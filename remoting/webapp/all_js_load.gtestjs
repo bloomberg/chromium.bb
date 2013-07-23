@@ -52,7 +52,6 @@ AllJsLoadTest.prototype = {
     'oauth2.js',
     'paired_client_manager.js',
     'plugin_settings.js',
-    'xhr_proxy.js',
     'remoting.js',
     'session_connector.js',
     'server_log_entry.js',
@@ -66,6 +65,7 @@ AllJsLoadTest.prototype = {
     'wcs_sandbox_content.js',
     'wcs_sandbox_container.js',
     'xhr.js',
+    'xhr_proxy.js',
   ],
 };
 

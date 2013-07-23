@@ -337,5 +337,42 @@ remoting.HostController.prototype.getLocalHostId = function(onDone) {
   });
 };
 
+/**
+ * Fetch the list of paired clients for this host.
+ *
+ * @param {function(Array.<remoting.PairedClient>):void} onDone
+ * @param {function(remoting.Error):void} onError
+ * @return {void}
+ */
+remoting.HostController.prototype.getPairedClients = function(onDone,
+                                                              onError) {
+  this.hostDispatcher_.getPairedClients(onDone, onError);
+};
+
+/**
+ * Delete a single paired client.
+ *
+ * @param {string} client The client id of the pairing to delete.
+ * @param {function():void} onDone Completion callback.
+ * @param {function(remoting.Error):void} onError Error callback.
+ * @return {void}
+ */
+remoting.HostController.prototype.deletePairedClient = function(
+    client, onDone, onError) {
+  this.hostDispatcher_.deletePairedClient(client, onDone, onError);
+};
+
+/**
+ * Delete all paired clients.
+ *
+ * @param {function():void} onDone Completion callback.
+ * @param {function(remoting.Error):void} onError Error callback.
+ * @return {void}
+ */
+remoting.HostController.prototype.clearPairedClients = function(
+    onDone, onError) {
+  this.hostDispatcher_.clearPairedClients(onDone, onError);
+};
+
 /** @type {remoting.HostController} */
 remoting.hostController = null;

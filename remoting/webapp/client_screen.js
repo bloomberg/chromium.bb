@@ -357,8 +357,22 @@ remoting.onConnected = function(clientSession) {
       };
       remoting.HostSettings.save(clientSession.hostId, pairingInfo);
     };
-    // TODO(jamiewalch): Since we can't get a descriptive name for the local
-    // computer from Javascript, pass the empty string for now.
-    clientSession.requestPairing('', onPairingComplete);
+    // Use the platform name as a proxy for the local computer name.
+    // TODO(jamiewalch): Use a descriptive name for the local computer, for
+    // example, its Chrome Sync name.
+    var clientName = '';
+    if (navigator.platform.indexOf('Mac') != -1) {
+      clientName = 'Mac';
+    } else if (navigator.platform.indexOf('Win32') != -1) {
+      clientName = 'Windows';
+    } else if (navigator.userAgent.match(/\bCrOS\b/)) {
+      clientName = 'ChromeOS';
+    } else if (navigator.platform.indexOf('Linux') != -1) {
+      clientName = 'Linux';
+    } else {
+      console.log('Unrecognized client platform. Using navigator.platform.');
+      clientName = navigator.platform;
+    }
+    clientSession.requestPairing(clientName, onPairingComplete);
   }
 };

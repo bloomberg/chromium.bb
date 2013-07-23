@@ -85,7 +85,11 @@ function onLoad() {
       { event: 'click', id: 'host-config-done-dismiss', fn: goHome },
       { event: 'click', id: 'host-config-error-dismiss', fn: goHome },
       { event: 'click', id: 'token-refresh-error-ok', fn: goHome },
-      { event: 'click', id: 'token-refresh-error-sign-in', fn: doAuthRedirect }
+      { event: 'click', id: 'token-refresh-error-sign-in', fn: doAuthRedirect },
+      { event: 'click', id: 'open-paired-client-manager-dialog',
+        fn: remoting.setMode.bind(null,
+                                  remoting.AppMode.HOME_MANAGE_PAIRINGS) },
+      { event: 'click', id: 'close-paired-client-manager-dialog', fn: goHome }
   ];
 
   for (var i = 0; i < actions.length; ++i) {

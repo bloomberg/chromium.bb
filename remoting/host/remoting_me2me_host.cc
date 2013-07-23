@@ -481,9 +481,12 @@ void HostProcess::CreateAuthenticatorFactory() {
     return;
   }
 
-  // TODO(jamiewalch): Create a pairing registry here once all the code
-  // is committed.
-  scoped_refptr<remoting::protocol::PairingRegistry> pairing_registry = NULL;
+  scoped_refptr<protocol::PairingRegistry> pairing_registry = NULL;
+  scoped_ptr<protocol::PairingRegistry::Delegate> delegate(
+      CreatePairingRegistryDelegate(context_->file_task_runner()));
+  if (delegate) {
+    pairing_registry = new protocol::PairingRegistry(delegate.Pass());
+  }
 
   scoped_ptr<protocol::AuthenticatorFactory> factory;
 

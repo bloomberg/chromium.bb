@@ -382,23 +382,43 @@ remoting.HostDispatcher.prototype.getPairedClients = function(callback,
 };
 
 /**
- * @param {function(boolean):void} onDone
+ * The pairing API returns a boolean to indicate success or failure, but
+ * the JS API is defined in terms of onDone and onError callbacks. This
+ * function converts one to the other.
+ *
+ * @param {function():void} onDone Success callback.
+ * @param {function(remoting.Error):void} onError Error callback.
+ * @param {boolean} success True if the operation succeeded; false otherwise.
+ * @private
+ */
+remoting.HostDispatcher.runCallback_ = function(onDone, onError, success) {
+  if (success) {
+    onDone();
+  } else {
+    onError(remoting.Error.UNEXPECTED);
+  }
+};
+
+/**
+ * @param {function():void} onDone
  * @param {function(remoting.Error):void} onError
  * @return {void}
  */
 remoting.HostDispatcher.prototype.clearPairedClients =
     function(onDone, onError) {
+  var callback =
+      remoting.HostDispatcher.runCallback_.bind(null, onDone, onError);
   switch (this.state_) {
     case remoting.HostDispatcher.State.UNKNOWN:
       this.pendingRequests_.push(
         this.clearPairedClients.bind(this, onDone, onError));
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
-      this.nativeMessagingHost_.clearPairedClients(onDone, onError);
+      this.nativeMessagingHost_.clearPairedClients(callback, onError);
       break;
     case remoting.HostDispatcher.State.NPAPI:
       try {
-        this.npapiHost_.clearPairedClients(onDone);
+        this.npapiHost_.clearPairedClients(callback);
       } catch (err) {
         onError(remoting.Error.MISSING_PLUGIN);
       }
@@ -408,23 +428,25 @@ remoting.HostDispatcher.prototype.clearPairedClients =
 
 /**
  * @param {string} client
- * @param {function(boolean):void} onDone
+ * @param {function():void} onDone
  * @param {function(remoting.Error):void} onError
  * @return {void}
  */
 remoting.HostDispatcher.prototype.deletePairedClient =
     function(client, onDone, onError) {
+  var callback =
+      remoting.HostDispatcher.runCallback_.bind(null, onDone, onError);
   switch (this.state_) {
     case remoting.HostDispatcher.State.UNKNOWN:
       this.pendingRequests_.push(
         this.deletePairedClient.bind(this, client, onDone, onError));
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
-      this.nativeMessagingHost_.deletePairedClient(client, onDone, onError);
+      this.nativeMessagingHost_.deletePairedClient(client, callback, onError);
       break;
     case remoting.HostDispatcher.State.NPAPI:
       try {
-        this.npapiHost_.deletePairedClient(client, onDone);
+        this.npapiHost_.deletePairedClient(client, callback);
       } catch (err) {
         onError(remoting.Error.MISSING_PLUGIN);
       }

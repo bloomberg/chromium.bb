@@ -624,6 +624,33 @@
       <message name="IDR_HOST_STARTED" desc="The message reported to the EventLog by Chromoting Host every time it is started.">
         Host started for user: <ph name="HOST_USERNAME">%1<ex>host@email.com</ex></ph>.
       </message>
+      <message desc="Link to allow a host's paired clients to be viewed or edited." name="IDR_HOME_DAEMON_MANAGE_PAIRINGS">
+        View/edit
+      </message>
+      <message desc="Link to delete a specific paired client." name="IDR_DELETE_PAIRED_CLIENT">
+        Delete
+      </message>
+      <message desc="Link to delete all paired clients." name="IDR_DELETE_ALL_PAIRED_CLIENTS">
+        Delete all
+      </message>
+      <message desc="Message displayed in the paired client manager dialog when all paired clients have been deleted." name="IDR_NO_PAIRED_CLIENTS">
+        All paired clients have been deleted.
+      </message>
+      <message desc="Message displayed when the current computer has been paired with one or more clients, allowing them to connect without needing a PIN." name="IDR_HOME_DAEMON_PAIRED_MESSAGE">
+        This computer is configured to allow one or more clients to connect without entering a PIN.
+      </message>
+      <message desc="Message displayed above the list of paired clients, explaining its purpose." name="IDR_PAIRED_CLIENTS_INTRODUCTION">
+        The following clients have been paired with this computer and can connect without supplying a PIN. You can revoke this permission at any time, either individually, or for all clients.
+      </message>
+      <message desc="Table header for the dates at which clients were paired." name="IDR_PAIRED_CLIENT_DATE">
+        Pairing date
+      </message>
+      <message desc="Table header for the names of paired clients." name="IDR_PAIRED_CLIENT_NAME">
+        Client
+      </message>
+      <message desc="Text shown while a background operation is in progress." name="IDR_WORKING">
+        Working…
+      </message>
     </messages>
   </release>
 </grit>

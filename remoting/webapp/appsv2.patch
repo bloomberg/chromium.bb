@@ -121,7 +121,7 @@ index f89072a..2fadd83 100644
    remoting.stats = new remoting.ConnectionStats(
        document.getElementById('statistics'));
    remoting.formatIq = new remoting.FormatIq();
-@@ -156,9 +151,6 @@ remoting.initHomeScreenUi = function () {
+@@ -11,9 +151,6 @@ remoting.initHomeScreenUi = function() {
    remoting.hostController = new remoting.HostController();
    document.getElementById('share-button').disabled = !isIT2MeSupported_();
    remoting.setMode(remoting.AppMode.HOME);
@@ -130,7 +130,7 @@ index f89072a..2fadd83 100644
 -  }
    remoting.hostSetupDialog =
        new remoting.HostSetupDialog(remoting.hostController);
-   // Display the cached host list, then asynchronously update and re-display it.
+   var dialog = document.getElementById('paired-clients-list');
 diff --git a/remoting/webapp/xhr_proxy.js b/remoting/webapp/xhr_proxy.js
 index 4c45780..653b481 100644
 --- a/xhr_proxy.js

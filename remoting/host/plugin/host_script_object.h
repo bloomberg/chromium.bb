@@ -242,10 +242,6 @@ class HostNPScriptObject {
   // success status.
   void InvokeBooleanCallback(const ScopedRefNPObject& callback, bool result);
 
-  // Callback handler for DaemonController::DeletePairedClients().
-  void InvokeDeletePairedClientsCallback(const ScopedRefNPObject& callback,
-                                         bool success);
-
   // Callback handler for DaemonController::GetConfig().
   void InvokeGetDaemonConfigCallback(const ScopedRefNPObject& callback,
                                      scoped_ptr<base::DictionaryValue> config);

@@ -156,6 +156,17 @@ remoting.initHomeScreenUi = function() {
   }
   remoting.hostSetupDialog =
       new remoting.HostSetupDialog(remoting.hostController);
+  var dialog = document.getElementById('paired-clients-list');
+  var message = document.getElementById('paired-client-manager-message');
+  var deleteAll = document.getElementById('delete-all-paired-clients');
+  var close = document.getElementById('close-paired-client-manager-dialog');
+  var working = document.getElementById('paired-client-manager-dialog-working');
+  var error = document.getElementById('paired-client-manager-dialog-error');
+  var noPairedClients = document.getElementById('no-paired-clients');
+  remoting.pairedClientManager =
+      new remoting.PairedClientManager(remoting.hostController, dialog, message,
+                                       deleteAll, close, noPairedClients,
+                                       working, error);
   // Display the cached host list, then asynchronously update and re-display it.
   remoting.updateLocalHostState();
   remoting.hostList.refresh(remoting.updateLocalHostState);
@@ -163,7 +174,7 @@ remoting.initHomeScreenUi = function() {
 };
 
 /**
- * Fetches local host state and updates host list accordingly.
+ * Fetches local host state and updates the DOM accordingly.
  */
 remoting.updateLocalHostState = function() {
   /**
@@ -182,7 +193,19 @@ remoting.updateLocalHostState = function() {
     remoting.hostList.display();
   };
 
+  /**
+   * @param {remoting.Error} error
+   */
+  var onError = function(error) {
+    console.error('Failed to get pairing status: ' + error);
+    remoting.pairedClientManager.setPairedClients([]);
+  }
+
   remoting.hostController.getLocalHostId(onHostId);
+  remoting.hostController.getPairedClients(
+      remoting.pairedClientManager.setPairedClients.bind(
+          remoting.pairedClientManager),
+      onError);
 };
 
 /**

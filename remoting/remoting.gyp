@@ -2169,6 +2169,7 @@
           'webapp/host_setup_dialog.js',
           'webapp/main.html',
           'webapp/manifest.json',
+          'webapp/paired_client_manager.js',
           'webapp/remoting.js',
         ],
       },

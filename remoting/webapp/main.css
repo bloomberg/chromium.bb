@@ -11,6 +11,11 @@ tfoot, thead, tr, th, td, button {
   margin: 0;
   padding: 0;
   border: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+  font-family: inherit;
+  vertical-align: baseline;
 }
 
 body {
@@ -297,6 +302,10 @@ section {
   margin-left: 5px;
 }
 
+.button-row span:first-child {
+  width: 100%;
+}
+
 .clickable {
   cursor: pointer;
 }
@@ -424,6 +433,10 @@ section {
   padding-__MSG_@@bidi_start_edge__: 2px;
 }
 
+#paired-clients-list table {
+  width: 100%;
+}
+
 .message {
   margin-bottom: 24px;
 }
@@ -438,6 +451,10 @@ section {
 
 td {
   vertical-align: middle;
+}
+
+thead {
+  font-weight: bold;
 }
 
 .host-online.clickable:hover,

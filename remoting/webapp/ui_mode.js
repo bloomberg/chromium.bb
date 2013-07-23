@@ -47,6 +47,7 @@ remoting.AppMode = {
       HOST_SETUP_PROCESSING: 'home.host-setup.processing',
       HOST_SETUP_DONE: 'home.host-setup.done',
       HOST_SETUP_ERROR: 'home.host-setup.error',
+    HOME_MANAGE_PAIRINGS: 'home.manage-pairings',
   IN_SESSION: 'in-session'
 };
 
