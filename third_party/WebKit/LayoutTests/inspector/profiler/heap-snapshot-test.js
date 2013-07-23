@@ -118,7 +118,7 @@ InspectorTest.createHeapSnapshotMockWithDOM = function()
         snapshot: {
             meta: {
                 node_fields: ["type", "name", "id", "edge_count"],
-                node_types: [["hidden", "object"], "", "", ""],
+                node_types: [["hidden", "object", "synthetic"], "", "", ""],
                 edge_fields: ["type", "name_or_index", "to_node"],
                 edge_types: [["element", "hidden", "internal"], "", ""]
             },
@@ -134,15 +134,15 @@ InspectorTest.createHeapSnapshotMockWithDOM = function()
             //    |        |     \
             //  (root)   hidden   --->D--internal / "native"-->N
             //    |          \        |
-            //    |----->(E)  H     internal
+            //    |----->E    H    internal
             //    |                   v
-            //    |----->(F)--->G     M
+            //    |----->F--->G       M
             //
-            /* (root) */    0,  0,  1, 4,
+            /* (root) */    2,  0,  1, 4,
             /* Window */    1, 11,  2, 2,
             /* Window */    1, 11,  3, 3,
-            /* E */         1,  5,  4, 0,
-            /* F */         1,  6,  5, 1,
+            /* E */         2,  5,  4, 0,
+            /* F */         2,  6,  5, 1,
             /* A */         1,  1,  6, 0,
             /* B */         1,  2,  7, 1,
             /* D */         1,  4,  8, 2,
@@ -160,7 +160,7 @@ InspectorTest.createHeapSnapshotMockWithDOM = function()
             /* from B */       0,  1, 40,
             /* from D */       2, 12, 44, 2, 1, 48
             ],
-        strings: ["", "A", "B", "C", "D", "(E)", "(F)", "G", "H", "M", "N", "Window", "native"]
+        strings: ["", "A", "B", "C", "D", "E", "F", "G", "H", "M", "N", "Window", "native"]
     });
 };
 

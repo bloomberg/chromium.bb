@@ -76,6 +76,7 @@ function test()
                 var windowNode = new InspectorTest.HeapNode("Window", 20);
                 rootNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.shortcut);
                 nativeContextNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.element);
+                windowNode.linkNode(nativeContextNode, InspectorTest.HeapEdge.Type.internal, "native_context");
 
                 var headNode = new InspectorTest.HeapNode("Body", 32);
                 windowNode.linkNode(headNode, InspectorTest.HeapEdge.Type.property, "next");
