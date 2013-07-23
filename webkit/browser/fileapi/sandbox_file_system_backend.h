@@ -222,11 +222,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
 
   std::set<std::pair<GURL, FileSystemType> > sticky_dirty_origins_;
 
-  // Indicates if the usage tracking for FileSystem is enabled or not.
-  // The usage tracking is enabled by default and can be disabled by
-  // a command-line switch (--disable-file-system-usage-tracking).
-  bool enable_usage_tracking_;
-
   base::WeakPtrFactory<SandboxFileSystemBackend> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxFileSystemBackend);

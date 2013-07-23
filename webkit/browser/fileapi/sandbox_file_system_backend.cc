@@ -5,7 +5,6 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -48,9 +47,6 @@ const char kOpenFileSystemDetailLabel[] = "FileSystem.OpenFileSystemDetail";
 const char kOpenFileSystemDetailNonThrottledLabel[] =
     "FileSystem.OpenFileSystemDetailNonthrottled";
 int64 kMinimumStatsCollectionIntervalHours = 1;
-
-// A command line switch to disable usage tracking.
-const char kDisableUsageTracking[] = "disable-file-system-usage-tracking";
 
 enum FileSystemError {
   kOK = 0,
@@ -138,12 +134,9 @@ SandboxFileSystemBackend::SandboxFileSystemBackend(
     : file_system_options_(file_system_options),
       sandbox_context_(sandbox_context),
       enable_temporary_file_system_in_incognito_(false),
-      enable_usage_tracking_(
-          !CommandLine::ForCurrentProcess()->HasSwitch(
-              kDisableUsageTracking)),
       weak_factory_(this) {
   // Set quota observers.
-  if (enable_usage_tracking_) {
+  if (sandbox_context_->is_usage_tracking_enabled()) {
     update_observers_ = update_observers_.AddObserver(
         sandbox_context_->quota_observer(),
         sandbox_context_->file_task_runner());
@@ -217,7 +210,7 @@ void SandboxFileSystemBackend::InitializeFileSystem(
                  base::Bind(callback, root_url, name),
                  base::Owned(error_ptr)));
 
-  if (enable_usage_tracking_)
+  if (sandbox_context_->is_usage_tracking_enabled())
     return;
 
   // Schedule full usage recalculation on the next launch without
@@ -394,7 +387,7 @@ int64 SandboxFileSystemBackend::GetOriginUsageOnFileThread(
     const GURL& origin_url,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
-  if (!enable_usage_tracking_)
+  if (!sandbox_context_->is_usage_tracking_enabled())
     return 0;
 
   // Don't use usage cache and return recalculated usage for sticky invalidated

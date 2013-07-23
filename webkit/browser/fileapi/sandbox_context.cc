@@ -4,6 +4,7 @@
 
 #include "webkit/browser/fileapi/sandbox_context.h"
 
+#include "base/command_line.h"
 #include "base/task_runner_util.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
@@ -12,6 +13,11 @@
 #include "webkit/browser/quota/quota_manager.h"
 
 namespace fileapi {
+
+namespace {
+// A command line switch to disable usage tracking.
+const char kDisableUsageTracking[] = "disable-file-system-usage-tracking";
+}
 
 const base::FilePath::CharType
 SandboxContext::kFileSystemDirectory[] = FILE_PATH_LITERAL("File System");
@@ -32,7 +38,10 @@ SandboxContext::SandboxContext(
           quota_manager_proxy,
           file_task_runner,
           sync_file_util(),
-          usage_cache())) {
+          usage_cache())),
+      is_usage_tracking_enabled_(
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+              kDisableUsageTracking)) {
 }
 
 SandboxContext::~SandboxContext() {
