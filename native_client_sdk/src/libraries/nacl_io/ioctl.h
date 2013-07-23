@@ -1,7 +1,7 @@
 /* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
+
 #ifndef LIBRARIES_NACL_IO_IOCTL_H_
 #define LIBRARIES_NACL_IO_IOCTL_H_
 
@@ -22,4 +22,4 @@ struct tioc_nacl_input_string {
   const char* buffer;
 };
 
-#endif  // LIBRARIES_NACL_IO_NACL_IO_H_
+#endif  /* LIBRARIES_NACL_IO_NACL_IO_H_ */

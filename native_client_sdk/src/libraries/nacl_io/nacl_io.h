@@ -1,7 +1,7 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
+
 #ifndef LIBRARIES_NACL_IO_NACL_IO_H_
 #define LIBRARIES_NACL_IO_NACL_IO_H_
 
@@ -114,4 +114,4 @@ int mount(const char* source, const char* target, const char* filesystemtype,
 
 EXTERN_C_END
 
-#endif  // LIBRARIES_NACL_IO_NACL_IO_H_
+#endif  /* LIBRARIES_NACL_IO_NACL_IO_H_ */
