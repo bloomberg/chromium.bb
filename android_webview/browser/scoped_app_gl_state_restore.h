@@ -23,6 +23,8 @@ class ScopedAppGLStateRestore {
   ~ScopedAppGLStateRestore();
 
  private:
+  const CallMode mode_;
+
   GLint texture_external_oes_binding_;
   GLint pack_alignment_;
   GLint unpack_alignment_;
@@ -41,7 +43,28 @@ class ScopedAppGLStateRestore {
 
   GLboolean depth_test_;
   GLboolean cull_face_;
+  GLint cull_face_mode_;
   GLboolean color_mask_[4];
+  GLfloat color_clear_[4];
+  GLfloat depth_clear_;
+  GLint current_program_;
+  GLint depth_func_;
+  GLboolean depth_mask_;
+  GLfloat depth_rage_[2];
+  GLint front_face_;
+  GLint hint_generate_mipmap_;
+  GLfloat line_width_;
+  GLfloat polygon_offset_factor_;
+  GLfloat polygon_offset_units_;
+  GLfloat sample_coverage_value_;
+  GLboolean sample_coverage_invert_;
+
+  GLboolean enable_dither_;
+  GLboolean enable_polygon_offset_fill_;
+  GLboolean enable_sample_alpha_to_coverage_;
+  GLboolean enable_sample_coverage_;
+
+  // Not saved/restored in MODE_DRAW.
   GLboolean blend_enabled_;
   GLint blend_src_rgb_;
   GLint blend_src_alpha_;
@@ -51,7 +74,6 @@ class ScopedAppGLStateRestore {
   GLint viewport_[4];
   GLboolean scissor_test_;
   GLint scissor_box_[4];
-  GLint current_program_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAppGLStateRestore);
 };

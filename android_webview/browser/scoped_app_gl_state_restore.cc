@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
 
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_stub.h"
@@ -40,15 +41,23 @@ void MakeAppContextCurrent() {
   g_app_context_surface.Get().MakeCurrent();
 }
 
+void GLEnableDisable(GLenum cap, bool enable) {
+  if (enable)
+    glEnable(cap);
+  else
+    glDisable(cap);
+}
+
 }  // namespace
 
-ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) {
+ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
+  TRACE_EVENT0("android_webview", "AppGLStateSave");
   MakeAppContextCurrent();
 
   glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &vertex_array_buffer_binding_);
   glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &index_array_buffer_binding_);
 
-  switch(mode) {
+  switch(mode_) {
     case MODE_DRAW:
       // TODO(boliu): These should always be 0 in draw case. When we have
       // guarantee that we are no longer making GL calls outside of draw, DCHECK
@@ -64,6 +73,15 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) {
       index_array_buffer_binding_ = 0;
       break;
     case MODE_DETACH_FROM_WINDOW:
+      glGetBooleanv(GL_BLEND, &blend_enabled_);
+      glGetIntegerv(GL_BLEND_SRC_RGB, &blend_src_rgb_);
+      glGetIntegerv(GL_BLEND_SRC_ALPHA, &blend_src_alpha_);
+      glGetIntegerv(GL_BLEND_DST_RGB, &blend_dest_rgb_);
+      glGetIntegerv(GL_BLEND_DST_ALPHA, &blend_dest_alpha_);
+      glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture_);
+      glGetIntegerv(GL_VIEWPORT, viewport_);
+      glGetBooleanv(GL_SCISSOR_TEST, &scissor_test_);
+      glGetIntegerv(GL_SCISSOR_BOX, scissor_box_);
       break;
   }
 
@@ -89,20 +107,32 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) {
 
   glGetBooleanv(GL_DEPTH_TEST, &depth_test_);
   glGetBooleanv(GL_CULL_FACE, &cull_face_);
+  glGetIntegerv(GL_CULL_FACE_MODE, &cull_face_mode_);
   glGetBooleanv(GL_COLOR_WRITEMASK, color_mask_);
-  glGetBooleanv(GL_BLEND, &blend_enabled_);
-  glGetIntegerv(GL_BLEND_SRC_RGB, &blend_src_rgb_);
-  glGetIntegerv(GL_BLEND_SRC_ALPHA, &blend_src_alpha_);
-  glGetIntegerv(GL_BLEND_DST_RGB, &blend_dest_rgb_);
-  glGetIntegerv(GL_BLEND_DST_ALPHA, &blend_dest_alpha_);
-  glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture_);
-  glGetIntegerv(GL_VIEWPORT, viewport_);
-  glGetBooleanv(GL_SCISSOR_TEST, &scissor_test_);
-  glGetIntegerv(GL_SCISSOR_BOX, scissor_box_);
   glGetIntegerv(GL_CURRENT_PROGRAM, &current_program_);
+  glGetFloatv(GL_COLOR_CLEAR_VALUE, color_clear_);
+  glGetFloatv(GL_DEPTH_CLEAR_VALUE, &depth_clear_);
+  glGetIntegerv(GL_DEPTH_FUNC, &depth_func_);
+  glGetBooleanv(GL_DEPTH_WRITEMASK, &depth_mask_);
+  glGetFloatv(GL_DEPTH_RANGE, depth_rage_);
+  glGetIntegerv(GL_FRONT_FACE, &front_face_);
+  glGetIntegerv(GL_GENERATE_MIPMAP_HINT, &hint_generate_mipmap_);
+  glGetFloatv(GL_LINE_WIDTH, &line_width_);
+  glGetFloatv(GL_POLYGON_OFFSET_FACTOR, &polygon_offset_factor_);
+  glGetFloatv(GL_POLYGON_OFFSET_UNITS, &polygon_offset_units_);
+  glGetFloatv(GL_SAMPLE_COVERAGE_VALUE, &sample_coverage_value_);
+  glGetBooleanv(GL_SAMPLE_COVERAGE_INVERT, &sample_coverage_invert_);
+
+  glGetBooleanv(GL_DITHER, &enable_dither_);
+  glGetBooleanv(GL_POLYGON_OFFSET_FILL, &enable_polygon_offset_fill_);
+  glGetBooleanv(GL_SAMPLE_ALPHA_TO_COVERAGE, &enable_sample_alpha_to_coverage_);
+  glGetBooleanv(GL_SAMPLE_COVERAGE, &enable_sample_coverage_);
+
+  // Intentionally not saving/restoring stencil related state.
 }
 
 ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
+  TRACE_EVENT0("android_webview", "AppGLStateRestore");
   MakeAppContextCurrent();
 
   glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding_);
@@ -127,42 +157,47 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
     }
   }
 
-  if (depth_test_) {
-    glEnable(GL_DEPTH_TEST);
-  } else {
-    glDisable(GL_DEPTH_TEST);
-  }
+  GLEnableDisable(GL_DEPTH_TEST, depth_test_);
 
-  if (cull_face_) {
-    glEnable(GL_CULL_FACE);
-  } else {
-    glDisable(GL_CULL_FACE);
-  }
+  GLEnableDisable(GL_CULL_FACE, cull_face_);
+  glCullFace(cull_face_mode_);
 
   glColorMask(color_mask_[0], color_mask_[1], color_mask_[2], color_mask_[3]);
 
-  if (blend_enabled_) {
-    glEnable(GL_BLEND);
-  } else {
-    glDisable(GL_BLEND);
-  }
-
-  glBlendFuncSeparate(
-      blend_src_rgb_, blend_dest_rgb_, blend_src_alpha_, blend_dest_alpha_);
-  glActiveTexture(active_texture_);
-
-  glViewport(viewport_[0], viewport_[1], viewport_[2], viewport_[3]);
-
-  if (scissor_test_) {
-    glEnable(GL_SCISSOR_TEST);
-  } else {
-    glDisable(GL_SCISSOR_TEST);
-  }
-
-  glScissor(
-      scissor_box_[0], scissor_box_[1], scissor_box_[2], scissor_box_[3]);
-
   glUseProgram(current_program_);
+
+  glClearColor(
+      color_clear_[0], color_clear_[1], color_clear_[2], color_clear_[3]);
+  glClearDepth(depth_clear_);
+  glDepthFunc(depth_func_);
+  glDepthMask(depth_mask_);
+  glDepthRange(depth_rage_[0], depth_rage_[1]);
+  glFrontFace(front_face_);
+  glHint(GL_GENERATE_MIPMAP_HINT, hint_generate_mipmap_);
+  // TODO(boliu): GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES ??
+  glLineWidth(line_width_);
+  glPolygonOffset(polygon_offset_factor_, polygon_offset_units_);
+  glSampleCoverage(sample_coverage_value_, sample_coverage_invert_);
+
+  GLEnableDisable(GL_DITHER, enable_dither_);
+  GLEnableDisable(GL_POLYGON_OFFSET_FILL, enable_polygon_offset_fill_);
+  GLEnableDisable(GL_SAMPLE_ALPHA_TO_COVERAGE,
+                  enable_sample_alpha_to_coverage_);
+  GLEnableDisable(GL_SAMPLE_COVERAGE, enable_sample_coverage_);
+
+  if (mode_ == MODE_DETACH_FROM_WINDOW) {
+    GLEnableDisable(GL_BLEND, blend_enabled_);
+    glBlendFuncSeparate(
+        blend_src_rgb_, blend_dest_rgb_, blend_src_alpha_, blend_dest_alpha_);
+    glActiveTexture(active_texture_);
+
+    glViewport(viewport_[0], viewport_[1], viewport_[2], viewport_[3]);
+
+    GLEnableDisable(GL_SCISSOR_TEST, scissor_test_);
+
+    glScissor(
+        scissor_box_[0], scissor_box_[1], scissor_box_[2], scissor_box_[3]);
+  }
 }
 
 }  // namespace android_webview
