@@ -235,7 +235,7 @@ string PriorityDescription(const WebURLRequest::Priority& priority)
 
 void blockRequest(WebURLRequest& request)
 {
-    request.setURL(WebURL());
+    request.setURL(GURL("255.255.255.255"));
 }
 
 bool isLocalhost(const string& host)
@@ -1319,17 +1319,6 @@ void WebTestProxyBase::willSendRequest(WebFrame*, unsigned identifier, WebKit::W
         m_delegate->printMessage(" has priority ");
         m_delegate->printMessage(PriorityDescription(request.priority()));
         m_delegate->printMessage("\n");
-    }
-
-    if (!redirectResponse.isNull() && m_testInterfaces->testRunner()->shouldBlockRedirects()) {
-        m_delegate->printMessage("Returning null for this redirect\n");
-        blockRequest(request);
-        return;
-    }
-
-    if (m_testInterfaces->testRunner()->willSendRequestShouldReturnNull()) {
-        blockRequest(request);
-        return;
     }
 
     if (m_testInterfaces->testRunner()->httpHeadersToClear()) {

@@ -114,8 +114,6 @@ public:
     bool shouldStayOnPageAfterHandlingBeforeUnload() const;
     void setTitleTextDirection(WebKit::WebTextDirection);
     const std::set<std::string>* httpHeadersToClear() const;
-    bool shouldBlockRedirects() const;
-    bool willSendRequestShouldReturnNull() const;
     void setTopLoadingFrame(WebKit::WebFrame*, bool);
     WebKit::WebFrame* topLoadingFrame() const;
     void policyDelegateDone();
@@ -406,12 +404,6 @@ private:
     // Causes WillSendRequest to clear certain headers.
     void setWillSendRequestClearHeader(const CppArgumentList&, CppVariant*);
 
-    // Causes WillSendRequest to block redirects.
-    void setWillSendRequestReturnsNullOnRedirect(const CppArgumentList&, CppVariant*);
-
-    // Causes WillSendRequest to return an empty request.
-    void setWillSendRequestReturnsNull(const CppArgumentList&, CppVariant*);
-
     // This function sets a flag that tells the test_shell to dump a descriptive
     // line for each resource load's priority and any time that priority
     // changes. It takes no arguments, and ignores any that may be present.
@@ -674,10 +666,6 @@ private:
     bool m_isPrinting;
 
     bool m_shouldStayOnPageAfterHandlingBeforeUnload;
-
-    bool m_shouldBlockRedirects;
-
-    bool m_willSendRequestShouldReturnNull;
 
     bool m_shouldDumpResourcePriorities;
 

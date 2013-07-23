@@ -32,7 +32,6 @@
 
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/ResourceLoaderHost.h"
-#include "core/page/Page.h"
 #include "core/platform/Logging.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
@@ -60,8 +59,7 @@ ResourceLoader::RequestCountTracker::~RequestCountTracker()
 PassRefPtr<ResourceLoader> ResourceLoader::create(ResourceLoaderHost* host, CachedResource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
 {
     RefPtr<ResourceLoader> loader(adoptRef(new ResourceLoader(host, resource, options)));
-    if (!loader->init(request))
-        return 0;
+    loader->init(request);
     loader->start();
     return loader.release();
 }
@@ -72,7 +70,7 @@ ResourceLoader::ResourceLoader(ResourceLoaderHost* host, CachedResource* resourc
     , m_defersLoading(host->defersLoading())
     , m_options(options)
     , m_resource(resource)
-    , m_state(Uninitialized)
+    , m_state(Initialized)
     , m_connectionState(ConnectionStateNew)
     , m_requestCountTracker(adoptPtr(new RequestCountTracker(host, resource)))
 {
@@ -86,14 +84,12 @@ ResourceLoader::~ResourceLoader()
 void ResourceLoader::releaseResources()
 {
     ASSERT(m_state != Terminated);
-    if (m_state != Uninitialized) {
-        m_requestCountTracker.clear();
-        m_host->didLoadResource(m_resource);
-        if (m_state == Terminated)
-            return;
-        m_resource->clearLoader();
-        m_host->willTerminateResourceLoader(this);
-    }
+    m_requestCountTracker.clear();
+    m_host->didLoadResource(m_resource);
+    if (m_state == Terminated)
+        return;
+    m_resource->clearLoader();
+    m_host->willTerminateResourceLoader(this);
 
     ASSERT(m_state != Terminated);
     
@@ -114,26 +110,15 @@ void ResourceLoader::releaseResources()
     m_deferredRequest = ResourceRequest();
 }
 
-bool ResourceLoader::init(const ResourceRequest& r)
+void ResourceLoader::init(const ResourceRequest& passedRequest)
 {
-    ASSERT(!m_loader);
-    ASSERT(m_request.isNull());
-    ASSERT(m_deferredRequest.isNull());
-    
-    ResourceRequest clientRequest(r);
-
-    WebKit::WrappedResourceRequest wrappedRequest(clientRequest);
-    willSendRequest(0, wrappedRequest, WebKit::WebURLResponse());
-    if (clientRequest.isNull()) {
-        cancel();
-        return false;
-    }
+    ResourceRequest request(passedRequest);
+    m_host->willSendRequest(m_resource, request, ResourceResponse(), m_options);
+    request.setReportLoadTiming(true);
     ASSERT(m_state != Terminated);
-
-    m_originalRequest = m_request = clientRequest;
-    m_state = Initialized;
+    ASSERT(!request.isNull());
+    m_originalRequest = m_request = request;
     m_host->didInitializeResourceLoader(this);
-    return true;
 }
 
 void ResourceLoader::start()
@@ -253,31 +238,25 @@ void ResourceLoader::cancel(const ResourceError& error)
 
 void ResourceLoader::willSendRequest(WebKit::WebURLLoader*, WebKit::WebURLRequest& passedRequest, const WebKit::WebURLResponse& passedRedirectResponse)
 {
-    // Store the previous URL because we may modify it.
-    KURL previousURL = m_request.url();
     RefPtr<ResourceLoader> protect(this);
 
     ResourceRequest& request(passedRequest.toMutableResourceRequest());
     ASSERT(!request.isNull());
-    const ResourceResponse& redirectResponse(passedRedirectResponse.isNull() ? ResourceResponse() : passedRedirectResponse.toResourceResponse());
-    if (!redirectResponse.isNull()) {
-        if (!m_host->shouldRequest(m_resource, request, m_options)) {
-            cancel();
-            return;
-        }
-        m_host->redirectReceived(m_resource, redirectResponse);
-        m_resource->willSendRequest(request, redirectResponse);
+    const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
+    ASSERT(!redirectResponse.isNull());
+    if (!m_host->shouldRequest(m_resource, request, m_options)) {
+        cancel();
+        return;
     }
-
+    m_host->redirectReceived(m_resource, redirectResponse);
+    m_resource->willSendRequest(request, redirectResponse);
     if (request.isNull() || m_state == Terminated)
         return;
 
     m_host->willSendRequest(m_resource, request, redirectResponse, m_options);
     request.setReportLoadTiming(true);
+    ASSERT(!request.isNull());
     m_request = request;
-
-    if (request.isNull())
-        cancel();
 }
 
 void ResourceLoader::didReceiveCachedMetadata(WebKit::WebURLLoader*, const char* data, int length)

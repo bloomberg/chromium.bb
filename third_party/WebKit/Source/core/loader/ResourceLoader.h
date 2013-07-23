@@ -33,16 +33,12 @@
 #include "core/platform/network/ResourceRequest.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderClient.h"
-
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class CachedResource;
-class DocumentLoader;
-class Frame;
-class FrameLoader;
 class KURL;
 class ResourceError;
 class ResourceResponse;
@@ -90,7 +86,7 @@ public:
 private:
     ResourceLoader(ResourceLoaderHost*, CachedResource*, const ResourceLoaderOptions&);
 
-    bool init(const ResourceRequest&);
+    void init(const ResourceRequest&);
     void start();
 
     void didFinishLoadingOnePart(double finishTime);
@@ -108,7 +104,6 @@ private:
     ResourceLoaderOptions m_options;
 
     enum ResourceLoaderState {
-        Uninitialized,
         Initialized,
         Finishing,
         Terminated
