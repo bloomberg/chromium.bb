@@ -30,9 +30,9 @@
 #define ResourceLoader_h
 
 #include "core/loader/ResourceLoaderOptions.h"
-#include "core/platform/network/ResourceHandleClient.h"
 #include "core/platform/network/ResourceRequest.h"
-#include "core/platform/network/ResourceResponse.h"
+#include "public/platform/WebURLLoader.h"
+#include "public/platform/WebURLLoaderClient.h"
 
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
@@ -44,14 +44,16 @@ class DocumentLoader;
 class Frame;
 class FrameLoader;
 class KURL;
-class ResourceBuffer;
-class ResourceHandle;
+class ResourceError;
+class ResourceResponse;
 class ResourceLoaderHost;
 
-class ResourceLoader : public RefCounted<ResourceLoader>, protected ResourceHandleClient {
+class ResourceLoader : public RefCounted<ResourceLoader>, protected WebKit::WebURLLoaderClient {
 public:
     static PassRefPtr<ResourceLoader> create(ResourceLoaderHost*, CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();
+
+    static void loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
 
     void cancel();
     void cancel(const ResourceError&);
@@ -67,18 +69,17 @@ public:
 
     void didChangePriority(ResourceLoadPriority);
 
-    // ResourceHandleClient
-    virtual void willSendRequest(ResourceHandle*, ResourceRequest&, const ResourceResponse& redirectResponse) OVERRIDE;
-    virtual void didSendData(ResourceHandle*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
-    virtual void didReceiveResponse(ResourceHandle*, const ResourceResponse&) OVERRIDE;
-    virtual void didReceiveData(ResourceHandle*, const char*, int, int encodedDataLength) OVERRIDE;
-    virtual void didReceiveCachedMetadata(ResourceHandle*, const char* data, int length) OVERRIDE;
-    virtual void didFinishLoading(ResourceHandle*, double finishTime) OVERRIDE;
-    virtual void didFail(ResourceHandle*, const ResourceError&) OVERRIDE;
-    virtual void didDownloadData(ResourceHandle*, int) OVERRIDE;
+    // WebURLLoaderClient
+    virtual void willSendRequest(WebKit::WebURLLoader*, WebKit::WebURLRequest&, const WebKit::WebURLResponse& redirectResponse) OVERRIDE;
+    virtual void didSendData(WebKit::WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
+    virtual void didReceiveResponse(WebKit::WebURLLoader*, const WebKit::WebURLResponse&) OVERRIDE;
+    virtual void didReceiveData(WebKit::WebURLLoader*, const char*, int, int encodedDataLength) OVERRIDE;
+    virtual void didReceiveCachedMetadata(WebKit::WebURLLoader*, const char* data, int length) OVERRIDE;
+    virtual void didFinishLoading(WebKit::WebURLLoader*, double finishTime) OVERRIDE;
+    virtual void didFail(WebKit::WebURLLoader*, const WebKit::WebURLError&) OVERRIDE;
+    virtual void didDownloadData(WebKit::WebURLLoader*, int) OVERRIDE;
 
-    const KURL& url() const { return m_request.url(); } 
-    ResourceHandle* handle() const { return m_handle.get(); }
+    const KURL& url() const { return m_request.url(); }
     bool shouldSendResourceLoadCallbacks() const { return m_options.sendLoadCallbacks == SendCallbacks; }
     bool shouldSniffContent() const { return m_options.sniffContent == SniffContent; }
     bool isLoadedBy(ResourceLoaderHost*) const;
@@ -94,13 +95,12 @@ private:
 
     void didFinishLoadingOnePart(double finishTime);
 
-    RefPtr<ResourceHandle> m_handle;
+    OwnPtr<WebKit::WebURLLoader> m_loader;
     RefPtr<ResourceLoaderHost> m_host;
 
     ResourceRequest m_request;
     ResourceRequest m_originalRequest; // Before redirects.
 
-    bool m_loadingMultipartContent;
     bool m_notifiedLoadComplete;
 
     bool m_defersLoading;
@@ -114,6 +114,16 @@ private:
         Terminated
     };
 
+    enum ConnectionState {
+        ConnectionStateNew,
+        ConnectionStateStarted,
+        ConnectionStateReceivedResponse,
+        ConnectionStateReceivingData,
+        ConnectionStateFinishedLoading,
+        ConnectionStateCanceled,
+        ConnectionStateFailed,
+    };
+
     class RequestCountTracker {
     public:
         RequestCountTracker(ResourceLoaderHost*, CachedResource*);
@@ -125,6 +135,11 @@ private:
 
     CachedResource* m_resource;
     ResourceLoaderState m_state;
+
+    // Used for sanity checking to make sure we don't experience illegal state
+    // transitions.
+    ConnectionState m_connectionState;
+
     OwnPtr<RequestCountTracker> m_requestCountTracker;
 };
 

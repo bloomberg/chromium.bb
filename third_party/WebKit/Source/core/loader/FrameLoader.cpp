@@ -63,6 +63,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/IconController.h"
 #include "core/loader/ProgressTracker.h"
+#include "core/loader/ResourceLoader.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/loader/cache/CachedResourceLoader.h"
@@ -81,7 +82,6 @@
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/HTTPParsers.h"
-#include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "modules/webdatabase/DatabaseManager.h"
@@ -1703,7 +1703,7 @@ unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& requ
     if (error.isNull()) {
         ASSERT(!newRequest.isNull());
         documentLoader()->applicationCacheHost()->willStartLoadingSynchronously(newRequest);
-        ResourceHandle::loadResourceSynchronously(newRequest, storedCredentials, error, response, data);
+        ResourceLoader::loadResourceSynchronously(newRequest, storedCredentials, error, response, data);
     }
     int encodedDataLength = response.resourceLoadInfo() ? static_cast<int>(response.resourceLoadInfo()->encodedDataLength) : -1;
     notifier()->sendRemainingDelegateMessages(m_documentLoader.get(), identifier, response, data.data(), data.size(), encodedDataLength, error);

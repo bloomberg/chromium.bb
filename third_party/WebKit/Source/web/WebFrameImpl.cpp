@@ -163,7 +163,6 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
-#include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBox.h"

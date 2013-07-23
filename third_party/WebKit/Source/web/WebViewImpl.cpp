@@ -150,7 +150,6 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/chromium/LayerPainterChromium.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
-#include "core/platform/network/ResourceHandle.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"

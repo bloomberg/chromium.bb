@@ -36,7 +36,7 @@
 #include "core/platform/Logging.h"
 #include "core/platform/PurgeableBuffer.h"
 #include "core/platform/SharedBuffer.h"
-#include "core/platform/network/ResourceHandle.h"
+#include "public/platform/Platform.h"
 #include "weborigin/KURL.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
@@ -332,7 +332,8 @@ void CachedResource::setCachedMetadata(unsigned dataTypeID, const char* data, si
     ASSERT(!m_cachedMetadata);
 
     m_cachedMetadata = CachedMetadata::create(dataTypeID, data, size);
-    ResourceHandle::cacheMetadata(m_response, m_cachedMetadata->serialize());
+    const Vector<char>& serializedData = m_cachedMetadata->serialize();
+    WebKit::Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), serializedData.data(), serializedData.size());
 }
 
 CachedMetadata* CachedResource::cachedMetadata(unsigned dataTypeID) const

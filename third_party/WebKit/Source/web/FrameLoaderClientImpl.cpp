@@ -52,7 +52,6 @@
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "core/platform/network/HTTPParsers.h"
-#include "core/platform/network/ResourceHandleInternal.h"
 #include "core/plugins/PluginData.h"
 #include "core/rendering/HitTestResult.h"
 #include <v8.h>
