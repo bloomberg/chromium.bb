@@ -48,7 +48,7 @@ public:
     { }
 
     // FIXME: It is not necessarily safe to call this method more than once.
-    RenderStyle* locateSharedStyle(const ElementResolveContext&);
+    RenderStyle* locateSharedStyle(const ElementResolveContext&, RenderStyle* newStyle);
 
 private:
     Node* locateCousinList(Element* parent, unsigned& visitedNodeCount) const;

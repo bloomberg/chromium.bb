@@ -47,16 +47,13 @@ ElementResolveContext::ElementResolveContext(Element* element)
     m_rootElementStyle = documentElement && element != documentElement ? documentElement->renderStyle() : documentStyle;
 }
 
-StyleResolverState::StyleResolverState(StyleResolverState** thisPointer, const Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
+StyleResolverState::StyleResolverState(const Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
     : m_regionForStyling(0)
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_lineHeightValue(0)
     , m_styleMap(*this, m_elementStyleResources)
-    , m_thisPointer(thisPointer)
 {
-    if (m_thisPointer)
-        *m_thisPointer = this;
     ASSERT(!element() || document() == newDocument);
     if (newElement)
         m_elementContext = ElementResolveContext(newElement);
@@ -87,8 +84,6 @@ StyleResolverState::StyleResolverState(StyleResolverState** thisPointer, const D
 
 StyleResolverState::~StyleResolverState()
 {
-    if (m_thisPointer)
-        *m_thisPointer = 0;
     m_elementContext = ElementResolveContext();
     m_style = 0;
     m_parentStyle = 0;

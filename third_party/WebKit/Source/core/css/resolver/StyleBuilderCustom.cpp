@@ -1419,7 +1419,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
     {
         CSSPropertyID newId = CSSProperty::resolveDirectionAwareProperty(id, state.style()->direction(), state.style()->writingMode());
         ASSERT(newId != id);
-        return styleResolver->applyProperty(newId, value);
+        return styleResolver->applyProperty(state, newId, value);
     }
     case CSSPropertyFontStretch:
     case CSSPropertyPage:

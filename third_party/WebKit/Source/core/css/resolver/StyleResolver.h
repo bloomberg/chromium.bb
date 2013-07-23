@@ -210,7 +210,7 @@ public:
     }
 
     // FIXME: Used by SharingStyleFinder, but should be removed.
-    bool styleSharingCandidateMatchesRuleSet(const ElementResolveContext&, RuleSet*);
+    bool styleSharingCandidateMatchesRuleSet(const ElementResolveContext&, RenderStyle*, RuleSet*);
 
     const StyleRuleKeyframes* matchScopedKeyframesRule(Element*, const AtomicStringImpl* animationName);
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle*, const StyleKeyframe*, KeyframeValue&);
@@ -264,21 +264,21 @@ public:
 #endif
 private:
     // FIXME: This should probably go away, folded into FontBuilder.
-    void updateFont();
+    void updateFont(StyleResolverState&);
 
     void matchUARules(ElementRuleCollector&, RuleSet*);
-    void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules);
+    void matchAuthorRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
     void matchShadowDistributedRules(ElementRuleCollector&, bool includeEmptyRules);
-    void matchHostRules(ScopedStyleResolver*, ElementRuleCollector&, bool includeEmptyRules);
-    void matchScopedAuthorRules(ElementRuleCollector&, bool includeEmptyRules);
-    void matchAllRules(ElementRuleCollector&, bool matchAuthorAndUserStyles, bool includeSMILProperties);
+    void matchHostRules(Element*, ScopedStyleResolver*, ElementRuleCollector&, bool includeEmptyRules);
+    void matchScopedAuthorRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
+    void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool matchAuthorAndUserStyles, bool includeSMILProperties);
     void matchUARules(ElementRuleCollector&);
     void matchUserRules(ElementRuleCollector&, bool includeEmptyRules);
     void collectFeatures();
 
     bool fastRejectSelector(const RuleData&) const;
 
-    void applyMatchedProperties(const MatchResult&, const Element*);
+    void applyMatchedProperties(StyleResolverState&, const MatchResult&, const Element*);
 
     enum StyleApplicationPass {
         VariableDefinitions,
@@ -289,12 +289,12 @@ private:
     template <StyleResolver::StyleApplicationPass pass>
     static inline bool isPropertyForPass(CSSPropertyID);
     template <StyleApplicationPass pass>
-    void applyMatchedProperties(const MatchResult&, bool important, int startIndex, int endIndex, bool inheritedOnly);
+    void applyMatchedProperties(StyleResolverState&, const MatchResult&, bool important, int startIndex, int endIndex, bool inheritedOnly);
     template <StyleApplicationPass pass>
-    void applyProperties(const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
+    void applyProperties(StyleResolverState&, const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <StyleApplicationPass pass>
-    void applyAnimatedProperties(const Element* target);
-    void resolveVariables(CSSPropertyID, CSSValue*, Vector<std::pair<CSSPropertyID, String> >& knownExpressions);
+    void applyAnimatedProperties(StyleResolverState&, const Element* target);
+    void resolveVariables(StyleResolverState&, CSSPropertyID, CSSValue*, Vector<std::pair<CSSPropertyID, String> >& knownExpressions);
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
     void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>&, bool isLeftPage, bool isFirstPage, const String& pageName);
     void collectViewportRules();
@@ -315,7 +315,7 @@ private:
 
     void cacheBorderAndBackground();
 
-    void applyProperty(CSSPropertyID, CSSValue*);
+    void applyProperty(StyleResolverState&, CSSPropertyID, CSSValue*);
 
     MatchedPropertiesCache m_matchedPropertiesCache;
 
@@ -340,7 +340,6 @@ private:
 
     InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 
-    StyleResolverState* m_state;
     StyleResourceLoader m_styleResourceLoader;
 
 #ifdef STYLE_STATS
