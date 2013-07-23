@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/gtk/extensions/native_app_window_gtk.h"
 
+#include <gdk/gdkx.h>
+#include <vector>
+
+#include "base/message_loop/message_pump_gtk.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/extensions/extension_keybinding_registry_gtk.h"
@@ -28,6 +32,12 @@ namespace {
 // gtk_window_get_position() after the last GTK configure-event signal.
 const int kDebounceTimeoutMilliseconds = 100;
 
+const char* kAtomsToCache[] = {
+  "_NET_WM_STATE",
+  "_NET_WM_STATE_HIDDEN",
+  NULL
+};
+
 } // namespace
 
 NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
@@ -38,7 +48,9 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
       is_active_(false),
       content_thinks_its_fullscreen_(false),
       frameless_(params.frame == ShellWindow::FRAME_NONE),
-      frame_cursor_(NULL) {
+      frame_cursor_(NULL),
+      atom_cache_(base::MessagePumpGtk::GetDefaultXDisplay(), kAtomsToCache),
+      is_x_event_listened_(false) {
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
   gfx::NativeView native_view =
@@ -128,6 +140,25 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
                      G_CALLBACK(OnMouseMoveEventThunk), this);
   }
 
+  // If _NET_WM_STATE_HIDDEN is in _NET_SUPPORTED, listen for XEvent to work
+  // around GTK+ not reporting minimization state changes. See comment in the
+  // |OnXEvent|.
+  std::vector< ::Atom> supported_atoms;
+  if (ui::GetAtomArrayProperty(ui::GetX11RootWindow(),
+                               "_NET_SUPPORTED",
+                               &supported_atoms)) {
+    if (std::find(supported_atoms.begin(),
+                  supported_atoms.end(),
+                  atom_cache_.GetAtom("_NET_WM_STATE_HIDDEN")) !=
+        supported_atoms.end()) {
+      GdkWindow* window = gtk_widget_get_window(GTK_WIDGET(window_));
+      gdk_window_add_filter(window,
+                            &NativeAppWindowGtk::OnXEventThunk,
+                            this);
+      is_x_event_listened_ = true;
+    }
+  }
+
   // Add the keybinding registry.
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryGtk(
       shell_window_->profile(),
@@ -140,6 +171,11 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
 
 NativeAppWindowGtk::~NativeAppWindowGtk() {
   ui::ActiveWindowWatcherX::RemoveObserver(this);
+  if (is_x_event_listened_) {
+    gdk_window_remove_filter(NULL,
+                             &NativeAppWindowGtk::OnXEventThunk,
+                             this);
+  }
 }
 
 bool NativeAppWindowGtk::IsActive() const {
@@ -224,6 +260,10 @@ void NativeAppWindowGtk::Deactivate() {
 }
 
 void NativeAppWindowGtk::Maximize() {
+  // Represent the window first in order to keep the maximization behavior
+  // consistency with Windows platform. Otherwise the window will be hidden if
+  // it has been minimized.
+  gtk_window_present(window_);
   gtk_window_maximize(window_);
 }
 
@@ -236,6 +276,12 @@ void NativeAppWindowGtk::Restore() {
     gtk_window_unmaximize(window_);
   else if (IsMinimized())
     gtk_window_deiconify(window_);
+
+  // Represent the window to keep restoration behavior consistency with Windows
+  // platform.
+  // TODO(zhchbin): verify whether we need this until http://crbug.com/261013 is
+  // fixed.
+  gtk_window_present(window_);
 }
 
 void NativeAppWindowGtk::SetBounds(const gfx::Rect& bounds) {
@@ -255,6 +301,33 @@ void NativeAppWindowGtk::SetBounds(const gfx::Rect& bounds) {
     gtk_window_util::SetWindowSize(window_,
         gfx::Size(bounds.width(), bounds.height()));
   }
+}
+
+GdkFilterReturn NativeAppWindowGtk::OnXEvent(GdkXEvent* gdk_x_event,
+                                             GdkEvent* gdk_event) {
+  // Work around GTK+ not reporting minimization state changes. Listen
+  // for _NET_WM_STATE property changes and use _NET_WM_STATE_HIDDEN's
+  // presence to set or clear the iconified bit if _NET_WM_STATE_HIDDEN
+  // is supported. http://crbug.com/162794.
+  XEvent* x_event = static_cast<XEvent*>(gdk_x_event);
+  std::vector< ::Atom> atom_list;
+
+  if (x_event->type == PropertyNotify &&
+      x_event->xproperty.atom == atom_cache_.GetAtom("_NET_WM_STATE") &&
+      ui::GetAtomArrayProperty(GDK_WINDOW_XWINDOW(GTK_WIDGET(window_)->window),
+                               "_NET_WM_STATE",
+                               &atom_list)) {
+    std::vector< ::Atom>::iterator it =
+        std::find(atom_list.begin(),
+                  atom_list.end(),
+                  atom_cache_.GetAtom("_NET_WM_STATE_HIDDEN"));
+    state_ = (it != atom_list.end()) ? GDK_WINDOW_STATE_ICONIFIED :
+        static_cast<GdkWindowState>(state_ & ~GDK_WINDOW_STATE_ICONIFIED);
+
+    shell_window_->OnNativeWindowChanged();
+  }
+
+  return GDK_FILTER_CONTINUE;
 }
 
 void NativeAppWindowGtk::FlashFrame(bool flash) {

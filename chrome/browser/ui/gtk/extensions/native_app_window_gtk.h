@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x_observer.h"
+#include "ui/base/x/x11_atom_cache.h"
 #include "ui/gfx/rect.h"
 
 class ExtensionKeybindingRegistryGtk;
@@ -102,6 +103,9 @@ class NativeAppWindowGtk : public NativeAppWindow,
                        GdkEventMotion*);
   CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
+  // Callback for PropertyChange XEvents.
+  CHROMEG_CALLBACK_1(NativeAppWindowGtk, GdkFilterReturn,
+                     OnXEvent, GdkXEvent*, GdkEvent*);
 
   void OnConfigureDebounced();
 
@@ -154,6 +158,11 @@ class NativeAppWindowGtk : public NativeAppWindow,
   // Observers to be notified when any web contents modal dialog requires
   // updating its dimensions.
   ObserverList<web_modal::WebContentsModalDialogHostObserver> observer_list_;
+
+  ui::X11AtomCache atom_cache_;
+
+  // True if we listen for the XEvent.
+  bool is_x_event_listened_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowGtk);
 };
