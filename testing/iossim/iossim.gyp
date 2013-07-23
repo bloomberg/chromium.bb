@@ -55,7 +55,7 @@
       'variables': {
         'ninja_output_dir': 'ninja-iossim',
         'ninja_product_dir':
-          '<(DEPTH)/xcodebuild/<(ninja_output_dir)/<(CONFIGURATION_NAME)',
+          '$(SYMROOT)/<(ninja_output_dir)/<(CONFIGURATION_NAME)',
       },
       'targets': [
         {
