@@ -3046,11 +3046,22 @@ TEST_F(DiskCacheBackendTest, SimpleCacheBasics) {
   BackendBasics();
 }
 
+TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheBasics) {
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  BackendBasics();
+}
+
 TEST_F(DiskCacheBackendTest, SimpleCacheKeying) {
   SetSimpleCacheMode();
   BackendKeying();
 }
 
+TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheKeying) {
+  SetSimpleCacheMode();
+  SetCacheType(net::APP_CACHE);
+  BackendKeying();
+}
 
 TEST_F(DiskCacheBackendTest, DISABLED_SimpleCacheSetSize) {
   SetSimpleCacheMode();
@@ -3060,14 +3071,28 @@ TEST_F(DiskCacheBackendTest, DISABLED_SimpleCacheSetSize) {
 // MacOS has a default open file limit of 256 files, which is incompatible with
 // this simple cache test.
 #if defined(OS_MACOSX)
-#define MAYBE_SimpleCacheLoad DISABLED_SimpleCacheLoad
+#define SIMPLE_MAYBE_MACOS(TestName) DISABLED_ ## TestName
 #else
-#define MAYBE_SimpleCacheLoad SimpleCacheLoad
+#define SIMPLE_MAYBE_MACOS(TestName) TestName
 #endif
-TEST_F(DiskCacheBackendTest, MAYBE_SimpleCacheLoad) {
+
+TEST_F(DiskCacheBackendTest, SIMPLE_MAYBE_MACOS(SimpleCacheLoad)) {
   SetMaxSize(0x100000);
   SetSimpleCacheMode();
   BackendLoad();
+}
+
+TEST_F(DiskCacheBackendTest, SIMPLE_MAYBE_MACOS(SimpleCacheAppCacheLoad)) {
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  SetMaxSize(0x100000);
+  BackendLoad();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheChain) {
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  BackendChain();
 }
 
 TEST_F(DiskCacheBackendTest, SimpleDoomRecent) {
@@ -3082,6 +3107,12 @@ TEST_F(DiskCacheBackendTest, SimpleDoomBetween) {
 
 // See http://crbug.com/237450.
 TEST_F(DiskCacheBackendTest, FLAKY_SimpleCacheDoomAll) {
+  SetSimpleCacheMode();
+  BackendDoomAll();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheOnlyDoomAll) {
+  SetCacheType(net::APP_CACHE);
   SetSimpleCacheMode();
   BackendDoomAll();
 }

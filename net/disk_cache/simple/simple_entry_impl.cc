@@ -94,14 +94,16 @@ class SimpleEntryImpl::ScopedOperationRunner {
   SimpleEntryImpl* const entry_;
 };
 
-SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
-                                 const FilePath& path,
+SimpleEntryImpl::SimpleEntryImpl(const FilePath& path,
                                  const uint64 entry_hash,
+                                 OperationsMode operations_mode,
+                                 SimpleBackendImpl* backend,
                                  net::NetLog* net_log)
     : backend_(backend->AsWeakPtr()),
       worker_pool_(backend->worker_pool()),
       path_(path),
       entry_hash_(entry_hash),
+      use_optimistic_operations_(operations_mode == OPTIMISTIC_OPERATIONS),
       last_used_(Time::Now()),
       last_modified_(last_used_),
       open_count_(0),
@@ -161,10 +163,9 @@ int SimpleEntryImpl::CreateEntry(Entry** out_entry,
   DCHECK(backend_.get());
   DCHECK_EQ(entry_hash_, simple_util::GetEntryHashKey(key_));
   int ret_value = net::ERR_FAILED;
-  if (state_ == STATE_UNINITIALIZED &&
-      pending_operations_.size() == 0) {
+  if (use_optimistic_operations_ &&
+      state_ == STATE_UNINITIALIZED && pending_operations_.size() == 0) {
     ReturnEntryToCaller(out_entry);
-    // We can do optimistic Create.
     EnqueueOperation(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
                                 this,
                                 CompletionCallback(),
@@ -183,8 +184,7 @@ int SimpleEntryImpl::CreateEntry(Entry** out_entry,
   // have the entry in the index but we don't have the created files yet, this
   // way we never leak files. CreationOperationComplete will remove the entry
   // from the index if the creation fails.
-  if (backend_.get())
-    backend_->index()->Insert(key_);
+  backend_->index()->Insert(key_);
 
   RunNextOperationIfNeeded();
   return ret_value;
@@ -288,46 +288,36 @@ int SimpleEntryImpl::WriteData(int stream_index,
     RecordWriteResult(WRITE_RESULT_OVER_MAX_SIZE);
     return net::ERR_FAILED;
   }
+  ScopedOperationRunner operation_runner(this);
 
-  int ret_value = net::ERR_FAILED;
-  if (state_ == STATE_READY && pending_operations_.size() == 0) {
-    // We can only do optimistic Write if there is no pending operations, so
-    // that we are sure that the next call to RunNextOperationIfNeeded will
-    // actually run the write operation that sets the stream size. It also
-    // prevents from previous possibly-conflicting writes that could be stacked
-    // in the |pending_operations_|. We could optimize this for when we have
-    // only read operations enqueued.
-    // TODO(gavinp,pasko): For performance, don't use a copy of an IOBuffer
-    // here to avoid paying the price of the RefCountedThreadSafe atomic
-    // operations.
-    IOBuffer* buf_copy = NULL;
-    if (buf) {
-      buf_copy = new IOBuffer(buf_len);
-      memcpy(buf_copy->data(), buf->data(), buf_len);
-    }
-    EnqueueOperation(base::Bind(&SimpleEntryImpl::WriteDataInternal,
-                                this,
-                                stream_index,
-                                offset,
-                                make_scoped_refptr(buf_copy),
-                                buf_len,
-                                CompletionCallback(),
-                                truncate));
-    ret_value = buf_len;
-  } else {
-    EnqueueOperation(base::Bind(&SimpleEntryImpl::WriteDataInternal,
-                                this,
-                                stream_index,
-                                offset,
-                                make_scoped_refptr(buf),
-                                buf_len,
-                                callback,
-                                truncate));
-    ret_value = net::ERR_IO_PENDING;
+  const bool do_optimistic_write = use_optimistic_operations_ &&
+      state_ == STATE_READY && pending_operations_.size() == 0;
+  if (!do_optimistic_write) {
+    pending_operations_.push(
+        base::Bind(&SimpleEntryImpl::WriteDataInternal, this, stream_index,
+                   offset, make_scoped_refptr(buf), buf_len, callback,
+                   truncate));
+    return net::ERR_IO_PENDING;
   }
 
-  RunNextOperationIfNeeded();
-  return ret_value;
+  // We can only do optimistic Write if there is no pending operations, so that
+  // we are sure that the next call to RunNextOperationIfNeeded will actually
+  // run the write operation that sets the stream size. It also prevents from
+  // previous possibly-conflicting writes that could be stacked in the
+  // |pending_operations_|. We could optimize this for when we have only read
+  // operations enqueued.
+  // TODO(gavinp,pasko): For performance, don't use a copy of an IOBuffer here
+  // to avoid paying the price of the RefCountedThreadSafe atomic operations.
+  IOBuffer* buf_copy = NULL;
+  if (buf) {
+    buf_copy = new IOBuffer(buf_len);
+    memcpy(buf_copy->data(), buf->data(), buf_len);
+  }
+  EnqueueOperation(
+      base::Bind(&SimpleEntryImpl::WriteDataInternal, this, stream_index,
+                 offset, make_scoped_refptr(buf_copy), buf_len,
+                 CompletionCallback(), truncate));
+  return buf_len;
 }
 
 int SimpleEntryImpl::ReadSparseData(int64 offset,
