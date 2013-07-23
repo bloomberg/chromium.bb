@@ -30,23 +30,18 @@
             testRunner.notifyDone();
         }
 
-        function customPropertyAccessThrowsException(o)
+        function getCustomProperty(o)
         {
-            try {
-                var x = o.customProperty;
-                return false;
-            } catch (e) {
-                return true;
-            }
+            return o.customProperty;
         }
 
         runTest = function()
         {
             window.targetWindow = frames[0];
 
-            shouldBeTrue("customPropertyAccessThrowsException(targetWindow)");
-            shouldBeTrue("customPropertyAccessThrowsException(targetWindow)");
-            shouldBeTrue("customPropertyAccessThrowsException(targetWindow)");
+            shouldBeUndefined("getCustomProperty(targetWindow)");
+            shouldBeUndefined("getCustomProperty(targetWindow)");
+            shouldBeUndefined("getCustomProperty(targetWindow)");
         }
     </script>
 </head>

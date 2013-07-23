@@ -56,19 +56,15 @@ function runTest() {
     }
 
     // Try accessing top.document using NPN_EVALUATE
-    try {
-        var documentViaTestEvaluate = document.plugin.testEvaluate('top.document')
-    } catch (e) {};
-    if (documentViaTestEvaluate) {
+    var l = document.plugin.testEvaluate('top.document')
+    if (l) {
         debug('could access top.document');
         numErrors++;
     }
 
     // Try accessing top.document using NPN_GetProperty
-    try {
-        var documentViaTestGetProperty = document.plugin.testGetProperty('top', 'document')
-    } catch (e) {};
-    if (documentViaTestGetProperty) {
+    var l = document.plugin.testGetProperty('top', 'document')
+    if (l) {
         debug('could access top.document');
         numErrors++;
     }

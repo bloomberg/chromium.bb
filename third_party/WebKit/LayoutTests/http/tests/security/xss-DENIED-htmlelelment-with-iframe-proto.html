@@ -16,7 +16,7 @@ targetWindow = frames[0];
 
 window.onload = function() {
   __proto__ = targetWindow;
-  shouldThrowException('targetWindow.myinput');
+  shouldBeUndefined('targetWindow.myinput');
 }
 </script>
 </body>

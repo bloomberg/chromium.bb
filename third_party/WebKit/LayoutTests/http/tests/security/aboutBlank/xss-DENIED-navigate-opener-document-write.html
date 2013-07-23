@@ -39,14 +39,14 @@
             log("To run the test, click the button below when the frames finish loading.");
             var button = document.createElement("button");
             button.appendChild(document.createTextNode("Run Test"));
-            button.onclick = runTest1;
+            button.onclick = runTest;
             document.body.appendChild(button);
         }
     }
     
     pollForTest1 = function()
     {
-        if (window.testRunner && !testRunner.globalFlag) {
+        if (!testRunner.globalFlag) {
             setTimeout(pollForTest1, 1);
             return;
         }
@@ -67,7 +67,7 @@
 
     pollForTest2 = function()
     {
-        if (window.testRunner && !testRunner.globalFlag) {
+        if (!testRunner.globalFlag) {
             setTimeout(pollForTest2, 1);
             return;
         }
@@ -86,7 +86,7 @@
 
     pollForDone = function()
     {
-        if (window.testRunner && !testRunner.globalFlag) {
+        if (!testRunner.globalFlag) {
             setTimeout(pollForDone, 1);
             return;
         }

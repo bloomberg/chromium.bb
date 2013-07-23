@@ -14,21 +14,14 @@ window.onmessage = function(evt)
         testRunner.notifyDone();
         return;
     }
-    try {
-        alert("Child window's history object after attempt to clear: " + window.frames[0].history);
-    } catch (e) {
-        alert("PASS: Access to window.frames[0].history threw an exception.");
-    }
+
+    alert("Child window's history object after attempt to clear: " + window.frames[0].history);
     testRunner.notifyDone();
 }
 
 function setHistoryLength()
 {
-    try {
-        alert("Child window's history object before attempt to clear: " + window.frames[0].history);
-    } catch (e) {
-        alert("PASS: Access to window.frames[0].history threw an exception.");
-    }
+    alert("Child window's history object before attempt to clear: " + window.frames[0].history);
     window.frames[0].postMessage("setHistoryLength", "*");
 }
 

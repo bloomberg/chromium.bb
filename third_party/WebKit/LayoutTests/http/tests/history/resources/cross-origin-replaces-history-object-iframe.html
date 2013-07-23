@@ -15,11 +15,7 @@ window.onmessage = function(evt)
 function setHistoryLength()
 {
     alert("Attempting to clear parent window's history object:");
-    try {
-        parent.window.history = "";
-    } catch (e) {
-        alert("PASS: access to parent.window.history threw an exception.");
-    }
+    parent.window.history = "";
     parent.window.postMessage("done", "*");
 }
 
