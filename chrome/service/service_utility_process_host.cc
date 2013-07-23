@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
@@ -26,6 +26,7 @@
 #if defined(OS_WIN)
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process/launch.h"
 #include "base/win/scoped_handle.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
