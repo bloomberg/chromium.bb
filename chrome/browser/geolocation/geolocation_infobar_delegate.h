@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "chrome/browser/geolocation/geolocation_permission_request_id.h"
+#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "url/gurl.h"
 
-class GeolocationInfoBarQueueController;
+class PermissionQueueController;
 class InfoBarService;
 
 // GeolocationInfoBarDelegates are created by the
@@ -22,15 +22,15 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Creates a geolocation infobar delegate and adds it to |infobar_service|.
   // Returns the delegate if it was successfully added.
   static InfoBarDelegate* Create(InfoBarService* infobar_service,
-                                 GeolocationInfoBarQueueController* controller,
-                                 const GeolocationPermissionRequestID& id,
+                                 PermissionQueueController* controller,
+                                 const PermissionRequestID& id,
                                  const GURL& requesting_frame,
                                  const std::string& display_languages);
 
  protected:
   GeolocationInfoBarDelegate(InfoBarService* infobar_service,
-                             GeolocationInfoBarQueueController* controller,
-                             const GeolocationPermissionRequestID& id,
+                             PermissionQueueController* controller,
+                             const PermissionRequestID& id,
                              const GURL& requesting_frame,
                              int contents_unique_id,
                              const std::string& display_languages);
@@ -54,8 +54,8 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
-  GeolocationInfoBarQueueController* controller_;
-  const GeolocationPermissionRequestID id_;
+  PermissionQueueController* controller_;
+  const PermissionRequestID id_;
   GURL requesting_frame_;
   int contents_unique_id_;
   std::string display_languages_;

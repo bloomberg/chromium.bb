@@ -1,12 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
+#include "chrome/browser/content_settings/permission_queue_controller.h"
 
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/geolocation/geolocation_permission_request_id.h"
+#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
@@ -14,24 +15,22 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class GeolocationInfoBarQueueControllerTests
-    : public ChromeRenderViewHostTestHarness {
+class PermissionQueueControllerTests : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
   }
 
-  GeolocationPermissionRequestID RequestID(int bridge_id) {
-    return GeolocationPermissionRequestID(
+  PermissionRequestID RequestID(int bridge_id) {
+    return PermissionRequestID(
         web_contents()->GetRenderProcessHost()->GetID(),
         web_contents()->GetRenderViewHost()->GetRoutingID(),
         bridge_id);
   }
 };
 
-class ObservationCountingQueueController :
-    public GeolocationInfoBarQueueController {
+class ObservationCountingQueueController : public PermissionQueueController {
  public:
   explicit ObservationCountingQueueController(Profile* profile);
 
@@ -40,12 +39,12 @@ class ObservationCountingQueueController :
  private:
   int call_count_;
 
-  // GeolocationInfoBarQueueController
+  // PermissionQueueController
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  static void NotifyPermissionSet(const GeolocationPermissionRequestID& id,
+  static void NotifyPermissionSet(const PermissionRequestID& id,
                                   const GURL& requesting_frame,
                                   base::Callback<void(bool)> callback,
                                   bool allowed);
@@ -53,8 +52,7 @@ class ObservationCountingQueueController :
 
 ObservationCountingQueueController::ObservationCountingQueueController(
     Profile* profile)
-    : GeolocationInfoBarQueueController(
-          profile),
+    : PermissionQueueController(profile, CONTENT_SETTINGS_TYPE_GEOLOCATION),
       call_count_(0) {
 }
 
@@ -63,18 +61,18 @@ void ObservationCountingQueueController::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   ++call_count_;
-  GeolocationInfoBarQueueController::Observe(type, source, details);
+  PermissionQueueController::Observe(type, source, details);
 }
 
 void ObservationCountingQueueController::NotifyPermissionSet(
-    const GeolocationPermissionRequestID& id,
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     base::Callback<void(bool)> callback,
     bool allowed) {
 }
 
 
-TEST_F(GeolocationInfoBarQueueControllerTests,
+TEST_F(PermissionQueueControllerTests,
        OneObservationPerInfoBarCancelled) {
   // When an infobar is cancelled, the infobar helper sends a notification to
   // the controller. If the controller has another infobar queued, it should

@@ -22,7 +22,7 @@ ChromeGeolocationPermissionContextAndroid::
 }
 
 void ChromeGeolocationPermissionContextAndroid::DecidePermission(
-    const GeolocationPermissionRequestID& id,
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     base::Callback<void(bool)> callback) {
@@ -41,7 +41,7 @@ void ChromeGeolocationPermissionContextAndroid::DecidePermission(
 }
 
 void ChromeGeolocationPermissionContextAndroid::PermissionDecided(
-    const GeolocationPermissionRequestID& id,
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     base::Callback<void(bool)> callback,

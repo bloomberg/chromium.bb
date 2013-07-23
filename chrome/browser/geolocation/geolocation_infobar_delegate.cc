@@ -4,7 +4,7 @@
 
 #include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
 
-#include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
+#include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/navigation_details.h"
@@ -27,8 +27,8 @@ typedef GeolocationInfoBarDelegate DelegateType;
 // static
 InfoBarDelegate* GeolocationInfoBarDelegate::Create(
     InfoBarService* infobar_service,
-    GeolocationInfoBarQueueController* controller,
-    const GeolocationPermissionRequestID& id,
+    PermissionQueueController* controller,
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     const std::string& display_languages) {
   const content::NavigationEntry* committed_entry =
@@ -41,8 +41,8 @@ InfoBarDelegate* GeolocationInfoBarDelegate::Create(
 
 GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
     InfoBarService* infobar_service,
-    GeolocationInfoBarQueueController* controller,
-    const GeolocationPermissionRequestID& id,
+    PermissionQueueController* controller,
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     int contents_unique_id,
     const std::string& display_languages)

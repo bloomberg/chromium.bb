@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
+#include "chrome/browser/content_settings/permission_queue_controller.h"
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -21,11 +21,9 @@
 #include "content/public/browser/web_contents.h"
 
 
-// Utilities ------------------------------------------------------------------
-
 namespace {
 
-InfoBarService* GetInfoBarService(const GeolocationPermissionRequestID& id) {
+InfoBarService* GetInfoBarService(const PermissionRequestID& id) {
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(id.render_process_id(), id.render_view_id());
   return web_contents ? InfoBarService::FromWebContents(web_contents) : NULL;
@@ -34,11 +32,9 @@ InfoBarService* GetInfoBarService(const GeolocationPermissionRequestID& id) {
 }
 
 
-// GeolocationInfoBarQueueController::PendingInfoBarRequest -------------------
-
-class GeolocationInfoBarQueueController::PendingInfoBarRequest {
+class PermissionQueueController::PendingInfoBarRequest {
  public:
-  PendingInfoBarRequest(const GeolocationPermissionRequestID& id,
+  PendingInfoBarRequest(const PermissionRequestID& id,
                         const GURL& requesting_frame,
                         const GURL& embedder,
                         PermissionDecidedCallback callback);
@@ -47,17 +43,17 @@ class GeolocationInfoBarQueueController::PendingInfoBarRequest {
   bool IsForPair(const GURL& requesting_frame,
                  const GURL& embedder) const;
 
-  const GeolocationPermissionRequestID& id() const { return id_; }
+  const PermissionRequestID& id() const { return id_; }
   const GURL& requesting_frame() const { return requesting_frame_; }
   bool has_infobar() const { return !!infobar_; }
   InfoBarDelegate* infobar() { return infobar_; }
 
   void RunCallback(bool allowed);
-  void CreateInfoBar(GeolocationInfoBarQueueController* controller,
+  void CreateInfoBar(PermissionQueueController* controller,
                      const std::string& display_languages);
 
  private:
-  GeolocationPermissionRequestID id_;
+  PermissionRequestID id_;
   GURL requesting_frame_;
   GURL embedder_;
   PermissionDecidedCallback callback_;
@@ -66,8 +62,8 @@ class GeolocationInfoBarQueueController::PendingInfoBarRequest {
   // Purposefully do not disable copying, as this is stored in STL containers.
 };
 
-GeolocationInfoBarQueueController::PendingInfoBarRequest::PendingInfoBarRequest(
-    const GeolocationPermissionRequestID& id,
+PermissionQueueController::PendingInfoBarRequest::PendingInfoBarRequest(
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     PermissionDecidedCallback callback)
@@ -78,42 +74,41 @@ GeolocationInfoBarQueueController::PendingInfoBarRequest::PendingInfoBarRequest(
       infobar_(NULL) {
 }
 
-GeolocationInfoBarQueueController::PendingInfoBarRequest::
-    ~PendingInfoBarRequest() {
+PermissionQueueController::PendingInfoBarRequest::~PendingInfoBarRequest() {
 }
 
-bool GeolocationInfoBarQueueController::PendingInfoBarRequest::IsForPair(
+bool PermissionQueueController::PendingInfoBarRequest::IsForPair(
     const GURL& requesting_frame,
     const GURL& embedder) const {
   return (requesting_frame_ == requesting_frame) && (embedder_ == embedder);
 }
 
-void GeolocationInfoBarQueueController::PendingInfoBarRequest::RunCallback(
+void PermissionQueueController::PendingInfoBarRequest::RunCallback(
     bool allowed) {
   callback_.Run(allowed);
 }
 
-void GeolocationInfoBarQueueController::PendingInfoBarRequest::
-    CreateInfoBar(GeolocationInfoBarQueueController* controller,
-                  const std::string& display_languages) {
+void PermissionQueueController::PendingInfoBarRequest::CreateInfoBar(
+    PermissionQueueController* controller,
+    const std::string& display_languages) {
+  // TODO(toyoshim): Remove following dependency on geolocation.
   infobar_ = GeolocationInfoBarDelegate::Create(
       GetInfoBarService(id_), controller, id_, requesting_frame_,
       display_languages);
 }
 
 
-// GeolocationInfoBarQueueController ------------------------------------------
-
-GeolocationInfoBarQueueController::GeolocationInfoBarQueueController(
-    Profile* profile)
-    : profile_(profile) {
+PermissionQueueController::PermissionQueueController(
+    Profile* profile, ContentSettingsType type)
+    : profile_(profile),
+      type_(type) {
 }
 
-GeolocationInfoBarQueueController::~GeolocationInfoBarQueueController() {
+PermissionQueueController::~PermissionQueueController() {
 }
 
-void GeolocationInfoBarQueueController::CreateInfoBarRequest(
-    const GeolocationPermissionRequestID& id,
+void PermissionQueueController::CreateInfoBarRequest(
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     PermissionDecidedCallback callback) {
@@ -131,8 +126,8 @@ void GeolocationInfoBarQueueController::CreateInfoBarRequest(
     ShowQueuedInfoBarForTab(id);
 }
 
-void GeolocationInfoBarQueueController::CancelInfoBarRequest(
-    const GeolocationPermissionRequestID& id) {
+void PermissionQueueController::CancelInfoBarRequest(
+    const PermissionRequestID& id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   for (PendingInfoBarRequests::iterator i(pending_infobar_requests_.begin());
@@ -147,8 +142,8 @@ void GeolocationInfoBarQueueController::CancelInfoBarRequest(
   }
 }
 
-void GeolocationInfoBarQueueController::OnPermissionSet(
-    const GeolocationPermissionRequestID& id,
+void PermissionQueueController::OnPermissionSet(
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     bool update_content_setting,
@@ -197,7 +192,7 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
     i->RunCallback(allowed);
 }
 
-void GeolocationInfoBarQueueController::Observe(
+void PermissionQueueController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -216,7 +211,7 @@ void GeolocationInfoBarQueueController::Observe(
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ++i) {
     if (i->infobar() == infobar) {
-      GeolocationPermissionRequestID id(i->id());
+      PermissionRequestID id(i->id());
       pending_infobar_requests_.erase(i);
       ShowQueuedInfoBarForTab(id);
       return;
@@ -224,8 +219,8 @@ void GeolocationInfoBarQueueController::Observe(
   }
 }
 
-bool GeolocationInfoBarQueueController::AlreadyShowingInfoBarForTab(
-    const GeolocationPermissionRequestID& id) const {
+bool PermissionQueueController::AlreadyShowingInfoBarForTab(
+    const PermissionRequestID& id) const {
   for (PendingInfoBarRequests::const_iterator i(
            pending_infobar_requests_.begin());
        i != pending_infobar_requests_.end(); ++i) {
@@ -235,8 +230,8 @@ bool GeolocationInfoBarQueueController::AlreadyShowingInfoBarForTab(
   return false;
 }
 
-void GeolocationInfoBarQueueController::ShowQueuedInfoBarForTab(
-    const GeolocationPermissionRequestID& id) {
+void PermissionQueueController::ShowQueuedInfoBarForTab(
+    const PermissionRequestID& id) {
   DCHECK(!AlreadyShowingInfoBarForTab(id));
 
   InfoBarService* infobar_service = GetInfoBarService(id);
@@ -264,8 +259,8 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBarForTab(
   UnregisterForInfoBarNotifications(infobar_service);
 }
 
-void GeolocationInfoBarQueueController::ClearPendingInfoBarRequestsForTab(
-    const GeolocationPermissionRequestID& id) {
+void PermissionQueueController::ClearPendingInfoBarRequestsForTab(
+    const PermissionRequestID& id) {
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ) {
     if (i->id().IsForSameTabAs(id)) {
@@ -277,7 +272,7 @@ void GeolocationInfoBarQueueController::ClearPendingInfoBarRequestsForTab(
   }
 }
 
-void GeolocationInfoBarQueueController::RegisterForInfoBarNotifications(
+void PermissionQueueController::RegisterForInfoBarNotifications(
     InfoBarService* infobar_service) {
   if (!registrar_.IsRegistered(
       this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -288,7 +283,7 @@ void GeolocationInfoBarQueueController::RegisterForInfoBarNotifications(
   }
 }
 
-void GeolocationInfoBarQueueController::UnregisterForInfoBarNotifications(
+void PermissionQueueController::UnregisterForInfoBarNotifications(
     InfoBarService* infobar_service) {
   if (registrar_.IsRegistered(
       this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -299,7 +294,7 @@ void GeolocationInfoBarQueueController::UnregisterForInfoBarNotifications(
   }
 }
 
-void GeolocationInfoBarQueueController::UpdateContentSetting(
+void PermissionQueueController::UpdateContentSetting(
     const GURL& requesting_frame,
     const GURL& embedder,
     bool allowed) {
@@ -315,7 +310,7 @@ void GeolocationInfoBarQueueController::UpdateContentSetting(
   profile_->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(requesting_frame.GetOrigin()),
       ContentSettingsPattern::FromURLNoWildcard(embedder.GetOrigin()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      type_,
       std::string(),
       content_setting);
 }

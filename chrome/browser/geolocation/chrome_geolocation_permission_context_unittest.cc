@@ -14,9 +14,9 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
-#include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -101,8 +101,8 @@ class GeolocationPermissionContextTests
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  GeolocationPermissionRequestID RequestID(int bridge_id);
-  GeolocationPermissionRequestID RequestIDForTab(int tab, int bridge_id);
+  PermissionRequestID RequestID(int bridge_id);
+  PermissionRequestID RequestIDForTab(int tab, int bridge_id);
   InfoBarService* infobar_service() {
     return InfoBarService::FromWebContents(web_contents());
   }
@@ -110,12 +110,11 @@ class GeolocationPermissionContextTests
     return InfoBarService::FromWebContents(extra_tabs_[tab]);
   }
 
-  void RequestGeolocationPermission(const GeolocationPermissionRequestID& id,
+  void RequestGeolocationPermission(const PermissionRequestID& id,
                                     const GURL& requesting_frame);
-  void CancelGeolocationPermissionRequest(
-      const GeolocationPermissionRequestID& id,
-      const GURL& requesting_frame);
-  void PermissionResponse(const GeolocationPermissionRequestID& id,
+  void CancelGeolocationPermissionRequest(const PermissionRequestID& id,
+                                          const GURL& requesting_frame);
+  void PermissionResponse(const PermissionRequestID& id,
                           bool allowed);
   void CheckPermissionMessageSent(int bridge_id, bool allowed);
   void CheckPermissionMessageSentForTab(int tab, int bridge_id, bool allowed);
@@ -136,24 +135,25 @@ class GeolocationPermissionContextTests
   base::hash_map<int, std::pair<int, bool> > responses_;
 };
 
-GeolocationPermissionRequestID GeolocationPermissionContextTests::RequestID(
+PermissionRequestID GeolocationPermissionContextTests::RequestID(
     int bridge_id) {
-  return GeolocationPermissionRequestID(
+  return PermissionRequestID(
       web_contents()->GetRenderProcessHost()->GetID(),
       web_contents()->GetRenderViewHost()->GetRoutingID(),
       bridge_id);
 }
 
-GeolocationPermissionRequestID
-    GeolocationPermissionContextTests::RequestIDForTab(int tab, int bridge_id) {
-  return GeolocationPermissionRequestID(
+PermissionRequestID GeolocationPermissionContextTests::RequestIDForTab(
+    int tab,
+    int bridge_id) {
+  return PermissionRequestID(
       extra_tabs_[tab]->GetRenderProcessHost()->GetID(),
       extra_tabs_[tab]->GetRenderViewHost()->GetRoutingID(),
       bridge_id);
 }
 
 void GeolocationPermissionContextTests::RequestGeolocationPermission(
-    const GeolocationPermissionRequestID& id,
+    const PermissionRequestID& id,
     const GURL& requesting_frame) {
   geolocation_permission_context_->RequestGeolocationPermission(
       id.render_process_id(), id.render_view_id(), id.bridge_id(),
@@ -163,7 +163,7 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
 }
 
 void GeolocationPermissionContextTests::CancelGeolocationPermissionRequest(
-    const GeolocationPermissionRequestID& id,
+    const PermissionRequestID& id,
     const GURL& requesting_frame) {
   geolocation_permission_context_->CancelGeolocationPermissionRequest(
       id.render_process_id(), id.render_view_id(), id.bridge_id(),
@@ -171,7 +171,7 @@ void GeolocationPermissionContextTests::CancelGeolocationPermissionRequest(
 }
 
 void GeolocationPermissionContextTests::PermissionResponse(
-    const GeolocationPermissionRequestID& id,
+    const PermissionRequestID& id,
     bool allowed) {
   responses_[id.render_process_id()] = std::make_pair(id.bridge_id(), allowed);
 }

@@ -11,12 +11,11 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
-#include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
-#include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/extensions/extension.h"
@@ -35,9 +34,9 @@ ChromeGeolocationPermissionContext::ChromeGeolocationPermissionContext(
 
 ChromeGeolocationPermissionContext::~ChromeGeolocationPermissionContext() {
   // ChromeGeolocationPermissionContext may be destroyed on either the UI thread
-  // or the IO thread, but the GeolocationInfobarQueueController must have been
+  // or the IO thread, but the PermissionQueueController must have been
   // destroyed on the UI thread.
-  DCHECK(!geolocation_infobar_queue_controller_.get());
+  DCHECK(!permission_queue_controller_.get());
 }
 
 void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
@@ -62,7 +61,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
 
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
-  const GeolocationPermissionRequestID id(render_process_id, render_view_id,
+  const PermissionRequestID id(render_process_id, render_view_id,
                                           bridge_id);
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
@@ -112,12 +111,12 @@ void ChromeGeolocationPermissionContext::CancelGeolocationPermissionRequest(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame) {
-  CancelPendingInfoBarRequest(GeolocationPermissionRequestID(
+  CancelPendingInfoBarRequest(PermissionRequestID(
       render_process_id, render_view_id, bridge_id));
 }
 
 void ChromeGeolocationPermissionContext::DecidePermission(
-    const GeolocationPermissionRequestID& id,
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     base::Callback<void(bool)> callback) {
@@ -145,12 +144,12 @@ void ChromeGeolocationPermissionContext::DecidePermission(
 
 void ChromeGeolocationPermissionContext::ShutdownOnUIThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  geolocation_infobar_queue_controller_.reset();
+  permission_queue_controller_.reset();
   shutting_down_ = true;
 }
 
 void ChromeGeolocationPermissionContext::PermissionDecided(
-    const GeolocationPermissionRequestID& id,
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     base::Callback<void(bool)> callback,
@@ -159,7 +158,7 @@ void ChromeGeolocationPermissionContext::PermissionDecided(
 }
 
 void ChromeGeolocationPermissionContext::NotifyPermissionSet(
-    const GeolocationPermissionRequestID& id,
+    const PermissionRequestID& id,
     const GURL& requesting_frame,
     base::Callback<void(bool)> callback,
     bool allowed) {
@@ -177,23 +176,24 @@ void ChromeGeolocationPermissionContext::NotifyPermissionSet(
   callback.Run(allowed);
 }
 
-GeolocationInfoBarQueueController*
+PermissionQueueController*
     ChromeGeolocationPermissionContext::QueueController() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!shutting_down_);
-  if (!geolocation_infobar_queue_controller_)
-    geolocation_infobar_queue_controller_.reset(CreateQueueController());
-  return geolocation_infobar_queue_controller_.get();
+  if (!permission_queue_controller_)
+    permission_queue_controller_.reset(CreateQueueController());
+  return permission_queue_controller_.get();
 }
 
-GeolocationInfoBarQueueController*
+PermissionQueueController*
     ChromeGeolocationPermissionContext::CreateQueueController() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  return new GeolocationInfoBarQueueController(profile());
+  return new PermissionQueueController(profile(),
+                                       CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }
 
 void ChromeGeolocationPermissionContext::CancelPendingInfoBarRequest(
-    const GeolocationPermissionRequestID& id) {
+    const PermissionRequestID& id) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,

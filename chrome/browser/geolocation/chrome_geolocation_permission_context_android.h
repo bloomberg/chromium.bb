@@ -22,12 +22,12 @@ class ChromeGeolocationPermissionContextAndroid
   virtual ~ChromeGeolocationPermissionContextAndroid();
 
   // ChromeGeolocationPermissionContext implementation:
-  virtual void DecidePermission(const GeolocationPermissionRequestID& id,
+  virtual void DecidePermission(const PermissionRequestID& id,
                                 const GURL& requesting_frame,
                                 const GURL& embedder,
                                 base::Callback<void(bool)> callback) OVERRIDE;
 
-  virtual void PermissionDecided(const GeolocationPermissionRequestID& id,
+  virtual void PermissionDecided(const PermissionRequestID& id,
                                  const GURL& requesting_frame,
                                  const GURL& embedder,
                                  base::Callback<void(bool)> callback,
