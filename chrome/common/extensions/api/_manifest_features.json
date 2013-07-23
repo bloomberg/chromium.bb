@@ -203,8 +203,8 @@
     "extension_types": "all"
   },
   "media_galleries_handlers": {
-    "channel": "stable",
-    "extension_types": ["packaged_app", "platform_app"]
+    "channel": "dev",
+    "extension_types": ["platform_app"]
   },
   "mime_types": {
     "channel": "stable",
