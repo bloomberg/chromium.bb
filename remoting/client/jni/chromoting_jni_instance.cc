@@ -75,12 +75,39 @@ void ChromotingJniInstance::RedrawDesktop() {
       display_task_runner()->BelongsToCurrentThread()) {
     ChromotingJni::GetInstance()->display_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&ChromotingJniInstance::RedrawDesktop,
-                   this));
+        base::Bind(&ChromotingJniInstance::RedrawDesktop, this));
     return;
   }
 
   ChromotingJni::GetInstance()->RedrawCanvas();
+}
+
+void ChromotingJniInstance::PerformMouseAction(
+    int x,
+    int y,
+    protocol::MouseEvent_MouseButton button,
+    bool buttonDown) {
+  if(!ChromotingJni::GetInstance()->
+      network_task_runner()->BelongsToCurrentThread()) {
+    ChromotingJni::GetInstance()->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromotingJniInstance::PerformMouseAction,
+                   this,
+                   x,
+                   y,
+                   button,
+                   buttonDown));
+    return;
+  }
+
+  protocol::MouseEvent action;
+  action.set_x(x);
+  action.set_y(y);
+  action.set_button(button);
+  if (button != protocol::MouseEvent::BUTTON_UNDEFINED)
+    action.set_button_down(buttonDown);
+
+  connection_->input_stub()->InjectMouseEvent(action);
 }
 
 void ChromotingJniInstance::OnConnectionState(
@@ -113,19 +140,27 @@ void ChromotingJniInstance::SetPairingResponse(
 }
 
 protocol::ClipboardStub* ChromotingJniInstance::GetClipboardStub() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return this;
 }
 
 protocol::CursorShapeStub* ChromotingJniInstance::GetCursorShapeStub() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return this;
 }
 
 scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
     ChromotingJniInstance::GetTokenFetcher(const std::string& host_public_key) {
   // Return null to indicate that third-party authentication is unsupported.
   return scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>();
+}
+
+void ChromotingJniInstance::InjectClipboardEvent(
+    const protocol::ClipboardEvent& event) {
+  NOTIMPLEMENTED();
+}
+
+void ChromotingJniInstance::SetCursorShape(
+    const protocol::CursorShapeInfo& shape) {
+  NOTIMPLEMENTED();
 }
 
 void ChromotingJniInstance::ConnectToHostOnDisplayThread() {

@@ -32,13 +32,20 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
      * *Square* of the minimum displacement (in pixels) to be recognized as a scroll gesture.
      * Setting this to a lower value forces more frequent canvas redraws during scrolling.
      */
-    private static int MIN_SCROLL_DISTANCE = 8 * 8;
+    private static final int MIN_SCROLL_DISTANCE = 8 * 8;
 
     /**
      * Minimum change to the scaling factor to be recognized as a zoom gesture. Setting lower
      * values here will result in more frequent canvas redraws during zooming.
      */
-    private static double MIN_ZOOM_FACTOR = 0.05;
+    private static final double MIN_ZOOM_FACTOR = 0.05;
+
+    /*
+     * These constants must match those in the generated struct protoc::MouseEvent_MouseButton.
+     */
+    private static final int BUTTON_UNDEFINED = 0;
+    private static final int BUTTON_LEFT = 1;
+    private static final int BUTTON_RIGHT = 3;
 
     /** Specifies one dimension of an image. */
     private static enum Constraint {
@@ -63,6 +70,9 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
     /** Whether the bottom edge of the image was visible on-screen during the last render. */
     private boolean mBottomUsedToBeOut;
 
+    private int mMouseButton;
+    private boolean mMousePressed;
+
     /** Whether the device has just been rotated, necessitating a canvas redraw. */
     private boolean mJustRotated;
 
@@ -80,6 +90,9 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
 
         mRightUsedToBeOut = false;
         mBottomUsedToBeOut = false;
+
+        mMouseButton = BUTTON_UNDEFINED;
+        mMousePressed = false;
 
         mJustRotated = false;
     }
@@ -151,27 +164,37 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
                 boolean rightEdgeOutOfBounds = bottomright[0] < mScreenWidth;
                 boolean bottomEdgeOutOfBounds = bottomright[1] < mScreenHeight;
 
+                // Prevent the user from scrolling past the left or right edge of the image.
                 if (leftEdgeOutOfBounds != rightEdgeOutOfBounds) {
                     if (leftEdgeOutOfBounds != mRightUsedToBeOut) {
+                        // Make the left edge of the image flush with the left screen edge.
                         values[Matrix.MTRANS_X] = 0;
                     }
                     else {
+                        // Make the right edge of the image flush with the right screen edge.
                         values[Matrix.MTRANS_X] += mScreenWidth - bottomright[0];
                     }
                 }
-                else {  // The view would oscillate if this were updated while scrolling off-screen.
+                else {
+                    // The else prevents this from being updated during the repositioning process,
+                    // in which case the view would begin to oscillate.
                     mRightUsedToBeOut = rightEdgeOutOfBounds;
                 }
 
+                // Prevent the user from scrolling past the top or bottom edge of the image.
                 if (topEdgeOutOfBounds != bottomEdgeOutOfBounds) {
                     if (topEdgeOutOfBounds != mBottomUsedToBeOut) {
+                        // Make the top edge of the image flush with the top screen edge.
                         values[Matrix.MTRANS_Y] = 0;
                     }
                     else {
+                        // Make the bottom edge of the image flush with the bottom screen edge.
                         values[Matrix.MTRANS_Y] += mScreenHeight - bottomright[1];
                     }
                 }
-                else {  // The view would oscillate if this were updated while scrolling off-screen.
+                else {
+                    // The else prevents this from being updated during the repositioning process,
+                    // in which case the view would begin to oscillate.
                     mBottomUsedToBeOut = bottomEdgeOutOfBounds;
                 }
 
@@ -224,13 +247,71 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
         Log.i("deskview", "DesktopView.surfaceDestroyed(...)");
     }
 
+    /** Called when a mouse action is made. */
+    private void handleMouseMovement(float[] coordinates, int button, boolean pressed) {
+        // Coordinates are relative to the canvas, but we need image coordinates.
+        Matrix canvasToImage = new Matrix();
+        mTransform.invert(canvasToImage);
+        canvasToImage.mapPoints(coordinates);
+
+        // Coordinates are now relative to the image, so transmit them to the host.
+        JniInterface.mouseAction((int)coordinates[0], (int)coordinates[1], button, pressed);
+    }
+
     /**
      * Called whenever the user attempts to touch the canvas. Forwards such
      * events to the appropriate gesture detector until one accepts them.
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return mScroller.onTouchEvent(event) || mZoomer.onTouchEvent(event);
+        boolean handled = mScroller.onTouchEvent(event) || mZoomer.onTouchEvent(event);
+
+        if (event.getPointerCount()==1) {
+            float[] coordinates = {event.getRawX(), event.getY()};
+
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    Log.i("mouse", "Found a finger");
+                    mMouseButton = BUTTON_UNDEFINED;
+                    mMousePressed = false;
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    Log.i("mouse", "Finger is dragging");
+                    if (mMouseButton == BUTTON_UNDEFINED) {
+                        Log.i("mouse", "\tStarting left click");
+                        mMouseButton = BUTTON_LEFT;
+                        mMousePressed = true;
+                    }
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    Log.i("mouse", "Lost the finger");
+                    if (mMouseButton == BUTTON_UNDEFINED) {
+                        // The user pressed and released without moving: do left click and release.
+                        Log.i("mouse", "\tStarting and finishing left click");
+                        handleMouseMovement(coordinates, BUTTON_LEFT, true);
+                        mMouseButton = BUTTON_LEFT;
+                        mMousePressed = false;
+                    }
+                    else if (mMousePressed) {
+                        Log.i("mouse", "\tReleasing the currently-pressed button");
+                        mMousePressed = false;
+                    }
+                    else {
+                        Log.w("mouse", "Button already in released state before gesture ended");
+                    }
+                    break;
+
+                default:
+                    return handled;
+            }
+            handleMouseMovement(coordinates, mMouseButton, mMousePressed);
+
+            return true;
+        }
+
+        return handled;
     }
 
     /** Responds to touch events filtered by the gesture detectors. */
@@ -272,6 +353,12 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
             return true;
         }
 
+        /** Called whenever a gesture starts. Always accepts the gesture so it isn't ignored. */
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+
         /**
          * Called when the user starts to zoom. Always accepts the zoom so that
          * onScale() can decide whether to respond to it.
@@ -281,12 +368,31 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
             return true;
         }
 
-        /**
-         * Called when the user is done zooming. Defers to onScale()'s judgement.
-         */
+        /** Called when the user is done zooming. Defers to onScale()'s judgement. */
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
             onScale(detector);
+        }
+
+        /** Called when the user holds down on the screen. Starts a right-click. */
+        @Override
+        public void onLongPress(MotionEvent e) {
+            if (e.getPointerCount() > 1) {
+                return;
+            }
+
+            float[] coordinates = new float[] {e.getRawX(), e.getY()};
+
+            Log.i("mouse", "Finger held down");
+            if (mMousePressed) {
+                Log.i("mouse", "\tReleasing the currently-pressed button");
+                handleMouseMovement(coordinates, mMouseButton, false);
+            }
+
+            Log.i("mouse", "\tStarting right click");
+            mMouseButton = BUTTON_RIGHT;
+            mMousePressed = true;
+            handleMouseMovement(coordinates, mMouseButton, mMousePressed);
         }
     }
 }

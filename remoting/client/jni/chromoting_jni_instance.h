@@ -19,13 +19,21 @@
 #include "remoting/client/jni/jni_frame_consumer.h"
 #include "remoting/jingle_glue/network_settings.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
+#include "remoting/protocol/cursor_shape_stub.h"
 
 namespace remoting {
+namespace protocol {
+  class ClipboardEvent;
+  class CursorShapeInfo;
+}  // namespace protocol
 
 // ClientUserInterface that indirectly makes and receives JNI calls.
 class ChromotingJniInstance
   : public ClientUserInterface,
+    public protocol::ClipboardStub,
+    public protocol::CursorShapeStub,
     public base::RefCountedThreadSafe<ChromotingJniInstance> {
  public:
   // Initiates a connection with the specified host. Call from the UI thread.
@@ -48,6 +56,13 @@ class ChromotingJniInstance
   // Schedules a redraw on the display thread. May be called from any thread.
   void RedrawDesktop();
 
+  // Moves the host's cursor to the specified coordinates, optionally with some
+  // mouse button depressed. If |button| is BUTTON_UNDEFINED, no click is made.
+  void PerformMouseAction(int x,
+                          int y,
+                          protocol::MouseEvent_MouseButton button,
+                          bool buttonDown);
+
   // ClientUserInterface implementation.
   virtual void OnConnectionState(
       protocol::ConnectionToHost::State state,
@@ -60,6 +75,13 @@ class ChromotingJniInstance
   virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
   virtual scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
       GetTokenFetcher(const std::string& host_public_key) OVERRIDE;
+
+  // CursorShapeStub implementation.
+  virtual void InjectClipboardEvent(
+      const protocol::ClipboardEvent& event) OVERRIDE;
+
+  // ClipboardStub implementation.
+  virtual void SetCursorShape(const protocol::CursorShapeInfo& shape) OVERRIDE;
 
  private:
   // This object is ref-counted, so it cleans itself up.

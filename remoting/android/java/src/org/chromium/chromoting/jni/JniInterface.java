@@ -204,9 +204,21 @@ public class JniInterface {
         return Bitmap.createBitmap(frame, 0, sWidth, sWidth, sHeight, Bitmap.Config.ARGB_8888);
     }
 
+    /** Moves the mouse cursor, possibly while clicking. */
+    public static void mouseAction(int x, int y, int whichButton, boolean buttonDown) {
+        if (!sConnected) {
+            return;
+        }
+
+        mouseActionNative(x, y, whichButton, buttonDown);
+    }
+
     /** Performs the native response to the user's PIN. */
     private static native void authenticationResponse(String pin);
 
     /** Schedules a redraw on the native graphics thread. */
     private static native void scheduleRedrawNative();
+
+    /** Passes mouse information to the native handling code. */
+    private static native void mouseActionNative(int x, int y, int whichButton, boolean buttonDown);
 }

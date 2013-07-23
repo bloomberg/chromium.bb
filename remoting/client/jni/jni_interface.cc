@@ -113,4 +113,18 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(scheduleRedrawNative)(
   remoting::ChromotingJni::GetInstance()->session()->RedrawDesktop();
 }
 
+JNIEXPORT void JNICALL JNI_IMPLEMENTATION(mouseActionNative)(
+    JNIEnv* env,
+    jobject that,
+    jint x,
+    jint y,
+    jint which_button,
+    jboolean button_down) {
+  remoting::ChromotingJni::GetInstance()->session()->PerformMouseAction(
+      x,
+      y,
+      static_cast<remoting::protocol::MouseEvent_MouseButton>(which_button),
+      button_down);
+}
+
 }  // extern "C"
