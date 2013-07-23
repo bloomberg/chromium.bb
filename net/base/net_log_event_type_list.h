@@ -59,6 +59,9 @@ EVENT_TYPE(HOST_RESOLVER_IMPL)
 //   }
 EVENT_TYPE(HOST_RESOLVER_IMPL_REQUEST)
 
+// This event is logged when IPv6 support is determined via IPv6 connect probe.
+EVENT_TYPE(HOST_RESOLVER_IMPL_IPV6_SUPPORTED)
+
 // This event is logged when a request is handled by a cache entry.
 EVENT_TYPE(HOST_RESOLVER_IMPL_CACHE_HIT)
 
@@ -568,6 +571,13 @@ EVENT_TYPE(SSL_CERTIFICATES_RECEIVED)
 //     "net_error": <Net integer error code, on failure>,
 //   }
 EVENT_TYPE(UDP_CONNECT)
+
+// The local address of the UDP socket, retrieved via getsockname.
+// The following parameters are attached:
+//   {
+//     "address": <Local address bound to the socket>,
+//   }
+EVENT_TYPE(UDP_LOCAL_ADDRESS)
 
 // The specified number of bytes were transferred on the socket.
 // The following parameters are attached:

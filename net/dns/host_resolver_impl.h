@@ -192,7 +192,8 @@ class NET_EXPORT HostResolverImpl
   // Returns the (hostname, address_family) key to use for |info|, choosing an
   // "effective" address family by inheriting the resolver's default address
   // family when the request leaves it unspecified.
-  Key GetEffectiveKeyForRequest(const RequestInfo& info) const;
+  Key GetEffectiveKeyForRequest(const RequestInfo& info,
+                                const BoundNetLog& net_log) const;
 
   // Records the result in cache if cache is present.
   void CacheResult(const Key& key,

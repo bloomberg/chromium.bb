@@ -123,6 +123,8 @@ int UDPSocketLibevent::GetLocalAddress(IPEndPoint* address) const {
     if (!address->FromSockAddr(storage.addr, storage.addr_len))
       return ERR_FAILED;
     local_address_.reset(address.release());
+    net_log_.AddEvent(NetLog::TYPE_UDP_LOCAL_ADDRESS,
+                      CreateNetLogUDPConnectCallback(local_address_.get()));
   }
 
   *address = *local_address_;

@@ -171,13 +171,14 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
 }
 
 // Attempts to connect a UDP socket to |dest|:80.
-bool IsGloballyReachable(const IPAddressNumber& dest) {
+bool IsGloballyReachable(const IPAddressNumber& dest,
+                         const BoundNetLog& net_log) {
   scoped_ptr<DatagramClientSocket> socket(
       ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
           DatagramSocket::DEFAULT_BIND,
           RandIntCallback(),
-          NULL,
-          NetLog::Source()));
+          net_log.net_log(),
+          net_log.source()));
   int rv = socket->Connect(IPEndPoint(dest, 80));
   if (rv != OK)
     return false;
@@ -1750,7 +1751,7 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
 
   // Build a key that identifies the request in the cache and in the
   // outstanding jobs map.
-  Key key = GetEffectiveKeyForRequest(info);
+  Key key = GetEffectiveKeyForRequest(info, request_net_log);
 
   int rv = ResolveHelper(key, info, addresses, request_net_log);
   if (rv != ERR_DNS_CACHE_MISS) {
@@ -1838,7 +1839,7 @@ int HostResolverImpl::ResolveFromCache(const RequestInfo& info,
   // Update the net log and notify registered observers.
   LogStartRequest(source_net_log, request_net_log, info);
 
-  Key key = GetEffectiveKeyForRequest(info);
+  Key key = GetEffectiveKeyForRequest(info, request_net_log);
 
   int rv = ResolveHelper(key, info, addresses, request_net_log);
   LogFinishRequest(source_net_log, request_net_log, info, rv);
@@ -2014,7 +2015,7 @@ void HostResolverImpl::SetHaveOnlyLoopbackAddresses(bool result) {
 }
 
 HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
-    const RequestInfo& info) const {
+    const RequestInfo& info, const BoundNetLog& net_log) const {
   HostResolverFlags effective_flags =
       info.host_resolver_flags() | additional_resolver_flags_;
   AddressFamily effective_address_family = info.address_family();
@@ -2028,7 +2029,9 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x88, 0x88 };
       IPAddressNumber address(kIPv6Address,
                               kIPv6Address + arraysize(kIPv6Address));
-      bool rv6 = IsGloballyReachable(address);
+      bool rv6 = IsGloballyReachable(address, net_log);
+      if (rv6)
+        net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_IPV6_SUPPORTED);
 
       UMA_HISTOGRAM_TIMES("Net.IPv6ConnectDuration",
                           base::TimeTicks::Now() - start_time);
