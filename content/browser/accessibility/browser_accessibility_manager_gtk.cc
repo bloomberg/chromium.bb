@@ -26,8 +26,9 @@ BrowserAccessibilityManagerGtk::BrowserAccessibilityManagerGtk(
     const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(src, delegate, factory),
+    : BrowserAccessibilityManager(delegate, factory),
       parent_widget_(parent_widget) {
+  Initialize(src);
 }
 
 BrowserAccessibilityManagerGtk::~BrowserAccessibilityManagerGtk() {

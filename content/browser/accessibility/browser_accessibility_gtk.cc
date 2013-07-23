@@ -108,10 +108,12 @@ static AtkStateSet* browser_accessibility_ref_state_set(AtkObject* atk_object) {
           ref_state_set(atk_object);
   int32 state = obj->state();
 
-  if ((state >> AccessibilityNodeData::STATE_FOCUSABLE) & 1)
+  if (state & (1 << AccessibilityNodeData::STATE_FOCUSABLE))
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSABLE);
   if (obj->manager()->GetFocus(NULL) == obj)
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSED);
+  if (!(state & (1 << AccessibilityNodeData::STATE_UNAVAILABLE)))
+    atk_state_set_add_state(state_set, ATK_STATE_ENABLED);
 
   return state_set;
 }
@@ -338,6 +340,15 @@ void BrowserAccessibilityGtk::InitRoleAndState() {
   atk_acc_description_ = UTF16ToUTF8(description);
 
   switch(role_) {
+    case AccessibilityNodeData::ROLE_DOCUMENT:
+    case AccessibilityNodeData::ROLE_ROOT_WEB_AREA:
+    case AccessibilityNodeData::ROLE_WEB_AREA:
+      atk_role_ = ATK_ROLE_DOCUMENT_WEB;
+      break;
+    case AccessibilityNodeData::ROLE_GROUP:
+    case AccessibilityNodeData::ROLE_DIV:
+      atk_role_ = ATK_ROLE_SECTION;
+      break;
     case AccessibilityNodeData::ROLE_BUTTON:
       atk_role_ = ATK_ROLE_PUSH_BUTTON;
       break;
@@ -352,6 +363,9 @@ void BrowserAccessibilityGtk::InitRoleAndState() {
       break;
     case AccessibilityNodeData::ROLE_RADIO_BUTTON:
       atk_role_ = ATK_ROLE_RADIO_BUTTON;
+      break;
+    case AccessibilityNodeData::ROLE_STATIC_TEXT:
+      atk_role_ = ATK_ROLE_TEXT;
       break;
     case AccessibilityNodeData::ROLE_TEXTAREA:
       atk_role_ = ATK_ROLE_ENTRY;

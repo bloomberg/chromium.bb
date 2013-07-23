@@ -100,7 +100,8 @@ bool AccessibilityTreeFormatter::IncludeChildren(
 }
 #endif
 
-#if (!defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_ANDROID))
+#if (!defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
+     !defined(TOOLKIT_GTK))
 void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
                                                base::DictionaryValue* dict) {
   dict->SetInteger("id", node.renderer_id());

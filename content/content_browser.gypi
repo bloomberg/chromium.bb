@@ -198,6 +198,7 @@
     'browser/accessibility/accessibility_tree_formatter.cc',
     'browser/accessibility/accessibility_tree_formatter.h',
     'browser/accessibility/accessibility_tree_formatter_android.cc',
+    'browser/accessibility/accessibility_tree_formatter_gtk.cc',
     'browser/accessibility/accessibility_tree_formatter_mac.mm',
     'browser/accessibility/accessibility_tree_formatter_utils_win.cc',
     'browser/accessibility/accessibility_tree_formatter_utils_win.h',

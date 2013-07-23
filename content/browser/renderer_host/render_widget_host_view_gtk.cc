@@ -1544,28 +1544,28 @@ void RenderWidgetHostViewGtk::FatalAccessibilityTreeError() {
 
 void RenderWidgetHostViewGtk::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
-  if (!browser_accessibility_manager_) {
+  if (!GetBrowserAccessibilityManager()) {
     GtkWidget* parent = gtk_widget_get_parent(view_.get());
-    browser_accessibility_manager_.reset(
+    SetBrowserAccessibilityManager(
         new BrowserAccessibilityManagerGtk(
             parent,
             BrowserAccessibilityManagerGtk::GetEmptyDocument(),
             this));
   }
-  browser_accessibility_manager_->OnAccessibilityNotifications(params);
+  GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
 }
 
 AtkObject* RenderWidgetHostViewGtk::GetAccessible() {
-  if (!browser_accessibility_manager_) {
+  if (!GetBrowserAccessibilityManager()) {
     GtkWidget* parent = gtk_widget_get_parent(view_.get());
-    browser_accessibility_manager_.reset(
+    SetBrowserAccessibilityManager(
         new BrowserAccessibilityManagerGtk(
             parent,
             BrowserAccessibilityManagerGtk::GetEmptyDocument(),
             this));
   }
   BrowserAccessibilityGtk* root =
-      browser_accessibility_manager_->GetRoot()->ToBrowserAccessibilityGtk();
+      GetBrowserAccessibilityManager()->GetRoot()->ToBrowserAccessibilityGtk();
 
   atk_object_set_role(root->GetAtkObject(), ATK_ROLE_HTML_CONTAINER);
   return root->GetAtkObject();
