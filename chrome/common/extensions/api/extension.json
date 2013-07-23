@@ -9,17 +9,6 @@
     "compiler_options": {
       "implemented_in": "chrome/browser/extensions/api/module/module.h"
     },
-    "types": [
-      {
-        "id": "MessageSender",
-        "type": "object",
-        "description": "An object containing information about the script context that sent a message or request.",
-        "properties": {
-          "tab": {"$ref": "tabs.Tab", "optional": true, "description":"This property will <b>only</b> be present when the connection was opened from a tab or content script."},
-          "id": {"type": "string", "description": "The extension ID of the extension that opened the connection."}
-        }
-      }
-    ],
     "properties": {
       "lastError": {
         "type": "object",
@@ -200,11 +189,13 @@
         "name": "onRequest",
         "nodoc": true,
         "type": "function",
-        "anonymous": true,
+        "options": {
+          "unmanaged": true
+        },
         "description": "Deprecated: please use onMessage.",
         "parameters": [
-          {"name": "request", "type": "any", "description": "The request sent by the calling script."},
-          {"name": "sender", "$ref": "MessageSender" },
+          {"name": "request", "type": "any", "optional": true, "description": "The request sent by the calling script."},
+          {"name": "sender", "$ref": "runtime.MessageSender" },
           {"name": "sendResponse", "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response. If you have more than one <code>onRequest</code> listener in the same document, then only one may send a response." }
         ]
       },
@@ -212,11 +203,13 @@
         "name": "onRequestExternal",
         "nodoc": true,
         "type": "function",
-        "anonymous": true,
+        "options": {
+          "unmanaged": true
+        },
         "description": "Deprecated: please use onMessageExternal.",
         "parameters": [
-          {"name": "request", "type": "any", "description": "The request sent by the calling script."},
-          {"name": "sender", "$ref": "MessageSender" },
+          {"name": "request", "type": "any", "optional": true, "description": "The request sent by the calling script."},
+          {"name": "sender", "$ref": "runtime.MessageSender" },
           {"name": "sendResponse", "type": "function", "description": "Function to call when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response." }
         ]
       }

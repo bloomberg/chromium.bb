@@ -92,65 +92,56 @@ class ExtensionImpl : public ChromeV8Extension {
 
   // Attach an event name to an object.
   void AttachEvent(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    DCHECK(args.Length() == 1);
-    // TODO(erikkay) should enforce that event name is a string in the bindings
-    DCHECK(args[0]->IsString() || args[0]->IsUndefined());
+    CHECK_EQ(1, args.Length());
+    CHECK(args[0]->IsString());
 
-    if (args[0]->IsString()) {
-      std::string event_name = *v8::String::AsciiValue(args[0]->ToString());
-      CHECK(context());
+    std::string event_name = *v8::String::AsciiValue(args[0]->ToString());
 
-      if (!dispatcher_->CheckContextAccessToExtensionAPI(event_name, context()))
-        return;
+    if (!dispatcher_->CheckContextAccessToExtensionAPI(event_name, context()))
+      return;
 
-      std::string extension_id = context()->GetExtensionID();
-      EventListenerCounts& listener_counts =
-          g_listener_counts.Get()[extension_id];
-      if (++listener_counts[event_name] == 1) {
-        content::RenderThread::Get()->Send(
-            new ExtensionHostMsg_AddListener(extension_id, event_name));
-      }
+    std::string extension_id = context()->GetExtensionID();
+    EventListenerCounts& listener_counts =
+        g_listener_counts.Get()[extension_id];
+    if (++listener_counts[event_name] == 1) {
+      content::RenderThread::Get()->Send(
+          new ExtensionHostMsg_AddListener(extension_id, event_name));
+    }
 
-      // This is called the first time the page has added a listener. Since
-      // the background page is the only lazy page, we know this is the first
-      // time this listener has been registered.
-      if (IsLazyBackgroundPage(GetRenderView(), context()->extension())) {
-        content::RenderThread::Get()->Send(
-            new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
-      }
+    // This is called the first time the page has added a listener. Since
+    // the background page is the only lazy page, we know this is the first
+    // time this listener has been registered.
+    if (IsLazyBackgroundPage(GetRenderView(), context()->extension())) {
+      content::RenderThread::Get()->Send(
+          new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
     }
   }
 
   void DetachEvent(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    DCHECK(args.Length() == 2);
-    // TODO(erikkay) should enforce that event name is a string in the bindings
-    DCHECK(args[0]->IsString() || args[0]->IsUndefined());
+    CHECK_EQ(2, args.Length());
+    CHECK(args[0]->IsString());
+    CHECK(args[1]->IsBoolean());
 
-    if (args[0]->IsString() && args[1]->IsBoolean()) {
-      std::string event_name = *v8::String::AsciiValue(args[0]->ToString());
-      bool is_manual = args[1]->BooleanValue();
+    std::string event_name = *v8::String::AsciiValue(args[0]);
+    bool is_manual = args[1]->BooleanValue();
 
-      if (!context())
-        return;
+    std::string extension_id = context()->GetExtensionID();
+    EventListenerCounts& listener_counts =
+        g_listener_counts.Get()[extension_id];
 
-      std::string extension_id = context()->GetExtensionID();
-      EventListenerCounts& listener_counts =
-          g_listener_counts.Get()[extension_id];
+    if (--listener_counts[event_name] == 0) {
+      content::RenderThread::Get()->Send(
+          new ExtensionHostMsg_RemoveListener(extension_id, event_name));
+    }
 
-      if (--listener_counts[event_name] == 0) {
-        content::RenderThread::Get()->Send(
-            new ExtensionHostMsg_RemoveListener(extension_id, event_name));
-      }
-
-      // DetachEvent is called when the last listener for the context is
-      // removed. If the context is the background page, and it removes the
-      // last listener manually, then we assume that it is no longer interested
-      // in being awakened for this event.
-      if (is_manual && IsLazyBackgroundPage(GetRenderView(),
-                                            context()->extension())) {
-        content::RenderThread::Get()->Send(
-            new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
-      }
+    // DetachEvent is called when the last listener for the context is
+    // removed. If the context is the background page, and it removes the
+    // last listener manually, then we assume that it is no longer interested
+    // in being awakened for this event.
+    if (is_manual && IsLazyBackgroundPage(GetRenderView(),
+                                          context()->extension())) {
+      content::RenderThread::Get()->Send(
+          new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
     }
   }
 
@@ -160,17 +151,12 @@ class ExtensionImpl : public ChromeV8Extension {
   // returns the id assigned to the listener, which will be returned from calls
   // to MatchAgainstEventFilter where this listener matches.
   void AttachFilteredEvent(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    DCHECK_EQ(2, args.Length());
-    DCHECK(args[0]->IsString());
-    DCHECK(args[1]->IsObject());
-
-    DCHECK(context());
-    if (!context()) {
-      args.GetReturnValue().Set(static_cast<int32_t>(-1));
-      return;
-    }
+    CHECK_EQ(2, args.Length());
+    CHECK(args[0]->IsString());
+    CHECK(args[1]->IsObject());
 
     std::string event_name = *v8::String::AsciiValue(args[0]);
+
     // This method throws an exception if it returns false.
     if (!dispatcher_->CheckContextAccessToExtensionAPI(event_name, context()))
       return;
@@ -247,12 +233,10 @@ class ExtensionImpl : public ChromeV8Extension {
   // manual - false if this is part of the extension unload process where all
   //          listeners are automatically detached.
   void DetachFilteredEvent(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    DCHECK_EQ(2, args.Length());
-    DCHECK(args[0]->IsInt32());
-    DCHECK(args[1]->IsBoolean());
+    CHECK_EQ(2, args.Length());
+    CHECK(args[0]->IsInt32());
+    CHECK(args[1]->IsBoolean());
     bool is_manual = args[1]->BooleanValue();
-    if (!context())
-      return;
 
     std::string extension_id = context()->GetExtensionID();
     if (extension_id.empty())

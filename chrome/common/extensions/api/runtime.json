@@ -33,8 +33,8 @@
         "description": "An object containing information about the script context that sent a message or request.",
         "properties": {
           "tab": {"$ref": "tabs.Tab", "optional": true, "description": "The $ref:tabs.Tab which opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab (including content scripts), and <strong>only</strong> if the receiver is an extension, not an app."},
-          "id": {"type": "string", "description": "The ID of the extension or app that opened the connection."},
-          "url": {"type": "string", "optional": true, "description": "The URL of the page or frame that opened the connection. This property will <strong>only</strong> be present when the connection was opened from a tab (including content scripts)."}
+          "id": {"type": "string", "optional": true, "description": "The ID of the extension or app that opened the connection, if any."},
+          "url": {"type": "string", "optional": true, "description": "The URL of the page or frame that opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab or content script."}
         }
       }
     ],
@@ -384,7 +384,9 @@
         "name": "onConnect",
         "type": "function",
         "nocompile": true,
-        "anonymous": true,
+        "options": {
+          "unmanaged": true
+        },
         "description": "Fired when a connection is made from either an extension process or a content script.",
         "parameters": [
           {"$ref": "Port", "name": "port"}
@@ -394,7 +396,9 @@
         "name": "onConnectExternal",
         "type": "function",
         "nocompile": true,
-        "anonymous": true,
+        "options": {
+          "unmanaged": true
+        },
         "description": "Fired when a connection is made from another extension.",
         "parameters": [
           {"$ref": "Port", "name": "port"}
@@ -403,10 +407,12 @@
       {
         "name": "onMessage",
         "type": "function",
-        "anonymous": true,
+        "options": {
+          "unmanaged": true
+        },
         "description": "Fired when a message is sent from either an extension process or a content script.",
         "parameters": [
-          {"name": "message", "type": "any", "description": "The message sent by the calling script."},
+          {"name": "message", "type": "any", "optional": true, "description": "The message sent by the calling script."},
           {"name": "sender", "$ref": "MessageSender" },
           {"name": "sendResponse", "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object. If you have more than one <code>onMessage</code> listener in the same document, then only one may send a response. This function becomes invalid when the event listener returns, unless you return true from the event listener to indicate you wish to send a response asynchronously (this will keep the message channel open to the other end until <code>sendResponse</code> is called)." }
         ],
@@ -419,10 +425,12 @@
       {
         "name": "onMessageExternal",
         "type": "function",
-        "anonymous": true,
+        "options": {
+          "unmanaged": true
+        },
         "description": "Fired when a message is sent from another extension/app. Cannot be used in a content script.",
         "parameters": [
-          {"name": "message", "type": "any", "description": "The message sent by the calling script."},
+          {"name": "message", "type": "any", "optional": true, "description": "The message sent by the calling script."},
           {"name": "sender", "$ref": "MessageSender" },
           {"name": "sendResponse", "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object. If you have more than one <code>onMessage</code> listener in the same document, then only one may send a response. This function becomes invalid when the event listener returns, unless you return true from the event listener to indicate you wish to send a response asynchronously (this will keep the message channel open to the other end until <code>sendResponse</code> is called)." }
         ],

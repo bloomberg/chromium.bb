@@ -38,8 +38,14 @@
   function Port(portId, opt_name) {
     this.portId_ = portId;
     this.name = opt_name;
-    this.onDisconnect = new Event();
-    this.onMessage = new Event();
+
+    var portSchema = {name: 'port', $ref: 'runtime.Port'};
+    var options = {unmanaged: true};
+    this.onDisconnect = new Event(null, [portSchema], options);
+    this.onMessage = new Event(
+        null,
+        [{name: 'message', type: 'any', optional: true}, portSchema],
+        options);
   }
 
   // Sends a message asynchronously to the context on the other end of this

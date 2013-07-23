@@ -44,6 +44,25 @@
   // Key is event name, value is function.
   var eventArgumentMassagers = {};
 
+  // An attachment strategy for events that aren't attached to the browser.
+  // This applies to events with the "unmanaged" option and events without
+  // names.
+  var NullAttachmentStrategy = function(event) {
+    this.event_ = event;
+  };
+  NullAttachmentStrategy.prototype.onAddedListener =
+      function(listener) {
+  };
+  NullAttachmentStrategy.prototype.onRemovedListener =
+      function(listener) {
+  };
+  NullAttachmentStrategy.prototype.detach = function(manual) {
+  };
+  NullAttachmentStrategy.prototype.getListenersByIDs = function(ids) {
+    // |ids| is for filtered events only.
+    return this.event_.listeners_;
+  };
+
   // Handles adding/removing/dispatching listeners for unfiltered events.
   var UnfilteredAttachmentStrategy = function(event) {
     this.event_ = event;
@@ -67,6 +86,7 @@
   };
 
   UnfilteredAttachmentStrategy.prototype.getListenersByIDs = function(ids) {
+    // |ids| is for filtered events only.
     return this.event_.listeners_;
   };
 
@@ -123,11 +143,33 @@
     }
 
     var options = opt_eventOptions || {};
-    merge(options,
-        {supportsFilters: false,
-         supportsListeners: true,
-         supportsRules: false,
-        });
+    merge(options, {
+      // Event supports adding listeners with filters ("filtered events"), for
+      // example as used in the webNavigation API.
+      //
+      // event.addListener(listener, [filter1, filter2]);
+      supportsFilters: false,
+
+      // Events supports vanilla events. Most APIs use these.
+      //
+      // event.addListener(listener);
+      supportsListeners: true,
+
+      // Event supports adding rules ("declarative events") rather than
+      // listeners, for example as used in the declarativeWebRequest API.
+      //
+      // event.addRules([rule1, rule2]);
+      supportsRules: false,
+
+      // Event is unmanaged in that the browser has no knowledge of its
+      // existence; it's never invoked, doesn't keep the renderer alive, and
+      // the bindings system has no knowledge of it.
+      //
+      // Both events created by user code (new chrome.Event()) and messaging
+      // events are unmanaged, though in the latter case the browser *does*
+      // interact indirectly with them via IPCs written by hand.
+      unmanaged: false,
+    });
     return options;
   };
 
@@ -147,38 +189,31 @@
   // entries "supportsListeners" and "supportsRules".
   var Event = function(opt_eventName, opt_argSchemas, opt_eventOptions) {
     this.eventName_ = opt_eventName;
+    this.argSchemas_ = opt_argSchemas;
     this.listeners_ = [];
     this.eventOptions_ = parseEventOptions(opt_eventOptions);
 
+    if (!this.eventName_) {
+      if (this.eventOptions_.supportsRules)
+        throw new Error("Events that support rules require an event name.");
+      // Events without names cannot be managed by the browser by definition
+      // (the browser has no way of identifying them).
+      this.eventOptions_.unmanaged = true;
+    }
+
     // Track whether the event has been destroyed to help track down the cause
     // of http://crbug.com/258526.
+    // This variable will eventually hold the stack trace of the destroy call.
     // TODO(kalman): Delete this and replace with more sound logic that catches
     // when events are used without being *attached*.
-    this.destroyed_ = false;
+    this.destroyed_ = null;
 
-    if (this.eventOptions_.supportsRules && !opt_eventName)
-      throw new Error("Events that support rules require an event name.");
-
-    if (this.eventOptions_.supportsFilters) {
+    if (this.eventOptions_.unmanaged)
+      this.attachmentStrategy_ = new NullAttachmentStrategy(this);
+    else if (this.eventOptions_.supportsFilters)
       this.attachmentStrategy_ = new FilteredAttachmentStrategy(this);
-    } else {
+    else
       this.attachmentStrategy_ = new UnfilteredAttachmentStrategy(this);
-    }
-
-    // Validate event arguments (the data that is passed to the callbacks)
-    // if we are in debug.
-    if (opt_argSchemas && logging.DCHECK_IS_ON()) {
-      this.validateEventArgs_ = function(args) {
-        try {
-          validate(args, opt_argSchemas);
-        } catch (exception) {
-          return "Event validation error during " + opt_eventName + " -- " +
-                 exception;
-        }
-      };
-    } else {
-      this.validateEventArgs_ = function() {}
-    }
   };
 
   // callback is a function(args, dispatch). args are the args we receive from
@@ -220,8 +255,9 @@
     if (!this.eventOptions_.supportsListeners)
       throw new Error("This event does not support listeners.");
     if (this.eventOptions_.maxListeners &&
-        this.getListenerCount() >= this.eventOptions_.maxListeners)
+        this.getListenerCount() >= this.eventOptions_.maxListeners) {
       throw new Error("Too many listeners for " + this.eventName_);
+    }
     if (filters) {
       if (!this.eventOptions_.supportsFilters)
         throw new Error("This event does not support filters.");
@@ -235,15 +271,16 @@
 
   Event.prototype.attach_ = function(listener) {
     this.attachmentStrategy_.onAddedListener(listener);
+
     if (this.listeners_.length == 0) {
       allAttachedEvents[allAttachedEvents.length] = this;
-      if (!this.eventName_)
-        return;
-
-      if (attachedNamedEvents[this.eventName_])
-        throw new Error("Event '" + this.eventName_ + "' is already attached.");
-
-      attachedNamedEvents[this.eventName_] = this;
+      if (this.eventName_) {
+        if (attachedNamedEvents[this.eventName_]) {
+          throw new Error("Event '" + this.eventName_ +
+                          "' is already attached.");
+        }
+        attachedNamedEvents[this.eventName_] = this;
+      }
     }
   };
 
@@ -251,6 +288,7 @@
   Event.prototype.removeListener = function(cb) {
     if (!this.eventOptions_.supportsListeners)
       throw new Error("This event does not support listeners.");
+
     var idx = this.findListener_(cb);
     if (idx == -1)
       return;
@@ -262,13 +300,11 @@
       var i = allAttachedEvents.indexOf(this);
       if (i >= 0)
         delete allAttachedEvents[i];
-      if (!this.eventName_)
-        return;
-
-      if (!attachedNamedEvents[this.eventName_])
-        throw new Error("Event '" + this.eventName_ + "' is not attached.");
-
-      delete attachedNamedEvents[this.eventName_];
+      if (this.eventName_) {
+        if (!attachedNamedEvents[this.eventName_])
+          throw new Error("Event '" + this.eventName_ + "' is not attached.");
+        delete attachedNamedEvents[this.eventName_];
+      }
     }
   };
 
@@ -305,15 +341,19 @@
 
   Event.prototype.dispatch_ = function(args, listenerIDs) {
     if (this.destroyed_) {
-      throw new Error((this.eventName_ || "(anonymous)") +
-                      ' has been destroyed');
+      throw new Error(this.eventName_ + ' was already destroyed at: ' +
+                      this.destroyed_);
     }
     if (!this.eventOptions_.supportsListeners)
       throw new Error("This event does not support listeners.");
-    var validationErrors = this.validateEventArgs_(args);
-    if (validationErrors) {
-      console.error(validationErrors);
-      return {validationErrors: validationErrors};
+
+    if (this.argSchemas_ && logging.DCHECK_IS_ON()) {
+      try {
+        validate(args, this.argSchemas_);
+      } catch (e) {
+        e.message += ' in ' + this.eventName_;
+        throw e;
+      }
     }
 
     // Make a copy of the listeners in case the listener list is modified
@@ -328,11 +368,9 @@
         if (result !== undefined)
           $Array.push(results, result);
       } catch (e) {
-        var errorMessage = "Error in event handler";
-        if (this.eventName_)
-          errorMessage += " for " + this.eventName_;
-        errorMessage += ": " + e;
-        console.error(errorMessage);
+        console.error('Error in event handler for ' +
+                      (this.eventName_ ? this.eventName_ : '(unknown)') +
+                      ': ' + e.stack);
       }
     }
     if (results.length)
@@ -358,7 +396,7 @@
   Event.prototype.destroy_ = function() {
     this.listeners_.length = 0;
     this.detach_();
-    this.destroyed_ = true;
+    this.destroyed_ = new Error().stack;
   };
 
   Event.prototype.addRules = function(rules, opt_cb) {
@@ -395,7 +433,7 @@
 
     if (!this.eventOptions_.conditions || !this.eventOptions_.actions) {
       throw new Error('Event ' + this.eventName_ + ' misses conditions or ' +
-                'actions in the API specification.');
+                      'actions in the API specification.');
     }
 
     validateRules(rules,
