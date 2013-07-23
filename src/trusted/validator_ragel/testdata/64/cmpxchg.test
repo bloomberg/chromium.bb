@@ -17,3 +17,5 @@
     10:	49 0f c7 0c 1f                               	cmpxchg16b (%r15,%rbx,1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

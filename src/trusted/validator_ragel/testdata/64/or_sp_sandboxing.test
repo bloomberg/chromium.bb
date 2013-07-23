@@ -8,6 +8,8 @@
      2:	4c 01 fc                                     	add    %r15,%rsp
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # mov %esp, %esp
@@ -19,6 +21,8 @@
      2:	4c 09 fc                                     	or     %r15,%rsp
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # mov %esp, %esp
@@ -30,3 +34,5 @@
      2:	49 0b e7                                     	or     %r15,%rsp
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

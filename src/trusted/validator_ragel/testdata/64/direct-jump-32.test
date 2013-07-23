@@ -13,3 +13,5 @@
      6:	90                                           	nop
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

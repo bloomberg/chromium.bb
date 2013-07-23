@@ -25,3 +25,5 @@
     1b:	4f 89 c0                                     	rex.WRXB mov    %r8,%r8
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

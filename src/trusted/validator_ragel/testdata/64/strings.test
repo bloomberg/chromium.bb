@@ -130,3 +130,11 @@
   4a: [0] unrecognized instruction
   57: [1] unrecognized instruction
   return code: 1
+@spec:
+  d: ('segments in memory references are not allowed', Instruction(0xd: ae  scas %es:(%rdi),%al))
+  13: ('segments in memory references are not allowed', Instruction(0x13: ae  scas %es:(%rdi),%al))
+  1a: ('segments in memory references are not allowed', Instruction(0x1a: ae  scas %es:(%rdi),%al))
+  25: ('segments in memory references are not allowed', Instruction(0x25: a5  movsl %ds:(%rsi),%es:(%rdi)))
+  30: ('segments in memory references are not allowed', Instruction(0x30: a7  cmpsl %es:(%rdi),%ds:(%rsi)))
+  4a: ('segments in memory references are not allowed', Instruction(0x4a: a7  cmpsl %es:(%rdi),%ds:(%rsi)))
+  57: ('segments in memory references are not allowed', Instruction(0x57: a7  cmpsl %es:(%rdi),%ds:(%rsi)))

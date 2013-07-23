@@ -9,3 +9,5 @@
 @rdfa_output:
   4: [0] improper memory address - bad index
   return code: 1
+@spec:
+  4: register %rcx should be restricted, while in fact None is restricted

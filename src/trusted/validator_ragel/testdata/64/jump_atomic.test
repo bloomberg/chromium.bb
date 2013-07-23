@@ -15,3 +15,5 @@
      8:	ff e2                                        	jmpq   *%rdx
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

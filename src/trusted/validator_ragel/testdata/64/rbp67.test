@@ -13,3 +13,5 @@
 @rdfa_output:
   5: [0] unrecognized instruction
   return code: 1
+@spec:
+  5: ('addr prefixes are not allowed', Instruction(0x5: 67 48 89 84 25 70 e4 63 00  addr32 mov %rax,0x63e470(%ebp,%eiz,1)))

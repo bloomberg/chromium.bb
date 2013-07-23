@@ -6,3 +6,5 @@
      0:	41 01 c3                                     	add    %eax,%r11d
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

@@ -13,3 +13,6 @@
   0: [0] error - %bpl or %bp is changed
   3: [0] error - %bpl or %bp is changed
   return code: 1
+@spec:
+  0: ('changes to rbp are not allowed', Instruction(0x0: 48 89 cd  mov %rcx,%rbp))
+  3: ('changes to rbp are not allowed', Instruction(0x3: 4a 8d 2c 3c  lea (%rsp,%r15,1),%rbp))

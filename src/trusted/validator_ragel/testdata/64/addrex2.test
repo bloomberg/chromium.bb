@@ -8,3 +8,5 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('dangling rex prefix', Instruction(0x0: 40  rex))

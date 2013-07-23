@@ -15,3 +15,5 @@
 @rdfa_output:
   1: [0] unrecognized instruction
   return code: 1
+@spec:
+  1: unrecognized instruction 'xsave (%ecx)'

@@ -48,3 +48,5 @@
 @rdfa_output:
   1b: [0] unrecognized instruction
   return code: 1
+@spec:
+  1b: ('16-bit jumps are disallowed', Instruction(0x1b: 66 e8 f0 ff  callw 0xf))

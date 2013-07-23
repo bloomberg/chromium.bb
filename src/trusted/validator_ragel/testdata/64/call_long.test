@@ -60,3 +60,5 @@
     1b:	e8 80 fd fd 00                               	callq  0xfdfda0
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

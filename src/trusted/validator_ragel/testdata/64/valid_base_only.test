@@ -7,3 +7,5 @@
      0:	48 89 44 24 36                               	mov    %rax,0x36(%rsp)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

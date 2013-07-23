@@ -9,3 +9,5 @@
      5:	41 31 1c 07                                  	xor    %ebx,(%r15,%rax,1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

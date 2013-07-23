@@ -12,3 +12,5 @@
   2: [0] improper %rbp sandboxing
   2: [0] error - %bpl or %bp is changed
   return code: 1
+@spec:
+  2: ('changes to rbp are not allowed', Instruction(0x2: 4a 8d 6c 35 00  lea 0x0(%rbp,%r14,1),%rbp))

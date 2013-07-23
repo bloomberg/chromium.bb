@@ -7,6 +7,8 @@
 @rdfa_output:
   2: [0] improper %rsp sandboxing
   return code: 1
+@spec:
+  2: register %rsp should be restricted, while in fact None is restricted
 ----------------------------------------------------------------------
 @hex:
   44 01 c3
@@ -31,3 +33,5 @@
 @rdfa_output:
   3: [0] unrecognized instruction
   return code: 1
+@spec:
+  3: ('addr prefixes are not allowed', Instruction(0x3: 67 48 89 84 25 70 e4 63 00  addr32 mov %rax,0x63e470(%ebp,%eiz,1)))

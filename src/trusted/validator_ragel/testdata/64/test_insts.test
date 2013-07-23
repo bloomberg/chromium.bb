@@ -10,3 +10,5 @@
 @rdfa_output:
   f: [0] unrecognized instruction
   return code: 1
+@spec:
+  f: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0xf: a0 88 77 66 55 44 33 22 11  mov 0x1122334455667788,%al))

@@ -43,3 +43,6 @@
 @rdfa_output:
   20: [0] improper %rbp sandboxing
   return code: 1
+@spec:
+  20: %rbp should not be restricted at the end of bundle
+  20: register %rbp should be restricted, while in fact None is restricted

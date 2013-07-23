@@ -58,3 +58,5 @@
     1e:	ff d0                                        	callq  *%rax
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

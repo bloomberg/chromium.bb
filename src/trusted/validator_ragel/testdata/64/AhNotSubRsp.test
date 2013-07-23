@@ -5,3 +5,5 @@
      0:	80 e4 f7                                     	and    $0xf7,%ah
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

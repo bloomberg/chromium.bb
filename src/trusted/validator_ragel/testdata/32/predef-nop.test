@@ -9,3 +9,5 @@
      d:	66 0f 1f 44 00 00                            	nopw   0x0(%eax,%eax,1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

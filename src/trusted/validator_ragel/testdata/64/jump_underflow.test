@@ -5,3 +5,5 @@
      0:	e9 fb ff ff bf                               	jmpq   0xc0000000
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

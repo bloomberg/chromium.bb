@@ -12,3 +12,5 @@
 @rdfa_output:
   4: [0] unrecognized instruction
   return code: 1
+@spec:
+  4: ('segments in memory references are not allowed', Instruction(0x4: ab  stos %eax,%es:(%rdi)))

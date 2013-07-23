@@ -11,3 +11,5 @@
 @rdfa_output:
   7: [0] unrecognized instruction
   return code: 1
+@spec:
+  7: unrecognized instruction 'jmpq *%r9'

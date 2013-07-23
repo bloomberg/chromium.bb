@@ -5,3 +5,5 @@
      0:	0f a2                                        	cpuid  
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

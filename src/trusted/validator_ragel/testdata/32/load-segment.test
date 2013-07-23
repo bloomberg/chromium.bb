@@ -5,6 +5,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'lds (%eax),%eax'
 ----------------------------------------------------------------------
 @hex:
   C4 00
@@ -13,6 +15,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'les (%eax),%eax'
 ----------------------------------------------------------------------
 @hex:
   0F B4 00
@@ -21,6 +25,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'lfs (%eax),%eax'
 ----------------------------------------------------------------------
 @hex:
   0F B5 00
@@ -29,6 +35,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'lgs (%eax),%eax'
 ----------------------------------------------------------------------
 @hex:
   0F B2 00
@@ -37,6 +45,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'lss (%eax),%eax'
 ----------------------------------------------------------------------
 @hex:
   0F B4 18
@@ -45,6 +55,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'lfs (%eax),%ebx'
 ----------------------------------------------------------------------
 @hex:
   0F B5 18
@@ -53,6 +65,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'lgs (%eax),%ebx'
 ----------------------------------------------------------------------
 @hex:
   0F B2 18
@@ -61,3 +75,5 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'lss (%eax),%ebx'

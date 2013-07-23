@@ -8,3 +8,5 @@
 @rdfa_output:
   0: [0] improper memory address - bad base
   return code: 1
+@spec:
+  0: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x0: 48 89 43 36  mov %rax,0x36(%rbx)))

@@ -7,3 +7,5 @@
      9:	f0 66 83 05 bb 05 5e 00 ff                   	lock addw $0xffffffffffffffff,0x5e05bb(%rip)        # 0x5e05cd
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

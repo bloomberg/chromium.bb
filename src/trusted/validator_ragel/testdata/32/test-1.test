@@ -27,3 +27,8 @@
   10: [0] direct jump out of range
   16: [0] unrecognized instruction
   return code: 1
+@spec:
+  16: unrecognized instruction 'ret'
+  6: jump into a middle of instruction (0x8c)
+  b: jump into a middle of instruction (0xe3)
+  10: jump into a middle of instruction (0x508)

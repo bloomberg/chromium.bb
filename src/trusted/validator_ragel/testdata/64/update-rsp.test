@@ -9,3 +9,5 @@
      3:	4c 01 fc                                     	add    %r15,%rsp
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

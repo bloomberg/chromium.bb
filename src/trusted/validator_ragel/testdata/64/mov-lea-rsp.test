@@ -9,3 +9,5 @@
      2:	4a 8d 24 3c                                  	lea    (%rsp,%r15,1),%rsp
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

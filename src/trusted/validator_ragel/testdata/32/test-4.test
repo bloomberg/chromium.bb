@@ -188,3 +188,7 @@
   eb: [0] direct jump out of range
   137: [0] direct jump out of range
   return code: 1
+@spec:
+  4b: jump into a middle of instruction (0x210)
+  eb: jump into a middle of instruction (0x210)
+  137: jump into a middle of instruction (0x1b0)

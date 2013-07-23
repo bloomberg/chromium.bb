@@ -11,3 +11,5 @@
 @rdfa_output:
   5: [0] direct jump out of range
   return code: 1
+@spec:
+  5: jump into a middle of instruction (0x21)

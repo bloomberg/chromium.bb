@@ -7,3 +7,5 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 6d  insl (%dx),%es:(%rdi)))

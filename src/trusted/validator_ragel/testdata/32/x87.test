@@ -6,3 +6,5 @@
      0:	dc c1                                        	fadd   %st,%st(1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

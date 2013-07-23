@@ -11,3 +11,5 @@
      2:	41 89 54 37 08                               	mov    %edx,0x8(%r15,%rsi,1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

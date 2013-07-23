@@ -6,3 +6,5 @@
 @rdfa_output:
   0: [0] improper memory address - bad base
   return code: 1
+@spec:
+  0: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x0: 23 0c 25 ff ff ff ff  and 0xffffffffffffffff,%ecx))

@@ -6,3 +6,5 @@
      0:	c6 05 e5 7f 3a 00 01                         	movb   $0x1,0x3a7fe5(%rip)        # 0x3a7fec
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
