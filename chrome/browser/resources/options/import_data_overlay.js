@@ -236,6 +236,7 @@ cr.define('options', function() {
     // Make sure that any previous import success message is hidden, and
     // we're showing the UI to import further data.
     ImportDataOverlay.getInstance().updateSuccessState_(false);
+    ImportDataOverlay.getInstance().validateCommitButton_();
 
     OptionsPage.navigateToPage('importData');
   };
