@@ -29,66 +29,52 @@
  */
 
 #include "config.h"
-#include "DeviceMotionDispatcher.h"
-
-#include "modules/device_orientation/DeviceMotionController.h"
-#include "modules/device_orientation/DeviceMotionData.h"
-#include "public/platform/Platform.h"
+#include "modules/device_orientation/DeviceSensorEventDispatcher.h"
 
 namespace WebCore {
 
-DeviceMotionDispatcher& DeviceMotionDispatcher::instance()
-{
-    DEFINE_STATIC_LOCAL(DeviceMotionDispatcher, deviceMotionDispatcher, ());
-    return deviceMotionDispatcher;
-}
-
-DeviceMotionDispatcher::DeviceMotionDispatcher()
+DeviceSensorEventDispatcher::DeviceSensorEventDispatcher()
 {
 }
 
-DeviceMotionDispatcher::~DeviceMotionDispatcher()
+DeviceSensorEventDispatcher::~DeviceSensorEventDispatcher()
 {
 }
 
-void DeviceMotionDispatcher::addDeviceMotionController(DeviceMotionController* controller)
+void DeviceSensorEventDispatcher::addController(DeviceSensorEventController* controller)
 {
-    addController(controller);
+    bool wasEmpty = m_controllers.isEmpty();
+    if (!m_controllers.contains(controller))
+        m_controllers.append(controller);
+    if (wasEmpty)
+        startListening();
 }
 
-void DeviceMotionDispatcher::removeDeviceMotionController(DeviceMotionController* controller)
+void DeviceSensorEventDispatcher::removeController(DeviceSensorEventController* controller)
 {
-    removeController(controller);
+    // Do not actually remove controller from the vector, instead zero them out.
+    // The zeros are removed after didChangeDeviceMotion has dispatched all events.
+    // This is to prevent re-entrancy case when a controller is destroyed while in the
+    // didChangeDeviceMotion method.
+    size_t index = m_controllers.find(controller);
+    if (index != notFound)
+        m_controllers[index] = 0;
 }
 
-void DeviceMotionDispatcher::startListening()
+void DeviceSensorEventDispatcher::purgeControllers()
 {
-    WebKit::Platform::current()->setDeviceMotionListener(this);
-}
-
-void DeviceMotionDispatcher::stopListening()
-{
-    WebKit::Platform::current()->setDeviceMotionListener(0);
-}
-
-void DeviceMotionDispatcher::didChangeDeviceMotion(const WebKit::WebDeviceMotionData& motion)
-{
-    m_lastDeviceMotionData = DeviceMotionData::create(motion);
-    bool needsPurge = false;
-    for (size_t i = 0; i < m_controllers.size(); ++i) {
-        if (m_controllers[i])
-            static_cast<DeviceMotionController*>(m_controllers[i])->didChangeDeviceMotion(m_lastDeviceMotionData.get());
-        else
-            needsPurge = true;
+    size_t i = 0;
+    while (i < m_controllers.size()) {
+        if (!m_controllers[i]) {
+            m_controllers[i] = m_controllers.last();
+            m_controllers.removeLast();
+        } else {
+            ++i;
+        }
     }
 
-    if (needsPurge)
-        purgeControllers();
-}
-
-DeviceMotionData* DeviceMotionDispatcher::latestDeviceMotionData()
-{
-    return m_lastDeviceMotionData.get();
+    if (m_controllers.isEmpty())
+        stopListening();
 }
 
 } // namespace WebCore

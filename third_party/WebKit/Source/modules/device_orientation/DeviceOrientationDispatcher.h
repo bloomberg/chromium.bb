@@ -28,48 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeviceMotionDispatcher_h
-#define DeviceMotionDispatcher_h
+#ifndef DeviceOrientationDispatcher_h
+#define DeviceOrientationDispatcher_h
 
-#include "modules/device_orientation/DeviceMotionData.h"
 #include "modules/device_orientation/DeviceSensorEventDispatcher.h"
-#include "public/platform/WebDeviceMotionListener.h"
+#include "public/platform/WebDeviceOrientationListener.h"
 #include "wtf/RefPtr.h"
 
 namespace WebKit {
-class WebDeviceMotionData;
+class WebDeviceOrientationData;
 }
 
 namespace WebCore {
 
-class DeviceMotionController;
-class DeviceMotionData;
+class NewDeviceOrientationController;
+class DeviceOrientationData;
 
 // This class listens to device motion data and dispatches it to all
 // listening controllers.
-class DeviceMotionDispatcher : public DeviceSensorEventDispatcher, public WebKit::WebDeviceMotionListener {
+class DeviceOrientationDispatcher : public DeviceSensorEventDispatcher, public WebKit::WebDeviceOrientationListener {
 public:
-    static DeviceMotionDispatcher& instance();
+    static DeviceOrientationDispatcher& instance();
 
     // Note that the returned object is owned by this class.
     // FIXME: make the return value const, see crbug.com/233174.
-    DeviceMotionData* latestDeviceMotionData();
+    DeviceOrientationData* latestDeviceOrientationData();
 
     // This method is called every time new device motion data is available.
-    virtual void didChangeDeviceMotion(const WebKit::WebDeviceMotionData&) OVERRIDE;
-    void addDeviceMotionController(DeviceMotionController*);
-    void removeDeviceMotionController(DeviceMotionController*);
+    virtual void didChangeDeviceOrientation(const WebKit::WebDeviceOrientationData&) OVERRIDE;
+    void addDeviceOrientationController(NewDeviceOrientationController*);
+    void removeDeviceOrientationController(NewDeviceOrientationController*);
 
 private:
-    DeviceMotionDispatcher();
-    ~DeviceMotionDispatcher();
+    DeviceOrientationDispatcher();
+    ~DeviceOrientationDispatcher();
 
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 
-    RefPtr<DeviceMotionData> m_lastDeviceMotionData;
+    RefPtr<DeviceOrientationData> m_lastDeviceOrientationData;
 };
 
 } // namespace WebCore
 
-#endif // DeviceMotionDispatcher_h
+#endif // DeviceOrientationDispatcher_h

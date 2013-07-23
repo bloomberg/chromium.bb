@@ -28,48 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeviceMotionDispatcher_h
-#define DeviceMotionDispatcher_h
+#ifndef WebDeviceOrientationData_h
+#define WebDeviceOrientationData_h
 
-#include "modules/device_orientation/DeviceMotionData.h"
-#include "modules/device_orientation/DeviceSensorEventDispatcher.h"
-#include "public/platform/WebDeviceMotionListener.h"
-#include "wtf/RefPtr.h"
+#include "WebCommon.h"
 
 namespace WebKit {
-class WebDeviceMotionData;
-}
 
-namespace WebCore {
+#pragma pack(push, 1)
 
-class DeviceMotionController;
-class DeviceMotionData;
-
-// This class listens to device motion data and dispatches it to all
-// listening controllers.
-class DeviceMotionDispatcher : public DeviceSensorEventDispatcher, public WebKit::WebDeviceMotionListener {
+class WebDeviceOrientationData {
 public:
-    static DeviceMotionDispatcher& instance();
+    WEBKIT_EXPORT WebDeviceOrientationData();
+    ~WebDeviceOrientationData() { }
 
-    // Note that the returned object is owned by this class.
-    // FIXME: make the return value const, see crbug.com/233174.
-    DeviceMotionData* latestDeviceMotionData();
+    double alpha;
+    double beta;
+    double gamma;
 
-    // This method is called every time new device motion data is available.
-    virtual void didChangeDeviceMotion(const WebKit::WebDeviceMotionData&) OVERRIDE;
-    void addDeviceMotionController(DeviceMotionController*);
-    void removeDeviceMotionController(DeviceMotionController*);
+    bool hasAlpha : 1;
+    bool hasBeta : 1;
+    bool hasGamma : 1;
 
-private:
-    DeviceMotionDispatcher();
-    ~DeviceMotionDispatcher();
+    bool absolute : 1;
+    bool hasAbsolute : 1;
 
-    virtual void startListening() OVERRIDE;
-    virtual void stopListening() OVERRIDE;
-
-    RefPtr<DeviceMotionData> m_lastDeviceMotionData;
+    bool allAvailableSensorsAreActive : 1;
 };
 
-} // namespace WebCore
+#if WEBKIT_IMPLEMENTATION
+COMPILE_ASSERT(sizeof(WebDeviceOrientationData) == (3 * sizeof(double) + 1 * sizeof(char)), WebDeviceOrientationData_has_wrong_size);
+#endif
 
-#endif // DeviceMotionDispatcher_h
+#pragma pack(pop)
+
+} // namespace WebKit
+
+#endif // WebDeviceOrientationData_h

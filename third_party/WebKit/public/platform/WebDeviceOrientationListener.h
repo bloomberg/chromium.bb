@@ -28,48 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeviceMotionDispatcher_h
-#define DeviceMotionDispatcher_h
-
-#include "modules/device_orientation/DeviceMotionData.h"
-#include "modules/device_orientation/DeviceSensorEventDispatcher.h"
-#include "public/platform/WebDeviceMotionListener.h"
-#include "wtf/RefPtr.h"
+#ifndef WebDeviceOrientationListener_h
+#define WebDeviceOrientationListener_h
 
 namespace WebKit {
-class WebDeviceMotionData;
-}
 
-namespace WebCore {
+class WebDeviceOrientationData;
 
-class DeviceMotionController;
-class DeviceMotionData;
-
-// This class listens to device motion data and dispatches it to all
-// listening controllers.
-class DeviceMotionDispatcher : public DeviceSensorEventDispatcher, public WebKit::WebDeviceMotionListener {
+class WebDeviceOrientationListener {
 public:
-    static DeviceMotionDispatcher& instance();
-
-    // Note that the returned object is owned by this class.
-    // FIXME: make the return value const, see crbug.com/233174.
-    DeviceMotionData* latestDeviceMotionData();
-
-    // This method is called every time new device motion data is available.
-    virtual void didChangeDeviceMotion(const WebKit::WebDeviceMotionData&) OVERRIDE;
-    void addDeviceMotionController(DeviceMotionController*);
-    void removeDeviceMotionController(DeviceMotionController*);
-
-private:
-    DeviceMotionDispatcher();
-    ~DeviceMotionDispatcher();
-
-    virtual void startListening() OVERRIDE;
-    virtual void stopListening() OVERRIDE;
-
-    RefPtr<DeviceMotionData> m_lastDeviceMotionData;
+    // This method is called every time new device orientation data is available.
+    virtual void didChangeDeviceOrientation(const WebDeviceOrientationData&) = 0;
 };
 
-} // namespace WebCore
+} // namespace WebKit
 
-#endif // DeviceMotionDispatcher_h
+#endif // WebDeviceOrientationListener_h

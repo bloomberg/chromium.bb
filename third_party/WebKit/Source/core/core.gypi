@@ -3690,6 +3690,7 @@
             'platform/chromium/support/WebCursorInfo.cpp',
             'platform/chromium/support/WebData.cpp',
             'platform/chromium/support/WebDeviceMotionData.cpp',
+            'platform/chromium/support/WebDeviceOrientationData.cpp',
             'platform/chromium/support/WebFloatQuad.cpp',
             'platform/chromium/support/WebHTTPBody.cpp',
             'platform/chromium/support/WebHTTPLoadInfo.cpp',

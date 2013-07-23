@@ -28,48 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeviceMotionDispatcher_h
-#define DeviceMotionDispatcher_h
+#include "config.h"
+#include "public/platform/WebDeviceOrientationData.h"
 
-#include "modules/device_orientation/DeviceMotionData.h"
-#include "modules/device_orientation/DeviceSensorEventDispatcher.h"
-#include "public/platform/WebDeviceMotionListener.h"
-#include "wtf/RefPtr.h"
+#include <string.h>
 
 namespace WebKit {
-class WebDeviceMotionData;
+
+WebDeviceOrientationData::WebDeviceOrientationData()
+{
+    // Make sure to zero out the memory so that there are no uninitialized bits.
+    // This object is used in the shared memory buffer and is memory copied by
+    // two processes. Valgrind will complain if we copy around memory that is
+    // only partially initialized.
+    memset(this, 0, sizeof(*this));
 }
 
-namespace WebCore {
-
-class DeviceMotionController;
-class DeviceMotionData;
-
-// This class listens to device motion data and dispatches it to all
-// listening controllers.
-class DeviceMotionDispatcher : public DeviceSensorEventDispatcher, public WebKit::WebDeviceMotionListener {
-public:
-    static DeviceMotionDispatcher& instance();
-
-    // Note that the returned object is owned by this class.
-    // FIXME: make the return value const, see crbug.com/233174.
-    DeviceMotionData* latestDeviceMotionData();
-
-    // This method is called every time new device motion data is available.
-    virtual void didChangeDeviceMotion(const WebKit::WebDeviceMotionData&) OVERRIDE;
-    void addDeviceMotionController(DeviceMotionController*);
-    void removeDeviceMotionController(DeviceMotionController*);
-
-private:
-    DeviceMotionDispatcher();
-    ~DeviceMotionDispatcher();
-
-    virtual void startListening() OVERRIDE;
-    virtual void stopListening() OVERRIDE;
-
-    RefPtr<DeviceMotionData> m_lastDeviceMotionData;
-};
-
-} // namespace WebCore
-
-#endif // DeviceMotionDispatcher_h
+} // namespace WebKit

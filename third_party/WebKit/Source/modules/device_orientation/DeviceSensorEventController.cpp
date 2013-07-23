@@ -24,36 +24,65 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeviceMotionController_h
-#define DeviceMotionController_h
-
-#include "core/dom/Event.h"
-#include "core/platform/Supplementable.h"
+#include "config.h"
 #include "modules/device_orientation/DeviceSensorEventController.h"
+
+#include "core/dom/Document.h"
+#include "core/page/DOMWindow.h"
 
 namespace WebCore {
 
-class DeviceMotionData;
+DeviceSensorEventController::DeviceSensorEventController(Document* document)
+    : m_document(document)
+    , m_isActive(false)
+    , m_timer(this, &DeviceSensorEventController::fireDeviceEvent)
+{
+}
 
-class DeviceMotionController : public DeviceSensorEventController, public Supplement<ScriptExecutionContext> {
+DeviceSensorEventController::~DeviceSensorEventController()
+{
+    stopUpdating();
+}
 
-public:
-    virtual ~DeviceMotionController();
+void DeviceSensorEventController::fireDeviceEvent(Timer<DeviceSensorEventController>* timer)
+{
+    ASSERT_UNUSED(timer, timer == &m_timer);
+    ASSERT(hasLastData());
 
-    static const char* supplementName();
-    static DeviceMotionController* from(Document*);
+    m_timer.stop();
+    dispatchDeviceEvent(getLastEvent());
+}
 
-    void didChangeDeviceMotion(DeviceMotionData*);
+void DeviceSensorEventController::dispatchDeviceEvent(PassRefPtr<Event> prpEvent)
+{
+    RefPtr<Event> event = prpEvent;
+    if (m_document && m_document->domWindow()
+        && !m_document->activeDOMObjectsAreSuspended()
+        && !m_document->activeDOMObjectsAreStopped())
+        m_document->domWindow()->dispatchEvent(event);
+}
 
-private:
-    explicit DeviceMotionController(Document*);
-    virtual void registerWithDispatcher() OVERRIDE;
-    virtual void unregisterWithDispatcher() OVERRIDE;
+void DeviceSensorEventController::startUpdating()
+{
+    if (m_isActive)
+        return;
 
-    virtual bool hasLastData() OVERRIDE;
-    virtual PassRefPtr<Event> getLastEvent() OVERRIDE;
-};
+    registerWithDispatcher();
+    m_isActive = true;
+
+    if (hasLastData() && !m_timer.isActive()) {
+        // Make sure to fire the device motion data as soon as possible.
+        m_timer.startOneShot(0);
+    }
+}
+
+void DeviceSensorEventController::stopUpdating()
+{
+    if (!m_isActive)
+        return;
+
+    unregisterWithDispatcher();
+    m_isActive = false;
+}
 
 } // namespace WebCore
-
-#endif // DeviceMotionController_h

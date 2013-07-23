@@ -29,55 +29,55 @@
  */
 
 #include "config.h"
-#include "DeviceMotionDispatcher.h"
+#include "modules/device_orientation/DeviceOrientationDispatcher.h"
 
-#include "modules/device_orientation/DeviceMotionController.h"
-#include "modules/device_orientation/DeviceMotionData.h"
+#include "modules/device_orientation/DeviceOrientationData.h"
+#include "modules/device_orientation/NewDeviceOrientationController.h"
 #include "public/platform/Platform.h"
 
 namespace WebCore {
 
-DeviceMotionDispatcher& DeviceMotionDispatcher::instance()
+DeviceOrientationDispatcher& DeviceOrientationDispatcher::instance()
 {
-    DEFINE_STATIC_LOCAL(DeviceMotionDispatcher, deviceMotionDispatcher, ());
-    return deviceMotionDispatcher;
+    DEFINE_STATIC_LOCAL(DeviceOrientationDispatcher, deviceOrientationDispatcher, ());
+    return deviceOrientationDispatcher;
 }
 
-DeviceMotionDispatcher::DeviceMotionDispatcher()
-{
-}
-
-DeviceMotionDispatcher::~DeviceMotionDispatcher()
+DeviceOrientationDispatcher::DeviceOrientationDispatcher()
 {
 }
 
-void DeviceMotionDispatcher::addDeviceMotionController(DeviceMotionController* controller)
+DeviceOrientationDispatcher::~DeviceOrientationDispatcher()
+{
+}
+
+void DeviceOrientationDispatcher::addDeviceOrientationController(NewDeviceOrientationController* controller)
 {
     addController(controller);
 }
 
-void DeviceMotionDispatcher::removeDeviceMotionController(DeviceMotionController* controller)
+void DeviceOrientationDispatcher::removeDeviceOrientationController(NewDeviceOrientationController* controller)
 {
     removeController(controller);
 }
 
-void DeviceMotionDispatcher::startListening()
+void DeviceOrientationDispatcher::startListening()
 {
-    WebKit::Platform::current()->setDeviceMotionListener(this);
+    WebKit::Platform::current()->setDeviceOrientationListener(this);
 }
 
-void DeviceMotionDispatcher::stopListening()
+void DeviceOrientationDispatcher::stopListening()
 {
-    WebKit::Platform::current()->setDeviceMotionListener(0);
+    WebKit::Platform::current()->setDeviceOrientationListener(0);
 }
 
-void DeviceMotionDispatcher::didChangeDeviceMotion(const WebKit::WebDeviceMotionData& motion)
+void DeviceOrientationDispatcher::didChangeDeviceOrientation(const WebKit::WebDeviceOrientationData& motion)
 {
-    m_lastDeviceMotionData = DeviceMotionData::create(motion);
+    m_lastDeviceOrientationData = DeviceOrientationData::create(motion);
     bool needsPurge = false;
     for (size_t i = 0; i < m_controllers.size(); ++i) {
         if (m_controllers[i])
-            static_cast<DeviceMotionController*>(m_controllers[i])->didChangeDeviceMotion(m_lastDeviceMotionData.get());
+            static_cast<NewDeviceOrientationController*>(m_controllers[i])->didChangeDeviceOrientation(m_lastDeviceOrientationData.get());
         else
             needsPurge = true;
     }
@@ -86,9 +86,9 @@ void DeviceMotionDispatcher::didChangeDeviceMotion(const WebKit::WebDeviceMotion
         purgeControllers();
 }
 
-DeviceMotionData* DeviceMotionDispatcher::latestDeviceMotionData()
+DeviceOrientationData* DeviceOrientationDispatcher::latestDeviceOrientationData()
 {
-    return m_lastDeviceMotionData.get();
+    return m_lastDeviceOrientationData.get();
 }
 
 } // namespace WebCore

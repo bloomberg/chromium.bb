@@ -59,6 +59,7 @@ class WebCompositorSupport;
 class WebCookieJar;
 class WebCrypto;
 class WebDeviceMotionListener;
+class WebDeviceOrientationListener;
 class WebDiscardableMemory;
 class WebFallbackThemeEngine;
 class WebFileSystem;
@@ -558,6 +559,10 @@ public:
     // Sets a Listener to listen for device motion data updates.
     // If null, the platform stops providing device motion data to the current listener.
     virtual void setDeviceMotionListener(WebKit::WebDeviceMotionListener*) { }
+
+    // Sets a Listener to listen for device orientation data updates.
+    // If null, the platform stops proving device orientation data to the current listener.
+    virtual void setDeviceOrientationListener(WebKit::WebDeviceOrientationListener*) { }
 
 
     // Quota -----------------------------------------------------------

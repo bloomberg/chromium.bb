@@ -28,67 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "DeviceMotionDispatcher.h"
+#ifndef DeviceSensorEventDispatcher_h
+#define DeviceSensorEventDispatcher_h
 
-#include "modules/device_orientation/DeviceMotionController.h"
-#include "modules/device_orientation/DeviceMotionData.h"
-#include "public/platform/Platform.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
+class DeviceSensorEventController;
 
-DeviceMotionDispatcher& DeviceMotionDispatcher::instance()
-{
-    DEFINE_STATIC_LOCAL(DeviceMotionDispatcher, deviceMotionDispatcher, ());
-    return deviceMotionDispatcher;
-}
+class DeviceSensorEventDispatcher {
+protected:
+    DeviceSensorEventDispatcher();
+    virtual ~DeviceSensorEventDispatcher();
 
-DeviceMotionDispatcher::DeviceMotionDispatcher()
-{
-}
+    void addController(DeviceSensorEventController*);
+    void removeController(DeviceSensorEventController*);
+    void purgeControllers();
 
-DeviceMotionDispatcher::~DeviceMotionDispatcher()
-{
-}
+    virtual void startListening() = 0;
+    virtual void stopListening() = 0;
 
-void DeviceMotionDispatcher::addDeviceMotionController(DeviceMotionController* controller)
-{
-    addController(controller);
-}
-
-void DeviceMotionDispatcher::removeDeviceMotionController(DeviceMotionController* controller)
-{
-    removeController(controller);
-}
-
-void DeviceMotionDispatcher::startListening()
-{
-    WebKit::Platform::current()->setDeviceMotionListener(this);
-}
-
-void DeviceMotionDispatcher::stopListening()
-{
-    WebKit::Platform::current()->setDeviceMotionListener(0);
-}
-
-void DeviceMotionDispatcher::didChangeDeviceMotion(const WebKit::WebDeviceMotionData& motion)
-{
-    m_lastDeviceMotionData = DeviceMotionData::create(motion);
-    bool needsPurge = false;
-    for (size_t i = 0; i < m_controllers.size(); ++i) {
-        if (m_controllers[i])
-            static_cast<DeviceMotionController*>(m_controllers[i])->didChangeDeviceMotion(m_lastDeviceMotionData.get());
-        else
-            needsPurge = true;
-    }
-
-    if (needsPurge)
-        purgeControllers();
-}
-
-DeviceMotionData* DeviceMotionDispatcher::latestDeviceMotionData()
-{
-    return m_lastDeviceMotionData.get();
-}
+    Vector<DeviceSensorEventController*> m_controllers;
+};
 
 } // namespace WebCore
+
+#endif // DeviceSensorEventDispatcher_h

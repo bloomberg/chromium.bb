@@ -25,61 +25,62 @@
  */
 
 #include "config.h"
-#include "modules/device_orientation/DeviceMotionController.h"
+#include "modules/device_orientation/NewDeviceOrientationController.h"
 
 #include "core/dom/Document.h"
-#include "modules/device_orientation/DeviceMotionDispatcher.h"
-#include "modules/device_orientation/DeviceMotionEvent.h"
+#include "modules/device_orientation/DeviceOrientationDispatcher.h"
+#include "modules/device_orientation/DeviceOrientationEvent.h"
 
 namespace WebCore {
 
-DeviceMotionController::DeviceMotionController(Document* document)
+NewDeviceOrientationController::NewDeviceOrientationController(Document* document)
     : DeviceSensorEventController(document)
 {
 }
 
-DeviceMotionController::~DeviceMotionController()
+NewDeviceOrientationController::~NewDeviceOrientationController()
 {
 }
 
-void DeviceMotionController::didChangeDeviceMotion(DeviceMotionData* deviceMotionData)
+void NewDeviceOrientationController::didChangeDeviceOrientation(DeviceOrientationData* deviceOrientationData)
 {
-    dispatchDeviceEvent(DeviceMotionEvent::create(eventNames().devicemotionEvent, deviceMotionData));
+    dispatchDeviceEvent(DeviceOrientationEvent::create(eventNames().deviceorientationEvent, deviceOrientationData));
 }
 
-const char* DeviceMotionController::supplementName()
+const char* NewDeviceOrientationController::supplementName()
 {
-    return "DeviceMotionController";
+    return "NewDeviceOrientationController";
 }
 
-DeviceMotionController* DeviceMotionController::from(Document* document)
+NewDeviceOrientationController* NewDeviceOrientationController::from(Document* document)
 {
-    DeviceMotionController* controller = static_cast<DeviceMotionController*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
+    NewDeviceOrientationController* controller = static_cast<NewDeviceOrientationController*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
     if (!controller) {
-        controller = new DeviceMotionController(document);
+        controller = new NewDeviceOrientationController(document);
         Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(controller));
     }
     return controller;
 }
 
-bool DeviceMotionController::hasLastData()
+bool NewDeviceOrientationController::hasLastData()
 {
-    return DeviceMotionDispatcher::instance().latestDeviceMotionData();
+    return DeviceOrientationDispatcher::instance().latestDeviceOrientationData();
 }
 
-PassRefPtr<Event> DeviceMotionController::getLastEvent()
+PassRefPtr<Event> NewDeviceOrientationController::getLastEvent()
 {
-    return DeviceMotionEvent::create(eventNames().devicemotionEvent, DeviceMotionDispatcher::instance().latestDeviceMotionData());
+    return DeviceOrientationEvent::create(eventNames().deviceorientationEvent,
+        DeviceOrientationDispatcher::instance().latestDeviceOrientationData());
 }
 
-void DeviceMotionController::registerWithDispatcher()
+void NewDeviceOrientationController::registerWithDispatcher()
 {
-    DeviceMotionDispatcher::instance().addDeviceMotionController(this);
+    DeviceOrientationDispatcher::instance().addDeviceOrientationController(this);
 }
 
-void DeviceMotionController::unregisterWithDispatcher()
+void NewDeviceOrientationController::unregisterWithDispatcher()
 {
-    DeviceMotionDispatcher::instance().removeDeviceMotionController(this);
+    DeviceOrientationDispatcher::instance().removeDeviceOrientationController(this);
 }
 
 } // namespace WebCore
