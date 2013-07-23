@@ -9,7 +9,7 @@ Example usage:
 $ tools/perf/run_measurement --browser=release \
     --output-format=csv --output=/path/to/loading_measurement_output.csv \
     loading_measurement tools/perf/page_sets/top_1m.json
-$ tools/perf/perf_tools/loading_measurement_analyzer.py \
+$ tools/perf/measurements/loading_measurement_analyzer.py \
     --num-slowest-urls=100 --rank-csv-file=/path/to/top-1m.csv \
     /path/to/loading_measurement_output.csv
 """
@@ -45,7 +45,7 @@ class LoadingMeasurementAnalyzer(object):
         for key, value in row.iteritems():
           if key in ('url', 'dom_content_loaded_time (ms)', 'load_time (ms)'):
             continue
-          if not value:
+          if not value or value == '-':
             continue
           if '_avg' in key:
             self.avgs[key].append((float(value), row['url']))
@@ -89,7 +89,8 @@ class LoadingMeasurementAnalyzer(object):
     if not self.num_slowest_urls:
       return
 
-    for key, values in self.totals.iteritems():
+    for key, values in sorted(self.totals.iteritems(), reverse=True,
+                              key=lambda i: sum_totals[i[0]]):
       print
       print 'Top %d slowest %s:' % (self.num_slowest_urls,
                                     key.replace(' (ms)', ''))
