@@ -646,9 +646,14 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
     self.resetQueue_();
   };
 
-  var onTaskSuccess = function(task) {
+  var onTaskSuccess = function() {
     if (self.maybeCancel_())
       return;
+
+    // The task at the front of the queue is completed. Pop it from the queue.
+    self.copyTasks_.shift();
+    self.maybeScheduleCloseBackgroundPage_();
+
     if (!self.copyTasks_.length) {
       // All tasks have been serviced, clean up and exit.
       self.sendProgressEvent_('SUCCESS');
@@ -662,36 +667,53 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
     // these continuous tasks.
     self.sendProgressEvent_('PROGRESS');
 
-    self.serviceNextTask_(onTaskSuccess, onTaskError);
+    self.serviceTask_(self.copyTasks_[0], onTaskSuccess, onTaskError);
   };
 
   // If the queue size is 1 after pushing our task, it was empty before,
   // so we need to kick off queue processing and dispatch BEGIN event.
 
   this.sendProgressEvent_('BEGIN');
-  this.serviceNextTask_(onTaskSuccess, onTaskError);
+  this.serviceTask_(this.copyTasks_[0], onTaskSuccess, onTaskError);
 };
 
 /**
- * Service all entries in the next copy task.
+ * Runs a given task.
+ * Note that the responsibility of this method is just dispatching to the
+ * appropriate serviceXxxTask_() method.
+ * TODO(hidehiko): Remove this method by introducing FileCopyManager.Task.run()
+ *     (crbug.com/246976).
  *
- * @param {function} successCallback On success.
- * @param {function} errorCallback On error.
+ * @param {FileCopyManager.Task} task A task to be run.
+ * @param {function()} successCallback Callback run on success.
+ * @param {function(FileCopyManager.Error)} errorCallback Callback run on error.
  * @private
  */
-FileCopyManager.prototype.serviceNextTask_ = function(
-    successCallback, errorCallback) {
+FileCopyManager.prototype.serviceTask_ = function(
+    task, successCallback, errorCallback) {
+  if (task.zip)
+    this.serviceZipTask_(task, successCallback, errorCallback);
+  else
+    this.serviceCopyTask_(task, successCallback, errorCallback);
+};
+
+/**
+ * Service all entries in the copy (and move) task.
+ * Note: this method contains also the operation of "Move" due to historical
+ * reason.
+ * TODO(hidehiko): extract "move" related code into another method.
+ *
+ * @param {FileCopyManager.Task} task A copy task to be run.
+ * @param {function()} successCallback On success.
+ * @param {function(FileCopyManager.Error)} errorCallback On error.
+ * @private
+ */
+FileCopyManager.prototype.serviceCopyTask_ = function(
+    task, successCallback, errorCallback) {
   var self = this;
-  var task = this.copyTasks_[0];
 
   var onFilesystemError = function(err) {
     errorCallback(new FileCopyManager.Error('FILESYSTEM_ERROR', err));
-  };
-
-  var onTaskComplete = function() {
-    self.copyTasks_.shift();
-    self.maybeScheduleCloseBackgroundPage_();
-    successCallback(task);
   };
 
   var deleteOriginals = function() {
@@ -701,7 +723,7 @@ FileCopyManager.prototype.serviceNextTask_ = function(
       self.sendOperationEvent_('deleted', [entry]);
       count--;
       if (!count)
-        onTaskComplete();
+        successCallback();
     };
 
     for (var i = 0; i < task.originalEntries.length; i++) {
@@ -711,14 +733,14 @@ FileCopyManager.prototype.serviceNextTask_ = function(
     }
   };
 
-  var onEntryServiced = function(targetEntry, size) {
+  var onEntryServiced = function() {
     // We should not dispatch a PROGRESS event when there is no pending items
     // in the task.
     if (task.pendingDirectories.length + task.pendingFiles.length == 0) {
       if (task.deleteAfterCopy) {
         deleteOriginals();
       } else {
-        onTaskComplete();
+        successCallback();
       }
       return;
     }
@@ -728,14 +750,11 @@ FileCopyManager.prototype.serviceNextTask_ = function(
     // We yield a few ms between copies to give the browser a chance to service
     // events (like perhaps the user clicking to cancel the copy, for example).
     setTimeout(function() {
-      self.serviceNextTaskEntry_(task, onEntryServiced, errorCallback);
+      self.serviceNextCopyTaskEntry_(task, onEntryServiced, errorCallback);
     }, 10);
   };
 
-  if (!task.zip)
-    this.serviceNextTaskEntry_(task, onEntryServiced, errorCallback);
-  else
-    this.serviceZipTask_(task, onTaskComplete, errorCallback);
+  this.serviceNextCopyTaskEntry_(task, onEntryServiced, errorCallback);
 };
 
 /**
@@ -743,11 +762,11 @@ FileCopyManager.prototype.serviceNextTask_ = function(
  * TODO(olege): Refactor this method into a separate class.
  *
  * @param {FileManager.Task} task A task.
- * @param {function} successCallback On success.
- * @param {function} errorCallback On error.
+ * @param {function()} successCallback On success.
+ * @param {function(FileCopyManager.Error)} errorCallback On error.
  * @private
  */
-FileCopyManager.prototype.serviceNextTaskEntry_ = function(
+FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
     task, successCallback, errorCallback) {
   if (this.maybeCancel_())
     return;
@@ -757,9 +776,14 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
   if (!sourceEntry) {
     // All entries in this task have been copied.
-    successCallback(null);
+    successCallback();
     return;
   }
+
+  var onError = function(reason, data) {
+    self.log_('serviceNextCopyTaskEntry error: ' + reason + ':', data);
+    errorCallback(new FileCopyManager.Error(reason, data));
+  };
 
   // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
   var sourcePath = sourceEntry.originalSourcePath;
@@ -776,7 +800,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
   var onCopyCompleteBase = function(entry, size) {
     task.markEntryComplete(entry, size);
-    successCallback(entry, size);
+    successCallback();
   };
 
   var onCopyComplete = function(entry, size) {
@@ -787,11 +811,6 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
   var onCopyProgress = function(entry, size) {
     task.updateFileCopyProgress(entry, size);
     self.sendProgressEvent_('PROGRESS');
-  };
-
-  var onError = function(reason, data) {
-    self.log_('serviceNextTaskEntry error: ' + reason + ':', data);
-    errorCallback(new FileCopyManager.Error(reason, data));
   };
 
   var onFilesystemCopyComplete = function(sourceEntry, targetEntry) {
@@ -1019,13 +1038,13 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 /**
  * Service a zip file creation task.
  *
- * @param {FileManager.Task} task A task.
- * @param {function} completeCallback On complete.
- * @param {function} errorCallback On error.
+ * @param {FileCopyManager.Task} task A zip task to be run.
+ * @param {function()} successCallback On complete.
+ * @param {function(FileCopyManager.Error)} errorCallback On error.
  * @private
  */
-FileCopyManager.prototype.serviceZipTask_ = function(task, completeCallback,
-                                                     errorCallback) {
+FileCopyManager.prototype.serviceZipTask_ = function(
+    task, successCallback, errorCallback) {
   var self = this;
   var dirURL = task.zipBaseDirEntry.toURL();
   var selectionURLs = [];
@@ -1056,7 +1075,7 @@ FileCopyManager.prototype.serviceZipTask_ = function(task, completeCallback,
         self.sendProgressEvent_('ERROR',
             new FileCopyManager.Error('FILESYSTEM_ERROR', ''));
       }
-      completeCallback(task);
+      successCallback();
     };
 
     self.sendProgressEvent_('PROGRESS');
