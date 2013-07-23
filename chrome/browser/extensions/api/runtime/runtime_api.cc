@@ -142,11 +142,6 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   if (!system)
     return;
 
-  // Special case: normally, extensions add their own lazy event listeners.
-  // However, since the extension has just been installed, it hasn't had a
-  // chance to register for events. So we register on its behalf. If the
-  // extension does not actually have a listener, the event will just be
-  // ignored.
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
   base::DictionaryValue* info = new base::DictionaryValue();
   event_args->Append(info);
@@ -159,11 +154,9 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
     info->SetString(kInstallReason, kInstallReasonInstall);
   }
   DCHECK(system->event_router());
-  system->event_router()->AddLazyEventListener(kOnInstalledEvent, extension_id);
   scoped_ptr<Event> event(new Event(kOnInstalledEvent, event_args.Pass()));
-  system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
-  system->event_router()->RemoveLazyEventListener(kOnInstalledEvent,
-                                                  extension_id);
+  system->event_router()->DispatchEventWithLazyListener(extension_id,
+                                                        event.Pass());
 }
 
 // static

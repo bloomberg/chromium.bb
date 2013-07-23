@@ -99,12 +99,8 @@ void WebAuthFlow::Start() {
         base::FilePath(FILE_PATH_LITERAL("identity_scope_approval_dialog")));
   }
 
-  system->event_router()->AddLazyEventListener(
-      "identityPrivate.onWebFlowRequest", extension_misc::kIdentityApiUiAppId);
-  system->event_router()->DispatchEventToExtension(
+  system->event_router()->DispatchEventWithLazyListener(
       extension_misc::kIdentityApiUiAppId, event.Pass());
-  system->event_router()->RemoveLazyEventListener(
-      "identityPrivate.onWebFlowRequest", extension_misc::kIdentityApiUiAppId);
 }
 
 void WebAuthFlow::DetachDelegateAndDelete() {

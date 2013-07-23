@@ -30,17 +30,10 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
                                  Profile* profile) {
   extensions::ExtensionSystem* system =
       extensions::ExtensionSystem::Get(profile);
-  // Special case: normally, extensions add their own lazy event listeners.
-  // However, since the extension might have just been enabled, it hasn't had a
-  // chance to register for events. So we register on its behalf. If the
-  // extension does not actually have a listener, the event will just be
-  // ignored (but an app that doesn't listen for the onLaunched event doesn't
-  // make sense anyway).
-  system->event_router()->AddLazyEventListener(kOnLaunched, extension_id);
   scoped_ptr<Event> event(new Event(kOnLaunched, args.Pass()));
   event->restrict_to_profile = profile;
-  system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
-  system->event_router()->RemoveLazyEventListener(kOnLaunched, extension_id);
+  system->event_router()->DispatchEventWithLazyListener(extension_id,
+                                                        event.Pass());
 }
 
 }  // anonymous namespace
