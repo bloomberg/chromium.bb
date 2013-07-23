@@ -70,6 +70,9 @@ GpuMemoryManager::GpuMemoryManager(
 #if defined(OS_ANDROID)
   bytes_default_per_client_ = 16 * 1024 * 1024;
   bytes_minimum_per_client_ = 16 * 1024 * 1024;
+#elif defined(OS_CHROMEOS)
+  bytes_default_per_client_ = 64 * 1024 * 1024;
+  bytes_minimum_per_client_ = 4 * 1024 * 1024;
 #else
   bytes_default_per_client_ = 64 * 1024 * 1024;
   bytes_minimum_per_client_ = 64 * 1024 * 1024;

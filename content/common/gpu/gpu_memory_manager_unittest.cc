@@ -456,44 +456,6 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   EXPECT_TRUE(IsAllocationHibernatedForSurfaceNo(stub4.allocation_));
 }
 
-// Test GpuMemoryAllocation memory allocation bonuses:
-// When the number of visible tabs is small, each tab should get a
-// gpu_resource_size_in_bytes allocation value that is greater than
-// GetMinimumClientAllocation(), and when the number of tabs is large,
-// each should get exactly GetMinimumClientAllocation() and not less.
-TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocation) {
-  size_t max_stubs_before_no_bonus = static_cast<size_t>(
-      GetAvailableGpuMemory() / (GetMinimumClientAllocation() + 1));
-
-  std::vector<FakeClient*> stubs;
-  for (size_t i = 0; i < max_stubs_before_no_bonus; ++i) {
-    stubs.push_back(
-        new FakeClient(&memmgr_, GenerateUniqueSurfaceId(), true));
-  }
-
-  Manage();
-  for (size_t i = 0; i < stubs.size(); ++i) {
-    EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stubs[i]->allocation_));
-    EXPECT_GT(
-        stubs[i]->allocation_.renderer_allocation.bytes_limit_when_visible,
-        GetMinimumClientAllocation());
-  }
-
-  FakeClient extra_stub(&memmgr_, GenerateUniqueSurfaceId(), true);
-
-  Manage();
-  for (size_t i = 0; i < stubs.size(); ++i) {
-    EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stubs[i]->allocation_));
-    EXPECT_EQ(
-        stubs[i]->allocation_.renderer_allocation.bytes_limit_when_visible,
-        GetMinimumClientAllocation());
-  }
-
-  for (size_t i = 0; i < max_stubs_before_no_bonus; ++i) {
-    delete stubs[i];
-  }
-}
-
 // Test GpuMemoryManager::UpdateAvailableGpuMemory functionality
 TEST_F(GpuMemoryManagerTest, TestUpdateAvailableGpuMemory) {
   FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true),
