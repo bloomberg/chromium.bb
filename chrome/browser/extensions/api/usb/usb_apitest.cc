@@ -39,9 +39,9 @@ ACTION_TEMPLATE(InvokeUsbResultCallback,
 #pragma warning(push)
 #pragma warning(disable:4373)
 #endif
-class MockUsbDevice : public UsbDevice {
+class MockUsbDeviceHandle : public UsbDeviceHandle {
  public:
-  MockUsbDevice() : UsbDevice() {}
+  MockUsbDeviceHandle() : UsbDeviceHandle() {}
 
   MOCK_METHOD1(Close, void(const base::Callback<void()>& callback));
 
@@ -64,13 +64,14 @@ class MockUsbDevice : public UsbDevice {
       const unsigned int packets, const unsigned int packet_length,
       const unsigned int timeout, const UsbTransferCallback& callback));
 
-  MOCK_METHOD1(ResetDevice, void(const base::Callback<void(bool)>& callback));
+  MOCK_METHOD1(ResetDevice, void(
+      const base::Callback<void(bool success)>& callback));
 
   MOCK_METHOD2(ListInterfaces, void(UsbConfigDescriptor* config,
       const UsbInterfaceCallback& callback));
 
  protected:
-  virtual ~MockUsbDevice() {}
+  virtual ~MockUsbDeviceHandle() {}
 };
 #if defined(OS_WIN)
 #pragma warning(pop)
@@ -84,12 +85,12 @@ class UsbApiTest : public ExtensionApiTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    mock_device_ = new MockUsbDevice();
+    mock_device_ = new MockUsbDeviceHandle();
     extensions::UsbFindDevicesFunction::SetDeviceForTest(mock_device_.get());
   }
 
  protected:
-  scoped_refptr<MockUsbDevice> mock_device_;
+  scoped_refptr<MockUsbDeviceHandle> mock_device_;
 };
 
 }  // namespace
@@ -116,8 +117,8 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
   EXPECT_CALL(*mock_device_.get(),
               ControlTransfer(USB_DIRECTION_OUTBOUND,
-                              UsbDevice::STANDARD,
-                              UsbDevice::DEVICE,
+                              UsbDeviceHandle::STANDARD,
+                              UsbDeviceHandle::DEVICE,
                               1,
                               2,
                               3,

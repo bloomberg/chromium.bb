@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_USB_USB_DEVICE_H_
-#define CHROME_BROWSER_USB_USB_DEVICE_H_
+#ifndef CHROME_BROWSER_USB_USB_DEVICE_HANDLE_H_
+#define CHROME_BROWSER_USB_USB_DEVICE_HANDLE_H_
 
 #include <map>
 #include <vector>
@@ -43,12 +43,12 @@ enum UsbTransferStatus {
 
 typedef base::Callback<void(UsbTransferStatus, scoped_refptr<net::IOBuffer>,
     size_t)> UsbTransferCallback;
-typedef base::Callback<void(bool)> UsbInterfaceCallback;
+typedef base::Callback<void(bool success)> UsbInterfaceCallback;
 
 // A UsbDevice wraps the platform's underlying representation of what a USB
 // device actually is, and provides accessors for performing many of the
 // standard USB operations.
-class UsbDevice : public base::RefCounted<UsbDevice> {
+class UsbDeviceHandle : public base::RefCounted<UsbDeviceHandle> {
  public:
   enum TransferRequestType { STANDARD, CLASS, VENDOR, RESERVED };
   enum TransferRecipient { DEVICE, INTERFACE, ENDPOINT, OTHER };
@@ -56,7 +56,7 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
   // Usually you will not want to directly create a UsbDevice, favoring to let
   // the UsbService take care of the logistics of getting a platform device
   // handle and handling events for it.
-  UsbDevice(UsbService* service, PlatformUsbDeviceHandle handle);
+  UsbDeviceHandle(UsbService* service, PlatformUsbDeviceHandle handle);
 
   PlatformUsbDeviceHandle handle() { return handle_; }
 
@@ -112,7 +112,7 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
                                    const unsigned int timeout,
                                    const UsbTransferCallback& callback);
 
-  virtual void ResetDevice(const base::Callback<void(bool)>& callback);
+  virtual void ResetDevice(const base::Callback<void(bool success)>& callback);
 
   // Normal code should not call this function. It is called by the platform's
   // callback mechanism in such a way that it cannot be made private. Invokes
@@ -122,10 +122,10 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
 
  protected:
   // This constructor variant is for use in testing only.
-  UsbDevice();
+  UsbDeviceHandle();
 
-  friend class base::RefCounted<UsbDevice>;
-  virtual ~UsbDevice();
+  friend class base::RefCounted<UsbDeviceHandle>;
+  virtual ~UsbDeviceHandle();
 
  private:
   struct Transfer {
@@ -163,7 +163,7 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
   base::Lock lock_;
   std::map<PlatformUsbTransferHandle, Transfer> transfers_;
 
-  DISALLOW_COPY_AND_ASSIGN(UsbDevice);
+  DISALLOW_COPY_AND_ASSIGN(UsbDeviceHandle);
 };
 
-#endif  // CHROME_BROWSER_USB_USB_DEVICE_H_
+#endif  // CHROME_BROWSER_USB_USB_DEVICE_HANDLE_H_

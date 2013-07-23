@@ -9,7 +9,7 @@
 #include <queue>
 #include <vector>
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/usb/usb_device.h"
+#include "chrome/browser/usb/usb_device_handle.h"
 
 namespace base {
 class MessageLoop;
@@ -72,7 +72,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
                         const AndroidUsbDevicesCallback& callback);
 
   AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
-                   scoped_refptr<UsbDevice> device,
+                   scoped_refptr<UsbDeviceHandle> device,
                    const std::string& serial,
                    int inbound_address,
                    int outbound_address,
@@ -127,7 +127,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
 
   // Device info
-  scoped_refptr<UsbDevice> usb_device_;
+  scoped_refptr<UsbDeviceHandle> usb_device_;
   std::string serial_;
   int inbound_address_;
   int outbound_address_;

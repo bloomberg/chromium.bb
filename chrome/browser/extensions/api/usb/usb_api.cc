@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/usb/usb_device_resource.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/usb/usb_device_handle.h"
 #include "chrome/browser/usb/usb_service.h"
 #include "chrome/browser/usb/usb_service_factory.h"
 #include "chrome/common/extensions/api/usb.h"
@@ -89,7 +90,7 @@ static const size_t kMaxTransferLength = 100 * 1024 * 1024;
 static const int kMaxPackets = 4 * 1024 * 1024;
 static const int kMaxPacketLength = 64 * 1024;
 
-static UsbDevice* device_for_test_ = NULL;
+static UsbDeviceHandle* device_for_test_ = NULL;
 
 static bool ConvertDirectionToApi(const UsbEndpointDirection& input,
                                   Direction* output) {
@@ -184,19 +185,19 @@ static bool ConvertDirection(const Direction& input,
 }
 
 static bool ConvertRequestType(const RequestType& input,
-                               UsbDevice::TransferRequestType* output) {
+                               UsbDeviceHandle::TransferRequestType* output) {
   switch (input) {
     case usb::REQUEST_TYPE_STANDARD:
-      *output = UsbDevice::STANDARD;
+      *output = UsbDeviceHandle::STANDARD;
       return true;
     case usb::REQUEST_TYPE_CLASS:
-      *output = UsbDevice::CLASS;
+      *output = UsbDeviceHandle::CLASS;
       return true;
     case usb::REQUEST_TYPE_VENDOR:
-      *output = UsbDevice::VENDOR;
+      *output = UsbDeviceHandle::VENDOR;
       return true;
     case usb::REQUEST_TYPE_RESERVED:
-      *output = UsbDevice::RESERVED;
+      *output = UsbDeviceHandle::RESERVED;
       return true;
     default:
       NOTREACHED();
@@ -205,19 +206,19 @@ static bool ConvertRequestType(const RequestType& input,
 }
 
 static bool ConvertRecipient(const Recipient& input,
-                             UsbDevice::TransferRecipient* output) {
+                             UsbDeviceHandle::TransferRecipient* output) {
   switch (input) {
     case usb::RECIPIENT_DEVICE:
-      *output = UsbDevice::DEVICE;
+      *output = UsbDeviceHandle::DEVICE;
       return true;
     case usb::RECIPIENT_INTERFACE:
-      *output = UsbDevice::INTERFACE;
+      *output = UsbDeviceHandle::INTERFACE;
       return true;
     case usb::RECIPIENT_ENDPOINT:
-      *output = UsbDevice::ENDPOINT;
+      *output = UsbDeviceHandle::ENDPOINT;
       return true;
     case usb::RECIPIENT_OTHER:
-      *output = UsbDevice::OTHER;
+      *output = UsbDeviceHandle::OTHER;
       return true;
     default:
       NOTREACHED();
@@ -383,7 +384,7 @@ bool UsbAsyncApiTransferFunction::ConvertDirectionSafely(
 }
 
 bool UsbAsyncApiTransferFunction::ConvertRequestTypeSafely(
-    const RequestType& input, UsbDevice::TransferRequestType* output) {
+    const RequestType& input, UsbDeviceHandle::TransferRequestType* output) {
   const bool converted = ConvertRequestType(input, output);
   if (!converted)
     SetError(kErrorConvertRequestType);
@@ -391,7 +392,7 @@ bool UsbAsyncApiTransferFunction::ConvertRequestTypeSafely(
 }
 
 bool UsbAsyncApiTransferFunction::ConvertRecipientSafely(
-    const Recipient& input, UsbDevice::TransferRecipient* output) {
+    const Recipient& input, UsbDeviceHandle::TransferRecipient* output) {
   const bool converted = ConvertRecipient(input, output);
   if (!converted)
     SetError(kErrorConvertRecipient);
@@ -402,7 +403,7 @@ UsbFindDevicesFunction::UsbFindDevicesFunction() {}
 
 UsbFindDevicesFunction::~UsbFindDevicesFunction() {}
 
-void UsbFindDevicesFunction::SetDeviceForTest(UsbDevice* device) {
+void UsbFindDevicesFunction::SetDeviceForTest(UsbDeviceHandle* device) {
   device_for_test_ = device;
 }
 
@@ -454,7 +455,7 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
 
 void UsbFindDevicesFunction::OnCompleted() {
   for (size_t i = 0; i < devices_.size(); ++i) {
-    UsbDevice* const device = devices_[i].get();
+    UsbDeviceHandle* const device = devices_[i].get();
     UsbDeviceResource* const resource =
         new UsbDeviceResource(extension_->id(), device);
 
@@ -729,8 +730,8 @@ void UsbControlTransferFunction::AsyncWorkStart() {
   const ControlTransferInfo& transfer = parameters_->transfer_info;
 
   UsbEndpointDirection direction;
-  UsbDevice::TransferRequestType request_type;
-  UsbDevice::TransferRecipient recipient;
+  UsbDeviceHandle::TransferRequestType request_type;
+  UsbDeviceHandle::TransferRecipient recipient;
   size_t size = 0;
 
   if (!ConvertDirectionSafely(transfer.direction, &direction) ||

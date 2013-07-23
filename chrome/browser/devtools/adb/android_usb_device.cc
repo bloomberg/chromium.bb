@@ -38,7 +38,7 @@ const uint32 kVersion = 0x01000000;
 
 static const char kHostConnectMessage[] = "host::";
 
-typedef std::vector<scoped_refptr<UsbDevice> > UsbDevices;
+typedef std::vector<scoped_refptr<UsbDeviceHandle> > UsbDevices;
 
 base::LazyInstance<AndroidUsbDevices>::Leaky g_devices =
     LAZY_INSTANCE_INITIALIZER;
@@ -94,7 +94,7 @@ static std::string ReadSerialNumSync(libusb_device_handle* handle) {
 }
 
 static void InterfaceClaimed(crypto::RSAPrivateKey* rsa_key,
-                             scoped_refptr<UsbDevice> usb_device,
+                             scoped_refptr<UsbDeviceHandle> usb_device,
                              int inbound_address,
                              int outbound_address,
                              int zero_mask,
@@ -112,7 +112,7 @@ static void InterfaceClaimed(crypto::RSAPrivateKey* rsa_key,
 
 static void ClaimInterface(
     crypto::RSAPrivateKey* rsa_key,
-    scoped_refptr<UsbDevice> usb_device,
+    scoped_refptr<UsbDeviceHandle> usb_device,
     const UsbInterface* interface,
     AndroidUsbDevices* devices) {
   if (interface->GetNumAltSettings() == 0)
@@ -155,7 +155,7 @@ static void ClaimInterface(
 
 static void InterfacesListed(
     crypto::RSAPrivateKey* rsa_key,
-    scoped_refptr<UsbDevice> usb_device,
+    scoped_refptr<UsbDeviceHandle> usb_device,
     scoped_refptr<UsbConfigDescriptor> config,
     AndroidUsbDevices* devices,
     bool success) {
@@ -231,12 +231,12 @@ void AndroidUsbDevice::Enumerate(Profile* profile,
 
   // GC Android devices with no actual usb device.
   AndroidUsbDevices::iterator it = g_devices.Get().begin();
-  std::set<UsbDevice*> claimed_devices;
+  std::set<UsbDeviceHandle*> claimed_devices;
   while (it != g_devices.Get().end()) {
     bool found_device = false;
     for (UsbDevices::iterator it2 = usb_devices.begin();
          it2 != usb_devices.end() && !found_device; ++it2) {
-      UsbDevice* usb_device = it2->get();
+      UsbDeviceHandle* usb_device = it2->get();
       AndroidUsbDevice* device = it->get();
       if (usb_device == device->usb_device_) {
         found_device = true;
@@ -253,7 +253,7 @@ void AndroidUsbDevice::Enumerate(Profile* profile,
   // Add new devices.
   for (UsbDevices::iterator it = usb_devices.begin(); it != usb_devices.end();
        ++it) {
-    scoped_refptr<UsbDevice> usb_device = *it;
+    scoped_refptr<UsbDeviceHandle> usb_device = *it;
     if (claimed_devices.find(usb_device.get()) != claimed_devices.end())
       continue;
     scoped_refptr<UsbConfigDescriptor> config = new UsbConfigDescriptor();
@@ -266,7 +266,7 @@ void AndroidUsbDevice::Enumerate(Profile* profile,
 }
 
 AndroidUsbDevice::AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
-                                   scoped_refptr<UsbDevice> usb_device,
+                                   scoped_refptr<UsbDeviceHandle> usb_device,
                                    const std::string& serial,
                                    int inbound_address,
                                    int outbound_address,

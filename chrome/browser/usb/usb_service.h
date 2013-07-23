@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/usb/usb_device.h"
+#include "chrome/browser/usb/usb_device_handle.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
@@ -37,16 +37,16 @@ class UsbService : public BrowserContextKeyedService {
   void FindDevices(const uint16 vendor_id,
                    const uint16 product_id,
                    int interface_id,
-                   std::vector<scoped_refptr<UsbDevice> >* devices,
+                   std::vector<scoped_refptr<UsbDeviceHandle> >* devices,
                    const base::Callback<void()>& callback);
 
   // Find all of the devices attached to the system, inserting them into
   // |devices|. Clears |devices| before use.
-  void EnumerateDevices(std::vector<scoped_refptr<UsbDevice> >* devices);
+  void EnumerateDevices(std::vector<scoped_refptr<UsbDeviceHandle> >* devices);
 
   // This function should not be called by normal code. It is invoked by a
   // UsbDevice's Close function and disposes of the associated platform handle.
-  void CloseDevice(scoped_refptr<UsbDevice> device);
+  void CloseDevice(scoped_refptr<UsbDeviceHandle> device);
 
  private:
   // RefCountedPlatformUsbDevice takes care of managing the underlying reference
@@ -78,7 +78,7 @@ class UsbService : public BrowserContextKeyedService {
   // FindDevices.
   void FindDevicesImpl(const uint16 vendor_id,
                        const uint16 product_id,
-                       std::vector<scoped_refptr<UsbDevice> >* devices,
+                       std::vector<scoped_refptr<UsbDeviceHandle> >* devices,
                        const base::Callback<void()>& callback,
                        bool success);
 
@@ -88,7 +88,7 @@ class UsbService : public BrowserContextKeyedService {
   // If a UsbDevice wrapper corresponding to |device| has already been created,
   // returns it. Otherwise, opens the device, creates a wrapper, and associates
   // the wrapper with the device internally.
-  UsbDevice* LookupOrCreateDevice(PlatformUsbDevice device);
+  UsbDeviceHandle* LookupOrCreateDevice(PlatformUsbDevice device);
 
   PlatformUsbContext context_;
   UsbEventHandler* event_handler_;
@@ -96,7 +96,8 @@ class UsbService : public BrowserContextKeyedService {
   // The devices_ map contains scoped_refptrs to all open devices, indicated by
   // their vendor and product id. This allows for reusing an open device without
   // creating another platform handle for it.
-  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDevice> > DeviceMap;
+  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDeviceHandle> >
+      DeviceMap;
   DeviceMap devices_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbService);

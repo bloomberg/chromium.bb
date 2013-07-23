@@ -6,15 +6,16 @@
 #define CHROME_BROWSER_EXTENSIONS_API_USB_USB_API_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
-#include "chrome/browser/usb/usb_device.h"
+#include "chrome/browser/usb/usb_device_handle.h"
 #include "chrome/common/extensions/api/usb.h"
 #include "net/base/io_buffer.h"
 
-class UsbDevice;
+class UsbDeviceHandle;
 
 namespace extensions {
 
@@ -46,9 +47,9 @@ class UsbAsyncApiTransferFunction : public UsbAsyncApiFunction {
   bool ConvertDirectionSafely(const extensions::api::usb::Direction& input,
                               UsbEndpointDirection* output);
   bool ConvertRequestTypeSafely(const extensions::api::usb::RequestType& input,
-                              UsbDevice::TransferRequestType* output);
+                              UsbDeviceHandle::TransferRequestType* output);
   bool ConvertRecipientSafely(const extensions::api::usb::Recipient& input,
-                              UsbDevice::TransferRecipient* output);
+                              UsbDeviceHandle::TransferRecipient* output);
 
   void OnCompleted(UsbTransferStatus status,
                    scoped_refptr<net::IOBuffer> data,
@@ -61,7 +62,7 @@ class UsbFindDevicesFunction : public UsbAsyncApiFunction {
 
   UsbFindDevicesFunction();
 
-  static void SetDeviceForTest(UsbDevice* device);
+  static void SetDeviceForTest(UsbDeviceHandle* device);
 
  protected:
   virtual ~UsbFindDevicesFunction();
@@ -73,7 +74,7 @@ class UsbFindDevicesFunction : public UsbAsyncApiFunction {
   void OnCompleted();
 
   scoped_ptr<base::ListValue> result_;
-  std::vector<scoped_refptr<UsbDevice> > devices_;
+  std::vector<scoped_refptr<UsbDeviceHandle> > devices_;
   scoped_ptr<extensions::api::usb::FindDevices::Params> parameters_;
 };
 

@@ -1,9 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/usb/usb_device.h"
+#include "chrome/browser/usb/usb_device_handle.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/stl_util.h"
@@ -28,36 +29,36 @@ static uint8 ConvertTransferDirection(
 }
 
 static uint8 CreateRequestType(const UsbEndpointDirection direction,
-    const UsbDevice::TransferRequestType request_type,
-    const UsbDevice::TransferRecipient recipient) {
+    const UsbDeviceHandle::TransferRequestType request_type,
+    const UsbDeviceHandle::TransferRecipient recipient) {
   uint8 result = ConvertTransferDirection(direction);
 
   switch (request_type) {
-    case UsbDevice::STANDARD:
+    case UsbDeviceHandle::STANDARD:
       result |= LIBUSB_REQUEST_TYPE_STANDARD;
       break;
-    case UsbDevice::CLASS:
+    case UsbDeviceHandle::CLASS:
       result |= LIBUSB_REQUEST_TYPE_CLASS;
       break;
-    case UsbDevice::VENDOR:
+    case UsbDeviceHandle::VENDOR:
       result |= LIBUSB_REQUEST_TYPE_VENDOR;
       break;
-    case UsbDevice::RESERVED:
+    case UsbDeviceHandle::RESERVED:
       result |= LIBUSB_REQUEST_TYPE_RESERVED;
       break;
   }
 
   switch (recipient) {
-    case UsbDevice::DEVICE:
+    case UsbDeviceHandle::DEVICE:
       result |= LIBUSB_RECIPIENT_DEVICE;
       break;
-    case UsbDevice::INTERFACE:
+    case UsbDeviceHandle::INTERFACE:
       result |= LIBUSB_RECIPIENT_INTERFACE;
       break;
-    case UsbDevice::ENDPOINT:
+    case UsbDeviceHandle::ENDPOINT:
       result |= LIBUSB_RECIPIENT_ENDPOINT;
       break;
-    case UsbDevice::OTHER:
+    case UsbDeviceHandle::OTHER:
       result |= LIBUSB_RECIPIENT_OTHER;
       break;
   }
@@ -90,33 +91,36 @@ static UsbTransferStatus ConvertTransferStatus(
 
 static void LIBUSB_CALL HandleTransferCompletion(
     struct libusb_transfer* transfer) {
-  UsbDevice* const device = reinterpret_cast<UsbDevice*>(transfer->user_data);
+  UsbDeviceHandle* const device =
+      reinterpret_cast<UsbDeviceHandle*>(transfer->user_data);
   device->TransferComplete(transfer);
 }
 
 }  // namespace
 
-UsbDevice::Transfer::Transfer() : length(0) {}
+UsbDeviceHandle::Transfer::Transfer() : length(0) {}
 
-UsbDevice::Transfer::~Transfer() {}
+UsbDeviceHandle::Transfer::~Transfer() {}
 
-UsbDevice::UsbDevice(UsbService* service, PlatformUsbDeviceHandle handle)
+UsbDeviceHandle::UsbDeviceHandle(
+    UsbService* service,
+    PlatformUsbDeviceHandle handle)
     : service_(service), handle_(handle) {
   DCHECK(handle) << "Cannot create device with NULL handle.";
 }
 
-UsbDevice::UsbDevice() : service_(NULL), handle_(NULL) {}
+UsbDeviceHandle::UsbDeviceHandle() : service_(NULL), handle_(NULL) {}
 
-UsbDevice::~UsbDevice() {}
+UsbDeviceHandle::~UsbDeviceHandle() {}
 
-void UsbDevice::Close(const base::Callback<void()>& callback) {
+void UsbDeviceHandle::Close(const base::Callback<void()>& callback) {
   CheckDevice();
   service_->CloseDevice(this);
   handle_ = NULL;
   callback.Run();
 }
 
-void UsbDevice::TransferComplete(PlatformUsbTransferHandle handle) {
+void UsbDeviceHandle::TransferComplete(PlatformUsbTransferHandle handle) {
   base::AutoLock lock(lock_);
 
   // TODO(gdk): Handle device disconnect.
@@ -196,7 +200,7 @@ void UsbDevice::TransferComplete(PlatformUsbTransferHandle handle) {
   libusb_free_transfer(handle);
 }
 
-void UsbDevice::ListInterfaces(UsbConfigDescriptor* config,
+void UsbDeviceHandle::ListInterfaces(UsbConfigDescriptor* config,
                                const UsbInterfaceCallback& callback) {
   CheckDevice();
 
@@ -211,7 +215,7 @@ void UsbDevice::ListInterfaces(UsbConfigDescriptor* config,
   callback.Run(list_result == 0);
 }
 
-void UsbDevice::ClaimInterface(const int interface_number,
+void UsbDeviceHandle::ClaimInterface(const int interface_number,
                                const UsbInterfaceCallback& callback) {
   CheckDevice();
 
@@ -219,7 +223,7 @@ void UsbDevice::ClaimInterface(const int interface_number,
   callback.Run(claim_result == 0);
 }
 
-void UsbDevice::ReleaseInterface(const int interface_number,
+void UsbDeviceHandle::ReleaseInterface(const int interface_number,
                                  const UsbInterfaceCallback& callback) {
   CheckDevice();
 
@@ -228,7 +232,7 @@ void UsbDevice::ReleaseInterface(const int interface_number,
   callback.Run(release_result == 0);
 }
 
-void UsbDevice::SetInterfaceAlternateSetting(
+void UsbDeviceHandle::SetInterfaceAlternateSetting(
     const int interface_number,
     const int alternate_setting,
     const UsbInterfaceCallback& callback) {
@@ -240,7 +244,7 @@ void UsbDevice::SetInterfaceAlternateSetting(
   callback.Run(setting_result == 0);
 }
 
-void UsbDevice::ControlTransfer(const UsbEndpointDirection direction,
+void UsbDeviceHandle::ControlTransfer(const UsbEndpointDirection direction,
     const TransferRequestType request_type, const TransferRecipient recipient,
     const uint8 request, const uint16 value, const uint16 index,
     net::IOBuffer* buffer, const size_t length, const unsigned int timeout,
@@ -267,7 +271,7 @@ void UsbDevice::ControlTransfer(const UsbEndpointDirection direction,
                  callback);
 }
 
-void UsbDevice::BulkTransfer(const UsbEndpointDirection direction,
+void UsbDeviceHandle::BulkTransfer(const UsbEndpointDirection direction,
     const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
     const unsigned int timeout, const UsbTransferCallback& callback) {
   CheckDevice();
@@ -280,7 +284,7 @@ void UsbDevice::BulkTransfer(const UsbEndpointDirection direction,
   SubmitTransfer(transfer, USB_TRANSFER_BULK, buffer, length, callback);
 }
 
-void UsbDevice::InterruptTransfer(const UsbEndpointDirection direction,
+void UsbDeviceHandle::InterruptTransfer(const UsbEndpointDirection direction,
     const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
     const unsigned int timeout, const UsbTransferCallback& callback) {
   CheckDevice();
@@ -293,7 +297,7 @@ void UsbDevice::InterruptTransfer(const UsbEndpointDirection direction,
   SubmitTransfer(transfer, USB_TRANSFER_INTERRUPT, buffer, length, callback);
 }
 
-void UsbDevice::IsochronousTransfer(const UsbEndpointDirection direction,
+void UsbDeviceHandle::IsochronousTransfer(const UsbEndpointDirection direction,
     const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
     const unsigned int packets, const unsigned int packet_length,
     const unsigned int timeout, const UsbTransferCallback& callback) {
@@ -313,16 +317,16 @@ void UsbDevice::IsochronousTransfer(const UsbEndpointDirection direction,
   SubmitTransfer(transfer, USB_TRANSFER_ISOCHRONOUS, buffer, length, callback);
 }
 
-void UsbDevice::ResetDevice(const base::Callback<void(bool)>& callback) {
+void UsbDeviceHandle::ResetDevice(const base::Callback<void(bool)>& callback) {
   CheckDevice();
   callback.Run(libusb_reset_device(handle_) == 0);
 }
 
-void UsbDevice::CheckDevice() {
+void UsbDeviceHandle::CheckDevice() {
   DCHECK(handle_) << "Device is already closed.";
 }
 
-void UsbDevice::SubmitTransfer(PlatformUsbTransferHandle handle,
+void UsbDeviceHandle::SubmitTransfer(PlatformUsbTransferHandle handle,
                                UsbTransferType transfer_type,
                                net::IOBuffer* buffer,
                                const size_t length,
