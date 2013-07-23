@@ -1276,6 +1276,8 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     m_frame->loader()->resetMultipleFormSubmissionProtection();
     
     cancelFakeMouseMoveEvent();
+    if (m_eventHandlerWillResetCapturingMouseEventsNode)
+        m_capturingMouseEventsNode = 0;
     m_mousePressed = true;
     m_capturesDragging = true;
     setLastKnownMousePosition(mouseEvent);
@@ -1870,7 +1872,7 @@ MouseEventWithHitTestResults EventHandler::prepareMouseEvent(const HitTestReques
 {
     ASSERT(m_frame);
     ASSERT(m_frame->document());
-    
+
     return m_frame->document()->prepareMouseEvent(request, documentPointForWindowPoint(m_frame, mev.position()), mev);
 }
 
