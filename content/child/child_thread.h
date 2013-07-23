@@ -50,7 +50,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // has a thread that post tasks to ChildProcess::main_thread(), that thread
   // should be joined in Shutdown().
   virtual ~ChildThread();
-  virtual void Shutdown() = 0;
+  virtual void Shutdown();
 
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;

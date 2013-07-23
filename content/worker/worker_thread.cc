@@ -58,6 +58,8 @@ WorkerThread::~WorkerThread() {
 }
 
 void WorkerThread::Shutdown() {
+  ChildThread::Shutdown();
+
   // Shutdown in reverse of the initialization order.
   channel()->RemoveFilter(indexed_db_message_filter_.get());
   indexed_db_message_filter_ = NULL;

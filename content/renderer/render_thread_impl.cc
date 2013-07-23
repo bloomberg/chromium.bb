@@ -433,6 +433,8 @@ void RenderThreadImpl::Shutdown() {
   FOR_EACH_OBSERVER(
       RenderProcessObserver, observers_, OnRenderProcessShutdown());
 
+  ChildThread::Shutdown();
+
   // Wait for all databases to be closed.
   if (web_database_observer_impl_)
     web_database_observer_impl_->WaitForAllDatabasesToClose();

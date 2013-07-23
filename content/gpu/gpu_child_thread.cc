@@ -77,6 +77,7 @@ GpuChildThread::~GpuChildThread() {
 }
 
 void GpuChildThread::Shutdown() {
+  ChildThread::Shutdown();
   logging::SetLogMessageHandler(NULL);
 }
 

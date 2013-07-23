@@ -52,6 +52,8 @@ UtilityThreadImpl::~UtilityThreadImpl() {
 }
 
 void UtilityThreadImpl::Shutdown() {
+  ChildThread::Shutdown();
+
   if (!single_process_)
     WebKit::shutdown();
 }

@@ -139,6 +139,8 @@ void PluginThread::SetForcefullyTerminatePluginProcess() {
 }
 
 void PluginThread::Shutdown() {
+  ChildThread::Shutdown();
+
   if (preloaded_plugin_module_) {
     base::UnloadNativeLibrary(preloaded_plugin_module_);
     preloaded_plugin_module_ = NULL;

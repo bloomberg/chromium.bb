@@ -195,6 +195,12 @@ ChildThread::~ChildThread() {
   g_lazy_tls.Pointer()->Set(NULL);
 }
 
+void ChildThread::Shutdown() {
+  // Delete objects that hold references to blink so derived classes can
+  // safely shutdown blink in their Shutdown implementation.
+  file_system_dispatcher_.reset();
+}
+
 void ChildThread::OnChannelConnected(int32 peer_pid) {
   channel_connected_factory_.InvalidateWeakPtrs();
 }
