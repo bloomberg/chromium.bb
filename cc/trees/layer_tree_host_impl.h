@@ -537,7 +537,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool need_to_update_visible_tiles_before_draw_;
 
   // Optional callback to notify of new tree activations.
-  base::Closure tree_activiation_callback_;
+  base::Closure tree_activation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };
