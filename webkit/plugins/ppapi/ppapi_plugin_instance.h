@@ -511,6 +511,11 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // This is not inlined so as to avoid an unnecessary header include of v8.h.
   v8::Isolate* GetIsolate() const;
 
+  // Returns a reference to a file with the given path.
+  // The returned object will have a refcount of 0 (just like "new").
+  PP_Resource CreateExternalFileReference(
+      const base::FilePath& external_file_path);
+
  private:
   friend class PpapiUnittest;
 

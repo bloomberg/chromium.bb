@@ -85,6 +85,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
+#include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
@@ -2537,6 +2538,14 @@ NPP PluginInstance::instanceNPP() {
 
 v8::Isolate* PluginInstance::GetIsolate() const {
   return isolate_;
+}
+
+PP_Resource PluginInstance::CreateExternalFileReference(
+    const base::FilePath& external_file_path) {
+  webkit::ppapi::PPB_FileRef_Impl* ref =
+      webkit::ppapi::PPB_FileRef_Impl::CreateExternal(
+          pp_instance(), external_file_path, "");
+  return ref->GetReference();
 }
 
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {

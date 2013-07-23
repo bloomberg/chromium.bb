@@ -14,7 +14,6 @@
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 
 namespace chrome {
 
@@ -58,12 +57,10 @@ int32_t PepperFlashDRMRendererHost::OnGetVoucherFile(
   base::FilePath voucher_file = plugin_dir.Append(
       base::FilePath(kVoucherFilename));
 
-  webkit::ppapi::PPB_FileRef_Impl* ref =
-      webkit::ppapi::PPB_FileRef_Impl::CreateExternal(
-          pp_instance(), voucher_file, "");
   ppapi::PPB_FileRef_CreateInfo create_info;
-  ppapi::proxy::PPB_FileRef_Proxy::SerializeFileRef(ref->GetReference(),
-                                                    &create_info);
+  ppapi::proxy::PPB_FileRef_Proxy::SerializeFileRef(
+      plugin_instance->CreateExternalFileReference(voucher_file),
+      &create_info);
   context->reply_msg =
       PpapiPluginMsg_FlashDRM_GetVoucherFileReply(create_info);
   return PP_OK;
