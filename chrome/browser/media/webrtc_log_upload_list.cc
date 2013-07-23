@@ -5,6 +5,7 @@
 #include "chrome/browser/media/webrtc_log_upload_list.h"
 
 #include "base/files/file_path.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 
@@ -23,6 +24,8 @@ WebRtcLogUploadList* WebRtcLogUploadList::Create(Delegate* delegate) {
 
 WebRtcLogUploadList::WebRtcLogUploadList(Delegate* delegate,
                                          const base::FilePath& upload_log_path)
-    : UploadList(delegate, upload_log_path) {}
+    : base::UploadList(delegate,
+                       upload_log_path,
+                       base::MessageLoopProxy::current()) {}
 
 WebRtcLogUploadList::~WebRtcLogUploadList() {}

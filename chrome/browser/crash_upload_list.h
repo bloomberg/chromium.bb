@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CRASH_UPLOAD_LIST_H_
 #define CHROME_BROWSER_CRASH_UPLOAD_LIST_H_
 
-#include "chrome/browser/upload_list.h"
+#include "base/upload_list.h"
 
 // An upload list manager for crash reports from breakpad.
-class CrashUploadList : public UploadList {
+class CrashUploadList : public base::UploadList {
  public:
   // Static factory method that creates the platform-specific implementation
   // of the crash upload list with the given callback delegate.

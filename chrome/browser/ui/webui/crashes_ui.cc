@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -104,7 +105,8 @@ CrashesDOMHandler::~CrashesDOMHandler() {
 }
 
 void CrashesDOMHandler::RegisterMessages() {
-  upload_list_->LoadUploadListAsynchronously();
+  upload_list_->LoadUploadListAsynchronously(
+      content::BrowserThread::GetBlockingPool());
 
   web_ui()->RegisterMessageCallback("requestCrashList",
       base::Bind(&CrashesDOMHandler::HandleRequestCrashes,
