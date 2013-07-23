@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/plugin_service.h"
@@ -143,8 +142,7 @@ FlashDOMHandler::FlashDOMHandler()
       has_plugin_info_(false) {
   // Request Crash data asynchronously.
   upload_list_ = CrashUploadList::Create(this);
-  upload_list_->LoadUploadListAsynchronously(
-      content::BrowserThread::GetBlockingPool());
+  upload_list_->LoadUploadListAsynchronously();
 
   // Watch for changes in GPUInfo.
   GpuDataManager::GetInstance()->AddObserver(this);

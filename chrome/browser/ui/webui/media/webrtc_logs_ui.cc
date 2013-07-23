@@ -19,7 +19,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -113,8 +112,7 @@ WebRtcLogsDOMHandler::~WebRtcLogsDOMHandler() {
 }
 
 void WebRtcLogsDOMHandler::RegisterMessages() {
-  upload_list_->LoadUploadListAsynchronously(
-      content::BrowserThread::GetBlockingPool());
+  upload_list_->LoadUploadListAsynchronously();
 
   web_ui()->RegisterMessageCallback("requestWebRtcLogsList",
       base::Bind(&WebRtcLogsDOMHandler::HandleRequestWebRtcLogs,

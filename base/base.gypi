@@ -586,8 +586,6 @@
           'tracking_info.cc',
           'tracking_info.h',
           'tuple.h',
-          'upload_list.cc',
-          'upload_list.h',
           'values.cc',
           'values.h',
           'value_conversions.cc',

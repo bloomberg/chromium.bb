@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_LOG_UPLOAD_LIST_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_LOG_UPLOAD_LIST_H_
 
-#include "base/upload_list.h"
+#include "chrome/browser/upload_list.h"
 
 // Loads and parses a text file list of uploaded WebRTC logs.
-class WebRtcLogUploadList : public base::UploadList {
+class WebRtcLogUploadList : public UploadList {
  public:
   // Creates the WebRTC log upload list with the given callback delegate.
   static WebRtcLogUploadList* Create(Delegate* delegate);

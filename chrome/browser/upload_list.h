@@ -2,22 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_UPLOAD_LIST_H_
-#define BASE_UPLOAD_LIST_H_
+#ifndef CHROME_BROWSER_UPLOAD_LIST_H_
+#define CHROME_BROWSER_UPLOAD_LIST_H_
 
 #include <string>
 #include <vector>
 
-#include "base/base_export.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-
-namespace base {
-
-class SingleThreadTaskRunner;
-class SequencedWorkerPool;
 
 // Loads and parses an upload list text file of the format
 // time,id
@@ -26,14 +20,14 @@ class SequencedWorkerPool;
 // where each line represents an upload and "time" is Unix time. Must be used
 // from the UI thread. The loading and parsing is done on a blocking pool task
 // runner.
-class BASE_EXPORT UploadList : public RefCountedThreadSafe<UploadList> {
+class UploadList : public base::RefCountedThreadSafe<UploadList> {
  public:
-  struct BASE_EXPORT UploadInfo {
-    UploadInfo(const std::string& c, const Time& t);
+  struct UploadInfo {
+    UploadInfo(const std::string& c, const base::Time& t);
     ~UploadInfo();
 
     std::string id;
-    Time time;
+    base::Time time;
   };
 
   class Delegate {
@@ -47,13 +41,11 @@ class BASE_EXPORT UploadList : public RefCountedThreadSafe<UploadList> {
   };
 
   // Creates a new upload list with the given callback delegate.
-  UploadList(Delegate* delegate,
-             const FilePath& upload_log_path,
-             SingleThreadTaskRunner* task_runner);
+  UploadList(Delegate* delegate, const base::FilePath& upload_log_path);
 
   // Starts loading the upload list. OnUploadListAvailable will be called when
   // loading is complete.
-  void LoadUploadListAsynchronously(SequencedWorkerPool* worker_pool);
+  void LoadUploadListAsynchronously();
 
   // Clears the delegate, so that any outstanding asynchronous load will not
   // call the delegate on completion.
@@ -74,7 +66,7 @@ class BASE_EXPORT UploadList : public RefCountedThreadSafe<UploadList> {
   void AppendUploadInfo(const UploadInfo& info);
 
  private:
-  friend class RefCountedThreadSafe<UploadList>;
+  friend class base::RefCountedThreadSafe<UploadList>;
   FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseLogEntries);
 
   // Manages the background thread work for LoadUploadListAsynchronously().
@@ -88,12 +80,9 @@ class BASE_EXPORT UploadList : public RefCountedThreadSafe<UploadList> {
 
   std::vector<UploadInfo> uploads_;
   Delegate* delegate_;
-  const FilePath upload_log_path_;
-  SingleThreadTaskRunner* task_runner_;
+  const base::FilePath upload_log_path_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadList);
 };
 
-}  // namespace base
-
-#endif  // BASE_UPLOAD_LIST_H_
+#endif  // CHROME_BROWSER_UPLOAD_LIST_H_

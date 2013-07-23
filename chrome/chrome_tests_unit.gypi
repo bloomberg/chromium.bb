@@ -1597,6 +1597,7 @@
         'browser/ui/window_sizer/window_sizer_common_unittest.cc',
         'browser/ui/window_sizer/window_sizer_unittest.cc',
         'browser/ui/zoom/zoom_controller_unittest.cc',
+        'browser/upload_list_unittest.cc',
         'browser/chrome_content_browser_client_unittest.cc',
         'browser/undo/undo_manager_test.cc',
         'browser/user_style_sheet_watcher_unittest.cc',

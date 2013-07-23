@@ -6,13 +6,10 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "base/upload_list.h"
+#include "chrome/browser/upload_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace base {
 
 // Test that UploadList can parse a vector of log entry strings to a vector of
 // UploadInfo objects. See the UploadList declaration for a description of the
@@ -25,7 +22,7 @@ TEST(UploadListTest, ParseLogEntries) {
   test_entry.append(kTestID, sizeof(kTestID));
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(NULL, base::FilePath(), MessageLoopProxy::current());
+      new UploadList(NULL, base::FilePath());
 
   // 1 entry.
   std::vector<std::string> log_entries;
@@ -45,5 +42,3 @@ TEST(UploadListTest, ParseLogEntries) {
   EXPECT_STREQ(kTestTime, base::DoubleToString(time_double).c_str());
   EXPECT_STREQ(kTestID, upload_list->uploads_[3].id.c_str());
 }
-
-}  // namespace base

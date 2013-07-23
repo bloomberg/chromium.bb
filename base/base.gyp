@@ -619,7 +619,6 @@
         'tools_sanity_unittest.cc',
         'tracked_objects_unittest.cc',
         'tuple_unittest.cc',
-        'upload_list_unittest.cc',
         'values_unittest.cc',
         'version_unittest.cc',
         'vlog_unittest.cc',
