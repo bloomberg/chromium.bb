@@ -156,12 +156,15 @@ public class AwContents {
     // TODO(boliu): This should be in a global context, not per webview.
     private final double mDIPScale;
 
+    // The base background color, i.e. not accounting for any CSS body from the current page.
+    private int mBaseBackgroundColor = Color.WHITE;
+
     // Must call nativeUpdateLastHitTestData first to update this before use.
     private final HitTestData mPossiblyStaleHitTestData = new HitTestData();
 
     private DefaultVideoPosterRequestHandler mDefaultVideoPosterRequestHandler;
 
-    // Bound method for suppling Picture instances to the AwContentClient. Will be null if the
+    // Bound method for suppling Picture instances to the AwContentsClient. Will be null if the
     // picture listener API has not yet been enabled, or if it is using invalidation-only mode.
     private Callable<Picture> mPictureListenerContentProvider;
 
@@ -641,7 +644,10 @@ public class AwContents {
     private final Rect mClipBoundsTemporary = new Rect();
 
     public void onDraw(Canvas canvas) {
-        if (mNativeAwContents == 0) return;
+        if (mNativeAwContents == 0) {
+            canvas.drawColor(getEffectiveBackgroundColor());
+            return;
+        }
 
         mScrollOffsetManager.syncScrollOffsetFromOnDraw();
 
@@ -651,8 +657,7 @@ public class AwContents {
                     mClipBoundsTemporary.left, mClipBoundsTemporary.top,
                     mClipBoundsTemporary.right, mClipBoundsTemporary.bottom )) {
             Log.w(TAG, "nativeOnDraw failed; clearing to background color.");
-            int c = mContentViewCore.getBackgroundColor();
-            canvas.drawRGB(Color.red(c), Color.green(c), Color.blue(c));
+            canvas.drawColor(getEffectiveBackgroundColor());
         }
     }
 
@@ -816,6 +821,21 @@ public class AwContents {
         if (!mContainerView.isInTouchMode() && mSettings.shouldFocusFirstNode()) {
             nativeFocusFirstNode(mNativeAwContents);
         }
+    }
+
+    public void setBackgroundColor(int color) {
+        mBaseBackgroundColor = color;
+        if (mNativeAwContents != 0) nativeSetBackgroundColor(mNativeAwContents, color);
+    }
+
+    private int getEffectiveBackgroundColor() {
+        // Do not ask the ContentViewCore for the background color, as it will always
+        // report white prior to initial navigation or post destruction,  whereas we want
+        // to use the client supplied base value in those cases.
+        if (mNativeAwContents == 0 || !mContentsClient.isCachedRendererBackgroundColorValid()) {
+            return mBaseBackgroundColor;
+        }
+        return mContentsClient.getCachedRendererBackgroundColor();
     }
 
     public boolean isMultiTouchZoomSupported() {
@@ -1718,6 +1738,7 @@ public class AwContents {
 
     private native int nativeReleasePopupAwContents(int nativeAwContents);
     private native void nativeFocusFirstNode(int nativeAwContents);
+    private native void nativeSetBackgroundColor(int nativeAwContents, int color);
 
     private native int nativeGetAwDrawGLViewContext(int nativeAwContents);
     private native Picture nativeCapturePicture(int nativeAwContents);

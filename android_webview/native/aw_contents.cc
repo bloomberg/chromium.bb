@@ -676,6 +676,10 @@ void AwContents::FocusFirstNode(JNIEnv* env, jobject obj) {
   web_contents_->FocusThroughTabTraversal(false);
 }
 
+void AwContents::SetBackgroundColor(JNIEnv* env, jobject obj, jint color) {
+  render_view_host_ext_->SetBackgroundColor(color);
+}
+
 jint AwContents::ReleasePopupAwContents(JNIEnv* env, jobject obj) {
   return reinterpret_cast<jint>(pending_contents_.release());
 }

@@ -8,6 +8,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 // Singly-included section for enums and custom IPC traits.
 #ifndef ANDROID_WEBVIEW_COMMON_RENDER_VIEW_MESSAGES_H_
@@ -65,6 +66,10 @@ IPC_MESSAGE_ROUTED0(AwViewMsg_ResetScrollAndScaleState)
 // the meta viewport tag.
 IPC_MESSAGE_ROUTED1(AwViewMsg_SetInitialPageScale,
                     double /* page_scale_factor */)
+
+// Sets the base background color for this view.
+IPC_MESSAGE_ROUTED1(AwViewMsg_SetBackgroundColor,
+                    SkColor);
 
 //-----------------------------------------------------------------------------
 // RenderView messages

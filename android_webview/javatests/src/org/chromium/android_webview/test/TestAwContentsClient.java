@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.graphics.Picture;
 import android.webkit.ConsoleMessage;
 
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -20,6 +21,7 @@ class TestAwContentsClient extends NullContentsClient {
     private final OnEvaluateJavaScriptResultHelper mOnEvaluateJavaScriptResultHelper;
     private final AddMessageToConsoleHelper mAddMessageToConsoleHelper;
     private final OnScaleChangedHelper mOnScaleChangedHelper;
+    private final PictureListenerHelper mPictureListenerHelper;
 
     public TestAwContentsClient() {
         mOnPageStartedHelper = new OnPageStartedHelper();
@@ -28,6 +30,7 @@ class TestAwContentsClient extends NullContentsClient {
         mOnEvaluateJavaScriptResultHelper = new OnEvaluateJavaScriptResultHelper();
         mAddMessageToConsoleHelper = new AddMessageToConsoleHelper();
         mOnScaleChangedHelper = new OnScaleChangedHelper();
+        mPictureListenerHelper = new PictureListenerHelper();
     }
 
     public OnPageStartedHelper getOnPageStartedHelper() {
@@ -66,6 +69,10 @@ class TestAwContentsClient extends NullContentsClient {
 
     public OnScaleChangedHelper getOnScaleChangedHelper() {
         return mOnScaleChangedHelper;
+    }
+
+    public PictureListenerHelper getPictureListenerHelper() {
+        return mPictureListenerHelper;
     }
 
     @Override
@@ -137,5 +144,25 @@ class TestAwContentsClient extends NullContentsClient {
     @Override
     public void onScaleChangedScaled(float oldScale, float newScale) {
         mOnScaleChangedHelper.notifyCalled(oldScale, newScale);
+    }
+
+    public static class PictureListenerHelper extends CallbackHelper {
+        // Generally null, depending on |invalidationOnly| in enableOnNewPicture()
+        private Picture mPicture;
+
+        public Picture getPicture() {
+            assert getCallCount() > 0;
+            return mPicture;
+        }
+
+        void notifyCalled(Picture picture) {
+            mPicture = picture;
+            notifyCalled();
+        }
+    }
+
+    @Override
+    public void onNewPicture(Picture picture) {
+        mPictureListenerHelper.notifyCalled(picture);
     }
 }

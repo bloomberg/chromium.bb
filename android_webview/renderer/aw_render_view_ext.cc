@@ -155,6 +155,7 @@ bool AwRenderViewExt::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AwViewMsg_ResetScrollAndScaleState,
                         OnResetScrollAndScaleState)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetInitialPageScale, OnSetInitialPageScale)
+    IPC_MESSAGE_HANDLER(AwViewMsg_SetBackgroundColor, OnSetBackgroundColor)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -281,6 +282,13 @@ void AwRenderViewExt::OnSetInitialPageScale(double page_scale_factor) {
     return;
   render_view()->GetWebView()->setInitialPageScaleOverride(
       page_scale_factor);
+}
+
+void AwRenderViewExt::OnSetBackgroundColor(SkColor c) {
+  if (!render_view() || !render_view()->GetWebView())
+    return;
+  // TODO(joth): Uncomment when crrev.com/19883002/ has rolled in.
+  // render_view()->GetWebView()->setBaseBackgroundColor(c);
 }
 
 }  // namespace android_webview

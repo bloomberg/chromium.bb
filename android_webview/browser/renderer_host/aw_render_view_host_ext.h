@@ -10,6 +10,7 @@
 #include "android_webview/common/aw_hit_test_data.h"
 #include "base/callback_forward.h"
 #include "base/threading/non_thread_safe.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
 
@@ -70,9 +71,11 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // Sets the initial page scale. This overrides initial scale set by
   // the meta viewport tag.
   void SetInitialPageScale(double page_scale_factor);
+  void SetBackgroundColor(SkColor c);
 
  private:
   // content::WebContentsObserver implementation.
+  virtual void RenderViewCreated(content::RenderViewHost* view_host) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
@@ -86,6 +89,8 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   bool IsRenderViewReady() const;
 
   AwRenderViewHostExtClient* client_;
+
+  SkColor background_color_;
 
   std::map<int, DocumentHasImagesResult> pending_document_has_images_requests_;
 

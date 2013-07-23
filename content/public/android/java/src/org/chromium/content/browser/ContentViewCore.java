@@ -883,12 +883,6 @@ import java.util.Map;
         return Color.WHITE;
     }
 
-    public void setBackgroundColor(int color) {
-        if (mNativeContentViewCore != 0 && getBackgroundColor() != color) {
-            nativeSetBackgroundColor(mNativeContentViewCore, color);
-        }
-    }
-
     @CalledByNative
     private void onBackgroundColorChanged(int color) {
         getContentViewClient().onBackgroundColorChanged(color);
@@ -3100,8 +3094,6 @@ import java.util.Map;
     private native int nativeGetCurrentRenderProcessId(int nativeContentViewCoreImpl);
 
     private native int nativeGetBackgroundColor(int nativeContentViewCoreImpl);
-
-    private native void nativeSetBackgroundColor(int nativeContentViewCoreImpl, int color);
 
     private native void nativeOnShow(int nativeContentViewCoreImpl);
     private native void nativeOnHide(int nativeContentViewCoreImpl);

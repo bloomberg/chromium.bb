@@ -25,6 +25,7 @@ AwRenderViewHostExt::AwRenderViewHostExt(
     AwRenderViewHostExtClient* client, content::WebContents* contents)
     : content::WebContentsObserver(contents),
       client_(client),
+      background_color_(SK_ColorWHITE),
       has_new_hit_test_data_(false) {
   DCHECK(client_);
 }
@@ -83,6 +84,22 @@ void AwRenderViewHostExt::SetInitialPageScale(double page_scale_factor) {
   DCHECK(CalledOnValidThread());
   Send(new AwViewMsg_SetInitialPageScale(web_contents()->GetRoutingID(),
                                          page_scale_factor));
+}
+
+void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
+  if (background_color_ == c)
+    return;
+  background_color_ = c;
+  if (web_contents()->GetRenderViewHost()) {
+    Send(new AwViewMsg_SetBackgroundColor(web_contents()->GetRoutingID(),
+                                          background_color_));
+  }
+}
+
+void AwRenderViewHostExt::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  Send(new AwViewMsg_SetBackgroundColor(web_contents()->GetRoutingID(),
+                                        background_color_));
 }
 
 void AwRenderViewHostExt::RenderProcessGone(base::TerminationStatus status) {

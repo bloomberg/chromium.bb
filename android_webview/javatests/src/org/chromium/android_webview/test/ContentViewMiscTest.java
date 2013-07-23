@@ -8,8 +8,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Proxy;
 import android.test.FlakyTest;
 import android.test.mock.MockContext;
@@ -112,29 +110,5 @@ public class ContentViewMiscTest extends AwTestBase {
         ContentViewStatics.enablePlatformNotifications();
         receiverRef.get().onReceive(context, intent);
         assertEquals(true, proxyChanged.get());
-    }
-
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * Bug 6931901
-     */
-    @DisabledTest
-    public void testSetGetBackgroundColor() throws Throwable {
-        loadUrlSync(mAwContents , mContentsClient.getOnPageFinishedHelper(), "about:blank");
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mContentViewCore.setBackgroundColor(Color.MAGENTA);
-            }
-        });
-        int backgroundColor = ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                Bitmap map = mContentViewCore.getBitmap(1, 1);
-                return map.getPixel(0,0);
-            }
-        });
-        assertEquals(Color.MAGENTA, backgroundColor);
     }
 }
