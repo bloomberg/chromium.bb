@@ -157,7 +157,7 @@ def _RunTestsFromQueue(runner, test_collection, out_results, watcher,
     """
     new_test_run_results = base_test_result.TestRunResults()
     for test_result in test_run_results.GetAll():
-      test_result.SetTag(runner.device[-4:])
+      test_result.SetName('%s_%s' % (runner.device[-4:], test_result.GetName()))
       new_test_run_results.AddResult(test_result)
     return new_test_run_results
 

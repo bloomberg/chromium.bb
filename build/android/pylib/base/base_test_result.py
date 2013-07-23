@@ -22,7 +22,7 @@ class ResultType(object):
 class BaseTestResult(object):
   """Base class for a single test result."""
 
-  def __init__(self, name, test_type, tag='', log=''):
+  def __init__(self, name, test_type, log=''):
     """Construct a BaseTestResult.
 
     Args:
@@ -34,28 +34,28 @@ class BaseTestResult(object):
     assert test_type in ResultType.GetTypes()
     self._name = name
     self._test_type = test_type
-    self._tag = tag
     self._log = log
 
   def __str__(self):
-    return self.GetTaggedName()
+    return self._name
 
   def __repr__(self):
-    return self.GetTaggedName()
+    return self._name
 
   def __cmp__(self, other):
     # pylint: disable=W0212
-    return cmp(self.GetTaggedName(), other.GetTaggedName())
+    return cmp(self._name, other._name)
 
   def __hash__(self):
-    return hash(self.GetTaggedName())
+    return hash(self._name)
 
-  def GetTaggedName(self):
-    """Get the test name with tag."""
-    if self._tag:
-      return '%s_%s' % (self._tag, self._name)
-    else:
-      return self._name
+  def SetName(self, name):
+    """Set the test name.
+
+    Because we're putting this into a set, this should only be used if moving
+    this test result into another set.
+    """
+    self._name = name
 
   def GetName(self):
     """Get the test name."""
@@ -65,17 +65,9 @@ class BaseTestResult(object):
     """Get the test result type."""
     return self._test_type
 
-  def GetTag(self):
-    """Get the test tag."""
-    return self._tag
-
   def GetLog(self):
     """Get the test log."""
     return self._log
-
-  def SetTag(self, tag):
-    """Set the test tag."""
-    self._tag = tag
 
 
 class TestRunResults(object):
