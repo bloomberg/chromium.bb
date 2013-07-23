@@ -988,6 +988,8 @@ weston_surface_unmap(struct weston_surface *surface)
 						 NULL,
 						 wl_fixed_from_int(0),
 						 wl_fixed_from_int(0));
+		if (seat->touch && seat->touch->focus == surface)
+			weston_touch_set_focus(seat, NULL);
 	}
 
 	weston_surface_schedule_repaint(surface);
