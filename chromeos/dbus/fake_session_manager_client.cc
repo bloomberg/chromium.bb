@@ -93,6 +93,11 @@ void FakeSessionManagerClient::RetrievePolicyForUser(
       FROM_HERE, base::Bind(callback, user_policies_[username]));
 }
 
+std::string FakeSessionManagerClient::BlockingRetrievePolicyForUser(
+    const std::string& username) {
+  return user_policies_[username];
+}
+
 void FakeSessionManagerClient::RetrieveDeviceLocalAccountPolicy(
     const std::string& account_id,
     const RetrievePolicyCallback& callback) {

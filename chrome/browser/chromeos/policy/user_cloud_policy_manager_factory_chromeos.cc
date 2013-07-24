@@ -134,16 +134,20 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   base::FilePath policy_key_dir;
   CHECK(PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &policy_key_dir));
 
-  scoped_ptr<CloudPolicyStore> store(
+  scoped_ptr<UserCloudPolicyStoreChromeOS> store(
       new UserCloudPolicyStoreChromeOS(
           chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
           chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
           username, policy_key_dir, token_cache_file, policy_cache_file));
+  if (force_immediate_load)
+    store->LoadImmediately();
+
   scoped_ptr<ResourceCache> resource_cache;
   if (command_line->HasSwitch(switches::kEnableComponentCloudPolicy))
     resource_cache.reset(new ResourceCache(resource_cache_dir));
+
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager(
-      new UserCloudPolicyManagerChromeOS(store.Pass(),
+      new UserCloudPolicyManagerChromeOS(store.PassAs<CloudPolicyStore>(),
                                          resource_cache.Pass(),
                                          wait_for_initial_policy));
   manager->Init();

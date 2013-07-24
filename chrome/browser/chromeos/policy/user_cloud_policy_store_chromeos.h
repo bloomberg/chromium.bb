@@ -49,6 +49,9 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
       const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
   virtual void Load() OVERRIDE;
 
+  // Loads the policy synchronously on the current thread.
+  void LoadImmediately();
+
  private:
   // Starts validation of |policy| before storing it.
   void ValidatePolicyForStore(

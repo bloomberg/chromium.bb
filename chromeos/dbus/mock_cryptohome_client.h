@@ -38,6 +38,8 @@ class MockCryptohomeClient : public CryptohomeClient {
   MOCK_METHOD2(GetSanitizedUsername,
                void(const std::string& username,
                     const StringDBusMethodCallback& callback));
+  MOCK_METHOD1(BlockingGetSanitizedUsername,
+               std::string(const std::string& username));
   MOCK_METHOD4(AsyncMount, void(const std::string& username,
                                 const std::string& key,
                                 int flags,

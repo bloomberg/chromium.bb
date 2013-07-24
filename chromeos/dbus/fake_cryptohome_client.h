@@ -38,6 +38,8 @@ class FakeCryptohomeClient : public CryptohomeClient {
   virtual void GetSanitizedUsername(
       const std::string& username,
       const StringDBusMethodCallback& callback) OVERRIDE;
+  virtual std::string BlockingGetSanitizedUsername(
+      const std::string& username) OVERRIDE;
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
                           int flags,

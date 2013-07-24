@@ -203,6 +203,54 @@ void UserCloudPolicyStoreChromeOS::Load() {
                  weak_factory_.GetWeakPtr()));
 }
 
+void UserCloudPolicyStoreChromeOS::LoadImmediately() {
+  // This blocking DBus call is in the startup path and will block the UI
+  // thread. This only happens when the Profile is created synchronously, which
+  // on ChromeOS happens whenever the browser is restarted into the same
+  // session. That happens when the browser crashes, or right after signin if
+  // the user has flags configured in about:flags.
+  // However, on those paths we must load policy synchronously so that the
+  // Profile initialization never sees unmanaged prefs, which would lead to
+  // data loss. http://crbug.com/263061
+  std::string policy_blob =
+      session_manager_client_->BlockingRetrievePolicyForUser(username_);
+  if (policy_blob.empty()) {
+    // The session manager doesn't have policy, or the call failed.
+    // Just notify that the load is done, and don't bother with the legacy
+    // caches in this case.
+    NotifyStoreLoaded();
+    return;
+  }
+
+  scoped_ptr<em::PolicyFetchResponse> policy(new em::PolicyFetchResponse());
+  if (!policy->ParseFromString(policy_blob)) {
+    status_ = STATUS_PARSE_ERROR;
+    NotifyStoreError();
+    return;
+  }
+
+  std::string sanitized_username =
+      cryptohome_client_->BlockingGetSanitizedUsername(username_);
+  if (sanitized_username.empty()) {
+    status_ = STATUS_LOAD_ERROR;
+    NotifyStoreError();
+    return;
+  }
+
+  policy_key_path_ = user_policy_key_dir_.Append(
+      base::StringPrintf(kPolicyKeyFile, sanitized_username.c_str()));
+  LoadPolicyKey(policy_key_path_, &policy_key_);
+  policy_key_loaded_ = true;
+
+  scoped_ptr<UserCloudPolicyValidator> validator =
+      CreateValidator(policy.Pass());
+  validator->ValidateUsername(username_);
+  const bool allow_rotation = false;
+  validator->ValidateSignature(policy_key_, allow_rotation);
+  validator->RunValidation();
+  OnRetrievedPolicyValidated(validator.get());
+}
+
 void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
     scoped_ptr<em::PolicyFetchResponse> policy) {
   // Create and configure a validator.

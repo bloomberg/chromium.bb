@@ -104,6 +104,15 @@ class CHROMEOS_EXPORT CryptohomeClient {
       const std::string& username,
       const StringDBusMethodCallback& callback) = 0;
 
+  // Same as GetSanitizedUsername() but blocks until a reply is received, and
+  // returns the sanitized username synchronously. Returns an empty string if
+  // the method call fails.
+  // This may only be called in situations where blocking the UI thread is
+  // considered acceptable (e.g. restarting the browser after a crash or after
+  // a flag change).
+  virtual std::string BlockingGetSanitizedUsername(
+      const std::string& username) = 0;
+
   // Calls the AsyncMount method to asynchronously mount the cryptohome for
   // |username|, using |key| to unlock it. For supported |flags|, see the
   // documentation of AsyncMethodCaller::AsyncMount().

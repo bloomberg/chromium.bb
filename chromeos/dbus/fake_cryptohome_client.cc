@@ -259,6 +259,11 @@ void FakeCryptohomeClient::GetSanitizedUsername(
                    username));
 }
 
+std::string FakeCryptohomeClient::BlockingGetSanitizedUsername(
+    const std::string& username) {
+  return username;
+}
+
 void FakeCryptohomeClient::TpmAttestationSignEnterpriseChallenge(
     attestation::AttestationKeyType key_type,
     const std::string& key_name,

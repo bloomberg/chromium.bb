@@ -126,6 +126,15 @@ class CHROMEOS_EXPORT SessionManagerClient {
       const std::string& username,
       const RetrievePolicyCallback& callback) = 0;
 
+  // Same as RetrievePolicyForUser() but blocks until a reply is received, and
+  // returns the policy synchronously. Returns an empty string if the method
+  // call fails.
+  // This may only be called in situations where blocking the UI thread is
+  // considered acceptable (e.g. restarting the browser after a crash or after
+  // a flag change).
+  virtual std::string BlockingRetrievePolicyForUser(
+      const std::string& username) = 0;
+
   // Fetches the policy blob associated with the specified device-local account
   // from session manager.  |callback| is invoked up on completion.
   virtual void RetrieveDeviceLocalAccountPolicy(

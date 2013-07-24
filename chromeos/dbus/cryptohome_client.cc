@@ -152,6 +152,26 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
+  virtual std::string BlockingGetSanitizedUsername(
+      const std::string& username) OVERRIDE {
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeGetSanitizedUsername);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(username);
+
+    scoped_ptr<dbus::Response> response =
+        blocking_method_caller_.CallMethodAndBlock(&method_call);
+
+    std::string sanitized_username;
+    if (response) {
+      dbus::MessageReader reader(response.get());
+      reader.PopString(&sanitized_username);
+    }
+
+    return sanitized_username;
+  }
+
+  // CryptohomeClient override.
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
                           int flags,
@@ -879,6 +899,12 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, sanitized_username));
+  }
+
+  // CryptohomeClient override.
+  virtual std::string BlockingGetSanitizedUsername(
+      const std::string& username) OVERRIDE {
+    return GetStubSanitizedUsername(username);
   }
 
   // CryptohomeClient override.

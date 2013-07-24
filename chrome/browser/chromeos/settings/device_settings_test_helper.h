@@ -99,6 +99,8 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   virtual void RetrievePolicyForUser(
       const std::string& username,
       const RetrievePolicyCallback& callback) OVERRIDE;
+  virtual std::string BlockingRetrievePolicyForUser(
+      const std::string& username) OVERRIDE;
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       const RetrievePolicyCallback& callback) OVERRIDE;

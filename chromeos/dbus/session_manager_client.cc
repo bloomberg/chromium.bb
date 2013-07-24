@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/chromeos_paths.h"
+#include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -28,12 +29,11 @@ namespace chromeos {
 class SessionManagerClientImpl : public SessionManagerClient {
  public:
   explicit SessionManagerClientImpl(dbus::Bus* bus)
-      : session_manager_proxy_(NULL),
+      : session_manager_proxy_(bus->GetObjectProxy(
+            login_manager::kSessionManagerServiceName,
+            dbus::ObjectPath(login_manager::kSessionManagerServicePath))),
+        blocking_method_caller_(bus, session_manager_proxy_),
         weak_ptr_factory_(this) {
-    session_manager_proxy_ = bus->GetObjectProxy(
-        login_manager::kSessionManagerServiceName,
-        dbus::ObjectPath(login_manager::kSessionManagerServicePath));
-
     // Signals emitted on Chromium's interface.  Many of these ought to be
     // method calls instead.
     session_manager_proxy_->ConnectToSignal(
@@ -223,6 +223,22 @@ class SessionManagerClientImpl : public SessionManagerClient {
         callback);
   }
 
+  virtual std::string BlockingRetrievePolicyForUser(
+      const std::string& username) OVERRIDE {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerRetrievePolicyForUser);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(username);
+    scoped_ptr<dbus::Response> response =
+        blocking_method_caller_.CallMethodAndBlock(&method_call);
+    std::string policy;
+    ExtractString(login_manager::kSessionManagerRetrievePolicyForUser,
+                  response.get(),
+                  &policy);
+    return policy;
+  }
+
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,
       const RetrievePolicyCallback& callback) OVERRIDE {
@@ -400,14 +416,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
     callback.Run(sessions, success);
   }
 
-  // Called when kSessionManagerRetrievePolicy or
-  // kSessionManagerRetrievePolicyForUser method is complete.
-  void OnRetrievePolicy(const std::string& method_name,
-                        const RetrievePolicyCallback& callback,
-                        dbus::Response* response) {
+  void ExtractString(const std::string& method_name,
+                     dbus::Response* response,
+                     std::string* extracted) {
     if (!response) {
       LOG(ERROR) << "Failed to call " << method_name;
-      callback.Run("");
       return;
     }
     dbus::MessageReader reader(response);
@@ -415,11 +428,19 @@ class SessionManagerClientImpl : public SessionManagerClient {
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&values, &length)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
-      callback.Run("");
       return;
     }
     // static_cast does not work due to signedness.
-    std::string serialized_proto(reinterpret_cast<char*>(values), length);
+    extracted->assign(reinterpret_cast<char*>(values), length);
+  }
+
+  // Called when kSessionManagerRetrievePolicy or
+  // kSessionManagerRetrievePolicyForUser method is complete.
+  void OnRetrievePolicy(const std::string& method_name,
+                        const RetrievePolicyCallback& callback,
+                        dbus::Response* response) {
+    std::string serialized_proto;
+    ExtractString(method_name, response, &serialized_proto);
     callback.Run(serialized_proto);
   }
 
@@ -492,6 +513,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   dbus::ObjectProxy* session_manager_proxy_;
+  BlockingMethodCaller blocking_method_caller_;
   ObserverList<Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
@@ -558,6 +580,10 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
       const std::string& username,
       const RetrievePolicyCallback& callback) OVERRIDE {
     callback.Run(user_policies_[username]);
+  }
+  virtual std::string BlockingRetrievePolicyForUser(
+      const std::string& username) OVERRIDE {
+    return user_policies_[username];
   }
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,

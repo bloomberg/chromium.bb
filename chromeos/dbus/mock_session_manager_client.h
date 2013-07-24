@@ -36,6 +36,7 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD2(RetrievePolicyForUser,
                void(const std::string&,
                     const RetrievePolicyCallback&));
+  MOCK_METHOD1(BlockingRetrievePolicyForUser, std::string(const std::string&));
   MOCK_METHOD2(RetrieveDeviceLocalAccountPolicy,
                void(const std::string&,
                     const RetrievePolicyCallback&));

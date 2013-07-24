@@ -138,6 +138,11 @@ void DeviceSettingsTestHelper::RetrievePolicyForUser(
     const RetrievePolicyCallback& callback) {
 }
 
+std::string DeviceSettingsTestHelper::BlockingRetrievePolicyForUser(
+    const std::string& username) {
+  return "";
+}
+
 void DeviceSettingsTestHelper::RetrieveDeviceLocalAccountPolicy(
     const std::string& account_id,
     const RetrievePolicyCallback& callback) {
