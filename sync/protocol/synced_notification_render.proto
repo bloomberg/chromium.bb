@@ -36,6 +36,11 @@ message CollapsedInfo {
   optional SyncedNotificationDestination default_destination = 3;
 
   repeated Target target = 4;
+
+  // Defines a repeated list of meta tags that provide some context on what
+  // this collapsed info is describing. Nothing about the display of this
+  // collapsed info is defined by the meta tags.
+  repeated string meta_tag = 5;
 }
 
 // Render information for the expanded (detail) view of a coalesced
@@ -45,6 +50,13 @@ message ExpandedInfo {
 
   // Collapsed information for each notification in the coalesced group.
   repeated CollapsedInfo collapsed_info = 2;
+
+  // A set of targets for actions the user can take, or destinations the
+  // viewer can be taken to. These relate to the coalesced notification.
+  repeated Target target = 3;
+
+  // Enhanced context for the expanded view.
+  repeated string meta_tag = 4;
 }
 
 message SimpleCollapsedLayout {
@@ -60,6 +72,13 @@ message SimpleCollapsedLayout {
 
   // Description - often the action that generated the notification.
   optional string description = 4;
+
+  // Media - one or more shared media items.
+  repeated Media media = 5;
+
+  // Annotation - often the annotation of the entity generating the
+  // notification.
+  optional string annotation = 6;
 }
 
 message SimpleExpandedLayout {
@@ -134,6 +153,10 @@ message SyncedNotificationAction {
 
   // Optional label to aid accessibility.
   optional string accessibility_label= 5;
+
+  // Defines a repeated list of meta tags that provide some context on this
+  // action. Nothing about the display of this action is defined by the tags.
+  repeated string meta_tag = 6;
 }
 
 message SyncedNotificationImage {

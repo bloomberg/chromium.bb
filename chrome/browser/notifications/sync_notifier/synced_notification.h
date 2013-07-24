@@ -52,6 +52,7 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   std::string GetTitle() const;
   std::string GetHeading() const;
   std::string GetDescription() const;
+  std::string GetAnnotation() const;
   std::string GetAppId() const;
   std::string GetKey() const;
   GURL GetOriginUrl() const;
@@ -67,6 +68,8 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   std::string GetButtonTitle(unsigned int which_button) const;
   GURL GetButtonIconUrl(unsigned int which_button) const;
   GURL GetButtonUrl(unsigned int which_button) const;
+  GURL GetProfilePictureUrl(unsigned int which_url) const;
+  size_t GetProfilePictureCount() const;
   size_t GetNotificationCount() const;
   size_t GetButtonCount() const;
   std::string GetContainedNotificationTitle(int index) const;
@@ -113,6 +116,7 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   ScopedVector<NotificationBitmapFetcher> fetchers_;
   int active_fetcher_count_;
   gfx::Image app_icon_bitmap_;
+  gfx::Image sender_bitmap_;
   gfx::Image image_bitmap_;
   std::vector<gfx::Image> button_bitmaps_;
 

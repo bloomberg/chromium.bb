@@ -109,24 +109,24 @@ syncer::SyncData CreateSyncData(
 
   // Set the title.
   simple_expanded_layout->set_title(title);
+  simple_collapsed_layout->set_heading(title);
 
   // Set the text.
   simple_expanded_layout->set_text(text);
+  simple_collapsed_layout->set_description(text);
+  simple_collapsed_layout->set_annotation(text);
 
   // Set the heading.
   simple_collapsed_layout->set_heading(title);
 
   // Add the collapsed info and set the app_icon_url on it.
-  expanded_info->add_collapsed_info();
-  expanded_info->
-      mutable_collapsed_info(0)->
-      mutable_simple_collapsed_layout()->
+  simple_collapsed_layout->
       mutable_app_icon()->
       set_url(app_icon_url);
 
   // Add the media object and set the image url on it.
-  simple_expanded_layout->add_media();
-  simple_expanded_layout->
+  simple_collapsed_layout->add_media();
+  simple_collapsed_layout->
       mutable_media(0)->
       mutable_image()->
       set_url(image_url);
@@ -136,8 +136,7 @@ syncer::SyncData CreateSyncData(
   coalesced_notification->set_read_state(read_state);
 
   // Contained notification one.
-  // We re-use the collapsed info we added for the app_icon_url,
-  // so no need to create another one here.
+  expanded_info->add_collapsed_info();
   sync_pb::SimpleCollapsedLayout* notification_layout1 =
       expanded_info->
       mutable_collapsed_info(0)->

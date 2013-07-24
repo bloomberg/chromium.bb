@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 
 #include "base/basictypes.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -21,6 +22,7 @@
 
 namespace {
 const char kExtensionScheme[] = "chrome-extension://";
+const char kDefaultSyncedNotificationScheme[] = "https:";
 
 // The name of our first synced notification service.
 // TODO(petewil): remove this hardcoding once we have the synced notification
@@ -35,6 +37,16 @@ const unsigned int kMaxNotificationButtonIndex = 2;
 
 bool UseRichNotifications() {
   return message_center::IsRichNotificationEnabled();
+}
+
+// Schema-less specs default badly in windows.  If we find one, add the schema
+// we expect instead of allowing windows specific GURL code to make it default
+// to "file:".
+GURL AddDefaultSchemaIfNeeded(std::string& url_spec) {
+  if (StartsWithASCII(url_spec, std::string("//"), false))
+    return GURL(std::string(kDefaultSyncedNotificationScheme) + url_spec);
+
+  return GURL(url_spec);
 }
 
 }  // namespace
@@ -83,12 +95,15 @@ void SyncedNotification::OnFetchComplete(const GURL url,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Match the incoming bitmaps to URLs.  In case this is a dup, make sure to
-  // Try all potentially matching urls.
+  // try all potentially matching urls.
   if (GetAppIconUrl() == url && bitmap != NULL) {
     app_icon_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
   }
   if (GetImageUrl() == url && bitmap != NULL) {
     image_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
+  }
+  if (GetProfilePictureUrl(0) == url && bitmap != NULL) {
+    sender_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
   }
 
   // If this URL matches one or more button bitmaps, save them off.
@@ -128,6 +143,13 @@ void SyncedNotification::QueueBitmapFetchJobs(
   for (unsigned int i = 0; i < GetButtonCount(); ++i) {
     button_bitmaps_.push_back(gfx::Image());
     AddBitmapToFetchQueue(GetButtonIconUrl(i));
+  }
+
+  // If there is a profile image bitmap, fetch it
+  if (GetProfilePictureCount() > 0) {
+    // TODO(petewil): When we have the capacity to display more than one bitmap,
+    // modify this code to fetch as many as we can display
+    AddBitmapToFetchQueue(GetProfilePictureUrl(0));
   }
 
   // If the URL is non-empty, add it to our queue of URLs to fetch.
@@ -178,9 +200,13 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
   GURL image_url = GetImageUrl();
   string16 text = UTF8ToUTF16(GetText());
   string16 heading = UTF8ToUTF16(GetHeading());
+  string16 description = UTF8ToUTF16(GetDescription());
+  string16 annotation = UTF8ToUTF16(GetAnnotation());
   // TODO(petewil): Eventually put the display name of the sending service here.
   string16 display_source = UTF8ToUTF16(GetOriginUrl().spec());
   string16 replace_key = UTF8ToUTF16(GetKey());
+  string16 notification_heading = heading;
+  string16 notification_text = text;
 
   // The delegate will eventually catch calls that the notification
   // was read or deleted, and send the changes back to the server.
@@ -216,7 +242,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
     // Fill in the button data.
     // TODO(petewil): Today Rich notifiations are limited to two buttons.
     // When rich notifications supports more, remove the
-    // "&& i < kMaxNotificationButtonIndex" below.
+    // "&& i < kMaxNotificationButtonIndex" clause below.
     for (unsigned int i = 0;
          i < button_count
          && i < button_bitmaps_.size()
@@ -246,11 +272,33 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
       }
     }
 
+    // Set the heading and text appropriately for the message type.
+    notification_text = annotation;
+    if (notification_type == message_center::NOTIFICATION_TYPE_IMAGE) {
+      // For an image, fill in the description field.
+      notification_text = description;
+    } else if (notification_count == 1) {
+      // For a single collapsed info entry, use the contained message if any.
+      std::string comment_body = GetContainedNotificationMessage(0);
+      std::string comment_header = GetContainedNotificationTitle(0);
+      if (!comment_header.empty() && !comment_body.empty())
+        notification_text = UTF8ToUTF16(comment_header) + UTF8ToUTF16(" ") +
+            UTF8ToUTF16(comment_body);
+    }
+
+    // If there is a single person sending, use their picture instead of the app
+    // icon.
+    // TODO(petewil): Someday combine multiple profile photos here.
+    gfx::Image icon_bitmap = app_icon_bitmap_;
+    if (GetProfilePictureCount() == 1)  {
+      icon_bitmap = sender_bitmap_;
+    }
+
     Notification ui_notification(notification_type,
                                  GetOriginUrl(),
-                                 heading,
-                                 text,
-                                 app_icon_bitmap_,
+                                 notification_heading,
+                                 notification_text,
+                                 icon_bitmap,
                                  WebKit::WebTextDirectionDefault,
                                  display_source,
                                  replace_key,
@@ -258,11 +306,11 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
                                  delegate.get());
     notification_manager->Add(ui_notification, profile);
   } else {
-
+    // In this case we have a Webkit Notification, not a Rich Notification.
     Notification ui_notification(GetOriginUrl(),
                                  GetAppIconUrl(),
-                                 heading,
-                                 text,
+                                 notification_heading,
+                                 notification_text,
                                  WebKit::WebTextDirectionDefault,
                                  display_source,
                                  replace_key,
@@ -279,13 +327,13 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
 }
 
 // This should detect even small changes in case the server updated the
-// notification.
-// TODO(petewil): Should I also ignore the timestamp if other fields match?
+// notification.  We ignore the timestamp if other fields match.
 bool SyncedNotification::EqualsIgnoringReadState(
     const SyncedNotification& other) const {
   if (GetTitle() == other.GetTitle() &&
       GetHeading() == other.GetHeading() &&
       GetDescription() == other.GetDescription() &&
+      GetAnnotation() == other.GetAnnotation() &&
       GetAppId() == other.GetAppId() &&
       GetKey() == other.GetKey() &&
       GetOriginUrl() == other.GetOriginUrl() &&
@@ -298,7 +346,8 @@ bool SyncedNotification::EqualsIgnoringReadState(
       GetDefaultDestinationTitle() == other.GetDefaultDestinationTitle() &&
       GetDefaultDestinationIconUrl() == other.GetDefaultDestinationIconUrl() &&
       GetNotificationCount() == other.GetNotificationCount() &&
-      GetButtonCount() == other.GetButtonCount()) {
+      GetButtonCount() == other.GetButtonCount() &&
+      GetProfilePictureCount() == other.GetProfilePictureCount()) {
 
     // If all the surface data matched, check, to see if contained data also
     // matches, titles and messages.
@@ -318,6 +367,13 @@ bool SyncedNotification::EqualsIgnoringReadState(
       if (GetButtonTitle(jj) != other.GetButtonTitle(jj))
         return false;
       if (GetButtonIconUrl(jj) != other.GetButtonIconUrl(jj))
+        return false;
+    }
+
+    // Make sure profile icons match
+    count = GetButtonCount();
+    for (size_t kk = 0; kk < count; ++kk) {
+      if (GetProfilePictureUrl(kk) != other.GetProfilePictureUrl(kk))
         return false;
     }
 
@@ -376,6 +432,15 @@ std::string SyncedNotification::GetDescription() const {
       simple_collapsed_layout().description();
 }
 
+std::string SyncedNotification::GetAnnotation() const {
+  if (!specifics_.coalesced_notification().render_info().collapsed_info().
+      simple_collapsed_layout().has_annotation())
+    return std::string();
+
+  return specifics_.coalesced_notification().render_info().collapsed_info().
+      simple_collapsed_layout().annotation();
+}
+
 std::string SyncedNotification::GetAppId() const {
   if (!specifics_.coalesced_notification().has_app_id())
     return std::string();
@@ -394,35 +459,32 @@ GURL SyncedNotification::GetOriginUrl() const {
   return GURL(origin_url);
 }
 
-// TODO(petewil): This only returns the first icon. Make all the icons
-// available.
 GURL SyncedNotification::GetAppIconUrl() const {
-  if (specifics_.coalesced_notification().render_info().expanded_info().
-      collapsed_info_size() == 0)
+  if (!specifics_.coalesced_notification().render_info().collapsed_info().
+      simple_collapsed_layout().has_app_icon())
     return GURL();
 
-  if (!specifics_.coalesced_notification().render_info().expanded_info().
-      collapsed_info(0).simple_collapsed_layout().has_app_icon())
-    return GURL();
+  std::string url_spec = specifics_.coalesced_notification().render_info().
+              collapsed_info().simple_collapsed_layout().app_icon().url();
 
-  return GURL(specifics_.coalesced_notification().render_info().
-              expanded_info().collapsed_info(0).simple_collapsed_layout().
-              app_icon().url());
+  return AddDefaultSchemaIfNeeded(url_spec);
 }
 
-// TODO(petewil): This currenly only handles the first image from the first
-// collapsed item, someday return all images.
+// TODO(petewil): This ignores all but the first image.  If Rich Notifications
+// supports more images someday, then fetch all images.
 GURL SyncedNotification::GetImageUrl() const {
-  if (specifics_.coalesced_notification().render_info().expanded_info().
-      simple_expanded_layout().media_size() == 0)
+  if (specifics_.coalesced_notification().render_info().collapsed_info().
+      simple_collapsed_layout().media_size() == 0)
     return GURL();
 
-  if (!specifics_.coalesced_notification().render_info().expanded_info().
-      simple_expanded_layout().media(0).image().has_url())
+  if (!specifics_.coalesced_notification().render_info().collapsed_info().
+      simple_collapsed_layout().media(0).image().has_url())
     return GURL();
 
-  return GURL(specifics_.coalesced_notification().render_info().
-              expanded_info().simple_expanded_layout().media(0).image().url());
+  std::string url_spec = specifics_.coalesced_notification().render_info().
+              collapsed_info().simple_collapsed_layout().media(0).image().url();
+
+  return AddDefaultSchemaIfNeeded(url_spec);
 }
 
 std::string SyncedNotification::GetText() const {
@@ -500,6 +562,23 @@ size_t SyncedNotification::GetButtonCount() const {
       target_size();
 }
 
+size_t SyncedNotification::GetProfilePictureCount() const {
+  return specifics_.coalesced_notification().render_info().collapsed_info().
+      simple_collapsed_layout().profile_image_size();
+}
+
+GURL SyncedNotification::GetProfilePictureUrl(unsigned int which_url) const {
+  if (GetProfilePictureCount() <= which_url)
+    return GURL();
+
+  std::string url_spec = specifics_.coalesced_notification().render_info().
+      collapsed_info().simple_collapsed_layout().profile_image(which_url).
+      image_url();
+
+  return AddDefaultSchemaIfNeeded(url_spec);
+}
+
+
 std::string SyncedNotification::GetDefaultDestinationTitle() const {
   if (!specifics_.coalesced_notification().render_info().collapsed_info().
       default_destination().icon().has_alt_text()) {
@@ -514,8 +593,10 @@ GURL SyncedNotification::GetDefaultDestinationIconUrl() const {
       default_destination().icon().has_url()) {
     return GURL();
   }
-  return GURL(specifics_.coalesced_notification().render_info().
-              collapsed_info().default_destination().icon().url());
+  std::string url_spec = specifics_.coalesced_notification().render_info().
+              collapsed_info().default_destination().icon().url();
+
+  return AddDefaultSchemaIfNeeded(url_spec);
 }
 
 GURL SyncedNotification::GetDefaultDestinationUrl() const {
@@ -523,8 +604,10 @@ GURL SyncedNotification::GetDefaultDestinationUrl() const {
       default_destination().has_url()) {
     return GURL();
   }
-  return GURL(specifics_.coalesced_notification().render_info().
-              collapsed_info().default_destination().url());
+  std::string url_spec = specifics_.coalesced_notification().render_info().
+              collapsed_info().default_destination().url();
+
+  return AddDefaultSchemaIfNeeded(url_spec);
 }
 
 std::string SyncedNotification::GetButtonTitle(
@@ -548,8 +631,10 @@ GURL SyncedNotification::GetButtonIconUrl(unsigned int which_button) const {
       target(which_button).action().icon().has_url()) {
     return GURL();
   }
-  return GURL(specifics_.coalesced_notification().render_info().
-              collapsed_info().target(which_button).action().icon().url());
+  std::string url_spec = specifics_.coalesced_notification().render_info().
+              collapsed_info().target(which_button).action().icon().url();
+
+  return AddDefaultSchemaIfNeeded(url_spec);
 }
 
 GURL SyncedNotification::GetButtonUrl(unsigned int which_button) const {
@@ -560,8 +645,10 @@ GURL SyncedNotification::GetButtonUrl(unsigned int which_button) const {
       target(which_button).action().has_url()) {
     return GURL();
   }
-  return GURL(specifics_.coalesced_notification().render_info().
-              collapsed_info().target(which_button).action().url());
+  std::string url_spec = specifics_.coalesced_notification().render_info().
+              collapsed_info().target(which_button).action().url();
+
+  return AddDefaultSchemaIfNeeded(url_spec);
 }
 
 std::string SyncedNotification::GetContainedNotificationTitle(
