@@ -13,7 +13,10 @@ PASS internals.compareTreeScopePosition(sr1, sr3) is Node.DOCUMENT_POSITION_FOLL
 PASS internals.compareTreeScopePosition(sr3, sr1) is Node.DOCUMENT_POSITION_PRECEDING
 PASS internals.compareTreeScopePosition(document, document) is 0
 PASS internals.compareTreeScopePosition(sr1, sr1) is 0
-PASS internals.compareTreeScopePosition(sr3, sr2) is Node.DOCUMENT_POSITION_DISCONNECTED | Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+PASS internals.compareTreeScopePosition(sr3, sr2) & Node.DOCUMENT_POSITION_PRECEDING || internals.compareTreeScopePosition(sr3, sr2) & Node.DOCUMENT_POSITION_FOLLOWING is non-zero.
+PASS internals.compareTreeScopePosition(sr3, sr2) & Node.DOCUMENT_POSITION_DISCONNECTED is Node.DOCUMENT_POSITION_DISCONNECTED
+PASS internals.compareTreeScopePosition(sr3, sr2) & Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC is Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+PASS internals.compareTreeScopePosition(sr3, sr2) is internals.compareTreeScopePosition(sr3, sr2)
 PASS successfullyParsed is true
 
 TEST COMPLETE
