@@ -307,6 +307,16 @@ class NET_EXPORT Entry {
   virtual ~Entry() {}
 };
 
+struct EntryDeleter {
+  void operator()(Entry* entry) {
+    // Note that |entry| is ref-counted.
+    entry->Close();
+  }
+};
+
+// Automatically closes an entry when it goes out of scope.
+typedef scoped_ptr<Entry, EntryDeleter> ScopedEntryPtr;
+
 }  // namespace disk_cache
 
 #endif  // NET_DISK_CACHE_DISK_CACHE_H_
