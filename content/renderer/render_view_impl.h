@@ -132,6 +132,10 @@ class WebHitTestResult;
 #endif
 }
 
+namespace webkit_glue {
+class WebURLResponseExtraDataImpl;
+}
+
 namespace content {
 class BrowserPluginManager;
 class DeviceOrientationDispatcher;
@@ -829,6 +833,11 @@ class CONTENT_EXPORT RenderViewImpl
   friend class RendererAccessibilityTest;
   friend class RenderViewTest;
 
+  // TODO(nasko): Temporarily friend RenderFrameImpl, so we don't duplicate
+  // utility functions needed in both classes, while we move frame specific
+  // code away from this class.
+  friend class RenderFrameImpl;
+
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
@@ -878,6 +887,17 @@ class CONTENT_EXPORT RenderViewImpl
     HTTP_404,
     CONNECTION_ERROR,
   };
+
+  static WebKit::WebReferrerPolicy GetReferrerPolicyFromRequest(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURLRequest& request);
+
+  static Referrer GetReferrerFromRequest(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURLRequest& request);
+
+  static webkit_glue::WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
+      const WebKit::WebURLResponse& response);
 
   void UpdateURL(WebKit::WebFrame* frame);
   void UpdateTitle(WebKit::WebFrame* frame, const string16& title,

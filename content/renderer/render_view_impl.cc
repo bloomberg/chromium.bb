@@ -413,7 +413,8 @@ static bool IsReload(const ViewMsg_Navigate_Params& params) {
           ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
 }
 
-static WebReferrerPolicy GetReferrerPolicyFromRequest(
+// static
+WebReferrerPolicy RenderViewImpl::GetReferrerPolicyFromRequest(
     WebFrame* frame,
     const WebURLRequest& request) {
   return request.extraData() ?
@@ -421,14 +422,16 @@ static WebReferrerPolicy GetReferrerPolicyFromRequest(
       frame->document().referrerPolicy();
 }
 
-static Referrer GetReferrerFromRequest(
+// static
+Referrer RenderViewImpl::GetReferrerFromRequest(
     WebFrame* frame,
     const WebURLRequest& request) {
   return Referrer(GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
                   GetReferrerPolicyFromRequest(frame, request));
 }
 
-static WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
+// static
+WebURLResponseExtraDataImpl* RenderViewImpl::GetExtraDataFromResponse(
     const WebURLResponse& response) {
   return static_cast<WebURLResponseExtraDataImpl*>(
       response.extraData());
@@ -2833,57 +2836,15 @@ void RenderViewImpl::initializeLayerTreeView() {
 
 WebKit::WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
                                                 const WebPluginParams& params) {
-  WebKit::WebPlugin* plugin = NULL;
-  if (GetContentClient()->renderer()->OverrideCreatePlugin(
-          this, frame, params, &plugin)) {
-    return plugin;
-  }
-
-#if defined(ENABLE_PLUGINS)
-  if (UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType) {
-    return GetBrowserPluginManager()->CreateBrowserPlugin(this, frame, params);
-  }
-
-  WebPluginInfo info;
-  std::string mime_type;
-  bool found = GetPluginInfo(params.url, frame->top()->document().url(),
-                             params.mimeType.utf8(), &info, &mime_type);
-  if (!found)
-    return NULL;
-
-  WebPluginParams params_to_use = params;
-  params_to_use.mimeType = WebString::fromUTF8(mime_type);
-  return CreatePlugin(frame, info, params_to_use);
-#else
+  NOTREACHED();
   return NULL;
-#endif  // defined(ENABLE_PLUGINS)
 }
 
 WebSharedWorker* RenderViewImpl::createSharedWorker(
     WebFrame* frame, const WebURL& url, const WebString& name,
     unsigned long long document_id) {
-
-  int route_id = MSG_ROUTING_NONE;
-  bool exists = false;
-  bool url_mismatch = false;
-  ViewHostMsg_CreateWorker_Params params;
-  params.url = url;
-  params.name = name;
-  params.document_id = document_id;
-  params.render_view_route_id = routing_id_;
-  params.route_id = MSG_ROUTING_NONE;
-  params.script_resource_appcache_id = 0;
-  Send(new ViewHostMsg_LookupSharedWorker(
-      params, &exists, &route_id, &url_mismatch));
-  if (url_mismatch) {
-    return NULL;
-  } else {
-    return new WebSharedWorkerProxy(RenderThreadImpl::current(),
-                                    document_id,
-                                    exists,
-                                    route_id,
-                                    routing_id_);
-  }
+  NOTREACHED();
+  return NULL;
 }
 
 WebMediaPlayer* RenderViewImpl::createMediaPlayer(
@@ -2981,11 +2942,8 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
 WebApplicationCacheHost* RenderViewImpl::createApplicationCacheHost(
     WebFrame* frame, WebApplicationCacheHostClient* client) {
-  if (!frame || !frame->view())
-    return NULL;
-  return new RendererWebApplicationCacheHostImpl(
-      FromWebView(frame->view()), client,
-      RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy());
+  NOTREACHED();
+  return NULL;
 }
 
 WebCookieJar* RenderViewImpl::cookieJar(WebFrame* frame) {
@@ -3000,8 +2958,7 @@ void RenderViewImpl::didAccessInitialDocument(WebFrame* frame) {
 }
 
 void RenderViewImpl::didCreateFrame(WebFrame* parent, WebFrame* child) {
-  Send(new ViewHostMsg_FrameAttached(routing_id_, parent->identifier(),
-      child->identifier(), UTF16ToUTF8(child->assignedName())));
+  NOTREACHED();
 }
 
 void RenderViewImpl::didDisownOpener(WebKit::WebFrame* frame) {
@@ -3017,13 +2974,6 @@ void RenderViewImpl::didDisownOpener(WebKit::WebFrame* frame) {
 }
 
 void RenderViewImpl::frameDetached(WebFrame* frame) {
-  int64 parent_frame_id = -1;
-  if (frame->parent())
-    parent_frame_id = frame->parent()->identifier();
-
-  Send(new ViewHostMsg_FrameDetached(routing_id_, parent_frame_id,
-      frame->identifier()));
-
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameDetached(frame));
 }
 
@@ -3033,19 +2983,13 @@ void RenderViewImpl::willClose(WebFrame* frame) {
 
 void RenderViewImpl::didChangeName(WebFrame* frame,
                                    const WebString& name)  {
-  if (!renderer_preferences_.report_frame_name_changes)
-    return;
-
-  Send(new ViewHostMsg_UpdateFrameName(routing_id_,
-                                       frame->identifier(),
-                                       !frame->parent(),
-                                       UTF16ToUTF8(name)));
+  NOTREACHED();
 }
 
 void RenderViewImpl::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
     WebNavigationPolicy policy) {
-  loadURLExternally(frame, request, policy, WebString());
+  NOTREACHED();
 }
 
 void RenderViewImpl::Repaint(const gfx::Size& size) {
@@ -3081,13 +3025,7 @@ void RenderViewImpl::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
     WebNavigationPolicy policy,
     const WebString& suggested_name) {
-  Referrer referrer(GetReferrerFromRequest(frame, request));
-  if (policy == WebKit::WebNavigationPolicyDownload) {
-    Send(new ViewHostMsg_DownloadUrl(routing_id_, request.url(), referrer,
-                                     suggested_name));
-  } else {
-    OpenURL(frame, request.url(), referrer, policy);
-  }
+  NOTREACHED();
 }
 
 WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
@@ -3314,11 +3252,8 @@ WebURLError RenderViewImpl::cannotHandleRequestError(
 
 WebURLError RenderViewImpl::cancelledError(
     WebFrame* frame, const WebURLRequest& request) {
-  WebURLError error;
-  error.domain = WebString::fromUTF8(net::kErrorDomain);
-  error.reason = net::ERR_ABORTED;
-  error.unreachableURL = request.url();
-  return error;
+  NOTREACHED();
+  return WebURLError();
 }
 
 void RenderViewImpl::unableToImplementPolicyWithError(
@@ -3328,53 +3263,11 @@ void RenderViewImpl::unableToImplementPolicyWithError(
 
 void RenderViewImpl::willSendSubmitEvent(WebKit::WebFrame* frame,
     const WebKit::WebFormElement& form) {
-  // Some login forms have onSubmit handlers that put a hash of the password
-  // into a hidden field and then clear the password. (Issue 28910.)
-  // This method gets called before any of those handlers run, so save away
-  // a copy of the password in case it gets lost.
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->dataSource());
-  document_state->set_password_form_data(CreatePasswordForm(form));
+  NOTREACHED();
 }
 
 void RenderViewImpl::willSubmitForm(WebFrame* frame,
                                     const WebFormElement& form) {
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->provisionalDataSource());
-  NavigationState* navigation_state = document_state->navigation_state();
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
-
-  if (PageTransitionCoreTypeIs(navigation_state->transition_type(),
-                               PAGE_TRANSITION_LINK)) {
-    navigation_state->set_transition_type(PAGE_TRANSITION_FORM_SUBMIT);
-  }
-
-  // Save these to be processed when the ensuing navigation is committed.
-  WebSearchableFormData web_searchable_form_data(form);
-  internal_data->set_searchable_form_url(web_searchable_form_data.url());
-  internal_data->set_searchable_form_encoding(
-      web_searchable_form_data.encoding().utf8());
-  scoped_ptr<PasswordForm> password_form_data =
-      CreatePasswordForm(form);
-
-  // In order to save the password that the user actually typed and not one
-  // that may have gotten transformed by the site prior to submit, recover it
-  // from the form contents already stored by |willSendSubmitEvent| into the
-  // dataSource's NavigationState (as opposed to the provisionalDataSource's,
-  // which is what we're storing into now.)
-  if (password_form_data) {
-    DocumentState* old_document_state =
-        DocumentState::FromDataSource(frame->dataSource());
-    if (old_document_state) {
-      PasswordForm* old_form_data = old_document_state->password_form_data();
-      if (old_form_data && old_form_data->action == password_form_data->action)
-        password_form_data->password_value = old_form_data->password_value;
-    }
-  }
-
-  document_state->set_password_form_data(password_form_data.Pass());
-
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, WillSubmitForm(frame, form));
 }
@@ -3881,13 +3774,6 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame) {
 }
 
 void RenderViewImpl::didCreateDocumentElement(WebFrame* frame) {
-  // Notify the browser about non-blank documents loading in the top frame.
-  GURL url = frame->document().url();
-  if (url.is_valid() && url.spec() != kAboutBlankURL) {
-    if (frame == webview()->mainFrame())
-      Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));
-  }
-
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     DidCreateDocumentElement(frame));
 }
@@ -4015,145 +3901,12 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
                                      unsigned identifier,
                                      WebURLRequest& request,
                                      const WebURLResponse& redirect_response) {
-  // The request my be empty during tests.
-  if (request.url().isEmpty())
-    return;
-
-  WebFrame* top_frame = frame->top();
-  if (!top_frame)
-    top_frame = frame;
-  WebDataSource* provisional_data_source = top_frame->provisionalDataSource();
-  WebDataSource* top_data_source = top_frame->dataSource();
-  WebDataSource* data_source =
-      provisional_data_source ? provisional_data_source : top_data_source;
-
-  PageTransition transition_type = PAGE_TRANSITION_LINK;
-  DocumentState* document_state = DocumentState::FromDataSource(data_source);
-  DCHECK(document_state);
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
-  NavigationState* navigation_state = document_state->navigation_state();
-  transition_type = navigation_state->transition_type();
-
-  GURL request_url(request.url());
-  GURL new_url;
-  if (GetContentClient()->renderer()->WillSendRequest(
-          frame,
-          transition_type,
-          request_url,
-          request.firstPartyForCookies(),
-          &new_url)) {
-    request.setURL(WebURL(new_url));
-  }
-
-  if (internal_data->is_cache_policy_override_set())
-    request.setCachePolicy(internal_data->cache_policy_override());
-
-  WebKit::WebReferrerPolicy referrer_policy;
-  if (internal_data->is_referrer_policy_set()) {
-    referrer_policy = internal_data->referrer_policy();
-    internal_data->clear_referrer_policy();
-  } else {
-    referrer_policy = frame->document().referrerPolicy();
-  }
-
-  // The request's extra data may indicate that we should set a custom user
-  // agent. This needs to be done here, after WebKit is through with setting the
-  // user agent on its own.
-  WebString custom_user_agent;
-  if (request.extraData()) {
-    webkit_glue::WebURLRequestExtraDataImpl* old_extra_data =
-        static_cast<webkit_glue::WebURLRequestExtraDataImpl*>(
-            request.extraData());
-    custom_user_agent = old_extra_data->custom_user_agent();
-
-    if (!custom_user_agent.isNull()) {
-      if (custom_user_agent.isEmpty())
-        request.clearHTTPHeaderField("User-Agent");
-      else
-        request.setHTTPHeaderField("User-Agent", custom_user_agent);
-    }
-  }
-
-  request.setExtraData(
-      new RequestExtraData(referrer_policy,
-                           custom_user_agent,
-                           (frame == top_frame),
-                           frame->identifier(),
-                           frame->parent() == top_frame,
-                           frame->parent() ? frame->parent()->identifier() : -1,
-                           navigation_state->allow_download(),
-                           transition_type,
-                           navigation_state->transferred_request_child_id(),
-                           navigation_state->transferred_request_request_id()));
-
-  DocumentState* top_document_state =
-      DocumentState::FromDataSource(top_data_source);
-  // TODO(gavinp): separate out prefetching and prerender field trials
-  // if the rel=prerender rel type is sticking around.
-  if (top_document_state &&
-      request.targetType() == WebURLRequest::TargetIsPrefetch)
-    top_document_state->set_was_prefetcher(true);
-
-  request.setRequestorID(routing_id_);
-  request.setHasUserGesture(WebUserGestureIndicator::isProcessingUserGesture());
-
-  if (!navigation_state->extra_headers().empty()) {
-    for (net::HttpUtil::HeadersIterator i(
-        navigation_state->extra_headers().begin(),
-        navigation_state->extra_headers().end(), "\n");
-        i.GetNext(); ) {
-      request.setHTTPHeaderField(WebString::fromUTF8(i.name()),
-                                 WebString::fromUTF8(i.values()));
-    }
-  }
-
-  if (!renderer_preferences_.enable_referrers)
-    request.clearHTTPHeaderField("Referer");
+  NOTREACHED();
 }
 
 void RenderViewImpl::didReceiveResponse(
     WebFrame* frame, unsigned identifier, const WebURLResponse& response) {
-
-  // Only do this for responses that correspond to a provisional data source
-  // of the top-most frame.  If we have a provisional data source, then we
-  // can't have any sub-resources yet, so we know that this response must
-  // correspond to a frame load.
-  if (!frame->provisionalDataSource() || frame->parent())
-    return;
-
-  // If we are in view source mode, then just let the user see the source of
-  // the server's error page.
-  if (frame->isViewSourceModeEnabled())
-    return;
-
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->provisionalDataSource());
-  int http_status_code = response.httpStatusCode();
-
-  // Record page load flags.
-  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
-  if (extra_data) {
-    document_state->set_was_fetched_via_spdy(
-        extra_data->was_fetched_via_spdy());
-    document_state->set_was_npn_negotiated(
-        extra_data->was_npn_negotiated());
-    document_state->set_npn_negotiated_protocol(
-        extra_data->npn_negotiated_protocol());
-    document_state->set_was_alternate_protocol_available(
-        extra_data->was_alternate_protocol_available());
-    document_state->set_connection_info(
-        extra_data->connection_info());
-    document_state->set_was_fetched_via_proxy(
-        extra_data->was_fetched_via_proxy());
-  }
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
-  internal_data->set_http_status_code(http_status_code);
-  // Whether or not the http status code actually corresponds to an error is
-  // only checked when the page is done loading, if |use_error_page| is
-  // still true.
-  internal_data->set_use_error_page(true);
+  NOTREACHED();
 }
 
 void RenderViewImpl::didFinishResourceLoad(
@@ -4212,54 +3965,33 @@ void RenderViewImpl::didFailResourceLoad(
 void RenderViewImpl::didLoadResourceFromMemoryCache(
     WebFrame* frame, const WebURLRequest& request,
     const WebURLResponse& response) {
-  // The recipients of this message have no use for data: URLs: they don't
-  // affect the page's insecure content list and are not in the disk cache. To
-  // prevent large (1M+) data: URLs from crashing in the IPC system, we simply
-  // filter them out here.
-  GURL url(request.url());
-  if (url.SchemeIs("data"))
-    return;
-
-  // Let the browser know we loaded a resource from the memory cache.  This
-  // message is needed to display the correct SSL indicators.
-  Send(new ViewHostMsg_DidLoadResourceFromMemoryCache(
-      routing_id_,
-      url,
-      response.securityInfo(),
-      request.httpMethod().utf8(),
-      response.mimeType().utf8(),
-      ResourceType::FromTargetType(request.targetType())));
+  NOTREACHED();
 }
 
 void RenderViewImpl::didDisplayInsecureContent(WebFrame* frame) {
-  Send(new ViewHostMsg_DidDisplayInsecureContent(routing_id_));
+  NOTREACHED();
 }
 
 void RenderViewImpl::didRunInsecureContent(
     WebFrame* frame, const WebSecurityOrigin& origin, const WebURL& target) {
-  Send(new ViewHostMsg_DidRunInsecureContent(
-      routing_id_,
-      origin.toString().utf8(),
-      target));
+  NOTREACHED();
 }
 
 void RenderViewImpl::didExhaustMemoryAvailableForScript(WebFrame* frame) {
-  Send(new ViewHostMsg_JSOutOfMemory(routing_id_));
+  NOTREACHED();
 }
 
 void RenderViewImpl::didCreateScriptContext(WebFrame* frame,
                                             v8::Handle<v8::Context> context,
                                             int extension_group,
                                             int world_id) {
-  GetContentClient()->renderer()->DidCreateScriptContext(
-      frame, context, extension_group, world_id);
+  NOTREACHED();
 }
 
 void RenderViewImpl::willReleaseScriptContext(WebFrame* frame,
                                               v8::Handle<v8::Context> context,
                                               int world_id) {
-  GetContentClient()->renderer()->WillReleaseScriptContext(
-      frame, context, world_id);
+  NOTREACHED();
 }
 
 void RenderViewImpl::CheckPreferredSize() {
@@ -4361,9 +4093,7 @@ void RenderViewImpl::didChangeScrollOffset(WebFrame* frame) {
 }
 
 void RenderViewImpl::willInsertBody(WebKit::WebFrame* frame) {
-  if (!frame->parent()) {
-    Send(new ViewHostMsg_WillInsertBody(routing_id()));
-  }
+  NOTREACHED();
 }
 
 void RenderViewImpl::didFirstVisuallyNonEmptyLayout(WebFrame* frame) {
@@ -4385,7 +4115,8 @@ void RenderViewImpl::didFirstVisuallyNonEmptyLayout(WebFrame* frame) {
 
   if (bg_color != body_background_color_) {
     body_background_color_ = bg_color;
-    Send(new ViewHostMsg_DidChangeBodyBackgroundColor(routing_id_, bg_color));
+    Send(new ViewHostMsg_DidChangeBodyBackgroundColor(
+        GetRoutingID(), bg_color));
   }
 #endif
 }
@@ -4426,26 +4157,13 @@ bool RenderViewImpl::ShouldUpdateSelectionTextFromContextMenuParams(
 void RenderViewImpl::reportFindInPageMatchCount(int request_id,
                                                 int count,
                                                 bool final_update) {
-  int active_match_ordinal = -1;  // -1 = don't update active match ordinal
-  if (!count)
-    active_match_ordinal = 0;
-
-  // Send the search result over to the browser process.
-  SendFindReply(request_id,
-                count,
-                active_match_ordinal,
-                gfx::Rect(),
-                final_update);
+  NOTREACHED();
 }
 
 void RenderViewImpl::reportFindInPageSelection(int request_id,
                                                int active_match_ordinal,
                                                const WebRect& selection_rect) {
-  SendFindReply(request_id,
-                -1,
-                active_match_ordinal,
-                selection_rect,
-                false);
+  NOTREACHED();
 }
 
 void RenderViewImpl::openFileSystem(
@@ -4454,56 +4172,21 @@ void RenderViewImpl::openFileSystem(
     long long size,
     bool create,
     WebFileSystemCallbacks* callbacks) {
-  DCHECK(callbacks);
-
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isUnique()) {
-    // Unique origins cannot store persistent state.
-    callbacks->didFail(WebKit::WebFileErrorAbort);
-    return;
-  }
-
-  ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
-      GURL(origin.toString()), static_cast<fileapi::FileSystemType>(type),
-      size, create,
-      base::Bind(&OpenFileSystemCallbackAdapter, callbacks),
-      base::Bind(&FileStatusCallbackAdapter, callbacks));
+  NOTREACHED();
 }
 
 void RenderViewImpl::deleteFileSystem(
     WebFrame* frame,
     WebKit::WebFileSystemType type ,
     WebFileSystemCallbacks* callbacks) {
-  DCHECK(callbacks);
-
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isUnique()) {
-    // Unique origins cannot store persistent state.
-    callbacks->didSucceed();
-    return;
-  }
-
-  ChildThread::current()->file_system_dispatcher()->DeleteFileSystem(
-      GURL(origin.toString()),
-      static_cast<fileapi::FileSystemType>(type),
-      base::Bind(&FileStatusCallbackAdapter, callbacks));
+  NOTREACHED();
 }
 
 void RenderViewImpl::queryStorageUsageAndQuota(
     WebFrame* frame,
     WebStorageQuotaType type,
     WebStorageQuotaCallbacks* callbacks) {
-  DCHECK(frame);
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isUnique()) {
-    // Unique origins cannot store persistent state.
-    callbacks->didFail(WebKit::WebStorageQuotaErrorAbort);
-    return;
-  }
-  ChildThread::current()->quota_dispatcher()->QueryStorageUsageAndQuota(
-      GURL(origin.toString()),
-      static_cast<quota::StorageType>(type),
-      QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
+  NOTREACHED();
 }
 
 void RenderViewImpl::requestStorageQuota(
@@ -4511,17 +4194,7 @@ void RenderViewImpl::requestStorageQuota(
     WebStorageQuotaType type,
     unsigned long long requested_size,
     WebStorageQuotaCallbacks* callbacks) {
-  DCHECK(frame);
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isUnique()) {
-    // Unique origins cannot store persistent state.
-    callbacks->didFail(WebKit::WebStorageQuotaErrorAbort);
-    return;
-  }
-  ChildThread::current()->quota_dispatcher()->RequestStorageQuota(
-      routing_id(), GURL(origin.toString()),
-      static_cast<quota::StorageType>(type), requested_size,
-      QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
+  NOTREACHED();
 }
 
 bool RenderViewImpl::willCheckAndDispatchMessageEvent(
@@ -4552,14 +4225,12 @@ bool RenderViewImpl::willCheckAndDispatchMessageEvent(
 
 void RenderViewImpl::willOpenSocketStream(
     WebSocketStreamHandle* handle) {
-  SocketStreamHandleData::AddToHandle(handle, routing_id_);
+  NOTREACHED();
 }
 
 void RenderViewImpl::willStartUsingPeerConnectionHandler(
     WebKit::WebFrame* frame, WebKit::WebRTCPeerConnectionHandler* handler) {
-#if defined(ENABLE_WEBRTC)
-  static_cast<RTCPeerConnectionHandler*>(handler)->associateWithFrame(frame);
-#endif
+  NOTREACHED();
 }
 
 WebKit::WebString RenderViewImpl::acceptLanguages() {
@@ -4569,53 +4240,24 @@ WebKit::WebString RenderViewImpl::acceptLanguages() {
 WebKit::WebString RenderViewImpl::userAgentOverride(
     WebKit::WebFrame* frame,
     const WebKit::WebURL& url) {
-  if (!webview() || !webview()->mainFrame() ||
-      renderer_preferences_.user_agent_override.empty()) {
-    return WebKit::WebString();
-  }
-
-  // If we're in the middle of committing a load, the data source we need
-  // will still be provisional.
-  WebFrame* main_frame = webview()->mainFrame();
-  WebDataSource* data_source = NULL;
-  if (main_frame->provisionalDataSource())
-    data_source = main_frame->provisionalDataSource();
-  else
-    data_source = main_frame->dataSource();
-
-  InternalDocumentStateData* internal_data = data_source ?
-      InternalDocumentStateData::FromDataSource(data_source) : NULL;
-  if (internal_data && internal_data->is_overriding_user_agent())
-    return WebString::fromUTF8(renderer_preferences_.user_agent_override);
+  NOTREACHED();
   return WebKit::WebString();
 }
 
 WebString RenderViewImpl::doNotTrackValue(WebFrame* frame) {
-  if (renderer_preferences_.enable_do_not_track)
-    return WebString::fromUTF8("1");
-  return WebString();
+  NOTREACHED();
+  return WebKit::WebString();
 }
 
 bool RenderViewImpl::allowWebGL(WebFrame* frame, bool default_value) {
-  if (!default_value)
-    return false;
-
-  bool blocked = true;
-  Send(new ViewHostMsg_Are3DAPIsBlocked(
-      routing_id_,
-      GURL(frame->top()->document().securityOrigin().toString()),
-      THREE_D_API_TYPE_WEBGL,
-      &blocked));
-  return !blocked;
+  NOTREACHED();
+  return false;
 }
 
 void RenderViewImpl::didLoseWebGLContext(
     WebKit::WebFrame* frame,
     int arb_robustness_status_code) {
-  Send(new ViewHostMsg_DidLose3DContext(
-      GURL(frame->top()->document().securityOrigin().toString()),
-      THREE_D_API_TYPE_WEBGL,
-      arb_robustness_status_code));
+  NOTREACHED();
 }
 
 // WebKit::WebPageSerializerClient implementation ------------------------------
@@ -4787,7 +4429,7 @@ void RenderViewImpl::LoadURLExternally(
     WebKit::WebFrame* frame,
     const WebKit::WebURLRequest& request,
     WebKit::WebNavigationPolicy policy) {
-  loadURLExternally(frame, request, policy);
+  main_render_frame_->loadURLExternally(frame, request, policy);
 }
 
 void RenderViewImpl::DidStartLoading() {
