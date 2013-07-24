@@ -36,6 +36,12 @@
 
 namespace {
 
+// Distance a drag needs to be from the app grid to be considered 'outside', at
+// which point we rearrange the apps to their pre-drag configuration, as a drop
+// then would be canceled. We have a buffer to make it easier to drag apps to
+// other pages.
+const int kDragBufferPx = 20;
+
 // Padding space in pixels for fixed layout.
 const int kLeftRightPadding = 20;
 const int kTopPadding = 1;
@@ -183,10 +189,6 @@ class SynchronousDrag : public ui::DragSourceWin {
   virtual void OnDragSourceMove() OVERRIDE {
     grid_view_->UpdateDrag(app_list::AppsGridView::MOUSE,
                            GetCursorInGridViewCoords());
-
-    // Don't turn pages if the cursor is dragged outside the view.
-    if (!IsCursorWithinGridView())
-      grid_view_->StopPageFlipTimer();
   }
 
   void SetupExchangeData(ui::OSExchangeData* data) {
@@ -241,6 +243,7 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
       rows_per_page_(0),
       selected_view_(NULL),
       drag_view_(NULL),
+      drag_start_page_(-1),
       drag_pointer_(NONE),
       drag_and_drop_host_(NULL),
       forward_events_to_drag_and_drop_host_(false),
@@ -323,6 +326,7 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
 
   drag_view_ = view;
   drag_view_offset_ = event.location();
+  drag_start_page_ = pagination_model_->selected_page();
   ExtractDragLocation(event, &drag_start_grid_view_);
   drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
 }
@@ -407,7 +411,10 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
   const Index last_drop_target = drop_target_;
   CalculateDropTarget(last_drag_point_, false);
 
-  MaybeStartPageFlipTimer(last_drag_point_);
+  if (IsPointWithinDragBuffer(last_drag_point_))
+    MaybeStartPageFlipTimer(last_drag_point_);
+  else
+    StopPageFlipTimer();
 
   gfx::Point page_switcher_point(last_drag_point_);
   views::View::ConvertPointToTarget(this, page_switcher_view_,
@@ -448,6 +455,9 @@ void AppsGridView::EndDrag(bool cancel) {
   drag_pointer_ = NONE;
   drop_target_ = Index();
   drag_view_ = NULL;
+  drag_start_grid_view_ = gfx::Point();
+  drag_start_page_ = -1;
+  drag_view_offset_ = gfx::Point();
   AnimateToIdealBounds();
 
   StopPageFlipTimer();
@@ -898,11 +908,16 @@ void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
 
 void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
                                        bool use_page_button_hovering) {
-  const int current_page = pagination_model_->selected_page();
+  int current_page = pagination_model_->selected_page();
+  gfx::Point point(drag_point);
+  if (!IsPointWithinDragBuffer(drag_point)) {
+    point = drag_start_grid_view_;
+    current_page = drag_start_page_;
+  }
 
   if (use_page_button_hovering &&
-      page_switcher_view_->bounds().Contains(drag_point)) {
-    gfx::Point page_switcher_point(drag_point);
+      page_switcher_view_->bounds().Contains(point)) {
+    gfx::Point page_switcher_point(point);
     views::View::ConvertPointToTarget(this, page_switcher_view_,
                                       &page_switcher_point);
     int page = page_switcher_view_->GetPageForPoint(page_switcher_point);
@@ -911,9 +926,9 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
       drop_target_.slot = tiles_per_page() - 1;
     }
   } else {
-    const int drop_row = drag_point.y() / kPreferredTileHeight;
+    const int drop_row = point.y() / kPreferredTileHeight;
     const int drop_col = std::min(cols_ - 1,
-                                  drag_point.x() / kPreferredTileWidth);
+                                  point.x() / kPreferredTileWidth);
 
     drop_target_.page = current_page;
     drop_target_.slot = std::max(0, std::min(
@@ -990,6 +1005,8 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
 }
 
 void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
+  if (!IsPointWithinDragBuffer(drag_point))
+    StopPageFlipTimer();
   int new_page_flip_target = -1;
 
   if (page_switcher_view_->bounds().Contains(drag_point)) {
@@ -1012,18 +1029,15 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
   if (new_page_flip_target == page_flip_target_)
     return;
 
+  StopPageFlipTimer();
   if (pagination_model_->is_valid_page(new_page_flip_target)) {
     page_flip_target_ = new_page_flip_target;
-    page_flip_timer_.Stop();
 
     if (page_flip_target_ != pagination_model_->selected_page()) {
       page_flip_timer_.Start(FROM_HERE,
           base::TimeDelta::FromMilliseconds(page_flip_delay_in_ms_),
           this, &AppsGridView::OnPageFlipTimer);
     }
-  } else {
-    page_flip_target_ = -1;
-    page_flip_timer_.Stop();
   }
 }
 
@@ -1058,6 +1072,12 @@ void AppsGridView::CancelContextMenusOnCurrentPage() {
         static_cast<AppListItemView*>(view_model_.view_at(i));
     view->CancelContextMenu();
   }
+}
+
+bool AppsGridView::IsPointWithinDragBuffer(const gfx::Point& point) const {
+  gfx::Rect rect(GetLocalBounds());
+  rect.Inset(-kDragBufferPx, -kDragBufferPx, -kDragBufferPx, -kDragBufferPx);
+  return rect.Contains(point);
 }
 
 void AppsGridView::ButtonPressed(views::Button* sender,

@@ -222,6 +222,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Cancels any context menus showing for app items on the current page.
   void CancelContextMenusOnCurrentPage();
 
+  // Returnes true if |point| lies within the bounds of this grid view plus a
+  // buffer area surrounding it.
+  bool IsPointWithinDragBuffer(const gfx::Point& point) const;
+
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
@@ -272,6 +276,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // The location of |drag_view_| when the drag started.
   gfx::Point drag_view_start_;
+
+  // Page the drag started on.
+  int drag_start_page_;
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Created when a drag is started (ie: drag exceeds the drag threshold), but
