@@ -71,10 +71,6 @@ class ExternalLoader : public base::RefCountedThreadSafe<ExternalLoader> {
 
   ExternalProviderImpl* owner_;  // weak
 
-  // Set to true if loading the extensions is already running. New requests
-  // are ignored while this is set true.
-  bool running_;
-
   DISALLOW_COPY_AND_ASSIGN(ExternalLoader);
 };
 

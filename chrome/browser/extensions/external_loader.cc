@@ -14,8 +14,7 @@ using content::BrowserThread;
 namespace extensions {
 
 ExternalLoader::ExternalLoader()
-    : owner_(NULL),
-      running_(false) {
+    : owner_(NULL) {
 }
 
 void ExternalLoader::Init(ExternalProviderImpl* owner) {
@@ -40,7 +39,6 @@ ExternalLoader::~ExternalLoader() {}
 
 void ExternalLoader::LoadFinished() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  running_ = false;
   if (owner_) {
     owner_->SetPrefs(prefs_.release());
   }
