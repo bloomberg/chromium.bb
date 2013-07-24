@@ -22,9 +22,6 @@
 
 namespace {
 
-void Noop() {}
-void BoolNoop(bool success) {}
-
 const size_t kHeaderSize = 24;
 
 const int kAdbClass = 0xff;
@@ -93,23 +90,6 @@ static std::string ReadSerialNumSync(libusb_device_handle* handle) {
   return std::string();
 }
 
-static void InterfaceClaimed(crypto::RSAPrivateKey* rsa_key,
-                             scoped_refptr<UsbDeviceHandle> usb_device,
-                             int inbound_address,
-                             int outbound_address,
-                             int zero_mask,
-                             AndroidUsbDevices* devices,
-                             bool success) {
-  if (!success)
-    return;
-
-  std::string serial = ReadSerialNumSync(usb_device->handle());
-  scoped_refptr<AndroidUsbDevice> device =
-      new AndroidUsbDevice(rsa_key, usb_device, serial, inbound_address,
-                           outbound_address, zero_mask);
-  devices->push_back(device);
-}
-
 static void ClaimInterface(
     crypto::RSAPrivateKey* rsa_key,
     scoped_refptr<UsbDeviceHandle> usb_device,
@@ -147,24 +127,14 @@ static void ClaimInterface(
   if (inbound_address == 0 || outbound_address == 0)
     return;
 
-  usb_device->ClaimInterface(1, base::Bind(&InterfaceClaimed,
-                                           rsa_key, usb_device,
-                                           inbound_address, outbound_address,
-                                           zero_mask, devices));
-}
-
-static void InterfacesListed(
-    crypto::RSAPrivateKey* rsa_key,
-    scoped_refptr<UsbDeviceHandle> usb_device,
-    scoped_refptr<UsbConfigDescriptor> config,
-    AndroidUsbDevices* devices,
-    bool success) {
-  if (!success)
+  if (!usb_device->ClaimInterface(1))
     return;
-  for (size_t j = 0; j < config->GetNumInterfaces(); ++j) {
-    ClaimInterface(rsa_key, usb_device, config->GetInterface(j),
-                   devices);
-  }
+
+  std::string serial = ReadSerialNumSync(usb_device->handle());
+  scoped_refptr<AndroidUsbDevice> device =
+      new AndroidUsbDevice(rsa_key, usb_device, serial, inbound_address,
+                           outbound_address, zero_mask);
+  devices->push_back(device);
 }
 
 static uint32 Checksum(const std::string& data) {
@@ -257,10 +227,13 @@ void AndroidUsbDevice::Enumerate(Profile* profile,
     if (claimed_devices.find(usb_device.get()) != claimed_devices.end())
       continue;
     scoped_refptr<UsbConfigDescriptor> config = new UsbConfigDescriptor();
-    usb_device->ListInterfaces(config.get(),
-                               base::Bind(&InterfacesListed, rsa_key,
-                                          usb_device, config,
-                                          &g_devices.Get()));
+    bool success = usb_device->ListInterfaces(config.get());
+    if (!success)
+      continue;
+    for (size_t j = 0; j < config->GetNumInterfaces(); ++j) {
+      ClaimInterface(rsa_key, usb_device, config->GetInterface(j),
+                     &g_devices.Get());
+    }
   }
   callback.Run(g_devices.Get());
 }
@@ -533,8 +506,8 @@ void AndroidUsbDevice::Terminate() {
     it->second->Terminated();
   }
 
-  usb_device_->ReleaseInterface(1, base::Bind(&BoolNoop));
-  usb_device_->Close(base::Bind(&Noop));
+  usb_device_->ReleaseInterface(1);
+  usb_device_->Close();
 }
 
 void AndroidUsbDevice::SocketDeleted(uint32 socket_id) {

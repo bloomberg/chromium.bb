@@ -113,11 +113,10 @@ UsbDeviceHandle::UsbDeviceHandle() : service_(NULL), handle_(NULL) {}
 
 UsbDeviceHandle::~UsbDeviceHandle() {}
 
-void UsbDeviceHandle::Close(const base::Callback<void()>& callback) {
+void UsbDeviceHandle::Close() {
   CheckDevice();
   service_->CloseDevice(this);
   handle_ = NULL;
-  callback.Run();
 }
 
 void UsbDeviceHandle::TransferComplete(PlatformUsbTransferHandle handle) {
@@ -200,8 +199,7 @@ void UsbDeviceHandle::TransferComplete(PlatformUsbTransferHandle handle) {
   libusb_free_transfer(handle);
 }
 
-void UsbDeviceHandle::ListInterfaces(UsbConfigDescriptor* config,
-                               const UsbInterfaceCallback& callback) {
+bool UsbDeviceHandle::ListInterfaces(UsbConfigDescriptor* config) {
   CheckDevice();
 
   PlatformUsbDevice device = libusb_get_device(handle_);
@@ -212,36 +210,38 @@ void UsbDeviceHandle::ListInterfaces(UsbConfigDescriptor* config,
   if (list_result == 0) {
     config->Reset(platform_config);
   }
-  callback.Run(list_result == 0);
+  return list_result == 0;
 }
 
-void UsbDeviceHandle::ClaimInterface(const int interface_number,
-                               const UsbInterfaceCallback& callback) {
+bool UsbDeviceHandle::ClaimInterface(const int interface_number) {
   CheckDevice();
 
   const int claim_result = libusb_claim_interface(handle_, interface_number);
-  callback.Run(claim_result == 0);
+  return claim_result == 0;
 }
 
-void UsbDeviceHandle::ReleaseInterface(const int interface_number,
-                                 const UsbInterfaceCallback& callback) {
+bool UsbDeviceHandle::ReleaseInterface(const int interface_number) {
   CheckDevice();
 
   const int release_result = libusb_release_interface(handle_,
                                                       interface_number);
-  callback.Run(release_result == 0);
+  return release_result == 0;
 }
 
-void UsbDeviceHandle::SetInterfaceAlternateSetting(
+bool UsbDeviceHandle::SetInterfaceAlternateSetting(
     const int interface_number,
-    const int alternate_setting,
-    const UsbInterfaceCallback& callback) {
+    const int alternate_setting) {
   CheckDevice();
 
   const int setting_result = libusb_set_interface_alt_setting(handle_,
       interface_number, alternate_setting);
 
-  callback.Run(setting_result == 0);
+  return setting_result == 0;
+}
+
+bool UsbDeviceHandle::ResetDevice() {
+  CheckDevice();
+  return libusb_reset_device(handle_) == 0;
 }
 
 void UsbDeviceHandle::ControlTransfer(const UsbEndpointDirection direction,
@@ -315,11 +315,6 @@ void UsbDeviceHandle::IsochronousTransfer(const UsbEndpointDirection direction,
   libusb_set_iso_packet_lengths(transfer, packet_length);
 
   SubmitTransfer(transfer, USB_TRANSFER_ISOCHRONOUS, buffer, length, callback);
-}
-
-void UsbDeviceHandle::ResetDevice(const base::Callback<void(bool)>& callback) {
-  CheckDevice();
-  callback.Run(libusb_reset_device(handle_) == 0);
 }
 
 void UsbDeviceHandle::CheckDevice() {

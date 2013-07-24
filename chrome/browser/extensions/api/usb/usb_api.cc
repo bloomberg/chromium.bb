@@ -488,8 +488,13 @@ void UsbListInterfacesFunction::AsyncWorkStart() {
   }
 
   config_ = new UsbConfigDescriptor();
-  resource->device()->ListInterfaces(
-      config_.get(), base::Bind(&UsbListInterfacesFunction::OnCompleted, this));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UsbDeviceHandle::ListInterfaces,
+                 resource->device(),
+                 config_),
+      base::Bind(&UsbListInterfacesFunction::OnCompleted, this));
 }
 
 void UsbListInterfacesFunction::OnCompleted(bool success) {
@@ -612,8 +617,11 @@ void UsbCloseDeviceFunction::AsyncWorkStart() {
     return;
   }
 
-  resource->device()->Close(base::Bind(&UsbCloseDeviceFunction::OnCompleted,
-                                     this));
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UsbDeviceHandle::Close, resource->device()),
+      base::Bind(&UsbCloseDeviceFunction::OnCompleted, this));
   RemoveUsbDeviceResource(parameters_->device.handle);
 }
 
@@ -639,7 +647,12 @@ void UsbClaimInterfaceFunction::AsyncWorkStart() {
     return;
   }
 
-  resource->device()->ClaimInterface(parameters_->interface_number,
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UsbDeviceHandle::ClaimInterface,
+                 resource->device(),
+                 parameters_->interface_number),
       base::Bind(&UsbClaimInterfaceFunction::OnCompleted, this));
 }
 
@@ -667,7 +680,12 @@ void UsbReleaseInterfaceFunction::AsyncWorkStart() {
     return;
   }
 
-  resource->device()->ReleaseInterface(parameters_->interface_number,
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UsbDeviceHandle::ReleaseInterface,
+                 resource->device(),
+                 parameters_->interface_number),
       base::Bind(&UsbReleaseInterfaceFunction::OnCompleted, this));
 }
 
@@ -697,9 +715,13 @@ void UsbSetInterfaceAlternateSettingFunction::AsyncWorkStart() {
     return;
   }
 
-  resource->device()->SetInterfaceAlternateSetting(
-      parameters_->interface_number,
-      parameters_->alternate_setting,
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UsbDeviceHandle::SetInterfaceAlternateSetting,
+                 resource->device(),
+                 parameters_->interface_number,
+                 parameters_->alternate_setting),
       base::Bind(&UsbSetInterfaceAlternateSettingFunction::OnCompleted, this));
 }
 
@@ -956,8 +978,7 @@ void UsbResetDeviceFunction::AsyncWorkStart() {
 
 void UsbResetDeviceFunction::OnStartResest(UsbDeviceResource* resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  resource->device()->ResetDevice(
-      base::Bind(&UsbResetDeviceFunction::OnCompletedFileThread, this));
+  OnCompletedFileThread(resource->device()->ResetDevice());
 }
 
 void UsbResetDeviceFunction::OnCompletedFileThread(bool success) {
@@ -979,8 +1000,12 @@ void UsbResetDeviceFunction::OnCompleted(bool success) {
     }
     // Close the device now because the handle is invalid after an
     // unsuccessful reset.
-    resource->device()->Close(
-        base::Bind(&UsbResetDeviceFunction::OnError, this));
+    BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UsbDeviceHandle::Close,
+                 resource->device()),
+      base::Bind(&UsbResetDeviceFunction::OnError, this));
     return;
   }
   SetResult(Value::CreateBooleanValue(true));
