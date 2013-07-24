@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class CachedResourceLoader;
+class ResourceFetcher;
 
 class CSSSVGDocumentValue : public CSSValue {
 public:
@@ -39,7 +39,7 @@ public:
     ~CSSSVGDocumentValue();
 
     CachedDocument* cachedSVGDocument() const { return m_document.get(); }
-    CachedDocument* load(CachedResourceLoader*);
+    CachedDocument* load(ResourceFetcher*);
 
     String customCssText() const;
     const String& url() const { return m_url; }

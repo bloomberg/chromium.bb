@@ -51,7 +51,7 @@ public:
     String customCssText() const;
 
     bool updateIfSVGCursorIsUsed(Element*);
-    StyleImage* cachedImage(CachedResourceLoader*, float deviceScaleFactor);
+    StyleImage* cachedImage(ResourceFetcher*, float deviceScaleFactor);
     StyleImage* cachedOrPendingImage(float deviceScaleFactor);
 
     void removeReferencedElement(SVGElement*);

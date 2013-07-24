@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class CachedResourceLoader;
+class ResourceFetcher;
 class Image;
 class RenderObject;
 class StyleResolver;
@@ -65,7 +65,7 @@ public:
     bool isPending() const;
     bool knownToBeOpaque(const RenderObject*) const;
 
-    void loadSubimages(CachedResourceLoader*);
+    void loadSubimages(ResourceFetcher*);
 
 protected:
     CSSImageGeneratorValue(ClassType);

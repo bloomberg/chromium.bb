@@ -25,8 +25,8 @@
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/rendering/style/StyleCachedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
 
@@ -59,14 +59,14 @@ StyleImage* CSSImageValue::cachedOrPendingImage()
     return m_image.get();
 }
 
-StyleCachedImage* CSSImageValue::cachedImage(CachedResourceLoader* loader, const ResourceLoaderOptions& options)
+StyleCachedImage* CSSImageValue::cachedImage(ResourceFetcher* loader, const ResourceLoaderOptions& options)
 {
     ASSERT(loader);
 
     if (!m_accessedImage) {
         m_accessedImage = true;
 
-        CachedResourceRequest request(ResourceRequest(loader->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? CachedResourceInitiatorTypeNames::css : m_initiatorName, options);
+        FetchRequest request(ResourceRequest(loader->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? CachedResourceInitiatorTypeNames::css : m_initiatorName, options);
         if (CachedResourceHandle<CachedImage> cachedImage = loader->requestImage(request))
             m_image = StyleCachedImage::create(cachedImage.get());
     }

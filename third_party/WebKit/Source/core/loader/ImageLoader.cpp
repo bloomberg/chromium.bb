@@ -31,8 +31,8 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderVideo.h"
@@ -156,7 +156,7 @@ void ImageLoader::updateFromElement()
     // an empty string.
     CachedResourceHandle<CachedImage> newImage = 0;
     if (!attr.isNull() && !stripLeadingAndTrailingHTMLSpaces(attr).isEmpty()) {
-        CachedResourceRequest request(ResourceRequest(document->completeURL(sourceURI(attr))), element()->localName());
+        FetchRequest request(ResourceRequest(document->completeURL(sourceURI(attr))), element()->localName());
 
         String crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
         if (!crossOriginMode.isNull()) {
@@ -165,14 +165,15 @@ void ImageLoader::updateFromElement()
         }
 
         if (m_loadManually) {
-            bool autoLoadOtherImages = document->cachedResourceLoader()->autoLoadImages();
-            document->cachedResourceLoader()->setAutoLoadImages(false);
+            bool autoLoadOtherImages = document->fetcher()->autoLoadImages();
+            document->fetcher()->setAutoLoadImages(false);
             newImage = new CachedImage(request.resourceRequest());
             newImage->setLoading(true);
-            document->cachedResourceLoader()->m_documentResources.set(newImage->url(), newImage.get());
-            document->cachedResourceLoader()->setAutoLoadImages(autoLoadOtherImages);
-        } else
-            newImage = document->cachedResourceLoader()->requestImage(request);
+            document->fetcher()->m_documentResources.set(newImage->url(), newImage.get());
+            document->fetcher()->setAutoLoadImages(autoLoadOtherImages);
+        } else {
+            newImage = document->fetcher()->requestImage(request);
+        }
 
         // If we do not have an image here, it means that a cross-site
         // violation occurred, or that the image was blocked via Content

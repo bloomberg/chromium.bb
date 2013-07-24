@@ -58,9 +58,9 @@
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResource.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -257,7 +257,7 @@ void InspectorPageAgent::resourceContent(ErrorString* errorString, Frame* frame,
 
 CachedResource* InspectorPageAgent::cachedResource(Frame* frame, const KURL& url)
 {
-    CachedResource* cachedResource = frame->document()->cachedResourceLoader()->cachedResource(url);
+    CachedResource* cachedResource = frame->document()->fetcher()->cachedResource(url);
     if (!cachedResource)
         cachedResource = memoryCache()->resourceForURL(url);
     return cachedResource;
@@ -490,9 +490,9 @@ static Vector<CachedResource*> cachedResourcesForFrame(Frame* frame)
 {
     Vector<CachedResource*> result;
 
-    const CachedResourceLoader::DocumentResourceMap& allResources = frame->document()->cachedResourceLoader()->allCachedResources();
-    CachedResourceLoader::DocumentResourceMap::const_iterator end = allResources.end();
-    for (CachedResourceLoader::DocumentResourceMap::const_iterator it = allResources.begin(); it != end; ++it) {
+    const ResourceFetcher::DocumentResourceMap& allResources = frame->document()->fetcher()->allCachedResources();
+    ResourceFetcher::DocumentResourceMap::const_iterator end = allResources.end();
+    for (ResourceFetcher::DocumentResourceMap::const_iterator it = allResources.begin(); it != end; ++it) {
         CachedResource* cachedResource = it->value.get();
 
         switch (cachedResource->type()) {

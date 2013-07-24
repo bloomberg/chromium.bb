@@ -34,7 +34,7 @@
 namespace WebCore {
 
 class CachedImageClient;
-class CachedResourceLoader;
+class ResourceFetcher;
 class FloatSize;
 class MemoryCache;
 class RenderObject;
@@ -48,7 +48,7 @@ public:
     CachedImage(Image*);
     virtual ~CachedImage();
     
-    virtual void load(CachedResourceLoader*, const ResourceLoaderOptions&);
+    virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 
     Image* image(); // Returns the nullImage() if the image is not available yet.
     Image* imageForRenderer(const RenderObject*); // Returns the nullImage() if the image is not available yet.

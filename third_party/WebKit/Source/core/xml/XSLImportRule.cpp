@@ -24,9 +24,9 @@
 
 #include "CachedResourceInitiatorTypeNames.h"
 #include "core/dom/Document.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/xml/XSLStyleSheet.h"
 
 namespace WebCore {
@@ -73,7 +73,7 @@ bool XSLImportRule::isLoading()
 
 void XSLImportRule::loadSheet()
 {
-    CachedResourceLoader* cachedResourceLoader = 0;
+    ResourceFetcher* fetcher = 0;
 
     XSLStyleSheet* rootSheet = parentStyleSheet();
 
@@ -83,7 +83,7 @@ void XSLImportRule::loadSheet()
     }
 
     if (rootSheet)
-        cachedResourceLoader = rootSheet->cachedResourceLoader();
+        fetcher = rootSheet->fetcher();
     
     String absHref = m_strHref;
     XSLStyleSheet* parentSheet = parentStyleSheet();
@@ -98,8 +98,8 @@ void XSLImportRule::loadSheet()
             return;
     }
     
-    CachedResourceRequest request(ResourceRequest(cachedResourceLoader->document()->completeURL(absHref)), CachedResourceInitiatorTypeNames::xml);
-    m_cachedSheet = cachedResourceLoader->requestXSLStyleSheet(request);
+    FetchRequest request(ResourceRequest(fetcher->document()->completeURL(absHref)), CachedResourceInitiatorTypeNames::xml);
+    m_cachedSheet = fetcher->requestXSLStyleSheet(request);
     
     if (m_cachedSheet) {
         m_cachedSheet->addClient(this);

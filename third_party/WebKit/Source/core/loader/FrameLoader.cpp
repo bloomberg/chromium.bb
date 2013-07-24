@@ -66,7 +66,7 @@
 #include "core/loader/ResourceLoader.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContentSecurityPolicy.h"
@@ -536,8 +536,8 @@ void FrameLoader::didBeginDocument(bool dispatch)
 
     Settings* settings = m_frame->document()->settings();
     if (settings) {
-        m_frame->document()->cachedResourceLoader()->setImagesEnabled(settings->areImagesEnabled());
-        m_frame->document()->cachedResourceLoader()->setAutoLoadImages(settings->loadsImagesAutomatically());
+        m_frame->document()->fetcher()->setImagesEnabled(settings->areImagesEnabled());
+        m_frame->document()->fetcher()->setAutoLoadImages(settings->loadsImagesAutomatically());
     }
 
     if (m_documentLoader) {
@@ -637,7 +637,7 @@ void FrameLoader::checkCompleted()
         return;
 
     // Still waiting for images/scripts?
-    if (m_frame->document()->cachedResourceLoader()->requestCount())
+    if (m_frame->document()->fetcher()->requestCount())
         return;
 
     // Still waiting for elements that don't go through a FrameLoader?
@@ -1569,11 +1569,11 @@ void FrameLoader::checkLoadComplete()
 int FrameLoader::numPendingOrLoadingRequests(bool recurse) const
 {
     if (!recurse)
-        return m_frame->document()->cachedResourceLoader()->requestCount();
+        return m_frame->document()->fetcher()->requestCount();
 
     int count = 0;
     for (Frame* frame = m_frame; frame; frame = frame->tree()->traverseNext(m_frame))
-        count += frame->document()->cachedResourceLoader()->requestCount();
+        count += frame->document()->fetcher()->requestCount();
     return count;
 }
 

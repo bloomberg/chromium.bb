@@ -35,8 +35,8 @@
 #include "core/loader/EmptyClients.h"
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -163,7 +163,7 @@ TEST(CachedImageTest, CancelOnDetach)
 
     // Emulate starting a real load.
     CachedResourceHandle<CachedImage> cachedImage = new CachedImage(ResourceRequest(testURL));
-    cachedImage->load(documentLoader->cachedResourceLoader(), ResourceLoaderOptions());
+    cachedImage->load(documentLoader->fetcher(), ResourceLoaderOptions());
     memoryCache()->add(cachedImage.get());
 
     MockCachedImageClient client;

@@ -36,8 +36,8 @@
 #include "core/dom/Document.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/loader/Prerenderer.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Settings.h"
 #include "core/platform/PrerenderHandle.h"
 #include "core/platform/network/DNS.h"
@@ -118,12 +118,12 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
         if (!m_client->shouldLoadLink())
             return false;
         CachedResource::Type type = relAttribute.isLinkSubresource() ?  CachedResource::LinkSubresource : CachedResource::LinkPrefetch;
-        CachedResourceRequest linkRequest(ResourceRequest(document->completeURL(href)), CachedResourceInitiatorTypeNames::link);
+        FetchRequest linkRequest(ResourceRequest(document->completeURL(href)), CachedResourceInitiatorTypeNames::link);
         if (m_cachedLinkResource) {
             m_cachedLinkResource->removeClient(this);
             m_cachedLinkResource = 0;
         }
-        m_cachedLinkResource = document->cachedResourceLoader()->requestLinkResource(type, linkRequest);
+        m_cachedLinkResource = document->fetcher()->requestLinkResource(type, linkRequest);
         if (m_cachedLinkResource)
             m_cachedLinkResource->addClient(this);
     }

@@ -28,9 +28,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/parser/XMLDocumentParser.h" // for parseAttributes()
 
@@ -154,9 +154,9 @@ void ProcessingInstruction::checkStyleSheet()
             m_loading = true;
             document()->styleSheetCollection()->addPendingSheet();
             
-            CachedResourceRequest request(ResourceRequest(document()->completeURL(href)), CachedResourceInitiatorTypeNames::processinginstruction);
+            FetchRequest request(ResourceRequest(document()->completeURL(href)), CachedResourceInitiatorTypeNames::processinginstruction);
             if (m_isXSL)
-                m_cachedSheet = document()->cachedResourceLoader()->requestXSLStyleSheet(request);
+                m_cachedSheet = document()->fetcher()->requestXSLStyleSheet(request);
             else
             {
                 String charset = attrs.get("charset");
@@ -164,7 +164,7 @@ void ProcessingInstruction::checkStyleSheet()
                     charset = document()->charset();
                 request.setCharset(charset);
 
-                m_cachedSheet = document()->cachedResourceLoader()->requestCSSStyleSheet(request);
+                m_cachedSheet = document()->fetcher()->requestCSSStyleSheet(request);
             }
             if (m_cachedSheet)
                 m_cachedSheet->addClient(this);

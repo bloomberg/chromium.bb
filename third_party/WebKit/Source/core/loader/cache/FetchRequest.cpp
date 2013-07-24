@@ -24,19 +24,19 @@
  */
 
 #include "config.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
 
 #include "core/dom/Element.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/cache/CachedResourceInitiatorInfo.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 
 namespace WebCore {
 
-CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const String& charset, ResourceLoadPriority priority)
+FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const String& charset, ResourceLoadPriority priority)
     : m_resourceRequest(resourceRequest)
     , m_charset(charset)
-    , m_options(CachedResourceLoader::defaultCachedResourceOptions())
+    , m_options(ResourceFetcher::defaultCachedResourceOptions())
     , m_priority(priority)
     , m_forPreload(false)
     , m_defer(NoDefer)
@@ -44,7 +44,7 @@ CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequ
     m_options.initiatorInfo.name = initiator;
 }
 
-CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const ResourceLoaderOptions& options)
+FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const ResourceLoaderOptions& options)
     : m_resourceRequest(resourceRequest)
     , m_options(options)
     , m_priority(ResourceLoadPriorityUnresolved)
@@ -54,9 +54,9 @@ CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequ
     m_options.initiatorInfo.name = initiator;
 }
 
-CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequest, const CachedResourceInitiatorInfo& initiator)
+FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const CachedResourceInitiatorInfo& initiator)
     : m_resourceRequest(resourceRequest)
-    , m_options(CachedResourceLoader::defaultCachedResourceOptions())
+    , m_options(ResourceFetcher::defaultCachedResourceOptions())
     , m_priority(ResourceLoadPriorityUnresolved)
     , m_forPreload(false)
     , m_defer(NoDefer)
@@ -64,11 +64,11 @@ CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequ
     m_options.initiatorInfo = initiator;
 }
 
-CachedResourceRequest::~CachedResourceRequest()
+FetchRequest::~FetchRequest()
 {
 }
 
-void CachedResourceRequest::setPotentiallyCrossOriginEnabled(SecurityOrigin* origin, StoredCredentials allowCredentials)
+void FetchRequest::setPotentiallyCrossOriginEnabled(SecurityOrigin* origin, StoredCredentials allowCredentials)
 {
     updateRequestForAccessControl(m_resourceRequest, origin, allowCredentials);
     ASSERT(m_options.requestOriginPolicy == UseDefaultOriginRestrictionsForType); // Allows only tightening from the default value.

@@ -53,7 +53,7 @@ namespace WebCore {
     class ApplicationCacheHost;
     class ArchiveResource;
     class ArchiveResourceCollection;
-    class CachedResourceLoader;
+    class ResourceFetcher;
     class ContentFilter;
     class FormState;
     class Frame;
@@ -95,7 +95,7 @@ namespace WebCore {
         const ResourceRequest& request() const;
         ResourceRequest& request();
 
-        CachedResourceLoader* cachedResourceLoader() const { return m_cachedResourceLoader.get(); }
+        ResourceFetcher* fetcher() const { return m_fetcher.get(); }
 
         const SubstituteData& substituteData() const { return m_substituteData; }
 
@@ -221,7 +221,7 @@ namespace WebCore {
         void startDataLoadTimer();
                 
         Frame* m_frame;
-        RefPtr<CachedResourceLoader> m_cachedResourceLoader;
+        RefPtr<ResourceFetcher> m_fetcher;
 
         CachedResourceHandle<CachedRawResource> m_mainResource;
         ResourceLoaderSet m_resourceLoaders;

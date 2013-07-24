@@ -51,7 +51,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/DragActions.h"
 #include "core/page/DragClient.h"
 #include "core/page/DragSession.h"
@@ -493,8 +493,8 @@ bool DragController::concludeEditDrag(DragData* dragData)
     // manually controlling drag behaviour
     if (!range)
         return false;
-    CachedResourceLoader* cachedResourceLoader = range->ownerDocument()->cachedResourceLoader();
-    ResourceCacheValidationSuppressor validationSuppressor(cachedResourceLoader);
+    ResourceFetcher* fetcher = range->ownerDocument()->fetcher();
+    ResourceCacheValidationSuppressor validationSuppressor(fetcher);
     if (dragIsMove(innerFrame->selection(), dragData) || dragCaret.isContentRichlyEditable()) {
         bool chosePlainText = false;
         RefPtr<DocumentFragment> fragment = documentFragmentFromDragData(dragData, innerFrame.get(), range, true, chosePlainText);

@@ -29,7 +29,7 @@
 #include "core/loader/ResourceLoader.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/platform/SharedBuffer.h"
 
 namespace WebCore {

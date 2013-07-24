@@ -234,9 +234,9 @@ static PassRefPtr<CustomFilterProgram> lookupCustomFilterProgram(CSSShaderValue*
     CustomFilterProgramType programType, const CustomFilterProgramMixSettings& mixSettings, CustomFilterMeshType meshType,
     StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
 {
-    CachedResourceLoader* cachedResourceLoader = state.document()->cachedResourceLoader();
-    KURL vertexShaderURL = vertexShader ? vertexShader->completeURL(cachedResourceLoader) : KURL();
-    KURL fragmentShaderURL = fragmentShader ? fragmentShader->completeURL(cachedResourceLoader) : KURL();
+    ResourceFetcher* fetcher = state.document()->fetcher();
+    KURL vertexShaderURL = vertexShader ? vertexShader->completeURL(fetcher) : KURL();
+    KURL fragmentShaderURL = fragmentShader ? fragmentShader->completeURL(fetcher) : KURL();
     RefPtr<StyleCustomFilterProgram> program;
     if (customFilterProgramCache)
         program = customFilterProgramCache->lookup(CustomFilterProgramInfo(vertexShaderURL.string(), fragmentShaderURL.string(), programType, mixSettings, meshType));

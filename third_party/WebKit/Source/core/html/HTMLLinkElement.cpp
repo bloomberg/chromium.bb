@@ -40,8 +40,8 @@
 #include "core/html/HTMLImportsController.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "wtf/StdLibExtras.h"
@@ -598,8 +598,8 @@ void LinkStyle::process()
         addPendingSheet(blocking ? Blocking : NonBlocking);
 
         // Load stylesheets that are not needed for the rendering immediately with low priority.
-        CachedResourceRequest request = builder.build(blocking);
-        m_cachedSheet = document()->cachedResourceLoader()->requestCSSStyleSheet(request);
+        FetchRequest request = builder.build(blocking);
+        m_cachedSheet = document()->fetcher()->requestCSSStyleSheet(request);
 
         if (m_cachedSheet)
             m_cachedSheet->addClient(this);

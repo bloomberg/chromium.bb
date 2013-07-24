@@ -34,8 +34,8 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/loader/cache/CachedDocument.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 #include "core/svg/SVGElementInstance.h"
@@ -233,8 +233,8 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
         if (isExternalReference) {
             KURL url = document()->completeURL(hrefCurrentValue());
             if (url.hasFragmentIdentifier()) {
-                CachedResourceRequest request(ResourceRequest(url.string()), localName());
-                setCachedDocument(document()->cachedResourceLoader()->requestSVGDocument(request));
+                FetchRequest request(ResourceRequest(url.string()), localName());
+                setCachedDocument(document()->fetcher()->requestSVGDocument(request));
             }
         } else
             setCachedDocument(0);

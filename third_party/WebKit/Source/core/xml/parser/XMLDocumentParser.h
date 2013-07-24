@@ -41,7 +41,7 @@ namespace WebCore {
 
 class ContainerNode;
 class CachedScript;
-class CachedResourceLoader;
+class ResourceFetcher;
 class DocumentFragment;
 class Document;
 class Element;
@@ -191,7 +191,7 @@ class Text;
         SegmentedString m_pendingSrc;
     };
 
-xmlDocPtr xmlDocPtrForString(CachedResourceLoader*, const String& source, const String& url);
+xmlDocPtr xmlDocPtrForString(ResourceFetcher*, const String& source, const String& url);
 
 HashMap<String, String> parseAttributes(const String&, bool& attrsOK);
 

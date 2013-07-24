@@ -37,7 +37,7 @@
 namespace WebCore {
 
 class CachedResource;
-class CachedResourceLoader;
+class ResourceFetcher;
 class Frame;
 class ResourceLoader;
 class ResourceRequest;

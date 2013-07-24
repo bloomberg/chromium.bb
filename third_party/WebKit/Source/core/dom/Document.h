@@ -64,7 +64,7 @@ class CDATASection;
 class CSSStyleDeclaration;
 class CSSStyleSheet;
 class CachedCSSStyleSheet;
-class CachedResourceLoader;
+class ResourceFetcher;
 class CachedScript;
 class CanvasRenderingContext;
 class CharacterData;
@@ -498,7 +498,7 @@ public:
     // auto is specified.
     void pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int& marginTop, int& marginRight, int& marginBottom, int& marginLeft);
 
-    CachedResourceLoader* cachedResourceLoader() { return m_cachedResourceLoader.get(); }
+    ResourceFetcher* fetcher() { return m_fetcher.get(); }
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
@@ -1133,7 +1133,7 @@ private:
     DOMWindow* m_domWindow;
     HTMLImport* m_import;
 
-    RefPtr<CachedResourceLoader> m_cachedResourceLoader;
+    RefPtr<ResourceFetcher> m_fetcher;
     RefPtr<DocumentParser> m_parser;
     unsigned m_activeParserCount;
     RefPtr<ContextFeatures> m_contextFeatures;

@@ -41,7 +41,7 @@ class MemoryCache;
 class CachedMetadata;
 class CachedResourceClient;
 class CachedResourceHandleBase;
-class CachedResourceLoader;
+class ResourceFetcher;
 class InspectorResource;
 class PurgeableBuffer;
 class ResourceLoader;
@@ -83,7 +83,7 @@ public:
     CachedResource(const ResourceRequest&, Type);
     virtual ~CachedResource();
 
-    virtual void load(CachedResourceLoader*, const ResourceLoaderOptions&);
+    virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 
     virtual void setEncoding(const String&) { }
     virtual String encoding() const { return String(); }

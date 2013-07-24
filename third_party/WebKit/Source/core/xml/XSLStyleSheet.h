@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class CachedResourceLoader;
+class ResourceFetcher;
 class XSLImportRule;
     
 class XSLStyleSheet : public StyleSheet {
@@ -67,7 +67,7 @@ public:
     void loadChildSheets();
     void loadChildSheet(const String& href);
 
-    CachedResourceLoader* cachedResourceLoader();
+    ResourceFetcher* fetcher();
 
     Document* ownerDocument();
     virtual XSLStyleSheet* parentStyleSheet() const OVERRIDE { return m_parentStyleSheet; }

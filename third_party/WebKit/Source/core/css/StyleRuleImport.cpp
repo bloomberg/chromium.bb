@@ -26,8 +26,8 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 
 namespace WebCore {
 
@@ -93,8 +93,8 @@ void StyleRuleImport::requestStyleSheet()
     if (!document)
         return;
 
-    CachedResourceLoader* cachedResourceLoader = document->cachedResourceLoader();
-    if (!cachedResourceLoader)
+    ResourceFetcher* fetcher = document->fetcher();
+    if (!fetcher)
         return;
 
     KURL absURL;
@@ -114,11 +114,11 @@ void StyleRuleImport::requestStyleSheet()
         rootSheet = sheet;
     }
 
-    CachedResourceRequest request(ResourceRequest(absURL), CachedResourceInitiatorTypeNames::css, m_parentStyleSheet->charset());
+    FetchRequest request(ResourceRequest(absURL), CachedResourceInitiatorTypeNames::css, m_parentStyleSheet->charset());
     if (m_parentStyleSheet->isUserStyleSheet())
-        m_cachedSheet = cachedResourceLoader->requestUserCSSStyleSheet(request);
+        m_cachedSheet = fetcher->requestUserCSSStyleSheet(request);
     else
-        m_cachedSheet = cachedResourceLoader->requestCSSStyleSheet(request);
+        m_cachedSheet = fetcher->requestCSSStyleSheet(request);
     if (m_cachedSheet) {
         // if the import rule is issued dynamically, the sheet may be
         // removed from the pending sheet count, so let the doc know

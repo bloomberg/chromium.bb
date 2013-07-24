@@ -29,7 +29,7 @@
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShaderValue.h"
 #include "core/css/resolver/ElementStyleResources.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CursorList.h"
@@ -46,8 +46,8 @@
 
 namespace WebCore {
 
-StyleResourceLoader::StyleResourceLoader(CachedResourceLoader* cachedResourceLoader)
-    : m_cachedResourceLoader(cachedResourceLoader)
+StyleResourceLoader::StyleResourceLoader(ResourceFetcher* fetcher)
+    : m_fetcher(fetcher)
     , m_customFilterProgramCache(StyleCustomFilterProgramCache::create())
 {
 }
@@ -66,7 +66,7 @@ void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, cons
             CSSSVGDocumentValue* value = elementStyleResources.pendingSVGDocuments().get(referenceFilter);
             if (!value)
                 continue;
-            CachedDocument* cachedDocument = value->load(m_cachedResourceLoader);
+            CachedDocument* cachedDocument = value->load(m_fetcher);
             if (!cachedDocument)
                 continue;
 
@@ -80,23 +80,23 @@ PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* 
 {
     if (pendingImage->cssImageValue()) {
         CSSImageValue* imageValue = pendingImage->cssImageValue();
-        return imageValue->cachedImage(m_cachedResourceLoader);
+        return imageValue->cachedImage(m_fetcher);
     }
 
     if (pendingImage->cssImageGeneratorValue()) {
         CSSImageGeneratorValue* imageGeneratorValue = pendingImage->cssImageGeneratorValue();
-        imageGeneratorValue->loadSubimages(m_cachedResourceLoader);
+        imageGeneratorValue->loadSubimages(m_fetcher);
         return StyleGeneratedImage::create(imageGeneratorValue);
     }
 
     if (pendingImage->cssCursorImageValue()) {
         CSSCursorImageValue* cursorImageValue = pendingImage->cssCursorImageValue();
-        return cursorImageValue->cachedImage(m_cachedResourceLoader, deviceScaleFactor);
+        return cursorImageValue->cachedImage(m_fetcher, deviceScaleFactor);
     }
 
     if (pendingImage->cssImageSetValue()) {
         CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue();
-        return imageSetValue->cachedImageSet(m_cachedResourceLoader, deviceScaleFactor);
+        return imageSetValue->cachedImageSet(m_fetcher, deviceScaleFactor);
     }
 
     return 0;
@@ -114,10 +114,10 @@ void StyleResourceLoader::loadPendingShapeImage(RenderStyle* renderStyle, ShapeV
     StylePendingImage* pendingImage = static_cast<StylePendingImage*>(image);
     CSSImageValue* cssImageValue =  pendingImage->cssImageValue();
 
-    ResourceLoaderOptions options = CachedResourceLoader::defaultCachedResourceOptions();
+    ResourceLoaderOptions options = ResourceFetcher::defaultCachedResourceOptions();
     options.requestOriginPolicy = RestrictToSameOrigin;
 
-    shapeValue->setImage(cssImageValue->cachedImage(m_cachedResourceLoader, options));
+    shapeValue->setImage(cssImageValue->cachedImage(m_fetcher, options));
 }
 
 void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementStyleResources& elementStyleResources)
@@ -229,11 +229,11 @@ void StyleResourceLoader::loadPendingShaders(RenderStyle* style, const ElementSt
             } else {
                 if (program->vertexShader() && program->vertexShader()->isPendingShader()) {
                     CSSShaderValue* shaderValue = static_cast<StylePendingShader*>(program->vertexShader())->cssShaderValue();
-                    program->setVertexShader(shaderValue->cachedShader(m_cachedResourceLoader));
+                    program->setVertexShader(shaderValue->cachedShader(m_fetcher));
                 }
                 if (program->fragmentShader() && program->fragmentShader()->isPendingShader()) {
                     CSSShaderValue* shaderValue = static_cast<StylePendingShader*>(program->fragmentShader())->cssShaderValue();
-                    program->setFragmentShader(shaderValue->cachedShader(m_cachedResourceLoader));
+                    program->setFragmentShader(shaderValue->cachedShader(m_fetcher));
                 }
                 m_customFilterProgramCache->add(program);
             }

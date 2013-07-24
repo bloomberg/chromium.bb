@@ -82,8 +82,8 @@
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/DOMPoint.h"
@@ -264,7 +264,7 @@ String Internals::address(Node* node)
 bool Internals::isPreloaded(const String& url)
 {
     Document* document = contextDocument();
-    return document->cachedResourceLoader()->isPreloaded(url);
+    return document->fetcher()->isPreloaded(url);
 }
 
 bool Internals::isLoadingFromMemoryCache(const String& url)
@@ -1686,10 +1686,10 @@ void Internals::garbageCollectDocumentResources(Document* document, ExceptionCod
         return;
     }
 
-    CachedResourceLoader* cachedResourceLoader = document->cachedResourceLoader();
-    if (!cachedResourceLoader)
+    ResourceFetcher* fetcher = document->fetcher();
+    if (!fetcher)
         return;
-    cachedResourceLoader->garbageCollectDocumentResources();
+    fetcher->garbageCollectDocumentResources();
 }
 
 void Internals::evictAllCachedResources() const

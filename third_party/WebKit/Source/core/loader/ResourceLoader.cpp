@@ -296,7 +296,7 @@ void ResourceLoader::didReceiveResponse(WebKit::WebURLLoader*, const WebKit::Web
     m_host->didReceiveResponse(m_resource, response.toResourceResponse(), m_options);
 
     if (response.toResourceResponse().isMultipart()) {
-        // We don't count multiParts in a CachedResourceLoader's request count
+        // We don't count multiParts in a ResourceFetcher's request count
         m_requestCountTracker.clear();
         if (!m_resource->isImage()) {
             cancel();

@@ -29,7 +29,7 @@
 #include <limits>
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
@@ -44,8 +44,8 @@ namespace WebCore {
 static void setImageLoadingSettings(Page* page)
 {
     for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        frame->document()->cachedResourceLoader()->setImagesEnabled(page->settings()->areImagesEnabled());
-        frame->document()->cachedResourceLoader()->setAutoLoadImages(page->settings()->loadsImagesAutomatically());
+        frame->document()->fetcher()->setImagesEnabled(page->settings()->areImagesEnabled());
+        frame->document()->fetcher()->setAutoLoadImages(page->settings()->loadsImagesAutomatically());
     }
 }
 

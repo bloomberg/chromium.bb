@@ -479,7 +479,7 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const Resource
     return static_cast<NavigationPolicy>(webPolicy);
 }
 
-void FrameLoaderClientImpl::dispatchWillRequestResource(CachedResourceRequest* request)
+void FrameLoaderClientImpl::dispatchWillRequestResource(FetchRequest* request)
 {
     if (m_webFrame->client()) {
         WebCachedURLRequest urlRequest(request);

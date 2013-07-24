@@ -43,7 +43,7 @@
 namespace WebCore {
 
 class ScriptExecutionContext;
-class CachedResourceLoader;
+class ResourceFetcher;
 class HTMLImportLoader;
 class HTMLImportsController;
 class DocumentWriter;
@@ -133,7 +133,7 @@ public:
     void showSecurityErrorMessage(const String&);
     PassRefPtr<HTMLImportLoader> findLinkFor(const KURL&) const;
     SecurityOrigin* securityOrigin() const;
-    CachedResourceLoader* cachedResourceLoader() const;
+    ResourceFetcher* fetcher() const;
     bool haveChildrenLoaded(HTMLImport* parent) const;
     void didLoad(HTMLImportLoader*);
 

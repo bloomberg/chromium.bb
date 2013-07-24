@@ -95,7 +95,7 @@ public:
     virtual void dispatchDidFinishLoad();
     virtual void dispatchDidLayout(WebCore::LayoutMilestones);
     virtual WebCore::NavigationPolicy decidePolicyForNavigation(const WebCore::ResourceRequest&, WebCore::NavigationType, WebCore::NavigationPolicy, bool isRedirect);
-    virtual void dispatchWillRequestResource(WebCore::CachedResourceRequest*);
+    virtual void dispatchWillRequestResource(WebCore::FetchRequest*);
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<WebCore::FormState>);
     virtual void dispatchWillSubmitForm(PassRefPtr<WebCore::FormState>);
     virtual void postProgressStartedNotification();

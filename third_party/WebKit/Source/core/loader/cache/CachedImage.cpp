@@ -27,8 +27,8 @@
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/FrameView.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
@@ -65,10 +65,10 @@ CachedImage::~CachedImage()
     clearImage();
 }
 
-void CachedImage::load(CachedResourceLoader* cachedResourceLoader, const ResourceLoaderOptions& options)
+void CachedImage::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
 {
-    if (!cachedResourceLoader || cachedResourceLoader->autoLoadImages())
-        CachedResource::load(cachedResourceLoader, options);
+    if (!fetcher || fetcher->autoLoadImages())
+        CachedResource::load(fetcher, options);
     else
         setLoading(false);
 }

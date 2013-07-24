@@ -55,7 +55,7 @@ CachedFont::~CachedFont()
     delete m_fontData;
 }
 
-void CachedFont::load(CachedResourceLoader*, const ResourceLoaderOptions& options)
+void CachedFont::load(ResourceFetcher*, const ResourceLoaderOptions& options)
 {
     // Don't load the file yet.  Wait for an access before triggering the load.
     setLoading(true);
@@ -69,7 +69,7 @@ void CachedFont::didAddClient(CachedResourceClient* c)
         static_cast<CachedFontClient*>(c)->fontLoaded(this);
 }
 
-void CachedFont::beginLoadIfNeeded(CachedResourceLoader* dl)
+void CachedFont::beginLoadIfNeeded(ResourceFetcher* dl)
 {
     if (!m_loadInitiated) {
         m_loadInitiated = true;

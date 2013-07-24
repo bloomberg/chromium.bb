@@ -28,7 +28,7 @@
 
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedResourceInitiatorInfo.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
@@ -50,13 +50,13 @@ KURL PreloadRequest::completeURL(Document* document)
     return document->completeURL(m_resourceURL, m_baseURL.isEmpty() ? document->url() : m_baseURL);
 }
 
-CachedResourceRequest PreloadRequest::resourceRequest(Document* document)
+FetchRequest PreloadRequest::resourceRequest(Document* document)
 {
     ASSERT(isMainThread());
     CachedResourceInitiatorInfo initiatorInfo;
     initiatorInfo.name = m_initiatorName;
     initiatorInfo.position = m_initiatorPosition;
-    CachedResourceRequest request(ResourceRequest(completeURL(document)), initiatorInfo);
+    FetchRequest request(ResourceRequest(completeURL(document)), initiatorInfo);
 
     // FIXME: It's possible CORS should work for other request types?
     if (m_resourceType == CachedResource::Script)
@@ -88,8 +88,8 @@ void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
     if (!preload->media().isEmpty() && !mediaAttributeMatches(m_document->frame(), m_document->renderer()->style(), preload->media()))
         return;
 
-    CachedResourceRequest request = preload->resourceRequest(m_document);
-    m_document->cachedResourceLoader()->preload(preload->resourceType(), request, preload->charset());
+    FetchRequest request = preload->resourceRequest(m_document);
+    m_document->fetcher()->preload(preload->resourceType(), request, preload->charset());
 }
 
 

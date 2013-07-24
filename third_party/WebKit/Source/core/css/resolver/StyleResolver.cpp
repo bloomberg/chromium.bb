@@ -106,7 +106,7 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     , m_matchAuthorAndUserStyles(matchAuthorAndUserStyles)
     , m_fontSelector(CSSFontSelector::create(document))
     , m_viewportStyleResolver(ViewportStyleResolver::create(document))
-    , m_styleResourceLoader(document->cachedResourceLoader())
+    , m_styleResourceLoader(document->fetcher())
 {
     Element* root = document->documentElement();
 

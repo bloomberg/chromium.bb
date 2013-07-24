@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CachedResourceRequest_h
-#define CachedResourceRequest_h
+#ifndef FetchRequest_h
+#define FetchRequest_h
 
 #include "core/dom/Element.h"
 #include "core/loader/ResourceLoaderOptions.h"
@@ -36,14 +36,14 @@
 namespace WebCore {
 class SecurityOrigin;
 
-class CachedResourceRequest {
+class FetchRequest {
 public:
     enum DeferOption { NoDefer, DeferredByClient };
 
-    explicit CachedResourceRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String(), ResourceLoadPriority = ResourceLoadPriorityUnresolved);
-    CachedResourceRequest(const ResourceRequest&, const AtomicString& initiator, const ResourceLoaderOptions&);
-    CachedResourceRequest(const ResourceRequest&, const CachedResourceInitiatorInfo&);
-    ~CachedResourceRequest();
+    explicit FetchRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String(), ResourceLoadPriority = ResourceLoadPriorityUnresolved);
+    FetchRequest(const ResourceRequest&, const AtomicString& initiator, const ResourceLoaderOptions&);
+    FetchRequest(const ResourceRequest&, const CachedResourceInitiatorInfo&);
+    ~FetchRequest();
 
     ResourceRequest& mutableResourceRequest() { return m_resourceRequest; }
     const ResourceRequest& resourceRequest() const { return m_resourceRequest; }

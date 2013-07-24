@@ -27,8 +27,8 @@
 #include "XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGElementInstance.h"
@@ -79,8 +79,8 @@ void SVGFEImageElement::clearResourceReferences()
 
 void SVGFEImageElement::requestImageResource()
 {
-    CachedResourceRequest request(ResourceRequest(ownerDocument()->completeURL(hrefCurrentValue())), localName());
-    m_cachedImage = document()->cachedResourceLoader()->requestImage(request);
+    FetchRequest request(ResourceRequest(ownerDocument()->completeURL(hrefCurrentValue())), localName());
+    m_cachedImage = document()->fetcher()->requestImage(request);
 
     if (m_cachedImage)
         m_cachedImage->addClient(this);

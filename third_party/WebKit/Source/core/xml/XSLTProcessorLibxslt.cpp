@@ -36,7 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
 #include "core/editing/markup.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
@@ -82,7 +82,7 @@ void XSLTProcessor::parseErrorFunc(void* userData, xmlError* error)
 
 // FIXME: There seems to be no way to control the ctxt pointer for loading here, thus we have globals.
 static XSLTProcessor* globalProcessor = 0;
-static CachedResourceLoader* globalCachedResourceLoader = 0;
+static ResourceFetcher* globalResourceFetcher = 0;
 static xmlDocPtr docLoaderFunc(const xmlChar* uri,
                                xmlDictPtr,
                                int options,
@@ -103,14 +103,14 @@ static xmlDocPtr docLoaderFunc(const xmlChar* uri,
 
         Vector<char> data;
 
-        bool requestAllowed = globalCachedResourceLoader->frame() && globalCachedResourceLoader->document()->securityOrigin()->canRequest(url);
+        bool requestAllowed = globalResourceFetcher->frame() && globalResourceFetcher->document()->securityOrigin()->canRequest(url);
         if (requestAllowed) {
-            globalCachedResourceLoader->frame()->loader()->loadResourceSynchronously(url, AllowStoredCredentials, error, response, data);
-            requestAllowed = globalCachedResourceLoader->document()->securityOrigin()->canRequest(response.url());
+            globalResourceFetcher->frame()->loader()->loadResourceSynchronously(url, AllowStoredCredentials, error, response, data);
+            requestAllowed = globalResourceFetcher->document()->securityOrigin()->canRequest(response.url());
         }
         if (!requestAllowed) {
             data.clear();
-            globalCachedResourceLoader->printAccessDeniedMessage(url);
+            globalResourceFetcher->printAccessDeniedMessage(url);
         }
 
         PageConsole* console = 0;
@@ -138,11 +138,11 @@ static xmlDocPtr docLoaderFunc(const xmlChar* uri,
     return 0;
 }
 
-static inline void setXSLTLoadCallBack(xsltDocLoaderFunc func, XSLTProcessor* processor, CachedResourceLoader* cachedResourceLoader)
+static inline void setXSLTLoadCallBack(xsltDocLoaderFunc func, XSLTProcessor* processor, ResourceFetcher* fetcher)
 {
     xsltSetLoaderFunc(func);
     globalProcessor = processor;
-    globalCachedResourceLoader = cachedResourceLoader;
+    globalResourceFetcher = fetcher;
 }
 
 static int writeToStringBuilder(void* context, const char* buffer, int len)
@@ -250,7 +250,7 @@ static inline xmlDocPtr xmlDocPtrFromNode(Node* sourceNode, bool& shouldDelete)
     if (sourceIsDocument && ownerDocument->transformSource())
         sourceDoc = (xmlDocPtr)ownerDocument->transformSource()->platformSource();
     if (!sourceDoc) {
-        sourceDoc = (xmlDocPtr)xmlDocPtrForString(ownerDocument->cachedResourceLoader(), createMarkup(sourceNode),
+        sourceDoc = (xmlDocPtr)xmlDocPtrForString(ownerDocument->fetcher(), createMarkup(sourceNode),
             sourceIsDocument ? ownerDocument->url().string() : String());
         shouldDelete = sourceDoc;
     }
@@ -280,7 +280,7 @@ bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String
 {
     RefPtr<Document> ownerDocument = sourceNode->document();
 
-    setXSLTLoadCallBack(docLoaderFunc, this, ownerDocument->cachedResourceLoader());
+    setXSLTLoadCallBack(docLoaderFunc, this, ownerDocument->fetcher());
     xsltStylesheetPtr sheet = xsltStylesheetPointer(m_stylesheet, m_stylesheetRootNode.get());
     if (!sheet) {
         setXSLTLoadCallBack(0, 0, 0);

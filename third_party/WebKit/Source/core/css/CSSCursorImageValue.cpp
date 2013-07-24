@@ -26,7 +26,7 @@
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/rendering/style/StyleCachedImage.h"
 #include "core/rendering/style/StyleCachedImageSet.h"
 #include "core/rendering/style/StyleImage.h"
@@ -119,7 +119,7 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
     return false;
 }
 
-StyleImage* CSSCursorImageValue::cachedImage(CachedResourceLoader* loader, float deviceScaleFactor)
+StyleImage* CSSCursorImageValue::cachedImage(ResourceFetcher* loader, float deviceScaleFactor)
 {
     if (m_imageValue->isImageSetValue())
         return static_cast<CSSImageSetValue*>(m_imageValue.get())->cachedImageSet(loader, deviceScaleFactor);

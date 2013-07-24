@@ -34,8 +34,8 @@
 #include "CachedResourceInitiatorTypeNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/rendering/style/StyleCachedShader.h"
 #include "core/rendering/style/StylePendingShader.h"
 #include "wtf/text/StringBuilder.h"
@@ -53,19 +53,19 @@ CSSShaderValue::~CSSShaderValue()
 {
 }
 
-KURL CSSShaderValue::completeURL(CachedResourceLoader* loader) const
+KURL CSSShaderValue::completeURL(ResourceFetcher* loader) const
 {
     return loader->document()->completeURL(m_url);
 }
 
-StyleCachedShader* CSSShaderValue::cachedShader(CachedResourceLoader* loader)
+StyleCachedShader* CSSShaderValue::cachedShader(ResourceFetcher* loader)
 {
     ASSERT(loader);
 
     if (!m_accessedShader) {
         m_accessedShader = true;
 
-        CachedResourceRequest request(ResourceRequest(completeURL(loader)), CachedResourceInitiatorTypeNames::css);
+        FetchRequest request(ResourceRequest(completeURL(loader)), CachedResourceInitiatorTypeNames::css);
         if (CachedResourceHandle<CachedShader> cachedShader = loader->requestShader(request))
             m_shader = StyleCachedShader::create(cachedShader.get());
     }

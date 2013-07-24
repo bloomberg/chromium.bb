@@ -28,24 +28,24 @@
 
 namespace WebCore {
 
-CachedResourceLoader* XMLDocumentParserScope::currentCachedResourceLoader = 0;
+ResourceFetcher* XMLDocumentParserScope::currentFetcher = 0;
 
-XMLDocumentParserScope::XMLDocumentParserScope(CachedResourceLoader* cachedResourceLoader)
-    : m_oldCachedResourceLoader(currentCachedResourceLoader)
+XMLDocumentParserScope::XMLDocumentParserScope(ResourceFetcher* fetcher)
+    : m_oldFetcher(currentFetcher)
     , m_oldGenericErrorFunc(xmlGenericError)
     , m_oldStructuredErrorFunc(xmlStructuredError)
     , m_oldErrorContext(xmlGenericErrorContext)
 {
-    currentCachedResourceLoader = cachedResourceLoader;
+    currentFetcher = fetcher;
 }
 
-XMLDocumentParserScope::XMLDocumentParserScope(CachedResourceLoader* cachedResourceLoader, xmlGenericErrorFunc genericErrorFunc, xmlStructuredErrorFunc structuredErrorFunc, void* errorContext)
-    : m_oldCachedResourceLoader(currentCachedResourceLoader)
+XMLDocumentParserScope::XMLDocumentParserScope(ResourceFetcher* fetcher, xmlGenericErrorFunc genericErrorFunc, xmlStructuredErrorFunc structuredErrorFunc, void* errorContext)
+    : m_oldFetcher(currentFetcher)
     , m_oldGenericErrorFunc(xmlGenericError)
     , m_oldStructuredErrorFunc(xmlStructuredError)
     , m_oldErrorContext(xmlGenericErrorContext)
 {
-    currentCachedResourceLoader = cachedResourceLoader;
+    currentFetcher = fetcher;
     if (genericErrorFunc)
         xmlSetGenericErrorFunc(errorContext, genericErrorFunc);
     if (structuredErrorFunc)
@@ -54,7 +54,7 @@ XMLDocumentParserScope::XMLDocumentParserScope(CachedResourceLoader* cachedResou
 
 XMLDocumentParserScope::~XMLDocumentParserScope()
 {
-    currentCachedResourceLoader = m_oldCachedResourceLoader;
+    currentFetcher = m_oldFetcher;
     xmlSetGenericErrorFunc(m_oldErrorContext, m_oldGenericErrorFunc);
     xmlSetStructuredErrorFunc(m_oldErrorContext, m_oldStructuredErrorFunc);
 }

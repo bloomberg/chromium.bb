@@ -28,8 +28,8 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedFont.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/svg/SVGFontFaceElement.h"
 
 namespace WebCore {
@@ -95,12 +95,12 @@ void SVGFontFaceUriElement::loadFont()
 
     const AtomicString& href = getAttribute(XLinkNames::hrefAttr);
     if (!href.isNull()) {
-        CachedResourceLoader* cachedResourceLoader = document()->cachedResourceLoader();
-        CachedResourceRequest request(ResourceRequest(document()->completeURL(href)), localName());
-        m_cachedFont = cachedResourceLoader->requestFont(request);
+        ResourceFetcher* fetcher = document()->fetcher();
+        FetchRequest request(ResourceRequest(document()->completeURL(href)), localName());
+        m_cachedFont = fetcher->requestFont(request);
         if (m_cachedFont) {
             m_cachedFont->addClient(this);
-            m_cachedFont->beginLoadIfNeeded(cachedResourceLoader);
+            m_cachedFont->beginLoadIfNeeded(fetcher);
         }
     } else
         m_cachedFont = 0;

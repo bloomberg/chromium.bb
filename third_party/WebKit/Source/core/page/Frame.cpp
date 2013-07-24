@@ -41,7 +41,7 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/DOMWindow.h"
@@ -223,7 +223,7 @@ void Frame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSiz
 {
     // In setting printing, we should not validate resources already cached for the document.
     // See https://bugs.webkit.org/show_bug.cgi?id=43704
-    ResourceCacheValidationSuppressor validationSuppressor(document()->cachedResourceLoader());
+    ResourceCacheValidationSuppressor validationSuppressor(document()->fetcher());
 
     document()->setPrinting(printing);
     view()->adjustMediaTypeForPrinting(printing);

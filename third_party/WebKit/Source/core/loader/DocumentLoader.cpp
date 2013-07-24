@@ -47,8 +47,8 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/loader/archive/ArchiveResourceCollection.h"
 #include "core/loader/archive/MHTMLArchive.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
@@ -91,7 +91,7 @@ static bool isArchiveMIMEType(const String& mimeType)
 DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData& substituteData)
     : m_deferMainResourceDataLoad(true)
     , m_frame(0)
-    , m_cachedResourceLoader(CachedResourceLoader::create(this))
+    , m_fetcher(ResourceFetcher::create(this))
     , m_originalRequest(req)
     , m_substituteData(substituteData)
     , m_originalRequestCopy(req)
@@ -124,7 +124,7 @@ ResourceLoader* DocumentLoader::mainResourceLoader() const
 DocumentLoader::~DocumentLoader()
 {
     ASSERT(!m_frame || frameLoader()->activeDocumentLoader() != this || !isLoading());
-    m_cachedResourceLoader->clearDocumentLoader();
+    m_fetcher->clearDocumentLoader();
     clearMainResourceHandle();
 }
 
@@ -746,7 +746,7 @@ bool DocumentLoader::isLoadingInAPISense() const
         Document* doc = m_frame->document();
         if ((isLoadingMainResource() || !m_frame->document()->loadEventFinished()) && isLoading())
             return true;
-        if (m_cachedResourceLoader->requestCount())
+        if (m_fetcher->requestCount())
             return true;
         if (doc->processingLoadEvent())
             return true;
@@ -879,7 +879,7 @@ void DocumentLoader::setDefersLoading(bool defers)
     // Multiple frames may be loading the same main resource simultaneously. If deferral state changes,
     // each frame's DocumentLoader will try to send a setDefersLoading() to the same underlying ResourceLoader. Ensure only
     // the "owning" DocumentLoader does so, as setDefersLoading() is not resilient to setting the same value repeatedly.
-    if (mainResourceLoader() && mainResourceLoader()->isLoadedBy(m_cachedResourceLoader.get()))
+    if (mainResourceLoader() && mainResourceLoader()->isLoadedBy(m_fetcher.get()))
         mainResourceLoader()->setDefersLoading(defers);
 
     setAllDefersLoading(m_resourceLoaders, defers);
@@ -960,8 +960,8 @@ void DocumentLoader::startLoadingMainResource()
     ResourceRequest request(m_request);
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
         (SendCallbacks, SniffContent, DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, UseDefaultOriginRestrictionsForType, DocumentContext));
-    CachedResourceRequest cachedResourceRequest(request, CachedResourceInitiatorTypeNames::document, mainResourceLoadOptions);
-    m_mainResource = m_cachedResourceLoader->requestMainResource(cachedResourceRequest);
+    FetchRequest cachedResourceRequest(request, CachedResourceInitiatorTypeNames::document, mainResourceLoadOptions);
+    m_mainResource = m_fetcher->requestMainResource(cachedResourceRequest);
     if (!m_mainResource) {
         setRequest(ResourceRequest());
         // If the load was aborted by clearing m_request, it's possible the ApplicationCacheHost

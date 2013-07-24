@@ -32,20 +32,20 @@
 
 namespace WebCore {
 
-    class CachedResourceLoader;
+class ResourceFetcher;
 
     class XMLDocumentParserScope {
         WTF_MAKE_NONCOPYABLE(XMLDocumentParserScope);
     public:
-        XMLDocumentParserScope(CachedResourceLoader* cachedResourceLoader);
+        XMLDocumentParserScope(ResourceFetcher*);
         ~XMLDocumentParserScope();
 
-        static CachedResourceLoader* currentCachedResourceLoader;
+        static ResourceFetcher* currentFetcher;
 
-        XMLDocumentParserScope(CachedResourceLoader* cachedResourceLoader, xmlGenericErrorFunc genericErrorFunc, xmlStructuredErrorFunc structuredErrorFunc = 0, void* errorContext = 0);
+        XMLDocumentParserScope(ResourceFetcher*, xmlGenericErrorFunc, xmlStructuredErrorFunc = 0, void* errorContext = 0);
 
     private:
-        CachedResourceLoader* m_oldCachedResourceLoader;
+        ResourceFetcher* m_oldFetcher;
 
         xmlGenericErrorFunc m_oldGenericErrorFunc;
         xmlStructuredErrorFunc m_oldStructuredErrorFunc;

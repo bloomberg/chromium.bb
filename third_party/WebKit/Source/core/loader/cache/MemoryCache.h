@@ -35,7 +35,7 @@ namespace WebCore  {
 
 class CachedCSSStyleSheet;
 class CachedResource;
-class CachedResourceLoader;
+class ResourceFetcher;
 class KURL;
 class ScriptExecutionContext;
 class SecurityOrigin;

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebCachedURLRequest.h"
 
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -69,7 +69,7 @@ WebString WebCachedURLRequest::initiatorName() const
     return WebString(m_private->options().initiatorInfo.name);
 }
 
-WebCachedURLRequest::WebCachedURLRequest(CachedResourceRequest* request)
+WebCachedURLRequest::WebCachedURLRequest(FetchRequest* request)
     : m_private(request)
 {
 }

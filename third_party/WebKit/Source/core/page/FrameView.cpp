@@ -43,7 +43,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
@@ -1817,7 +1817,7 @@ bool FrameView::shouldUseLoadTimeDeferredRepaintDelay() const
         return false;
     if (document->parsing())
         return true;
-    if (document->cachedResourceLoader()->requestCount())
+    if (document->fetcher()->requestCount())
         return true;
     return false;
 }

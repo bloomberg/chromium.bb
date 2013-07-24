@@ -56,10 +56,10 @@ LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
         m_charset = m_owner->document()->charset();
 }
 
-CachedResourceRequest LinkRequestBuilder::build(bool blocking) const
+FetchRequest LinkRequestBuilder::build(bool blocking) const
 {
     ResourceLoadPriority priority = blocking ? ResourceLoadPriorityUnresolved : ResourceLoadPriorityVeryLow;
-    return CachedResourceRequest(ResourceRequest(m_owner->document()->completeURL(m_url)), m_owner->localName(), m_charset, priority);
+    return FetchRequest(ResourceRequest(m_owner->document()->completeURL(m_url)), m_owner->localName(), m_charset, priority);
 }
 
 } // namespace WebCore

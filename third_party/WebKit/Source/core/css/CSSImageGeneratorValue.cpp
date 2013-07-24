@@ -191,20 +191,20 @@ bool CSSImageGeneratorValue::knownToBeOpaque(const RenderObject* renderer) const
     return false;
 }
 
-void CSSImageGeneratorValue::loadSubimages(CachedResourceLoader* cachedResourceLoader)
+void CSSImageGeneratorValue::loadSubimages(ResourceFetcher* fetcher)
 {
     switch (classType()) {
     case CrossfadeClass:
-        static_cast<CSSCrossfadeValue*>(this)->loadSubimages(cachedResourceLoader);
+        static_cast<CSSCrossfadeValue*>(this)->loadSubimages(fetcher);
         break;
     case CanvasClass:
-        static_cast<CSSCanvasValue*>(this)->loadSubimages(cachedResourceLoader);
+        static_cast<CSSCanvasValue*>(this)->loadSubimages(fetcher);
         break;
     case LinearGradientClass:
-        static_cast<CSSLinearGradientValue*>(this)->loadSubimages(cachedResourceLoader);
+        static_cast<CSSLinearGradientValue*>(this)->loadSubimages(fetcher);
         break;
     case RadialGradientClass:
-        static_cast<CSSRadialGradientValue*>(this)->loadSubimages(cachedResourceLoader);
+        static_cast<CSSRadialGradientValue*>(this)->loadSubimages(fetcher);
         break;
     default:
         ASSERT_NOT_REACHED();

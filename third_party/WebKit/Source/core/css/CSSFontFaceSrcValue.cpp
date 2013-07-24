@@ -31,8 +31,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/loader/cache/CachedFont.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/platform/graphics/FontCustomPlatformData.h"
 #include "core/svg/SVGFontFaceElement.h"
 #include "wtf/text/StringBuilder.h"
@@ -97,8 +97,8 @@ bool CSSFontFaceSrcValue::hasFailedOrCanceledSubresources() const
 CachedFont* CSSFontFaceSrcValue::cachedFont(Document* document)
 {
     if (!m_cachedFont) {
-        CachedResourceRequest request(ResourceRequest(document->completeURL(m_resource)), CachedResourceInitiatorTypeNames::css);
-        m_cachedFont = document->cachedResourceLoader()->requestFont(request);
+        FetchRequest request(ResourceRequest(document->completeURL(m_resource)), CachedResourceInitiatorTypeNames::css);
+        m_cachedFont = document->fetcher()->requestFont(request);
     }
     return m_cachedFont.get();
 }

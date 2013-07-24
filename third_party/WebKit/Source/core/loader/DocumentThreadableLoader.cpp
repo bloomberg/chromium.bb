@@ -40,8 +40,8 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/cache/CachedRawResource.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 #include "core/platform/network/ResourceError.h"
@@ -414,9 +414,9 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
         if (m_options.timeoutMilliseconds > 0)
             m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0);
 
-        CachedResourceRequest newRequest(request, m_options.initiator, options);
+        FetchRequest newRequest(request, m_options.initiator, options);
         ASSERT(!m_resource);
-        m_resource = m_document->cachedResourceLoader()->requestRawResource(newRequest);
+        m_resource = m_document->fetcher()->requestRawResource(newRequest);
         if (m_resource) {
             if (m_resource->loader()) {
                 unsigned long identifier = m_resource->identifier();

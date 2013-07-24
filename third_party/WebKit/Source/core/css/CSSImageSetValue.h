@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class CachedResourceLoader;
+class ResourceFetcher;
 class StyleCachedImageSet;
 class StyleImage;
 
@@ -43,7 +43,7 @@ public:
     }
     ~CSSImageSetValue();
 
-    StyleCachedImageSet* cachedImageSet(CachedResourceLoader*, float deviceScaleFactor);
+    StyleCachedImageSet* cachedImageSet(ResourceFetcher*, float deviceScaleFactor);
 
     // Returns a StyleCachedImageSet if the best fit image has been cached already, otherwise a StylePendingImage.
     StyleImage* cachedOrPendingImageSet(float);

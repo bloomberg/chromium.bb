@@ -31,8 +31,8 @@
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
 #include "core/loader/cache/CachedResourceHandle.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/platform/Logging.h"
 #include "core/platform/PurgeableBuffer.h"
 #include "core/platform/SharedBuffer.h"
@@ -158,9 +158,9 @@ void CachedResource::failBeforeStarting()
     error(CachedResource::LoadError);
 }
 
-void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const ResourceLoaderOptions& options)
+void CachedResource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
 {
-    if (!cachedResourceLoader->frame()) {
+    if (!fetcher->frame()) {
         failBeforeStarting();
         return;
     }
@@ -181,7 +181,7 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
         m_fragmentIdentifierForRequest = String();
     }
 
-    m_loader = ResourceLoader::create(cachedResourceLoader, this, request, options);
+    m_loader = ResourceLoader::create(fetcher, this, request, options);
     if (!m_loader) {
         failBeforeStarting();
         return;

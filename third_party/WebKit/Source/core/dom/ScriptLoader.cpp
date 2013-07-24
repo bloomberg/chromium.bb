@@ -37,9 +37,9 @@
 #include "core/dom/Text.h"
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -263,7 +263,7 @@ bool ScriptLoader::requestScript(const String& sourceUrl)
 
     ASSERT(!m_cachedScript);
     if (!stripLeadingAndTrailingHTMLSpaces(sourceUrl).isEmpty()) {
-        CachedResourceRequest request(ResourceRequest(m_element->document()->completeURL(sourceUrl)), m_element->localName());
+        FetchRequest request(ResourceRequest(m_element->document()->completeURL(sourceUrl)), m_element->localName());
 
         String crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
         if (!crossOriginMode.isNull()) {
@@ -276,7 +276,7 @@ bool ScriptLoader::requestScript(const String& sourceUrl)
         if (isValidScriptNonce)
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
 
-        m_cachedScript = m_element->document()->cachedResourceLoader()->requestScript(request);
+        m_cachedScript = m_element->document()->fetcher()->requestScript(request);
         m_isExternalScript = true;
     }
 
@@ -369,7 +369,7 @@ void ScriptLoader::notifyFinished(CachedResource* resource)
     ASSERT_UNUSED(resource, resource == m_cachedScript);
     if (!m_cachedScript)
         return;
-    if (!m_element->document()->cachedResourceLoader()->canAccess(m_cachedScript.get())) {
+    if (!m_element->document()->fetcher()->canAccess(m_cachedScript.get())) {
         dispatchErrorEvent();
         return;
     }

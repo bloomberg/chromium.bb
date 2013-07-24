@@ -59,7 +59,7 @@ public:
     bool isPending() const;
     bool knownToBeOpaque(const RenderObject*) const;
 
-    void loadSubimages(CachedResourceLoader*);
+    void loadSubimages(ResourceFetcher*);
 
     void setPercentage(PassRefPtr<CSSPrimitiveValue> percentageValue) { m_percentageValue = percentageValue; }
 

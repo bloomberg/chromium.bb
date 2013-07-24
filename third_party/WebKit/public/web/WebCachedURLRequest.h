@@ -35,7 +35,7 @@
 #include "../platform/WebPrivateOwnPtr.h"
 #include "../platform/WebString.h"
 
-namespace WebCore { class CachedResourceRequest; }
+namespace WebCore { class FetchRequest; }
 
 namespace WebKit {
 
@@ -54,14 +54,14 @@ public:
     WEBKIT_EXPORT WebString initiatorName() const;
 
 #if WEBKIT_IMPLEMENTATION
-    explicit WebCachedURLRequest(WebCore::CachedResourceRequest*);
+    explicit WebCachedURLRequest(WebCore::FetchRequest*);
 #endif
 
 private:
     WebCachedURLRequest(const WebCachedURLRequest&);
     WebCachedURLRequest& operator=(const WebCachedURLRequest&);
 
-    WebCore::CachedResourceRequest* m_private;
+    WebCore::FetchRequest* m_private;
     mutable WebPrivateOwnPtr<WrappedResourceRequest> m_resourceRequestWrapper;
 };
 

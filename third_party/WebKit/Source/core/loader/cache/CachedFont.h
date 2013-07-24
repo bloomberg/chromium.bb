@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class CachedResourceLoader;
+class ResourceFetcher;
 class FontPlatformData;
 class SVGDocument;
 class SVGFontElement;
@@ -44,12 +44,12 @@ public:
     CachedFont(const ResourceRequest&);
     virtual ~CachedFont();
     
-    virtual void load(CachedResourceLoader*, const ResourceLoaderOptions&);
+    virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 
     virtual void didAddClient(CachedResourceClient*);
 
     virtual void allClientsRemoved();
-    void beginLoadIfNeeded(CachedResourceLoader* dl);
+    void beginLoadIfNeeded(ResourceFetcher* dl);
     bool stillNeedsLoad() const { return !m_loadInitiated; }
 
     bool ensureCustomFontData();

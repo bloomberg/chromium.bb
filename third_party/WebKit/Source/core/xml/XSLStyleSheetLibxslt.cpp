@@ -111,12 +111,12 @@ void XSLStyleSheet::clearDocuments()
     }
 }
 
-CachedResourceLoader* XSLStyleSheet::cachedResourceLoader()
+ResourceFetcher* XSLStyleSheet::fetcher()
 {
     Document* document = ownerDocument();
     if (!document)
         return 0;
-    return document->cachedResourceLoader();
+    return document->fetcher();
 }
 
 bool XSLStyleSheet::parseString(const String& source)
@@ -131,7 +131,7 @@ bool XSLStyleSheet::parseString(const String& source)
     if (frame && frame->page())
         console = frame->page()->console();
 
-    XMLDocumentParserScope scope(cachedResourceLoader(), XSLTProcessor::genericErrorFunc, XSLTProcessor::parseErrorFunc, console);
+    XMLDocumentParserScope scope(fetcher(), XSLTProcessor::genericErrorFunc, XSLTProcessor::parseErrorFunc, console);
     XMLParserInput input(source);
 
     xmlParserCtxtPtr ctxt = xmlCreateMemoryParserCtxt(input.data(), input.size());

@@ -31,9 +31,9 @@
 #include "core/dom/Document.h"
 #include "core/html/track/WebVTTParser.h"
 #include "core/loader/CrossOriginAccessControl.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedTextTrack.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/platform/Logging.h"
 #include "core/platform/SharedBuffer.h"
 #include "weborigin/SecurityOrigin.h"
@@ -152,7 +152,7 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
 
     ASSERT(m_scriptExecutionContext->isDocument());
     Document* document = toDocument(m_scriptExecutionContext);
-    CachedResourceRequest cueRequest(ResourceRequest(document->completeURL(url)), CachedResourceInitiatorTypeNames::texttrack);
+    FetchRequest cueRequest(ResourceRequest(document->completeURL(url)), CachedResourceInitiatorTypeNames::texttrack);
 
     if (!crossOriginMode.isNull()) {
         m_crossOriginMode = crossOriginMode;
@@ -166,8 +166,8 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
         }
     }
 
-    CachedResourceLoader* cachedResourceLoader = document->cachedResourceLoader();
-    m_cachedCueData = cachedResourceLoader->requestTextTrack(cueRequest);
+    ResourceFetcher* fetcher = document->fetcher();
+    m_cachedCueData = fetcher->requestTextTrack(cueRequest);
     if (m_cachedCueData)
         m_cachedCueData->addClient(this);
     

@@ -63,7 +63,7 @@
 #include "core/editing/markup.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
@@ -931,7 +931,7 @@ void Editor::paste()
     if (!canPaste())
         return;
     updateMarkersForWordsAffectedByEditing(false);
-    CachedResourceLoader* loader = m_frame->document()->cachedResourceLoader();
+    ResourceFetcher* loader = m_frame->document()->fetcher();
     ResourceCacheValidationSuppressor validationSuppressor(loader);
     if (m_frame->selection()->isContentRichlyEditable())
         pasteWithPasteboard(Pasteboard::generalPasteboard(), true);

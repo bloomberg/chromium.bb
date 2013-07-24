@@ -31,8 +31,8 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "core/rendering/style/StyleCachedImageSet.h"
 #include "core/rendering/style/StylePendingImage.h"
 #include "wtf/text/StringBuilder.h"
@@ -88,7 +88,7 @@ CSSImageSetValue::ImageWithScale CSSImageSetValue::bestImageForScaleFactor()
     return image;
 }
 
-StyleCachedImageSet* CSSImageSetValue::cachedImageSet(CachedResourceLoader* loader, float deviceScaleFactor)
+StyleCachedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, float deviceScaleFactor)
 {
     ASSERT(loader);
 
@@ -103,7 +103,7 @@ StyleCachedImageSet* CSSImageSetValue::cachedImageSet(CachedResourceLoader* load
         // and any CSS transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
         ImageWithScale image = bestImageForScaleFactor();
         if (Document* document = loader->document()) {
-            CachedResourceRequest request(ResourceRequest(document->completeURL(image.imageURL)), CachedResourceInitiatorTypeNames::css);
+            FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), CachedResourceInitiatorTypeNames::css);
             if (CachedResourceHandle<CachedImage> cachedImage = loader->requestImage(request)) {
                 m_imageSet = StyleCachedImageSet::create(cachedImage.get(), image.scaleFactor, this);
                 m_accessedBestFitImage = true;

@@ -51,12 +51,12 @@ class WebCookieJar;
 
 namespace WebCore {
 
-    class CachedResourceRequest;
     class Color;
     class DOMWindowExtension;
     class DOMWrapperWorld;
     class DocumentLoader;
     class Element;
+class FetchRequest;
     class FormState;
     class Frame;
     class FrameLoader;
@@ -118,7 +118,7 @@ namespace WebCore {
 
         virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, NavigationType, NavigationPolicy, bool isRedirect) = 0;
 
-        virtual void dispatchWillRequestResource(CachedResourceRequest*) { }
+        virtual void dispatchWillRequestResource(FetchRequest*) { }
 
         virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) = 0;
         virtual void dispatchWillSubmitForm(PassRefPtr<FormState>) = 0;

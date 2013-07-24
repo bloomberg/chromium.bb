@@ -36,8 +36,8 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/DocumentWriter.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/ResourceFetcher.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
@@ -88,9 +88,9 @@ void LinkImport::process()
         return;
     }
 
-    CachedResourceRequest request = builder.build(true);
+    FetchRequest request = builder.build(true);
     request.setPotentiallyCrossOriginEnabled(controller->securityOrigin(), DoNotAllowStoredCredentials);
-    CachedResourceHandle<CachedRawResource> resource = controller->cachedResourceLoader()->requestRawResource(request);
+    CachedResourceHandle<CachedRawResource> resource = controller->fetcher()->requestRawResource(request);
     if (!resource)
         return;
 
@@ -176,7 +176,7 @@ void HTMLImportLoader::dispose()
 HTMLImportLoader::State HTMLImportLoader::startParsing(const ResourceResponse& response)
 {
     // Current canAccess() implementation isn't sufficient for catching cross-domain redirects: http://crbug.com/256976
-    if (!controller()->cachedResourceLoader()->canAccess(m_resource.get()))
+    if (!controller()->fetcher()->canAccess(m_resource.get()))
         return StateError;
 
     m_importedDocument = HTMLDocument::create(DocumentInit(response.url(), 0, this));
@@ -293,9 +293,9 @@ SecurityOrigin* HTMLImportsController::securityOrigin() const
     return m_master->securityOrigin();
 }
 
-CachedResourceLoader* HTMLImportsController::cachedResourceLoader() const
+ResourceFetcher* HTMLImportsController::fetcher() const
 {
-    return m_master->cachedResourceLoader();
+    return m_master->fetcher();
 }
 
 bool HTMLImportsController::haveChildrenLoaded(HTMLImport* parent) const

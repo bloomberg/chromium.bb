@@ -27,7 +27,7 @@
 #define HTMLResourcePreloader_h
 
 #include "core/loader/cache/CachedResource.h"
-#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/FetchRequest.h"
 #include "wtf/text/TextPosition.h"
 
 namespace WebCore {
@@ -46,7 +46,7 @@ public:
 
     bool isSafeToSendToAnotherThread() const;
 
-    CachedResourceRequest resourceRequest(Document*);
+    FetchRequest resourceRequest(Document*);
 
     const String& charset() const { return m_charset; }
     const String& media() const { return m_mediaAttribute; }
