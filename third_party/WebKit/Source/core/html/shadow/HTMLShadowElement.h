@@ -42,8 +42,6 @@ public:
 
     virtual ~HTMLShadowElement();
 
-    virtual Type insertionPointType() const OVERRIDE { return ShadowInsertionPoint; }
-
     ShadowRoot* olderShadowRoot();
 
 private:

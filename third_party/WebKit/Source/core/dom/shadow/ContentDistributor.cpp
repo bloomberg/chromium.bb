@@ -112,30 +112,27 @@ const Vector<RefPtr<InsertionPoint> >& ScopeContentDistribution::ensureInsertion
 
 void ScopeContentDistribution::registerInsertionPoint(InsertionPoint* point)
 {
-    switch (point->insertionPointType()) {
-    case InsertionPoint::ShadowInsertionPoint:
+    if (isHTMLShadowElement(point))
         ++m_numberOfShadowElementChildren;
-        break;
-    case InsertionPoint::ContentInsertionPoint:
+    else if (isHTMLContentElement(point))
         ++m_numberOfContentElementChildren;
-        break;
-    }
+    else
+        ASSERT_NOT_REACHED();
 
     invalidateInsertionPointList();
 }
 
 void ScopeContentDistribution::unregisterInsertionPoint(InsertionPoint* point)
 {
-    switch (point->insertionPointType()) {
-    case InsertionPoint::ShadowInsertionPoint:
-        ASSERT(m_numberOfShadowElementChildren > 0);
+    if (isHTMLShadowElement(point))
         --m_numberOfShadowElementChildren;
-        break;
-    case InsertionPoint::ContentInsertionPoint:
-        ASSERT(m_numberOfContentElementChildren > 0);
+    else if (isHTMLContentElement(point))
         --m_numberOfContentElementChildren;
-        break;
-    }
+    else
+        ASSERT_NOT_REACHED();
+
+    ASSERT(m_numberOfContentElementChildren >= 0);
+    ASSERT(m_numberOfShadowElementChildren >= 0);
 
     invalidateInsertionPointList();
 }

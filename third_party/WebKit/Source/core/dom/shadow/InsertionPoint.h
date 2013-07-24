@@ -41,11 +41,6 @@ namespace WebCore {
 
 class InsertionPoint : public HTMLElement {
 public:
-    enum Type {
-        ShadowInsertionPoint,
-        ContentInsertionPoint
-    };
-
     enum MatchType {
         AlwaysMatches,
         NeverMatches,
@@ -63,7 +58,6 @@ public:
 
     virtual MatchType matchTypeFor(Node*) { return AlwaysMatches; }
     virtual const CSSSelectorList& selectorList() { return emptySelectorList(); }
-    virtual Type insertionPointType() const = 0;
     virtual bool canAffectSelector() const { return false; }
 
     bool resetStyleInheritance() const;

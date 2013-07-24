@@ -34,16 +34,11 @@
 
 namespace WebCore {
 
-using HTMLNames::selectAttr;
-
-const QualifiedName& HTMLContentElement::contentTagName(Document*)
-{
-    return HTMLNames::contentTag;
-}
+using namespace HTMLNames;
 
 PassRefPtr<HTMLContentElement> HTMLContentElement::create(Document* document)
 {
-    return adoptRef(new HTMLContentElement(contentTagName(document), document));
+    return adoptRef(new HTMLContentElement(contentTag, document));
 }
 
 PassRefPtr<HTMLContentElement> HTMLContentElement::create(const QualifiedName& tagName, Document* document)
@@ -56,6 +51,7 @@ HTMLContentElement::HTMLContentElement(const QualifiedName& name, Document* docu
     , m_shouldParseSelectorList(false)
     , m_isValidSelector(true)
 {
+    ASSERT(hasTagName(contentTag));
     ScriptWrappable::init(this);
 }
 

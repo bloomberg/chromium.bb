@@ -38,7 +38,6 @@ namespace WebCore {
 
 class HTMLContentElement FINAL : public InsertionPoint {
 public:
-    static const QualifiedName& contentTagName(Document*);
     static PassRefPtr<HTMLContentElement> create(const QualifiedName&, Document*);
     static PassRefPtr<HTMLContentElement> create(Document*);
 
@@ -49,7 +48,6 @@ public:
 
     virtual MatchType matchTypeFor(Node*) OVERRIDE;
     virtual const CSSSelectorList& selectorList() OVERRIDE;
-    virtual Type insertionPointType() const OVERRIDE { return ContentInsertionPoint; }
     virtual bool canAffectSelector() const OVERRIDE { return true; }
     virtual bool isSelectValid();
 
@@ -80,8 +78,12 @@ inline const CSSSelectorList& HTMLContentElement::selectorList()
 
 inline bool isHTMLContentElement(const Node* node)
 {
-    ASSERT(node);
-    return node->isInsertionPoint() && toInsertionPoint(node)->insertionPointType() == InsertionPoint::ContentInsertionPoint;
+    return node->hasTagName(HTMLNames::contentTag);
+}
+
+inline bool isHTMLContentElement(const Element* element)
+{
+    return element->hasTagName(HTMLNames::contentTag);
 }
 
 inline HTMLContentElement* toHTMLContentElement(Node* node)
