@@ -8,7 +8,6 @@ function insertBackground() {
 }
 </script>
 <style type="text/css">
-
 body {
   background-color: black;
   background-repeat: no-repeat;
@@ -16,17 +15,10 @@ body {
   overflow: hidden;
 }
 
-#main {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  padding: 0%;
-}
-
 #inner {
-  position: relative;
-  top: 50%;
+  position: absolute;
   left: 50%;
+  top: 50%;
   margin-left: -33px;
   margin-top: -23px;
 }
@@ -47,9 +39,7 @@ body {
 </style>
 </head>
 <body id="body" onLoad="insertBackground()">
-<div id="main">
 <div id="logo"><img id="youtube" src="youtube.png"/></div>
 <div id="inner"><img id="play" src="play.png" onclick="plugin.openYoutubeURL();"/></div>
-</div>
 </body>
 </html>
