@@ -9,7 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/message_bundle.h"
@@ -160,39 +162,55 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
     }
   }
 
-  struct GCCallbackArgs {
-    GCCallbackArgs(v8::Handle<v8::Object> object,
-                   v8::Handle<v8::Function> callback)
-        : object(object), callback(callback) {}
-
-    extensions::ScopedPersistent<v8::Object> object;
-    extensions::ScopedPersistent<v8::Function> callback;
+  // Holds a |callback| to run sometime after |object| is GC'ed. |callback| will
+  // not be executed re-entrantly to avoid running JS in an unexpected state.
+  class GCCallback {
+   public:
+    static void Bind(v8::Handle<v8::Object> object,
+                     v8::Handle<v8::Function> callback) {
+      GCCallback* cb = new GCCallback(object, callback);
+      cb->object_.MakeWeak(cb, NearDeathCallback);
+    }
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(GCCallbackArgs);
+    static void NearDeathCallback(v8::Isolate* isolate,
+                                  v8::Persistent<v8::Object>* object,
+                                  GCCallback* self) {
+      // v8 says we need to explicitly reset weak handles from their callbacks.
+      // It's not implicit as one might expect.
+      self->object_.reset();
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+          base::Bind(&GCCallback::RunCallback, base::Owned(self)));
+    }
+
+    GCCallback(v8::Handle<v8::Object> object, v8::Handle<v8::Function> callback)
+        : object_(object), callback_(callback) {
+    }
+
+    void RunCallback() {
+      v8::HandleScope handle_scope;
+      v8::Handle<v8::Context> context = callback_->CreationContext();
+      if (context.IsEmpty())
+        return;
+      v8::Context::Scope context_scope(context);
+      WebKit::WebScopedMicrotaskSuppression suppression;
+      callback_->Call(context->Global(), 0, NULL);
+    }
+
+    extensions::ScopedPersistent<v8::Object> object_;
+    extensions::ScopedPersistent<v8::Function> callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(GCCallback);
   };
 
-  static void GCCallback(v8::Isolate* isolate,
-                         v8::Persistent<v8::Object>* object,
-                         GCCallbackArgs* args) {
-    v8::HandleScope handle_scope;
-    v8::Handle<v8::Context> context = args->callback->CreationContext();
-    v8::Context::Scope context_scope(context);
-    WebKit::WebScopedMicrotaskSuppression suppression;
-    // Wrap in try/catch here so that we don't call into any message/exception
-    // handlers during GC. That is a recipe for pain.
-    v8::TryCatch trycatch;
-    args->callback->Call(context->Global(), 0, NULL);
-    delete args;
-  }
-
-  // Binds a callback to be invoked when the given object is garbage collected.
+  // void BindToGC(object, callback)
+  //
+  // Binds |callback| to be invoked *sometime after* |object| is garbage
+  // collected. We don't call the method re-entrantly so as to avoid executing
+  // JS in some bizarro undefined mid-GC state.
   void BindToGC(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK(args.Length() == 2 && args[0]->IsObject() && args[1]->IsFunction());
-    GCCallbackArgs* context = new GCCallbackArgs(
-        v8::Handle<v8::Object>::Cast(args[0]),
-        v8::Handle<v8::Function>::Cast(args[1]));
-    context->object.MakeWeak(context, GCCallback);
+    GCCallback::Bind(args[0].As<v8::Object>(), args[1].As<v8::Function>());
   }
 };
 
