@@ -1715,11 +1715,6 @@ crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
 
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Pass Failure ]
 
-crbug.com/260227 editing/selection/button-right-click.html [ NeedsRebaseline ]
-crbug.com/260227 editing/selection/rtl-delete-within-line-crash.html [ NeedsRebaseline ]
-crbug.com/260227 fast/forms/button-default-title.html [ NeedsRebaseline ]
-crbug.com/260227 fast/forms/formtarget-attribute-button-html.html [ NeedsRebaseline ]
-
 crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
 
 crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Failure ]

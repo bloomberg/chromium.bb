@@ -29,9 +29,6 @@ layer at (0,0) size 785x670
           text run at (0,0) width 288: "This button should have a single space in its title:"
       RenderBlock (anonymous) at (0,223) size 769x22
         RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 64x16
-            RenderText {#text} at (30,0) size 4x16
-              text run at (30,0) width 4: " "
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,260) size 769x21
         RenderText {#text} at (0,0) size 189x19
@@ -65,9 +62,6 @@ layer at (0,0) size 785x670
           text run at (0,0) width 288: "This button should have a single space in its title:"
       RenderBlock (anonymous) at (0,560) size 769x22
         RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 64x16
-            RenderText {#text} at (30,0) size 4x16
-              text run at (30,0) width 4: " "
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,597) size 769x21
         RenderText {#text} at (0,0) size 189x19
