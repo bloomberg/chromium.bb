@@ -149,7 +149,7 @@ static inline bool LayerClipsSubtree(LayerType* layer) {
 template <typename LayerType>
 static gfx::Rect CalculateVisibleContentRect(
     LayerType* layer,
-    gfx::Rect ancestor_clip_rect_in_descendant_surface_space,
+    gfx::Rect clip_rect_of_target_surface_in_target_space,
     gfx::Rect layer_rect_in_target_space) {
   DCHECK(layer->render_target());
 
@@ -163,13 +163,17 @@ static gfx::Rect CalculateVisibleContentRect(
       layer->drawable_content_rect();
 
   if (!layer->render_target()->render_surface()->clip_rect().IsEmpty()) {
-    // In this case the target surface does clip layers that contribute to
-    // it. So, we have to convert the current surface's clip rect from its
-    // ancestor surface space to the current (descendant) surface
-    // space. This conversion is done outside this function so that it can
-    // be cached instead of computing it redundantly for every layer.
+    // The |layer| L has a target T which owns a surface Ts. The surface Ts
+    // has a target TsT.
+    //
+    // In this case the target surface Ts does clip the layer L that contributes
+    // to it. So, we have to convert the clip rect of Ts from the target space
+    // of Ts (that is the space of TsT), to the current render target's space
+    // (that is the space of T). This conversion is done outside this function
+    // so that it can be cached instead of computing it redundantly for every
+    // layer.
     visible_rect_in_target_surface_space.Intersect(
-        ancestor_clip_rect_in_descendant_surface_space);
+        clip_rect_of_target_surface_in_target_space);
   }
 
   if (visible_rect_in_target_surface_space.IsEmpty())
@@ -862,8 +866,8 @@ static void CalculateDrawPropertiesInternal(
     const gfx::Transform& full_hierarchy_matrix,
     const gfx::Transform& current_scroll_compensation_matrix,
     LayerType* current_fixed_container,
-    gfx::Rect clip_rect_from_ancestor,
-    gfx::Rect clip_rect_from_ancestor_in_descendant_space,
+    gfx::Rect clip_rect_from_ancestor_in_ancestor_target_space,
+    gfx::Rect clip_rect_of_target_surface_from_ancestor_in_target_space,
     bool ancestor_clips_subtree,
     RenderSurfaceType* nearest_ancestor_that_moves_pixels,
     LayerListType* render_surface_layer_list,
@@ -1027,15 +1031,15 @@ static void CalculateDrawPropertiesInternal(
   DrawProperties<LayerType, RenderSurfaceType>& layer_draw_properties =
       layer->draw_properties();
 
-  gfx::Rect clip_rect_for_subtree;
-  bool subtree_should_be_clipped = false;
+  gfx::Rect clip_rect_in_target_space;
+  bool layer_or_ancestor_clips_descendants = false;
 
   // This value is cached on the stack so that we don't have to inverse-project
   // the surface's clip rect redundantly for every layer. This value is the
-  // same as the surface's clip rect, except that instead of being described
-  // in the target surface space (i.e. the ancestor surface space), it is
-  // described in the current surface space.
-  gfx::Rect clip_rect_for_subtree_in_descendant_space;
+  // same as the target surface's clip rect, except that instead of being
+  // described in the target surface's target's space, it is described in the
+  // current render target's space.
+  gfx::Rect clip_rect_of_target_surface_in_target_space;
 
   float accumulated_draw_opacity = layer->opacity();
   bool animating_opacity_to_target = layer->OpacityIsAnimating();
@@ -1235,7 +1239,7 @@ static void CalculateDrawPropertiesInternal(
     // the tree. This way, we can avoid transforming clip rects from ancestor
     // target surface space to current target surface space that could cause
     // more w < 0 headaches.
-    subtree_should_be_clipped = false;
+    layer_or_ancestor_clips_descendants = false;
 
     if (layer->mask_layer()) {
       DrawProperties<LayerType, RenderSurfaceType>& mask_layer_draw_properties =
@@ -1260,10 +1264,12 @@ static void CalculateDrawPropertiesInternal(
       nearest_ancestor_that_moves_pixels = render_surface;
 
     // The render surface clip rect is expressed in the space where this surface
-    // draws, i.e. the same space as clip_rect_from_ancestor.
+    // draws, i.e. the same space as
+    // clip_rect_from_ancestor_in_ancestor_target_space.
     render_surface->SetIsClipped(ancestor_clips_subtree);
     if (ancestor_clips_subtree) {
-      render_surface->SetClipRect(clip_rect_from_ancestor);
+      render_surface->SetClipRect(
+          clip_rect_from_ancestor_in_ancestor_target_space);
 
       gfx::Transform inverse_surface_draw_transform(
           gfx::Transform::kSkipInitialization);
@@ -1272,13 +1278,13 @@ static void CalculateDrawPropertiesInternal(
         // TODO(shawnsingh): Either we need to handle uninvertible transforms
         // here, or DCHECK that the transform is invertible.
       }
-      clip_rect_for_subtree_in_descendant_space =
+      clip_rect_of_target_surface_in_target_space =
           gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
               inverse_surface_draw_transform, render_surface->clip_rect()));
     } else {
       render_surface->SetClipRect(gfx::Rect());
-      clip_rect_for_subtree_in_descendant_space =
-          clip_rect_from_ancestor_in_descendant_space;
+      clip_rect_of_target_surface_in_target_space =
+          clip_rect_of_target_surface_from_ancestor_in_target_space;
     }
 
     render_surface->SetNearestAncestorThatMovesPixels(
@@ -1309,14 +1315,16 @@ static void CalculateDrawPropertiesInternal(
 
     // Layers without render_surfaces directly inherit the ancestor's clip
     // status.
-    subtree_should_be_clipped = ancestor_clips_subtree;
-    if (ancestor_clips_subtree)
-      clip_rect_for_subtree = clip_rect_from_ancestor;
+    layer_or_ancestor_clips_descendants = ancestor_clips_subtree;
+    if (ancestor_clips_subtree) {
+      clip_rect_in_target_space =
+          clip_rect_from_ancestor_in_ancestor_target_space;
+    }
 
     // The surface's cached clip rect value propagates regardless of what
     // clipping goes on between layers here.
-    clip_rect_for_subtree_in_descendant_space =
-        clip_rect_from_ancestor_in_descendant_space;
+    clip_rect_of_target_surface_in_target_space =
+        clip_rect_of_target_surface_from_ancestor_in_target_space;
 
     // Layers that are not their own render_target will render into the target
     // of their nearest ancestor.
@@ -1345,12 +1353,14 @@ static void CalculateDrawPropertiesInternal(
       MathUtil::MapClippedRect(layer->draw_transform(), content_rect));
 
   if (LayerClipsSubtree(layer)) {
-    subtree_should_be_clipped = true;
+    layer_or_ancestor_clips_descendants = true;
     if (ancestor_clips_subtree && !layer->render_surface()) {
-      clip_rect_for_subtree = clip_rect_from_ancestor;
-      clip_rect_for_subtree.Intersect(rect_in_target_space);
+      // A layer without render surface shares the same target as its ancestor.
+      clip_rect_in_target_space =
+          clip_rect_from_ancestor_in_ancestor_target_space;
+      clip_rect_in_target_space.Intersect(rect_in_target_space);
     } else {
-      clip_rect_for_subtree = rect_in_target_space;
+      clip_rect_in_target_space = rect_in_target_space;
     }
   }
 
@@ -1406,9 +1416,9 @@ static void CalculateDrawPropertiesInternal(
         next_hierarchy_matrix,
         next_scroll_compensation_matrix,
         next_fixed_container,
-        clip_rect_for_subtree,
-        clip_rect_for_subtree_in_descendant_space,
-        subtree_should_be_clipped,
+        clip_rect_in_target_space,
+        clip_rect_of_target_surface_in_target_space,
+        layer_or_ancestor_clips_descendants,
         nearest_ancestor_that_moves_pixels,
         render_surface_layer_list,
         &descendants,
@@ -1442,40 +1452,41 @@ static void CalculateDrawPropertiesInternal(
       accumulated_drawable_content_rect_of_children;
   if (layer->DrawsContent())
     local_drawable_content_rect_of_subtree.Union(rect_in_target_space);
-  if (subtree_should_be_clipped)
-    local_drawable_content_rect_of_subtree.Intersect(clip_rect_for_subtree);
+  if (layer_or_ancestor_clips_descendants)
+    local_drawable_content_rect_of_subtree.Intersect(clip_rect_in_target_space);
 
   // Compute the layer's drawable content rect (the rect is in target surface
   // space).
   layer_draw_properties.drawable_content_rect = rect_in_target_space;
-  if (subtree_should_be_clipped) {
+  if (layer_or_ancestor_clips_descendants) {
     layer_draw_properties.drawable_content_rect.
-        Intersect(clip_rect_for_subtree);
+        Intersect(clip_rect_in_target_space);
   }
 
   // Tell the layer the rect that is clipped by. In theory we could use a
   // tighter clip rect here (drawable_content_rect), but that actually does not
   // reduce how much would be drawn, and instead it would create unnecessary
   // changes to scissor state affecting GPU performance.
-  layer_draw_properties.is_clipped = subtree_should_be_clipped;
-  if (subtree_should_be_clipped) {
-    layer_draw_properties.clip_rect = clip_rect_for_subtree;
+  layer_draw_properties.is_clipped = layer_or_ancestor_clips_descendants;
+  if (layer_or_ancestor_clips_descendants) {
+    layer_draw_properties.clip_rect = clip_rect_in_target_space;
   } else {
     // Initialize the clip rect to a safe value that will not clip the
     // layer, just in case clipping is still accidentally used.
     layer_draw_properties.clip_rect = rect_in_target_space;
   }
 
-  // Compute the layer's visible content rect (the rect is in content space)
+  // Compute the layer's visible content rect (the rect is in content space).
   layer_draw_properties.visible_content_rect = CalculateVisibleContentRect(
-      layer, clip_rect_for_subtree_in_descendant_space, rect_in_target_space);
+      layer, clip_rect_of_target_surface_in_target_space, rect_in_target_space);
 
   // Compute the remaining properties for the render surface, if the layer has
   // one.
   if (IsRootLayer(layer)) {
     // The root layer's surface's content_rect is always the entire viewport.
     DCHECK(layer->render_surface());
-    layer->render_surface()->SetContentRect(clip_rect_from_ancestor);
+    layer->render_surface()->SetContentRect(
+        clip_rect_from_ancestor_in_ancestor_target_space);
   } else if (layer->render_surface() && !IsRootLayer(layer)) {
     RenderSurfaceType* render_surface = layer->render_surface();
     gfx::Rect clipped_content_rect = local_drawable_content_rect_of_subtree;
@@ -1604,7 +1615,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
-  bool subtree_should_be_clipped = true;
+  bool layer_or_ancestor_clips_descendants = true;
   gfx::Rect device_viewport_rect(device_viewport_size);
   bool in_subtree_of_page_scale_application_layer = false;
   bool subtree_is_visible = true;
@@ -1623,7 +1634,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       root_layer,
       device_viewport_rect,
       device_viewport_rect,
-      subtree_should_be_clipped,
+      layer_or_ancestor_clips_descendants,
       NULL,
       render_surface_layer_list,
       &dummy_layer_list,
@@ -1665,7 +1676,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
-  bool subtree_should_be_clipped = true;
+  bool layer_or_ancestor_clips_descendants = true;
   gfx::Rect device_viewport_rect(device_viewport_size);
   bool in_subtree_of_page_scale_application_layer = false;
   bool subtree_is_visible = true;
@@ -1686,7 +1697,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       root_layer,
       device_viewport_rect,
       device_viewport_rect,
-      subtree_should_be_clipped,
+      layer_or_ancestor_clips_descendants,
       NULL,
       render_surface_layer_list,
       &dummy_layer_list,
