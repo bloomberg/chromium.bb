@@ -162,7 +162,8 @@ def _ParseInstruction(instruction):
 
   prefixes = []
   while elems != [] and elems[0] in [
-      'lock', 'rep', 'repz', 'repnz', 'data16', 'addr16', 'addr32']:
+      'lock', 'rep', 'repz', 'repnz',
+      'data16', 'data32', 'addr16', 'addr32', 'addr64']:
     prefixes.append(elems.pop(0))
 
   if elems == []:
@@ -178,7 +179,7 @@ def _ParseInstruction(instruction):
   #    jo,pt      <addr>
   #    jge,pn     <addr>
   name_re = r'[a-z]\w*(,p[nt])?$'
-  assert re.match(name_re, name), name
+  assert re.match(name_re, name) or name == "nop/reserved", name
 
   if len(elems) == 1:
     ops = []
@@ -355,6 +356,8 @@ def _GetLegacyPrefixes(instruction):
     if b not in [
         0x66, 0x67, 0x2e, 0x3e, 0x26, 0x64, 0x65, 0x36, 0xf0, 0xf3, 0xf2]:
       break
+    if b == 0x67:
+      raise SandboxingError('addr prefix is not allowed', instruction)
     if b in result:
       raise SandboxingError('duplicate legacy prefix', instruction)
     result.append(b)
@@ -1069,9 +1072,10 @@ def ValidateRegularInstruction(instruction, bitness):
       pass
 
   prefixes, name, ops = _ParseInstruction(instruction)
-  # TODO(shcherbina): prohibit excessive prefixes.
-  if 'addr16' in prefixes or 'addr32' in prefixes:
-    raise SandboxingError('addr prefixes are not allowed', instruction)
+
+  for prefix in prefixes:
+    if prefix not in ['lock', 'rep', 'repz', 'repnz']:
+      raise SandboxingError('prefix %s is not allowed' % prefix, instruction)
 
   # Older versions of objdump decode 'tzcnt' as 'repz bsf'.
   # TODO(shcherbina): get rid of this exception once objdump is updated.

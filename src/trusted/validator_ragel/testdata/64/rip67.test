@@ -14,4 +14,4 @@
   5: [0] unrecognized instruction
   return code: 1
 @spec:
-  5: ('addr prefixes are not allowed', Instruction(0x5: 67 48 89 05 cf e0 61 00  addr32 mov %rax,0x61e0cf(%eip) # 0x61e0dc))
+  5: ('addr prefix is not allowed', Instruction(0x5: 67 48 89 05 cf e0 61 00  addr32 mov %rax,0x61e0cf(%eip) # 0x61e0dc))

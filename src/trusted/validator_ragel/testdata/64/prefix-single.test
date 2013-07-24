@@ -161,7 +161,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefixes are not allowed', Instruction(0x0: 67 89 04 24  addr32 mov %eax,(%esp)))
+  0: ('addr prefix is not allowed', Instruction(0x0: 67 89 04 24  addr32 mov %eax,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   # Jumps with segment prefixes.

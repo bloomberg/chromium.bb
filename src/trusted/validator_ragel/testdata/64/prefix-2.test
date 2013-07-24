@@ -96,7 +96,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('duplicate legacy prefix', Instruction(0x0: 67 67 48 8d 04 24  addr32 lea (%esp),%rax))
+  0: ('addr prefix is not allowed', Instruction(0x0: 67 67 48 8d 04 24  addr32 lea (%esp),%rax))
 ----------------------------------------------------------------------
 @hex:
   # rex rex jmp $
@@ -221,7 +221,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefixes are not allowed', Instruction(0x0: 67 f0 01 04 24  lock addr32 add %eax,(%esp)))
+  0: ('addr prefix is not allowed', Instruction(0x0: 67 f0 01 04 24  lock addr32 add %eax,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   F0 67 01 04 24
@@ -231,7 +231,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefixes are not allowed', Instruction(0x0: f0 67 01 04 24  lock addr32 add %eax,(%esp)))
+  0: ('addr prefix is not allowed', Instruction(0x0: f0 67 01 04 24  lock addr32 add %eax,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   # addr32 rep
@@ -246,7 +246,7 @@
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  6: ('addr prefixes are not allowed', Instruction(0x6: 67 f3 ab  rep addr32 stos %eax,%es:(%edi)))
+  6: ('addr prefix is not allowed', Instruction(0x6: 67 f3 ab  rep addr32 stos %eax,%es:(%edi)))
 ----------------------------------------------------------------------
 @hex:
   # rep addr32
@@ -261,7 +261,7 @@
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  6: ('addr prefixes are not allowed', Instruction(0x6: f3 67 ab  rep addr32 stos %eax,%es:(%edi)))
+  6: ('addr prefix is not allowed', Instruction(0x6: f3 67 ab  rep addr32 stos %eax,%es:(%edi)))
 ----------------------------------------------------------------------
 @hex:
   f0 48 01 04 24
@@ -330,7 +330,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefixes are not allowed', Instruction(0x0: 67 64 01 04 24  addr32 add %eax,%fs:(%esp)))
+  0: ('addr prefix is not allowed', Instruction(0x0: 67 64 01 04 24  addr32 add %eax,%fs:(%esp)))
 ----------------------------------------------------------------------
 @hex:
   64 67 01 04 24
@@ -340,7 +340,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefixes are not allowed', Instruction(0x0: 64 67 01 04 24  addr32 add %eax,%fs:(%esp)))
+  0: ('addr prefix is not allowed', Instruction(0x0: 64 67 01 04 24  addr32 add %eax,%fs:(%esp)))
 ----------------------------------------------------------------------
 @hex:
   64 48 89 C0
@@ -374,7 +374,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefixes are not allowed', Instruction(0x0: 66 67 01 04 24  addr32 add %ax,(%esp)))
+  0: ('addr prefix is not allowed', Instruction(0x0: 66 67 01 04 24  addr32 add %ax,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   67 66 01 04 24
@@ -384,7 +384,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefixes are not allowed', Instruction(0x0: 67 66 01 04 24  addr32 add %ax,(%esp)))
+  0: ('addr prefix is not allowed', Instruction(0x0: 67 66 01 04 24  addr32 add %ax,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   66 44 89 3C 24
@@ -415,7 +415,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefixes are not allowed', Instruction(0x0: 67 4c 89 3c 24  addr32 mov %r15,(%esp)))
+  0: ('addr prefix is not allowed', Instruction(0x0: 67 4c 89 3c 24  addr32 mov %r15,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   4C 67 89 3C 24
@@ -427,7 +427,7 @@
   return code: 1
 @spec:
   0: ('dangling rex prefix', Instruction(0x0: 4c  rex.WR))
-  1: ('addr prefixes are not allowed', Instruction(0x1: 67 89 3c 24  addr32 mov %edi,(%esp)))
+  1: ('addr prefix is not allowed', Instruction(0x1: 67 89 3c 24  addr32 mov %edi,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   # 2 prefixes when one is mandatory
@@ -486,7 +486,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefixes are not allowed', Instruction(0x0: 67 66 0f 38 01 04 24  addr32 phaddw (%esp),%xmm0))
+  0: ('addr prefix is not allowed', Instruction(0x0: 67 66 0f 38 01 04 24  addr32 phaddw (%esp),%xmm0))
 ----------------------------------------------------------------------
 @hex:
   # addsd (%esp), %xmm0
@@ -497,7 +497,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefixes are not allowed', Instruction(0x0: 67 f2 0f 58 04 24  addr32 addsd (%esp),%xmm0))
+  0: ('addr prefix is not allowed', Instruction(0x0: 67 f2 0f 58 04 24  addr32 addsd (%esp),%xmm0))
 ----------------------------------------------------------------------
 @hex:
   89 C0 \\
