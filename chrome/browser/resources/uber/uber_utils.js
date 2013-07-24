@@ -22,6 +22,10 @@ cr.define('uber', function() {
     headerElements = document.getElementsByTagName('header');
     document.addEventListener('scroll', handleScroll);
 
+    // Prevent the navigation from being stuck in a disabled state when a
+    // content page is reloaded while an overlay is visible (crbug.com/246939).
+    invokeMethodOnParent('stopInterceptingEvents');
+
     // Trigger the scroll handler to tell the navigation if our page started
     // with some scroll (happens when you use tab restore).
     handleScroll();
