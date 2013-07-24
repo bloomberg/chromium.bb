@@ -103,7 +103,7 @@ class BluetoothDetailedView : public TrayDetailsView,
   BluetoothDetailedView(SystemTrayItem* owner, user::LoginStatus login)
       : TrayDetailsView(owner),
         login_(login),
-        add_device_(NULL),
+        manage_devices_(NULL),
         toggle_bluetooth_(NULL),
         enable_bluetooth_(NULL),
         bluetooth_discovering_(false) {
@@ -308,11 +308,11 @@ class BluetoothDetailedView : public TrayDetailsView,
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     HoverHighlightView* container = new HoverHighlightView(this);
     container->AddLabel(
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE),
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BLUETOOTH_MANAGE_DEVICES),
         gfx::Font::NORMAL);
     container->SetEnabled(delegate->GetBluetoothAvailable());
     AddChildView(container);
-    add_device_ = container;
+    manage_devices_ = container;
   }
 
   // Returns true if the device with |device_id| is found in |device_list|,
@@ -354,10 +354,8 @@ class BluetoothDetailedView : public TrayDetailsView,
         ash::Shell::GetInstance()->system_tray_delegate();
     if (sender == footer()->content()) {
       owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
-    } else if (sender == add_device_) {
-      if (!delegate->GetBluetoothEnabled())
-        delegate->ToggleBluetooth();
-      delegate->AddBluetoothDevice();
+    } else if (sender == manage_devices_) {
+      delegate->ManageBluetoothDevices();
     } else if (sender == enable_bluetooth_) {
       delegate->ToggleBluetooth();
     } else {
@@ -389,7 +387,7 @@ class BluetoothDetailedView : public TrayDetailsView,
   user::LoginStatus login_;
 
   std::map<views::View*, std::string> device_map_;
-  views::View* add_device_;
+  views::View* manage_devices_;
   ThrobberView* throbber_;
   TrayPopupHeaderButton* toggle_bluetooth_;
   HoverHighlightView* enable_bluetooth_;

@@ -227,7 +227,7 @@ void TestSystemTrayDelegate::ConfigureNetwork(const std::string& network_id) {
 void TestSystemTrayDelegate::ConnectToNetwork(const std::string& network_id) {
 }
 
-void TestSystemTrayDelegate::AddBluetoothDevice() {
+void TestSystemTrayDelegate::ManageBluetoothDevices() {
 }
 
 void TestSystemTrayDelegate::ToggleBluetooth() {

@@ -70,7 +70,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
       ash::DriveOperationStatusList*) OVERRIDE;
   virtual void ConfigureNetwork(const std::string& network_id) OVERRIDE;
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE;
-  virtual void AddBluetoothDevice() OVERRIDE;
+  virtual void ManageBluetoothDevices() OVERRIDE;
   virtual void ToggleBluetooth() OVERRIDE;
   virtual bool IsBluetoothDiscovering() OVERRIDE;
   virtual void ShowMobileSimDialog() OVERRIDE;

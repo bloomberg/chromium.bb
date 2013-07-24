@@ -253,8 +253,8 @@ class SystemTrayDelegate {
   // Sends a connect request for the network specified by |network_id|.
   virtual void ConnectToNetwork(const std::string& network_id) = 0;
 
-  // Shows UI to add a new bluetooth device.
-  virtual void AddBluetoothDevice() = 0;
+  // Shows UI to manage bluetooth devices.
+  virtual void ManageBluetoothDevices() = 0;
 
   // Toggles bluetooth.
   virtual void ToggleBluetooth() = 0;

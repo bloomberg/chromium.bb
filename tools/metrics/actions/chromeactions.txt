@@ -1189,7 +1189,7 @@
 0xbdc9ec125e7a3ade	NewWindow
 0xa86d43452b05bf72	Notifications.ShowMessageCenter
 0xa72c673a1f44d11f	OmniboxDestinationURLIsSearchOnDSP
-0xa04047593128ff2a	OmniboxDestinationURLMatchesDefaultSearchProvider
+0x6048dbd4f2f2ca50	OmniboxDestinationURLMatchesDefaultSearchProvider
 0x268376698078c71b	OmniboxInputInProgress
 0xe7ff15c3f1043a26	Omnibox_DragString
 0x1a18c36c737ec22b	Omnibox_DragURL
@@ -1505,6 +1505,7 @@
 0x0d1d6961dd313b79	ShowAppMenu
 0x9be2b265107318b8	ShowApplications
 0x853927a304493ac7	ShowAsTab
+0x2c5584a8586dc1ab	ShowBluetoothSettingsPage
 0x1b93c35c19ff3600	ShowBookmarkManager
 0xd1a227df4f361dbb	ShowBookmarks
 0x1afb02b1f90b177e	ShowBookmarksBar
