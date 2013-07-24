@@ -34,8 +34,8 @@ def need_issue(fn):
   def hook(parser, args, *extra_args, **kwargs):
     old_parse_args = parser.parse_args
 
-    def new_parse_args(args=None, values=None):
-      options, args = old_parse_args(args, values)
+    def new_parse_args(args):
+      options, args = old_parse_args(args)
       if not options.issue:
         parser.error('Require --issue')
       obj = rietveld.Rietveld(options.server, options.user, None)
@@ -103,28 +103,32 @@ def CMDclear(parser, args):
 ## Boilerplate code
 
 
-class OptionParser(optparse.OptionParser):
-  """An OptionParser instance with default options.
+def gen_parser():
+  """Returns an OptionParser instance with default options.
 
   It should be then processed with gen_usage() before being used.
   """
-  def __init__(self, *args, **kwargs):
-    optparse.OptionParser.__init__(self, *args, **kwargs)
-    self.add_option(
-        '-v', '--verbose', action='count', default=0,
-        help='Use multiple times to increase logging level')
+  parser = optparse.OptionParser(version=__version__)
+  # Remove description formatting
+  parser.format_description = (
+      lambda _: parser.description)  # pylint: disable=E1101
+  # Add common parsing.
+  old_parser_args = parser.parse_args
 
-  def parse_args(self, args=None, values=None):
-    options, args = optparse.OptionParser.parse_args(self, args, values)
-    levels = [logging.WARNING, logging.INFO, logging.DEBUG]
+  def Parse(*args, **kwargs):
+    options, args = old_parser_args(*args, **kwargs)
     logging.basicConfig(
-        level=levels[min(len(levels) - 1, options.verbose)],
+        level=[logging.WARNING, logging.INFO, logging.DEBUG][
+            min(2, options.verbose)],
         format='%(levelname)s %(filename)s(%(lineno)d): %(message)s')
     return options, args
 
-  def format_description(self, _):
-    """Removes description formatting."""
-    return self.description.rstrip() + '\n'
+  parser.parse_args = Parse
+
+  parser.add_option(
+      '-v', '--verbose', action='count', default=0,
+      help='Use multiple times to increase logging level')
+  return parser
 
 
 def Command(name):
@@ -164,7 +168,7 @@ def gen_usage(parser, command):
 def main(args=None):
   # Do it late so all commands are listed.
   # pylint: disable=E1101
-  parser = OptionParser(version=__version__)
+  parser = gen_parser()
   if args is None:
     args = sys.argv[1:]
   if args:

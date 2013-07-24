@@ -47,8 +47,7 @@ class TryChangeUnittest(TryChangeTestsBase):
   def testMembersChanged(self):
     members = [
       'DieWithError', 'EPILOG', 'Escape', 'GIT', 'GetMungedDiff', 'GuessVCS',
-      'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'OptionParser',
-      'PrintSuccess',
+      'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PrintSuccess',
       'RunCommand', 'RunGit', 'SCM', 'SVN', 'TryChange', 'USAGE', 'breakpad',
       'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils', 'gen_parser',
       'getpass', 'json', 'logging', 'optparse', 'os', 'posixpath', 're', 'scm',

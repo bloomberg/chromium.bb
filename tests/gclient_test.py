@@ -86,7 +86,7 @@ class GclientTest(trial_dir.TestCase):
     Args:
       |jobs| is the number of parallel jobs simulated.
     """
-    parser = gclient.OptionParser()
+    parser = gclient.Parser()
     options, args = parser.parse_args(['--jobs', jobs])
     write(
         '.gclient',
@@ -213,7 +213,7 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals('proto://host/path@revision', d.url)
 
   def testStr(self):
-    parser = gclient.OptionParser()
+    parser = gclient.Parser()
     options, _ = parser.parse_args([])
     obj = gclient.GClient('foo', options)
     obj.add_dependencies_and_close(
@@ -265,7 +265,7 @@ class GclientTest(trial_dir.TestCase):
 
     os.chdir(topdir)
 
-    parser = gclient.OptionParser()
+    parser = gclient.Parser()
     options, _ = parser.parse_args([])
     options.force = True
     client = gclient.GClient.LoadCurrentConfig(options)
@@ -314,7 +314,7 @@ class GclientTest(trial_dir.TestCase):
 
     os.chdir(topdir)
 
-    parser = gclient.OptionParser()
+    parser = gclient.Parser()
     options, _ = parser.parse_args([])
     options.force = True
     client = gclient.GClient.LoadCurrentConfig(options)
@@ -350,7 +350,7 @@ class GclientTest(trial_dir.TestCase):
         '  "baz": { "foo/dir3": "/dir3", },\n'
         '}')
 
-    parser = gclient.OptionParser()
+    parser = gclient.Parser()
     options, _ = parser.parse_args(['--jobs', '1'])
     options.deps_os = "unix"
 
@@ -385,7 +385,7 @@ class GclientTest(trial_dir.TestCase):
         '  "baz": { "foo/dir3": "/dir3", },\n'
         '}')
 
-    parser = gclient.OptionParser()
+    parser = gclient.Parser()
     options, _ = parser.parse_args(['--jobs', '1'])
     options.deps_os = "unix"
 
@@ -413,7 +413,7 @@ class GclientTest(trial_dir.TestCase):
         '  "unix": { "foo/dir2": "/dir2", },\n'
         '}')
 
-    parser = gclient.OptionParser()
+    parser = gclient.Parser()
     options, _ = parser.parse_args(['--jobs', '1'])
     options.deps_os = "unix"
 
@@ -458,7 +458,7 @@ class GclientTest(trial_dir.TestCase):
         '  "jaz": { "bar/jaz": "/jaz", },\n'
         '}')
 
-    parser = gclient.OptionParser()
+    parser = gclient.Parser()
     options, _ = parser.parse_args(['--jobs', '1'])
     options.deps_os = 'unix'
 
@@ -499,7 +499,7 @@ class GclientTest(trial_dir.TestCase):
         '  "jaz": { "foo/jaz": "/jaz", },\n'
         '}')
 
-    parser = gclient.OptionParser()
+    parser = gclient.Parser()
     options, _ = parser.parse_args(['--jobs', '1'])
     options.deps_os = 'unix'
 
@@ -552,7 +552,7 @@ class GclientTest(trial_dir.TestCase):
         '  "fuzz": "/fuzz",\n'
         '}')
 
-    options, _ = gclient.OptionParser().parse_args([])
+    options, _ = gclient.Parser().parse_args([])
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
     self.assertEquals(
