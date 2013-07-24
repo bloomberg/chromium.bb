@@ -1795,7 +1795,7 @@ def CMDpatch(parser, args):
   if issue_arg.isdigit():
     # Input is an issue id.  Figure out the URL.
     issue = int(issue_arg)
-    cl = Changelist(issue)
+    cl = Changelist(issue=issue)
     patchset = cl.GetMostRecentPatchset()
     patch_data = cl.GetPatchSetDiff(issue, patchset)
   else:
