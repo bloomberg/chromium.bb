@@ -263,6 +263,10 @@
             'dependencies': [
                 '../../wtf/wtf.gyp:wtf',
                 '<(DEPTH)/skia/skia.gyp:skia',
+                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+            ],
+            'export_dependent_settings': [
+              '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
             ],
             'defines': [
                 'INSIDE_WEBKIT',
