@@ -2023,7 +2023,7 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
             obj = cache.wait_for(remaining)
             for filepath, properties in remaining.pop(obj):
               outfile = os.path.join(outdir, filepath)
-              link_file(outfile, cache.path(obj), HARDLINK_WITH_FALLBACK)
+              link_file(outfile, cache.path(obj), HARDLINK)
               if 'm' in properties:
                 # It's not set on Windows.
                 os.chmod(outfile, properties['m'])
