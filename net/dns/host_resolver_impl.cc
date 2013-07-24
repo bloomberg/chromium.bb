@@ -170,7 +170,7 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
                         kSuffix, kSuffixLenTrimmed);
 }
 
-// Attempts to connect a UDP socket to |dest|:80.
+// Attempts to connect a UDP socket to |dest|:53.
 bool IsGloballyReachable(const IPAddressNumber& dest,
                          const BoundNetLog& net_log) {
   scoped_ptr<DatagramClientSocket> socket(
@@ -179,7 +179,7 @@ bool IsGloballyReachable(const IPAddressNumber& dest,
           RandIntCallback(),
           net_log.net_log(),
           net_log.source()));
-  int rv = socket->Connect(IPEndPoint(dest, 80));
+  int rv = socket->Connect(IPEndPoint(dest, 53));
   if (rv != OK)
     return false;
   IPEndPoint endpoint;
