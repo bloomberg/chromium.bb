@@ -1772,6 +1772,9 @@ function entryBoxMousedown(event) {
  * @param {!MouseEvent} event A click event.
  */
 function entryBoxClick(event) {
+  // Do nothing if a bookmark star is clicked.
+  if (event.defaultPrevented)
+    return;
   var tagName = event.target.tagName;
   if (tagName == 'BUTTON' || tagName == 'INPUT' || tagName == 'A')
     return;
