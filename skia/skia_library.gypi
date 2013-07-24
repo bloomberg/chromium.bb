@@ -92,6 +92,8 @@
     '../third_party/skia/src/pdf/SkPDFImageStream.h',
     '../third_party/skia/src/pdf/SkPDFPage.cpp',
     '../third_party/skia/src/pdf/SkPDFPage.h',
+    '../third_party/skia/src/pdf/SkPDFResourceDict.cpp',
+    '../third_party/skia/src/pdf/SkPDFResourceDict.h',
     '../third_party/skia/src/pdf/SkPDFShader.cpp',
     '../third_party/skia/src/pdf/SkPDFShader.h',
     '../third_party/skia/src/pdf/SkPDFStream.cpp',
