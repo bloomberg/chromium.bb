@@ -1452,6 +1452,8 @@
         'browser/prefs/incognito_mode_prefs.h',
         'browser/prefs/pref_model_associator.cc',
         'browser/prefs/pref_model_associator.h',
+        'browser/prefs/pref_metrics_service.cc',
+        'browser/prefs/pref_metrics_service.h',
         'browser/prefs/pref_service_syncable.cc',
         'browser/prefs/pref_service_syncable.h',
         'browser/prefs/pref_service_syncable_builder.cc',
