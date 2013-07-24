@@ -48,16 +48,6 @@
 #
 # START OVERRIDES HERE
 
-# r9928 fixed arc end capping but caused some minor image differences
-# in the following 6 layout tests  
-crbug.com/258850 svg/W3C-SVG-1.1/paths-data-10-t.svg [ ImageOnlyFailure ]
-crbug.com/258850 svg/W3C-SVG-1.1/struct-group-03-t.svg [ ImageOnlyFailure ]
-crbug.com/258850 svg/as-background-image/svg-as-background-6.html [ ImageOnlyFailure ]
-crbug.com/258850 svg/custom/marker-opacity.svg [ ImageOnlyFailure ]
-
-crbug.com/258850 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
-crbug.com/258850 svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
-
 # Image scaling difference due to ongoing Skia image resizing changes
 crbug.com/263331 virtual/deferred/fast/images/webp-color-profile-lossy.html [ ImageOnlyFailure ]
 
