@@ -752,9 +752,15 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   SkScalar color_matrix[20];
   bool use_color_matrix = false;
   if (quad->filter) {
-    SkColorFilter* cf;
-    if ((quad->filter->asColorFilter(&cf)) && cf->asColorMatrix(color_matrix) &&
-        !quad->filter->getInput(0)) {
+    skia::RefPtr<SkColorFilter> cf;
+
+    {
+      SkColorFilter* colorfilter_rawptr = NULL;
+      quad->filter->asColorFilter(&colorfilter_rawptr);
+      cf = skia::AdoptRef(colorfilter_rawptr);
+    }
+
+    if (cf && cf->asColorMatrix(color_matrix) && !quad->filter->getInput(0)) {
       // We have a single color matrix as a filter; apply it locally
       // in the compositor.
       use_color_matrix = true;
