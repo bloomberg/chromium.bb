@@ -104,7 +104,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
 
 // Designated initializer. The WebContents cannot be NULL.
 - (id)initWithWebContents:(content::WebContents*)webContents
-      autofillDialog:(autofill::AutofillDialogCocoa*)autofillDialog;
+           autofillDialog:(autofill::AutofillDialogCocoa*)autofillDialog;
 
 // A child view request re-layouting.
 - (void)requestRelayout;
@@ -121,6 +121,8 @@ class AutofillDialogCocoa : public AutofillDialogView,
 - (void)updateNotificationArea;
 - (void)updateAccountChooser;
 - (void)updateSection:(autofill::DialogSection)section;
+- (void)fillSection:(autofill::DialogSection)section
+           forInput:(const autofill::DetailInput&)input;
 - (void)getInputs:(autofill::DetailOutputMap*)outputs
        forSection:(autofill::DialogSection)section;
 - (BOOL)saveDetailsLocally;
@@ -128,6 +130,14 @@ class AutofillDialogCocoa : public AutofillDialogView,
 - (void)hideSignIn;
 - (void)modelChanged;
 
+@end
+
+
+// Mirrors the TestableAutofillDialogView API on the C++ side.
+@interface AutofillDialogWindowController (TestableAutofillDialogView)
+- (void)setTextContents:(NSString*)text
+               forInput:(const autofill::DetailInput&)input;
+- (void)activateFieldForInput:(const autofill::DetailInput&)input;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_COCOA_H_
