@@ -17,9 +17,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -161,4 +164,72 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, NotTrustedAfterRedirect) {
   EXPECT_FALSE(signin->HasSigninProcess());
 }
 
+class BackOnNTPCommitObserver : public content::WebContentsObserver {
+ public:
+  explicit BackOnNTPCommitObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {
+  }
+
+  virtual void DidCommitProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& url,
+      content::PageTransition transition_type,
+      content::RenderViewHost* render_view_host) OVERRIDE {
+    if (url == GURL(chrome::kChromeUINewTabURL)) {
+      content::WindowedNotificationObserver observer(
+          content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+          content::NotificationService::AllSources());
+      web_contents()->GetController().GoBack();
+      observer.Wait();
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BackOnNTPCommitObserver);
+};
+
+// This is a test for http://crbug.com/257277. It simulates the navigations
+// that occur if the user clicks on the "Skip for now" link at the signin page
+// and initiates a back navigation between the point of Commit and
+// DidStopLoading of the NTP.
+IN_PROC_BROWSER_TEST_F(SigninBrowserTest, SigninSkipForNowAndGoBack) {
+  GURL ntp_url(chrome::kChromeUINewTabURL);
+  GURL start_url =
+      SyncPromoUI::GetSyncPromoURL(SyncPromoUI::SOURCE_START_PAGE, true);
+  GURL skip_url(SyncPromoUI::GetSyncLandingURL("ntp", 1));
+
+  SigninManager* signin = SigninManagerFactory::GetForProfile(
+      browser()->profile());
+  EXPECT_FALSE(signin->HasSigninProcess());
+
+  ui_test_utils::NavigateToURL(browser(), start_url);
+  EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Simulate clicking on the Skip for now link by navigating to the URL.
+  ui_test_utils::NavigateToURL(browser(), skip_url);
+
+  // Register an observer that will navigate back immediately on the commit of
+  // the NTP. This will allow us to hit the race condition of navigating back
+  // before the DidStopLoading message of NTP gets delivered. This must be
+  // created after the navigation to the skip_url has finished loading,
+  // otherwise this observer will navigate back, before the history cleaner
+  // has had a chance to remove the navigation entry.
+  BackOnNTPCommitObserver commit_observer(web_contents);
+
+  // Since the navigation to the blank URL is monitored for, the
+  // OneClickSigninHelper initiates immediately a navigation to the NTP.
+  // Thus, we expect the visible URL to be the NTP.
+  EXPECT_EQ(skip_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(ntp_url, web_contents->GetVisibleURL());
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  observer.Wait();
+  EXPECT_EQ(start_url, web_contents->GetLastCommittedURL());
+}
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_BROWSERTEST_H_

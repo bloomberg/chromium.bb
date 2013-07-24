@@ -482,8 +482,8 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   if (navigation_entry_index_to_remove_ != -1 &&
       navigation_entry_index_to_remove_ != last_committed_index &&
       !web_contents_->IsBeingDestroyed()) {
-    web_contents_->GetController().RemoveEntryAtIndex(
-        navigation_entry_index_to_remove_);
+    CHECK(web_contents_->GetController().RemoveEntryAtIndex(
+        navigation_entry_index_to_remove_));
     navigation_entry_index_to_remove_ = -1;
   }
 }

@@ -476,7 +476,11 @@ class CurrentHistoryCleaner : public content::WebContentsObserver {
 
   // content::WebContentsObserver:
   virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
-  virtual void DidStopLoading(
+  virtual void DidCommitProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& url,
+      content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
@@ -495,13 +499,26 @@ CurrentHistoryCleaner::CurrentHistoryCleaner(content::WebContents* contents)
 CurrentHistoryCleaner::~CurrentHistoryCleaner() {
 }
 
-void CurrentHistoryCleaner::DidStopLoading(
+void CurrentHistoryCleaner::DidCommitProvisionalLoadForFrame(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& url,
+    content::PageTransition transition_type,
     content::RenderViewHost* render_view_host) {
+  // Return early if this is not top-level navigation.
+  if (!is_main_frame)
+    return;
+
   content::NavigationController* nc = &web_contents()->GetController();
+
   // Have to wait until something else gets added to history before removal.
   if (history_index_to_remove_ < nc->GetLastCommittedEntryIndex()) {
-    nc->RemoveEntryAtIndex(history_index_to_remove_);
-    delete this;  // Success.
+    content::NavigationEntry* entry =
+        nc->GetEntryAtIndex(history_index_to_remove_);
+    if (SyncPromoUI::IsContinueUrlForWebBasedSigninFlow(entry->GetURL()) &&
+        nc->RemoveEntryAtIndex(history_index_to_remove_)) {
+      delete this;  // Success.
+    }
   }
 }
 
@@ -906,8 +923,10 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
 void OneClickSigninHelper::RemoveSigninRedirectURLHistoryItem(
     content::WebContents* web_contents) {
   // Only actually remove the item if it's the blank.html continue url.
-  if (SyncPromoUI::IsContinueUrlForWebBasedSigninFlow(web_contents->GetURL()))
+  if (SyncPromoUI::IsContinueUrlForWebBasedSigninFlow(
+          web_contents->GetLastCommittedURL())) {
     new CurrentHistoryCleaner(web_contents);  // will self-destruct when done
+  }
 }
 
 void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
@@ -1041,7 +1060,7 @@ void OneClickSigninHelper::DidStopLoading(
   // If the user left the sign in process, clear all members.
   // TODO(rogerta): might need to allow some youtube URLs.
   content::WebContents* contents = web_contents();
-  const GURL url = contents->GetURL();
+  const GURL url = contents->GetLastCommittedURL();
   Profile* profile =
       Profile::FromBrowserContext(contents->GetBrowserContext());
   VLOG(1) << "OneClickSigninHelper::DidStopLoading: url=" << url.spec();

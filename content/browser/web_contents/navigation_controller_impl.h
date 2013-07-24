@@ -69,7 +69,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void GoForward() OVERRIDE;
   virtual void GoToIndex(int index) OVERRIDE;
   virtual void GoToOffset(int offset) OVERRIDE;
-  virtual void RemoveEntryAtIndex(int index) OVERRIDE;
+  virtual bool RemoveEntryAtIndex(int index) OVERRIDE;
   virtual const SessionStorageNamespaceMap&
       GetSessionStorageNamespaceMap() const OVERRIDE;
   virtual SessionStorageNamespace*

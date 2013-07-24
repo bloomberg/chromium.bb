@@ -2398,20 +2398,25 @@ TEST_F(NavigationControllerTest, RemoveEntry) {
   test_rvh()->SendNavigate(4, url5);
 
   // Try to remove the last entry.  Will fail because it is the current entry.
-  controller.RemoveEntryAtIndex(controller.GetEntryCount() - 1);
+  EXPECT_FALSE(controller.RemoveEntryAtIndex(controller.GetEntryCount() - 1));
   EXPECT_EQ(5, controller.GetEntryCount());
   EXPECT_EQ(4, controller.GetLastCommittedEntryIndex());
 
-  // Go back and remove the last entry.
+  // Go back, but don't commit yet. Check that we can't delete the current
+  // and pending entries.
   controller.GoBack();
+  EXPECT_FALSE(controller.RemoveEntryAtIndex(controller.GetEntryCount() - 1));
+  EXPECT_FALSE(controller.RemoveEntryAtIndex(controller.GetEntryCount() - 2));
+
+  // Now commit and delete the last entry.
   test_rvh()->SendNavigate(3, url4);
-  controller.RemoveEntryAtIndex(controller.GetEntryCount() - 1);
+  EXPECT_TRUE(controller.RemoveEntryAtIndex(controller.GetEntryCount() - 1));
   EXPECT_EQ(4, controller.GetEntryCount());
   EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
   EXPECT_FALSE(controller.GetPendingEntry());
 
   // Remove an entry which is not the last committed one.
-  controller.RemoveEntryAtIndex(0);
+  EXPECT_TRUE(controller.RemoveEntryAtIndex(0));
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
   EXPECT_FALSE(controller.GetPendingEntry());
