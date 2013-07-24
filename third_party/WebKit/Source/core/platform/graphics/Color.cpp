@@ -191,17 +191,17 @@ String Color::serialized() const
         return builder.toString();
     }
 
-    Vector<LChar> result;
-    result.reserveInitialCapacity(28);
+    StringBuilder result;
+    result.reserveCapacity(28);
     const char commaSpace[] = ", ";
     const char rgbaParen[] = "rgba(";
 
     result.append(rgbaParen, 5);
-    appendNumber(result, red());
+    result.appendNumber(red());
     result.append(commaSpace, 2);
-    appendNumber(result, green());
+    result.appendNumber(green());
     result.append(commaSpace, 2);
-    appendNumber(result, blue());
+    result.appendNumber(blue());
     result.append(commaSpace, 2);
 
     if (!alpha())
@@ -213,7 +213,7 @@ String Color::serialized() const
     }
 
     result.append(')');
-    return String::adopt(result);
+    return result.toString();
 }
 
 String Color::nameForRenderTreeAsText() const

@@ -76,6 +76,7 @@
 #include "wtf/Uint8Array.h"
 #include "wtf/Uint8ClampedArray.h"
 #include "wtf/Vector.h"
+#include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 
 // FIXME: consider crashing in debug mode on deserialization errors
@@ -2250,9 +2251,9 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::createFromWireBytes(con
     // Decode wire data from big endian to host byte order.
     ASSERT(!(data.size() % sizeof(UChar)));
     size_t length = data.size() / sizeof(UChar);
-    Vector<UChar> buffer(length);
+    StringBuffer<UChar> buffer(length);
     const UChar* src = reinterpret_cast<const UChar*>(data.data());
-    UChar* dst = buffer.data();
+    UChar* dst = buffer.characters();
     for (size_t i = 0; i < length; i++)
         dst[i] = ntohs(src[i]);
 
