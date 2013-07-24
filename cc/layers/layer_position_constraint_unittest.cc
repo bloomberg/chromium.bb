@@ -39,7 +39,6 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
                                     bool can_use_lcd_text) {
   gfx::Transform identity_matrix;
   std::vector<LayerImpl*> dummy_render_surface_layer_list;
-  int dummy_max_texture_size = 512;
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
                 root_layer->bounds().height() * device_scale_factor);
@@ -47,17 +46,13 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
   // We are probably not testing what is intended if the root_layer bounds are
   // empty.
   DCHECK(!root_layer->bounds().IsEmpty());
-  LayerTreeHostCommon::CalculateDrawProperties(
-      root_layer,
-      device_viewport_size,
-      gfx::Transform(),
-      device_scale_factor,
-      page_scale_factor,
-      page_scale_application_layer,
-      dummy_max_texture_size,
-      can_use_lcd_text,
-      false,
-      &dummy_render_surface_layer_list);
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root_layer, device_viewport_size, &dummy_render_surface_layer_list);
+  inputs.device_scale_factor = device_scale_factor;
+  inputs.page_scale_factor = page_scale_factor;
+  inputs.page_scale_application_layer = page_scale_application_layer;
+  inputs.can_use_lcd_text = can_use_lcd_text;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
 
 void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {

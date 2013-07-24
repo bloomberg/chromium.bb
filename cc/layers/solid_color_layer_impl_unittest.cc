@@ -110,16 +110,9 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
   root->AddChild(layer);
 
   RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
-                                               gfx::Size(500, 500),
-                                               gfx::Transform(),
-                                               1.f,
-                                               1.f,
-                                               NULL,
-                                               1024,
-                                               false,
-                                               false,
-                                               &render_surface_layer_list);
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      root, gfx::Size(500, 500), &render_surface_layer_list);
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_FALSE(layer->contents_opaque());
   layer->SetBackgroundColor(SkColorSetARGBInline(255, 10, 20, 30));
