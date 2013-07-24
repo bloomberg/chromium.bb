@@ -16,6 +16,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -42,6 +43,18 @@ struct CHROMEOS_EXPORT WifiAccessPoint {
   int signal_strength;  // Radio signal strength measured in dBm.
   int signal_to_noise;  // Current signal to noise ratio measured in dB.
   int channel;  // Wifi channel number.
+};
+
+// Struct for passing network scan result data.
+struct CHROMEOS_EXPORT CellularScanResult {
+  CellularScanResult();
+  ~CellularScanResult();
+  std::string status;  // The network's availability status. (One of "unknown",
+                       // "available", "current", or "forbidden")
+  std::string network_id;  // 3GPP operator code ("MCCMNC").
+  std::string short_name;  // Short-format name of the operator.
+  std::string long_name;  // Long-format name of the operator.
+  std::string technology;  // Access technology.
 };
 
 typedef std::vector<WifiAccessPoint> WifiAccessPointVector;
@@ -71,6 +84,12 @@ CHROMEOS_EXPORT std::string PrefixLengthToNetmask(int32 prefix_length);
 // Converts a |netmask| to a prefixlen. (for IPv4 only)
 // e.g. a |netmask| of 255.255.255.0 is converted to a prefixlen of 24
 CHROMEOS_EXPORT int32 NetmaskToPrefixLength(const std::string& netmask);
+
+// Parses |list|, which contains DictionaryValues and returns a vector of
+// CellularScanResult in |scan_results|. Returns false if parsing fails,
+// in which case the contents of |scan_results| will be undefined.
+CHROMEOS_EXPORT bool ParseCellularScanResults(
+    const ListValue& list, std::vector<CellularScanResult>* scan_results);
 
 }  // namespace network_util
 }  // namespace chromeos

@@ -5,9 +5,12 @@
 #include "chromeos/network/network_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
+using chromeos::CellularScanResult;
 using chromeos::network_util::NetmaskToPrefixLength;
 using chromeos::network_util::PrefixLengthToNetmask;
+using chromeos::network_util::ParseCellularScanResults;
 
 typedef testing::Test NetworkUtilTest;
 
@@ -98,4 +101,51 @@ TEST_F(NetworkUtilTest, PrefixLengthToNetmask) {
   EXPECT_EQ("", PrefixLengthToNetmask(-1));
   EXPECT_EQ("", PrefixLengthToNetmask(33));
   EXPECT_EQ("", PrefixLengthToNetmask(255));
+}
+
+TEST_F(NetworkUtilTest, ParseScanResults) {
+  ListValue list;
+  std::vector<CellularScanResult> scan_results;
+
+  // Empty list value.
+  EXPECT_TRUE(ParseCellularScanResults(list, &scan_results));
+
+  // List contains invalid item.
+  list.AppendInteger(0);
+  EXPECT_FALSE(ParseCellularScanResults(list, &scan_results));
+
+  // Scan result has no network id.
+  list.Clear();
+  DictionaryValue* dict_value = new DictionaryValue();
+  dict_value->SetString(flimflam::kStatusProperty, "available");
+  list.Append(dict_value);
+  EXPECT_TRUE(ParseCellularScanResults(list, &scan_results));
+  EXPECT_TRUE(scan_results.empty());
+
+  // Mixed parse results.
+  dict_value = new DictionaryValue();
+  dict_value->SetString(flimflam::kNetworkIdProperty, "000001");
+  dict_value->SetString(flimflam::kStatusProperty, "unknown");
+  dict_value->SetString(flimflam::kTechnologyProperty, "GSM");
+  list.Append(dict_value);
+
+  dict_value = new DictionaryValue();
+  dict_value->SetString(flimflam::kNetworkIdProperty, "000002");
+  dict_value->SetString(flimflam::kStatusProperty, "available");
+  dict_value->SetString(flimflam::kLongNameProperty, "Long Name");
+  list.Append(dict_value);
+
+  EXPECT_TRUE(ParseCellularScanResults(list, &scan_results));
+  EXPECT_EQ(static_cast<size_t>(2), scan_results.size());
+  EXPECT_EQ("000001", scan_results[0].network_id);
+  EXPECT_EQ("unknown", scan_results[0].status);
+  EXPECT_EQ("GSM", scan_results[0].technology);
+  EXPECT_TRUE(scan_results[0].long_name.empty());
+  EXPECT_TRUE(scan_results[0].short_name.empty());
+
+  EXPECT_EQ("000002", scan_results[1].network_id);
+  EXPECT_EQ("available", scan_results[1].status);
+  EXPECT_EQ("Long Name", scan_results[1].long_name);
+  EXPECT_TRUE(scan_results[1].short_name.empty());
+  EXPECT_TRUE(scan_results[1].technology.empty());
 }

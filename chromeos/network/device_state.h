@@ -7,6 +7,7 @@
 
 #include "base/values.h"
 #include "chromeos/network/managed_state.h"
+#include "chromeos/network/network_util.h"
 
 namespace chromeos {
 
@@ -14,6 +15,8 @@ namespace chromeos {
 // see network_state.h for usage guidelines.
 class CHROMEOS_EXPORT DeviceState : public ManagedState {
  public:
+  typedef std::vector<CellularScanResult> CellularScanResults;
+
   explicit DeviceState(const std::string& path);
   virtual ~DeviceState();
 
@@ -38,6 +41,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   const std::string& imei() const { return imei_; }
   const std::string& iccid() const { return iccid_; }
   const std::string& mdn() const { return mdn_; }
+  const CellularScanResults& scan_results() const { return scan_results_; }
   const DictionaryValue& properties() const { return properties_; }
 
   // Returns true if the technology family is GSM and sim_present_ is false.
@@ -61,6 +65,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   std::string imei_;
   std::string iccid_;
   std::string mdn_;
+  CellularScanResults scan_results_;
   // Keep all Device properties in a dictionary. Devices are limited and should
   // change rarely if ever, so the overhead for this is small.
   DictionaryValue properties_;

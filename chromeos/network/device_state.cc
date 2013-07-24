@@ -65,6 +65,15 @@ bool DeviceState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &technology_family_);
   } else if (key == flimflam::kCarrierProperty) {
     return GetStringValue(key, value, &carrier_);
+  } else if (key == flimflam::kFoundNetworksProperty) {
+    const base::ListValue* list = NULL;
+    if (!value.GetAsList(&list))
+      return false;
+    CellularScanResults parsed_results;
+    if (!network_util::ParseCellularScanResults(*list, &parsed_results))
+      return false;
+    scan_results_.swap(parsed_results);
+    return true;
   } else if (key == flimflam::kSIMLockStatusProperty) {
     const base::DictionaryValue* dict = NULL;
     if (!value.GetAsDictionary(&dict))

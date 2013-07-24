@@ -6,6 +6,7 @@
 
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -22,6 +23,12 @@ WifiAccessPoint::WifiAccessPoint()
 }
 
 WifiAccessPoint::~WifiAccessPoint() {
+}
+
+CellularScanResult::CellularScanResult() {
+}
+
+CellularScanResult::~CellularScanResult() {
 }
 
 namespace network_util {
@@ -90,6 +97,33 @@ int32 NetmaskToPrefixLength(const std::string& netmask) {
   if (count < 4)
     return -1;
   return prefix_length;
+}
+
+bool ParseCellularScanResults(
+    const ListValue& list, std::vector<CellularScanResult>* scan_results) {
+  scan_results->clear();
+  scan_results->reserve(list.GetSize());
+  for (ListValue::const_iterator it = list.begin(); it != list.end(); ++it) {
+    if (!(*it)->IsType(base::Value::TYPE_DICTIONARY))
+      return false;
+    CellularScanResult scan_result;
+    const DictionaryValue* dict = static_cast<const DictionaryValue*>(*it);
+    // If the network id property is not present then this network cannot be
+    // connected to so don't include it in the results.
+    if (!dict->GetStringWithoutPathExpansion(flimflam::kNetworkIdProperty,
+                                             &scan_result.network_id))
+      continue;
+    dict->GetStringWithoutPathExpansion(flimflam::kStatusProperty,
+                                        &scan_result.status);
+    dict->GetStringWithoutPathExpansion(flimflam::kLongNameProperty,
+                                        &scan_result.long_name);
+    dict->GetStringWithoutPathExpansion(flimflam::kShortNameProperty,
+                                        &scan_result.short_name);
+    dict->GetStringWithoutPathExpansion(flimflam::kTechnologyProperty,
+                                        &scan_result.technology);
+    scan_results->push_back(scan_result);
+  }
+  return true;
 }
 
 }  // namespace network_util
