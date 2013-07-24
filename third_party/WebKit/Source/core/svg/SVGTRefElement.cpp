@@ -33,6 +33,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/markup.h"
 #include "core/page/UseCounter.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "core/rendering/svg/RenderSVGInline.h"
@@ -149,18 +150,10 @@ SVGTRefElement::~SVGTRefElement()
 
 void SVGTRefElement::updateReferencedText(Element* target)
 {
-    String textContent;
     if (target)
-        textContent = target->textContent();
-
-    ASSERT(shadow());
-    ShadowRoot* root = shadow()->oldestShadowRoot();
-    if (!root->firstChild())
-        root->appendChild(Text::create(document(), textContent), ASSERT_NO_EXCEPTION, AttachLazily);
-    else {
-        ASSERT(root->firstChild()->isTextNode());
-        root->firstChild()->setTextContent(textContent, ASSERT_NO_EXCEPTION);
-    }
+        replaceChildrenWithText(userAgentShadowRoot(), target->textContent(), ASSERT_NO_EXCEPTION);
+    else
+        userAgentShadowRoot()->removeChildren();
 }
 
 void SVGTRefElement::detachTarget()
@@ -168,12 +161,7 @@ void SVGTRefElement::detachTarget()
     // Remove active listeners and clear the text content.
     m_targetListener->detach();
 
-    String emptyContent;
-
-    ASSERT(shadow());
-    Node* container = shadow()->oldestShadowRoot()->firstChild();
-    if (container)
-        container->setTextContent(emptyContent, IGNORE_EXCEPTION);
+    userAgentShadowRoot()->removeChildren();
 
     if (!inDocument())
         return;

@@ -43,9 +43,9 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&);
 
-    virtual RenderObject* createRenderer(RenderStyle*);
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
-    virtual bool rendererIsNeeded(const NodeRenderingContext&);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const OVERRIDE;
+    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
