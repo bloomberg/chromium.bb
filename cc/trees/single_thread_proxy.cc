@@ -171,11 +171,6 @@ void SingleThreadProxy::SetNeedsAnimate() {
   NOTREACHED();
 }
 
-void SingleThreadProxy::SetNeedsUpdateLayers() {
-  DCHECK(Proxy::IsMainThread());
-  layer_tree_host_->ScheduleComposite();
-}
-
 void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
   DCHECK(Proxy::IsMainThread());
   // Commit immediately.
@@ -208,12 +203,11 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
     layer_tree_host_impl_->CommitComplete();
 
 #ifndef NDEBUG
-    // In the single-threaded case, the scale and scroll deltas should never be
+    // In the single-threaded case, the scroll deltas should never be
     // touched on the impl layer tree.
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         layer_tree_host_impl_->ProcessScrollDeltas();
     DCHECK(!scroll_info->scrolls.size());
-    DCHECK_EQ(1.f, scroll_info->page_scale_delta);
 #endif
 
     base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);

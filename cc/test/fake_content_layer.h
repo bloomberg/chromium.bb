@@ -29,10 +29,6 @@ class FakeContentLayer : public ContentLayer {
       ResourceUpdateQueue* queue,
       const OcclusionTracker* occlusion) OVERRIDE;
 
-  void set_always_update_resources(bool always_update_resources) {
-    always_update_resources_ = always_update_resources;
-  }
-
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
   bool HaveBackingAt(int i, int j);
@@ -43,7 +39,6 @@ class FakeContentLayer : public ContentLayer {
 
   size_t update_count_;
   size_t push_properties_count_;
-  bool always_update_resources_;
 };
 
 }  // namespace cc

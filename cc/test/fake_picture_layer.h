@@ -26,12 +26,9 @@ class FakePictureLayer : public PictureLayer {
   size_t push_properties_count() const { return push_properties_count_; }
   void reset_push_properties_count() { push_properties_count_ = 0; }
 
-  void set_always_update_resources(bool always_update_resources) {
-    always_update_resources_ = always_update_resources;
-  }
-
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) OVERRIDE;
+  virtual bool Update(
+      ResourceUpdateQueue* queue,
+      const OcclusionTracker* occlusion) OVERRIDE;
 
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
@@ -41,7 +38,6 @@ class FakePictureLayer : public PictureLayer {
 
   size_t update_count_;
   size_t push_properties_count_;
-  bool always_update_resources_;
 };
 
 }  // namespace cc

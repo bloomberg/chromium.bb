@@ -87,7 +87,6 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
       case 3:
         // Cause non-visible damage.
         content_->SetNeedsDisplayRect(gfx::Rect(1990, 1990, 10, 10));
-        layer_tree_host()->SetNeedsCommit();
         break;
     }
   }

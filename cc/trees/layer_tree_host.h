@@ -165,7 +165,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   const RendererCapabilities& GetRendererCapabilities() const;
 
   void SetNeedsAnimate();
-  virtual void SetNeedsUpdateLayers();
   virtual void SetNeedsCommit();
   virtual void SetNeedsFullTreeSync();
   void SetNeedsRedraw();
@@ -190,7 +189,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
   float overdraw_bottom_height() const { return overdraw_bottom_height_; }
 
-  void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float min_page_scale_factor,
                                    float max_page_scale_factor);

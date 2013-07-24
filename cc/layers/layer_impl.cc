@@ -270,22 +270,6 @@ gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
   return unscrolled;
 }
 
-void LayerImpl::ApplySentScrollDeltas() {
-  // Pending tree never has sent scroll deltas
-  DCHECK(layer_tree_impl()->IsActiveTree());
-
-  // Apply sent scroll deltas to scroll position / scroll delta as if the
-  // main thread had applied them and then committed those values.
-  scroll_offset_ += sent_scroll_delta_;
-  scroll_delta_ -= sent_scroll_delta_;
-  sent_scroll_delta_ = gfx::Vector2d();
-
-  DCHECK_GE(TotalScrollOffset().x(), 0);
-  DCHECK_GE(TotalScrollOffset().y(), 0);
-  DCHECK_LE(TotalScrollOffset().x(), max_scroll_offset_.x());
-  DCHECK_LE(TotalScrollOffset().y(), max_scroll_offset_.y());
-}
-
 InputHandler::ScrollStatus LayerImpl::TryScroll(
     gfx::PointF screen_space_point,
     InputHandler::ScrollInputType type) const {

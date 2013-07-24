@@ -469,8 +469,6 @@ void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
 }
 
-void LayerTreeHost::SetNeedsUpdateLayers() { proxy_->SetNeedsUpdateLayers(); }
-
 void LayerTreeHost::SetNeedsCommit() {
   if (!prepaint_callback_.IsCancelled()) {
     TRACE_EVENT_INSTANT0("cc",
@@ -581,11 +579,6 @@ void LayerTreeHost::SetOverdrawBottomHeight(float overdraw_bottom_height) {
 
   overdraw_bottom_height_ = overdraw_bottom_height;
   SetNeedsCommit();
-}
-
-void LayerTreeHost::ApplyPageScaleDeltaFromImplSide(float page_scale_delta) {
-  DCHECK(CommitRequested());
-  page_scale_factor_ *= page_scale_delta;
 }
 
 void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
@@ -971,8 +964,8 @@ void LayerTreeHost::ApplyScrollAndScale(const ScrollAndScaleSet& info) {
   if (!root_layer_.get())
     return;
 
-  gfx::Vector2d root_scroll_delta;
   Layer* root_scroll_layer = FindFirstScrollableLayer(root_layer_.get());
+  gfx::Vector2d root_scroll_delta;
 
   for (size_t i = 0; i < info.scrolls.size(); ++i) {
     Layer* layer =
@@ -987,22 +980,8 @@ void LayerTreeHost::ApplyScrollAndScale(const ScrollAndScaleSet& info) {
                                          info.scrolls[i].scroll_delta);
     }
   }
-
-  if (!root_scroll_delta.IsZero() || info.page_scale_delta != 1.f) {
-    // SetScrollOffsetFromImplSide above could have destroyed the tree,
-    // so re-get this layer before doing anything to it.
-    root_scroll_layer = FindFirstScrollableLayer(root_layer_.get());
-
-    // Preemptively apply the scroll offset and scale delta here before sending
-    // it to the client.  If the client comes back and sets it to the same
-    // value, then the layer can early out without needing a full commit.
-    if (root_scroll_layer) {
-      root_scroll_layer->SetScrollOffsetFromImplSide(
-          root_scroll_layer->scroll_offset() + root_scroll_delta);
-    }
-    ApplyPageScaleDeltaFromImplSide(info.page_scale_delta);
+  if (!root_scroll_delta.IsZero() || info.page_scale_delta != 1.f)
     client_->ApplyScrollAndScale(root_scroll_delta, info.page_scale_delta);
-  }
 }
 
 void LayerTreeHost::StartRateLimiter(WebKit::WebGraphicsContext3D* context3d) {

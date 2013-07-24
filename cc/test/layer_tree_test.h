@@ -52,13 +52,10 @@ class TestHooks : public AnimationDelegate {
   virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,
                                    float scale) {}
   virtual void Animate(base::TimeTicks monotonic_time) {}
-  virtual void WillBeginFrame() {}
-  virtual void DidBeginFrame() {}
   virtual void Layout() {}
   virtual void DidInitializeOutputSurface(bool succeeded) {}
   virtual void DidFailToInitializeOutputSurface() {}
   virtual void DidAddAnimation() {}
-  virtual void WillCommit() {}
   virtual void DidCommit() {}
   virtual void DidCommitAndDrawFrame() {}
   virtual void DidCompleteSwapBuffers() {}
