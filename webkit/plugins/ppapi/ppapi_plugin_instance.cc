@@ -31,6 +31,7 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppp_instance_private.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_gamepad_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
@@ -2458,7 +2459,7 @@ PP_Var PluginInstance::GetPluginInstanceURL(
                                                         components);
 }
 
-PP_NaClResult PluginInstance::ResetAsProxied(
+PP_ExternalPluginResult PluginInstance::ResetAsProxied(
     scoped_refptr<PluginModule> module) {
   // Save the original module and switch over to the new one now that this
   // plugin is using the IPC-based proxy.
@@ -2481,7 +2482,7 @@ PP_NaClResult PluginInstance::ResetAsProxied(
     // While this could be a failure to implement the interface in the NaCl
     // module, it is more likely that the NaCl process has crashed. Either
     // way, report that module initialization failed.
-    return PP_NACL_ERROR_MODULE;
+    return PP_EXTERNAL_PLUGIN_ERROR_MODULE;
   }
 
   instance_interface_.reset(ppp_instance_combined);
@@ -2504,7 +2505,7 @@ PP_NaClResult PluginInstance::ResetAsProxied(
   scoped_ptr<const char*[]> argv_array(StringVectorToArgArray(argv_));
   if (!instance_interface_->DidCreate(pp_instance(), argn_.size(),
                                       argn_array.get(), argv_array.get()))
-    return PP_NACL_ERROR_INSTANCE;
+    return PP_EXTERNAL_PLUGIN_ERROR_INSTANCE;
   message_channel_->StopQueueingJavaScriptMessages();
 
   // Clear sent_initial_did_change_view_ and cancel any pending DidChangeView
@@ -2526,7 +2527,7 @@ PP_NaClResult PluginInstance::ResetAsProxied(
     nacl_document_loader_.reset(NULL);
   }
 
-  return PP_NACL_OK;
+  return PP_EXTERNAL_PLUGIN_OK;
 }
 
 bool PluginInstance::IsValidInstanceOf(PluginModule* module) {
@@ -2590,6 +2591,40 @@ PP_Resource PluginInstance::CreateImage(gfx::ImageSkia* source_image,
   canvas->writePixels(image_skia_rep.sk_bitmap(), 0, 0);
 
   return image_data->GetReference();
+}
+
+base::FilePath PluginInstance::GetModulePath() {
+  return module_->path();
+}
+
+PP_ExternalPluginResult PluginInstance::SwitchToOutOfProcessProxy(
+    const base::FilePath& file_path,
+    ::ppapi::PpapiPermissions permissions,
+    const IPC::ChannelHandle& channel_handle,
+    base::ProcessId plugin_pid,
+    int plugin_child_id) {
+  // Create a new module for each instance of the external plugin that is using
+  // the IPC based out-of-process proxy. We can't use the existing module,
+  // because it is configured for the in-process plugin, and we must keep it
+  // that way to allow the page to create other instances.
+  scoped_refptr<webkit::ppapi::PluginModule> external_plugin_module(
+      module_->CreateModuleForExternalPluginInstance());
+
+  content::RendererPpapiHost* renderer_ppapi_host =
+      delegate_->CreateExternalPluginModule(
+          external_plugin_module,
+          file_path,
+          permissions,
+          channel_handle,
+          plugin_pid,
+          plugin_child_id);
+  if (!renderer_ppapi_host) {
+    DLOG(ERROR) << "CreateExternalPluginModule() failed";
+    return PP_EXTERNAL_PLUGIN_ERROR_MODULE;
+  }
+
+  // Finally, switch the instance to the proxy.
+  return external_plugin_module->InitAsProxiedExternalPlugin(this);
 }
 
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {

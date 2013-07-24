@@ -482,8 +482,9 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
                           "could not initialize module.");
     return false;
   }
-  PP_NaClResult ipc_result = nacl_interface_->StartPpapiProxy(pp_instance());
-  if (ipc_result == PP_NACL_OK) {
+  PP_ExternalPluginResult ipc_result =
+      nacl_interface_->StartPpapiProxy(pp_instance());
+  if (ipc_result == PP_EXTERNAL_PLUGIN_OK) {
     // Log the amound of time that has passed between the trusted plugin being
     // initialized and the untrusted plugin being initialized.  This is
     // (roughly) the cost of using NaCl, in terms of startup time.
@@ -491,13 +492,13 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
         "NaCl.Perf.StartupTime.NaClOverhead",
         static_cast<float>(NaClGetTimeOfDayMicroseconds() - init_time_)
             / NACL_MICROS_PER_MILLI);
-  } else if (ipc_result == PP_NACL_ERROR_MODULE) {
+  } else if (ipc_result == PP_EXTERNAL_PLUGIN_ERROR_MODULE) {
     NaClLog(LOG_ERROR, "LoadNaClModuleContinuationIntern: "
-            "Got PP_NACL_ERROR_MODULE\n");
+            "Got PP_EXTERNAL_PLUGIN_ERROR_MODULE\n");
     error_info->SetReport(ERROR_START_PROXY_MODULE,
                           "could not initialize module.");
     return false;
-  } else if (ipc_result == PP_NACL_ERROR_INSTANCE) {
+  } else if (ipc_result == PP_EXTERNAL_PLUGIN_ERROR_INSTANCE) {
     error_info->SetReport(ERROR_START_PROXY_INSTANCE,
                           "could not create instance.");
     return false;

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Mon Jul 15 09:19:33 2013. */
+/* From private/ppb_nacl_private.idl modified Tue Jul 23 13:16:52 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/private/ppb_instance_private.h"
 
 #define PPB_NACL_PRIVATE_INTERFACE_1_0 "PPB_NaCl_Private;1.0"
 #define PPB_NACL_PRIVATE_INTERFACE PPB_NACL_PRIVATE_INTERFACE_1_0
@@ -25,26 +26,12 @@
 
 
 #include "ppapi/c/private/pp_file_handle.h"
+#include "ppapi/c/private/ppb_instance_private.h"
 
 /**
  * @addtogroup Enums
  * @{
  */
-/**
- * The <code>PP_NaClResult</code> enum contains NaCl result codes.
- */
-typedef enum {
-  /** Successful NaCl call */
-  PP_NACL_OK = 0,
-  /** Unspecified NaCl error */
-  PP_NACL_FAILED = 1,
-  /** Error creating the module */
-  PP_NACL_ERROR_MODULE = 2,
-  /** Error creating and initializing the instance */
-  PP_NACL_ERROR_INSTANCE = 3
-} PP_NaClResult;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NaClResult, 4);
-
 /** NaCl-specific errors that should be reported to the user */
 typedef enum {
   /**
@@ -77,15 +64,15 @@ struct PPB_NaCl_Private_1_0 {
    * The |enable_exception_handling| flag indicates whether or not the nexe
    * will be able to use hardware exception handling.
    */
-  PP_NaClResult (*LaunchSelLdr)(PP_Instance instance,
-                                const char* alleged_url,
-                                PP_Bool uses_irt,
-                                PP_Bool uses_ppapi,
-                                PP_Bool enable_ppapi_dev,
-                                PP_Bool enable_dyncode_syscalls,
-                                PP_Bool enable_exception_handling,
-                                void* imc_handle,
-                                struct PP_Var* error_message);
+  PP_ExternalPluginResult (*LaunchSelLdr)(PP_Instance instance,
+                                          const char* alleged_url,
+                                          PP_Bool uses_irt,
+                                          PP_Bool uses_ppapi,
+                                          PP_Bool enable_ppapi_dev,
+                                          PP_Bool enable_dyncode_syscalls,
+                                          PP_Bool enable_exception_handling,
+                                          void* imc_handle,
+                                          struct PP_Var* error_message);
   /* This function starts the IPC proxy so the nexe can communicate with the
    * browser. Returns PP_NACL_OK on success, otherwise a result code indicating
    * the failure. PP_NACL_FAILED is returned if LaunchSelLdr wasn't called with
@@ -93,7 +80,7 @@ struct PPB_NaCl_Private_1_0 {
    * initialized. PP_NACL_ERROR_INSTANCE is returned if the instance can't be
    * initialized. PP_NACL_USE_SRPC is returned if the plugin should use SRPC.
    */
-  PP_NaClResult (*StartPpapiProxy)(PP_Instance instance);
+  PP_ExternalPluginResult (*StartPpapiProxy)(PP_Instance instance);
   /* On POSIX systems, this function returns the file descriptor of
    * /dev/urandom.  On non-POSIX systems, this function returns 0.
    */
@@ -162,8 +149,8 @@ struct PPB_NaCl_Private_1_0 {
    */
   PP_Bool (*IsPnaclEnabled)(void);
   /* Display a UI message to the user. */
-  PP_NaClResult (*ReportNaClError)(PP_Instance instance,
-                                   PP_NaClError message_id);
+  PP_ExternalPluginResult (*ReportNaClError)(PP_Instance instance,
+                                             PP_NaClError message_id);
   /* Opens a NaCl executable file in the application's extension directory
    * corresponding to the file URL and returns a file descriptor, or an invalid
    * handle on failure. |metadata| is left unchanged on failure.

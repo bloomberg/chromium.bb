@@ -44,6 +44,10 @@ class SkCanvas;
 class TransportDIB;
 struct PP_NetAddress_Private;
 
+namespace IPC {
+struct ChannelHandle;
+}
+
 namespace WebKit {
 class WebGraphicsContext3D;
 }
@@ -51,6 +55,10 @@ class WebGraphicsContext3D;
 namespace base {
 class MessageLoopProxy;
 class Time;
+}
+
+namespace content {
+class RendererPpapiHost;
 }
 
 namespace fileapi {
@@ -68,6 +76,7 @@ struct Mailbox;
 
 namespace ppapi {
 class PepperFilePath;
+class PpapiPermissions;
 class PPB_X509Certificate_Fields;
 class SocketOptionData;
 struct DeviceRefData;
@@ -685,6 +694,16 @@ class PluginDelegate {
   // loader using set_document_loader.
   virtual void HandleDocumentLoad(PluginInstance* instance,
                                   const WebKit::WebURLResponse& response) = 0;
+
+  // Sets up the renderer host and out-of-process proxy for an external plugin
+  // module. Returns the renderer host, or NULL if it couldn't be created.
+  virtual content::RendererPpapiHost* CreateExternalPluginModule(
+      scoped_refptr<PluginModule> module,
+      const base::FilePath& path,
+      ::ppapi::PpapiPermissions permissions,
+      const IPC::ChannelHandle& channel_handle,
+      base::ProcessId plugin_pid,
+      int plugin_child_id) = 0;
 };
 
 }  // namespace ppapi

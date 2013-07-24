@@ -480,27 +480,29 @@ void PluginModule::InitAsProxied(
   out_of_process_proxy_.reset(out_of_process_proxy);
 }
 
-scoped_refptr<PluginModule> PluginModule::CreateModuleForNaClInstance() {
+scoped_refptr<PluginModule>
+    PluginModule::CreateModuleForExternalPluginInstance() {
   // Create a new module, but don't set the lifetime delegate. This isn't a
   // plugin in the usual sense, so it isn't tracked by the browser.
-  scoped_refptr<PluginModule> nacl_module(
+  scoped_refptr<PluginModule> external_plugin_module(
       new PluginModule(name_,
                        path_,
                        NULL,  // no lifetime_delegate
                        permissions_));
-  return nacl_module;
+  return external_plugin_module;
 }
 
-PP_NaClResult PluginModule::InitAsProxiedNaCl(PluginInstance* instance) {
+PP_ExternalPluginResult PluginModule::InitAsProxiedExternalPlugin(
+    PluginInstance* instance) {
   DCHECK(out_of_process_proxy_.get());
   // InitAsProxied (for the trusted/out-of-process case) initializes only the
   // module, and one or more instances are added later. In this case, the
   // PluginInstance was already created as in-process, so we missed the proxy
   // AddInstance step and must do it now.
   out_of_process_proxy_->AddInstance(instance->pp_instance());
-  // In NaCl, we need to tell the instance to reset itself as proxied. This will
-  // clear cached interface pointers and send DidCreate (etc) to the plugin
-  // side of the proxy.
+  // For external plugins, we need to tell the instance to reset itself as
+  // proxied. This will clear cached interface pointers and send DidCreate (etc)
+  // to the plugin side of the proxy.
   return instance->ResetAsProxied(this);
 }
 

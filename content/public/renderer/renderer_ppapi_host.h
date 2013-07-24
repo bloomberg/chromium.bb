@@ -22,12 +22,10 @@ class Point;
 }
 
 namespace IPC {
-struct ChannelHandle;
 class Message;
 }
 
 namespace ppapi {
-class PpapiPermissions;
 namespace host {
 class PpapiHost;
 }
@@ -54,20 +52,6 @@ class RenderView;
 // There will be one of these objects in the renderer per plugin module.
 class RendererPpapiHost {
  public:
-  // Creates a host and sets up an out-of-process proxy for an external plugin
-  // module. |file_path| should identify the module. It is only used to report
-  // failures to the renderer.
-  // Returns a host if the external module is proxied successfully, otherwise
-  // returns NULL.
-  CONTENT_EXPORT static RendererPpapiHost* CreateExternalPluginModule(
-      scoped_refptr<webkit::ppapi::PluginModule> plugin_module,
-      webkit::ppapi::PluginInstance* plugin_instance,
-      const base::FilePath& file_path,
-      ppapi::PpapiPermissions permissions,
-      const IPC::ChannelHandle& channel_handle,
-      base::ProcessId plugin_pid,
-      int plugin_child_id);
-
   // Returns the RendererPpapiHost associated with the given PP_Instance,
   // or NULL if the instance is invalid.
   CONTENT_EXPORT static RendererPpapiHost* GetForPPInstance(

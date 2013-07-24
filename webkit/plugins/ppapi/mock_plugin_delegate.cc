@@ -7,10 +7,12 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "webkit/plugins/ppapi/mock_platform_image_2d.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace webkit {
@@ -407,6 +409,16 @@ bool MockPluginDelegate::IsRunningInProcess(PP_Instance instance) const {
 void MockPluginDelegate::HandleDocumentLoad(
     PluginInstance* instance,
     const WebKit::WebURLResponse& response) {
+}
+
+content::RendererPpapiHost* MockPluginDelegate::CreateExternalPluginModule(
+    scoped_refptr<PluginModule> module,
+    const base::FilePath& path,
+    ::ppapi::PpapiPermissions permissions,
+    const IPC::ChannelHandle& channel_handle,
+    base::ProcessId plugin_pid,
+    int plugin_child_id) {
+  return NULL;
 }
 
 }  // namespace ppapi

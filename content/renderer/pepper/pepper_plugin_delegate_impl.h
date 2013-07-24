@@ -30,14 +30,9 @@ namespace base {
 class FilePath;
 }
 
-namespace IPC {
-struct ChannelHandle;
-}
-
 namespace ppapi {
 class PepperFilePath;
 class PPB_X509Certificate_Fields;
-class PpapiPermissions;
 }
 
 namespace webkit {
@@ -74,16 +69,6 @@ class PepperPluginDelegateImpl
   PepperBrowserConnection* pepper_browser_connection() {
     return &pepper_browser_connection_;
   }
-
-  // Sets up the renderer host and out-of-process proxy for an external plugin
-  // module. Returns the renderer host, or NULL if it couldn't be created.
-  RendererPpapiHost* CreateExternalPluginModule(
-      scoped_refptr<webkit::ppapi::PluginModule> module,
-      const base::FilePath& path,
-      ppapi::PpapiPermissions permissions,
-      const IPC::ChannelHandle& channel_handle,
-      base::ProcessId plugin_pid,
-      int plugin_child_id);
 
   // Removes broker from pending_connect_broker_ if present. Returns true if so.
   bool StopWaitingForBrokerConnection(PepperBrokerImpl* broker);
@@ -335,6 +320,13 @@ class PepperPluginDelegateImpl
   virtual void HandleDocumentLoad(
       webkit::ppapi::PluginInstance* instance,
       const WebKit::WebURLResponse& response) OVERRIDE;
+  virtual content::RendererPpapiHost* CreateExternalPluginModule(
+      scoped_refptr<webkit::ppapi::PluginModule> module,
+      const base::FilePath& path,
+      ::ppapi::PpapiPermissions permissions,
+      const IPC::ChannelHandle& channel_handle,
+      base::ProcessId plugin_pid,
+      int plugin_child_id) OVERRIDE;
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

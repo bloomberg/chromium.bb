@@ -182,6 +182,13 @@ class MockPluginDelegate : public PluginDelegate {
   virtual bool IsRunningInProcess(PP_Instance instance) const;
   virtual void HandleDocumentLoad(PluginInstance* instance,
                                   const WebKit::WebURLResponse& response);
+  virtual content::RendererPpapiHost* CreateExternalPluginModule(
+      scoped_refptr<PluginModule> module,
+      const base::FilePath& path,
+      ::ppapi::PpapiPermissions permissions,
+      const IPC::ChannelHandle& channel_handle,
+      base::ProcessId plugin_pid,
+      int plugin_child_id);
 };
 
 }  // namespace ppapi

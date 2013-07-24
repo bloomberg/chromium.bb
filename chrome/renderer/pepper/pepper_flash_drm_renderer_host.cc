@@ -12,7 +12,6 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace chrome {
@@ -52,7 +51,7 @@ int32_t PepperFlashDRMRendererHost::OnGetVoucherFile(
   if (!plugin_instance)
     return PP_ERROR_FAILED;
 
-  base::FilePath plugin_dir = plugin_instance->module()->path().DirName();
+  base::FilePath plugin_dir = plugin_instance->GetModulePath().DirName();
   DCHECK(!plugin_dir.empty());
   base::FilePath voucher_file = plugin_dir.Append(
       base::FilePath(kVoucherFilename));

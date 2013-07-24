@@ -34,34 +34,6 @@ using webkit::ppapi::PluginInstance;
 using webkit::ppapi::PluginModule;
 
 namespace content {
-
-// static
-CONTENT_EXPORT RendererPpapiHost*
-RendererPpapiHost::CreateExternalPluginModule(
-    scoped_refptr<PluginModule> plugin_module,
-    PluginInstance* plugin_instance,
-    const base::FilePath& file_path,
-    ppapi::PpapiPermissions permissions,
-    const IPC::ChannelHandle& channel_handle,
-    base::ProcessId plugin_pid,
-    int plugin_child_id) {
-  RendererPpapiHost* renderer_ppapi_host = NULL;
-  // Since we're the embedder, we can make assumptions about the delegate on
-  // the instance.
-  PepperPluginDelegateImpl* pepper_plugin_delegate =
-      static_cast<PepperPluginDelegateImpl*>(plugin_instance->delegate());
-  if (pepper_plugin_delegate) {
-    renderer_ppapi_host = pepper_plugin_delegate->CreateExternalPluginModule(
-        plugin_module,
-        file_path,
-        permissions,
-        channel_handle,
-        plugin_pid,
-        plugin_child_id);
-  }
-  return renderer_ppapi_host;
-}
-
 // static
 CONTENT_EXPORT RendererPpapiHost*
 RendererPpapiHost::GetForPPInstance(PP_Instance instance) {

@@ -14,9 +14,9 @@
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
+#include "ppapi/c/private/ppb_instance_private.h"
 
-typedef PP_NaClResult (*LaunchNaClProcessFunc)(
+typedef PP_ExternalPluginResult (*LaunchNaClProcessFunc)(
     PP_Instance instance,
     const char* alleged_url,
     PP_Bool uses_irt,

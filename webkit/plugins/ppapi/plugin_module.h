@@ -21,7 +21,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
+#include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/webkit_plugins_export.h"
@@ -117,15 +117,16 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // ownership of the given pointer, even in the failure case.
   void InitAsProxied(PluginDelegate::OutOfProcessProxy* out_of_process_proxy);
 
-  // Creates a new module for a NaCl instance that will be using the IPC proxy.
-  // We can't use the existing module, or new instances of the plugin can't
-  // be created.
-  scoped_refptr<PluginModule> CreateModuleForNaClInstance();
+  // Creates a new module for an external plugin instance that will be using the
+  // IPC proxy. We can't use the existing module, or new instances of the plugin
+  // can't be created.
+  scoped_refptr<PluginModule> CreateModuleForExternalPluginInstance();
 
-  // Initializes the NaCl module for the out of process proxy. InitAsProxied
-  // must be called before calling InitAsProxiedNaCl. Returns a NaCl result code
-  // indicating whether the proxy started successfully or there was an error.
-  PP_NaClResult InitAsProxiedNaCl(PluginInstance* instance);
+  // Initializes the external plugin module for the out of process proxy.
+  // InitAsProxied must be called before calling InitAsProxiedExternalPlugin.
+  // Returns a result code indicating whether the proxy started successfully or
+  // there was an error.
+  PP_ExternalPluginResult InitAsProxiedExternalPlugin(PluginInstance* instance);
 
   bool IsProxied() const;
 

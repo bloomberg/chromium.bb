@@ -8,22 +8,8 @@
 
 #inline c
 #include "ppapi/c/private/pp_file_handle.h"
+#include "ppapi/c/private/ppb_instance_private.h"
 #endinl
-
-/**
- * The <code>PP_NaClResult</code> enum contains NaCl result codes.
- */
-[assert_size(4)]
-enum PP_NaClResult {
-  /** Successful NaCl call */
-  PP_NACL_OK = 0,
-  /** Unspecified NaCl error */
-  PP_NACL_FAILED = 1,
-  /** Error creating the module */
-  PP_NACL_ERROR_MODULE = 2,
-  /** Error creating and initializing the instance */
-  PP_NACL_ERROR_INSTANCE = 3
-};
 
 /** NaCl-specific errors that should be reported to the user */
 enum PP_NaClError {
@@ -36,9 +22,9 @@ enum PP_NaClError {
 
 /* PPB_NaCl_Private */
 interface PPB_NaCl_Private {
-  /* Launches NaCl's sel_ldr process.  Returns PP_NACL_OK on success and
-   * writes a NaClHandle to imc_handle. Returns PP_NACL_FAILED on failure.
-   * The |enable_ppapi_dev| parameter controls whether GetInterface
+  /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
+   * and writes a NaClHandle to imc_handle. Returns PP_EXTERNAL_PLUGIN_FAILED on
+   * failure. The |enable_ppapi_dev| parameter controls whether GetInterface
    * returns 'Dev' interfaces to the NaCl plugin.  The |uses_ppapi| flag
    * indicates that the nexe run by sel_ldr will use the PPAPI APIs.
    * This implies that LaunchSelLdr is run from the main thread.  If a nexe
@@ -50,24 +36,25 @@ interface PPB_NaCl_Private {
    * The |enable_exception_handling| flag indicates whether or not the nexe
    * will be able to use hardware exception handling.
    */
-  PP_NaClResult LaunchSelLdr([in] PP_Instance instance,
-                             [in] str_t alleged_url,
-                             [in] PP_Bool uses_irt,
-                             [in] PP_Bool uses_ppapi,
-                             [in] PP_Bool enable_ppapi_dev,
-                             [in] PP_Bool enable_dyncode_syscalls,
-                             [in] PP_Bool enable_exception_handling,
-                             [out] mem_t imc_handle,
-                             [out] PP_Var error_message);
+  PP_ExternalPluginResult LaunchSelLdr([in] PP_Instance instance,
+                                       [in] str_t alleged_url,
+                                       [in] PP_Bool uses_irt,
+                                       [in] PP_Bool uses_ppapi,
+                                       [in] PP_Bool enable_ppapi_dev,
+                                       [in] PP_Bool enable_dyncode_syscalls,
+                                       [in] PP_Bool enable_exception_handling,
+                                       [out] mem_t imc_handle,
+                                       [out] PP_Var error_message);
 
   /* This function starts the IPC proxy so the nexe can communicate with the
-   * browser. Returns PP_NACL_OK on success, otherwise a result code indicating
-   * the failure. PP_NACL_FAILED is returned if LaunchSelLdr wasn't called with
-   * the instance. PP_NACL_ERROR_MODULE is returned if the module can't be
-   * initialized. PP_NACL_ERROR_INSTANCE is returned if the instance can't be
-   * initialized. PP_NACL_USE_SRPC is returned if the plugin should use SRPC.
+   * browser. Returns PP_EXTERNAL_PLUGIN_OK on success, otherwise a result code
+   * indicating the failure. PP_EXTERNAL_PLUGIN_FAILED is returned if
+   * LaunchSelLdr wasn't called with the instance.
+   * PP_EXTERNAL_PLUGIN_ERROR_MODULE is returned if the module can't be
+   * initialized. PP_EXTERNAL_PLUGIN_ERROR_INSTANCE is returned if the instance
+   * can't be initialized.
    */
-  PP_NaClResult StartPpapiProxy(PP_Instance instance);
+  PP_ExternalPluginResult StartPpapiProxy(PP_Instance instance);
 
   /* On POSIX systems, this function returns the file descriptor of
    * /dev/urandom.  On non-POSIX systems, this function returns 0.
@@ -146,8 +133,8 @@ interface PPB_NaCl_Private {
   PP_Bool IsPnaclEnabled();
 
   /* Display a UI message to the user. */
-  PP_NaClResult ReportNaClError([in] PP_Instance instance,
-                                [in] PP_NaClError message_id);
+  PP_ExternalPluginResult ReportNaClError([in] PP_Instance instance,
+                                          [in] PP_NaClError message_id);
 
   /* Opens a NaCl executable file in the application's extension directory
    * corresponding to the file URL and returns a file descriptor, or an invalid

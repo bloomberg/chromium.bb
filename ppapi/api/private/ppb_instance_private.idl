@@ -16,6 +16,23 @@ label Chrome {
 };
 
 /**
+ * The <code>PP_ExternalPluginResult </code> enum contains result codes from
+ * launching an external plugin.
+ */
+[assert_size(4)]
+enum PP_ExternalPluginResult  {
+  /** Successful external plugin call */
+  PP_EXTERNAL_PLUGIN_OK = 0,
+  /** Unspecified external plugin error */
+  PP_EXTERNAL_PLUGIN_FAILED = 1,
+  /** Error creating the module */
+  PP_EXTERNAL_PLUGIN_ERROR_MODULE = 2,
+  /** Error creating and initializing the instance */
+  PP_EXTERNAL_PLUGIN_ERROR_INSTANCE = 3
+};
+
+
+/**
  * The PPB_Instance_Private interface contains functions available only to
  * trusted plugin instances.
  *

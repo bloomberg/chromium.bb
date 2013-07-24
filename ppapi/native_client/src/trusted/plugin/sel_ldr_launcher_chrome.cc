@@ -38,7 +38,7 @@ bool SelLdrLauncherChrome::Start(PP_Instance instance,
                           PP_FromBool(enable_dyncode_syscalls),
                           PP_FromBool(enable_exception_handling),
                           &channel_,
-                          &var_error_message) != PP_NACL_OK) {
+                          &var_error_message) != PP_EXTERNAL_PLUGIN_OK) {
     pp::Var var_error_message_cpp(pp::PASS_REF, var_error_message);
     if (var_error_message_cpp.is_string()) {
       *error_message = var_error_message_cpp.AsString();
