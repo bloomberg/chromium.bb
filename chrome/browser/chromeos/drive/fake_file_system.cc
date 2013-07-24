@@ -74,11 +74,6 @@ void FakeFileSystem::OpenFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::CloseFile(const base::FilePath& file_path,
-                               const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void FakeFileSystem::Copy(const base::FilePath& src_file_path,
                           const base::FilePath& dest_file_path,
                           const FileOperationCallback& callback) {
@@ -210,7 +205,7 @@ void FakeFileSystem::GetMetadata(
 
 void FakeFileSystem::MarkCacheFileAsMounted(
     const base::FilePath& drive_file_path,
-    const OpenFileCallback& callback) {
+    const MarkMountedCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

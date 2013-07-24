@@ -50,7 +50,8 @@ void RunCreateOrOpenFileCallback(
     const base::FilePath& file_path,
     const AsyncFileUtil::CreateOrOpenCallback& callback,
     base::PlatformFileError error,
-    base::PlatformFile file) {
+    base::PlatformFile file,
+    const base::Closure& close_callback_on_ui_thread) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // It is necessary to make a closure, which runs on file closing here.
@@ -58,10 +59,9 @@ void RunCreateOrOpenFileCallback(
   // (crbug.com/259184).
   callback.Run(
       error, base::PassPlatformFile(&file),
-      base::Bind(&PostFileSystemCallback,
-                 file_system_getter,
-                 base::Bind(&fileapi_internal::CloseFile, file_path),
-                 base::Closure()));
+      base::Bind(&google_apis::RunTaskOnThread,
+                 BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+                 close_callback_on_ui_thread));
 }
 
 // Runs CreateOrOpenFile when the error happens.

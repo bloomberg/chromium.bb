@@ -58,7 +58,8 @@ class WebkitFileStreamWriterImpl : public fileapi::FileStreamWriter {
       net::IOBuffer* buf,
       int buf_len,
       base::PlatformFileError open_result,
-      const base::FilePath& local_path);
+      const base::FilePath& local_path,
+      const base::Closure& close_callback_on_ui_thread);
 
   FileSystemGetter file_system_getter_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
@@ -66,6 +67,7 @@ class WebkitFileStreamWriterImpl : public fileapi::FileStreamWriter {
   const int64 offset_;
 
   scoped_ptr<fileapi::FileStreamWriter> local_file_writer_;
+  base::Closure close_callback_on_ui_thread_;
   net::CompletionCallback pending_write_callback_;
   net::CompletionCallback pending_cancel_callback_;
 

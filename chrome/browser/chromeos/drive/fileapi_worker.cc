@@ -136,28 +136,32 @@ void RunCreateSnapshotFileCallback(const CreateSnapshotFileCallback& callback,
 void RunCreateWritableSnapshotFileCallback(
     const CreateWritableSnapshotFileCallback& callback,
     FileError error,
-    const base::FilePath& local_path) {
+    const base::FilePath& local_path,
+    const base::Closure& close_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  callback.Run(FileErrorToPlatformError(error), local_path);
+  callback.Run(FileErrorToPlatformError(error), local_path, close_callback);
 }
 
 // Runs |callback| with |error| and |platform_file|.
 void RunOpenFileCallback(const OpenFileCallback& callback,
+                         const base::Closure& close_callback,
                          base::PlatformFileError* error,
                          base::PlatformFile platform_file) {
-  callback.Run(*error, platform_file);
+  callback.Run(*error, platform_file, close_callback);
 }
 
 // Part of OpenFile(). Called after FileSystem::OpenFile().
 void OpenFileAfterFileSystemOpenFile(int file_flags,
                                      const OpenFileCallback& callback,
                                      FileError error,
-                                     const base::FilePath& local_path) {
+                                     const base::FilePath& local_path,
+                                     const base::Closure& close_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != FILE_ERROR_OK) {
     callback.Run(FileErrorToPlatformError(error),
-                 base::kInvalidPlatformFileValue);
+                 base::kInvalidPlatformFileValue,
+                 base::Closure());
     return;
   }
 
@@ -183,14 +187,9 @@ void OpenFileAfterFileSystemOpenFile(int file_flags,
       BrowserThread::GetBlockingPool(), FROM_HERE,
       base::Bind(&base::CreatePlatformFile,
                  local_path, file_flags, static_cast<bool*>(NULL), result),
-      base::Bind(&RunOpenFileCallback, callback, base::Owned(result)));
+      base::Bind(&RunOpenFileCallback,
+                 callback, close_callback, base::Owned(result)));
   DCHECK(posted);
-}
-
-// Emits debug log when FileSystem::CloseFile() is complete.
-void EmitDebugLogForCloseFile(const base::FilePath& local_path,
-                              FileError file_error) {
-  DVLOG(1) << "Closed: " << local_path.AsUTF8Unsafe() << ": " << file_error;
 }
 
 }  // namespace
@@ -336,20 +335,14 @@ void OpenFile(const base::FilePath& file_path,
         FROM_HERE,
         base::Bind(callback,
                    base::PLATFORM_FILE_ERROR_FAILED,
-                   base::kInvalidPlatformFileValue));
+                   base::kInvalidPlatformFileValue,
+                   base::Closure()));
     return;
   }
 
   file_system->OpenFile(
       file_path, GetOpenMode(file_flags),
       base::Bind(&OpenFileAfterFileSystemOpenFile, file_flags, callback));
-}
-
-void CloseFile(const base::FilePath& file_path,
-               FileSystemInterface* file_system) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system->CloseFile(file_path,
-                         base::Bind(&EmitDebugLogForCloseFile, file_path));
 }
 
 void TouchFile(const base::FilePath& file_path,

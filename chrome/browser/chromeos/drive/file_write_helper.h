@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_WRITE_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_WRITE_HELPER_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
 
 namespace base {
 class FilePath;
@@ -15,10 +15,17 @@ class FilePath;
 
 namespace drive {
 
+class FileSystemInterface;
+
 // This class provides higher level operations for writing to Drive files over
 // FileSystemInterface.
 class FileWriteHelper {
  public:
+  // Callback for PrepareWritableFileAndRun.
+  typedef base::Callback<void(FileError error,
+                              const base::FilePath& file_path)>
+      OpenFileCallback;
+
   explicit FileWriteHelper(FileSystemInterface* file_system);
   ~FileWriteHelper();
 
@@ -34,13 +41,13 @@ class FileWriteHelper {
  private:
   // Part of PrepareWritableFilePathAndRun(). It tries CreateFile for the case
   // file does not exist yet, does OpenFile to download and mark the file as
-  // dirty, runs |callback|, and finally calls CloseFile.
+  // dirty, runs |callback|, and finally closes the file.
   void PrepareWritableFileAndRunAfterOpenFile(
       const base::FilePath& file_path,
       const OpenFileCallback& callback,
       FileError result,
-      const base::FilePath& local_cache_path);
-  void PrepareWritableFileAndRunAfterCallback(const base::FilePath& file_path);
+      const base::FilePath& local_cache_path,
+      const base::Closure& close_callback);
 
   FileSystemInterface* file_system_;  // Owned by DriveIntegrationService.
 

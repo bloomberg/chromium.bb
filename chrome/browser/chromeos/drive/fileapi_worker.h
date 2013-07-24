@@ -61,23 +61,25 @@ typedef base::Callback<
     CreateSnapshotFileCallback;
 typedef base::Callback<
     void(base::PlatformFileError result,
-         const base::FilePath& snapshot_file_path)>
+         const base::FilePath& snapshot_file_path,
+         const base::Closure& close_callback)>
     CreateWritableSnapshotFileCallback;
 typedef base::Callback<
     void(base::PlatformFileError result,
-         base::PlatformFile platform_file)> OpenFileCallback;
+         base::PlatformFile platform_file,
+         const base::Closure& close_callback)> OpenFileCallback;
 
 // Runs |file_system_getter| to obtain the instance of FileSystemInstance,
 // and then runs |callback| with it.
-// If |file_system_getter| returns NULL, runs |on_error_callback| instead.
+// If |file_system_getter| returns NULL, runs |error_callback| instead.
 // This function must be called on UI thread.
 // |file_system_getter| and |callback| must not be null, but
-// |on_error_callback| can be null (if no operation is necessary for error
+// |error_callback| can be null (if no operation is necessary for error
 // case).
 void RunFileSystemCallback(
     const FileSystemGetter& file_system_getter,
     const base::Callback<void(FileSystemInterface*)>& callback,
-    const base::Closure& on_error_callback);
+    const base::Closure& error_callback);
 
 // Returns the metadata info of the file at |file_path|.
 // Called from FileSystemProxy::GetFileInfo().
@@ -148,7 +150,7 @@ void CreateSnapshotFile(const base::FilePath& file_path,
                         FileSystemInterface* file_system);
 
 // Creates a writable snapshot for the file at |file_path|.
-// After writing operation is done, CloseFile is needed to be called.
+// After writing operation is done, |close_callback| must be called.
 void CreateWritableSnapshotFile(
     const base::FilePath& file_path,
     const CreateWritableSnapshotFileCallback& callback,
@@ -160,12 +162,6 @@ void OpenFile(const base::FilePath& file_path,
               int file_flags,
               const OpenFileCallback& callback,
               FileSystemInterface* file_system);
-
-// Closes the file at |file_path|.
-// Called from FileSystemProxy::NotifyCloseFile and
-// FileSystemProxy::CloseWRitableSnapshotFile.
-void CloseFile(const base::FilePath& file_path,
-               FileSystemInterface* file_system);
 
 // Changes timestamp of the file at |file_path| to |last_access_time| and
 // |last_modified_time|. Called from FileSystemProxy::TouchFile().

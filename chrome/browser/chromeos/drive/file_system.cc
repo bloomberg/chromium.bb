@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
-#include "chrome/browser/chromeos/drive/file_system/close_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/create_directory_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
@@ -105,11 +104,6 @@ void FileSystem::Initialize() {
   SetupChangeListLoader();
 
   file_system::OperationObserver* observer = this;
-  close_file_operation_.reset(
-      new file_system::CloseFileOperation(blocking_task_runner_.get(),
-                                          observer,
-                                          resource_metadata_,
-                                          &open_files_));
   copy_operation_.reset(
       new file_system::CopyOperation(blocking_task_runner_.get(),
                                      observer,
@@ -134,8 +128,7 @@ void FileSystem::Initialize() {
                                          scheduler_,
                                          resource_metadata_,
                                          cache_,
-                                         temporary_file_directory_,
-                                         &open_files_));
+                                         temporary_file_directory_));
   remove_operation_.reset(
       new file_system::RemoveOperation(blocking_task_runner_.get(),
                                        observer,
@@ -755,7 +748,7 @@ void FileSystem::GetMetadata(
 
 void FileSystem::MarkCacheFileAsMounted(
     const base::FilePath& drive_file_path,
-    const OpenFileCallback& callback) {
+    const MarkMountedCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -766,7 +759,7 @@ void FileSystem::MarkCacheFileAsMounted(
 }
 
 void FileSystem::MarkCacheFileAsMountedAfterGetResourceEntry(
-    const OpenFileCallback& callback,
+    const MarkMountedCallback& callback,
     FileError error,
     scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -844,14 +837,6 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
 
   open_file_operation_->OpenFile(file_path, open_mode, callback);
-}
-
-void FileSystem::CloseFile(const base::FilePath& file_path,
-                           const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  close_file_operation_->CloseFile(file_path, callback);
 }
 
 void FileSystem::CheckLocalModificationAndRun(

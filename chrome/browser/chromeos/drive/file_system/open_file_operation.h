@@ -42,8 +42,7 @@ class OpenFileOperation {
                     JobScheduler* scheduler,
                     internal::ResourceMetadata* metadata,
                     internal::FileCache* cache,
-                    const base::FilePath& temporary_file_directory,
-                    std::map<base::FilePath, int>* open_files);
+                    const base::FilePath& temporary_file_directory);
   ~OpenFileOperation();
 
   // Opens the file at |file_path|.
@@ -63,28 +62,30 @@ class OpenFileOperation {
                                FileError error);
 
   // Part of OpenFile(). Called after file downloading is completed.
-  void OpenFileAfterFileDownloaded(const base::FilePath& file_path,
-                                   const OpenFileCallback& callback,
+  void OpenFileAfterFileDownloaded(const OpenFileCallback& callback,
                                    FileError error,
                                    const base::FilePath& local_file_path,
                                    scoped_ptr<ResourceEntry> entry);
 
   // Part of OpenFile(). Called after the updating of the local state.
-  void OpenFileAfterUpdateLocalState(const base::FilePath& file_path,
+  void OpenFileAfterUpdateLocalState(const std::string& resource_id,
                                      const OpenFileCallback& callback,
                                      const base::FilePath* local_file_path,
                                      FileError error);
 
+  // Closes the file with |resource_id|.
+  void CloseFile(const std::string& resource_id);
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  OperationObserver* observer_;
   internal::FileCache* cache_;
 
   scoped_ptr<CreateFileOperation> create_file_operation_;
   scoped_ptr<DownloadOperation> download_operation_;
 
-  // The map from paths for opened file to the number how many the file is
-  // opened. The instance is owned by FileSystem and shared with
-  // CloseFileOperation.
-  std::map<base::FilePath, int>* open_files_;
+  // The map from resource id for an opened file to the number how many times
+  // the file is opened.
+  std::map<std::string, int> open_files_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

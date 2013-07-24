@@ -249,8 +249,6 @@
         'browser/chromeos/drive/file_errors.h',
         'browser/chromeos/drive/file_system.cc',
         'browser/chromeos/drive/file_system.h',
-        'browser/chromeos/drive/file_system/close_file_operation.cc',
-        'browser/chromeos/drive/file_system/close_file_operation.h',
         'browser/chromeos/drive/file_system/copy_operation.cc',
         'browser/chromeos/drive/file_system/copy_operation.h',
         'browser/chromeos/drive/file_system/create_directory_operation.cc',

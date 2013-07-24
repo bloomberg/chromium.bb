@@ -25,10 +25,9 @@ class OpenFileOperationTest : public OperationTestBase {
 
     operation_.reset(new OpenFileOperation(
         blocking_task_runner(), observer(), scheduler(), metadata(), cache(),
-        temp_dir(), &open_files_));
+        temp_dir()));
   }
 
-  std::map<base::FilePath, int> open_files_;
   scoped_ptr<OpenFileOperation> operation_;
 };
 
@@ -41,10 +40,12 @@ TEST_F(OpenFileOperationTest, OpenExistingFile) {
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
+  base::Closure close_callback;
   operation_->OpenFile(
       file_in_root,
       OPEN_FILE,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -53,8 +54,11 @@ TEST_F(OpenFileOperationTest, OpenExistingFile) {
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
 
-  // The file_path should be added into the set.
-  EXPECT_EQ(1, open_files_[file_in_root]);
+  ASSERT_FALSE(close_callback.is_null());
+  close_callback.Run();
+  EXPECT_EQ(
+      1U,
+      observer()->upload_needed_resource_ids().count(src_entry.resource_id()));
 }
 
 TEST_F(OpenFileOperationTest, OpenNonExistingFile) {
@@ -63,15 +67,15 @@ TEST_F(OpenFileOperationTest, OpenNonExistingFile) {
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
+  base::Closure close_callback;
   operation_->OpenFile(
       file_in_root,
       OPEN_FILE,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-
-  // The file shouldn't be in the set of opened files.
-  EXPECT_EQ(0U, open_files_.count(file_in_root));
+  EXPECT_TRUE(close_callback.is_null());
 }
 
 TEST_F(OpenFileOperationTest, CreateExistingFile) {
@@ -82,16 +86,16 @@ TEST_F(OpenFileOperationTest, CreateExistingFile) {
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
+  base::Closure close_callback;
   operation_->OpenFile(
       file_in_root,
       CREATE_FILE,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
-
-  // The file shouldn't be in the set of opened files.
-  EXPECT_EQ(0U, open_files_.count(file_in_root));
+  EXPECT_TRUE(close_callback.is_null());
 }
 
 TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
@@ -100,10 +104,12 @@ TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
+  base::Closure close_callback;
   operation_->OpenFile(
       file_in_root,
       CREATE_FILE,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -112,8 +118,11 @@ TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(0, local_file_size);  // Should be an empty file.
 
-  // The file_path should be added into the set.
-  EXPECT_EQ(1, open_files_[file_in_root]);
+  ASSERT_FALSE(close_callback.is_null());
+  close_callback.Run();
+  // Here we don't know about the resource id, so just make sure
+  // OnCacheFileUploadNeededByOperation is called actually.
+  EXPECT_EQ(1U, observer()->upload_needed_resource_ids().size());
 }
 
 TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
@@ -125,10 +134,12 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
+  base::Closure close_callback;
   operation_->OpenFile(
       file_in_root,
       OPEN_OR_CREATE_FILE,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -137,8 +148,11 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
 
-  // The file_path should be added into the set.
-  EXPECT_EQ(1, open_files_[file_in_root]);
+  ASSERT_FALSE(close_callback.is_null());
+  close_callback.Run();
+  EXPECT_EQ(
+      1U,
+      observer()->upload_needed_resource_ids().count(src_entry.resource_id()));
 }
 
 TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {
@@ -147,10 +161,12 @@ TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
+  base::Closure close_callback;
   operation_->OpenFile(
       file_in_root,
       OPEN_OR_CREATE_FILE,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -159,8 +175,11 @@ TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(0, local_file_size);  // Should be an empty file.
 
-  // The file_path should be added into the set.
-  EXPECT_EQ(1, open_files_[file_in_root]);
+  ASSERT_FALSE(close_callback.is_null());
+  close_callback.Run();
+  // Here we don't know about the resource id, so just make sure
+  // OnCacheFileUploadNeededByOperation is called actually.
+  EXPECT_EQ(1U, observer()->upload_needed_resource_ids().size());
 }
 
 TEST_F(OpenFileOperationTest, OpenFileTwice) {
@@ -172,10 +191,12 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
+  base::Closure close_callback;
   operation_->OpenFile(
       file_in_root,
       OPEN_FILE,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -184,15 +205,14 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
 
-  // The file_path should be added into the set.
-  EXPECT_EQ(1, open_files_[file_in_root]);
-
   // Open again.
   error = FILE_ERROR_FAILED;
+  base::Closure close_callback2;
   operation_->OpenFile(
       file_in_root,
       OPEN_FILE,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &close_callback2));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -200,8 +220,21 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
 
-  // The file_path should be added into the set.
-  EXPECT_EQ(2, open_files_[file_in_root]);
+  ASSERT_FALSE(close_callback.is_null());
+  ASSERT_FALSE(close_callback2.is_null());
+
+  close_callback.Run();
+
+  // There still remains a client opening the file, so it shouldn't be
+  // uploaded yet.
+  EXPECT_TRUE(observer()->upload_needed_resource_ids().empty());
+
+  close_callback2.Run();
+
+  // Here, all the clients close the file, so it should be uploaded then.
+  EXPECT_EQ(
+      1U,
+      observer()->upload_needed_resource_ids().count(src_entry.resource_id()));
 }
 
 }  // namespace file_system

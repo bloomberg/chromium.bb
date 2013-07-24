@@ -37,23 +37,8 @@ void CreateWritableSnapshotFile(
           base::Bind(&fileapi_internal::CreateWritableSnapshotFile,
                      drive_path, google_apis::CreateRelayCallback(callback)),
           google_apis::CreateRelayCallback(base::Bind(
-              callback, base::PLATFORM_FILE_ERROR_FAILED, base::FilePath()))));
-}
-
-// Closes the writable snapshot file opened by CreateWritableSnapshotFile.
-// TODO(hidehiko): Get rid of this function. crbug.com/259184.
-void CloseFile(
-    const WebkitFileStreamWriterImpl::FileSystemGetter& file_system_getter,
-    const base::FilePath& drive_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&fileapi_internal::RunFileSystemCallback,
-                 file_system_getter,
-                 base::Bind(&fileapi_internal::CloseFile, drive_path),
-                 base::Closure()));
+              callback, base::PLATFORM_FILE_ERROR_FAILED, base::FilePath(),
+              base::Closure()))));
 }
 
 }  // namespace
@@ -75,7 +60,10 @@ WebkitFileStreamWriterImpl::~WebkitFileStreamWriterImpl() {
     // If the file is opened, close it at destructor.
     // It is necessary to close the local file in advance.
     local_file_writer_.reset();
-    CloseFile(file_system_getter_, file_path_);
+    DCHECK(!close_callback_on_ui_thread_.is_null());
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            close_callback_on_ui_thread_);
   }
 }
 
@@ -146,7 +134,8 @@ void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
     net::IOBuffer* buf,
     int buf_len,
     base::PlatformFileError open_result,
-    const base::FilePath& local_path) {
+    const base::FilePath& local_path,
+    const base::Closure& close_callback_on_ui_thread) {
   DCHECK(!local_file_writer_);
 
   if (!pending_cancel_callback_.is_null()) {
@@ -156,8 +145,10 @@ void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
     if (open_result == base::PLATFORM_FILE_OK) {
       // Here the file is internally created. To revert the operation, close
       // the file.
-      DCHECK(!local_path.empty());
-      CloseFile(file_system_getter_, file_path_);
+      DCHECK(!close_callback_on_ui_thread.is_null());
+      BrowserThread::PostTask(BrowserThread::UI,
+                              FROM_HERE,
+                              close_callback_on_ui_thread);
     }
 
     base::ResetAndReturn(&pending_cancel_callback_).Run(net::OK);
@@ -169,10 +160,14 @@ void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
   const net::CompletionCallback callback =
       base::ResetAndReturn(&pending_write_callback_);
   if (open_result != base::PLATFORM_FILE_OK) {
+    DCHECK(close_callback_on_ui_thread.is_null());
     callback.Run(net::PlatformFileErrorToNetError(open_result));
     return;
   }
 
+  // Keep |close_callback| to close the file when the stream is destructed.
+  DCHECK(!close_callback_on_ui_thread.is_null());
+  close_callback_on_ui_thread_ = close_callback_on_ui_thread;
   local_file_writer_.reset(new fileapi::LocalFileStreamWriter(
       file_task_runner_.get(), local_path, offset_));
   int result = local_file_writer_->Write(buf, buf_len, callback);

@@ -43,7 +43,6 @@ class SyncClient;
 }  // namespace internal
 
 namespace file_system {
-class CloseFileOperation;
 class CopyOperation;
 class CreateDirectoryOperation;
 class CreateFileOperation;
@@ -95,8 +94,6 @@ class FileSystem : public FileSystemInterface,
   virtual void OpenFile(const base::FilePath& file_path,
                         OpenMode open_mode,
                         const OpenFileCallback& callback) OVERRIDE;
-  virtual void CloseFile(const base::FilePath& file_path,
-                         const FileOperationCallback& callback) OVERRIDE;
   virtual void Copy(const base::FilePath& src_file_path,
                     const base::FilePath& dest_file_path,
                     const FileOperationCallback& callback) OVERRIDE;
@@ -143,7 +140,7 @@ class FileSystem : public FileSystemInterface,
       const GetFilesystemMetadataCallback& callback) OVERRIDE;
   virtual void MarkCacheFileAsMounted(
       const base::FilePath& drive_file_path,
-      const OpenFileCallback& callback) OVERRIDE;
+      const MarkMountedCallback& callback) OVERRIDE;
   virtual void MarkCacheFileAsUnmounted(
       const base::FilePath& cache_file_path,
       const FileOperationCallback& callback) OVERRIDE;
@@ -291,7 +288,7 @@ class FileSystem : public FileSystemInterface,
   // Part of MarkCacheFileAsMounted. Called after GetResourceEntryByPath is
   // completed. |callback| must not be null.
   void MarkCacheFileAsMountedAfterGetResourceEntry(
-      const OpenFileCallback& callback,
+      const MarkMountedCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
 
@@ -313,10 +310,6 @@ class FileSystem : public FileSystemInterface,
   // True if hosted documents should be hidden.
   bool hide_hosted_docs_;
 
-  // Map from opened file paths to the number how many the file is opened.
-  // The value should be incremented by OpenFile, and decremented by CloseFile.
-  std::map<base::FilePath, int> open_files_;
-
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
 
   scoped_ptr<internal::SyncClient> sync_client_;
@@ -331,7 +324,6 @@ class FileSystem : public FileSystemInterface,
   base::FilePath temporary_file_directory_;
 
   // Implementation of each file system operation.
-  scoped_ptr<file_system::CloseFileOperation> close_file_operation_;
   scoped_ptr<file_system::CopyOperation> copy_operation_;
   scoped_ptr<file_system::CreateDirectoryOperation> create_directory_operation_;
   scoped_ptr<file_system::CreateFileOperation> create_file_operation_;

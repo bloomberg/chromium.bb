@@ -23,6 +23,11 @@ const base::FilePath::CharType kLocalPath[] =
 
 class TestFileSystem : public DummyFileSystem {
  public:
+  TestFileSystem() : num_closed_(0) {
+  }
+
+  int num_closed() const { return num_closed_; }
+
   // Mimics OpenFile. It fails if the |file_path| points to a hosted document.
   virtual void OpenFile(const base::FilePath& file_path,
                         OpenMode open_mode,
@@ -31,17 +36,23 @@ class TestFileSystem : public DummyFileSystem {
 
     // Emulate a case of opening a hosted document.
     if (file_path == base::FilePath(kInvalidPath)) {
-      callback.Run(FILE_ERROR_INVALID_OPERATION, base::FilePath());
+      callback.Run(FILE_ERROR_INVALID_OPERATION, base::FilePath(),
+                   base::Closure());
       return;
     }
 
-    callback.Run(FILE_ERROR_OK, base::FilePath(kLocalPath));
+    callback.Run(FILE_ERROR_OK, base::FilePath(kLocalPath),
+                 base::Bind(&TestFileSystem::CloseFile,
+                            base::Unretained(this)));
   }
 
-  virtual void CloseFile(const base::FilePath& file_path,
-                         const FileOperationCallback& callback) OVERRIDE {
-    callback.Run(FILE_ERROR_OK);
+ private:
+
+  void CloseFile() {
+    ++num_closed_;
   }
+
+  int num_closed_;
 };
 
 }  // namespace
@@ -69,6 +80,9 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingSuccess) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(kLocalPath, path.value());
+
+  // Make sure that the file is actually closed.
+  EXPECT_EQ(1, test_file_system_->num_closed());
 }
 
 TEST_F(FileWriteHelperTest, PrepareFileForWritingCreateFail) {

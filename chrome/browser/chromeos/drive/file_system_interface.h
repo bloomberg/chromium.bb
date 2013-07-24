@@ -98,8 +98,14 @@ typedef base::Callback<void(
 
 // Used to open files from the file system. |file_path| is the path on the local
 // file system for the opened file.
+// If |close_callback| is not null, it must be called when the
+// modification to the cache is done. Otherwise, Drive file system does not
+// pick up the file for uploading.
+// |close_callback| must not be called more than once.
 typedef base::Callback<void(FileError error,
-                            const base::FilePath& file_path)> OpenFileCallback;
+                            const base::FilePath& file_path,
+                            const base::Closure& close_callback)>
+    OpenFileCallback;
 
 // Used to get available space for the account from Drive.
 typedef base::Callback<void(FileError error,
@@ -109,6 +115,11 @@ typedef base::Callback<void(FileError error,
 // Used to get filesystem metadata.
 typedef base::Callback<void(const FileSystemMetadata&)>
     GetFilesystemMetadataCallback;
+
+// Used to mark cached files mounted.
+typedef base::Callback<void(FileError error,
+                            const base::FilePath& file_path)>
+    MarkMountedCallback;
 
 // The mode of opening a file.
 enum OpenMode {
@@ -193,20 +204,10 @@ class FileSystemInterface {
   // returned to |callback|. After opening the file, both read and write
   // on the file can be done with normal local file operations.
   //
-  // |CloseFile| must be called when the modification to the cache is done.
-  // Otherwise, Drive file system does not pick up the file for uploading.
-  //
   // |callback| must not be null.
   virtual void OpenFile(const base::FilePath& file_path,
                         OpenMode open_mode,
                         const OpenFileCallback& callback) = 0;
-
-  // Closes a file at the virtual path |file_path| on the Drive file system,
-  // which is opened via OpenFile(). It commits the dirty flag on the cache.
-  //
-  // |callback| must not be null.
-  virtual void CloseFile(const base::FilePath& file_path,
-                         const FileOperationCallback& callback) = 0;
 
   // Copies |src_file_path| to |dest_file_path| on the file system.
   // |src_file_path| can be a hosted document (see limitations below).
@@ -390,7 +391,7 @@ class FileSystemInterface {
   // If succeeded, the cached file path will be passed to the |callback|.
   // |callback| must not be null.
   virtual void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
-                                    const OpenFileCallback& callback) = 0;
+                                      const MarkMountedCallback& callback) = 0;
 
   // Marks the cached file as unmounted, and runs |callback| upon completion.
   // Note that this method expects that the |cached_file_path| is the path

@@ -62,8 +62,6 @@ class FakeFileSystem : public FileSystemInterface {
   virtual void OpenFile(const base::FilePath& file_path,
                         OpenMode open_mode,
                         const OpenFileCallback& callback) OVERRIDE;
-  virtual void CloseFile(const base::FilePath& file_path,
-                         const FileOperationCallback& callback) OVERRIDE;
   virtual void Copy(const base::FilePath& src_file_path,
                     const base::FilePath& dest_file_path,
                     const FileOperationCallback& callback) OVERRIDE;
@@ -117,7 +115,7 @@ class FakeFileSystem : public FileSystemInterface {
       const GetFilesystemMetadataCallback& callback) OVERRIDE;
   virtual void MarkCacheFileAsMounted(
       const base::FilePath& drive_file_path,
-      const OpenFileCallback& callback) OVERRIDE;
+      const MarkMountedCallback& callback) OVERRIDE;
   virtual void MarkCacheFileAsUnmounted(
       const base::FilePath& cache_file_path,
       const FileOperationCallback& callback) OVERRIDE;

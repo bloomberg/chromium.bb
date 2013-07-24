@@ -741,10 +741,12 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   // Open kFileInRoot ("drive/root/File 1.txt").
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
+  base::Closure close_callback;
   file_system_->OpenFile(
       kFileInRoot,
       OPEN_FILE,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
   const base::FilePath opened_file_path = file_path;
 
@@ -780,9 +782,8 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
                                                         kNewContent));
 
   // Close kFileInRoot ("drive/root/File 1.txt").
-  file_system_->CloseFile(
-      kFileInRoot,
-      google_apis::test_util::CreateCopyResultCallback(&error));
+  ASSERT_FALSE(close_callback.is_null());
+  close_callback.Run();
   test_util::RunBlockingPoolTask();
 
   // Verify that the file was properly closed.
@@ -805,17 +806,6 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   ASSERT_EQ(2u, mock_directory_observer_->changed_directories().size());
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/root")),
             mock_directory_observer_->changed_directories()[1]);
-
-  // Try to close the same file twice.
-  file_system_->CloseFile(
-      kFileInRoot,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-
-  // It must fail.
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-  // There should be no new directory change.
-  ASSERT_EQ(2u, mock_directory_observer_->changed_directories().size());
 }
 
 TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {

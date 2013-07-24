@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -42,18 +43,16 @@ OpenFileOperation::OpenFileOperation(
     JobScheduler* scheduler,
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
-    const base::FilePath& temporary_file_directory,
-    std::map<base::FilePath, int>* open_files)
+    const base::FilePath& temporary_file_directory)
     : blocking_task_runner_(blocking_task_runner),
+      observer_(observer),
       cache_(cache),
       create_file_operation_(new CreateFileOperation(
           blocking_task_runner, observer, scheduler, metadata, cache)),
       download_operation_(new DownloadOperation(
           blocking_task_runner, observer, scheduler,
           metadata, cache, temporary_file_directory)),
-      open_files_(open_files),
       weak_ptr_factory_(this) {
-  DCHECK(open_files);
 }
 
 OpenFileOperation::~OpenFileOperation() {
@@ -97,7 +96,7 @@ void OpenFileOperation::OpenFileAfterCreateFile(
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath());
+    callback.Run(error, base::FilePath(), base::Closure());
     return;
   }
 
@@ -108,11 +107,10 @@ void OpenFileOperation::OpenFileAfterCreateFile(
       google_apis::GetContentCallback(),
       base::Bind(
           &OpenFileOperation::OpenFileAfterFileDownloaded,
-          weak_ptr_factory_.GetWeakPtr(), file_path, callback));
+          weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void OpenFileOperation::OpenFileAfterFileDownloaded(
-    const base::FilePath& file_path,
     const OpenFileCallback& callback,
     FileError error,
     const base::FilePath& local_file_path,
@@ -129,7 +127,7 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
   }
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath());
+    callback.Run(error, base::FilePath(), base::Closure());
     return;
   }
 
@@ -146,22 +144,39 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
                  new_local_file_path),
       base::Bind(&OpenFileOperation::OpenFileAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
+                 entry->resource_id(),
                  callback,
                  base::Owned(new_local_file_path)));
 }
 
 void OpenFileOperation::OpenFileAfterUpdateLocalState(
-    const base::FilePath& file_path,
+    const std::string& resource_id,
     const OpenFileCallback& callback,
     const base::FilePath* local_file_path,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == FILE_ERROR_OK)
-    ++(*open_files_)[file_path];
-  callback.Run(error, *local_file_path);
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error, base::FilePath(), base::Closure());
+    return;
+  }
+
+  ++open_files_[resource_id];
+  callback.Run(error, *local_file_path,
+               base::Bind(&OpenFileOperation::CloseFile,
+                          weak_ptr_factory_.GetWeakPtr(), resource_id));
+}
+
+void OpenFileOperation::CloseFile(const std::string& resource_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_GT(open_files_[resource_id], 0);
+
+  if (--open_files_[resource_id] == 0) {
+    // All clients closes this file, so notify to upload the file.
+    open_files_.erase(resource_id);
+    observer_->OnCacheFileUploadNeededByOperation(resource_id);
+  }
 }
 
 }  // namespace file_system
