@@ -30,7 +30,6 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/utility_process_host.h"
@@ -359,7 +358,6 @@ class CrxUpdateService : public ComponentUpdateService {
   base::OneShotTimer<CrxUpdateService> timer_;
 
   const Version chrome_version_;
-  const std::string prod_id_;
 
   bool running_;
 
@@ -375,8 +373,6 @@ CrxUpdateService::CrxUpdateService(ComponentUpdateService::Configurator* config)
           config->PingUrl(),
           config->RequestContext())),
       chrome_version_(chrome::VersionInfo().Version()),
-      prod_id_(chrome::OmahaQueryParams::GetProdIdString(
-          chrome::OmahaQueryParams::CHROME)),
       running_(false) {
  }
 
