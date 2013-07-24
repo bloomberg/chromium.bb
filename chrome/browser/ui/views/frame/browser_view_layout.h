@@ -76,10 +76,6 @@ class BrowserViewLayout : public views::LayoutManager {
   // Returns the bounding box, in widget coordinates,  for the find bar.
   gfx::Rect GetFindBarBoundingBox() const;
 
-  // Returns true if the specified point(BrowserView coordinates) is in
-  // in the window caption area of the browser window.
-  bool IsPositionInWindowCaption(const gfx::Point& point);
-
   // Tests to see if the specified |point| (in nonclient view's coordinates)
   // is within the views managed by the laymanager. Returns one of
   // HitTestCompat enum defined in ui/base/hit_test.h.

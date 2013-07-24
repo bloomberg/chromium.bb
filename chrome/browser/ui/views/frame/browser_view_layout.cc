@@ -243,20 +243,7 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
   return bounding_box;
 }
 
-bool BrowserViewLayout::IsPositionInWindowCaption(
-    const gfx::Point& point) {
-  // Tab strip may transiently have no parent between the RemoveChildView() and
-  // AddChildView() caused by reparenting during an immersive mode reveal.
-  // During this window report that the point didn't hit a tab.
-  if (!tab_strip_->parent())
-    return true;
-  gfx::Point tabstrip_point(point);
-  views::View::ConvertPointToTarget(browser_view_, tab_strip_, &tabstrip_point);
-  return tab_strip_->IsPositionInWindowCaption(tabstrip_point);
-}
-
-int BrowserViewLayout::NonClientHitTest(
-    const gfx::Point& point) {
+int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   // Since the TabStrip only renders in some parts of the top of the window,
   // the un-obscured area is considered to be part of the non-client caption
   // area of the window. So we need to treat hit-tests in these regions as
@@ -282,7 +269,7 @@ int BrowserViewLayout::NonClientHitTest(
     // The top few pixels of the TabStrip are a drop-shadow - as we're pretty
     // starved of dragable area, let's give it to window dragging (this also
     // makes sense visually).
-    if (!browser_view_->IsMaximized() &&
+    if (!(browser_view_->IsMaximized() || browser_view_->IsFullscreen()) &&
         (point_in_browser_view_coords.y() <
             (tab_strip_->y() + kTabShadowSize))) {
       // We return HTNOWHERE as this is a signal to our containing
@@ -301,16 +288,27 @@ int BrowserViewLayout::NonClientHitTest(
   if (bv_bounds.Contains(point))
     return HTCLIENT;
 
-  // If the point's y coordinate is above the top of the toolbar, but not in
-  // the tabstrip (per previous checking in this function), then we consider it
-  // in the window caption (e.g. the area to the right of the tabstrip
-  // underneath the window controls). However, note that we DO NOT return
-  // HTCAPTION here, because when the window is maximized the window controls
-  // will fall into this space (since the BrowserView is sized to entire size
-  // of the window at that point), and the HTCAPTION value will cause the
-  // window controls not to work. So we return HTNOWHERE so that the caller
-  // will hit-test the window controls before finally falling back to
-  // HTCAPTION.
+  // If the point is within the bounds of the window switcher button, the point
+  // is considered to be within the client area.
+  views::View* window_switcher_button = delegate_->GetWindowSwitcherButton();
+  if (window_switcher_button && window_switcher_button->visible()) {
+    gfx::Point window_switcher_point(point_in_browser_view_coords);
+    views::View::ConvertPointToTarget(browser_view_, window_switcher_button,
+                                      &window_switcher_point);
+    if (window_switcher_button->HitTestPoint(window_switcher_point))
+      return HTCLIENT;
+  }
+
+  // If the point's y coordinate is above the top of the toolbar, but neither
+  // over the tabstrip nor over the window switcher button (per previous
+  // checking in this function), then we consider it in the window caption
+  // (e.g. the area to the right of the tabstrip underneath the window
+  // controls). However, note that we DO NOT return HTCAPTION here, because
+  // when the window is maximized the window controls will fall into this
+  // space (since the BrowserView is sized to entire size of the window at that
+  // point), and the HTCAPTION value will cause the window controls not to work.
+  // So we return HTNOWHERE so that the caller will hit-test the window controls
+  // before finally falling back to HTCAPTION.
   bv_bounds = browser_view_->bounds();
   bv_bounds.set_height(toolbar_->y());
   if (bv_bounds.Contains(point))
