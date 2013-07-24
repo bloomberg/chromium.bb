@@ -8,13 +8,15 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "cloud_print/gcp20/prototype/cloud_print_requester.h"
 #include "cloud_print/gcp20/prototype/dns_sd_server.h"
 #include "cloud_print/gcp20/prototype/privet_http_server.h"
 #include "cloud_print/gcp20/prototype/x_privet_token.h"
 
 // This class maintain work of DNS-SD server, HTTP server and others.
-class Printer : public PrivetHttpServer::Delegate,
+class Printer : public base::SupportsWeakPtr<Printer>,
+                public PrivetHttpServer::Delegate,
                 public CloudPrintRequester::Delegate {
  public:
   // Constructs uninitialized object.
@@ -35,12 +37,23 @@ class Printer : public PrivetHttpServer::Delegate,
  private:
   struct RegistrationInfo {
     enum RegistrationState {
-      DEV_REG_UNREGISTERED = 0,
-      DEV_REG_REGISTRATION_STARTED,
-      DEV_REG_REGISTRATION_CLAIM_TOKEN_READY,
-      DEV_REG_REGISTRATION_COMPLETING,
-      DEV_REG_REGISTRATION_ERROR,
+      DEV_REG_UNREGISTERED,
+      DEV_REG_REGISTRATION_STARTED,  // |action=start| was called,
+                                     // request to CloudPrint was sent.
+      DEV_REG_REGISTRATION_CLAIM_TOKEN_READY,  // The same as previous,
+                                               // but request reply is already
+                                               // received.
+      DEV_REG_REGISTRATION_COMPLETING,  // |action=complete| was called,
+                                        // |complete| request was sent.
+      DEV_REG_REGISTRATION_ERROR,  // Is set when server error was occurred.
       DEV_REG_REGISTERED,
+    };
+
+    enum ConfirmationState {
+      CONFIRMATION_PENDING,
+      CONFIRMATION_CONFIRMED,
+      CONFIRMATION_DISCARDED,
+      CONFIRMATION_TIMEOUT,
     };
 
     RegistrationInfo();
@@ -50,6 +63,7 @@ class Printer : public PrivetHttpServer::Delegate,
     std::string refresh_token;
     std::string device_id;
     RegistrationState state;
+    ConfirmationState confirmation_state;
 
     std::string registration_token;
     std::string complete_invite_url;
@@ -100,14 +114,21 @@ class Printer : public PrivetHttpServer::Delegate,
   // Generates ProxyId for this device.
   std::string GenerateProxyId() const;
 
+  // Checks if confirmation was received.
+  void WaitUserConfirmation(base::Time valid_until);
+
   // Creates data for DNS TXT respond.
   std::vector<std::string> CreateTxt() const;
-
-  RegistrationInfo reg_info_;
 
   // Saving and loading registration info from file.
   void SaveToFile(const base::FilePath& file_path) const;
   bool LoadFromFile(const base::FilePath& file_path);
+
+  // Converts errors.
+  PrivetHttpServer::RegistrationErrorStatus ConfirmationToRegistrationError(
+      RegistrationInfo::ConfirmationState state);
+
+  RegistrationInfo reg_info_;
 
   // Contains DNS-SD server.
   DnsSdServer dns_server_;

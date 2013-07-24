@@ -4,6 +4,7 @@
 
 #include "cloud_print/gcp20/prototype/printer.h"
 
+#include <stdio.h>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "cloud_print/gcp20/prototype/command_line_reader.h"
 #include "cloud_print/gcp20/prototype/service_parameters.h"
+#include "cloud_print/gcp20/prototype/special_io.h"
 #include "net/base/net_util.h"
 #include "net/base/url_util.h"
 
@@ -23,14 +25,18 @@ const base::FilePath::CharType kPrinterStatePath[] =
 
 namespace {
 
-const char* kServiceType = "_privet._tcp.local";
-const char* kServiceNamePrefix = "first_gcp20_device";
-const char* kServiceDomainName = "my-privet-device.local";
+const char kServiceType[] = "_privet._tcp.local";
+const char kServiceNamePrefix[] = "first_gcp20_device";
+const char kServiceDomainName[] = "my-privet-device.local";
 
-const char* kPrinterName = "Google GCP2.0 Prototype";
-const char* kPrinterDescription = "Printer emulator";
+const char kPrinterName[] = "Google GCP2.0 Prototype";
+const char kPrinterDescription[] = "Printer emulator";
 
-const char* kCdd =
+const char kUserConfirmationTitle[] = "Confirm registration: type 'y' if you "
+                                      "agree and any other to discard\n";
+const int64 kUserConfirmationTimeout = 30;  // in seconds
+
+const char kCdd[] =
 "{\n"
 " 'version': '1.0',\n"
 "  'printer': {\n"
@@ -86,7 +92,9 @@ net::IPAddressNumber GetLocalIp(const std::string& interface_name,
 
 }  // namespace
 
-Printer::RegistrationInfo::RegistrationInfo() : state(DEV_REG_UNREGISTERED) {
+Printer::RegistrationInfo::RegistrationInfo()
+    : state(DEV_REG_UNREGISTERED),
+      confirmation_state(CONFIRMATION_PENDING) {
 }
 
 Printer::RegistrationInfo::~RegistrationInfo() {
@@ -165,6 +173,13 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationStart(
   reg_info_.user = user;
   reg_info_.state = RegistrationInfo::DEV_REG_REGISTRATION_STARTED;
 
+  printf(kUserConfirmationTitle);
+  base::Time valid_until = base::Time::Now() +
+      base::TimeDelta::FromSeconds(kUserConfirmationTimeout);
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&Printer::WaitUserConfirmation, AsWeakPtr(), valid_until));
+
   requester_->StartRegistration(GenerateProxyId(), kPrinterName, user, kCdd);
 
   return PrivetHttpServer::REG_ERROR_OK;
@@ -186,19 +201,29 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationGetClaimToken(
   if (status != PrivetHttpServer::REG_ERROR_OK)
     return status;
 
-  // TODO(maksymb): Add user confirmation.
+  // Check if |action=start| was called, but |action=complete| wasn't.
+  if (reg_info_.state != RegistrationInfo::DEV_REG_REGISTRATION_STARTED &&
+      reg_info_.state !=
+          RegistrationInfo::DEV_REG_REGISTRATION_CLAIM_TOKEN_READY)
+    return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
 
+  // If |action=getClaimToken| is valid in this state (was checked above) then
+  // check confirmation status.
+  if (reg_info_.confirmation_state != RegistrationInfo::CONFIRMATION_CONFIRMED)
+    return ConfirmationToRegistrationError(reg_info_.confirmation_state);
+
+  // If reply wasn't received yet, reply with |device_busy| error.
   if (reg_info_.state == RegistrationInfo::DEV_REG_REGISTRATION_STARTED)
     return PrivetHttpServer::REG_ERROR_DEVICE_BUSY;
 
-  if (reg_info_.state ==
-      RegistrationInfo::DEV_REG_REGISTRATION_CLAIM_TOKEN_READY) {
-    *token = reg_info_.registration_token;
-    *claim_url = reg_info_.complete_invite_url;
-    return PrivetHttpServer::REG_ERROR_OK;
-  }
+  DCHECK_EQ(reg_info_.state,
+            RegistrationInfo::DEV_REG_REGISTRATION_CLAIM_TOKEN_READY);
+  DCHECK_EQ(reg_info_.confirmation_state,
+            RegistrationInfo::CONFIRMATION_CONFIRMED);
 
-  return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
+  *token = reg_info_.registration_token;
+  *claim_url = reg_info_.complete_invite_url;
+  return PrivetHttpServer::REG_ERROR_OK;
 }
 
 PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationComplete(
@@ -213,9 +238,11 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationComplete(
     return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
   }
 
+  if (reg_info_.confirmation_state != RegistrationInfo::CONFIRMATION_CONFIRMED)
+    return ConfirmationToRegistrationError(reg_info_.confirmation_state);
+
   reg_info_.state = RegistrationInfo::DEV_REG_REGISTRATION_COMPLETING;
   requester_->CompleteRegistration();
-
   *device_id = reg_info_.device_id;
 
   return PrivetHttpServer::REG_ERROR_OK;
@@ -233,6 +260,10 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationCancel(
     return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
 
   reg_info_ = RegistrationInfo();
+  requester_.reset(new CloudPrintRequester(
+      base::MessageLoop::current()->message_loop_proxy(),
+      this));  // Forget all old queries.
+
   return PrivetHttpServer::REG_ERROR_OK;
 }
 
@@ -305,6 +336,31 @@ PrivetHttpServer::RegistrationErrorStatus Printer::CheckCommonRegErrors(
     return PrivetHttpServer::REG_ERROR_SERVER_ERROR;
 
   return PrivetHttpServer::REG_ERROR_OK;
+}
+
+void Printer::WaitUserConfirmation(base::Time valid_until) {
+  if (base::Time::Now() > valid_until) {
+    reg_info_.confirmation_state = RegistrationInfo::CONFIRMATION_TIMEOUT;
+    LOG(INFO) << "Confirmation timeout reached.";
+    return;
+  }
+
+  if (_kbhit()) {
+    int c = _getche();
+    if (c == 'y' || c == 'Y') {
+      reg_info_.confirmation_state = RegistrationInfo::CONFIRMATION_CONFIRMED;
+      LOG(INFO) << "Registration confirmed by user.";
+    } else {
+      reg_info_.confirmation_state = RegistrationInfo::CONFIRMATION_DISCARDED;
+      LOG(INFO) << "Registration discarded by user.";
+    }
+    return;
+  }
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&Printer::WaitUserConfirmation, AsWeakPtr(), valid_until),
+      base::TimeDelta::FromMilliseconds(100));
 }
 
 std::string Printer::GenerateProxyId() const {
@@ -403,5 +459,24 @@ bool Printer::LoadFromFile(const base::FilePath& file_path) {
   reg_info_.refresh_token = refresh_token;
 
   return true;
+}
+
+PrivetHttpServer::RegistrationErrorStatus
+    Printer::ConfirmationToRegistrationError(
+        RegistrationInfo::ConfirmationState state) {
+  switch (state) {
+    case RegistrationInfo::CONFIRMATION_PENDING:
+      return PrivetHttpServer::REG_ERROR_PENDING_USER_ACTION;
+    case RegistrationInfo::CONFIRMATION_DISCARDED:
+      return PrivetHttpServer::REG_ERROR_USER_CANCEL;
+    case RegistrationInfo::CONFIRMATION_CONFIRMED:
+      NOTREACHED();
+      return PrivetHttpServer::REG_ERROR_OK;
+    case RegistrationInfo::CONFIRMATION_TIMEOUT:
+      return PrivetHttpServer::REG_ERROR_CONFIRMATION_TIMEOUT;
+    default:
+      NOTREACHED();
+      return PrivetHttpServer::REG_ERROR_OK;
+  }
 }
 

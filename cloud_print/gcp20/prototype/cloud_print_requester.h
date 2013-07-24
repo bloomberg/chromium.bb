@@ -21,7 +21,7 @@ typedef base::Callback<void(const std::string&)> ParserCallback;
 
 class CloudPrintURLRequestContextGetter;
 
-extern const char* kCloudPrintUrl;
+extern const char kCloudPrintUrl[];
 
 // Class for requesting CloudPrint server and parsing responses.
 class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,

@@ -21,7 +21,7 @@
 
 namespace {
 
-const char* kDefaultIpAddressMulticast = "224.0.0.251";
+const char kDefaultIpAddressMulticast[] = "224.0.0.251";
 const uint16 kDefaultPortMulticast = 5353;
 
 const double kTimeToNextAnnouncement = 0.8;  // relatively to TTL
