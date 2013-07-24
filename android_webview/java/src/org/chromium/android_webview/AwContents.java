@@ -143,8 +143,9 @@ public class AwContents {
     private final InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private final InternalAccessDelegate mInternalAccessAdapter;
     private final AwLayoutSizer mLayoutSizer;
-    private final AwScrollOffsetManager mScrollOffsetManager;
     private final AwZoomControls mZoomControls;
+    private final AwScrollOffsetManager mScrollOffsetManager;
+    private OverScrollGlow mOverScrollGlow;
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
 
@@ -481,6 +482,8 @@ public class AwContents {
         mContentsClient.setDIPScale(mDIPScale);
         mScrollOffsetManager = new AwScrollOffsetManager(new AwScrollOffsetManagerDelegate());
 
+        setOverScrollMode(mContainerView.getOverScrollMode());
+
         setNewAwContents(nativeInit(browserContext));
     }
 
@@ -659,6 +662,12 @@ public class AwContents {
             Log.w(TAG, "nativeOnDraw failed; clearing to background color.");
             canvas.drawColor(getEffectiveBackgroundColor());
         }
+
+        if (mOverScrollGlow != null && mOverScrollGlow.drawEdgeGlows(canvas,
+                    mScrollOffsetManager.computeMaximumHorizontalScrollOffset(),
+                    mScrollOffsetManager.computeMaximumVerticalScrollOffset())) {
+            mContainerView.invalidate();
+        }
     }
 
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -671,23 +680,6 @@ public class AwContents {
 
     public int getContentWidthCss() {
         return (int) Math.ceil(mContentViewCore.getContentWidthCss());
-    }
-
-    /**
-     * Called by the embedder when the scroll offset of the containing view has changed.
-     * @see View#onScrollChanged(int,int)
-     */
-    public void onContainerViewScrollChanged(int l, int t, int oldl, int oldt) {
-        mScrollOffsetManager.onContainerViewScrollChanged(l, t);
-    }
-
-    /**
-     * Called by the embedder when the containing view is to be scrolled or overscrolled.
-     * @see View#onOverScrolled(int,int,int,int)
-     */
-    public void onContainerViewOverScrolled(int scrollX, int scrollY, boolean clampedX,
-            boolean clampedY) {
-        mScrollOffsetManager.onContainerViewOverScrolled(scrollX, scrollY, clampedX, clampedY);
     }
 
     public Picture capturePicture() {
@@ -851,6 +843,44 @@ public class AwContents {
      */
     public ContentSettings getContentSettings() {
         return mContentViewCore.getContentSettings();
+    }
+
+    /**
+     * @see View#setOverScrollMode(int)
+     */
+    public void setOverScrollMode(int mode) {
+        if (mode != View.OVER_SCROLL_NEVER) {
+            mOverScrollGlow = new OverScrollGlow(mContainerView);
+        } else {
+            mOverScrollGlow = null;
+        }
+    }
+
+    /**
+     * Called by the embedder when the scroll offset of the containing view has changed.
+     * @see View#onScrollChanged(int,int)
+     */
+    public void onContainerViewScrollChanged(int l, int t, int oldl, int oldt) {
+        mScrollOffsetManager.onContainerViewScrollChanged(l, t);
+    }
+
+    /**
+     * Called by the embedder when the containing view is to be scrolled or overscrolled.
+     * @see View#onOverScrolled(int,int,int,int)
+     */
+    public void onContainerViewOverScrolled(int scrollX, int scrollY, boolean clampedX,
+            boolean clampedY) {
+        int oldX = mContainerView.getScrollX();
+        int oldY = mContainerView.getScrollY();
+
+        mScrollOffsetManager.onContainerViewOverScrolled(scrollX, scrollY, clampedX, clampedY);
+
+        if (mOverScrollGlow != null) {
+            mOverScrollGlow.pullGlow(mContainerView.getScrollX(), mContainerView.getScrollY(),
+                    oldX, oldY,
+                    mScrollOffsetManager.computeMaximumHorizontalScrollOffset(),
+                    mScrollOffsetManager.computeMaximumVerticalScrollOffset());
+        }
     }
 
     /**
@@ -1250,6 +1280,10 @@ public class AwContents {
                                           (int)Math.round(event.getY(actionIndex) / mDIPScale));
         }
 
+        if (mOverScrollGlow != null && event.getActionMasked() == MotionEvent.ACTION_UP) {
+            mOverScrollGlow.releaseAll();
+        }
+
         return rv;
     }
 
@@ -1381,7 +1415,6 @@ public class AwContents {
         }
         nativeSetVisibility(mNativeAwContents, mIsVisible);
     }
-
 
     /**
      * Key for opaque state in bundle. Note this is only public for tests.
@@ -1632,7 +1665,15 @@ public class AwContents {
 
     @CalledByNative
     private void didOverscroll(int deltaX, int deltaY) {
+        if (mOverScrollGlow != null) {
+            mOverScrollGlow.setOverScrollDeltas(deltaX, deltaY);
+        }
+
         mScrollOffsetManager.overscrollBy(deltaX, deltaY);
+
+        if (mOverScrollGlow != null && mOverScrollGlow.isAnimating()) {
+            mContainerView.invalidate();
+        }
     }
 
     // -------------------------------------------------------------------------------------------
