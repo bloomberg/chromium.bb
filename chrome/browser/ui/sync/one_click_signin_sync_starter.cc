@@ -357,24 +357,10 @@ void OneClickSigninSyncStarter::SigninFailed(
 }
 
 void OneClickSigninSyncStarter::SigninSuccess() {
-  // Before handing control back to sync setup, update the auth error state of
-  // ProfileSyncService if needed. This is necessary because ProfileSyncService
-  // will normally update its auth error state only after attempting a sync
-  // cycle, and we do not want old auth errors to remain visible on the menu or
-  // the settings page.
-  // TODO(rsimha): We shouldn't have to do this here. PSS must update its auth
-  // state after the backend is inititialized if it waiting_for_auth() is true.
-  ProfileSyncService* profile_sync_service = GetProfileSyncService();
-  if (profile_sync_service &&
-      profile_sync_service->GetAuthError().state() !=
-          GoogleServiceAuthError::NONE) {
-    profile_sync_service->UpdateAuthErrorState(
-        GoogleServiceAuthError::AuthErrorNone());
-  }
-
   switch (start_mode_) {
     case SYNC_WITH_DEFAULT_SETTINGS: {
       // Just kick off the sync machine, no need to configure it first.
+      ProfileSyncService* profile_sync_service = GetProfileSyncService();
       if (profile_sync_service)
         profile_sync_service->SetSyncSetupCompleted();
       FinishProfileSyncServiceSetup();
