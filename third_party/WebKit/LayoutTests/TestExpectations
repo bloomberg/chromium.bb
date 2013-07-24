@@ -334,6 +334,8 @@ crbug.com/73609 http/tests/media/video-play-stall.html [ Failure Slow ]
 crbug.com/100798 [ Debug ] fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/100798 [ Debug ] fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
 
+crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
+
 # -----------------------------------------------------------------
 # SVG TESTS
 # -----------------------------------------------------------------
@@ -1373,7 +1375,7 @@ crbug.com/248938 [ Debug ] virtual/threaded/animations/cross-fade-background-ima
 crbug.com/248938 [ Win Release ] virtual/threaded/animations/cross-fade-background-image.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-reverse.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-from-to.html [ Pass Timeout ]
-crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ] 
+crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/missing-values-last-keyframe.html [ Pass ImageOnlyFailure Timeout ]
 crbug.com/248938 [ Mac Debug ] virtual/threaded/animations/missing-from-to-transforms.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure ]
