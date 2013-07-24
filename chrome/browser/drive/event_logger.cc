@@ -4,6 +4,7 @@
 
 #include "chrome/browser/drive/event_logger.h"
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
 namespace drive {
@@ -29,6 +30,8 @@ void EventLogger::Log(const char* format, ...) {
   va_start(args, format);
   base::StringAppendV(&what, format, args);
   va_end(args);
+
+  DVLOG(1) << what;
 
   base::AutoLock auto_lock(lock_);
   history_.push_back(Event(next_event_id_, what));
