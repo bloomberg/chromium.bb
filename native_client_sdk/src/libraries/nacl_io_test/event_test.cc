@@ -73,6 +73,11 @@ const int TIMEOUT_LONG = 500;
 const int TIMEOUT_NEVER = -1;
 const int TIMEOUT_VERY_LONG = 1000;
 
+// We subtract TIMEOUT_SLOP from the expected minimum timed due to rounding
+// and clock drift converting between absolute and relative time.
+// 1 for LT comparison, 1 for rounding, etc...
+const int TIMEOUT_SLOP = 2;
+
 TEST(EventTest, EmitterBasic) {
   ScopedRef<EventEmitterTester> emitter(new EventEmitterTester());
   ScopedRef<EventEmitter> null_emitter;
@@ -300,7 +305,7 @@ TEST(EventTest, EmitterTimeout) {
   memset(ev, 0, sizeof(ev));
   EXPECT_TRUE(TimedListen(listener, ev, MAX_EVENTS, EXPECT_NO_EVENT,
                           TIMEOUT_LONG, &duration));
-  EXPECT_LT(TIMEOUT_LONG - 1, duration);
+  EXPECT_LT(TIMEOUT_LONG - TIMEOUT_SLOP, duration);
   EXPECT_GT(TIMEOUT_LONG + SCHEDULING_GRANULARITY, duration);
 }
 
@@ -353,7 +358,7 @@ TEST(EventTest, EmitterSignalling) {
   // Verify the wait duration, and that we only recieved the expected signal.
   duration = Duration(&start, &end);
   EXPECT_GT(TIMEOUT_SHORT + SCHEDULING_GRANULARITY, duration);
-  EXPECT_LT(TIMEOUT_SHORT - 1, duration);
+  EXPECT_LT(TIMEOUT_SHORT - TIMEOUT_SLOP, duration);
   EXPECT_EQ(USER_DATA_A, ev[0].user_data);
   EXPECT_EQ(KE_EXPECTED, ev[0].events);
 }
