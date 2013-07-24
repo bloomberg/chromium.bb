@@ -204,6 +204,7 @@ class StorageMonitorLinuxTest : public testing::Test {
 
     // Linux storage monitor must be destroyed on the UI thread, so do it here.
     test::TestStorageMonitor::RemoveSingleton();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Append mtab entries from the |data| array of size |data_size| to the mtab
