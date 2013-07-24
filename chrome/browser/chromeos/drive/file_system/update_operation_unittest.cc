@@ -57,7 +57,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_PersistentFile) {
   // Add the dirty bit.
   error = FILE_ERROR_FAILED;
   cache()->MarkDirtyOnUIThread(
-      kResourceId, kMd5,
+      kResourceId,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -132,7 +132,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
   // Add the dirty bit.
   error = FILE_ERROR_FAILED;
   cache()->MarkDirtyOnUIThread(
-      kResourceId, kMd5,
+      kResourceId,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -178,7 +178,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
   // Again mark the cache file dirty.
   error = FILE_ERROR_FAILED;
   cache()->MarkDirtyOnUIThread(
-      kResourceId, server_entry->file_md5(),
+      kResourceId,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

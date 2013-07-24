@@ -28,7 +28,7 @@ FileError UpdateFileLocalState(internal::FileCache* cache,
                                const std::string& resource_id,
                                const std::string& md5,
                                base::FilePath* local_file_path) {
-  FileError error = cache->MarkDirty(resource_id, md5);
+  FileError error = cache->MarkDirty(resource_id);
   if (error != FILE_ERROR_OK)
     return error;
 

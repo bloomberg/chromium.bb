@@ -200,12 +200,10 @@ class FileCache {
   // |callback| must not be null.
   // Must be called on the UI thread.
   void MarkDirtyOnUIThread(const std::string& resource_id,
-                           const std::string& md5,
                            const FileOperationCallback& callback);
 
   // Marks the specified entry dirty.
-  FileError MarkDirty(const std::string& resource_id,
-                      const std::string& md5);
+  FileError MarkDirty(const std::string& resource_id);
 
   // Clears dirty state of the specified entry.
   FileError ClearDirty(const std::string& resource_id,

@@ -200,7 +200,6 @@ class FileCacheTestOnUIThread : public testing::Test {
   }
 
   void TestMarkDirty(const std::string& resource_id,
-                     const std::string& md5,
                      FileError expected_error,
                      int expected_cache_state) {
     expected_error_ = expected_error;
@@ -208,17 +207,17 @@ class FileCacheTestOnUIThread : public testing::Test {
 
     FileError error = FILE_ERROR_OK;
     cache_->MarkDirtyOnUIThread(
-        resource_id, md5,
+        resource_id,
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
 
-    VerifyCacheFileState(error, resource_id, md5);
+    VerifyCacheFileState(error, resource_id, std::string());
 
     // Verify filename.
     if (error == FILE_ERROR_OK) {
       base::FilePath cache_file_path;
       cache_->GetFileOnUIThread(
-          resource_id, md5,
+          resource_id, std::string(),
           google_apis::test_util::CreateCopyResultCallback(
               &error, &cache_file_path));
       test_util::RunBlockingPoolTask();
@@ -554,7 +553,7 @@ TEST_F(FileCacheTestOnUIThread, DirtyCacheSimple) {
                    FILE_ERROR_OK, TEST_CACHE_STATE_PRESENT);
 
   // Mark the file dirty.
-  TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
+  TestMarkDirty(resource_id, FILE_ERROR_OK,
                 TEST_CACHE_STATE_PRESENT | TEST_CACHE_STATE_DIRTY);
 
   // Clear dirty state of the file.
@@ -572,7 +571,7 @@ TEST_F(FileCacheTestOnUIThread, DirtyCachePinned) {
           TEST_CACHE_STATE_PRESENT | TEST_CACHE_STATE_PINNED);
 
   // Mark the file dirty.
-  TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
+  TestMarkDirty(resource_id, FILE_ERROR_OK,
                 TEST_CACHE_STATE_PRESENT |
                 TEST_CACHE_STATE_DIRTY |
                 TEST_CACHE_STATE_PINNED);
@@ -589,7 +588,7 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpinDirtyCache) {
   // First store a file to cache and mark it as dirty.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
                    FILE_ERROR_OK, TEST_CACHE_STATE_PRESENT);
-  TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
+  TestMarkDirty(resource_id, FILE_ERROR_OK,
                 TEST_CACHE_STATE_PRESENT | TEST_CACHE_STATE_DIRTY);
 
   // Verifies dirty file exists.
@@ -628,11 +627,11 @@ TEST_F(FileCacheTestOnUIThread, DirtyCacheRepetitive) {
                    FILE_ERROR_OK, TEST_CACHE_STATE_PRESENT);
 
   // Mark the file dirty.
-  TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
+  TestMarkDirty(resource_id, FILE_ERROR_OK,
                 TEST_CACHE_STATE_PRESENT | TEST_CACHE_STATE_DIRTY);
 
   // Again, mark the file dirty.  Nothing should change.
-  TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
+  TestMarkDirty(resource_id, FILE_ERROR_OK,
                 TEST_CACHE_STATE_PRESENT | TEST_CACHE_STATE_DIRTY);
 
   // Clear dirty state of the file.
@@ -648,7 +647,7 @@ TEST_F(FileCacheTestOnUIThread, DirtyCacheInvalid) {
   std::string md5("abcdef0123456789");
 
   // Mark a non-existent file dirty.
-  TestMarkDirty(resource_id, md5, FILE_ERROR_NOT_FOUND, TEST_CACHE_STATE_NONE);
+  TestMarkDirty(resource_id, FILE_ERROR_NOT_FOUND, TEST_CACHE_STATE_NONE);
 
   // Clear dirty state of a non-existent file.
   TestClearDirty(resource_id, md5, FILE_ERROR_NOT_FOUND, TEST_CACHE_STATE_NONE);
@@ -663,7 +662,7 @@ TEST_F(FileCacheTestOnUIThread, DirtyCacheInvalid) {
 
   // Mark an existing file dirty, then store a new file to the same resource id
   // but different md5, which should fail.
-  TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
+  TestMarkDirty(resource_id, FILE_ERROR_OK,
                 TEST_CACHE_STATE_PRESENT | TEST_CACHE_STATE_DIRTY);
   md5 = "new_md5";
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -680,7 +679,7 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromDirtyCache) {
                    FILE_ERROR_OK, TEST_CACHE_STATE_PRESENT);
   TestPin(resource_id, FILE_ERROR_OK,
           TEST_CACHE_STATE_PRESENT | TEST_CACHE_STATE_PINNED);
-  TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
+  TestMarkDirty(resource_id, FILE_ERROR_OK,
                 TEST_CACHE_STATE_PRESENT |
                 TEST_CACHE_STATE_PINNED |
                 TEST_CACHE_STATE_DIRTY);

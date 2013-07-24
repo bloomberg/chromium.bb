@@ -414,7 +414,6 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   cache()->MarkDirtyOnUIThread(
       src_entry.resource_id(),
-      src_entry.file_specific_info().md5(),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

@@ -46,7 +46,7 @@ FileError StoreAndMarkDirty(internal::FileCache* cache,
                                  internal::FileCache::FILE_OPERATION_COPY);
   if (error != FILE_ERROR_OK)
     return error;
-  return cache->MarkDirty(resource_id, md5);
+  return cache->MarkDirty(resource_id);
 }
 
 }  // namespace

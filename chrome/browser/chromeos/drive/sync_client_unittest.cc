@@ -178,8 +178,7 @@ class SyncClientTest : public testing::Test {
               cache_->Store(resource_ids_["dirty"], md5_dirty,
                             temp_file, FileCache::FILE_OPERATION_COPY));
     EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["dirty"]));
-    EXPECT_EQ(FILE_ERROR_OK,
-              cache_->MarkDirty(resource_ids_["dirty"], md5_dirty));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->MarkDirty(resource_ids_["dirty"]));
 
     // Load data from the service to the metadata.
     FileError error = FILE_ERROR_FAILED;

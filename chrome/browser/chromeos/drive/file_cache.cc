@@ -390,7 +390,6 @@ void FileCache::MarkAsUnmountedOnUIThread(
 }
 
 void FileCache::MarkDirtyOnUIThread(const std::string& resource_id,
-                                    const std::string& md5,
                                     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -398,28 +397,20 @@ void FileCache::MarkDirtyOnUIThread(const std::string& resource_id,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(
-          &FileCache::MarkDirty, base::Unretained(this), resource_id, md5),
+      base::Bind(&FileCache::MarkDirty, base::Unretained(this), resource_id),
       callback);
 }
 
-FileError FileCache::MarkDirty(const std::string& resource_id,
-                               const std::string& md5) {
+FileError FileCache::MarkDirty(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
-
-  // If file has already been marked dirty in previous instance of chrome, we
-  // would have lost the md5 info during cache initialization, because the file
-  // would have been renamed to .local extension.
-  // So, search for entry in cache without comparing md5.
 
   // Marking a file dirty means its entry and actual file blob must exist in
   // cache.
   FileCacheEntry cache_entry;
-  if (!GetCacheEntry(resource_id, md5, &cache_entry) ||
+  if (!storage_->GetCacheEntry(resource_id, &cache_entry) ||
       !cache_entry.is_present()) {
-    LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
-                 << resource_id
-                 << ", md5=" << md5;
+    LOG(WARNING) << "Can't mark dirty a file that wasn't cached: "
+                 << resource_id;
     return FILE_ERROR_NOT_FOUND;
   }
 

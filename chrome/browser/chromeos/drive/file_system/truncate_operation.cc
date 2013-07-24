@@ -48,12 +48,11 @@ class ScopedPlatformFileCloser {
 // then marks the resource is dirty on |cache|.
 FileError TruncateOnBlockingPool(internal::FileCache* cache,
                                  const std::string& resource_id,
-                                 const std::string& md5,
                                  const base::FilePath& local_cache_path,
                                  int64 length) {
   DCHECK(cache);
 
-  FileError error = cache->MarkDirty(resource_id, md5);
+  FileError error = cache->MarkDirty(resource_id);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -149,7 +148,7 @@ void TruncateOperation::TruncateAfterEnsureFileDownloadedByPath(
       FROM_HERE,
       base::Bind(&TruncateOnBlockingPool,
                  base::Unretained(cache_),
-                 entry->resource_id(), entry->file_specific_info().md5(),
+                 entry->resource_id(),
                  local_file_path, length),
       base::Bind(
           &TruncateOperation::TruncateAfterTruncateOnBlockingPool,

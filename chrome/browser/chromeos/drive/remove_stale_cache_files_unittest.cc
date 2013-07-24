@@ -94,7 +94,7 @@ TEST_F(RemoveStaleCacheFilesTest, DirtyCacheFiles) {
   EXPECT_EQ(FILE_ERROR_OK,
             cache_->Store(resource_id_1, md5_1, dummy_file,
                           FileCache::FILE_OPERATION_COPY));
-  EXPECT_EQ(FILE_ERROR_OK, cache_->MarkDirty(resource_id_1, md5_1));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->MarkDirty(resource_id_1));
 
   // Dirty and mismatching-MD5 entry.
   std::string resource_id_2("file:2");
@@ -103,7 +103,7 @@ TEST_F(RemoveStaleCacheFilesTest, DirtyCacheFiles) {
   EXPECT_EQ(FILE_ERROR_OK,
             cache_->Store(resource_id_2, md5_2_cache, dummy_file,
                           FileCache::FILE_OPERATION_COPY));
-  EXPECT_EQ(FILE_ERROR_OK, cache_->MarkDirty(resource_id_2, md5_2_cache));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->MarkDirty(resource_id_2));
 
   ResourceEntry entry;
   entry.set_resource_id(resource_id_2);
