@@ -6,6 +6,7 @@ cr.define('extensions', function() {
   var FocusManager = cr.ui.FocusManager;
 
   function ExtensionFocusManager() {
+    FocusManager.disableMouseFocusOnButtons();
   }
 
   cr.addSingletonGetter(ExtensionFocusManager);
