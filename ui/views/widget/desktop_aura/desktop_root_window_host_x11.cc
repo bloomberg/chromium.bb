@@ -990,6 +990,12 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
   // May want to factor CheckXEventForConsistency(xev); into a common location
   // since it is called here.
   switch (xev->type) {
+    case EnterNotify:
+    case LeaveNotify: {
+      ui::MouseEvent mouse_event(xev);
+      DispatchMouseEvent(&mouse_event);
+      break;
+    }
     case Expose: {
       gfx::Rect damage_rect(xev->xexpose.x, xev->xexpose.y,
                             xev->xexpose.width, xev->xexpose.height);
