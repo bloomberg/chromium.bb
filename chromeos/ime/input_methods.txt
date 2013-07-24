@@ -102,13 +102,6 @@ xkb:jp::jpn	jp	ja
 xkb:ru::rus	ru	ru
 xkb:ru:phonetic:rus	ru(phonetic)	ru
 
-# Vietnamese
-m17n:vi:vni	us	vi
-# Note: Since Chrome does not support "get surrounding text" feature yet,
-# Vietnames input methods, except 4 input methods above, in m17n-db should
-# not work fine. The 4 input methods in m17n-db (>= 1.6.0) don't require the
-# feature.
-
 # Keyboard layouts.
 xkb:br::por	br	pt-BR
 xkb:bg::bul	bg	bg
