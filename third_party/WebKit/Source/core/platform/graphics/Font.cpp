@@ -30,8 +30,9 @@
 #include "core/platform/text/transcoder/FontTranscoder.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
-#include "wtf/text/StringBuilder.h"
+#include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"
+#include "wtf/text/StringBuilder.h"
 
 using namespace WTF;
 using namespace Unicode;
@@ -353,122 +354,84 @@ Font::CodePath Font::codePath(const TextRun& run) const
     return characterRangeCodePath(run.characters16(), run.length());
 }
 
+static inline UChar keyExtractorUChar(const UChar* value)
+{
+    return *value;
+}
+
+static inline UChar32 keyExtractorUChar32(const UChar32* value)
+{
+    return *value;
+}
+
 Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned len)
 {
-    // FIXME: Should use a UnicodeSet in ports where ICU is used. Note that we 
-    // can't simply use UnicodeCharacter Property/class because some characters
-    // are not 'combining', but still need to go to the complex path.
-    // Alternatively, we may as well consider binary search over a sorted
-    // list of ranges.
+    static UChar complexCodePathRanges[] = {
+        // U+02E5 through U+02E9 (Modifier Letters : Tone letters)
+        0x2E5, 0x2E9,
+        // U+0300 through U+036F Combining diacritical marks
+        0x300, 0x36F,
+        // U+0591 through U+05CF excluding U+05BE Hebrew combining marks, ...
+        0x0591, 0x05BD,
+        // ... Hebrew punctuation Paseq, Sof Pasuq and Nun Hafukha
+        0x05BF, 0x05CF,
+        // U+0600 through U+109F Arabic, Syriac, Thaana, NKo, Samaritan, Mandaic,
+        // Devanagari, Bengali, Gurmukhi, Gujarati, Oriya, Tamil, Telugu, Kannada,
+        // Malayalam, Sinhala, Thai, Lao, Tibetan, Myanmar
+        0x0600, 0x109F,
+        // U+1100 through U+11FF Hangul Jamo (only Ancient Korean should be left
+        // here if you precompose; Modern Korean will be precomposed as a result of step A)
+        0x1100, 0x11FF,
+        // U+135D through U+135F Ethiopic combining marks
+        0x135D, 0x135F,
+        // U+1780 through U+18AF Tagalog, Hanunoo, Buhid, Taghanwa,Khmer, Mongolian
+        0x1700, 0x18AF,
+        // U+1900 through U+194F Limbu (Unicode 4.0)
+        0x1900, 0x194F,
+        // U+1980 through U+19DF New Tai Lue
+        0x1980, 0x19DF,
+        // U+1A00 through U+1CFF Buginese, Tai Tham, Balinese, Batak, Lepcha, Vedic
+        0x1A00, 0x1CFF,
+        // U+1DC0 through U+1DFF Comining diacritical mark supplement
+        0x1DC0, 0x1DFF,
+        // U+20D0 through U+20FF Combining marks for symbols
+        0x20D0, 0x20FF,
+        // U+2CEF through U+2CF1 Combining marks for Coptic
+        0x2CEF, 0x2CF1,
+        // U+302A through U+302F Ideographic and Hangul Tone marks
+        0x302A, 0x302F,
+        // U+A67C through U+A67D Combining marks for old Cyrillic
+        0xA67C, 0xA67D,
+        // U+A6F0 through U+A6F1 Combining mark for Bamum
+        0xA6F0, 0xA6F1,
+        // U+A800 through U+ABFF Nagri, Phags-pa, Saurashtra, Devanagari Extended,
+        // Hangul Jamo Ext. A, Javanese, Myanmar Extended A, Tai Viet, Meetei Mayek
+        0xA800, 0xABFF,
+        // U+D7B0 through U+D7FF Hangul Jamo Ext. B
+        0xD7B0, 0xD7FF,
+        // U+FE00 through U+FE0F Unicode variation selectors
+        0xFE00, 0xFE0F,
+        // U+FE20 through U+FE2F Combining half marks
+        0xFE20, 0xFE2F
+    };
+    static size_t complexCodePathRangesCount = WTF_ARRAY_LENGTH(complexCodePathRanges);
+
     CodePath result = Simple;
     for (unsigned i = 0; i < len; i++) {
         const UChar c = characters[i];
-        if (c < 0x2E5) // U+02E5 through U+02E9 (Modifier Letters : Tone letters)  
-            continue;
-        if (c <= 0x2E9) 
-            return Complex;
 
-        if (c < 0x300) // U+0300 through U+036F Combining diacritical marks
+        // Shortcut for common case
+        if (c < 0x2E5)
             continue;
-        if (c <= 0x36F)
-            return Complex;
-
-        if (c < 0x0591 || c == 0x05BE) // U+0591 through U+05CF excluding U+05BE Hebrew combining marks, Hebrew punctuation Paseq, Sof Pasuq and Nun Hafukha
-            continue;
-        if (c <= 0x05CF)
-            return Complex;
-
-        // U+0600 through U+109F Arabic, Syriac, Thaana, NKo, Samaritan, Mandaic,
-        // Devanagari, Bengali, Gurmukhi, Gujarati, Oriya, Tamil, Telugu, Kannada, 
-        // Malayalam, Sinhala, Thai, Lao, Tibetan, Myanmar
-        if (c < 0x0600) 
-            continue;
-        if (c <= 0x109F)
-            return Complex;
-
-        // U+1100 through U+11FF Hangul Jamo (only Ancient Korean should be left here if you precompose;
-        // Modern Korean will be precomposed as a result of step A)
-        if (c < 0x1100)
-            continue;
-        if (c <= 0x11FF)
-            return Complex;
-
-        if (c < 0x135D) // U+135D through U+135F Ethiopic combining marks
-            continue;
-        if (c <= 0x135F)
-            return Complex;
-
-        if (c < 0x1700) // U+1780 through U+18AF Tagalog, Hanunoo, Buhid, Taghanwa,Khmer, Mongolian
-            continue;
-        if (c <= 0x18AF)
-            return Complex;
-
-        if (c < 0x1900) // U+1900 through U+194F Limbu (Unicode 4.0)
-            continue;
-        if (c <= 0x194F)
-            return Complex;
-
-        if (c < 0x1980) // U+1980 through U+19DF New Tai Lue
-            continue;
-        if (c <= 0x19DF)
-            return Complex;
-
-        if (c < 0x1A00) // U+1A00 through U+1CFF Buginese, Tai Tham, Balinese, Batak, Lepcha, Vedic
-            continue;
-        if (c <= 0x1CFF)
-            return Complex;
-
-        if (c < 0x1DC0) // U+1DC0 through U+1DFF Comining diacritical mark supplement
-            continue;
-        if (c <= 0x1DFF)
-            return Complex;
 
         // U+1E00 through U+2000 characters with diacritics and stacked diacritics
-        if (c <= 0x2000) {
+        if (c >= 0x1E00 && c <= 0x2000) {
             result = SimpleWithGlyphOverflow;
             continue;
         }
 
-        if (c < 0x20D0) // U+20D0 through U+20FF Combining marks for symbols
-            continue;
-        if (c <= 0x20FF)
-            return Complex;
-
-        if (c < 0x2CEF) // U+2CEF through U+2CF1 Combining marks for Coptic
-            continue;
-        if (c <= 0x2CF1)
-            return Complex;
-
-        if (c < 0x302A) // U+302A through U+302F Ideographic and Hangul Tone marks
-            continue;
-        if (c <= 0x302F)
-            return Complex;
-
-        if (c < 0xA67C) // U+A67C through U+A67D Combining marks for old Cyrillic
-            continue;
-        if (c <= 0xA67D)
-            return Complex;
-
-        if (c < 0xA6F0) // U+A6F0 through U+A6F1 Combining mark for Bamum
-            continue;
-        if (c <= 0xA6F1)
-            return Complex;
-
-       // U+A800 through U+ABFF Nagri, Phags-pa, Saurashtra, Devanagari Extended,
-       // Hangul Jamo Ext. A, Javanese, Myanmar Extended A, Tai Viet, Meetei Mayek,
-        if (c < 0xA800) 
-            continue;
-        if (c <= 0xABFF)
-            return Complex;
-
-        if (c < 0xD7B0) // U+D7B0 through U+D7FF Hangul Jamo Ext. B
-            continue;
-        if (c <= 0xD7FF)
-            return Complex;
-
-        if (c <= 0xDBFF) {
-            // High surrogate
-
+        // Surrogate pairs
+        if (c > 0xD7FF && c <= 0xDBFF) {
             if (i == len - 1)
                 continue;
 
@@ -494,219 +457,214 @@ Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned le
             continue;
         }
 
-        if (c < 0xFE00) // U+FE00 through U+FE0F Unicode variation selectors
-            continue;
-        if (c <= 0xFE0F)
+        // Search for other Complex cases
+        UChar* boundingCharacter = approximateBinarySearch<UChar, UChar>(
+            (UChar*)complexCodePathRanges, complexCodePathRangesCount, c, keyExtractorUChar);
+        // Exact matches are complex
+        if (*boundingCharacter == c)
             return Complex;
-
-        if (c < 0xFE20) // U+FE20 through U+FE2F Combining half marks
+        bool isEndOfRange = ((boundingCharacter - complexCodePathRanges) % 2);
+        if (*boundingCharacter < c) {
+            // Determine if we are in a range or out
+            if (!isEndOfRange)
+                return Complex;
             continue;
-        if (c <= 0xFE2F)
+        }
+        ASSERT(*boundingCharacter > c);
+        // Determine if we are in a range or out - opposite condition to above
+        if (isEndOfRange)
             return Complex;
     }
+
     return result;
 }
 
 bool Font::isCJKIdeograph(UChar32 c)
 {
-    // The basic CJK Unified Ideographs block.
-    if (c >= 0x4E00 && c <= 0x9FFF)
-        return true;
-    
-    // CJK Unified Ideographs Extension A.
-    if (c >= 0x3400 && c <= 0x4DBF)
-        return true;
-    
-    // CJK Radicals Supplement.
-    if (c >= 0x2E80 && c <= 0x2EFF)
-        return true;
-    
-    // Kangxi Radicals.
-    if (c >= 0x2F00 && c <= 0x2FDF)
-        return true;
-    
-    // CJK Strokes.
-    if (c >= 0x31C0 && c <= 0x31EF)
-        return true;
-    
-    // CJK Compatibility Ideographs.
-    if (c >= 0xF900 && c <= 0xFAFF)
-        return true;
-    
-    // CJK Unified Ideographs Extension B.
-    if (c >= 0x20000 && c <= 0x2A6DF)
-        return true;
-        
-    // CJK Unified Ideographs Extension C.
-    if (c >= 0x2A700 && c <= 0x2B73F)
-        return true;
-    
-    // CJK Unified Ideographs Extension D.
-    if (c >= 0x2B740 && c <= 0x2B81F)
-        return true;
-    
-    // CJK Compatibility Ideographs Supplement.
-    if (c >= 0x2F800 && c <= 0x2FA1F)
-        return true;
+    static UChar32 cjkIdeographRanges[] = {
+        // CJK Radicals Supplement and Kangxi Radicals.
+        0x2E80, 0x2FDF,
+        // CJK Strokes.
+        0x31C0, 0x31EF,
+        // CJK Unified Ideographs Extension A.
+        0x3400, 0x4DBF,
+        // The basic CJK Unified Ideographs block.
+        0x4E00, 0x9FFF,
+        // CJK Compatibility Ideographs.
+        0xF900, 0xFAFF,
+        // CJK Unified Ideographs Extension B.
+        0x20000, 0x2A6DF,
+        // CJK Unified Ideographs Extension C.
+        // CJK Unified Ideographs Extension D.
+        0x2A700, 0x2B81F,
+        // CJK Compatibility Ideographs Supplement.
+        0x2F800, 0x2FA1F
+    };
+    static size_t cjkIdeographRangesCount = WTF_ARRAY_LENGTH(cjkIdeographRanges);
 
-    return false;
+    // Early out
+    if (c < cjkIdeographRanges[0] || c > cjkIdeographRanges[cjkIdeographRangesCount - 1])
+        return false;
+
+    UChar32* boundingCharacter = approximateBinarySearch<UChar32, UChar32>(
+        (UChar32*)cjkIdeographRanges, cjkIdeographRangesCount, c, keyExtractorUChar32);
+    // Exact matches are CJK
+    if (*boundingCharacter == c)
+        return true;
+    bool isEndOfRange = ((boundingCharacter - cjkIdeographRanges) % 2);
+    if (*boundingCharacter < c)
+        return !isEndOfRange;
+    return isEndOfRange;
 }
 
 bool Font::isCJKIdeographOrSymbol(UChar32 c)
 {
-    // 0x2C7 Caron, Mandarin Chinese 3rd Tone
-    // 0x2CA Modifier Letter Acute Accent, Mandarin Chinese 2nd Tone
-    // 0x2CB Modifier Letter Grave Access, Mandarin Chinese 4th Tone 
-    // 0x2D9 Dot Above, Mandarin Chinese 5th Tone 
-    if ((c == 0x2C7) || (c == 0x2CA) || (c == 0x2CB) || (c == 0x2D9))
-        return true;
-
-    if ((c == 0x2020) || (c == 0x2021) || (c == 0x2030) || (c == 0x203B) || (c == 0x203C)
-        || (c == 0x2042) || (c == 0x2047) || (c == 0x2048) || (c == 0x2049) || (c == 0x2051)
-        || (c == 0x20DD) || (c == 0x20DE) || (c == 0x2100) || (c == 0x2103) || (c == 0x2105)
-        || (c == 0x2109) || (c == 0x210A) || (c == 0x2113) || (c == 0x2116) || (c == 0x2121)
-        || (c == 0x212B) || (c == 0x213B) || (c == 0x2150) || (c == 0x2151) || (c == 0x2152))
-        return true;
-
-    if (c >= 0x2156 && c <= 0x215A)
-        return true;
-
-    if (c >= 0x2160 && c <= 0x216B)
-        return true;
-
-    if (c >= 0x2170 && c <= 0x217B)
-        return true;
-
-    if ((c == 0x217F) || (c == 0x2189) || (c == 0x2307) || (c == 0x2312) || (c == 0x23BE) || (c == 0x23BF))
-        return true;
-
-    if (c >= 0x23C0 && c <= 0x23CC)
-        return true;
-
-    if ((c == 0x23CE) || (c == 0x2423))
-        return true;
-
-    if (c >= 0x2460 && c <= 0x2492)
-        return true;
-
-    if (c >= 0x249C && c <= 0x24FF)
-        return true;
-
-    if ((c == 0x25A0) || (c == 0x25A1) || (c == 0x25A2) || (c == 0x25AA) || (c == 0x25AB))
-        return true;
-
-    if ((c == 0x25B1) || (c == 0x25B2) || (c == 0x25B3) || (c == 0x25B6) || (c == 0x25B7) || (c == 0x25BC) || (c == 0x25BD))
-        return true;
-    
-    if ((c == 0x25C0) || (c == 0x25C1) || (c == 0x25C6) || (c == 0x25C7) || (c == 0x25C9) || (c == 0x25CB) || (c == 0x25CC))
-        return true;
-
-    if (c >= 0x25CE && c <= 0x25D3)
-        return true;
-
-    if (c >= 0x25E2 && c <= 0x25E6)
-        return true;
-
-    if (c == 0x25EF)
-        return true;
-
-    if (c >= 0x2600 && c <= 0x2603)
-        return true;
-
-    if ((c == 0x2605) || (c == 0x2606) || (c == 0x260E) || (c == 0x2616) || (c == 0x2617) || (c == 0x2640) || (c == 0x2642))
-        return true;
-
-    if (c >= 0x2660 && c <= 0x266F)
-        return true;
-
-    if (c >= 0x2672 && c <= 0x267D)
-        return true;
-
-    if ((c == 0x26A0) || (c == 0x26BD) || (c == 0x26BE) || (c == 0x2713) || (c == 0x271A) || (c == 0x273F) || (c == 0x2740) || (c == 0x2756))
-        return true;
-
-    if (c >= 0x2776 && c <= 0x277F)
-        return true;
-
-    if (c == 0x2B1A)
-        return true;
-
-    // Ideographic Description Characters.
-    if (c >= 0x2FF0 && c <= 0x2FFF)
-        return true;
-    
-    // CJK Symbols and Punctuation, excluding 0x3030.
-    if (c >= 0x3000 && c < 0x3030)
-        return true;
-
-    if (c > 0x3030 && c <= 0x303F)
-        return true;
-
-    // Hiragana
-    if (c >= 0x3040 && c <= 0x309F)
-        return true;
-
-    // Katakana 
-    if (c >= 0x30A0 && c <= 0x30FF)
-        return true;
-
-    // Bopomofo
-    if (c >= 0x3100 && c <= 0x312F)
-        return true;
-
-    if (c >= 0x3190 && c <= 0x319F)
-        return true;
-
-    // Bopomofo Extended
-    if (c >= 0x31A0 && c <= 0x31BF)
-        return true;
- 
-    // Enclosed CJK Letters and Months.
-    if (c >= 0x3200 && c <= 0x32FF)
-        return true;
-    
-    // CJK Compatibility.
-    if (c >= 0x3300 && c <= 0x33FF)
-        return true;
-
-    if (c >= 0xF860 && c <= 0xF862)
-        return true;
-
-    // CJK Compatibility Forms.
-    if (c >= 0xFE30 && c <= 0xFE4F)
-        return true;
-
-    if ((c == 0xFE10) || (c == 0xFE11) || (c == 0xFE12) || (c == 0xFE19))
-        return true;
-
-    if ((c == 0xFF0D) || (c == 0xFF1B) || (c == 0xFF1C) || (c == 0xFF1E))
+    // Likely common case
+    if (c < 0x2C7)
         return false;
 
-    // Halfwidth and Fullwidth Forms
-    // Usually only used in CJK
-    if (c >= 0xFF00 && c <= 0xFFEF)
+    // Hash lookup for isolated symbols (those not part of a contiguous range)
+    static HashSet<UChar32>* cjkIsolatedSymbols = 0;
+    if (!cjkIsolatedSymbols) {
+        cjkIsolatedSymbols = new HashSet<UChar32>();
+        // 0x2C7 Caron, Mandarin Chinese 3rd Tone
+        cjkIsolatedSymbols->add(0x2C7);
+        // 0x2CA Modifier Letter Acute Accent, Mandarin Chinese 2nd Tone
+        cjkIsolatedSymbols->add(0x2CA);
+        // 0x2CB Modifier Letter Grave Access, Mandarin Chinese 4th Tone
+        cjkIsolatedSymbols->add(0x2CB);
+        // 0x2D9 Dot Above, Mandarin Chinese 5th Tone
+        cjkIsolatedSymbols->add(0x2D9);
+
+        cjkIsolatedSymbols->add(0x2020);
+        cjkIsolatedSymbols->add(0x2021);
+        cjkIsolatedSymbols->add(0x2030);
+        cjkIsolatedSymbols->add(0x203B);
+        cjkIsolatedSymbols->add(0x203C);
+        cjkIsolatedSymbols->add(0x2042);
+        cjkIsolatedSymbols->add(0x2047);
+        cjkIsolatedSymbols->add(0x2048);
+        cjkIsolatedSymbols->add(0x2049);
+        cjkIsolatedSymbols->add(0x2051);
+        cjkIsolatedSymbols->add(0x20DD);
+        cjkIsolatedSymbols->add(0x20DE);
+        cjkIsolatedSymbols->add(0x2100);
+        cjkIsolatedSymbols->add(0x2103);
+        cjkIsolatedSymbols->add(0x2105);
+        cjkIsolatedSymbols->add(0x2109);
+        cjkIsolatedSymbols->add(0x210A);
+        cjkIsolatedSymbols->add(0x2113);
+        cjkIsolatedSymbols->add(0x2116);
+        cjkIsolatedSymbols->add(0x2121);
+        cjkIsolatedSymbols->add(0x212B);
+        cjkIsolatedSymbols->add(0x213B);
+        cjkIsolatedSymbols->add(0x2150);
+        cjkIsolatedSymbols->add(0x2151);
+        cjkIsolatedSymbols->add(0x2152);
+        cjkIsolatedSymbols->add(0x217F);
+        cjkIsolatedSymbols->add(0x2189);
+        cjkIsolatedSymbols->add(0x2307);
+        cjkIsolatedSymbols->add(0x2312);
+        cjkIsolatedSymbols->add(0x23CE);
+        cjkIsolatedSymbols->add(0x2423);
+        cjkIsolatedSymbols->add(0x25A0);
+        cjkIsolatedSymbols->add(0x25A1);
+        cjkIsolatedSymbols->add(0x25A2);
+        cjkIsolatedSymbols->add(0x25AA);
+        cjkIsolatedSymbols->add(0x25AB);
+        cjkIsolatedSymbols->add(0x25B1);
+        cjkIsolatedSymbols->add(0x25B2);
+        cjkIsolatedSymbols->add(0x25B3);
+        cjkIsolatedSymbols->add(0x25B6);
+        cjkIsolatedSymbols->add(0x25B7);
+        cjkIsolatedSymbols->add(0x25BC);
+        cjkIsolatedSymbols->add(0x25BD);
+        cjkIsolatedSymbols->add(0x25C0);
+        cjkIsolatedSymbols->add(0x25C1);
+        cjkIsolatedSymbols->add(0x25C6);
+        cjkIsolatedSymbols->add(0x25C7);
+        cjkIsolatedSymbols->add(0x25C9);
+        cjkIsolatedSymbols->add(0x25CB);
+        cjkIsolatedSymbols->add(0x25CC);
+        cjkIsolatedSymbols->add(0x25EF);
+        cjkIsolatedSymbols->add(0x2605);
+        cjkIsolatedSymbols->add(0x2606);
+        cjkIsolatedSymbols->add(0x260E);
+        cjkIsolatedSymbols->add(0x2616);
+        cjkIsolatedSymbols->add(0x2617);
+        cjkIsolatedSymbols->add(0x2640);
+        cjkIsolatedSymbols->add(0x2642);
+        cjkIsolatedSymbols->add(0x26A0);
+        cjkIsolatedSymbols->add(0x26BD);
+        cjkIsolatedSymbols->add(0x26BE);
+        cjkIsolatedSymbols->add(0x2713);
+        cjkIsolatedSymbols->add(0x271A);
+        cjkIsolatedSymbols->add(0x273F);
+        cjkIsolatedSymbols->add(0x2740);
+        cjkIsolatedSymbols->add(0x2756);
+        cjkIsolatedSymbols->add(0x2B1A);
+        cjkIsolatedSymbols->add(0xFE10);
+        cjkIsolatedSymbols->add(0xFE11);
+        cjkIsolatedSymbols->add(0xFE12);
+        cjkIsolatedSymbols->add(0xFE19);
+        cjkIsolatedSymbols->add(0xFF1D);
+        // Emoji.
+        cjkIsolatedSymbols->add(0x1F100);
+    }
+    if (cjkIsolatedSymbols->contains(c))
         return true;
 
-    // Emoji.
-    if (c == 0x1F100)
+    if (isCJKIdeograph(c))
         return true;
 
-    if (c >= 0x1F110 && c <= 0x1F129)
-        return true;
+    static UChar32 cjkSymbolRanges[] = {
+        0x2156, 0x215A,
+        0x2160, 0x216B,
+        0x2170, 0x217B,
+        0x23BE, 0x23CC,
+        0x2460, 0x2492,
+        0x249C, 0x24FF,
+        0x25CE, 0x25D3,
+        0x25E2, 0x25E6,
+        0x2600, 0x2603,
+        0x2660, 0x266F,
+        0x2672, 0x267D,
+        0x2776, 0x277F,
+        // Ideographic Description Characters, with CJK Symbols and Punctuation, excluding 0x3030.
+        // Then Hiragana 0x3040 .. 0x309F, Katakana 0x30A0 .. 0x30FF, Bopomofo 0x3100 .. 0x312F
+        0x2FF0, 0x302F,
+        0x3031, 0x312F,
+        // More Bopomofo and Bopomofo Extended 0x31A0 .. 0x31BF
+        0x3190, 0x31BF,
+        // Enclosed CJK Letters and Months (0x3200 .. 0x32FF).
+        // CJK Compatibility (0x3300 .. 0x33FF).
+        0x3200, 0x33FF,
+        0xF860, 0xF862,
+        // CJK Compatibility Forms.
+        0xFE30, 0xFE4F,
+        // Halfwidth and Fullwidth Forms
+        // Usually only used in CJK
+        0xFF00, 0xFF0C,
+        0xFF0E, 0xFF1A,
+        0xFF1F, 0xFFEF,
+        // Emoji.
+        0x1F110, 0x1F129,
+        0x1F130, 0x1F149,
+        0x1F150, 0x1F169,
+        0x1F170, 0x1F189,
+        0x1F200, 0x1F6FF
+    };
+    static size_t cjkSymbolRangesCount = WTF_ARRAY_LENGTH(cjkSymbolRanges);
 
-    if (c >= 0x1F130 && c <= 0x1F149)
+    UChar32* boundingCharacter = approximateBinarySearch<UChar32, UChar32>(
+        (UChar32*)cjkSymbolRanges, cjkSymbolRangesCount, c, keyExtractorUChar32);
+    // Exact matches are CJK Symbols
+    if (*boundingCharacter == c)
         return true;
-
-    if (c >= 0x1F150 && c <= 0x1F169)
-        return true;
-
-    if (c >= 0x1F170 && c <= 0x1F189)
-        return true;
-
-    if (c >= 0x1F200 && c <= 0x1F6F)
-        return true;
-
-    return isCJKIdeograph(c);
+    bool isEndOfRange = ((boundingCharacter - cjkSymbolRanges) % 2);
+    if (*boundingCharacter < c)
+        return !isEndOfRange;
+    return isEndOfRange;
 }
 
 unsigned Font::expansionOpportunityCount(const LChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion)
