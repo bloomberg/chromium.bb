@@ -3743,6 +3743,7 @@
             'html/TimeRangesTest.cpp',
             'loader/cache/CachedImageTest.cpp',
             'loader/cache/MemoryCacheTest.cpp',
+            'loader/cache/ResourceFetcherTest.cpp',
             'platform/DecimalTest.cpp',
             'platform/SharedBufferTest.cpp',
             'platform/chromium/ClipboardChromiumTest.cpp',

@@ -502,12 +502,11 @@ CachedResourceHandle<CachedResource> ResourceFetcher::requestResource(CachedReso
     }
 
     if ((policy != Use || resource->stillNeedsLoad()) && FetchRequest::NoDefer == request.defer()) {
-        if (!frame())
+        if (!frame() || m_documentLoader != frame()->loader()->activeDocumentLoader() || m_documentLoader->isStopping()) {
+            if (resource->inCache())
+                memoryCache()->remove(resource.get());
             return 0;
-
-        FrameLoader* frameLoader = this->frameLoader();
-        if (request.options().securityCheck == DoSecurityCheck && (frameLoader->state() == FrameStateProvisional || !frameLoader->activeDocumentLoader() || frameLoader->activeDocumentLoader()->isStopping()))
-            return 0;
+        }
 
         if (!m_documentLoader->scheduleArchiveLoad(resource.get(), request.resourceRequest()))
             resource->load(this, request.options());
