@@ -369,7 +369,7 @@ class RunTestCasesSlow(unittest.TestCase):
       self.assertEqual(os.getcwd(), cwd)
       # They are in reverse order due to test shuffling.
       self.assertEqual(['Foo.Bar1', 'Foo.Bar/3'], test_cases)
-      self.assertEqual(run_test_cases.num_processors(), jobs)
+      self.assertEqual(run_test_cases.run_isolated.num_processors(), jobs)
       self.assertEqual(75, timeout)
       self.assertEqual(None, clusters)
       self.assertEqual(2, retries)

@@ -69,24 +69,6 @@ OK_PREFIX = '[       OK ] '
 FAILED_PREFIX = '[  FAILED  ] '
 
 
-def num_processors():
-  """Returns the number of processors.
-
-  Python on OSX 10.6 raises a NotImplementedError exception.
-  """
-  try:
-    # Multiprocessing
-    import multiprocessing
-    return multiprocessing.cpu_count()
-  except:  # pylint: disable=W0702
-    try:
-      # Mac OS 10.6
-      return int(os.sysconf('SC_NPROCESSORS_ONLN'))  # pylint: disable=E1101
-    except:
-      # Some of the windows builders seem to get here.
-      return 4
-
-
 if subprocess.mswindows:
   import msvcrt  # pylint: disable=F0401
   from ctypes import wintypes
@@ -1400,43 +1382,12 @@ def run_test_cases(
   return int(bool(fail) or decider.stopped or bool(missing))
 
 
-class OptionParserWithLogging(optparse.OptionParser):
-  """Adds --verbose option."""
-  def __init__(self, verbose=0, **kwargs):
-    kwargs.setdefault('description', sys.modules['__main__'].__doc__)
-    optparse.OptionParser.__init__(self, **kwargs)
-    self.add_option(
-        '-v', '--verbose',
-        action='count',
-        default=verbose,
-        help='Use multiple times to increase verbosity')
-    self.add_option(
-        '-l', '--log_file',
-        default=os.environ.get('RUN_TEST_CASES_LOG_FILE', ''),
-        help='The name of the file to store rotating log details.')
-
-  def parse_args(self, *args, **kwargs):
-    options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
-    level = ([logging.ERROR, logging.INFO, logging.DEBUG]
-             [min(2, options.verbose)])
-
-    logging_console = logging.StreamHandler()
-    logging_console.setFormatter(logging.Formatter(
-        '%(levelname)5s %(module)15s(%(lineno)3d): %(message)s'))
-    logging_console.setLevel(level)
-    logging.getLogger().setLevel(level)
-    logging.getLogger().addHandler(logging_console)
-
-    if options.log_file:
-      logging_rotating_file = logging.handlers.RotatingFileHandler(
-          options.log_file, maxBytes=10 * 1024 * 1024, backupCount=5)
-      logging_rotating_file.setLevel(logging.DEBUG)
-      logging.getLogger().setLevel(logging.DEBUG)
-      logging_rotating_file.setFormatter(logging.Formatter(
-          '%(asctime)s %(levelname)-8s %(module)15s(%(lineno)3d): %(message)s'))
-      logging.getLogger().addHandler(logging_rotating_file)
-
-    return options, args
+class OptionParserWithLogging(run_isolated.OptionParserWithLogging):
+  def __init__(self, **kwargs):
+    run_isolated.OptionParserWithLogging.__init__(
+        self,
+        log_file=os.environ.get('RUN_TEST_CASES_LOG_FILE', ''),
+        **kwargs)
 
 
 class OptionParserWithTestSharding(OptionParserWithLogging):
@@ -1579,12 +1530,12 @@ class OptionParserTestCases(OptionParserWithTestShardingAndFiltering):
     self.add_option(
         '-j', '--jobs',
         type='int',
-        default=num_processors(),
+        default=run_isolated.num_processors(),
         help='Number of parallel jobs; default=%default')
     self.add_option(
         '--use-less-jobs',
         action='store_const',
-        const=num_processors() - 1,
+        const=run_isolated.num_processors() - 1,
         dest='jobs',
         help='Starts less parallel jobs than the default, used to help reduce'
              'contention between threads if all the tests are very CPU heavy.')

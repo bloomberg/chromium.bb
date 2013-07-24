@@ -197,6 +197,24 @@ def disable_buffering():
     os.environ['PYTHONUNBUFFERED'] = 'x'
 
 
+def num_processors():
+  """Returns the number of processors.
+
+  Python on OSX 10.6 raises a NotImplementedError exception.
+  """
+  try:
+    # Multiprocessing
+    import multiprocessing
+    return multiprocessing.cpu_count()
+  except:  # pylint: disable=W0702
+    try:
+      # Mac OS 10.6
+      return int(os.sysconf('SC_NPROCESSORS_ONLN'))  # pylint: disable=E1101
+    except:
+      # Some of the windows builders seem to get here.
+      return 4
+
+
 def os_link(source, link_name):
   """Add support for os.link() on Windows."""
   if sys.platform == 'win32':
@@ -2053,12 +2071,55 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
       rmtree(outdir)
 
 
+class OptionParserWithLogging(optparse.OptionParser):
+  """Adds --verbose option."""
+  def __init__(self, verbose=0, log_file=None, **kwargs):
+    kwargs.setdefault('description', sys.modules['__main__'].__doc__)
+    optparse.OptionParser.__init__(self, **kwargs)
+    self.add_option(
+        '-v', '--verbose',
+        action='count',
+        default=verbose,
+        help='Use multiple times to increase verbosity')
+    self.add_option(
+        '-l', '--log_file',
+        default=log_file,
+        help='The name of the file to store rotating log details.')
+
+  def parse_args(self, *args, **kwargs):
+    options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
+    levels = [logging.ERROR, logging.INFO, logging.DEBUG]
+    level = levels[min(len(levels) - 1, options.verbose)]
+
+    logging_console = logging.StreamHandler()
+    logging_console.setFormatter(logging.Formatter(
+        '%(levelname)5s %(module)15s(%(lineno)3d): %(message)s'))
+    logging_console.setLevel(level)
+    logging.getLogger().setLevel(level)
+    logging.getLogger().addHandler(logging_console)
+
+    if options.log_file:
+      # This is necessary otherwise attached handler will miss the messages.
+      logging.getLogger().setLevel(logging.DEBUG)
+
+      logging_rotating_file = logging.handlers.RotatingFileHandler(
+          options.log_file,
+          maxBytes=10 * 1024 * 1024,
+          backupCount=5,
+          encoding='utf-8')
+      # log files are always at DEBUG level.
+      logging_rotating_file.setLevel(logging.DEBUG)
+      logging_rotating_file.setFormatter(logging.Formatter(
+          '%(asctime)s %(levelname)-8s %(module)15s(%(lineno)3d): %(message)s'))
+      logging.getLogger().addHandler(logging_rotating_file)
+
+    return options, args
+
+
 def main():
   disable_buffering()
-  parser = optparse.OptionParser(
-      usage='%prog <options>', description=sys.modules[__name__].__doc__)
-  parser.add_option(
-      '-v', '--verbose', action='count', default=0, help='Use multiple times')
+  parser = OptionParserWithLogging(
+      usage='%prog <options>', log_file=RUN_ISOLATED_LOG_FILE)
 
   group = optparse.OptionGroup(parser, 'Download')
   group.add_option(
@@ -2111,24 +2172,6 @@ def main():
   parser.add_option_group(group)
 
   options, args = parser.parse_args()
-  levels = [logging.WARNING, logging.INFO, logging.DEBUG]
-  level = levels[min(len(levels) - 1, options.verbose)]
-
-  logging_console = logging.StreamHandler()
-  logging_console.setFormatter(logging.Formatter(
-      '%(levelname)5s %(module)15s(%(lineno)3d): %(message)s'))
-  logging_console.setLevel(level)
-  logging.getLogger().addHandler(logging_console)
-
-  logging_rotating_file = logging.handlers.RotatingFileHandler(
-      RUN_ISOLATED_LOG_FILE,
-      maxBytes=10 * 1024 * 1024, backupCount=5)
-  logging_rotating_file.setLevel(logging.DEBUG)
-  logging_rotating_file.setFormatter(logging.Formatter(
-      '%(asctime)s %(levelname)-8s %(module)15s(%(lineno)3d): %(message)s'))
-  logging.getLogger().addHandler(logging_rotating_file)
-
-  logging.getLogger().setLevel(logging.DEBUG)
 
   if bool(options.isolated) == bool(options.hash):
     logging.debug('One and only one of --isolated or --hash is required.')

@@ -18,7 +18,6 @@ import urllib
 import zlib
 
 import run_isolated
-import run_test_cases
 
 
 # The minimum size of files to upload directly to the blobstore.
@@ -296,7 +295,7 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
 
   # Create a pool of workers to zip and upload any files missing from
   # the server.
-  num_threads = run_test_cases.num_processors()
+  num_threads = run_isolated.num_processors()
   zipping_pool = run_isolated.ThreadPool(min(2, num_threads),
                                          num_threads, 0, 'zip')
   remote_uploader = UploadRemote(namespace, base_url, token)

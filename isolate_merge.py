@@ -16,7 +16,7 @@ import sys
 
 from isolate import eval_content, extract_comment
 from isolate import load_isolate_as_config, print_all, union
-import run_test_cases
+import run_isolated
 
 
 def load_isolates(items):
@@ -49,8 +49,8 @@ def load_isolates(items):
 
 
 def main(args=None):
-  run_test_cases.run_isolated.disable_buffering()
-  parser = run_test_cases.OptionParserWithLogging(
+  run_isolated.disable_buffering()
+  parser = run_isolated.OptionParserWithLogging(
       usage='%prog <options> [file1] [file2] ...')
   parser.add_option(
       '-o', '--output', help='Output to file instead of stdout')
