@@ -455,8 +455,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   std::string hash = "hash";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(5);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(5);
+  EXPECT_CALL(item, AddObserver(_)).Times(6);
+  EXPECT_CALL(item, RemoveObserver(_)).Times(6);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -469,7 +469,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*signature_util_.get(), CheckSignature(a_tmp, _)).Times(5);
+  EXPECT_CALL(*signature_util_.get(), CheckSignature(a_tmp, _)).Times(6);
 
   download_service_->CheckClientDownload(
       &item,
@@ -558,6 +558,25 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
       item, &feedback_ping, &feedback_response));
   EXPECT_EQ(response.SerializeAsString(), feedback_response);
+#else
+  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+#endif
+
+  // If the response is POTENTIALLY_UNWANTED the result should also be marked as
+  // POTENTIALLY_UNWANTED.
+  response.set_verdict(ClientDownloadResponse::POTENTIALLY_UNWANTED);
+  factory.SetFakeResponse(
+      DownloadProtectionService::GetDownloadRequestUrl(),
+      response.SerializeAsString(),
+      true);
+
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+#if defined(OS_WIN)
+  EXPECT_TRUE(IsResult(DownloadProtectionService::POTENTIALLY_UNWANTED));
 #else
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 #endif

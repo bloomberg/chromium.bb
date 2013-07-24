@@ -111,6 +111,7 @@ const int DownloadDatabase::kDangerTypeMaybeDangerousContent = 4;
 const int DownloadDatabase::kDangerTypeUncommonContent = 5;
 const int DownloadDatabase::kDangerTypeUserValidated = 6;
 const int DownloadDatabase::kDangerTypeDangerousHost = 7;
+const int DownloadDatabase::kDangerTypePotentiallyUnwanted = 8;
 
 int DownloadDatabase::StateToInt(DownloadItem::DownloadState state) {
   switch (state) {
@@ -156,6 +157,8 @@ int DownloadDatabase::DangerTypeToInt(content::DownloadDangerType danger_type) {
       return DownloadDatabase::kDangerTypeUserValidated;
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
       return DownloadDatabase::kDangerTypeDangerousHost;
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+      return DownloadDatabase::kDangerTypePotentiallyUnwanted;
     case content::DOWNLOAD_DANGER_TYPE_MAX:
       NOTREACHED();
       return DownloadDatabase::kDangerTypeInvalid;
@@ -182,6 +185,8 @@ content::DownloadDangerType DownloadDatabase::IntToDangerType(int danger_type) {
       return content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
     case DownloadDatabase::kDangerTypeDangerousHost:
       return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST;
+    case DownloadDatabase::kDangerTypePotentiallyUnwanted:
+      return content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED;
     default:
       return content::DOWNLOAD_DANGER_TYPE_MAX;
   }

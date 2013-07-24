@@ -15468,6 +15468,7 @@ other types of suffix sets.
   <int value="5" label="UNCOMMON_CONTENT"/>
   <int value="6" label="USER_VALIDATED"/>
   <int value="7" label="DANGEROUS_HOST"/>
+  <int value="8" label="POTENTIALLY_UNWANTED"/>
 </enum>
 
 <enum name="DownloadSavePackageEvent" type="int">

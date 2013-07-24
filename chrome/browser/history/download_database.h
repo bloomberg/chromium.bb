@@ -94,6 +94,7 @@ class DownloadDatabase {
   static const int kDangerTypeUncommonContent;
   static const int kDangerTypeUserValidated;
   static const int kDangerTypeDangerousHost;
+  static const int kDangerTypePotentiallyUnwanted;
 
   // Fixes state of the download entries. Sometimes entries with IN_PROGRESS
   // state are not updated during browser shutdown (particularly when crashing).

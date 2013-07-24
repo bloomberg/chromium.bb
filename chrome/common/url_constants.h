@@ -389,6 +389,10 @@ extern const char kSyncLearnMoreURL[];
 // The URL for the "Learn more" page for download scanning.
 extern const char kDownloadScanningLearnMoreURL[];
 
+// The URL for the "Learn more" page for downloads flagged as potentially
+// unwanted by the SafeBrowsing service.
+extern const char kDownloadPotentiallyUnwantedLearnMoreURL[];
+
 // The URL for the "Learn more" page for interrupted downloads.
 extern const char kDownloadInterruptedLearnMoreURL[];
 

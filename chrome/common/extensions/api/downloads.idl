@@ -76,12 +76,15 @@ namespace downloads {
   //     <dt>host</dt>
   //     <dd>The download came from a host known to distribute malicious
   //     binaries and is likely dangerous.</dd>
+  //     <dt>unwanted</dt>
+  //     <dd>The download is potentially unwanted or unsafe. E.g. it could make
+  //     changes to browser or system settings.</dd>
   //     <dt>safe</dt>
   //     <dd>The download presents no known danger to the user's computer.</dd>
   //     <dt>accepted</dt>
   //     <dd>The user has accepted the dangerous download.</dd>
   // </dl>
-  enum DangerType {file, url, content, uncommon, host, safe, accepted};
+  enum DangerType {file, url, content, uncommon, host, unwanted, safe, accepted};
 
   // <dl><dt>in_progress</dt>
   //     <dd>The download is currently receiving data from the server.</dd>

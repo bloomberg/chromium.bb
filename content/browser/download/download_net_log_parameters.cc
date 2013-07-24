@@ -31,6 +31,7 @@ static const char* download_danger_names[] = {
   "UNCOMMON_CONTENT",
   "USER_VALIDATED",
   "DANGEROUS_HOST",
+  "POTENTIALLY_UNWANTED"
 };
 
 COMPILE_ASSERT(ARRAYSIZE_UNSAFE(download_type_names) == SRC_SAVE_PAGE_AS + 1,

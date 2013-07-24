@@ -1085,13 +1085,24 @@ void DownloadItemView::ShowWarningDialog() {
   AddChildView(discard_button_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  // The dangerous download label text and icon are different under
-  // different cases.
-  if (mode_ == MALICIOUS_MODE) {
-    warning_icon_ = rb.GetImageSkiaNamed(IDR_SAFEBROWSING_WARNING);
-  } else {
-    // The download file has dangerous file type (e.g.: an executable).
-    warning_icon_ = rb.GetImageSkiaNamed(IDR_WARNING);
+  switch (download()->GetDangerType()) {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+      warning_icon_ = rb.GetImageSkiaNamed(IDR_SAFEBROWSING_WARNING);
+      break;
+
+    case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
+    case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
+    case content::DOWNLOAD_DANGER_TYPE_MAX:
+      NOTREACHED();
+      // fallthrough
+
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+      warning_icon_ = rb.GetImageSkiaNamed(IDR_WARNING);
   }
   string16 dangerous_label = model_.GetWarningText(font_, kTextWidth);
   dangerous_download_label_ = new views::Label(dangerous_label);

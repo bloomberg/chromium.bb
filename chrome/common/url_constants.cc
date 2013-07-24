@@ -466,6 +466,9 @@ const char kSyncLearnMoreURL[] =
 const char kDownloadScanningLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ib_download_scan";
 
+const char kDownloadPotentiallyUnwantedLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=ui_protect_settings";
+
 const char kDownloadInterruptedLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_download_errors";
 

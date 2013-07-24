@@ -1825,7 +1825,8 @@ EVENT_TYPE(DOWNLOAD_URL_REQUEST)
 //                     the filename specified in the final URL>,
 //     "danger_type": <NOT_DANGEROUS, DANGEROUS_FILE, DANGEROUS_URL,
 //                     DANGEROUS_CONTENT, MAYBE_DANGEROUS_CONTENT,
-//                     UNCOMMON_CONTENT, USER_VALIDATED, DANGEROUS_HOST>,
+//                     UNCOMMON_CONTENT, USER_VALIDATED, DANGEROUS_HOST,
+//                     POTENTIALLY_UNWANTED>,
 //     "start_offset": <Where to start writing (defaults to 0)>,
 //     "has_user_gesture": <Whether or not we think the user initiated
 //                          the download>

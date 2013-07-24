@@ -301,6 +301,8 @@ string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
                                            int base_width) const {
   // Should only be called if IsDangerous().
   DCHECK(IsDangerous());
+  string16 elided_filename =
+      ui::ElideFilename(download_->GetFileNameToReportUser(), font, base_width);
   switch (download_->GetDangerType()) {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
       return l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
@@ -310,31 +312,30 @@ string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
         return l10n_util::GetStringUTF16(
             IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
       } else {
-        return l10n_util::GetStringFUTF16(
-            IDS_PROMPT_DANGEROUS_DOWNLOAD,
-            ui::ElideFilename(download_->GetFileNameToReportUser(),
-                              font, base_width));
+        return l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD,
+                                          elided_filename);
       }
 
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-      return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
-          ui::ElideFilename(download_->GetFileNameToReportUser(),
-                            font, base_width));
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+                                        elided_filename);
 
     case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT,
+                                        elided_filename);
+
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT,
-          ui::ElideFilename(download_->GetFileNameToReportUser(),
-                            font, base_width));
+          IDS_PROMPT_POTENTIALLY_UNWANTED_DOWNLOAD, elided_filename);
 
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
     case content::DOWNLOAD_DANGER_TYPE_MAX:
-      NOTREACHED();
+      break;
   }
+  NOTREACHED();
   return string16();
 }
 
@@ -378,6 +379,7 @@ bool DownloadItemModel::IsMalicious() const {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return true;
 
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:

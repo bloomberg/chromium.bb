@@ -386,7 +386,8 @@ Download.DangerType = {
   DANGEROUS_URL: 'DANGEROUS_URL',
   DANGEROUS_CONTENT: 'DANGEROUS_CONTENT',
   UNCOMMON_CONTENT: 'UNCOMMON_CONTENT',
-  DANGEROUS_HOST: 'DANGEROUS_HOST'
+  DANGEROUS_HOST: 'DANGEROUS_HOST',
+  POTENTIALLY_UNWANTED: 'POTENTIALLY_UNWANTED',
 };
 
 /**
@@ -442,6 +443,9 @@ Download.prototype.update = function(download) {
     } else if (this.dangerType_ == Download.DangerType.UNCOMMON_CONTENT) {
       this.dangerDesc_.textContent = loadTimeData.getStringF(
           'danger_uncommon_desc', this.fileName_);
+    } else if (this.dangerType_ == Download.DangerType.POTENTIALLY_UNWANTED) {
+      this.dangerDesc_.textContent = loadTimeData.getStringF(
+          'danger_potentially_unwanted_desc', this.fileName_);
     }
     this.danger_.style.display = 'block';
     this.safe_.style.display = 'none';
