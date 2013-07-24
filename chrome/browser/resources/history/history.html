@@ -62,6 +62,12 @@
 <body i18n-values=".style.fontFamily:fontfamily">
 </if>
 
+<if expr="not is_android and not pp_ifdef('ios')">
+<div id="overlay" class="overlay" hidden>
+  <include src="alert_overlay.html">
+</div>
+</if>
+
 <div id="history-page" class="page">
   <header>
     <h1 i18n-content="history"></h1>
@@ -139,11 +145,5 @@
 
 <script src="chrome://history-frame/strings.js"></script>
 <script src="chrome://resources/js/i18n_template2.js"></script>
-
-<if expr="not is_android and not pp_ifdef('ios')">
-<div id="overlay" class="overlay" hidden>
-    <include src="alert_overlay.html">
-</div>
-</if>
 </body>
 </html>

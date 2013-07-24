@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 <include src="../uber/uber_utils.js">
+<include src="history_focus_manager.js">
 
 ///////////////////////////////////////////////////////////////////////////////
 // Globals:
@@ -1487,6 +1488,7 @@ function load() {
     cr.ui.overlay.setupOverlay($('overlay'));
     cr.ui.overlay.globalInitialization();
   }
+  HistoryFocusManager.getInstance().initialize();
 
   var doSearch = function(e) {
     recordUmaAction('HistoryPage_Search');
