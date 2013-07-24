@@ -181,8 +181,7 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
           new DragWindowController(GetTarget()));
       // Always show the drag phantom on the |another_root| window.
       drag_window_controller_->SetDestinationDisplay(
-          Shell::GetScreen()->GetDisplayMatching(
-              another_root->GetBoundsInScreen()));
+          Shell::GetScreen()->GetDisplayNearestWindow(another_root));
       drag_window_controller_->Show();
     } else {
       // No animation.
