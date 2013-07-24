@@ -389,6 +389,7 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
     bool success =
         base::mac::OpenApplicationWithPath(info->chrome_outer_bundle_path,
                                            command_line,
+                                           kLSLaunchDefaults,
                                            &psn);
     if (!success)
       return 1;

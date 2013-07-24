@@ -214,8 +214,10 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
   handler_->OnShimLaunch(&host_bb_, normal_launch);
   EXPECT_EQ(&host_bb_, handler_->FindHost(&profile_b_, kTestAppIdB));
 
-  // Activation when there is a registered shim finishes launch with success.
+  // Activation when there is a registered shim finishes launch with success and
+  // focuses the app.
   EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
+  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_NORMAL));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
 
   // Starting and closing a second host just focuses the app.

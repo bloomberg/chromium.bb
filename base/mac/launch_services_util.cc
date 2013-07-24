@@ -4,8 +4,6 @@
 
 #include "base/mac/launch_services_util.h"
 
-#include <ApplicationServices/ApplicationServices.h>
-
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
@@ -16,6 +14,7 @@ namespace mac {
 
 bool OpenApplicationWithPath(const base::FilePath& bundle_path,
                              const CommandLine& command_line,
+                             LSLaunchFlags launch_flags,
                              ProcessSerialNumber* out_psn) {
   FSRef app_fsref;
   if (!base::mac::FSRefFromPath(bundle_path.value(), &app_fsref)) {
@@ -45,7 +44,7 @@ bool OpenApplicationWithPath(const base::FilePath& bundle_path,
 
   LSApplicationParameters ls_parameters = {
     0,     // version
-    kLSLaunchDefaults,
+    launch_flags,
     &app_fsref,
     NULL,  // asyncLaunchRefCon
     NULL,  // environment

@@ -347,6 +347,7 @@ void ExtensionAppShimHandler::OnAppActivated(Profile* profile,
   HostMap::iterator it = hosts_.find(make_pair(profile, app_id));
   if (it != hosts_.end()) {
     it->second->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
+    OnShimFocus(it->second, APP_SHIM_FOCUS_NORMAL);
     return;
   }
 

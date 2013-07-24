@@ -185,7 +185,9 @@ void LaunchShimOnFileThread(
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(app_mode::kNoLaunchApp);
-  base::mac::OpenApplicationWithPath(shim_path, command_line, NULL);
+  // Launch without activating (kLSLaunchDontSwitch).
+  base::mac::OpenApplicationWithPath(
+      shim_path, command_line, kLSLaunchDefaults | kLSLaunchDontSwitch, NULL);
 }
 
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
