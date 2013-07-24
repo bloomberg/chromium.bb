@@ -29,8 +29,6 @@
 #include "core/platform/HashTools.h"
 #include "wtf/text/WTFString.h"
 
-using namespace std;
-
 namespace WebCore {
 
 StyleColor::StyleColor(const String& name)
