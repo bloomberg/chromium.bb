@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
           text run at (0,16) width 296: ".two {border-top: purple thin solid;}"
           text run at (296,16) width 0: " "
           text run at (0,32) width 0: " "
-      RenderBlock {HR} at (0,97) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,97) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,115) size 784x60 [bgcolor=#C0C0C0]
         RenderText {#text} at (0,0) size 627x19
           text run at (0,0) width 627: "This is an unstyled element, save for the background color, and containing inline elements with classes of "

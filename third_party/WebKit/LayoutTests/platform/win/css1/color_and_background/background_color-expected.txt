@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
           text run at (0,32) width 296: ".two {background-color: transparent;}"
           text run at (296,32) width 0: " "
           text run at (0,48) width 0: " "
-      RenderBlock {HR} at (0,113) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,113) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,131) size 784x20 [bgcolor=#008000]
         RenderText {#text} at (0,0) size 263x19
           text run at (0,0) width 263: "This element's background should be green."

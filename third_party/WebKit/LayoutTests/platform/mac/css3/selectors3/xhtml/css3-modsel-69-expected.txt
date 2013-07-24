@@ -11,7 +11,7 @@ layer at (0,0) size 800x81
         RenderText {#text} at (246,3) size 5x18
           text run at (246,3) width 5: " "
         RenderBR {br} at (0,0) size 0x0
-        RenderTextControl {input} at (2,28) size 203x19 [bgcolor=#00FF00] [border: (2px inset #000000)]
+        RenderTextControl {input} at (2,28) size 203x19 [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
 layer at (13,47) size 197x13 scrollWidth 238
   RenderBlock {div} at (3,3) size 197x13

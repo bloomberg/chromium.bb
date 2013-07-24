@@ -32,7 +32,7 @@ layer at (0,0) size 785x4402
           text run at (301,150) width 0: " "
           text run at (0,165) width 266: "SPAN.color {background-color: silver;}"
           text run at (266,165) width 0: " "
-      RenderBlock {HR} at (0,220) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,220) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,234) size 769x16
         RenderText {#text} at (0,0) size 721x15
           text run at (0,0) width 431: "This element is unstyled, and should inherit a font-size of 12px from the BODY element. "

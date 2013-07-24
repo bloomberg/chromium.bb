@@ -29,7 +29,7 @@ layer at (0,0) size 785x1105
           text run at (0,144) width 200: "B {font-weight: lighter;}"
           text run at (200,144) width 0: " "
           text run at (0,160) width 0: " "
-      RenderBlock {HR} at (0,225) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,225) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,243) size 769x20
         RenderText {#text} at (0,0) size 195x19
           text run at (0,0) width 195: "This sentence should be bold."

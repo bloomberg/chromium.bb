@@ -37,7 +37,7 @@ layer at (0,0) size 785x921
           text run at (0,208) width 176: ".eight {color: green;}"
           text run at (176,208) width 0: " "
           text run at (0,224) width 0: " "
-      RenderBlock {HR} at (0,289) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,289) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,307) size 769x20 [color=#008000]
         RenderText {#text} at (0,0) size 184x19
           text run at (0,0) width 184: "This sentence should be green."

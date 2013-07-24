@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
           text run at (0,48) width 224: ".four {text-align: justify;}"
           text run at (224,48) width 0: " "
           text run at (0,64) width 0: " "
-      RenderBlock {HR} at (0,129) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,129) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,147) size 784x20
         RenderText {#text} at (0,0) size 221x19
           text run at (0,0) width 221: "This sentence should be left-justified."

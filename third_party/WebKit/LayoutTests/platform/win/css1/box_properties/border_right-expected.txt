@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
           text run at (0,32) width 312: ".two {border-right: purple thin solid;}"
           text run at (312,32) width 0: " "
           text run at (0,48) width 0: " "
-      RenderBlock {HR} at (0,113) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,113) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,131) size 764x60 [bgcolor=#C0C0C0]
         RenderText {#text} at (0,0) size 731x19
           text run at (0,0) width 731: "This paragraph has a background color of silver and a 20-pixel right margin, and it contains inline elements with classes of "

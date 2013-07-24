@@ -42,7 +42,7 @@ layer at (0,0) size 785x4501
           text run at (0,256) width 280: ".midalign {vertical-align: middle;}"
           text run at (280,256) width 0: " "
           text run at (0,272) width 0: " "
-      RenderBlock {HR} at (0,337) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,337) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,355) size 769x79
         RenderImage {IMG} at (0,0) size 15x50
         RenderInline {SPAN} at (0,0) size 119x19

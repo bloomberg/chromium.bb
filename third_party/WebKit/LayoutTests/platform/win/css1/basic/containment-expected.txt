@@ -28,7 +28,7 @@ layer at (0,0) size 785x1009
           text run at (168,128) width 0: " "
           text run at (0,144) width 24: "-->"
           text run at (24,144) width 0: " "
-      RenderBlock {HR} at (0,209) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,209) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,227) size 769x20
         RenderText {#text} at (0,0) size 383x19
           text run at (0,0) width 383: "This sentence should be underlined due to the linked style sheet "

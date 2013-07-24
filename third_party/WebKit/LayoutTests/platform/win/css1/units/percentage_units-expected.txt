@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
           text run at (0,48) width 208: ".three {margin-left: 25%;}"
           text run at (208,48) width 0: " "
           text run at (0,64) width 0: " "
-      RenderBlock {HR} at (0,129) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,129) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {DIV} at (0,147) size 784x116 [bgcolor=#FFFF00]
         RenderBlock {DIV} at (196,0) size 392x40 [bgcolor=#FFFFFF]
           RenderBlock {P} at (0,0) size 392x40

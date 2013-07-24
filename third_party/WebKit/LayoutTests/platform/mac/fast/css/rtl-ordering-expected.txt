@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
             text run at (0,18) width 371 LTR override: "type=\"button\"> text is reversed on \"visual Hebrew\" pages"
         RenderText {#text} at (371,18) size 4x18
           text run at (371,18) width 4 LTR override: "."
-      RenderBlock {HR} at (0,52) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,70) size 784x19
         RenderText {#text} at (0,1) size 304x18
           text run at (0,1) width 304 LTR override: "The text on both buttons should like this: \x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
@@ -32,7 +32,7 @@ layer at (0,0) size 800x600
             RenderText {#text} at (0,0) size 30x13
               text run at (0,0) width 30 RTL: "\x{5DB}\x{5E4}\x{5EA}\x{5D5}\x{5E8}"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,157) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,157) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,175) size 784x18
         RenderText {#text} at (0,0) size 249x18
           text run at (0,0) width 249 LTR override: "The following lines should be identical:"

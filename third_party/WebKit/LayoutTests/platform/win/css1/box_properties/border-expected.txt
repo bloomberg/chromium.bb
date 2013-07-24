@@ -26,7 +26,7 @@ layer at (0,0) size 785x1395
           text run at (168,112) width 0: " "
           text run at (0,128) width 232: "TD {border: 2px solid green;}"
           text run at (232,128) width 0: " "
-      RenderBlock {HR} at (0,193) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,193) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,211) size 769x40
         RenderText {#text} at (0,0) size 758x39
           text run at (0,0) width 597: "Note that all table cells on this page should have a two-pixel solid green border along all four sides. "

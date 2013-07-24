@@ -30,7 +30,7 @@ layer at (0,0) size 785x1378
           text run at (224,135) width 0: " "
           text run at (0,150) width 264: ".eleven {letter-spacing: -0.1em;}"
           text run at (264,150) width 0: " "
-      RenderBlock {HR} at (0,212) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,212) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,230) size 769x72
         RenderText {#text} at (0,0) size 710x72
           text run at (0,0) width 687: "This letters in this"

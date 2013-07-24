@@ -18,7 +18,7 @@ layer at (0,0) size 785x873
           text run at (272,48) width 0: " "
           text run at (0,64) width 152: "I {display: block;}"
           text run at (152,64) width 0: " "
-      RenderBlock {HR} at (0,129) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,129) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,147) size 769x20
         RenderText {#text} at (0,0) size 279x19
           text run at (0,0) width 279: "This sentence should be a block-level element."

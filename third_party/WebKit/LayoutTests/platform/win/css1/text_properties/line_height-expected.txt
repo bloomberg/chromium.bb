@@ -36,7 +36,7 @@ layer at (0,0) size 785x2649
           text run at (248,192) width 0: " "
           text run at (0,208) width 304: "SPAN.color {background-color: silver;}"
           text run at (304,208) width 0: " "
-      RenderBlock {HR} at (0,273) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,273) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,287) size 769x48
         RenderText {#text} at (0,16) size 511x15
           text run at (0,16) width 511: "This sentence should have a line-height of half an inch, which should cause extra spacing between the lines."

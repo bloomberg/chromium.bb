@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
           text run at (0,16) width 240: ".one {background-image: none;}"
           text run at (240,16) width 0: " "
           text run at (0,32) width 0: " "
-      RenderBlock {HR} at (0,97) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,97) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,115) size 784x40
         RenderText {#text} at (0,0) size 779x39
           text run at (0,0) width 482: "This sentence should be backed by an image-- a green grid pattern, in this case. "

@@ -29,7 +29,7 @@ layer at (0,0) size 785x1329
           text run at (0,144) width 384: "blockquote {text-indent: 50%; background: aqua;}"
           text run at (384,144) width 0: " "
           text run at (0,160) width 0: " "
-      RenderBlock {HR} at (0,225) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,225) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,243) size 769x20 [bgcolor=#00FFFF]
         RenderText {#text} at (48,0) size 361x19
           text run at (48,0) width 361: "The first line of this sentence should be indented half an inch."

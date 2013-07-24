@@ -14,7 +14,7 @@ layer at (0,0) size 785x729
           text run at (352,16) width 0: " "
           text run at (0,32) width 360: ".two {margin: -10px; background-color: aqua;}"
           text run at (360,32) width 0: " "
-      RenderBlock {HR} at (0,97) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,97) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,107) size 769x20 [bgcolor=#C0C0C0]
         RenderText {#text} at (0,0) size 193x19
           text run at (0,0) width 193: "This element has a class of zero."

@@ -23,7 +23,7 @@ layer at (0,0) size 785x1205
           text run at (0,96) width 464: ".seven {text-decoration: underline overline line-through;}"
           text run at (464,96) width 0: " "
           text run at (0,112) width 0: " "
-      RenderBlock {HR} at (0,177) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,177) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,195) size 769x20
         RenderText {#text} at (0,0) size 213x19
           text run at (0,0) width 213: "This sentence should be underlined."

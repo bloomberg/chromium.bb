@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
           text run at (240,0) width 0: " "
           text run at (0,16) width 552: "BODY {background-color: green; background-image: none; margin: 25px;}"
           text run at (552,16) width 0: " "
-      RenderBlock {HR} at (0,81) size 750x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,81) size 750x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,99) size 750x60
         RenderText {#text} at (0,0) size 735x59
           text run at (0,0) width 368: "The body of this document should have a green background. "

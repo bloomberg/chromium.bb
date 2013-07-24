@@ -31,7 +31,7 @@ layer at (0,0) size 785x997
           text run at (0,150) width 248: ".eleven {word-spacing: -0.2em;}"
           text run at (248,150) width 0: " "
           text run at (0,165) width 0: " "
-      RenderBlock {HR} at (0,227) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,227) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,245) size 769x18
         RenderText {#text} at (0,0) size 709x18
           text run at (0,0) width 709: "This words in this sentence should have extra space between them."

@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           RenderText {#text} at (0,0) size 212x19
             text run at (0,0) width 212: "This should turn red when hovered."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,28) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,28) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,46) size 784x40
         RenderText {#text} at (0,0) size 51x19
           text run at (0,0) width 51: "Test for "

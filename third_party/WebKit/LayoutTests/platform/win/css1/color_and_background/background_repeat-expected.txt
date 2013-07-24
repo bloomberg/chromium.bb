@@ -37,7 +37,7 @@ layer at (0,0) size 785x1993
           text run at (0,208) width 240: "       background-color: red;}"
           text run at (240,208) width 0: " "
           text run at (0,224) width 0: " "
-      RenderBlock {HR} at (0,289) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,289) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,307) size 769x60
         RenderText {#text} at (0,0) size 744x19
           text run at (0,0) width 744: "This sentence should have an orange stripe repeated in the \"y\" direction, starting at the upper left corner (since the default for"

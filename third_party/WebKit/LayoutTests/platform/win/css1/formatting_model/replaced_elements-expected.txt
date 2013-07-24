@@ -24,7 +24,7 @@ layer at (0,0) size 785x2379
           text run at (200,96) width 0: " "
           text run at (0,112) width 464: "          margin-right: 0; margin-left: auto; width: 50%;}"
           text run at (464,112) width 0: " "
-      RenderBlock {HR} at (0,177) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,177) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,195) size 769x20
         RenderImage {IMG} at (0,0) size 15x15
         RenderText {#text} at (15,0) size 411x19

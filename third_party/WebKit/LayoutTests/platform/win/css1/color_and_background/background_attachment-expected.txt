@@ -11,7 +11,7 @@ layer at (0,0) size 785x1259
           text run at (0,0) width 872: "BODY {background-image: url(../resources/bg.gif); background-repeat: repeat-x; background-attachment: fixed;}"
           text run at (872,0) width 0: " "
           text run at (0,16) width 0: " "
-      RenderBlock {HR} at (0,81) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,81) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,99) size 769x100
         RenderText {#text} at (0,0) size 769x99
           text run at (0,0) width 768: "This document should have a green grid-pattern line across the top of the page (or at least a tiled background) which does NOT"
@@ -27,8 +27,8 @@ layer at (0,0) size 785x1259
         RenderText {#text} at (0,0) size 484x19
           text run at (0,0) width 397: "In fact, why not the relevant section from the CSS1 specification? "
           text run at (397,0) width 87: "A capital idea."
-      RenderBlock {HR} at (0,251) size 769x2 [border: (1px inset #000000)]
-      RenderBlock {HR} at (0,261) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,251) size 769x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {HR} at (0,261) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H4} at (0,284) size 769x21
         RenderInline {A} at (0,0) size 213x19
           RenderText {#text} at (0,0) size 213x19
@@ -115,8 +115,8 @@ layer at (0,0) size 785x1259
                 RenderText {#text} at (0,0) size 484x19
                   text run at (0,0) width 397: "In fact, why not the relevant section from the CSS1 specification? "
                   text run at (397,0) width 87: "A capital idea."
-              RenderBlock {HR} at (4,156) size 747x2 [border: (1px inset #000000)]
-              RenderBlock {HR} at (4,166) size 747x2 [border: (1px inset #000000)]
+              RenderBlock {HR} at (4,156) size 747x2 [border: (1px inset #EEEEEE)]
+              RenderBlock {HR} at (4,166) size 747x2 [border: (1px inset #EEEEEE)]
               RenderBlock {H4} at (4,189) size 747x21
                 RenderInline {A} at (0,0) size 213x19
                   RenderText {#text} at (0,0) size 213x19

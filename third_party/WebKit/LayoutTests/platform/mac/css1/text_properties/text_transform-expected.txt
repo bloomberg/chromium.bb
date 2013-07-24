@@ -17,7 +17,7 @@ layer at (0,0) size 785x732
           text run at (0,45) width 264: ".low {text-transform: lowercase;}"
           text run at (264,45) width 0: " "
           text run at (0,60) width 0: " "
-      RenderBlock {HR} at (0,122) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,122) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,140) size 769x36
         RenderText {#text} at (0,0) size 718x36
           text run at (0,0) width 718: "This page tests the 'text-transform' property of CSS1. This paragraph has no text transformation and should appear"

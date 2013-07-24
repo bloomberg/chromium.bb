@@ -8,7 +8,7 @@ layer at (0,0) size 785x2368
           text run at (0,0) width 538: "Test of objects that avoid floats to see what they do with percentage and auto widths. "
           text run at (538,0) width 227: "This test is designed to illustrate that"
           text run at (0,18) width 447: "we have removed the WinIE quirk and are behaving more like Firefox."
-      RenderBlock {HR} at (0,44) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,44) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,54) size 769x18
         RenderText {#text} at (0,0) size 507x18
           text run at (0,0) width 507: "The inline-level button should be below the select and fill the width of the block."
@@ -249,7 +249,7 @@ layer at (0,0) size 785x2368
             RenderText at (8,2) size 22x13
               text run at (8,2) width 22: "One"
         RenderText {#text} at (0,0) size 0x0
-        RenderBlock (floating) {HR} at (112,30) size 82x2 [border: (1px inset #000000)]
+        RenderBlock (floating) {HR} at (112,30) size 82x2 [border: (1px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
         RenderBR {BR} at (196,28) size 0x18
       RenderBlock (anonymous) at (0,2058) size 769x36
@@ -265,7 +265,7 @@ layer at (0,0) size 785x2368
             RenderText at (8,2) size 22x13
               text run at (8,2) width 22: "One"
         RenderText {#text} at (0,0) size 0x0
-        RenderBlock (floating) {HR} at (112,30) size 2x2 [border: (1px inset #000000)]
+        RenderBlock (floating) {HR} at (112,30) size 2x2 [border: (1px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
         RenderBR {BR} at (116,28) size 0x18
       RenderBlock (anonymous) at (0,2154) size 769x18
@@ -281,7 +281,7 @@ layer at (0,0) size 785x2368
               RenderText at (8,2) size 22x13
                 text run at (8,2) width 22: "One"
           RenderText {#text} at (0,0) size 0x0
-        RenderBlock {HR} at (10,50) size 202x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (10,50) size 202x2 [border: (1px inset #EEEEEE)]
         RenderBlock (anonymous) at (10,60) size 200x18
           RenderBR {BR} at (0,0) size 0x18
       RenderBlock (anonymous) at (0,2260) size 769x18
@@ -298,7 +298,7 @@ layer at (0,0) size 785x2368
               RenderText at (8,2) size 22x13
                 text run at (8,2) width 22: "One"
           RenderText {#text} at (0,0) size 0x0
-        RenderBlock {HR} at (110,36) size 100x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (110,36) size 100x2 [border: (1px inset #EEEEEE)]
         RenderBlock (anonymous) at (10,46) size 200x18
           RenderBR {BR} at (100,0) size 0x18
 layer at (118,1338) size 100x108

@@ -35,7 +35,7 @@ layer at (0,0) size 800x600
         RenderBlock (anonymous) at (0,0) size 784x20
           RenderText {#text} at (0,0) size 20x19
             text run at (0,0) width 20: "foo"
-        RenderBlock {HR} at (0,28) size 784x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,28) size 784x2 [border: (1px inset #EEEEEE)]
         RenderBlock (anonymous) at (0,38) size 784x20
           RenderText {#text} at (0,0) size 20x19
             text run at (0,0) width 20: "bar"

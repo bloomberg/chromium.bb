@@ -20,7 +20,7 @@ layer at (0,0) size 785x1057
           text run at (552,64) width 0: " "
           text run at (0,80) width 416: ".five {margin-right: -10px; background-color: aqua;}"
           text run at (416,80) width 0: " "
-      RenderBlock {HR} at (0,145) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,145) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,163) size 769x20 [bgcolor=#C0C0C0]
         RenderText {#text} at (576,0) size 193x19
           text run at (576,0) width 193: "This element has a class of zero."

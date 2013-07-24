@@ -14,7 +14,7 @@ layer at (0,0) size 785x1391
           text run at (144,16) width 0: " "
           text run at (0,32) width 152: "TABLE {width: 50%;}"
           text run at (152,32) width 0: " "
-      RenderBlock {HR} at (0,97) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,97) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,107) size 769x50
         RenderImage {IMG} at (0,0) size 50x50
         RenderText {#text} at (0,0) size 0x0

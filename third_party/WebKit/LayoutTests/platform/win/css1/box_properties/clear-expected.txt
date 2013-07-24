@@ -16,7 +16,7 @@ layer at (0,0) size 785x1005
           text run at (168,32) width 0: " "
           text run at (0,48) width 160: ".four {clear: none;}"
           text run at (160,48) width 0: " "
-      RenderBlock {HR} at (0,113) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,113) size 769x2 [border: (1px inset #EEEEEE)]
       RenderImage {IMG} at (0,123) size 15x50
       RenderBlock {P} at (0,131) size 769x20
         RenderText {#text} at (18,0) size 563x19

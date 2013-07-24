@@ -25,7 +25,7 @@ layer at (0,0) size 785x1915
           text run at (0,112) width 400: "#img5 {margin-right: -30px; margin-bottom: -30px;}"
           text run at (400,112) width 0: " "
           text run at (0,128) width 0: " "
-      RenderBlock {HR} at (0,193) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,193) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (30,215) size 729x92 [bgcolor=#FFFFFF]
         RenderText {#text} at (0,0) size 719x91
           text run at (0,0) width 719: "This paragraph should have a white background which extends to the edges of the element's"

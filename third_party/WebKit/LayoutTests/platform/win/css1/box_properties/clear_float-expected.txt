@@ -24,7 +24,7 @@ layer at (0,0) size 785x826
           text run at (0,112) width 480: "             color: black; background: yellow; clear: none;}"
           text run at (480,112) width 0: " "
           text run at (0,128) width 0: " "
-      RenderBlock {HR} at (0,190) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,190) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (floating) {DIV} at (0,200) size 192x126 [color=#FFFFFF] [bgcolor=#008000]
         RenderBlock {H1} at (8,8) size 176x23
           RenderText {#text} at (0,0) size 82x22

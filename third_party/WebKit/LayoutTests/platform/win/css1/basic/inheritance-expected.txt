@@ -22,7 +22,7 @@ layer at (0,0) size 785x768
           text run at (152,80) width 0: " "
           text run at (0,96) width 184: ".three {color: purple;}"
           text run at (184,96) width 0: " "
-      RenderBlock {HR} at (0,161) size 769x2 [border: (1px inset #008000)]
+      RenderBlock {HR} at (0,161) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,181) size 769x25 [color=#0000FF]
         RenderText {#text} at (0,0) size 221x22
           text run at (0,0) width 221: "This sentence should show "

@@ -479,7 +479,7 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 333x18
           text run at (0,0) width 333: "This tests to see if spaces are lost during a copy/paste"
-      RenderBlock {HR} at (0,34) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {DIV} at (0,44) size 784x198
         RenderBlock (anonymous) at (0,0) size 784x18
           RenderText {#text} at (0,0) size 20x18

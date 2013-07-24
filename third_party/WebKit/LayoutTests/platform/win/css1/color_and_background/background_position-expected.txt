@@ -41,7 +41,7 @@ layer at (0,0) size 785x1533
           text run at (0,240) width 488: "       background-repeat: no-repeat; background-color: aqua;}"
           text run at (488,240) width 0: " "
           text run at (0,256) width 0: " "
-      RenderBlock {HR} at (0,321) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,321) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,339) size 769x20
         RenderText {#text} at (0,0) size 472x19
           text run at (0,0) width 472: "This document should have a single, small green image in its upper right corner."

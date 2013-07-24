@@ -29,7 +29,7 @@ layer at (0,0) size 785x849
           text run at (0,144) width 296: ".one {text-decoration: line-through;}"
           text run at (296,144) width 0: " "
           text run at (0,160) width 0: " "
-      RenderBlock {HR} at (0,225) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,225) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {UL} at (0,243) size 769x160
         RenderListItem {LI} at (40,0) size 729x20 [color=#0000FF]
           RenderListMarker at (-18,0) size 7x19: bullet
