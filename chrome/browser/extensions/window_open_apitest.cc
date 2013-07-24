@@ -328,15 +328,10 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
   EXPECT_TRUE(WaitForTabsAndPopups(browser(), 1, num_popups, 0));
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(derat): See if there's some way to get this to work on Chrome OS.  It
-// crashes there, apparently because we automatically reload crashed pages:
-// http:/crbug.com/161073
-#define MAYBE_ClosePanelsOnExtensionCrash DISABLED_ClosePanelsOnExtensionCrash
-#else
-#define MAYBE_ClosePanelsOnExtensionCrash ClosePanelsOnExtensionCrash
-#endif
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_ClosePanelsOnExtensionCrash) {
+// This test isn't applicable on Chrome OS, which automatically reloads
+// crashed pages.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, ClosePanelsOnExtensionCrash) {
 #if defined(USE_ASH_PANELS)
   // On Ash, new panel windows open as popup windows instead.
   int num_popups = 4;
@@ -386,6 +381,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_ClosePanelsOnExtensionCrash) {
   // Only expect panels to close. The rest stay open to show a sad-tab.
   EXPECT_TRUE(WaitForTabsAndPopups(browser(), 2, num_popups, 0));
 }
+#endif  // !defined(OS_CHROMEOS)
 
 #if defined(USE_ASH_PANELS)
 // This test is not applicable on Ash. The modified window.open behavior only
