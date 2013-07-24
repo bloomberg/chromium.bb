@@ -53,14 +53,11 @@ function populateLists(data) {
   removeChildren('pages');
   removeChildren('extensions');
   removeChildren('apps');
-  removeChildren('workers');
   removeChildren('others');
 
   for (var i = 0; i < data.length; i++) {
     if (data[i].type === 'page')
       addToPagesList(data[i]);
-    else if (data[i].type === 'worker')
-      addToWorkersList(data[i]);
     else if (data[i].type === 'extension')
       addToExtensionsList(data[i]);
     else if (data[i].type === 'app')
@@ -68,6 +65,13 @@ function populateLists(data) {
     else
       addToOthersList(data[i]);
   }
+}
+
+function populateWorkersList(data) {
+  removeChildren('workers');
+
+  for (var i = 0; i < data.length; i++)
+    addToWorkersList(data[i]);
 }
 
 function populateDeviceLists(pages) {

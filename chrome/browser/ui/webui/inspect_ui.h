@@ -23,10 +23,11 @@ class InspectUI : public content::WebUIController,
   virtual ~InspectUI();
 
   void InitUI();
-  void RefreshUI();
 
  private:
   class WorkerCreationDestructionListener;
+
+  void PopulateLists();
 
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
@@ -36,8 +37,6 @@ class InspectUI : public content::WebUIController,
   void StopListeningNotifications();
 
   content::WebUIDataSource* CreateInspectUIHTMLSource();
-
-  void PopulateLists(base::ListValue* target_list);
 
   // DevToolsAdbBridge::Listener overrides.
   virtual void RemotePagesChanged(

@@ -160,22 +160,6 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
                                rvh->GetRoutingID());
 }
 
-void CollectWorkerData(ListValue* target_list) {
-  std::vector<WorkerService::WorkerInfo> worker_info =
-      WorkerService::GetInstance()->GetWorkers();
-  for (size_t i = 0; i < worker_info.size(); ++i) {
-    target_list->Append(BuildTargetDescriptor(
-        kWorkerTargetType,
-        false,
-        worker_info[i].url,
-        UTF16ToUTF8(worker_info[i].name),
-        GURL(),
-        worker_info[i].process_id,
-        worker_info[i].route_id,
-        worker_info[i].handle));
-  }
-}
-
 class InspectMessageHandler : public WebUIMessageHandler {
  public:
   explicit InspectMessageHandler(
@@ -311,6 +295,13 @@ class InspectUI::WorkerCreationDestructionListener
                    this));
   }
 
+  void InitUI() {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&WorkerCreationDestructionListener::CollectWorkersData,
+                   this));
+  }
+
  private:
   friend class base::RefCountedThreadSafe<WorkerCreationDestructionListener>;
   virtual ~WorkerCreationDestructionListener() {}
@@ -320,22 +311,34 @@ class InspectUI::WorkerCreationDestructionListener
       const string16& name,
       int process_id,
       int route_id) OVERRIDE {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WorkerCreationDestructionListener::NotifyItemsChanged,
-                   this));
+    CollectWorkersData();
   }
 
   virtual void WorkerDestroyed(int process_id, int route_id) OVERRIDE {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WorkerCreationDestructionListener::NotifyItemsChanged,
-                   this));
+    CollectWorkersData();
   }
 
-  void NotifyItemsChanged() {
-    if (discovery_ui_)
-      discovery_ui_->RefreshUI();
+  void CollectWorkersData() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    scoped_ptr<ListValue> target_list(new ListValue());
+    std::vector<WorkerService::WorkerInfo> worker_info =
+        WorkerService::GetInstance()->GetWorkers();
+    for (size_t i = 0; i < worker_info.size(); ++i) {
+      target_list->Append(BuildTargetDescriptor(
+          kWorkerTargetType,
+          false,
+          worker_info[i].url,
+          UTF16ToUTF8(worker_info[i].name),
+          GURL(),
+          worker_info[i].process_id,
+          worker_info[i].route_id,
+          worker_info[i].handle));
+    }
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&WorkerCreationDestructionListener::PopulateWorkersList,
+                   this, base::Owned(target_list.release())));
   }
 
   void RegisterObserver() {
@@ -344,6 +347,14 @@ class InspectUI::WorkerCreationDestructionListener
 
   void UnregisterObserver() {
     WorkerService::GetInstance()->RemoveObserver(this);
+  }
+
+  void PopulateWorkersList(ListValue* target_list) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (discovery_ui_) {
+      discovery_ui_->web_ui()->CallJavascriptFunction(
+          "populateWorkersList", *target_list);
+    }
   }
 
   InspectUI* discovery_ui_;
@@ -376,10 +387,11 @@ InspectUI::~InspectUI() {
 }
 
 void InspectUI::InitUI() {
-  RefreshUI();
+  PopulateLists();
+  observer_->InitUI();
 }
 
-void InspectUI::RefreshUI() {
+void InspectUI::PopulateLists() {
   std::set<RenderViewHost*> tab_rvhs;
   for (TabContentsIterator it; !it.done(); it.Next())
     tab_rvhs.insert(it->GetRenderViewHost());
@@ -394,22 +406,14 @@ void InspectUI::RefreshUI() {
     bool is_tab = tab_rvhs.find(*it) != tab_rvhs.end();
     target_list->Append(BuildTargetDescriptor(*it, is_tab));
   }
-
-  ListValue* target_list_ptr = target_list.release();
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&CollectWorkerData, target_list_ptr),
-      base::Bind(&InspectUI::PopulateLists,
-                 weak_factory_.GetWeakPtr(),
-                 target_list_ptr));
+  web_ui()->CallJavascriptFunction("populateLists", *target_list.get());
 }
 
 void InspectUI::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (source != content::Source<WebContents>(web_ui()->GetWebContents()))
-    RefreshUI();
+    PopulateLists();
   else if (type == content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED)
     StopListeningNotifications();
 }
@@ -432,11 +436,6 @@ content::WebUIDataSource* InspectUI::CreateInspectUIHTMLSource() {
   source->AddResourcePath("inspect.js", IDR_INSPECT_JS);
   source->SetDefaultResource(IDR_INSPECT_HTML);
   return source;
-}
-
-void InspectUI::PopulateLists(ListValue* target_list_ptr) {
-  scoped_ptr<ListValue> target_list(target_list_ptr);
-  web_ui()->CallJavascriptFunction("populateLists", *target_list.get());
 }
 
 void InspectUI::RemotePagesChanged(DevToolsAdbBridge::RemotePages* pages) {
