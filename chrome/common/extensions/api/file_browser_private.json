@@ -1162,9 +1162,31 @@
             "type": "function",
             "parameters": [
               {
-                "name" : "accessToken",
+                "name": "accessToken",
                 "type": "string",
                 "description": "OAuth2 access token, or an empty string if failed to fetch."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getShareUrl",
+        "description": "Requests a share dialog url for the specified file.",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "Url for the file."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "shareUrl",
+                "type": "string",
+                "description": "Share Url for the sharing dialog."
               }
             ]
           }

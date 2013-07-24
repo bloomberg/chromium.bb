@@ -441,6 +441,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<ValidatePathNameLengthFunction>();
   registry->RegisterFunction<ZoomFunction>();
   registry->RegisterFunction<RequestAccessTokenFunction>();
+  registry->RegisterFunction<GetShareUrlFunction>();
   event_router_->ObserveFileSystemEvents();
 }
 
@@ -3075,5 +3076,46 @@ bool RequestAccessTokenFunction::RunImpl() {
 void RequestAccessTokenFunction::OnAccessTokenFetched(
     google_apis::GDataErrorCode code, const std::string& access_token) {
   SetResult(new base::StringValue(access_token));
+  SendResponse(true);
+}
+
+GetShareUrlFunction::GetShareUrlFunction() {
+}
+
+GetShareUrlFunction::~GetShareUrlFunction() {
+}
+
+bool GetShareUrlFunction::RunImpl() {
+  std::string file_url;
+  if (!args_->GetString(0, &file_url))
+    return false;
+
+  const base::FilePath path = GetLocalPathFromURL(GURL(file_url));
+  DCHECK(drive::util::IsUnderDriveMountPoint(path));
+
+  base::FilePath drive_path = drive::util::ExtractDrivePath(path);
+
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
+  // |integration_service| is NULL if Drive is disabled.
+  if (!integration_service)
+    return false;
+
+  integration_service->file_system()->GetShareUrl(
+      drive_path,
+      base::Bind(&GetShareUrlFunction::OnGetShareUrl, this));
+  return true;
+}
+
+
+void GetShareUrlFunction::OnGetShareUrl(drive::FileError error,
+                                        const GURL& share_url) {
+  if (error != drive::FILE_ERROR_OK) {
+    error_ = "Share Url for this item is not available.";
+    SendResponse(false);
+    return;
+  }
+
+  SetResult(new base::StringValue(share_url.spec()));
   SendResponse(true);
 }

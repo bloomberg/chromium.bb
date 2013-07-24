@@ -729,6 +729,10 @@
             "rel": "edit-media",
             "type": "audio/mpeg"
          }, {
+            "href": "https://file_link_share",
+            "rel": "http://schemas.google.com/docs/2007#share",
+            "type": "text/html"
+         }, {
             "href": "https://fake_server/fake_root",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"

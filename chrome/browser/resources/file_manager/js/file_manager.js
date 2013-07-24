@@ -901,7 +901,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.alert = new d.AlertDialog(this.dialogDom_);
     this.confirm = new d.ConfirmDialog(this.dialogDom_);
     this.prompt = new d.PromptDialog(this.dialogDom_);
-    this.shareDialog_ = new ShareDialog(this.dialogDom_, this.metadataCache_);
+    this.shareDialog_ = new ShareDialog(this.dialogDom_);
     this.defaultTaskPicker =
         new cr.filebrowser.DefaultActionDialog(this.dialogDom_);
   };

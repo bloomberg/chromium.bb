@@ -6,15 +6,13 @@
 
 /**
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
- * @param {MetadataCache} metadataCache Metadata cache.
  * @constructor
  * @extends {cr.ui.dialogs.BaseDialog}
  * @implements {ShareClient.Observer}
  */
-function ShareDialog(parentNode, metadataCache) {
+function ShareDialog(parentNode) {
   this.queue_ = new AsyncUtil.Queue();
   this.onQueueTaskFinished_ = null;
-  this.metadataCache_ = metadataCache;
   this.shareClient_ = null;
   this.spinner_ = null;
   this.spinnerWrapper_ = null;
@@ -223,23 +221,33 @@ ShareDialog.prototype.show = function(entry, onFailure) {
 
     // Initialize and authorize the Web View tag asynchronously.
     var group = new AsyncUtil.Group();
+
+    // Fetches an url to the sharing dialog.
+    var shareUrl;
+    var getShareUrlClosure = function(callback) {
+      chrome.fileBrowserPrivate.getShareUrl(
+          entry.toURL(),
+          function(inShareUrl) {
+            if (!chrome.runtime.lastError)
+              shareUrl = inShareUrl;
+            callback();
+          });
+    };
+
+    group.add(getShareUrlClosure);
     group.add(this.webViewAuthorizer_.initialize.bind(this.webViewAuthorizer_));
     group.add(this.webViewAuthorizer_.authorize.bind(this.webViewAuthorizer_));
 
+    // Loads the share widget once all the previous async calls are finished.
     group.run(function() {
-      // Loads the metadata and later the share widget.
-      this.metadataCache_.get(entry, 'drive', function(metadata) {
-        if (!metadata.shareUrl) {
-          onError();
-          return;
-        }
-        var shareUrl = metadata.shareUrl + '&embedOrigin=' +
-            ShareClient.SHARE_ORIGIN;
-        this.shareClient_ = new ShareClient(this.webView_,
-                                            shareUrl,
-                                            this);
-        this.shareClient_.load();
-      }.bind(this));
+      if (!shareUrl) {
+        onError();
+        return;
+      }
+      this.shareClient_ = new ShareClient(this.webView_,
+                                          shareUrl,
+                                          this);
+      this.shareClient_.load();
     }.bind(this));
   }.bind(this));
 };

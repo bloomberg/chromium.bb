@@ -198,6 +198,12 @@ void FakeFileSystem::GetAvailableSpace(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeFileSystem::GetShareUrl(
+    const base::FilePath& file_path,
+    const GetShareUrlCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeFileSystem::GetMetadata(
     const GetFilesystemMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -780,9 +780,28 @@ class RequestAccessTokenFunction : public AsyncExtensionFunction {
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
-  // Received the cached auth token (if available) or the fetched one.
+  // Callback with a cached auth token (if available) or a fetched one.
   void OnAccessTokenFetched(google_apis::GDataErrorCode code,
                             const std::string& access_token);
+};
+
+// Implements the chrome.fileBrowserPrivate.getShareUrl method.
+class GetShareUrlFunction : public FileBrowserFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getShareUrl",
+                             FILEBROWSERPRIVATE_GETSHAREURL)
+
+  GetShareUrlFunction();
+
+ protected:
+  virtual ~GetShareUrlFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+  // Callback with an url to the sharing dialog as |share_url|, called by
+  // FileSystem::GetShareUrl.
+  void OnGetShareUrl(drive::FileError error, const GURL& share_url);
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_PRIVATE_API_H_
