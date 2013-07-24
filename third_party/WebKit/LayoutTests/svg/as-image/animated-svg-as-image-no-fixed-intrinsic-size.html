@@ -6,11 +6,11 @@
     if (!window.testRunner)
       return;
 
-    // The animation lasts 100ms.
+    // The animation lasts 100ms. Wait 200ms for the repaint.
     testRunner.waitUntilDone();
     setTimeout(function() {
       testRunner.notifyDone();
-    }, 100);
+    }, 200);
   }
   </script>
   <style type="text/css" media="screen">
