@@ -23,6 +23,7 @@
 #include "ui/views/corewm/window_modality_controller.h"
 #endif
 
+// TODO(wittman): this code should not depend on ash.
 #if defined(USE_ASH)
 #include "ash/ash_constants.h"
 #include "ash/shell.h"
@@ -37,11 +38,19 @@ namespace {
 
 class NativeWebContentsModalDialogManagerViews
     : public NativeWebContentsModalDialogManager,
-      public views::WidgetObserver {
+      public views::WidgetObserver
+#if defined(USE_AURA)
+      , public aura::WindowObserver
+#endif
+                                   {
  public:
   NativeWebContentsModalDialogManagerViews(
       NativeWebContentsModalDialogManagerDelegate* native_delegate)
       : native_delegate_(native_delegate) {
+#if defined(USE_AURA)
+    native_delegate_->GetWebContents()->GetView()->GetNativeView()->
+        AddObserver(this);
+#endif
   }
 
   virtual ~NativeWebContentsModalDialogManagerViews() {
@@ -161,6 +170,23 @@ class NativeWebContentsModalDialogManagerViews
   }
 
  private:
+#if defined(USE_AURA)
+  // aura::WindowObserver overrides
+  virtual void OnWindowHierarchyChanged(
+      const aura::WindowObserver::HierarchyChangeParams& params) OVERRIDE {
+    // We are called during the teardown of the WebContents' view by which time
+    // GetWebContents() will return NULL. We can safely ignore this case.
+    if (!native_delegate_->GetWebContents())
+      return;
+    if (params.target ==
+        native_delegate_->GetWebContents()->GetView()->GetNativeView()) {
+      std::set<views::Widget*>::const_iterator it = observed_widgets_.begin();
+      for (; it != observed_widgets_.end(); ++it)
+        params.new_parent->AddChild((*it)->GetNativeWindow());
+    }
+  }
+#endif
+
   static views::Widget* GetWidget(NativeWebContentsModalDialog dialog) {
     views::Widget* widget = views::Widget::GetWidgetForNativeWindow(dialog);
     DCHECK(widget);
