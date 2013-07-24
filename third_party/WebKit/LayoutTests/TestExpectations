@@ -1728,3 +1728,5 @@ crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.
 crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ Failure ]
 
 crbug.com/263991 [ Win Debug ] editing/selection/fake-drag.html [ Failure Pass ]
+
+crbug.com/264021 [ Linux ] fast/forms/placeholder-position.html [ ImageOnlyFailure Pass ]
