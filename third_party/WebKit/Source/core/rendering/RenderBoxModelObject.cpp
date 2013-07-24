@@ -556,14 +556,14 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     // while rendering.)
     if (forceBackgroundToWhite) {
         // Note that we can't reuse this variable below because the bgColor might be changed
-        bool shouldPaintBackgroundColor = !bgLayer->next() && bgColor.isValid() && bgColor.alpha();
+        bool shouldPaintBackgroundColor = !bgLayer->next() && bgColor.alpha();
         if (shouldPaintBackgroundImage || shouldPaintBackgroundColor) {
             bgColor = Color::white;
             shouldPaintBackgroundImage = false;
         }
     }
 
-    bool colorVisible = bgColor.isValid() && bgColor.alpha();
+    bool colorVisible = bgColor.alpha();
 
     // Fast path for drawing simple color backgrounds.
     if (!isRoot && !clippedWithLocalScrolling && !shouldPaintBackgroundImage && isBorderFill && !bgLayer->next()) {
@@ -673,7 +673,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     bool isOpaqueRoot = false;
     if (isRoot) {
         isOpaqueRoot = true;
-        if (!bgLayer->next() && !(bgColor.isValid() && bgColor.alpha() == 255) && view()->frameView()) {
+        if (!bgLayer->next() && !(bgColor.alpha() == 255) && view()->frameView()) {
             Element* ownerElement = document()->ownerElement();
             if (ownerElement) {
                 if (!ownerElement->hasTagName(frameTag)) {
@@ -2375,7 +2375,7 @@ bool RenderBoxModelObject::boxShadowShouldBeAppliedToBackground(BackgroundBleedA
         return false;
 
     Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
-    if (!backgroundColor.isValid() || backgroundColor.hasAlpha())
+    if (backgroundColor.hasAlpha())
         return false;
 
     const FillLayer* lastBackgroundLayer = style()->backgroundLayers();
@@ -2436,7 +2436,7 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
         if (shadowOffset.isZero() && !shadowBlur && !shadowSpread)
             continue;
         
-        const Color& shadowColor = resolveColor(shadow->color());
+        const Color& shadowColor = resolveColor(shadow->color(), Color::stdShadowColor);
 
         if (shadow->style() == Normal) {
             RoundedRect fillRect = border;

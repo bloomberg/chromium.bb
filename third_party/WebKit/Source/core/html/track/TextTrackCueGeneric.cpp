@@ -73,10 +73,10 @@ void TextTrackCueGenericBoxElement::applyCSSProperties(const IntSize& videoSize)
             setInlineStyleProperty(CSSPropertyHeight, size,  CSSPrimitiveValue::CSS_PERCENTAGE);
     }
 
-    if (cue->foregroundColor().isValid())
+    if (cue->foregroundColor().alpha())
         setInlineStyleProperty(CSSPropertyColor, cue->foregroundColor().serialized());
     
-    if (cue->backgroundColor().isValid())
+    if (cue->backgroundColor().alpha())
         cue->element()->setInlineStyleProperty(CSSPropertyBackgroundColor, cue->backgroundColor().serialized());
 
     if (cue->getWritingDirection() == TextTrackCue::Horizontal)

@@ -115,7 +115,7 @@ void ColorChooserPopupUIController::setValueAndClosePopup(int numValue, const St
     ASSERT(m_popup);
     ASSERT(m_client);
     if (numValue == ColorPickerPopupActionSetValue)
-        m_client->didChooseColor(Color(stringValue));
+        m_client->didChooseColor(StyleColor(stringValue).color());
     if (numValue == ColorPickerPopupActionChooseOtherColor)
         openColorChooser();
     closePopup();
@@ -124,7 +124,7 @@ void ColorChooserPopupUIController::setValueAndClosePopup(int numValue, const St
 void ColorChooserPopupUIController::setValue(const String& value)
 {
     ASSERT(m_client);
-    m_client->didChooseColor(Color(value));
+    m_client->didChooseColor(StyleColor(value).color());
 }
 
 void ColorChooserPopupUIController::didClosePopup()

@@ -866,7 +866,7 @@ void AccessibilityNodeObject::colorValue(int& r, int& g, int& b) const
         return;
 
     // HTMLInputElement::value always returns a string parseable by Color().
-    Color color(input->value());
+    StyleColor color(input->value());
     r = color.red();
     g = color.green();
     b = color.blue();

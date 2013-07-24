@@ -146,7 +146,7 @@ bool AccessibilityTable::isDataTable() const
     RenderStyle* tableStyle = table->style();
     if (!tableStyle)
         return false;
-    Color tableBGColor = tableStyle->visitedDependentColor(CSSPropertyBackgroundColor);
+    StyleColor tableBGColor = tableStyle->visitedDependentColor(CSSPropertyBackgroundColor);
     
     // check enough of the cells to find if the table matches our criteria
     // Criteria: 
@@ -161,7 +161,7 @@ bool AccessibilityTable::isDataTable() const
     unsigned cellsWithLeftBorder = 0;
     unsigned cellsWithRightBorder = 0;
     
-    Color alternatingRowColors[5];
+    StyleColor alternatingRowColors[5];
     int alternatingRowColorCount = 0;
     
     int headersInFirstColumnCount = 0;
@@ -223,7 +223,7 @@ bool AccessibilityTable::isDataTable() const
             
             // If the cell has a different color from the table and there is cell spacing,
             // then it is probably a data table cell (spacing and colors take the place of borders).
-            Color cellColor = renderStyle->visitedDependentColor(CSSPropertyBackgroundColor);
+            StyleColor cellColor = renderStyle->visitedDependentColor(CSSPropertyBackgroundColor);
             if (table->hBorderSpacing() > 0 && table->vBorderSpacing() > 0
                 && tableBGColor != cellColor && cellColor.alpha() != 1)
                 backgroundDifferenceCellCount++;
@@ -240,7 +240,7 @@ bool AccessibilityTable::isDataTable() const
                 RenderStyle* rowRenderStyle = renderRow->style();
                 if (!rowRenderStyle)
                     continue;
-                Color rowColor = rowRenderStyle->visitedDependentColor(CSSPropertyBackgroundColor);
+                StyleColor rowColor = rowRenderStyle->visitedDependentColor(CSSPropertyBackgroundColor);
                 alternatingRowColors[alternatingRowColorCount] = rowColor;
                 alternatingRowColorCount++;
             }
@@ -272,7 +272,7 @@ bool AccessibilityTable::isDataTable() const
 
     // Check if there is an alternating row background color indicating a zebra striped style pattern.
     if (alternatingRowColorCount > 2) {
-        Color firstColor = alternatingRowColors[0];
+        StyleColor firstColor = alternatingRowColors[0];
         for (int k = 1; k < alternatingRowColorCount; k++) {
             // If an odd row was the same color as the first row, its not alternating.
             if (k % 2 == 1 && alternatingRowColors[k] == firstColor)

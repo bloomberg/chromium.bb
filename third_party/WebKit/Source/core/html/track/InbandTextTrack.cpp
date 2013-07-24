@@ -156,9 +156,9 @@ void InbandTextTrack::addGenericCue(InbandTextTrackPrivate* trackPrivate, Generi
         cue->setLine(lround(cueData->line()), IGNORE_EXCEPTION);
     if (cueData->size() > 0)
         cue->setSize(lround(cueData->size()), IGNORE_EXCEPTION);
-    if (cueData->backgroundColor().isValid())
+    if (cueData->backgroundColor().alpha())
         cue->setBackgroundColor(cueData->backgroundColor().rgb());
-    if (cueData->foregroundColor().isValid())
+    if (cueData->foregroundColor().alpha())
         cue->setForegroundColor(cueData->foregroundColor().rgb());
 
     if (cueData->align() == GenericCueData::Start)

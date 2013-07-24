@@ -1654,32 +1654,35 @@ static bool shouldUseSelectionColor(const RenderStyle& style)
 
 Color RenderObject::selectionBackgroundColor() const
 {
-    Color color;
+    Color backgroundColor= Color::transparent;
     if (shouldUseSelectionColor(*style())) {
         RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
-        if (pseudoStyle && resolveColor(pseudoStyle.get(), CSSPropertyBackgroundColor).isValid())
-            color = resolveColor(pseudoStyle.get(), CSSPropertyBackgroundColor).blendWithWhite();
-        else
-            color = frame()->selection()->isFocusedAndActive() ?
-                    theme()->activeSelectionBackgroundColor() :
-                    theme()->inactiveSelectionBackgroundColor();
+        if (pseudoStyle) {
+            StyleColor styleColor = resolveCurrentColor(pseudoStyle.get(), CSSPropertyBackgroundColor);
+            if (styleColor.isValid())
+                return styleColor.color().blendWithWhite();
+        }
+
+        backgroundColor = frame()->selection()->isFocusedAndActive() ?
+            theme()->activeSelectionBackgroundColor() :
+            theme()->inactiveSelectionBackgroundColor();
     }
 
-    return color;
+    return backgroundColor;
 }
 
 Color RenderObject::selectionColor(int colorProperty) const
 {
-    Color color;
     // If the element is unselectable, or we are only painting the selection,
     // don't override the foreground color with the selection foreground color.
     if (!shouldUseSelectionColor(*style())
         || (frame()->view()->paintBehavior() & PaintBehaviorSelectionOnly))
-        return color;
+        return Color::transparent;
 
+    Color color;
     if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION))) {
-        Color selectionColor = resolveColor(pseudoStyle.get(), colorProperty);
-        color = selectionColor.isValid() ? selectionColor : resolveColor(pseudoStyle.get(), CSSPropertyColor);
+        StyleColor styleColor = resolveCurrentColor(pseudoStyle.get(), colorProperty);
+        color = styleColor.isValid() ? styleColor.color() : resolveColor(pseudoStyle.get(), CSSPropertyColor);
     } else
         color = frame()->selection()->isFocusedAndActive() ?
                 theme()->activeSelectionForegroundColor() :
@@ -2870,20 +2873,20 @@ bool RenderObject::hasBlendMode() const
 
 static Color decorationColor(const RenderObject* object, RenderStyle* style)
 {
-    Color result;
+    StyleColor result;
     // Check for text decoration color first.
-    result = object->resolveColor(style, CSSPropertyTextDecorationColor);
+    result = object->resolveStyleColor(style, CSSPropertyTextDecorationColor);
     if (result.isValid())
-        return result;
+        return result.color();
     if (style->textStrokeWidth() > 0) {
         // Prefer stroke color if possible but not if it's fully transparent.
         result = object->resolveColor(style, CSSPropertyWebkitTextStrokeColor);
         if (result.alpha())
-            return result;
+            return result.color();
     }
     
     result = object->resolveColor(style, CSSPropertyWebkitTextFillColor);
-    return result;
+    return result.color();
 }
 
 void RenderObject::getTextDecorationColors(int decorations, Color& underline, Color& overline,

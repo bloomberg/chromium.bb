@@ -141,8 +141,8 @@ public:
     bool hasOpaqueBackground() const;
 
     Color baseBackgroundColor() const;
-    void setBaseBackgroundColor(const Color&);
-    void updateBackgroundRecursively(const Color&, bool);
+    void setBaseBackgroundColor(const StyleColor&);
+    void updateBackgroundRecursively(const StyleColor&, bool);
 
     bool shouldUpdateWhileOffscreen() const;
     void setShouldUpdateWhileOffscreen(bool);
@@ -233,7 +233,7 @@ public:
     virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect);
     virtual void paintScrollbar(GraphicsContext*, Scrollbar*, const IntRect&) OVERRIDE;
 
-    Color documentBackgroundColor() const;
+    StyleColor documentBackgroundColor() const;
 
     static double currentPaintTimeStamp() { return sCurrentPaintTimeStamp; } // returns 0 if not painting
 

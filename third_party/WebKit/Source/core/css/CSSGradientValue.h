@@ -28,6 +28,7 @@
 
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/StyleColor.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -51,7 +52,7 @@ struct CSSGradientColorStop {
     CSSGradientColorStop() : m_colorIsDerivedFromElement(false) { };
     RefPtr<CSSPrimitiveValue> m_position; // percentage or length
     RefPtr<CSSPrimitiveValue> m_color;
-    Color m_resolvedColor;
+    StyleColor m_resolvedColor;
     bool m_colorIsDerivedFromElement;
     bool operator==(const CSSGradientColorStop& other) const
     {
@@ -89,7 +90,7 @@ public:
     bool knownToBeOpaque(const RenderObject*) const;
 
     void loadSubimages(CachedResourceLoader*) { }
-    PassRefPtr<CSSGradientValue> gradientWithStylesResolved(const TextLinkColors&, Color currentColor);
+    PassRefPtr<CSSGradientValue> gradientWithStylesResolved(const TextLinkColors&);
 
 protected:
     CSSGradientValue(ClassType classType, CSSGradientRepeat repeat, CSSGradientType gradientType)

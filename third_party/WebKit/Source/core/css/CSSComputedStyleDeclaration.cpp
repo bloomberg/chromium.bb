@@ -647,11 +647,28 @@ static PassRefPtr<CSSValue> getPositionOffsetValue(RenderStyle* style, CSSProper
     return zoomAdjustedPixelValueForLength(l, style);
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSComputedStyleDeclaration::currentColorOrValidColor(RenderStyle* style, const Color& color) const
+PassRefPtr<CSSPrimitiveValue> CSSComputedStyleDeclaration::currentColorOrValidColor(RenderStyle* style, const StyleColor& color) const
 {
     // This function does NOT look at visited information, so that computed style doesn't expose that.
     if (!color.isValid())
         return cssValuePool().createColorValue(style->color().rgb());
+    return cssValuePool().createColorValue(color.rgb());
+}
+
+PassRefPtr<CSSPrimitiveValue> CSSComputedStyleDeclaration::currentColorOrValidColor(const RenderObject* renderer, const RenderStyle* style, int colorProperty) const
+{
+    Color color;
+    if (renderer) {
+        if (m_allowVisitedStyle)
+            color = renderer->resolveColor(colorProperty);
+        else
+            color = renderer->resolveColor(style->colorIncludingFallback(colorProperty, false /* visited */));
+    } else {
+        if (m_allowVisitedStyle)
+            color = style->visitedDependentColor(colorProperty).color();
+        else
+            color = style->colorIncludingFallback(colorProperty, false /* visited */).color();
+    }
     return cssValuePool().createColorValue(color.rgb());
 }
 
@@ -911,7 +928,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
             filterValue = CSSFilterValue::create(CSSFilterValue::DropShadowFilterOperation);
             // We want our computed style to look like that of a text shadow (has neither spread nor inset style).
             OwnPtr<ShadowData> shadow = ShadowData::create(dropShadowOperation->location(), dropShadowOperation->stdDeviation(), 0, Normal, dropShadowOperation->color());
-            filterValue->append(valueForShadow(shadow.get(), CSSPropertyTextShadow, style));
+            filterValue->append(valueForShadow(renderer, shadow.get(), CSSPropertyTextShadow, style));
             break;
         }
         case FilterOperation::VALIDATED_CUSTOM:
@@ -1257,7 +1274,7 @@ bool CSSComputedStyleDeclaration::useFixedFontDefaultSize() const
     return style->fontDescription().useFixedDefaultSize();
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadow(const ShadowData* shadow, CSSPropertyID propertyID, const RenderStyle* style) const
+PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadow(const RenderObject* renderer, const ShadowData* shadow, CSSPropertyID propertyID, const RenderStyle* style) const
 {
     if (!shadow)
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -1269,7 +1286,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadow(const ShadowDat
         RefPtr<CSSPrimitiveValue> blur = zoomAdjustedPixelValue(s->blur(), style);
         RefPtr<CSSPrimitiveValue> spread = propertyID == CSSPropertyTextShadow ? PassRefPtr<CSSPrimitiveValue>() : zoomAdjustedPixelValue(s->spread(), style);
         RefPtr<CSSPrimitiveValue> style = propertyID == CSSPropertyTextShadow || s->style() == Normal ? PassRefPtr<CSSPrimitiveValue>() : cssValuePool().createIdentifierValue(CSSValueInset);
-        RefPtr<CSSPrimitiveValue> color = cssValuePool().createColorValue(s->color().rgb());
+        RefPtr<CSSPrimitiveValue> color = cssValuePool().createColorValue(renderer ? renderer->resolveColor(s->color()).rgb() : s->color().rgb());
         list->prepend(ShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), style.release(), color.release()));
     }
     return list.release();
@@ -1602,7 +1619,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             break;
 
         case CSSPropertyBackgroundColor:
-            return cssValuePool().createColorValue(m_allowVisitedStyle? style->visitedDependentColor(CSSPropertyBackgroundColor).rgb() : style->backgroundColor().rgb());
+            return cssValuePool().createColorValue(renderer->resolveColor(m_allowVisitedStyle? style->visitedDependentColor(CSSPropertyBackgroundColor).rgb() : style->backgroundColor()).rgb());
         case CSSPropertyBackgroundImage:
         case CSSPropertyWebkitMaskImage: {
             const FillLayer* layers = propertyID == CSSPropertyWebkitMaskImage ? style->maskLayers() : style->backgroundLayers();
@@ -1748,13 +1765,13 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return style->borderImageSource()->cssValue();
             return cssValuePool().createIdentifierValue(CSSValueNone);
         case CSSPropertyBorderTopColor:
-            return m_allowVisitedStyle ? cssValuePool().createColorValue(style->visitedDependentColor(CSSPropertyBorderTopColor).rgb()) : currentColorOrValidColor(style.get(), style->borderTopColor());
+            return currentColorOrValidColor(renderer, style.get(), CSSPropertyBorderTopColor);
         case CSSPropertyBorderRightColor:
-            return m_allowVisitedStyle ? cssValuePool().createColorValue(style->visitedDependentColor(CSSPropertyBorderRightColor).rgb()) : currentColorOrValidColor(style.get(), style->borderRightColor());
+            return currentColorOrValidColor(renderer, style.get(), CSSPropertyBorderRightColor);
         case CSSPropertyBorderBottomColor:
-            return m_allowVisitedStyle ? cssValuePool().createColorValue(style->visitedDependentColor(CSSPropertyBorderBottomColor).rgb()) : currentColorOrValidColor(style.get(), style->borderBottomColor());
+            return currentColorOrValidColor(renderer, style.get(), CSSPropertyBorderBottomColor);
         case CSSPropertyBorderLeftColor:
-            return m_allowVisitedStyle ? cssValuePool().createColorValue(style->visitedDependentColor(CSSPropertyBorderLeftColor).rgb()) : currentColorOrValidColor(style.get(), style->borderLeftColor());
+            return currentColorOrValidColor(renderer, style.get(), CSSPropertyBorderLeftColor);
         case CSSPropertyBorderTopStyle:
             return cssValuePool().createValue(style->borderTopStyle());
         case CSSPropertyBorderRightStyle:
@@ -1797,7 +1814,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return valueForReflection(style->boxReflect(), style.get());
         case CSSPropertyBoxShadow:
         case CSSPropertyWebkitBoxShadow:
-            return valueForShadow(style->boxShadow(), propertyID, style.get());
+            return valueForShadow(renderer, style->boxShadow(), propertyID, style.get());
         case CSSPropertyCaptionSide:
             return cssValuePool().createValue(style->captionSide());
         case CSSPropertyClear:
@@ -1819,7 +1836,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitColumnProgression:
             return cssValuePool().createValue(style->columnProgression());
         case CSSPropertyWebkitColumnRuleColor:
-            return m_allowVisitedStyle ? cssValuePool().createColorValue(style->visitedDependentColor(CSSPropertyOutlineColor).rgb()) : currentColorOrValidColor(style.get(), style->columnRuleColor());
+            return currentColorOrValidColor(renderer, style.get(), CSSPropertyWebkitColumnRuleColor);
         case CSSPropertyWebkitColumnRuleStyle:
             return cssValuePool().createValue(style->columnRuleStyle());
         case CSSPropertyWebkitColumnRuleWidth:
@@ -2098,7 +2115,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
             return cssValuePool().createValue(style->orphans(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyOutlineColor:
-            return m_allowVisitedStyle ? cssValuePool().createColorValue(style->visitedDependentColor(CSSPropertyOutlineColor).rgb()) : currentColorOrValidColor(style.get(), style->outlineColor());
+            return currentColorOrValidColor(renderer, style.get(), CSSPropertyOutlineColor);
         case CSSPropertyOutlineOffset:
             return zoomAdjustedPixelValue(style->outlineOffset(), style.get());
         case CSSPropertyOutlineStyle:
@@ -2176,9 +2193,9 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitTextDecorationsInEffect:
             return renderTextDecorationFlagsToCSSValue(style->textDecorationsInEffect());
         case CSSPropertyWebkitTextFillColor:
-            return currentColorOrValidColor(style.get(), style->textFillColor());
+            return currentColorOrValidColor(renderer, style.get(), CSSPropertyWebkitTextFillColor);
         case CSSPropertyWebkitTextEmphasisColor:
-            return currentColorOrValidColor(style.get(), style->textEmphasisColor());
+            return currentColorOrValidColor(renderer, style.get(), CSSPropertyWebkitTextEmphasisColor);
         case CSSPropertyWebkitTextEmphasisPosition:
             return cssValuePool().createValue(style->textEmphasisPosition());
         case CSSPropertyWebkitTextEmphasisStyle:
@@ -2214,7 +2231,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return textIndent.release();
         }
         case CSSPropertyTextShadow:
-            return valueForShadow(style->textShadow(), propertyID, style.get());
+            return valueForShadow(renderer, style->textShadow(), propertyID, style.get());
         case CSSPropertyTextRendering:
             return cssValuePool().createValue(style->fontDescription().textRenderingMode());
         case CSSPropertyTextOverflow:
@@ -2224,7 +2241,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitTextSecurity:
             return cssValuePool().createValue(style->textSecurity());
         case CSSPropertyWebkitTextStrokeColor:
-            return currentColorOrValidColor(style.get(), style->textStrokeColor());
+            return currentColorOrValidColor(renderer, style.get(), CSSPropertyWebkitTextStrokeColor);
         case CSSPropertyWebkitTextStrokeWidth:
             return zoomAdjustedPixelValue(style->textStrokeWidth(), style.get());
         case CSSPropertyTextTransform:
@@ -2470,7 +2487,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitRtlOrdering:
             return cssValuePool().createIdentifierValue(style->rtlOrdering() ? CSSValueVisual : CSSValueLogical);
         case CSSPropertyWebkitTapHighlightColor:
-            return currentColorOrValidColor(style.get(), style->tapHighlightColor());
+            return currentColorOrValidColor(renderer, style.get(), CSSPropertyWebkitTapHighlightColor);
         case CSSPropertyWebkitUserDrag:
             return cssValuePool().createValue(style->userDrag());
         case CSSPropertyWebkitUserSelect:

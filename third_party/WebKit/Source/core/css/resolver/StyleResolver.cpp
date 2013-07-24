@@ -1385,10 +1385,6 @@ void StyleResolver::applyProperty(StyleResolverState& state, CSSPropertyID id, C
         return;
     }
 
-    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
-    if (primitiveValue && primitiveValue->getValueID() == CSSValueCurrentcolor)
-        state.style()->setHasCurrentColor();
-
     if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSProperty::isInheritedProperty(id))
         state.parentStyle()->setHasExplicitlyInheritedProperties();
 

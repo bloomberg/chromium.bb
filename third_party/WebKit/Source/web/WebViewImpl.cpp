@@ -1259,7 +1259,7 @@ void WebViewImpl::enableTapHighlight(const PlatformGestureEvent& tapEvent)
     if (!touchNode || !touchNode->renderer() || !touchNode->renderer()->enclosingLayer())
         return;
 
-    Color highlightColor = touchNode->renderer()->style()->tapHighlightColor();
+    Color highlightColor = touchNode->renderer()->resolveColor(CSSPropertyWebkitTapHighlightColor);
     // Safari documentation for -webkit-tap-highlight-color says if the specified color has 0 alpha,
     // then tap highlighting is disabled.
     // http://developer.apple.com/library/safari/#documentation/appleapplications/reference/safaricssref/articles/standardcssproperties.html
@@ -2463,7 +2463,7 @@ WebColor WebViewImpl::backgroundColor() const
     if (!m_page)
         return Color::white;
     FrameView* view = m_page->mainFrame()->view();
-    Color backgroundColor = view->documentBackgroundColor();
+    StyleColor backgroundColor = view->documentBackgroundColor();
     if (!backgroundColor.isValid())
         return Color::white;
     return backgroundColor.rgb();

@@ -1009,11 +1009,11 @@ static bool degreeToGlyphOrientation(CSSPrimitiveValue* primitiveValue, EGlyphOr
     return true;
 }
 
-static Color colorFromSVGColorCSSValue(SVGColor* svgColor, const Color& fgColor)
+static Color colorFromSVGColorCSSValue(SVGColor* svgColor, const StyleColor& fgColor)
 {
     Color color;
     if (svgColor->colorType() == SVGColor::SVG_COLORTYPE_CURRENTCOLOR)
-        color = fgColor;
+        color = fgColor.color();
     else
         color = svgColor->color();
     return color;
@@ -1079,7 +1079,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
                 CSSValue* item = i.value();
                 if (item->isImageGeneratorValue()) {
                     if (item->isGradientValue())
-                        state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSGradientValue*>(item)->gradientWithStylesResolved(state.document()->textLinkColors(), state.style()->color()).get()), didSet);
+                        state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSGradientValue*>(item)->gradientWithStylesResolved(state.document()->textLinkColors()).get()), didSet);
                     else
                         state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSImageGeneratorValue*>(item)), didSet);
                     didSet = true;
@@ -1259,9 +1259,9 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
             int blur = item->blur ? item->blur->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor) : 0;
             int spread = item->spread ? item->spread->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor) : 0;
             ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
-            Color color;
+            StyleColor color;
             if (item->color)
-                color = state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
+                color = state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get());
             else if (state.style())
                 color = state.style()->color();
 
@@ -1379,7 +1379,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
         if (!primitiveValue)
             break;
 
-        Color col = state.document()->textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor));
+        StyleColor col = state.document()->textLinkColors().colorFromPrimitiveValue(primitiveValue);
         state.style()->setTapHighlightColor(col);
         return;
     }
@@ -2190,9 +2190,9 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
         IntPoint location(item->x->computeLength<int>(state.style(), state.rootElementStyle()),
             item->y->computeLength<int>(state.style(), state.rootElementStyle()));
         int blur = item->blur ? item->blur->computeLength<int>(state.style(), state.rootElementStyle()) : 0;
-        Color color;
+        StyleColor color;
         if (item->color)
-            color = state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
+            color = state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get());
 
         // -webkit-svg-shadow does should not have a spread or style
         ASSERT(!item->spread);

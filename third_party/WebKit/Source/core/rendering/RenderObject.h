@@ -541,7 +541,13 @@ public:
     bool backgroundIsKnownToBeObscured();
     bool borderImageIsLoadedAndCanBeRendered() const;
     bool mustRepaintBackgroundOrBorder() const;
-    bool hasBackground() const { return style()->hasBackground(); }
+    bool hasBackground() const
+    {
+        StyleColor color = resolveColor(CSSPropertyBackgroundColor);
+        if (color.isValid() && color.alpha())
+            return true;
+        return style()->hasBackgroundImage();
+    }
     bool hasEntirelyFixedBackground() const;
 
     bool needsLayout() const
@@ -759,23 +765,41 @@ public:
 
     inline Color resolveColor(const RenderStyle* styleToUse, int colorProperty) const
     {
-        return styleToUse->visitedDependentColor(colorProperty);
+        StyleColor styleColor = resolveCurrentColor(styleToUse, colorProperty);
+        return styleColor.color();
     }
 
     inline Color resolveColor(int colorProperty) const
     {
-        return style()->visitedDependentColor(colorProperty);
+        StyleColor styleColor = resolveCurrentColor(style(), colorProperty);
+        return styleColor.color();
     }
 
-    inline Color resolveColor(int colorProperty, Color fallback) const
+    inline Color resolveColor(int colorProperty, Color fallbackIfInvalid) const
     {
-        Color color = resolveColor(colorProperty);
-        return color.isValid() ? color : fallback;
+        StyleColor styleColor = resolveCurrentColor(style(), colorProperty);
+        return styleColor.isValid() ? styleColor.color() : fallbackIfInvalid;
     }
 
-    inline Color resolveColor(Color color) const
+    inline Color resolveColor(StyleColor color) const
     {
-        return color;
+        return resolveCurrentColor(color).color();
+    }
+
+    inline Color resolveColor(StyleColor color, Color fallbackIfInvalid) const
+    {
+        StyleColor styleColor = resolveCurrentColor(color);
+        return styleColor.isValid() ? styleColor.color() : fallbackIfInvalid;
+    }
+
+    inline StyleColor resolveStyleColor(int colorProperty) const
+    {
+        return resolveCurrentColor(style(), colorProperty);
+    }
+
+    inline StyleColor resolveStyleColor(const RenderStyle* styleToUse, int colorProperty) const
+    {
+        return resolveCurrentColor(styleToUse, colorProperty);
     }
 
     // Used only by Element::pseudoStyleCacheIsInvalid to get a first line style based off of a
@@ -1020,6 +1044,28 @@ private:
     StyleDifference adjustStyleDifference(StyleDifference, unsigned contextSensitiveProperties) const;
 
     Color selectionColor(int colorProperty) const;
+
+    inline StyleColor resolveCurrentColor(const RenderStyle* styleToUse, int colorProperty) const
+    {
+        StyleColor styleColor = styleToUse->visitedDependentColor(colorProperty);
+        if (UNLIKELY(styleColor.isCurrentColor()))
+            styleColor = styleToUse->visitedDependentColor(CSSPropertyColor);
+
+        // In the unlikely case that CSSPropertyColor is also 'currentColor'
+        // the color of the nearest ancestor with a valid color is used.
+        for (const RenderObject* object = this; UNLIKELY(styleColor.isCurrentColor()) && object && object->style(); object = object->parent())
+            styleColor = object->style()->visitedDependentColor(CSSPropertyColor);
+
+        return styleColor;
+    }
+
+    inline StyleColor resolveCurrentColor(StyleColor color) const
+    {
+        StyleColor styleColor = color;
+        for (const RenderObject* object = this; UNLIKELY(styleColor.isCurrentColor()) && object && object->style(); object = object->parent())
+            styleColor = object->style()->visitedDependentColor(CSSPropertyColor);
+        return styleColor;
+    }
 
 #ifndef NDEBUG
     void checkBlockPositionedObjectsNeedLayout();

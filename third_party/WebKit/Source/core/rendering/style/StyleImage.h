@@ -73,7 +73,7 @@ public:
     ALWAYS_INLINE bool isGeneratedImage() const { return m_isGeneratedImage; }
     ALWAYS_INLINE bool isCachedImageSet() const { return m_isCachedImageSet; }
     
-    static  bool imagesEquivalent(StyleImage* image1, StyleImage* image2)
+    static bool imagesEquivalent(const StyleImage* image1, const StyleImage* image2)
     {
         if (image1 != image2) {
             if (!image1 || !image2)

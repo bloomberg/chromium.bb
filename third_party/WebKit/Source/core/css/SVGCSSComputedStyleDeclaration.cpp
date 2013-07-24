@@ -62,8 +62,11 @@ static PassRefPtr<CSSValue> strokeDashArrayToCSSValueList(const Vector<SVGLength
 PassRefPtr<SVGPaint> CSSComputedStyleDeclaration::adjustSVGPaintForCurrentColor(PassRefPtr<SVGPaint> newPaint, RenderStyle* style) const
 {
     RefPtr<SVGPaint> paint = newPaint;
-    if (paint->paintType() == SVGPaint::SVG_PAINTTYPE_CURRENTCOLOR || paint->paintType() == SVGPaint::SVG_PAINTTYPE_URI_CURRENTCOLOR)
-        paint->setColor(style->color());
+    if (paint->paintType() == SVGPaint::SVG_PAINTTYPE_CURRENTCOLOR || paint->paintType() == SVGPaint::SVG_PAINTTYPE_URI_CURRENTCOLOR) {
+        // SVG handles currentColor itself, style->color() is guaranteed not to be currentColor.
+        ASSERT(!style->color().isCurrentColor());
+        paint->setColor(style->color().color());
+    }
     return paint.release();
 }
 
@@ -190,7 +193,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSValue(CSSProp
             return 0;
         }
         case CSSPropertyWebkitSvgShadow:
-            return valueForShadow(svgStyle->shadow(), propertyID, style);
+            return valueForShadow(node->renderer(), svgStyle->shadow(), propertyID, style);
         case CSSPropertyVectorEffect:
             return CSSPrimitiveValue::create(svgStyle->vectorEffect());
         case CSSPropertyMaskType:

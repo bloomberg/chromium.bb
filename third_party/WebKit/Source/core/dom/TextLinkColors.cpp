@@ -44,17 +44,17 @@ TextLinkColors::TextLinkColors()
 
 void TextLinkColors::resetLinkColor()
 {
-    m_linkColor = Color(0, 0, 238);
+    m_linkColor = StyleColor(0, 0, 238);
 }
 
 void TextLinkColors::resetVisitedLinkColor()
 {
-    m_visitedLinkColor = Color(85, 26, 139);
+    m_visitedLinkColor = StyleColor(85, 26, 139);
 }
 
 void TextLinkColors::resetActiveLinkColor()
 {
-    m_activeLinkColor.setNamedColor("red");
+    m_activeLinkColor = StyleColor(255, 0, 0);
 }
 
 static Color colorForCSSValue(CSSValueID cssValueId)
@@ -94,10 +94,10 @@ static Color colorForCSSValue(CSSValueID cssValueId)
     return RenderTheme::defaultTheme()->systemColor(cssValueId);
 }
 
-Color TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue* value, Color currentColor, bool forVisitedLink) const
+StyleColor TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue* value, bool forVisitedLink) const
 {
     if (value->isRGBColor())
-        return Color(value->getRGBA32Value());
+        return StyleColor(value->getRGBA32Value());
 
     CSSValueID valueID = value->getValueID();
     switch (valueID) {
@@ -112,7 +112,7 @@ Color TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue* value, Co
     case CSSValueWebkitFocusRingColor:
         return RenderTheme::focusRingColor();
     case CSSValueCurrentcolor:
-        return currentColor;
+        return StyleColor::currentColor();
     default:
         return colorForCSSValue(valueID);
     }

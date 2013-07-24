@@ -452,7 +452,7 @@ PassRefPtr<Range> Frame::rangeForPoint(const IntPoint& framePoint)
     return 0;
 }
 
-void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor, bool transparent,
+void Frame::createView(const IntSize& viewportSize, const StyleColor& backgroundColor, bool transparent,
     const IntSize& fixedLayoutSize, bool useFixedLayout, ScrollbarMode horizontalScrollbarMode, bool horizontalLock,
     ScrollbarMode verticalScrollbarMode, bool verticalLock)
 {
@@ -479,7 +479,7 @@ void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor
     setView(frameView);
 
     if (backgroundColor.isValid())
-        frameView->updateBackgroundRecursively(backgroundColor, transparent);
+        frameView->updateBackgroundRecursively(backgroundColor.color(), transparent);
 
     if (isMainFrame)
         frameView->setParentVisible(true);

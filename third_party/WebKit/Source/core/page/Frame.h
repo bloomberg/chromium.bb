@@ -28,6 +28,7 @@
 #ifndef Frame_h
 #define Frame_h
 
+#include "core/css/StyleColor.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/AdjustViewSizeOrNot.h"
@@ -69,7 +70,7 @@ namespace WebCore {
 
         void init();
         void setView(PassRefPtr<FrameView>);
-        void createView(const IntSize&, const Color&, bool,
+        void createView(const IntSize&, const StyleColor&, bool,
             const IntSize& fixedLayoutSize = IntSize(), bool useFixedLayout = false, ScrollbarMode = ScrollbarAuto, bool horizontalLock = false,
             ScrollbarMode = ScrollbarAuto, bool verticalLock = false);
 

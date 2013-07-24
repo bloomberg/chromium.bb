@@ -394,7 +394,7 @@ Color RenderThemeChromiumMac::systemColor(CSSValueID cssValueId) const
             return it->value;
     }
 
-    Color color;
+    Color color = Color::transparent;
     switch (cssValueId) {
         case CSSValueActiveborder:
             color = convertNSColorToColor([NSColor keyboardFocusIndicatorColor]);
@@ -495,10 +495,10 @@ Color RenderThemeChromiumMac::systemColor(CSSValueID cssValueId) const
             break;
     }
 
-    if (!color.isValid())
+    if (!color.alpha())
         color = RenderTheme::systemColor(cssValueId);
 
-    if (color.isValid())
+    if (color.alpha())
         m_systemColorCache.set(cssValueId, color.rgb());
 
     return color;
@@ -1247,7 +1247,7 @@ bool RenderThemeChromiumMac::paintMenuListButton(RenderObject* o, const PaintInf
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
-    paintInfo.context->setFillColor(o->style()->visitedDependentColor(CSSPropertyColor));
+    paintInfo.context->setFillColor(o->resolveColor(CSSPropertyColor));
     paintInfo.context->setStrokeStyle(NoStroke);
 
     FloatPoint arrow1[3];

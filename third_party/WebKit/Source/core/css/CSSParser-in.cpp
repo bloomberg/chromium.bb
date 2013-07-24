@@ -5872,10 +5872,10 @@ bool CSSParser::fastParseColor(RGBA32& rgb, const StringType& name, bool strict)
         return true;
 
     // Try named colors.
-    Color tc;
-    tc.setNamedColor(name);
-    if (tc.isValid()) {
-        rgb = tc.rgb();
+    StyleColor color;
+    color.setNamedColor(name);
+    if (color.isValid()) {
+        rgb = color.rgb();
         return true;
     }
     return false;

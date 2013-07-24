@@ -186,7 +186,6 @@ void RenderStyle::copyNonInheritedFrom(const RenderStyle* other)
     noninherited_flags._page_break_after = other->noninherited_flags._page_break_after;
     noninherited_flags._page_break_inside = other->noninherited_flags._page_break_inside;
     noninherited_flags.explicitInheritance = other->noninherited_flags.explicitInheritance;
-    noninherited_flags.currentColor = other->noninherited_flags.currentColor;
     if (m_svgStyle != other->m_svgStyle)
         m_svgStyle.access()->copyNonInheritedFrom(other->m_svgStyle.get());
     ASSERT(zoom() == initialZoom());
@@ -918,10 +917,10 @@ void RenderStyle::setListStyleImage(PassRefPtr<StyleImage> v)
         rareInheritedData.access()->listStyleImage = v;
 }
 
-Color RenderStyle::color() const { return inherited->color; }
-Color RenderStyle::visitedLinkColor() const { return inherited->visitedLinkColor; }
-void RenderStyle::setColor(const Color& v) { SET_VAR(inherited, color, v); }
-void RenderStyle::setVisitedLinkColor(const Color& v) { SET_VAR(inherited, visitedLinkColor, v); }
+StyleColor RenderStyle::color() const { return inherited->color; }
+StyleColor RenderStyle::visitedLinkColor() const { return inherited->visitedLinkColor; }
+void RenderStyle::setColor(const StyleColor& v) { SET_VAR(inherited, color, v); }
+void RenderStyle::setVisitedLinkColor(const StyleColor& v) { SET_VAR(inherited, visitedLinkColor, v); }
 
 short RenderStyle::horizontalBorderSpacing() const { return inherited->horizontal_border_spacing; }
 short RenderStyle::verticalBorderSpacing() const { return inherited->vertical_border_spacing; }
@@ -1295,9 +1294,9 @@ void RenderStyle::getShadowVerticalExtent(const ShadowData* shadow, LayoutUnit &
     }
 }
 
-Color RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) const
+StyleColor RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) const
 {
-    Color result;
+    StyleColor result;
     EBorderStyle borderStyle = BNONE;
     switch (colorProperty) {
     case CSSPropertyBackgroundColor:
@@ -1339,12 +1338,24 @@ Color RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) c
     case CSSPropertyWebkitTextStrokeColor:
         result = visitedLink ? visitedLinkTextStrokeColor() : textStrokeColor();
         break;
+    case CSSPropertyFloodColor:
+        result = floodColor();
+        break;
+    case CSSPropertyLightingColor:
+        result = lightingColor();
+        break;
+    case CSSPropertyStopColor:
+        result = stopColor();
+        break;
+    case CSSPropertyWebkitTapHighlightColor:
+        result = tapHighlightColor();
+        break;
     default:
         ASSERT_NOT_REACHED();
         break;
     }
 
-    if (!result.isValid()) {
+    if (!result.isValid() && !result.isCurrentColor()) {
         if (!visitedLink && (borderStyle == INSET || borderStyle == OUTSET || borderStyle == RIDGE || borderStyle == GROOVE))
             result.setRGB(238, 238, 238);
         else
@@ -1353,13 +1364,13 @@ Color RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) c
     return result;
 }
 
-Color RenderStyle::visitedDependentColor(int colorProperty) const
+StyleColor RenderStyle::visitedDependentColor(int colorProperty) const
 {
-    Color unvisitedColor = colorIncludingFallback(colorProperty, false);
+    StyleColor unvisitedColor = colorIncludingFallback(colorProperty, false);
     if (insideLink() != InsideVisitedLink)
         return unvisitedColor;
 
-    Color visitedColor = colorIncludingFallback(colorProperty, true);
+    StyleColor visitedColor = colorIncludingFallback(colorProperty, true);
 
     // Text decoration color validity is preserved (checked in RenderObject::decorationColor).
     if (colorProperty == CSSPropertyTextDecorationColor)
@@ -1373,8 +1384,12 @@ Color RenderStyle::visitedDependentColor(int colorProperty) const
     if (colorProperty == CSSPropertyBackgroundColor && visitedColor == Color::transparent)
         return unvisitedColor;
 
-    // Take the alpha from the unvisited color, but get the RGB values from the visited color.
-    return Color(visitedColor.red(), visitedColor.green(), visitedColor.blue(), unvisitedColor.alpha());
+    // Unless the visitied color is 'currentColor'; take the alpha from the unvisited color,
+    // but get the RGB values from the visited color.
+    if (visitedColor.isCurrentColor())
+        return visitedColor;
+
+    return StyleColor(visitedColor.red(), visitedColor.green(), visitedColor.blue(), unvisitedColor.alpha());
 }
 
 const BorderValue& RenderStyle::borderBefore() const
