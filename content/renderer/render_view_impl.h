@@ -87,7 +87,7 @@ struct SelectedFileInfo;
 namespace webkit {
 
 namespace ppapi {
-class PluginInstance;
+class PluginInstanceImpl;
 }  // namespace ppapi
 
 }  // namespace webkit
@@ -300,7 +300,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Creates a fullscreen container for a pepper plugin instance.
   RenderWidgetFullscreenPepper* CreatePepperFullscreenContainer(
-      webkit::ppapi::PluginInstance* plugin);
+      webkit::ppapi::PluginInstanceImpl* plugin);
 
   // Informs the render view that a PPAPI plugin has gained or lost focus.
   void PpapiPluginFocusChanged();
@@ -755,7 +755,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void WillInitiatePaint() OVERRIDE;
   virtual void DidInitiatePaint() OVERRIDE;
   virtual void DidFlushPaint() OVERRIDE;
-  virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
+  virtual webkit::ppapi::PluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,

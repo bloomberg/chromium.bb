@@ -182,7 +182,7 @@ int32_t PepperPDFHost::OnHostMsgDidStartLoading(
   PluginInstance* instance = host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
-  instance->render_view()->DidStartLoading();
+  instance->GetRenderView()->DidStartLoading();
   return PP_OK;
 }
 
@@ -191,7 +191,7 @@ int32_t PepperPDFHost::OnHostMsgDidStopLoading(
   PluginInstance* instance = host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
-  instance->render_view()->DidStopLoading();
+  instance->GetRenderView()->DidStopLoading();
   return PP_OK;
 }
 
@@ -200,9 +200,9 @@ int32_t PepperPDFHost::OnHostMsgSetContentRestriction(
   PluginInstance* instance = host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
-  instance->render_view()->Send(
+  instance->GetRenderView()->Send(
       new ChromeViewHostMsg_PDFUpdateContentRestrictions(
-          instance->render_view()->GetRoutingID(), restrictions));
+          instance->GetRenderView()->GetRoutingID(), restrictions));
   return PP_OK;
 }
 
@@ -235,7 +235,7 @@ int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
     return PP_OK;
 
   WebKit::WebView* view =
-      instance->container()->element().document().frame()->view();
+      instance->GetContainer()->element().document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
   render_view->Send(new ChromeViewHostMsg_PDFHasUnsupportedFeature(
       render_view->GetRoutingID()));
@@ -249,7 +249,7 @@ int32_t PepperPDFHost::OnHostMsgPrint(
   if (!instance)
     return PP_ERROR_FAILED;
 
-  WebKit::WebElement element = instance->container()->element();
+  WebKit::WebElement element = instance->GetContainer()->element();
   WebKit::WebView* view = element.document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
 
@@ -268,8 +268,8 @@ int32_t PepperPDFHost::OnHostMsgSaveAs(
   PluginInstance* instance = host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
-  GURL url = instance->plugin_url();
-  content::RenderView* render_view = instance->render_view();
+  GURL url = instance->GetPluginURL();
+  content::RenderView* render_view = instance->GetRenderView();
   WebKit::WebFrame* frame = render_view->GetWebView()->mainFrame();
   content::Referrer referrer(frame->document().url(),
                              frame->document().referrerPolicy());

@@ -2234,7 +2234,7 @@ WebExternalPopupMenu* RenderViewImpl::createExternalPopupMenu(
 }
 
 RenderWidgetFullscreenPepper* RenderViewImpl::CreatePepperFullscreenContainer(
-    webkit::ppapi::PluginInstance* plugin) {
+    webkit::ppapi::PluginInstanceImpl* plugin) {
 #if defined(ENABLE_PLUGINS)
   GURL active_url;
   if (webview() && webview()->mainFrame())
@@ -5449,12 +5449,13 @@ void RenderViewImpl::DidFlushPaint() {
   }
 }
 
-webkit::ppapi::PluginInstance* RenderViewImpl::GetBitmapForOptimizedPluginPaint(
-    const gfx::Rect& paint_bounds,
-    TransportDIB** dib,
-    gfx::Rect* location,
-    gfx::Rect* clip,
-    float* scale_factor) {
+webkit::ppapi::PluginInstanceImpl*
+    RenderViewImpl::GetBitmapForOptimizedPluginPaint(
+        const gfx::Rect& paint_bounds,
+        TransportDIB** dib,
+        gfx::Rect* location,
+        gfx::Rect* clip,
+        float* scale_factor) {
   return pepper_helper_->GetBitmapForOptimizedPluginPaint(
       paint_bounds, dib, location, clip, scale_factor);
 }

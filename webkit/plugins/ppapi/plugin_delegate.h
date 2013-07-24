@@ -111,7 +111,7 @@ namespace ppapi {
 
 class FileIO;
 class FullscreenContainer;
-class PluginInstance;
+class PluginInstanceImpl;
 class PluginModule;
 class PPB_Broker_Impl;
 class PPB_Flash_Menu_Impl;
@@ -203,7 +203,7 @@ class PluginDelegate {
     // to clear the existing device. Returns true on success. In this case, a
     // repaint of the page will also be scheduled. Failure means that the device
     // is already bound to a different instance, and nothing will happen.
-    virtual bool BindToInstance(PluginInstance* new_instance) = 0;
+    virtual bool BindToInstance(PluginInstanceImpl* new_instance) = 0;
 
     // Paints the current backing store to the web page.
     virtual void Paint(WebKit::WebCanvas* canvas,
@@ -361,20 +361,20 @@ class PluginDelegate {
   };
 
   // Notification that the given plugin is focused or unfocused.
-  virtual void PluginFocusChanged(webkit::ppapi::PluginInstance* instance,
+  virtual void PluginFocusChanged(webkit::ppapi::PluginInstanceImpl* instance,
                                   bool focused) = 0;
   // Notification that the text input status of the given plugin is changed.
   virtual void PluginTextInputTypeChanged(
-      webkit::ppapi::PluginInstance* instance) = 0;
+      webkit::ppapi::PluginInstanceImpl* instance) = 0;
   // Notification that the caret position in the given plugin is changed.
   virtual void PluginCaretPositionChanged(
-      webkit::ppapi::PluginInstance* instance) = 0;
+      webkit::ppapi::PluginInstanceImpl* instance) = 0;
   // Notification that the plugin requested to cancel the current composition.
   virtual void PluginRequestedCancelComposition(
-      webkit::ppapi::PluginInstance* instance) = 0;
+      webkit::ppapi::PluginInstanceImpl* instance) = 0;
   // Notification that the text selection in the given plugin is changed.
   virtual void PluginSelectionChanged(
-      webkit::ppapi::PluginInstance* instance) = 0;
+      webkit::ppapi::PluginInstanceImpl* instance) = 0;
   // Requests simulating IME events for testing purpose.
   virtual void SimulateImeSetComposition(
       const base::string16& text,
@@ -386,19 +386,19 @@ class PluginDelegate {
   // Notification that the given plugin has crashed. When a plugin crashes, all
   // instances associated with that plugin will notify that they've crashed via
   // this function.
-  virtual void PluginCrashed(PluginInstance* instance) = 0;
+  virtual void PluginCrashed(PluginInstanceImpl* instance) = 0;
 
   // Indicates that the given instance has been created.
-  virtual void InstanceCreated(PluginInstance* instance) = 0;
+  virtual void InstanceCreated(PluginInstanceImpl* instance) = 0;
 
   // Indicates that the given instance is being destroyed. This is called from
   // the destructor, so it's important that the instance is not dereferenced
   // from this call.
-  virtual void InstanceDeleted(PluginInstance* instance) = 0;
+  virtual void InstanceDeleted(PluginInstanceImpl* instance) = 0;
 
   // Creates the resource creation API for the given instance.
   virtual scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
-      CreateResourceCreationAPI(PluginInstance* instance) = 0;
+      CreateResourceCreationAPI(PluginInstanceImpl* instance) = 0;
 
   // Returns a pointer (ownership not transferred) to the bitmap to paint the
   // sad plugin screen with. Returns NULL on failure.
@@ -413,7 +413,7 @@ class PluginDelegate {
   virtual PlatformImage2D* CreateImage2D(int width, int height) = 0;
 
   // Returns the internal PlatformGraphics2D implementation.
-  virtual PlatformGraphics2D* GetGraphics2D(PluginInstance* instance,
+  virtual PlatformGraphics2D* GetGraphics2D(PluginInstanceImpl* instance,
                                             PP_Resource graphics_2d) = 0;
 
   // The caller will own the pointer returned from this.
@@ -609,7 +609,7 @@ class PluginDelegate {
   // Create a fullscreen container for a plugin instance. This effectively
   // switches the plugin to fullscreen.
   virtual FullscreenContainer* CreateFullscreenContainer(
-      PluginInstance* instance) = 0;
+      PluginInstanceImpl* instance) = 0;
 
   // Gets the size of the screen. The fullscreen window will be created at that
   // size.
@@ -633,7 +633,7 @@ class PluginDelegate {
   // possible. If true is returned then the lock is pending. Success or
   // failure will be delivered asynchronously via
   // PluginInstance::OnLockMouseACK().
-  virtual bool LockMouse(PluginInstance* instance) = 0;
+  virtual bool LockMouse(PluginInstanceImpl* instance) = 0;
 
   // Unlocks the mouse if |instance| currently owns the mouse lock. Whenever an
   // plugin instance has lost the mouse lock, it will be notified by
@@ -641,19 +641,19 @@ class PluginDelegate {
   // the only cause of losing mouse lock. For example, a user may press the Esc
   // key to quit the mouse lock mode, which also results in an OnMouseLockLost()
   // call to the current mouse lock owner.
-  virtual void UnlockMouse(PluginInstance* instance) = 0;
+  virtual void UnlockMouse(PluginInstanceImpl* instance) = 0;
 
   // Returns true iff |instance| currently owns the mouse lock.
-  virtual bool IsMouseLocked(PluginInstance* instance) = 0;
+  virtual bool IsMouseLocked(PluginInstanceImpl* instance) = 0;
 
   // Notifies that |instance| has changed the cursor.
   // This will update the cursor appearance if it is currently over the plugin
   // instance.
-  virtual void DidChangeCursor(PluginInstance* instance,
+  virtual void DidChangeCursor(PluginInstanceImpl* instance,
                                const WebKit::WebCursorInfo& cursor) = 0;
 
   // Notifies that |instance| has received a mouse event.
-  virtual void DidReceiveMouseEvent(PluginInstance* instance) = 0;
+  virtual void DidReceiveMouseEvent(PluginInstanceImpl* instance) = 0;
 
   // Determines if the browser entered fullscreen mode.
   virtual bool IsInFullscreenMode() = 0;
@@ -692,7 +692,7 @@ class PluginDelegate {
   //
   // The loader object should set itself on the PluginInstance as the document
   // loader using set_document_loader.
-  virtual void HandleDocumentLoad(PluginInstance* instance,
+  virtual void HandleDocumentLoad(PluginInstanceImpl* instance,
                                   const WebKit::WebURLResponse& response) = 0;
 
   // Sets up the renderer host and out-of-process proxy for an external plugin

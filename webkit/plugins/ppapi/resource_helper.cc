@@ -7,33 +7,32 @@
 #include "base/logging.h"
 #include "ppapi/shared_impl/resource.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 namespace webkit {
 namespace ppapi {
 
 // static
-PluginInstance* ResourceHelper::GetPluginInstance(
+PluginInstanceImpl* ResourceHelper::GetPluginInstance(
     const ::ppapi::Resource* resource) {
   return PPInstanceToPluginInstance(resource->pp_instance());
 }
 
-PluginInstance* ResourceHelper::PPInstanceToPluginInstance(
+PluginInstanceImpl* ResourceHelper::PPInstanceToPluginInstance(
     PP_Instance instance) {
   return HostGlobals::Get()->GetInstance(instance);
 }
 
 PluginModule* ResourceHelper::GetPluginModule(
     const ::ppapi::Resource* resource) {
-  PluginInstance* instance = GetPluginInstance(resource);
+  PluginInstanceImpl* instance = GetPluginInstance(resource);
   return instance ? instance->module() : NULL;
 }
 
 PluginDelegate* ResourceHelper::GetPluginDelegate(
     const ::ppapi::Resource* resource) {
-  PluginInstance* instance = GetPluginInstance(resource);
+  PluginInstanceImpl* instance = GetPluginInstance(resource);
   return instance ? instance->delegate() : NULL;
 }
 

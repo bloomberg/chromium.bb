@@ -123,7 +123,7 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/ppb_gpu_blacklist_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
@@ -239,7 +239,7 @@ PP_Bool IsOutOfProcess() {
 }
 
 void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
-  PluginInstance* plugin_instance = host_globals->GetInstance(instance);
+  PluginInstanceImpl* plugin_instance = host_globals->GetInstance(instance);
   if (!plugin_instance)
     return;
 
@@ -252,7 +252,7 @@ void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
 }
 
 PP_Var GetDocumentURL(PP_Instance instance, PP_URLComponents_Dev* components) {
-  PluginInstance* plugin_instance = host_globals->GetInstance(instance);
+  PluginInstanceImpl* plugin_instance = host_globals->GetInstance(instance);
   if (!plugin_instance)
     return PP_MakeUndefined();
   return plugin_instance->GetDocumentURL(instance, components);
@@ -493,7 +493,7 @@ scoped_refptr<PluginModule>
 }
 
 PP_ExternalPluginResult PluginModule::InitAsProxiedExternalPlugin(
-    PluginInstance* instance) {
+    PluginInstanceImpl* instance) {
   DCHECK(out_of_process_proxy_.get());
   // InitAsProxied (for the trusted/out-of-process case) initializes only the
   // module, and one or more instances are added later. In this case, the
@@ -537,13 +537,13 @@ bool PluginModule::SupportsInterface(const char* name) {
   return !!InternalGetInterface(name);
 }
 
-PluginInstance* PluginModule::CreateInstance(
+PluginInstanceImpl* PluginModule::CreateInstance(
     PluginDelegate* delegate,
     content::RenderView* render_view,
     WebKit::WebPluginContainer* container,
     const GURL& plugin_url) {
-  PluginInstance* instance = PluginInstance::Create(delegate, render_view, this,
-                                                    container, plugin_url);
+  PluginInstanceImpl* instance = PluginInstanceImpl::Create(
+      delegate, render_view, this, container, plugin_url);
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;
@@ -553,7 +553,7 @@ PluginInstance* PluginModule::CreateInstance(
   return instance;
 }
 
-PluginInstance* PluginModule::GetSomeInstance() const {
+PluginInstanceImpl* PluginModule::GetSomeInstance() const {
   // This will generally crash later if there is not actually any instance to
   // return, so we force a crash now to make bugs easier to track down.
   CHECK(!instances_.empty());
@@ -570,11 +570,11 @@ const void* PluginModule::GetPluginInterface(const char* name) const {
   return entry_points_.get_interface(name);
 }
 
-void PluginModule::InstanceCreated(PluginInstance* instance) {
+void PluginModule::InstanceCreated(PluginInstanceImpl* instance) {
   instances_.insert(instance);
 }
 
-void PluginModule::InstanceDeleted(PluginInstance* instance) {
+void PluginModule::InstanceDeleted(PluginInstanceImpl* instance) {
   if (out_of_process_proxy_)
     out_of_process_proxy_->RemoveInstance(instance->pp_instance());
   instances_.erase(instance);

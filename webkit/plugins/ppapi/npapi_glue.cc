@@ -8,13 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "ppapi/c/pp_var.h"
-#include "webkit/plugins/ppapi/host_array_buffer_var.h"
-#include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/host_var_tracker.h"
-#include "webkit/plugins/ppapi/npobject_var.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/plugin_object.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
@@ -23,6 +16,13 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "v8/include/v8.h"
+#include "webkit/plugins/ppapi/host_array_buffer_var.h"
+#include "webkit/plugins/ppapi/host_globals.h"
+#include "webkit/plugins/ppapi/host_var_tracker.h"
+#include "webkit/plugins/ppapi/npobject_var.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/plugin_object.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using ppapi::NPObjectVar;
 using ppapi::PpapiGlobals;
@@ -39,7 +39,7 @@ namespace {
 
 const char kInvalidPluginValue[] = "Error: Plugin returned invalid value.";
 
-PP_Var NPObjectToPPVarImpl(PluginInstance* instance,
+PP_Var NPObjectToPPVarImpl(PluginInstanceImpl* instance,
                            NPObject* object,
                            v8::Local<v8::Context> context) {
   DCHECK(object);
@@ -122,7 +122,8 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result) {
   return true;
 }
 
-PP_Var NPVariantToPPVar(PluginInstance* instance, const NPVariant* variant) {
+PP_Var NPVariantToPPVar(PluginInstanceImpl* instance,
+                        const NPVariant* variant) {
   switch (variant->type) {
     case NPVariantType_Void:
       return PP_MakeUndefined();
@@ -171,7 +172,7 @@ PP_Var NPIdentifierToPPVar(NPIdentifier id) {
   return PP_MakeInt32(int_value);
 }
 
-PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
+PP_Var NPObjectToPPVar(PluginInstanceImpl* instance, NPObject* object) {
   WebPluginContainer* container = instance->container();
   // It's possible that container() is NULL if the plugin has been removed from
   // the DOM (but the PluginInstance is not destroyed yet).
@@ -183,7 +184,7 @@ PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
   return NPObjectToPPVarImpl(instance, object, context);
 }
 
-PP_Var NPObjectToPPVarForTest(PluginInstance* instance, NPObject* object) {
+PP_Var NPObjectToPPVarForTest(PluginInstanceImpl* instance, NPObject* object) {
   v8::Isolate* test_isolate = v8::Isolate::New();
   PP_Var result = PP_MakeUndefined();
   {
@@ -279,7 +280,7 @@ void PPResultAndExceptionToNPResult::ThrowException() {
 // PPVarArrayFromNPVariantArray ------------------------------------------------
 
 PPVarArrayFromNPVariantArray::PPVarArrayFromNPVariantArray(
-    PluginInstance* instance,
+    PluginInstanceImpl* instance,
     size_t size,
     const NPVariant* variants)
     : size_(size) {
@@ -298,7 +299,8 @@ PPVarArrayFromNPVariantArray::~PPVarArrayFromNPVariantArray() {
 
 // PPVarFromNPObject -----------------------------------------------------------
 
-PPVarFromNPObject::PPVarFromNPObject(PluginInstance* instance, NPObject* object)
+PPVarFromNPObject::PPVarFromNPObject(PluginInstanceImpl* instance,
+                                     NPObject* object)
     : var_(NPObjectToPPVar(instance, object)) {
 }
 

@@ -17,7 +17,7 @@ class Resource;
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
+class PluginInstanceImpl;
 class PluginModule;
 class PluginDelegate;
 
@@ -30,7 +30,8 @@ class ResourceHelper {
  public:
   // Returns the instance implementation object for the given resource, or NULL
   // if the resource has outlived its instance.
-  static PluginInstance* GetPluginInstance(const ::ppapi::Resource* resource);
+  static PluginInstanceImpl* GetPluginInstance(
+      const ::ppapi::Resource* resource);
 
   // Returns the module for the given resource, or NULL if the resource has
   // outlived its instance.
@@ -42,7 +43,7 @@ class ResourceHelper {
   static PluginDelegate* GetPluginDelegate(const ::ppapi::Resource* resource);
 
   // Returns the instance implementation object for the pp_instance.
-  static PluginInstance* PPInstanceToPluginInstance(PP_Instance instance);
+  static PluginInstanceImpl* PPInstanceToPluginInstance(PP_Instance instance);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceHelper);

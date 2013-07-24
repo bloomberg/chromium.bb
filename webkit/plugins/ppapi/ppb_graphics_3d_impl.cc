@@ -19,7 +19,7 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "webkit/plugins/plugin_switches.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::thunk::EnterResourceNoLock;
@@ -236,7 +236,7 @@ bool PPB_Graphics3D_Impl::Init(PPB_Graphics3D_API* share_context,
 
 bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
                                   const int32_t* attrib_list) {
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return false;
 
@@ -307,7 +307,7 @@ void PPB_Graphics3D_Impl::SendContextLost() {
   // By the time we run this, the instance may have been deleted, or in the
   // process of being deleted. Even in the latter case, we don't want to send a
   // callback after DidDestroy.
-  PluginInstance* instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* instance = ResourceHelper::GetPluginInstance(this);
   if (!instance || !instance->container())
     return;
 

@@ -14,7 +14,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ui/gfx/point.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace chrome {
 

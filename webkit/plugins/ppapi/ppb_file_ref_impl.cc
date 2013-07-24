@@ -21,7 +21,7 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::HostResource;
@@ -232,7 +232,7 @@ PPB_FileRef_Impl::~PPB_FileRef_Impl() {
 PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Instance instance,
                                                    PP_Resource pp_file_system,
                                                    const std::string& path) {
-  PluginInstance* plugin_instance =
+  PluginInstanceImpl* plugin_instance =
       ResourceHelper::PPInstanceToPluginInstance(instance);
   if (!plugin_instance || !plugin_instance->delegate())
     return 0;
@@ -309,7 +309,7 @@ int32_t PPB_FileRef_Impl::MakeDirectory(
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
   plugin_instance->delegate()->MakeDirectory(
@@ -324,7 +324,7 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
   plugin_instance->delegate()->Touch(
@@ -339,7 +339,7 @@ int32_t PPB_FileRef_Impl::Delete(scoped_refptr<TrackedCallback> callback) {
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
   plugin_instance->delegate()->Delete(
@@ -362,7 +362,7 @@ int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
 
   // TODO(viettrungluu): Also cancel when the new file ref is destroyed?
   // http://crbug.com/67624
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
   plugin_instance->delegate()->Rename(
@@ -405,7 +405,7 @@ GURL PPB_FileRef_Impl::GetFileSystemURL() const {
   // We need to trim off the '/' before calling Resolve, as FileSystem URLs
   // start with a storage type identifier that looks like a path segment.
 
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   PluginDelegate* delegate =
       plugin_instance ? plugin_instance->delegate() : NULL;
   if (!delegate)
@@ -415,7 +415,7 @@ GURL PPB_FileRef_Impl::GetFileSystemURL() const {
 }
 
 bool PPB_FileRef_Impl::IsValidNonExternalFileSystem() const {
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   PluginDelegate* delegate =
       plugin_instance ? plugin_instance->delegate() : NULL;
   return delegate &&
@@ -425,7 +425,7 @@ bool PPB_FileRef_Impl::IsValidNonExternalFileSystem() const {
 }
 
 bool PPB_FileRef_Impl::HasValidFileSystem() const {
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   PluginDelegate* delegate =
       plugin_instance ? plugin_instance->delegate() : NULL;
   return delegate && delegate->IsFileSystemOpened(pp_instance(), file_system_);
@@ -440,7 +440,7 @@ int32_t PPB_FileRef_Impl::Query(PP_FileInfo* info,
 int32_t PPB_FileRef_Impl::QueryInHost(
     linked_ptr<PP_FileInfo> info,
     scoped_refptr<TrackedCallback> callback) {
-  scoped_refptr<PluginInstance> plugin_instance =
+  scoped_refptr<PluginInstanceImpl> plugin_instance =
       ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance.get())
     return PP_ERROR_FAILED;
@@ -462,7 +462,8 @@ int32_t PPB_FileRef_Impl::QueryInHost(
     if (!HasValidFileSystem())
       return PP_ERROR_NOACCESS;
 
-    PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+    PluginInstanceImpl* plugin_instance =
+        ResourceHelper::GetPluginInstance(this);
     PluginDelegate* delegate =
         plugin_instance ? plugin_instance->delegate() : NULL;
     if (!delegate)
@@ -492,7 +493,7 @@ int32_t PPB_FileRef_Impl::ReadDirectoryEntriesInHost(
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
 

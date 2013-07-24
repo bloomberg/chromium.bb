@@ -25,7 +25,7 @@ class Rect;
 namespace webkit {
 namespace ppapi {
 class PPB_ImageData_Impl;
-class PluginInstance;
+class PluginInstanceImpl;
 }  // namespace ppapi
 }  // namespace webkit
 
@@ -58,7 +58,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
   virtual bool ReadImageData(PP_Resource image,
                              const PP_Point* top_left) OVERRIDE;
   virtual bool BindToInstance(
-      webkit::ppapi::PluginInstance* new_instance) OVERRIDE;
+      webkit::ppapi::PluginInstanceImpl* new_instance) OVERRIDE;
   virtual void Paint(WebKit::WebCanvas* canvas,
                      const gfx::Rect& plugin_rect,
                      const gfx::Rect& paint_rect) OVERRIDE;
@@ -142,7 +142,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   // Non-owning pointer to the plugin instance this context is currently bound
   // to, if any. If the context is currently unbound, this will be NULL.
-  webkit::ppapi::PluginInstance* bound_instance_;
+  webkit::ppapi::PluginInstanceImpl* bound_instance_;
 
   // Keeps track of all drawing commands queued before a Flush call.
   struct QueuedOperation;

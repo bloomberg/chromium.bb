@@ -18,7 +18,7 @@
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using ppapi::NPObjectVar;
 using ppapi::PpapiGlobals;
@@ -119,7 +119,7 @@ class ObjectAccessorTryCatch : public TryCatch {
 
   NPObjectVar* object() { return object_.get(); }
 
-  PluginInstance* GetPluginInstance() {
+  PluginInstanceImpl* GetPluginInstance() {
     return HostGlobals::Get()->GetInstance(object()->pp_instance());
   }
 
@@ -332,7 +332,7 @@ PP_Var CallDeprecated(PP_Var var,
   ObjectAccessorTryCatch accessor(var, exception);
   if (accessor.has_exception())
     return PP_MakeUndefined();
-  PluginInstance* plugin = accessor.GetPluginInstance();
+  PluginInstanceImpl* plugin = accessor.GetPluginInstance();
   if (plugin && plugin->IsProcessingUserGesture()) {
     WebKit::WebScopedUserGesture user_gesture(
         plugin->CurrentUserGestureToken());
@@ -389,7 +389,7 @@ bool IsInstanceOfDeprecated(PP_Var var,
 PP_Var CreateObjectDeprecated(PP_Instance pp_instance,
                               const PPP_Class_Deprecated* ppp_class,
                               void* ppp_class_data) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
+  PluginInstanceImpl* instance = HostGlobals::Get()->GetInstance(pp_instance);
   if (!instance) {
     DLOG(ERROR) << "Create object passed an invalid instance.";
     return PP_MakeNull();

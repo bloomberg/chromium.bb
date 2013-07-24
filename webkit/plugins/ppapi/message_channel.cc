@@ -25,7 +25,7 @@
 #include "webkit/plugins/ppapi/host_array_buffer_var.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/v8_var_converter.h"
 
 using ppapi::ArrayBufferVar;
@@ -328,7 +328,7 @@ MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {
 
 MessageChannel::MessageChannelNPObject::~MessageChannelNPObject() {}
 
-MessageChannel::MessageChannel(PluginInstance* instance)
+MessageChannel::MessageChannel(PluginInstanceImpl* instance)
     : instance_(instance),
       passthrough_object_(NULL),
       np_object_(NULL),
@@ -425,7 +425,7 @@ void MessageChannel::DrainEarlyMessageQueue() {
   // Take a reference on the PluginInstance. This is because JavaScript code
   // may delete the plugin, which would destroy the PluginInstance and its
   // corresponding MessageChannel.
-  scoped_refptr<PluginInstance> instance_ref(instance_);
+  scoped_refptr<PluginInstanceImpl> instance_ref(instance_);
 
   if (early_message_queue_state_ == DRAIN_CANCELLED) {
     early_message_queue_state_ = QUEUE_MESSAGES;

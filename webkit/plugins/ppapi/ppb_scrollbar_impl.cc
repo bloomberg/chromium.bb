@@ -19,7 +19,7 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
@@ -54,7 +54,7 @@ PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {
 }
 
 void PPB_Scrollbar_Impl::Init(bool vertical) {
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return;
   scrollbar_.reset(WebPluginScrollbar::createForPlugin(

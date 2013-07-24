@@ -5,7 +5,6 @@
 #include "webkit/plugins/ppapi/ppb_x509_certificate_private_impl.h"
 
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 namespace webkit {

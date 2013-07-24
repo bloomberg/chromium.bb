@@ -20,6 +20,7 @@
 #include "grit/webkit_strings.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
@@ -136,7 +137,7 @@ WebKit::WebElement GetWebElement(PP_Instance instance_id) {
   PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return WebKit::WebElement();
-  return instance->container()->element();
+  return instance->GetContainer()->element();
 }
 
 printing::PrintWebViewHelper* GetPrintWebViewHelper(
@@ -289,30 +290,30 @@ void DidStartLoading(PP_Instance instance_id) {
   PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return;
-  instance->render_view()->DidStartLoading();
+  instance->GetRenderView()->DidStartLoading();
 }
 
 void DidStopLoading(PP_Instance instance_id) {
   PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return;
-  instance->render_view()->DidStopLoading();
+  instance->GetRenderView()->DidStopLoading();
 }
 
 void SetContentRestriction(PP_Instance instance_id, int restrictions) {
   PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return;
-  instance->render_view()->Send(
+  instance->GetRenderView()->Send(
       new ChromeViewHostMsg_PDFUpdateContentRestrictions(
-          instance->render_view()->GetRoutingID(), restrictions));
+          instance->GetRenderView()->GetRoutingID(), restrictions));
 }
 
-void HistogramPDFPageCount(PP_Instance /*instance*/, int count) {
+void HistogramPDFPageCount(PP_Instance instance, int count) {
   UMA_HISTOGRAM_COUNTS_10000("PDF.PageCount", count);
 }
 
-void UserMetricsRecordAction(PP_Instance /*instance*/, PP_Var action) {
+void UserMetricsRecordAction(PP_Instance instance, PP_Var action) {
   scoped_refptr<ppapi::StringVar> action_str(
       ppapi::StringVar::FromPPVar(action));
   if (action_str.get())
@@ -328,7 +329,7 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
   if (!instance->IsFullPagePlugin())
     return;
 
-  WebView* view = instance->container()->element().document().frame()->view();
+  WebView* view = instance->GetContainer()->element().document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
   render_view->Send(new ChromeViewHostMsg_PDFHasUnsupportedFeature(
       render_view->GetRoutingID()));
@@ -338,9 +339,9 @@ void SaveAs(PP_Instance instance_id) {
   PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return;
-  GURL url = instance->plugin_url();
+  GURL url = instance->GetPluginURL();
 
-  content::RenderView* render_view = instance->render_view();
+  content::RenderView* render_view = instance->GetRenderView();
   WebKit::WebFrame* frame = render_view->GetWebView()->mainFrame();
   content::Referrer referrer(frame->document().url(),
                              frame->document().referrerPolicy());

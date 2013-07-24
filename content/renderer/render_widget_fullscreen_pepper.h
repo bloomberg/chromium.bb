@@ -14,7 +14,7 @@
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
+class PluginInstanceImpl;
 
 }  // namespace ppapi
 }  // namespace webkit
@@ -34,7 +34,7 @@ class RenderWidgetFullscreenPepper :
  public:
   static RenderWidgetFullscreenPepper* Create(
       int32 opener_id,
-      webkit::ppapi::PluginInstance* plugin,
+      webkit::ppapi::PluginInstanceImpl* plugin,
       const GURL& active_url,
       const WebKit::WebScreenInfo& screen_info);
 
@@ -51,7 +51,7 @@ class RenderWidgetFullscreenPepper :
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Could be NULL when this widget is closing.
-  webkit::ppapi::PluginInstance* plugin() const { return plugin_; }
+  webkit::ppapi::PluginInstanceImpl* plugin() const { return plugin_; }
 
   MouseLockDispatcher* mouse_lock_dispatcher() const {
     return mouse_lock_dispatcher_.get();
@@ -60,7 +60,7 @@ class RenderWidgetFullscreenPepper :
   bool is_compositing() const { return !!layer_; }
 
  protected:
-  RenderWidgetFullscreenPepper(webkit::ppapi::PluginInstance* plugin,
+  RenderWidgetFullscreenPepper(webkit::ppapi::PluginInstanceImpl* plugin,
                                const GURL& active_url,
                                const WebKit::WebScreenInfo& screen_info);
   virtual ~RenderWidgetFullscreenPepper();
@@ -70,7 +70,7 @@ class RenderWidgetFullscreenPepper :
   virtual void DidInitiatePaint() OVERRIDE;
   virtual void DidFlushPaint() OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
+  virtual webkit::ppapi::PluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,
@@ -90,7 +90,7 @@ class RenderWidgetFullscreenPepper :
   GURL active_url_;
 
   // The plugin instance this widget wraps.
-  webkit::ppapi::PluginInstance* plugin_;
+  webkit::ppapi::PluginInstanceImpl* plugin_;
 
   WebKit::WebLayer* layer_;
 

@@ -21,7 +21,7 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "webkit/plugins/plugin_switches.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using ppapi::CheckIdType;
 using ppapi::MakeTypedId;
@@ -119,14 +119,14 @@ HostGlobals::~HostGlobals() {
 
 ::ppapi::thunk::ResourceCreationAPI* HostGlobals::GetResourceCreationAPI(
     PP_Instance pp_instance) {
-  PluginInstance* instance = GetInstance(pp_instance);
+  PluginInstanceImpl* instance = GetInstance(pp_instance);
   if (!instance)
     return NULL;
   return &instance->resource_creation();
 }
 
 PP_Module HostGlobals::GetModuleForInstance(PP_Instance instance) {
-  PluginInstance* inst = GetInstance(instance);
+  PluginInstanceImpl* inst = GetInstance(instance);
   if (!inst)
     return 0;
   return inst->module()->pp_module();
@@ -150,7 +150,8 @@ void HostGlobals::LogWithSource(PP_Instance instance,
                                 PP_LogLevel level,
                                 const std::string& source,
                                 const std::string& value) {
-  PluginInstance* instance_object = HostGlobals::Get()->GetInstance(instance);
+  PluginInstanceImpl* instance_object =
+      HostGlobals::Get()->GetInstance(instance);
   if (instance_object) {
     instance_object->container()->element().document().frame()->
         addMessageToConsole(MakeLogMessage(level, source, value));
@@ -185,7 +186,7 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
 }
 
 base::TaskRunner* HostGlobals::GetFileTaskRunner(PP_Instance instance) {
-  scoped_refptr<PluginInstance> plugin_instance = GetInstance(instance);
+  scoped_refptr<PluginInstanceImpl> plugin_instance = GetInstance(instance);
   DCHECK(plugin_instance.get());
   scoped_refptr<base::MessageLoopProxy> message_loop =
       plugin_instance->delegate()->GetFileThreadMessageLoopProxy();
@@ -235,7 +236,7 @@ PluginModule* HostGlobals::GetModule(PP_Module module) {
   return found->second;
 }
 
-PP_Instance HostGlobals::AddInstance(PluginInstance* instance) {
+PP_Instance HostGlobals::AddInstance(PluginInstanceImpl* instance) {
   DCHECK(instance_map_.find(instance->pp_instance()) == instance_map_.end());
 
   // Use a random number for the instance ID. This helps prevent some
@@ -267,7 +268,7 @@ void HostGlobals::InstanceCrashed(PP_Instance instance) {
   host_var_tracker_.DidDeleteInstance(instance);
 }
 
-PluginInstance* HostGlobals::GetInstance(PP_Instance instance) {
+PluginInstanceImpl* HostGlobals::GetInstance(PP_Instance instance) {
   DLOG_IF(ERROR, !CheckIdType(instance, ::ppapi::PP_ID_TYPE_INSTANCE))
       << instance << " is not a PP_Instance.";
   InstanceMap::iterator found = instance_map_.find(instance);

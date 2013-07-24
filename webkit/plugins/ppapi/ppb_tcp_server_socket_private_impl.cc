@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 

@@ -9,7 +9,6 @@
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 using ppapi::PpapiGlobals;
 using ppapi::thunk::EnterResource;

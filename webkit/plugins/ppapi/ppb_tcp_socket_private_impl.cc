@@ -7,7 +7,7 @@
 #include "ppapi/shared_impl/socket_option_data.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 namespace webkit {
@@ -123,7 +123,8 @@ void PPB_TCPSocket_Private_Impl::SendSetOption(
 
 PluginDelegate* PPB_TCPSocket_Private_Impl::GetPluginDelegate(
     PP_Instance instance) {
-  PluginInstance* plugin_instance = HostGlobals::Get()->GetInstance(instance);
+  PluginInstanceImpl* plugin_instance =
+      HostGlobals::Get()->GetInstance(instance);
   if (!plugin_instance)
     return NULL;
   return plugin_instance->delegate();

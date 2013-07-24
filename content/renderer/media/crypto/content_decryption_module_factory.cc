@@ -13,7 +13,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #elif defined(OS_ANDROID)
 #include "content/renderer/media/android/proxy_media_keys.h"
@@ -23,10 +23,10 @@
 namespace content {
 
 #if defined(ENABLE_PEPPER_CDMS)
-// Returns the PluginInstance associated with the Helper Plugin.
+// Returns the PluginInstanceImpl associated with the Helper Plugin.
 // If a non-NULL pointer is returned, the caller must call closeHelperPlugin()
 // when the Helper Plugin is no longer needed.
-static scoped_refptr<webkit::ppapi::PluginInstance> CreateHelperPlugin(
+static scoped_refptr<webkit::ppapi::PluginInstanceImpl> CreateHelperPlugin(
     const std::string& plugin_type,
     WebKit::WebMediaPlayerClient* web_media_player_client,
     WebKit::WebFrame* web_frame) {
@@ -58,7 +58,7 @@ static scoped_ptr<media::MediaKeys> CreatePpapiDecryptor(
 
   std::string plugin_type = GetPepperType(key_system);
   DCHECK(!plugin_type.empty());
-  const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance =
+  const scoped_refptr<webkit::ppapi::PluginInstanceImpl>& plugin_instance =
       CreateHelperPlugin(plugin_type, web_media_player_client, web_frame);
   if (!plugin_instance.get()) {
     DLOG(ERROR) << "ProxyDecryptor: plugin instance creation failed.";

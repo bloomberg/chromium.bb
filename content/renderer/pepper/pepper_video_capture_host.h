@@ -18,13 +18,14 @@
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 
 namespace content {
+class RendererPpapiHostImpl;
 
 class PepperVideoCaptureHost
   : public ppapi::host::ResourceHost,
     public webkit::ppapi::PluginDelegate::PlatformVideoCaptureEventHandler,
     public PepperDeviceEnumerationHostHelper::Delegate {
  public:
-  PepperVideoCaptureHost(RendererPpapiHost* host,
+  PepperVideoCaptureHost(RendererPpapiHostImpl* host,
                          PP_Instance instance,
                          PP_Resource resource);
 
@@ -90,7 +91,7 @@ class PepperVideoCaptureHost
     scoped_refptr<webkit::ppapi::PPB_Buffer_Impl> buffer;
   };
 
-  RendererPpapiHost* renderer_ppapi_host_;
+  RendererPpapiHostImpl* renderer_ppapi_host_;
 
   std::vector<BufferInfo> buffers_;
   size_t buffer_count_hint_;

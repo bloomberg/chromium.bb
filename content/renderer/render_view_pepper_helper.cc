@@ -17,7 +17,7 @@ WebKit::WebPlugin* RenderViewPepperHelper::CreatePepperWebPlugin(
   return NULL;
 }
 
-webkit::ppapi::PluginInstance*
+webkit::ppapi::PluginInstanceImpl*
 RenderViewPepperHelper::GetBitmapForOptimizedPluginPaint(
     const gfx::Rect& paint_bounds,
     TransportDIB** dib,

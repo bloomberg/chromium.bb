@@ -14,7 +14,6 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_broker_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {

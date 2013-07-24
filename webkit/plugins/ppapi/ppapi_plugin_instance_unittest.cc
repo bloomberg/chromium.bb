@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -41,7 +41,7 @@ class MockPlatformGraphics2D : public PluginDelegate::PlatformGraphics2D {
                              const PP_Point* top_left) OVERRIDE {
     return false;
   }
-  virtual bool BindToInstance(PluginInstance* new_instance) OVERRIDE {
+  virtual bool BindToInstance(PluginInstanceImpl* new_instance) OVERRIDE {
     bound_instance_ = new_instance;
     return true;
   }
@@ -62,7 +62,7 @@ class MockPlatformGraphics2D : public PluginDelegate::PlatformGraphics2D {
  private:
   PPB_ImageData_Impl* image_data_;
   float scale_;
-  PluginInstance* bound_instance_;
+  PluginInstanceImpl* bound_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPlatformGraphics2D);
 };
@@ -101,7 +101,7 @@ TEST_F(PpapiPluginInstanceTest, GetBitmap2xScale) {
   MockPlatformGraphics2D mock_graphics_2d(image_data.get(), 1.0 / scale);
   instance()->SetBoundGraphics2DForTest(&mock_graphics_2d);
 
-  instance()->set_always_on_top(true);
+  instance()->SetAlwaysOnTop(true);
   SetViewSize(size.width, size.height);
 
   gfx::Rect bounds(0, 0, 1, 1);

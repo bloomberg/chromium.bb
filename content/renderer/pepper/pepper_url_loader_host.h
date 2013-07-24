@@ -21,7 +21,7 @@ class WebURLLoader;
 
 namespace content {
 
-class RendererPpapiHost;
+class RendererPpapiHostImpl;
 
 class PepperURLLoaderHost
     : public ppapi::host::ResourceHost,
@@ -29,7 +29,7 @@ class PepperURLLoaderHost
  public:
   // If main_document_loader is true, PP_Resource must be 0 since it will be
   // pending until the plugin resource attaches to it.
-  PepperURLLoaderHost(RendererPpapiHost* host,
+  PepperURLLoaderHost(RendererPpapiHostImpl* host,
                       bool main_document_loader,
                       PP_Instance instance,
                       PP_Resource resource);
@@ -99,7 +99,7 @@ class PepperURLLoaderHost
   void UpdateProgress();
 
   // Non-owning pointer.
-  RendererPpapiHost* renderer_ppapi_host_;
+  RendererPpapiHostImpl* renderer_ppapi_host_;
 
   // If true, then the plugin instance is a full-frame plugin and we're just
   // wrapping the main document's loader (i.e. loader_ is null).

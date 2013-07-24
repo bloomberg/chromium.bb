@@ -22,7 +22,7 @@
 #include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
@@ -265,7 +265,7 @@ struct PluginObject::NPObjectWrapper : public NPObject {
   PluginObject* obj;
 };
 
-PluginObject::PluginObject(PluginInstance* instance,
+PluginObject::PluginObject(PluginInstanceImpl* instance,
                            NPObjectWrapper* object_wrapper,
                            const PPP_Class_Deprecated* ppp_class,
                            void* ppp_class_data)
@@ -290,7 +290,7 @@ PluginObject::~PluginObject() {
   instance_->RemovePluginObject(this);
 }
 
-PP_Var PluginObject::Create(PluginInstance* instance,
+PP_Var PluginObject::Create(PluginInstanceImpl* instance,
                             const PPP_Class_Deprecated* ppp_class,
                             void* ppp_class_data) {
   // This will internally end up calling our AllocateObjectWrapper via the

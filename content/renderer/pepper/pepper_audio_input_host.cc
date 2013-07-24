@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ipc/ipc_message.h"
 #include "media/audio/shared_memory_util.h"
 #include "ppapi/c/pp_errors.h"
@@ -17,7 +17,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 namespace content {
 
@@ -41,7 +41,7 @@ base::PlatformFile ConvertSharedMemoryHandle(
 }  // namespace
 
 PepperAudioInputHost::PepperAudioInputHost(
-    RendererPpapiHost* host,
+    RendererPpapiHostImpl* host,
     PP_Instance instance,
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
@@ -84,8 +84,8 @@ void PepperAudioInputHost::StreamCreationFailed() {
 }
 
 webkit::ppapi::PluginDelegate* PepperAudioInputHost::GetPluginDelegate() {
-  webkit::ppapi::PluginInstance* instance =
-      renderer_ppapi_host_->GetPluginInstance(pp_instance());
+  webkit::ppapi::PluginInstanceImpl* instance =
+      renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
   if (instance)
     return instance->delegate();
   return NULL;
@@ -105,8 +105,8 @@ int32_t PepperAudioInputHost::OnOpen(
   if (!plugin_delegate)
     return PP_ERROR_FAILED;
 
-  webkit::ppapi::PluginInstance* instance =
-      renderer_ppapi_host_->GetPluginInstance(pp_instance());
+  webkit::ppapi::PluginInstanceImpl* instance =
+      renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
 

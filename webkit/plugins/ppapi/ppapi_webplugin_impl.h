@@ -31,7 +31,7 @@ namespace webkit {
 namespace ppapi {
 
 class PluginDelegate;
-class PluginInstance;
+class PluginInstanceImpl;
 class PluginModule;
 class PPB_URLLoader_Impl;
 
@@ -43,7 +43,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
       const base::WeakPtr<PluginDelegate>& plugin_delegate,
       const base::WeakPtr<content::RenderView>& render_view);
 
-  PluginInstance* instance() { return instance_.get(); }
+  PluginInstanceImpl* instance() { return instance_.get(); }
 
   // WebKit::WebPlugin implementation.
   virtual WebKit::WebPluginContainer* container() const;
@@ -103,7 +103,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
   // True if the instance represents the entire document in a frame instead of
   // being an embedded resource.
   bool full_frame_;
-  scoped_refptr<PluginInstance> instance_;
+  scoped_refptr<PluginInstanceImpl> instance_;
   gfx::Rect plugin_rect_;
   PP_Var instance_object_;
   WebKit::WebPluginContainer* container_;

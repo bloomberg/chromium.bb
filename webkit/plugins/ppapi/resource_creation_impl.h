@@ -13,7 +13,7 @@
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
+class PluginInstanceImpl;
 
 // This is an abstract class.  ResourceCreationAPI functions that implement
 // "old-style" resources are handled here. See
@@ -22,7 +22,7 @@ class PluginInstance;
 class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
     : public NON_EXPORTED_BASE(::ppapi::thunk::ResourceCreationAPI) {
  public:
-  explicit ResourceCreationImpl(PluginInstance* instance);
+  explicit ResourceCreationImpl(PluginInstanceImpl* instance);
   virtual ~ResourceCreationImpl();
 
   // ResourceCreationAPI implementation.

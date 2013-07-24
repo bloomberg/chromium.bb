@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/platform_file.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/ppapi_unittest.h"
 #include "webkit/plugins/ppapi/quota_file_io.h"
 

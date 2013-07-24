@@ -17,7 +17,7 @@ struct PP_Var;
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
+class PluginInstanceImpl;
 
 // MessageChannel implements bidirectional postMessage functionality, allowing
 // calls from JavaScript to plugins and vice-versa. See
@@ -45,7 +45,7 @@ class MessageChannel {
     base::WeakPtr<MessageChannel> message_channel;
   };
 
-  explicit MessageChannel(PluginInstance* instance);
+  explicit MessageChannel(PluginInstanceImpl* instance);
   ~MessageChannel();
 
   // Post a message to the onmessage handler for this channel's instance
@@ -66,7 +66,7 @@ class MessageChannel {
 
   NPObject* np_object() { return np_object_; }
 
-  PluginInstance* instance() {
+  PluginInstanceImpl* instance() {
     return instance_;
   }
 
@@ -77,7 +77,7 @@ class MessageChannel {
   void StopQueueingJavaScriptMessages();
 
  private:
-  PluginInstance* instance_;
+  PluginInstanceImpl* instance_;
 
   // We pass all non-postMessage calls through to the passthrough_object_.
   // This way, a plugin can use PPB_Class or PPP_Class_Deprecated and also

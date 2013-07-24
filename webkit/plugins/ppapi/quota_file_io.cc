@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using base::PlatformFile;
@@ -288,7 +288,7 @@ bool QuotaFileIO::WillSetLength(int64_t length,
 }
 
 PluginDelegate* QuotaFileIO::GetPluginDelegate() const {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance_);
+  PluginInstanceImpl* instance = HostGlobals::Get()->GetInstance(pp_instance_);
   if (instance)
     return instance->delegate();
   return NULL;

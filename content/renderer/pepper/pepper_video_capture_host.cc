@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/host_dispatcher.h"
@@ -15,7 +16,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using ppapi::HostResource;
 using ppapi::TrackedCallback;
@@ -33,7 +34,7 @@ const uint32_t kMaxBuffers = 20;
 
 namespace content {
 
-PepperVideoCaptureHost::PepperVideoCaptureHost(RendererPpapiHost* host,
+PepperVideoCaptureHost::PepperVideoCaptureHost(RendererPpapiHostImpl* host,
                                                PP_Instance instance,
                                                PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
@@ -241,8 +242,8 @@ void PepperVideoCaptureHost::OnDeviceInfoReceived(
 }
 
 webkit::ppapi::PluginDelegate* PepperVideoCaptureHost::GetPluginDelegate() {
-  webkit::ppapi::PluginInstance* instance =
-      renderer_ppapi_host_->GetPluginInstance(pp_instance());
+  webkit::ppapi::PluginInstanceImpl* instance =
+      renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
   if (instance)
     return instance->delegate();
   return NULL;
@@ -269,7 +270,7 @@ int32_t PepperVideoCaptureHost::OnOpen(
 
   platform_video_capture_ =
       plugin_delegate->CreateVideoCapture(device_id,
-          instance->container()->element().document().url(), this);
+          instance->GetContainer()->element().document().url(), this);
 
   open_reply_context_ = context->MakeReplyMessageContext();
 

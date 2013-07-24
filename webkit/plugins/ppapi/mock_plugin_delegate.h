@@ -18,27 +18,27 @@ class MockPluginDelegate : public PluginDelegate {
   MockPluginDelegate();
   virtual ~MockPluginDelegate();
 
-  virtual void PluginFocusChanged(PluginInstance* instance, bool focused);
-  virtual void PluginTextInputTypeChanged(PluginInstance* instance);
-  virtual void PluginCaretPositionChanged(PluginInstance* instance);
-  virtual void PluginRequestedCancelComposition(PluginInstance* instance);
-  virtual void PluginSelectionChanged(PluginInstance* instance);
+  virtual void PluginFocusChanged(PluginInstanceImpl* instance, bool focused);
+  virtual void PluginTextInputTypeChanged(PluginInstanceImpl* instance);
+  virtual void PluginCaretPositionChanged(PluginInstanceImpl* instance);
+  virtual void PluginRequestedCancelComposition(PluginInstanceImpl* instance);
+  virtual void PluginSelectionChanged(PluginInstanceImpl* instance);
   virtual void SimulateImeSetComposition(
       const base::string16& text,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end);
   virtual void SimulateImeConfirmComposition(const base::string16& text);
-  virtual void PluginCrashed(PluginInstance* instance);
-  virtual void InstanceCreated(PluginInstance* instance);
-  virtual void InstanceDeleted(PluginInstance* instance);
+  virtual void PluginCrashed(PluginInstanceImpl* instance);
+  virtual void InstanceCreated(PluginInstanceImpl* instance);
+  virtual void InstanceDeleted(PluginInstanceImpl* instance);
   virtual scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
-      CreateResourceCreationAPI(PluginInstance* instance);
+      CreateResourceCreationAPI(PluginInstanceImpl* instance);
   virtual SkBitmap* GetSadPluginBitmap();
   virtual WebKit::WebPlugin* CreatePluginReplacement(
       const base::FilePath& file_path);
   virtual PlatformImage2D* CreateImage2D(int width, int height);
-  virtual PlatformGraphics2D* GetGraphics2D(PluginInstance* instance,
+  virtual PlatformGraphics2D* GetGraphics2D(PluginInstanceImpl* instance,
                                             PP_Resource graphics_2d);
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
@@ -152,7 +152,7 @@ class MockPluginDelegate : public PluginDelegate {
       const std::vector<char>& der,
       ::ppapi::PPB_X509Certificate_Fields* fields);
   virtual FullscreenContainer* CreateFullscreenContainer(
-      PluginInstance* instance);
+      PluginInstanceImpl* instance);
   virtual gfx::Size GetScreenSize();
   virtual std::string GetDefaultEncoding();
   virtual void ZoomLimitsChanged(double minimum_factor,
@@ -163,12 +163,12 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void SaveURLAs(const GURL& url);
   virtual base::SharedMemory* CreateAnonymousSharedMemory(size_t size);
   virtual ::ppapi::Preferences GetPreferences();
-  virtual bool LockMouse(PluginInstance* instance);
-  virtual void UnlockMouse(PluginInstance* instance);
-  virtual bool IsMouseLocked(PluginInstance* instance);
-  virtual void DidChangeCursor(PluginInstance* instance,
+  virtual bool LockMouse(PluginInstanceImpl* instance);
+  virtual void UnlockMouse(PluginInstanceImpl* instance);
+  virtual bool IsMouseLocked(PluginInstanceImpl* instance);
+  virtual void DidChangeCursor(PluginInstanceImpl* instance,
                                const WebKit::WebCursorInfo& cursor);
-  virtual void DidReceiveMouseEvent(PluginInstance* instance);
+  virtual void DidReceiveMouseEvent(PluginInstanceImpl* instance);
   virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
   virtual bool IsInFullscreenMode();
   virtual bool IsPageVisible() const;
@@ -180,7 +180,7 @@ class MockPluginDelegate : public PluginDelegate {
       base::ProcessId target_process_id,
       bool should_close_source) const;
   virtual bool IsRunningInProcess(PP_Instance instance) const;
-  virtual void HandleDocumentLoad(PluginInstance* instance,
+  virtual void HandleDocumentLoad(PluginInstanceImpl* instance,
                                   const WebKit::WebURLResponse& response);
   virtual content::RendererPpapiHost* CreateExternalPluginModule(
       scoped_refptr<PluginModule> module,

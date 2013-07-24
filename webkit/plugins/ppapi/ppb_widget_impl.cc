@@ -8,8 +8,8 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_input_event_api.h"
 #include "ppapi/thunk/ppb_widget_api.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
@@ -65,7 +65,7 @@ void PPB_Widget_Impl::SetScale(float scale) {
 }
 
 void PPB_Widget_Impl::Invalidate(const PP_Rect* dirty) {
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return;
   const PPP_Widget_Dev* widget = static_cast<const PPP_Widget_Dev*>(

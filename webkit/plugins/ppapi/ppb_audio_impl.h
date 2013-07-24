@@ -18,7 +18,6 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "webkit/plugins/ppapi/audio_helper.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace webkit {
 namespace ppapi {

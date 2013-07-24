@@ -49,7 +49,7 @@ namespace webkit {
 namespace ppapi {
 
 class PluginDelegate;
-class PluginInstance;
+class PluginInstanceImpl;
 
 // Represents one plugin library loaded into one renderer. This library may
 // have multiple instances.
@@ -81,7 +81,7 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
     virtual ~EmbedderState() {}
   };
 
-  typedef std::set<PluginInstance*> PluginInstanceSet;
+  typedef std::set<PluginInstanceImpl*> PluginInstanceSet;
 
   // You must call one of the Init functions after the constructor to create a
   // module of the type you desire.
@@ -126,7 +126,8 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // InitAsProxied must be called before calling InitAsProxiedExternalPlugin.
   // Returns a result code indicating whether the proxy started successfully or
   // there was an error.
-  PP_ExternalPluginResult InitAsProxiedExternalPlugin(PluginInstance* instance);
+  PP_ExternalPluginResult InitAsProxiedExternalPlugin(
+      PluginInstanceImpl* instance);
 
   bool IsProxied() const;
 
@@ -162,16 +163,16 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   const base::FilePath& path() const { return path_; }
   const ::ppapi::PpapiPermissions& permissions() const { return permissions_; }
 
-  PluginInstance* CreateInstance(PluginDelegate* delegate,
-                                 content::RenderView* render_view,
-                                 WebKit::WebPluginContainer* container,
-                                 const GURL& plugin_url);
+  PluginInstanceImpl* CreateInstance(PluginDelegate* delegate,
+                                     content::RenderView* render_view,
+                                     WebKit::WebPluginContainer* container,
+                                     const GURL& plugin_url);
 
   // Returns "some" plugin instance associated with this module. This is not
   // guaranteed to be any one in particular. This is normally used to execute
   // callbacks up to the browser layer that are not inherently per-instance,
   // but the delegate lives only on the plugin instance so we need one of them.
-  PluginInstance* GetSomeInstance() const;
+  PluginInstanceImpl* GetSomeInstance() const;
 
   const PluginInstanceSet& GetAllInstances() const { return instances_; }
 
@@ -182,8 +183,8 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // This module is associated with a set of instances. The PluginInstance
   // object declares its association with this module in its destructor and
   // releases us in its destructor.
-  void InstanceCreated(PluginInstance* instance);
-  void InstanceDeleted(PluginInstance* instance);
+  void InstanceCreated(PluginInstanceImpl* instance);
+  void InstanceDeleted(PluginInstanceImpl* instance);
 
   scoped_refptr< ::ppapi::CallbackTracker> GetCallbackTracker();
 

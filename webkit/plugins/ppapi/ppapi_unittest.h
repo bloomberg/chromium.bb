@@ -19,7 +19,7 @@ namespace webkit {
 namespace ppapi {
 
 class MockPluginDelegate;
-class PluginInstance;
+class PluginInstanceImpl;
 class PluginModule;
 
 class PpapiUnittest : public testing::Test,
@@ -33,7 +33,7 @@ class PpapiUnittest : public testing::Test,
 
   MockPluginDelegate* delegate() { return delegate_.get(); }
   PluginModule* module() const { return module_.get(); }
-  PluginInstance* instance() const { return instance_.get(); }
+  PluginInstanceImpl* instance() const { return instance_.get(); }
 
   // Provides access to the interfaces implemented by the test. The default one
   // implements PPP_INSTANCE.
@@ -53,7 +53,7 @@ class PpapiUnittest : public testing::Test,
 
   // Note: module must be declared first since we want it to get destroyed last.
   scoped_refptr<PluginModule> module_;
-  scoped_refptr<PluginInstance> instance_;
+  scoped_refptr<PluginInstanceImpl> instance_;
 
   scoped_ptr<base::MessageLoop> message_loop_;
 

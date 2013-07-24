@@ -38,7 +38,7 @@ class PepperInProcessResourceCreation
     : public webkit::ppapi::ResourceCreationImpl {
  public:
   PepperInProcessResourceCreation(RendererPpapiHostImpl* host_impl,
-                                  webkit::ppapi::PluginInstance* instance);
+                                  webkit::ppapi::PluginInstanceImpl* instance);
   virtual ~PepperInProcessResourceCreation();
 
   // ResourceCreation_API implementation.

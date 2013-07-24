@@ -30,7 +30,7 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 // Note that the code in the creation functions in this file should generally
 // be the same as that in ppapi/proxy/resource_creation_proxy.cc. See
@@ -42,7 +42,7 @@ namespace content {
 
 PepperInProcessResourceCreation::PepperInProcessResourceCreation(
     RendererPpapiHostImpl* host_impl,
-    webkit::ppapi::PluginInstance* instance)
+    webkit::ppapi::PluginInstanceImpl* instance)
     : ResourceCreationImpl(instance),
       host_impl_(host_impl) {
 }

@@ -21,7 +21,7 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 namespace content {
 
@@ -126,7 +126,7 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
       ChildThread::current()->file_system_dispatcher();
   reply_context_ = context->MakeReplyMessageContext();
   file_system_dispatcher->OpenFileSystem(
-      GURL(plugin_instance->container()->element().document().url()).
+      GURL(plugin_instance->GetContainer()->element().document().url()).
           GetOrigin(),
       file_system_type, expected_size, true /* create */,
       base::Bind(&PepperFileSystemHost::DidOpenFileSystem,

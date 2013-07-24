@@ -21,14 +21,14 @@
 
 namespace content {
 
-class RendererPpapiHost;
+class RendererPpapiHostImpl;
 
 class PepperAudioInputHost
     : public ppapi::host::ResourceHost,
       public webkit::ppapi::PluginDelegate::PlatformAudioInputClient,
       public PepperDeviceEnumerationHostHelper::Delegate {
  public:
-  PepperAudioInputHost(RendererPpapiHost* host,
+  PepperAudioInputHost(RendererPpapiHostImpl* host,
                        PP_Instance instance,
                        PP_Resource resource);
   virtual ~PepperAudioInputHost();
@@ -69,7 +69,7 @@ class PepperAudioInputHost
   void Close();
 
   // Non-owning pointer.
-  RendererPpapiHost* renderer_ppapi_host_;
+  RendererPpapiHostImpl* renderer_ppapi_host_;
 
   scoped_ptr<ppapi::host::ReplyMessageContext> open_context_;
 

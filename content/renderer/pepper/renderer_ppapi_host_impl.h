@@ -31,7 +31,7 @@ class ResourceCreationAPI;
 
 namespace webkit {
 namespace ppapi {
-class PluginInstance;
+class PluginInstanceImpl;
 class PluginModule;
 }
 }
@@ -81,9 +81,12 @@ class RendererPpapiHostImpl
   // happen automatically.
   scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
       CreateInProcessResourceCreationAPI(
-          webkit::ppapi::PluginInstance* instance);
+          webkit::ppapi::PluginInstanceImpl* instance);
 
   PepperBrowserConnection* GetBrowserConnection(PP_Instance instance) const;
+
+  webkit::ppapi::PluginInstanceImpl* GetPluginInstanceImpl(
+      PP_Instance instance) const;
 
   // RendererPpapiHost implementation.
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
@@ -122,7 +125,7 @@ class RendererPpapiHostImpl
   //
   // We use this to security check the PP_Instance values sent from a plugin to
   // make sure it's not trying to spoof another instance.
-  webkit::ppapi::PluginInstance* GetAndValidateInstance(
+  webkit::ppapi::PluginInstanceImpl* GetAndValidateInstance(
       PP_Instance instance) const;
 
   webkit::ppapi::PluginModule* module_;  // Non-owning pointer.

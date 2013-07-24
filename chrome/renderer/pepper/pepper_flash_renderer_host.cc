@@ -92,7 +92,7 @@ int32_t PepperFlashRendererHost::OnSetInstanceAlwaysOnTop(
   webkit::ppapi::PluginInstance* plugin_instance =
       host_->GetPluginInstance(pp_instance());
   if (plugin_instance)
-    plugin_instance->set_always_on_top(on_top);
+    plugin_instance->SetAlwaysOnTop(on_top);
   // Since no reply is sent for this message, it doesn't make sense to return an
   // error.
   return PP_OK;

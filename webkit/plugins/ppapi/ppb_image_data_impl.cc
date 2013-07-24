@@ -16,7 +16,6 @@
 #include "ppapi/thunk/thunk.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ::ppapi::thunk::PPB_ImageData_API;

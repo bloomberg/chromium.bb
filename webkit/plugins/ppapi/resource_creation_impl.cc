@@ -34,7 +34,7 @@ using ppapi::StringVar;
 namespace webkit {
 namespace ppapi {
 
-ResourceCreationImpl::ResourceCreationImpl(PluginInstance* instance) {
+ResourceCreationImpl::ResourceCreationImpl(PluginInstanceImpl* instance) {
 }
 
 ResourceCreationImpl::~ResourceCreationImpl() {

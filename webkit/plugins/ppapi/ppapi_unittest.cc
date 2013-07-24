@@ -14,7 +14,7 @@
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 namespace webkit {
 namespace ppapi {
@@ -90,8 +90,8 @@ void PpapiUnittest::SetUp() {
   ASSERT_TRUE(module_->InitAsInternalPlugin(entry_points));
 
   // Initialize the mock instance.
-  instance_ = PluginInstance::Create(delegate_.get(), NULL, module(), NULL,
-                                     GURL());
+  instance_ = PluginInstanceImpl::Create(
+      delegate_.get(), NULL, module(), NULL, GURL());
 }
 
 void PpapiUnittest::TearDown() {

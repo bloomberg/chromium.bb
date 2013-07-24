@@ -26,7 +26,7 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/gpu_preference.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebCompositionUnderline;
@@ -348,7 +348,7 @@ class PepperWidget : public WebWidget {
 
 // static
 RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
-    int32 opener_id, webkit::ppapi::PluginInstance* plugin,
+    int32 opener_id, webkit::ppapi::PluginInstanceImpl* plugin,
     const GURL& active_url,
     const WebKit::WebScreenInfo& screen_info) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
@@ -360,7 +360,7 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
 }
 
 RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
-    webkit::ppapi::PluginInstance* plugin,
+    webkit::ppapi::PluginInstanceImpl* plugin,
     const GURL& active_url,
     const WebKit::WebScreenInfo& screen_info)
     : RenderWidgetFullscreen(screen_info),
@@ -467,7 +467,7 @@ void RenderWidgetFullscreenPepper::Close() {
   RenderWidget::Close();
 }
 
-webkit::ppapi::PluginInstance*
+webkit::ppapi::PluginInstanceImpl*
 RenderWidgetFullscreenPepper::GetBitmapForOptimizedPluginPaint(
     const gfx::Rect& paint_bounds,
     TransportDIB** dib,

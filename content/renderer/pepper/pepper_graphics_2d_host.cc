@@ -30,7 +30,7 @@
 #include "ui/gfx/skia_util.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/gfx_conversion.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
@@ -296,7 +296,7 @@ bool PepperGraphics2DHost::ReadImageData(PP_Resource image,
 }
 
 bool PepperGraphics2DHost::BindToInstance(
-    webkit::ppapi::PluginInstance* new_instance) {
+    webkit::ppapi::PluginInstanceImpl* new_instance) {
   if (new_instance && new_instance->pp_instance() != pp_instance())
     return false;  // Can't bind other instance's contexts.
   if (bound_instance_ == new_instance)

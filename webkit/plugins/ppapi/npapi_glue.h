@@ -18,7 +18,7 @@ typedef void* NPIdentifier;
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
+class PluginInstanceImpl;
 class PluginObject;
 
 // Utilities -------------------------------------------------------------------
@@ -38,7 +38,7 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result);
 //
 // The returned PP_Var will have a refcount of 1, this passing ownership of
 // the reference to the caller. This is suitable for returning to a plugin.
-WEBKIT_PLUGINS_EXPORT PP_Var NPVariantToPPVar(PluginInstance* instance,
+WEBKIT_PLUGINS_EXPORT PP_Var NPVariantToPPVar(PluginInstanceImpl* instance,
                                               const NPVariant* variant);
 
 // Returns a NPIdentifier that corresponds to the given PP_Var. The contents
@@ -65,14 +65,15 @@ PP_Var NPIdentifierToPPVar(NPIdentifier id);
 // Note: this could easily be changed to take a PP_Instance instead if that
 // makes certain calls in the future easier. Currently all callers have a
 // PluginInstance so that's what we use here.
-WEBKIT_PLUGINS_EXPORT PP_Var NPObjectToPPVar(PluginInstance* instance,
+WEBKIT_PLUGINS_EXPORT PP_Var NPObjectToPPVar(PluginInstanceImpl* instance,
                                              NPObject* object);
 
 // This version creates a default v8::Context rather than using the one from
 // the container of |instance|. It is only for use in unit tests, where we don't
 // have a real container for |instance|.
-WEBKIT_PLUGINS_EXPORT PP_Var NPObjectToPPVarForTest(PluginInstance* instance,
-                                                    NPObject* object);
+WEBKIT_PLUGINS_EXPORT PP_Var NPObjectToPPVarForTest(
+    PluginInstanceImpl* instance,
+    NPObject* object);
 
 // PPResultAndExceptionToNPResult ----------------------------------------------
 
@@ -153,7 +154,7 @@ class PPResultAndExceptionToNPResult {
 // WebKit to the plugin.
 class PPVarArrayFromNPVariantArray {
  public:
-  PPVarArrayFromNPVariantArray(PluginInstance* instance,
+  PPVarArrayFromNPVariantArray(PluginInstanceImpl* instance,
                                size_t size,
                                const NPVariant* variants);
   ~PPVarArrayFromNPVariantArray();
@@ -173,7 +174,7 @@ class PPVarArrayFromNPVariantArray {
 // is used when converting 'this' pointer from WebKit to the plugin.
 class PPVarFromNPObject {
  public:
-  PPVarFromNPObject(PluginInstance* instance, NPObject* object);
+  PPVarFromNPObject(PluginInstanceImpl* instance, NPObject* object);
   ~PPVarFromNPObject();
 
   PP_Var var() const { return var_; }

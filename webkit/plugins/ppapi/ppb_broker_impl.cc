@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::PlatformFileToInt;
@@ -52,7 +53,7 @@ int32_t PPB_Broker_Impl::Connect(
     return PP_ERROR_FAILED;
   }
 
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
 
@@ -79,7 +80,7 @@ int32_t PPB_Broker_Impl::GetHandle(int32_t* handle) {
 }
 
 GURL PPB_Broker_Impl::GetDocumentUrl() {
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
   return plugin_instance->container()->element().document().url();
 }
 

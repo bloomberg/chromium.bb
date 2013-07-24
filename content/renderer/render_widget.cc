@@ -58,7 +58,7 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
 #include "webkit/renderer/cursor_utils.h"
 
@@ -966,7 +966,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   TransportDIB* optimized_dib = NULL;
   gfx::Rect optimized_copy_rect, optimized_copy_location;
   float dib_scale_factor;
-  webkit::ppapi::PluginInstance* optimized_instance =
+  webkit::ppapi::PluginInstanceImpl* optimized_instance =
       GetBitmapForOptimizedPluginPaint(rect, &optimized_dib,
                                        &optimized_copy_location,
                                        &optimized_copy_rect,
@@ -2021,12 +2021,13 @@ void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
   }
 }
 
-webkit::ppapi::PluginInstance* RenderWidget::GetBitmapForOptimizedPluginPaint(
-    const gfx::Rect& paint_bounds,
-    TransportDIB** dib,
-    gfx::Rect* location,
-    gfx::Rect* clip,
-    float* scale_factor) {
+webkit::ppapi::PluginInstanceImpl*
+    RenderWidget::GetBitmapForOptimizedPluginPaint(
+        const gfx::Rect& paint_bounds,
+        TransportDIB** dib,
+        gfx::Rect* location,
+        gfx::Rect* clip,
+        float* scale_factor) {
   // Bare RenderWidgets don't support optimized plugin painting.
   return NULL;
 }

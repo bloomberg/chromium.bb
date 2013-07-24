@@ -18,13 +18,13 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "webkit/plugins/ppapi/content_decryptor_delegate.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 namespace content {
 
 scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const std::string& key_system,
-    const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance,
+    const scoped_refptr<webkit::ppapi::PluginInstanceImpl>& plugin_instance,
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
     const media::KeyMessageCB& key_message_cb,
@@ -47,7 +47,7 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
 }
 
 PpapiDecryptor::PpapiDecryptor(
-    const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance,
+    const scoped_refptr<webkit::ppapi::PluginInstanceImpl>& plugin_instance,
     webkit::ppapi::ContentDecryptorDelegate* plugin_cdm_delegate,
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,

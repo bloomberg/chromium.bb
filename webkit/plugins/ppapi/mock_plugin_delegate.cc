@@ -13,7 +13,7 @@
 #include "webkit/plugins/ppapi/mock_platform_image_2d.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 namespace webkit {
 namespace ppapi {
@@ -24,21 +24,23 @@ MockPluginDelegate::MockPluginDelegate() {
 MockPluginDelegate::~MockPluginDelegate() {
 }
 
-void MockPluginDelegate::PluginFocusChanged(PluginInstance* instance,
+void MockPluginDelegate::PluginFocusChanged(PluginInstanceImpl* instance,
                                             bool focused) {
 }
 
-void MockPluginDelegate::PluginTextInputTypeChanged(PluginInstance* instance) {
+void MockPluginDelegate::PluginTextInputTypeChanged(
+    PluginInstanceImpl* instance) {
 }
 
-void MockPluginDelegate::PluginCaretPositionChanged(PluginInstance* instance) {
+void MockPluginDelegate::PluginCaretPositionChanged(
+    PluginInstanceImpl* instance) {
 }
 
 void MockPluginDelegate::PluginRequestedCancelComposition(
-    PluginInstance* instance) {
+    PluginInstanceImpl* instance) {
 }
 
-void MockPluginDelegate::PluginSelectionChanged(PluginInstance* instance) {
+void MockPluginDelegate::PluginSelectionChanged(PluginInstanceImpl* instance) {
 }
 
 void MockPluginDelegate::SimulateImeSetComposition(
@@ -52,17 +54,17 @@ void MockPluginDelegate::SimulateImeConfirmComposition(
     const base::string16& text) {
 }
 
-void MockPluginDelegate::PluginCrashed(PluginInstance* instance) {
+void MockPluginDelegate::PluginCrashed(PluginInstanceImpl* instance) {
 }
 
-void MockPluginDelegate::InstanceCreated(PluginInstance* instance) {
+void MockPluginDelegate::InstanceCreated(PluginInstanceImpl* instance) {
 }
 
-void MockPluginDelegate::InstanceDeleted(PluginInstance* instance) {
+void MockPluginDelegate::InstanceDeleted(PluginInstanceImpl* instance) {
 }
 
 scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
-MockPluginDelegate::CreateResourceCreationAPI(PluginInstance* instance) {
+MockPluginDelegate::CreateResourceCreationAPI(PluginInstanceImpl* instance) {
   return scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>();
 }
 
@@ -82,7 +84,7 @@ MockPluginDelegate::PlatformImage2D* MockPluginDelegate::CreateImage2D(
 }
 
 PluginDelegate::PlatformGraphics2D* MockPluginDelegate::GetGraphics2D(
-    PluginInstance* instance,
+    PluginInstanceImpl* instance,
     PP_Resource graphics_2d) {
   return NULL;
 }
@@ -319,7 +321,7 @@ bool MockPluginDelegate::X509CertificateParseDER(
 }
 
 FullscreenContainer* MockPluginDelegate::CreateFullscreenContainer(
-    PluginInstance* instance) {
+    PluginInstanceImpl* instance) {
   return NULL;
 }
 
@@ -356,22 +358,22 @@ base::SharedMemory* MockPluginDelegate::CreateAnonymousSharedMemory(
   return ::ppapi::Preferences();
 }
 
-bool MockPluginDelegate::LockMouse(PluginInstance* instance) {
+bool MockPluginDelegate::LockMouse(PluginInstanceImpl* instance) {
   return false;
 }
 
-void MockPluginDelegate::UnlockMouse(PluginInstance* instance) {
+void MockPluginDelegate::UnlockMouse(PluginInstanceImpl* instance) {
 }
 
-bool MockPluginDelegate::IsMouseLocked(PluginInstance* instance) {
+bool MockPluginDelegate::IsMouseLocked(PluginInstanceImpl* instance) {
   return false;
 }
 
-void MockPluginDelegate::DidChangeCursor(PluginInstance* instance,
+void MockPluginDelegate::DidChangeCursor(PluginInstanceImpl* instance,
                                          const WebKit::WebCursorInfo& cursor) {
 }
 
-void MockPluginDelegate::DidReceiveMouseEvent(PluginInstance* instance) {
+void MockPluginDelegate::DidReceiveMouseEvent(PluginInstanceImpl* instance) {
 }
 
 void MockPluginDelegate::SampleGamepads(WebKit::WebGamepads* data) {
@@ -407,7 +409,7 @@ bool MockPluginDelegate::IsRunningInProcess(PP_Instance instance) const {
 }
 
 void MockPluginDelegate::HandleDocumentLoad(
-    PluginInstance* instance,
+    PluginInstanceImpl* instance,
     const WebKit::WebURLResponse& response) {
 }
 

@@ -27,7 +27,7 @@
 #include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using ppapi::NPObjectVar;
 using WebKit::WebCanvas;

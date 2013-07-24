@@ -13,7 +13,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using ppapi::ArrayBufferVar;
 using WebKit::WebArrayBuffer;
@@ -63,7 +63,7 @@ bool HostArrayBufferVar::CopyToNewShmem(
     PP_Instance instance,
     int* host_shm_handle_id,
     base::SharedMemoryHandle* plugin_shm_handle) {
-  webkit::ppapi::PluginInstance* i =
+  webkit::ppapi::PluginInstanceImpl* i =
       webkit::ppapi::HostGlobals::Get()->GetInstance(instance);
   scoped_ptr<base::SharedMemory> shm(i->delegate()->CreateAnonymousSharedMemory(
       ByteLength()));

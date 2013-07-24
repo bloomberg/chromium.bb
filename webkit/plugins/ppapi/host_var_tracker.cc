@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_var.h"
 #include "webkit/plugins/ppapi/host_array_buffer_var.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using ppapi::ArrayBufferVar;
 using ppapi::NPObjectVar;

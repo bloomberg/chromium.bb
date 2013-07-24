@@ -12,7 +12,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ::ppapi::thunk::PPB_Buffer_API;

@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 
-#include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/url_response_info_util.h"
 #include "net/base/net_errors.h"
 #include "ppapi/c/pp_errors.h"
@@ -24,7 +24,7 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/plugins/ppapi/url_request_info_util.h"
 
 using WebKit::WebFrame;
@@ -43,7 +43,7 @@ using WebKit::WebURLResponse;
 
 namespace content {
 
-PepperURLLoaderHost::PepperURLLoaderHost(RendererPpapiHost* host,
+PepperURLLoaderHost::PepperURLLoaderHost(RendererPpapiHostImpl* host,
                                          bool main_document_loader,
                                          PP_Instance instance,
                                          PP_Resource resource)
@@ -83,8 +83,8 @@ PepperURLLoaderHost::~PepperURLLoaderHost() {
   // will get queued inside WebKit.
   if (main_document_loader_) {
     // The PluginInstance has a non-owning pointer to us.
-    webkit::ppapi::PluginInstance* instance_object =
-        renderer_ppapi_host_->GetPluginInstance(pp_instance());
+    webkit::ppapi::PluginInstanceImpl* instance_object =
+        renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
     if (instance_object) {
       DCHECK(instance_object->document_loader() == this);
       instance_object->set_document_loader(NULL);
@@ -335,7 +335,7 @@ WebKit::WebFrame* PepperURLLoaderHost::GetFrame() {
       renderer_ppapi_host_->GetPluginInstance(pp_instance());
   if (!instance_object)
     return NULL;
-  return instance_object->container()->element().document().frame();
+  return instance_object->GetContainer()->element().document().frame();
 }
 
 void PepperURLLoaderHost::SetDefersLoading(bool defers_loading) {
