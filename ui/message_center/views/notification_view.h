@@ -10,6 +10,10 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
 
+namespace views {
+class ProgressBar;
+}
+
 namespace message_center {
 
 class BoundedLabel;
@@ -71,6 +75,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   views::View* icon_view_;
   views::View* bottom_view_;
   views::View* image_view_;
+  views::ProgressBar* progress_bar_view_;
   std::vector<views::View*> action_buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);

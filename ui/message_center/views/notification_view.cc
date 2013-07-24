@@ -24,6 +24,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -38,6 +39,11 @@ const int kTextLeftPadding = kIconSize + message_center::kIconToTextPadding;
 const int kTextBottomPadding = 12;
 const int kTextRightPadding = 23;
 const int kItemTitleToMessagePadding = 3;
+const int kProgressBarWidth = message_center::kNotificationWidth -
+    kTextLeftPadding - kTextRightPadding;
+const int kProgressBarHeight = 8;
+const int kProgressBarTopPadding = 12;
+const int kProgressBarBottomPadding = 2;
 const int kButtonVecticalPadding = 0;
 const int kButtonTitleTopPadding = 0;
 
@@ -72,6 +78,11 @@ views::Border* MakeTextBorder(int padding, int top, int bottom) {
   // Split the padding between the top and the bottom, then add the extra space.
   return MakeEmptyBorder(padding / 2 + top, kTextLeftPadding,
                          (padding + 1) / 2 + bottom, kTextRightPadding);
+}
+
+// static
+views::Border* MakeProgressBarBorder(int top, int bottom) {
+  return MakeEmptyBorder(top, kTextLeftPadding, bottom, kTextRightPadding);
 }
 
 // static
@@ -223,6 +234,33 @@ gfx::Size ProportionalImageView::GetImageSizeForWidth(int width) {
   return message_center::GetImageSizeForWidth(width, size);
 }
 
+// NotificationProgressBar /////////////////////////////////////////////////////
+
+class NotificationProgressBar : public views::ProgressBar {
+ public:
+  NotificationProgressBar();
+  virtual ~NotificationProgressBar();
+
+ private:
+  // Overriden from View
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationProgressBar);
+};
+
+NotificationProgressBar::NotificationProgressBar() {
+}
+
+NotificationProgressBar::~NotificationProgressBar() {
+}
+
+gfx::Size NotificationProgressBar::GetPreferredSize() {
+  gfx::Size pref_size(kProgressBarWidth, kProgressBarHeight);
+  gfx::Insets insets = GetInsets();
+  pref_size.Enlarge(insets.width(), insets.height());
+  return pref_size;
+}
+
 // NotificationButton //////////////////////////////////////////////////////////
 
 // NotificationButtons render the action buttons of notifications.
@@ -345,6 +383,7 @@ MessageView* NotificationView::Create(const Notification& notification,
     case NOTIFICATION_TYPE_IMAGE:
     case NOTIFICATION_TYPE_MULTIPLE:
     case NOTIFICATION_TYPE_SIMPLE:
+    case NOTIFICATION_TYPE_PROGRESS:
       break;
     default:
       // If the caller asks for an unrecognized kind of view (entirely possible
@@ -420,6 +459,16 @@ NotificationView::NotificationView(const Notification& notification,
     message_view_->set_border(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(message_view_);
     accessible_lines.push_back(notification.message());
+  }
+
+  // Create the progress bar view.
+  progress_bar_view_ = NULL;
+  if (notification.type() == NOTIFICATION_TYPE_PROGRESS) {
+    progress_bar_view_ = new NotificationProgressBar();
+    progress_bar_view_->set_border(MakeProgressBarBorder(
+        kProgressBarTopPadding, kProgressBarBottomPadding));
+    progress_bar_view_->SetValue(notification.progress() / 100.0);
+    top_view_->AddChildView(progress_bar_view_);
   }
 
   // Create the list item views (up to a maximum).

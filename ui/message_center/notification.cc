@@ -26,7 +26,8 @@ ButtonInfo::ButtonInfo(const string16& title)
 RichNotificationData::RichNotificationData()
     : priority(DEFAULT_PRIORITY),
       never_timeout(false),
-      timestamp(base::Time::Now()) {}
+      timestamp(base::Time::Now()),
+      progress(0) {}
 
 RichNotificationData::RichNotificationData(const RichNotificationData& other)
     : priority(other.priority),
@@ -35,6 +36,7 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
       expanded_message(other.expanded_message),
       image(other.image),
       items(other.items),
+      progress(other.progress),
       buttons(other.buttons) {}
 
 RichNotificationData::~RichNotificationData() {}

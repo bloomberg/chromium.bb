@@ -13,7 +13,10 @@ namespace notifications {
     image,
 
     // icon, title, message, items, up to two buttons
-    list
+    list,
+
+    // icon, title, message, progress, up to two buttons
+    progress
   };
 
   dictionary NotificationItem {
@@ -70,6 +73,9 @@ namespace notifications {
 
     // Items for multi-item notifications.
     NotificationItem[]? items;
+
+    // Current progress ranges from 0 to 100.
+    long? progress;
   };
 
   callback CreateCallback = void (DOMString notificationId);

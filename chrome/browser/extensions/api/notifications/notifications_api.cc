@@ -34,6 +34,10 @@ namespace extensions {
 namespace {
 
 const char kResultKey[] = "result";
+const char kUnexpectedProgressValueForNonProgressType[] =
+    "The progress value should not be specified for non-progress notification";
+const char kInvalidProgressValue[] =
+    "The progress value should range from 0 to 100";
 
 // Converts an object with width, height, and data in RGBA format into an
 // gfx::Image (in ARGB format).
@@ -276,6 +280,20 @@ bool NotificationsApiFunction::CreateNotification(
     if (has_list_items != (type == message_center::NOTIFICATION_TYPE_MULTIPLE))
       return false;
 
+    if (options->progress.get() != NULL) {
+      // We should have progress if and only if the type is a progress type.
+      if (type != message_center::NOTIFICATION_TYPE_PROGRESS) {
+        SetError(kUnexpectedProgressValueForNonProgressType);
+        return false;
+      }
+      optional_fields.progress = *options->progress;
+      // Progress value should range from 0 to 100.
+      if (optional_fields.progress < 0 || optional_fields.progress > 100) {
+        SetError(kInvalidProgressValue);
+        return false;
+      }
+    }
+
     if (has_list_items) {
       using api::notifications::NotificationItem;
       std::vector<linked_ptr<NotificationItem> >::iterator i;
@@ -333,6 +351,8 @@ NotificationsApiFunction::MapApiTemplateTypeToType(
       return message_center::NOTIFICATION_TYPE_IMAGE;
     case api::notifications::TEMPLATE_TYPE_LIST:
       return message_center::NOTIFICATION_TYPE_MULTIPLE;
+    case api::notifications::TEMPLATE_TYPE_PROGRESS:
+      return message_center::NOTIFICATION_TYPE_PROGRESS;
     default:
       // Gracefully handle newer application code that is running on an older
       // runtime that doesn't recognize the requested template.

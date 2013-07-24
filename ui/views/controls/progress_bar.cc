@@ -183,7 +183,10 @@ void ProgressBar::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 gfx::Size ProgressBar::GetPreferredSize() {
-  return gfx::Size(100, 11);
+  gfx::Size pref_size(100, 11);
+  gfx::Insets insets = GetInsets();
+  pref_size.Enlarge(insets.width(), insets.height());
+  return pref_size;
 }
 
 const char* ProgressBar::GetClassName() const {
@@ -191,18 +194,24 @@ const char* ProgressBar::GetClassName() const {
 }
 
 void ProgressBar::OnPaint(gfx::Canvas* canvas) {
+  gfx::Rect content_bounds = GetContentsBounds();
+  int bar_left = content_bounds.x();
+  int bar_top = content_bounds.y();
+  int bar_width = content_bounds.width();
+  int bar_height = content_bounds.height();
+
   const int progress_width =
-      static_cast<int>(width() * GetNormalizedValue() + 0.5);
+      static_cast<int>(bar_width * GetNormalizedValue() + 0.5);
 
   // Draw background.
   FillRoundRect(canvas,
-                0, 0, width(), height(),
+                bar_left, bar_top, bar_width, bar_height,
                 kCornerRadius,
                 kBackgroundColor, kBackgroundColor,
                 false);
   StrokeRoundRect(canvas,
-                  0, 0,
-                  width(), height(),
+                  bar_left, bar_top,
+                  bar_width, bar_height,
                   kCornerRadius,
                   kBackgroundBorderColor,
                   kBorderWidth);
@@ -214,7 +223,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
 
       SkPath inner_path;
       AddRoundRectPathWithPadding(
-          0, 0, progress_width, height(),
+          bar_left, bar_top, progress_width, bar_height,
           kCornerRadius,
           0,
           &inner_path);
@@ -228,7 +237,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
         kBarColorEnd,
       };
       // We want a thin 1-pixel line for kBarTopColor.
-      SkScalar scalar_height = SkIntToScalar(height());
+      SkScalar scalar_height = SkIntToScalar(bar_height);
       SkScalar highlight_width = SkScalarDiv(SK_Scalar1, scalar_height);
       SkScalar border_width = SkScalarDiv(SkIntToScalar(kBorderWidth),
                                           scalar_height);
@@ -257,8 +266,8 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
       // Do not start from (kBorderWidth, kBorderWidth) because it makes gaps
       // between the inner and the border.
       FillRoundRect(canvas,
-                    0, 0,
-                    progress_width, height(),
+                    bar_left, bar_top,
+                    progress_width, bar_height,
                     kCornerRadius,
                     enabled() ? bar_colors : disabled_bar_colors,
                     enabled() ? bar_points : disabled_bar_points,
@@ -294,7 +303,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
         paint.setShader(s.get());
         paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
         canvas->DrawRect(gfx::Rect(highlight_left, 0,
-                                   kHighlightWidth + kBorderWidth, height()),
+                                   kHighlightWidth + kBorderWidth, bar_height),
                          paint);
       }
 
@@ -303,7 +312,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
 
     // Draw bar stroke
     StrokeRoundRect(canvas,
-                    0, 0, progress_width, height(),
+                    bar_left, bar_top, progress_width, bar_height,
                     kCornerRadius,
                     enabled() ? kBarBorderColor : kDisabledBarBorderColor,
                     kBorderWidth);

@@ -388,3 +388,117 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestByUser) {
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
 }
+
+
+#if defined(OS_LINUX)
+#define MAYBE_TestProgressNotification DISABLED_TestProgressNotification
+#else
+#define MAYBE_TestProgressNotification TestProgressNotification
+#endif
+
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestProgressNotification) {
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_create_function.get(),
+        "[\"\", "
+        "{"
+        "\"type\": \"progress\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+        "\"title\": \"Test!\","
+        "\"message\": \"This is a progress notification.\","
+        "\"priority\": 1,"
+        "\"eventTime\": 1234567890.12345678,"
+        "\"progress\": 30"
+        "}]",
+        browser(),
+        utils::NONE));
+
+    std::string notification_id;
+    EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
+    EXPECT_TRUE(result->GetAsString(&notification_id));
+    EXPECT_TRUE(notification_id.length() > 0);
+  }
+
+  // Error case: progress value provided for non-progress type.
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
+
+    utils::RunFunction(
+        notification_create_function.get(),
+        "[\"\", "
+        "{"
+        "\"type\": \"basic\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+        "\"title\": \"Test!\","
+        "\"message\": \"This is a progress notification.\","
+        "\"priority\": 1,"
+        "\"eventTime\": 1234567890.12345678,"
+        "\"progress\": 10"
+        "}]",
+        browser(),
+        utils::NONE);
+    EXPECT_FALSE(notification_create_function->GetError().empty());
+  }
+
+  // Error case: progress value less than lower bound.
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
+
+    utils::RunFunction(
+        notification_create_function.get(),
+        "[\"\", "
+        "{"
+        "\"type\": \"progress\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+        "\"title\": \"Test!\","
+        "\"message\": \"This is a progress notification.\","
+        "\"priority\": 1,"
+        "\"eventTime\": 1234567890.12345678,"
+        "\"progress\": -10"
+        "}]",
+        browser(),
+        utils::NONE);
+    EXPECT_FALSE(notification_create_function->GetError().empty());
+  }
+
+  // Error case: progress value greater than upper bound.
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
+
+    utils::RunFunction(
+        notification_create_function.get(),
+        "[\"\", "
+        "{"
+        "\"type\": \"progress\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+        "\"title\": \"Test!\","
+        "\"message\": \"This is a progress notification.\","
+        "\"priority\": 1,"
+        "\"eventTime\": 1234567890.12345678,"
+        "\"progress\": 101"
+        "}]",
+        browser(),
+        utils::NONE);
+    EXPECT_FALSE(notification_create_function->GetError().empty());
+  }
+}

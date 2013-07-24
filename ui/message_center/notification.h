@@ -44,6 +44,7 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   string16 expanded_message;
   gfx::Image image;
   std::vector<NotificationItem> items;
+  int progress;
   std::vector<ButtonInfo> buttons;
 };
 
@@ -88,6 +89,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   const std::vector<NotificationItem>& items() const {
     return optional_fields_.items;
   }
+  int progress() const { return optional_fields_.progress; }
   // End unpacked values.
 
   // Images fetched asynchronously.
