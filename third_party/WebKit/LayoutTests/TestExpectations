@@ -20,6 +20,7 @@ crbug.com/24182 [ Mac Debug ] fast/js/recursion-limit-equal.html [ Slow ]
 crbug.com/259934 [ Debug ] fast/js/regress/HashMap-put-get-iterate-keys.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/loader/javascript-url-iframe-crash.html [ Slow ]
 crbug.com/24182 [ Debug ] http/tests/security/xss-DENIED-iframe-src-alias.html [ Slow ]
+crbug.com/24182 http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Slow ]
 crbug.com/24182 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-aborted.html [ Slow ]
 crbug.com/24182 [ Debug ] jquery/data.html [ Slow ]
 crbug.com/243782 [ Debug ] jquery/deferred.html [ Slow ]
@@ -48,6 +49,7 @@ crbug.com/24182 [ Win ] virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-crash.html
 crbug.com/24182 [ Debug ] virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [ Slow ]
 crbug.com/24182 virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Slow ]
 crbug.com/24182 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Slow ]
+crbug.com/24182 virtual/gpu/compositedscrolling/overflow/remove-overflow-crash2.html [ Slow ]
 crbug.com/24182 [ Linux ] plugins/get-url-with-iframe-target.html [ Slow ]
 crbug.com/24182 [ Linux ] plugins/get-url-with-javascript-destroying-plugin.html [ Slow ]
 crbug.com/24182 [ Linux ] http/tests/plugins/third-party-cookie-accept-policy.html [ Slow ]
@@ -104,11 +106,6 @@ crbug.com/248081 [ Win7 Debug ] fast/forms/suggestion-picker/date-suggestion-pic
 crbug.com/248081 [ Win7 Debug ] fast/forms/suggestion-picker/date-suggestion-picker-reset-value-after-reload.html [ Slow ]
 crbug.com/248081 [ Win ] virtual/gpu/fast/hidpi/image-set-background-dynamic.html [ Slow ]
 crbug.com/248081 [ Win ] virtual/gpu/fast/hidpi/image-set-border-image-dynamic.html [ Slow ]
-
-# Test is now just slow (from webkit.org/b/62754)
-Bug(dpranke) http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Slow ]
-
-Bug(dpranke) virtual/gpu/compositedscrolling/overflow/remove-overflow-crash2.html [ Slow ]
 
 # Got slow with V8 update to 1.3.15. Debug logging perhaps?
 crbug.com/24182 [ Debug ] fast/forms/input-maxlength.html [ Slow ]
@@ -1670,8 +1667,6 @@ crbug.com/248146 [ Linux ] editing/selection/after-line-wrap.html [ ImageOnlyFai
 crbug.com/248146 [ Linux ] editing/style/create-block-for-style-012.html [ ImageOnlyFailure Pass ]
 crbug.com/248146 [ Linux ] fast/text/whitespace/nbsp-mode-and-linewraps.html [ ImageOnlyFailure Pass ]
 crbug.com/250970 [ Debug ] fast/events/simulated-key-state.html [ Crash Timeout ]
-
-Bug(dpranke) [ Linux ] fast/writing-mode/broken-ideographic-font.html [ Failure ]
 
 crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse.html [ ImageOnlyFailure Pass ]
