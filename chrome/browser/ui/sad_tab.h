@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_SAD_TAB_H_
 #define CHROME_BROWSER_UI_SAD_TAB_H_
 
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "chrome/browser/ui/sad_tab_types.h"
 
 namespace content {

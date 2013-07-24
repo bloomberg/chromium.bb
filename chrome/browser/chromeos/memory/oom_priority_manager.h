@@ -11,7 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"

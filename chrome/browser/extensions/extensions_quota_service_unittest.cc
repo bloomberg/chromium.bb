@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_function.h"

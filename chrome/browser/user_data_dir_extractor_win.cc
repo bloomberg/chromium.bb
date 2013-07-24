@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
+#include "base/process/launch.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "chrome/browser/user_data_dir_extractor.h"
 #include "chrome/common/chrome_paths.h"

@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/process_util.h"
+#include "base/process/launch.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 
 namespace extensions {

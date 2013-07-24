@@ -4,7 +4,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/process_handle.h"
+#include "base/process/process_iterator.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/ui/browser.h"

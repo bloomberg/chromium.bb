@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/process_util.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/site_details.h"
 #include "content/public/common/process_type.h"

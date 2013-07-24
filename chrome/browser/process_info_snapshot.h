@@ -11,7 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
+#include "base/process/process_metrics.h"
 
 // A class which captures process information at a given point in time when its
 // |Sample()| method is called. This information can then be probed by PID.

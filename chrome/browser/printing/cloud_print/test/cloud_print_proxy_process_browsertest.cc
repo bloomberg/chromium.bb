@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"

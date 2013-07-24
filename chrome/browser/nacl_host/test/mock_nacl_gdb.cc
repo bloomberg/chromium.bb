@@ -10,7 +10,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
 
 static const char kEvalCommand[] = "--eval-command";
 static const char kCommand[] = "--command";

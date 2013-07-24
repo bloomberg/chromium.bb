@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
 #include "base/strings/string_split.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"

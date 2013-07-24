@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "base/process_util.h"
 #include "base/threading/thread.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"

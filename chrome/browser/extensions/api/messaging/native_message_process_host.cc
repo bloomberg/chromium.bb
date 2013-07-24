@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
-#include "base/process_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"

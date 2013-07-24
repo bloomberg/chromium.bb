@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"  // USE_TCMALLOC
 

@@ -8,7 +8,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/prefs/pref_registry_simple.h"
-#include "base/process_util.h"
+#include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"

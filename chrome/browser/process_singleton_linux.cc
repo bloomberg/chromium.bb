@@ -65,7 +65,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/safe_strerror_posix.h"
 #include "base/sequenced_task_runner_helpers.h"

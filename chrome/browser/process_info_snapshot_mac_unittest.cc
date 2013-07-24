@@ -13,8 +13,10 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/process_util.h"
-
+#include "base/process/kill.h"
+#include "base/process/launch.h"
+#include "base/process/process_handle.h"
+#include "base/process/process_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef testing::Test ProcessInfoSnapshotMacTest;

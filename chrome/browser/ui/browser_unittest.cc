@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/browser.h"
 
-#include "base/process_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/site_instance.h"

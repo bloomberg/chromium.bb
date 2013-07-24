@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "base/process_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"

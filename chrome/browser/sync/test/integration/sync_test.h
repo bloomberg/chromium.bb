@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/process_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "sync/internal_api/public/base/model_type.h"

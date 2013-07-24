@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/uninstall_view.h"
 
 #include "base/message_loop/message_loop.h"
-#include "base/process_util.h"
+#include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/shell_integration.h"

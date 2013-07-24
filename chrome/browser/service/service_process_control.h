@@ -15,7 +15,7 @@
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_channel_proxy.h"

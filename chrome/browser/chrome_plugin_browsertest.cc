@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/ui/browser.h"

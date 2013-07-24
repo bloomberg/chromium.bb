@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/process_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/printing/print_job_manager.h"

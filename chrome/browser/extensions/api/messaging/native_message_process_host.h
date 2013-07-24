@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "content/public/browser/browser_thread.h"
 

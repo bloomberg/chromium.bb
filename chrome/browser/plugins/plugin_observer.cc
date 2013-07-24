@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
 #include "base/metrics/histogram.h"
-#include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"

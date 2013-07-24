@@ -9,7 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/nix/xdg_util.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/launch.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::Environment;

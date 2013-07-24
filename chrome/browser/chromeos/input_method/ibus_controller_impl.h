@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/process_util.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller_base.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"

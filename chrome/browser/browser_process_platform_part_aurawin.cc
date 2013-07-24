@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h"

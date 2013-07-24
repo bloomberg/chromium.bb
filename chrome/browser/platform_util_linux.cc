@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
