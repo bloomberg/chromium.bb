@@ -170,6 +170,7 @@
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebGlyphCache.h"
 #include "third_party/WebKit/public/web/WebHelperPlugin.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -206,7 +207,6 @@
 #include "v8/include/v8.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/webpreferences_renderer.h"
 
@@ -1936,7 +1936,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     // Save some histogram data so we can compute the average memory used per
     // page load of the glyphs.
     UMA_HISTOGRAM_COUNTS_10000("Memory.GlyphPagesPerLoad",
-                               webkit_glue::GetGlyphPageCount());
+                               WebKit::WebGlyphCache::pageCount());
 
     // This message needs to be sent before any of allowScripts(),
     // allowImages(), allowPlugins() is called for the new page, so that when
@@ -6290,7 +6290,9 @@ bool RenderViewImpl::didTapMultipleTargets(
     canvas->translate(-zoom_rect.x() * device_scale_factor_,
                       -zoom_rect.y() * device_scale_factor_);
 
-    webwidget_->paint(webkit_glue::ToWebCanvas(canvas.get()), zoom_rect,
+    webwidget_->paint(
+        canvas.get(),
+        zoom_rect,
         WebWidget::ForceSoftwareRenderingAndIgnoreGPUResidentContent);
   }
 

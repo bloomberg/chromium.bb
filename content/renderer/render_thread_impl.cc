@@ -21,7 +21,7 @@
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_number_conversions.h"  // Temporary
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -223,6 +223,14 @@ void AddHistogramSample(void* hist, int sample) {
 
 scoped_ptr<base::SharedMemory> AllocateSharedMemoryFunction(size_t size) {
   return RenderThreadImpl::Get()->HostAllocateSharedMemoryBuffer(size);
+}
+
+void EnableWebCoreLogChannels(const std::string& channels) {
+  if (channels.empty())
+    return;
+  base::StringTokenizer t(channels, ", ");
+  while (t.GetNext())
+    WebKit::enableLogChannel(t.token().c_str());
 }
 
 }  // namespace
@@ -722,7 +730,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   RenderThreadImpl::RegisterSchemes();
 
-  webkit_glue::EnableWebCoreLogChannels(
+  EnableWebCoreLogChannels(
       command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
 
   web_database_observer_impl_.reset(

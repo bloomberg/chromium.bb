@@ -57,7 +57,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
 #include "webkit/renderer/cursor_utils.h"
@@ -998,8 +997,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
 
     SkAutoCanvasRestore auto_restore(canvas, true);
     canvas->scale(device_scale_factor_, device_scale_factor_);
-    optimized_instance->Paint(webkit_glue::ToWebCanvas(canvas),
-                              optimized_copy_location, rect);
+    optimized_instance->Paint(canvas, optimized_copy_location, rect);
     canvas->restore();
     if (kEnableGpuBenchmarking) {
       base::TimeDelta paint_time =
@@ -1013,7 +1011,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     if (kEnableGpuBenchmarking)
       paint_begin_ticks = base::TimeTicks::HighResNow();
 
-    webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
+    webwidget_->paint(canvas, rect);
 
     if (kEnableGpuBenchmarking) {
       base::TimeDelta paint_time =
