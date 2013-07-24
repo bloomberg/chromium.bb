@@ -114,6 +114,54 @@ PathUtil.split = function(path) {
 };
 
 /**
+ * Returns a directory part of the given |path|. In other words, the path
+ * without its base name.
+ *
+ * Examples:
+ * PathUtil.dirname('abc') -> ''
+ * PathUtil.dirname('a/b') -> 'a'
+ * PathUtil.dirname('a/b/') -> 'a/b'
+ * PathUtil.dirname('a/b/c') -> 'a/b'
+ * PathUtil.dirname('/') -> '/'
+ * PathUtil.dirname('/abc') -> '/'
+ * PathUtil.dirname('/abc/def') -> '/abc'
+ * PathUtil.dirname('') -> ''
+ *
+ * @param {string} path The path to be parsed.
+ * @return {string} The directory path.
+ */
+PathUtil.dirname = function(path) {
+  var index = path.lastIndexOf('/');
+  if (index < 0)
+    return '';
+  if (index == 0)
+    return '/';
+  return path.substring(0, index);
+};
+
+/**
+ * Returns the base name (the last component) of the given |path|. If the
+ * |path| ends with '/', returns an empty component.
+ *
+ * Examples:
+ * PathUtil.basename('abc') -> 'abc'
+ * PathUtil.basename('a/b') -> 'b'
+ * PathUtil.basename('a/b/') -> ''
+ * PathUtil.basename('a/b/c') -> 'c'
+ * PathUtil.basename('/') -> ''
+ * PathUtil.basename('/abc') -> 'abc'
+ * PathUtil.basename('/abc/def') -> 'def'
+ * PathUtil.basename('') -> ''
+ *
+ * @param {string} path The path to be parsed.
+ * @return {string} The base name.
+ */
+PathUtil.basename = function(path) {
+  var index = path.lastIndexOf('/');
+  return index >= 0 ? path.substring(index + 1) : path;
+};
+
+/**
  * Join path components into a single path. Can be called either with a list of
  * components as arguments, or with an array of components as the only argument.
  *

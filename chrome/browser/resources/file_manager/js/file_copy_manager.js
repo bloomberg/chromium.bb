@@ -826,58 +826,12 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
     onError('FILESYSTEM_ERROR', err);
   };
 
-  /**
-   * Resolves the immediate parent directory entry and the file name of a
-   * given path, where the path is specified by a directory (not necessarily
-   * the immediate parent) and a path (not necessarily the file name) related
-   * to that directory. For instance,
-   *   Given:
-   *     |dirEntry| = DirectoryEntry('/root/dir1')
-   *     |relativePath| = 'dir2/file'
-   *
-   *   Return:
-   *     |parentDirEntry| = DirectoryEntry('/root/dir1/dir2')
-   *     |fileName| = 'file'
-   *
-   * @param {DirectoryEntry} dirEntry A directory entry.
-   * @param {string} relativePath A path relative to |dirEntry|.
-   * @param {function(Entry,string)} successCallback A callback for returning
-   *     the |parentDirEntry| and |fileName| upon success.
-   * @param {function(FileError)} errorCallback An error callback when there is
-   *     an error getting |parentDirEntry|.
-   */
-  var resolveDirAndBaseName = function(dirEntry, relativePath,
-                                 successCallback, errorCallback) {
-    // |intermediatePath| contains the intermediate path components
-    // that are appended to |dirEntry| to form |parentDirEntry|.
-    var intermediatePath = '';
-    var fileName = relativePath;
-
-    // Extract the file name component from |relativePath|.
-    var index = relativePath.lastIndexOf('/');
-    if (index != -1) {
-      intermediatePath = relativePath.substr(0, index);
-      fileName = relativePath.substr(index + 1);
-    }
-
-    if (intermediatePath == '') {
-      successCallback(dirEntry, fileName);
-    } else {
-      dirEntry.getDirectory(intermediatePath,
-                            {create: false},
-                            function(entry) {
-                              successCallback(entry, fileName);
-                            },
-                            errorCallback);
-    }
-  };
-
   var onDeduplicated = function(targetRelativePath) {
     if (task.move) {
-      resolveDirAndBaseName(
-          targetDirEntry, targetRelativePath,
-          function(dirEntry, fileName) {
-            sourceEntry.moveTo(dirEntry, fileName,
+      targetDirEntry.getDirectory(
+          PathUtil.dirname(targetRelativePath), {create: false},
+          function(dirEntry) {
+            sourceEntry.moveTo(dirEntry, PathUtil.basename(targetRelativePath),
                                onFilesystemMoveComplete.bind(self, sourceEntry),
                                onFilesystemError);
           },
@@ -955,12 +909,13 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
       };
 
       if (task.sourceOnDrive && task.targetOnDrive) {
-        resolveDirAndBaseName(
-            targetDirEntry, targetRelativePath,
-            function(dirEntry, fileName) {
+        targetDirEntry.getDirectory(
+            PathUtil.dirname(targetRelativePath), {create: false},
+            function(dirEntry) {
               onStartTransfer();
-              sourceEntry.copyTo(dirEntry, fileName, onSuccessTransfer,
-                                                     onFailTransfer);
+              sourceEntry.copyTo(
+                  dirEntry, PathUtil.basename(targetRelativePath),
+                  onSuccessTransfer, onFailTransfer);
             },
             onFilesystemError);
         return;
