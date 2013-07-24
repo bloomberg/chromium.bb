@@ -430,7 +430,7 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
   // even though the scroll gesture doesn't make no (or little) effects on the
   // slide-out behavior. See http://crbug.com/172991
 
-  if (!event->IsScrollGestureEvent())
+  if (!event->IsScrollGestureEvent() && !event->IsFlingScrollEvent())
     return;
 
   if (scroller_)
