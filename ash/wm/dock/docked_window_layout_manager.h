@@ -103,6 +103,10 @@ class ASH_EXPORT DockedWindowLayoutManager
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
@@ -173,6 +177,10 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Side of the screen that the dock is positioned at.
   DockedAlignment alignment_;
+
+  // The last active window. Used to maintain stacking order even if no windows
+  // are currently focused.
+  aura::Window* last_active_window_;
 
   // Observers of dock bounds changes.
   ObserverList<DockedWindowLayoutManagerObserver> observer_list_;

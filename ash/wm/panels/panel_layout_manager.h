@@ -172,8 +172,8 @@ class ASH_EXPORT PanelLayoutManager
   // Tracks the visibility of the shelf. Defaults to false when there is no
   // shelf.
   bool shelf_hidden_;
-  // The last active panel. Used to maintain stacking even if no panels are
-  // currently focused.
+  // The last active panel. Used to maintain stacking order even if no panels
+  // are currently focused.
   aura::Window* last_active_panel_;
   base::WeakPtrFactory<PanelLayoutManager> weak_factory_;
 

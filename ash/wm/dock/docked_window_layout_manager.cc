@@ -29,6 +29,7 @@ namespace internal {
 const int DockedWindowLayoutManager::kMinDockWidth = 200;
 const int DockedWindowLayoutManager::kMaxDockWidth = 450;
 const int DockedWindowLayoutManager::kMinDockGap = 2;
+const int kWindowIdealSpacing = 4;
 
 namespace {
 
@@ -49,6 +50,11 @@ bool IsUsedByLayout(aura::Window* window) {
           window->type() != aura::client::WINDOW_TYPE_POPUP);
 }
 
+bool CompareWindowPos(const aura::Window* win1, const aura::Window* win2) {
+  return win1->GetTargetBounds().CenterPoint().y() <
+      win2->GetTargetBounds().CenterPoint().y();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +68,8 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       shelf_layout_manager_(NULL),
       shelf_hidden_(false),
       docked_width_(0),
-      alignment_(DOCKED_ALIGNMENT_NONE) {
+      alignment_(DOCKED_ALIGNMENT_NONE),
+      last_active_window_(NULL) {
   DCHECK(dock_container);
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       AddObserver(this);
@@ -127,7 +134,13 @@ void DockedWindowLayoutManager::FinishDragging() {
     if (!found_docked_window)
       alignment_ = AlignmentOfWindow(dragged_window_);
   }
-  dragged_window_ = NULL;
+
+  // We no longer need to observe |dragged_window_| unless it is added back;
+  if (dragged_window_) {
+    if (dragged_window_->parent() != dock_container_)
+      dragged_window_->RemoveObserver(this);
+    dragged_window_ = NULL;
+  }
 
   Relayout();
   UpdateDockBounds();
@@ -226,7 +239,10 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   // If this is the first window getting docked - update alignment.
   if (alignment_ == DOCKED_ALIGNMENT_NONE)
     alignment_ = AlignmentOfWindow(child);
-  child->AddObserver(this);
+  // We need to observe a child unless it is a |dragged_window_| that just got
+  // added back in which case we are already observing it.
+  if (child != dragged_window_)
+    child->AddObserver(this);
   Relayout();
   UpdateDockBounds();
 }
@@ -248,7 +264,14 @@ void DockedWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
   if (!found_docked_window)
     alignment_ = DOCKED_ALIGNMENT_NONE;
 
-  child->RemoveObserver(this);
+  // Keep track of former children if they are dragged as they can be reparented
+  // temporarily just for the drag.
+  if (child != dragged_window_)
+    child->RemoveObserver(this);
+
+  if (last_active_window_ == child)
+    last_active_window_ = NULL;
+
   // Close the dock and expand workspace work area.
   Relayout();
 
@@ -325,6 +348,20 @@ void DockedWindowLayoutManager::OnWindowPropertyChanged(aura::Window* window,
   else
     RestoreWindow(window);
 }
+
+void DockedWindowLayoutManager::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
+  if (window == dragged_window_)
+    Relayout();
+}
+
+void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {
+  if (dragged_window_ == window)
+    dragged_window_ = NULL;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // DockLayoutManager, aura::client::ActivationChangeObserver implementation:
@@ -408,6 +445,7 @@ void DockedWindowLayoutManager::Relayout() {
 
   gfx::Rect dock_bounds = dock_container_->bounds();
   aura::Window* active_window = NULL;
+  aura::Window::Windows visible_windows;
   docked_width_ = 0;
   for (size_t i = 0; i < dock_container_->children().size(); ++i) {
     aura::Window* window(dock_container_->children()[i]);
@@ -423,35 +461,71 @@ void DockedWindowLayoutManager::Relayout() {
       window->Hide();
       continue;
     }
-
     if (window->HasFocus() ||
         window->Contains(
             aura::client::GetFocusClient(window)->GetFocusedWindow())) {
       DCHECK(!active_window);
       active_window = window;
     }
+    visible_windows.push_back(window);
+  }
 
-    // all docked windows other than the one currently dragged remain stuck
-    // to the screen edge
+  // Consider windows that were formerly children of the |dock_container_|
+  // when fanning out other child windows.
+  if (dragged_window_ && dragged_window_->parent() != dock_container_)
+    visible_windows.push_back(dragged_window_);
+
+  // Sort windows by their center positions and fan out overlapping
+  // windows.
+  std::sort(visible_windows.begin(), visible_windows.end(), CompareWindowPos);
+  gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
+      dock_container_);
+  const gfx::Rect work_area = display.work_area();
+  int available_room = work_area.height();
+  for (aura::Window::Windows::const_iterator iter = visible_windows.begin();
+      iter != visible_windows.end(); ++iter) {
+    available_room -= (*iter)->bounds().height();
+  }
+  const int num_windows = visible_windows.size();
+  const float delta = (float)available_room /
+      ((available_room > 0 || num_windows <= 1) ?
+          num_windows + 1 : num_windows - 1);
+  float y_pos = (available_room > 0) ? delta : 0;
+
+  for (aura::Window::Windows::const_iterator iter = visible_windows.begin();
+      iter != visible_windows.end(); ++iter) {
+    aura::Window* window = *iter;
     gfx::Rect bounds = window->GetTargetBounds();
-    if (window != dragged_window_) {
-      switch (alignment_) {
-        case DOCKED_ALIGNMENT_LEFT:
-          bounds.set_x(0);
-          break;
-        case DOCKED_ALIGNMENT_RIGHT:
-          bounds.set_x(dock_bounds.right() - bounds.width());
-          break;
-        case DOCKED_ALIGNMENT_NONE:
-          NOTREACHED() << "Relayout called when dock alignment is 'NONE'";
-          break;
-      }
-      // Keep the dock at least kMinDockWidth when all windows in it overhang.
-      docked_width_ = std::min(kMaxDockWidth,
-                               std::max(docked_width_,
-                                        bounds.width() > kMaxDockWidth ?
-                                            kMinDockWidth : bounds.width()));
+    // Do not force position of a single window.
+    if (num_windows == 1)
+      y_pos = bounds.y();
+
+    // Fan out windows evenly distributing the overlap or remaining free space.
+    bounds.set_y(std::max(work_area.y(),
+                          std::min(work_area.bottom() - bounds.height(),
+                                   static_cast<int>(y_pos + 0.5))));
+    y_pos += bounds.height() + delta;
+
+    // All docked windows other than the one currently dragged remain stuck
+    // to the screen edge.
+    if (window == dragged_window_)
+      continue;
+    switch (alignment_) {
+      case DOCKED_ALIGNMENT_LEFT:
+        bounds.set_x(0);
+        break;
+      case DOCKED_ALIGNMENT_RIGHT:
+        bounds.set_x(dock_bounds.right() - bounds.width());
+        break;
+      case DOCKED_ALIGNMENT_NONE:
+        NOTREACHED() << "Relayout called when dock alignment is 'NONE'";
+        break;
     }
+    // Keep the dock at least kMinDockWidth when all windows in it overhang.
+    docked_width_ = std::min(kMaxDockWidth,
+                             std::max(docked_width_,
+                                      bounds.width() > kMaxDockWidth ?
+                                          kMinDockWidth : bounds.width()));
     SetChildBoundsDirect(window, bounds);
   }
   UpdateStacking(active_window);
@@ -475,8 +549,57 @@ void DockedWindowLayoutManager::UpdateDockBounds() {
 }
 
 void DockedWindowLayoutManager::UpdateStacking(aura::Window* active_window) {
-  // TODO(varkha): Implement restacking to ensure that all docked windows are at
-  // least partially visible and selectable.
+  if (!active_window) {
+    if (!last_active_window_)
+      return;
+    active_window = last_active_window_;
+  }
+
+  // We want to to stack the windows like a deck of cards:
+  //  ,------.
+  // |,------.|
+  // |,------.|
+  // | active |
+  // | window |
+  // |`------'|
+  // |`------'|
+  //  `------'
+  // We use the middle of each window to figure out how to stack the window.
+  // This allows us to update the stacking when a window is being dragged around
+  // by the titlebar.
+  std::map<int, aura::Window*> window_ordering;
+  for (aura::Window::Windows::const_iterator it =
+           dock_container_->children().begin();
+       it != dock_container_->children().end(); ++it) {
+    gfx::Rect bounds = (*it)->bounds();
+    window_ordering.insert(std::make_pair(bounds.y() + bounds.height() / 2,
+                                          *it));
+  }
+  int active_center_y = active_window->bounds().CenterPoint().y();
+
+  aura::Window* previous_window = NULL;
+  for (std::map<int, aura::Window*>::const_iterator it =
+       window_ordering.begin();
+       it != window_ordering.end() && it->first < active_center_y; ++it) {
+    if (previous_window)
+      dock_container_->StackChildAbove(it->second, previous_window);
+    previous_window = it->second;
+  }
+
+  previous_window = NULL;
+  for (std::map<int, aura::Window*>::const_reverse_iterator it =
+       window_ordering.rbegin();
+       it != window_ordering.rend() && it->first > active_center_y; ++it) {
+    if (previous_window)
+      dock_container_->StackChildAbove(it->second, previous_window);
+    previous_window = it->second;
+  }
+
+  if (active_window->parent() == dock_container_)
+    dock_container_->StackChildAtTop(active_window);
+  if (dragged_window_ && dragged_window_->parent() == dock_container_)
+    dock_container_->StackChildAtTop(dragged_window_);
+  last_active_window_ = active_window;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

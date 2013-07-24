@@ -224,8 +224,9 @@ class DockedWindowResizerTest
     DragEnd();
 
     // x-coordinate can get adjusted by snapping or sticking.
-    // y-coordinate should not change by possible docking.
-    EXPECT_EQ(initial_bounds.y() + dy, window->GetBoundsInScreen().y());
+    // y-coordinate could be changed by possible automatic layout if docked.
+    if (window->parent()->id() != internal::kShellWindowId_DockedContainer)
+      EXPECT_EQ(initial_bounds.y() + dy, window->GetBoundsInScreen().y());
   }
 
   bool test_panels() const {
@@ -454,9 +455,10 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows)
             w2->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
 
-  // Detach by dragging left (should get undocked)
+  // Detach by dragging left (should get undocked).
   ASSERT_NO_FATAL_FAILURE(DragStart(w2.get()));
-  DragMove(-32, -10);
+  // Drag up as well to avoid attaching panels to launcher shelf.
+  DragMove(-32, -100);
   // Release the mouse and the window should be no longer attached to the edge.
   DragEnd();
 
@@ -651,7 +653,8 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne)
       w2.get(),
       w2->bounds().width()/2 + 10,
       0));
-  DragMove(-(w2->bounds().width()/2 + 20), 10);
+  // Drag up as well to avoid attaching panels to launcher shelf.
+  DragMove(-(w2->bounds().width()/2 + 20), -100);
   // Release the mouse and the window should be no longer attached to the edge.
   DragEnd();
 
@@ -985,7 +988,8 @@ TEST_P(DockedWindowResizerTest, ResizeTwoWindows)
 
   // Undock the second window. Docked area should shrink to its minimum size.
   ASSERT_NO_FATAL_FAILURE(DragStart(w2.get()));
-  DragMove(-40, 10);
+  // Drag up as well to avoid attaching panels to launcher shelf.
+  DragMove(-40, -100);
   // Alignment set to "RIGHT" since we have another window docked.
   EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
   // Release the mouse and the window should be no longer attached to the edge.
