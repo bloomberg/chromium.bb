@@ -2585,7 +2585,7 @@
    Bug_69934_a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN13NPObjectProxy10NPAllocateEP4_NPPP7NPClass
+   fun:_ZN*NPObjectProxy10NPAllocateEP4_NPPP7NPClass
    fun:_NPN_CreateObject
    fun:_ZN6WebKit11WebBindings12createObjectEP4_NPPP7NPClass
 }
@@ -4434,8 +4434,8 @@
    Memcheck:Leak
    fun:malloc
    fun:NPN_MemAlloc
-   fun:_ZL13testEnumerateP8NPObjectPPPvPj
-   fun:_ZN7WebCore26npObjectPropertyEnumeratorERKN2v812AccessorInfoEb
+   fun:*Enumerate*ObjectPPPvPj
+   fun:_ZN7WebCore26npObjectPropertyEnumerator*Info*
    ...
    fun:_ZN2v88internal28Runtime_GetPropertyNamesFast*IsolateE
 }
@@ -4863,11 +4863,10 @@
    bug_124156
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN26SimpleResourceLoaderBridge6CreateERKN11webkit_glue20ResourceLoaderBridge11RequestInfoE
-   fun:_ZN25TestWebKitPlatformSupport20CreateResourceLoaderERKN11webkit_glue20ResourceLoaderBridge11RequestInfoE
+   ...
+   fun:*WebKitPlatformSupport*20CreateResourceLoaderERKN11webkit_glue20ResourceLoaderBridge11RequestInfoE
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context5StartERKN6WebKit13WebURLRequestEPNS_20ResourceLoaderBridge16SyncLoadResponseEPNS_25WebKitPlatformSupportImplE
    fun:_ZN11webkit_glue16WebURLLoaderImpl18loadAsynchronouslyERKN6WebKit13WebURLRequestEPNS1_18WebURLLoaderClientE
-   fun:_ZN7WebCore22ResourceHandleInternal5startEv
 }
 {
    bug_124488
