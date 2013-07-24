@@ -44,7 +44,7 @@ download_latest_trace() {
   TRACE_FILE=$(adb logcat -d | \
       grep "Logging performance trace to file: " | \
       tail -1 | \
-      sed -E "s/.*\/storage\/emulated\/.+\/([^\r]+).*/\/sdcard\/Download\/\\1/")
+      perl -pi -e "s/.*\/storage\/emulated\/.+\/([^\r]+).*/\/sdcard\/Download\/\\1/g")
   if [ -z "$TRACE_FILE" ]; then
     echo "Unable to determine trace file name"
     exit 1
