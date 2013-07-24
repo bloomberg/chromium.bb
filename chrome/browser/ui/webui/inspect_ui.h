@@ -34,6 +34,7 @@ class InspectUI : public content::WebUIController,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  void StartListeningNotifications();
   void StopListeningNotifications();
 
   content::WebUIDataSource* CreateInspectUIHTMLSource();
@@ -48,7 +49,6 @@ class InspectUI : public content::WebUIController,
   content::NotificationRegistrar registrar_;
 
   DevToolsAdbBridge* adb_bridge_;
-  base::WeakPtrFactory<InspectUI> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectUI);
 };

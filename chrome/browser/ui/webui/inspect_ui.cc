@@ -162,11 +162,8 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
 
 class InspectMessageHandler : public WebUIMessageHandler {
  public:
-  explicit InspectMessageHandler(
-      InspectUI* inspect_ui,
-      DevToolsAdbBridge* adb_bridge)
-      : inspect_ui_(inspect_ui),
-        adb_bridge_(adb_bridge) {}
+  explicit InspectMessageHandler(InspectUI* inspect_ui)
+      : inspect_ui_(inspect_ui) {}
   virtual ~InspectMessageHandler() {}
 
  private:
@@ -182,7 +179,6 @@ class InspectMessageHandler : public WebUIMessageHandler {
                             int* route_id);
 
   InspectUI* inspect_ui_;
-  DevToolsAdbBridge* adb_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectMessageHandler);
 };
@@ -204,6 +200,10 @@ void InspectMessageHandler::HandleInitUICommand(const ListValue*) {
 }
 
 void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!profile)
+    return;
+
   int process_id;
   int route_id;
   if (!GetProcessAndRouteId(args, &process_id, &route_id) || process_id == 0
@@ -219,7 +219,9 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
         data->GetString(kAdbSocketField, &socket) &&
         data->GetString(kAdbDebugUrlField, &debug_url) &&
         data->GetString(kAdbFrontendUrlField, &frontend_url)) {
-      adb_bridge_->Attach(serial, socket, debug_url, frontend_url);
+      scoped_refptr<DevToolsAdbBridge> adb_bridge =
+          DevToolsAdbBridge::Factory::GetForProfile(profile);
+      adb_bridge->Attach(serial, socket, debug_url, frontend_url);
     }
     return;
   }
@@ -230,9 +232,6 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
     return;
   }
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!profile)
-    return;
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetForWorker(process_id, route_id));
   if (!agent_host.get())
@@ -361,25 +360,10 @@ class InspectUI::WorkerCreationDestructionListener
 };
 
 InspectUI::InspectUI(content::WebUI* web_ui)
-    : WebUIController(web_ui),
-      observer_(new WorkerCreationDestructionListener()),
-      weak_factory_(this) {
-  observer_->Init(this);
+    : WebUIController(web_ui) {
+  web_ui->AddMessageHandler(new InspectMessageHandler(this));
   Profile* profile = Profile::FromWebUI(web_ui);
-  adb_bridge_ = DevToolsAdbBridge::Factory::GetForProfile(profile);
-  adb_bridge_->AddListener(this);
-  web_ui->AddMessageHandler(new InspectMessageHandler(this, adb_bridge_));
   content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
-
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 content::NotificationService::AllSources());
 }
 
 InspectUI::~InspectUI() {
@@ -387,6 +371,7 @@ InspectUI::~InspectUI() {
 }
 
 void InspectUI::InitUI() {
+  StartListeningNotifications();
   PopulateLists();
   observer_->InitUI();
 }
@@ -416,6 +401,25 @@ void InspectUI::Observe(int type,
     PopulateLists();
   else if (type == content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED)
     StopListeningNotifications();
+}
+
+void InspectUI::StartListeningNotifications() {
+  observer_ = new WorkerCreationDestructionListener();
+  observer_->Init(this);
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  adb_bridge_ = DevToolsAdbBridge::Factory::GetForProfile(profile);
+  adb_bridge_->AddListener(this);
+
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::NotificationService::AllSources());
 }
 
 void InspectUI::StopListeningNotifications()
