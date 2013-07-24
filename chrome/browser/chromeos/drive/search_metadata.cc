@@ -152,12 +152,12 @@ void MaybeAddEntryToResult(
 }
 
 // Implements SearchMetadata().
-scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
-    ResourceMetadata* resource_metadata,
-    FileCache* cache,
-    const std::string& query_text,
-    int options,
-    int at_most_num_matches) {
+FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
+                                       FileCache* cache,
+                                       const std::string& query_text,
+                                       int options,
+                                       int at_most_num_matches,
+                                       MetadataSearchResultVector* results) {
   ScopedPriorityQueue<MetadataSearchResult,
                       MetadataSearchResultComparator> result_candidates;
 
@@ -175,8 +175,6 @@ scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
   }
 
   // Prepare the result.
-  scoped_ptr<MetadataSearchResultVector> results(
-      new MetadataSearchResultVector);
   for (; !result_candidates.empty(); result_candidates.pop()) {
     // The path field of entries in result_candidates are empty at this point,
     // because we don't want to run the expensive metadata DB look up except for
@@ -184,7 +182,7 @@ scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
     base::FilePath path = resource_metadata->GetFilePath(
         result_candidates.top()->entry.resource_id());
     if (path.empty())
-      continue;
+      return FILE_ERROR_FAILED;
     results->push_back(*result_candidates.top());
     results->back().path = path;
   }
@@ -193,8 +191,17 @@ scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
   // uninteresting candidate at the top.
   std::reverse(results->begin(), results->end());
 
-  return results.Pass();
+  return FILE_ERROR_OK;
 }
+
+void RunSearchMetadataCallback(const SearchMetadataCallback& callback,
+                               scoped_ptr<MetadataSearchResultVector> results,
+                               FileError error) {
+  if (error != FILE_ERROR_OK)
+    results.reset();
+  callback.Run(error, results.Pass());
+}
+
 }  // namespace
 
 void SearchMetadata(
@@ -209,8 +216,9 @@ void SearchMetadata(
   DCHECK_LE(0, at_most_num_matches);
   DCHECK(!callback.is_null());
 
-  // TODO(hashimoto): Report error code from ResourceMetadata::IterateEntries
-  // and stop binding FILE_ERROR_OK to |callback|.
+  scoped_ptr<MetadataSearchResultVector> results(
+      new MetadataSearchResultVector);
+  MetadataSearchResultVector* results_ptr = results.get();
   base::PostTaskAndReplyWithResult(blocking_task_runner.get(),
                                    FROM_HERE,
                                    base::Bind(&SearchMetadataOnBlockingPool,
@@ -218,8 +226,11 @@ void SearchMetadata(
                                               cache,
                                               query,
                                               options,
-                                              at_most_num_matches),
-                                   base::Bind(callback, FILE_ERROR_OK));
+                                              at_most_num_matches,
+                                              results_ptr),
+                                   base::Bind(&RunSearchMetadataCallback,
+                                              callback,
+                                              base::Passed(&results)));
 }
 
 bool FindAndHighlight(
