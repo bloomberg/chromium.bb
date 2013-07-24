@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        window.jsTestIsAsync = true;
+        window.isOnErrorTest = true;
+    </script>
+    <script src="/resources/js-test-pre.js"></script>
+    <script src="/resources/js-test-post.js"></script>
+</head>
+<body>
+    <script>
+        description("Ensure that scripts imported into a Worker from cross-origin hosts trigger sanitized onerror messages.");
+
+        var worker = new Worker('resources/worker-importscripts-onerror-crossorigin.js');
+
+        var onerrorMessage, onerrorURL, onerrorLine;
+        worker.onerror = function (e) {
+            onerrorMessage = e.message;
+            onerrorURL = e.filename;
+            onerrorLine = e.lineno;
+            shouldBeEqualToString("onerrorMessage", "Uncaught undefined");
+            shouldBeEqualToString("onerrorURL", "http://127.0.0.1:8000/workers/resources/worker-importscripts-onerror-crossorigin.js");
+            shouldEvaluateTo("onerrorLine", 1);
+
+            e.preventDefault();
+            finishJSTest();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        window.jsTestIsAsync = true;
+        window.isOnErrorTest = true;
+    </script>
+    <script src="/resources/js-test-pre.js"></script>
+    <script src="/resources/js-test-post.js"></script>
+</head>
+<body>
+    <script>
+        description("Ensure that scripts imported into a Worker from same-origin hosts trigger detailed onerror messages.");
+
+        var worker = new Worker('resources/worker-importscripts-onerror-sameorigin.js');
+
+        var onerrorMessage, onerrorURL, onerrorLine;
+        worker.onerror = function (e) {
+            onerrorMessage = e.message;
+            onerrorURL = e.filename;
+            onerrorLine = e.lineno;
+            shouldBeEqualToString("onerrorMessage", "Uncaught This is a custom error message.");
+            shouldBeEqualToString("onerrorURL", "http://127.0.0.1:8000/workers/resources/worker-importscripts-onerror-sameorigin.js");
+            shouldEvaluateTo("onerrorLine", 1);
+
+            e.preventDefault();
+            finishJSTest();
+        };
+    </script>
+    <script src="/resources/js-test-post.js"></script>
+</body>
+</html>

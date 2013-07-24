@@ -72,10 +72,12 @@ var description, debug, successfullyParsed, errorMessage;
     if (!isWorker())
         insertStyleSheet();
 
-    self.onerror = function(message)
-    {
-        errorMessage = message;
-    };
+    if (!self.isOnErrorTest) {
+        self.onerror = function(message)
+        {
+            errorMessage = message;
+        };
+    }
 
 })();
 
