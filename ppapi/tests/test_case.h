@@ -187,7 +187,9 @@ class TestCase {
 
    private:
     void Run() {
-      PP_DCHECK(PP_OK == loop_.AttachToCurrentThread());
+      int32_t result = loop_.AttachToCurrentThread();
+      static_cast<void>(result); // result is not used in the RELEASE build.
+      PP_DCHECK(PP_OK == result);
       result_ = (test_case_->*test_to_run_)();
       // Now give the loop a chance to clean up.
       loop_.PostQuit(true /* should_destroy */);
