@@ -320,7 +320,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
                                         entry.visit_count,
                                         entry.typed_count, time, false,
                                         history::SOURCE_BROWSED);
-    history_service->SetPageContents(url, UTF8ToUTF16(entry.body));
     if (entry.starred)
       bookmark_utils::AddIfNotBookmarked(bookmark_model, url, string16());
     // Wait at least for the AddPageWithDetails() call to finish.

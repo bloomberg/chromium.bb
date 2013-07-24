@@ -14,10 +14,6 @@
 //                                      -> SQLite connection to History
 //                                   -> ArchivedDatabase
 //                                      -> SQLite connection to Archived History
-//                                   -> TextDatabaseManager
-//                                      -> SQLite connection to one month's data
-//                                      -> SQLite connection to one month's data
-//                                      ...
 //                                   -> ThumbnailDatabase
 //                                      -> SQLite connection to Thumbnails
 //                                         (and favicons)
@@ -595,16 +591,6 @@ void HistoryService::AddPagesWithDetails(const history::URLRows& info,
 
   ScheduleAndForget(PRIORITY_NORMAL,
                     &HistoryBackend::AddPagesWithDetails, info, visit_source);
-}
-
-void HistoryService::SetPageContents(const GURL& url,
-                                     const string16& contents) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!CanAddURL(url))
-    return;
-
-  ScheduleAndForget(PRIORITY_LOW, &HistoryBackend::SetPageContents,
-                    url, contents);
 }
 
 HistoryService::Handle HistoryService::GetPageThumbnail(

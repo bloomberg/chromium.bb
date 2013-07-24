@@ -902,8 +902,6 @@
         'browser/history/shortcuts_backend_unittest.cc',
         'browser/history/shortcuts_database_unittest.cc',
         'browser/history/snippet_unittest.cc',
-        'browser/history/text_database_manager_unittest.cc',
-        'browser/history/text_database_unittest.cc',
         'browser/history/thumbnail_database_unittest.cc',
         'browser/history/top_sites_database_unittest.cc',
         'browser/history/top_sites_impl_unittest.cc',

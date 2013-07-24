@@ -246,13 +246,6 @@ class VisitRow {
   // If 0, the segment id is null in the table.
   SegmentID segment_id;
 
-  // True when this visit has indexed data for it. We try to keep this in sync
-  // with the full text index: when we add or remove things from there, we will
-  // update the visit table as well. However, that file could get deleted, or
-  // out of sync in various ways, so this flag should be false when things
-  // change.
-  bool is_indexed;
-
   // Record how much time a user has this visit starting from the user
   // opened this visit to the user closed or ended this visit.
   // This includes both active and inactive time as long as
@@ -459,10 +452,6 @@ struct QueryOptions {
   // the most recent first, so older results may not be returned if there is not
   // enough room. When 0, this will return everything (the default).
   int max_count;
-
-  // Only search within the page body if true, otherwise search all columns
-  // including url and time. Defaults to false.
-  bool body_only;
 
   enum DuplicateHandling {
     // Omit visits for which there is a more recent visit to the same URL.

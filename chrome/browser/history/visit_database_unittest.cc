@@ -29,8 +29,7 @@ bool IsVisitInfoEqual(const VisitRow& a,
          a.url_id == b.url_id &&
          a.visit_time == b.visit_time &&
          a.referring_visit == b.referring_visit &&
-         a.transition == b.transition &&
-         a.is_indexed == b.is_indexed;
+         a.transition == b.transition;
 }
 
 }  // namespace
@@ -148,7 +147,6 @@ TEST_F(VisitDatabaseTest, Update) {
   modification.transition = content::PAGE_TRANSITION_TYPED;
   modification.visit_time = Time::Now() + TimeDelta::FromDays(1);
   modification.referring_visit = 9292;
-  modification.is_indexed = true;
   UpdateVisitRow(modification);
 
   // Check that the mutated version was written.
@@ -385,33 +383,6 @@ TEST_F(VisitDatabaseTest, VisitSource) {
   GetVisitsSource(matches, &sources);
   ASSERT_EQ(1U, sources.size());
   EXPECT_EQ(SOURCE_EXTENSION, sources[matches[0].visit_id]);
-}
-
-TEST_F(VisitDatabaseTest, GetIndexedVisits) {
-  // Add non-indexed visits.
-  int url_id = 111;
-  VisitRow visit_info1(
-      url_id, Time::Now(), 0, content::PAGE_TRANSITION_LINK, 0);
-  ASSERT_TRUE(AddVisit(&visit_info1, SOURCE_BROWSED));
-
-  VisitRow visit_info2(
-      url_id, Time::Now(), 0, content::PAGE_TRANSITION_TYPED, 0);
-  ASSERT_TRUE(AddVisit(&visit_info2, SOURCE_SYNCED));
-
-  std::vector<VisitRow> visits;
-  EXPECT_TRUE(GetVisitsForURL(url_id, &visits));
-  EXPECT_EQ(static_cast<size_t>(2), visits.size());
-  EXPECT_TRUE(GetIndexedVisitsForURL(url_id, &visits));
-  EXPECT_EQ(static_cast<size_t>(0), visits.size());
-
-  VisitRow visit_info3(
-      url_id, Time::Now(), 2, content::PAGE_TRANSITION_TYPED, 0);
-  visit_info3.is_indexed = true;
-  ASSERT_TRUE(AddVisit(&visit_info3, SOURCE_SYNCED));
-  EXPECT_TRUE(GetVisitsForURL(url_id, &visits));
-  EXPECT_EQ(static_cast<size_t>(3), visits.size());
-  EXPECT_TRUE(GetIndexedVisitsForURL(url_id, &visits));
-  EXPECT_EQ(static_cast<size_t>(1), visits.size());
 }
 
 }  // namespace history

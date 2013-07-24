@@ -34,18 +34,9 @@ bool VisitDatabase::InitVisitTable() {
         "from_visit INTEGER,"
         "transition INTEGER DEFAULT 0 NOT NULL,"
         "segment_id INTEGER,"
-        // True when we have indexed data for this visit.
-        "is_indexed BOOLEAN,"
+        // Some old DBs may have an "is_indexed" field here, but this is no
+        // longer used and should NOT be read or written from any longer.
         "visit_duration INTEGER DEFAULT 0 NOT NULL)"))
-      return false;
-  } else if (!GetDB().DoesColumnExist("visits", "is_indexed")) {
-    // Old versions don't have the is_indexed column, we can just add that and
-    // not worry about different database revisions, since old ones will
-    // continue to work.
-    //
-    // TODO(brettw) this should be removed once we think everybody has been
-    // updated (added early Mar 2008).
-    if (!GetDB().Execute("ALTER TABLE visits ADD COLUMN is_indexed BOOLEAN"))
       return false;
   }
 
@@ -98,9 +89,8 @@ void VisitDatabase::FillVisitRow(sql::Statement& statement, VisitRow* visit) {
   visit->referring_visit = statement.ColumnInt64(3);
   visit->transition = content::PageTransitionFromInt(statement.ColumnInt(4));
   visit->segment_id = statement.ColumnInt64(5);
-  visit->is_indexed = !!statement.ColumnInt(6);
   visit->visit_duration =
-      base::TimeDelta::FromInternalValue(statement.ColumnInt64(7));
+      base::TimeDelta::FromInternalValue(statement.ColumnInt64(6));
 }
 
 // static
@@ -154,15 +144,14 @@ bool VisitDatabase::FillVisitVectorWithOptions(sql::Statement& statement,
 VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO visits "
-      "(url, visit_time, from_visit, transition, segment_id, is_indexed, "
-      "visit_duration) VALUES (?,?,?,?,?,?,?)"));
+      "(url, visit_time, from_visit, transition, segment_id, "
+      "visit_duration) VALUES (?,?,?,?,?,?)"));
   statement.BindInt64(0, visit->url_id);
   statement.BindInt64(1, visit->visit_time.ToInternalValue());
   statement.BindInt64(2, visit->referring_visit);
   statement.BindInt64(3, visit->transition);
   statement.BindInt64(4, visit->segment_id);
-  statement.BindInt64(5, visit->is_indexed);
-  statement.BindInt64(6, visit->visit_duration.ToInternalValue());
+  statement.BindInt64(5, visit->visit_duration.ToInternalValue());
 
   if (!statement.Run()) {
     VLOG(0) << "Failed to execute visit insert statement:  "
@@ -241,16 +230,15 @@ bool VisitDatabase::UpdateVisitRow(const VisitRow& visit) {
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE visits SET "
-      "url=?,visit_time=?,from_visit=?,transition=?,segment_id=?,is_indexed=?,"
+      "url=?,visit_time=?,from_visit=?,transition=?,segment_id=?,"
       "visit_duration=? WHERE id=?"));
   statement.BindInt64(0, visit.url_id);
   statement.BindInt64(1, visit.visit_time.ToInternalValue());
   statement.BindInt64(2, visit.referring_visit);
   statement.BindInt64(3, visit.transition);
   statement.BindInt64(4, visit.segment_id);
-  statement.BindInt64(5, visit.is_indexed);
-  statement.BindInt64(6, visit.visit_duration.ToInternalValue());
-  statement.BindInt64(7, visit.visit_id);
+  statement.BindInt64(5, visit.visit_duration.ToInternalValue());
+  statement.BindInt64(6, visit.visit_id);
 
   return statement.Run();
 }
@@ -263,17 +251,6 @@ bool VisitDatabase::GetVisitsForURL(URLID url_id, VisitVector* visits) {
       "FROM visits "
       "WHERE url=? "
       "ORDER BY visit_time ASC"));
-  statement.BindInt64(0, url_id);
-  return FillVisitVector(statement, visits);
-}
-
-bool VisitDatabase::GetIndexedVisitsForURL(URLID url_id, VisitVector* visits) {
-  visits->clear();
-
-  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "SELECT" HISTORY_VISIT_ROW_FIELDS
-      "FROM visits "
-      "WHERE url=? AND is_indexed=1"));
   statement.BindInt64(0, url_id);
   return FillVisitVector(statement, visits);
 }

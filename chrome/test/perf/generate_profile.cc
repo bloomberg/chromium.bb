@@ -191,8 +191,6 @@ void InsertURLBatch(Profile* profile,
                              transition, history::SOURCE_BROWSED, true);
     ThumbnailScore score(0.75, false, false);
     history_service->SetPageTitle(url, ConstructRandomTitle());
-    if (types & FULL_TEXT)
-      history_service->SetPageContents(url, ConstructRandomPage());
     if (types & TOP_SITES && top_sites) {
       top_sites->SetPageThumbnailToJPEGBytes(
           url,

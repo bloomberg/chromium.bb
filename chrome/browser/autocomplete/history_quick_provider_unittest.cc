@@ -212,7 +212,7 @@ void HistoryQuickProviderTest::FillData() {
       // Mark the most recent |cur.typed_count| visits as typed.
       std::string sql_cmd_line = base::StringPrintf(
           "INSERT INTO \"visits\" VALUES(%" PRIuS ", %" PRIuS ", %" PRId64
-          ", 0, %d, 0, 0, 1)",
+          ", 0, %d, 0, 1)",
           visit_id++, i + 1, visit_time.ToInternalValue(),
           (j < cur.typed_count) ? content::PAGE_TRANSITION_TYPED :
                                   content::PAGE_TRANSITION_LINK);

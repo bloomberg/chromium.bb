@@ -25,7 +25,6 @@ namespace history {
 class ArchivedDatabase;
 class HistoryDatabase;
 struct HistoryDetails;
-class TextDatabaseManager;
 class ThumbnailDatabase;
 
 // Delegate used to broadcast notifications to the main thread.
@@ -76,8 +75,7 @@ class ExpireHistoryBackend {
   // Completes initialization by setting the databases that this class will use.
   void SetDatabases(HistoryDatabase* main_db,
                     ArchivedDatabase* archived_db,
-                    ThumbnailDatabase* thumb_db,
-                    TextDatabaseManager* text_db);
+                    ThumbnailDatabase* thumb_db);
 
   // Begins periodic expiration of history older than the given threshold. This
   // will continue until the object is deleted.
@@ -128,9 +126,6 @@ class ExpireHistoryBackend {
   // Deletes the visit-related stuff for all the visits in the given list, and
   // adds the rows for unique URLs affected to the affected_urls list in
   // the dependencies structure.
-  //
-  // Deleted information is the visits themselves and the full-text index
-  // entries corresponding to them.
   void DeleteVisitRelatedInfo(const VisitVector& visits,
                               DeleteDependencies* dependencies);
 
@@ -138,8 +133,7 @@ class ExpireHistoryBackend {
   void ArchiveVisits(const VisitVector& visits);
 
   // Finds or deletes dependency information for the given URL. Information that
-  // is specific to this URL (URL row, thumbnails, full text indexed stuff,
-  // etc.) is deleted.
+  // is specific to this URL (URL row, thumbnails, etc.) is deleted.
   //
   // This does not affect the visits! This is used for expiration as well as
   // deleting from the UI, and they handle visits differently.
@@ -240,12 +234,6 @@ class ExpireHistoryBackend {
   // and deletes items. For example, URLs with no visits.
   void ParanoidExpireHistory();
 
-  // Schedules a call to DoExpireHistoryIndexFiles.
-  void ScheduleExpireHistoryIndexFiles();
-
-  // Deletes old history index files.
-  void DoExpireHistoryIndexFiles();
-
   // Returns the BookmarkService, blocking until it is loaded. This may return
   // NULL.
   BookmarkService* GetBookmarkService();
@@ -269,7 +257,6 @@ class ExpireHistoryBackend {
   HistoryDatabase* main_db_;       // Main history database.
   ArchivedDatabase* archived_db_;  // Old history.
   ThumbnailDatabase* thumb_db_;    // Thumbnails and favicons.
-  TextDatabaseManager* text_db_;   // Full text index.
 
   // Used to generate runnable methods to do timers on this class. They will be
   // automatically canceled when this class is deleted.
