@@ -45,6 +45,16 @@ function successCallback1(a) {
         testFailed('output attributes are not correct');
     }
 
+    // Test sending of MIDI data with a Uint8Array.
+    var typedArrayData = new Uint8Array([0x90, 0x45, 0x7f]);
+    output.send(typedArrayData);
+
+    // Test sending of MIDI data with a regular Array.
+    output.send([0x90, 0x45, 0x7f]);
+
+    // Test sending of MIDI data with a regular Array giving an explicit timestamp.
+    output.send([0x90, 0x45, 0x7f], performance.now());
+
     // Now test System Exclusive access - our test mock should not allow this type of access.
     try {
         navigator.requestMIDIAccess( { sysex: true } ).then(successCallback2, errorCallback2);

@@ -67,7 +67,7 @@ WebSecurityOrigin WebMIDIPermissionRequest::securityOrigin() const
 
 void WebMIDIPermissionRequest::setIsAllowed(bool allowed)
 {
-    m_private->enableSysEx(allowed);
+    m_private->setSysExEnabled(allowed);
 }
 
 } // namespace WebKit

@@ -31,30 +31,70 @@
 #include "config.h"
 #include "modules/webmidi/MIDIOutput.h"
 
+#include "core/dom/ExceptionCode.h"
+#include "modules/webmidi/MIDIAccess.h"
+
 namespace WebCore {
 
-PassRefPtr<MIDIOutput> MIDIOutput::create(ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
+PassRefPtr<MIDIOutput> MIDIOutput::create(MIDIAccess* access, unsigned portIndex, ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
 {
-    return adoptRef(new MIDIOutput(context, id, manufacturer, name, version));
+    return adoptRef(new MIDIOutput(access, portIndex, context, id, manufacturer, name, version));
 }
 
-MIDIOutput::MIDIOutput(ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
+MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
     : MIDIPort(context, id, manufacturer, name, MIDIPortTypeOutput, version)
+    , m_access(access)
+    , m_portIndex(portIndex)
 {
     ScriptWrappable::init(this);
 }
 
-void MIDIOutput::send(Uint8Array* data, double timestamp)
+MIDIOutput::~MIDIOutput()
 {
-    // FIXME: Implement MIDI protocol validation here. System exclusive
-    // messages must be checked at the same time.
-    // Actual sending operation will be implemented in core/platform/midi.
 }
 
-void MIDIOutput::send(Vector<unsigned>, double timestamp)
+void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionCode& ec)
 {
-    // FIXME: Ditto. Implementation will be shared between these two send
-    // functions.
+    if (!array)
+        return;
+
+    const unsigned char* data = array->data();
+    size_t length = array->length();
+
+    // Filter out System Exclusive messages if we're not allowed.
+    // FIXME: implement more extensive filtering.
+    if (length > 0 && data[0] >= 0xf0 && !m_access->sysExEnabled()) {
+        ec = SecurityError;
+        return;
+    }
+
+    m_access->sendMIDIData(m_portIndex, data, length, timestamp);
+}
+
+void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, ExceptionCode& ec)
+{
+    RefPtr<Uint8Array> array = Uint8Array::create(unsignedData.size());
+
+    for (size_t i = 0; i < unsignedData.size(); ++i) {
+        if (unsignedData[i] > 0xff) {
+            ec = InvalidStateError;
+            return;
+        }
+        unsigned char value = unsignedData[i] & 0xff;
+        array->set(i, value);
+    }
+
+    send(array.get(), timestamp, ec);
+}
+
+void MIDIOutput::send(Uint8Array* data, ExceptionCode& ec)
+{
+    send(data, 0, ec);
+}
+
+void MIDIOutput::send(Vector<unsigned> unsignedData, ExceptionCode& ec)
+{
+    send(unsignedData, 0, ec);
 }
 
 } // namespace WebCore
