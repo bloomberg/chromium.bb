@@ -518,7 +518,7 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
   if (num_decoded_frames_ > delay_reuse_after_frame_num_) {
     base::MessageLoop::current()->PostDelayedTask(FROM_HERE, base::Bind(
         &VideoDecodeAccelerator::ReusePictureBuffer,
-        base::Unretained(decoder_.get()), picture.picture_buffer_id()),
+        decoder_->AsWeakPtr(), picture.picture_buffer_id()),
         base::TimeDelta::FromMilliseconds(kReuseDelayMs));
   } else {
     decoder_->ReusePictureBuffer(picture.picture_buffer_id());
