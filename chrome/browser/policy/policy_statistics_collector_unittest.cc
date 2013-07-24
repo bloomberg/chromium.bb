@@ -34,7 +34,7 @@ using testing::Return;
 using testing::ReturnRef;
 
 // Arbitrary policy names used for testing.
-const char* const kTestPolicy1 = key::kHomepageIsNewTabPage;
+const char* const kTestPolicy1 = key::kAlternateErrorPagesEnabled;
 const char* const kTestPolicy2 = key::kSearchSuggestEnabled;
 
 class TestPolicyStatisticsCollector : public PolicyStatisticsCollector {

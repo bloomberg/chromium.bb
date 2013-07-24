@@ -1295,7 +1295,6 @@
         'proprietary_codecs%': '<(proprietary_codecs)',
         'enable_task_manager%': 0,
         'safe_browsing%': 2,
-        'configuration_policy%': 0,
         'input_speech%': 0,
         'enable_automation%': 0,
         'java_bridge%': 1,
