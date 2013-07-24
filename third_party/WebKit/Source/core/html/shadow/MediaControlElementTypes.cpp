@@ -116,6 +116,11 @@ MediaControlInputElement::MediaControlInputElement(Document* document, MediaCont
 {
 }
 
+bool MediaControlInputElement::isMouseFocusable() const
+{
+    return false;
+}
+
 // ----------------------------
 
 MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(Document* document, MediaControlElementType displayType)

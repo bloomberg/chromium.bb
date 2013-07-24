@@ -119,6 +119,7 @@ protected:
 
 private:
     virtual void updateDisplayType() { }
+    virtual bool isMouseFocusable() const OVERRIDE;
 };
 
 // ----------------------------
