@@ -68,10 +68,9 @@ TEST(TimedItem, Sanity)
     timing.iterationDuration = 2;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
-    ASSERT_FALSE(timedItem->isScheduled());
-    ASSERT_FALSE(timedItem->isActive());
     ASSERT_FALSE(timedItem->isCurrent());
     ASSERT_FALSE(timedItem->isInEffect());
+    ASSERT_FALSE(timedItem->isInPlay());
     ASSERT_TRUE(isNull(timedItem->currentIteration()));
     ASSERT_EQ(0, timedItem->startTime());
     ASSERT_TRUE(isNull(timedItem->activeDuration()));
@@ -79,8 +78,7 @@ TEST(TimedItem, Sanity)
 
     timedItem->updateInheritedTime(0);
 
-    ASSERT_FALSE(timedItem->isScheduled());
-    ASSERT_TRUE(timedItem->isActive());
+    ASSERT_TRUE(timedItem->isInPlay());
     ASSERT_TRUE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
     ASSERT_EQ(0, timedItem->currentIteration());
@@ -90,8 +88,7 @@ TEST(TimedItem, Sanity)
 
     timedItem->updateInheritedTime(1);
 
-    ASSERT_FALSE(timedItem->isScheduled());
-    ASSERT_TRUE(timedItem->isActive());
+    ASSERT_TRUE(timedItem->isInPlay());
     ASSERT_TRUE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
     ASSERT_EQ(0, timedItem->currentIteration());
@@ -101,8 +98,7 @@ TEST(TimedItem, Sanity)
 
     timedItem->updateInheritedTime(2);
 
-    ASSERT_FALSE(timedItem->isScheduled());
-    ASSERT_FALSE(timedItem->isActive());
+    ASSERT_FALSE(timedItem->isInPlay());
     ASSERT_FALSE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
     ASSERT_EQ(0, timedItem->currentIteration());
@@ -112,8 +108,7 @@ TEST(TimedItem, Sanity)
 
     timedItem->updateInheritedTime(3);
 
-    ASSERT_FALSE(timedItem->isScheduled());
-    ASSERT_FALSE(timedItem->isActive());
+    ASSERT_FALSE(timedItem->isInPlay());
     ASSERT_FALSE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
     ASSERT_EQ(0, timedItem->currentIteration());
@@ -304,8 +299,7 @@ TEST(TimedItem, ZeroDurationSanity)
     Timing timing;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
-    ASSERT_FALSE(timedItem->isScheduled());
-    ASSERT_FALSE(timedItem->isActive());
+    ASSERT_FALSE(timedItem->isInPlay());
     ASSERT_FALSE(timedItem->isCurrent());
     ASSERT_FALSE(timedItem->isInEffect());
     ASSERT_TRUE(isNull(timedItem->currentIteration()));
@@ -315,8 +309,7 @@ TEST(TimedItem, ZeroDurationSanity)
 
     timedItem->updateInheritedTime(0);
 
-    ASSERT_FALSE(timedItem->isScheduled());
-    ASSERT_FALSE(timedItem->isActive());
+    ASSERT_FALSE(timedItem->isInPlay());
     ASSERT_FALSE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
     ASSERT_EQ(0, timedItem->currentIteration());
@@ -326,8 +319,7 @@ TEST(TimedItem, ZeroDurationSanity)
 
     timedItem->updateInheritedTime(1);
 
-    ASSERT_FALSE(timedItem->isScheduled());
-    ASSERT_FALSE(timedItem->isActive());
+    ASSERT_FALSE(timedItem->isInPlay());
     ASSERT_FALSE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
     ASSERT_EQ(0, timedItem->currentIteration());
@@ -397,6 +389,25 @@ TEST(TimedItem, ZeroDurationStartDelay)
 
     timedItem->updateInheritedTime(1.5);
     ASSERT_EQ(1, timedItem->timeFraction());
+}
+
+TEST(TimedItem, ZeroDurationIterationStartAndCount)
+{
+    Timing timing;
+    timing.iterationStart = 0.1;
+    timing.iterationCount = 0.2;
+    timing.fillMode = Timing::FillModeBoth;
+    timing.startDelay = 0.3;
+    RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
+
+    timedItem->updateInheritedTime(0);
+    ASSERT_EQ(0.1, timedItem->timeFraction());
+
+    timedItem->updateInheritedTime(0.3);
+    ASSERT_DOUBLE_EQ(0.3, timedItem->timeFraction());
+
+    timedItem->updateInheritedTime(1);
+    ASSERT_DOUBLE_EQ(0.3, timedItem->timeFraction());
 }
 
 // FIXME: Needs specification work -- ASSERTION FAILED: activeDuration >= 0

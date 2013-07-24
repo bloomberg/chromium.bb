@@ -43,37 +43,46 @@ TEST(TimedItemCalculations, ActiveTime)
 
     // calculateActiveTime(activeDuration, localTime, startTime)
 
-    // if the local time is null
-    ASSERT_TRUE(isNull(calculateActiveTime(32, nullValue(), 17, timing)));
-
-    // local time < start delay
-    timing.fillMode = Timing::FillModeForwards;
+    // Before Phase
     timing.startDelay = 10;
-    ASSERT_TRUE(isNull(calculateActiveTime(20, 0, 20, timing)));
+    timing.fillMode = Timing::FillModeForwards;
+    ASSERT_TRUE(isNull(calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing)));
     timing.fillMode = Timing::FillModeNone;
-    ASSERT_TRUE(isNull(calculateActiveTime(20, 0, 20, timing)));
+    ASSERT_TRUE(isNull(calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing)));
     timing.fillMode = Timing::FillModeBackwards;
-    ASSERT_EQ(0, calculateActiveTime(20, 0, 20, timing));
+    ASSERT_EQ(0, calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing));
     timing.fillMode = Timing::FillModeBoth;
-    ASSERT_EQ(0, calculateActiveTime(20, 0, 20, timing));
+    ASSERT_EQ(0, calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing));
 
-    // local time < start time + active duration
-    timing.fillMode = Timing::FillModeForwards;
+    // Active Phase
     timing.startDelay = 10;
-    ASSERT_EQ(5, calculateActiveTime(20, 15, 20, timing));
-
-    // otherwise, forwards / both
-    timing.fillMode = Timing::FillModeForwards;
-    timing.startDelay = 10;
-    ASSERT_EQ(21, calculateActiveTime(21, 45, 20, timing));
-    timing.fillMode = Timing::FillModeBoth;
-    ASSERT_EQ(21, calculateActiveTime(21, 45, 20, timing));
-
-    // otherwise
-    timing.fillMode = Timing::FillModeBackwards;
-    ASSERT_TRUE(isNull(calculateActiveTime(21, 45, 20, timing)));
+    // Active, and parent Before
     timing.fillMode = Timing::FillModeNone;
-    ASSERT_TRUE(isNull(calculateActiveTime(21, 45, 20, timing)));
+    ASSERT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseBefore, TimedItem::PhaseActive, timing)));
+    timing.fillMode = Timing::FillModeForwards;
+    ASSERT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseBefore, TimedItem::PhaseActive, timing)));
+    // Active, and parent After
+    timing.fillMode = Timing::FillModeNone;
+    ASSERT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseAfter, TimedItem::PhaseActive, timing)));
+    timing.fillMode = Timing::FillModeBackwards;
+    ASSERT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseAfter, TimedItem::PhaseActive, timing)));
+    // Active, and parent Active
+    timing.fillMode = Timing::FillModeForwards;
+    ASSERT_EQ(5, calculateActiveTime(20, 15, TimedItem::PhaseActive, TimedItem::PhaseActive, timing));
+
+    // After Phase
+    timing.startDelay = 10;
+    timing.fillMode = Timing::FillModeForwards;
+    ASSERT_EQ(21, calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing));
+    timing.fillMode = Timing::FillModeBoth;
+    ASSERT_EQ(21, calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing));
+    timing.fillMode = Timing::FillModeBackwards;
+    ASSERT_TRUE(isNull(calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing)));
+    timing.fillMode = Timing::FillModeNone;
+    ASSERT_TRUE(isNull(calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing)));
+
+    // None
+    ASSERT_TRUE(isNull(calculateActiveTime(32, nullValue(), TimedItem::PhaseNone, TimedItem::PhaseNone, timing)));
 }
 
 TEST(TimedItemCalculations, ScaledActiveTime)

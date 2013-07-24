@@ -53,10 +53,9 @@ class TimedItem : public RefCounted<TimedItem> {
 public:
     virtual ~TimedItem() { }
 
-    bool isScheduled() const { return ensureCalculated().isScheduled; }
-    bool isActive() const { return ensureCalculated().isActive; }
     bool isCurrent() const { return ensureCalculated().isCurrent; }
     bool isInEffect() const { return ensureCalculated().isInEffect; }
+    bool isInPlay() const { return ensureCalculated().isInPlay; }
 
     double startTime() const { return m_startTime; }
 
@@ -65,6 +64,13 @@ public:
     double timeFraction() const { return ensureCalculated().timeFraction; }
     Player* player() const { return m_player; }
 
+    enum Phase {
+        PhaseBefore,
+        PhaseActive,
+        PhaseAfter,
+        PhaseNone,
+    };
+
 protected:
     TimedItem(const Timing&);
 
@@ -72,7 +78,7 @@ protected:
     // it will (if necessary) recalculate timings and (if necessary) call
     // updateChildrenAndEffects.
     void updateInheritedTime(double inheritedTime) const;
-    virtual void updateChildrenAndEffects(bool wasActiveOrInEffect) const = 0;
+    virtual void updateChildrenAndEffects(bool wasInEffect) const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
     virtual void willDetach() = 0;
 
@@ -97,10 +103,9 @@ private:
         double activeDuration;
         double currentIteration;
         double timeFraction;
-        bool isScheduled;
-        bool isActive;
         bool isCurrent;
         bool isInEffect;
+        bool isInPlay;
     } m_calculated;
 
     // FIXME: Should check the version and reinherit time if inconsistent.

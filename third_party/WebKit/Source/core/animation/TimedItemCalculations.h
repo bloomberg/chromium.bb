@@ -38,27 +38,58 @@
 
 namespace WebCore {
 
-static inline double calculateActiveTime(double activeDuration, double localTime, double startTime, const Timing& specified)
+static inline TimedItem::Phase calculatePhase(double activeDuration, double localTime, const Timing& specified)
 {
     ASSERT(activeDuration >= 0);
-    ASSERT(std::isfinite(startTime));
-
     if (isNull(localTime))
-        return nullValue();
+        return TimedItem::PhaseNone;
+    if (localTime < specified.startDelay)
+        return TimedItem::PhaseBefore;
+    if (localTime >= specified.startDelay + activeDuration)
+        return TimedItem::PhaseAfter;
+    return TimedItem::PhaseActive;
+}
 
-    if (localTime < specified.startDelay) {
+static inline bool isActiveInParentPhase(TimedItem::Phase parentPhase, Timing::FillMode fillMode)
+{
+    switch (parentPhase) {
+    case TimedItem::PhaseBefore:
+        return fillMode == Timing::FillModeBackwards || fillMode == Timing::FillModeBoth;
+    case TimedItem::PhaseActive:
+        return true;
+    case TimedItem::PhaseAfter:
+        return fillMode == Timing::FillModeForwards || fillMode == Timing::FillModeBoth;
+    default:
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+}
+
+static inline double calculateActiveTime(double activeDuration, double localTime, TimedItem::Phase parentPhase, TimedItem::Phase phase, const Timing& specified)
+{
+    ASSERT(activeDuration >= 0);
+    ASSERT(phase == calculatePhase(activeDuration, localTime, specified));
+
+    switch (phase) {
+    case TimedItem::PhaseBefore:
         if (specified.fillMode == Timing::FillModeBackwards || specified.fillMode == Timing::FillModeBoth)
             return 0;
         return nullValue();
+    case TimedItem::PhaseActive:
+        if (isActiveInParentPhase(parentPhase, specified.fillMode))
+            return localTime - specified.startDelay;
+        return nullValue();
+    case TimedItem::PhaseAfter:
+        if (specified.fillMode == Timing::FillModeForwards || specified.fillMode == Timing::FillModeBoth)
+            return activeDuration;
+        return nullValue();
+    case TimedItem::PhaseNone:
+        ASSERT(isNull(localTime));
+        return nullValue();
+    default:
+        ASSERT_NOT_REACHED();
+        return nullValue();
     }
-
-    if (localTime < startTime + activeDuration)
-        return localTime - specified.startDelay;
-
-    if (specified.fillMode == Timing::FillModeForwards || specified.fillMode == Timing::FillModeBoth)
-        return activeDuration;
-
-    return nullValue();
 }
 
 static inline double calculateScaledActiveTime(double activeDuration, double activeTime, double startOffset, const Timing& specified)

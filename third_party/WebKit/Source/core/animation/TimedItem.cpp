@@ -56,7 +56,10 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
         ? repeatedDuration / abs(m_specified.playbackRate)
         : std::numeric_limits<double>::infinity();
 
-    const double activeTime = calculateActiveTime(activeDuration, localTime, m_startTime, m_specified);
+    const TimedItem::Phase phase = calculatePhase(activeDuration, localTime, m_specified);
+    // FIXME: parentPhase depends on groups being implemented.
+    const TimedItem::Phase parentPhase = TimedItem::PhaseActive;
+    const double activeTime = calculateActiveTime(activeDuration, localTime, parentPhase, phase, m_specified);
 
     double currentIteration = nullValue();
     double timeFraction = nullValue();
@@ -72,8 +75,9 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
         const double iterationDuration = 1;
         const double repeatedDuration = iterationDuration * m_specified.iterationCount;
         const double activeDuration = m_specified.playbackRate ? repeatedDuration / abs(m_specified.playbackRate) : std::numeric_limits<double>::infinity();
-        const double newLocalTime = localTime < m_specified.startDelay ? m_specified.startDelay - 1 : activeDuration;
-        const double activeTime = calculateActiveTime(activeDuration, newLocalTime, m_startTime, m_specified);
+        const double newLocalTime = localTime < m_specified.startDelay ? m_specified.startDelay - 1 : activeDuration + m_specified.startDelay;
+        const TimedItem::Phase phase = calculatePhase(activeDuration, newLocalTime, m_specified);
+        const double activeTime = calculateActiveTime(activeDuration, newLocalTime, parentPhase, phase, m_specified);
         const double startOffset = m_specified.iterationStart * iterationDuration;
         const double scaledActiveTime = calculateScaledActiveTime(activeDuration, activeTime, startOffset, m_specified);
         const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset, m_specified);
@@ -86,24 +90,22 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
     m_calculated.activeDuration = activeDuration;
     m_calculated.timeFraction = timeFraction;
 
-    const bool wasActiveOrInEffect = isActive() || isInEffect();
-    m_calculated.isScheduled = (!isNull(localTime) && localTime < m_specified.startDelay) || (m_parent && m_parent->isScheduled());
-    m_calculated.isActive = !isNull(localTime) && localTime >= m_specified.startDelay && localTime < m_specified.startDelay + activeDuration;
-    m_calculated.isCurrent = isScheduled() || isActive() || (m_parent && m_parent->isCurrent());
+    const bool wasInEffect = isInEffect();
     m_calculated.isInEffect = !isNull(activeTime);
+    m_calculated.isInPlay = phase == PhaseActive && (!m_parent || m_parent->isInPlay());
+    m_calculated.isCurrent = phase == PhaseBefore || isInPlay() || (m_parent && m_parent->isCurrent());
 
     // FIXME: This probably shouldn't be recursive.
-    updateChildrenAndEffects(wasActiveOrInEffect);
+    updateChildrenAndEffects(wasInEffect);
 }
 
 TimedItem::CalculatedTiming::CalculatedTiming()
     : activeDuration(nullValue())
     , currentIteration(nullValue())
     , timeFraction(nullValue())
-    , isScheduled(false)
-    , isActive(false)
     , isCurrent(false)
     , isInEffect(false)
+    , isInPlay(false)
 {
 }
 

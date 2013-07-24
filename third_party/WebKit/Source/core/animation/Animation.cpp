@@ -61,10 +61,10 @@ static AnimationStack* ensureAnimationStack(Element* element)
     return element->ensureActiveAnimations()->defaultStack();
 }
 
-void Animation::applyEffects(bool previouslyActiveOrInEffect)
+void Animation::applyEffects(bool previouslyInEffect)
 {
     ASSERT(player());
-    if (!previouslyActiveOrInEffect) {
+    if (!previouslyInEffect) {
         ensureAnimationStack(m_target.get())->add(this);
         m_activeInAnimationStack = true;
     }
@@ -81,14 +81,13 @@ void Animation::clearEffects()
     m_compositableValues.clear();
 }
 
-void Animation::updateChildrenAndEffects(bool wasActiveOrInEffect) const
+void Animation::updateChildrenAndEffects(bool wasInEffect) const
 {
-    const bool isActiveOrInEffect = isActive() || isInEffect();
-    ASSERT(m_activeInAnimationStack == wasActiveOrInEffect);
-    if (wasActiveOrInEffect && !isActiveOrInEffect)
+    ASSERT(m_activeInAnimationStack == wasInEffect);
+    if (isInEffect())
+        const_cast<Animation*>(this)->applyEffects(wasInEffect);
+    else if (wasInEffect)
         const_cast<Animation*>(this)->clearEffects();
-    else if (isActiveOrInEffect)
-        const_cast<Animation*>(this)->applyEffects(wasActiveOrInEffect);
 }
 
 } // namespace WebCore
