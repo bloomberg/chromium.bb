@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 // systemInfo.storage api test
-// browser_tests --gtest_filter=SystemInfoStorageApiTest.Storage
+// browser_tests --gtest_filter=SystemInfoStorageApiTest.StorageAttachment
 chrome.systemInfo = chrome.experimental.systemInfo;
 
-// Testing data should be the same as that in system_info_storage_apitest.cc
+// Testing data should be the same as |kRemovableStorageData| in
+// system_info_storage_apitest.cc.
 var testData = {
   id: "transient:0004",
   name: "/media/usb1",

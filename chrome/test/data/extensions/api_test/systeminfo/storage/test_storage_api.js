@@ -6,7 +6,8 @@
 // browser_tests --gtest_filter=SystemInfoStorageApiTest.Storage
 chrome.systemInfo = chrome.experimental.systemInfo;
 
-// Testing data should be the same as that in system_info_storage_apitest.cc
+// Testing data should be the same as |kTestingData| in
+// system_info_storage_apitest.cc.
 var testData = [
   { id:"transient:0004", name: "0xbeaf", type: "unknown", capacity: 4098,
     availableCapacity: 1000, step: 0 },
@@ -28,6 +29,7 @@ chrome.test.runTests([
       }
     }));
   },
+
   function testChangedEvent() {
     var numOfChangedEvent = 0;
     var callbackCompleted = chrome.test.callbackAdded();

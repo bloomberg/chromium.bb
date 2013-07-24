@@ -1,10 +1,10 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/api/system_info_storage/test_storage_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -27,7 +27,7 @@ using extensions::systeminfo::kStorageTypeUnknown;
 using extensions::TestStorageUnitInfo;
 using extensions::TestStorageInfoProvider;
 
-struct TestStorageUnitInfo kTestingData[] = {
+const struct TestStorageUnitInfo kTestingData[] = {
   {"dcim:device:0004", "transient:0004", "0xbeaf", kStorageTypeUnknown,
     4098, 1000, 0},
   {"path:device:002", "transient:002", "/home", kStorageTypeFixed,
@@ -36,14 +36,14 @@ struct TestStorageUnitInfo kTestingData[] = {
     10000, 1000, 4097}
 };
 
-struct TestStorageUnitInfo kRemovableStorageData[] = {
+const struct TestStorageUnitInfo kRemovableStorageData[] = {
   {"dcim:device:0004", "transient:0004", "/media/usb1",
     kStorageTypeRemovable, 4098, 1000, 1}
 };
 
 }  // namespace
 
-class SystemInfoStorageApiTest: public ExtensionApiTest {
+class SystemInfoStorageApiTest : public ExtensionApiTest {
  public:
   SystemInfoStorageApiTest() {}
   virtual ~SystemInfoStorageApiTest() {}
@@ -59,8 +59,7 @@ class SystemInfoStorageApiTest: public ExtensionApiTest {
   }
 
   void AttachRemovableStorage(const std::string& device_id) {
-    size_t len = arraysize(kRemovableStorageData);
-    for (size_t i = 0; i < len; ++i) {
+    for (size_t i = 0; i < arraysize(kRemovableStorageData); ++i) {
       if (kRemovableStorageData[i].device_id != device_id)
         continue;
 
