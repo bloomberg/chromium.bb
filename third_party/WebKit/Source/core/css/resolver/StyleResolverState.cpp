@@ -25,7 +25,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/NodeRenderingContext.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/page/Page.h"
 
@@ -37,10 +37,10 @@ ElementResolveContext::ElementResolveContext(Element* element)
     , m_distributedToInsertionPoint(false)
     , m_resetStyleInheritance(false)
 {
-    NodeRenderingContext context(element);
-    m_parentNode = context.parentNodeForRenderingAndStyle();
-    m_distributedToInsertionPoint = context.insertionPoint();
-    m_resetStyleInheritance = context.resetStyleInheritance();
+    NodeRenderingTraversal::ParentDetails parentDetails;
+    m_parentNode = NodeRenderingTraversal::parent(element, &parentDetails);
+    m_distributedToInsertionPoint = parentDetails.insertionPoint();
+    m_resetStyleInheritance = parentDetails.resetStyleInheritance();
 
     Node* documentElement = document()->documentElement();
     RenderStyle* documentStyle = document()->renderStyle();

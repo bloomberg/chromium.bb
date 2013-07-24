@@ -487,8 +487,7 @@ Node* HitTestResult::targetNode() const
 
 Element* HitTestResult::innerElement() const
 {
-    NodeRenderingTraversal::ParentDetails details;
-    for (Node* node = m_innerNode.get(); node; node = NodeRenderingTraversal::parent(node, &details))
+    for (Node* node = m_innerNode.get(); node; node = NodeRenderingTraversal::parent(node))
         if (node->isElementNode())
             return toElement(node);
 

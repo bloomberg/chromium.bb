@@ -264,7 +264,7 @@ void NodeRenderingContext::createRendererForTextIfNeeded()
 
     RenderObject* parentRenderer = this->parentRenderer();
 
-    if (resetStyleInheritance())
+    if (m_parentDetails.resetStyleInheritance())
         m_style = textNode->document()->styleResolver()->defaultStyleForElement();
     else
         m_style = parentRenderer->style();

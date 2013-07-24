@@ -3082,11 +3082,12 @@ void Document::hoveredNodeDetached(Node* node)
     if (!m_hoverNode)
         return;
 
-    NodeRenderingTraversal::ParentDetails details;
-    if (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != NodeRenderingTraversal::parent(m_hoverNode.get(), &details)))
+    if (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != NodeRenderingTraversal::parent(m_hoverNode.get())))
         return;
 
-    for (m_hoverNode = NodeRenderingTraversal::parent(node, &details); m_hoverNode && !m_hoverNode->renderer(); m_hoverNode = NodeRenderingTraversal::parent(m_hoverNode.get(), &details)) { }
+    m_hoverNode = NodeRenderingTraversal::parent(node);
+    while (m_hoverNode && !m_hoverNode->renderer())
+        m_hoverNode = NodeRenderingTraversal::parent(m_hoverNode.get());
 
     // If the mouse cursor is not visible, do not clear existing
     // hover effects on the ancestors of |node| and do not invoke
@@ -3103,12 +3104,12 @@ void Document::activeChainNodeDetached(Node* node)
     if (!m_activeElement)
         return;
 
-    NodeRenderingTraversal::ParentDetails details;
-    if (node != m_activeElement && (!m_activeElement->isTextNode() || node != NodeRenderingTraversal::parent(m_activeElement.get(), &details)))
+    if (node != m_activeElement && (!m_activeElement->isTextNode() || node != NodeRenderingTraversal::parent(m_activeElement.get())))
         return;
 
-    Node* activeNode = NodeRenderingTraversal::parent(node, &details);
-    for (; activeNode && activeNode->isElementNode() && !activeNode->renderer(); activeNode = NodeRenderingTraversal::parent(activeNode, &details)) { }
+    Node* activeNode = NodeRenderingTraversal::parent(node);
+    while (activeNode && activeNode->isElementNode() && !activeNode->renderer())
+        activeNode = NodeRenderingTraversal::parent(activeNode);
 
     m_activeElement = activeNode && activeNode->isElementNode() ? toElement(activeNode) : 0;
 }

@@ -667,7 +667,9 @@ Element* Internals::includerFor(Node* node, ExceptionCode& ec)
         return 0;
     }
 
-    return NodeRenderingContext(node).insertionPoint();
+    NodeRenderingTraversal::ParentDetails parentDetails;
+    NodeRenderingTraversal::parent(node, &parentDetails);
+    return parentDetails.insertionPoint();
 }
 
 String Internals::shadowPseudoId(Element* element, ExceptionCode& ec)

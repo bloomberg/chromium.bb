@@ -908,10 +908,11 @@ PassRefPtr<RenderStyle> StyleResolver::styleForText(Text* textNode)
 {
     ASSERT(textNode);
 
-    NodeRenderingContext context(textNode);
-    Node* parentNode = context.parentNodeForRenderingAndStyle();
-    return context.resetStyleInheritance() || !parentNode || !parentNode->renderStyle() ?
-        defaultStyleForElement() : parentNode->renderStyle();
+    NodeRenderingTraversal::ParentDetails parentDetails;
+    Node* parentNode = NodeRenderingTraversal::parent(textNode, &parentDetails);
+    if (!parentNode || !parentNode->renderStyle() || parentDetails.resetStyleInheritance())
+        return defaultStyleForElement();
+    return parentNode->renderStyle();
 }
 
 bool StyleResolver::checkRegionStyle(Element* regionElement)
