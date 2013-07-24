@@ -371,6 +371,10 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 // Disables support for the QUIC protocol.
 const char kDisableQuic[]                   = "disable-quic";
 
+// Disables support for the HTTPS over QUIC protocol.  This is a temporary
+// testing flag.  This only has an effect if QUIC protocol is enabled.
+const char kDisableQuicHttps[]              = "disable-quic-https";
+
 // Prevents the URLs of BackgroundContents from being remembered and
 // re-launched when the browser restarts.
 const char kDisableRestoreBackgroundContents[] =

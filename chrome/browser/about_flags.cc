@@ -715,7 +715,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_QUIC_HTTPS_NAME,
     IDS_FLAGS_ENABLE_QUIC_HTTPS_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableQuicHttps)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableQuicHttps,
+                              switches::kDisableQuicHttps)
   },
   {
     "enable-spdy4a2",

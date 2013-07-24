@@ -262,6 +262,10 @@ class IOThread : public content::BrowserThreadDelegate {
   // of a field trial or a command line flag.
   bool ShouldEnableQuic(const CommandLine& command_line);
 
+  // Returns true if HTTPS over QUIC should be enabled, either as a result
+  // of a field trial or a command line flag.
+  bool ShouldEnableQuicHttps(const CommandLine& command_line);
+
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.
   ChromeNetLog* net_log_;

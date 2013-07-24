@@ -96,6 +96,7 @@ namespace {
 
 const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
+const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ObserveKeychainEvents() {
@@ -550,8 +551,8 @@ void IOThread::InitAsync() {
   }
   bool enable_quic = ShouldEnableQuic(command_line);
   globals_->enable_quic.set(enable_quic);
-  if (enable_quic && command_line.HasSwitch(switches::kEnableQuicHttps))
-    globals_->enable_quic_https.set(true);
+  if (enable_quic)
+    globals_->enable_quic_https.set(ShouldEnableQuicHttps(command_line));
   if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
     net::HostPortPair quic_origin =
         net::HostPortPair::FromString(
@@ -974,9 +975,28 @@ bool IOThread::ShouldEnableQuic(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kDisableQuic))
     return false;
 
-  if (command_line.HasSwitch(switches::kEnableQuic)) {
+  if (command_line.HasSwitch(switches::kEnableQuic))
     return true;
-  }
 
-  return quic_trial_group == kQuicFieldTrialEnabledGroupName;
+  // QUIC should be enabled if we are in either field trial group.
+  return quic_trial_group == kQuicFieldTrialEnabledGroupName ||
+      quic_trial_group == kQuicFieldTrialHttpsEnabledGroupName;
+}
+
+bool IOThread::ShouldEnableQuicHttps(const CommandLine& command_line) {
+  // Always fetch the field trial group to ensure it is reported correctly.
+  // The command line flags will be associated with a group that is reported
+  // so long as trial is actually queried.
+  std::string quic_trial_group =
+      base::FieldTrialList::FindFullName(kQuicFieldTrialName);
+
+  if (command_line.HasSwitch(switches::kDisableQuicHttps))
+    return false;
+
+  if (command_line.HasSwitch(switches::kEnableQuicHttps))
+    return true;
+
+  // HTTPS over QUIC should only be enabled if we are in the https
+  // field trial group.
+  return quic_trial_group == kQuicFieldTrialHttpsEnabledGroupName;
 }
