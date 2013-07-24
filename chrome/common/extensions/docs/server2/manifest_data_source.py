@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections import OrderedDict
 from copy import deepcopy
 from operator import itemgetter
 
-from third_party.json_schema_compiler.json_parse import Parse
+from third_party.json_schema_compiler.json_parse import OrderedDict, Parse
 
 class ManifestDataSource(object):
   '''Provides a template with access to manifest properties specific to apps or
