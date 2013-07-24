@@ -920,15 +920,9 @@ bool DeveloperPrivateExportSyncfsFolderToLocalfsFunction::RunImpl() {
 
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     ClearPrexistingDirectoryContent(const base::FilePath& project_path) {
-  if (!base::DeleteFile(project_path, true/*recursive*/)) {
-    SetError("Error in copying files from sync filesystem.");
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-                       SendResponse,
-                   this,
-                   false));
-    return;
-  }
+
+  // Clear the project directory before copying new files.
+  base::DeleteFile(project_path, true/*recursive*/);
 
   pendingCopyOperationsCount_ = 1;
 
