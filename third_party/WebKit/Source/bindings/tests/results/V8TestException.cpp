@@ -63,7 +63,7 @@ template <typename T> void V8_USE(T) { }
 static void nameAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestException* imp = V8TestException::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->name(), info.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(info, imp->name(), info.GetIsolate());
     return;
 }
 

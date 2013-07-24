@@ -198,7 +198,7 @@ static void stringAttrWithGetterExceptionAttrGetter(v8::Local<v8::String> name, 
     String v = imp->stringAttrWithGetterException(es);
     if (UNLIKELY(es.throwIfNeeded()))
         return;
-    v8SetReturnValueString(info, v, info.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(info, v, info.GetIsolate());
     return;
 }
 
@@ -227,7 +227,7 @@ static void stringAttrWithGetterExceptionAttrSetterCallback(v8::Local<v8::String
 static void stringAttrWithSetterExceptionAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->stringAttrWithSetterException(), info.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(info, imp->stringAttrWithSetterException(), info.GetIsolate());
     return;
 }
 

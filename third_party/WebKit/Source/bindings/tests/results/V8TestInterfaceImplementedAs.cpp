@@ -66,7 +66,7 @@ template <typename T> void V8_USE(T) { }
 static void aAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->a(), info.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(info, imp->a(), info.GetIsolate());
     return;
 }
 
@@ -129,7 +129,7 @@ static void func1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(args.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, a, args[0]);
-    v8SetReturnValueString(args, imp->func1(a), args.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(args, imp->func1(a), args.GetIsolate());
     return;
 }
 
@@ -148,7 +148,7 @@ static void funcTestInterfaceImplementedAsParamMethod(const v8::FunctionCallback
     }
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(args.Holder());
     V8TRYCATCH_VOID(RealClass*, orange, V8TestInterfaceImplementedAs::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
-    v8SetReturnValueString(args, imp->funcTestInterfaceImplementedAsParam(orange), args.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(args, imp->funcTestInterfaceImplementedAsParam(orange), args.GetIsolate());
     return;
 }
 

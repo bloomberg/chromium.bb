@@ -65,7 +65,7 @@ template <typename T> void V8_USE(T) { }
 static void attr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestEventConstructor* imp = V8TestEventConstructor::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->attr1(), info.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(info, imp->attr1(), info.GetIsolate());
     return;
 }
 
@@ -79,7 +79,7 @@ static void attr1AttrGetterCallback(v8::Local<v8::String> name, const v8::Proper
 static void attr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestEventConstructor* imp = V8TestEventConstructor::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->attr2(), info.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(info, imp->attr2(), info.GetIsolate());
     return;
 }
 
