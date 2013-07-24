@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script>
-if (window.internals)
-    internals.settings.setDialogElementEnabled(true);
-</script>
 <style>
 dialog {
     background: green;
@@ -14,6 +10,7 @@ div {
     display: table-column;
 }
 </style>
+</head>
 <body>
 <p>Bug <a href="http://webkit.org/b/103477">103477</a>: Make
 NodeRenderingContext::parentRenderer and nextRenderer top layer aware

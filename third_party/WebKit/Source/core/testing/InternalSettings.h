@@ -60,7 +60,6 @@ public:
         IntSize m_originalTextAutosizingWindowSizeOverride;
         float m_originalTextAutosizingFontScaleFactor;
         String m_originalMediaTypeOverride;
-        bool m_originalDialogElementEnabled;
         bool m_originalLazyLayoutEnabled;
         bool m_originalMockScrollbarsEnabled;
         bool m_originalUsesOverlayScrollbars;
@@ -110,7 +109,6 @@ public:
     // be removed or moved onto internals.runtimeFlags:
     void setAuthorShadowDOMForAnyElementEnabled(bool);
     void setCSSExclusionsEnabled(bool);
-    void setDialogElementEnabled(bool);
     void setExperimentalShadowDOMEnabled(bool);
     void setExperimentalWebSocketEnabled(bool);
     void setLangAttributeAwareFormControlUIEnabled(bool);

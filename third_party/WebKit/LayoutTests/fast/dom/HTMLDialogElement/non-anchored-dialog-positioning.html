@@ -19,9 +19,6 @@ dialog {
 </style>
 <script src="../../js/resources/js-test-pre.js"></script>
 <script>
-if (window.internals)
-    internals.settings.setDialogElementEnabled(true);
-
 function checkTopOfViewport(dialog) {
     shouldBe('dialog.getBoundingClientRect().top', '0');
 }

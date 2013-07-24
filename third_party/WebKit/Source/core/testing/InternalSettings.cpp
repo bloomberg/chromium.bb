@@ -66,7 +66,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalTextAutosizingWindowSizeOverride(settings->textAutosizingWindowSizeOverride())
     , m_originalTextAutosizingFontScaleFactor(settings->textAutosizingFontScaleFactor())
     , m_originalMediaTypeOverride(settings->mediaTypeOverride())
-    , m_originalDialogElementEnabled(RuntimeEnabledFeatures::dialogElementEnabled())
     , m_originalLazyLayoutEnabled(RuntimeEnabledFeatures::lazyLayoutEnabled())
     , m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled())
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
@@ -90,7 +89,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setTextAutosizingWindowSizeOverride(m_originalTextAutosizingWindowSizeOverride);
     settings->setTextAutosizingFontScaleFactor(m_originalTextAutosizingFontScaleFactor);
     settings->setMediaTypeOverride(m_originalMediaTypeOverride);
-    RuntimeEnabledFeatures::setDialogElementEnabled(m_originalDialogElementEnabled);
     RuntimeEnabledFeatures::setLazyLayoutEnabled(m_originalLazyLayoutEnabled);
     settings->setMockScrollbarsEnabled(m_originalMockScrollbarsEnabled);
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
@@ -290,11 +288,6 @@ void InternalSettings::setEditingBehavior(const String& editingBehavior, Excepti
         settings()->setEditingBehaviorType(EditingAndroidBehavior);
     else
         ec = SyntaxError;
-}
-
-void InternalSettings::setDialogElementEnabled(bool enabled)
-{
-    RuntimeEnabledFeatures::setDialogElementEnabled(enabled);
 }
 
 void InternalSettings::setLazyLayoutEnabled(bool enabled)
