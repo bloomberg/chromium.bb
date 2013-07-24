@@ -4719,7 +4719,7 @@ PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridBreadth(CSSParserValue* curren
         return cssValuePool().createValue(flexValue, CSSPrimitiveValue::CSS_FR);
     }
 
-    if (!validUnit(currentValue, FLength | FPercent))
+    if (!validUnit(currentValue, FNonNeg | FLength | FPercent))
         return 0;
 
     return createPrimitiveNumericValue(currentValue);

@@ -241,6 +241,17 @@ element.style.gridDefinitionRows = "-8,0fr";
 shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'none'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'none'");
 
+// Negative values are not allowed.
+element.style.gridDefinitionColumns = "-1px";
+element.style.gridDefinitionRows = "-6em";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'none'");
+
+element.style.gridDefinitionColumns = "minmax(-1%, 32%)";
+element.style.gridDefinitionRows = "minmax(2vw, -6em)";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'none'");
+
 debug("");
 debug("Test setting grid-definition-columns and grid-definition-rows back to 'none' through JS");
 element.style.gridDefinitionColumns = "18px";

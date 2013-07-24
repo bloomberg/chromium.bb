@@ -169,6 +169,21 @@ element.style.gridDefinitionRows = "minmax(auto, 15%) 10vw";
 shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'none'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'none'");
 
+// Negative values are not allowed.
+element = document.createElement("div");
+document.body.appendChild(element);
+element.style.gridDefinitionColumns = "-10px minmax(16px, 32px)";
+element.style.gridDefinitionRows = "minmax(10%, 15%) -10vw";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'none'");
+
+element = document.createElement("div");
+document.body.appendChild(element);
+element.style.gridDefinitionColumns = "10px minmax(16px, -1vw)";
+element.style.gridDefinitionRows = "minmax(-1%, 15%) 10vw";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'none'");
+
 function testInherit()
 {
     var parentElement = document.createElement("div");
