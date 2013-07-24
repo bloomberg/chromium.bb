@@ -210,8 +210,7 @@ AutofillFieldType FieldTypeFromAutocompleteType(
   if (autocomplete_type == "organization")
     return COMPANY_NAME;
 
-  if (autocomplete_type == "street-address" ||
-      autocomplete_type == "address-line1")
+  if (autocomplete_type == "address-line1")
     return ADDRESS_HOME_LINE1;
 
   if (autocomplete_type == "address-line2")

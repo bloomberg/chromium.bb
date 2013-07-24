@@ -2076,7 +2076,7 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
   form.fields.push_back(field);
 
   test::CreateTestFormField("", "address", "", "text", &field);
-  field.autocomplete_attribute = "section-billing street-address";
+  field.autocomplete_attribute = "section-billing address-line1";
   form.fields.push_back(field);
 
   test::CreateTestFormField("", "city", "", "text", &field);

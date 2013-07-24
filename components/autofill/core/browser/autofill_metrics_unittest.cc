@@ -808,7 +808,7 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
   field.autocomplete_attribute = "email";
   forms.back().fields.push_back(field);
   test::CreateTestFormField("", "", "", "text", &field);
-  field.autocomplete_attribute = "street-address";
+  field.autocomplete_attribute = "address-line1";
   forms.back().fields.push_back(field);
 
   // Expect both the "form parsed" metric and the author-specified field type

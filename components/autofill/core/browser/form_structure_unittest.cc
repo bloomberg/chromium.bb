@@ -673,7 +673,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsRepeated) {
 
   field.autocomplete_attribute = "section-foo email";
   form.fields.push_back(field);
-  field.autocomplete_attribute = "section-foo street-address";
+  field.autocomplete_attribute = "section-foo address-line1";
   form.fields.push_back(field);
 
   FormStructure form_structure(form, std::string());
@@ -702,7 +702,7 @@ TEST(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
   field.form_control_type = "text";
 
   field.name = ASCIIToUTF16("one");
-  field.autocomplete_attribute = "street-address";
+  field.autocomplete_attribute = "address-line1";
   form.fields.push_back(field);
   field.name = base::string16();
   field.autocomplete_attribute = "section-foo email";
@@ -711,7 +711,7 @@ TEST(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
   field.autocomplete_attribute = "name";
   form.fields.push_back(field);
   field.name = ASCIIToUTF16("two");
-  field.autocomplete_attribute = "street-address";
+  field.autocomplete_attribute = "address-line1";
   form.fields.push_back(field);
 
   FormStructure form_structure(form, std::string());
