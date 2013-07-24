@@ -58,10 +58,12 @@ void ContentsView::ChildPreferredSizeChanged(View* child) {
 // MessageCenterBubble /////////////////////////////////////////////////////////
 
 MessageCenterBubble::MessageCenterBubble(MessageCenter* message_center,
-                                         MessageCenterTray* tray)
+                                         MessageCenterTray* tray,
+                                         bool first_item_has_no_margin)
     : MessageBubbleBase(message_center, tray),
       message_center_view_(NULL),
-      initially_settings_visible_(false) {
+      initially_settings_visible_(false),
+      first_item_has_no_margin_(first_item_has_no_margin) {
 }
 
 MessageCenterBubble::~MessageCenterBubble() {
@@ -82,6 +84,7 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
   init_params.max_width += kMarginBetweenItems * 2;
   init_params.max_height = max_height();
   init_params.can_activate = true;
+  init_params.first_item_has_no_margin = first_item_has_no_margin_;
   return init_params;
 }
 

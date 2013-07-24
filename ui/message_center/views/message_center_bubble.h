@@ -18,7 +18,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble
     : public MessageBubbleBase,
       public base::SupportsWeakPtr<MessageCenterBubble> {
  public:
-  MessageCenterBubble(MessageCenter* message_center, MessageCenterTray* tray);
+  MessageCenterBubble(MessageCenter* message_center,
+                      MessageCenterTray* tray,
+                      bool first_item_has_no_margin);
 
   virtual ~MessageCenterBubble();
 
@@ -43,6 +45,10 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble
 
   // Use settings view as the initially visible content if true.
   bool initially_settings_visible_;
+
+  // True if the first message which gets shown should have no margin against
+  // the used anchor.
+  bool first_item_has_no_margin_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterBubble);
 };

@@ -53,10 +53,13 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
       public base::SupportsWeakPtr<MessagePopupCollection> {
  public:
   // |parent| specifies the parent widget of the toast windows. The default
-  // parent will be used for NULL.
+  // parent will be used for NULL. Usually each icon is spacing against its
+  // predecessor. If |first_item_has_no_margin| is set however the first item
+  // does not space against the tray.
   MessagePopupCollection(gfx::NativeView parent,
                          MessageCenter* message_center,
-                         MessageCenterTray* tray);
+                         MessageCenterTray* tray,
+                         bool first_item_has_no_margin);
   virtual ~MessagePopupCollection();
 
   // Called by ToastContentsView when its window is closed.
@@ -166,6 +169,9 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   // Weak, only exists temporarily in tests.
   scoped_ptr<base::RunLoop> run_loop_for_test_;
+
+  // True if the first item should not have spacing against the tray.
+  bool first_item_has_no_margin_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePopupCollection);
 };

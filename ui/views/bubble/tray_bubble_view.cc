@@ -31,6 +31,12 @@ namespace {
 const int kArrowMinOffset = 20;
 const int kBubbleSpacing = 20;
 
+// The new theme adjusts the menus / bubbles to be flush with the shelf when
+// there is no bubble. These are the offsets which need to be applied.
+const int kArrowOffsetTopBottom = 5;
+const int kArrowOffsetLeft = 9;
+const int kArrowOffsetRight = -5;
+
 }  // namespace
 
 namespace views {
@@ -47,7 +53,8 @@ class TrayBubbleBorder : public BubbleBorder {
       : BubbleBorder(params.arrow, params.shadow, params.arrow_color),
         owner_(owner),
         anchor_(anchor),
-        tray_arrow_offset_(params.arrow_offset) {
+        tray_arrow_offset_(params.arrow_offset),
+        first_item_has_no_margin_(params.first_item_has_no_margin) {
     set_alignment(params.arrow_alignment);
     set_background_color(params.arrow_color);
     set_paint_arrow(params.arrow_paint_type);
@@ -59,13 +66,27 @@ class TrayBubbleBorder : public BubbleBorder {
   // Sets the bubble on top of the anchor when it has no arrow.
   virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
                               const gfx::Size& contents_size) const OVERRIDE {
-    if (has_arrow(arrow()))
-      return BubbleBorder::GetBounds(position_relative_to, contents_size);
+    if (has_arrow(arrow())) {
+      gfx::Rect rect =
+          BubbleBorder::GetBounds(position_relative_to, contents_size);
+      if (first_item_has_no_margin_) {
+        if (arrow() == BubbleBorder::BOTTOM_RIGHT ||
+            arrow() == BubbleBorder::BOTTOM_LEFT) {
+          rect.set_y(rect.y() + kArrowOffsetTopBottom);
+        } else if (arrow() == BubbleBorder::LEFT_BOTTOM) {
+          rect.set_x(rect.x() + kArrowOffsetLeft);
+        } else if (arrow() == BubbleBorder::RIGHT_BOTTOM) {
+          rect.set_x(rect.x() + kArrowOffsetRight);
+        }
+      }
+      return rect;
+    }
 
+    // TODO(skuhne): With shelf LR alignment, arrow-less messages get
+    // automatically offsetted from an open status menu which needs addressing.
     gfx::Size border_size(contents_size);
     gfx::Insets insets = GetInsets();
     border_size.Enlarge(insets.width(), insets.height());
-
     const int x = position_relative_to.x() +
         position_relative_to.width() / 2 - border_size.width() / 2;
     // Position the bubble on top of the anchor.
@@ -111,6 +132,10 @@ class TrayBubbleBorder : public BubbleBorder {
   View* owner_;
   View* anchor_;
   const int tray_arrow_offset_;
+
+  // If true the first item should not get any additional spacing against the
+  // anchor (without the bubble tip the bubble should be flush to the shelf).
+  const bool first_item_has_no_margin_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleBorder);
 };
@@ -225,6 +250,7 @@ TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
       can_activate(false),
       close_on_deactivate(true),
       arrow_color(SK_ColorBLACK),
+      first_item_has_no_margin(false),
       arrow(BubbleBorder::NONE),
       arrow_offset(kArrowDefaultOffset),
       arrow_paint_type(BubbleBorder::PAINT_NORMAL),

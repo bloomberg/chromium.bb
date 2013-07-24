@@ -263,8 +263,10 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
 
   should_block_shelf_auto_hide_ = true;
   message_center::MessageCenterBubble* message_center_bubble =
-      new message_center::MessageCenterBubble(message_center(),
-                                              message_center_tray_.get());
+      new message_center::MessageCenterBubble(
+          message_center(),
+          message_center_tray_.get(),
+          ash::switches::UseAlternateShelfLayout());
 
   int max_height = 0;
   aura::Window* status_area_window = status_area_widget()->GetNativeView();
@@ -337,7 +339,8 @@ bool WebNotificationTray::ShowPopups() {
           GetWidget()->GetNativeView()->GetRootWindow(),
           internal::kShellWindowId_StatusContainer),
       message_center(),
-      message_center_tray_.get()));
+      message_center_tray_.get(),
+      ash::switches::UseAlternateShelfLayout()));
   work_area_observer_.reset(new internal::WorkAreaObserver(
       popup_collection_.get(), GetShelfLayoutManager()));
   return true;

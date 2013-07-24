@@ -38,19 +38,28 @@ namespace {
 // just closed, the timeout is shorter.
 const int kMouseExitedDeferTimeoutMs = 200;
 
+// The margin between messages (and between the anchor unless
+// first_item_has_no_margin was specified).
 const int kToastMargin = kMarginBetweenItems;
+
+// If there should be no margin for the first item, this value needs to be
+// substracted to flush the message to the shelf (the width of the border +
+// shadow).
+const int kNoToastMarginBorderAndShadowOffset = 2;
 
 }  // namespace.
 
 MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
                                                MessageCenter* message_center,
-                                               MessageCenterTray* tray)
+                                               MessageCenterTray* tray,
+                                               bool first_item_has_no_margin)
     : parent_(parent),
       message_center_(message_center),
       tray_(tray),
       defer_counter_(0),
       latest_toast_entered_(NULL),
-      user_is_closing_toasts_by_clicking_(false) {
+      user_is_closing_toasts_by_clicking_(false),
+      first_item_has_no_margin_(first_item_has_no_margin) {
   DCHECK(message_center_);
   defer_timer_.reset(new base::OneShotTimer<MessagePopupCollection>);
   DoUpdateIfPossible();
@@ -101,7 +110,12 @@ void MessagePopupCollection::UpdateWidgets() {
 
   int bottom = toasts_.empty() ?
       work_area_.bottom() : toasts_.back()->origin().y();
-  bottom -= kToastMargin;
+
+  if (!first_item_has_no_margin_)
+    bottom -= kToastMargin;
+  else
+    bottom += kNoToastMarginBorderAndShadowOffset;
+
   // Iterate in the reverse order to keep the oldest toasts on screen. Newer
   // items may be ignored if there are no room to place them.
   for (NotificationList::PopupNotifications::const_reverse_iterator iter =
@@ -191,7 +205,12 @@ int MessagePopupCollection::GetToastOriginX(const gfx::Rect& toast_bounds) {
 }
 
 void MessagePopupCollection::RepositionWidgets() {
-  int bottom = work_area_.bottom() - kToastMargin;
+  int bottom = work_area_.bottom();
+  if (!first_item_has_no_margin_)
+    bottom -= kToastMargin;
+  else
+    bottom += kNoToastMarginBorderAndShadowOffset;
+
   for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end();) {
     Toasts::iterator curr = iter++;
     gfx::Rect bounds((*curr)->bounds());

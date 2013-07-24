@@ -137,7 +137,7 @@ message_center::MessageCenter* WebNotificationTray::message_center() {
 
 bool WebNotificationTray::ShowPopups() {
   popup_collection_.reset(new message_center::MessagePopupCollection(
-      NULL, message_center(), message_center_tray_.get()));
+      NULL, message_center(), message_center_tray_.get(), false));
   return true;
 }
 

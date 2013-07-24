@@ -437,6 +437,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                                            menu_width,
                                            kTrayPopupMaxWidth);
     init_params.can_activate = can_activate;
+    init_params.first_item_has_no_margin =
+        ash::switches::UseAlternateShelfLayout();
     if (detailed) {
       // This is the case where a volume control or brightness control bubble
       // is created.
@@ -470,7 +472,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
 }
 
 void SystemTray::UpdateNotificationBubble() {
-  // Only show the notification buble if we have notifications.
+  // Only show the notification bubble if we have notifications.
   if (notification_items_.empty()) {
     DestroyNotificationBubble();
     return;
@@ -499,6 +501,8 @@ void SystemTray::UpdateNotificationBubble() {
                                          GetAnchorAlignment(),
                                          kTrayPopupMinWidth,
                                          kTrayPopupMaxWidth);
+  init_params.first_item_has_no_margin =
+      ash::switches::UseAlternateShelfLayout();
   init_params.arrow_color = kBackgroundColor;
   init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
   notification_bubble_.reset(
