@@ -38,6 +38,10 @@
 #include "ui/gl/gl_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::DomOperationNotificationDetails;
 using content::RenderViewHost;
 
@@ -254,6 +258,14 @@ std::string PPAPITestBase::StripPrefixes(const std::string& test_name) {
 }
 
 void PPAPITestBase::RunTestURL(const GURL& test_url) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // PPAPITests are broken in Ash browser tests (http://crbug.com/263548).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    LOG(WARNING) << "PPAPITests are disabled for Ash browser tests.";
+    return;
+  }
+#endif
+
   // See comment above TestingInstance in ppapi/test/testing_instance.h.
   // Basically it sends messages using the DOM automation controller. The
   // value of "..." means it's still working and we should continue to wait,
