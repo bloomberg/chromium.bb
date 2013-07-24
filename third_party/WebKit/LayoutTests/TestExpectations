@@ -404,7 +404,7 @@ webkit.org/b/82509 [ Linux ] svg/text/append-text-node-to-tspan.html [ ImageOnly
 webkit.org/b/82954 [ Debug Mac Win ] svg/W3C-SVG-1.1/animate-elem-77-t.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/82954 [ Debug Mac Win ] svg/W3C-SVG-1.1/text-text-05-t.svg [ ImageOnlyFailure Pass ]
 
-webkit.org/b/83183 [ Mac ] svg/as-image/animated-svg-as-image-no-fixed-intrinsic-size.html [ ImageOnlyFailure Pass ]
+webkit.org/b/83183 [ Mac Win ] svg/as-image/animated-svg-as-image-no-fixed-intrinsic-size.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg [ ImageOnlyFailure ]
 
