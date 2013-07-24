@@ -375,7 +375,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   if (!app_page_names || !app_page_names->GetSize()) {
     ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);
     ListValue* list = update.Get();
-    list->Set(0, Value::CreateStringValue(
+    list->Set(0, new base::StringValue(
         l10n_util::GetStringUTF16(IDS_APP_DEFAULT_PAGE_NAME)));
     dictionary->Set("appPageNames",
                     static_cast<ListValue*>(list->DeepCopy()));
@@ -652,7 +652,7 @@ void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);
   ListValue* list = update.Get();
-  list->Set(static_cast<size_t>(page_index), Value::CreateStringValue(name));
+  list->Set(static_cast<size_t>(page_index), new base::StringValue(name));
 }
 
 void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
