@@ -121,8 +121,9 @@ int32 IndexedDBDispatcherHost::Add(IndexedDBConnection* connection,
                                    int32 ipc_thread_id,
                                    const GURL& origin_url) {
   if (!database_dispatcher_host_) {
+    connection->Close();
     delete connection;
-    return 0;
+    return -1;
   }
   int32 ipc_database_id = database_dispatcher_host_->map_.Add(connection);
   Context()->ConnectionOpened(origin_url, connection);
@@ -262,6 +263,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
 void IndexedDBDispatcherHost::FinishTransaction(int64 host_transaction_id,
                                                 bool committed) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  if (!database_dispatcher_host_)
+    return;
   TransactionIDToURLMap& transaction_url_map =
       database_dispatcher_host_->transaction_url_map_;
   TransactionIDToSizeMap& transaction_size_map =

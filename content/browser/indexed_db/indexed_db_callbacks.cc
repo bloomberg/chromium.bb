@@ -118,6 +118,8 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   dispatcher_host_->RegisterTransactionId(host_transaction_id_, origin_url_);
   int32 ipc_database_id =
       dispatcher_host_->Add(connection.release(), ipc_thread_id_, origin_url_);
+  if (ipc_database_id < 0)
+    return;
   ipc_database_id_ = ipc_database_id;
   IndexedDBMsg_CallbacksUpgradeNeeded_Params params;
   params.ipc_thread_id = ipc_thread_id_;
