@@ -294,7 +294,7 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     if (use_async_pin_dialog_) {
       config.fetch_secret_callback =
           base::Bind(&ChromotingInstance::FetchSecretFromDialog,
-                     this->AsWeakPtr());
+                     weak_factory_.GetWeakPtr());
     } else {
       std::string shared_secret;
       if (!data->GetString("sharedSecret", &shared_secret)) {
@@ -572,7 +572,7 @@ protocol::CursorShapeStub* ChromotingInstance::GetCursorShapeStub() {
 scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
 ChromotingInstance::GetTokenFetcher(const std::string& host_public_key) {
   return scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>(
-      new PepperTokenFetcher(this->AsWeakPtr(), host_public_key));
+      new PepperTokenFetcher(weak_factory_.GetWeakPtr(), host_public_key));
 }
 
 void ChromotingInstance::InjectClipboardEvent(
@@ -701,7 +701,8 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // Setup the PepperSignalStrategy.
   signal_strategy_.reset(new PepperSignalStrategy(
       config.local_jid,
-      base::Bind(&ChromotingInstance::SendOutgoingIq, AsWeakPtr())));
+      base::Bind(&ChromotingInstance::SendOutgoingIq,
+                 weak_factory_.GetWeakPtr())));
 
   scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
       PepperPortAllocator::Create(this));
@@ -713,7 +714,8 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 
   // Start timer that periodically sends perf stats.
   plugin_task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats, AsWeakPtr()),
+      FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats,
+                            weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
 }
 
@@ -874,7 +876,8 @@ void ChromotingInstance::SendPerfStats() {
   }
 
   plugin_task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats, AsWeakPtr()),
+      FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats,
+                            weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
 
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());

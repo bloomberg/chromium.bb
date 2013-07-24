@@ -71,8 +71,7 @@ class ChromotingInstance :
       public ClientUserInterface,
       public protocol::ClipboardStub,
       public protocol::CursorShapeStub,
-      public pp::Instance,
-      public base::SupportsWeakPtr<ChromotingInstance> {
+      public pp::Instance {
  public:
   // Plugin API version. This should be incremented whenever the API
   // interface changes.
@@ -258,6 +257,7 @@ class ChromotingInstance :
 
   base::WeakPtr<PepperTokenFetcher> pepper_token_fetcher_;
 
+  // Weak reference to this instance, used for global logging and task posting.
   base::WeakPtrFactory<ChromotingInstance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingInstance);
