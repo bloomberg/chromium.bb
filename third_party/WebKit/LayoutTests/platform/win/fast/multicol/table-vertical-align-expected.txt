@@ -3,8 +3,8 @@ layer at (0,0) size 1955x1010
 layer at (0,0) size 785x1010
   RenderBlock {HTML} at (0,0) size 785x1010
     RenderBody {BODY} at (8,8) size 769x994
-      RenderBlock {HR} at (0,358) size 769x2 [border: (1px inset #000000)]
-      RenderBlock {HR} at (0,676) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,358) size 769x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {HR} at (0,676) size 769x2 [border: (1px inset #EEEEEE)]
 layer at (8,8) size 769x350
   RenderBlock {DIV} at (0,0) size 769x350
     RenderTable {TABLE} at (0,0) size 376x1307 [border: (1px outset #808080)]

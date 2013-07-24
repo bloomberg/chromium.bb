@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 442: "The following tests text iteration over RTL text embedded with LTR text. "
           text run at (442,0) width 281: "TextIterators are used for find, spellcheck, and"
           text run at (0,20) width 60: ".innerText"
-      RenderBlock {HR} at (0,48) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,48) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,58) size 784x20
         RenderText {#text} at (0,0) size 129x19
           text run at (0,0) width 129: "Embedded Numbers:"

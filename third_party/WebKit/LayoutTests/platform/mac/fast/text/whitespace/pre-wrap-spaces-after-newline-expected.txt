@@ -16,7 +16,7 @@ layer at (0,0) size 785x781
             text run at (0,18) width 124: "following a newline"
         RenderText {#text} at (124,18) size 4x18
           text run at (124,18) width 4: "."
-      RenderBlock {HR} at (0,52) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,52) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,70) size 769x18
         RenderText {#text} at (0,0) size 35x18
           text run at (0,0) width 35: "Here "

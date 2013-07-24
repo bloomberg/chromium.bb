@@ -11,7 +11,7 @@ layer at (0,0) size 800x596
           RenderText {#text} at (0,0) size 23x215
             text run at (0,0) width 215: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,276) size 784x3 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,276) size 784x3 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,300) size 784x25
         RenderText {#text} at (0,0) size 152x23
           text run at (0,0) width 152: "Complex text path"

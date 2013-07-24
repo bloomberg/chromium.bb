@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,56) size 784x20
         RenderText {#text} at (0,0) size 664x19
           text run at (0,0) width 664: "The word \x{201C}dolor\x{201D} below should be highlighted in its entirety. The highlight should not extend beyond that word."
-      RenderBlock {HR} at (0,92) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,102) size 784x20
         RenderInline {SPAN} at (0,0) size 165x19
           RenderText {#text} at (0,0) size 165x19

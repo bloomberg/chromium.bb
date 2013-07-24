@@ -539,7 +539,7 @@ layer at (0,0) size 800x589
         RenderText {#text} at (0,0) size 369x18
           text run at (0,0) width 39: "Note: "
           text run at (39,0) width 330: "This test does not test RLM or LRM, but it ought to."
-      RenderBlock {HR} at (0,447) size 784x3 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,447) size 784x3 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,465) size 784x19
         RenderText {#text} at (0,0) size 58x18
           text run at (0,0) width 58: "(Back to "

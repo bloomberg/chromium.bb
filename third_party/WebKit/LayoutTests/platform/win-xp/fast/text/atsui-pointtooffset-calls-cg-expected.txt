@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 800x20
         RenderText {#text} at (0,0) size 53x19
           text run at (0,0) width 53: "e\x{300}e\x{300}e\x{300}e\x{300}e\x{300}e\x{300}X"
-      RenderBlock {HR} at (0,28) size 800x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,28) size 800x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,38) size 800x40
         RenderText {#text} at (0,0) size 197x19
           text run at (0,0) width 197: "This tests for regressions against "

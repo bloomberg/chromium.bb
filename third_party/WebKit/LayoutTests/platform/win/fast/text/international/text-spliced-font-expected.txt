@@ -22,7 +22,7 @@ layer at (0,0) size 800x534
           RenderText {#text} at (0,194) size 304x16
             text run at (0,194) width 304: "ABCDEFGHIJKLM abcdefghijklm 1234567890"
         RenderBR {BR} at (304,194) size 0x16
-      RenderBlock {HR} at (0,250) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,250) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,268) size 784x16
         RenderText {#text} at (0,0) size 152x16
           text run at (0,0) width 152: "Complex text path: "

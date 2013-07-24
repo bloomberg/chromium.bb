@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
           text run at (0,18) width 709: "column in the first row should span only column \"one\" and the second cell should span all of the other columns. "
           text run at (709,18) width 73: "The second"
           text run at (0,36) width 520: "table tests the zero value. \"Just A\" should span \"A\" and \"Just B\" should span \"B.\""
-      RenderBlock {HR} at (0,192) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,192) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,202) size 784x18
         RenderBR {BR} at (0,0) size 0x18
       RenderTable {TABLE} at (0,220) size 270x70 [border: (1px outset #808080)]

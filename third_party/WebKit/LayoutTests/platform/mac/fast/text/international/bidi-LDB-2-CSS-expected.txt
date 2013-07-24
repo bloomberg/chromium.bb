@@ -566,7 +566,7 @@ layer at (0,0) size 800x547
               text run at (127,1) width 38: " GHI "
               text run at (164,1) width 28 RTL: "\x{5D6}\x{5D7}\x{5D8}"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,405) size 784x3 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,405) size 784x3 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,423) size 784x19
         RenderText {#text} at (0,0) size 58x18
           text run at (0,0) width 58: "(Back to "

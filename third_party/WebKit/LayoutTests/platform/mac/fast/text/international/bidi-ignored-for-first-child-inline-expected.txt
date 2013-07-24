@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
             text run at (0,18) width 246: "child is an inline container are ignored"
         RenderText {#text} at (246,18) size 4x18
           text run at (246,18) width 4: "."
-      RenderBlock {HR} at (0,52) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,70) size 784x18
         RenderText {#text} at (0,0) size 316x18
           text run at (0,0) width 316: "The following lines should read \x{201C}ABCDEFGHI\x{201D}:"
@@ -78,7 +78,7 @@ layer at (0,0) size 800x600
           RenderText {#text} at (0,0) size 94x18
             text run at (0,0) width 94 RTL override: "IHGFEDCBA"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,342) size 784x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,342) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,352) size 784x18
         RenderText {#text} at (0,0) size 249x18
           text run at (0,0) width 249: "The following lines should be identical:"
