@@ -4,6 +4,9 @@ import optparse
 import os
 import sys
 
+from webkitpy.common.host import Host
+from webkitpy.layout_tests.port import platform_options, configuration_options
+
 
 def main(argv):
     parser = optparse.OptionParser(usage='%prog [path-to-results.json]')
@@ -17,17 +20,22 @@ def main(argv):
                       help='show passing tests')
     parser.add_option('--ignored-failures-path', action='store',
                       help='ignore failures seen in a previous run')
+    parser.add_options(platform_options())
+    parser.add_options(configuration_options())
     options, args = parser.parse_args(argv)
 
-    if args and args[0] != '-':
-        if os.path.exists(args[0]):
+    host = Host()
+    if args:
+        if args[0] == '-':
+            txt = sys.stdin.read()
+        elif os.path.exists(args[0]):
             with open(args[0], 'r') as fp:
                 txt = fp.read()
         else:
             print >> sys.stderr, "file not found: %s" % args[0]
             sys.exit(1)
     else:
-        txt = sys.stdin.read()
+        txt = host.filesystem.read_text_file(host.filesystem.join(host.port_factory.get(options=options).results_directory(), 'full_results.json'))
 
     if txt.startswith('ADD_RESULTS(') and txt.endswith(');'):
         txt = txt[12:-2]  # ignore optional JSONP wrapper
