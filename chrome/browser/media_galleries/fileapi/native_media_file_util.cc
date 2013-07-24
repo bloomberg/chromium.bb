@@ -330,10 +330,8 @@ void NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(
     const GetFileInfoCallback& callback) {
   DCHECK(IsOnTaskRunnerThread(context.get()));
   base::PlatformFileInfo file_info;
-  // TODO(thestig): remove this.
-  base::FilePath platform_path;
   base::PlatformFileError error =
-      GetFileInfoSync(context.get(), url, &file_info, &platform_path);
+      GetFileInfoSync(context.get(), url, &file_info, NULL);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,

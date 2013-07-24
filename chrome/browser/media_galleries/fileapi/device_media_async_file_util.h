@@ -104,20 +104,18 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // Use Create() to get an instance of DeviceMediaAsyncFileUtil.
   explicit DeviceMediaAsyncFileUtil(const base::FilePath& profile_path);
 
-  // Called when GetFileInfo method call succeeds. |file_info|
-  // contains the |platform_path| file details. |callback| is invoked
-  // to complete the GetFileInfo request.
+  // Called when GetFileInfo method call succeeds. |file_info| contains the
+  // file details of the requested url. |callback| is invoked to complete the
+  // GetFileInfo request.
   void OnDidGetFileInfo(
       const AsyncFileUtil::GetFileInfoCallback& callback,
-      const base::FilePath& platform_path,
       const base::PlatformFileInfo& file_info);
 
   // Called when GetFileInfo method call failed to get the details of file
-  // specified by the |platform_path|. |callback| is invoked to notify the
+  // specified by the requested url. |callback| is invoked to notify the
   // caller about the platform file |error|.
   void OnGetFileInfoError(
       const AsyncFileUtil::GetFileInfoCallback& callback,
-      const base::FilePath& platform_path,
       base::PlatformFileError error);
 
   // Called when ReadDirectory method call succeeds. |callback| is invoked to
