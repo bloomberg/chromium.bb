@@ -4428,11 +4428,6 @@ void Document::addMessage(MessageSource source, MessageLevel level, const String
         page->console()->addMessage(source, level, message, sourceURL, lineNumber, 0, callStack, state, requestIdentifier);
 }
 
-const SecurityOrigin* Document::topOrigin() const
-{
-    return topDocument()->securityOrigin();
-}
-
 struct PerformTaskContext {
     WTF_MAKE_NONCOPYABLE(PerformTaskContext); WTF_MAKE_FAST_ALLOCATED;
 public:

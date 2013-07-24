@@ -127,14 +127,12 @@ namespace WebCore {
 
         bool idleNotification();
 
-        virtual const SecurityOrigin* topOrigin() const OVERRIDE { return m_topOrigin.get(); }
-
         double timeOrigin() const { return m_timeOrigin; }
 
         WorkerClients* clients() { return m_workerClients.get(); }
 
     protected:
-        WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin, PassOwnPtr<WorkerClients>);
+        WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, PassOwnPtr<WorkerClients>);
         void applyContentSecurityPolicyFromString(const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType);
 
         virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) OVERRIDE;
@@ -174,8 +172,6 @@ namespace WebCore {
         HashSet<Observer*> m_workerObservers;
 
         OwnPtr<WorkerEventQueue> m_eventQueue;
-
-        RefPtr<SecurityOrigin> m_topOrigin;
 
         OwnPtr<WorkerClients> m_workerClients;
 

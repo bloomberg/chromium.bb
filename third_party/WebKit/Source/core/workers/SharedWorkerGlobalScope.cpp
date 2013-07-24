@@ -59,7 +59,7 @@ PassRefPtr<SharedWorkerGlobalScope> SharedWorkerGlobalScope::create(const String
 }
 
 SharedWorkerGlobalScope::SharedWorkerGlobalScope(const String& name, const KURL& url, const String& userAgent, SharedWorkerThread* thread, PassOwnPtr<WorkerClients> workerClients)
-    : WorkerGlobalScope(url, userAgent, thread, 0, monotonicallyIncreasingTime(), workerClients)
+    : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), workerClients)
     , m_name(name)
 {
     ScriptWrappable::init(this);

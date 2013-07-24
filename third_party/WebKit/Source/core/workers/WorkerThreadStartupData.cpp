@@ -32,18 +32,16 @@
 #include "WorkerThreadStartupData.h"
 
 #include "core/workers/WorkerClients.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
-WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, const SecurityOrigin* topOrigin, PassOwnPtr<WorkerClients> workerClients)
+WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
     : m_scriptURL(scriptURL.copy())
     , m_userAgent(userAgent.isolatedCopy())
     , m_sourceCode(sourceCode.isolatedCopy())
     , m_startMode(startMode)
     , m_contentSecurityPolicy(contentSecurityPolicy.isolatedCopy())
     , m_contentSecurityPolicyType(contentSecurityPolicyType)
-    , m_topOrigin(topOrigin ? topOrigin->isolatedCopy() : 0)
     , m_workerClients(workerClients)
 {
 }

@@ -1028,8 +1028,6 @@ public:
 
     virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0);
 
-    virtual const SecurityOrigin* topOrigin() const OVERRIDE;
-
     PassRefPtr<FontLoader> fontloader();
     DocumentLifecycleNotifier* lifecycleNotifier();
 
