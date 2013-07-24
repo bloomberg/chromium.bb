@@ -14,13 +14,15 @@ class DesktopFrame;
 }  // namespace webrtc
 
 namespace remoting {
-class ChromotingJni;
+class ChromotingJniRuntime;
 class FrameProducer;
 
 // FrameConsumer implementation that draws onto a JNI direct byte buffer.
 class JniFrameConsumer : public FrameConsumer {
  public:
-  JniFrameConsumer();
+  // The instance does not take ownership of |jni_runtime|.
+  explicit JniFrameConsumer(ChromotingJniRuntime* jni_runtime);
+
   virtual ~JniFrameConsumer();
 
   // This must be called once before the producer's source size is set.
@@ -38,9 +40,12 @@ class JniFrameConsumer : public FrameConsumer {
  private:
   // Variables are to be used from the display thread.
 
-  // Whether to allocate/provide the producer with a buffer when able. This
-  // goes to false during destruction so that we don't leak memory.
-  bool provide_buffer_;
+  // Used to obtain task runner references and make calls to Java methods.
+  ChromotingJniRuntime* jni_runtime_;
+
+  // Whether we're currently in the constructor, and should deallocate the
+  // buffer instead of passing it back to the producer.
+  bool in_dtor_;
 
   FrameProducer* frame_producer_;
   SkISize view_size_;

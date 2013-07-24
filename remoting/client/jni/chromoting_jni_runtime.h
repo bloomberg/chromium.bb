@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_JNI_CHROMOTING_JNI_H_
-#define REMOTING_CLIENT_JNI_CHROMOTING_JNI_H_
+#ifndef REMOTING_CLIENT_JNI_CHROMOTING_JNI_RUNTIME_H_
+#define REMOTING_CLIENT_JNI_CHROMOTING_JNI_RUNTIME_H_
 
 #include <jni.h>
 
@@ -21,11 +21,11 @@ namespace remoting {
 // (e.g. message loops and task runners). Proxies outgoing JNI calls from its
 // ChromotingJniInstance member to Java. All its methods should be invoked
 // exclusively from the UI thread unless otherwise noted.
-class ChromotingJni {
+class ChromotingJniRuntime {
  public:
   // This class is instantiated at process initialization and persists until
   // we close. Its components are reused across |ChromotingJniInstance|s.
-  static ChromotingJni* GetInstance();
+  static ChromotingJniRuntime* GetInstance();
 
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner() {
     return ui_task_runner_;
@@ -77,14 +77,14 @@ class ChromotingJni {
   void RedrawCanvas();
 
  private:
-  ChromotingJni();
+  ChromotingJniRuntime();
 
   // Forces a DisconnectFromHost() in case there is any active or failed
   // connection, then proceeds to tear down the Chromium dependencies on which
   // all sessions depended. Because destruction only occurs at application exit
   // after all connections have terminated, it is safe to make unretained
   // cross-thread calls on the class.
-  virtual ~ChromotingJni();
+  virtual ~ChromotingJniRuntime();
 
   // Reference to the Java class into which we make JNI calls.
   jclass class_;
@@ -106,9 +106,9 @@ class ChromotingJni {
   // Contains all connection-specific state.
   scoped_refptr<ChromotingJniInstance> session_;
 
-  friend struct DefaultSingletonTraits<ChromotingJni>;
+  friend struct DefaultSingletonTraits<ChromotingJniRuntime>;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromotingJni);
+  DISALLOW_COPY_AND_ASSIGN(ChromotingJniRuntime);
 };
 
 }  // namespace remoting

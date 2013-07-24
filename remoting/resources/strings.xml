@@ -25,7 +25,7 @@
     <string name="error_auth_failed">Authentication with specified account failed</string>
     <string name="error_cataloging_hosts">Unable to display host list</string>
     <string name="error_displaying_host">Unable to display host entry</string>
-    <string name="error_unexpected_response">Unexpected response from directory server</string>
+    <string name="error_unexpected_response">Account has no remote desktop hosts registered</string>
     <string name="error_reading_host">Unable to read host entry</string>
 
     <!--Protocol states (see remoting/protocol/connection_to_host.h)-->

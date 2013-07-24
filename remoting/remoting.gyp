@@ -1690,10 +1690,10 @@
             '../google_apis/google_apis.gyp:google_apis',
           ],
           'sources': [
-            'client/jni/chromoting_jni.cc',
-            'client/jni/chromoting_jni.h',
             'client/jni/chromoting_jni_instance.cc',
             'client/jni/chromoting_jni_instance.h',
+            'client/jni/chromoting_jni_runtime.cc',
+            'client/jni/chromoting_jni_runtime.h',
             'client/jni/jni_frame_consumer.cc',
             'client/jni/jni_frame_consumer.h',
             'client/jni/jni_interface.cc',

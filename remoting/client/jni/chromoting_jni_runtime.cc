@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/jni/chromoting_jni.h"
+#include "remoting/client/jni/chromoting_jni_runtime.h"
 
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
@@ -17,11 +17,11 @@ const char* const JAVA_CLASS = "org/chromium/chromoting/jni/JniInterface";
 namespace remoting {
 
 // static
-ChromotingJni* ChromotingJni::GetInstance() {
-  return Singleton<ChromotingJni>::get();
+ChromotingJniRuntime* ChromotingJniRuntime::GetInstance() {
+  return Singleton<ChromotingJniRuntime>::get();
 }
 
-ChromotingJni::ChromotingJni() {
+ChromotingJniRuntime::ChromotingJniRuntime() {
   // Obtain a reference to the Java environment. (Future calls to this function
   // made from the same thread return the same stored reference instead of
   // repeating the work of attaching to the JVM.)
@@ -58,7 +58,7 @@ ChromotingJni::ChromotingJni() {
   class_ = static_cast<jclass>(env->NewGlobalRef(env->FindClass(JAVA_CLASS)));
 }
 
-ChromotingJni::~ChromotingJni() {
+ChromotingJniRuntime::~ChromotingJniRuntime() {
   // The singleton should only ever be destroyed on the main thread.
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
@@ -71,21 +71,22 @@ ChromotingJni::~ChromotingJni() {
   // TODO(solb): crbug.com/259594 Detach all threads from JVM here.
 }
 
-void ChromotingJni::ConnectToHost(const char* username,
+void ChromotingJniRuntime::ConnectToHost(const char* username,
                                   const char* auth_token,
                                   const char* host_jid,
                                   const char* host_id,
                                   const char* host_pubkey) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(!session_);
-  session_ = new ChromotingJniInstance(username,
+  session_ = new ChromotingJniInstance(this,
+                                       username,
                                        auth_token,
                                        host_jid,
                                        host_id,
                                        host_pubkey);
 }
 
-void ChromotingJni::DisconnectFromHost() {
+void ChromotingJniRuntime::DisconnectFromHost() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   if (session_) {
     session_->Cleanup();
@@ -93,7 +94,7 @@ void ChromotingJni::DisconnectFromHost() {
   }
 }
 
-void ChromotingJni::ReportConnectionStatus(
+void ChromotingJniRuntime::ReportConnectionStatus(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
@@ -106,7 +107,7 @@ void ChromotingJni::ReportConnectionStatus(
     error);
 }
 
-void ChromotingJni::DisplayAuthenticationPrompt() {
+void ChromotingJniRuntime::DisplayAuthenticationPrompt() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -115,7 +116,9 @@ void ChromotingJni::DisplayAuthenticationPrompt() {
       env->GetStaticMethodID(class_, "displayAuthenticationPrompt", "()V"));
 }
 
-void ChromotingJni::UpdateImageBuffer(int width, int height, jobject buffer) {
+void ChromotingJniRuntime::UpdateImageBuffer(int width,
+                                             int height,
+                                             jobject buffer) {
   DCHECK(display_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -133,7 +136,7 @@ void ChromotingJni::UpdateImageBuffer(int width, int height, jobject buffer) {
       buffer);
 }
 
-void ChromotingJni::RedrawCanvas() {
+void ChromotingJniRuntime::RedrawCanvas() {
   DCHECK(display_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();

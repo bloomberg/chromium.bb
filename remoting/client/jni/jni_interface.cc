@@ -5,8 +5,8 @@
 // This file defines functions that implement the static methods declared in a
 // closely-related Java class in the platform-specific user interface
 // implementation.  In effect, it is the entry point for all JNI calls *into*
-// the C++ codebase from Java.  The separate ChromotingJni class serves as the
-// corresponding exit point, and is responsible for making all JNI calls
+// the C++ codebase from Java.  The separate ChromotingJniRuntime class serves
+// as the corresponding exit point, and is responsible for making all JNI calls
 // *out of* the C++ codebase into Java.
 
 #include <jni.h>
@@ -15,8 +15,8 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "google_apis/google_api_keys.h"
-#include "remoting/client/jni/chromoting_jni.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
+#include "remoting/client/jni/chromoting_jni_runtime.h"
 
 // Class and package name of the Java class that declares this file's functions.
 #define JNI_IMPLEMENTATION(method) \
@@ -42,7 +42,7 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(loadNative)(JNIEnv* env,
   CommandLine::Init(0, NULL);
 
   // Create the singleton now so that the Chromoting threads will be set up.
-  remoting::ChromotingJni::GetInstance();
+  remoting::ChromotingJniRuntime::GetInstance();
 }
 
 JNIEXPORT jstring JNICALL JNI_IMPLEMENTATION(getApiKey)(JNIEnv* env,
@@ -76,7 +76,7 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(connectNative)(
   const char* host_id_cstr = env->GetStringUTFChars(host_id_jstr, NULL);
   const char* host_pubkey_cstr = env->GetStringUTFChars(host_pubkey_jstr, NULL);
 
-  remoting::ChromotingJni::GetInstance()->ConnectToHost(
+  remoting::ChromotingJniRuntime::GetInstance()->ConnectToHost(
       username_cstr,
       auth_token_cstr,
       host_jid_cstr,
@@ -92,7 +92,7 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(connectNative)(
 
 JNIEXPORT void JNICALL JNI_IMPLEMENTATION(disconnectNative)(JNIEnv* env,
                                                             jobject that) {
-  remoting::ChromotingJni::GetInstance()->DisconnectFromHost();
+  remoting::ChromotingJniRuntime::GetInstance()->DisconnectFromHost();
 }
 
 JNIEXPORT void JNICALL JNI_IMPLEMENTATION(authenticationResponse)(
@@ -101,7 +101,7 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(authenticationResponse)(
     jstring pin_jstr) {
   const char* pin_cstr = env->GetStringUTFChars(pin_jstr, NULL);
 
-  remoting::ChromotingJni::GetInstance()->
+  remoting::ChromotingJniRuntime::GetInstance()->
       session()->ProvideSecret(pin_cstr);
 
   env->ReleaseStringUTFChars(pin_jstr, pin_cstr);
@@ -110,7 +110,7 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(authenticationResponse)(
 JNIEXPORT void JNICALL JNI_IMPLEMENTATION(scheduleRedrawNative)(
     JNIEnv* env,
     jobject that) {
-  remoting::ChromotingJni::GetInstance()->session()->RedrawDesktop();
+  remoting::ChromotingJniRuntime::GetInstance()->session()->RedrawDesktop();
 }
 
 JNIEXPORT void JNICALL JNI_IMPLEMENTATION(mouseActionNative)(
@@ -120,7 +120,7 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(mouseActionNative)(
     jint y,
     jint which_button,
     jboolean button_down) {
-  remoting::ChromotingJni::GetInstance()->session()->PerformMouseAction(
+  remoting::ChromotingJniRuntime::GetInstance()->session()->PerformMouseAction(
       x,
       y,
       static_cast<remoting::protocol::MouseEvent_MouseButton>(which_button),

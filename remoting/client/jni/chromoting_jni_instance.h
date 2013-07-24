@@ -37,12 +37,13 @@ class ChromotingJniInstance
     public base::RefCountedThreadSafe<ChromotingJniInstance> {
  public:
   // Initiates a connection with the specified host. Call from the UI thread.
-  ChromotingJniInstance(
-      const char* username,
-      const char* auth_token,
-      const char* host_jid,
-      const char* host_id,
-      const char* host_pubkey);
+  // The instance does not take ownership of |jni_runtime|.
+  ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
+                        const char* username,
+                        const char* auth_token,
+                        const char* host_jid,
+                        const char* host_id,
+                        const char* host_pubkey);
 
   // Terminates the current connection (if it hasn't already failed) and cleans
   // up. Must be called before destruction.
@@ -96,6 +97,9 @@ class ChromotingJniInstance
   // May be called on any thread.
   void FetchSecret(bool pairable,
                    const protocol::SecretFetchedCallback& callback);
+
+  // Used to obtain task runner references and make calls to Java methods.
+  ChromotingJniRuntime* jni_runtime_;
 
   // This group of variables is to be used on the display thread.
   scoped_refptr<FrameConsumerProxy> frame_consumer_;

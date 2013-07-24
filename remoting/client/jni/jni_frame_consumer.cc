@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "remoting/client/frame_producer.h"
-#include "remoting/client/jni/chromoting_jni.h"
+#include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace {
@@ -41,14 +41,15 @@ DirectDesktopFrame::~DirectDesktopFrame() {}
 
 namespace remoting {
 
-JniFrameConsumer::JniFrameConsumer()
-    : provide_buffer_(true),
+JniFrameConsumer::JniFrameConsumer(ChromotingJniRuntime* jni_runtime)
+    : jni_runtime_(jni_runtime),
+      in_dtor_(false),
       frame_producer_(NULL) {
 }
 
 JniFrameConsumer::~JniFrameConsumer() {
   // Stop giving the producer a buffer to work with.
-  provide_buffer_ = false;
+  in_dtor_ = true;
 
   // Don't destroy the object until we've deleted the buffer.
   base::WaitableEvent done_event(true, false);
@@ -65,35 +66,36 @@ void JniFrameConsumer::ApplyBuffer(const SkISize& view_size,
                                    const SkIRect& clip_area,
                                    webrtc::DesktopFrame* buffer,
                                    const SkRegion& region) {
-  DCHECK(ChromotingJni::GetInstance()->
-      display_task_runner()->BelongsToCurrentThread());
+  DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
 
-  ChromotingJni::GetInstance()->RedrawCanvas();
+  scoped_ptr<webrtc::DesktopFrame> buffer_scoped(buffer);
+  jni_runtime_->RedrawCanvas();
 
   if (view_size.width() > view_size_.width() ||
       view_size.height() > view_size_.height()) {
     LOG(INFO) << "Existing buffer is too small";
     view_size_ = view_size;
-    delete buffer;
+
+    // Manually destroy the old buffer before allocating a new one to prevent
+    // our memory footprint from temporarily ballooning.
+    buffer_scoped.reset();
     AllocateBuffer();
   }
 
   // Supply |frame_producer_| with a buffer to render the next frame into.
-  if (provide_buffer_)
-    frame_producer_->DrawBuffer(buffer);
+  if (!in_dtor_)
+    frame_producer_->DrawBuffer(buffer_scoped.release());
 }
 
 void JniFrameConsumer::ReturnBuffer(webrtc::DesktopFrame* buffer) {
-  DCHECK(ChromotingJni::GetInstance()->
-      display_task_runner()->BelongsToCurrentThread());
+  DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
   LOG(INFO) << "Returning image buffer";
   delete buffer;
 }
 
 void JniFrameConsumer::SetSourceSize(const SkISize& source_size,
                                      const SkIPoint& dpi) {
-  DCHECK(ChromotingJni::GetInstance()->
-      display_task_runner()->BelongsToCurrentThread());
+  DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
 
   // We currently render the desktop 1:1 and perform pan/zoom scaling
   // and cropping on the managed canvas.
@@ -108,10 +110,9 @@ void JniFrameConsumer::SetSourceSize(const SkISize& source_size,
 
 void JniFrameConsumer::AllocateBuffer() {
   // Only do anything if we're not being destructed.
-  if (provide_buffer_) {
-    if (!ChromotingJni::GetInstance()->
-        display_task_runner()->BelongsToCurrentThread()) {
-      ChromotingJni::GetInstance()->display_task_runner()->PostTask(FROM_HERE,
+  if (!in_dtor_) {
+    if (!jni_runtime_->display_task_runner()->BelongsToCurrentThread()) {
+      jni_runtime_->display_task_runner()->PostTask(FROM_HERE,
           base::Bind(&JniFrameConsumer::AllocateBuffer,
                      base::Unretained(this)));
       return;
@@ -121,10 +122,9 @@ void JniFrameConsumer::AllocateBuffer() {
                                                         view_size_.height());
 
     // Update Java's reference to the buffer and record of its dimensions.
-    ChromotingJni::GetInstance()->UpdateImageBuffer(
-        view_size_.width(),
-        view_size_.height(),
-        buffer->buffer());
+    jni_runtime_->UpdateImageBuffer(view_size_.width(),
+                                        view_size_.height(),
+                                        buffer->buffer());
 
     frame_producer_->DrawBuffer(buffer);
   }
