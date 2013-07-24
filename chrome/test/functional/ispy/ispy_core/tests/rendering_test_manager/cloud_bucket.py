@@ -37,6 +37,25 @@ class CloudBucket(object):
     """
     raise NotImplementedError
 
+  def RemoveFile(self, path):
+    """Removes a file from GCS.
+
+    Args:
+      path: the location in GCS to download the file from.
+    """
+    raise NotImplementedError
+
+  def FileExists(self, path):
+    """Checks if a file exists in GCS.
+
+    Args:
+      path: the location in GCS of the file.
+
+    Returns:
+      boolean representing whether the file exists in GCS.
+    """
+    raise NotImplementedError
+
   def GetURL(self, path):
     """Gets a URL to an item in GCS from its path.
 

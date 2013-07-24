@@ -110,6 +110,47 @@ class BucketRenderingTestManagerUnitTest(unittest.TestCase):
     self.assertRaises(
         cloud_bucket.FileNotFoundError, self.manager.GetTest, 'test3')
 
+  def testTestExists(self):
+    self.bucket.Reset()
+    self.manager.UploadTest('test1', [self.white, self.black])
+    self.manager.UploadTest('test2', [self.white, self.black])
+    self.assertTrue(self.manager.TestExists('test1'))
+    self.assertTrue(self.manager.TestExists('test2'))
+    self.assertFalse(self.manager.TestExists('test3'))
+
+  def testFailureExists(self):
+    self.bucket.Reset()
+    self.manager.UploadTest('test1', [self.white, self.white])
+    self.manager.RunTest('test1', 'run1', self.black)
+    self.manager.RunTest('test1', 'run2', self.white)
+    self.assertTrue(self.manager.FailureExists('test1', 'run1'))
+    self.assertFalse(self.manager.FailureExists('test1', 'run2'))
+
+  def testRemoveTest(self):
+    self.bucket.Reset()
+    self.manager.UploadTest('test1', [self.white, self.white])
+    self.manager.UploadTest('test2', [self.white, self.white])
+    self.assertTrue(self.manager.TestExists('test1'))
+    self.assertTrue(self.manager.TestExists('test2'))
+    self.manager.RemoveTest('test1')
+    self.assertFalse(self.manager.TestExists('test1'))
+    self.assertTrue(self.manager.TestExists('test2'))
+    self.manager.RemoveTest('test2')
+    self.assertFalse(self.manager.TestExists('test1'))
+    self.assertFalse(self.manager.TestExists('test2'))
+
+  def testRemoveFailure(self):
+    self.bucket.Reset()
+    self.manager.UploadTest('test1', [self.white, self.white])
+    self.manager.UploadTest('test2', [self.white, self.white])
+    self.manager.RunTest('test1', 'run1', self.black)
+    self.manager.RunTest('test1', 'run2', self.black)
+    self.manager.RemoveFailure('test1', 'run1')
+    self.assertFalse(self.manager.FailureExists('test1', 'run1'))
+    self.assertTrue(self.manager.TestExists('test1'))
+    self.assertTrue(self.manager.FailureExists('test1', 'run2'))
+    self.assertTrue(self.manager.TestExists('test2'))
+
   def testGetFailure(self):
     self.bucket.Reset()
     # Upload a result

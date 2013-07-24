@@ -34,6 +34,15 @@ class MockCloudBucket(cloud_bucket.CloudBucket):
       raise cloud_bucket.FileNotFoundError
 
   # override
+  def RemoveFile(self, path):
+    if self.datastore.has_key(path):
+      self.datastore.pop(path)
+
+  # override
+  def FileExists(self, path):
+    return self.datastore.has_key(path)
+
+  # override
   def GetURL(self, path):
     if self.datastore.has_key(path):
       return path

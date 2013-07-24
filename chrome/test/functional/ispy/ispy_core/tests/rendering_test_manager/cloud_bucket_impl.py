@@ -47,6 +47,18 @@ class CloudBucketImpl(cloud_bucket.CloudBucket):
       raise cloud_bucket.FileNotFoundError
 
   # override
+  def RemoveFile(self, path):
+    key = boto.gs.key.Key(self.bucket)
+    key.key = path
+    key.delete()
+
+  # override
+  def FileExists(self, path):
+    key = boto.gs.key.Key(self.bucket)
+    key.key = path
+    return key.exists()
+
+  # override
   def GetURL(self, path):
     key = boto.gs.key.Key(self.bucket)
     key.key = path

@@ -7,6 +7,7 @@
 from tools import image_tools
 import collections
 import posixpath
+import itertools
 
 
 class RenderingTestManager(object):
@@ -77,7 +78,7 @@ class RenderingTestManager(object):
     """
     path = posixpath.join('failures', test_name, run_name)
     test = self.GetTest(test_name)
-    if not image_tools.SameImage(actual, test['expected']):
+    if not image_tools.SameImage(actual, test.expected):
       self.UploadImage(posixpath.join(path, 'actual.png'), actual)
 
   def GetTest(self, test_name):
@@ -96,6 +97,62 @@ class RenderingTestManager(object):
     Test = collections.namedtuple('Test', ['expected', 'mask'])
     return Test(self.DownloadImage(posixpath.join(path, 'expected.png')),
                 self.DownloadImage(posixpath.join(path, 'mask.png')))
+
+  def TestExists(self, test_name):
+    """Returns whether the given test exists in GCS.
+
+    Args:
+      test_name: the name of the test to look for.
+
+    Returns:
+      A boolean indicating whether the test exists.
+    """
+    path = posixpath.join('tests', test_name)
+    expected_image_exists = self.cloud_bucket.FileExists(
+        posixpath.join(path, 'expected.png'))
+    mask_image_exists = self.cloud_bucket.FileExists(
+        posixpath.join(path, 'mask.png'))
+    return expected_image_exists and mask_image_exists
+
+  def FailureExists(self, test_name, run_name):
+    """Returns whether the given run exists in GCS.
+
+    Args:
+      test_name: the name of the test that failed.
+      run_name: the name of the run that the given test failed on.
+
+    Returns:
+      A boolean indicating whether the failure exists.
+    """
+    failure_path = posixpath.join('failures', test_name, run_name)
+    actual_image_exists = self.cloud_bucket.FileExists(
+        posixpath.join(failure_path, 'actual.png'))
+    return self.TestExists(test_name) and actual_image_exists
+
+  def RemoveTest(self, test_name):
+    """Removes a Test from GCS, and all associated failures with that test.
+
+    Args:
+      test_name: the name of the test to remove.
+    """
+    test_path = posixpath.join('tests', test_name)
+    failure_path = posixpath.join('failures', test_name)
+    test_paths = self.cloud_bucket.GetAllPaths(test_path)
+    failure_paths = self.cloud_bucket.GetAllPaths(failure_path)
+    for path in itertools.chain(failure_paths, test_paths):
+      self.cloud_bucket.RemoveFile(path)
+
+  def RemoveFailure(self, test_name, run_name):
+    """Removes a failure from GCS.
+
+    Args:
+      test_name: the test on which the failure to be removed occured.
+      run_name: the name of the run on the given test that failed.
+    """
+    failure_path = posixpath.join('failures', test_name, run_name)
+    failure_paths = self.cloud_bucket.GetAllPaths(failure_path)
+    for path in failure_paths:
+      self.cloud_bucket.RemoveFile(path)
 
   def GetFailure(self, test_name, run_name):
     """Returns a given test failure's expected, diff, and actual images.
