@@ -1379,7 +1379,7 @@ def CMDfetch(parser, args):
 Completely git-specific. Simply runs 'git fetch [args ...]' for each module.
 """
   (options, args) = parser.parse_args(args)
-  return CMDrecurse(Parser(), [
+  return CMDrecurse(OptionParser(), [
       '--jobs=%d' % options.jobs, '--scm=git', 'git', 'fetch'] + args)
 
 
@@ -1735,52 +1735,57 @@ def GenUsage(parser, command):
   parser.epilog = getattr(obj, 'epilog', None)
 
 
-def Parser():
-  """Returns the default parser."""
-  parser = optparse.OptionParser(version='%prog ' + __version__)
-  # some arm boards have issues with parallel sync.
-  if platform.machine().startswith('arm'):
-    jobs = 1
-  else:
-    jobs = max(8, gclient_utils.NumLocalCpus())
-  # cmp: 2013/06/19
-  # Temporary workaround to lower bot-load on SVN server.
-  if os.environ.get('CHROME_HEADLESS') == '1':
-    jobs = 4
+class OptionParser(optparse.OptionParser):
   gclientfile_default = os.environ.get('GCLIENT_FILE', '.gclient')
-  parser.add_option('-j', '--jobs', default=jobs, type='int',
-                    help='Specify how many SCM commands can run in parallel; '
-                          'defaults to number of cpu cores (%default)')
-  parser.add_option('-v', '--verbose', action='count', default=0,
-                    help='Produces additional output for diagnostics. Can be '
-                          'used up to three times for more logging info.')
-  parser.add_option('--gclientfile', dest='config_filename',
-                    default=None,
-                    help='Specify an alternate %s file' % gclientfile_default)
-  parser.add_option('--spec',
-                    default=None,
-                    help='create a gclient file containing the provided '
-                         'string. Due to Cygwin/Python brokenness, it '
-                         'probably can\'t contain any newlines.')
-  parser.add_option('--no-nag-max', default=False, action='store_true',
-                    help='If a subprocess runs for too long without generating'
-                         ' terminal output, generate warnings, but do not kill'
-                         ' the process.')
-  # Integrate standard options processing.
-  old_parser = parser.parse_args
-  def Parse(args):
-    (options, args) = old_parser(args)
-    level = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG][
-        min(options.verbose, 3)]
-    logging.basicConfig(level=level,
+
+  def __init__(self, **kwargs):
+    optparse.OptionParser.__init__(
+        self, version='%prog ' + __version__, **kwargs)
+
+    # Some arm boards have issues with parallel sync.
+    if platform.machine().startswith('arm'):
+      jobs = 1
+    else:
+      jobs = max(8, gclient_utils.NumLocalCpus())
+    # cmp: 2013/06/19
+    # Temporary workaround to lower bot-load on SVN server.
+    if os.environ.get('CHROME_HEADLESS') == '1':
+      jobs = 4
+
+    self.add_option(
+        '-j', '--jobs', default=jobs, type='int',
+        help='Specify how many SCM commands can run in parallel; defaults to '
+             'number of cpu cores (%default)')
+    self.add_option(
+        '-v', '--verbose', action='count', default=0,
+        help='Produces additional output for diagnostics. Can be used up to '
+             'three times for more logging info.')
+    self.add_option(
+        '--gclientfile', dest='config_filename',
+        help='Specify an alternate %s file' % self.gclientfile_default)
+    self.add_option(
+        '--spec',
+        help='create a gclient file containing the provided string. Due to '
+            'Cygwin/Python brokenness, it can\'t contain any newlines.')
+    self.add_option(
+        '--no-nag-max', default=False, action='store_true',
+        help='If a subprocess runs for too long without generating terminal '
+             'output, generate warnings, but do not kill the process.')
+
+  def parse_args(self, args=None, values=None):
+    """Integrates standard options processing."""
+    options, args = optparse.OptionParser.parse_args(self, args, values)
+    levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+    logging.basicConfig(
+        level=levels[min(options.verbose, len(levels) - 1)],
         format='%(module)s(%(lineno)d) %(funcName)s:%(message)s')
     if options.config_filename and options.spec:
-      parser.error('Cannot specifiy both --gclientfile and --spec')
+      self.error('Cannot specifiy both --gclientfile and --spec')
     if not options.config_filename:
-      options.config_filename = gclientfile_default
+      options.config_filename = self.gclientfile_default
     options.entries_filename = options.config_filename + '_entries'
     if options.jobs < 1:
-      parser.error('--jobs must be 1 or higher')
+      self.error('--jobs must be 1 or higher')
 
     # These hacks need to die.
     if not hasattr(options, 'revisions'):
@@ -1799,10 +1804,10 @@ def Parser():
     if options.no_nag_max:
       gclient_scm.SCMWrapper.nag_max = None
     return (options, args)
-  parser.parse_args = Parse
-  # We don't want wordwrapping in epilog (usually examples)
-  parser.format_epilog = lambda _: parser.epilog or ''
-  return parser
+
+  def format_epilog(self, _):
+    """Disables wordwrapping in epilog (usually examples)."""
+    return self.epilog or ''
 
 
 def Main(argv):
@@ -1835,7 +1840,7 @@ def Main(argv):
         to_str(fn) for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')
     )
     CMDhelp.usage = '\n\nCommands are:\n' + '\n'.join(cmds)
-    parser = Parser()
+    parser = OptionParser()
     if argv:
       command = Command(argv[0])
       if command:

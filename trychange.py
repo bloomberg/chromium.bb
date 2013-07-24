@@ -524,11 +524,15 @@ def GetMungedDiff(path_diff, diff):
   return (diff, changed_files)
 
 
+class OptionParser(optparse.OptionParser):
+  def format_epilog(self, _):
+    """Removes epilog formatting."""
+    return self.epilog or ''
+
+
 def gen_parser(prog):
   # Parse argv
-  parser = optparse.OptionParser(usage=USAGE,
-                                 version=__version__,
-                                 prog=prog)
+  parser = OptionParser(usage=USAGE, version=__version__, prog=prog)
   parser.add_option("-v", "--verbose", action="count", default=0,
                     help="Prints debugging infos")
   group = optparse.OptionGroup(parser, "Result and status")
@@ -675,8 +679,6 @@ def TryChange(argv,
   if extra_epilog:
     epilog += extra_epilog
   parser.epilog = epilog
-  # Remove epilog formatting
-  parser.format_epilog = lambda x: parser.epilog
 
   options, args = parser.parse_args(argv)
 

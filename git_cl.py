@@ -1033,7 +1033,7 @@ def DownloadHooks(force):
 
 @usage('[repo root containing codereview.settings]')
 def CMDconfig(parser, args):
-  """edit configuration for this tree"""
+  """Edits configuration for this tree."""
 
   _, args = parser.parse_args(args)
   if len(args) == 0:
@@ -1052,7 +1052,7 @@ def CMDconfig(parser, args):
 
 
 def CMDbaseurl(parser, args):
-  """get or set base-url for this branch"""
+  """Gets or sets base-url for this branch."""
   branchref = RunGit(['symbolic-ref', 'HEAD']).strip()
   branch = ShortBranchName(branchref)
   _, args = parser.parse_args(args)
@@ -1067,7 +1067,17 @@ def CMDbaseurl(parser, args):
 
 
 def CMDstatus(parser, args):
-  """show status of changelists"""
+  """Show status of changelists.
+
+  Colors are used to tell the state of the CL unless --fast is used:
+    - Green   LGTM'ed
+    - Blue    waiting for review
+    - Yellow  waiting for you to reply to review
+    - Red     not sent for review or broken
+    - Cyan    was committed, branch can be deleted
+
+  Also see 'git cl comments'.
+  """
   parser.add_option('--field',
                     help='print only specific field (desc|id|patch|url)')
   parser.add_option('-f', '--fast', action='store_true',
@@ -1109,18 +1119,37 @@ def CMDstatus(parser, args):
 
   if not options.fast:
     def fetch(b):
+      """Fetches information for an issue and returns (branch, issue, color)."""
       c = Changelist(branchref=b)
       i = c.GetIssueURL()
-      try:
-        props = c.GetIssueProperties()
-        r = c.GetApprovingReviewers() if i else None
-        if not props.get('messages'):
-          r = None
-      except urllib2.HTTPError:
-        # The issue probably doesn't exist anymore.
-        i += ' (broken)'
-        r = None
-      output.put((b, i, r))
+      props = {}
+      r = None
+      if i:
+        try:
+          props = c.GetIssueProperties()
+          r = c.GetApprovingReviewers() if i else None
+        except urllib2.HTTPError:
+          # The issue probably doesn't exist anymore.
+          i += ' (broken)'
+
+      msgs = props.get('messages') or []
+
+      if not i:
+        color = Fore.WHITE
+      elif props.get('closed'):
+        # Issue is closed.
+        color = Fore.CYAN
+      elif r:
+        # Was LGTM'ed.
+        color = Fore.GREEN
+      elif not msgs:
+        # No message was sent.
+        color = Fore.RED
+      elif msgs[-1]['sender'] != props.get('owner_email'):
+        color = Fore.YELLOW
+      else:
+        color = Fore.BLUE
+      output.put((b, i, color))
 
     threads = [threading.Thread(target=fetch, args=(b,)) for b in branches]
     for t in threads:
@@ -1130,25 +1159,16 @@ def CMDstatus(parser, args):
     # Do not use GetApprovingReviewers(), since it requires an HTTP request.
     for b in branches:
       c = Changelist(branchref=b)
-      output.put((b, c.GetIssue(), None))
+      url = c.GetIssueURL()
+      output.put((b, url, Fore.BLUE if url else Fore.WHITE))
 
   tmp = {}
   alignment = max(5, max(len(ShortBranchName(b)) for b in branches))
   for branch in sorted(branches):
     while branch not in tmp:
-      b, i, r = output.get()
-      tmp[b] = (i, r)
-    issue, reviewers = tmp.pop(branch)
-    if not issue:
-      color = Fore.WHITE
-    elif reviewers:
-      # Was approved.
-      color = Fore.GREEN
-    elif reviewers is None:
-      # No message was sent.
-      color = Fore.RED
-    else:
-      color = Fore.BLUE
+      b, i, color = output.get()
+      tmp[b] = (i, color)
+    issue, color = tmp.pop(branch)
     print '  %*s: %s%s%s' % (
           alignment, ShortBranchName(branch), color, issue, Fore.RESET)
 
@@ -1167,10 +1187,10 @@ def CMDstatus(parser, args):
 
 @usage('[issue_number]')
 def CMDissue(parser, args):
-  """Set or display the current code review issue number.
+  """Sets or displays the current code review issue number.
 
   Pass issue number 0 to clear the current issue.
-"""
+  """
   _, args = parser.parse_args(args)
 
   cl = Changelist()
@@ -1186,7 +1206,7 @@ def CMDissue(parser, args):
 
 
 def CMDcomments(parser, args):
-  """show review comments of the current changelist"""
+  """Shows review comments of the current changelist."""
   (_, args) = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
@@ -1212,7 +1232,7 @@ def CMDcomments(parser, args):
 
 
 def CMDdescription(parser, args):
-  """brings up the editor for the current CL's description."""
+  """Brings up the editor for the current CL's description."""
   cl = Changelist()
   if not cl.GetIssue():
     DieWithError('This branch has no associated changelist.')
@@ -1237,7 +1257,7 @@ def CreateDescriptionFromLog(args):
 
 
 def CMDpresubmit(parser, args):
-  """run presubmit tests on the current changelist"""
+  """Runs presubmit tests on the current changelist."""
   parser.add_option('-u', '--upload', action='store_true',
                     help='Run upload hook instead of the push/dcommit hook')
   parser.add_option('-f', '--force', action='store_true',
@@ -1424,7 +1444,7 @@ def cleanup_list(l):
 
 @usage('[args to "git diff"]')
 def CMDupload(parser, args):
-  """upload the current changelist to codereview"""
+  """Uploads the current changelist to codereview."""
   parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
                     help='bypass upload presubmit hook')
   parser.add_option('--bypass-watchlists', action='store_true',
@@ -1747,7 +1767,7 @@ def SendUpstream(parser, args, cmd):
 
 @usage('[upstream branch to apply against]')
 def CMDdcommit(parser, args):
-  """commit the current changelist via git-svn"""
+  """Commits the current changelist via git-svn."""
   if not settings.GetIsGitSvn():
     message = """This doesn't appear to be an SVN repository.
 If your project has a git mirror with an upstream SVN master, you probably need
@@ -1763,7 +1783,7 @@ will instead be silently ignored."""
 
 @usage('[upstream branch to apply against]')
 def CMDpush(parser, args):
-  """commit the current changelist via git"""
+  """Commits the current changelist via git."""
   if settings.GetIsGitSvn():
     print('This appears to be an SVN repository.')
     print('Are you sure you didn\'t mean \'git cl dcommit\'?')
@@ -1773,7 +1793,7 @@ def CMDpush(parser, args):
 
 @usage('<patch url or issue id>')
 def CMDpatch(parser, args):
-  """patch in a code review"""
+  """Patchs in a code review."""
   parser.add_option('-b', dest='newbranch',
                     help='create a new branch off trunk for the patch')
   parser.add_option('-f', action='store_true', dest='force',
@@ -1863,7 +1883,7 @@ def CMDpatch(parser, args):
 
 
 def CMDrebase(parser, args):
-  """rebase current branch on top of svn repo"""
+  """Rebases current branch on top of svn repo."""
   # Provide a wrapper for git svn rebase to help avoid accidental
   # git svn dcommit.
   # It's the only command that doesn't use parser at all since we just defer
@@ -1901,7 +1921,7 @@ def GetTreeStatusReason():
 
 
 def CMDtree(parser, args):
-  """show the status of the tree"""
+  """Shows the status of the tree."""
   _, args = parser.parse_args(args)
   status = GetTreeStatus()
   if 'unset' == status:
@@ -2017,7 +2037,7 @@ def CMDtry(parser, args):
 
 @usage('[new upstream branch]')
 def CMDupstream(parser, args):
-  """prints or sets the name of the upstream branch, if any"""
+  """Prints or sets the name of the upstream branch, if any."""
   _, args = parser.parse_args(args)
   if len(args) > 1:
     parser.error('Unrecognized args: %s' % ' '.join(args))
@@ -2035,7 +2055,7 @@ def CMDupstream(parser, args):
 
 
 def CMDset_commit(parser, args):
-  """set the commit bit"""
+  """Sets the commit bit to trigger the Commit Queue."""
   _, args = parser.parse_args(args)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
@@ -2045,7 +2065,7 @@ def CMDset_commit(parser, args):
 
 
 def CMDset_close(parser, args):
-  """close the issue"""
+  """Closes the issue."""
   _, args = parser.parse_args(args)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
@@ -2057,7 +2077,7 @@ def CMDset_close(parser, args):
 
 
 def CMDformat(parser, args):
-  """run clang-format on the diff"""
+  """Runs clang-format on the diff."""
   CLANG_EXTS = ['.cc', '.cpp', '.h']
   parser.add_option('--full', action='store_true', default=False)
   opts, args = parser.parse_args(args)
@@ -2154,7 +2174,7 @@ def Command(name):
 
 
 def CMDhelp(parser, args):
-  """print list of commands or help for a specific command"""
+  """Prints list of commands or help for a specific command."""
   _, args = parser.parse_args(args)
   if len(args) == 1:
     return main(args + ['--help'])
@@ -2172,9 +2192,30 @@ def GenUsage(parser, command):
   if command == 'help':
     command = '<command>'
   else:
-    # OptParser.description prefer nicely non-formatted strings.
-    parser.description = re.sub('[\r\n ]{2,}', ' ', obj.__doc__)
+    parser.description = obj.__doc__
   parser.set_usage('usage: %%prog %s [options] %s' % (command, more))
+
+
+class OptionParser(optparse.OptionParser):
+  """Creates the option parse and add --verbose support."""
+  def __init__(self, *args, **kwargs):
+    optparse.OptionParser.__init__(self, *args, **kwargs)
+    self.add_option(
+        '-v', '--verbose', action='count', default=0,
+        help='Use 2 times for more debugging info')
+
+  def parse_args(self, args=None, values=None):
+    options, args = optparse.OptionParser.parse_args(self, args, values)
+    levels = [logging.WARNING, logging.INFO, logging.DEBUG]
+    logging.basicConfig(level=levels[min(options.verbose, len(levels) - 1)])
+    return options, args
+
+  def format_description(self, _):
+    """Disables automatic reformatting."""
+    lines = self.description.rstrip().splitlines()
+    lines_fixed = [lines[0]] + [l[2:] if len(l) >= 2 else l for l in lines[1:]]
+    description = ''.join(l + '\n' for l in lines_fixed)
+    return description[0].upper() + description[1:]
 
 
 def main(argv):
@@ -2193,29 +2234,19 @@ def main(argv):
   # Do it late so all commands are listed.
   commands = Commands()
   length = max(len(c) for c in commands)
+
+  def gen_summary(x):
+    """Creates a oneline summary from the docstring."""
+    line = x.split('\n', 1)[0].rstrip('.')
+    return line[0].lower() + line[1:]
+
   docs = sorted(
-      (name, handler.__doc__.split('\n')[0].strip())
+      (name, gen_summary(handler.__doc__).strip())
       for name, handler in commands.iteritems())
   CMDhelp.usage_more = ('\n\nCommands are:\n' + '\n'.join(
       '  %-*s %s' % (length, name, doc) for name, doc in docs))
 
-  # Create the option parse and add --verbose support.
-  parser = optparse.OptionParser()
-  parser.add_option(
-      '-v', '--verbose', action='count', default=0,
-      help='Use 2 times for more debugging info')
-  old_parser_args = parser.parse_args
-  def Parse(args):
-    options, args = old_parser_args(args)
-    if options.verbose >= 2:
-      logging.basicConfig(level=logging.DEBUG)
-    elif options.verbose:
-      logging.basicConfig(level=logging.INFO)
-    else:
-      logging.basicConfig(level=logging.WARNING)
-    return options, args
-  parser.parse_args = Parse
-
+  parser = OptionParser()
   if argv:
     command = Command(argv[0])
     if command:
