@@ -71,6 +71,8 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
       return browser_plugin::kPermissionTypeNewWindow;
     case BrowserPluginPermissionTypePointerLock:
       return browser_plugin::kPermissionTypePointerLock;
+    case BrowserPluginPermissionTypeJavaScriptDialog:
+      return browser_plugin::kPermissionTypeDialog;
     case BrowserPluginPermissionTypeUnknown:
     default:
       NOTREACHED();
@@ -503,11 +505,14 @@ void BrowserPlugin::OnRequestPermission(
   // The New Window API is very similiar to the permission API in structure,
   // but exposes a slightly different interface to the developer and so we put
   // it in a separate event.
-  const char* event_name =
-      (permission_type == BrowserPluginPermissionTypeNewWindow) ?
-          browser_plugin::kEventNewWindow :
-              browser_plugin::kEventRequestPermission;
-
+  const char* event_name = NULL;
+  if (permission_type == BrowserPluginPermissionTypeNewWindow) {
+    event_name = browser_plugin::kEventNewWindow;
+  } else if (permission_type == BrowserPluginPermissionTypeJavaScriptDialog) {
+    event_name = browser_plugin::kEventDialog;
+  } else {
+    event_name = browser_plugin::kEventRequestPermission;
+  }
   AddPermissionRequestToSet(request_id);
 
   std::map<std::string, base::Value*> props;
@@ -974,25 +979,29 @@ WebKit::WebPluginContainer* BrowserPlugin::container() const {
   return container_;
 }
 
-void BrowserPlugin::RespondPermission(int request_id, bool allow) {
+void BrowserPlugin::RespondPermission(
+    int request_id, bool allow, const std::string& user_input) {
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_RespondPermission(
-          render_view_routing_id_, guest_instance_id_, request_id, allow));
+          render_view_routing_id_, guest_instance_id_,
+          request_id, allow, user_input));
 }
 
 void BrowserPlugin::RespondPermissionIfRequestIsPending(
-    int request_id, bool allow) {
+    int request_id, bool allow, const std::string& user_input) {
   PendingPermissionRequests::iterator iter =
       pending_permission_requests_.find(request_id);
   if (iter == pending_permission_requests_.end())
     return;
 
   pending_permission_requests_.erase(iter);
-  RespondPermission(request_id, allow);
+  RespondPermission(request_id, allow, user_input);
 }
 
-void BrowserPlugin::OnEmbedderDecidedPermission(int request_id, bool allow) {
-  RespondPermissionIfRequestIsPending(request_id, allow);
+void BrowserPlugin::OnEmbedderDecidedPermission(int request_id,
+                                                bool allow,
+                                                const std::string& user_input) {
+  RespondPermissionIfRequestIsPending(request_id, allow, user_input);
 }
 
 bool BrowserPlugin::initialize(WebPluginContainer* container) {

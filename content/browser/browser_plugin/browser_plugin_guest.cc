@@ -61,7 +61,7 @@ BrowserPluginHostFactory* BrowserPluginGuest::factory_ = NULL;
 // should be able to handle the response to their permission request.
 class BrowserPluginGuest::PermissionRequest {
  public:
-  virtual void Respond(bool should_allow) = 0;
+  virtual void Respond(bool should_allow, const std::string& user_input) = 0;
   virtual ~PermissionRequest() {}
   virtual BrowserPluginPermissionType GetType() const = 0;
  protected:
@@ -77,8 +77,8 @@ class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
     RecordAction(
         UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Download"));
   }
-
-  virtual void Respond(bool should_allow) OVERRIDE {
+  virtual void Respond(bool should_allow,
+                       const std::string& user_input) OVERRIDE {
     callback_.Run(should_allow);
   }
 
@@ -105,7 +105,8 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
         UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Geolocation"));
   }
 
-  virtual void Respond(bool should_allow) OVERRIDE {
+  virtual void Respond(bool should_allow,
+                       const std::string& user_input) OVERRIDE {
     WebContents* web_contents = guest_->embedder_web_contents();
     if (should_allow && web_contents) {
       // If renderer side embedder decides to allow gelocation, we need to check
@@ -161,7 +162,8 @@ class BrowserPluginGuest::MediaRequest : public PermissionRequest {
         UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Media"));
   }
 
-  virtual void Respond(bool should_allow) OVERRIDE {
+  virtual void Respond(bool should_allow,
+                       const std::string& user_input) OVERRIDE {
     WebContentsImpl* web_contents = guest_->embedder_web_contents();
     if (should_allow && web_contents) {
       // Re-route the request to the embedder's WebContents; the guest gets the
@@ -193,7 +195,8 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
         UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.NewWindow"));
   }
 
-  virtual void Respond(bool should_allow) OVERRIDE {
+  virtual void Respond(bool should_allow,
+                       const std::string& user_input) OVERRIDE {
     int embedder_render_process_id =
         guest_->embedder_web_contents()->GetRenderProcessHost()->GetID();
     BrowserPluginGuest* guest =
@@ -219,6 +222,29 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
   BrowserPluginGuest* guest_;
 };
 
+class BrowserPluginGuest::JavaScriptDialogRequest : public PermissionRequest {
+ public:
+  JavaScriptDialogRequest(const DialogClosedCallback& callback)
+      : callback_(callback) {
+    RecordAction(
+        UserMetricsAction(
+            "BrowserPlugin.Guest.PermissionRequest.JavaScriptDialog"));
+  }
+
+  virtual void Respond(bool should_allow,
+                       const std::string& user_input) OVERRIDE {
+    callback_.Run(should_allow, UTF8ToUTF16(user_input));
+  }
+
+  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
+    return BrowserPluginPermissionTypeJavaScriptDialog;
+  }
+
+  virtual ~JavaScriptDialogRequest() {}
+ private:
+   DialogClosedCallback callback_;
+};
+
 class BrowserPluginGuest::PointerLockRequest : public PermissionRequest {
  public:
   PointerLockRequest(BrowserPluginGuest* guest)
@@ -227,7 +253,8 @@ class BrowserPluginGuest::PointerLockRequest : public PermissionRequest {
         UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.PointerLock"));
   }
 
-  virtual void Respond(bool should_allow) OVERRIDE {
+  virtual void Respond(bool should_allow,
+                       const std::string& user_input) OVERRIDE {
     guest_->SendMessageToEmbedder(
         new BrowserPluginMsg_SetMouseLock(guest_->instance_id(), should_allow));
   }
@@ -244,26 +271,40 @@ class BrowserPluginGuest::PointerLockRequest : public PermissionRequest {
 namespace {
 const size_t kNumMaxOutstandingPermissionRequests = 1024;
 
-static std::string WindowOpenDispositionToString(
+std::string WindowOpenDispositionToString(
   WindowOpenDisposition window_open_disposition) {
   switch (window_open_disposition) {
-      case IGNORE_ACTION:
-        return "ignore";
-      case SAVE_TO_DISK:
-        return "save_to_disk";
-      case CURRENT_TAB:
-        return "current_tab";
-      case NEW_BACKGROUND_TAB:
-        return "new_background_tab";
-      case NEW_FOREGROUND_TAB:
-        return "new_foreground_tab";
-      case NEW_WINDOW:
-        return "new_window";
-      case NEW_POPUP:
-        return "new_popup";
-      default:
-        NOTREACHED() << "Unknown Window Open Disposition";
-        return "ignore";
+    case IGNORE_ACTION:
+      return "ignore";
+    case SAVE_TO_DISK:
+      return "save_to_disk";
+    case CURRENT_TAB:
+      return "current_tab";
+    case NEW_BACKGROUND_TAB:
+      return "new_background_tab";
+    case NEW_FOREGROUND_TAB:
+      return "new_foreground_tab";
+    case NEW_WINDOW:
+      return "new_window";
+    case NEW_POPUP:
+      return "new_popup";
+    default:
+      NOTREACHED() << "Unknown Window Open Disposition";
+      return "ignore";
+  }
+}
+
+std::string JavaScriptMessageTypeToString(JavaScriptMessageType message_type) {
+  switch (message_type) {
+    case JAVASCRIPT_MESSAGE_TYPE_ALERT:
+      return "alert";
+    case JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+      return "confirm";
+    case JAVASCRIPT_MESSAGE_TYPE_PROMPT:
+      return "prompt";
+    default:
+      NOTREACHED() << "Unknown JavaScript Message Type.";
+      return "unknown";
   }
 }
 
@@ -609,6 +650,10 @@ void BrowserPluginGuest::CloseContents(WebContents* source) {
     return;
 
   delegate_->Close();
+}
+
+JavaScriptDialogManager* BrowserPluginGuest::GetJavaScriptDialogManager() {
+  return this;
 }
 
 bool BrowserPluginGuest::HandleContextMenu(const ContextMenuParams& params) {
@@ -1344,14 +1389,15 @@ void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {
 void BrowserPluginGuest::OnRespondPermission(
     int instance_id,
     int request_id,
-    bool should_allow) {
+    bool should_allow,
+    const std::string& user_input) {
   RequestMap::iterator request_itr = permission_request_map_.find(request_id);
   if (request_itr == permission_request_map_.end()) {
     LOG(INFO) << "Not a valid request ID.";
     return;
   }
   BrowserPluginPermissionType permission_type = request_itr->second->GetType();
-  request_itr->second->Respond(should_allow);
+  request_itr->second->Respond(should_allow, user_input);
 
   // Geolocation requests have to hang around for a while, so we don't delete
   // them here.
@@ -1479,6 +1525,61 @@ void BrowserPluginGuest::RequestMediaAccessPermission(
       request_id, request_info));
 }
 
+void BrowserPluginGuest::RunJavaScriptDialog(
+    WebContents* web_contents,
+    const GURL& origin_url,
+    const std::string& accept_lang,
+    JavaScriptMessageType javascript_message_type,
+    const string16& message_text,
+    const string16& default_prompt_text,
+    const DialogClosedCallback& callback,
+    bool* did_suppress_message) {
+  if (permission_request_map_.size() >= kNumMaxOutstandingPermissionRequests) {
+    // Cancel the dialog.
+    callback.Run(false, string16());
+    return;
+  }
+  int request_id = next_permission_request_id_++;
+  permission_request_map_[request_id] = new JavaScriptDialogRequest(callback);
+  base::DictionaryValue request_info;
+  request_info.Set(
+      browser_plugin::kDefaultPromptText,
+      base::Value::CreateStringValue(UTF16ToUTF8(default_prompt_text)));
+  request_info.Set(
+      browser_plugin::kMessageText,
+      base::Value::CreateStringValue(UTF16ToUTF8(message_text)));
+  request_info.Set(
+      browser_plugin::kMessageType,
+      base::Value::CreateStringValue(
+          JavaScriptMessageTypeToString(javascript_message_type)));
+  request_info.Set(
+      browser_plugin::kURL,
+      base::Value::CreateStringValue(origin_url.spec()));
+  SendMessageToEmbedder(new BrowserPluginMsg_RequestPermission(
+      instance_id(), BrowserPluginPermissionTypeJavaScriptDialog,
+      request_id, request_info));
+}
+
+void BrowserPluginGuest::RunBeforeUnloadDialog(
+    WebContents* web_contents,
+    const string16& message_text,
+    bool is_reload,
+    const DialogClosedCallback& callback) {
+  // This is called if the guest has a beforeunload event handler.
+  // This callback allows navigation to proceed.
+  callback.Run(true, string16());
+}
+
+bool BrowserPluginGuest::HandleJavaScriptDialog(
+    WebContents* web_contents,
+    bool accept,
+    const string16* prompt_override) {
+  return false;
+}
+
+void BrowserPluginGuest::ResetJavaScriptState(WebContents* web_contents) {
+}
+
 void BrowserPluginGuest::OnUpdateRect(
     const ViewHostMsg_UpdateRect_Params& params) {
   BrowserPluginMsg_UpdateRect_Params relay_params;
@@ -1538,7 +1639,8 @@ void BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId(
     int permission_request_id,
     const std::string& url) {
   if (url.empty()) {
-    OnRespondPermission(instance_id(), permission_request_id, false);
+    OnRespondPermission(instance_id(), permission_request_id,
+        false, std::string());
     return;
   }
 

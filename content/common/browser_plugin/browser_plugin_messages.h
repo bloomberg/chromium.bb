@@ -253,11 +253,13 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetName,
 // Note that |allow| = true does not readily mean that the guest will be granted
 // permission, since a security check in the embedder might follow. For example
 // for media access permission, the guest will be granted permission only if its
-// embedder also has access.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_RespondPermission,
+// embedder also has access. For certain APIs, such as the Dialog API,
+// additional information may be passed by the developer through |user_input|.
+IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_RespondPermission,
                     int /* instance_id */,
                     int /* request_id */,
-                    bool /* allow */)
+                    bool /* allow */,
+                    std::string /* user_input */)
 
 // Sends a PointerLock Lock ACK to the BrowserPluginGuest.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_LockMouse_ACK,

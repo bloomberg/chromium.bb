@@ -33,6 +33,7 @@
 #include "content/common/edit_command.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_observer.h"
@@ -83,7 +84,8 @@ struct MediaStreamRequest;
 // CreateNewWindow. The newly created guest will live in the same partition,
 // which means it can share storage and can script this guest.
 class CONTENT_EXPORT BrowserPluginGuest
-    : public NotificationObserver,
+    : public JavaScriptDialogManager,
+      public NotificationObserver,
       public WebContentsDelegate,
       public WebContentsObserver,
       public base::SupportsWeakPtr<BrowserPluginGuest> {
@@ -161,7 +163,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebContentsDelegate implementation.
-
   virtual bool AddMessageToConsole(WebContents* source,
                                    int32 level,
                                    const string16& message,
@@ -181,6 +182,7 @@ class CONTENT_EXPORT BrowserPluginGuest
                            const std::string& request_method,
                            const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void CloseContents(WebContents* source) OVERRIDE;
+  virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
       WebContents* source,
@@ -201,6 +203,26 @@ class CONTENT_EXPORT BrowserPluginGuest
       WebContents* web_contents,
       const MediaStreamRequest& request,
       const MediaResponseCallback& callback) OVERRIDE;
+
+  // JavaScriptDialogManager implementation.
+  virtual void RunJavaScriptDialog(
+      WebContents* web_contents,
+      const GURL& origin_url,
+      const std::string& accept_lang,
+      JavaScriptMessageType javascript_message_type,
+      const string16& message_text,
+      const string16& default_prompt_text,
+      const DialogClosedCallback& callback,
+      bool* did_suppress_message) OVERRIDE;
+  virtual void RunBeforeUnloadDialog(
+      WebContents* web_contents,
+      const string16& message_text,
+      bool is_reload,
+      const DialogClosedCallback& callback) OVERRIDE;
+  virtual bool HandleJavaScriptDialog(WebContents* web_contents,
+                                      bool accept,
+                                      const string16* prompt_override) OVERRIDE;
+  virtual void ResetJavaScriptState(WebContents* web_contents) OVERRIDE;
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents();
@@ -264,6 +286,7 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   class DownloadRequest;
   class GeolocationRequest;
+  class JavaScriptDialogRequest;
   // MediaRequest because of naming conflicts with MediaStreamRequest.
   class MediaRequest;
   class NewWindowRequest;
@@ -307,7 +330,8 @@ class CONTENT_EXPORT BrowserPluginGuest
   // chance to decide.
   void OnRespondPermission(int instance_id,
                            int request_id,
-                           bool should_allow);
+                           bool should_allow,
+                           const std::string& user_input);
   // Handles drag events from the embedder.
   // When dragging, the drag events go to the embedder first, and if the drag
   // happens on the browser plugin, then the plugin sends a corresponding

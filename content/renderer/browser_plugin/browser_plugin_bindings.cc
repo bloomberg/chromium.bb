@@ -353,7 +353,7 @@ class BrowserPluginBindingSetPermission : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingSetPermission()
       : BrowserPluginMethodBinding(
-          browser_plugin::kMethodInternalSetPermission, 2) {
+          browser_plugin::kMethodInternalSetPermission, 3) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
@@ -361,7 +361,9 @@ class BrowserPluginBindingSetPermission : public BrowserPluginMethodBinding {
                       NPVariant* result) OVERRIDE {
     int request_id = IntFromNPVariant(args[0]);
     bool allow = NPVARIANT_TO_BOOLEAN(args[1]);
-    bindings->instance()->OnEmbedderDecidedPermission(request_id, allow);
+    std::string user_input = StringFromNPVariant(args[2]);
+    bindings->instance()->OnEmbedderDecidedPermission(
+        request_id, allow, user_input);
     return true;
   }
 

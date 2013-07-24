@@ -1,0 +1,13 @@
+{
+  "name": "Packaged App Test: <webview> JavaScript Dialogs",
+  "description": "Verifies that the <webview> Dialog API works as expected.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

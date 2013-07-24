@@ -130,7 +130,8 @@ class CONTENT_EXPORT BrowserPlugin :
 
   gfx::Point ToLocalCoordinates(const gfx::Point& point) const;
   // Called by browser plugin binding.
-  void OnEmbedderDecidedPermission(int request_id, bool allow);
+  void OnEmbedderDecidedPermission(int request_id, bool allow,
+                                   const std::string& user_input);
 
   // Called when a guest instance ID has been allocated by the browser process.
   void OnInstanceIDAllocated(int guest_instance_id);
@@ -292,12 +293,16 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Informs the BrowserPlugin that the guest's permission request has been
   // allowed or denied by the embedder.
-  void RespondPermission(int request_id, bool allow);
+  void RespondPermission(int request_id,
+                         bool allow,
+                         const std::string& user_input);
 
   // If the request with id |request_id| is pending then informs the
   // BrowserPlugin that the guest's permission request has been allowed or
   // denied by the embedder.
-  void RespondPermissionIfRequestIsPending(int request_id, bool allow);
+  void RespondPermissionIfRequestIsPending(int request_id,
+                                           bool allow,
+                                           const std::string& user_input);
 
   // Called when the tracked object of |id| ID becomes unreachable in
   // JavaScript.

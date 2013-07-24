@@ -423,7 +423,7 @@ WebView.prototype.setupNewWindowEvent_ = function() {
     var detail = e.detail ? JSON.parse(e.detail) : {};
     if (detail.id != requestId)
       return;
-    browserPluginNode['-internal-setPermission'](requestId, false);
+    browserPluginNode['-internal-setPermission'](requestId, false, '');
   }
 
   browserPluginNode.addEventListener('-internal-newwindow', function(e) {
@@ -463,12 +463,12 @@ WebView.prototype.setupNewWindowEvent_ = function() {
           // then we will fail and it will be treated as if the new window
           // was rejected. The permission API plumbing is used here to clean
           // up the state created for the new window if attaching fails.
-          browserPluginNode['-internal-setPermission'](requestId, attached);
+          browserPluginNode['-internal-setPermission'](requestId, attached, '');
         }, 0);
       },
       discard: function() {
         validateCall();
-        browserPluginNode['-internal-setPermission'](requestId, false);
+        browserPluginNode['-internal-setPermission'](requestId, false, '');
       }
     };
     evt.window = window;
@@ -483,7 +483,7 @@ WebView.prototype.setupNewWindowEvent_ = function() {
     if (!actionTaken && !defaultPrevented) {
       actionTaken = true;
       // The default action is to discard the window.
-      browserPluginNode['-internal-setPermission'](requestId, false);
+      browserPluginNode['-internal-setPermission'](requestId, false, '');
       console.warn(WARNING_MSG_NEWWINDOW_BLOCKED);
     }
   });
@@ -552,7 +552,7 @@ WebView.prototype.setupPermissionEvent_ = function() {
     var detail = e.detail ? JSON.parse(e.detail) : {};
     if (detail.id != requestId)
       return;
-    browserPluginNode['-internal-setPermission'](requestId, false);
+    browserPluginNode['-internal-setPermission'](requestId, false, '');
   }
 
   browserPluginNode.addEventListener(internalevent, function(e) {
@@ -575,7 +575,7 @@ WebView.prototype.setupPermissionEvent_ = function() {
           if (decisionMade) {
             throw new Error(ERROR_MSG_PERMISSION_ALREADY_DECIDED);
           } else {
-            browserPluginNode['-internal-setPermission'](requestId, true);
+            browserPluginNode['-internal-setPermission'](requestId, true, '');
             decisionMade = true;
           }
         },
@@ -583,7 +583,7 @@ WebView.prototype.setupPermissionEvent_ = function() {
           if (decisionMade) {
             throw new Error(ERROR_MSG_PERMISSION_ALREADY_DECIDED);
           } else {
-            browserPluginNode['-internal-setPermission'](requestId, false);
+            browserPluginNode['-internal-setPermission'](requestId, false, '');
             decisionMade = true;
           }
         }
@@ -600,7 +600,7 @@ WebView.prototype.setupPermissionEvent_ = function() {
       var defaultPrevented = !node.dispatchEvent(evt);
       if (!decisionMade && !defaultPrevented) {
         decisionMade = true;
-        browserPluginNode['-internal-setPermission'](requestId, false);
+        browserPluginNode['-internal-setPermission'](requestId, false, '');
       }
     }
   });

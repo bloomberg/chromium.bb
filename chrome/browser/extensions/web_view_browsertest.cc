@@ -1382,3 +1382,45 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentInteractive) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/document_interactive"))
                   << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestAlertDialog) {
+  TestHelper("testAlertDialog",
+             "DoneDialogTest.PASSED",
+             "DoneDialogTest.FAILED",
+             "web_view/dialog");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialog) {
+  TestHelper("testConfirmDialog",
+             "DoneDialogTest.PASSED",
+             "DoneDialogTest.FAILED",
+             "web_view/dialog");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogCancel) {
+  TestHelper("testConfirmDialogCancel",
+             "DoneDialogTest.PASSED",
+             "DoneDialogTest.FAILED",
+             "web_view/dialog");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
+  TestHelper("testConfirmDialogDefaultCancel",
+             "DoneDialogTest.PASSED",
+             "DoneDialogTest.FAILED",
+             "web_view/dialog");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultGCCancel) {
+  TestHelper("testConfirmDialogDefaultGCCancel",
+             "DoneDialogTest.PASSED",
+             "DoneDialogTest.FAILED",
+             "web_view/dialog");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestPromptDialog) {
+  TestHelper("testPromptDialog",
+             "DoneDialogTest.PASSED",
+             "DoneDialogTest.FAILED",
+             "web_view/dialog");
+}

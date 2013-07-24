@@ -27,6 +27,12 @@ enum BrowserPluginPermissionType {
   // API is sufficiently similar that it's convenient to consider it a
   // permission type for code reuse.
   BrowserPluginPermissionTypeNewWindow,
+
+  // JavaScript Dialogs: prompt, alert, confirm
+  // Note: Even through dialogs do not use the permission API, the dialog API
+  // is sufficiently similiar that it's convenient to consider it a permission
+  // type for code reuse.
+  BrowserPluginPermissionTypeJavaScriptDialog
 };
 
 #endif  // CONTENT_COMMON_BROWSER_PLUGIN_BROWSER_PLUGIN_MESSAGE_ENUMS_H_

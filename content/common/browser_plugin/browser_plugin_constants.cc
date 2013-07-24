@@ -44,6 +44,7 @@ const char kAttributePartition[] = "partition";
 const char kAttributeSrc[] = "src";
 
 // Events.
+const char kEventDialog[] = "dialog";
 const char kEventNewWindow[] = "newwindow";
 const char kEventRequestPermission[] = "permissionrequest";
 const char kEventResponsive[] = "responsive";
@@ -51,17 +52,21 @@ const char kEventSizeChanged[] = "sizechanged";
 const char kEventUnresponsive[] = "unresponsive";
 
 // Parameters/properties on events.
+const char kDefaultPromptText[] = "defaultPromptText";
 const char kId[] = "id";
 const char kInitialHeight[] = "initialHeight";
 const char kInitialWidth[] = "initialWidth";
 const char kIsTopLevel[] = "isTopLevel";
 const char kLastUnlockedBySelf[] = "lastUnlockedBySelf";
+const char kMessageText[] = "messageText";
+const char kMessageType[] = "messageType";
 const char kName[] = "name";
 const char kNewHeight[] = "newHeight";
 const char kNewWidth[] = "newWidth";
 const char kOldHeight[] = "oldHeight";
 const char kOldWidth[] = "oldWidth";
 const char kPermission[] = "permission";
+const char kPermissionTypeDialog[] = "dialog";
 const char kPermissionTypeDownload[] = "download";
 const char kPermissionTypeGeolocation[] = "geolocation";
 const char kPermissionTypeMedia[] = "media";
