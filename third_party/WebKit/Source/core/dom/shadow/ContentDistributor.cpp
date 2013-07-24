@@ -355,22 +355,18 @@ const SelectRuleFeatureSet& ContentDistributor::ensureSelectFeatureSet(ElementSh
 
 void ContentDistributor::collectSelectFeatureSetFrom(ShadowRoot* root)
 {
-    if (root->containsShadowRoots()) {
-        for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element)) {
-            if (ElementShadow* elementShadow = element->shadow())
-                m_selectFeatures.add(elementShadow->distributor().ensureSelectFeatureSet(elementShadow));
-        }
-    }
+    if (!root->containsShadowRoots() && !root->containsContentElements())
+        return;
 
-    if (root->containsContentElements()) {
-        for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element)) {
-            if (!isHTMLContentElement(element))
-                continue;
-            const CSSSelectorList& list = toHTMLContentElement(element)->selectorList();
-            for (const CSSSelector* selector = list.first(); selector; selector = CSSSelectorList::next(selector)) {
-                for (const CSSSelector* component = selector; component; component = component->tagHistory())
-                    m_selectFeatures.collectFeaturesFromSelector(component);
-            }
+    for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element, root)) {
+        if (ElementShadow* shadow = element->shadow())
+            m_selectFeatures.add(shadow->ensureSelectFeatureSet());
+        if (!isHTMLContentElement(element))
+            continue;
+        const CSSSelectorList& list = toHTMLContentElement(element)->selectorList();
+        for (const CSSSelector* selector = list.first(); selector; selector = CSSSelectorList::next(selector)) {
+            for (const CSSSelector* component = selector; component; component = component->tagHistory())
+                m_selectFeatures.collectFeaturesFromSelector(component);
         }
     }
 }
