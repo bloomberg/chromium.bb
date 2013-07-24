@@ -490,8 +490,9 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
                            scoped_ptr<base::Value>());
 
     OnProcessURLFetchResultsComplete(true);
-  } else {
-    // There might be explanation of unexpected error code in response.
+  } else if (code == HTTP_CREATED || code == HTTP_SUCCESS) {
+    // The upload is successfully done. Parse the response which should be
+    // the entry's metadata.
     std::string response_content;
     source->GetResponseAsString(&response_content);
 
@@ -500,16 +501,21 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
               base::Bind(&UploadRangeRequestBase::OnDataParsed,
                          weak_ptr_factory_.GetWeakPtr(),
                          code));
+  } else {
+    // Failed to upload. Run callbacks to notify the error.
+    OnRangeRequestComplete(
+        UploadRangeResponse(code, -1, -1), scoped_ptr<base::Value>());
+    OnProcessURLFetchResultsComplete(false);
   }
 }
 
 void UploadRangeRequestBase::OnDataParsed(GDataErrorCode code,
                                           scoped_ptr<base::Value> value) {
   DCHECK(CalledOnValidThread());
+  DCHECK(code == HTTP_CREATED || code == HTTP_SUCCESS);
 
   OnRangeRequestComplete(UploadRangeResponse(code, -1, -1), value.Pass());
-  OnProcessURLFetchResultsComplete(
-      code == HTTP_CREATED || code == HTTP_SUCCESS);
+  OnProcessURLFetchResultsComplete(true);
 }
 
 void UploadRangeRequestBase::RunCallbackOnPrematureFailure(

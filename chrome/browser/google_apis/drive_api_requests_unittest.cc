@@ -68,6 +68,9 @@ class DriveApiRequestsTest : public testing::Test {
         base::Bind(&DriveApiRequestsTest::HandleDataFileRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
+        base::Bind(&DriveApiRequestsTest::HandlePreconditionFailedRequest,
+                   base::Unretained(this)));
+    test_server_.RegisterRequestHandler(
         base::Bind(&DriveApiRequestsTest::HandleResumeUploadRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
@@ -104,6 +107,10 @@ class DriveApiRequestsTest : public testing::Test {
   // This is a path string in the expected response header from the server
   // for initiating file uploading.
   std::string expected_upload_path_;
+
+  // This is a path to the file which contains expected response for
+  // PRECONDITION_FAILED response.
+  base::FilePath expected_precondition_failed_file_path_;
 
   // These are content and its type in the expected response from the server.
   // See also HandleContentResponse below.
@@ -162,6 +169,33 @@ class DriveApiRequestsTest : public testing::Test {
         expected_data_file_path_).PassAs<net::test_server::HttpResponse>();
   }
 
+  // Returns PRECONDITION_FAILED response for ETag mismatching with error JSON
+  // content specified by |expected_precondition_failed_file_path_|.
+  // To use this method, it is necessary to set the variable to the appropriate
+  // file path before sending the request to the server.
+  scoped_ptr<net::test_server::HttpResponse> HandlePreconditionFailedRequest(
+      const net::test_server::HttpRequest& request) {
+    if (expected_precondition_failed_file_path_.empty()) {
+      // The file is not specified. Delegate the process to the next handler.
+      return scoped_ptr<net::test_server::HttpResponse>();
+    }
+
+    http_request_ = request;
+
+    scoped_ptr<net::test_server::BasicHttpResponse> response(
+        new net::test_server::BasicHttpResponse);
+    response->set_code(net::HTTP_PRECONDITION_FAILED);
+
+    std::string content;
+    if (file_util::ReadFileToString(expected_precondition_failed_file_path_,
+                                    &content)) {
+      response->set_content(content);
+      response->set_content_type("application/json");
+    }
+
+    return response.PassAs<net::test_server::HttpResponse>();
+  }
+
   // Returns the response based on set expected upload url.
   // The response contains the url in its "Location: " header. Also, it doesn't
   // have any content.
@@ -181,19 +215,10 @@ class DriveApiRequestsTest : public testing::Test {
     scoped_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse);
 
-    // Check an ETag.
-    std::map<std::string, std::string>::const_iterator found =
-        request.headers.find("If-Match");
-    if (found != request.headers.end() &&
-        found->second != "*" &&
-        found->second != kTestETag) {
-      response->set_code(net::HTTP_PRECONDITION_FAILED);
-      return response.PassAs<net::test_server::HttpResponse>();
-    }
-
     // Check if the X-Upload-Content-Length is present. If yes, store the
     // length of the file.
-    found = request.headers.find("X-Upload-Content-Length");
+    std::map<std::string, std::string>::const_iterator found =
+        request.headers.find("X-Upload-Content-Length");
     if (found == request.headers.end() ||
         !base::StringToInt64(found->second, &content_length_)) {
       return scoped_ptr<net::test_server::HttpResponse>();
@@ -1314,6 +1339,11 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETagConflicting) {
   // Set an expected url for uploading.
   expected_upload_path_ = kTestUploadExistingFilePath;
 
+  // If it turned out that the etag is conflicting, PRECONDITION_FAILED should
+  // be returned.
+  expected_precondition_failed_file_path_ =
+      test_util::GetTestFilePath("drive/error.json");
+
   const char kTestContentType[] = "text/plain";
   const std::string kTestContent(100, 'a');
 
@@ -1349,6 +1379,102 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETagConflicting) {
             http_request_.relative_url);
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_TRUE(http_request_.content.empty());
+}
+
+TEST_F(DriveApiRequestsTest,
+       UploadExistingFileRequestWithETagConflictOnResumeUpload) {
+  // Set an expected url for uploading.
+  expected_upload_path_ = kTestUploadExistingFilePath;
+
+  const char kTestContentType[] = "text/plain";
+  const std::string kTestContent(100, 'a');
+  const base::FilePath kTestFilePath =
+      temp_dir_.path().AppendASCII("upload_file.txt");
+  ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_url;
+
+  // Initiate uploading a new file to the directory with "parent_resource_id".
+  {
+    base::RunLoop run_loop;
+    drive::InitiateUploadExistingFileRequest* request =
+        new drive::InitiateUploadExistingFileRequest(
+            request_sender_.get(),
+            *url_generator_,
+            kTestContentType,
+            kTestContent.size(),
+            "resource_id",  // The resource id of the file to be overwritten.
+            kTestETag,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(kTestUploadExistingFilePath, upload_url.path());
+  EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
+  EXPECT_EQ(base::Int64ToString(kTestContent.size()),
+            http_request_.headers["X-Upload-Content-Length"]);
+  EXPECT_EQ(kTestETag, http_request_.headers["If-Match"]);
+
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("/upload/drive/v2/files/resource_id?uploadType=resumable",
+            http_request_.relative_url);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_TRUE(http_request_.content.empty());
+
+  // Set PRECONDITION_FAILED to the server. This is the emulation of the
+  // confliction during uploading.
+  expected_precondition_failed_file_path_ =
+      test_util::GetTestFilePath("drive/error.json");
+
+  // Upload the content to the upload URL.
+  UploadRangeResponse response;
+  scoped_ptr<FileResource> new_entry;
+
+  {
+    base::RunLoop run_loop;
+    drive::ResumeUploadRequest* resume_request =
+        new drive::ResumeUploadRequest(
+            request_sender_.get(),
+            upload_url,
+            0,  // start_position
+            kTestContent.size(),  // end_position (exclusive)
+            kTestContent.size(),  // content_length,
+            kTestContentType,
+            kTestFilePath,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&response, &new_entry)),
+            ProgressCallback());
+    request_sender_->StartRequestWithRetry(resume_request);
+    run_loop.Run();
+  }
+
+  // METHOD_PUT should be used to upload data.
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
+  // Request should go to the upload URL.
+  EXPECT_EQ(upload_url.path(), http_request_.relative_url);
+  // Content-Range header should be added.
+  EXPECT_EQ("bytes 0-" +
+            base::Int64ToString(kTestContent.size() - 1) + "/" +
+            base::Int64ToString(kTestContent.size()),
+            http_request_.headers["Content-Range"]);
+  // The upload content should be set in the HTTP request.
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ(kTestContent, http_request_.content);
+
+  // Check the response.
+  EXPECT_EQ(HTTP_PRECONDITION, response.code);
+  // The start and end positions should be set to -1 for error.
+  EXPECT_EQ(-1, response.start_position_received);
+  EXPECT_EQ(-1, response.end_position_received);
+
+  // New entry should be NULL.
+  EXPECT_FALSE(new_entry.get());
 }
 
 TEST_F(DriveApiRequestsTest, DownloadFileRequest) {
