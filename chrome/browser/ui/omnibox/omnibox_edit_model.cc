@@ -116,18 +116,18 @@ void RecordPercentageMatchHistogram(const string16& old_text,
   if (search_term_replacement_active) {
     if (transition == content::PAGE_TRANSITION_TYPED) {
       UMA_HISTOGRAM_PERCENTAGE(
-          "InstantExtended.PercentageMatchQuerytoURL", percent);
+          "InstantExtended.PercentageMatchV2_QuerytoURL", percent);
     } else {
       UMA_HISTOGRAM_PERCENTAGE(
-          "InstantExtended.PercentageMatchQuerytoQuery", percent);
+          "InstantExtended.PercentageMatchV2_QuerytoQuery", percent);
     }
   } else {
     if (transition == content::PAGE_TRANSITION_TYPED) {
       UMA_HISTOGRAM_PERCENTAGE(
-          "InstantExtended.PercentageMatchURLtoURL", percent);
+          "InstantExtended.PercentageMatchV2_URLtoURL", percent);
     } else {
       UMA_HISTOGRAM_PERCENTAGE(
-          "InstantExtended.PercentageMatchURLtoQuery", percent);
+          "InstantExtended.PercentageMatchV2_URLtoQuery", percent);
     }
   }
 }

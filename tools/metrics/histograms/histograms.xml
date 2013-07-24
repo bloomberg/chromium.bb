@@ -4073,6 +4073,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="InstantExtended.PercentageMatchQuerytoQuery" units="%">
+  <obsolete>
+    Deprecated 2013-07. Please see
+    InstantExtended.PercentageMatchV2_QuerytoQuery instead.
+  </obsolete>
   <summary>
     Records the number of matching characters at the start of the user's text as
     a percentage of average length between the old and new text when the user
@@ -4081,6 +4085,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="InstantExtended.PercentageMatchQuerytoURL" units="%">
+  <obsolete>
+    Deprecated 2013-07. Please see InstantExtended.PercentageMatchV2_QuerytoURL
+    instead.
+  </obsolete>
   <summary>
     Records the number of matching characters at the start of the user's text as
     a percentage of average length between the old and new text when the user
@@ -4090,6 +4098,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="InstantExtended.PercentageMatchURLtoQuery" units="%">
+  <obsolete>
+    Deprecated 2013-07. Please see InstantExtended.PercentageMatchV2_URLtoQuery
+    instead.
+  </obsolete>
   <summary>
     Records the number of matching characters at the start of the user's text as
     a percentage of average length between the old and new text when the user
@@ -4098,6 +4110,43 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="InstantExtended.PercentageMatchURLtoURL" units="%">
+  <obsolete>
+    Deprecated 2013-07. Please see InstantExtended.PercentageMatchV2_URLtoURL
+    instead.
+  </obsolete>
+  <summary>
+    Records the number of matching characters at the start of the user's text as
+    a percentage of average length between the old and new text when the user
+    navigates from a url to another url.
+  </summary>
+</histogram>
+
+<histogram name="InstantExtended.PercentageMatchV2_QuerytoQuery" units="%">
+  <summary>
+    Records the number of matching characters at the start of the user's text as
+    a percentage of average length between the old and new text when the user
+    navigates from a search query to another search query.
+  </summary>
+</histogram>
+
+<histogram name="InstantExtended.PercentageMatchV2_QuerytoURL" units="%">
+  <summary>
+    Records the number of matching characters at the start of the user's text as
+    a percentage of average length between the old and new text when the user
+    navigates from a search query to a url. Example: Accidental search for
+    google.con, then navigation to google.com.
+  </summary>
+</histogram>
+
+<histogram name="InstantExtended.PercentageMatchV2_URLtoQuery" units="%">
+  <summary>
+    Records the number of matching characters at the start of the user's text as
+    a percentage of average length between the old and new text when the user
+    navigates from a url to a search query.
+  </summary>
+</histogram>
+
+<histogram name="InstantExtended.PercentageMatchV2_URLtoURL" units="%">
   <summary>
     Records the number of matching characters at the start of the user's text as
     a percentage of average length between the old and new text when the user
