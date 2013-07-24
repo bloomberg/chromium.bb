@@ -38,31 +38,31 @@
   # see https://code.google.com/p/nativeclient/issues/detail?id=1950
   89 FF
   49 8D 3C 3F
-  66 F3 48 AB
+  66 F3 AB
 @dis:
      0:	89 ff                                        	mov    %edi,%edi
      2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-     6:	66 f3 48 ab                                  	data32 rep stos %rax,%es:(%rdi)
+     6:	66 f3 ab                                     	rep stos %ax,%es:(%rdi)
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  6: ('prefix data32 is not allowed', Instruction(0x6: 66 f3 48 ab  data32 rep stos %rax,%es:(%rdi)))
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # REP prefix together with DATA16
   89 FF
   49 8D 3C 3F
-  F3 66 48 AB
+  F3 66 AB
 @dis:
      0:	89 ff                                        	mov    %edi,%edi
      2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-     6:	f3 66 48 ab                                  	rep data32 stos %rax,%es:(%rdi)
+     6:	f3 66 ab                                     	rep stos %ax,%es:(%rdi)
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  6: ('prefix data32 is not allowed', Instruction(0x6: f3 66 48 ab  rep data32 stos %rax,%es:(%rdi)))
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   66 90
