@@ -2039,6 +2039,8 @@ void RenderViewImpl::OpenURL(WebFrame* frame,
     params.should_replace_current_entry = false;
   }
   params.user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
+  if (GetContentClient()->renderer()->AllowPopup())
+    params.user_gesture = true;
 
   if (policy == WebKit::WebNavigationPolicyNewBackgroundTab ||
       policy == WebKit::WebNavigationPolicyNewForegroundTab ||
@@ -2131,6 +2133,8 @@ WebView* RenderViewImpl::createView(
   ViewHostMsg_CreateWindow_Params params;
   params.opener_id = routing_id_;
   params.user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
+  if (GetContentClient()->renderer()->AllowPopup())
+    params.user_gesture = true;
   params.window_container_type = WindowFeaturesToContainerType(features);
   params.session_storage_namespace_id = session_storage_namespace_id_;
   if (frame_name != "_blank")
@@ -2740,9 +2744,6 @@ void RenderViewImpl::show(WebNavigationPolicy policy) {
   did_show_ = true;
 
   DCHECK(opener_id_ != MSG_ROUTING_NONE);
-
-  if (GetContentClient()->renderer()->AllowPopup())
-    opened_by_user_gesture_ = true;
 
   // Force new windows to a popup if they were not opened with a user gesture.
   if (!opened_by_user_gesture_) {
