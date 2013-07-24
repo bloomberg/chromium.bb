@@ -5,7 +5,6 @@
 #include "chrome/test/perf/browser_perf_test.h"
 
 #include "base/command_line.h"
-#include "base/process_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/perf/perf_test.h"

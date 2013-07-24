@@ -9,7 +9,8 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/process_iterator.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/test_switches.h"

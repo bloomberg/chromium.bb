@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -45,6 +44,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "base/process/process_metrics.h"
 #include "chromeos/chromeos_paths.h"
 #endif
 

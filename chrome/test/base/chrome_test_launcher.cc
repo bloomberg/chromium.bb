@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/process_util.h"
+#include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_file_util.h"

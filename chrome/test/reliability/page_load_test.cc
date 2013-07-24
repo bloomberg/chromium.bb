@@ -49,6 +49,7 @@
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/process/kill.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_file_util.h"

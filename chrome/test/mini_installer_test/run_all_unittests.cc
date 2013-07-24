@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/process_util.h"
+#include "base/process/process_iterator.h"
 #include "base/test/test_suite.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"

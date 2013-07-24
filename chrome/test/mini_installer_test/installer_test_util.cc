@@ -6,8 +6,9 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/process.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_result_codes.h"

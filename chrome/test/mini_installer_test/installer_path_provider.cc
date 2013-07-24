@@ -10,7 +10,6 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/test/mini_installer_test/installer_test_util.h"

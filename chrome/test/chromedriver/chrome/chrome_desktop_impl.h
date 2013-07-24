@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
 class AutomationExtension;

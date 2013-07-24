@@ -11,7 +11,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/launch.h"
+#include "base/process/process_iterator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_TEST_UI_UI_TEST_SUITE_H_
 #define CHROME_TEST_UI_UI_TEST_SUITE_H_
 
-#include "base/process.h"
+#include "base/process/process.h"
 #include "chrome/test/base/chrome_test_suite.h"
 
 #if defined(OS_WIN)

@@ -10,7 +10,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/process_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/automation_constants.h"
