@@ -359,6 +359,7 @@ _COPY_PATHS = (
   Path('nacl_irt_*.nexe',
        cond=C.GypNotSet(_DISABLE_NACL)),
   Path('nacl_helper',
+       exe=True,
        optional=True,
        cond=C.GypNotSet(_DISABLE_NACL)),
   Path('resources/'),
