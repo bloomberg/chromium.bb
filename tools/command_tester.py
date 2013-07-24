@@ -423,12 +423,6 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
   else:
     expected_statuses = [int(req_status)]
 
-  # On 32-bit Windows, we cannot catch a signal that occurs in x86-32
-  # untrusted code, so it always appears as a 'normal' exit, which
-  # means that the signal handler does not print a message.
-  if GlobalPlatform == 'win32' and expected_sigtype == 'untrusted':
-    expected_sigtype = 'normal'
-
   if expected_sigtype == 'normal':
     expected_printed_signum = None
   else:
