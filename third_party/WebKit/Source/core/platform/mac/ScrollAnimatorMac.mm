@@ -1026,7 +1026,9 @@ bool ScrollAnimatorMac::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
 
     bool didHandleEvent = m_scrollElasticityController.handleWheelEvent(wheelEvent);
 
-    if (didHandleEvent)
+    // The elasticity controller can return false on a phase end event if rubber banding wasn't in progress.
+    // In this case, the wheel phase must still be handled so that that overlay scroll bars get hidden.
+    if (didHandleEvent || wheelEvent.phase() == PlatformWheelEventPhaseEnded || wheelEvent.phase() == PlatformWheelEventPhaseCancelled)
         handleWheelEventPhase(wheelEvent.phase());
 
     return didHandleEvent;
