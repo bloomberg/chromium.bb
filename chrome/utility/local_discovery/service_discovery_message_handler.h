@@ -6,6 +6,7 @@
 #define CHROME_UTILITY_LOCAL_DISCOVERY_SERVICE_DISCOVERY_MESSAGE_HANDLER_H_
 
 #include <map>
+#include <string>
 
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
@@ -42,6 +43,8 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
  private:
   typedef std::map<uint64, linked_ptr<ServiceWatcher> > ServiceWatchers;
   typedef std::map<uint64, linked_ptr<ServiceResolver> > ServiceResolvers;
+  typedef std::map<uint64, linked_ptr<LocalDomainResolver> >
+      LocalDomainResolvers;
 
   // Lazy initializes ServiceDiscoveryClient.
   bool InitializeThread();
@@ -54,6 +57,9 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
   void OnDestroyWatcher(uint64 id);
   void OnResolveService(uint64 id, const std::string& service_name);
   void OnDestroyResolver(uint64 id);
+  void OnResolveLocalDomain(uint64 id, const std::string& domain,
+                            net::AddressFamily address_family);
+  void OnDestroyLocalDomainResolver(uint64 id);
 
   void InitializeMdns();
   void StartWatcher(uint64 id, const std::string& service_type);
@@ -61,6 +67,9 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
   void DestroyWatcher(uint64 id);
   void ResolveService(uint64 id, const std::string& service_name);
   void DestroyResolver(uint64 id);
+  void ResolveLocalDomain(uint64 id, const std::string& domain,
+                          net::AddressFamily address_family);
+  void DestroyLocalDomainResolver(uint64 id);
 
   // Is called by ServiceWatcher as callback.
   void OnServiceUpdated(uint64 id,
@@ -72,8 +81,14 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
                          ServiceResolver::RequestStatus status,
                          const ServiceDescription& description);
 
+  // Is called by LocalDomainResolver as callback.
+  void OnLocalDomainResolved(uint64 id,
+                             bool success,
+                             const net::IPAddressNumber& address);
+
   ServiceWatchers service_watchers_;
   ServiceResolvers service_resolvers_;
+  LocalDomainResolvers local_domain_resolvers_;
 
   scoped_ptr<net::MDnsClient> mdns_client_;
   scoped_ptr<ServiceDiscoveryClient> service_discovery_client_;
@@ -86,4 +101,3 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
 }  // namespace local_discovery
 
 #endif  // CHROME_UTILITY_LOCAL_DISCOVERY_SERVICE_DISCOVERY_MESSAGE_HANDLER_H_
-

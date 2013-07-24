@@ -19,6 +19,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(local_discovery::ServiceWatcher::UpdateType)
 IPC_ENUM_TRAITS(local_discovery::ServiceResolver::RequestStatus)
+IPC_ENUM_TRAITS(net::AddressFamily)
 
 //------------------------------------------------------------------------------
 // Utility process messages:
@@ -47,6 +48,16 @@ IPC_MESSAGE_CONTROL2(LocalDiscoveryMsg_ResolveService,
 IPC_MESSAGE_CONTROL1(LocalDiscoveryMsg_DestroyResolver,
                      uint64 /* id */)
 
+// Creates a local domain resolver and starts resolving in utility process.
+IPC_MESSAGE_CONTROL3(LocalDiscoveryMsg_ResolveLocalDomain,
+                     uint64 /* id */,
+                     std::string /* domain */,
+                     net::AddressFamily /* address_family */)
+
+// Destroys local domain resolver in utility process.
+IPC_MESSAGE_CONTROL1(LocalDiscoveryMsg_DestroyLocalDomainResolver,
+                     uint64 /* id */)
+
 //------------------------------------------------------------------------------
 // Utility process host messages:
 // These are messages from the utility process to the browser.
@@ -63,3 +74,10 @@ IPC_MESSAGE_CONTROL3(
     uint64 /* id */,
     local_discovery::ServiceResolver::RequestStatus /* status */,
     local_discovery::ServiceDescription /* description */)
+
+// Notifies browser process about local domain resolution results.
+IPC_MESSAGE_CONTROL3(
+    LocalDiscoveryHostMsg_LocalDomainResolverCallback,
+    uint64 /* id */,
+    bool /* success */,
+    net::IPAddressNumber /* ip_address */)

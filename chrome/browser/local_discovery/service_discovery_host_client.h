@@ -57,10 +57,13 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
  private:
   class ServiceWatcherProxy;
   class ServiceResolverProxy;
+  class LocalDomainResolverProxy;
 
   typedef std::map<uint64, ServiceWatcher::UpdatedCallback> WatcherCallbacks;
   typedef std::map<uint64, ServiceResolver::ResolveCompleteCallback>
       ResolverCallbacks;
+  typedef std::map<uint64, LocalDomainResolver::IPAddressCallback>
+      DomainResolverCallbacks;
 
   void StartOnIOThread();
   void ShutdownOnIOThread();
@@ -72,8 +75,12 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
       const ServiceWatcher::UpdatedCallback& callback);
   uint64 RegisterResolverCallback(
       const ServiceResolver::ResolveCompleteCallback& callback);
+  uint64 RegisterLocalDomainResolverCallback(
+      const LocalDomainResolver::IPAddressCallback& callback);
+
   void UnregisterWatcherCallback(uint64 id);
   void UnregisterResolverCallback(uint64 id);
+  void UnregisterLocalDomainResolverCallback(uint64 id);
 
   // IPC Message handlers.
   void OnWatcherCallback(uint64 id,
@@ -82,6 +89,10 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
   void OnResolverCallback(uint64 id,
                           ServiceResolver::RequestStatus status,
                           const ServiceDescription& description);
+  void OnLocalDomainResolverCallback(uint64 id,
+                                     bool success,
+                                     const net::IPAddressNumber& address);
+
 
   // Runs watcher callback on owning thread.
   void RunWatcherCallback(uint64 id,
@@ -91,6 +102,11 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
   void RunResolverCallback(uint64 id,
                            ServiceResolver::RequestStatus status,
                            const ServiceDescription& description);
+  // Runs local domain resolver callback on owning thread.
+  void RunLocalDomainResolverCallback(uint64 id,
+                                      bool success,
+                                      const net::IPAddressNumber& address);
+
 
   base::WeakPtr<content::UtilityProcessHost> utility_host_;
 
@@ -98,6 +114,7 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
   uint64 current_id_;
   WatcherCallbacks service_watcher_callbacks_;
   ResolverCallbacks service_resolver_callbacks_;
+  DomainResolverCallbacks domain_resolver_callbacks_;
   scoped_refptr<base::TaskRunner> callback_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryHostClient);

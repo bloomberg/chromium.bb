@@ -4,6 +4,8 @@
 
 #include "chrome/utility/local_discovery/service_discovery_message_handler.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "chrome/utility/local_discovery/service_discovery_client_impl.h"
@@ -72,6 +74,7 @@ class SocketFactory : public net::PlatformSocketFactory {
   SOCKET socket_v4_;
   SOCKET socket_v6_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SocketFactory);
 };
 
@@ -131,6 +134,12 @@ void SendServiceUpdated(uint64 id, ServiceWatcher::UpdateType update,
       new LocalDiscoveryHostMsg_WatcherCallback(id, update, name));
 }
 
+void SendLocalDomainResolved(uint64 id, bool success,
+                             const net::IPAddressNumber& address) {
+  content::UtilityThread::Get()->Send(
+      new LocalDiscoveryHostMsg_LocalDomainResolverCallback(
+          id, success, address));
+}
 
 }  // namespace
 
@@ -187,6 +196,10 @@ bool ServiceDiscoveryMessageHandler::OnMessageReceived(
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_DestroyWatcher, OnDestroyWatcher)
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_ResolveService, OnResolveService)
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_DestroyResolver, OnDestroyResolver)
+    IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_ResolveLocalDomain,
+                        OnResolveLocalDomain)
+    IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_DestroyLocalDomainResolver,
+                        OnDestroyLocalDomainResolver)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -233,6 +246,21 @@ void ServiceDiscoveryMessageHandler::OnDestroyResolver(uint64 id) {
   PostTask(FROM_HERE,
            base::Bind(&ServiceDiscoveryMessageHandler::DestroyResolver,
                       base::Unretained(this), id));
+}
+
+void ServiceDiscoveryMessageHandler::OnResolveLocalDomain(
+    uint64 id, const std::string& domain,
+    net::AddressFamily address_family) {
+    PostTask(FROM_HERE,
+           base::Bind(&ServiceDiscoveryMessageHandler::ResolveLocalDomain,
+                      base::Unretained(this), id, domain, address_family));
+}
+
+void ServiceDiscoveryMessageHandler::OnDestroyLocalDomainResolver(uint64 id) {
+  PostTask(FROM_HERE,
+           base::Bind(
+               &ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver,
+               base::Unretained(this), id));
 }
 
 void ServiceDiscoveryMessageHandler::StartWatcher(
@@ -287,6 +315,29 @@ void ServiceDiscoveryMessageHandler::DestroyResolver(uint64 id) {
   service_resolvers_.erase(id);
 }
 
+void ServiceDiscoveryMessageHandler::ResolveLocalDomain(
+    uint64 id,
+    const std::string& domain,
+    net::AddressFamily address_family) {
+  if (!service_discovery_client_)
+    return;
+  DCHECK(!ContainsKey(local_domain_resolvers_, id));
+  scoped_ptr<LocalDomainResolver> resolver(
+      service_discovery_client_->CreateLocalDomainResolver(
+          domain, address_family,
+          base::Bind(&ServiceDiscoveryMessageHandler::OnLocalDomainResolved,
+                     base::Unretained(this), id)));
+  resolver->Start();
+  local_domain_resolvers_[id].reset(resolver.release());
+}
+
+void ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver(uint64 id) {
+  if (!service_discovery_client_)
+    return;
+  DCHECK(ContainsKey(local_domain_resolvers_, id));
+  local_domain_resolvers_.erase(id);
+}
+
 void ServiceDiscoveryMessageHandler::OnServiceUpdated(
     uint64 id,
     ServiceWatcher::UpdateType update,
@@ -305,5 +356,14 @@ void ServiceDiscoveryMessageHandler::OnServiceResolved(
       base::Bind(&SendServiceResolved, id, status, description));
 }
 
-}  // namespace local_discovery
+void ServiceDiscoveryMessageHandler::OnLocalDomainResolved(
+    uint64 id,
+    bool success,
+    const net::IPAddressNumber& address) {
+  DCHECK(service_discovery_client_);
+  utility_task_runner_->PostTask(FROM_HERE, base::Bind(&SendLocalDomainResolved,
+                                                       id, success, address));
+}
 
+
+}  // namespace local_discovery

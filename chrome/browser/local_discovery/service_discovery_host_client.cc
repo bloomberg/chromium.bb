@@ -87,6 +87,41 @@ class ServiceDiscoveryHostClient::ServiceResolverProxy
   bool started_;
 };
 
+class ServiceDiscoveryHostClient::LocalDomainResolverProxy
+    : public LocalDomainResolver {
+ public:
+  LocalDomainResolverProxy(ServiceDiscoveryHostClient* host,
+                       const std::string& domain,
+                       net::AddressFamily address_family,
+                       const LocalDomainResolver::IPAddressCallback& callback)
+      : host_(host),
+        domain_(domain),
+        address_family_(address_family),
+        id_(host->RegisterLocalDomainResolverCallback(callback)),
+        started_(false) {
+  }
+
+  virtual ~LocalDomainResolverProxy() {
+    host_->UnregisterLocalDomainResolverCallback(id_);
+    if (started_)
+      host_->Send(new LocalDiscoveryMsg_DestroyLocalDomainResolver(id_));
+  }
+
+  virtual void Start() OVERRIDE {
+    DCHECK(!started_);
+    host_->Send(new LocalDiscoveryMsg_ResolveLocalDomain(id_, domain_,
+                                                         address_family_));
+    started_ = true;
+  }
+
+ private:
+  scoped_refptr<ServiceDiscoveryHostClient> host_;
+  std::string domain_;
+  net::AddressFamily address_family_;
+  const uint64 id_;
+  bool started_;
+};
+
 ServiceDiscoveryHostClient::ServiceDiscoveryHostClient() : current_id_(0) {
   callback_runner_ = base::MessageLoop::current()->message_loop_proxy();
 }
@@ -118,8 +153,9 @@ ServiceDiscoveryHostClient::CreateLocalDomainResolver(
     const std::string& domain,
     net::AddressFamily address_family,
     const LocalDomainResolver::IPAddressCallback& callback) {
-  NOTIMPLEMENTED();  // TODO(noamsml): Multiprocess domain resolver
-  return scoped_ptr<LocalDomainResolver>();
+  DCHECK(CalledOnValidThread());
+  return scoped_ptr<LocalDomainResolver>(new LocalDomainResolverProxy(
+      this, domain, address_family, callback));
 }
 
 uint64 ServiceDiscoveryHostClient::RegisterWatcherCallback(
@@ -138,6 +174,14 @@ uint64 ServiceDiscoveryHostClient::RegisterResolverCallback(
   return current_id_;
 }
 
+uint64 ServiceDiscoveryHostClient::RegisterLocalDomainResolverCallback(
+    const LocalDomainResolver::IPAddressCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!ContainsKey(domain_resolver_callbacks_, current_id_ + 1));
+  domain_resolver_callbacks_[++current_id_] = callback;
+  return current_id_;
+}
+
 void ServiceDiscoveryHostClient::UnregisterWatcherCallback(uint64 id) {
   DCHECK(CalledOnValidThread());
   DCHECK(ContainsKey(service_watcher_callbacks_, id));
@@ -148,6 +192,13 @@ void ServiceDiscoveryHostClient::UnregisterResolverCallback(uint64 id) {
   DCHECK(CalledOnValidThread());
   DCHECK(ContainsKey(service_resolver_callbacks_, id));
   service_resolver_callbacks_.erase(id);
+}
+
+void ServiceDiscoveryHostClient::UnregisterLocalDomainResolverCallback(
+    uint64 id) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(ContainsKey(domain_resolver_callbacks_, id));
+  domain_resolver_callbacks_.erase(id);
 }
 
 void ServiceDiscoveryHostClient::Start() {
@@ -205,6 +256,8 @@ bool ServiceDiscoveryHostClient::OnMessageReceived(
                         OnWatcherCallback)
     IPC_MESSAGE_HANDLER(LocalDiscoveryHostMsg_ResolverCallback,
                         OnResolverCallback)
+    IPC_MESSAGE_HANDLER(LocalDiscoveryHostMsg_LocalDomainResolverCallback,
+                        OnLocalDomainResolverCallback)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -232,6 +285,17 @@ void ServiceDiscoveryHostClient::OnResolverCallback(
                  status, description));
 }
 
+void ServiceDiscoveryHostClient::OnLocalDomainResolverCallback(
+    uint64 id,
+    bool success,
+    const net::IPAddressNumber& ip_address) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  callback_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ServiceDiscoveryHostClient::RunLocalDomainResolverCallback,
+                 this, id, success, ip_address));
+}
+
 void ServiceDiscoveryHostClient::RunWatcherCallback(
     uint64 id,
     ServiceWatcher::UpdateType update,
@@ -250,6 +314,16 @@ void ServiceDiscoveryHostClient::RunResolverCallback(
   ResolverCallbacks::iterator it = service_resolver_callbacks_.find(id);
   if (it != service_resolver_callbacks_.end() && !it->second.is_null())
     it->second.Run(status, description);
+}
+
+void ServiceDiscoveryHostClient::RunLocalDomainResolverCallback(
+    uint64 id,
+    bool success,
+    const net::IPAddressNumber& ip_address) {
+  DCHECK(CalledOnValidThread());
+  DomainResolverCallbacks::iterator it = domain_resolver_callbacks_.find(id);
+  if (it != domain_resolver_callbacks_.end() && !it->second.is_null())
+    it->second.Run(success, ip_address);
 }
 
 }  // namespace local_discovery
