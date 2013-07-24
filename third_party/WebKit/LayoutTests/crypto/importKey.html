@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests cypto.subtle.importKey.");
+
+jsTestIsAsync = true;
+
+function asciiToArrayBuffer(str)
+{
+    var chars = [];
+    for (var i = 0; i < str.length; ++i)
+        chars.push(str.charCodeAt(i));
+    return new Uint8Array(chars);
+}
+
+// Each sub-test run in this file is asynchronous. Chaining them together
+// manually leads to very unreadable code, due to having closures within
+// closures within closures. Instead of doing that, each subtest calls
+// "startNextTest()" once it has completed.
+
+currentTestIndex = 0;
+
+function startNextTest()
+{
+    var currentTest = allTests[currentTestIndex++];
+
+    if (!currentTest) {
+        finishJSTest();
+        return;
+    }
+
+    currentTest();
+}
+
+function rejectHandler(value)
+{
+    debug("    rejected with value of " + value);
+    startNextTest();
+}
+
+function failHandler(value)
+{
+    testFailed(value);
+    startNextTest();
+}
+
+allTests = [
+    function()
+    {
+        keyFormat = "raw";
+        data = asciiToArrayBuffer("private");
+        algorithm = {name: "Sha-256"};
+        extractable = true;
+        // Note there are duplicates
+        keyUsages = ['encrypt', 'encrypt', 'encrypt', 'sign'];
+
+        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
+        function(value) {
+            key = value;
+            shouldBe("key.type", "'private'")
+            shouldBe("key.extractable", "true")
+            shouldBe("key.algorithm.name", "'SHA-256'")
+            shouldBe("key.usages.join(',')", "'encrypt,sign'")
+
+            startNextTest();
+        }, failHandler);
+    },
+
+    // Same test as above, but with an keyUsages.
+    function()
+    {
+        keyFormat = "raw";
+        data = asciiToArrayBuffer("private");
+        algorithm = {name: "Sha-256"};
+        extractable = true;
+        keyUsages = [];
+
+        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
+        function(value) {
+            key = value;
+            shouldBe("key.type", "'private'")
+            shouldBe("key.extractable", "true")
+            shouldBe("key.algorithm.name", "'SHA-256'")
+            shouldBe("key.usages.join(',')", "''")
+
+            startNextTest();
+        }, failHandler);
+    },
+
+    // Same test as above, but with extractable = false.
+    function()
+    {
+        keyFormat = "raw";
+        data = asciiToArrayBuffer("private");
+        algorithm = {name: "Sha-256"};
+        extractable = false;
+        keyUsages = [];
+
+        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
+        function(value) {
+            key = value;
+            shouldBe("key.type", "'private'")
+            shouldBe("key.extractable", "false")
+            shouldBe("key.algorithm.name", "'SHA-256'")
+            shouldBe("key.usages.join(',')", "''")
+
+            startNextTest();
+        }, failHandler);
+    },
+
+    // Same test as above, but with key.type of public.
+    function()
+    {
+        keyFormat = "raw";
+        data = asciiToArrayBuffer("public");
+        algorithm = {name: "Sha-256"};
+        extractable = false;
+        keyUsages = [];
+
+        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
+        function(value) {
+            key = value;
+            shouldBe("key.type", "'public'")
+            shouldBe("key.extractable", "false")
+            shouldBe("key.algorithm.name", "'SHA-256'")
+            shouldBe("key.usages.join(',')", "''")
+
+            startNextTest();
+        }, failHandler);
+    },
+
+    // Same test as above, but with keyFormat = spki
+    function()
+    {
+        keyFormat = "spki";
+        data = asciiToArrayBuffer("public");
+        algorithm = {name: "Sha-256"};
+        extractable = false;
+        keyUsages = [];
+
+        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
+        function(value) {
+            key = value;
+            shouldBe("key.type", "'public'")
+            shouldBe("key.extractable", "false")
+            shouldBe("key.algorithm.name", "'SHA-256'")
+            shouldBe("key.usages.join(',')", "''")
+
+            startNextTest();
+        }, failHandler);
+    },
+
+    function()
+    {
+        keyFormat = "spki";
+        data = asciiToArrayBuffer("reject");
+        algorithm = {name: "Sha-256"};
+        extractable = false;
+        keyUsages = [];
+
+        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
+            failHandler,
+            function(value) {
+                debug("rejected with " + value);
+                startNextTest();
+            });
+    },
+
+    function()
+    {
+        keyFormat = "spki";
+        data = asciiToArrayBuffer("throw");
+        algorithm = {name: "Sha-256"};
+        extractable = false;
+        keyUsages = [];
+
+        shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages)");
+        startNextTest();
+    },
+
+    function()
+    {
+        keyFormat = "raw";
+        data = asciiToArrayBuffer("private");
+        algorithm = {name: 'sha-256'};
+        extractable = true;
+
+        // Note contains duplicates and invalid entries.
+        keyUsages = [];
+
+        // Invalid format.
+        shouldThrow("crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages)");
+
+        // Invalid key usage.
+        shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN'])");
+
+        // Undefined key usage.
+        // FIXME: http://crbug.com/262383
+        //shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, undefined)");
+
+        startNextTest();
+    },
+
+];
+
+// Begin!
+startNextTest();
+</script>
+
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

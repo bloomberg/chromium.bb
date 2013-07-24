@@ -1,0 +1,33 @@
+Tests cypto.subtle.importKey.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS key.type is 'private'
+PASS key.extractable is true
+PASS key.algorithm.name is 'SHA-256'
+PASS key.usages.join(',') is 'encrypt,sign'
+PASS key.type is 'private'
+PASS key.extractable is true
+PASS key.algorithm.name is 'SHA-256'
+PASS key.usages.join(',') is ''
+PASS key.type is 'private'
+PASS key.extractable is false
+PASS key.algorithm.name is 'SHA-256'
+PASS key.usages.join(',') is ''
+PASS key.type is 'public'
+PASS key.extractable is false
+PASS key.algorithm.name is 'SHA-256'
+PASS key.usages.join(',') is ''
+PASS key.type is 'public'
+PASS key.extractable is false
+PASS key.algorithm.name is 'SHA-256'
+PASS key.usages.join(',') is ''
+rejected with null
+PASS crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages) threw exception TypeError: Type error.
+PASS crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN']) threw exception TypeError: Type error.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

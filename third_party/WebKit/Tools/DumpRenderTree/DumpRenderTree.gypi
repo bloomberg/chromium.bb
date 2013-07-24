@@ -25,6 +25,8 @@
             'chromium/TestRunner/src/MockSpellCheck.h',
             'chromium/TestRunner/src/MockWebAudioDevice.cpp',
             'chromium/TestRunner/src/MockWebAudioDevice.h',
+            'chromium/TestRunner/src/MockWebCrypto.cpp',
+            'chromium/TestRunner/src/MockWebCrypto.h',
             'chromium/TestRunner/src/MockWebMediaStreamCenter.cpp',
             'chromium/TestRunner/src/MockWebMediaStreamCenter.h',
             'chromium/TestRunner/src/MockWebMIDIAccessor.cpp',

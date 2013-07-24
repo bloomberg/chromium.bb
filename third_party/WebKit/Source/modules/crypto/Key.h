@@ -46,10 +46,18 @@ class Key : public ScriptWrappable, public RefCounted<Key> {
 public:
     static PassRefPtr<Key> create(const WebKit::WebCryptoKey& key) { return adoptRef(new Key(key)); }
 
+    ~Key();
+
     String type() const;
     bool extractable() const;
     Algorithm* algorithm();
     Vector<String> usages() const;
+
+    static bool parseFormat(const String&, WebKit::WebCryptoKeyFormat&);
+
+    // Parses KeyUsage strings to a WebCryptoKeyUsageMask. If any element is
+    // unrecognized, returns false.
+    static bool parseUsageMask(const Vector<String>&, WebKit::WebCryptoKeyUsageMask&);
 
 protected:
     explicit Key(const WebKit::WebCryptoKey&);

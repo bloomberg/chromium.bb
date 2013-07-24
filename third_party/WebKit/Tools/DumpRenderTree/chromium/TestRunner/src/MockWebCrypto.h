@@ -28,11 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    NoInterfaceObject,
-] interface Key {
-    readonly attribute DOMString type;
-    readonly attribute boolean extractable;
-    readonly attribute Algorithm algorithm;
-    readonly attribute DOMString[] usages;
+#ifndef MockWebCrypto_h
+#define MockWebCrypto_h
+
+#include "TestCommon.h"
+#include "public/platform/WebCrypto.h"
+
+namespace WebTestRunner {
+
+class MockWebCrypto : public WebKit::WebCrypto {
+public:
+    static MockWebCrypto* get();
+
+    virtual void digest(const WebKit::WebCryptoAlgorithm&, WebKit::WebCryptoOperationResult&) OVERRIDE;
+    virtual void importKey(WebKit::WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebKit::WebCryptoAlgorithm&, bool extractable, WebKit::WebCryptoKeyUsageMask, WebKit::WebCryptoKeyOperationResult&) OVERRIDE;
 };
+
+} // namespace WebTestRunner
+
+#endif // MockWebCrypto_h

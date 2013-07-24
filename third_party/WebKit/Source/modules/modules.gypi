@@ -215,6 +215,8 @@
       'crypto/DOMWindowCrypto.h',
       'crypto/Key.cpp',
       'crypto/Key.h',
+      'crypto/KeyOperation.cpp',
+      'crypto/KeyOperation.h',
       'crypto/NormalizeAlgorithm.cpp',
       'crypto/NormalizeAlgorithm.h',
       'crypto/SubtleCrypto.cpp',

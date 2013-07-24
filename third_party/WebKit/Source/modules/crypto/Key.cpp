@@ -51,31 +51,47 @@ const char* keyTypeToString(WebKit::WebCryptoKeyType type)
     return 0;
 }
 
+struct KeyUsageMapping {
+    WebKit::WebCryptoKeyUsage value;
+    const char* const name;
+};
+
+const KeyUsageMapping keyUsageMappings[] = {
+    { WebKit::WebCryptoKeyUsageEncrypt, "encrypt" },
+    { WebKit::WebCryptoKeyUsageDecrypt, "decrypt" },
+    { WebKit::WebCryptoKeyUsageSign, "sign" },
+    { WebKit::WebCryptoKeyUsageVerify, "verify" },
+    { WebKit::WebCryptoKeyUsageDeriveKey, "deriveKey" },
+    { WebKit::WebCryptoKeyUsageWrapKey, "wrapKey" },
+    { WebKit::WebCryptoKeyUsageUnwrapKey, "unwrapKey" },
+};
+
+COMPILE_ASSERT(WebKit::EndOfWebCryptoKeyUsage == (1 << 6) + 1, update_keyUsageMappings);
+
 const char* keyUsageToString(WebKit::WebCryptoKeyUsage usage)
 {
-    switch (usage) {
-    case WebKit::WebCryptoKeyUsageEncrypt:
-        return "encrypt";
-    case WebKit::WebCryptoKeyUsageDecrypt:
-        return "decrypt";
-    case WebKit::WebCryptoKeyUsageSign:
-        return "sign";
-    case WebKit::WebCryptoKeyUsageVerify:
-        return "verify";
-    case WebKit::WebCryptoKeyUsageDeriveKey:
-        return "deriveKey";
-    case WebKit::WebCryptoKeyUsageWrapKey:
-        return "wrapKey";
-    case WebKit::WebCryptoKeyUsageUnwrapKey:
-        return "unwrapKey";
-    case WebKit::EndOfWebCryptoKeyUsage:
-        break;
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
+        if (keyUsageMappings[i].value == usage)
+            return keyUsageMappings[i].name;
     }
     ASSERT_NOT_REACHED();
     return 0;
 }
 
+WebKit::WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString)
+{
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
+        if (keyUsageMappings[i].name == usageString)
+            return keyUsageMappings[i].value;
+    }
+    return 0;
+}
+
 } // namespace
+
+Key::~Key()
+{
+}
 
 Key::Key(const WebKit::WebCryptoKey& key)
     : m_key(key)
@@ -107,14 +123,47 @@ Algorithm* Key::algorithm()
 Vector<String> Key::usages() const
 {
     Vector<String> result;
-
-    // The WebCryptoKeyUsage values are consecutive powers of 2. Test each one in order.
-    for (int i = 0; (1 << i) < WebKit::EndOfWebCryptoKeyUsage; ++i) {
-        WebKit::WebCryptoKeyUsage usage = static_cast<WebKit::WebCryptoKeyUsage>(1 << i);
+    for (int i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
+        WebKit::WebCryptoKeyUsage usage = keyUsageMappings[i].value;
         if (m_key.usages() & usage)
             result.append(ASCIILiteral(keyUsageToString(usage)));
     }
     return result;
+}
+
+bool Key::parseFormat(const String& formatString, WebKit::WebCryptoKeyFormat& format)
+{
+    // There are few enough values that testing serially is fast enough.
+    if (formatString == "raw") {
+        format = WebKit::WebCryptoKeyFormatRaw;
+        return true;
+    }
+    if (formatString == "pkcs8") {
+        format = WebKit::WebCryptoKeyFormatPkcs8;
+        return true;
+    }
+    if (formatString == "spki") {
+        format = WebKit::WebCryptoKeyFormatSpki;
+        return true;
+    }
+    if (formatString == "jwk") {
+        format = WebKit::WebCryptoKeyFormatJwk;
+        return true;
+    }
+
+    return false;
+}
+
+bool Key::parseUsageMask(const Vector<String>& usages, WebKit::WebCryptoKeyUsageMask& mask)
+{
+    mask = 0;
+    for (size_t i = 0; i < usages.size(); ++i) {
+        WebKit::WebCryptoKeyUsageMask usage = keyUsageStringToMask(usages[i]);
+        if (!usage)
+            return false;
+        mask |= usage;
+    }
+    return true;
 }
 
 } // namespace WebCore

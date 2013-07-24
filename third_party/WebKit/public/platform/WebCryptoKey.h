@@ -58,6 +58,13 @@ enum WebCryptoKeyUsage {
 // A bitfield of WebCryptoKeyUsage
 typedef int WebCryptoKeyUsageMask;
 
+enum WebCryptoKeyFormat {
+    WebCryptoKeyFormatRaw,
+    WebCryptoKeyFormatPkcs8,
+    WebCryptoKeyFormatSpki,
+    WebCryptoKeyFormatJwk,
+};
+
 class WebCryptoAlgorithm;
 class WebCryptoKeyPrivate;
 class WebCryptoKeyHandle;

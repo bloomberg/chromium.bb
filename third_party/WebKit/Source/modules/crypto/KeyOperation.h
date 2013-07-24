@@ -28,11 +28,61 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    NoInterfaceObject,
-] interface Key {
-    readonly attribute DOMString type;
-    readonly attribute boolean extractable;
-    readonly attribute Algorithm algorithm;
-    readonly attribute DOMString[] usages;
+#ifndef KeyOperation_h
+#define KeyOperation_h
+
+#include "bindings/v8/ScriptObject.h"
+#include "public/platform/WebCrypto.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
+
+namespace WebKit {
+class WebCryptoKeyOperation;
+class WebCryptoKey;
+}
+
+namespace WebCore {
+
+class ExceptionState;
+class ScriptPromiseResolver;
+
+typedef int ExceptionCode;
+
+class KeyOperation : public WebKit::WebCryptoKeyOperationResultPrivate, public ThreadSafeRefCounted<KeyOperation> {
+public:
+    static PassRefPtr<KeyOperation> create();
+
+    ~KeyOperation();
+
+    // Implementation of WebCryptoKeyOperationResultPrivate.
+    virtual void initializationFailed() OVERRIDE;
+    virtual void initializationSucceeded(WebKit::WebCryptoKeyOperation*) OVERRIDE;
+    virtual void completeWithError() OVERRIDE;
+    virtual void completeWithKey(const WebKit::WebCryptoKey&) OVERRIDE;
+    virtual void ref() OVERRIDE;
+    virtual void deref() OVERRIDE;
+
+    ScriptObject returnValue(ExceptionState&);
+
+private:
+    enum State {
+        Initializing,
+        InProgress,
+        Done,
+    };
+
+    KeyOperation();
+
+    ScriptPromiseResolver* promiseResolver();
+
+    State m_state;
+    WebKit::WebCryptoKeyOperation* m_impl;
+    ExceptionCode m_initializationError;
+    RefPtr<ScriptPromiseResolver> m_promiseResolver;
 };
+
+} // namespace WebCore
+
+#endif

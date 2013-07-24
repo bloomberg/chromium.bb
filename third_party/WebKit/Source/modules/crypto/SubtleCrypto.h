@@ -31,6 +31,7 @@
 #ifndef SubtleCrypto_h
 #define SubtleCrypto_h
 
+#include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -52,6 +53,8 @@ public:
     // Note that this is not named "verify" because when compiling on Mac that expands to a macro and breaks.
     PassRefPtr<CryptoOperation> verifySignature(const Dictionary&, ExceptionState&);
     PassRefPtr<CryptoOperation> digest(const Dictionary&, ExceptionState&);
+
+    ScriptObject importKey(const String&, ArrayBufferView*, const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);
 
 private:
     SubtleCrypto();

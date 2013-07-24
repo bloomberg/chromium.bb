@@ -43,40 +43,25 @@
 
 namespace WebCore {
 
-CryptoOperation::~CryptoOperation()
-{
-    abortImpl();
-    ASSERT(!m_impl);
-}
-
-PassRefPtr<CryptoOperation> CryptoOperation::create(const WebKit::WebCryptoAlgorithm& algorithm, ExceptionState* es)
-{
-    return adoptRef(new CryptoOperation(algorithm, es));
-}
-
-CryptoOperation::CryptoOperation(const WebKit::WebCryptoAlgorithm& algorithm, ExceptionState* es)
-    : m_algorithm(algorithm)
+CryptoOperationImpl::CryptoOperationImpl()
+    : m_state(Initializing)
     , m_impl(0)
-    , m_exceptionState(es)
-    , m_state(Initializing)
+    , m_initializationError(0)
 {
-    ASSERT(es);
-    ScriptWrappable::init(this);
 }
 
-CryptoOperation* CryptoOperation::process(ArrayBuffer* data)
+bool CryptoOperationImpl::throwInitializationError(ExceptionState& es)
 {
-    process(static_cast<unsigned char*>(data->data()), data->byteLength());
-    return this;
+    ASSERT(m_state != Initializing);
+
+    if (m_initializationError) {
+        es.throwDOMException(m_initializationError);
+        return true;
+    }
+    return false;
 }
 
-CryptoOperation* CryptoOperation::process(ArrayBufferView* data)
-{
-    process(static_cast<unsigned char*>(data->baseAddress()), data->byteLength());
-    return this;
-}
-
-ScriptObject CryptoOperation::finish()
+ScriptObject CryptoOperationImpl::finish()
 {
     switch (m_state) {
     case Initializing:
@@ -99,68 +84,49 @@ ScriptObject CryptoOperation::finish()
     return promiseResolver()->promise();
 }
 
-ScriptObject CryptoOperation::abort()
-{
-    if (abortImpl())
-        promiseResolver()->reject(ScriptValue::createNull());
-    return promiseResolver()->promise();
-}
-
-Algorithm* CryptoOperation::algorithm()
-{
-    if (!m_algorithmNode)
-        m_algorithmNode = Algorithm::create(m_algorithm);
-    return m_algorithmNode.get();
-}
-
-void CryptoOperation::initializationFailed()
+void CryptoOperationImpl::initializationFailed()
 {
     ASSERT(m_state == Initializing);
 
-    m_exceptionState->throwDOMException(NotSupportedError);
-
-    m_exceptionState = 0;
+    m_initializationError = NotSupportedError;
     m_state = Done;
 }
 
-void CryptoOperation::initializationSucceded(WebKit::WebCryptoOperation* operationImpl)
+void CryptoOperationImpl::initializationSucceeded(WebKit::WebCryptoOperation* operationImpl)
 {
     ASSERT(m_state == Initializing);
     ASSERT(operationImpl);
     ASSERT(!m_impl);
 
-    m_exceptionState = 0;
     m_impl = operationImpl;
     m_state = Processing;
 }
 
-void CryptoOperation::completeWithError()
+void CryptoOperationImpl::completeWithError()
 {
     ASSERT(m_state == Processing || m_state == Finishing);
 
     m_impl = 0;
     m_state = Done;
-
     promiseResolver()->reject(ScriptValue::createNull());
 }
 
-void CryptoOperation::completeWithArrayBuffer(const WebKit::WebArrayBuffer& buffer)
+void CryptoOperationImpl::completeWithArrayBuffer(const WebKit::WebArrayBuffer& buffer)
 {
     ASSERT(m_state == Processing || m_state == Finishing);
 
     m_impl = 0;
     m_state = Done;
-
     promiseResolver()->fulfill(PassRefPtr<ArrayBuffer>(buffer));
 }
 
-void CryptoOperation::process(const unsigned char* bytes, size_t size)
+void CryptoOperationImpl::process(const void* bytes, size_t size)
 {
     switch (m_state) {
     case Initializing:
         ASSERT_NOT_REACHED();
     case Processing:
-        m_impl->process(bytes, size);
+        m_impl->process(reinterpret_cast<const unsigned char*>(bytes), size);
         break;
     case Finishing:
     case Done:
@@ -168,7 +134,7 @@ void CryptoOperation::process(const unsigned char* bytes, size_t size)
     }
 }
 
-bool CryptoOperation::abortImpl()
+ScriptObject CryptoOperationImpl::abort()
 {
     switch (m_state) {
     case Initializing:
@@ -180,20 +146,95 @@ bool CryptoOperation::abortImpl()
         m_state = Done;
         m_impl->abort();
         m_impl = 0;
-        return true;
+        promiseResolver()->reject(ScriptValue::createNull());
     case Done:
         ASSERT(!m_impl);
         break;
     }
 
-    return false;
+    return promiseResolver()->promise();
 }
 
-ScriptPromiseResolver* CryptoOperation::promiseResolver()
+void CryptoOperationImpl::detach()
+{
+    switch (m_state) {
+    case Initializing:
+        ASSERT_NOT_REACHED();
+        break;
+    case Processing:
+        // If the operation has not been finished yet, it has no way of being
+        // finished now that the CryptoOperation is gone.
+        m_state = Done;
+        m_impl->abort();
+        m_impl = 0;
+    case Finishing:
+    case Done:
+        break;
+    }
+}
+
+void CryptoOperationImpl::ref()
+{
+    ThreadSafeRefCounted<CryptoOperationImpl>::ref();
+}
+
+void CryptoOperationImpl::deref()
+{
+    ThreadSafeRefCounted<CryptoOperationImpl>::deref();
+}
+
+ScriptPromiseResolver* CryptoOperationImpl::promiseResolver()
 {
     if (!m_promiseResolver)
         m_promiseResolver = ScriptPromiseResolver::create();
     return m_promiseResolver.get();
+}
+
+CryptoOperation::~CryptoOperation()
+{
+    m_impl->detach();
+}
+
+PassRefPtr<CryptoOperation> CryptoOperation::create(const WebKit::WebCryptoAlgorithm& algorithm, CryptoOperationImpl* impl)
+{
+    return adoptRef(new CryptoOperation(algorithm, impl));
+}
+
+CryptoOperation::CryptoOperation(const WebKit::WebCryptoAlgorithm& algorithm, CryptoOperationImpl* impl)
+    : m_algorithm(algorithm)
+    , m_impl(impl)
+{
+    ASSERT(impl);
+    ScriptWrappable::init(this);
+}
+
+CryptoOperation* CryptoOperation::process(ArrayBuffer* data)
+{
+    m_impl->process(data->data(), data->byteLength());
+    return this;
+}
+
+CryptoOperation* CryptoOperation::process(ArrayBufferView* data)
+{
+    m_impl->process(data->baseAddress(), data->byteLength());
+    return this;
+}
+
+ScriptObject CryptoOperation::finish()
+{
+    return m_impl->finish();
+}
+
+ScriptObject CryptoOperation::abort()
+{
+    return m_impl->abort();
+}
+
+Algorithm* CryptoOperation::algorithm()
+{
+    if (!m_algorithmNode)
+        m_algorithmNode = Algorithm::create(m_algorithm);
+    return m_algorithmNode.get();
 }
 
 } // namespace WebCore

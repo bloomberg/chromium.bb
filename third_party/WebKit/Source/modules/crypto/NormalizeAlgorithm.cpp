@@ -189,6 +189,28 @@ PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseAlgorithmParams(const Dictiona
     return nullptr;
 }
 
+const AlgorithmInfo* algorithmInfo(const Dictionary& raw, ExceptionState& es)
+{
+    String algorithmName;
+    if (!raw.get("name", algorithmName)) {
+        es.throwDOMException(NotSupportedError);
+        return 0;
+    }
+
+    if (!algorithmName.containsOnlyASCII()) {
+        es.throwDOMException(SyntaxError);
+        return 0;
+    }
+
+    const AlgorithmInfo* info = AlgorithmRegistry::lookupAlgorithmByName(algorithmName);
+    if (!info) {
+        es.throwDOMException(NotSupportedError);
+        return 0;
+    }
+
+    return info;
+}
+
 } // namespace
 
 // FIXME: Throw the correct exception types!
@@ -196,22 +218,9 @@ PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseAlgorithmParams(const Dictiona
 // http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
 bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::WebCryptoAlgorithm& algorithm, ExceptionState& es)
 {
-    String algorithmName;
-    if (!raw.get("name", algorithmName)) {
-        es.throwDOMException(NotSupportedError);
+    const AlgorithmInfo* info = algorithmInfo(raw, es);
+    if (!info)
         return false;
-    }
-
-    if (!algorithmName.containsOnlyASCII()) {
-        es.throwDOMException(SyntaxError);
-        return false;
-    }
-
-    const AlgorithmInfo* info = AlgorithmRegistry::lookupAlgorithmByName(algorithmName);
-    if (!info) {
-        es.throwDOMException(NotSupportedError);
-        return false;
-    }
 
     if (info->paramsForOperation[op] == UnsupportedOp) {
         es.throwDOMException(NotSupportedError);
@@ -227,6 +236,16 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::We
     }
 
     algorithm = WebKit::WebCryptoAlgorithm(info->algorithmId, info->algorithmName, params.release());
+    return true;
+}
+
+bool normalizeAlgorithmForImportKey(const Dictionary& raw, WebKit::WebCryptoAlgorithm& algorithm, ExceptionState& es)
+{
+    const AlgorithmInfo* info = algorithmInfo(raw, es);
+    if (!info)
+        return false;
+
+    algorithm = WebKit::WebCryptoAlgorithm(info->algorithmId, info->algorithmName, nullptr);
     return true;
 }
 

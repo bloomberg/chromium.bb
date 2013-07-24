@@ -31,8 +31,6 @@
 #ifndef NormalizeAlgorithm_h
 #define NormalizeAlgorithm_h
 
-#include "wtf/Assertions.h"
-
 namespace WebKit { class WebCryptoAlgorithm; }
 
 namespace WebCore {
@@ -55,8 +53,9 @@ enum AlgorithmOperation {
 };
 
 // Normalizes an algorithm identifier (dictionary) into a WebCryptoAlgorithm. If
-// normalization fails then returns false and sets |es|.
+// normalization fails then returns false and sets the ExceptionState.
 bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, WebKit::WebCryptoAlgorithm&, ExceptionState&) WARN_UNUSED_RETURN;
+bool normalizeAlgorithmForImportKey(const Dictionary&, WebKit::WebCryptoAlgorithm&, ExceptionState&) WARN_UNUSED_RETURN;
 
 } // namespace WebCore
 

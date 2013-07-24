@@ -1729,4 +1729,7 @@ crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.
 
 crbug.com/263991 [ Win Debug ] editing/selection/fake-drag.html [ Failure Pass ]
 
+# Part of a 2-sided patch; re-enabled immediately after chromium side lands.
+Bug(eroman) crypto/  [ Skip ]
+
 crbug.com/264021 [ Linux ] fast/forms/placeholder-position.html [ ImageOnlyFailure Pass ]
