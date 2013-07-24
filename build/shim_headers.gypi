@@ -20,6 +20,9 @@
     'include_dirs+++': [
       '<(shim_headers_path)',
     ],
+    'include_dirs++++': [
+      '<(shim_headers_path)',
+    ],
   },
   'actions': [
     {
