@@ -221,7 +221,8 @@ void Performance::addResourceTiming(const ResourceTimingInfo& info, Document* in
     if (!allowRedirectDetails) {
         ResourceLoadTiming* finalTiming = finalResponse.resourceLoadTiming();
         ASSERT(finalTiming);
-        startTime = finalTiming->requestTime;
+        if (finalTiming)
+            startTime = finalTiming->requestTime;
     }
 
     ResourceLoadTiming* lastRedirectTiming = redirectChain.last().resourceLoadTiming();
