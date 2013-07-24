@@ -107,6 +107,7 @@ bool IsSharedByGroup(int col_id) {
     case IDS_TASK_MANAGER_CPU_COLUMN:
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
     case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
+    case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN:
     case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
@@ -503,9 +504,7 @@ string16 TaskManagerModel::GetResourceVideoMemory(int index) const {
   if (!GetVideoMemory(index, &video_memory, &has_duplicates) || !video_memory)
     return ASCIIToUTF16("N/A");
   if (has_duplicates) {
-    return ASCIIToUTF16("(") +
-        GetMemCellText(video_memory) +
-        ASCIIToUTF16(")");
+    return GetMemCellText(video_memory) + ASCIIToUTF16("*");
   }
   return GetMemCellText(video_memory);
 }
