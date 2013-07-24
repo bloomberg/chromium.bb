@@ -1083,6 +1083,14 @@ void TraceLog::RemoveEnabledStateObserver(EnabledStateObserver* listener) {
     enabled_state_observer_list_.erase(it);
 }
 
+bool TraceLog::HasEnabledStateObserver(EnabledStateObserver* listener) const {
+  std::vector<EnabledStateObserver*>::const_iterator it =
+      std::find(enabled_state_observer_list_.begin(),
+                enabled_state_observer_list_.end(),
+                listener);
+  return it != enabled_state_observer_list_.end();
+}
+
 float TraceLog::GetBufferPercentFull() const {
   return (float)((double)logged_events_->Size()/(double)kTraceEventBufferSize);
 }
@@ -1107,6 +1115,9 @@ void TraceLog::SetEventCallback(EventCallback cb) {
 };
 
 void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
+  // Ignore memory allocations from here down.
+  INTERNAL_TRACE_MEMORY(TRACE_DISABLED_BY_DEFAULT("memory"),
+                        TRACE_MEMORY_IGNORE);
   scoped_ptr<TraceBuffer> previous_logged_events;
   {
     AutoLock lock(lock_);

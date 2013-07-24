@@ -222,6 +222,11 @@ static int64 last_dump_time = 0;      // The time of the last dump
 static HeapProfileTable* heap_profile = NULL;  // the heap profile table
 static DeepHeapProfile* deep_profile = NULL;  // deep memory profiler
 
+// Callback to generate a stack trace for an allocation. May be overriden
+// by an application to provide its own pseudo-stacks.
+static StackGeneratorFunction stack_generator_function =
+    HeapProfileTable::GetCallerStackTrace;
+
 //----------------------------------------------------------------------
 // Profile generation
 //----------------------------------------------------------------------
@@ -374,7 +379,7 @@ static void MaybeDumpProfileLocked() {
 static void RecordAlloc(const void* ptr, size_t bytes, int skip_count) {
   // Take the stack trace outside the critical section.
   void* stack[HeapProfileTable::kMaxStackDepth];
-  int depth = HeapProfileTable::GetCallerStackTrace(skip_count + 1, stack);
+  int depth = stack_generator_function(skip_count + 1, stack);
   SpinLockHolder l(&heap_lock);
   if (is_on) {
     heap_profile->RecordAlloc(ptr, bytes, depth, stack);
@@ -542,12 +547,24 @@ extern "C" void HeapProfilerStart(const char* prefix) {
     RAW_CHECK(MallocHook::AddDeleteHook(&DeleteHook), "");
   }
 
-  // Copy filename prefix
+  // Copy filename prefix only if provided.
+  if (!prefix)
+    return;
   RAW_DCHECK(filename_prefix == NULL, "");
   const int prefix_length = strlen(prefix);
   filename_prefix = reinterpret_cast<char*>(ProfilerMalloc(prefix_length + 1));
   memcpy(filename_prefix, prefix, prefix_length);
   filename_prefix[prefix_length] = '\0';
+}
+
+extern "C" void HeapProfilerWithPseudoStackStart(
+    StackGeneratorFunction callback) {
+  {
+    // Ensure the callback is set before allocations can be recorded.
+    SpinLockHolder l(&heap_lock);
+    stack_generator_function = callback;
+  }
+  HeapProfilerStart(NULL);
 }
 
 extern "C" void IterateAllocatedObjects(AddressVisitor visitor, void* data) {

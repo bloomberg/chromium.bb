@@ -345,6 +345,7 @@ class BASE_EXPORT TraceLog {
   };
   void AddEnabledStateObserver(EnabledStateObserver* listener);
   void RemoveEnabledStateObserver(EnabledStateObserver* listener);
+  bool HasEnabledStateObserver(EnabledStateObserver* listener) const;
 
   float GetBufferPercentFull() const;
 

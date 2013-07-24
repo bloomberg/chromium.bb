@@ -17,16 +17,20 @@
 
 namespace base {
 class MessageLoop;
-}
+
+namespace debug {
+class TraceMemoryController;
+}  // namespace debug
+}  // namespace base
 
 namespace IPC {
 class SyncChannel;
 class SyncMessageFilter;
-}
+}  // namespace IPC
 
 namespace WebKit {
 class WebFrame;
-}
+}  // namespace WebKit
 
 namespace content {
 class ChildHistogramMessageFilter;
@@ -185,6 +189,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_refptr<ChildResourceMessageFilter> resource_message_filter_;
 
   base::WeakPtrFactory<ChildThread> channel_connected_factory_;
+
+  // Observes the trace event system. When tracing is enabled, optionally
+  // starts profiling the tcmalloc heap.
+  scoped_ptr<base::debug::TraceMemoryController> trace_memory_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThread);
 };

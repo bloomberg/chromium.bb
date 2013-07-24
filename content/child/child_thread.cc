@@ -35,6 +35,10 @@
 #include "content/common/handle_enumerator_win.h"
 #endif
 
+#if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
+#endif
+
 using tracked_objects::ThreadData;
 
 namespace content {
@@ -172,6 +176,14 @@ void ChildThread::Init() {
 
 #if defined(OS_ANDROID)
   g_child_thread = this;
+#endif
+
+#if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
+  trace_memory_controller_.reset(new base::debug::TraceMemoryController(
+      message_loop_->message_loop_proxy(),
+      ::HeapProfilerWithPseudoStackStart,
+      ::HeapProfilerStop,
+      ::GetHeapProfile));
 #endif
 }
 

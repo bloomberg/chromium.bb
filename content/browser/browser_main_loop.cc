@@ -96,6 +96,10 @@
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #endif
 
+#if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
+#endif
+
 #if defined(USE_X11)
 #include <X11/Xlib.h>
 #endif
@@ -469,6 +473,14 @@ void BrowserMainLoop::MainMessageLoopStart() {
     memory_observer_.reset(new MemoryObserver());
     base::MessageLoop::current()->AddTaskObserver(memory_observer_.get());
   }
+
+#if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
+  trace_memory_controller_.reset(new base::debug::TraceMemoryController(
+      base::MessageLoop::current()->message_loop_proxy(),
+      ::HeapProfilerWithPseudoStackStart,
+      ::HeapProfilerStop,
+      ::GetHeapProfile));
+#endif
 }
 
 void BrowserMainLoop::CreateThreads() {
@@ -628,6 +640,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
   if (parts_)
     parts_->PostMainMessageLoopRun();
+
+  trace_memory_controller_.reset();
 
 #if !defined(OS_IOS)
   // Destroying the GpuProcessHostUIShims on the UI thread posts a task to

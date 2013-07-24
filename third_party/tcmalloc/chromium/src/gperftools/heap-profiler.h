@@ -68,8 +68,23 @@ extern "C" {
 
 /* Start profiling and arrange to write profile data to file names
  * of the form: "prefix.0000", "prefix.0001", ...
+ *
+ * If |prefix| is NULL then dumps will not be written to disk. Applications
+ * can use GetHeapProfile() to get profile data, but HeapProfilerDump() will do
+ * nothing.
  */
 PERFTOOLS_DLL_DECL void HeapProfilerStart(const char* prefix);
+
+/* Start profiling with a callback function that returns application-generated
+ * stacks. Profiles are not written to disk, but may be obtained via
+ * GetHeapProfile(). The callback:
+ * 1. May optionally skip the first |skip_count| items on the stack.
+ * 2. Must provide a |stack| buffer of at least size 32 * sizeof(void*).
+ * 3. Must return the number of items copied or zero.
+ */
+typedef int (*StackGeneratorFunction)(int skip_count, void** stack);
+PERFTOOLS_DLL_DECL void HeapProfilerWithPseudoStackStart(
+    StackGeneratorFunction callback);
 
 /* Returns non-zero if we are currently profiling the heap.  (Returns
  * an int rather than a bool so it's usable from C.)  This is true

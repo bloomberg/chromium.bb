@@ -89,3 +89,5 @@ Modifications:
 - Added support for android.
 - Use NULL instead of static_cast<uintptr_t>(0) in stack_trace_table.cc,
   for -std=c++11 compatibility.
+- Added support for pseudo-stack heap profiling via a callback to retrieve a
+  simulated stack from the embedding application.

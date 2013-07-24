@@ -16,16 +16,19 @@ class HighResolutionTimerManager;
 class MessageLoop;
 class PowerMonitor;
 class SystemMonitor;
-}
+namespace debug {
+class TraceMemoryController;
+}  // namespace debug
+}  // namespace base
 
 namespace media {
 class AudioManager;
 class MIDIManager;
-}
+}  // namespace media
 
 namespace net {
 class NetworkChangeNotifier;
-}
+}  // namespace net
 
 namespace content {
 class AudioMirroringManager;
@@ -142,6 +145,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<BrowserProcessSubThread> io_thread_;
   scoped_ptr<base::Thread> indexed_db_thread_;
   scoped_ptr<MemoryObserver> memory_observer_;
+  scoped_ptr<base::debug::TraceMemoryController> trace_memory_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
 };

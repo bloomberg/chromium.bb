@@ -193,6 +193,7 @@
 
 #include "base/atomicops.h"
 #include "base/debug/trace_event_impl.h"
+#include "base/debug/trace_event_memory.h"
 #include "build/build_config.h"
 
 // By default, const char* argument values are assumed to have long-lived scope
@@ -220,13 +221,16 @@
 // - category and name strings must have application lifetime (statics or
 //   literals). They may not include " chars.
 #define TRACE_EVENT0(category_group, name) \
+    INTERNAL_TRACE_MEMORY(category_group, name) \
     INTERNAL_TRACE_EVENT_ADD_SCOPED(category_group, name)
 #define TRACE_EVENT1(category_group, name, arg1_name, arg1_val) \
+    INTERNAL_TRACE_MEMORY(category_group, name) \
     INTERNAL_TRACE_EVENT_ADD_SCOPED(category_group, name, arg1_name, arg1_val)
-#define TRACE_EVENT2(category_group, name, arg1_name, arg1_val, arg2_name, \
-                     arg2_val) \
-    INTERNAL_TRACE_EVENT_ADD_SCOPED(category_group, name, arg1_name, arg1_val, \
-        arg2_name, arg2_val)
+#define TRACE_EVENT2( \
+    category_group, name, arg1_name, arg1_val, arg2_name, arg2_val) \
+  INTERNAL_TRACE_MEMORY(category_group, name) \
+  INTERNAL_TRACE_EVENT_ADD_SCOPED( \
+      category_group, name, arg1_name, arg1_val, arg2_name, arg2_val)
 
 // UNSHIPPED_TRACE_EVENT* are like TRACE_EVENT* except that they are not
 // included in official builds.
