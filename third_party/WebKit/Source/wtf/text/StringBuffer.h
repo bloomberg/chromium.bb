@@ -70,7 +70,7 @@ public:
     }
 
     unsigned length() const { return m_data->length(); }
-    CharType* characters() { return const_cast<CharType*>(m_data->getCharacters<CharType>()); }
+    CharType* characters() { return length() ? const_cast<CharType*>(m_data->getCharacters<CharType>()) : 0; }
 
     CharType& operator[](unsigned i) { ASSERT_WITH_SECURITY_IMPLICATION(i < length()); return characters()[i]; }
 

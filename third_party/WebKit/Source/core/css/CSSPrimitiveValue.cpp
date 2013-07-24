@@ -1025,21 +1025,21 @@ String CSSPrimitiveValue::customCssText(CssTextFormattingFlags formattingFlag) c
                 Color::parseHexColor(m_value.string, rgbColor);
             Color color(rgbColor);
 
-            Vector<LChar> result;
-            result.reserveInitialCapacity(32);
+            StringBuilder result;
+            result.reserveCapacity(32);
             bool colorHasAlpha = color.hasAlpha();
             if (colorHasAlpha)
                 result.append("rgba(", 5);
             else
                 result.append("rgb(", 4);
 
-            appendNumber(result, static_cast<unsigned char>(color.red()));
+            result.appendNumber(static_cast<unsigned char>(color.red()));
             result.append(", ", 2);
 
-            appendNumber(result, static_cast<unsigned char>(color.green()));
+            result.appendNumber(static_cast<unsigned char>(color.green()));
             result.append(", ", 2);
 
-            appendNumber(result, static_cast<unsigned char>(color.blue()));
+            result.appendNumber(static_cast<unsigned char>(color.blue()));
             if (colorHasAlpha) {
                 result.append(", ", 2);
 
@@ -1049,7 +1049,7 @@ String CSSPrimitiveValue::customCssText(CssTextFormattingFlags formattingFlag) c
             }
 
             result.append(')');
-            text = String::adopt(result);
+            text = result.toString();
             break;
         }
         case CSS_PAIR:
