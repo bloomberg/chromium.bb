@@ -6,6 +6,8 @@
 
 #include <android/keycodes.h>
 
+namespace ui {
+
 namespace {
 
 // The Android NDK does not provide values for these yet:
@@ -56,8 +58,6 @@ enum {
 };
 
 }  // namespace
-
-namespace ui {
 
 KeyboardCode KeyboardCodeFromAndroidKeyCode(int keycode) {
   // Does not provide all key codes, and does not handle all keys.
