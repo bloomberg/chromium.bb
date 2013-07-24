@@ -141,7 +141,7 @@ namespace syncFileSystem {
 
     // Sets the default conflict resolution policy
     // for the <code>'syncable'</code> file storage for the app.
-    // By default it is set to <code>'manual'</code>.
+    // By default it is set to <code>'last_write_win'</code>.
     // When conflict resolution policy is set to <code>'last_write_win'</code>
     // conflicts for existing files are automatically resolved next time
     // the file is updated.
