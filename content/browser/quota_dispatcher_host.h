@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_QUOTA_DISPATCHER_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_QUOTA_DISPATCHER_HOST_H_
+#ifndef CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
+#define CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
@@ -65,4 +65,4 @@ class QuotaDispatcherHost : public BrowserMessageFilter {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_QUOTA_DISPATCHER_HOST_H_
+#endif  // CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
