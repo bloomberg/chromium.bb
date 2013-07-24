@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -29,6 +30,29 @@
 #include "base/strings/stringprintf.h"
 
 namespace {
+
+class BitSet {
+ public:
+  void resize(size_t nbits) {
+    data_.resize((nbits + 7) / 8);
+  }
+
+  void set(uint32 bit) {
+    const uint32 byte_idx = bit / 8;
+    CHECK(byte_idx < data_.size());
+    data_[byte_idx] |= (1 << (bit & 7));
+  }
+
+  std::string AsB64String() const {
+    std::string bits(&data_[0], data_.size());
+    std::string b64_string;
+    base::Base64Encode(bits, &b64_string);
+    return b64_string;
+  }
+
+ private:
+  std::vector<char> data_;
+};
 
 // An entry in /proc/<pid>/pagemap.
 struct PageMapEntry {
@@ -49,6 +73,7 @@ struct MemoryMap {
   std::string flags;
   uint start_address;
   uint end_address;
+  uint offset;
   int private_count;
   int unevictable_private_count;
   int other_shared_count;
@@ -57,6 +82,9 @@ struct MemoryMap {
   // (only among the processes that are being analyzed).
   std::vector<int> app_shared_counts;
   std::vector<PageInfo> committed_pages;
+  // committed_pages_bits is a bitset reflecting the present bit for all the
+  // virtual pages of the mapping.
+  BitSet committed_pages_bits;
 };
 
 struct ProcessMemory {
@@ -114,6 +142,11 @@ bool ParseMemoryMapLine(const std::string& line,
   if (tokens->at(1).size() != strlen("rwxp"))
     return false;
   memory_map->flags.swap(tokens->at(1));
+  if (!base::HexStringToUInt64(tokens->at(2), &tmp))
+    return false;
+  memory_map->offset = static_cast<uint>(tmp);
+  memory_map->committed_pages_bits.resize(
+      (memory_map->end_address - memory_map->start_address) / PAGE_SIZE);
   const int map_name_index = 5;
   if (tokens->size() >= map_name_index + 1) {
     for (std::vector<std::string>::const_iterator it =
@@ -167,9 +200,11 @@ bool GetProcessMaps(pid_t pid, std::vector<MemoryMap>* process_maps) {
 // provided memory map.
 bool GetPagesForMemoryMap(int pagemap_fd,
                           const MemoryMap& memory_map,
-                          std::vector<PageInfo>* committed_pages) {
-  for (uint addr = memory_map.start_address; addr < memory_map.end_address;
-       addr += PAGE_SIZE) {
+                          std::vector<PageInfo>* committed_pages,
+                          BitSet* committed_pages_bits) {
+  for (uint addr = memory_map.start_address, page_index = 0;
+       addr < memory_map.end_address;
+       addr += PAGE_SIZE, ++page_index) {
     DCHECK_EQ(0, addr % PAGE_SIZE);
     PageMapEntry page_map_entry = {};
     COMPILE_ASSERT(sizeof(PageMapEntry) == sizeof(uint64), unexpected_size);
@@ -182,6 +217,7 @@ bool GetPagesForMemoryMap(int pagemap_fd,
       PageInfo page_info = {};
       page_info.page_frame_number = page_map_entry.page_frame_number;
       committed_pages->push_back(page_info);
+      committed_pages_bits->set(page_index);
     }
   }
   return true;
@@ -387,6 +423,40 @@ void DumpProcessesMemoryMapsInShortFormat(
   }
 }
 
+void DumpProcessesMemoryMapsInExtendedFormat(
+    const std::vector<ProcessMemory>& processes_memory) {
+  std::string buf;
+  std::string app_shared_buf;
+  for (std::vector<ProcessMemory>::const_iterator it = processes_memory.begin();
+       it != processes_memory.end(); ++it) {
+    const ProcessMemory& process_memory = *it;
+    std::cout << "[ PID=" << process_memory.pid << "]" << '\n';
+    const std::vector<MemoryMap>& memory_maps = process_memory.memory_maps;
+    for (std::vector<MemoryMap>::const_iterator it = memory_maps.begin();
+         it != memory_maps.end(); ++it) {
+      const MemoryMap& memory_map = *it;
+      app_shared_buf.clear();
+      AppendAppSharedField(memory_map.app_shared_counts, &app_shared_buf);
+      base::SStringPrintf(
+          &buf,
+          "%x-%x %s %x private_unevictable=%d private=%d shared_app=%s "
+          "shared_other_unevictable=%d shared_other=%d \"%s\" [%s]\n",
+          memory_map.start_address,
+          memory_map.end_address,
+          memory_map.flags.c_str(),
+          memory_map.offset,
+          memory_map.unevictable_private_count * PAGE_SIZE,
+          memory_map.private_count * PAGE_SIZE,
+          app_shared_buf.c_str(),
+          memory_map.unevictable_other_shared_count * PAGE_SIZE,
+          memory_map.other_shared_count * PAGE_SIZE,
+          memory_map.name.c_str(),
+          memory_map.committed_pages_bits.AsB64String().c_str());
+      std::cout << buf;
+    }
+  }
+}
+
 bool CollectProcessMemoryInformation(int page_count_fd,
                                      int page_flags_fd,
                                      ProcessMemory* process_memory) {
@@ -404,7 +474,8 @@ bool CollectProcessMemoryInformation(int page_count_fd,
   for (std::vector<MemoryMap>::iterator it = process_maps->begin();
        it != process_maps->end(); ++it) {
     std::vector<PageInfo>* const committed_pages = &it->committed_pages;
-    GetPagesForMemoryMap(pagemap_fd, *it, committed_pages);
+    BitSet* const pages_bits = &it->committed_pages_bits;
+    GetPagesForMemoryMap(pagemap_fd, *it, committed_pages, pages_bits);
     SetPagesInfo(page_count_fd, page_flags_fd, committed_pages);
   }
   return true;
@@ -420,17 +491,17 @@ void KillAll(const std::vector<pid_t>& pids, int signal_number) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  bool short_output = false;
   if (argc == 1) {
-    LOG(ERROR) << "Usage: " << argv[0] << " [-a] <PID1>... <PIDN>";
+    LOG(ERROR) << "Usage: " << argv[0] << " [-a|-x] <PID1>... <PIDN>";
     return EXIT_FAILURE;
   }
-  if (!strncmp(argv[1], "-a", 2)) {
+  const bool short_output = !strncmp(argv[1], "-a", 2);
+  const bool extended_output = !strncmp(argv[1], "-x", 2);
+  if (short_output || extended_output) {
     if (argc == 2) {
-      LOG(ERROR) << "Usage: " << argv[0] << " [-a] <PID1>... <PIDN>";
+      LOG(ERROR) << "Usage: " << argv[0] << " [-a|-x] <PID1>... <PIDN>";
       return EXIT_FAILURE;
     }
-    short_output = true;
     ++argv;
   }
   std::vector<pid_t> pids;
@@ -476,6 +547,8 @@ int main(int argc, char** argv) {
   ClassifyPages(&processes_memory);
   if (short_output)
     DumpProcessesMemoryMapsInShortFormat(processes_memory);
+  else if (extended_output)
+    DumpProcessesMemoryMapsInExtendedFormat(processes_memory);
   else
     DumpProcessesMemoryMaps(processes_memory);
   return EXIT_SUCCESS;
