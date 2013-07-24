@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/usb/usb_interface.h"
 #include "chrome/browser/usb/usb_service.h"
@@ -242,6 +243,41 @@ bool UsbDeviceHandle::SetInterfaceAlternateSetting(
 bool UsbDeviceHandle::ResetDevice() {
   CheckDevice();
   return libusb_reset_device(handle_) == 0;
+}
+
+bool UsbDeviceHandle::GetSerial(base::string16* serial) {
+  PlatformUsbDevice device = libusb_get_device(handle_);
+  libusb_device_descriptor desc;
+
+  if (libusb_get_device_descriptor(device, &desc) != LIBUSB_SUCCESS)
+    return false;
+
+  if (desc.iSerialNumber == 0)
+    return false;
+
+  // Getting supported language ID.
+  uint16 langid[128] = { 0 };
+
+  int size = libusb_get_string_descriptor(
+      handle_, 0, 0,
+      reinterpret_cast<unsigned char*>(&langid[0]), sizeof(langid));
+  if (size < 0)
+    return false;
+
+  int language_count = (size - 2) / 2;
+
+  for (int i = 1; i <= language_count; ++i) {
+    // Get the string using language ID.
+    char16 text[256] = { 0 };
+    size = libusb_get_string_descriptor(
+        handle_, desc.iSerialNumber, langid[i],
+        reinterpret_cast<unsigned char*>(&text[0]), sizeof(text));
+    if (size < 0)
+      continue;
+    *serial = base::string16(text, size / 2);
+    return true;
+  }
+  return false;
 }
 
 void UsbDeviceHandle::ControlTransfer(const UsbEndpointDirection direction,

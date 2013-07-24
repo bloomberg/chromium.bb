@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/devtools/adb/android_rsa.h"
 #include "chrome/browser/devtools/adb/android_usb_socket.h"
@@ -40,54 +41,12 @@ typedef std::vector<scoped_refptr<UsbDeviceHandle> > UsbDevices;
 base::LazyInstance<AndroidUsbDevices>::Leaky g_devices =
     LAZY_INSTANCE_INITIALIZER;
 
-static std::string ReadSerialNumSync(libusb_device_handle* handle) {
-  libusb_device* device = libusb_get_device(handle);
-  libusb_device_descriptor descriptor;
-  if (libusb_get_device_descriptor(device, &descriptor) != LIBUSB_SUCCESS)
-    return std::string();
-
-  if (!descriptor.iSerialNumber)
-    return std::string();
-
-  uint16 languages[128] = {0};
-  memset(languages, 0, sizeof(languages));
-
-  int res = libusb_control_transfer(
-      handle,
-      LIBUSB_ENDPOINT_IN |  LIBUSB_REQUEST_TYPE_STANDARD |
-          LIBUSB_RECIPIENT_DEVICE,
-      LIBUSB_REQUEST_GET_DESCRIPTOR, LIBUSB_DT_STRING << 8, 0,
-      reinterpret_cast<uint8*>(languages), sizeof(languages), 0);
-
-  if (res <= 0) {
-    LOG(ERROR) << "Failed to get languages count";
-    return std::string();
-  }
-
-  int language_count = (res - 2) / 2;
-  uint16 buffer[128] = {0};
-  for (int i = 1; i <= language_count; ++i) {
-    memset(buffer, 0, sizeof(buffer));
-
-    res = libusb_control_transfer(
-        handle,
-        LIBUSB_ENDPOINT_IN |  LIBUSB_REQUEST_TYPE_STANDARD |
-            LIBUSB_RECIPIENT_DEVICE,
-        LIBUSB_REQUEST_GET_DESCRIPTOR,
-        (LIBUSB_DT_STRING << 8) | descriptor.iSerialNumber,
-        languages[i], reinterpret_cast<uint8*>(buffer), sizeof(buffer), 0);
-
-    if (res > 0) {
-        res /= 2;
-        char serial[256] = {0};
-        int j;
-        for (j = 1; j < res; ++j)
-          serial[j - 1] = buffer[j];
-        serial[j - 1] = '\0';
-        return std::string(serial, j);
-    }
-  }
-  return std::string();
+static std::string ReadSerialNumSync(scoped_refptr<UsbDeviceHandle> handle) {
+  base::string16 serial;
+  if (!handle->GetSerial(&serial))
+    return "";
+  else
+    return UTF16ToASCII(serial);
 }
 
 static void ClaimInterface(
@@ -130,7 +89,7 @@ static void ClaimInterface(
   if (!usb_device->ClaimInterface(1))
     return;
 
-  std::string serial = ReadSerialNumSync(usb_device->handle());
+  std::string serial = ReadSerialNumSync(usb_device);
   scoped_refptr<AndroidUsbDevice> device =
       new AndroidUsbDevice(rsa_key, usb_device, serial, inbound_address,
                            outbound_address, zero_mask);

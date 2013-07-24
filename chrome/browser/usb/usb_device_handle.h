@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/usb/usb_interface.h"
 #include "net/base/completion_callback.h"
@@ -70,6 +71,7 @@ class UsbDeviceHandle : public base::RefCounted<UsbDeviceHandle> {
       const int interface_number,
       const int alternate_setting);
   virtual bool ResetDevice();
+  bool GetSerial(base::string16* serial);
 
   // Async IO.
   virtual void ControlTransfer(const UsbEndpointDirection direction,
