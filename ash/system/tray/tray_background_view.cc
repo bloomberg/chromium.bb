@@ -581,6 +581,9 @@ void TrayBackgroundView::SetBubbleVisible(bool visible) {
 
 void TrayBackgroundView::UpdateBubbleViewArrow(
     views::TrayBubbleView* bubble_view) {
+  if (switches::UseAlternateShelfLayout())
+    return;
+
   aura::RootWindow* root_window =
       bubble_view->GetWidget()->GetNativeView()->GetRootWindow();
   ash::internal::ShelfLayoutManager* shelf =

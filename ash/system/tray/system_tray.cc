@@ -539,8 +539,7 @@ void SystemTray::AnchorUpdated() {
   }
   if (system_bubble_) {
     system_bubble_->bubble_view()->UpdateBubble();
-    if (!ash::switches::UseAlternateShelfLayout())
-      UpdateBubbleViewArrow(system_bubble_->bubble_view());
+    UpdateBubbleViewArrow(system_bubble_->bubble_view());
   }
 }
 
