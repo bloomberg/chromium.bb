@@ -1074,14 +1074,8 @@ def ValidateRegularInstruction(instruction, bitness):
   prefixes, name, ops = _ParseInstruction(instruction)
 
   for prefix in prefixes:
-    if prefix not in ['lock', 'rep', 'repz', 'repnz']:
+    if prefix != 'lock':
       raise SandboxingError('prefix %s is not allowed' % prefix, instruction)
-
-  # Older versions of objdump decode 'tzcnt' as 'repz bsf'.
-  # TODO(shcherbina): get rid of this exception once objdump is updated.
-  if name != 'bsf':
-    if 'rep' in prefixes or 'repz' in prefixes or 'repnz' in prefixes:
-      raise SandboxingError('rep is only allowed with string instructions')
 
   for op in ops:
     if op in ['%cs', '%ds', '%es', '%ss', '%fs', '%gs']:

@@ -53,7 +53,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: rep is only allowed with string instructions
+  0: ('prefix repz is not allowed', Instruction(0x0: f3 50  repz push %rax))
 ----------------------------------------------------------------------
 @hex:
   # stos allows rep, not repnz
@@ -68,7 +68,7 @@
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  6: rep is only allowed with string instructions
+  6: ('prefix repnz is not allowed', Instruction(0x6: f2 ab  repnz stos %eax,%es:(%rdi)))
 ----------------------------------------------------------------------
 @hex:
   # MOVs with segment prefixes

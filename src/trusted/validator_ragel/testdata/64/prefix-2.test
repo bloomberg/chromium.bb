@@ -42,7 +42,7 @@
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  6: rep is only allowed with string instructions
+  6: ('prefix repnz is not allowed', Instruction(0x6: f2 f3 ab  repnz rep stos %eax,%es:(%rdi)))
 ----------------------------------------------------------------------
 @hex:
   # mov %edi,%edi
@@ -59,7 +59,7 @@
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  6: rep is only allowed with string instructions
+  6: ('prefix repz is not allowed', Instruction(0x6: f3 f2 ae  repz repnz scas %es:(%rdi),%al))
 ----------------------------------------------------------------------
 @hex:
   # fs gs mov %eax,%eax
@@ -147,7 +147,7 @@
   return code: 1
 @spec:
   6: unrecognized instruction 'es'
-  7: rep is only allowed with string instructions
+  7: ('prefix rep is not allowed', Instruction(0x7: f3 ab  rep stos %eax,%es:(%rdi)))
 ----------------------------------------------------------------------
 @hex:
   # mov %edi,%edi
