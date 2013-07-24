@@ -11,6 +11,8 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
+#include "base/process/process_handle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/message_window.h"
 #include "base/win/registry.h"
