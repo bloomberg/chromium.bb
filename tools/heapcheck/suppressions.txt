@@ -530,6 +530,20 @@
    ...
    fun:*CreateLocaleDefaultValue
    ...
+   fun:PermissionQueueControllerTests::SetUp
+}
+{
+   bug_155530_c
+   Heapcheck:Leak
+   ...
+   fun:PermissionQueueControllerTests_OneObservationPerInfoBarCancelled_Test::TestBody
+}
+{
+   bug_155530_d
+   Heapcheck:Leak
+   ...
+   fun:*CreateLocaleDefaultValue
+   ...
    fun:GeolocationInfoBarQueueControllerTests::SetUp
 }
 {
