@@ -39,23 +39,24 @@ public class ChildProcessLauncher {
 
     // The upper limit on the number of simultaneous sandboxed and privileged child service process
     // instances supported. Each limit must not exceed total number of SandboxedProcessServiceX
-    // classes and PrivilegedProcessClassX declared in this package, and defined as services in the
-    // embedding application's manifest file.
+    // classes and PrivilegedProcessServiceX classes declared in this package and defined as
+    // services in the embedding application's manifest file.
     // (See {@link ChildProcessService} for more details on defining the services.)
     /* package */ static final int MAX_REGISTERED_SANDBOXED_SERVICES = 13;
     /* package */ static final int MAX_REGISTERED_PRIVILEGED_SERVICES = 3;
 
     private static class ChildConnectionAllocator {
+        // Connections to services. Indices of the array correspond to the service numbers.
         private ChildProcessConnection[] mChildProcessConnections;
 
-        // The list of free slots in corresponing Connections.  When looking for a free connection,
-        // the first index in that list should be used. When a connection is freed, its index
-        // is added to the end of the list. This is so that we avoid immediately reusing a freed
-        // connection (see bug crbug.com/164069): the framework might keep a service process alive
-        // when it's been unbound for a short time.  If a connection to that same service is bound
-        // at that point, the process is reused and bad things happen (mostly static variables are
-        // set when we don't expect them to).
-        // SHOULD BE ACCESSED WITH THE mConnectionLock.
+        // The list of free (not bound) service indices. When looking for a free service, the first
+        // index in that list should be used. When a service is unbound, its index is added to the
+        // end of the list. This is so that we avoid immediately reusing the freed service (see
+        // http://crbug.com/164069): the framework might keep a service process alive when it's been
+        // unbound for a short time. If a new connection to the same service is bound at that point,
+        // the process is reused and bad things happen (mostly static variables are set when we
+        // don't expect them to).
+        // SHOULD BE ACCESSED WITH mConnectionLock.
         private ArrayList<Integer> mFreeConnectionIndices;
         private final Object mConnectionLock = new Object();
 
@@ -113,7 +114,7 @@ public class ChildProcessLauncher {
     }
 
     // Service class for child process. As the default value it uses SandboxedProcessService0 and
-    // PrivilegedProcessService0
+    // PrivilegedProcessService0.
     private static final ChildConnectionAllocator mSandboxedChildConnectionAllocator =
             new ChildConnectionAllocator(true);
     private static final ChildConnectionAllocator mPrivilegedChildConnectionAllocator =
@@ -121,7 +122,7 @@ public class ChildProcessLauncher {
 
     private static boolean mConnectionAllocated = false;
 
-   // Sets service class for sandboxed service and privileged service
+    // Sets service class for sandboxed service and privileged service.
     public static void setChildProcessClass(
             Class<? extends SandboxedProcessService> sandboxedServiceClass,
             Class<? extends PrivilegedProcessService> privilegedServiceClass) {
@@ -193,9 +194,9 @@ public class ChildProcessLauncher {
     }
 
     /**
-     * Should be called early in startup so the work needed to spawn the child process can
-     * be done in parallel to other startup work. Must not be called on the UI thread.
-     * Spare connection is created in sandboxed child process.
+     * Should be called early in startup so the work needed to spawn the child process can be done
+     * in parallel to other startup work. Must not be called on the UI thread. Spare connection is
+     * created in sandboxed child process.
      * @param context the application context used for the connection.
      */
     public static void warmUp(Context context) {
@@ -222,10 +223,10 @@ public class ChildProcessLauncher {
     }
 
     /**
-     * Spawns and connects to a child process. May be called on any thread. It will not
-     * block, but will instead callback to {@link #nativeOnChildProcessStarted} when the
-     * connection is established. Note this callback will not necessarily be from the same thread
-     * (currently it always comes from the main thread).
+     * Spawns and connects to a child process. May be called on any thread. It will not block, but
+     * will instead callback to {@link #nativeOnChildProcessStarted} when the connection is
+     * established. Note this callback will not necessarily be from the same thread (currently it
+     * always comes from the main thread).
      *
      * @param context Context used to obtain the application context.
      * @param commandLine The child process command line argv.

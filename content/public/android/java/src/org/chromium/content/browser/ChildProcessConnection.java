@@ -135,6 +135,10 @@ public class ChildProcessConnection {
             }
         }
 
+        boolean isBound() {
+            return mBound;
+        }
+
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             synchronized(mUiThreadLock) {
@@ -355,14 +359,29 @@ public class ChildProcessConnection {
         TraceEvent.end();
     }
 
+    private static final long REMOVE_INITIAL_BINDING_DELAY_MILLIS = 1 * 1000;  // One second.
+
     /**
      * Called to remove the strong binding estabilished when the connection was started. It is safe
-     * to call this multiple times.
+     * to call this multiple times. The binding is removed after a fixed delay period so that the
+     * renderer will not be killed immediately after the call.
      */
     void removeInitialBinding() {
         synchronized(mUiThreadLock) {
-            mInitialBinding.unbind();
+            if (!mInitialBinding.isBound()) {
+                // While it is safe to post and execute the unbinding multiple times, we prefer to
+                // avoid spamming the message queue.
+                return;
+            }
         }
+        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+            @Override
+            public void run() {
+                synchronized(mUiThreadLock) {
+                    mInitialBinding.unbind();
+                }
+            }
+        }, REMOVE_INITIAL_BINDING_DELAY_MILLIS);
     }
 
     /**
@@ -384,23 +403,30 @@ public class ChildProcessConnection {
         }
     }
 
+    private static final long DETACH_AS_ACTIVE_DELAY_MILLIS = 5 * 1000;  // Five seconds.
+
     /**
-     * Called when the service is no longer considered active.
+     * Called when the service is no longer considered active. Actual binding is removed after a
+     * fixed delay period so that the renderer will not be killed immediately after the call.
      */
     void detachAsActive() {
-        synchronized(mUiThreadLock) {
-            assert mAttachAsActiveCount > 0;
-            if (mService == null) {
-                Log.w(TAG, "The connection is not bound for " + mPID);
-                return;
+        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+            @Override
+            public void run() {
+                synchronized(mUiThreadLock) {
+                    if (mService == null) {
+                        Log.w(TAG, "The connection is not bound for " + mPID);
+                        return;
+                    }
+                    assert mAttachAsActiveCount > 0;
+                    mAttachAsActiveCount--;
+                    if (mAttachAsActiveCount == 0) {
+                        mStrongBinding.unbind();
+                    }
+                }
             }
-            mAttachAsActiveCount--;
-            if (mAttachAsActiveCount == 0) {
-                mStrongBinding.unbind();
-            }
-        }
+        }, DETACH_AS_ACTIVE_DELAY_MILLIS);
     }
-
 
     /**
      * @return The connection PID, or 0 if not yet connected.
