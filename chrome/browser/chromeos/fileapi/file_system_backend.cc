@@ -106,12 +106,14 @@ bool FileSystemBackend::CanHandleType(fileapi::FileSystemType type) const {
   }
 }
 
-void FileSystemBackend::InitializeFileSystem(
+void FileSystemBackend::Initialize(fileapi::FileSystemContext* context) {
+}
+
+void FileSystemBackend::OpenFileSystem(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     fileapi::OpenFileSystemMode mode,
-    fileapi::FileSystemContext* context,
-    const InitializeFileSystemCallback& callback) {
+    const OpenFileSystemCallback& callback) {
   DCHECK(fileapi::IsolatedContext::IsIsolatedType(type));
   // Nothing to validate for external filesystem.
   callback.Run(GetFileSystemRootURI(origin_url, type),

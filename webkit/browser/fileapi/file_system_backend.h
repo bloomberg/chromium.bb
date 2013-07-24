@@ -46,25 +46,29 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
   typedef base::Callback<void(const GURL& root_url,
                               const std::string& name,
                               base::PlatformFileError error)>
-      InitializeFileSystemCallback;
+      OpenFileSystemCallback;
   virtual ~FileSystemBackend() {}
 
   // Returns true if this mount point provider can handle |type|.
   // One mount point provider may be able to handle multiple filesystem types.
   virtual bool CanHandleType(FileSystemType type) const = 0;
 
-  // Initializes the filesystem for the given |origin_url| and |type|.
+  // This method is called right after the backend is registered in the
+  // FileSystemContext and before any other methods are called. Each backend can
+  // do additional initialization which depends on FileSystemContext here.
+  virtual void Initialize(FileSystemContext* context) = 0;
+
+  // Opens the filesystem for the given |origin_url| and |type|.
   // This verifies if it is allowed to request (or create) the filesystem
   // and if it can access (or create) the root directory of the mount point.
   // If |mode| is CREATE_IF_NONEXISTENT calling this may also create
   // the root directory (and/or related database entries etc) for
   // the filesystem if it doesn't exist.
-  virtual void InitializeFileSystem(
+  virtual void OpenFileSystem(
       const GURL& origin_url,
       FileSystemType type,
       OpenFileSystemMode mode,
-      FileSystemContext* context,
-      const InitializeFileSystemCallback& callback) = 0;
+      const OpenFileSystemCallback& callback) = 0;
 
   // Returns the specialized FileSystemFileUtil for this mount point.
   // It is ok to return NULL if the filesystem doesn't support synchronous

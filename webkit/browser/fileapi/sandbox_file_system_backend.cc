@@ -135,6 +135,19 @@ SandboxFileSystemBackend::SandboxFileSystemBackend(
       sandbox_context_(sandbox_context),
       enable_temporary_file_system_in_incognito_(false),
       weak_factory_(this) {
+}
+
+SandboxFileSystemBackend::~SandboxFileSystemBackend() {
+}
+
+bool SandboxFileSystemBackend::CanHandleType(FileSystemType type) const {
+  return type == kFileSystemTypeTemporary ||
+         type == kFileSystemTypePersistent ||
+         type == kFileSystemTypeSyncable ||
+         type == kFileSystemTypeSyncableForInternalSync;
+}
+
+void SandboxFileSystemBackend::Initialize(FileSystemContext* context) {
   // Set quota observers.
   if (sandbox_context_->is_usage_tracking_enabled()) {
     update_observers_ = update_observers_.AddObserver(
@@ -156,22 +169,11 @@ SandboxFileSystemBackend::SandboxFileSystemBackend(
   }
 }
 
-SandboxFileSystemBackend::~SandboxFileSystemBackend() {
-}
-
-bool SandboxFileSystemBackend::CanHandleType(FileSystemType type) const {
-  return type == kFileSystemTypeTemporary ||
-         type == kFileSystemTypePersistent ||
-         type == kFileSystemTypeSyncable ||
-         type == kFileSystemTypeSyncableForInternalSync;
-}
-
-void SandboxFileSystemBackend::InitializeFileSystem(
+void SandboxFileSystemBackend::OpenFileSystem(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     OpenFileSystemMode mode,
-    FileSystemContext* context,
-    const InitializeFileSystemCallback& callback) {
+    const OpenFileSystemCallback& callback) {
   if (file_system_options_.is_incognito() &&
       !(type == kFileSystemTypeTemporary &&
         enable_temporary_file_system_in_incognito_)) {

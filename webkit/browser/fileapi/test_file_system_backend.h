@@ -35,12 +35,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TestFileSystemBackend
 
   // FileSystemBackend implementation.
   virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
-  virtual void InitializeFileSystem(
+  virtual void Initialize(FileSystemContext* context) OVERRIDE;
+  virtual void OpenFileSystem(
       const GURL& origin_url,
       FileSystemType type,
       OpenFileSystemMode mode,
-      FileSystemContext* context,
-      const InitializeFileSystemCallback& callback) OVERRIDE;
+      const OpenFileSystemCallback& callback) OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(

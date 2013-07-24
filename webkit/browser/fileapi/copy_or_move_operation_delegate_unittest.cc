@@ -129,10 +129,9 @@ class CopyOrMoveOperationTestHelper {
     // Prepare the origin's root directory.
     FileSystemBackend* mount_point_provider =
         file_system_context_->GetFileSystemBackend(src_type_);
-    mount_point_provider->InitializeFileSystem(
+    mount_point_provider->OpenFileSystem(
         origin_, src_type_,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        NULL /* context */,
         base::Bind(&ExpectOk));
     mount_point_provider =
         file_system_context_->GetFileSystemBackend(dest_type_);
@@ -144,10 +143,9 @@ class CopyOrMoveOperationTestHelper {
       test_provider->set_require_copy_or_move_validator(true);
       test_provider->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
     }
-    mount_point_provider->InitializeFileSystem(
+    mount_point_provider->OpenFileSystem(
         origin_, dest_type_,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        NULL /* context */,
         base::Bind(&ExpectOk));
     base::MessageLoop::current()->RunUntilIdle();
 

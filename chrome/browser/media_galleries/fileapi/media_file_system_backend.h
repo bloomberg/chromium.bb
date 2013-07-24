@@ -39,12 +39,12 @@ class MediaFileSystemBackend : public fileapi::FileSystemBackend {
 
   // FileSystemBackend implementation.
   virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
-  virtual void InitializeFileSystem(
+  virtual void Initialize(fileapi::FileSystemContext* context) OVERRIDE;
+  virtual void OpenFileSystem(
       const GURL& origin_url,
       fileapi::FileSystemType type,
       fileapi::OpenFileSystemMode mode,
-      fileapi::FileSystemContext* context,
-      const InitializeFileSystemCallback& callback) OVERRIDE;
+      const OpenFileSystemCallback& callback) OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil(
       fileapi::FileSystemType type) OVERRIDE;
   virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(
