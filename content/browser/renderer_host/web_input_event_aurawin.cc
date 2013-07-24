@@ -6,7 +6,7 @@
 
 #include "base/event_types.h"
 #include "base/logging.h"
-#include "third_party/WebKit/public/web/win/WebInputEventFactory.h"
+#include "content/browser/renderer_host/input/web_input_event_builders_win.h"
 
 namespace content {
 
@@ -15,26 +15,26 @@ namespace content {
 
 WebKit::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     base::NativeEvent native_event) {
-  return WebKit::WebInputEventFactory::mouseEvent(native_event.hwnd,
-                                                  native_event.message,
-                                                  native_event.wParam,
-                                                  native_event.lParam);
+  return WebMouseEventBuilder::Build(native_event.hwnd,
+                                     native_event.message,
+                                     native_event.wParam,
+                                     native_event.lParam);
 }
 
 WebKit::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
     base::NativeEvent native_event) {
-  return WebKit::WebInputEventFactory::mouseWheelEvent(native_event.hwnd,
-                                                       native_event.message,
-                                                       native_event.wParam,
-                                                       native_event.lParam);
+  return WebMouseWheelEventBuilder::Build(native_event.hwnd,
+                                          native_event.message,
+                                          native_event.wParam,
+                                          native_event.lParam);
 }
 
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event) {
-  return WebKit::WebInputEventFactory::keyboardEvent(native_event.hwnd,
-                                                     native_event.message,
-                                                     native_event.wParam,
-                                                     native_event.lParam);
+  return WebKeyboardEventBuilder::Build(native_event.hwnd,
+                                        native_event.message,
+                                        native_event.wParam,
+                                        native_event.lParam);
 }
 
 WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(

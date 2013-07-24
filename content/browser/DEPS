@@ -71,7 +71,6 @@ include_rules = [
   "!third_party/WebKit/public/web/gtk/WebInputEventFactory.h",
   "!third_party/WebKit/public/web/linux/WebFontInfo.h",
   "!third_party/WebKit/public/web/mac/WebInputEventFactory.h",
-  "!third_party/WebKit/public/web/win/WebInputEventFactory.h",
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module

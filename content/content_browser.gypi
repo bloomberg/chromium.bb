@@ -776,6 +776,8 @@
     'browser/renderer_host/input/immediate_input_router.h',
     'browser/renderer_host/input/input_router.h',
     'browser/renderer_host/input/input_router_client.h',
+    'browser/renderer_host/input/web_input_event_builders_win.cc',
+    'browser/renderer_host/input/web_input_event_builders_win.h',
     'browser/renderer_host/java/java_bound_object.cc',
     'browser/renderer_host/java/java_bound_object.h',
     'browser/renderer_host/java/java_bridge_channel_host.cc',

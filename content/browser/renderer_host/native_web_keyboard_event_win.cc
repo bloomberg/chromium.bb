@@ -4,9 +4,8 @@
 
 #include "content/public/browser/native_web_keyboard_event.h"
 
-#include "third_party/WebKit/public/web/win/WebInputEventFactory.h"
+#include "content/browser/renderer_host/input/web_input_event_builders_win.h"
 
-using WebKit::WebInputEventFactory;
 using WebKit::WebKeyboardEvent;
 
 namespace content {
@@ -18,10 +17,10 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent()
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
     : WebKeyboardEvent(
-          WebInputEventFactory::keyboardEvent(native_event.hwnd,
-                                              native_event.message,
-                                              native_event.wParam,
-                                              native_event.lParam)),
+          WebKeyboardEventBuilder::Build(native_event.hwnd,
+                                         native_event.message,
+                                         native_event.wParam,
+                                         native_event.lParam)),
       os_event(native_event),
       skip_in_browser(false) {
 }

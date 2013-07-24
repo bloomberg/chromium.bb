@@ -33,6 +33,7 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_win.h"
+#include "content/browser/renderer_host/input/web_input_event_builders_win.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
@@ -53,7 +54,6 @@
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/WebKit/public/web/win/WebInputEventFactory.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
@@ -79,7 +79,6 @@ using base::TimeDelta;
 using base::TimeTicks;
 using ui::ViewProp;
 using WebKit::WebInputEvent;
-using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebTextDirection;
 
@@ -2007,7 +2006,7 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
 
   if (render_widget_host_) {
     WebKit::WebMouseWheelEvent wheel_event =
-        WebInputEventFactory::mouseWheelEvent(m_hWnd, message, wparam, lparam);
+        WebMouseWheelEventBuilder::Build(m_hWnd, message, wparam, lparam);
     float scale = ui::win::GetDeviceScaleFactor();
     wheel_event.x /= scale;
     wheel_event.y /= scale;
@@ -2902,7 +2901,7 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
   lparam = MAKELPARAM(point.x(), point.y());
 
   WebMouseEvent event(
-      WebInputEventFactory::mouseEvent(m_hWnd, message, wparam, lparam));
+      WebMouseEventBuilder::Build(m_hWnd, message, wparam, lparam));
 
   if (mouse_locked_) {
     event.movementX = event.globalX - last_mouse_position_.locked_global.x();
