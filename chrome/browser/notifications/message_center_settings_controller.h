@@ -12,7 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/content_settings.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/message_center/notifier_settings.h"
 
 class CancelableTaskTracker;
@@ -25,7 +28,8 @@ struct FaviconImageResult;
 // storage.
 class MessageCenterSettingsController
     : public message_center::NotifierSettingsProvider,
-      public extensions::AppIconLoader::Delegate {
+      public extensions::AppIconLoader::Delegate,
+      public content::NotificationObserver {
  public:
   MessageCenterSettingsController();
   virtual ~MessageCenterSettingsController();
@@ -48,6 +52,11 @@ class MessageCenterSettingsController
                            const gfx::ImageSkia& image) OVERRIDE;
 
  private:
+  // Overridden from content::NotificationObserver.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   void OnFaviconLoaded(const GURL& url,
                        const chrome::FaviconImageResult& favicon_result);
 
@@ -60,6 +69,13 @@ class MessageCenterSettingsController
   scoped_ptr<extensions::AppIconLoader> app_icon_loader_;
 
   std::map<string16, ContentSettingsPattern> patterns_;
+
+  // The Registrar used to register for notifications.
+  content::NotificationRegistrar registrar_;
+
+  // TODO(sidharthms): Fix this for multi-profile.
+  // The profile associated with message center settings.
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsController);
 };

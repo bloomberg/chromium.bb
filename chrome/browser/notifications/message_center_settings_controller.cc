@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/i18n/string_compare.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -18,11 +19,12 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/favicon/favicon_types.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -59,7 +61,13 @@ bool SimpleCompareNotifiers(Notifier* n1, Notifier* n2) {
 
 }  // namespace
 
-MessageCenterSettingsController::MessageCenterSettingsController() {
+MessageCenterSettingsController::MessageCenterSettingsController()
+  : profile_(NULL) {
+  // We set the profile associated with the settings at the beginning and fail
+  // silently if this profile is destroyed later. This is a temporary fix for
+  // http://crbug.com/263193
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::NotificationService::AllSources());
 }
 
 MessageCenterSettingsController::~MessageCenterSettingsController() {
@@ -81,9 +89,9 @@ void MessageCenterSettingsController::GetNotifierList(
   // TODO(mukai): Fix this for multi-profile.
   // Temporarily use the last used profile to prevent chrome from crashing when
   // the default profile is not loaded.
-  Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
+  profile_ = ProfileManager::GetLastUsedProfileAllowedByPolicy();
   DesktopNotificationService* notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
+      DesktopNotificationServiceFactory::GetForProfile(profile_);
 
   UErrorCode error;
   scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
@@ -91,7 +99,7 @@ void MessageCenterSettingsController::GetNotifierList(
   if (!U_FAILURE(error))
     comparator.reset(new NotifierComparator(collator.get()));
 
-  ExtensionService* extension_service = profile->GetExtensionService();
+  ExtensionService* extension_service = profile_->GetExtensionService();
   const ExtensionSet* extension_set = extension_service->extensions();
   // The extension icon size has to be 32x32 at least to load bigger icons if
   // the icon doesn't exist for the specified size, and in that case it falls
@@ -99,7 +107,7 @@ void MessageCenterSettingsController::GetNotifierList(
   // dialog. See chrome/browser/extensions/extension_icon_image.cc and
   // crbug.com/222931
   app_icon_loader_.reset(new extensions::AppIconLoaderImpl(
-      profile, extension_misc::EXTENSION_ICON_SMALL, this));
+      profile_, extension_misc::EXTENSION_ICON_SMALL, this));
   for (ExtensionSet::const_iterator iter = extension_set->begin();
        iter != extension_set->end(); ++iter) {
     const extensions::Extension* extension = iter->get();
@@ -120,7 +128,7 @@ void MessageCenterSettingsController::GetNotifierList(
           CommandLine::ForCurrentProcess())) {
     notifier::ChromeNotifierService* sync_notifier_service =
         notifier::ChromeNotifierServiceFactory::GetInstance()->GetForProfile(
-            profile, Profile::EXPLICIT_ACCESS);
+            profile_, Profile::EXPLICIT_ACCESS);
     sync_notifier_service->GetSyncedNotificationServices(notifiers);
 
     if (comparator)
@@ -134,7 +142,7 @@ void MessageCenterSettingsController::GetNotifierList(
   ContentSettingsForOneType settings;
   notification_service->GetNotificationsSettings(&settings);
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
+      profile_, Profile::EXPLICIT_ACCESS);
   favicon_tracker_.reset(new CancelableTaskTracker());
   patterns_.clear();
   for (ContentSettingsForOneType::const_iterator iter = settings.begin();
@@ -155,7 +163,7 @@ void MessageCenterSettingsController::GetNotifierList(
         notification_service->IsNotifierEnabled(notifier_id)));
     patterns_[name] = iter->primary_pattern;
     FaviconService::FaviconForURLParams favicon_params(
-        profile, url, chrome::FAVICON | chrome::TOUCH_ICON,
+        profile_, url, chrome::FAVICON | chrome::TOUCH_ICON,
         message_center::kSettingsIconSize);
     // Note that favicon service obtains the favicon from history. This means
     // that it will fail to obtain the image if there are no history data for
@@ -194,9 +202,11 @@ void MessageCenterSettingsController::SetNotifierEnabled(
     const Notifier& notifier,
     bool enabled) {
   // TODO(mukai): Fix this for multi-profile.
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  // If the profile has been destroyed, fail silently.
+  if (!profile_)
+    return;
   DesktopNotificationService* notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
+      DesktopNotificationServiceFactory::GetForProfile(profile_);
 
   if (notifier.notifier_id.type == NotifierId::WEB_PAGE) {
     // WEB_PAGE notifier cannot handle in DesktopNotificationService
@@ -233,7 +243,7 @@ void MessageCenterSettingsController::SetNotifierEnabled(
     if (notifier.notifier_id.type == NotifierId::SYNCED_NOTIFICATION_SERVICE) {
       notifier::ChromeNotifierService* notifier_service =
           notifier::ChromeNotifierServiceFactory::GetInstance()->GetForProfile(
-              profile, Profile::EXPLICIT_ACCESS);
+              profile_, Profile::EXPLICIT_ACCESS);
       notifier_service->OnSyncedNotificationServiceEnabled(
           notifier.notifier_id.id, enabled);
     }
@@ -244,6 +254,17 @@ void MessageCenterSettingsController::OnNotifierSettingsClosing() {
   DCHECK(favicon_tracker_.get());
   favicon_tracker_->TryCancelAll();
   patterns_.clear();
+}
+
+void MessageCenterSettingsController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_PROFILE_DESTROYED &&
+      content::Source<Profile>(source).ptr() == profile_) {
+    // Our profile just got destroyed, so we delete our pointer to it.
+    profile_ = NULL;
+  }
 }
 
 void MessageCenterSettingsController::OnFaviconLoaded(
