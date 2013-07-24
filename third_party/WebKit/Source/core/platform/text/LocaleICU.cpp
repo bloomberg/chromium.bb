@@ -36,7 +36,6 @@
 #include <limits>
 #include "wtf/DateMath.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 
 using namespace icu;
@@ -84,9 +83,9 @@ String LocaleICU::decimalSymbol(UNumberFormatSymbol symbol)
     ASSERT(U_SUCCESS(status) || status == U_BUFFER_OVERFLOW_ERROR);
     if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR)
         return String();
-    StringBuffer<UChar> buffer(bufferLength);
+    Vector<UChar> buffer(bufferLength);
     status = U_ZERO_ERROR;
-    unum_getSymbol(m_numberFormat, symbol, buffer.characters(), bufferLength, &status);
+    unum_getSymbol(m_numberFormat, symbol, buffer.data(), bufferLength, &status);
     if (U_FAILURE(status))
         return String();
     return String::adopt(buffer);
@@ -99,9 +98,9 @@ String LocaleICU::decimalTextAttribute(UNumberFormatTextAttribute tag)
     ASSERT(U_SUCCESS(status) || status == U_BUFFER_OVERFLOW_ERROR);
     if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR)
         return String();
-    StringBuffer<UChar> buffer(bufferLength);
+    Vector<UChar> buffer(bufferLength);
     status = U_ZERO_ERROR;
-    unum_getTextAttribute(m_numberFormat, tag, buffer.characters(), bufferLength, &status);
+    unum_getTextAttribute(m_numberFormat, tag, buffer.data(), bufferLength, &status);
     ASSERT(U_SUCCESS(status));
     if (U_FAILURE(status))
         return String();
@@ -160,9 +159,9 @@ static String getDateFormatPattern(const UDateFormat* dateFormat)
     int32_t length = udat_toPattern(dateFormat, TRUE, 0, 0, &status);
     if (status != U_BUFFER_OVERFLOW_ERROR || !length)
         return emptyString();
-    StringBuffer<UChar> buffer(length);
+    Vector<UChar> buffer(length);
     status = U_ZERO_ERROR;
-    udat_toPattern(dateFormat, TRUE, buffer.characters(), length, &status);
+    udat_toPattern(dateFormat, TRUE, buffer.data(), length, &status);
     if (U_FAILURE(status))
         return emptyString();
     return String::adopt(buffer);
@@ -182,9 +181,9 @@ PassOwnPtr<Vector<String> > LocaleICU::createLabelVector(const UDateFormat* date
         int32_t length = udat_getSymbols(dateFormat, type, startIndex + i, 0, 0, &status);
         if (status != U_BUFFER_OVERFLOW_ERROR)
             return PassOwnPtr<Vector<String> >();
-        StringBuffer<UChar> buffer(length);
+        Vector<UChar> buffer(length);
         status = U_ZERO_ERROR;
-        udat_getSymbols(dateFormat, type, startIndex + i, buffer.characters(), length, &status);
+        udat_getSymbols(dateFormat, type, startIndex + i, buffer.data(), length, &status);
         if (U_FAILURE(status))
             return PassOwnPtr<Vector<String> >();
         labels->append(String::adopt(buffer));
@@ -328,9 +327,9 @@ static String getFormatForSkeleton(const char* locale, const String& skeleton)
     skeleton.appendTo(skeletonCharacters);
     int32_t length = udatpg_getBestPattern(patternGenerator, skeletonCharacters.data(), skeletonCharacters.size(), 0, 0, &status);
     if (status == U_BUFFER_OVERFLOW_ERROR && length) {
-        StringBuffer<UChar> buffer(length);
+        Vector<UChar> buffer(length);
         status = U_ZERO_ERROR;
-        udatpg_getBestPattern(patternGenerator, skeletonCharacters.data(), skeletonCharacters.size(), buffer.characters(), length, &status);
+        udatpg_getBestPattern(patternGenerator, skeletonCharacters.data(), skeletonCharacters.size(), buffer.data(), length, &status);
         if (U_SUCCESS(status))
             format = String::adopt(buffer);
     }
