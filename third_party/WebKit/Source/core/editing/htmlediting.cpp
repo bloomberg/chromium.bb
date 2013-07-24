@@ -448,11 +448,6 @@ static Node* lastInSpecialElement(const Position& pos)
     return 0;
 }
 
-bool isFirstVisiblePositionInSpecialElement(const Position& pos)
-{
-    return firstInSpecialElement(pos);
-}
-
 Position positionBeforeContainingSpecialElement(const Position& pos, Node** containingSpecialElement)
 {
     Node* n = firstInSpecialElement(pos);
@@ -466,11 +461,6 @@ Position positionBeforeContainingSpecialElement(const Position& pos, Node** cont
     return result;
 }
 
-bool isLastVisiblePositionInSpecialElement(const Position& pos)
-{
-    return lastInSpecialElement(pos);
-}
-
 Position positionAfterContainingSpecialElement(const Position& pos, Node **containingSpecialElement)
 {
     Node* n = lastInSpecialElement(pos);
@@ -482,15 +472,6 @@ Position positionAfterContainingSpecialElement(const Position& pos, Node **conta
     if (containingSpecialElement)
         *containingSpecialElement = n;
     return result;
-}
-
-Position positionOutsideContainingSpecialElement(const Position &pos, Node **containingSpecialElement)
-{
-    if (isFirstVisiblePositionInSpecialElement(pos))
-        return positionBeforeContainingSpecialElement(pos, containingSpecialElement);
-    if (isLastVisiblePositionInSpecialElement(pos))
-        return positionAfterContainingSpecialElement(pos, containingSpecialElement);
-    return pos;
 }
 
 Node* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
@@ -544,33 +525,6 @@ PassRefPtr<Range> createRange(PassRefPtr<Document> document, const VisiblePositi
     if (!ec)
         selectedRange->setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), ec);
     return selectedRange.release();
-}
-
-// Extend rangeToExtend to include nodes that wraps range and visibly starts and ends inside or at the boudnaries of maximumRange
-// e.g. if the original range spaned "hello" in <div>hello</div>, then this function extends the range to contain div's around it.
-// Call this function before copying / moving paragraphs to contain all wrapping nodes.
-// This function stops extending the range immediately below rootNode; i.e. the extended range can contain a child node of rootNode
-// but it can never contain rootNode itself.
-PassRefPtr<Range> extendRangeToWrappingNodes(PassRefPtr<Range> range, const Range* maximumRange, const Node* rootNode)
-{
-    ASSERT(range);
-    ASSERT(maximumRange);
-
-    Node* ancestor = range->commonAncestorContainer(IGNORE_EXCEPTION); // Find the closest common ancestor.
-    Node* highestNode = 0;
-    // traverse through ancestors as long as they are contained within the range, content-editable, and below rootNode (could be =0).
-    while (ancestor && ancestor->rendererIsEditable() && isNodeVisiblyContainedWithin(ancestor, maximumRange) && ancestor != rootNode) {
-        highestNode = ancestor;
-        ancestor = ancestor->parentNode();
-    }
-
-    if (!highestNode)
-        return range;
-
-    // Create new range with the highest editable node contained within the range
-    RefPtr<Range> extendedRange = Range::create(range->ownerDocument());
-    extendedRange->selectNode(highestNode, IGNORE_EXCEPTION);
-    return extendedRange.release();
 }
 
 bool isListElement(Node *n)

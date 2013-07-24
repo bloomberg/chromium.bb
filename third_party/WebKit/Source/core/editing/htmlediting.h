@@ -37,7 +37,6 @@ namespace WebCore {
 class Document;
 class Element;
 class HTMLElement;
-class HTMLTextFormControlElement;
 class Node;
 class Position;
 class Range;
@@ -130,7 +129,6 @@ Position previousVisuallyDistinctCandidate(const Position&);
 Position positionOutsideTabSpan(const Position&);
 Position positionBeforeContainingSpecialElement(const Position&, Node** containingSpecialElement = 0);
 Position positionAfterContainingSpecialElement(const Position&, Node** containingSpecialElement = 0);
-Position positionOutsideContainingSpecialElement(const Position&, Node** containingSpecialElement = 0);
 
 inline Position firstPositionInOrBeforeNode(Node* node)
 {
@@ -155,8 +153,6 @@ int comparePositions(const Position&, const Position&);
 enum EUpdateStyle { UpdateStyle, DoNotUpdateStyle };
 bool isEditablePosition(const Position&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
 bool isRichlyEditablePosition(const Position&, EditableType = ContentIsEditable);
-bool isFirstVisiblePositionInSpecialElement(const Position&);
-bool isLastVisiblePositionInSpecialElement(const Position&);
 bool lineBreakExistsAtPosition(const Position&);
 bool isVisiblyAdjacent(const Position& first, const Position& second);
 bool isAtUnsplittableElement(const Position&);
@@ -191,7 +187,6 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
 // Functions returning Range
 
 PassRefPtr<Range> createRange(PassRefPtr<Document>, const VisiblePosition& start, const VisiblePosition& end, ExceptionCode&);
-PassRefPtr<Range> extendRangeToWrappingNodes(PassRefPtr<Range> rangeToExtend, const Range* maximumRange, const Node* rootNode);
 
 // -------------------------------------------------------------------------
 // HTMLElement
