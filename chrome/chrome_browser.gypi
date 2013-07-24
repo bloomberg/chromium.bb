@@ -320,8 +320,6 @@
         'browser/feedback/feedback_data.h',
         'browser/feedback/feedback_util.cc',
         'browser/feedback/feedback_util.h',
-        'browser/feedback/tracing_manager.cc',
-        'browser/feedback/tracing_manager.h',
         'browser/captive_portal/captive_portal_detector.cc',
         'browser/captive_portal/captive_portal_detector.h',
         'browser/captive_portal/captive_portal_login_detector.cc',
