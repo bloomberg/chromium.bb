@@ -197,7 +197,6 @@ bool InProcessViewRenderer::OnDraw(jobject java_canvas,
                                    bool is_hardware_canvas,
                                    const gfx::Vector2d& scroll,
                                    const gfx::Rect& clip) {
-  fallback_tick_.Cancel();
   scroll_at_start_of_frame_  = scroll;
   if (is_hardware_canvas && attached_to_window_ && HardwareEnabled()) {
     // We should be performing a hardware draw here. If we don't have the
@@ -279,6 +278,7 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
 bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
                                            const gfx::Rect& clip) {
   TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawSW");
+  fallback_tick_.Cancel();
 
   if (clip.IsEmpty()) {
     TRACE_EVENT_INSTANT0(
