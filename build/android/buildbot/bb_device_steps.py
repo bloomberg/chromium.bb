@@ -172,9 +172,9 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True):
     args.append('--release')
   if options.asan:
     args.append('--tool=asan')
-  if options.upload_to_flakiness_server:
+  if options.flakiness_server:
     args.append('--flakiness-dashboard-server=%s' %
-                constants.UPSTREAM_FLAKINESS_SERVER)
+                options.flakiness_server)
   if test.host_driven_root:
     args.append('--python_test_root=%s' % test.host_driven_root)
   if test.annotation:
@@ -359,8 +359,10 @@ def GetDeviceStepsOptParser():
                     help='Install an apk by name')
   parser.add_option('--reboot', action='store_true',
                     help='Reboot devices before running tests')
-  parser.add_option('--upload-to-flakiness-server', action='store_true',
-                    help='Upload the results to the flakiness dashboard.')
+  parser.add_option(
+      '--flakiness-server',
+      help='The flakiness dashboard server to which the results should be '
+           'uploaded.')
   parser.add_option(
       '--auto-reconnect', action='store_true',
       help='Push script to device which restarts adbd on disconnections.')

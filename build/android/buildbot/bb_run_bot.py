@@ -15,6 +15,10 @@ import sys
 
 import bb_utils
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from pylib import constants
+
+
 _BotConfig = collections.namedtuple(
     'BotConfig', ['bot_id', 'host_obj', 'test_obj'])
 
@@ -111,7 +115,8 @@ def GetBotStepMap():
   std_build_steps = ['compile', 'zip_build']
   std_test_steps = ['extract_build']
   std_tests = ['ui', 'unit']
-  flakiness_server = '--upload-to-flakiness-server'
+  flakiness_server = (
+      '--flakiness-server=%s' % constants.UPSTREAM_FLAKINESS_SERVER)
   experimental = ['--experimental']
 
   B = BotConfig
