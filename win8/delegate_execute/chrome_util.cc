@@ -15,6 +15,8 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/md5.h"
+#include "base/process/kill.h"
+#include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
