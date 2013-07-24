@@ -261,7 +261,7 @@ static NaClReverseInterfaceVtbl const kReverseInterfaceWrapperVtbl = {
 int ReverseInterfaceWrapperCtor(ReverseInterfaceWrapper* self,
                                 nacl::ReverseInterface* itf) {
   NaClLog(4,
-          "ReverseInterfaceWrapperCtor: self 0x%"NACL_PRIxPTR"\n",
+          "ReverseInterfaceWrapperCtor: self 0x%" NACL_PRIxPTR "\n",
           reinterpret_cast<uintptr_t>(self));
   if (!NaClReverseInterfaceCtor_protected(
         reinterpret_cast<NaClReverseInterface*>(&self->base))) {

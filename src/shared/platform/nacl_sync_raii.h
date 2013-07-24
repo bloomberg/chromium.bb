@@ -24,13 +24,13 @@ class MutexLocker {
   explicit MutexLocker(NaClMutex* mu)
       : mu_(mu) {
     NaClLog2(kMutexLockerModuleName, 3,
-             "MutexLocker: taking lock %"NACL_PRIxPTR"\n",
+             "MutexLocker: taking lock %" NACL_PRIxPTR "\n",
              (uintptr_t) mu_);
     NaClXMutexLock(mu_);
   }
   ~MutexLocker() {
     NaClLog2(kMutexLockerModuleName, 3,
-             "MutexLocker: dropping lock %"NACL_PRIxPTR"\n",
+             "MutexLocker: dropping lock %" NACL_PRIxPTR "\n",
              (uintptr_t) mu_);
     NaClXMutexUnlock(mu_);
   }

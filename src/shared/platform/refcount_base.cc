@@ -23,7 +23,7 @@ RefCountBase* RefCountBase::Ref() {
   if (0 == ++refcount_) {
     NaClLog(LOG_FATAL,
             ("scoped_ptr_refcount_obj: refcount overflow on 0x%08"
-             NACL_PRIxPTR"\n"),
+             NACL_PRIxPTR "\n"),
             reinterpret_cast<uintptr_t>(this));
   }
   NaClXMutexUnlock(&mu_);
@@ -35,7 +35,7 @@ void RefCountBase::Unref() {
   if (0 == refcount_) {
     NaClLog(LOG_FATAL,
             ("scoped_ptr_refcount_obj: Unref on zero refcount object: "
-             "0x%08"NACL_PRIxPTR"\n"),
+             "0x%08" NACL_PRIxPTR "\n"),
             reinterpret_cast<uintptr_t>(this));
   }
   bool do_delete = (0 == --refcount_);

@@ -24,7 +24,7 @@ AnchoredResource::AnchoredResource(WeakRefAnchor* anchor)
 AnchoredResource::~AnchoredResource() {
   anchor_->Unref();
   NaClMutexDtor(&mu_);
-  NaClLog(4, "~AnchoredResource: this 0x%"NACL_PRIxPTR"\n", (uintptr_t) this);
+  NaClLog(4, "~AnchoredResource: this 0x%" NACL_PRIxPTR "\n", (uintptr_t) this);
 }
 
 WeakRefAnchor::WeakRefAnchor()
@@ -44,7 +44,7 @@ bool WeakRefAnchor::is_abandoned() {
 
 void WeakRefAnchor::Abandon() {
   NaClLog(4,
-          "Entered WeakRefAnchor::Abandon: this 0x%"NACL_PRIxPTR"\n",
+          "Entered WeakRefAnchor::Abandon: this 0x%" NACL_PRIxPTR "\n",
           (uintptr_t) this);
   do {
     nacl::MutexLocker take(&mu_);

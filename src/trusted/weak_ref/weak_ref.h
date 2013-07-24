@@ -153,7 +153,7 @@ class WeakRefAnchor : public RefCountBase {
   WeakRef<R>* MakeWeakRef(R* raw_resource) {
     WeakRef<R>* rp = NULL;
     NaClLog2(kWeakRefModuleName, 4,
-             "Entered WeakRef<R>::MakeWeakRef, raw 0x%"NACL_PRIxPTR"\n",
+             "Entered WeakRef<R>::MakeWeakRef, raw 0x%" NACL_PRIxPTR "\n",
              (uintptr_t) raw_resource);
     CHECK(raw_resource != NULL);
     rp = new WeakRef<R>(this, raw_resource);
@@ -161,7 +161,7 @@ class WeakRefAnchor : public RefCountBase {
     // and the use of the WeakRef will discover this.
     CHECK(rp != NULL);
     NaClLog2(kWeakRefModuleName, 4,
-             "Leaving WeakRef<R>::MakeWeakRef, weak_ref 0x%"NACL_PRIxPTR"\n",
+             "Leaving WeakRef<R>::MakeWeakRef, weak_ref 0x%" NACL_PRIxPTR "\n",
              (uintptr_t) rp);
     return rp;
   }
@@ -200,7 +200,7 @@ class WeakRef : public AnchoredResource {
   // must not use the pointer to the WeakRef object further.
   void ReleaseAndUnref(scoped_ptr<R>* out_ptr) {
     NaClLog2(kWeakRefModuleName, 4,
-             "Entered WeakRef<R>::ReleaseAndUnref: this 0x%"NACL_PRIxPTR"\n",
+             "Entered WeakRef<R>::ReleaseAndUnref: this 0x%" NACL_PRIxPTR "\n",
              (uintptr_t) this);
     do {
       nacl::MutexLocker take(&mu_);
@@ -212,7 +212,8 @@ class WeakRef : public AnchoredResource {
       }
     } while (0);
     NaClLog2(kWeakRefModuleName, 4,
-             "Leaving ReleaseAndUnref: raw: out_ptr->get() 0x%"NACL_PRIxPTR"\n",
+             "Leaving ReleaseAndUnref: raw: out_ptr->get() 0x%"
+             NACL_PRIxPTR "\n",
              (uintptr_t) out_ptr->get());
     Unref();  // release ref associated with the callback
   }
