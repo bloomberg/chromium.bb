@@ -180,8 +180,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenURLsPopup) {
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
   // This should create a new window, but re-use the profile from |popup|. If
   // it used a NULL or invalid profile, it would crash.
-  launch.OpenURLsInBrowser(popup, false, urls,
-                           chrome::HOST_DESKTOP_TYPE_NATIVE);
+  launch.OpenURLsInBrowser(popup, false, urls, chrome::GetActiveDesktop());
   ASSERT_NE(popup, observer.added_browser_);
   BrowserList::RemoveObserver(&observer);
 }
