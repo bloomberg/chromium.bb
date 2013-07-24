@@ -35,7 +35,6 @@
 #include "media/base/media_keys.h"
 #include "media/base/pipeline.h"
 #include "media/base/text_track.h"
-#include "media/filters/gpu_video_decoder.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -57,6 +56,7 @@ class MessageLoopProxy;
 namespace media {
 class ChunkDemuxer;
 class FFmpegDemuxer;
+class GpuVideoDecoderFactories;
 class MediaLog;
 }
 
@@ -319,7 +319,7 @@ class WebMediaPlayerImpl
   bool incremented_externally_allocated_memory_;
 
   // Factories for supporting GpuVideoDecoder. May be null.
-  scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories_;
+  scoped_refptr<media::GpuVideoDecoderFactories> gpu_factories_;
 
   // Routes audio playback to either AudioRendererSink or WebAudio.
   scoped_refptr<WebAudioSourceProviderImpl> audio_source_provider_;

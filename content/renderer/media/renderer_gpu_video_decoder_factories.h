@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/content_export.h"
-#include "media/filters/gpu_video_decoder.h"
+#include "media/filters/gpu_video_decoder_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 
@@ -36,7 +36,7 @@ class WebGraphicsContext3DCommandBufferImpl;
 // renderer thread if threaded compositing is disabled), and shmem-related calls
 // go to the render thread.
 class CONTENT_EXPORT RendererGpuVideoDecoderFactories
-    : public media::GpuVideoDecoder::Factories {
+    : public media::GpuVideoDecoderFactories {
  public:
   // Takes a ref on |gpu_channel_host| and tests |context| for loss before each
   // use.
@@ -45,7 +45,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
       const scoped_refptr<base::MessageLoopProxy>& compositor_message_loop,
       WebGraphicsContext3DCommandBufferImpl* wgc3dcbi);
 
-  // media::GpuVideoDecoder::Factories implementation.
+  // media::GpuVideoDecoderFactories implementation.
   virtual media::VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
       media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client) OVERRIDE;

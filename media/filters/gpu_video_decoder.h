@@ -23,11 +23,10 @@ class MessageLoopProxy;
 class SharedMemory;
 }
 
-class SkBitmap;
-
 namespace media {
 
 class DecoderBuffer;
+class GpuVideoDecoderFactories;
 class VDAClientProxy;
 
 // GPU-accelerated video decoder implementation.  Relies on
@@ -37,48 +36,8 @@ class MEDIA_EXPORT GpuVideoDecoder
     : public VideoDecoder,
       public VideoDecodeAccelerator::Client {
  public:
-  // Helper interface for specifying factories needed to instantiate a
-  // GpuVideoDecoder.
-  class MEDIA_EXPORT Factories : public base::RefCountedThreadSafe<Factories> {
-   public:
-    // Caller owns returned pointer.
-    virtual VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
-        VideoCodecProfile, VideoDecodeAccelerator::Client*) = 0;
-
-    // Allocate & delete native textures.
-    virtual uint32 CreateTextures(int32 count, const gfx::Size& size,
-                                  std::vector<uint32>* texture_ids,
-                                  std::vector<gpu::Mailbox>* texture_mailboxes,
-                                  uint32 texture_target) = 0;
-    virtual void DeleteTexture(uint32 texture_id) = 0;
-
-    virtual void WaitSyncPoint(uint32 sync_point) = 0;
-
-    // Read pixels from a native texture and store into |pixels| as RGBA.
-    virtual void ReadPixels(uint32 texture_id, uint32 texture_target,
-                            const gfx::Size& size, const SkBitmap& pixels) = 0;
-
-    // Allocate & return a shared memory segment.  Caller is responsible for
-    // Close()ing the returned pointer.
-    virtual base::SharedMemory* CreateSharedMemory(size_t size) = 0;
-
-    // Returns the message loop the VideoDecodeAccelerator runs on.
-    virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() = 0;
-
-    // Abort any outstanding factory operations and error any future
-    // attempts at factory operations
-    virtual void Abort() = 0;
-
-    // Returns true if Abort() has been called.
-    virtual bool IsAborted() = 0;
-
-   protected:
-    friend class base::RefCountedThreadSafe<Factories>;
-    virtual ~Factories();
-  };
-
   GpuVideoDecoder(const scoped_refptr<base::MessageLoopProxy>& message_loop,
-                  const scoped_refptr<Factories>& factories);
+                  const scoped_refptr<GpuVideoDecoderFactories>& factories);
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
@@ -172,7 +131,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   // through).
   scoped_refptr<base::MessageLoopProxy> vda_loop_proxy_;
 
-  scoped_refptr<Factories> factories_;
+  scoped_refptr<GpuVideoDecoderFactories> factories_;
 
   // Proxies calls from |vda_| to |gvd_loop_proxy_| and used to safely detach
   // during shutdown.

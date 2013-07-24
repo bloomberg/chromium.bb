@@ -17,13 +17,14 @@
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
+#include "media/filters/gpu_video_decoder_factories.h"
 
 namespace media {
 
 // Proxies calls to a VideoDecodeAccelerator::Client from the calling thread to
 // the client's thread.
 //
-// TODO(scherkus): VDAClientProxy should hold onto GpuVideoDecoder::Factories
+// TODO(scherkus): VDAClientProxy should hold onto GpuVideoDecoderFactories
 // and take care of some of the work that GpuVideoDecoder does to minimize
 // thread hopping. See following for discussion:
 //
@@ -131,8 +132,6 @@ void VDAClientProxy::NotifyError(media::VideoDecodeAccelerator::Error error) {
 // resources.
 enum { kMaxInFlightDecodes = 4 };
 
-GpuVideoDecoder::Factories::~Factories() {}
-
 // Size of shared-memory segments we allocate.  Since we reuse them we let them
 // be on the beefy side.
 static const size_t kSharedMemorySegmentBytes = 100 << 10;
@@ -160,7 +159,7 @@ GpuVideoDecoder::BufferData::~BufferData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    const scoped_refptr<Factories>& factories)
+    const scoped_refptr<GpuVideoDecoderFactories>& factories)
     : needs_bitstream_conversion_(false),
       gvd_loop_proxy_(message_loop),
       weak_factory_(this),
@@ -547,21 +546,24 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
                 &natural_size);
   DCHECK(decoder_texture_target_);
 
-  scoped_refptr<VideoFrame> frame(
-      VideoFrame::WrapNativeTexture(
-          new VideoFrame::MailboxHolder(
-              pb.texture_mailbox(),
-              0,  // sync_point
-              BindToCurrentLoop(base::Bind(
-                  &GpuVideoDecoder::ReusePictureBuffer, weak_this_,
-                  picture.picture_buffer_id()))),
-          decoder_texture_target_,
-          pb.size(), visible_rect,
-          natural_size, timestamp,
-          base::Bind(&Factories::ReadPixels, factories_, pb.texture_id(),
-                     decoder_texture_target_,
-                     gfx::Size(visible_rect.width(), visible_rect.height())),
-          base::Closure()));
+  scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
+      new VideoFrame::MailboxHolder(
+          pb.texture_mailbox(),
+          0,  // sync_point
+          BindToCurrentLoop(base::Bind(&GpuVideoDecoder::ReusePictureBuffer,
+                                       weak_this_,
+                                       picture.picture_buffer_id()))),
+      decoder_texture_target_,
+      pb.size(),
+      visible_rect,
+      natural_size,
+      timestamp,
+      base::Bind(&GpuVideoDecoderFactories::ReadPixels,
+                 factories_,
+                 pb.texture_id(),
+                 decoder_texture_target_,
+                 gfx::Size(visible_rect.width(), visible_rect.height())),
+      base::Closure()));
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;
   bool inserted =

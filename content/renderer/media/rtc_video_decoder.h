@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_RTC_VIDEO_DECODER_H_
 
 #include <deque>
+#include <map>
 #include <set>
 #include <utility>
 
@@ -19,7 +20,6 @@
 #include "content/common/content_export.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_decoder.h"
-#include "media/filters/gpu_video_decoder.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/webrtc/modules/video_coding/codecs/interface/video_codec_interface.h"
@@ -30,6 +30,7 @@ class MessageLoopProxy;
 
 namespace media {
 class DecoderBuffer;
+class GpuVideoDecoderFactories;
 }
 
 namespace content {
@@ -51,7 +52,7 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // Creates a RTCVideoDecoder. Returns NULL if failed.
   static scoped_ptr<RTCVideoDecoder> Create(
-      const scoped_refptr<media::GpuVideoDecoder::Factories>& factories);
+      const scoped_refptr<media::GpuVideoDecoderFactories>& factories);
 
   // webrtc::VideoDecoder implementation.
   // Called on WebRTC DecodingThread.
@@ -111,7 +112,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsBufferAfterReset);
 
   RTCVideoDecoder(
-      const scoped_refptr<media::GpuVideoDecoder::Factories>& factories);
+      const scoped_refptr<media::GpuVideoDecoderFactories>& factories);
 
   void Initialize(base::WaitableEvent* waiter);
 
@@ -195,19 +196,18 @@ class CONTENT_EXPORT RTCVideoDecoder
   base::WeakPtrFactory<RTCVideoDecoder> weak_factory_;
   base::WeakPtr<RTCVideoDecoder> weak_this_;
 
-  scoped_refptr<media::GpuVideoDecoder::Factories> factories_;
+  scoped_refptr<media::GpuVideoDecoderFactories> factories_;
 
   // The message loop to run callbacks on. This is should be the same as the one
   // of |factories_|.
   scoped_refptr<base::MessageLoopProxy> vda_loop_proxy_;
 
-  // The thread to create shared memory. Factories::CreateSharedMemory is
-  // trampolined to the child thread. When |vda_loop_proxy_| is the compositor
-  // thread, blocking on the child thread will deadlock. During WebRTC hang up,
-  // the child thread waits for Chrome_libJingle_WorkerThread. libJingle thread
-  // cannot finish when DecodingThread holds a WebRTC lock and blocks on the
-  // child thread. So we need to call CreateSharedMemory asynchronously from a
-  // different thread.
+  // The thread to create shared memory. CreateSharedMemory is trampolined to
+  // the child thread. When |vda_loop_proxy_| is the compositor thread, blocking
+  // on the child thread will deadlock. During WebRTC hang up, the child thread
+  // waits for Chrome_libJingle_WorkerThread. libJingle thread cannot finish
+  // when DecodingThread holds a WebRTC lock and blocks on the child thread. So
+  // we need to call CreateSharedMemory asynchronously from a different thread.
   base::Thread create_shm_thread_;
 
   // The texture target used for decoded pictures.

@@ -6,7 +6,7 @@
 #define MEDIA_FILTERS_MOCK_GPU_VIDEO_DECODER_FACTORIES_H_
 
 #include "base/message_loop/message_loop_proxy.h"
-#include "media/filters/gpu_video_decoder.h"
+#include "media/filters/gpu_video_decoder_factories.h"
 #include "media/video/video_decode_accelerator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -20,7 +20,7 @@ class SharedMemory;
 
 namespace media {
 
-class MockGpuVideoDecoderFactories : public GpuVideoDecoder::Factories {
+class MockGpuVideoDecoderFactories : public GpuVideoDecoderFactories {
  public:
   MockGpuVideoDecoderFactories();
   MOCK_METHOD2(CreateVideoDecodeAccelerator,

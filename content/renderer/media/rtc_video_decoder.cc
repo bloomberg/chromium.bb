@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "content/child/child_thread.h"
 #include "media/base/bind_to_loop.h"
+#include "media/filters/gpu_video_decoder_factories.h"
 #include "third_party/webrtc/system_wrappers/interface/ref_count.h"
 
 namespace content {
@@ -68,7 +69,7 @@ RTCVideoDecoder::BufferData::BufferData() {}
 RTCVideoDecoder::BufferData::~BufferData() {}
 
 RTCVideoDecoder::RTCVideoDecoder(
-    const scoped_refptr<media::GpuVideoDecoder::Factories>& factories)
+    const scoped_refptr<media::GpuVideoDecoderFactories>& factories)
     : weak_factory_(this),
       weak_this_(weak_factory_.GetWeakPtr()),
       factories_(factories),
@@ -128,7 +129,7 @@ RTCVideoDecoder::~RTCVideoDecoder() {
 }
 
 scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
-    const scoped_refptr<media::GpuVideoDecoder::Factories>& factories) {
+    const scoped_refptr<media::GpuVideoDecoderFactories>& factories) {
   scoped_ptr<RTCVideoDecoder> decoder(new RTCVideoDecoder(factories));
   decoder->vda_.reset(factories->CreateVideoDecodeAccelerator(
       media::VP8PROFILE_MAIN, decoder.get()));
@@ -394,7 +395,7 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
       visible_rect,
       natural_size,
       timestamp_ms,
-      base::Bind(&media::GpuVideoDecoder::Factories::ReadPixels,
+      base::Bind(&media::GpuVideoDecoderFactories::ReadPixels,
                  factories_,
                  pb.texture_id(),
                  decoder_texture_target_,

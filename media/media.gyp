@@ -350,6 +350,8 @@
         'filters/file_data_source.h',
         'filters/gpu_video_decoder.cc',
         'filters/gpu_video_decoder.h',
+        'filters/gpu_video_decoder_factories.cc',
+        'filters/gpu_video_decoder_factories.h',
         'filters/h264_to_annex_b_bitstream_converter.cc',
         'filters/h264_to_annex_b_bitstream_converter.h',
         'filters/in_memory_url_protocol.cc',

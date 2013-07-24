@@ -7,11 +7,12 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/media/rtc_video_decoder.h"
+#include "media/filters/gpu_video_decoder_factories.h"
 
 namespace content {
 
 RTCVideoDecoderFactory::RTCVideoDecoderFactory(
-    const scoped_refptr<media::GpuVideoDecoder::Factories>& gpu_factories)
+    const scoped_refptr<media::GpuVideoDecoderFactories>& gpu_factories)
     : vda_loop_proxy_(gpu_factories->GetMessageLoop()) {
   DVLOG(2) << "RTCVideoDecoderFactory";
   // The decoder cannot be created in CreateVideoDecoder because VDA has to be

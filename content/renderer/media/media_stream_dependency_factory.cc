@@ -27,7 +27,7 @@
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_thread_impl.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "media/filters/gpu_video_decoder.h"
+#include "media/filters/gpu_video_decoder_factories.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -498,7 +498,7 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
 
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
     if (cmd_line->HasSwitch(switches::kEnableWebRtcHWDecoding)) {
-      scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories =
+      scoped_refptr<media::GpuVideoDecoderFactories> gpu_factories =
           RenderThreadImpl::current()->GetGpuFactories();
       if (gpu_factories.get() != NULL)
         decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));

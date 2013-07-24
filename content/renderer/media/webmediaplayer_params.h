@@ -5,8 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_PARAMS_H_
 #define CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_PARAMS_H_
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "media/filters/gpu_video_decoder.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -14,6 +14,7 @@ class MessageLoopProxy;
 
 namespace media {
 class AudioRendererSink;
+class GpuVideoDecoderFactories;
 class MediaLog;
 }
 
@@ -29,7 +30,7 @@ class WebMediaPlayerParams {
       const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
       const base::Callback<void(const base::Closure&)>& defer_load_cb,
       const scoped_refptr<media::AudioRendererSink>& audio_renderer_sink,
-      const scoped_refptr<media::GpuVideoDecoder::Factories>& gpu_factories,
+      const scoped_refptr<media::GpuVideoDecoderFactories>& gpu_factories,
       const scoped_refptr<media::MediaLog>& media_log);
   ~WebMediaPlayerParams();
 
@@ -45,8 +46,7 @@ class WebMediaPlayerParams {
     return audio_renderer_sink_;
   }
 
-  const scoped_refptr<media::GpuVideoDecoder::Factories>&
-  gpu_factories() const {
+  const scoped_refptr<media::GpuVideoDecoderFactories>& gpu_factories() const {
     return gpu_factories_;
   }
 
@@ -58,7 +58,7 @@ class WebMediaPlayerParams {
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   base::Callback<void(const base::Closure&)> defer_load_cb_;
   scoped_refptr<media::AudioRendererSink> audio_renderer_sink_;
-  scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories_;
+  scoped_refptr<media::GpuVideoDecoderFactories> gpu_factories_;
   scoped_refptr<media::MediaLog> media_log_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);

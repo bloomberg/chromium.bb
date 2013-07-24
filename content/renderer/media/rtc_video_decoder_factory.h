@@ -8,9 +8,12 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
-#include "media/filters/gpu_video_decoder.h"
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideodecoderfactory.h"
 #include "third_party/webrtc/modules/video_coding/codecs/interface/video_codec_interface.h"
+
+namespace media {
+class GpuVideoDecoderFactories;
+}
 
 namespace webrtc {
 class VideoDecoder;
@@ -22,7 +25,7 @@ class CONTENT_EXPORT RTCVideoDecoderFactory
     : NON_EXPORTED_BASE(public cricket::WebRtcVideoDecoderFactory) {
  public:
   RTCVideoDecoderFactory(
-      const scoped_refptr<media::GpuVideoDecoder::Factories>& gpu_factories);
+      const scoped_refptr<media::GpuVideoDecoderFactories>& gpu_factories);
   virtual ~RTCVideoDecoderFactory();
 
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
