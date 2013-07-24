@@ -1071,3 +1071,21 @@
    fun:base::FilePath::AppendASCII
    fun:SetUp
 }
+{
+   bug_263748a
+   Heapcheck:Leak
+   ...
+   fun:DisassemblerElf32X86Test_All_Test::TestBody
+}
+{
+   bug_263748b
+   Heapcheck:Leak
+   ...
+   fun:TypedRVATest_*_Test::TestBody
+}
+{
+   bug_263748c
+   Heapcheck:Leak
+   ...
+   fun:EncodeDecodeTest_Elf_Small_Test::TestBody
+}
