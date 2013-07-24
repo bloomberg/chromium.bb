@@ -92,7 +92,7 @@ class TranslateManager : public content::NotificationObserver {
 
   // Allows caller to cleanup pending URLFetcher objects to make sure they
   // get released in the appropriate thread... Mainly for tests.
-  void CleanupPendingUrlFetcher();
+  void CleanupPendingUlrFetcher();
 
   // Translates the page contents from |source_lang| to |target_lang|.
   // The actual translation might be performed asynchronously if the translate
