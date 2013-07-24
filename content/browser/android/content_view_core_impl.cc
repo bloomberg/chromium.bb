@@ -20,6 +20,7 @@
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
+#include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -47,7 +48,6 @@
 #include "jni/ContentViewCore_jni.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/WebKit/public/web/android/WebInputEventFactory.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -65,7 +65,6 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
-using WebKit::WebInputEventFactory;
 
 // Describes the type and enabled state of a select popup item.
 // Keep in sync with the value defined in SelectPopupDialog.java
@@ -899,8 +898,8 @@ jboolean ContentViewCoreImpl::SendMouseMoveEvent(JNIEnv* env,
   if (!rwhv)
     return false;
 
-  WebKit::WebMouseEvent event = WebInputEventFactory::mouseEvent(
-      WebInputEventFactory::MouseEventTypeMove,
+  WebKit::WebMouseEvent event = WebMouseEventBuilder::Build(
+      WebInputEvent::MouseMove,
       WebKit::WebMouseEvent::ButtonNone,
       time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale(), 0, 1);
 
@@ -918,16 +917,16 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
   if (!rwhv)
     return false;
 
-  WebKit::WebInputEventFactory::MouseWheelDirectionType type;
+  WebMouseWheelEventBuilder::Direction direction;
   if (vertical_axis > 0) {
-    type = WebInputEventFactory::MouseWheelDirectionTypeUp;
+    direction = WebMouseWheelEventBuilder::DIRECTION_UP;
   } else if (vertical_axis < 0) {
-    type = WebInputEventFactory::MouseWheelDirectionTypeDown;
+    direction = WebMouseWheelEventBuilder::DIRECTION_DOWN;
   } else {
     return false;
   }
-  WebKit::WebMouseWheelEvent event = WebInputEventFactory::mouseWheelEvent(
-      type, time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale());
+  WebKit::WebMouseWheelEvent event = WebMouseWheelEventBuilder::Build(
+      direction, time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale());
 
   rwhv->SendMouseWheelEvent(event);
   return true;
@@ -935,13 +934,8 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
 
 WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(
     WebInputEvent::Type type, long time_ms, float x, float y) const {
-  WebGestureEvent event;
-  event.type = type;
-  event.x = x / GetDpiScale();
-  event.y = y / GetDpiScale();
-  event.timeStampSeconds = time_ms / 1000.0;
-  event.sourceDevice = WebGestureEvent::Touchscreen;
-  return event;
+  return WebGestureEventBuilder::Build(
+      type, time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale());
 }
 
 void ContentViewCoreImpl::SendGestureEvent(

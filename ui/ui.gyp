@@ -233,6 +233,8 @@
         'base/hit_test.h',
         'base/keycodes/keyboard_code_conversion.cc',
         'base/keycodes/keyboard_code_conversion.h',
+        'base/keycodes/keyboard_code_conversion_android.cc',
+        'base/keycodes/keyboard_code_conversion_android.h',
         'base/keycodes/keyboard_code_conversion_gtk.cc',
         'base/keycodes/keyboard_code_conversion_gtk.h',
         'base/keycodes/keyboard_code_conversion_mac.h',
