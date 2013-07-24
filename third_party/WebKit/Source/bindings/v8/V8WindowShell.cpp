@@ -65,6 +65,10 @@
 #include <v8-debug.h>
 #include <v8.h>
 
+#if defined(USE_I18N_EXTENSION)
+#include <v8-i18n/include/extension.h>
+#endif
+
 namespace WebCore {
 
 static void checkDocumentWrapper(v8::Handle<v8::Object> wrapper, Document* document)
@@ -269,6 +273,11 @@ void V8WindowShell::createContext()
 
     // Used to avoid sleep calls in unload handlers.
     ScriptController::registerExtensionIfNeeded(DateExtension::get());
+
+#if defined(USE_I18N_EXTENSION)
+    // Enable i18n API in V8.
+    ScriptController::registerExtensionIfNeeded(v8_i18n::Extension::get());
+#endif
 
     // Dynamically tell v8 about our extensions now.
     const V8Extensions& extensions = ScriptController::registeredExtensions();
