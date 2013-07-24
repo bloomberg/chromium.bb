@@ -34,7 +34,6 @@ void BuildStorageUnitInfo(const chrome::StorageInfo& info,
   unit->type = chrome::StorageInfo::IsRemovableDevice(info.device_id()) ?
       STORAGE_UNIT_TYPE_REMOVABLE : STORAGE_UNIT_TYPE_FIXED;
   unit->capacity = static_cast<double>(info.total_size_in_bytes());
-  unit->available_capacity = 0;
 }
 
 }  // namespace systeminfo
@@ -61,8 +60,7 @@ const StorageUnitInfoList& StorageInfoProvider::storage_unit_info_list() const {
 }
 
 void StorageInfoProvider::PrepareQueryOnUIThread() {
-  // Get all available storage devices before invoking |QueryInfo()| to get
-  // available capacity.
+  // Get all available storage devices before invoking |QueryInfo()|.
   GetAllStoragesIntoInfoList();
 }
 
@@ -77,13 +75,8 @@ void StorageInfoProvider::InitializeProvider(
 
 bool StorageInfoProvider::QueryInfo() {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  for (StorageUnitInfoList::iterator it = info_.begin();
-       it != info_.end(); ++it) {
-    int64 amount = GetStorageFreeSpaceFromTransientId((*it)->id);
-    if (amount > 0)
-      (*it)->available_capacity = static_cast<double>(amount);
-  }
-
+  // No info to query since we get all available storage devices' info in
+  // |PrepareQueryOnUIThread()|.
   return true;
 }
 

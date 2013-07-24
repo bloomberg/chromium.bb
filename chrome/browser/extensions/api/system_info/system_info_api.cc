@@ -85,9 +85,6 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
   virtual void OnRemovableStorageDetached(
       const chrome::StorageInfo& info) OVERRIDE;
 
-  void DispatchStorageAttachedEvent(const chrome::StorageInfo& info,
-                                    int64 avail_bytes);
-
   // Called from any thread to dispatch the systemInfo event to all extension
   // processes cross multiple profiles.
   void DispatchEvent(const std::string& event_name,
@@ -217,29 +214,8 @@ void SystemInfoEventRouter::OnFreeSpaceChanged(
 
 void SystemInfoEventRouter::OnRemovableStorageAttached(
     const chrome::StorageInfo& info) {
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN),
-      FROM_HERE,
-      base::Bind(&StorageInfoProvider::GetStorageFreeSpaceFromTransientId,
-                 StorageInfoProvider::Get(),
-                 StorageInfoProvider::Get()->GetTransientIdForDeviceId(
-                     info.device_id())),
-      base::Bind(&SystemInfoEventRouter::DispatchStorageAttachedEvent,
-                 // Since SystemInfoEventRouter is a global lazy instance, this
-                 // pointer will be alive when the reply comes back.
-                 base::Unretained(this),
-                 info));
-}
-
-void SystemInfoEventRouter::DispatchStorageAttachedEvent(
-    const chrome::StorageInfo& info, int64 avail_bytes) {
   StorageUnitInfo unit;
   systeminfo::BuildStorageUnitInfo(info, &unit);
-
-  unit.available_capacity =
-      avail_bytes > 0 ? static_cast<double>(avail_bytes) : 0;
-
   scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(unit.ToValue().release());
   DispatchEvent(event_names::kOnStorageAttached, args.Pass());

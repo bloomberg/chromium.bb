@@ -25,9 +25,6 @@ chrome.test.runTests([
         chrome.test.assertEq(testData[i].name, units[i].name);
         chrome.test.assertEq(testData[i].type, units[i].type);
         chrome.test.assertEq(testData[i].capacity, units[i].capacity);
-        chrome.test.assertEq(testData[i].availableCapacity,
-                             units[i].availableCapacity);
-        testData[i].availableCapacity += testData[i].step;
       }
     }));
   },
@@ -38,11 +35,10 @@ chrome.test.runTests([
       function listener(changeInfo) {
         for (var i = 0; i < testData.length; ++i) {
           if (changeInfo.id == testData[i].id) {
-            // Increase its availableCapacity since it will be queried before
-            // triggering onChanged event.
-            testData[i].availableCapacity += testData[i].step;
             chrome.test.assertEq(testData[i].availableCapacity,
-                                  changeInfo.availableCapacity);
+                                 changeInfo.availableCapacity);
+            // Increase its availableCapacity with a fixed |change_step|.
+            testData[i].availableCapacity += testData[i].step;
             break;
           }
         }

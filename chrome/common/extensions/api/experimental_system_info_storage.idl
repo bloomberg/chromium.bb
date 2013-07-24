@@ -25,9 +25,6 @@ namespace experimental.systemInfo.storage {
     // The total amount of the storage space, in bytes.
     // Default value is 0 if query operation fails.
     double capacity;
-    // The available amount of the storage space, in bytes.
-    // Default value is 0 if query operation fails.
-    double availableCapacity;
   };
 
   [inline_doc] enum EjectDeviceResultCode {
