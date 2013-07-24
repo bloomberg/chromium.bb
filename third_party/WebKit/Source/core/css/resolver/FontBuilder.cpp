@@ -281,7 +281,7 @@ static float smallerFontSize(float size)
 }
 
 // FIXME: Have to pass RenderStyles here for calc/computed values. This shouldn't be neecessary.
-void FontBuilder::setFontSizeValue(CSSValue* value, RenderStyle* parentStyle, RenderStyle* rootElementStyle, float effectiveZoom)
+void FontBuilder::setFontSizeValue(CSSValue* value, RenderStyle* parentStyle, const RenderStyle* rootElementStyle, float effectiveZoom)
 {
     if (!value->isPrimitiveValue())
         return;

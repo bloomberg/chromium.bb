@@ -44,10 +44,6 @@ class NinePieceImage;
 class CSSToStyleMap {
     WTF_MAKE_NONCOPYABLE(CSSToStyleMap);
 public:
-    // FIXME: This could be const StyleResolverState
-    // except styleImage can include a gradient, which
-    // may resolve a color and may need to flip bits
-    // on StyleResolverState.
     CSSToStyleMap(const StyleResolverState& state, ElementStyleResources& elementStyleResources) : m_state(state), m_elementStyleResources(elementStyleResources) { }
 
     void mapFillAttachment(CSSPropertyID, FillLayer*, CSSValue*) const;
@@ -72,14 +68,14 @@ public:
     void mapAnimationProperty(CSSAnimationData*, CSSValue*) const;
     void mapAnimationTimingFunction(CSSAnimationData*, CSSValue*) const;
 
-    void mapNinePieceImage(CSSPropertyID, CSSValue*, NinePieceImage&);
+    void mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID, CSSValue*, NinePieceImage&);
     void mapNinePieceImageSlice(CSSValue*, NinePieceImage&) const;
     LengthBox mapNinePieceImageQuad(CSSValue*) const;
     void mapNinePieceImageRepeat(CSSValue*, NinePieceImage&) const;
 
 private:
-    RenderStyle* style() const;
-    RenderStyle* rootElementStyle() const;
+    const RenderStyle* style() const;
+    const RenderStyle* rootElementStyle() const;
     bool useSVGZoomRules() const;
 
     PassRefPtr<StyleImage> styleImage(CSSPropertyID, CSSValue*);

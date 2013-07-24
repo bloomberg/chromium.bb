@@ -41,12 +41,12 @@
 
 namespace WebCore {
 
-RenderStyle* CSSToStyleMap::style() const
+const RenderStyle* CSSToStyleMap::style() const
 {
     return m_state.style();
 }
     
-RenderStyle* CSSToStyleMap::rootElementStyle() const
+const RenderStyle* CSSToStyleMap::rootElementStyle() const
 {
     return m_state.rootElementStyle();
 }
@@ -503,7 +503,7 @@ void CSSToStyleMap::mapAnimationTimingFunction(CSSAnimationData* animation, CSSV
         animation->setTimingFunction(LinearTimingFunction::create());
 }
 
-void CSSToStyleMap::mapNinePieceImage(CSSPropertyID property, CSSValue* value, NinePieceImage& image)
+void CSSToStyleMap::mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID property, CSSValue* value, NinePieceImage& image)
 {
     // If we're not a value list, then we are "none" and don't need to alter the empty image at all.
     if (!value || !value->isValueList())
@@ -552,13 +552,13 @@ void CSSToStyleMap::mapNinePieceImage(CSSPropertyID property, CSSValue* value, N
         // also set the border widths. We don't need to worry about percentages, since we don't even support
         // those on real borders yet.
         if (image.borderSlices().top().isFixed())
-            style()->setBorderTopWidth(image.borderSlices().top().value());
+            mutableStyle->setBorderTopWidth(image.borderSlices().top().value());
         if (image.borderSlices().right().isFixed())
-            style()->setBorderRightWidth(image.borderSlices().right().value());
+            mutableStyle->setBorderRightWidth(image.borderSlices().right().value());
         if (image.borderSlices().bottom().isFixed())
-            style()->setBorderBottomWidth(image.borderSlices().bottom().value());
+            mutableStyle->setBorderBottomWidth(image.borderSlices().bottom().value());
         if (image.borderSlices().left().isFixed())
-            style()->setBorderLeftWidth(image.borderSlices().left().value());
+            mutableStyle->setBorderLeftWidth(image.borderSlices().left().value());
     }
 }
 

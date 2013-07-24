@@ -1292,7 +1292,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
             reflection->setOffset(reflectValue->offset()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), zoomFactor));
         NinePieceImage mask;
         mask.setMaskDefaults();
-        state.styleMap().mapNinePieceImage(id, reflectValue->mask(), mask);
+        state.styleMap().mapNinePieceImage(state.style(), id, reflectValue->mask(), mask);
         reflection->setMask(mask);
 
         state.style()->setBoxReflect(reflection.release());

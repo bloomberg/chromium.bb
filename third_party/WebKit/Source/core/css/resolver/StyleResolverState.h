@@ -82,18 +82,20 @@ public:
     Document* document() const { return m_elementContext.document(); }
     Element* element() const { return m_elementContext.element(); }
     const ContainerNode* parentNode() const { return m_elementContext.parentNode(); }
-    RenderStyle* rootElementStyle() const { return m_elementContext.rootElementStyle(); }
+    const RenderStyle* rootElementStyle() const { return m_elementContext.rootElementStyle(); }
     EInsideLink elementLinkState() const { return m_elementContext.elementLinkState(); }
     bool distributedToInsertionPoint() const { return m_elementContext.distributedToInsertionPoint(); }
 
     const ElementResolveContext& elementContext() const { return m_elementContext; }
 
     void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; }
-    RenderStyle* style() const { return m_style.get(); }
+    const RenderStyle* style() const { return m_style.get(); }
+    RenderStyle* style() { return m_style.get(); }
     PassRefPtr<RenderStyle> takeStyle() { return m_style.release(); }
 
     void setParentStyle(PassRefPtr<RenderStyle> parentStyle) { m_parentStyle = parentStyle; }
-    RenderStyle* parentStyle() const { return m_parentStyle.get(); }
+    const RenderStyle* parentStyle() const { return m_parentStyle.get(); }
+    RenderStyle* parentStyle() { return m_parentStyle.get(); }
 
     const RenderRegion* regionForStyling() const { return m_regionForStyling; }
 

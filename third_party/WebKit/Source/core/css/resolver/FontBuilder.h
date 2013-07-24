@@ -58,7 +58,7 @@ public:
 
     void setFontSizeInitial(float effectiveZoom);
     void setFontSizeInherit(const FontDescription&, float effectiveZoom);
-    void setFontSizeValue(CSSValue*, RenderStyle* parentStyle, RenderStyle* rootElementStyle, float effectiveZoom);
+    void setFontSizeValue(CSSValue*, RenderStyle* parentStyle, const RenderStyle* rootElementStyle, float effectiveZoom);
 
     void setWeight(FontWeight);
     void setWeightBolder();
