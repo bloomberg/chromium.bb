@@ -147,9 +147,9 @@ TEST_F(MediaStreamImplTest, LocalMediaStream) {
   WebKit::WebMediaStream video_desc = RequestLocalMediaStream();
 
   // Stop generated local streams.
-  ms_impl_->OnLocalMediaStreamStop(mixed_desc.label().utf8());
+  ms_impl_->OnLocalMediaStreamStop(mixed_desc.id().utf8());
   EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
-  ms_impl_->OnLocalMediaStreamStop(audio_desc.label().utf8());
+  ms_impl_->OnLocalMediaStreamStop(audio_desc.id().utf8());
   EXPECT_EQ(2, ms_dispatcher_->stop_stream_counter());
 
   // Test that the MediaStreams are deleted if the owning WebFrame is deleted.
@@ -219,7 +219,7 @@ TEST_F(MediaStreamImplTest, StopStreamAfterReload) {
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   ms_impl_->FrameWillClose(NULL);
   EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
-  ms_impl_->OnLocalMediaStreamStop(mixed_desc.label().utf8());
+  ms_impl_->OnLocalMediaStreamStop(mixed_desc.id().utf8());
   EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
 }
 

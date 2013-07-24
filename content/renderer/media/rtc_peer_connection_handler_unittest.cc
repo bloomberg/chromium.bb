@@ -223,31 +223,37 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     std::string video_track_label("video-label");
     std::string audio_track_label("audio-label");
 
-    WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
+    WebKit::WebMediaStreamSource audio_source;
+    audio_source.initialize(WebKit::WebString::fromUTF8(audio_track_label),
+                            WebKit::WebMediaStreamSource::TypeAudio,
+                            WebKit::WebString::fromUTF8("audio_track"));
+    WebKit::WebMediaStreamSource video_source;
+    video_source.initialize(WebKit::WebString::fromUTF8(video_track_label),
+                            WebKit::WebMediaStreamSource::TypeVideo,
+                            WebKit::WebString::fromUTF8("video_track"));
+
+    WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks(
         static_cast<size_t>(1));
-    audio_sources[0].initialize(WebKit::WebString::fromUTF8(audio_track_label),
-                                WebKit::WebMediaStreamSource::TypeAudio,
-                                WebKit::WebString::fromUTF8("audio_track"));
-    WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
+    audio_tracks[0].initialize(audio_source.id(), audio_source);
+    WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks(
         static_cast<size_t>(1));
-    video_sources[0].initialize(WebKit::WebString::fromUTF8(video_track_label),
-                                WebKit::WebMediaStreamSource::TypeVideo,
-                                WebKit::WebString::fromUTF8("video_track"));
+    video_tracks[0].initialize(video_source.id(), video_source);
+
     WebKit::WebMediaStream local_stream;
-    local_stream.initialize(UTF8ToUTF16(stream_label), audio_sources,
-                            video_sources);
+    local_stream.initialize(UTF8ToUTF16(stream_label), audio_tracks,
+                            video_tracks);
 
     scoped_refptr<webrtc::MediaStreamInterface> native_stream(
         mock_dependency_factory_->CreateLocalMediaStream(stream_label));
-    WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
-    local_stream.audioSources(audio_tracks);
+
+    local_stream.audioTracks(audio_tracks);
     const std::string audio_track_id = UTF16ToUTF8(audio_tracks[0].id());
     scoped_refptr<webrtc::AudioTrackInterface> audio_track(
         mock_dependency_factory_->CreateLocalAudioTrack(audio_track_id,
                                                         NULL));
     native_stream->AddTrack(audio_track.get());
-    WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
-    local_stream.audioSources(video_tracks);
+
+    local_stream.videoTracks(video_tracks);
     const std::string video_track_id = UTF16ToUTF8(video_tracks[0].id());
     webrtc::VideoSourceInterface* source = NULL;
     scoped_refptr<webrtc::VideoTrackInterface> video_track(
@@ -447,7 +453,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithLocalSelector) {
   WebKit::WebMediaConstraints constraints;
   pc_handler_->addStream(local_stream, constraints);
   WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
-  local_stream.audioSources(tracks);
+  local_stream.audioTracks(tracks);
   ASSERT_LE(1ul, tracks.size());
 
   scoped_refptr<MockRTCStatsRequest> request(
@@ -464,7 +470,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithRemoteSelector) {
   const WebKit::WebMediaStream& remote_stream = mock_client_->remote_stream();
 
   WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
-  remote_stream.audioSources(tracks);
+  remote_stream.audioTracks(tracks);
   ASSERT_LE(1ul, tracks.size());
 
   scoped_refptr<MockRTCStatsRequest> request(
@@ -482,7 +488,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
   WebKit::WebMediaConstraints constraints;
   WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
 
-  local_stream.audioSources(tracks);
+  local_stream.audioTracks(tracks);
   WebKit::WebMediaStreamTrack component = tracks[0];
   mock_peer_connection_->SetGetStatsResult(false);
 
@@ -641,20 +647,20 @@ TEST_F(RTCPeerConnectionHandlerTest, OnAddAndOnRemoveStream) {
   testing::InSequence sequence;
   EXPECT_CALL(*mock_tracker_.get(), TrackAddStream(
       pc_handler_.get(),
-      testing::Property(&WebKit::WebMediaStream::label,
+      testing::Property(&WebKit::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label)),
       PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
-      testing::Property(&WebKit::WebMediaStream::label,
+      testing::Property(&WebKit::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label))));
 
   EXPECT_CALL(*mock_tracker_.get(), TrackRemoveStream(
       pc_handler_.get(),
-      testing::Property(&WebKit::WebMediaStream::label,
+      testing::Property(&WebKit::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label)),
       PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_CALL(*mock_client_.get(), didRemoveRemoteStream(
-      testing::Property(&WebKit::WebMediaStream::label,
+      testing::Property(&WebKit::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label))));
 
   pc_handler_->OnAddStream(remote_stream.get());
@@ -669,7 +675,7 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoteTrackState) {
 
   testing::InSequence sequence;
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
-      testing::Property(&WebKit::WebMediaStream::label,
+      testing::Property(&WebKit::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label))));
   pc_handler_->OnAddStream(remote_stream.get());
   const WebKit::WebMediaStream& webkit_stream = mock_client_->remote_stream();
@@ -701,7 +707,7 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddAudioTrackFromRemoteStream) {
       AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
 
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
-      testing::Property(&WebKit::WebMediaStream::label,
+      testing::Property(&WebKit::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label))));
   pc_handler_->OnAddStream(remote_stream.get());
   const WebKit::WebMediaStream& webkit_stream = mock_client_->remote_stream();
@@ -731,7 +737,7 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddVideoTrackFromRemoteStream) {
       AddRemoteMockMediaStream(remote_stream_label, "video", "video"));
 
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
-      testing::Property(&WebKit::WebMediaStream::label,
+      testing::Property(&WebKit::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label))));
   pc_handler_->OnAddStream(remote_stream.get());
   const WebKit::WebMediaStream& webkit_stream = mock_client_->remote_stream();
@@ -797,12 +803,12 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDtmfSender) {
   pc_handler_->addStream(local_stream, constraints);
 
   WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
-  local_stream.videoSources(tracks);
+  local_stream.videoTracks(tracks);
 
   ASSERT_LE(1ul, tracks.size());
   EXPECT_FALSE(pc_handler_->createDTMFSender(tracks[0]));
 
-  local_stream.audioSources(tracks);
+  local_stream.audioTracks(tracks);
   ASSERT_LE(1ul, tracks.size());
 
   EXPECT_CALL(*mock_tracker_.get(),

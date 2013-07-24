@@ -92,8 +92,22 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
       video_sources_.assign(video_sources);
     }
     WebKit::WebMediaStream stream_desc;
-    stream_desc.initialize("media stream", audio_sources, video_sources);
+    WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_track_vector(
+        audio_sources.size());
+    for (size_t i = 0; i < audio_track_vector.size(); ++i) {
+      audio_track_vector[i].initialize(audio_sources[i].id(),
+                                       audio_sources[i]);
+    }
 
+    WebKit::WebVector<WebKit::WebMediaStreamTrack> video_track_vector(
+        video_sources.size());
+    for (size_t i = 0; i < video_track_vector.size(); ++i) {
+      video_track_vector[i].initialize(video_sources[i].id(),
+                                       video_sources[i]);
+    }
+
+    stream_desc.initialize("media stream", audio_track_vector,
+                           video_track_vector);
     return stream_desc;
   }
 
@@ -159,18 +173,24 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStream) {
 // remote tracks.
 TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStreamWithoutSource) {
   // Create a WebKit MediaStream description.
+  WebKit::WebMediaStreamSource audio_source;
+  audio_source.initialize("audio source",
+                          WebKit::WebMediaStreamSource::TypeAudio,
+                          "something");
+  WebKit::WebMediaStreamSource video_source;
+  video_source.initialize("video source",
+                          WebKit::WebMediaStreamSource::TypeVideo,
+                          "something");
+
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks(
+      static_cast<size_t>(1));
+  audio_tracks[0].initialize(audio_source.id(), audio_source);
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks(
+      static_cast<size_t>(1));
+  video_tracks[0].initialize(video_source.id(), video_source);
+
   WebKit::WebMediaStream stream_desc;
-  WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
-      static_cast<size_t>(1));
-  audio_sources[0].initialize("audio source",
-                              WebKit::WebMediaStreamSource::TypeAudio,
-                              "something");
-  WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
-      static_cast<size_t>(1));
-  video_sources[0].initialize("video source",
-                              WebKit::WebMediaStreamSource::TypeVideo,
-                              "something");
-  stream_desc.initialize("new stream", audio_sources, video_sources);
+  stream_desc.initialize("new stream", audio_tracks, video_tracks);
 
   EXPECT_TRUE(dependency_factory_->EnsurePeerConnectionFactory());
   dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);

@@ -25,9 +25,9 @@ bool IsMockMediaStreamWithVideo(const WebURL& url) {
       WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
   if (descriptor.isNull())
     return false;
-  WebVector<WebMediaStreamTrack> videoSources;
-  descriptor.videoSources(videoSources);
-  return videoSources.size() > 0;
+  WebVector<WebMediaStreamTrack> video_tracks;
+  descriptor.videoTracks(video_tracks);
+  return video_tracks.size() > 0;
 #else
   return false;
 #endif

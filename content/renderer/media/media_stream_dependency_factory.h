@@ -57,7 +57,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // MediaSourcesCreatedCallback is used in CreateNativeMediaSources.
-  typedef base::Callback<void(WebKit::WebMediaStream* description,
+  typedef base::Callback<void(WebKit::WebMediaStream* web_stream,
                               bool live)> MediaSourcesCreatedCallback;
   MediaStreamDependencyFactory(
       VideoCaptureImplManager* vc_manager,
@@ -70,7 +70,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       WebKit::WebRTCPeerConnectionHandlerClient* client);
 
   // CreateNativeMediaSources creates libjingle representations of
-  // the underlying sources to the tracks in |description|.
+  // the underlying sources to the tracks in |web_stream|.
   // |sources_created| is invoked when the sources have either been created and
   // transitioned to a live state or failed.
   // The libjingle sources is stored in the extra data field of
@@ -80,20 +80,20 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       int render_view_id,
       const WebKit::WebMediaConstraints& audio_constraints,
       const WebKit::WebMediaConstraints& video_constraints,
-      WebKit::WebMediaStream* description,
+      WebKit::WebMediaStream* web_stream,
       const MediaSourcesCreatedCallback& sources_created);
 
   // Creates a libjingle representation of a MediaStream and stores
-  // it in the extra data field of |description|.
+  // it in the extra data field of |web_stream|.
   void CreateNativeLocalMediaStream(
-      WebKit::WebMediaStream* description);
+      WebKit::WebMediaStream* web_stream);
 
   // Creates a libjingle representation of a MediaStream and stores
-  // it in the extra data field of |description|.
+  // it in the extra data field of |web_stream|.
   // |stream_stopped| is a callback that is run when a MediaStream have been
   // stopped.
   void CreateNativeLocalMediaStream(
-      WebKit::WebMediaStream* description,
+      WebKit::WebMediaStream* web_stream,
       const MediaStreamExtraData::StreamStopCallback& stream_stop);
 
   // Adds a libjingle representation of a MediaStreamTrack to |stream| based
@@ -138,7 +138,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // Stop the audio source for local audio tracks.
   // TODO(xians): Remove this function if each audio track takes care of their
   // own source.
-  void StopLocalAudioSource(const WebKit::WebMediaStream& description);
+  void StopLocalAudioSource(const WebKit::WebMediaStream& web_stream);
 
 #if defined(GOOGLE_TV)
   RTCVideoDecoderFactoryTv* decoder_factory_tv() { return decoder_factory_tv_; }

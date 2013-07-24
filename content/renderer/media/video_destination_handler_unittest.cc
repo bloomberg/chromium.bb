@@ -108,7 +108,7 @@ TEST_F(VideoDestinationHandlerTest, Open) {
   // Verify the video track has been added.
   const WebKit::WebMediaStream test_stream = registry_.test_stream();
   WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
-  test_stream.videoSources(video_tracks);
+  test_stream.videoTracks(video_tracks);
   EXPECT_EQ(1u, video_tracks.size());
 
   // Verify the native video track has been added.

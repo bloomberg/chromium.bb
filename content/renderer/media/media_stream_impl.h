@@ -94,11 +94,11 @@ class CONTENT_EXPORT MediaStreamImpl
 
   // Callback function triggered when all native (libjingle) versions of the
   // underlying media sources have been created and started.
-  // |description| is a raw pointer to the description in
-  // UserMediaRequests::description for which the underlying sources have been
+  // |web_stream| is a raw pointer to the web_stream in
+  // UserMediaRequests::web_stream for which the underlying sources have been
   // created.
   void OnCreateNativeSourcesComplete(
-      WebKit::WebMediaStream* description,
+      WebKit::WebMediaStream* web_stream,
       bool request_succeeded);
 
   // This function is virtual for test purposes. A test can override this to
@@ -127,7 +127,7 @@ class CONTENT_EXPORT MediaStreamImpl
     // OnStreamGenerated.
     bool generated;
     WebKit::WebFrame* frame;  // WebFrame that requested the MediaStream.
-    WebKit::WebMediaStream descriptor;
+    WebKit::WebMediaStream web_stream;
     WebKit::WebUserMediaRequest request;
     WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources;
     WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources;
@@ -136,7 +136,7 @@ class CONTENT_EXPORT MediaStreamImpl
 
   UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
   UserMediaRequestInfo* FindUserMediaRequestInfo(
-      WebKit::WebMediaStream* descriptor);
+      WebKit::WebMediaStream* web_stream);
   UserMediaRequestInfo* FindUserMediaRequestInfo(
       const WebKit::WebUserMediaRequest& request);
   UserMediaRequestInfo* FindUserMediaRequestInfo(const std::string& label);

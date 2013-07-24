@@ -70,25 +70,25 @@ static string SerializeMediaStreamComponent(
 
 static string SerializeMediaDescriptor(
     const WebKit::WebMediaStream& stream) {
-  string label = UTF16ToUTF8(stream.label());
+  string label = UTF16ToUTF8(stream.id());
   string result = "label: " + label;
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> sources;
-  stream.audioSources(sources);
-  if (!sources.isEmpty()) {
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
+  stream.audioTracks(tracks);
+  if (!tracks.isEmpty()) {
     result += ", audio: [";
-    for (size_t i = 0; i < sources.size(); ++i) {
-      result += SerializeMediaStreamComponent(sources[i]);
-      if (i != sources.size() - 1)
+    for (size_t i = 0; i < tracks.size(); ++i) {
+      result += SerializeMediaStreamComponent(tracks[i]);
+      if (i != tracks.size() - 1)
         result += ", ";
     }
     result += "]";
   }
-  stream.videoSources(sources);
-  if (!sources.isEmpty()) {
+  stream.videoTracks(tracks);
+  if (!tracks.isEmpty()) {
     result += ", video: [";
-    for (size_t i = 0; i < sources.size(); ++i) {
-      result += SerializeMediaStreamComponent(sources[i]);
-      if (i != sources.size() - 1)
+    for (size_t i = 0; i < tracks.size(); ++i) {
+      result += SerializeMediaStreamComponent(tracks[i]);
+      if (i != tracks.size() - 1)
         result += ", ";
     }
     result += "]";
