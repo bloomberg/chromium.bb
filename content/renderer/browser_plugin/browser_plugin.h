@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/process_util.h"
 #include "base/sequenced_task_runner_helpers.h"
 #if defined(OS_WIN)
 #include "base/memory/shared_memory.h"

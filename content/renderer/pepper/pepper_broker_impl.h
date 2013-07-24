@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_PEPPER_PEPPER_BROKER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "ppapi/proxy/proxy_channel.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
