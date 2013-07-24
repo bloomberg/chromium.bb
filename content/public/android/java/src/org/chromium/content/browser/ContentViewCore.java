@@ -821,11 +821,16 @@ import java.util.Map;
         mContentSettings = null;
         mJavaScriptInterfaces.clear();
         mRetainedJavaScriptObjects.clear();
-        if (mAccessibilityScriptInjectionObserver != null) {
-            getContext().getContentResolver().unregisterContentObserver(
-                    mAccessibilityScriptInjectionObserver);
-            mAccessibilityScriptInjectionObserver = null;
+        unregisterAccessibilityContentObserver();
+    }
+
+    private void unregisterAccessibilityContentObserver() {
+        if (mAccessibilityScriptInjectionObserver == null) {
+            return;
         }
+        getContext().getContentResolver().unregisterContentObserver(
+                mAccessibilityScriptInjectionObserver);
+        mAccessibilityScriptInjectionObserver = null;
     }
 
     /**
@@ -1430,6 +1435,7 @@ import java.util.Map;
         setInjectedAccessibility(false);
         hidePopupDialog();
         mZoomControlsDelegate.dismissZoomPicker();
+        unregisterAccessibilityContentObserver();
     }
 
     /**
