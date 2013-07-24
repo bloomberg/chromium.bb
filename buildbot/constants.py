@@ -349,6 +349,7 @@ BASE_IMAGE_BIN = '%s.bin' % BASE_IMAGE_NAME
 IMAGE_SCRIPTS_NAME = 'image_scripts'
 IMAGE_SCRIPTS_TAR = '%s.tar.xz' % IMAGE_SCRIPTS_NAME
 METADATA_JSON = 'metadata.json'
+METADATA_STAGE_JSON = 'metadata_%(stage)s.json'
 
 # Global configuration constants.
 CHROMITE_CONFIG_DIR = os.path.expanduser('~/.chromite')

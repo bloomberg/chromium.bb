@@ -814,7 +814,8 @@ class ArchivingMock(partial_mock.PartialMock):
 
   def UploadArtifact(self, *args, **kwargs):
     with patch(commands, 'ArchiveFile', return_value='foo.txt'):
-      self.backup['UploadArtifact'](*args, **kwargs)
+      with patch(commands, 'UploadArchivedFile'):
+        self.backup['UploadArtifact'](*args, **kwargs)
 
 
 class BuildPackagesStageTest(AbstractStageTest):
@@ -952,49 +953,19 @@ class ArchiveStageMock(partial_mock.PartialMock):
     return True
 
 
-class ArchiveStageTest(AbstractStageTest):
-
-  def _PatchDependencies(self):
-    """Patch dependencies of ArchiveStage.PerformStage()."""
-    to_patch = [
-        (parallel, 'RunParallelSteps'), (commands, 'PushImages'),
-        (commands, 'RemoveOldArchives'), (commands, 'UploadArchivedFile')]
-    self.AutoPatch(to_patch)
+class ArchivingStageTest(AbstractStageTest):
+  """Excerise ArchivingStage functionality."""
 
   def setUp(self):
     self._build_config = self.build_config.copy()
-    self._build_config['upload_symbols'] = True
-    self._build_config['push_image'] = True
-
-    self.archive_mock = ArchiveStageMock()
-    self.StartPatcher(self.archive_mock)
-    self._PatchDependencies()
+    self.StartPatcher(ArchivingMock())
+    self.StartPatcher(ArchiveStageMock())
 
   def ConstructStage(self):
-    return stages.ArchiveStage(self.options, self._build_config,
-                               self._current_board, '')
-
-  def testArchive(self):
-    """Simple did-it-run test."""
-    # TODO(davidjames): Test the individual archive steps as well.
-    self.RunStage()
-    # pylint: disable=E1101
-    self.assertEquals(
-        commands.UploadArchivedFile.call_args[0][2:],
-        ('LATEST-%s' % self.TARGET_MANIFEST_BRANCH, False))
-
-  def testNoPushImagesForRemoteTrybot(self):
-    """Test that remote trybot overrides work to disable push images."""
-    argv = ['--remote-trybot', '-r', self.build_root, '--buildnumber=1234',
-            'x86-mario-release']
-    parser = cbuildbot._CreateParser()
-    (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
-    test_config = config.config['x86-mario-release']
-    self._build_config = config.OverrideConfigForTrybot(test_config,
-                                                        self.options)
-    self.RunStage()
-    # pylint: disable=E1101
-    self.assertEquals(commands.PushImages.call_count, 0)
+    archive_stage = stages.ArchiveStage(self.options, self._build_config,
+                                        self._current_board, '')
+    return stages.ArchivingStage(self.options, self._build_config,
+                                 self._current_board, archive_stage)
 
   def testMetadataJson(self):
     """Test that the json metadata is built correctly"""
@@ -1007,10 +978,12 @@ class ArchiveStageTest(AbstractStageTest):
 
     # Now run the code.
     stage = self.ConstructStage()
-    stage.RefreshMetadata('tests')
+    stage.UploadMetadata(stage='tests')
 
     # Now check the results.
-    json_file = os.path.join(stage.archive_path, constants.METADATA_JSON)
+    json_file = os.path.join(
+        stage.archive_path,
+        constants.METADATA_STAGE_JSON % { 'stage': 'tests' } )
     json_data = json.loads(osutils.ReadFile(json_file))
 
     important_keys = (
@@ -1049,6 +1022,51 @@ class ArchiveStageTest(AbstractStageTest):
     overlay_tuples = ['i686-pc-linux-gnu', 'arm-none-eabi']
     self.assertEquals(json_data['toolchain-tuple'],
                       overlay_tuples if overlays else [])
+
+
+class ArchiveStageTest(AbstractStageTest):
+  """Exercise ArchiveStage functionality."""
+
+  def _PatchDependencies(self):
+    """Patch dependencies of ArchiveStage.PerformStage()."""
+    to_patch = [
+        (parallel, 'RunParallelSteps'), (commands, 'PushImages'),
+        (commands, 'RemoveOldArchives'), (commands, 'UploadArchivedFile')]
+    self.AutoPatch(to_patch)
+
+  def setUp(self):
+    self._build_config = self.build_config.copy()
+    self._build_config['upload_symbols'] = True
+    self._build_config['push_image'] = True
+
+    self.StartPatcher(ArchiveStageMock())
+    self._PatchDependencies()
+
+  def ConstructStage(self):
+    return stages.ArchiveStage(self.options, self._build_config,
+                               self._current_board, '')
+
+  def testArchive(self):
+    """Simple did-it-run test."""
+    # TODO(davidjames): Test the individual archive steps as well.
+    self.RunStage()
+    # pylint: disable=E1101
+    self.assertEquals(
+        commands.UploadArchivedFile.call_args[0][2:],
+        ('LATEST-%s' % self.TARGET_MANIFEST_BRANCH, False))
+
+  def testNoPushImagesForRemoteTrybot(self):
+    """Test that remote trybot overrides work to disable push images."""
+    argv = ['--remote-trybot', '-r', self.build_root, '--buildnumber=1234',
+            'x86-mario-release']
+    parser = cbuildbot._CreateParser()
+    (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
+    test_config = config.config['x86-mario-release']
+    self._build_config = config.OverrideConfigForTrybot(test_config,
+                                                        self.options)
+    self.RunStage()
+    # pylint: disable=E1101
+    self.assertEquals(commands.PushImages.call_count, 0)
 
   def testChromeEnvironment(self):
     """Test that the Chrome environment is built."""
