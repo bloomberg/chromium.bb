@@ -90,6 +90,7 @@ void CompareFixedBoundsLayerAndNormalLayer(
   const gfx::Size kDeviceViewportSize(800, 600);
   const float kDeviceScaleFactor = 2.f;
   const float kPageScaleFactor = 1.5f;
+  const int kMaxTextureSize = 512;
 
   WebSize bounds(150, 200);
   WebFloatPoint position(20, 30);
@@ -128,13 +129,17 @@ void CompareFixedBoundsLayerAndNormalLayer(
 
   {
     cc::RenderSurfaceLayerList render_surface_layer_list;
-    cc::LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root_layer->layer(), kDeviceViewportSize, &render_surface_layer_list);
-    inputs.device_scale_factor = kDeviceScaleFactor;
-    inputs.page_scale_factor = kPageScaleFactor;
-    inputs.page_scale_application_layer = root_layer->layer(),
-    cc::LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
+    cc::LayerTreeHostCommon::CalculateDrawProperties(
+        root_layer->layer(),
+        kDeviceViewportSize,
+        gfx::Transform(),
+        kDeviceScaleFactor,
+        kPageScaleFactor,
+        root_layer->layer(),
+        kMaxTextureSize,
+        false,  // can_use_lcd_text
+        false,  // can_adjust_raster_scales
+        &render_surface_layer_list);
     ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                   fixed_bounds_layer->layer());
     ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),
@@ -147,13 +152,17 @@ void CompareFixedBoundsLayerAndNormalLayer(
 
   {
     cc::RenderSurfaceLayerList render_surface_layer_list;
-    cc::LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root_layer->layer(), kDeviceViewportSize, &render_surface_layer_list);
-    inputs.device_scale_factor = kDeviceScaleFactor;
-    inputs.page_scale_factor = kPageScaleFactor;
-    inputs.page_scale_application_layer = root_layer->layer(),
-    cc::LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
+    cc::LayerTreeHostCommon::CalculateDrawProperties(
+        root_layer->layer(),
+        kDeviceViewportSize,
+        gfx::Transform(),
+        kDeviceScaleFactor,
+        kPageScaleFactor,
+        root_layer->layer(),
+        kMaxTextureSize,
+        false,  // can_use_lcd_text
+        false,  // can_adjust_raster_scales
+        &render_surface_layer_list);
     ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                   fixed_bounds_layer->layer());
     ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),

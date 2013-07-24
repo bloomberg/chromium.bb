@@ -5,7 +5,6 @@
 #ifndef CC_TREES_LAYER_TREE_HOST_COMMON_H_
 #define CC_TREES_LAYER_TREE_HOST_COMMON_H_
 
-#include <limits>
 #include <vector>
 
 #include "base/bind.h"
@@ -28,69 +27,28 @@ class CC_EXPORT LayerTreeHostCommon {
                                         gfx::Rect layer_bound_rect,
                                         const gfx::Transform& transform);
 
-  template <typename LayerType, typename RenderSurfaceLayerListType>
-  struct CalcDrawPropsInputs {
-   public:
-    CalcDrawPropsInputs(LayerType* root_layer,
-                        gfx::Size device_viewport_size,
-                        const gfx::Transform& device_transform,
-                        float device_scale_factor,
-                        float page_scale_factor,
-                        LayerType* page_scale_application_layer,
-                        int max_texture_size,
-                        bool can_use_lcd_text,
-                        bool can_adjust_raster_scales,
-                        RenderSurfaceLayerListType* render_surface_layer_list)
-        : root_layer(root_layer),
-          device_viewport_size(device_viewport_size),
-          device_transform(device_transform),
-          device_scale_factor(device_scale_factor),
-          page_scale_factor(page_scale_factor),
-          page_scale_application_layer(page_scale_application_layer),
-          max_texture_size(max_texture_size),
-          can_use_lcd_text(can_use_lcd_text),
-          can_adjust_raster_scales(can_adjust_raster_scales),
-          render_surface_layer_list(render_surface_layer_list) {}
-
-    LayerType* root_layer;
-    gfx::Size device_viewport_size;
-    const gfx::Transform& device_transform;
-    float device_scale_factor;
-    float page_scale_factor;
-    LayerType* page_scale_application_layer;
-    int max_texture_size;
-    bool can_use_lcd_text;
-    bool can_adjust_raster_scales;
-    RenderSurfaceLayerListType* render_surface_layer_list;
-  };
-
-  template <typename LayerType, typename RenderSurfaceLayerListType>
-  struct CalcDrawPropsInputsForTesting
-      : public CalcDrawPropsInputs<LayerType, RenderSurfaceLayerListType> {
-    CalcDrawPropsInputsForTesting(
-        LayerType* root_layer,
-        gfx::Size device_viewport_size,
-        const gfx::Transform& device_transform,
-        RenderSurfaceLayerListType* render_surface_layer_list);
-    CalcDrawPropsInputsForTesting(
-        LayerType* root_layer,
-        gfx::Size device_viewport_size,
-        RenderSurfaceLayerListType* render_surface_layer_list);
-
-   private:
-    const gfx::Transform identity_transform_;
-  };
-
-  typedef CalcDrawPropsInputs<Layer, RenderSurfaceLayerList>
-      CalcDrawPropsMainInputs;
-  typedef CalcDrawPropsInputsForTesting<Layer, RenderSurfaceLayerList>
-      CalcDrawPropsMainInputsForTesting;
-  static void CalculateDrawProperties(CalcDrawPropsMainInputs* inputs);
-
-  typedef CalcDrawPropsInputs<LayerImpl, LayerImplList> CalcDrawPropsImplInputs;
-  typedef CalcDrawPropsInputsForTesting<LayerImpl, LayerImplList>
-      CalcDrawPropsImplInputsForTesting;
-  static void CalculateDrawProperties(CalcDrawPropsImplInputs* inputs);
+  static void CalculateDrawProperties(
+      Layer* root_layer,
+      gfx::Size device_viewport_size,
+      const gfx::Transform& device_transform,
+      float device_scale_factor,
+      float page_scale_factor,
+      Layer* page_scale_application_layer,
+      int max_texture_size,
+      bool can_use_lcd_text,
+      bool can_adjust_raster_scales,
+      RenderSurfaceLayerList* render_surface_layer_list);
+  static void CalculateDrawProperties(
+      LayerImpl* root_layer,
+      gfx::Size device_viewport_size,
+      const gfx::Transform& device_transform,
+      float device_scale_factor,
+      float page_scale_factor,
+      LayerImpl* page_scale_application_layer,
+      int max_texture_size,
+      bool can_use_lcd_text,
+      bool can_adjust_raster_scales,
+      LayerImplList* render_surface_layer_list);
 
   // Performs hit testing for a given render_surface_layer_list.
   static LayerImpl* FindLayerThatIsHitByPoint(
@@ -201,51 +159,6 @@ void LayerTreeHostCommon::CallFunctionForSubtree(
     CallFunctionForSubtree(get_child_as_raw_ptr(root_layer->children(), i),
                            function);
   }
-}
-
-template <typename LayerType, typename RenderSurfaceLayerListType>
-LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
-                                                   RenderSurfaceLayerListType>::
-    CalcDrawPropsInputsForTesting(
-        LayerType* root_layer,
-        gfx::Size device_viewport_size,
-        const gfx::Transform& device_transform,
-        RenderSurfaceLayerListType* render_surface_layer_list)
-    : CalcDrawPropsInputs<LayerType, RenderSurfaceLayerListType>(
-          root_layer,
-          device_viewport_size,
-          device_transform,
-          1.f,
-          1.f,
-          NULL,
-          std::numeric_limits<int>::max() / 2,
-          false,
-          false,
-          render_surface_layer_list) {
-  DCHECK(root_layer);
-  DCHECK(render_surface_layer_list);
-}
-
-template <typename LayerType, typename RenderSurfaceLayerListType>
-LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
-                                                   RenderSurfaceLayerListType>::
-    CalcDrawPropsInputsForTesting(
-        LayerType* root_layer,
-        gfx::Size device_viewport_size,
-        RenderSurfaceLayerListType* render_surface_layer_list)
-    : CalcDrawPropsInputs<LayerType, RenderSurfaceLayerListType>(
-          root_layer,
-          device_viewport_size,
-          identity_transform_,
-          1.f,
-          1.f,
-          NULL,
-          std::numeric_limits<int>::max() / 2,
-          false,
-          false,
-          render_surface_layer_list) {
-  DCHECK(root_layer);
-  DCHECK(render_surface_layer_list);
 }
 
 }  // namespace cc

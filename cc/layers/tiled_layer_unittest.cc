@@ -134,15 +134,17 @@ class TiledLayerTest : public testing::Test {
     if (occlusion_)
       occlusion_->SetRenderTarget(layer_tree_host_->root_layer());
 
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+    LayerTreeHostCommon::CalculateDrawProperties(
         layer_tree_host_->root_layer(),
         layer_tree_host_->device_viewport_size(),
+        gfx::Transform(),
+        layer_tree_host_->device_scale_factor(),
+        1.f,    // page_scale_factor
+        NULL,
+        layer_tree_host_->GetRendererCapabilities().max_texture_size,
+        false,  // can_use_lcd_text
+        true,  // can_adjust_raster_scale
         render_surface_layer_list);
-    inputs.device_scale_factor = layer_tree_host_->device_scale_factor();
-    inputs.max_texture_size =
-        layer_tree_host_->GetRendererCapabilities().max_texture_size;
-    inputs.can_adjust_raster_scales = true;
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 
   bool UpdateAndPush(const scoped_refptr<FakeTiledLayer>& layer1,

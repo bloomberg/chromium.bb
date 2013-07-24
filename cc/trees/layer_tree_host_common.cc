@@ -1597,47 +1597,55 @@ static void CalculateDrawPropertiesInternal(
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(
-    CalcDrawPropsMainInputs* inputs) {
-  DCHECK(inputs->root_layer);
-  DCHECK(IsRootLayer(inputs->root_layer));
-  DCHECK(inputs->render_surface_layer_list);
+    Layer* root_layer,
+    gfx::Size device_viewport_size,
+    const gfx::Transform& device_transform,
+    float device_scale_factor,
+    float page_scale_factor,
+    Layer* page_scale_application_layer,
+    int max_texture_size,
+    bool can_use_lcd_text,
+    bool can_adjust_raster_scales,
+    RenderSurfaceLayerList* render_surface_layer_list) {
   gfx::Rect total_drawable_content_rect;
   gfx::Transform identity_matrix;
-  gfx::Transform scaled_device_transform = inputs->device_transform;
-  scaled_device_transform.Scale(inputs->device_scale_factor,
-                                inputs->device_scale_factor);
+  gfx::Transform scaled_device_transform = device_transform;
+  scaled_device_transform.Scale(device_scale_factor, device_scale_factor);
   RenderSurfaceLayerList dummy_layer_list;
 
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
   bool layer_or_ancestor_clips_descendants = true;
-  gfx::Rect device_viewport_rect(inputs->device_viewport_size);
+  gfx::Rect device_viewport_rect(device_viewport_size);
   bool in_subtree_of_page_scale_application_layer = false;
   bool subtree_is_visible = true;
 
+  // This function should have received a root layer.
+  DCHECK(IsRootLayer(root_layer));
+
   PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
+  PreCalculateMetaInformation(root_layer, &recursive_data);
 
   CalculateDrawPropertiesInternal<Layer, RenderSurfaceLayerList, RenderSurface>(
-      inputs->root_layer,
+      root_layer,
       scaled_device_transform,
       identity_matrix,
       identity_matrix,
-      inputs->root_layer,
+      root_layer,
       device_viewport_rect,
       device_viewport_rect,
       layer_or_ancestor_clips_descendants,
       NULL,
-      inputs->render_surface_layer_list,
+      render_surface_layer_list,
       &dummy_layer_list,
       NULL,
-      inputs->max_texture_size,
-      inputs->device_scale_factor,
-      inputs->page_scale_factor,
-      inputs->page_scale_application_layer,
+      max_texture_size,
+      device_scale_factor,
+      page_scale_factor,
+      page_scale_application_layer,
       in_subtree_of_page_scale_application_layer,
-      inputs->can_use_lcd_text,
-      inputs->can_adjust_raster_scales,
+      can_use_lcd_text,
+      can_adjust_raster_scales,
       subtree_is_visible,
       &total_drawable_content_rect);
 
@@ -1645,53 +1653,62 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   DCHECK_EQ(0u, dummy_layer_list.size());
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.
-  DCHECK(inputs->root_layer->render_surface());
+  DCHECK(root_layer->render_surface());
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(
-    CalcDrawPropsImplInputs* inputs) {
-  DCHECK(inputs->root_layer);
-  DCHECK(IsRootLayer(inputs->root_layer));
-  DCHECK(inputs->render_surface_layer_list);
-
+    LayerImpl* root_layer,
+    gfx::Size device_viewport_size,
+    const gfx::Transform& device_transform,
+    float device_scale_factor,
+    float page_scale_factor,
+    LayerImpl* page_scale_application_layer,
+    int max_texture_size,
+    bool can_use_lcd_text,
+    bool can_adjust_raster_scales,
+    LayerImplList* render_surface_layer_list) {
   gfx::Rect total_drawable_content_rect;
   gfx::Transform identity_matrix;
-  gfx::Transform scaled_device_transform = inputs->device_transform;
-  scaled_device_transform.Scale(inputs->device_scale_factor,
-                                inputs->device_scale_factor);
+  gfx::Transform scaled_device_transform = device_transform;
+  scaled_device_transform.Scale(device_scale_factor, device_scale_factor);
   LayerImplList dummy_layer_list;
   LayerSorter layer_sorter;
 
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
   bool layer_or_ancestor_clips_descendants = true;
-  gfx::Rect device_viewport_rect(inputs->device_viewport_size);
+  gfx::Rect device_viewport_rect(device_viewport_size);
   bool in_subtree_of_page_scale_application_layer = false;
   bool subtree_is_visible = true;
 
-  PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
+  // This function should have received a root layer.
+  DCHECK(IsRootLayer(root_layer));
 
-  CalculateDrawPropertiesInternal<LayerImpl, LayerImplList, RenderSurfaceImpl>(
-      inputs->root_layer,
+  PreCalculateMetaInformationRecursiveData recursive_data;
+  PreCalculateMetaInformation(root_layer, &recursive_data);
+
+  CalculateDrawPropertiesInternal<LayerImpl,
+                                  LayerImplList,
+                                  RenderSurfaceImpl>(
+      root_layer,
       scaled_device_transform,
       identity_matrix,
       identity_matrix,
-      inputs->root_layer,
+      root_layer,
       device_viewport_rect,
       device_viewport_rect,
       layer_or_ancestor_clips_descendants,
       NULL,
-      inputs->render_surface_layer_list,
+      render_surface_layer_list,
       &dummy_layer_list,
       &layer_sorter,
-      inputs->max_texture_size,
-      inputs->device_scale_factor,
-      inputs->page_scale_factor,
-      inputs->page_scale_application_layer,
+      max_texture_size,
+      device_scale_factor,
+      page_scale_factor,
+      page_scale_application_layer,
       in_subtree_of_page_scale_application_layer,
-      inputs->can_use_lcd_text,
-      inputs->can_adjust_raster_scales,
+      can_use_lcd_text,
+      can_adjust_raster_scales,
       subtree_is_visible,
       &total_drawable_content_rect);
 
@@ -1699,7 +1716,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   DCHECK_EQ(0u, dummy_layer_list.size());
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.
-  DCHECK(inputs->root_layer->render_surface());
+  DCHECK(root_layer->render_surface());
 }
 
 static bool PointHitsRect(

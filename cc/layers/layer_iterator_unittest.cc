@@ -137,9 +137,16 @@ TEST(LayerIteratorTest, SimpleTree) {
   root_layer->AddChild(fourth);
 
   RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root_layer.get(), root_layer->bounds(), &render_surface_layer_list);
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
+                                               root_layer->bounds(),
+                                               gfx::Transform(),
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               256,
+                                               false,
+                                               false,
+                                               &render_surface_layer_list);
 
   IterateBackToFront(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 0, -1, 1);
@@ -177,9 +184,16 @@ TEST(LayerIteratorTest, ComplexTree) {
   root23->AddChild(root231);
 
   RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root_layer.get(), root_layer->bounds(), &render_surface_layer_list);
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
+                                               root_layer->bounds(),
+                                               gfx::Transform(),
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               256,
+                                               false,
+                                               false,
+                                               &render_surface_layer_list);
 
   IterateBackToFront(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 0, -1, 1);
@@ -230,9 +244,16 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   root23->AddChild(root231);
 
   RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root_layer.get(), root_layer->bounds(), &render_surface_layer_list);
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
+                                               root_layer->bounds(),
+                                               gfx::Transform(),
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               256,
+                                               false,
+                                               false,
+                                               &render_surface_layer_list);
 
   IterateBackToFront(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 0, -1, 1);
