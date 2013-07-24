@@ -18,7 +18,7 @@
   90
   90
 @dis:
-     0:	48 68 03 04 05 06                            	rex.W pushq  $0x6050403
+     0:	48 68 03 04 05 06                            	rex.W pushq $0x6050403
      6:	90                                           	nop
      7:	90                                           	nop
      8:	90                                           	nop
@@ -30,17 +30,10 @@
 ----------------------------------------------------------------------
 @hex:
   # The following tests that data66 defines the size as 2 bytes.
-  # TODO(shcherbina): make sure it's still accepted when nacl-objdump is
-  # updated. Because of the bug (which was fixed in newer versions) it was
-  # incorrectly determining push immediate size in presence of data16 prefix.
-  
   # pushw $0x0403
-  # (not push $0x09090403 !!!)
   66 68 03 04
-  90
-  90
 @dis:
-     0:	66 68 03 04 90 90                            	pushw  $0xffffffff90900403
+     0:	66 68 03 04                                  	pushw  $0x403
 @rdfa_output:
   return code: 0
 @spec:
@@ -48,26 +41,11 @@
 ----------------------------------------------------------------------
 @hex:
   # The following shows that we don't allow rex.w and a data 66 prefix.
-  # TODO(shcherbina): make sure it's rejected when nacl-objdump is updated.
-  # Newer versions of objdump decode this 'data32 pushq $0x403' so it would
-  # be rejected automatically. Unfortunately, current version of nacl-objdump
-  # does not, so currently there is no natural way to recognize this instruction
-  # in text-based specification.
-  66 48 68 03 04
-  90
-  90
-  90
-  90
-  90
-  90
+  66 48 68 03 04 90 90
 @dis:
-     0:	66 48 68 03 04 90 90                         	pushq  $0xffffffff90900403
-     7:	90                                           	nop
-     8:	90                                           	nop
-     9:	90                                           	nop
-     a:	90                                           	nop
+     0:	66 48 68 03 04 90 90                         	data32 rex.W pushq $0xffffffff90900403
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  SAFE
+  0: ('prefix data32 is not allowed', Instruction(0x0: 66 48 68 03 04 90 90  data32 pushq $0xffffffff90900403))

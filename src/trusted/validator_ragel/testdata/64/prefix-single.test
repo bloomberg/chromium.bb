@@ -26,7 +26,7 @@
      e:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
     12:	f2 ae                                        	repnz scas %es:(%rdi),%al
     14:	66 89 c0                                     	mov    %ax,%ax
-    17:	40 eb fd                                     	rex jmp    0x17
+    17:	40 eb fd                                     	rex jmp 0x17
 @rdfa_output:
   return code: 0
 @spec:
@@ -156,12 +156,12 @@
 @hex:
   67 89 04 24
 @dis:
-     0:	67 89 04 24                                  	addr32 mov %eax,(%esp)
+     0:	67 89 04 24                                  	mov    %eax,(%esp)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('addr prefix is not allowed', Instruction(0x0: 67 89 04 24  addr32 mov %eax,(%esp)))
+  0: ('addr prefix is not allowed', Instruction(0x0: 67 89 04 24  mov %eax,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   # Jumps with segment prefixes.

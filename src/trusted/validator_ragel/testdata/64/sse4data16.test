@@ -44,10 +44,9 @@
   SAFE
 ----------------------------------------------------------------------
 @hex:
-  # tzcnt %bp,%bx
   66 f3 0f bc dd
 @dis:
-     0:	66 f3 0f bc dd                               	repz bsf %bp,%bx
+     0:	66 f3 0f bc dd                               	tzcnt  %bp,%bx
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -55,10 +54,9 @@
   SAFE
 ----------------------------------------------------------------------
 @hex:
-  # tzcnt %bp,%bx
   f3 66 0f bc dd
 @dis:
-     0:	f3 66 0f bc dd                               	repz bsf %bp,%bx
+     0:	f3 66 0f bc dd                               	tzcnt  %bp,%bx
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

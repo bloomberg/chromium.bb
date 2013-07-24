@@ -3,14 +3,12 @@
   # illegal undefined sequence
   0f 18 21
 @dis:
-     0:	0f 18                                        	(bad)  
-     2:	21                                           	.byte 0x21
+     0:	0f 18 21                                     	nop/reserved (%rcx)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('objdump failed to decode', Instruction(0x0: 0f 18  (bad)))
-  2: ('objdump failed to decode', Instruction(0x2: 21  .byte 0x21))
+  0: unrecognized instruction 'nop/reserved (%rcx)'
 ----------------------------------------------------------------------
 @hex:
   # legal SSE prefetch instruction

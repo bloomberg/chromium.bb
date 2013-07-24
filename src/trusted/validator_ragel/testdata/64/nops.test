@@ -37,8 +37,8 @@
   66 66 2E 0F 1F 84 00 00 00 00 00
   66 66 66 2E 0F 1F 84 00 00 00 00 00
 @dis:
-     0:	66 66 2e 0f 1f 84 00 00 00 00 00             	nopw   %cs:0x0(%rax,%rax,1)
-     b:	66 66 66 2e 0f 1f 84 00 00 00 00 00          	nopw   %cs:0x0(%rax,%rax,1)
+     0:	66 66 2e 0f 1f 84 00 00 00 00 00             	data32 nopw %cs:0x0(%rax,%rax,1)
+     b:	66 66 66 2e 0f 1f 84 00 00 00 00 00          	data32 data32 nopw %cs:0x0(%rax,%rax,1)
 @rdfa_output:
   return code: 0
 @spec:
@@ -48,8 +48,8 @@
   66 66 66 66 2E 0F 1F 84 00 00 00 00 00
   66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00
 @dis:
-     0:	66 66 66 66 2e 0f 1f 84 00 00 00 00 00       	nopw   %cs:0x0(%rax,%rax,1)
-     d:	66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    	nopw   %cs:0x0(%rax,%rax,1)
+     0:	66 66 66 66 2e 0f 1f 84 00 00 00 00 00       	data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)
+     d:	66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    	data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)
 @rdfa_output:
   return code: 0
 @spec:
@@ -58,7 +58,7 @@
 @hex:
   66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00
 @dis:
-     0:	66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 	nopw   %cs:0x0(%rax,%rax,1)
+     0:	66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 	data32 data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)
 @rdfa_output:
   return code: 0
 @spec:
@@ -68,22 +68,22 @@
   # Test cases for illegal nops
   66 66 90
 @dis:
-     0:	66 66 90                                     	xchg   %ax,%ax
+     0:	66 66 90                                     	data32 xchg %ax,%ax
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 90  xchg %ax,%ax))
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 90  data32 xchg %ax,%ax))
 ----------------------------------------------------------------------
 @hex:
   66 66 66 90
 @dis:
-     0:	66 66 66 90                                  	xchg   %ax,%ax
+     0:	66 66 66 90                                  	data32 data32 xchg %ax,%ax
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 66 90  xchg %ax,%ax))
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 66 90  data32 data32 xchg %ax,%ax))
 ----------------------------------------------------------------------
 @hex:
   3E 0F 1F 84 00 00 00 00 00
@@ -110,7 +110,7 @@
   # (see _ValidateNop in spec.py)
   66 66 0F 1F 84 00 00 00 00 00
 @dis:
-     0:	66 66 0f 1f 84 00 00 00 00 00                	nopw   0x0(%rax,%rax,1)
+     0:	66 66 0f 1f 84 00 00 00 00 00                	data32 nopw 0x0(%rax,%rax,1)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

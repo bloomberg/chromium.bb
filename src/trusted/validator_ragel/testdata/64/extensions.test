@@ -126,7 +126,7 @@
   # see https://code.google.com/p/nativeclient/issues/detail?id=1972
   c4 e3 e1 6b d8 10
 @dis:
-     0:	c4 e3 e1 6b d8 10                            	vfmaddsd %xmm0,%xmm3,%xmm1,%xmm3
+     0:	c4 e3 e1 6b d8 10                            	vfmaddsd %xmm0,%xmm1,%xmm3,%xmm3
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

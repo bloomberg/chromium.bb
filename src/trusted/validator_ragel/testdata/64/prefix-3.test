@@ -42,12 +42,12 @@
 @dis:
      0:	89 ff                                        	mov    %edi,%edi
      2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-     6:	66 f3 48 ab                                  	rep stos %rax,%es:(%rdi)
+     6:	66 f3 48 ab                                  	data32 rep stos %rax,%es:(%rdi)
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  SAFE
+  6: ('prefix data32 is not allowed', Instruction(0x6: 66 f3 48 ab  data32 rep stos %rax,%es:(%rdi)))
 ----------------------------------------------------------------------
 @hex:
   # REP prefix together with DATA16
@@ -57,12 +57,12 @@
 @dis:
      0:	89 ff                                        	mov    %edi,%edi
      2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-     6:	f3 66 48 ab                                  	rep stos %rax,%es:(%rdi)
+     6:	f3 66 48 ab                                  	rep data32 stos %rax,%es:(%rdi)
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  SAFE
+  6: ('prefix data32 is not allowed', Instruction(0x6: f3 66 48 ab  rep data32 stos %rax,%es:(%rdi)))
 ----------------------------------------------------------------------
 @hex:
   66 90
@@ -76,28 +76,28 @@
 @hex:
   66 66 90
 @dis:
-     0:	66 66 90                                     	xchg   %ax,%ax
+     0:	66 66 90                                     	data32 xchg %ax,%ax
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 90  xchg %ax,%ax))
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 90  data32 xchg %ax,%ax))
 ----------------------------------------------------------------------
 @hex:
   66 66 66 90
 @dis:
-     0:	66 66 66 90                                  	xchg   %ax,%ax
+     0:	66 66 66 90                                  	data32 data32 xchg %ax,%ax
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 66 90  xchg %ax,%ax))
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 66 90  data32 data32 xchg %ax,%ax))
 ----------------------------------------------------------------------
 @hex:
   # white-listed nop
   66 66 66 2E 0F 1F 84 00 00 00 00 00
 @dis:
-     0:	66 66 66 2e 0f 1f 84 00 00 00 00 00          	nopw   %cs:0x0(%rax,%rax,1)
+     0:	66 66 66 2e 0f 1f 84 00 00 00 00 00          	data32 data32 nopw %cs:0x0(%rax,%rax,1)
 @rdfa_output:
   return code: 0
 @spec:

@@ -22,7 +22,7 @@
 @hex:
   47 29 c7
 @dis:
-     0:	47 29 c7                                     	rex.RXB sub    %r8d,%r15d
+     0:	47 29 c7                                     	rex.RXB sub %r8d,%r15d
 @rdfa_output:
   0: [0] error - %r15 is changed
   return code: 1

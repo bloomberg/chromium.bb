@@ -10,7 +10,7 @@
   ff e2
 @dis:
      0:	eb 00                                        	jmp    0x2
-     2:	83 e2 e0                                     	and    $0xffffffffffffffe0,%edx
+     2:	83 e2 e0                                     	and    $0xffffffe0,%edx
      5:	4c 01 fa                                     	add    %r15,%rdx
      8:	ff e2                                        	jmpq   *%rdx
 @rdfa_output:

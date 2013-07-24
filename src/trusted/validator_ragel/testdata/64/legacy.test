@@ -132,7 +132,7 @@
   # xlat (%rbx,%al)
   48 D7
 @dis:
-     0:	48 d7                                        	rex.W xlat   %ds:(%rbx)
+     0:	48 d7                                        	rex.W xlat %ds:(%rbx)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

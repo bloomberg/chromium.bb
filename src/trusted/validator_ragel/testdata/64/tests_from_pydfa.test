@@ -11,7 +11,7 @@
      0:	90                                           	nop
      1:	f4                                           	hlt    
      2:	48 c7 c0 78 56 34 12                         	mov    $0x12345678,%rax
-     9:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
+     9:	48 b8 78 56 34 12 78 56 34 12                	movabs $0x1234567812345678,%rax
 @rdfa_output:
   return code: 0
 @spec:
@@ -55,10 +55,10 @@
   48 b8 78 56 34 12 78 56 34 12
   48 b8 78 56 34 12 78 56 34 12
 @dis:
-     0:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
-     a:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
-    14:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
-    1e:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
+     0:	48 b8 78 56 34 12 78 56 34 12                	movabs $0x1234567812345678,%rax
+     a:	48 b8 78 56 34 12 78 56 34 12                	movabs $0x1234567812345678,%rax
+    14:	48 b8 78 56 34 12 78 56 34 12                	movabs $0x1234567812345678,%rax
+    1e:	48 b8 78 56 34 12 78 56 34 12                	movabs $0x1234567812345678,%rax
 @rdfa_output:
   1e: [0] unrecognized instruction
   20: [0] direct jump out of range
@@ -121,7 +121,7 @@
   # jmp .-5
   eb f9
 @dis:
-     0:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
+     0:	48 b8 78 56 34 12 78 56 34 12                	movabs $0x1234567812345678,%rax
      a:	eb f9                                        	jmp    0x5
 @rdfa_output:
   a: [0] bad jump target
@@ -181,8 +181,8 @@
   # and $~31, %rbx
   48 83 e3 e0
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
-     3:	83 e3 e0                                     	and    $0xffffffffffffffe0,%ebx
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
+     3:	83 e3 e0                                     	and    $0xffffffe0,%ebx
      6:	48 83 e0 e0                                  	and    $0xffffffffffffffe0,%rax
      a:	48 83 e3 e0                                  	and    $0xffffffffffffffe0,%rbx
 @rdfa_output:
@@ -201,9 +201,9 @@
   # add %r15, %rbx
   4c 01 fb
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
      3:	4c 01 f8                                     	add    %r15,%rax
-     6:	83 e3 e0                                     	and    $0xffffffffffffffe0,%ebx
+     6:	83 e3 e0                                     	and    $0xffffffe0,%ebx
      9:	4c 01 fb                                     	add    %r15,%rbx
 @rdfa_output:
   return code: 0
@@ -219,7 +219,7 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
      3:	4c 01 f8                                     	add    %r15,%rax
      6:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
@@ -235,7 +235,7 @@
   # call *%rbx
   ff d3
 @dis:
-     0:	83 e3 e0                                     	and    $0xffffffffffffffe0,%ebx
+     0:	83 e3 e0                                     	and    $0xffffffe0,%ebx
      3:	4c 01 fb                                     	add    %r15,%rbx
      6:	ff d3                                        	callq  *%rbx
 @rdfa_output:
@@ -252,14 +252,14 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e3 e0                                     	and    $0xffffffffffffffe0,%ebx
+     0:	83 e3 e0                                     	and    $0xffffffe0,%ebx
      3:	4c 01 f8                                     	add    %r15,%rax
      6:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('nacljump64/naclcall64: registers do not match (%rbx, %rax, %rax)', [Instruction(0x0: 83 e3 e0  and $0xffffffffffffffe0,%ebx), Instruction(0x3: 4c 01 f8  add %r15,%rax), Instruction(0x6: ff e0  jmpq *%rax)])
+  0: ('nacljump64/naclcall64: registers do not match (%rbx, %rax, %rax)', [Instruction(0x0: 83 e3 e0  and $0xffffffe0,%ebx), Instruction(0x3: 4c 01 f8  add %r15,%rax), Instruction(0x6: ff e0  jmpq *%rax)])
   6: unrecognized instruction 'jmpq *%rax'
 ----------------------------------------------------------------------
 @hex:
@@ -270,14 +270,14 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
      3:	4c 01 fb                                     	add    %r15,%rbx
      6:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('nacljump64/naclcall64: registers do not match (%rax, %rbx, %rax)', [Instruction(0x0: 83 e0 e0  and $0xffffffffffffffe0,%eax), Instruction(0x3: 4c 01 fb  add %r15,%rbx), Instruction(0x6: ff e0  jmpq *%rax)])
+  0: ('nacljump64/naclcall64: registers do not match (%rax, %rbx, %rax)', [Instruction(0x0: 83 e0 e0  and $0xffffffe0,%eax), Instruction(0x3: 4c 01 fb  add %r15,%rbx), Instruction(0x6: ff e0  jmpq *%rax)])
   6: unrecognized instruction 'jmpq *%rax'
 ----------------------------------------------------------------------
 @hex:
@@ -288,14 +288,14 @@
   # jmp *%rbx
   ff e3
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
      3:	4c 01 f8                                     	add    %r15,%rax
      6:	ff e3                                        	jmpq   *%rbx
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('nacljump64/naclcall64: registers do not match (%rax, %rax, %rbx)', [Instruction(0x0: 83 e0 e0  and $0xffffffffffffffe0,%eax), Instruction(0x3: 4c 01 f8  add %r15,%rax), Instruction(0x6: ff e3  jmpq *%rbx)])
+  0: ('nacljump64/naclcall64: registers do not match (%rax, %rax, %rbx)', [Instruction(0x0: 83 e0 e0  and $0xffffffe0,%eax), Instruction(0x3: 4c 01 f8  add %r15,%rax), Instruction(0x6: ff e3  jmpq *%rbx)])
   6: unrecognized instruction 'jmpq *%rbx'
 ----------------------------------------------------------------------
 @hex:
@@ -306,14 +306,14 @@
   # jmp *%rbx
   ff e3
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
      3:	4c 01 fb                                     	add    %r15,%rbx
      6:	ff e3                                        	jmpq   *%rbx
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('nacljump64/naclcall64: registers do not match (%rax, %rbx, %rbx)', [Instruction(0x0: 83 e0 e0  and $0xffffffffffffffe0,%eax), Instruction(0x3: 4c 01 fb  add %r15,%rbx), Instruction(0x6: ff e3  jmpq *%rbx)])
+  0: ('nacljump64/naclcall64: registers do not match (%rax, %rbx, %rbx)', [Instruction(0x0: 83 e0 e0  and $0xffffffe0,%eax), Instruction(0x3: 4c 01 fb  add %r15,%rbx), Instruction(0x6: ff e3  jmpq *%rbx)])
   6: unrecognized instruction 'jmpq *%rbx'
 ----------------------------------------------------------------------
 @hex:
@@ -327,7 +327,7 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
      3:	90                                           	nop
      4:	4c 01 f8                                     	add    %r15,%rax
      7:	ff e0                                        	jmpq   *%rax
@@ -347,7 +347,7 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
      3:	4c 01 f8                                     	add    %r15,%rax
      6:	90                                           	nop
      7:	ff e0                                        	jmpq   *%rax
@@ -368,7 +368,7 @@
   # jmp .-2
   eb fc
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
      3:	4c 01 f8                                     	add    %r15,%rax
      6:	ff e0                                        	jmpq   *%rax
      8:	eb fc                                        	jmp    0x6
@@ -388,7 +388,7 @@
   # jmp .-5
   eb f9
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
      3:	4c 01 f8                                     	add    %r15,%rax
      6:	ff e0                                        	jmpq   *%rax
      8:	eb f9                                        	jmp    0x3
@@ -567,7 +567,7 @@
   # mov (%r15, %rax), %ebx
   41 8b 1c 07
 @dis:
-     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     0:	83 e0 e0                                     	and    $0xffffffe0,%eax
      3:	4c 01 f8                                     	add    %r15,%rax
      6:	ff e0                                        	jmpq   *%rax
      8:	41 8b 1c 07                                  	mov    (%r15,%rax,1),%ebx
