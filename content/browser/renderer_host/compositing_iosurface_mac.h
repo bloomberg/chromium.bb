@@ -286,9 +286,11 @@ class CompositingIOSurfaceMac {
       const scoped_refptr<media::VideoFrame>& video_frame_output);
 
   // Scan the list of started asynchronous copies and test if each one has
-  // completed.
-  void FinishAllCopies();
-  void FinishAllCopiesWithinContext(
+  // completed. If |block_until_finished| is true, then block until all
+  // pending copies are finished.
+  void CheckIfAllCopiesAreFinished(bool block_until_finished);
+  void CheckIfAllCopiesAreFinishedWithinContext(
+      bool block_until_finished,
       std::vector<base::Closure>* done_callbacks);
 
   void FailAllCopies();

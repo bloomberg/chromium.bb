@@ -252,8 +252,9 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
       finish_copy_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kFinishCopyPollingPeriodMs),
-          base::Bind(&CompositingIOSurfaceMac::FinishAllCopies,
-                     base::Unretained(this)),
+          base::Bind(&CompositingIOSurfaceMac::CheckIfAllCopiesAreFinished,
+                     base::Unretained(this),
+                     false),
           true),
       display_link_(0),
       display_link_stop_timer_(FROM_HERE, base::TimeDelta::FromSeconds(1),
@@ -311,7 +312,7 @@ void CompositingIOSurfaceMac::SetContext(
     return;
 
   // Asynchronous copies must complete in the same context they started in.
-  FinishAllCopies();
+  CheckIfAllCopiesAreFinished(true);
   CGLSetCurrentContext(context_->cgl_context());
   DestroyAllCopyContextsWithinContext();
   CGLSetCurrentContext(0);
@@ -501,7 +502,7 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
 
   // Try to finish previous copy requests after flush to get better pipelining.
   std::vector<base::Closure> copy_done_callbacks;
-  FinishAllCopiesWithinContext(&copy_done_callbacks);
+  CheckIfAllCopiesAreFinishedWithinContext(false, &copy_done_callbacks);
 
   // Check if any of the drawing calls result in an error.
   GetAndSaveGLError();
@@ -872,37 +873,44 @@ void CompositingIOSurfaceMac::AsynchronousReadbackForCopy(
       base::Bind(&MapBufferToVideoFrame, video_frame_output, dst_pixel_rect);
 }
 
-void CompositingIOSurfaceMac::FinishAllCopies() {
+void CompositingIOSurfaceMac::CheckIfAllCopiesAreFinished(
+    bool block_until_finished) {
   std::vector<base::Closure> done_callbacks;
   CGLSetCurrentContext(context_->cgl_context());
-  FinishAllCopiesWithinContext(&done_callbacks);
+  CheckIfAllCopiesAreFinishedWithinContext(
+      block_until_finished, &done_callbacks);
   CGLSetCurrentContext(0);
   for (size_t i = 0; i < done_callbacks.size(); ++i)
     done_callbacks[i].Run();
 }
 
-void CompositingIOSurfaceMac::FinishAllCopiesWithinContext(
+void CompositingIOSurfaceMac::CheckIfAllCopiesAreFinishedWithinContext(
+    bool block_until_finished,
     std::vector<base::Closure>* done_callbacks) {
   while (!copy_requests_.empty()) {
     CopyContext* const copy_context = copy_requests_.front();
 
-    if (copy_context->fence) {
-      const bool copy_completed = glTestFenceAPPLE(copy_context->fence);
+    if (copy_context->fence && !glTestFenceAPPLE(copy_context->fence)) {
       CHECK_AND_SAVE_GL_ERROR();
-
-      if (!copy_completed &&
-        copy_context->cycles_elapsed < kFinishCopyRetryCycles) {
+      // Doing a glFinishFenceAPPLE can cause transparent window flashes when
+      // switching tabs, so only do it when required.
+      if (block_until_finished) {
+        glFinishFenceAPPLE(copy_context->fence);
+        CHECK_AND_SAVE_GL_ERROR();
+      } else if (copy_context->cycles_elapsed < kFinishCopyRetryCycles) {
         ++copy_context->cycles_elapsed;
         // This copy has not completed there is no need to test subsequent
         // requests.
         break;
       }
     }
+    CHECK_AND_SAVE_GL_ERROR();
 
     bool success = true;
     for (int i = 0; success && i < copy_context->num_outputs; ++i) {
       TRACE_EVENT1(
-        "browser", "CompositingIOSurfaceMac::FinishAllCopiesWithinContext",
+        "browser",
+        "CompositingIOSurfaceMac::CheckIfAllCopiesAreFinishedWithinContext",
         "plane", i);
 
       glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, copy_context->pixel_buffers[i]);
@@ -923,6 +931,8 @@ void CompositingIOSurfaceMac::FinishAllCopiesWithinContext(
   }
   if (copy_requests_.empty())
     finish_copy_timer_.Stop();
+
+  CHECK(copy_requests_.empty() || !block_until_finished);
 }
 
 bool CompositingIOSurfaceMac::SynchronousReadbackForCopy(
