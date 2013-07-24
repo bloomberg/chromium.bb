@@ -1193,15 +1193,21 @@ void StyleResolver::invalidateMatchedPropertiesCache()
 void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult, const Element* element)
 {
     ASSERT(element);
+    STYLE_STATS_ADD_MATCHED_PROPERTIES_SEARCH();
+
     unsigned cacheHash = matchResult.isCacheable ? computeMatchedPropertiesHash(matchResult.matchedProperties.data(), matchResult.matchedProperties.size()) : 0;
     bool applyInheritedOnly = false;
     const CachedMatchedProperties* cachedMatchedProperties = 0;
+
     if (cacheHash && (cachedMatchedProperties = m_matchedPropertiesCache.find(cacheHash, state, matchResult))) {
+        STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT();
         // We can build up the style by copying non-inherited properties from an earlier style object built using the same exact
         // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the
         // element context. This is fast and saves memory by reusing the style data structures.
         state.style()->copyNonInheritedFrom(cachedMatchedProperties->renderStyle.get());
         if (state.parentStyle()->inheritedDataShared(cachedMatchedProperties->parentRenderStyle.get()) && !isAtShadowBoundary(element)) {
+            STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT_SHARED_INHERITED();
+
             EInsideLink linkStatus = state.style()->insideLink();
             // If the cache item parent style has identical inherited properties to the current parent style then the
             // resulting style will be identical too. We copy the inherited properties over from the cache and are done.
@@ -1275,10 +1281,16 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     ASSERT(!state.fontBuilder().fontDirty());
 
+#ifdef STYLE_STATS
+    if (!cachedMatchedProperties)
+        STYLE_STATS_ADD_MATCHED_PROPERTIES_TO_CACHE();
+#endif
+
     if (cachedMatchedProperties || !cacheHash)
         return;
     if (!MatchedPropertiesCache::isCacheable(state.element(), state.style(), state.parentStyle()))
         return;
+    STYLE_STATS_ADD_MATCHED_PROPERTIES_ENTERED_INTO_CACHE();
     m_matchedPropertiesCache.add(state.style(), state.parentStyle(), cacheHash, matchResult);
 }
 
@@ -1422,26 +1434,34 @@ bool StyleResolver::affectedByViewportChange() const
 #ifdef STYLE_STATS
 StyleSharingStats StyleResolver::m_styleSharingStats;
 
-static void printStyleStats(unsigned searches, unsigned elementsEligibleForSharing, unsigned stylesShared, unsigned searchFoundSiblingForSharing, unsigned searchesMissedSharing)
+static void printStyleStats(unsigned searches, unsigned elementsEligibleForSharing, unsigned stylesShared, unsigned searchFoundSiblingForSharing, unsigned searchesMissedSharing,
+    unsigned matchedPropertiesSearches, unsigned matchedPropertiesHit, unsigned matchedPropertiesSharedInheritedHit, unsigned matchedPropertiesToCache, unsigned matchedPropertiesEnteredIntoCache)
 {
     double percentOfElementsSharingStyle = (stylesShared * 100.0) / searches;
     double percentOfNodesEligibleForSharing = (elementsEligibleForSharing * 100.0) / searches;
     double percentOfEligibleSharingRelativesFound = (searchFoundSiblingForSharing * 100.0) / searches;
+    double percentOfMatchedPropertiesHit = (matchedPropertiesHit * 100.0) / matchedPropertiesSearches;
+    double percentOfMatchedPropertiesSharedInheritedHit = (matchedPropertiesSharedInheritedHit * 100.0) / matchedPropertiesSearches;
+    double percentOfMatchedPropertiesEnteredIntoCache = (matchedPropertiesEnteredIntoCache * 100.0) / matchedPropertiesToCache;
 
     fprintf(stderr, "%u elements checked, %u were eligible for style sharing (%.2f%%).\n", searches, elementsEligibleForSharing, percentOfNodesEligibleForSharing);
     fprintf(stderr, "%u elements were found to share with, %u were possible (%.2f%%).\n", searchFoundSiblingForSharing, searchesMissedSharing + searchFoundSiblingForSharing, percentOfEligibleSharingRelativesFound);
     fprintf(stderr, "%u styles were actually shared once sibling and attribute rules were considered (%.2f%%).\n", stylesShared, percentOfElementsSharingStyle);
-
+    fprintf(stderr, "%u/%u (%.2f%%) matched property lookups hit the cache.\n", matchedPropertiesHit, matchedPropertiesSearches, percentOfMatchedPropertiesHit);
+    fprintf(stderr, "%u/%u (%.2f%%) matched property lookups hit the cache and shared inherited data.\n", matchedPropertiesSharedInheritedHit, matchedPropertiesSearches, percentOfMatchedPropertiesSharedInheritedHit);
+    fprintf(stderr, "%u/%u (%.2f%%) matched properties were cacheable\n", matchedPropertiesEnteredIntoCache, matchedPropertiesToCache, percentOfMatchedPropertiesEnteredIntoCache);
 }
 
 void StyleSharingStats::printStats() const
 {
     fprintf(stderr, "--------------------------------------------------------------------------------\n");
     fprintf(stderr, "This recalc style:\n");
-    printStyleStats(m_searches, m_elementsEligibleForSharing, m_stylesShared, m_searchFoundSiblingForSharing, m_searchesMissedSharing);
+    printStyleStats(m_searches, m_elementsEligibleForSharing, m_stylesShared, m_searchFoundSiblingForSharing, m_searchesMissedSharing,
+        m_matchedPropertiesSearches, m_matchedPropertiesHit, m_matchedPropertiesSharedInheritedHit, m_matchedPropertiesToCache, m_matchedPropertiesEnteredIntoCache);
 
     fprintf(stderr, "Total:\n");
-    printStyleStats(m_totalSearches, m_totalElementsEligibleForSharing, m_totalStylesShared, m_totalSearchFoundSiblingForSharing, m_totalSearchesMissedSharing);
+    printStyleStats(m_totalSearches, m_totalElementsEligibleForSharing, m_totalStylesShared, m_totalSearchFoundSiblingForSharing, m_totalSearchesMissedSharing,
+        m_totalMatchedPropertiesSearches, m_totalMatchedPropertiesHit, m_totalMatchedPropertiesSharedInheritedHit, m_totalMatchedPropertiesToCache, m_totalMatchedPropertiesEnteredIntoCache);
     fprintf(stderr, "--------------------------------------------------------------------------------\n");
 }
 #endif

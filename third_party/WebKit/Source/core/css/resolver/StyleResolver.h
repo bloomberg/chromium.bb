@@ -92,10 +92,17 @@ struct StyleSharingStats {
     void addStyleShared() { ++m_stylesShared; ++m_totalStylesShared; }
     void addSearchFoundSiblingForSharing() { ++m_searchFoundSiblingForSharing; ++m_totalSearchFoundSiblingForSharing; }
     void addSearchMissedSharing() { ++m_searchesMissedSharing; ++m_totalSearchesMissedSharing; }
+    void addMatchedPropertiesSearch() { ++m_matchedPropertiesSearches; ++m_totalMatchedPropertiesSearches; }
+    void addMatchedPropertiesHit() { ++m_matchedPropertiesHit; ++m_totalMatchedPropertiesHit; }
+    void addMatchedPropertiesHitSharedInherited() { ++m_matchedPropertiesSharedInheritedHit; ++m_totalMatchedPropertiesSharedInheritedHit; }
+    void addMatchedPropertiesToCache() { ++m_matchedPropertiesToCache; ++m_totalMatchedPropertiesToCache; }
+    void addMatchedPropertiesEnteredIntoCache() { ++m_matchedPropertiesEnteredIntoCache; ++m_totalMatchedPropertiesEnteredIntoCache; }
 
     void clear()
     {
-        m_searches = m_elementsEligibleForSharing = m_stylesShared = m_searchesMissedSharing = m_searchFoundSiblingForSharing = 0;
+        m_searches = m_elementsEligibleForSharing = m_stylesShared = m_searchesMissedSharing = m_searchFoundSiblingForSharing =
+            m_matchedPropertiesSearches = m_matchedPropertiesHit = m_matchedPropertiesSharedInheritedHit = m_matchedPropertiesToCache =
+            m_matchedPropertiesEnteredIntoCache = 0;
     }
 
     void printStats() const;
@@ -105,12 +112,22 @@ struct StyleSharingStats {
     unsigned m_stylesShared;
     unsigned m_searchFoundSiblingForSharing;
     unsigned m_searchesMissedSharing;
+    unsigned m_matchedPropertiesSearches;
+    unsigned m_matchedPropertiesHit;
+    unsigned m_matchedPropertiesSharedInheritedHit;
+    unsigned m_matchedPropertiesToCache;
+    unsigned m_matchedPropertiesEnteredIntoCache;
 
     unsigned m_totalSearches;
     unsigned m_totalElementsEligibleForSharing;
     unsigned m_totalStylesShared;
     unsigned m_totalSearchFoundSiblingForSharing;
     unsigned m_totalSearchesMissedSharing;
+    unsigned m_totalMatchedPropertiesSearches;
+    unsigned m_totalMatchedPropertiesHit;
+    unsigned m_totalMatchedPropertiesSharedInheritedHit;
+    unsigned m_totalMatchedPropertiesToCache;
+    unsigned m_totalMatchedPropertiesEnteredIntoCache;
 };
 
 #define STYLE_STATS_ADD_SEARCH() StyleResolver::styleSharingStats().addSearch();
@@ -120,6 +137,11 @@ struct StyleSharingStats {
 #define STYLE_STATS_ADD_SEARCH_MISSED_SHARING() StyleResolver::styleSharingStats().addSearchMissedSharing();
 #define STYLE_STATS_PRINT() StyleResolver::styleSharingStats().printStats();
 #define STYLE_STATS_CLEAR() StyleResolver::styleSharingStats().clear();
+#define STYLE_STATS_ADD_MATCHED_PROPERTIES_SEARCH() StyleResolver::styleSharingStats().addMatchedPropertiesSearch();
+#define STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT() StyleResolver::styleSharingStats().addMatchedPropertiesHit();
+#define STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT_SHARED_INHERITED() StyleResolver::styleSharingStats().addMatchedPropertiesHitSharedInherited();
+#define STYLE_STATS_ADD_MATCHED_PROPERTIES_TO_CACHE() StyleResolver::styleSharingStats().addMatchedPropertiesToCache();
+#define STYLE_STATS_ADD_MATCHED_PROPERTIES_ENTERED_INTO_CACHE() StyleResolver::styleSharingStats().addMatchedPropertiesEnteredIntoCache();
 #else
 #define STYLE_STATS_ADD_SEARCH() (void(0));
 #define STYLE_STATS_ADD_ELEMENT_ELIGIBLE_FOR_SHARING() (void(0));
@@ -128,6 +150,11 @@ struct StyleSharingStats {
 #define STYLE_STATS_ADD_SEARCH_MISSED_SHARING() (void(0));
 #define STYLE_STATS_PRINT() (void(0));
 #define STYLE_STATS_CLEAR() (void(0));
+#define STYLE_STATS_ADD_MATCHED_PROPERTIES_SEARCH() (void(0));
+#define STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT() (void(0));
+#define STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT_SHARED_INHERITED() (void(0));
+#define STYLE_STATS_ADD_MATCHED_PROPERTIES_TO_CACHE() (void(0));
+#define STYLE_STATS_ADD_MATCHED_PROPERTIES_ENTERED_INTO_CACHE() (void(0));
 #endif
 
 // FIXME: Move to separate file.
