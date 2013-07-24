@@ -5,10 +5,11 @@
  */
 
 /*
- * This test ensures that the PNaCl backends can deal with volatile
- * operations, C++11 atomic primitives and compiler intrinsics as would
- * be written by regular users, including PNaCl's ABI stabilization and
- * target lowering.
+ * This test ensures that the PNaCl backends can deal with compiler
+ * intrinsics as would be written by regular users, including PNaCl's
+ * ABI stabilization and target lowering.
+ *
+ * See other synchronization_* tests in this directory.
  *
  * This is a syntactical check as we do not run this multithreaded. Some
  * real testing is done here: tests/threads/thread_test.c
@@ -18,12 +19,19 @@
  * as C11/C++11's atomics. PNaCl only supports 8, 16, 32 and 64-bit
  * atomics, and should be able to handle any type that can map to these
  * (e.g. 32- and 64-bit atomic floating point load/store).
+ *
+ * GCC Legacy __sync Built-in Functions for Atomic Memory Access.
+ * See:
+ * http://gcc.gnu.org/onlinedocs/gcc-4.8.1/gcc/_005f_005fsync-Builtins.html
+ *
+ * Note: nand is ignored because it isn't in C11/C++11.
  */
 
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "native_client/tests/toolchain/utils.h"
+#include <stdlib.h>
+
 
 #define CONCAT_(A, B) A ## B
 #define CONCAT(A, B) CONCAT_(A, B)
@@ -42,19 +50,22 @@
     }                                           \
   } while (0)
 
-// Test that using some synchronization primitives without using the
-// return value works. Do this by modifying volatile globals.
+/*
+ * Test that using some synchronization primitives without using the
+ * return value works. Do this by modifying volatile globals.
+ */
 volatile uint8_t g_uint8_t = 0;
 volatile uint16_t g_uint16_t = 0;
 volatile uint32_t g_uint32_t = 0;
 volatile uint64_t g_uint64_t = 0;
 #define SINK_ADDR(TYPE) (&CONCAT(g_, TYPE))
 
-// Test that base+displacement as synchronization address also works,
-// with small and big displacements (which should affect unrolling).
-//
-// Small displacement.
-static const size_t gsmall_ArrSize = 8;
+/*
+ * Test that base+displacement as synchronization address also works,
+ * with small and big displacements (which should affect unrolling).
+ */
+/* Small displacement. */
+enum { gsmall_ArrSize = 8 };
 volatile struct GS8 { void *ptr; uint8_t arr[gsmall_ArrSize]; }
   gsmall_uint8_t = { 0, { 0 } };
 volatile struct GS16 { void *ptr; uint16_t arr[gsmall_ArrSize]; }
@@ -66,8 +77,8 @@ volatile struct GS64 { void *ptr; uint64_t arr[gsmall_ArrSize]; }
 #define SMALL_SINK_ADDR(TYPE) (                                         \
     CONCAT(gsmall_, TYPE).ptr = (void*) CONCAT(gsmall_, TYPE).arr,      \
     (TYPE*) CONCAT(gsmall_, TYPE).ptr)
-// Big displacement.
-static const size_t gbig_ArrSize = 128;
+/* Big displacement. */
+enum { gbig_ArrSize = 128 };
 volatile struct GB8 { void *ptr; uint8_t arr[gbig_ArrSize]; }
   gbig_uint8_t = { 0, { 0 } };
 volatile struct GB16 { void *ptr; uint16_t arr[gbig_ArrSize]; }
@@ -80,27 +91,21 @@ volatile struct GB64 { void *ptr; uint64_t arr[gbig_ArrSize]; }
     CONCAT(gbig_, TYPE).ptr = (void*) CONCAT(gbig_, TYPE).arr,  \
     (TYPE*) CONCAT(gbig_, TYPE).ptr)
 
+
 /*
- * GCC Legacy __sync Built-in Functions for Atomic Memory Access.
- * See:
- * http://gcc.gnu.org/onlinedocs/gcc-4.8.1/gcc/_005f_005fsync-Builtins.html
+ * fetch_and_*
  *
- * Note: nand is ignored because it isn't in C11/C++11.
+ * These built-in functions perform the operation suggested by the name,
+ * and returns the value that had previously been in memory:
+ *   { tmp = *ptr; *ptr op= value; return tmp; }
+ *
+ * *_and_fetch
+ *
+ * These built-in functions perform the operation suggested by the name,
+ * and return the new value:
+ *   { *ptr op= value; return *ptr; }
  */
-void test_legacy_sync() {
-  /*
-   * fetch_and_*
-   *
-   * These built-in functions perform the operation suggested by the name,
-   * and returns the value that had previously been in memory:
-   *   { tmp = *ptr; *ptr op= value; return tmp; }
-   *
-   * *_and_fetch
-   *
-   * These built-in functions perform the operation suggested by the name,
-   * and return the new value:
-   *   { *ptr op= value; return *ptr; }
-   */
+void test_fetch(void) {
 # define FETCH_TEST(OPERATION_NAME, OPERATION, TYPE)  do {              \
     TYPE res, loc, value, res_, loc_, value_;                           \
     printf("Testing " STR(OPERATION_NAME) " with " STR(TYPE) "\n");     \
@@ -126,7 +131,8 @@ void test_legacy_sync() {
     }                                                                   \
     { /* In a small array. */                                           \
       volatile TYPE *small_sink = SMALL_SINK_ADDR(TYPE);                \
-      for (size_t i = 0; i != gsmall_ArrSize; ++i) {                    \
+      size_t i;                                                         \
+      for (i = 0; i != gsmall_ArrSize; ++i) {                           \
         (void) CONCAT(__sync_fetch_and_, OPERATION_NAME)(               \
             &small_sink[i], value);                                     \
         (void) CONCAT(CONCAT(__sync_, OPERATION_NAME), _and_fetch)(     \
@@ -135,7 +141,8 @@ void test_legacy_sync() {
     }                                                                   \
     { /* In a big array. */                                             \
       volatile TYPE *big_sink = BIG_SINK_ADDR(TYPE);                    \
-      for (size_t i = 0; i != gbig_ArrSize; ++i) {                      \
+      size_t i;                                                         \
+      for (i = 0; i != gbig_ArrSize; ++i) {                             \
         (void) CONCAT(__sync_fetch_and_, OPERATION_NAME)(               \
             &big_sink[i], value);                                       \
         (void) CONCAT(CONCAT(__sync_, OPERATION_NAME), _and_fetch)(     \
@@ -143,30 +150,34 @@ void test_legacy_sync() {
       }                                                                 \
     }                                                                   \
   } while (0)
+
 # define FETCH_TEST_ALL_TYPES(OPERATION_NAME, OPERATION) do {   \
     FETCH_TEST(OPERATION_NAME, OPERATION, uint8_t);             \
     FETCH_TEST(OPERATION_NAME, OPERATION, uint16_t);            \
     FETCH_TEST(OPERATION_NAME, OPERATION, uint32_t);            \
     FETCH_TEST(OPERATION_NAME, OPERATION, uint64_t);            \
   } while (0)
+
   FETCH_TEST_ALL_TYPES(add, +);
   FETCH_TEST_ALL_TYPES(sub, -);
   FETCH_TEST_ALL_TYPES(or, |);
   FETCH_TEST_ALL_TYPES(and, &);
   FETCH_TEST_ALL_TYPES(xor, ^);
+}
 
-  /*
-   * *_compare_and_swap
-   *
-   * These built-in functions perform an atomic compare and swap. That
-   * is, if the current value of *ptr is oldval, then write newval into
-   * *ptr. The “bool” version returns true if the comparison is
-   * successful and newval is written. The "val" version returns the
-   * contents of *ptr before the operation.
-   *
-   * Note: LLVM also has __sync_swap, which is ignored because it isn't
-   * C11/C++11 and isn't in GCC.
-   */
+/*
+ * *_compare_and_swap
+ *
+ * These built-in functions perform an atomic compare and swap. That is,
+ * if the current value of *ptr is oldval, then write newval into
+ * *ptr. The “bool” version returns true if the comparison is successful
+ * and newval is written. The "val" version returns the contents of *ptr
+ * before the operation.
+ *
+ * Note: LLVM also has __sync_swap, which is ignored because it isn't
+ * C11/C++11 and isn't in GCC.
+ */
+void test_cas(void) {
 # define CAS_TEST(TYPE) do {                                            \
     TYPE res, loc, oldval, newval;                                      \
     printf("Testing CAS with " STR(TYPE) "\n");                         \
@@ -200,7 +211,8 @@ void test_legacy_sync() {
     }                                                                   \
     { /* In a small array. */                                           \
       volatile TYPE *small_sink = SMALL_SINK_ADDR(TYPE);                \
-      for (size_t i = 0; i != gsmall_ArrSize; ++i) {                    \
+      size_t i;                                                         \
+      for (i = 0; i != gsmall_ArrSize; ++i) {                           \
         (void) __sync_bool_compare_and_swap(                            \
             &small_sink[i], oldval, newval);                            \
         (void) __sync_val_compare_and_swap(                             \
@@ -209,7 +221,8 @@ void test_legacy_sync() {
     }                                                                   \
     { /* In a big array. */                                             \
       volatile TYPE *big_sink = BIG_SINK_ADDR(TYPE);                    \
-      for (size_t i = 0; i != gbig_ArrSize; ++i) {                      \
+      size_t i;                                                         \
+      for (i = 0; i != gbig_ArrSize; ++i) {                             \
         (void) __sync_bool_compare_and_swap(                            \
             &big_sink[i], oldval, newval);                              \
         (void) __sync_val_compare_and_swap(                             \
@@ -217,49 +230,54 @@ void test_legacy_sync() {
       }                                                                 \
     }                                                                   \
   } while (0)
+
   CAS_TEST(uint8_t);
   CAS_TEST(uint16_t);
   CAS_TEST(uint32_t);
   CAS_TEST(uint64_t);
+}
 
-  /*
-   * synchronize
-   *
-   * This built-in function issues a full memory barrier. Simply test
-   * that it compiles fine.
-   */
+/*
+ * synchronize
+ *
+ * This built-in function issues a full memory barrier. Simply test that
+ * it compiles fine.
+ */
+void test_synchronize(void) {
   __sync_synchronize();
+}
 
-  /*
-   * lock_test_and_set
-   *
-   * This built-in function, as described by Intel, is not a traditional
-   * test-and-set operation, but rather an atomic exchange operation. It
-   * writes value into *ptr, and returns the previous contents of *ptr.
-   * Many targets have only minimal support for such locks, and do not
-   * support a full exchange operation. In this case, a target may
-   * support reduced functionality here by which the only valid value to
-   * store is the immediate constant 1. The exact value actually stored
-   * in *ptr is implementation defined.
-   *
-   * This built-in function is not a full barrier, but rather an acquire
-   * barrier. This means that references after the operation cannot move
-   * to (or be speculated to) before the operation, but previous memory
-   * stores may not be globally visible yet, and previous memory loads
-   * may not yet be satisfied.
-   *
-   * lock_release
-   *
-   * This built-in function releases the lock acquired by
-   * __sync_lock_test_and_set. Normally this means writing the constant
-   * 0 to *ptr.
-   *
-   * This built-in function is not a full barrier, but rather a release
-   * barrier. This means that all previous memory stores are globally
-   * visible, and all previous memory loads have been satisfied, but
-   * following memory reads are not prevented from being speculated to
-   * before the barrier.
-   */
+/*
+ * lock_test_and_set
+ *
+ * This built-in function, as described by Intel, is not a traditional
+ * test-and-set operation, but rather an atomic exchange operation. It
+ * writes value into *ptr, and returns the previous contents of *ptr.
+ * Many targets have only minimal support for such locks, and do not
+ * support a full exchange operation. In this case, a target may support
+ * reduced functionality here by which the only valid value to store is
+ * the immediate constant 1. The exact value actually stored in *ptr is
+ * implementation defined.
+ *
+ * This built-in function is not a full barrier, but rather an acquire
+ * barrier. This means that references after the operation cannot move
+ * to (or be speculated to) before the operation, but previous memory
+ * stores may not be globally visible yet, and previous memory loads may
+ * not yet be satisfied.
+ *
+ * lock_release
+ *
+ * This built-in function releases the lock acquired by
+ * __sync_lock_test_and_set. Normally this means writing the constant 0
+ * to *ptr.
+ *
+ * This built-in function is not a full barrier, but rather a release
+ * barrier. This means that all previous memory stores are globally
+ * visible, and all previous memory loads have been satisfied, but
+ * following memory reads are not prevented from being speculated to
+ * before the barrier.
+ */
+void test_tas(void) {
 # define TAS_TEST(TYPE) do {                                            \
     TYPE res, loc, value;                                               \
     printf("Testing TAS with " STR(TYPE) "\n");                         \
@@ -280,74 +298,33 @@ void test_legacy_sync() {
     /* Test the above two variants, without reading the result back. */ \
     { /* In a small array. */                                           \
       volatile TYPE *small_sink = SMALL_SINK_ADDR(TYPE);                \
-      for (size_t i = 0; i != gsmall_ArrSize; ++i) {                    \
+      size_t i;                                                         \
+      for (i = 0; i != gsmall_ArrSize; ++i) {                           \
         (void) __sync_lock_test_and_set(&small_sink[i], value);         \
         __sync_lock_release(&small_sink[i]);                            \
       }                                                                 \
     }                                                                   \
     { /* In a big array. */                                             \
       volatile TYPE *big_sink = BIG_SINK_ADDR(TYPE);                    \
-      for (size_t i = 0; i != gbig_ArrSize; ++i) {                      \
+      size_t i;                                                         \
+      for (i = 0; i != gbig_ArrSize; ++i) {                             \
         (void) __sync_lock_test_and_set(&big_sink[i], value);           \
         __sync_lock_release(&big_sink[i]);                              \
       }                                                                 \
     }                                                                   \
   } while (0)
+
   TAS_TEST(uint8_t);
   TAS_TEST(uint16_t);
   TAS_TEST(uint32_t);
   TAS_TEST(uint64_t);
 }
 
-void test_volatile() {
-# define VOLATILE_OPERATION_TEST(OPERATION_NAME, OPERATION, TYPE) do {  \
-    volatile TYPE loc = 5;                                              \
-    TYPE loc_ = 5;                                                      \
-    TYPE value = 41;                                                    \
-    printf("Testing volatile " STR(OPERATION_NAME)                      \
-           " with " STR(TYPE) "\n");                                    \
-    loc = loc OPERATION value;                                          \
-    loc_ = loc_ OPERATION value;                                        \
-    CHECK_EQ(loc, loc_, "volatile " STR(TYPE) " " STR(OPERATION_NAME)); \
-  } while (0)
-# define VOLATILE_OPERATION_TEST_ALL_TYPES(OPERATION_NAME, OPERATION)   \
-  VOLATILE_OPERATION_TEST(OPERATION_NAME, OPERATION, uint8_t);          \
-  VOLATILE_OPERATION_TEST(OPERATION_NAME, OPERATION, uint16_t);         \
-  VOLATILE_OPERATION_TEST(OPERATION_NAME, OPERATION, uint32_t);         \
-  VOLATILE_OPERATION_TEST(OPERATION_NAME, OPERATION, uint64_t);
-# define VOLATILE_LOAD_STORE_TEST(TYPE) do {            \
-    volatile TYPE loc = 5;                              \
-    TYPE res = loc;                                     \
-    CHECK_EQ(res, 5, "volatile " STR(TYPE) " load");    \
-    loc = 41;                                           \
-    CHECK_EQ(loc, 41, "volatile " STR(TYPE) " store");  \
-  } while (0)
-  VOLATILE_OPERATION_TEST_ALL_TYPES(add, +);
-  VOLATILE_OPERATION_TEST_ALL_TYPES(sub, -);
-  VOLATILE_OPERATION_TEST_ALL_TYPES(or,  |);
-  VOLATILE_OPERATION_TEST_ALL_TYPES(and, &);
-  VOLATILE_OPERATION_TEST_ALL_TYPES(xor, ^);
-  VOLATILE_LOAD_STORE_TEST(uint8_t);
-  VOLATILE_LOAD_STORE_TEST(uint16_t);
-  VOLATILE_LOAD_STORE_TEST(uint32_t);
-  VOLATILE_LOAD_STORE_TEST(uint64_t);
-  VOLATILE_LOAD_STORE_TEST(float);
-  VOLATILE_LOAD_STORE_TEST(double);
-}
 
-void test_cpp11_atomic() {
-  // TODO(jfb) Test C++11 atomic features.
-  //   - ATOMIC_*_LOCK_FREE
-  //   - std::atomic and their functions (including is_lock_free).
-  //   - std::atomic_flag.
-  //   - std::atomic_thread_fence (atomic_signal_fence currently unsupported).
-  //   - 6 memory orders.
-}
-
-
-int main() {
-  test_legacy_sync();
-  test_volatile();
-  test_cpp11_atomic();
+int main(void) {
+  test_fetch();
+  test_cas();
+  test_synchronize();
+  test_tas();
   return 0;
 }

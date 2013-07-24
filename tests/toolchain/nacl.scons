@@ -64,9 +64,10 @@ AddIntrinsicTest(env, 'intrinsics.cc', '55'),
 AddIntrinsicTest(env, 'float2.c', '0', golden_file=env.File('float2.stdout'))
 AddIntrinsicTest(env, 'memcpy_move_set.c', '0',
                  golden_file=env.File('memcpy_move_set.stdout'))
-AddIntrinsicTest(env, 'synchronization.cc', '0',
+AddIntrinsicTest(env, 'synchronization_sync.c', '0',
                  # TODO(jfb) Blocked on bugs 3579 and 2981.
                  is_broken=env.Bit('target_x86_32'))
+AddIntrinsicTest(env, 'synchronization_volatile.c', '0')
 
 # This test redirects C function calls to llvm instrinsic functions,
 # so they only work w/ PNaCl.
