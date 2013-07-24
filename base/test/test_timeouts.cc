@@ -5,6 +5,7 @@
 #include "base/test/test_timeouts.h"
 
 #include "base/command_line.h"
+#include "base/debug/debugger.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_switches.h"
@@ -18,6 +19,8 @@ static const int kTimeoutMultiplier = 2;
 #else
 static const int kTimeoutMultiplier = 1;
 #endif
+
+const int kAlmostInfiniteTimeoutMs = 100000000;
 
 // Sets value to the greatest of:
 // 1) value's current value multiplied by kTimeoutMultiplier (assuming
@@ -71,10 +74,17 @@ void TestTimeouts::Initialize() {
   }
   initialized_ = true;
 
+  if (base::debug::BeingDebugged()) {
+    fprintf(stdout,
+        "Detected presence of a debugger, running without test timeouts.\n");
+  }
+
   // Note that these timeouts MUST be initialized in the correct order as
   // per the CHECKS below.
   InitializeTimeout(switches::kTestTinyTimeout, &tiny_timeout_ms_);
-  InitializeTimeout(switches::kUiTestActionTimeout, tiny_timeout_ms_,
+  InitializeTimeout(switches::kUiTestActionTimeout,
+                    base::debug::BeingDebugged() ? kAlmostInfiniteTimeoutMs
+                                                 : tiny_timeout_ms_,
                     &action_timeout_ms_);
   InitializeTimeout(switches::kUiTestActionMaxTimeout, action_timeout_ms_,
                     &action_max_timeout_ms_);
