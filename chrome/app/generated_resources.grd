@@ -13006,11 +13006,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_ZIP_SELECTION_BUTTON_LABEL" desc="Menu item label, showing dialog to create zip file for selected files.">
         Zip selection
       </message>
-      <message name="IDS_FILE_BROWSER_PIN_FOLDER_BUTTON_LABEL" desc="Menu item label, pinning the selected folder to the left nav.">
-        Pin folder
+      <message name="IDS_FILE_BROWSER_CREATE_FOLDER_SHORTCUT_BUTTON_LABEL" desc="Menu item label, creating a shortcut of the selected folder to the left nav.">
+        Create shortcut
       </message>
-      <message name="IDS_FILE_BROWSER_UNPIN_FOLDER_BUTTON_LABEL" desc="Menu item label, unpinning the selected folder from the left nav.">
-        Unpin
+      <message name="IDS_FILE_BROWSER_REMOVE_FOLDER_SHORTCUT_BUTTON_LABEL" desc="Menu item label, unpinning the selected folder from the left nav.">
+        Remove shortcut
       </message>
       <message name="IDS_FILE_BROWSER_SHARE_BUTTON_LABEL" desc="Menu item label, showing dialog to share the selected file.">
         Share

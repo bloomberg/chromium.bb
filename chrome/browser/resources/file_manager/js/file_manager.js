@@ -687,9 +687,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         Commands.zipSelectionCommand, this, this.directoryModel_);
 
     CommandUtil.registerCommand(doc, 'share', Commands.shareCommand, this);
-    CommandUtil.registerCommand(doc, 'pin', Commands.pinCommand, this);
-    CommandUtil.registerCommand(doc, 'unpin',
-        Commands.unpinCommand, this, this.volumeList_);
+    CommandUtil.registerCommand(doc, 'create-folder-shortcut',
+        Commands.createFolderShortcutCommand, this);
+    CommandUtil.registerCommand(doc, 'remove-folder-shortcut',
+        Commands.removeFolderShortcutCommand, this, this.volumeList_);
 
     CommandUtil.registerCommand(doc, 'search', Commands.searchCommand, this,
         this.dialogDom_.querySelector('#search-box'));
@@ -2241,31 +2242,30 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Pin the selected folder.
+   * Creates a folder shortcut.
+   * @param {string} path A shortcut which refers to |path| to be created.
    */
-  FileManager.prototype.pinSelection = function() {
-    var entries = this.getSelection().entries;
-    var entry = entries[0];
+  FileManager.prototype.createFolderShortcut = function(path) {
     // Duplicate entry.
-    if (this.isFolderPinned(entry.fullPath))
+    if (this.folderShortcutExists(path))
       return;
 
-    this.folderShortcutsModel_.add(entry.fullPath);
+    this.folderShortcutsModel_.add(path);
   };
 
   /**
-   * Checkes if the folder is pinned or not.
+   * Checkes if the shortcut which refers to the given folder exists or not.
    * @param {string} path Path of the folder to be checked.
    */
-  FileManager.prototype.isFolderPinned = function(path) {
+  FileManager.prototype.folderShortcutExists = function(path) {
     return this.folderShortcutsModel_.exists(path);
   };
 
   /**
-   * Unpins the pinned folder.
-   * @param {string} path Path of the pinned folder to be unpinnned.
+   * Removes the folder shortcut.
+   * @param {string} path The shortcut which refers to |path| is to be removed.
    */
-  FileManager.prototype.unpinFolder = function(path) {
+  FileManager.prototype.removeFolderShortcut = function(path) {
     this.folderShortcutsModel_.remove(path);
   };
 
