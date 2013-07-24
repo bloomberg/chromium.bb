@@ -7387,18 +7387,9 @@
    fun:_ZN15webkit_database12_GLOBAL__N_120GetOriginsOnDBThreadEPNS_15DatabaseTrackerEPSt3setI4GURLSt4lessIS4_ESaIS4_EE
 }
 {
-   quic_socket_utils_write_packet_msg_name
+   bug_263753
    Memcheck:Param
-   socketcall.sendmsg(msg.msg_name)
-   obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
+   sendmsg(msg.msg_name)
+   obj:*libpthread-*.so
    fun:_ZN3net5tools15QuicSocketUtils11WritePacketEiPKcmRKSt6vectorIhSaIhEERKNS_10IPEndPointEPi
-   ...
-}
-{
-   quic_socket_utils_write_packet_msg_control
-   Memcheck:Param
-   socketcall.sendmsg(msg.msg_control)
-   obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
-   fun:_ZN3net5tools15QuicSocketUtils11WritePacketEiPKcmRKSt6vectorIhSaIhEERKNS_10IPEndPointEPi
-   ...
 }
