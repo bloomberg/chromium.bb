@@ -175,6 +175,7 @@ Commands.unmountCommand = {
 
     event.canExecute = (rootType == RootType.ARCHIVE ||
                         rootType == RootType.REMOVABLE);
+    event.command.setHidden(!event.canExecute);
     event.command.label = rootType == RootType.ARCHIVE ?
         str('CLOSE_ARCHIVE_BUTTON_LABEL') :
         str('UNMOUNT_DEVICE_BUTTON_LABEL');
