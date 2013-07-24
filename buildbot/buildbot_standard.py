@@ -379,26 +379,6 @@ def BuildScript(status, context):
     SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
           args=['medium_tests_irt'])
 
-  # TODO(eugenis): reenable this on clang/opt once the LLVM issue is fixed
-  # http://code.google.com/p/nativeclient/issues/detail?id=2473
-  bug2473 = (context['clang'] or context['asan']) and context['mode'] == 'opt'
-  if context.Mac() and context['arch'] != 'arm' and not bug2473:
-    # We don't run all tests on x86-64 Mac yet because it would slow
-    # down the bots too much.  We just run a small set of tests that
-    # have previously been fixed to pass, in order to prevent
-    # regressions.
-    # TODO(mseaborn): Remove this when we have bots dedicated to
-    # testing x86-64 Mac.
-    with Step('minimal x86-64 test', status, halt_on_fail=False):
-      SCons(context, parallel=True, platform='x86-64',
-            args=['exception_tests',
-                  'run_hello_world_test',
-                  'run_execute_data_test',
-                  'run_nacl_signal_test',
-                  'run_signal_frame_test',
-                  'run_signal_handler_test',
-                  'run_trusted_mmap_test'])
-
   ### END tests ###
 
   if not context['no_gyp']:
