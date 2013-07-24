@@ -272,8 +272,12 @@ void Connection::CloseInternal(bool forced) {
     // TODO(paivanof@gmail.com): This should move to the beginning
     // of the function. http://crbug.com/136655.
     AssertIOAllowed();
-    // TODO(shess): Histogram for failure.
-    sqlite3_close(db_);
+
+    int rc = sqlite3_close(db_);
+    if (rc != SQLITE_OK) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.CloseFailure", rc);
+      DLOG(FATAL) << "sqlite3_close failed: " << GetErrorMessage();
+    }
   }
   db_ = NULL;
 }
@@ -829,9 +833,13 @@ bool Connection::OpenInternal(const std::string& file_name,
 
   int err = sqlite3_open(file_name.c_str(), &db_);
   if (err != SQLITE_OK) {
+    // Extended error codes cannot be enabled until a handle is
+    // available, fetch manually.
+    err = sqlite3_extended_errcode(db_);
+
     // Histogram failures specific to initial open for debugging
     // purposes.
-    UMA_HISTOGRAM_ENUMERATION("Sqlite.OpenFailure", err & 0xff, 50);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.OpenFailure", err);
 
     OnSqliteError(err, NULL);
     bool was_poisoned = poisoned_;
@@ -873,6 +881,14 @@ bool Connection::OpenInternal(const std::string& file_name,
   // statements are run.
   sqlite3_db_config(db_, SQLITE_DBCONFIG_LOOKASIDE, NULL, 0, 0);
 
+  // Enable extended result codes to provide more color on I/O errors.
+  // Not having extended result codes is not a fatal problem, as
+  // Chromium code does not attempt to handle I/O errors anyhow.  The
+  // current implementation always returns SQLITE_OK, the DCHECK is to
+  // quickly notify someone if SQLite changes.
+  err = sqlite3_extended_result_codes(db_, 1);
+  DCHECK_EQ(err, SQLITE_OK) << "Could not enable extended result codes";
+
   // sqlite3_open() does not actually read the database file (unless a
   // hot journal is found).  Successfully executing this pragma on an
   // existing database requires a valid header on page 1.
@@ -881,15 +897,7 @@ bool Connection::OpenInternal(const std::string& file_name,
   // be razed.
   err = ExecuteAndReturnErrorCode("PRAGMA auto_vacuum");
   if (err != SQLITE_OK)
-    UMA_HISTOGRAM_ENUMERATION("Sqlite.OpenProbeFailure", err & 0xff, 50);
-
-  // Enable extended result codes to provide more color on I/O errors.
-  // Not having extended result codes is not a fatal problem, as
-  // Chromium code does not attempt to handle I/O errors anyhow.  The
-  // current implementation always returns SQLITE_OK, the DCHECK is to
-  // quickly notify someone if SQLite changes.
-  err = sqlite3_extended_result_codes(db_, 1);
-  DCHECK_EQ(err, SQLITE_OK) << "Could not enable extended result codes";
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.OpenProbeFailure", err);
 
 #if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
   // The version of SQLite shipped with iOS doesn't enable ICU, which includes

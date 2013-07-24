@@ -13079,6 +13079,10 @@ other types of suffix sets.
   <summary>Error codes returned by sqlite for the appcache db.</summary>
 </histogram>
 
+<histogram name="Sqlite.CloseFailure" enum="SqliteErrorCode">
+  <summary>Error which prevented database close.</summary>
+</histogram>
+
 <histogram name="Sqlite.Cookie.Error" enum="SqliteErrorCode">
   <summary>Error codes returned by sqlite the cookie db.</summary>
 </histogram>
@@ -13110,6 +13114,14 @@ other types of suffix sets.
 
 <histogram name="Sqlite.History.Error" enum="SqliteErrorCode">
   <summary>Error codes returned by sqlite for the history db.</summary>
+</histogram>
+
+<histogram name="Sqlite.OpenFailure" enum="SqliteErrorCode">
+  <summary>Error which prevented database open.</summary>
+</histogram>
+
+<histogram name="Sqlite.OpenProbeFailure" enum="SqliteErrorCode">
+  <summary>Error from first read of the database.</summary>
 </histogram>
 
 <histogram name="Sqlite.Quota.Error" enum="SqliteErrorCode">
