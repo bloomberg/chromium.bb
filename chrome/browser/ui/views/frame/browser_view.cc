@@ -1780,7 +1780,7 @@ void BrowserView::PaintChildren(gfx::Canvas* canvas) {
   // overlapping tabs.
   for (int i = 0; i < child_count(); ++i) {
     View* child = child_at(i);
-    if (child != infobar_container_)
+    if (child != infobar_container_ && !child->layer())
       child->Paint(canvas);
   }
 
@@ -2573,6 +2573,9 @@ void BrowserView::ShowPasswordGenerationBubble(
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR);
   bubble->GetWidget()->Show();
+}
+
+void BrowserView::OverscrollUpdate(int delta_y) {
 }
 
 void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),

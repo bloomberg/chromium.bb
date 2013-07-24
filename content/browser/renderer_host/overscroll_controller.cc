@@ -299,12 +299,6 @@ void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
   else if (fabs(overscroll_delta_y_) > fabs(overscroll_delta_x_) * kMinRatio)
     new_mode = overscroll_delta_y_ > 0.f ? OVERSCROLL_SOUTH : OVERSCROLL_NORTH;
 
-  // The vertical oversrcoll currently does not have any UX effects, which can
-  // be confusing to users. So disable vertical overscroll for now.
-  // (http://crbug.com/243551 and http://crbug.com/151356).
-  if (new_mode == OVERSCROLL_SOUTH || new_mode == OVERSCROLL_NORTH)
-    new_mode = OVERSCROLL_NONE;
-
   if (overscroll_mode_ == OVERSCROLL_NONE) {
     SetOverscrollMode(new_mode);
   } else if (new_mode != overscroll_mode_) {

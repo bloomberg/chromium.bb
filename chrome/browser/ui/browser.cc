@@ -1194,6 +1194,10 @@ bool Browser::TabsNeedBeforeUnloadFired() {
   return unload_controller_->TabsNeedBeforeUnloadFired();
 }
 
+void Browser::OverscrollUpdate(int delta_y) {
+  window_->OverscrollUpdate(delta_y);
+}
+
 bool Browser::IsMouseLocked() const {
   return fullscreen_controller_->IsMouseLocked();
 }

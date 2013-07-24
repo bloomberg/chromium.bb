@@ -97,6 +97,8 @@ class CONTENT_EXPORT WebContentsViewAura
 
   void AttachTouchEditableToRenderView();
 
+  void OverscrollUpdateForWebContentsDelegate(int delta_y);
+
   // Overridden from WebContentsView:
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;

@@ -158,6 +158,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // gestures.
   virtual bool CanOverscrollContent() const;
 
+  // Callback that allows vertical overscroll activies to be communicated to the
+  // delegate.
+  virtual void OverscrollUpdate(int delta_y) {}
+
   // Check whether this contents is permitted to load data URLs in WebUI mode.
   // This is normally disallowed for security.
   virtual bool CanLoadDataURLsInWebUI() const;

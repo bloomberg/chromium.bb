@@ -893,6 +893,11 @@ const char kEnableBrowserInputController[] = "enable-browser-input-controller";
 const char kOverscrollHistoryNavigation[] =
     "overscroll-history-navigation";
 
+// Enables or disables scroll end effect in response to vertical overscroll.
+// Set the value to '1' to enable the feature, and set to '0' to disable.
+// Defaults to disabled.
+const char kScrollEndEffect[] = "scroll-end-effect";
+
 // Forward overscroll event data from the renderer to the browser.
 const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
 

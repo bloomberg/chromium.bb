@@ -1324,6 +1324,15 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
+    "scroll-end-effect",
+    IDS_FLAGS_SCROLL_END_EFFECT_NAME,
+    IDS_FLAGS_SCROLL_END_EFFECT_DESCRIPTION,
+    kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
+        switches::kScrollEndEffect, "1",
+        switches::kScrollEndEffect, "0")
+  },
+  {
     "enable-touch-drag-drop",
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME,
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_DESCRIPTION,

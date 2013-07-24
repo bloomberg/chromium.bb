@@ -19,6 +19,8 @@ class MockRenderWidgetHost;
 class OverscrollControllerDelegate;
 class RenderWidgetHostImpl;
 
+// Indicates the direction that the scroll is heading in relative to the screen,
+// with the top being NORTH.
 enum OverscrollMode {
   OVERSCROLL_NONE,
   OVERSCROLL_NORTH,

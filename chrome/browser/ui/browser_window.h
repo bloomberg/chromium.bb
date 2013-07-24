@@ -355,6 +355,10 @@ class BrowserWindow : public ui::BaseWindow {
       const content::PasswordForm& form,
       autofill::PasswordGenerator* password_generator) = 0;
 
+  // Invoked when the amount of vertical overscroll changes. |delta_y| is the
+  // amount of overscroll that has occured in the y-direction.
+  virtual void OverscrollUpdate(int delta_y) {}
+
  protected:
   friend void chrome::CloseAllBrowsers();
   friend class BrowserView;

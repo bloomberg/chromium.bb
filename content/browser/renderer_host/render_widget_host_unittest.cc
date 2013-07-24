@@ -4019,38 +4019,6 @@ TEST_F(RenderWidgetHostTest, UnhandledWheelEvent) {
   EXPECT_EQ(view_->unhandled_wheel_event().deltaY, -5);
 }
 
-// Tests that vertical scrolls are never consumed.
-// Should be removed with http://crbug.com/151356.
-TEST_F(RenderWidgetHostTest, VerticalOverscrollIsDisabled) {
-  host_->SetupForOverscrollControllerTest();
-  process_->sink().ClearMessages();
-  view_->set_bounds(gfx::Rect(0, 0, 400, 200));
-  view_->Show();
-
-  // Send some downwards wheel events. ACK them as not scrolling anything. Then
-  // send some upwards wheel events. Make sure these wheel events reach the
-  // renderer.
-  SimulateWheelEvent(0, 200, 0, true);
-  SimulateWheelEvent(0, 100, 0, true);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  process_->sink().ClearMessages();
-
-  SendInputEventACK(WebInputEvent::MouseWheel,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  process_->sink().ClearMessages();
-
-  SendInputEventACK(WebInputEvent::MouseWheel,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(0U, process_->sink().message_count());
-  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
-
-  SimulateWheelEvent(0, -20, 0, true);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  SendInputEventACK(WebInputEvent::MouseWheel,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-}
-
 // Tests that if a mouse-move event completes the overscroll gesture, future
 // move events do reach the renderer.
 TEST_F(RenderWidgetHostTest, OverscrollMouseMoveCompletion) {

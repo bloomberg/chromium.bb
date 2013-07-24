@@ -281,6 +281,7 @@ CONTENT_EXPORT extern const char kTestCompositor[];
 #endif
 
 CONTENT_EXPORT extern const char kOverscrollHistoryNavigation[];
+CONTENT_EXPORT extern const char kScrollEndEffect[];
 CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];
 CONTENT_EXPORT extern const char kEnableWebGLDraftExtensions[];
 
