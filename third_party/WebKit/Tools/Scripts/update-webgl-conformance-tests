@@ -29,8 +29,8 @@
 
 """Wrapper around webkitpy/layout_tests/update-webgl-conformance-tests.py"""
 
-import webkitpy.to_be_moved.update_webgl_conformance_tests
+import webkitpy.webgl.update_webgl_conformance_tests
 import sys
 
 if __name__ == '__main__':
-    sys.exit(webkitpy.to_be_moved.update_webgl_conformance_tests.main())
+    sys.exit(webkitpy.webgl.update_webgl_conformance_tests.main())
