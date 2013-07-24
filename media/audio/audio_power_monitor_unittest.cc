@@ -82,6 +82,15 @@ class TestScenario {
   scoped_ptr<AudioBus> bus_;
 };
 
+// Value printer for TestScenario.  Required to prevent Valgrind "access to
+// uninitialized memory" errors (http://crbug.com/263315).
+::std::ostream& operator<<(::std::ostream& os, const TestScenario& ts) {
+  return os << "{" << ts.data().channels() << "-channel signal} --> {"
+            << ts.expected_power() << " dBFS, "
+            << (ts.expected_clipped() ? "clipped" : "not clipped")
+            << "}";
+}
+
 // An observer that receives power measurements.  Each power measurement should
 // should make progress towards the goal value.
 class MeasurementObserver {
