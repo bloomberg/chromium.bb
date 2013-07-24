@@ -2,15 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function requestData() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'targets-data.json', false);
-  xhr.send(null);
-  if (xhr.status === 200)
-    return JSON.parse(xhr.responseText);
-  return [];
-}
-
 function inspect(data) {
   chrome.send('inspect', [data]);
 }
@@ -39,7 +30,7 @@ function onload() {
     $('navigation').appendChild(tabHeader);
   }
   selectTab('devices-tab');
-  populateLists();
+  chrome.send('init-ui');
 }
 
 function selectTab(id) {
@@ -58,9 +49,7 @@ function selectTab(id) {
   }
 }
 
-function populateLists() {
-  var data = requestData();
-
+function populateLists(data) {
   removeChildren('pages');
   removeChildren('extensions');
   removeChildren('apps');
