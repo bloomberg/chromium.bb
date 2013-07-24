@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/debug_on_start_win.h"
+#include "base/process/kill.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "ipc/ipc_descriptors.h"

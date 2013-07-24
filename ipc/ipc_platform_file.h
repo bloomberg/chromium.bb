@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/platform_file.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "ipc/ipc_export.h"
 
 #if defined(OS_POSIX)

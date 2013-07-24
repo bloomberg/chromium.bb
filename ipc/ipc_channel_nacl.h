@@ -11,7 +11,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/threading/simple_thread.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_reader.h"
