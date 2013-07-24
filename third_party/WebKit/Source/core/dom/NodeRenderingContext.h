@@ -44,10 +44,7 @@ class ElementShadow;
 
 class NodeRenderingContext {
 public:
-    explicit NodeRenderingContext(Node*);
-    NodeRenderingContext(Node*, RenderStyle*);
-    NodeRenderingContext(Node*, const Node::AttachContext&);
-    ~NodeRenderingContext();
+    NodeRenderingContext(Node*, RenderStyle* = 0);
 
     void createRendererForTextIfNeeded();
     void createRendererForElementIfNeeded();

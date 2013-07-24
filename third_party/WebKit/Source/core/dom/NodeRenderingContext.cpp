@@ -27,13 +27,12 @@
 #include "core/dom/NodeRenderingContext.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/FullscreenController.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
-#include "core/html/shadow/HTMLShadowElement.h"
+#include "core/dom/shadow/InsertionPoint.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderNamedFlowThread.h"
@@ -43,31 +42,13 @@
 
 namespace WebCore {
 
-NodeRenderingContext::NodeRenderingContext(Node* node)
-    : m_node(node)
-    , m_parentFlowRenderer(0)
-{
-    m_renderingParent = NodeRenderingTraversal::parent(node, &m_parentDetails);
-}
-
 NodeRenderingContext::NodeRenderingContext(Node* node, RenderStyle* style)
     : m_node(node)
     , m_renderingParent(0)
     , m_style(style)
     , m_parentFlowRenderer(0)
 {
-}
-
-NodeRenderingContext::NodeRenderingContext(Node* node, const Node::AttachContext& context)
-: m_node(node)
-, m_style(context.resolvedStyle)
-, m_parentFlowRenderer(0)
-{
     m_renderingParent = NodeRenderingTraversal::parent(node, &m_parentDetails);
-}
-
-NodeRenderingContext::~NodeRenderingContext()
-{
 }
 
 static bool isRendererReparented(const RenderObject* renderer)
@@ -175,7 +156,6 @@ bool NodeRenderingContext::shouldCreateRenderer() const
 {
     if (!m_renderingParent)
         return false;
-
     RenderObject* parentRenderer = this->parentRenderer();
     if (!parentRenderer)
         return false;
@@ -254,13 +234,11 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
     if (!element->rendererIsNeeded(*this))
         return;
 
-    RenderObject* parentRenderer = this->parentRenderer();
-    RenderObject* nextRenderer = this->nextRenderer();
-
-    Document* document = element->document();
     RenderObject* newRenderer = element->createRenderer(m_style.get());
     if (!newRenderer)
         return;
+
+    RenderObject* parentRenderer = this->parentRenderer();
 
     if (!parentRenderer->isChildAllowed(newRenderer, m_style.get())) {
         newRenderer->destroy();
@@ -271,11 +249,12 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
     // for the first time. Otherwise code using inRenderFlowThread() in the styleWillChange and styleDidChange will fail.
     newRenderer->setFlowThreadState(parentRenderer->flowThreadState());
 
+    RenderObject* nextRenderer = this->nextRenderer();
     element->setRenderer(newRenderer);
     newRenderer->setAnimatableStyle(m_style.release()); // setAnimatableStyle() can depend on renderer() already being set.
 
     if (FullscreenController::isActiveFullScreenElement(element)) {
-        newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, document);
+        newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, element->document());
         if (!newRenderer)
             return;
     }
@@ -294,19 +273,16 @@ void NodeRenderingContext::createRendererForTextIfNeeded()
         return;
 
     RenderObject* parentRenderer = this->parentRenderer();
-    ASSERT(parentRenderer);
-    Document* document = textNode->document();
 
     if (resetStyleInheritance())
-        m_style = document->styleResolver()->defaultStyleForElement();
+        m_style = textNode->document()->styleResolver()->defaultStyleForElement();
     else
         m_style = parentRenderer->style();
 
     if (!textNode->textRendererIsNeeded(*this))
         return;
+
     RenderText* newRenderer = textNode->createTextRenderer(m_style.get());
-    if (!newRenderer)
-        return;
     if (!parentRenderer->isChildAllowed(newRenderer, m_style.get())) {
         newRenderer->destroy();
         return;

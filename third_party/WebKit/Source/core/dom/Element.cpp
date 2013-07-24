@@ -1301,7 +1301,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
 void Element::createRendererIfNeeded(const AttachContext& context)
 {
-    NodeRenderingContext(this, context).createRendererForElementIfNeeded();
+    NodeRenderingContext(this, context.resolvedStyle).createRendererForElementIfNeeded();
 }
 
 void Element::attach(const AttachContext& context)
