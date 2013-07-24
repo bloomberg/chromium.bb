@@ -389,7 +389,7 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   website_settings()->OnSitePermissionChanged(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
   website_settings()->OnUIClosing();
-  EXPECT_EQ(1u, infobar_service()->infobar_count());
+  ASSERT_EQ(1u, infobar_service()->infobar_count());
 
   // Removing an |InfoBarDelegate| from the |InfoBarService| does not delete
   // it. Hence the |delegate| must be cleaned up after it was removed from the

@@ -5,18 +5,12 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_APP_METRO_INFOBAR_DELEGATE_WIN_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_APP_METRO_INFOBAR_DELEGATE_WIN_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_service.h"
-#include "ui/base/window_open_disposition.h"
 
+class InfoBarService;
 class Profile;
-
-namespace gfx {
-class Image;
-}
-
-namespace chrome {
 
 // This infobar operates by opening a new tab on about:blank, showing an
 // infobar offering to relaunch the browser in metro mode, and then relaunching
@@ -28,16 +22,16 @@ class AppMetroInfoBarDelegateWin : public ConfirmInfoBarDelegate {
     LAUNCH_PACKAGED_APP
   };
 
-  // Creates an instance of the app metro infobar delegate, adds it to a new
-  // browser tab, then activates Metro mode.
+  // Creates an app metro infobar delegate, adds it to a new browser tab, then
+  // activates Metro mode.
   static void Create(Profile* profile,
                      Mode mode,
                      const std::string& extension_id);
 
  private:
-  explicit AppMetroInfoBarDelegateWin(InfoBarService* infobar_service,
-                                      Mode mode,
-                                      const std::string& extension_id);
+  AppMetroInfoBarDelegateWin(InfoBarService* infobar_service,
+                             Mode mode,
+                             const std::string& extension_id);
   virtual ~AppMetroInfoBarDelegateWin();
 
   // ConfirmInfoBarDelegate overrides:
@@ -54,7 +48,5 @@ class AppMetroInfoBarDelegateWin : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(AppMetroInfoBarDelegateWin);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APP_METRO_INFOBAR_DELEGATE_WIN_H_

@@ -74,8 +74,8 @@ void GoBackToSafety(content::WebContents* web_contents) {
 
 class ManagedModeWarningInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a managed mode warning delegate and adds it to |infobar_service|.
-  // Returns the delegate if it was successfully added.
+  // Creates a managed mode warning infobar delegate and adds it to
+  // |infobar_service|.  Returns the delegate if it was successfully added.
   static InfoBarDelegate* Create(InfoBarService* infobar_service);
 
  private:
@@ -153,7 +153,7 @@ ManagedModeNavigationObserver::~ManagedModeNavigationObserver() {
 ManagedModeNavigationObserver::ManagedModeNavigationObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      warn_infobar_delegate_(NULL) {
+      warn_infobar_(NULL) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   managed_user_service_ = ManagedUserServiceFactory::GetForProfile(profile);
@@ -161,8 +161,8 @@ ManagedModeNavigationObserver::ManagedModeNavigationObserver(
 }
 
 void ManagedModeNavigationObserver::WarnInfoBarDismissed() {
-  DCHECK(warn_infobar_delegate_);
-  warn_infobar_delegate_ = NULL;
+  DCHECK(warn_infobar_);
+  warn_infobar_ = NULL;
 }
 
 void ManagedModeNavigationObserver::ProvisionalChangeToMainFrameUrl(
@@ -171,14 +171,12 @@ void ManagedModeNavigationObserver::ProvisionalChangeToMainFrameUrl(
   ManagedModeURLFilter::FilteringBehavior behavior =
       url_filter_->GetFilteringBehaviorForURL(url);
 
-  if (behavior == ManagedModeURLFilter::WARN || !warn_infobar_delegate_)
+  if (behavior == ManagedModeURLFilter::WARN || !warn_infobar_)
     return;
 
   // If we shouldn't have a warn infobar remove it here.
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  infobar_service->RemoveInfoBar(warn_infobar_delegate_);
-  warn_infobar_delegate_ = NULL;
+  InfoBarService::FromWebContents(web_contents())->RemoveInfoBar(warn_infobar_);
+  warn_infobar_ = NULL;
 }
 
 void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
@@ -194,8 +192,8 @@ void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
   ManagedModeURLFilter::FilteringBehavior behavior =
       url_filter_->GetFilteringBehaviorForURL(url);
 
-  if (behavior == ManagedModeURLFilter::WARN && !warn_infobar_delegate_) {
-    warn_infobar_delegate_ = ManagedModeWarningInfoBarDelegate::Create(
+  if (behavior == ManagedModeURLFilter::WARN && !warn_infobar_) {
+    warn_infobar_ = ManagedModeWarningInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents()));
   }
 }

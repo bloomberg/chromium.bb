@@ -122,7 +122,7 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
     infobar_added.Wait();
     content::Details<InfoBarAddedDetails> details(infobar_added.details());
     MediaStreamInfoBarDelegate* media_infobar =
-        details.ptr()->AsMediaStreamInfoBarDelegate();
+        details->AsMediaStreamInfoBarDelegate();
     media_infobar->Accept();
 
     // Wait for WebRTC to call the success callback.

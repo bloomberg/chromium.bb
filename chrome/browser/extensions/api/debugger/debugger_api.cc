@@ -566,15 +566,14 @@ bool DebuggerAttachFunction::RunImpl() {
     return false;
   }
 
-  ExtensionDevToolsInfoBarDelegate* infobar_delegate = NULL;
-
+  ExtensionDevToolsInfoBarDelegate* infobar = NULL;
   if (!CommandLine::ForCurrentProcess()->
        HasSwitch(switches::kSilentDebuggerExtensionAPI)) {
     // Do not attach to the target if for any reason the infobar cannot be shown
     // for this WebContents instance.
-    infobar_delegate = ExtensionDevToolsInfoBarDelegate::Create(
+    infobar = ExtensionDevToolsInfoBarDelegate::Create(
           agent_host_->GetRenderViewHost(), GetExtension()->name());
-    if (!infobar_delegate) {
+    if (!infobar) {
       error_ = ErrorUtils::FormatErrorMessage(
           keys::kSilentDebuggingRequired,
           switches::kSilentDebuggerExtensionAPI);
@@ -582,12 +581,9 @@ bool DebuggerAttachFunction::RunImpl() {
     }
   }
 
-  new ExtensionDevToolsClientHost(profile(),
-                                  agent_host_.get(),
-                                  GetExtension()->id(),
-                                  GetExtension()->name(),
-                                  debuggee_,
-                                  infobar_delegate);
+  new ExtensionDevToolsClientHost(profile(), agent_host_.get(),
+                                  GetExtension()->id(), GetExtension()->name(),
+                                  debuggee_, infobar);
   SendResponse(true);
   return true;
 }

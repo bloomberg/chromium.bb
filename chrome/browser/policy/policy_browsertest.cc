@@ -1160,8 +1160,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   ui_test_utils::NavigateToURL(browser(), url);
   // This should have triggered the dangerous plugin infobar.
   ASSERT_EQ(1u, infobar_service->infobar_count());
-  InfoBarDelegate* infobar_delegate = infobar_service->infobar_at(0);
-  EXPECT_TRUE(infobar_delegate->AsConfirmInfoBarDelegate());
+  EXPECT_TRUE(infobar_service->infobar_at(0)->AsConfirmInfoBarDelegate());
   // And the plugin isn't running.
   EXPECT_EQ(0, CountPlugins());
 

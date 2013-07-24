@@ -288,9 +288,8 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
   // On Windows 8's single window Metro mode we can not launch platform apps.
   // Offer to switch Chrome to desktop mode.
   if (win8::IsSingleWindowMetroMode()) {
-    chrome::AppMetroInfoBarDelegateWin::Create(
-        profile,
-        chrome::AppMetroInfoBarDelegateWin::LAUNCH_PACKAGED_APP,
+    AppMetroInfoBarDelegateWin::Create(
+        profile, AppMetroInfoBarDelegateWin::LAUNCH_PACKAGED_APP,
         extension->id());
     return;
   }

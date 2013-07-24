@@ -2804,8 +2804,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
 
   // Get the infobar at index 0.
   InfoBarDelegate* infobar = infobar_service->infobar_at(0);
-  ASSERT_TRUE(infobar != NULL);
-
   ConfirmInfoBarDelegate* confirm_infobar = infobar->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(confirm_infobar != NULL);
 

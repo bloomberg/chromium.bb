@@ -11,6 +11,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+
 // static
 void GoogleApiKeysInfoBarDelegate::Create(InfoBarService* infobar_service) {
   if (google_apis::HasKeysConfigured())
@@ -42,12 +43,10 @@ string16 GoogleApiKeysInfoBarDelegate::GetLinkText() const {
 
 bool GoogleApiKeysInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  web_contents()->OpenURL(
-      content::OpenURLParams(
-          GURL("http://www.chromium.org/developers/how-tos/api-keys"),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          content::PAGE_TRANSITION_LINK,
-          false));
+  web_contents()->OpenURL(content::OpenURLParams(
+      GURL("http://www.chromium.org/developers/how-tos/api-keys"),
+      content::Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false));
   return false;
 }

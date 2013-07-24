@@ -24,11 +24,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "win8/util/win8_util.h"
 
-namespace chrome {
-
 // static
 void AppMetroInfoBarDelegateWin::Create(
-    Profile* profile, Mode mode, const std::string& extension_id) {
+    Profile* profile,
+    Mode mode,
+    const std::string& extension_id) {
   DCHECK(win8::IsSingleWindowMetroMode());
   DCHECK_EQ(mode == SHOW_APP_LIST, extension_id.empty());
 
@@ -38,12 +38,9 @@ void AppMetroInfoBarDelegateWin::Create(
       profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // Create a new tab at about:blank, and add the infobar.
-  content::OpenURLParams params(GURL(content::kAboutBlankURL),
-                                content::Referrer(),
-                                NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK,
-                                false);
-  content::WebContents* web_contents = browser->OpenURL(params);
+  content::WebContents* web_contents = browser->OpenURL(content::OpenURLParams(
+      GURL(content::kAboutBlankURL), content::Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false));
   InfoBarService* info_bar_service =
       InfoBarService::FromWebContents(web_contents);
   info_bar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
@@ -111,13 +108,10 @@ string16 AppMetroInfoBarDelegateWin::GetLinkText() const {
 
 bool AppMetroInfoBarDelegateWin::LinkClicked(
     WindowOpenDisposition disposition) {
-  content::OpenURLParams params(
+  web_contents()->OpenURL(content::OpenURLParams(
       GURL("https://support.google.com/chrome/?p=ib_redirect_to_desktop"),
       content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
-  web_contents()->OpenURL(params);
+      content::PAGE_TRANSITION_LINK, false));
   return false;
 }
-
-}  // namespace chrome

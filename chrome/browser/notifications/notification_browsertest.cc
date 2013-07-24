@@ -221,7 +221,7 @@ class NotificationsTest : public InProcessBrowserTest {
   void AllowOrigin(const GURL& origin);
   void AllowAllOrigins();
 
-  void VerifyInfobar(const Browser* browser, int index);
+  void VerifyInfoBar(const Browser* browser, int index);
   std::string CreateNotification(Browser* browser,
                                  bool wait_for_new_balloon,
                                  const char* icon,
@@ -232,9 +232,9 @@ class NotificationsTest : public InProcessBrowserTest {
                                        bool wait_for_new_balloon);
   bool RequestPermissionAndWait(Browser* browser);
   bool CancelNotification(const char* notification_id, Browser* browser);
-  bool PerformActionOnInfobar(Browser* browser,
+  bool PerformActionOnInfoBar(Browser* browser,
                               InfobarAction action,
-                              int infobar_index,
+                              size_t infobar_index,
                               int tab_index);
   void GetPrefsByContentSetting(ContentSetting setting,
                                 ContentSettingsForOneType* settings);
@@ -319,13 +319,13 @@ void NotificationsTest::AllowAllOrigins() {
       CONTENT_SETTING_ALLOW);
 }
 
-void NotificationsTest::VerifyInfobar(const Browser* browser, int index) {
+void NotificationsTest::VerifyInfoBar(const Browser* browser, int index) {
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
       browser->tab_strip_model()->GetWebContentsAt(index));
 
   ASSERT_EQ(1U, infobar_service->infobar_count());
-  InfoBarDelegate* infobar = infobar_service->infobar_at(0);
-  ConfirmInfoBarDelegate* confirm_infobar = infobar->AsConfirmInfoBarDelegate();
+  ConfirmInfoBarDelegate* confirm_infobar =
+      infobar_service->infobar_at(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(confirm_infobar);
   int buttons = confirm_infobar->GetButtons();
   EXPECT_TRUE(buttons & ConfirmInfoBarDelegate::BUTTON_OK);
@@ -399,33 +399,44 @@ bool NotificationsTest::CancelNotification(
   return observer->Wait();
 }
 
-bool NotificationsTest::PerformActionOnInfobar(
+bool NotificationsTest::PerformActionOnInfoBar(
     Browser* browser,
     InfobarAction action,
-    int infobar_index,
+    size_t infobar_index,
     int tab_index) {
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
       browser->tab_strip_model()->GetWebContentsAt(tab_index));
+  if (infobar_index >= infobar_service->infobar_count()) {
+    ADD_FAILURE();
+    return false;
+  }
 
-  InfoBarDelegate* infobar = infobar_service->infobar_at(infobar_index);
+  InfoBarDelegate* infobar_delegate =
+      infobar_service->infobar_at(infobar_index);
   switch (action) {
     case DISMISS:
-      infobar->InfoBarDismissed();
-      infobar_service->RemoveInfoBar(infobar);
+      infobar_delegate->InfoBarDismissed();
+      infobar_service->RemoveInfoBar(infobar_delegate);
       return true;
 
     case ALLOW: {
-      ConfirmInfoBarDelegate* confirm_bar = infobar->AsConfirmInfoBarDelegate();
-      if (confirm_bar->Accept()) {
-        infobar_service->RemoveInfoBar(infobar);
+      ConfirmInfoBarDelegate* confirm_infobar_delegate =
+          infobar_delegate->AsConfirmInfoBarDelegate();
+      if (!confirm_infobar_delegate) {
+        ADD_FAILURE();
+      } else if (confirm_infobar_delegate->Accept()) {
+        infobar_service->RemoveInfoBar(infobar_delegate);
         return true;
       }
     }
 
     case DENY: {
-      ConfirmInfoBarDelegate* confirm_bar = infobar->AsConfirmInfoBarDelegate();
-      if (confirm_bar->Cancel()) {
-        infobar_service->RemoveInfoBar(infobar);
+      ConfirmInfoBarDelegate* confirm_infobar_delegate =
+          infobar_delegate->AsConfirmInfoBarDelegate();
+      if (!confirm_infobar_delegate) {
+        ADD_FAILURE();
+      } else if (confirm_infobar_delegate->Cancel()) {
+        infobar_service->RemoveInfoBar(infobar_delegate);
         return true;
       }
     }
@@ -602,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPermissionInfobarAppears) {
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
 
   ASSERT_EQ(0, GetNotificationCount());
-  VerifyInfobar(browser(), 0);
+  ASSERT_NO_FATAL_FAILURE(VerifyInfoBar(browser(), 0));
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowOnPermissionInfobar) {
@@ -621,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowOnPermissionInfobar) {
   ASSERT_EQ(0, GetNotificationCount());
 
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
-  ASSERT_TRUE(PerformActionOnInfobar(browser(), ALLOW, 0, 0));
+  ASSERT_TRUE(PerformActionOnInfoBar(browser(), ALLOW, 0, 0));
 
   CreateSimpleNotification(browser(), true);
   EXPECT_EQ(1, GetNotificationCount());
@@ -634,7 +645,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyOnPermissionInfobar) {
   // when Deny is chosen from permission infobar.
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
-  PerformActionOnInfobar(browser(), DENY, 0, 0);
+  PerformActionOnInfoBar(browser(), DENY, 0, 0);
   CreateSimpleNotification(browser(), false);
   ASSERT_EQ(0, GetNotificationCount());
   ContentSettingsForOneType settings;
@@ -648,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestClosePermissionInfobar) {
   // Test that no notification is created when permission infobar is dismissed.
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
-  PerformActionOnInfobar(browser(), DISMISS, 0, 0);
+  PerformActionOnInfoBar(browser(), DISMISS, 0, 0);
   CreateSimpleNotification(browser(), false);
   ASSERT_EQ(0, GetNotificationCount());
   ContentSettingsForOneType settings;
@@ -800,13 +811,13 @@ IN_PROC_BROWSER_TEST_F(
   Browser* incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(incognito, GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(incognito));
-  PerformActionOnInfobar(incognito, DENY, 0, 0);
+  PerformActionOnInfoBar(incognito, DENY, 0, 0);
   CloseBrowserWindow(incognito);
 
   incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(incognito, GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(incognito));
-  PerformActionOnInfobar(incognito, ALLOW, 0, 0);
+  PerformActionOnInfoBar(incognito, ALLOW, 0, 0);
   CreateSimpleNotification(incognito, true);
   ASSERT_EQ(1, GetNotificationCount());
   CloseBrowserWindow(incognito);
@@ -893,7 +904,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestIncognitoNotification) {
   ui_test_utils::NavigateToURL(browser, GetTestPageURL());
   browser->tab_strip_model()->ActivateTabAt(0, true);
   ASSERT_TRUE(RequestPermissionAndWait(browser));
-  PerformActionOnInfobar(browser, ALLOW, 0, 0);
+  PerformActionOnInfoBar(browser, ALLOW, 0, 0);
   CreateSimpleNotification(browser, true);
   ASSERT_EQ(1, GetNotificationCount());
 }
@@ -941,7 +952,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
-  PerformActionOnInfobar(browser(), ALLOW, 0, 0);
+  PerformActionOnInfoBar(browser(), ALLOW, 0, 0);
   CreateSimpleNotification(browser(), true);
   ASSERT_EQ(1, GetNotificationCount());
 }

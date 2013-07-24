@@ -11,6 +11,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+
 // static
 void AlternateNavInfoBarDelegate::Create(InfoBarService* infobar_service,
                                          const GURL& alternate_nav_url) {

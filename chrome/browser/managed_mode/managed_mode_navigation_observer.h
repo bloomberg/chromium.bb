@@ -66,7 +66,7 @@ class ManagedModeNavigationObserver
   const ManagedModeURLFilter* url_filter_;
 
   // Owned by the InfoBarService, which has the same lifetime as this object.
-  InfoBarDelegate* warn_infobar_delegate_;
+  InfoBarDelegate* warn_infobar_;
 
   ScopedVector<const content::NavigationEntry> blocked_navigations_;
 

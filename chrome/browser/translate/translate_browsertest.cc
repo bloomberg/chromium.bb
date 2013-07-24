@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_BROWSERTEST_H_
-#define CHROME_BROWSER_TRANSLATE_TRANSLATE_BROWSERTEST_H_
-
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -102,9 +99,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, Translate) {
   infobar.Wait();
 
   // Perform Chrome Translate.
-  InfoBarDelegate* delegate = infobar_service->infobar_at(0);
-  ASSERT_TRUE(delegate);
-  TranslateInfoBarDelegate* translate = delegate->AsTranslateInfoBarDelegate();
+  ASSERT_EQ(1U, infobar_service->infobar_count());
+  TranslateInfoBarDelegate* translate =
+      infobar_service->infobar_at(0)->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(translate);
   translate->Translate();
 
@@ -291,5 +288,3 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
   // Check there is not infobar.
   EXPECT_EQ(0U, infobar_service->infobar_count());
 }
-
-#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_BROWSERTEST_H_

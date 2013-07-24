@@ -406,7 +406,7 @@ TEST_F(GeolocationPermissionContextTests, PermissionForFileScheme) {
   ConfirmInfoBarDelegate* infobar_delegate =
       infobar_service()->infobar_at(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate);
-  // Accept the frame
+  // Accept the frame.
   infobar_delegate->Accept();
   CheckTabContentsState(requesting_frame, CONTENT_SETTING_ALLOW);
   CheckPermissionMessageSent(0, true);
@@ -613,9 +613,7 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
   RequestGeolocationPermission(RequestID(1), requesting_frame_1);
   // Ensure only one infobar is created.
   ASSERT_EQ(1U, infobar_service()->infobar_count());
-  ConfirmInfoBarDelegate* infobar =
-      infobar_service()->infobar_at(0)->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(infobar);
+  InfoBarDelegate* infobar = infobar_service()->infobar_at(0);
 
   // Delete the tab contents.
   DeleteContents();
