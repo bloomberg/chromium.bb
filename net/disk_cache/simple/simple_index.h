@@ -77,7 +77,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   virtual ~SimpleIndex();
 
-  void Initialize();
+  void Initialize(base::Time cache_mtime);
 
   bool SetMaxSize(int max_bytes);
   int max_size() const { return max_size_; }

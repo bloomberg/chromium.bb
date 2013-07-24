@@ -54,6 +54,7 @@ class MockSimpleIndexFile : public SimpleIndexFile,
         disk_writes_(0) {}
 
   virtual void LoadIndexEntries(
+      base::Time cache_last_modified,
       scoped_refptr<base::SingleThreadTaskRunner> response_thread,
       const SimpleIndexFile::IndexCompletionCallback&
           completion_callback) OVERRIDE {
@@ -111,7 +112,7 @@ class SimpleIndexTest  : public testing::Test {
     index_.reset(new SimpleIndex(NULL, base::FilePath(),
                                  index_file.PassAs<SimpleIndexFile>()));
 
-    index_->Initialize();
+    index_->Initialize(base::Time());
   }
 
   void WaitForTimeChange() {

@@ -37,24 +37,23 @@ void DoomEntrySetReply(scoped_ptr<int> result,
 }
 
 void WriteToDiskInternal(const base::FilePath& index_filename,
+                         const base::FilePath& temp_index_filename,
                          scoped_ptr<Pickle> pickle,
                          const base::TimeTicks& start_time,
                          bool app_on_background) {
-  const base::FilePath temp_filename =
-      index_filename.DirName().AppendASCII("index_temp");
   int bytes_written = file_util::WriteFile(
-      temp_filename,
+      temp_index_filename,
       reinterpret_cast<const char*>(pickle->data()),
       pickle->size());
   DCHECK_EQ(bytes_written, implicit_cast<int>(pickle->size()));
   if (bytes_written != static_cast<int>(pickle->size())) {
     // TODO(felipeg): Add better error handling.
     LOG(ERROR) << "Could not write Simple Cache index to temporary file: "
-               << temp_filename.value();
-    base::DeleteFile(temp_filename, /* recursive = */ false);
+               << temp_index_filename.value();
+    base::DeleteFile(temp_index_filename, /* recursive = */ false);
   } else {
     // Swap temp and index_file.
-    bool result = base::ReplaceFile(temp_filename, index_filename, NULL);
+    bool result = base::ReplaceFile(temp_index_filename, index_filename, NULL);
     DCHECK(result);
   }
   if (app_on_background) {
@@ -72,6 +71,8 @@ namespace disk_cache {
 
 // static
 const char SimpleIndexFile::kIndexFileName[] = "the-real-index";
+// static
+const char SimpleIndexFile::kTempIndexFileName[] = "temp-index";
 
 SimpleIndexFile::IndexMetadata::IndexMetadata() :
     magic_number_(kSimpleIndexMagicNumber),
@@ -111,21 +112,28 @@ bool SimpleIndexFile::IndexMetadata::CheckIndexMetadata() {
 SimpleIndexFile::SimpleIndexFile(
     base::SingleThreadTaskRunner* cache_thread,
     base::TaskRunner* worker_pool,
-    const base::FilePath& index_file_directory)
+    const base::FilePath& cache_directory)
     : cache_thread_(cache_thread),
       worker_pool_(worker_pool),
-      index_file_path_(index_file_directory.AppendASCII(kIndexFileName)) {
+      cache_directory_(cache_directory),
+      index_file_(cache_directory_.AppendASCII(kIndexFileName)),
+      temp_index_file_(cache_directory_.AppendASCII(kTempIndexFileName)) {
 }
 
 SimpleIndexFile::~SimpleIndexFile() {}
 
 void SimpleIndexFile::LoadIndexEntries(
+    base::Time cache_last_modified,
     scoped_refptr<base::SingleThreadTaskRunner> response_thread,
     const IndexCompletionCallback& completion_callback) {
   worker_pool_->PostTask(
       FROM_HERE,
       base::Bind(&SimpleIndexFile::SyncLoadIndexEntries,
-                 index_file_path_, response_thread, completion_callback));
+                 cache_last_modified,
+                 cache_directory_,
+                 index_file_,
+                 response_thread,
+                 completion_callback));
 }
 
 void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
@@ -136,7 +144,8 @@ void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
   scoped_ptr<Pickle> pickle = Serialize(index_metadata, entry_set);
   cache_thread_->PostTask(FROM_HERE, base::Bind(
       &WriteToDiskInternal,
-      index_file_path_,
+      index_file_,
+      temp_index_file_,
       base::Passed(&pickle),
       base::TimeTicks::Now(),
       app_on_background));
@@ -151,7 +160,7 @@ void SimpleIndexFile::DoomEntrySet(
   worker_pool_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
-                 base::Passed(entry_hashes.Pass()), index_file_path_.DirName(),
+                 base::Passed(entry_hashes.Pass()), cache_directory_,
                  result_p),
       base::Bind(&DoomEntrySetReply, base::Passed(result.Pass()),
                  reply_callback));
@@ -159,31 +168,53 @@ void SimpleIndexFile::DoomEntrySet(
 
 // static
 void SimpleIndexFile::SyncLoadIndexEntries(
+    base::Time cache_last_modified,
+    const base::FilePath& cache_directory,
     const base::FilePath& index_file_path,
     scoped_refptr<base::SingleThreadTaskRunner> response_thread,
     const IndexCompletionCallback& completion_callback) {
-  // TODO(felipeg): probably could load a stale index and use it for something.
   scoped_ptr<SimpleIndex::EntrySet> index_file_entries;
-
   const bool index_file_exists = base::PathExists(index_file_path);
 
+  // Used in histograms. Please only add new values at the end.
+  enum {
+    INDEX_STATE_CORRUPT = 0,
+    INDEX_STATE_STALE = 1,
+    INDEX_STATE_FRESH = 2,
+    INDEX_STATE_FRESH_CONCURRENT_UPDATES = 3,
+    INDEX_STATE_MAX = 4,
+  } index_file_state;
+
   // Only load if the index is not stale.
-  const bool index_stale = IsIndexFileStale(index_file_path);
-  if (!index_stale) {
+  if (IsIndexFileStale(cache_last_modified, index_file_path)) {
+    index_file_state = INDEX_STATE_STALE;
+  } else {
+    index_file_state = INDEX_STATE_FRESH;
+    base::Time latest_dir_mtime;
+    if (simple_util::GetMTime(cache_directory, &latest_dir_mtime) &&
+        IsIndexFileStale(latest_dir_mtime, index_file_path)) {
+      // A file operation has updated the directory since we last looked at it
+      // during backend initialization.
+      index_file_state = INDEX_STATE_FRESH_CONCURRENT_UPDATES;
+    }
+
     const base::TimeTicks start = base::TimeTicks::Now();
     index_file_entries = SyncLoadFromDisk(index_file_path);
     UMA_HISTOGRAM_TIMES("SimpleCache.IndexLoadTime",
                         base::TimeTicks::Now() - start);
     UMA_HISTOGRAM_COUNTS("SimpleCache.IndexEntriesLoaded",
                          index_file_entries ? index_file_entries->size() : 0);
+    if (!index_file_entries)
+      index_file_state = INDEX_STATE_CORRUPT;
   }
-
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.IndexStale", index_stale);
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.IndexFileStateOnLoad",
+                            index_file_state,
+                            INDEX_STATE_MAX);
 
   bool force_index_flush = false;
   if (!index_file_entries) {
     const base::TimeTicks start = base::TimeTicks::Now();
-    index_file_entries = SyncRestoreFromDisk(index_file_path);
+    index_file_entries = SyncRestoreFromDisk(cache_directory, index_file_path);
     UMA_HISTOGRAM_MEDIUM_TIMES("SimpleCache.IndexRestoreTime",
                         base::TimeTicks::Now() - start);
     UMA_HISTOGRAM_COUNTS("SimpleCache.IndexEntriesRestored",
@@ -193,8 +224,6 @@ void SimpleIndexFile::SyncLoadIndexEntries(
     // away, this might save us from having to restore again next time.
     force_index_flush = true;
   }
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.IndexCorrupt",
-                        (!index_stale && force_index_flush));
 
   // Used in histograms. Please only add new values at the end.
   enum {
@@ -313,6 +342,7 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::Deserialize(const char* data,
 
 // static
 scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::SyncRestoreFromDisk(
+    const base::FilePath& cache_directory,
     const base::FilePath& index_file_path) {
   LOG(INFO) << "Simple Cache Index is being restored from disk.";
 
@@ -326,7 +356,7 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::SyncRestoreFromDisk(
 
   const int kFileSuffixLength = sizeof("_0") - 1;
   const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*_[0-2]");
-  base::FileEnumerator enumerator(index_file_path.DirName(),
+  base::FileEnumerator enumerator(cache_directory,
                                   false /* recursive */,
                                   base::FileEnumerator::FILES,
                                   file_pattern);
@@ -372,18 +402,12 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::SyncRestoreFromDisk(
 }
 
 // static
-bool SimpleIndexFile::IsIndexFileStale(const base::FilePath& index_filename) {
+bool SimpleIndexFile::IsIndexFileStale(base::Time cache_last_modified,
+                                       const base::FilePath& index_file_path) {
   base::Time index_mtime;
-  base::Time dir_mtime;
-  if (!simple_util::GetMTime(index_filename.DirName(), &dir_mtime))
+  if (!simple_util::GetMTime(index_file_path, &index_mtime))
     return true;
-  if (!simple_util::GetMTime(index_filename, &index_mtime))
-    return true;
-  // Index file last_modified must be equal to the directory last_modified since
-  // the last operation we do is ReplaceFile in the
-  // SimpleIndexFile::WriteToDisk().
-  // If not true, we need to restore the index.
-  return index_mtime < dir_mtime;
+  return index_mtime < cache_last_modified;
 }
 
 }  // namespace disk_cache

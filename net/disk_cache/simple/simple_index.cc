@@ -126,7 +126,7 @@ SimpleIndex::~SimpleIndex() {
   }
 }
 
-void SimpleIndex::Initialize() {
+void SimpleIndex::Initialize(base::Time cache_mtime) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
   // Take the foreground and background index flush delays from the experiment
@@ -152,8 +152,10 @@ void SimpleIndex::Initialize() {
       base::Bind(&SimpleIndex::OnActivityStateChange, AsWeakPtr())));
 #endif
 
-  index_file_->LoadIndexEntries(
-      io_thread_, base::Bind(&SimpleIndex::MergeInitializingSet, AsWeakPtr()));
+  index_file_->LoadIndexEntries(cache_mtime,
+                                io_thread_,
+                                base::Bind(&SimpleIndex::MergeInitializingSet,
+                                           AsWeakPtr()));
 }
 
 bool SimpleIndex::SetMaxSize(int max_bytes) {

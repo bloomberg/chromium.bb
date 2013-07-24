@@ -12854,6 +12854,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.IndexFileStateOnLoad" enum="SimpleIndexState">
+  <summary>
+    The state the index file is at when an attempt is made to load from it.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.IndexInitializationWaiters">
   <summary>
     At the time of index initialization, the number of enqueued jobs awaiting
@@ -12884,6 +12890,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.IndexStale" enum="BooleanStale">
+  <obsolete>
+    Deprecated 07/2013, and replaced by IndexFileStateOnLoad.
+  </obsolete>
   <summary>For each index load, whether the index file was stale.</summary>
 </histogram>
 
@@ -20451,6 +20460,13 @@ other types of suffix sets.
   <int value="2" label="Over Max Size"/>
   <int value="3" label="Bad State"/>
   <int value="4" label="Synchronous Write Failure"/>
+</enum>
+
+<enum name="SimpleIndexState" type="int">
+  <int value="0" label="Corrupt"/>
+  <int value="1" label="Stale"/>
+  <int value="2" label="Fresh"/>
+  <int value="3" label="Fresh index with cache updated since backend start"/>
 </enum>
 
 <enum name="SocketStreamConnectionType" type="int">

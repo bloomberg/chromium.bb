@@ -69,11 +69,12 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
 
   SimpleIndexFile(base::SingleThreadTaskRunner* cache_thread,
                   base::TaskRunner* worker_pool,
-                  const base::FilePath& index_file_directory);
+                  const base::FilePath& cache_directory);
   virtual ~SimpleIndexFile();
 
   // Get index entries based on current disk context.
   virtual void LoadIndexEntries(
+      base::Time cache_last_modified,
       scoped_refptr<base::SingleThreadTaskRunner> response_thread,
       const SimpleIndexFile::IndexCompletionCallback& completion_callback);
 
@@ -93,6 +94,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
 
   // Synchronous (IO performing) implementation of LoadIndexEntries.
   static void SyncLoadIndexEntries(
+      base::Time cache_last_modified,
+      const base::FilePath& cache_directory,
       const base::FilePath& index_file_path,
       scoped_refptr<base::SingleThreadTaskRunner> response_thread,
       const SimpleIndexFile::IndexCompletionCallback& completion_callback);
@@ -116,10 +119,13 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   // Scan the index directory for entries, returning an EntrySet of all entries
   // found.
   static scoped_ptr<SimpleIndex::EntrySet> SyncRestoreFromDisk(
+      const base::FilePath& cache_directory,
       const base::FilePath& index_file_path);
 
-  // Determines if an index file is stale relative to the cache directory.
-  static bool IsIndexFileStale(const base::FilePath& index_filename);
+  // Determines if an index file is stale relative to the time of last
+  // modification of the cache directory.
+  static bool IsIndexFileStale(base::Time cache_last_modified,
+                               const base::FilePath& index_file_path);
 
   struct PickleHeader : public Pickle::Header {
     uint32 crc;
@@ -127,9 +133,12 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
 
   const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
   const scoped_refptr<base::TaskRunner> worker_pool_;
-  const base::FilePath index_file_path_;
+  const base::FilePath cache_directory_;
+  const base::FilePath index_file_;
+  const base::FilePath temp_index_file_;
 
   static const char kIndexFileName[];
+  static const char kTempIndexFileName[];
 
   DISALLOW_COPY_AND_ASSIGN(SimpleIndexFile);
 };

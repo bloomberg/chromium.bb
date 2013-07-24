@@ -202,17 +202,21 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
   index_->ExecuteWhenReady(base::Bind(&RecordIndexLoad,
                                       base::TimeTicks::Now()));
 
-  InitializeIndexCallback initialize_index_callback =
-      base::Bind(&SimpleBackendImpl::InitializeIndex,
-                 base::Unretained(this),
-                 completion_callback);
-  cache_thread_->PostTask(
-      FROM_HERE,
+  scoped_ptr<base::Time> cache_dir_mtime(new base::Time());
+  scoped_ptr<uint64> max_size(new uint64());
+  scoped_ptr<int> result(new int());
+  Closure task =
       base::Bind(&SimpleBackendImpl::ProvideDirectorySuggestBetterCacheSize,
-                 MessageLoopProxy::current(),  // io_thread
-                 path_,
-                 initialize_index_callback,
-                 orig_max_size_));
+      path_, orig_max_size_,
+      cache_dir_mtime.get(), max_size.get(),
+      result.get());
+  Closure reply = base::Bind(&SimpleBackendImpl::InitializeIndex,
+                             AsWeakPtr(),
+                             base::Passed(&max_size),
+                             base::Passed(&cache_dir_mtime),
+                             base::Passed(&result),
+                             completion_callback);
+  cache_thread_->PostTaskAndReply(FROM_HERE, task, reply);
   return net::ERR_IO_PENDING;
 }
 
@@ -348,21 +352,24 @@ void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
   index_->UseIfExists(key);
 }
 
-void SimpleBackendImpl::InitializeIndex(
-    const CompletionCallback& callback, uint64 suggested_max_size, int result) {
-  if (result == net::OK) {
-    index_->SetMaxSize(suggested_max_size);
-    index_->Initialize();
+void SimpleBackendImpl::InitializeIndex(scoped_ptr<uint64> suggested_max_size,
+                                        scoped_ptr<base::Time> cache_dir_mtime,
+                                        scoped_ptr<int> dir_sanity_check_result,
+                                        const CompletionCallback& callback) {
+  if (*dir_sanity_check_result == net::OK) {
+    index_->SetMaxSize(*suggested_max_size);
+    index_->Initialize(*cache_dir_mtime);
   }
-  callback.Run(result);
+  callback.Run(*dir_sanity_check_result);
 }
 
 // static
 void SimpleBackendImpl::ProvideDirectorySuggestBetterCacheSize(
-    SingleThreadTaskRunner* io_thread,
     const base::FilePath& path,
-    const InitializeIndexCallback& initialize_index_callback,
-    uint64 suggested_max_size) {
+    uint64 suggested_max_size,
+    base::Time* out_mtime,
+    uint64* out_max_size,
+    int* out_result) {
   int rv = net::OK;
   uint64 max_size = suggested_max_size;
   if (!FileStructureConsistent(path)) {
@@ -370,6 +377,8 @@ void SimpleBackendImpl::ProvideDirectorySuggestBetterCacheSize(
                << path.LossyDisplayName();
     rv = net::ERR_FAILED;
   } else {
+    bool mtime_result = simple_util::GetMTime(path, out_mtime);
+    DCHECK(mtime_result);
     if (!max_size) {
       int64 available = base::SysInfo::AmountOfFreeDiskSpace(path);
       if (available < 0)
@@ -381,8 +390,8 @@ void SimpleBackendImpl::ProvideDirectorySuggestBetterCacheSize(
     }
     DCHECK(max_size);
   }
-  io_thread->PostTask(FROM_HERE,
-                      base::Bind(initialize_index_callback, max_size, rv));
+  *out_max_size = max_size;
+  *out_result = rv;
 }
 
 scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(

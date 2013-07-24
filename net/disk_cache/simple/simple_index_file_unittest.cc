@@ -15,6 +15,7 @@
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_index_file.h"
+#include "net/disk_cache/simple/simple_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -57,7 +58,6 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
  public:
   using SimpleIndexFile::Deserialize;
   using SimpleIndexFile::IsIndexFileStale;
-  using SimpleIndexFile::kIndexFileName;
   using SimpleIndexFile::Serialize;
 
   explicit WrappedSimpleIndexFile(const base::FilePath& index_file_directory)
@@ -65,6 +65,10 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
                         base::MessageLoopProxy::current().get(),
                         index_file_directory) {}
   virtual ~WrappedSimpleIndexFile() {
+  }
+
+  const base::FilePath& GetIndexFilePath() const {
+    return index_file_;
   }
 };
 
@@ -143,41 +147,43 @@ TEST_F(SimpleIndexFileTest, Serialize) {
 }
 
 TEST_F(SimpleIndexFileTest, IsIndexFileStale) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::ScopedTempDir cache_dir;
+  ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
+  base::Time cache_mtime;
+  const base::FilePath cache_path = cache_dir.path();
 
-  const std::string kIndexFileName = "simple-index";
-  const base::FilePath index_path =
-      temp_dir.path().AppendASCII(kIndexFileName);
-  EXPECT_TRUE(WrappedSimpleIndexFile::IsIndexFileStale(index_path));
+  ASSERT_TRUE(simple_util::GetMTime(cache_path, &cache_mtime));
+  WrappedSimpleIndexFile simple_index_file(cache_path);
+  const base::FilePath& index_path = simple_index_file.GetIndexFilePath();
+  EXPECT_TRUE(WrappedSimpleIndexFile::IsIndexFileStale(cache_mtime,
+                                                       index_path));
   const std::string kDummyData = "nothing to be seen here";
   EXPECT_EQ(static_cast<int>(kDummyData.size()),
             file_util::WriteFile(index_path,
                                  kDummyData.data(),
                                  kDummyData.size()));
-  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(index_path));
+  ASSERT_TRUE(simple_util::GetMTime(cache_path, &cache_mtime));
+  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(cache_mtime,
+                                                        index_path));
 
   const base::Time past_time = base::Time::Now() -
       base::TimeDelta::FromSeconds(10);
   EXPECT_TRUE(file_util::TouchFile(index_path, past_time, past_time));
-  EXPECT_TRUE(file_util::TouchFile(temp_dir.path(), past_time, past_time));
-  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(index_path));
+  EXPECT_TRUE(file_util::TouchFile(cache_path, past_time, past_time));
+  ASSERT_TRUE(simple_util::GetMTime(cache_path, &cache_mtime));
+  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(cache_mtime,
+                                                        index_path));
+  const base::Time even_older =
+      past_time - base::TimeDelta::FromSeconds(10);
+  EXPECT_TRUE(file_util::TouchFile(index_path, even_older, even_older));
+  EXPECT_TRUE(WrappedSimpleIndexFile::IsIndexFileStale(cache_mtime,
+                                                       index_path));
 
-  EXPECT_EQ(static_cast<int>(kDummyData.size()),
-            file_util::WriteFile(temp_dir.path().AppendASCII("other_file"),
-                                 kDummyData.data(),
-                                 kDummyData.size()));
-
-  EXPECT_TRUE(WrappedSimpleIndexFile::IsIndexFileStale(index_path));
 }
 
 TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-  const base::FilePath index_path =
-      temp_dir.path().AppendASCII(WrappedSimpleIndexFile::kIndexFileName);
-  EXPECT_TRUE(WrappedSimpleIndexFile::IsIndexFileStale(index_path));
+  base::ScopedTempDir cache_dir;
+  ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
 
   SimpleIndex::EntrySet entries;
   static const uint64 kHashes[] = { 11, 22, 33 };
@@ -192,19 +198,23 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
 
   const uint64 kCacheSize = 456U;
   {
-    WrappedSimpleIndexFile simple_index_file(temp_dir.path());
+    WrappedSimpleIndexFile simple_index_file(cache_dir.path());
     simple_index_file.WriteToDisk(entries, kCacheSize,
                                   base::TimeTicks(), false);
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(base::PathExists(index_path));
+    EXPECT_TRUE(base::PathExists(simple_index_file.GetIndexFilePath()));
   }
 
-  WrappedSimpleIndexFile simple_index_file(temp_dir.path());
-  simple_index_file.LoadIndexEntries(base::MessageLoopProxy::current(),
-                                     GetCallback());
+  WrappedSimpleIndexFile simple_index_file2(cache_dir.path());
+  base::Time fake_cache_mtime;
+  ASSERT_TRUE(simple_util::GetMTime(simple_index_file2.GetIndexFilePath(),
+                                    &fake_cache_mtime));
+  simple_index_file2.LoadIndexEntries(fake_cache_mtime,
+                                      base::MessageLoopProxy::current(),
+                                      GetCallback());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(base::PathExists(index_path));
+  EXPECT_TRUE(base::PathExists(simple_index_file2.GetIndexFilePath()));
   ASSERT_TRUE(callback_result());
   EXPECT_FALSE(callback_result()->force_index_flush);
   const SimpleIndex::EntrySet* read_entries =
@@ -217,21 +227,24 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
 }
 
 TEST_F(SimpleIndexFileTest, LoadCorruptIndex) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::ScopedTempDir cache_dir;
+  ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
 
-  const base::FilePath index_path =
-      temp_dir.path().AppendASCII(WrappedSimpleIndexFile::kIndexFileName);
-  EXPECT_TRUE(WrappedSimpleIndexFile::IsIndexFileStale(index_path));
+  WrappedSimpleIndexFile simple_index_file(cache_dir.path());
+  const base::FilePath& index_path = simple_index_file.GetIndexFilePath();
   const std::string kDummyData = "nothing to be seen here";
   EXPECT_EQ(static_cast<int>(kDummyData.size()),
             file_util::WriteFile(index_path,
                                  kDummyData.data(),
                                  kDummyData.size()));
-  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(index_path));
+  base::Time fake_cache_mtime;
+  ASSERT_TRUE(simple_util::GetMTime(simple_index_file.GetIndexFilePath(),
+                                    &fake_cache_mtime));
+  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(fake_cache_mtime,
+                                                        index_path));
 
-  WrappedSimpleIndexFile simple_index_file(temp_dir.path());
-  simple_index_file.LoadIndexEntries(base::MessageLoopProxy::current().get(),
+  simple_index_file.LoadIndexEntries(fake_cache_mtime,
+                                     base::MessageLoopProxy::current().get(),
                                      GetCallback());
   base::RunLoop().RunUntilIdle();
 

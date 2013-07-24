@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
+#include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
@@ -90,13 +91,14 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
  private:
   typedef base::hash_map<uint64, base::WeakPtr<SimpleEntryImpl> > EntryMap;
 
-  typedef base::Callback<void(uint64 max_size, int result)>
+  typedef base::Callback<void(base::Time mtime, uint64 max_size, int result)>
       InitializeIndexCallback;
 
   // Must run on IO Thread.
-  void InitializeIndex(const CompletionCallback& callback,
-                       uint64 suggested_max_size,
-                       int result);
+  void InitializeIndex(scoped_ptr<uint64> suggested_max_size,
+                       scoped_ptr<base::Time> cache_dir_mtime,
+                       scoped_ptr<int> dir_sanity_check_result,
+                       const CompletionCallback& callback);
 
   // Dooms all entries previously accessed between |initial_time| and
   // |end_time|. Invoked when the index is ready.
@@ -107,11 +109,11 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // Try to create the directory if it doesn't exist. Replies with maximum cache
   // size adjustment. Must run on Cache Thread.
-  static void ProvideDirectorySuggestBetterCacheSize(
-      base::SingleThreadTaskRunner* io_thread,
-      const base::FilePath& path,
-      const InitializeIndexCallback& initialize_index_callback,
-      uint64 suggested_max_size);
+  static void ProvideDirectorySuggestBetterCacheSize(const base::FilePath& path,
+                                                     uint64 suggested_max_size,
+                                                     base::Time* out_mtime,
+                                                     uint64* out_max_size,
+                                                     int* out_result);
 
   // Searches |active_entries_| for the entry corresponding to |key|. If found,
   // returns the found entry. Otherwise, creates a new entry and returns that.
