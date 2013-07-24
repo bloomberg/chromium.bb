@@ -2498,11 +2498,6 @@
             ['exclude', '^browser/themes/'],
           ],
         }],
-        ['enable_language_detection==0', {
-          'sources!': [
-            'browser/language_usage_metrics_unittest.cc',
-          ],
-        }],
         ['toolkit_views==1', {
           'dependencies': [
             '../ui/views/views.gyp:views',

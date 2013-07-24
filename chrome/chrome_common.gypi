@@ -24,6 +24,7 @@
         # TODO(gregoryd): chrome_resources and chrome_strings could be
         #  shared with the 64-bit target, but it does not work due to a gyp
         # issue.
+        '../third_party/cld/cld.gyp:cld',
         'common_net',
         'common_version',
         'installer_util',
@@ -649,11 +650,6 @@
           'sources!': [
             'common/media/webrtc_logging_messages.h',
           ]
-        }],
-        ['enable_language_detection==1', {
-          'dependencies': [
-            '../third_party/cld/cld.gyp:cld',
-          ],
         }],
       ],
       'target_conditions': [

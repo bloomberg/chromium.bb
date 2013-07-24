@@ -2843,12 +2843,6 @@
             ['exclude', '^browser/automation/'],
           ],
         }],
-        ['enable_language_detection==0', {
-          'sources!': [
-            'browser/language_usage_metrics.cc',
-            'browser/language_usage_metrics.h',
-          ],
-        }],
         ['enable_printing!=1', {
           'sources/': [
             ['exclude', '^browser/printing/'],

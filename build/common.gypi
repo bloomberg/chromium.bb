@@ -337,9 +337,6 @@
       # Enable Google Now.
       'enable_google_now%': 1,
 
-      # Enable language detection.
-      'enable_language_detection%': 1,
-
       # Enable printing support and UI.
       'enable_printing%': 1,
 
@@ -513,7 +510,6 @@
           'enable_automation%': 0,
           'enable_extensions%': 0,
           'enable_google_now%': 0,
-          'enable_language_detection%': 1,
           'enable_printing%': 0,
           'enable_themes%': 0,
           'proprietary_codecs%': 1,
@@ -546,7 +542,6 @@
           'enable_automation%': 0,
           'enable_extensions%': 0,
           'enable_google_now%': 0,
-          'enable_language_detection%': 1,
           'enable_printing%': 0,
           'enable_session_service%': 0,
           'enable_themes%': 0,
@@ -823,7 +818,6 @@
     'enable_automation%': '<(enable_automation)',
     'enable_printing%': '<(enable_printing)',
     'enable_google_now%': '<(enable_google_now)',
-    'enable_language_detection%': '<(enable_language_detection)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_ftp_support%': '<(disable_ftp_support)',
     'enable_task_manager%': '<(enable_task_manager)',
@@ -2228,9 +2222,6 @@
       }],
       ['enable_google_now==1', {
         'defines': ['ENABLE_GOOGLE_NOW=1'],
-      }],
-      ['enable_language_detection==1', {
-        'defines': ['ENABLE_LANGUAGE_DETECTION=1'],
       }],
       ['enable_printing==1', {
         'defines': ['ENABLE_PRINTING=1'],

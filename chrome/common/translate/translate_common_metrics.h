@@ -39,7 +39,7 @@ enum LanguageCheckType {
 // When a valid Content-Language is provided, TranslateHelper checks if a
 // server provided Content-Language matches to a language CLD determined.
 enum LanguageVerificationType {
-  LANGUAGE_VERIFICATION_CLD_DISABLED,
+  LANGUAGE_VERIFICATION_CLD_DISABLED,  // obsolete
   LANGUAGE_VERIFICATION_CLD_ONLY,
   LANGUAGE_VERIFICATION_UNKNOWN,
   LANGUAGE_VERIFICATION_CLD_AGREE,
@@ -89,12 +89,8 @@ void ReportUserActionDuration(base::TimeTicks begin, base::TimeTicks end);
 // Called when a translation is triggered.
 void ReportPageScheme(const std::string& scheme);
 
-#if defined(ENABLE_LANGUAGE_DETECTION)
-
 // Called when CLD detects page language.
 void ReportLanguageDetectionTime(base::TimeTicks begin, base::TimeTicks end);
-
-#endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
 // Called when CLD agreed on a language which is different, but in the similar
 // language list.

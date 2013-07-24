@@ -288,8 +288,6 @@ TEST(TranslateCommonMetricsTest, ReportSimilarLanguageMatch) {
   EXPECT_EQ(1, recorder.GetCount(kFalse));
 }
 
-#if defined(ENABLE_LANGUAGE_DETECTION)
-
 TEST(TranslateCommonMetricsTest, ReportLanguageDetectionTime) {
   MetricsRecorder recorder(TranslateCommonMetrics::GetMetricsName(
       TranslateCommonMetrics::UMA_LANGUAGE_DETECTION));
@@ -300,5 +298,3 @@ TEST(TranslateCommonMetricsTest, ReportLanguageDetectionTime) {
   recorder.CheckValueInLogs(9.009);
   recorder.CheckTotalCount(1);
 }
-
-#endif  // defined(ENABLE_LANGUAGE_DETECTION)

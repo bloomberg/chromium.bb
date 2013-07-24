@@ -11,11 +11,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/translate/translate_common_metrics.h"
 #include "chrome/common/translate/translate_util.h"
-
-#if defined(ENABLE_LANGUAGE_DETECTION)
 #include "third_party/cld/encodings/compact_lang_det/compact_lang_det.h"
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
-#endif
 
 namespace {
 
@@ -64,7 +61,6 @@ void ApplyLanguageCodeCorrection(std::string* code) {
   TranslateUtil::ToTranslateLanguageSynonym(code);
 }
 
-#if defined(ENABLE_LANGUAGE_DETECTION)
 // Returns the ISO 639 language code of the specified |text|, or 'unknown' if it
 // failed.
 // |is_cld_reliable| will be set as true if CLD says the detection is reliable.
@@ -100,7 +96,6 @@ std::string DetermineTextLanguage(const base::string16& text,
           << "\n*************************************\n";
   return language;
 }
-#endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
 // Checks if CLD can complement a sub code when the page language doesn't know
 // the sub code.
@@ -122,7 +117,6 @@ std::string DeterminePageLanguage(const std::string& code,
                                   const base::string16& contents,
                                   std::string* cld_language_p,
                                   bool* is_cld_reliable_p) {
-#if defined(ENABLE_LANGUAGE_DETECTION)
   base::TimeTicks begin_time = base::TimeTicks::Now();
   bool is_cld_reliable;
   std::string cld_language = DetermineTextLanguage(contents, &is_cld_reliable);
@@ -134,7 +128,6 @@ std::string DeterminePageLanguage(const std::string& code,
   if (is_cld_reliable_p != NULL)
     *is_cld_reliable_p = is_cld_reliable;
   TranslateUtil::ToTranslateLanguageSynonym(&cld_language);
-#endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
   // Check if html lang attribute is valid.
   std::string modified_html_lang;
@@ -158,7 +151,6 @@ std::string DeterminePageLanguage(const std::string& code,
   std::string language = modified_html_lang.empty() ? modified_code :
                                                       modified_html_lang;
 
-#if defined(ENABLE_LANGUAGE_DETECTION)
   // If |language| is empty, just use CLD result even though it might be
   // chrome::kUnknownLanguageCode.
   if (language.empty()) {
@@ -192,10 +184,6 @@ std::string DeterminePageLanguage(const std::string& code,
     // gives up suggesting a translation.
     return std::string(chrome::kUnknownLanguageCode);
   }
-#else  // defined(ENABLE_LANGUAGE_DETECTION)
-  TranslateCommonMetrics::ReportLanguageVerification(
-      TranslateCommonMetrics::LANGUAGE_VERIFICATION_CLD_DISABLED);
-#endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
   return language;
 }
@@ -303,11 +291,7 @@ bool MaybeServerWrongConfiguration(const std::string& page_language,
 }
 
 std::string GetCLDVersion() {
-#if defined(ENABLE_LANGUAGE_DETECTION)
   return CompactLangDet::DetectLanguageVersion();
-#else
-  return ""
-#endif
 }
 
 }  // namespace LanguageDetectionUtil

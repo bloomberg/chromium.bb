@@ -122,13 +122,9 @@ void ReportPageScheme(const std::string& scheme) {
   UMA_HISTOGRAM_ENUMERATION(kTranslatePageScheme, type, SCHEME_MAX);
 }
 
-#if defined(ENABLE_LANGUAGE_DETECTION)
-
 void ReportLanguageDetectionTime(base::TimeTicks begin, base::TimeTicks end) {
   UMA_HISTOGRAM_MEDIUM_TIMES(kRenderer4LanguageDetection, end - begin);
 }
-
-#endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
 void ReportSimilarLanguageMatch(bool match) {
   UMA_HISTOGRAM_BOOLEAN(kTranslateSimilarLanguageMatch, match);
