@@ -351,7 +351,7 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
     if (isMainThread()) {
         {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "MinorGC");
-            v8::HandleScope scope;
+            v8::HandleScope scope(isolate);
             MinorGCWrapperVisitor visitor(isolate);
             v8::V8::VisitHandlesForPartialDependence(isolate, &visitor);
             visitor.notifyFinished();
@@ -364,7 +364,7 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 // Create object groups for DOM tree nodes.
 void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos, v8::Isolate* isolate)
 {
-    v8::HandleScope scope;
+    v8::HandleScope scope(isolate);
     TRACE_EVENT_BEGIN0("v8", "majorGC");
     if (isMainThread()) {
         {
@@ -403,7 +403,7 @@ void V8GCController::minorGCEpilogue(v8::Isolate* isolate)
 
 void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
 {
-    v8::HandleScope scope;
+    v8::HandleScope scope(isolate);
 
     TRACE_EVENT_END0("v8", "majorGC");
     if (isMainThread())

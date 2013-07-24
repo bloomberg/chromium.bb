@@ -56,6 +56,7 @@ private:
 
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<DOMWrapperWorld> m_world;
+    v8::Isolate* m_isolate;
 };
 
 }

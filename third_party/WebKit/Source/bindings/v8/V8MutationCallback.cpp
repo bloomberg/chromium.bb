@@ -40,6 +40,7 @@ V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, Script
     : ActiveDOMCallback(context)
     , m_callback(callback)
     , m_world(DOMWrapperWorld::current())
+    , m_isolate(isolate)
 {
     owner->SetHiddenValue(V8HiddenPropertyName::callback(), callback);
     m_callback.makeWeak(this, &makeWeakCallback);
@@ -50,20 +51,19 @@ void V8MutationCallback::call(const Vector<RefPtr<MutationRecord> >& mutations, 
     if (!canInvokeCallback())
         return;
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
 
     v8::Handle<v8::Context> v8Context = toV8Context(scriptExecutionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 
     v8::Context::Scope scope(v8Context);
-    v8::Isolate* isolate = v8Context->GetIsolate();
 
-    v8::Handle<v8::Function> callback = m_callback.newLocal(isolate);
+    v8::Handle<v8::Function> callback = m_callback.newLocal(m_isolate);
     if (callback.IsEmpty())
         return;
 
-    v8::Handle<v8::Value> observerHandle = toV8(observer, v8::Handle<v8::Object>(), isolate);
+    v8::Handle<v8::Value> observerHandle = toV8(observer, v8::Handle<v8::Object>(), m_isolate);
     if (observerHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
@@ -74,7 +74,7 @@ void V8MutationCallback::call(const Vector<RefPtr<MutationRecord> >& mutations, 
         return;
 
     v8::Handle<v8::Object> thisObject = v8::Handle<v8::Object>::Cast(observerHandle);
-    v8::Handle<v8::Value> argv[] = { v8Array(mutations, isolate), observerHandle };
+    v8::Handle<v8::Value> argv[] = { v8Array(mutations, m_isolate), observerHandle };
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);

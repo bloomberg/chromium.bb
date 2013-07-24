@@ -730,7 +730,7 @@ public:
 
     Status serialize(v8::Handle<v8::Value> value)
     {
-        v8::HandleScope scope;
+        v8::HandleScope scope(m_isolate);
         m_writer.writeVersion();
         StateBase* state = doSerialize(value, 0);
         while (state)

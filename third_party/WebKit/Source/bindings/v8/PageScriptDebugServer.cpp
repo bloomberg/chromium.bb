@@ -163,7 +163,7 @@ void PageScriptDebugServer::runScript(ScriptState* state, const String& scriptId
 
 ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Handle<v8::Context> context)
 {
-    v8::HandleScope scope;
+    v8::HandleScope scope(m_isolate);
     Frame* frame = retrieveFrameWithGlobalObjectCheck(context);
     if (!frame)
         return 0;
@@ -172,7 +172,7 @@ ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Handl
 
 void PageScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context> context)
 {
-    v8::HandleScope scope;
+    v8::HandleScope scope(m_isolate);
     Frame* frame = retrieveFrameWithGlobalObjectCheck(context);
     m_pausedPage = frame->page();
 

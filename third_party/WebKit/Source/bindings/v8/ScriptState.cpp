@@ -96,13 +96,13 @@ void ScriptState::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Cont
 
 bool ScriptState::evalEnabled() const
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
     return context()->IsCodeGenerationFromStringsAllowed();
 }
 
 void ScriptState::setEvalEnabled(bool enabled)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
     return context()->AllowCodeGenerationFromStrings(enabled);
 }
 

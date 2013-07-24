@@ -151,7 +151,7 @@ bool V8PerIsolateData::hasInstance(WrapperTypeInfo* info, v8::Handle<v8::Value> 
 
 void V8PerIsolateData::visitExternalStrings(ExternalStringVisitor* visitor)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
     class VisitorImpl : public v8::ExternalResourceVisitor {
     public:
         VisitorImpl(ExternalStringVisitor* visitor) : m_visitor(visitor) { }

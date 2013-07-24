@@ -509,7 +509,7 @@ void V8WindowShell::updateSecurityOrigin()
     ASSERT(m_world->isMainWorld());
     if (m_context.isEmpty())
         return;
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
     setSecurityToken();
 }
 

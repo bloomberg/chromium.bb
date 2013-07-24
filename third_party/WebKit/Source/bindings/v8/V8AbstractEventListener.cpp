@@ -76,7 +76,7 @@ void V8AbstractEventListener::handleEvent(ScriptExecutionContext* context, Event
     // See issue 889829.
     RefPtr<V8AbstractEventListener> protect(this);
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
 
     v8::Local<v8::Context> v8Context = toV8Context(context, world());
     if (v8Context.IsEmpty())

@@ -210,7 +210,7 @@ static PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(const ScriptValu
     ASSERT(error == IDBKeyPathParseErrorNone);
     ASSERT(v8::Context::InContext());
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(value.v8Value());
     v8::Handle<v8::Value> v8Key(getNthValueOnKeyPath(v8Value, keyPathElements, keyPathElements.size(), isolate));
     if (v8Key.IsEmpty())
@@ -226,7 +226,7 @@ PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState* state,
 
 
     v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(isolate);
     if (keyPath.type() == IDBKeyPath::ArrayType) {
         IDBKey::KeyArray result;
         const Vector<String>& array = keyPath.array();
@@ -243,20 +243,22 @@ PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState* state,
     return createIDBKeyFromScriptValueAndKeyPath(value, keyPath.string(), isolate);
 }
 
-ScriptValue deserializeIDBValue(DOMRequestState*, PassRefPtr<SerializedScriptValue> prpValue)
+ScriptValue deserializeIDBValue(DOMRequestState* state, PassRefPtr<SerializedScriptValue> prpValue)
 {
     ASSERT(v8::Context::InContext());
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
     RefPtr<SerializedScriptValue> serializedValue = prpValue;
     if (serializedValue)
         return ScriptValue(serializedValue->deserialize());
     return ScriptValue(v8::Null());
 }
 
-ScriptValue deserializeIDBValueBuffer(DOMRequestState*, PassRefPtr<SharedBuffer> prpBuffer)
+ScriptValue deserializeIDBValueBuffer(DOMRequestState* state, PassRefPtr<SharedBuffer> prpBuffer)
 {
     ASSERT(v8::Context::InContext());
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
     RefPtr<SharedBuffer> buffer = prpBuffer;
     if (buffer) {
         // FIXME: The extra copy here can be eliminated by allowing SerializedScriptValue to take a raw const char* or const uint8_t*.
@@ -283,7 +285,7 @@ bool injectIDBKeyIntoScriptValue(DOMRequestState* state, PassRefPtr<IDBKey> key,
         return 0;
 
     v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(value.v8Value());
     v8::Handle<v8::Value> parent(ensureNthValueOnKeyPath(v8Value, keyPathElements, keyPathElements.size() - 1, isolate));
     if (parent.IsEmpty())
@@ -314,15 +316,17 @@ bool canInjectIDBKeyIntoScriptValue(DOMRequestState* state, const ScriptValue& s
 ScriptValue idbKeyToScriptValue(DOMRequestState* state, PassRefPtr<IDBKey> key)
 {
     ASSERT(v8::Context::InContext());
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(idbKeyToV8Value(key.get(), state->context()->GetIsolate()));
     return ScriptValue(v8Value);
 }
 
-PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState*, const ScriptValue& scriptValue)
+PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState* state, const ScriptValue& scriptValue)
 {
     ASSERT(v8::Context::InContext());
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(scriptValue.v8Value());
     return createIDBKeyFromValue(v8Value);
 }

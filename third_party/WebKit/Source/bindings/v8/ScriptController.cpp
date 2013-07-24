@@ -346,7 +346,7 @@ v8::Local<v8::Context> ScriptController::mainWorldContext(Frame* frame)
 // Create a V8 object with an interceptor of NPObjectPropertyGetter.
 void ScriptController::bindToWindowObject(Frame* frame, const String& key, NPObject* object)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
 
     v8::Handle<v8::Context> v8Context = ScriptController::mainWorldContext(frame);
     if (v8Context.IsEmpty())
@@ -358,14 +358,14 @@ void ScriptController::bindToWindowObject(Frame* frame, const String& key, NPObj
 
     // Attach to the global object.
     v8::Handle<v8::Object> global = v8Context->Global();
-    global->Set(v8String(key, v8Context->GetIsolate()), value);
+    global->Set(v8String(key, m_isolate), value);
 }
 
 void ScriptController::enableEval()
 {
     if (!m_windowShell->isContextInitialized())
         return;
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
     m_windowShell->context()->AllowCodeGenerationFromStrings(true);
 }
 
@@ -373,10 +373,10 @@ void ScriptController::disableEval(const String& errorMessage)
 {
     if (!m_windowShell->isContextInitialized())
         return;
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::Context> v8Context = m_windowShell->context();
     v8Context->AllowCodeGenerationFromStrings(false);
-    v8Context->SetErrorMessageForCodeGenerationFromStrings(v8String(errorMessage, v8Context->GetIsolate()));
+    v8Context->SetErrorMessageForCodeGenerationFromStrings(v8String(errorMessage, m_isolate));
 }
 
 PassScriptInstance ScriptController::createScriptInstanceForWidget(Widget* widget)

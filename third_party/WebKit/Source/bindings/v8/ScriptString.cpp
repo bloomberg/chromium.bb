@@ -35,8 +35,9 @@ namespace WebCore {
 
 ScriptString ScriptString::concatenateWith(const String& string)
 {
-    v8::HandleScope handleScope;
-    v8::Handle<v8::String> b = v8String(string, v8::Isolate::GetCurrent());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::String> b = v8String(string, isolate);
     if (hasNoValue())
         return ScriptString(b);
     v8::Handle<v8::String> a = v8::Handle<v8::String>::Cast(v8Value());
