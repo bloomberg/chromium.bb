@@ -1022,7 +1022,7 @@ Bug(senorblanco) [ Win ] http/tests/w3c/webperf/submission/Google/HighResolution
 # Fails since creation in 122663
 webkit.org/b/91372 [ Win ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]
 
-#webkit.org/b/91445 [ XP ] plugins/embed-attributes-style.html [ Pass Timeout ]
+webkit.org/b/91445 [ XP ] plugins/embed-attributes-style.html [ Pass Timeout ]
 
 webkit.org/b/92019 [ Debug ] fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ ImageOnlyFailure Pass ]
 webkit.org/b/92022 [ Debug ] svg/W3C-SVG-1.1/struct-dom-06-b.svg [ Failure Pass ]
@@ -1099,7 +1099,7 @@ crbug.com/b/242955 [ Linux ] compositing/gestures/gesture-tapHighlight-simple-lo
 
 webkit.org/b/98275 media/event-queue-crash.html [ Skip ]
 
-#webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ ImageOnlyFailure Pass ]
+webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/99604 [ Win ] http/tests/workers/text-encoding.html [ Pass Timeout ]
 
@@ -1131,9 +1131,9 @@ crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timin
 crbug.com/237003 [ Mac Linux ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]
 crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure Timeout ]
 
-#webkit.org/b/103148 [ Lion ] fast/frames/iframe-scaling-with-scroll.html [ ImageOnlyFailure Pass ]
-#webkit.org/b/103148 [ Lion ] fast/frames/iframe-scrolling-attribute.html [ ImageOnlyFailure Pass ]
-#webkit.org/b/103148 [ Linux ] fast/text/atsui-small-caps-punctuation-size.html [ Failure ImageOnlyFailure Pass ]
+webkit.org/b/103148 [ Lion ] fast/frames/iframe-scaling-with-scroll.html [ ImageOnlyFailure Pass ]
+webkit.org/b/103148 [ Lion ] fast/frames/iframe-scrolling-attribute.html [ ImageOnlyFailure Pass ]
+webkit.org/b/103148 [ Linux ] fast/text/atsui-small-caps-punctuation-size.html [ Failure ImageOnlyFailure Pass ]
 
 webkit.org/b/103446 [ Mac ] http/tests/canvas/canvas-slow-font-loading.html [ ImageOnlyFailure ]
 webkit.org/b/103471 http/tests/navigation/slowmetaredirect-basic.html [ Pass Timeout ]
@@ -1172,7 +1172,7 @@ webkit.org/b/106426 inspector/geolocation-error.html [ Failure Pass ]
 webkit.org/b/106426 inspector/geolocation-success.html [ Failure Pass ]
 webkit.org/b/106426 [ XP ] inspector/geolocation-watchPosition.html [ Failure Pass ]
 
-#webkit.org/b/106858 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106858 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/107962 [ Release ] http/tests/loading/redirect-methods.html [ Failure Pass ]
 
@@ -1275,7 +1275,7 @@ crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
 crbug.com/233223 http/tests/history/redirect-js-location-href-0-seconds.html [ Failure Pass ]
 crbug.com/233260 [ Win ] fast/preloader/script.html [ Failure ]
 
-#crbug.com/233585 media/media-document-audio-repaint.html [ ImageOnlyFailure ]
+crbug.com/233585 media/media-document-audio-repaint.html [ ImageOnlyFailure ]
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
@@ -1301,7 +1301,7 @@ crbug.com/237250 [ Lion Debug ] media/video-zoom-controls.html [ Crash Pass ]
 crbug.com/237270 [ Win7 ] transforms/2d/transform-2d.html [ Pass Timeout ]
 crbug.com/237270 [ Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Pass Timeout ]
 
-#crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Pass Timeout ]
+crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Pass Timeout ]
 crbug.com/251129 [ Linux Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ Failure Pass ]
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
@@ -1324,7 +1324,7 @@ crbug.com/14866009 [ Mac Win ] fast/forms/radio/radio-appearance-basic.html [ Fa
 
 crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 webkit.org/b/81697 fast/notifications/notifications-request-permission.html [ Failure Pass ]
-#crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
+crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 crbug.com/237270 fast/js/stack-overflow-arrity-catch.html [ Failure Pass ]
 
 crbug.com/238082 [ Win Mac Linux Debug ] media/media-continues-playing-after-replace-source.html [ Crash Pass Timeout ]
@@ -1730,13 +1730,4 @@ crbug.com/254914 [ Linux ] tables/mozilla/core/bloomberg.html [ ImageOnlyFailure
 crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
 crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ Failure ]
 
-crbug.com/263058 fast/frames/iframe-scaling-with-scroll.html [ NeedsManualRebaseline ]
-crbug.com/263058 fast/frames/iframe-scrolling-attribute.html [ NeedsManualRebaseline ]
-crbug.com/263058 fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ NeedsManualRebaseline ]
-crbug.com/263058 fast/text/atsui-small-caps-punctuation-size.html [ NeedsManualRebaseline ]
-crbug.com/263058 fast/transforms/transformed-focused-text-input.html [ NeedsManualRebaseline ]
-crbug.com/263058 media/media-document-audio-repaint.html [ NeedsManualRebaseline ]
-crbug.com/263058 plugins/embed-attributes-style.html [ NeedsManualRebaseline ]
-crbug.com/263058 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ NeedsManualRebaseline ]
-crbug.com/263058 scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ NeedsManualRebaseline ]
 
