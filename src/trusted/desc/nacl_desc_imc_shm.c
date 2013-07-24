@@ -62,7 +62,6 @@ static int NaClDescImcShmSubclassCtor(struct NaClDescImcShm  *self,
   self->h = h;
   self->size = size;
   basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescImcShmVtbl;
-  (*NACL_VTBL(NaClDesc, basep)->SetFlags)(basep, NACL_ABI_O_RDWR);
   return 1;
 }
 
@@ -82,6 +81,7 @@ int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
     /* NaClDescImcShm construction failed, still a NaClDesc object */
     (*NACL_VTBL(NaClRefCount, basep)->Dtor)((struct NaClRefCount *) basep);
   }
+  (*NACL_VTBL(NaClDesc, basep)->SetFlags)(basep, NACL_ABI_O_RDWR);
   return 1;
 }
 

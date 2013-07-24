@@ -52,8 +52,6 @@ static int NaClDescIoDescSubclassCtor(struct NaClDescIoDesc  *self,
 
   self->hd = hd;
   basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescIoDescVtbl;
-  (*NACL_VTBL(NaClDesc, basep)->
-   SetFlags)(basep, hd->flags & NACL_ABI_O_ACCMODE);
   return 1;
 }
 
@@ -73,6 +71,8 @@ int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
   if (!rv) {
     (*NACL_VTBL(NaClRefCount, basep)->Dtor)((struct NaClRefCount *) basep);
   }
+  (*NACL_VTBL(NaClDesc, basep)->
+   SetFlags)(basep, hd->flags & NACL_ABI_O_ACCMODE);
   return rv;
 }
 

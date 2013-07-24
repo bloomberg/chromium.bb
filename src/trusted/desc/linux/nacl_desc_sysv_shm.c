@@ -77,7 +77,6 @@ static int NaClDescSysvShmSubclassCtorIntern(struct NaClDescSysvShm *self,
   self->size = size;
   self->rmid_in_dtor = rmid_in_dtor;
   basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescSysvShmVtbl;
-  (*NACL_VTBL(NaClDesc, basep)->SetFlags)(basep, NACL_ABI_O_RDWR);
   return 1;
 }
 
@@ -97,6 +96,7 @@ static int NaClDescSysvShmCtorIntern(struct NaClDescSysvShm *self,
   if (!rv) {
     (*NACL_VTBL(NaClRefCount, self)->Dtor)((struct NaClRefCount *) self);
   }
+  (*NACL_VTBL(NaClDesc, basep)->SetFlags)(basep, NACL_ABI_O_RDWR);
   return rv;
 }
 
