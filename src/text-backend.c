@@ -792,6 +792,7 @@ input_method_notifier_destroy(struct wl_listener *listener, void *data)
 		deactivate_text_input(input_method->model, input_method);
 
 	wl_global_destroy(input_method->input_method_global);
+	wl_list_remove(&input_method->destroy_listener.link);
 
 	free(input_method);
 }
