@@ -12938,6 +12938,21 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.LastClusterLossPercent" units="percent">
+  <summary>
+    For each file in the Simple Cache, the percentage of disk space used by the
+    cluster loss, the unused disk space in the last 4096 byte cluster of the
+    file.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.LastClusterSize" units="bytes">
+  <summary>
+    For each file in the Simple Cache, the number of bytes in the last 4096 byte
+    cluster when the entry is saved to disk.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.OpenEntryIndexState"
     enum="SimpleCacheOpenEntryIndexState">
   <summary>

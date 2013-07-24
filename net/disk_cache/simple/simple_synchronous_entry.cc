@@ -349,6 +349,12 @@ void SimpleSynchronousEntry::Close(
       Doom();
       break;
     }
+    const int64 file_size = file_offset + sizeof(eof_record);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("SimpleCache.LastClusterSize",
+                                file_size % 4096, 0, 4097, 50);
+    const int64 cluster_loss = file_size % 4096 ? 4096 - file_size % 4096 : 0;
+    UMA_HISTOGRAM_PERCENTAGE("SimpleCache.LastClusterLossPercent",
+                             cluster_loss * 100 / (cluster_loss + file_size));
   }
 
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
