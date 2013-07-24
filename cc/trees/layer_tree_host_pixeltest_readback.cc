@@ -816,6 +816,28 @@ TEST_F(LayerTreeHostReadbackViaCompositeAndReadbackPixelTest,
                                      "green_small_with_blue_corner.png")));
 }
 
+TEST_F(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayerOutsideViewport) {
+  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
+      gfx::Rect(200, 200), SK_ColorWHITE);
+
+  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
+      gfx::Rect(200, 200), SK_ColorGREEN);
+  // Only the top left quarter of the layer is inside the viewport, so the
+  // blue layer is entirely outside.
+  green->SetPosition(gfx::Point(100, 100));
+  background->AddChild(green);
+
+  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
+      gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  green->AddChild(blue);
+
+  RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
+                                 background,
+                                 green.get(),
+                                 base::FilePath(FILE_PATH_LITERAL(
+                                     "green_with_blue_corner.png")));
+}
+
 }  // namespace
 }  // namespace cc
 

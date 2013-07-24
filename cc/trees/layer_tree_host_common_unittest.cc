@@ -8522,5 +8522,64 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   EXPECT_EQ(root->id(), root->render_surface()->layer_list().at(0)->id());
 }
 
+TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+  host_impl.CreatePendingTree();
+  const gfx::Transform identity_matrix;
+
+  scoped_refptr<Layer> root = Layer::Create();
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  root->SetIsDrawable(true);
+
+  // The surface is moved slightly outside of the viewport.
+  scoped_refptr<Layer> surface = Layer::Create();
+  SetLayerPropertiesForTesting(surface.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(-10, -20),
+                               gfx::Size(),
+                               false);
+  surface->SetForceRenderSurface(true);
+
+  scoped_refptr<Layer> surface_child = Layer::Create();
+  SetLayerPropertiesForTesting(surface_child.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  surface_child->SetIsDrawable(true);
+
+  surface->AddChild(surface_child);
+  root->AddChild(surface);
+
+  RenderSurfaceLayerList render_surface_layer_list;
+  int dummy_max_texture_size = 512;
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               gfx::Transform(),
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               dummy_max_texture_size,
+                                               false,
+                                               true,  // can_adjust_raster_scale
+                                               &render_surface_layer_list);
+
+  // The visible_content_rect for the |surface_child| should not be clipped by
+  // the viewport.
+  EXPECT_EQ(gfx::Rect(50, 50).ToString(),
+            surface_child->visible_content_rect().ToString());
+}
+
 }  // namespace
 }  // namespace cc
