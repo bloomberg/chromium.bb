@@ -125,6 +125,6 @@ class PageCycler(page_measurement.PageMeasurement):
                 int(float(tab.EvaluateJavaScript('__pc_load_time'))),
                 chart_name='times')
 
-  def DidRunPageSet(self, tab, results):
+  def DidRunTest(self, tab, results):
     self._memory_metrics.StopAndGetResults(tab.browser, results)
     self.MeasureIO(tab, results)
