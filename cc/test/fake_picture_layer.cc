@@ -11,7 +11,8 @@ namespace cc {
 FakePictureLayer::FakePictureLayer(ContentLayerClient* client)
     : PictureLayer(client),
       update_count_(0),
-      push_properties_count_(0) {
+      push_properties_count_(0),
+      always_update_resources_(false) {
   SetAnchorPoint(gfx::PointF(0.f, 0.f));
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
@@ -28,7 +29,7 @@ bool FakePictureLayer::Update(ResourceUpdateQueue* queue,
                               const OcclusionTracker* occlusion) {
   bool updated = PictureLayer::Update(queue, occlusion);
   update_count_++;
-  return updated;
+  return updated || always_update_resources_;
 }
 
 void FakePictureLayer::PushPropertiesTo(LayerImpl* layer) {

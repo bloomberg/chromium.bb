@@ -49,6 +49,7 @@ class ThreadProxy : public Proxy,
   virtual void CreateAndInitializeOutputSurface() OVERRIDE;
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
+  virtual void SetNeedsUpdateLayers() OVERRIDE;
   virtual void SetNeedsCommit() OVERRIDE;
   virtual void SetNeedsRedraw(gfx::Rect damage_rect) OVERRIDE;
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE;
@@ -135,6 +136,7 @@ class ThreadProxy : public Proxy,
   void OnOutputSurfaceInitializeAttempted(
       bool success,
       const RendererCapabilities& capabilities);
+  void SendCommitRequestToImplThreadIfNeeded();
 
   // Called on impl thread.
   struct ReadbackRequest;
@@ -146,7 +148,7 @@ class ThreadProxy : public Proxy,
       CompletionEvent* completion,
       ResourceUpdateQueue* queue,
       scoped_refptr<cc::ContextProvider> offscreen_context_provider);
-  void BeginFrameAbortedByMainThreadOnImplThread();
+  void BeginFrameAbortedByMainThreadOnImplThread(bool did_handle);
   void RequestReadbackOnImplThread(ReadbackRequest* request);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
   void InitializeImplOnImplThread(CompletionEvent* completion);
@@ -240,6 +242,8 @@ class ThreadProxy : public Proxy,
   bool using_synchronous_renderer_compositor_;
 
   bool inside_draw_;
+
+  bool can_cancel_commit_;
 
   bool defer_commits_;
   scoped_ptr<BeginFrameAndCommitState> pending_deferred_commit_;

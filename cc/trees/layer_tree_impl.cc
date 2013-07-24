@@ -231,6 +231,24 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
   root_scroll_layer_->SetMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
 }
 
+static void ApplySentScrollDeltasOn(LayerImpl* layer) {
+  layer->ApplySentScrollDeltas();
+}
+
+void LayerTreeImpl::ApplySentScrollAndScaleDeltas() {
+  DCHECK(IsActiveTree());
+
+  page_scale_factor_ *= sent_page_scale_delta_;
+  page_scale_delta_ /= sent_page_scale_delta_;
+  sent_page_scale_delta_ = 1.f;
+
+  if (!root_layer())
+    return;
+
+  LayerTreeHostCommon::CallFunctionForSubtree(
+      root_layer(), base::Bind(&ApplySentScrollDeltasOn));
+}
+
 void LayerTreeImpl::UpdateSolidColorScrollbars() {
   DCHECK(settings().solid_color_scrollbars);
 

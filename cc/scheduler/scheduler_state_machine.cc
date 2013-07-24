@@ -15,6 +15,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       commit_state_(COMMIT_STATE_IDLE),
       commit_count_(0),
       current_frame_number_(0),
+      last_frame_number_where_begin_frame_sent_to_main_thread_(-1),
       last_frame_number_where_draw_was_called_(-1),
       last_frame_number_where_tree_activation_attempted_(-1),
       last_frame_number_where_update_visible_tiles_was_called_(-1),
@@ -24,6 +25,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       swap_used_incomplete_tile_(false),
       needs_forced_redraw_(false),
       needs_forced_redraw_after_next_commit_(false),
+      needs_redraw_after_next_commit_(false),
       needs_commit_(false),
       needs_forced_commit_(false),
       expect_immediate_begin_frame_for_main_thread_(false),
@@ -116,6 +118,19 @@ bool SchedulerStateMachine::HasUpdatedVisibleTilesThisFrame() const {
          last_frame_number_where_update_visible_tiles_was_called_;
 }
 
+void SchedulerStateMachine::SetPostCommitFlags() {
+  // This post-commit work is common to both completed and aborted commits.
+  if (needs_forced_redraw_after_next_commit_) {
+    needs_forced_redraw_after_next_commit_ = false;
+    needs_forced_redraw_ = true;
+  }
+  if (needs_redraw_after_next_commit_) {
+    needs_redraw_after_next_commit_ = false;
+    needs_redraw_ = true;
+  }
+  texture_state_ = LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD;
+}
+
 bool SchedulerStateMachine::DrawSuspendedUntilCommit() const {
   if (!can_draw_)
     return true;
@@ -184,7 +199,7 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     return ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD;
 
   switch (commit_state_) {
-    case COMMIT_STATE_IDLE:
+    case COMMIT_STATE_IDLE: {
       if (output_surface_state_ != OUTPUT_SURFACE_ACTIVE &&
           needs_forced_redraw_)
         return ACTION_DRAW_FORCED;
@@ -205,14 +220,18 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
         return needs_forced_redraw_ ? ACTION_DRAW_FORCED
                                     : ACTION_DRAW_IF_POSSIBLE;
       }
-      if (needs_commit_ &&
-          ((visible_ && output_surface_state_ == OUTPUT_SURFACE_ACTIVE)
-           || needs_forced_commit_))
+      bool can_commit_this_frame =
+          visible_ &&
+          current_frame_number_ >
+              last_frame_number_where_begin_frame_sent_to_main_thread_;
+      if (needs_commit_ && ((can_commit_this_frame &&
+                             output_surface_state_ == OUTPUT_SURFACE_ACTIVE) ||
+                            needs_forced_commit_))
         // TODO(enne): Should probably drop the active tree on force commit.
         return has_pending_tree_ ? ACTION_NONE
                                  : ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD;
       return ACTION_NONE;
-
+    }
     case COMMIT_STATE_FRAME_IN_PROGRESS:
       if (ShouldUpdateVisibleTiles())
         return ACTION_UPDATE_VISIBLE_TILES;
@@ -239,7 +258,11 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
       // COMMIT_STATE_WAITING_FOR_FIRST_DRAW wants to enforce a draw. If
       // can_draw_ is false or textures are not available, proceed to the next
       // step (similar as in COMMIT_STATE_IDLE).
-      bool can_commit = visible_ || needs_forced_commit_;
+      bool can_commit =
+          needs_forced_commit_ ||
+          (visible_ &&
+           current_frame_number_ >
+               last_frame_number_where_begin_frame_sent_to_main_thread_);
       if (needs_commit_ && can_commit && DrawSuspendedUntilCommit())
         return has_pending_tree_ ? ACTION_NONE
                                  : ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD;
@@ -276,10 +299,16 @@ void SchedulerStateMachine::UpdateState(Action action) {
 
     case ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD:
       DCHECK(!has_pending_tree_);
-      DCHECK(visible_ || needs_forced_commit_);
+      if (!needs_forced_commit_) {
+        DCHECK(visible_);
+        DCHECK_GT(current_frame_number_,
+                  last_frame_number_where_begin_frame_sent_to_main_thread_);
+      }
       commit_state_ = COMMIT_STATE_FRAME_IN_PROGRESS;
       needs_commit_ = false;
       needs_forced_commit_ = false;
+      last_frame_number_where_begin_frame_sent_to_main_thread_ =
+          current_frame_number_;
       return;
 
     case ACTION_COMMIT:
@@ -293,13 +322,7 @@ void SchedulerStateMachine::UpdateState(Action action) {
         needs_redraw_ = true;
       if (draw_if_possible_failed_)
         last_frame_number_where_draw_was_called_ = -1;
-
-      if (needs_forced_redraw_after_next_commit_) {
-        needs_forced_redraw_after_next_commit_ = false;
-        needs_forced_redraw_ = true;
-      }
-
-      texture_state_ = LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD;
+      SetPostCommitFlags();
       return;
 
     case ACTION_DRAW_FORCED:
@@ -367,12 +390,12 @@ bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
 }
 
 void SchedulerStateMachine::DidEnterBeginFrame(const BeginFrameArgs& args) {
+  current_frame_number_++;
   inside_begin_frame_ = true;
   last_begin_frame_args_ = args;
 }
 
 void SchedulerStateMachine::DidLeaveBeginFrame() {
-  current_frame_number_++;
   inside_begin_frame_ = false;
 }
 
@@ -422,10 +445,13 @@ void SchedulerStateMachine::FinishCommit() {
   commit_state_ = COMMIT_STATE_READY_TO_COMMIT;
 }
 
-void SchedulerStateMachine::BeginFrameAbortedByMainThread() {
+void SchedulerStateMachine::BeginFrameAbortedByMainThread(bool did_handle) {
   DCHECK_EQ(commit_state_, COMMIT_STATE_FRAME_IN_PROGRESS);
   if (expect_immediate_begin_frame_for_main_thread_) {
     expect_immediate_begin_frame_for_main_thread_ = false;
+  } else if (did_handle) {
+    commit_state_ = COMMIT_STATE_IDLE;
+    SetPostCommitFlags();
   } else {
     commit_state_ = COMMIT_STATE_IDLE;
     SetNeedsCommit();
@@ -458,6 +484,7 @@ void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
     // sort themselves out with a commit.
     needs_redraw_ = false;
   }
+  needs_redraw_after_next_commit_ = true;
   did_create_and_initialize_first_output_surface_ = true;
 }
 

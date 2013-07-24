@@ -38,6 +38,7 @@ class MockLayerTreeHost : public LayerTreeHost {
 
   MOCK_METHOD0(AcquireLayerTextures, void());
   MOCK_METHOD0(SetNeedsCommit, void());
+  MOCK_METHOD0(SetNeedsUpdateLayers, void());
   MOCK_METHOD1(StartRateLimiter, void(WebKit::WebGraphicsContext3D* context));
   MOCK_METHOD1(StopRateLimiter, void(WebKit::WebGraphicsContext3D* context));
 };
@@ -118,7 +119,7 @@ TEST_F(TextureLayerTest, SyncImplWhenDrawing) {
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 
   EXPECT_CALL(*layer_tree_host_, AcquireLayerTextures()).Times(0);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(1);
   test_layer->SetNeedsDisplayRect(dirty_rect);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 

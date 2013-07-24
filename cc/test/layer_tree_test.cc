@@ -233,9 +233,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
   }
   virtual ~LayerTreeHostClientForTesting() {}
 
-  virtual void WillBeginFrame() OVERRIDE {}
+  virtual void WillBeginFrame() OVERRIDE { test_hooks_->WillBeginFrame(); }
 
-  virtual void DidBeginFrame() OVERRIDE {}
+  virtual void DidBeginFrame() OVERRIDE { test_hooks_->DidBeginFrame(); }
 
   virtual void Animate(double monotonic_time) OVERRIDE {
     test_hooks_->Animate(base::TimeTicks::FromInternalValue(
@@ -263,7 +263,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
     test_hooks_->DidFailToInitializeOutputSurface();
   }
 
-  virtual void WillCommit() OVERRIDE {}
+  virtual void WillCommit() OVERRIDE { test_hooks_->WillCommit(); }
 
   virtual void DidCommit() OVERRIDE {
     test_hooks_->DidCommit();
