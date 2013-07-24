@@ -123,22 +123,6 @@ void AddWindowSpecifics(int window_id,
   }
 }
 
-void BuildTabSpecifics(const std::string& tag, int window_id, int tab_id,
-                       sync_pb::SessionSpecifics* tab_base) {
-  tab_base->set_session_tag(tag);
-  sync_pb::SessionTab* tab = tab_base->mutable_tab();
-  tab->set_tab_id(tab_id);
-  tab->set_tab_visual_index(1);
-  tab->set_current_navigation_index(0);
-  tab->set_pinned(true);
-  tab->set_extension_app_id("app_id");
-  sync_pb::TabNavigation* navigation = tab->add_navigation();
-  navigation->set_virtual_url("http://foo/1");
-  navigation->set_referrer("referrer");
-  navigation->set_title("title");
-  navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
-}
-
 // Verifies number of windows, number of tabs, and basic fields.
 void VerifySyncedSession(
     const std::string& tag,
@@ -205,8 +189,26 @@ class ProfileSyncServiceSessionTest
   ProfileSyncServiceSessionTest()
       : window_bounds_(0, 1, 2, 3),
         notified_of_update_(false),
-        notified_of_refresh_(false) {}
+        notified_of_refresh_(false),
+        max_tab_node_id_(0) {}
   ProfileSyncService* sync_service() { return sync_service_.get(); }
+
+  void BuildTabSpecifics(const std::string& tag, int window_id, int tab_id,
+                         sync_pb::SessionSpecifics* tab_base) {
+    tab_base->set_session_tag(tag);
+    tab_base->set_tab_node_id(++max_tab_node_id_);
+    sync_pb::SessionTab* tab = tab_base->mutable_tab();
+    tab->set_tab_id(tab_id);
+    tab->set_tab_visual_index(1);
+    tab->set_current_navigation_index(0);
+    tab->set_pinned(true);
+    tab->set_extension_app_id("app_id");
+    sync_pb::TabNavigation* navigation = tab->add_navigation();
+    navigation->set_virtual_url("http://foo/1");
+    navigation->set_referrer("referrer");
+    navigation->set_title("title");
+    navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
+  }
 
  protected:
   virtual TestingProfile* CreateProfile() OVERRIDE {
@@ -246,6 +248,7 @@ class ProfileSyncServiceSessionTest
   }
 
   virtual void TearDown() {
+    max_tab_node_id_ = 0;
     sync_service_->Shutdown();
     sync_service_.reset();
 
@@ -318,6 +321,7 @@ class ProfileSyncServiceSessionTest
   bool notified_of_refresh_;
   content::NotificationRegistrar registrar_;
   net::TestURLFetcherFactory fetcher_factory_;
+  int max_tab_node_id_;
 };
 
 class CreateRootHelper {
@@ -408,7 +412,8 @@ TEST_F(ProfileSyncServiceSessionTest, MAYBE_WriteFilledSessionToNode) {
 
   // Get the tabs for this machine from the node and check that they were
   // filled.
-  SessionModelAssociator::TabLinksMap tab_map = model_associator_->tab_map_;
+  SessionModelAssociator::TabLinksMap tab_map =
+      model_associator_->local_tab_map_;
   ASSERT_EQ(2U, tab_map.size());
   // Tabs are ordered by sessionid in tab_map, so should be able to traverse
   // the tree based on order of tabs created
@@ -758,26 +763,26 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolEmpty) {
   ASSERT_TRUE(create_root.success());
 
   std::vector<int64> node_ids;
-  ASSERT_EQ(0U, model_associator_->tab_pool_.Capacity());
-  ASSERT_TRUE(model_associator_->tab_pool_.Empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.Full());
+  ASSERT_EQ(0U, model_associator_->local_tab_pool_.Capacity());
+  ASSERT_TRUE(model_associator_->local_tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->local_tab_pool_.Full());
   const size_t num_ids = 10;
   for (size_t i = 0; i < num_ids; ++i) {
-    int64 id = model_associator_->tab_pool_.GetFreeTabNode();
+    int64 id = model_associator_->local_tab_pool_.GetFreeTabNode();
     ASSERT_GT(id, -1);
     node_ids.push_back(id);
     // Associate with a tab node.
-    model_associator_->tab_pool_.AssociateTabNode(id, i + 1);
+    model_associator_->local_tab_pool_.AssociateTabNode(id, i + 1);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
-  ASSERT_TRUE(model_associator_->tab_pool_.Empty());
-  ASSERT_FALSE(model_associator_->tab_pool_.Full());
+  ASSERT_EQ(num_ids, model_associator_->local_tab_pool_.Capacity());
+  ASSERT_TRUE(model_associator_->local_tab_pool_.Empty());
+  ASSERT_FALSE(model_associator_->local_tab_pool_.Full());
   for (size_t i = 0; i < num_ids; ++i) {
-    model_associator_->tab_pool_.FreeTabNode(node_ids[i]);
+    model_associator_->local_tab_pool_.FreeTabNode(node_ids[i]);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
-  ASSERT_FALSE(model_associator_->tab_pool_.Empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.Full());
+  ASSERT_EQ(num_ids, model_associator_->local_tab_pool_.Capacity());
+  ASSERT_FALSE(model_associator_->local_tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->local_tab_pool_.Full());
 }
 
 // TODO(jhorwich): Re-enable when crbug.com/121487 addressed
@@ -790,31 +795,31 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
   SessionID session_id;
   for (size_t i = 0; i < num_starting_nodes; ++i) {
     session_id.set_id(i + 1);
-    model_associator_->tab_pool_.AddTabNode(i + 1, session_id, i);
+    model_associator_->local_tab_pool_.AddTabNode(i + 1, session_id, i);
   }
 
-  model_associator_->tab_pool_.FreeUnassociatedTabNodes();
+  model_associator_->local_tab_pool_.FreeUnassociatedTabNodes();
   std::vector<int64> node_ids;
-  ASSERT_EQ(num_starting_nodes, model_associator_->tab_pool_.Capacity());
-  ASSERT_FALSE(model_associator_->tab_pool_.Empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.Full());
+  ASSERT_EQ(num_starting_nodes, model_associator_->local_tab_pool_.Capacity());
+  ASSERT_FALSE(model_associator_->local_tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->local_tab_pool_.Full());
   const size_t num_ids = 10;
   for (size_t i = 0; i < num_ids; ++i) {
-    int64 id = model_associator_->tab_pool_.GetFreeTabNode();
+    int64 id = model_associator_->local_tab_pool_.GetFreeTabNode();
     ASSERT_GT(id, -1);
     node_ids.push_back(id);
     // Associate with a tab node.
-    model_associator_->tab_pool_.AssociateTabNode(id, i + 1);
+    model_associator_->local_tab_pool_.AssociateTabNode(id, i + 1);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
-  ASSERT_TRUE(model_associator_->tab_pool_.Empty());
-  ASSERT_FALSE(model_associator_->tab_pool_.Full());
+  ASSERT_EQ(num_ids, model_associator_->local_tab_pool_.Capacity());
+  ASSERT_TRUE(model_associator_->local_tab_pool_.Empty());
+  ASSERT_FALSE(model_associator_->local_tab_pool_.Full());
   for (size_t i = 0; i < num_ids; ++i) {
-    model_associator_->tab_pool_.FreeTabNode(node_ids[i]);
+    model_associator_->local_tab_pool_.FreeTabNode(node_ids[i]);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
-  ASSERT_FALSE(model_associator_->tab_pool_.Empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.Full());
+  ASSERT_EQ(num_ids, model_associator_->local_tab_pool_.Capacity());
+  ASSERT_FALSE(model_associator_->local_tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->local_tab_pool_.Full());
 }
 
 // Write a foreign session to a node, and then delete it.
@@ -1000,7 +1005,8 @@ TEST_F(ProfileSyncServiceSessionTest, MAYBE_ValidTabs) {
   // Note: chrome://newtab has special handling which crashes in unit tests.
 
   // Get the tabs for this machine. Only the bla:// url should be synced.
-  SessionModelAssociator::TabLinksMap tab_map = model_associator_->tab_map_;
+  SessionModelAssociator::TabLinksMap tab_map =
+      model_associator_->local_tab_map_;
   ASSERT_EQ(1U, tab_map.size());
   SessionModelAssociator::TabLinksMap::iterator iter = tab_map.begin();
   ASSERT_EQ(1, iter->second->tab()->GetEntryCount());
@@ -1054,7 +1060,8 @@ TEST_F(ProfileSyncServiceSessionTest, ExistingTabs) {
 
   // Get the tabs for this machine from the node and check that they were
   // filled.
-  SessionModelAssociator::TabLinksMap tab_map = model_associator_->tab_map_;
+  SessionModelAssociator::TabLinksMap tab_map =
+      model_associator_->local_tab_map_;
   ASSERT_EQ(2U, tab_map.size());
   // Tabs are ordered by sessionid in tab_map, so should be able to traverse
   // the tree based on order of tabs created
@@ -1336,8 +1343,8 @@ TEST_F(ProfileSyncServiceSessionTest, TabPoolFreeNodeLimits) {
   std::vector<int64> used_sync_ids;
   for (size_t i = 1; i <= TabNodePool::kFreeNodesHighWatermark + 1; ++i) {
     session_id.set_id(i);
-    int64 sync_id = model_associator_->tab_pool_.GetFreeTabNode();
-    model_associator_->tab_pool_.AssociateTabNode(sync_id, i);
+    int64 sync_id = model_associator_->local_tab_pool_.GetFreeTabNode();
+    model_associator_->local_tab_pool_.AssociateTabNode(sync_id, i);
     used_sync_ids.push_back(sync_id);
   }
 
@@ -1346,23 +1353,23 @@ TEST_F(ProfileSyncServiceSessionTest, TabPoolFreeNodeLimits) {
   used_sync_ids.pop_back();
 
   for (size_t i = 0; i < used_sync_ids.size(); ++i) {
-    model_associator_->tab_pool_.FreeTabNode(used_sync_ids[i]);
+    model_associator_->local_tab_pool_.FreeTabNode(used_sync_ids[i]);
   }
 
   // Except one node all nodes should be in FreeNode pool.
-  EXPECT_FALSE(model_associator_->tab_pool_.Full());
-  EXPECT_FALSE(model_associator_->tab_pool_.Empty());
+  EXPECT_FALSE(model_associator_->local_tab_pool_.Full());
+  EXPECT_FALSE(model_associator_->local_tab_pool_.Empty());
   // Total capacity = 1 Associated Node + kFreeNodesHighWatermark free node.
   EXPECT_EQ(TabNodePool::kFreeNodesHighWatermark + 1,
-            model_associator_->tab_pool_.Capacity());
+            model_associator_->local_tab_pool_.Capacity());
 
   // Freeing the last sync node should drop the free nodes to
   // kFreeNodesLowWatermark.
-  model_associator_->tab_pool_.FreeTabNode(last_sync_id);
-  EXPECT_FALSE(model_associator_->tab_pool_.Empty());
-  EXPECT_TRUE(model_associator_->tab_pool_.Full());
+  model_associator_->local_tab_pool_.FreeTabNode(last_sync_id);
+  EXPECT_FALSE(model_associator_->local_tab_pool_.Empty());
+  EXPECT_TRUE(model_associator_->local_tab_pool_.Full());
   EXPECT_EQ(TabNodePool::kFreeNodesLowWatermark,
-            model_associator_->tab_pool_.Capacity());
+            model_associator_->local_tab_pool_.Capacity());
 }
 
 }  // namespace browser_sync
