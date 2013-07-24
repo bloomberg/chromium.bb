@@ -36,6 +36,7 @@ namespace WebCore {
 
 TimedItem::TimedItem(const Timing& timing)
     : m_parent(0)
+    , m_player(0)
     , m_startTime(0)
     , m_specified(timing)
     , m_calculated()
@@ -45,7 +46,6 @@ TimedItem::TimedItem(const Timing& timing)
 
 void TimedItem::updateInheritedTime(double inheritedTime) const
 {
-    ASSERT(player());
     const double localTime = inheritedTime - m_startTime;
     const double iterationDuration = m_specified.hasIterationDuration
         ? m_specified.iterationDuration
