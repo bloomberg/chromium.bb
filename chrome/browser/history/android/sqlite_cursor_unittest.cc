@@ -63,7 +63,7 @@ class SQLiteCursorTest : public testing::Test,
     ui_test_utils::WaitForBookmarkModelToLoad(testing_profile_);
 
     testing_profile_->CreateFaviconService();
-    testing_profile_->CreateHistoryService(true, false);
+    ASSERT_TRUE(testing_profile_->CreateHistoryService(true, false));
     service_.reset(new AndroidHistoryProviderService(testing_profile_));
     hs_ = HistoryServiceFactory::GetForProfile(testing_profile_,
                                                Profile::EXPLICIT_ACCESS);

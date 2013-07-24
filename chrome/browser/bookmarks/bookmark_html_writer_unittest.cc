@@ -148,7 +148,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   content::TestBrowserThreadBundle thread_bundle;
 
   TestingProfile profile;
-  profile.CreateHistoryService(true, false);
+  ASSERT_TRUE(profile.CreateHistoryService(true, false));
   profile.BlockUntilHistoryProcessesPendingRequests();
   profile.CreateFaviconService();
   profile.CreateBookmarkModel(true);

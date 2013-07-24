@@ -331,11 +331,14 @@ class RemoveServerBoundCertTester : public net::SSLConfigService::Observer {
 
 class RemoveHistoryTester {
  public:
-  explicit RemoveHistoryTester(TestingProfile* profile)
-      : query_url_success_(false) {
-    profile->CreateHistoryService(true, false);
+  RemoveHistoryTester() : query_url_success_(false), history_service_(NULL) {}
+
+  bool Init(TestingProfile* profile) WARN_UNUSED_RESULT {
+    if (!profile->CreateHistoryService(true, false))
+      return false;
     history_service_ = HistoryServiceFactory::GetForProfile(
         profile, Profile::EXPLICIT_ACCESS);
+    return true;
   }
 
   // Returns true, if the given URL exists in the history service.
@@ -824,7 +827,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveLocalStorageForLastWeek) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {
-  RemoveHistoryTester tester(GetProfile());
+  RemoveHistoryTester tester;
+  ASSERT_TRUE(tester.Init(GetProfile()));
 
   tester.AddHistory(kOrigin1, base::Time::Now());
   ASSERT_TRUE(tester.HistoryContainsURL(kOrigin1));
@@ -838,7 +842,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryForLastHour) {
-  RemoveHistoryTester tester(GetProfile());
+  RemoveHistoryTester tester;
+  ASSERT_TRUE(tester.Init(GetProfile()));
 
   base::Time two_hours_ago = base::Time::Now() - base::TimeDelta::FromHours(2);
 
@@ -860,7 +865,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryForLastHour) {
 // here.
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryProhibited) {
-  RemoveHistoryTester tester(GetProfile());
+  RemoveHistoryTester tester;
+  ASSERT_TRUE(tester.Init(GetProfile()));
   PrefService* prefs = GetProfile()->GetPrefs();
   prefs->SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
 
@@ -884,7 +890,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryProhibited) {
 
 TEST_F(BrowsingDataRemoverTest, RemoveMultipleTypes) {
   // Add some history.
-  RemoveHistoryTester history_tester(GetProfile());
+  RemoveHistoryTester history_tester;
+  ASSERT_TRUE(history_tester.Init(GetProfile()));
   history_tester.AddHistory(kOrigin1, base::Time::Now());
   ASSERT_TRUE(history_tester.HistoryContainsURL(kOrigin1));
 
@@ -913,7 +920,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveMultipleTypesHistoryProhibited) {
   prefs->SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
 
   // Add some history.
-  RemoveHistoryTester history_tester(GetProfile());
+  RemoveHistoryTester history_tester;
+  ASSERT_TRUE(history_tester.Init(GetProfile()));
   history_tester.AddHistory(kOrigin1, base::Time::Now());
   ASSERT_TRUE(history_tester.HistoryContainsURL(kOrigin1));
 
@@ -1286,7 +1294,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedIgnoreExtensionsAndDevTools) {
 }
 
 TEST_F(BrowsingDataRemoverTest, OriginBasedHistoryRemoval) {
-  RemoveHistoryTester tester(GetProfile());
+  RemoveHistoryTester tester;
+  ASSERT_TRUE(tester.Init(GetProfile()));
 
   base::Time two_hours_ago = base::Time::Now() - base::TimeDelta::FromHours(2);
 
@@ -1307,7 +1316,8 @@ TEST_F(BrowsingDataRemoverTest, OriginBasedHistoryRemoval) {
 }
 
 TEST_F(BrowsingDataRemoverTest, OriginAndTimeBasedHistoryRemoval) {
-  RemoveHistoryTester tester(GetProfile());
+  RemoveHistoryTester tester;
+  ASSERT_TRUE(tester.Init(GetProfile()));
 
   base::Time two_hours_ago = base::Time::Now() - base::TimeDelta::FromHours(2);
 
