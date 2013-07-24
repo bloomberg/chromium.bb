@@ -194,11 +194,6 @@ void InsertionPoint::setResetStyleInheritance(bool value)
     setBooleanAttribute(reset_style_inheritanceAttr, value);
 }
 
-bool InsertionPoint::contains(const Node* node) const
-{
-    return m_distribution.contains(const_cast<Node*>(node)) || (node->isShadowRoot() && toShadowRoot(node)->insertionPoint() == this);
-}
-
 const CSSSelectorList& InsertionPoint::emptySelectorList()
 {
     DEFINE_STATIC_LOCAL(CSSSelectorList, selectorList, (CSSSelectorList()));
