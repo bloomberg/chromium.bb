@@ -22,7 +22,7 @@ layer at (0,0) size 785x782
             RenderTableCell {TD} at (2,2) size 55x22 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 53x19
                 text run at (1,1) width 53: "TBODY"
-      RenderBlock {HR} at (0,128) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,128) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,146) size 769x20
         RenderText {#text} at (0,0) size 246x19
           text run at (0,0) width 246: "TABLE 2 - with 'height' style on TABLE"

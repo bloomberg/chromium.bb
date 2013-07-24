@@ -25,7 +25,7 @@ layer at (0,0) size 785x982
           RenderInline {FONT} at (0,0) size 0x18
             RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,72) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,82) size 769x18
         RenderInline {FONT} at (0,0) size 108x18
           RenderInline {FONT} at (0,0) size 108x18
@@ -52,7 +52,7 @@ layer at (0,0) size 785x982
               RenderInline {FONT} at (0,0) size 0x18
                 RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,154) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,164) size 769x18
         RenderInline {FONT} at (0,0) size 12x18
           RenderInline {FONT} at (0,0) size 12x18
@@ -83,7 +83,7 @@ layer at (0,0) size 785x982
                   RenderInline {FONT} at (0,0) size 0x18
                     RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,236) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,246) size 769x18
         RenderInline {FONT} at (0,0) size 101x18
           RenderInline {FONT} at (0,0) size 101x18
@@ -115,7 +115,7 @@ layer at (0,0) size 785x982
                       RenderInline {FONT} at (0,0) size 0x18
                         RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,318) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,328) size 769x0
         RenderInline {FONT} at (0,0) size 0x0
           RenderInline {FONT} at (0,0) size 0x0
@@ -151,7 +151,7 @@ layer at (0,0) size 785x982
                           RenderInline {FONT} at (0,0) size 0x18
                             RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,382) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,392) size 769x18
         RenderInline {FONT} at (0,0) size 101x18
           RenderInline {FONT} at (0,0) size 101x18
@@ -188,7 +188,7 @@ layer at (0,0) size 785x982
                               RenderInline {FONT} at (0,0) size 0x0
                                 RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,446) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,456) size 769x0
         RenderInline {FONT} at (0,0) size 0x0
           RenderInline {FONT} at (0,0) size 0x0
@@ -251,7 +251,7 @@ layer at (0,0) size 785x982
                                   RenderInline {FONT} at (0,0) size 0x18
                                     RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,546) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,556) size 769x18
         RenderInline {FONT} at (0,0) size 12x18
           RenderInline {FONT} at (0,0) size 12x18
@@ -303,7 +303,7 @@ layer at (0,0) size 785x982
                                       RenderInline {FONT} at (0,0) size 0x18
                                         RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,646) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,656) size 769x18
         RenderInline {FONT} at (0,0) size 12x18
           RenderInline {FONT} at (0,0) size 12x18
@@ -359,7 +359,7 @@ layer at (0,0) size 785x982
                                           RenderInline {FONT} at (0,0) size 0x18
                                             RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,746) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,756) size 769x0
         RenderInline {FONT} at (0,0) size 0x0
           RenderInline {FONT} at (0,0) size 0x0
@@ -416,7 +416,7 @@ layer at (0,0) size 785x982
                                               RenderInline {FONT} at (0,0) size 0x18
                                                 RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,828) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,838) size 769x0
         RenderInline {FONT} at (0,0) size 0x0
           RenderInline {FONT} at (0,0) size 0x0
@@ -477,7 +477,7 @@ layer at (0,0) size 785x982
                                                   RenderInline {FONT} at (0,0) size 0x18
                                                     RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,910) size 769x2
-        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
+        RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,920) size 769x0
         RenderInline {FONT} at (0,0) size 0x0
           RenderInline {FONT} at (0,0) size 0x0

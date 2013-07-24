@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 21: "foo"
       RenderBlock (anonymous) at (0,46) size 784x18
         RenderBR {BR} at (0,0) size 0x18
-      RenderBlock {HR} at (0,72) size 602x2 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,72) size 602x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,82) size 784x18
         RenderBR {BR} at (0,0) size 0x18
       RenderTable {TABLE} at (0,100) size 600x109

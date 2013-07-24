@@ -75,14 +75,14 @@ layer at (0,0) size 785x685
           RenderInline {LABEL} at (0,0) size 197x18
             RenderText {#text} at (517,2) size 70x18
               text run at (517,2) width 70: "Comment: "
-            RenderTextControl {INPUT} at (589,2) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
+            RenderTextControl {INPUT} at (589,2) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderText {#text} at (0,0) size 0x0
           RenderButton {INPUT} at (2,25) size 54x18 [bgcolor=#C0C0C0]
             RenderBlock (anonymous) at (8,2) size 38x14
               RenderText {#text} at (0,0) size 38x13
                 text run at (0,0) width 38: "Submit"
           RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,509) size 769x3 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,509) size 769x3 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,527) size 769x19
         RenderText {#text} at (0,0) size 63x18
           text run at (0,0) width 63: "Up to the "

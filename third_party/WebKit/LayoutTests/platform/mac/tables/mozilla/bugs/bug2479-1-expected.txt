@@ -271,7 +271,7 @@ layer at (0,0) size 785x946
             RenderTableCell {SPAN} at (534,72) size 145x18 [r=2 c=3 rs=1 cs=1]
               RenderText {#text} at (0,0) size 145x18
                 text run at (0,0) width 145: "Table 2, Row 3, Cell 4"
-      RenderBlock {HR} at (0,787) size 769x3 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,787) size 769x3 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,805) size 769x36
         RenderInline {A} at (0,0) size 88x18 [color=#0000EE]
           RenderImage {IMG} at (0,0) size 88x31

@@ -1013,7 +1013,7 @@ layer at (0,0) size 785x5958
             RenderTableCell {TD} at (407,48) size 49x22 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
               RenderText {#text} at (2,2) size 45x18
                 text run at (2,2) width 45: "Middle"
-      RenderBlock {HR} at (0,5799) size 769x3 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,5799) size 769x3 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,5817) size 769x36
         RenderInline {A} at (0,0) size 88x18 [color=#0000EE]
           RenderImage {IMG} at (0,0) size 88x31

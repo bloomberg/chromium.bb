@@ -415,7 +415,7 @@ layer at (0,0) size 785x2766
             RenderTableCell {TD} at (36,24) size 32x20 [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 30x18
                 text run at (1,1) width 30: "Data"
-      RenderBlock {HR} at (0,2658) size 769x3 [border: (1px inset #000000)]
+      RenderBlock {HR} at (0,2658) size 769x3 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,2676) size 769x19
         RenderText {#text} at (0,0) size 58x18
           text run at (0,0) width 58: "(Back to "

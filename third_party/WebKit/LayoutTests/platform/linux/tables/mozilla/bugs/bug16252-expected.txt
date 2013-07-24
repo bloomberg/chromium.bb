@@ -503,7 +503,7 @@ layer at (0,0) size 785x637
                                     RenderInline {FONT} at (0,0) size 21x13
                                       RenderText {#text} at (3,2) size 21x13
                                         text run at (3,2) width 21: "30.1"
-                            RenderBlock {HR} at (2,464) size 250x1 [border: (1px inset #000000) none (1px inset #000000)]
+                            RenderBlock {HR} at (2,464) size 250x1 [border: (1px inset #EEEEEE) none (1px inset #EEEEEE)]
                     RenderText {#text} at (0,0) size 179x239
                       text run at (0,0) width 156: "Known as ``Wilt the Stilt''"
                       text run at (0,20) width 179: "and ``The Big Dipper,'' the 7-"
