@@ -51,3 +51,7 @@ fun:_ff_prefetch_mmxext
 # unrelated file in another thread. Revealed by DiskCacheBackendTest.DeleteOld.
 # See: https://code.google.com/p/data-race-test/issues/detail?id=114
 fun_r:SHFileOperationW
+
+# Ignore internal fopen synchronization:
+fun_r:_lock_file
+fun_r:_lock
