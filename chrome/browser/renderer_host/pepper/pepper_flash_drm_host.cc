@@ -50,7 +50,6 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
         render_id_(render_id),
         monitor_(NULL),
         request_sent_(0) {
-    GetMonitor();
   }
 
   int64_t GetMonitor() {
@@ -131,6 +130,7 @@ PepperFlashDRMHost::PepperFlashDRMHost(BrowserPpapiHost* host,
 
   fetcher_ = new DeviceIDFetcher(render_process_id);
   monitor_finder_ = new MonitorFinder(render_process_id, render_view_id);
+  monitor_finder_->GetMonitor();
 }
 
 PepperFlashDRMHost::~PepperFlashDRMHost() {
