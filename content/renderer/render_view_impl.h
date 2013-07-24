@@ -570,17 +570,6 @@ class CONTENT_EXPORT RenderViewImpl
       WebKit::WebNavigationType type,
       WebKit::WebNavigationPolicy default_policy,
       bool is_redirect);
-  virtual bool canHandleRequest(WebKit::WebFrame* frame,
-                                const WebKit::WebURLRequest& request);
-  virtual WebKit::WebURLError cannotHandleRequestError(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLRequest& request);
-  virtual WebKit::WebURLError cancelledError(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLRequest& request);
-  virtual void unableToImplementPolicyWithError(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLError& error);
   virtual void willSendSubmitEvent(WebKit::WebFrame* frame,
                                    const WebKit::WebFormElement& form);
   virtual void willSubmitForm(WebKit::WebFrame* frame,
@@ -617,9 +606,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didNavigateWithinPage(WebKit::WebFrame* frame,
                                      bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(WebKit::WebFrame* frame);
-  virtual void assignIdentifierToRequest(WebKit::WebFrame* frame,
-                                         unsigned identifier,
-                                         const WebKit::WebURLRequest& request);
   virtual void willSendRequest(WebKit::WebFrame* frame,
                                unsigned identifier,
                                WebKit::WebURLRequest& request,
@@ -629,9 +615,6 @@ class CONTENT_EXPORT RenderViewImpl
                                   const WebKit::WebURLResponse& response);
   virtual void didFinishResourceLoad(WebKit::WebFrame* frame,
                                      unsigned identifier);
-  virtual void didFailResourceLoad(WebKit::WebFrame* frame,
-                                   unsigned identifier,
-                                   const WebKit::WebURLError& error);
   virtual void didLoadResourceFromMemoryCache(
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,

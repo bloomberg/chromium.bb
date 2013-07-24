@@ -123,12 +123,6 @@ class WebViewPlugin : public WebKit::WebPlugin,
   // WebFrameClient methods:
   virtual void didClearWindowObject(WebKit::WebFrame* frame);
 
-  virtual bool canHandleRequest(WebKit::WebFrame* frame,
-                                const WebKit::WebURLRequest& request);
-
-  virtual WebKit::WebURLError cancelledError(
-      WebKit::WebFrame* frame, const WebKit::WebURLRequest& request);
-
   // This method is defined in WebPlugin as well as in WebFrameClient, but with
   // different parameters. We only care about implementing the WebPlugin
   // version, so we implement this method and call the default in WebFrameClient

@@ -287,29 +287,6 @@ WebKit::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
       frame, request, type, default_policy, is_redirect);
 }
 
-WebKit::WebURLError RenderFrameImpl::cannotHandleRequestError(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLRequest& request) {
-  NOTREACHED();  // Since we said we can handle all requests.
-  return WebURLError();
-}
-
-WebKit::WebURLError RenderFrameImpl::cancelledError(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLRequest& request) {
-  WebURLError error;
-  error.domain = WebString::fromUTF8(net::kErrorDomain);
-  error.reason = net::ERR_ABORTED;
-  error.unreachableURL = request.url();
-  return error;
-}
-
-void RenderFrameImpl::unableToImplementPolicyWithError(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLError& error) {
-  NOTREACHED();  // Since we said we can handle all requests.
-}
-
 void RenderFrameImpl::willSendSubmitEvent(WebKit::WebFrame* frame,
                                           const WebKit::WebFormElement& form) {
   // Some login forms have onSubmit handlers that put a hash of the password
@@ -672,12 +649,6 @@ void RenderFrameImpl::didFinishResourceLoad(WebKit::WebFrame* frame,
   // Needed methods:
   // * LoadNavigationErrorPage
   render_view_->didFinishResourceLoad(frame, identifier);
-}
-
-void RenderFrameImpl::didFailResourceLoad(WebKit::WebFrame* frame,
-                                          unsigned identifier,
-                                          const WebKit::WebURLError& error) {
-  // Ignore
 }
 
 void RenderFrameImpl::didLoadResourceFromMemoryCache(

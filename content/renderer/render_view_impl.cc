@@ -3238,30 +3238,6 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
                                    request, type, default_policy, is_redirect);
 }
 
-bool RenderViewImpl::canHandleRequest(
-    WebFrame* frame, const WebURLRequest& request) {
-  // We allow WebKit to think that everything can be handled even though
-  // browser-side we limit what we load.
-  return true;
-}
-
-WebURLError RenderViewImpl::cannotHandleRequestError(
-    WebFrame* frame, const WebURLRequest& request) {
-  NOTREACHED();  // Since we said we can handle all requests.
-  return WebURLError();
-}
-
-WebURLError RenderViewImpl::cancelledError(
-    WebFrame* frame, const WebURLRequest& request) {
-  NOTREACHED();
-  return WebURLError();
-}
-
-void RenderViewImpl::unableToImplementPolicyWithError(
-    WebFrame*, const WebURLError&) {
-  NOTREACHED();  // Since we said we can handle all requests.
-}
-
 void RenderViewImpl::willSendSubmitEvent(WebKit::WebFrame* frame,
     const WebKit::WebFormElement& form) {
   NOTREACHED();
@@ -3893,11 +3869,6 @@ void RenderViewImpl::didUpdateCurrentHistoryItem(WebFrame* frame) {
   StartNavStateSyncTimerIfNecessary();
 }
 
-void RenderViewImpl::assignIdentifierToRequest(
-    WebFrame* frame, unsigned identifier, const WebURLRequest& request) {
-  // Ignore
-}
-
 void RenderViewImpl::willSendRequest(WebFrame* frame,
                                      unsigned identifier,
                                      WebURLRequest& request,
@@ -3956,11 +3927,6 @@ void RenderViewImpl::didFinishResourceLoad(
     LoadNavigationErrorPage(
         frame, frame->dataSource()->request(), error, std::string(), true);
   }
-}
-
-void RenderViewImpl::didFailResourceLoad(
-    WebFrame* frame, unsigned identifier, const WebURLError& error) {
-  // Ignore
 }
 
 void RenderViewImpl::didLoadResourceFromMemoryCache(

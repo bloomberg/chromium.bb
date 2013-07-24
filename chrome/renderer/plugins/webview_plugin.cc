@@ -227,22 +227,6 @@ void WebViewPlugin::didClearWindowObject(WebFrame* frame) {
     delegate_->BindWebFrame(frame);
 }
 
-bool WebViewPlugin::canHandleRequest(WebFrame* frame,
-                                     const WebURLRequest& request) {
-  return GURL(request.url()).SchemeIs("chrome");
-}
-
-WebURLError WebViewPlugin::cancelledError(WebFrame* frame,
-                                          const WebURLRequest& request) {
-  // Return an error with a non-zero reason so isNull() on the corresponding
-  // ResourceError is false.
-  WebURLError error;
-  error.domain = "WebViewPlugin";
-  error.reason = -1;
-  error.unreachableURL = request.url();
-  return error;
-}
-
 void WebViewPlugin::didReceiveResponse(WebFrame* frame,
                                        unsigned identifier,
                                        const WebURLResponse& response) {
