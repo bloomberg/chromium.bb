@@ -2052,9 +2052,6 @@ String CanvasRenderingContext2D::font() const
 
 void CanvasRenderingContext2D::setFont(const String& newFont)
 {
-    if (newFont == state().m_unparsedFont && state().m_realizedFont)
-        return;
-
     MutableStylePropertyMap::iterator i = m_cachedFonts.find(newFont);
     RefPtr<MutableStylePropertySet> parsedStyle = i != m_cachedFonts.end() ? i->value : 0;
 
