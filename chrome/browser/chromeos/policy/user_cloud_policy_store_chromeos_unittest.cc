@@ -32,6 +32,7 @@ using testing::AnyNumber;
 using testing::Eq;
 using testing::Mock;
 using testing::Property;
+using testing::Return;
 using testing::SaveArg;
 using testing::_;
 
@@ -517,6 +518,104 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationAndStoreNew) {
 
   // Verify that the legacy cache has been removed.
   EXPECT_FALSE(base::PathExists(policy_file()));
+}
+
+TEST_F(UserCloudPolicyStoreChromeOSTest, LoadImmediately) {
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  EXPECT_CALL(session_manager_client_,
+              BlockingRetrievePolicyForUser(PolicyBuilder::kFakeUsername))
+      .WillOnce(Return(policy_.GetBlob()));
+  EXPECT_CALL(cryptohome_client_,
+              BlockingGetSanitizedUsername(PolicyBuilder::kFakeUsername))
+      .WillOnce(Return(kSanitizedUsername));
+
+  EXPECT_FALSE(store_->policy());
+  store_->LoadImmediately();
+  // Note: verify that the |observer_| got notified synchronously, without
+  // having to spin the current loop. TearDown() will flush the loop so this
+  // must be done within the test.
+  Mock::VerifyAndClearExpectations(&observer_);
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
+  Mock::VerifyAndClearExpectations(&cryptohome_client_);
+
+  // The policy should become available without having to spin any loops.
+  ASSERT_TRUE(store_->policy());
+  EXPECT_EQ(policy_.policy_data().SerializeAsString(),
+            store_->policy()->SerializeAsString());
+  VerifyPolicyMap(kDefaultHomepage);
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
+}
+
+TEST_F(UserCloudPolicyStoreChromeOSTest, LoadImmediatelyNoPolicy) {
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  EXPECT_CALL(session_manager_client_,
+              BlockingRetrievePolicyForUser(PolicyBuilder::kFakeUsername))
+      .WillOnce(Return(""));
+
+  EXPECT_FALSE(store_->policy());
+  store_->LoadImmediately();
+  Mock::VerifyAndClearExpectations(&observer_);
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
+
+  EXPECT_FALSE(store_->policy());
+  EXPECT_TRUE(store_->policy_map().empty());
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
+}
+
+TEST_F(UserCloudPolicyStoreChromeOSTest, LoadImmediatelyInvalidBlob) {
+  EXPECT_CALL(observer_, OnStoreError(store_.get()));
+  EXPECT_CALL(session_manager_client_,
+              BlockingRetrievePolicyForUser(PolicyBuilder::kFakeUsername))
+      .WillOnce(Return("le blob"));
+
+  EXPECT_FALSE(store_->policy());
+  store_->LoadImmediately();
+  Mock::VerifyAndClearExpectations(&observer_);
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
+
+  EXPECT_FALSE(store_->policy());
+  EXPECT_TRUE(store_->policy_map().empty());
+  EXPECT_EQ(CloudPolicyStore::STATUS_PARSE_ERROR, store_->status());
+}
+
+TEST_F(UserCloudPolicyStoreChromeOSTest, LoadImmediatelyDBusFailure) {
+  EXPECT_CALL(observer_, OnStoreError(store_.get()));
+  EXPECT_CALL(session_manager_client_,
+              BlockingRetrievePolicyForUser(PolicyBuilder::kFakeUsername))
+      .WillOnce(Return(policy_.GetBlob()));
+  EXPECT_CALL(cryptohome_client_,
+              BlockingGetSanitizedUsername(PolicyBuilder::kFakeUsername))
+      .WillOnce(Return(""));
+
+  EXPECT_FALSE(store_->policy());
+  store_->LoadImmediately();
+  Mock::VerifyAndClearExpectations(&observer_);
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
+  Mock::VerifyAndClearExpectations(&cryptohome_client_);
+
+  EXPECT_FALSE(store_->policy());
+  EXPECT_TRUE(store_->policy_map().empty());
+  EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR, store_->status());
+}
+
+TEST_F(UserCloudPolicyStoreChromeOSTest, LoadImmediatelyNoUserPolicyKey) {
+  EXPECT_CALL(observer_, OnStoreError(store_.get()));
+  EXPECT_CALL(session_manager_client_,
+              BlockingRetrievePolicyForUser(PolicyBuilder::kFakeUsername))
+      .WillOnce(Return(policy_.GetBlob()));
+  EXPECT_CALL(cryptohome_client_,
+              BlockingGetSanitizedUsername(PolicyBuilder::kFakeUsername))
+      .WillOnce(Return("wrong"));
+
+  EXPECT_FALSE(store_->policy());
+  store_->LoadImmediately();
+  Mock::VerifyAndClearExpectations(&observer_);
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
+  Mock::VerifyAndClearExpectations(&cryptohome_client_);
+
+  EXPECT_FALSE(store_->policy());
+  EXPECT_TRUE(store_->policy_map().empty());
+  EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, store_->status());
 }
 
 }  // namespace
