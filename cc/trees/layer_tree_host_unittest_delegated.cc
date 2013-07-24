@@ -204,7 +204,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         first_draw_for_source_frame_(true) {}
 
   virtual void DidCommit() OVERRIDE {
-    int next_source_frame_number = layer_tree_host()->commit_number();
+    int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
       case 1:
         // The first time the layer gets a frame the whole layer should be
@@ -483,7 +483,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = layer_tree_host()->commit_number();
+    int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
       case 1:
         // Generate a frame with two resources in it.
@@ -555,7 +555,7 @@ class LayerTreeHostDelegatedTestReusedResources
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = layer_tree_host()->commit_number();
+    int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
       case 1:
         // Generate a frame with some resources in it.
@@ -616,7 +616,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = layer_tree_host()->commit_number();
+    int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
       case 1:
         // Generate a frame with some resources in it.
@@ -715,7 +715,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = layer_tree_host()->commit_number();
+    int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
       case 1:
         // Generate a frame with some resources in it.
@@ -821,7 +821,7 @@ class LayerTreeHostDelegatedTestBadFrame
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = layer_tree_host()->commit_number();
+    int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
       case 1:
         // Generate a frame with some resources in it.
@@ -965,7 +965,7 @@ class LayerTreeHostDelegatedTestUnnamedResource
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = layer_tree_host()->commit_number();
+    int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
       case 1:
         // This frame includes two resources in it, but only uses one.
@@ -1022,7 +1022,7 @@ class LayerTreeHostDelegatedTestDontLeakResource
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = layer_tree_host()->commit_number();
+    int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
       case 1:
         // This frame includes two resources in it.
@@ -1087,7 +1087,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = layer_tree_host()->commit_number();
+    int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
       case 1:
         // This frame includes two resources in it.
@@ -1207,7 +1207,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = layer_tree_host()->commit_number();
+    int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
       case 1:
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));

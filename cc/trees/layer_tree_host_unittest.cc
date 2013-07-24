@@ -350,7 +350,7 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
   }
 
   virtual void DidCommit() OVERRIDE {
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // Changing the device scale factor causes a commit. It also changes
         // the content bounds of |scaled_layer_|, which should not generate
@@ -359,7 +359,7 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
         break;
       default:
         // No extra commits.
-        EXPECT_EQ(2, layer_tree_host()->commit_number());
+        EXPECT_EQ(2, layer_tree_host()->source_frame_number());
     }
   }
 
@@ -411,7 +411,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
   }
 
   virtual void DidCommit() OVERRIDE {
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // Changing the device scale factor causes a commit. It also changes
         // the content bounds of |scrollbar_|, which should not generate
@@ -420,7 +420,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
         break;
       default:
         // No extra commits.
-        EXPECT_EQ(2, layer_tree_host()->commit_number());
+        EXPECT_EQ(2, layer_tree_host()->source_frame_number());
     }
   }
 
@@ -849,7 +849,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 1:
         layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
         layer_tree_host()->StartPageScaleAnimation(
@@ -1277,7 +1277,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 1:
         parent_->SetNeedsDisplay();
         child_->SetNeedsDisplay();
@@ -1306,7 +1306,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
         EndTest();
         break;
       default:
-        NOTREACHED() << layer_tree_host()->commit_number();
+        NOTREACHED() << layer_tree_host()->source_frame_number();
         break;
     }
   }
@@ -1552,7 +1552,7 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    if (layer_tree_host()->commit_number() < 2)
+    if (layer_tree_host()->source_frame_number() < 2)
       root_layer_->SetNeedsDisplay();
   }
 
@@ -2170,7 +2170,7 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
   virtual void AfterTest() OVERRIDE {}
 
   virtual void DidCommit() OVERRIDE {
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // The first update consists one LCD notification and one paint.
         EXPECT_EQ(1, client_.lcd_notification_count());
@@ -2192,7 +2192,7 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
         break;
       default:
         // Verify that there is not extra commit due to layer invalidation.
-        EXPECT_EQ(3, layer_tree_host()->commit_number());
+        EXPECT_EQ(3, layer_tree_host()->source_frame_number());
         // LCD notification count should have incremented due to
         // change in layer opacity.
         EXPECT_EQ(2, client_.lcd_notification_count());
@@ -2519,7 +2519,7 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
   }
 
   void NextStep() {
-    int frame = layer_tree_host()->commit_number();
+    int frame = layer_tree_host()->source_frame_number();
     switch (frame) {
       case 1:
         child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
@@ -2648,7 +2648,7 @@ class LayerTreeHostTestAsyncReadbackLayerDestroyed : public LayerTreeHostTest {
   }
 
   virtual void DidCommit() OVERRIDE {
-    int frame = layer_tree_host()->commit_number();
+    int frame = layer_tree_host()->source_frame_number();
     switch (frame) {
       case 1:
         main_destroyed_->RequestCopyOfOutput(
@@ -2988,7 +2988,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw : public LayerTreeHostTest {
   }
 
   virtual void DidCommit() OVERRIDE {
-    if (layer_tree_host()->commit_number() == 1) {
+    if (layer_tree_host()->source_frame_number() == 1) {
       // Allow drawing.
       layer_tree_host()->SetViewportSize(gfx::Size(root_->bounds()));
 
@@ -3032,7 +3032,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
   // Round 5: commit + draw
 
   virtual void DidCommit() OVERRIDE {
-    int commit = layer_tree_host()->commit_number();
+    int commit = layer_tree_host()->source_frame_number();
     switch (commit) {
       case 2:
         // Round 2 done.
@@ -3053,7 +3053,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
   }
 
   virtual void DidCompleteSwapBuffers() OVERRIDE {
-    int commit = layer_tree_host()->commit_number();
+    int commit = layer_tree_host()->source_frame_number();
     ++frame_;
     char pixels[4] = {0};
     switch (frame_) {
@@ -3455,7 +3455,7 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 0:
         break;
       case 1: {
@@ -3538,7 +3538,7 @@ class LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    int last_source_frame_number = layer_tree_host()->commit_number() - 1;
+    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
         EXPECT_FALSE(root_->needs_push_properties());
@@ -3578,7 +3578,7 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    int last_source_frame_number = layer_tree_host()->commit_number() - 1;
+    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
         layer_tree_host()->SetRootLayer(root_);
@@ -3661,7 +3661,7 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    int last_source_frame_number = layer_tree_host()->commit_number() - 1;
+    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
         layer_tree_host()->SetRootLayer(root_);
@@ -3709,7 +3709,7 @@ class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    int last_source_frame_number = layer_tree_host()->commit_number() - 1;
+    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
         layer_tree_host()->SetRootLayer(root_);
@@ -3777,7 +3777,7 @@ class LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    int last_source_frame_number = layer_tree_host()->commit_number() - 1;
+    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
         layer_tree_host()->SetRootLayer(root_);
@@ -3841,7 +3841,7 @@ class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    int last_source_frame_number = layer_tree_host()->commit_number() - 1;
+    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
         layer_tree_host()->SetRootLayer(root_);

@@ -38,7 +38,7 @@ class LayerTreeHostPictureTestTwinLayer
   }
 
   virtual void DidCommit() OVERRIDE {
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 2:
         // Drop the picture layer from the tree.
         layer_tree_host()->root_layer()->children()[0]->RemoveFromParent();

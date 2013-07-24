@@ -74,7 +74,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
   }
 
   virtual void DidCommit() OVERRIDE {
-    int next_frame = layer_tree_host()->commit_number();
+    int next_frame = layer_tree_host()->source_frame_number();
     switch (next_frame) {
       case 1:
         layer_tree_host()->SetNeedsCommit();
@@ -157,7 +157,7 @@ class LayerTreeHostDamageTestNoDamageReadbackDoesDraw
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    int next_frame = layer_tree_host()->commit_number();
+    int next_frame = layer_tree_host()->source_frame_number();
     switch (next_frame) {
       case 1: {
         char pixels[4];

@@ -87,8 +87,8 @@ bool PictureLayer::Update(ResourceUpdateQueue*,
 
   TRACE_EVENT1(benchmark_instrumentation::kCategory,
                benchmark_instrumentation::kPictureLayerUpdate,
-               benchmark_instrumentation::kCommitNumber,
-               layer_tree_host()->commit_number());
+               benchmark_instrumentation::kSourceFrameNumber,
+               layer_tree_host()->source_frame_number());
 
   pile_->Resize(paint_properties().bounds);
 

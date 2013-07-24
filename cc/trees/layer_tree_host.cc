@@ -82,7 +82,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       needs_full_tree_sync_(true),
       needs_filter_context_(false),
       client_(client),
-      commit_number_(0),
+      source_frame_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
       output_surface_can_be_initialized_(true),
       output_surface_lost_(true),
@@ -293,7 +293,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     sync_tree = host_impl->active_tree();
   }
 
-  sync_tree->set_source_frame_number(commit_number());
+  sync_tree->set_source_frame_number(source_frame_number());
 
   if (needs_full_tree_sync_)
     sync_tree->SetRootLayer(TreeSynchronizer::SynchronizeTrees(
@@ -367,7 +367,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     sync_tree->DidBecomeActive();
   }
 
-  commit_number_++;
+  source_frame_number_++;
 }
 
 void LayerTreeHost::WillCommit() {
@@ -696,8 +696,8 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
                                  ResourceUpdateQueue* queue) {
   TRACE_EVENT1(benchmark_instrumentation::kCategory,
                benchmark_instrumentation::kLayerTreeHostUpdateLayers,
-               benchmark_instrumentation::kCommitNumber,
-               commit_number());
+               benchmark_instrumentation::kSourceFrameNumber,
+               source_frame_number());
 
   RenderSurfaceLayerList update_list;
   {

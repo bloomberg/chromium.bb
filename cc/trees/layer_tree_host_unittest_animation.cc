@@ -492,7 +492,7 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
   }
 
   virtual void DidCommit() OVERRIDE {
-    if (layer_tree_host()->commit_number() == 1) {
+    if (layer_tree_host()->source_frame_number() == 1) {
       scoped_refptr<Layer> layer = Layer::Create();
       layer->set_layer_animation_delegate(this);
 
@@ -530,7 +530,7 @@ class LayerTreeHostAnimationTestCompositeAndReadbackAnimateCount
   virtual void Animate(base::TimeTicks) OVERRIDE {
     // We shouldn't animate on the CompositeAndReadback-forced commit, but we
     // should for the SetNeedsCommit-triggered commit.
-    animated_commit_ = layer_tree_host()->commit_number();
+    animated_commit_ = layer_tree_host()->source_frame_number();
     EXPECT_NE(2, animated_commit_);
   }
 
@@ -539,7 +539,7 @@ class LayerTreeHostAnimationTestCompositeAndReadbackAnimateCount
   }
 
   virtual void DidCommit() OVERRIDE {
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 1:
         layer_tree_host()->SetNeedsCommit();
         break;
@@ -751,7 +751,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // The animation is longer than 1 BeginFrame interval.
         AddOpacityTransitionToLayer(content_.get(), 0.1, 0.2f, 0.8f, false);

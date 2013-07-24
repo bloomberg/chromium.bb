@@ -38,7 +38,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
 
   virtual void Layout() OVERRIDE {
     Layer* root = layer_tree_host()->root_layer();
-    if (!layer_tree_host()->commit_number()) {
+    if (!layer_tree_host()->source_frame_number()) {
       EXPECT_VECTOR_EQ(initial_scroll_, root->scroll_offset());
     } else {
       EXPECT_VECTOR_EQ(initial_scroll_ + scroll_amount_, root->scroll_offset());
@@ -103,7 +103,7 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
 
   virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     Layer* root = layer_tree_host()->root_layer();
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 0:
         EXPECT_VECTOR_EQ(root->scroll_offset(), initial_scroll_);
         break;
@@ -300,7 +300,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     EXPECT_VECTOR_EQ(gfx::Vector2d(),
                      expected_no_scroll_layer_->scroll_offset());
 
-    switch (layer_tree_host()->commit_number()) {
+    switch (layer_tree_host()->source_frame_number()) {
       case 0:
         EXPECT_VECTOR_EQ(initial_offset_,
                          expected_scroll_layer_->scroll_offset());
@@ -559,7 +559,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
 
   virtual void Layout() OVERRIDE {
     Layer* root = layer_tree_host()->root_layer();
-    if (!layer_tree_host()->commit_number()) {
+    if (!layer_tree_host()->source_frame_number()) {
       EXPECT_VECTOR_EQ(root->scroll_offset(), initial_scroll_);
     } else {
       EXPECT_VECTOR_EQ(root->scroll_offset(),

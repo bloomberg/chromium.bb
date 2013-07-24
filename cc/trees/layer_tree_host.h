@@ -152,7 +152,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   // Test only hook
   virtual void DidDeferCommit();
 
-  int commit_number() const { return commit_number_; }
+  int source_frame_number() const { return source_frame_number_; }
 
   void SetNeedsDisplayOnAllLayers();
 
@@ -299,7 +299,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   LayerTreeHostClient* client_;
   scoped_ptr<Proxy> proxy_;
 
-  int commit_number_;
+  int source_frame_number_;
   scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
 
   bool output_surface_can_be_initialized_;

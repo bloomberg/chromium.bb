@@ -39,7 +39,7 @@ class StatsCollector(object):
     if start_event is None:
       raise LookupError, \
           'no LayterTreeHost::UpdateLayers after measureNextFrame found'
-    return start_event.args["commit_number"]
+    return start_event.args["source_frame_number"]
 
   def GatherRasterizeStats(self, frame_number):
     for event in self.timeline.GetAllEventsOfName(
@@ -60,7 +60,7 @@ class StatsCollector(object):
 
   def GatherRecordStats(self, frame_number):
     for event in self.timeline.GetAllEventsOfName("PictureLayer::Update"):
-      if event.args["commit_number"] == frame_number:
+      if event.args["source_frame_number"] == frame_number:
         for record_loop_event in event.GetAllSubSlicesOfName("RecordLoop"):
           best_record_time = float('inf')
           for record_event in record_loop_event.GetAllSubSlicesOfName(

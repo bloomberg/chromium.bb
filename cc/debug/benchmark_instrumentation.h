@@ -11,10 +11,9 @@ namespace cc {
 namespace benchmark_instrumentation {
 // Please do not change the string constants in this file (or the TRACE_EVENT
 // calls that use them) without updating
-// tools/perf/perf_tools/rasterize_and_record_benchmark.py accordingly.
+// tools/perf/measurements/rasterize_and_record_benchmark.py accordingly.
 // The benchmark searches for events and their arguments by name.
 const char kCategory[] = "cc,benchmark";
-const char kCommitNumber[] = "commit_number";
 const char kSourceFrameNumber[] = "source_frame_number";
 const char kData[] = "data";
 const char kWidth[] = "width";

@@ -1294,7 +1294,7 @@ class LayerTreeHostContextTestDontUseLostResources
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     ASSERT_TRUE(layer_tree_host()->hud_layer());
     // End the test once we know the 3nd frame drew.
-    if (layer_tree_host()->commit_number() == 4)
+    if (layer_tree_host()->source_frame_number() == 4)
       EndTest();
     else
       layer_tree_host()->SetNeedsCommit();
