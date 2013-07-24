@@ -2417,7 +2417,6 @@
             '../webkit/common/webkit_common.gyp:webkit_common',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
-            '../webkit/support/webkit_support.gyp:glue',
             '../webkit/webkit_resources.gyp:webkit_resources',
           ],
           'defines': [
@@ -2439,6 +2438,11 @@
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
             ['include', '^browser/ui/profile_error_dialog\\.cc$'],
+          ],
+        }],
+        ['OS!="ios" and chrome_multiple_dll!=1', {
+          'dependencies': [
+            '../webkit/support/webkit_support.gyp:glue',
           ],
         }],
         ['OS == "android"', {

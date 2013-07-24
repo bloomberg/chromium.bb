@@ -532,7 +532,6 @@
             '<(DEPTH)/third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '<(DEPTH)/third_party/re2/re2.gyp:re2',
             '<(DEPTH)/third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
-            '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
           ],
         }, {  # OS == ios
           'sources/': [
@@ -565,6 +564,11 @@
           ],
           'include_dirs': [
             '<(DEPTH)/breakpad/src',
+          ],
+        }],
+        ['OS!="ios" and chrome_multiple_dll!=1', {
+          'dependencies': [
+            '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
           ],
         }],
         ['OS=="android"', {

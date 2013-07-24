@@ -44,7 +44,6 @@
         '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
-        '../webkit/support/webkit_support.gyp:glue',
         '../webkit/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
@@ -970,6 +969,11 @@
             'browser/extensions/extension_tab_util.cc',
             'browser/extensions/platform_app_launcher.cc',
             'browser/extensions/platform_app_launcher.h',
+          ],
+        }],
+        ['chrome_multiple_dll!=1', {
+          'dependencies': [
+            '../webkit/support/webkit_support.gyp:glue',
           ],
         }],
       ],

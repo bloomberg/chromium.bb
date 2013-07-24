@@ -1197,13 +1197,17 @@
         '../net/net.gyp:http_server',
         '../printing/printing.gyp:printing',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../third_party/WebKit/public/blink.gyp:blink',
         '../ui/surface/surface.gyp:surface',
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
         '../webkit/webkit_resources.gyp:webkit_resources',
         '../webkit/webkit_resources.gyp:webkit_strings',
+      ],
+    }],
+    ['OS!="ios" and chrome_multiple_dll!=1', {
+      'dependencies': [
+        '../third_party/WebKit/public/blink.gyp:blink',
       ],
     }],
     ['OS!="mac" and OS!="ios"', {

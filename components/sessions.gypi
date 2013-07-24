@@ -25,7 +25,7 @@
         'sessions/serialized_navigation_entry.h',
       ],
       'conditions': [
-        ['OS != "ios"', {
+        ['OS != "ios" and chrome_multiple_dll != 1', {
           'dependencies': [
             '../webkit/support/webkit_support.gyp:glue',
           ]

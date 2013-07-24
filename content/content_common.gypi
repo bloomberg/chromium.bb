@@ -391,6 +391,10 @@
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
+      ],
+    }],
+    ['OS!="ios" and chrome_multiple_dll!=1', {
+      'dependencies': [
         '../webkit/support/webkit_support.gyp:glue',
       ],
     }],

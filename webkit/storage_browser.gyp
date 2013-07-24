@@ -14,7 +14,6 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/sql/sql.gyp:sql',
-        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/url/url.gyp:url_lib',
@@ -243,6 +242,14 @@
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
+
+      'conditions': [
+        ['chrome_multiple_dll!=1', {
+          'dependencies': [
+            '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'dump_file_system',

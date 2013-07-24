@@ -130,7 +130,6 @@
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/printing/printing.gyp:printing',
         '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
@@ -197,6 +196,11 @@
                  '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                ],
             }],
+          ],
+        }],
+        ['chrome_multiple_dll!=1', {
+          'dependencies': [
+            '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
           ],
         }],
       ],
