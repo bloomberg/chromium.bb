@@ -541,7 +541,7 @@ bool InputType::shouldUseInputMethod() const
     return false;
 }
 
-void InputType::handleFocusEvent(Node*, FocusDirection)
+void InputType::handleFocusEvent(Element*, FocusDirection)
 {
 }
 

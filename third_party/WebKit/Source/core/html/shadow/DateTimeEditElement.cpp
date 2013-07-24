@@ -552,10 +552,10 @@ void DateTimeEditElement::focusIfNoFocus()
     focusOnNextFocusableField(0);
 }
 
-void DateTimeEditElement::focusByOwner(Node* oldFocusedNode)
+void DateTimeEditElement::focusByOwner(Element* oldFocusedElement)
 {
-    if (oldFocusedNode && oldFocusedNode->isElementNode() && toElement(oldFocusedNode)->isDateTimeFieldElement()) {
-        DateTimeFieldElement* oldFocusedField = static_cast<DateTimeFieldElement*>(oldFocusedNode);
+    if (oldFocusedElement && oldFocusedElement->isDateTimeFieldElement()) {
+        DateTimeFieldElement* oldFocusedField = static_cast<DateTimeFieldElement*>(oldFocusedElement);
         size_t index = fieldIndexOf(*oldFocusedField);
         if (index != invalidFieldIndex && oldFocusedField->isFocusable()) {
             oldFocusedField->focus();

@@ -130,9 +130,9 @@ bool PasswordInputType::isPasswordField() const
     return true;
 }
 
-void PasswordInputType::handleFocusEvent(Node* oldFocusedNode, FocusDirection direction)
+void PasswordInputType::handleFocusEvent(Element* oldFocusedElement, FocusDirection direction)
 {
-    BaseTextInputType::handleFocusEvent(oldFocusedNode, direction);
+    BaseTextInputType::handleFocusEvent(oldFocusedElement, direction);
     if (element()->document()->frame())
         element()->document()->setUseSecureKeyboardEntryWhenActive(true);
 }

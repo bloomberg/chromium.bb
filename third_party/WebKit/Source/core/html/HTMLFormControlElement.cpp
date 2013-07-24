@@ -327,10 +327,10 @@ bool HTMLFormControlElement::shouldShowFocusRingOnMouseFocus() const
     return false;
 }
 
-void HTMLFormControlElement::dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection direction)
+void HTMLFormControlElement::dispatchFocusEvent(Element* oldFocusedElement, FocusDirection direction)
 {
     m_wasFocusedByMouse = direction == FocusDirectionMouse;
-    HTMLElement::dispatchFocusEvent(oldFocusedNode, direction);
+    HTMLElement::dispatchFocusEvent(oldFocusedElement, direction);
 }
 
 bool HTMLFormControlElement::shouldHaveFocusAppearance() const
@@ -469,9 +469,9 @@ void HTMLFormControlElement::setCustomValidity(const String& error)
     setNeedsValidityCheck();
 }
 
-void HTMLFormControlElement::dispatchBlurEvent(PassRefPtr<Node> newFocusedNode)
+void HTMLFormControlElement::dispatchBlurEvent(Element* newFocusedElement)
 {
-    HTMLElement::dispatchBlurEvent(newFocusedNode);
+    HTMLElement::dispatchBlurEvent(newFocusedElement);
     hideVisibleValidationMessage();
 }
 

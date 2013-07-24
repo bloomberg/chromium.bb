@@ -121,12 +121,11 @@ protected:
     virtual bool isKeyboardFocusable(KeyboardEvent*) const;
     virtual bool shouldShowFocusRingOnMouseFocus() const;
     virtual bool shouldHaveFocusAppearance() const OVERRIDE;
-    virtual void dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection) OVERRIDE;
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE;
+    virtual void dispatchBlurEvent(Element* newFocusedElement) OVERRIDE;
     virtual void willCallDefaultEventHandler(const Event&) OVERRIDE;
 
     virtual void didRecalcStyle(StyleChange) OVERRIDE;
-
-    virtual void dispatchBlurEvent(PassRefPtr<Node> newFocusedNode);
 
     // This must be called any time the result of willValidate() has changed.
     void setNeedsWillValidateCheck();

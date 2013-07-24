@@ -669,8 +669,8 @@ public:
 
     void dispatchSubtreeModifiedEvent();
     bool dispatchDOMActivateEvent(int detail, PassRefPtr<Event> underlyingEvent);
-    void dispatchFocusInEvent(const AtomicString& eventType, PassRefPtr<Node> oldFocusedNode);
-    void dispatchFocusOutEvent(const AtomicString& eventType, PassRefPtr<Node> newFocusedNode);
+    void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement);
+    void dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement);
 
     bool dispatchKeyEvent(const PlatformKeyboardEvent&);
     bool dispatchWheelEvent(const PlatformWheelEvent&);
@@ -681,8 +681,8 @@ public:
     void dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions = SendNoEvents, SimulatedClickVisualOptions = ShowPressedLook);
 
     virtual bool dispatchBeforeLoadEvent(const String& sourceURL);
-    virtual void dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection);
-    virtual void dispatchBlurEvent(PassRefPtr<Node> newFocusedNode);
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection);
+    virtual void dispatchBlurEvent(Element* newFocusedElement);
     virtual void dispatchChangeEvent();
     virtual void dispatchInputEvent();
 

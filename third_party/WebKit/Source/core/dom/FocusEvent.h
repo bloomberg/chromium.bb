@@ -46,7 +46,7 @@ public:
         return adoptRef(new FocusEvent);
     }
 
-    static PassRefPtr<FocusEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view, int detail, PassRefPtr<EventTarget> relatedTarget)
+    static PassRefPtr<FocusEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view, int detail, EventTarget* relatedTarget)
     {
         return adoptRef(new FocusEvent(type, canBubble, cancelable, view, detail, relatedTarget));
     }
@@ -57,14 +57,14 @@ public:
     }
 
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
-    void setRelatedTarget(PassRefPtr<EventTarget> relatedTarget) { m_relatedTarget = relatedTarget; }
+    void setRelatedTarget(EventTarget* relatedTarget) { m_relatedTarget = relatedTarget; }
 
     virtual const AtomicString& interfaceName() const;
     virtual bool isFocusEvent() const;
 
 private:
     FocusEvent();
-    FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>, int, PassRefPtr<EventTarget>);
+    FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>, int, EventTarget*);
     FocusEvent(const AtomicString& type, const FocusEventInit&);
 
     RefPtr<EventTarget> m_relatedTarget;

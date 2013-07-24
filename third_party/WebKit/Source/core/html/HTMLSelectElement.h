@@ -119,8 +119,8 @@ private:
     
     virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE;
 
-    virtual void dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection) OVERRIDE;
-    virtual void dispatchBlurEvent(PassRefPtr<Node> newFocusedNode);
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE;
+    virtual void dispatchBlurEvent(Element* newFocusedElemnet) OVERRIDE;
     
     virtual bool canStartSelection() const { return false; }
 

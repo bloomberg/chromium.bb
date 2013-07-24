@@ -2356,18 +2356,18 @@ void Node::dispatchSubtreeModifiedEvent()
     dispatchScopedEvent(MutationEvent::create(eventNames().DOMSubtreeModifiedEvent, true));
 }
 
-void Node::dispatchFocusInEvent(const AtomicString& eventType, PassRefPtr<Node> oldFocusedNode)
+void Node::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     ASSERT(eventType == eventNames().focusinEvent || eventType == eventNames().DOMFocusInEvent);
-    dispatchScopedEventDispatchMediator(FocusInEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, oldFocusedNode)));
+    dispatchScopedEventDispatchMediator(FocusInEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, oldFocusedElement)));
 }
 
-void Node::dispatchFocusOutEvent(const AtomicString& eventType, PassRefPtr<Node> newFocusedNode)
+void Node::dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     ASSERT(eventType == eventNames().focusoutEvent || eventType == eventNames().DOMFocusOutEvent);
-    dispatchScopedEventDispatchMediator(FocusOutEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, newFocusedNode)));
+    dispatchScopedEventDispatchMediator(FocusOutEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, newFocusedElement)));
 }
 
 bool Node::dispatchDOMActivateEvent(int detail, PassRefPtr<Event> underlyingEvent)
@@ -2424,15 +2424,15 @@ bool Node::dispatchWheelEvent(const PlatformWheelEvent& event)
     return EventDispatcher::dispatchEvent(this, WheelEventDispatchMediator::create(event, document()->defaultView()));
 }
 
-void Node::dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection)
+void Node::dispatchFocusEvent(Element* oldFocusedElement, FocusDirection)
 {
-    RefPtr<FocusEvent> event = FocusEvent::create(eventNames().focusEvent, false, false, document()->defaultView(), 0, oldFocusedNode);
+    RefPtr<FocusEvent> event = FocusEvent::create(eventNames().focusEvent, false, false, document()->defaultView(), 0, oldFocusedElement);
     EventDispatcher::dispatchEvent(this, FocusEventDispatchMediator::create(event.release()));
 }
 
-void Node::dispatchBlurEvent(PassRefPtr<Node> newFocusedNode)
+void Node::dispatchBlurEvent(Element* newFocusedElement)
 {
-    RefPtr<FocusEvent> event = FocusEvent::create(eventNames().blurEvent, false, false, document()->defaultView(), 0, newFocusedNode);
+    RefPtr<FocusEvent> event = FocusEvent::create(eventNames().blurEvent, false, false, document()->defaultView(), 0, newFocusedElement);
     EventDispatcher::dispatchEvent(this, BlurEventDispatchMediator::create(event.release()));
 }
 

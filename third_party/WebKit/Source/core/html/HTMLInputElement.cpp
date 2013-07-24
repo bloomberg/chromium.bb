@@ -407,9 +407,9 @@ bool HTMLInputElement::shouldUseInputMethod()
     return m_inputType->shouldUseInputMethod();
 }
 
-void HTMLInputElement::handleFocusEvent(Node* oldFocusedNode, FocusDirection direction)
+void HTMLInputElement::handleFocusEvent(Element* oldFocusedElement, FocusDirection direction)
 {
-    m_inputType->handleFocusEvent(oldFocusedNode, direction);
+    m_inputType->handleFocusEvent(oldFocusedElement, direction);
 }
 
 void HTMLInputElement::handleBlurEvent()

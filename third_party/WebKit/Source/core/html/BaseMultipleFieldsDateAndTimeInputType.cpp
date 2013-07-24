@@ -371,7 +371,7 @@ void BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree()
     m_isDestroyingShadowSubtree = false;
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::handleFocusEvent(Node* oldFocusedNode, FocusDirection direction)
+void BaseMultipleFieldsDateAndTimeInputType::handleFocusEvent(Element* oldFocusedElement, FocusDirection direction)
 {
     DateTimeEditElement* edit = dateTimeEditElement();
     if (!edit || m_isDestroyingShadowSubtree)
@@ -380,7 +380,7 @@ void BaseMultipleFieldsDateAndTimeInputType::handleFocusEvent(Node* oldFocusedNo
         if (element()->document()->page())
             element()->document()->page()->focusController()->advanceFocus(direction, 0);
     } else if (direction == FocusDirectionNone || direction == FocusDirectionMouse) {
-        edit->focusByOwner(oldFocusedNode);
+        edit->focusByOwner(oldFocusedElement);
     } else
         edit->focusByOwner();
 }

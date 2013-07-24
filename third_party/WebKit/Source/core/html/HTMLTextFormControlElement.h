@@ -121,15 +121,15 @@ private:
     // https://bugs.webkit.org/show_bug.cgi?id=92608
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
-    virtual void dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection) OVERRIDE;
-    virtual void dispatchBlurEvent(PassRefPtr<Node> newFocusedNode);
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE;
+    virtual void dispatchBlurEvent(Element* newFocusedElement) OVERRIDE;
 
     // Returns true if user-editable value is empty. Used to check placeholder visibility.
     virtual bool isEmptyValue() const = 0;
     // Returns true if suggested value is empty. Used to check placeholder visibility.
     virtual bool isEmptySuggestedValue() const { return true; }
     // Called in dispatchFocusEvent(), after placeholder process, before calling parent's dispatchFocusEvent().
-    virtual void handleFocusEvent(Node* /* oldFocusedNode */, FocusDirection) { }
+    virtual void handleFocusEvent(Element* /* oldFocusedNode */, FocusDirection) { }
     // Called in dispatchBlurEvent(), after placeholder process, before calling parent's dispatchBlurEvent().
     virtual void handleBlurEvent() { }
 

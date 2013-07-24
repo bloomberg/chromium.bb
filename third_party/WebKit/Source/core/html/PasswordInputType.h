@@ -55,7 +55,7 @@ private:
     virtual bool shouldRespectListAttribute() OVERRIDE;
     virtual bool shouldRespectSpeechAttribute() OVERRIDE;
     virtual bool isPasswordField() const OVERRIDE;
-    virtual void handleFocusEvent(Node* oldFocusedNode, FocusDirection) OVERRIDE;
+    virtual void handleFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE;
     virtual void handleBlurEvent() OVERRIDE;
 
     bool isPasswordGenerationEnabled() const;

@@ -53,7 +53,7 @@ FocusEvent::FocusEvent()
     ScriptWrappable::init(this);
 }
 
-FocusEvent::FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view, int detail, PassRefPtr<EventTarget> relatedTarget)
+FocusEvent::FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view, int detail, EventTarget* relatedTarget)
     : UIEvent(type, canBubble, cancelable, view, detail)
     , m_relatedTarget(relatedTarget)
 {
