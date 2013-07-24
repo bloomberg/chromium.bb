@@ -1692,11 +1692,10 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostMainMessageLoopRun();
 
-  // Some tests don't set parameters.ui_task, so they started translate
-  // language fetch that was never completed so we need to cleanup here
+  // TranslateManager's URL fetchers should be destructed in the main thread
   // otherwise it will be done by the destructor in a wrong thread.
-  if (parameters().ui_task == NULL && translate_manager_ != NULL)
-    translate_manager_->CleanupPendingUlrFetcher();
+  if (translate_manager_ != NULL)
+    translate_manager_->CleanupPendingUrlFetcher();
 
   if (notify_result_ == ProcessSingleton::PROCESS_NONE)
     process_singleton_->Cleanup();

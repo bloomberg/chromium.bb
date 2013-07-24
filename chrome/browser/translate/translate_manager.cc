@@ -84,6 +84,10 @@ const int kMaxTranslateLoadCheckAttempts = 20;
 }  // namespace
 
 TranslateManager::~TranslateManager() {
+  // CleanupPendingUrlFetcher should be called ahead of destructing.
+  DCHECK(language_list_.get() == NULL);
+  DCHECK(script_.get() == NULL);
+
   weak_method_factory_.InvalidateWeakPtrs();
 }
 
@@ -634,7 +638,7 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
     NOTREACHED();
 }
 
-void TranslateManager::CleanupPendingUlrFetcher() {
+void TranslateManager::CleanupPendingUrlFetcher() {
   language_list_.reset();
   script_.reset();
 }
