@@ -36,13 +36,11 @@ class GpuVideoDecoderFactories;
 namespace content {
 
 // This class uses hardware accelerated video decoder to decode video for
-// WebRTC. The message loop of RendererGpuVideoDecoderFactories is stored as
-// |vda_message_loop_|. It is the compositor thread, or the renderer thread if
-// threaded compositing is disabled. VDA::Client methods run on
-// |vda_message_loop_|. webrtc::VideoDecoder methods run on WebRTC
+// WebRTC. |vda_message_loop_| is the message loop proxy of the media thread,
+// which VDA::Client methods run on. webrtc::VideoDecoder methods run on WebRTC
 // DecodingThread or Chrome_libJingle_WorkerThread, which are trampolined to
 // |vda_message_loop_|. Decode() is non-blocking and queues the buffers. Decoded
-// frames are delivered on |vda_message_loop_|.
+// frames are delivered to WebRTC on |vda_message_loop_|.
 class CONTENT_EXPORT RTCVideoDecoder
     : NON_EXPORTED_BASE(public webrtc::VideoDecoder),
       public media::VideoDecodeAccelerator::Client,
@@ -50,8 +48,10 @@ class CONTENT_EXPORT RTCVideoDecoder
  public:
   virtual ~RTCVideoDecoder();
 
-  // Creates a RTCVideoDecoder. Returns NULL if failed.
+  // Creates a RTCVideoDecoder. Returns NULL if failed. The video decoder will
+  // run on the message loop of |factories|.
   static scoped_ptr<RTCVideoDecoder> Create(
+      webrtc::VideoCodecType type,
       const scoped_refptr<media::GpuVideoDecoderFactories>& factories);
 
   // webrtc::VideoDecoder implementation.
@@ -111,6 +111,7 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsBufferAfterReset);
 
+  // The meessage loop of |factories| will be saved to |vda_loop_proxy_|.
   RTCVideoDecoder(
       const scoped_refptr<media::GpuVideoDecoderFactories>& factories);
 
@@ -198,17 +199,8 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   scoped_refptr<media::GpuVideoDecoderFactories> factories_;
 
-  // The message loop to run callbacks on. This is should be the same as the one
-  // of |factories_|.
+  // The message loop to run callbacks on. This is from |factories_|.
   scoped_refptr<base::MessageLoopProxy> vda_loop_proxy_;
-
-  // The thread to create shared memory. CreateSharedMemory is trampolined to
-  // the child thread. When |vda_loop_proxy_| is the compositor thread, blocking
-  // on the child thread will deadlock. During WebRTC hang up, the child thread
-  // waits for Chrome_libJingle_WorkerThread. libJingle thread cannot finish
-  // when DecodingThread holds a WebRTC lock and blocks on the child thread. So
-  // we need to call CreateSharedMemory asynchronously from a different thread.
-  base::Thread create_shm_thread_;
 
   // The texture target used for decoded pictures.
   uint32 decoder_texture_target_;

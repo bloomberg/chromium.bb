@@ -27,17 +27,16 @@ namespace media {
 
 class DecoderBuffer;
 class GpuVideoDecoderFactories;
-class VDAClientProxy;
 
 // GPU-accelerated video decoder implementation.  Relies on
 // AcceleratedVideoDecoderMsg_Decode and friends.
-// All methods internally trampoline to the |message_loop| passed to the ctor.
 class MEDIA_EXPORT GpuVideoDecoder
     : public VideoDecoder,
       public VideoDecodeAccelerator::Client {
  public:
-  GpuVideoDecoder(const scoped_refptr<base::MessageLoopProxy>& message_loop,
-                  const scoped_refptr<GpuVideoDecoderFactories>& factories);
+  // The message loop of |factories| will be saved to |gvd_loop_proxy_|.
+  explicit GpuVideoDecoder(
+      const scoped_refptr<GpuVideoDecoderFactories>& factories);
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
@@ -92,13 +91,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   void GetBufferData(int32 id, base::TimeDelta* timetamp,
                      gfx::Rect* visible_rect, gfx::Size* natural_size);
 
-  // Sets |vda_| and |weak_vda_| on the GVD thread and runs |status_cb|.
-  void SetVDA(const PipelineStatusCB& status_cb,
-              VideoDecodeAccelerator* vda,
-              base::WeakPtr<VideoDecodeAccelerator> weak_vda);
-
-  // Call VDA::Destroy() on |vda_loop_proxy_| ensuring that |this| outlives the
-  // Destroy() call.
   void DestroyVDA();
 
   // A shared memory segment and its allocated size.
@@ -120,28 +112,16 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   bool needs_bitstream_conversion_;
 
-  // Message loop on which to fire callbacks and trampoline calls to this class
-  // if they arrive on other loops.
+  // Message loop which this class and |factories_| run on.
   scoped_refptr<base::MessageLoopProxy> gvd_loop_proxy_;
   base::WeakPtrFactory<GpuVideoDecoder> weak_factory_;
   base::WeakPtr<GpuVideoDecoder> weak_this_;
 
-  // Message loop on which to makes all calls to vda_.  (beware this loop may be
-  // paused during the Pause/Flush/Stop dance PipelineImpl::Stop() goes
-  // through).
-  scoped_refptr<base::MessageLoopProxy> vda_loop_proxy_;
-
   scoped_refptr<GpuVideoDecoderFactories> factories_;
 
-  // Proxies calls from |vda_| to |gvd_loop_proxy_| and used to safely detach
-  // during shutdown.
-  scoped_refptr<VDAClientProxy> client_proxy_;
-
-  // Populated during Initialize() via SetVDA() (on success) and unchanged
-  // until an error occurs.
+  // Populated during Initialize() (on success) and unchanged until an error
+  // occurs.
   scoped_ptr<VideoDecodeAccelerator> vda_;
-  // Used to post tasks from the GVD thread to the VDA thread safely.
-  base::WeakPtr<VideoDecodeAccelerator> weak_vda_;
 
   // Callbacks that are !is_null() only during their respective operation being
   // asynchronously executed.

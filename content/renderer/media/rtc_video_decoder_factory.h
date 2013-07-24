@@ -20,12 +20,14 @@ class VideoDecoder;
 }
 
 namespace content {
+class RendererGpuVideoDecoderFactories;
 
+// TODO(wuchengli): add unittest.
 class CONTENT_EXPORT RTCVideoDecoderFactory
     : NON_EXPORTED_BASE(public cricket::WebRtcVideoDecoderFactory) {
  public:
-  RTCVideoDecoderFactory(
-      const scoped_refptr<media::GpuVideoDecoderFactories>& gpu_factories);
+  explicit RTCVideoDecoderFactory(
+      const scoped_refptr<RendererGpuVideoDecoderFactories>& gpu_factories);
   virtual ~RTCVideoDecoderFactory();
 
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
@@ -38,8 +40,7 @@ class CONTENT_EXPORT RTCVideoDecoderFactory
   virtual void DestroyVideoDecoder(webrtc::VideoDecoder* decoder) OVERRIDE;
 
  private:
-  scoped_refptr<base::MessageLoopProxy> vda_loop_proxy_;
-  scoped_ptr<webrtc::VideoDecoder> decoder_;
+  scoped_refptr<RendererGpuVideoDecoderFactories> gpu_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderFactory);
 };

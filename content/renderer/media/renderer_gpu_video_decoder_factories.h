@@ -32,9 +32,8 @@ class WebGraphicsContext3DCommandBufferImpl;
 //
 // The public methods of the class can be called from any thread, and are
 // internally trampolined to the appropriate thread.  GPU/GL-related calls go to
-// the constructor-argument loop (mostly that's the compositor thread, or the
-// renderer thread if threaded compositing is disabled), and shmem-related calls
-// go to the render thread.
+// the constructor-argument loop (the media thread), and shmem-related calls go
+// to the render thread.
 class CONTENT_EXPORT RendererGpuVideoDecoderFactories
     : public media::GpuVideoDecoderFactories {
  public:
@@ -42,7 +41,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   // use.
   RendererGpuVideoDecoderFactories(
       GpuChannelHost* gpu_channel_host,
-      const scoped_refptr<base::MessageLoopProxy>& compositor_message_loop,
+      const scoped_refptr<base::MessageLoopProxy>& message_loop,
       WebGraphicsContext3DCommandBufferImpl* wgc3dcbi);
 
   // media::GpuVideoDecoderFactories implementation.
@@ -67,20 +66,25 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   virtual void Abort() OVERRIDE;
   virtual bool IsAborted() OVERRIDE;
 
+  // Makes a copy of |this|.
+  scoped_refptr<media::GpuVideoDecoderFactories> Clone();
+
  protected:
   friend class base::RefCountedThreadSafe<RendererGpuVideoDecoderFactories>;
   virtual ~RendererGpuVideoDecoderFactories();
 
  private:
-  // Helper for the constructor to acquire the ContentGLContext on the
-  // compositor thread (when it is enabled).
+  RendererGpuVideoDecoderFactories();
+
+  // Helper for the constructor to acquire the ContentGLContext on
+  // |message_loop_|.
   void AsyncGetContext(WebGraphicsContext3DCommandBufferImpl* context);
 
   // Async versions of the public methods.  They use output parameters instead
   // of return values and each takes a WaitableEvent* param to signal completion
   // (except for DeleteTexture, which is fire-and-forget).
   // AsyncCreateSharedMemory runs on the renderer thread and the rest run on
-  // |compositor_message_loop_|.
+  // |message_loop_|.
   // The AsyncCreateVideoDecodeAccelerator returns its output in the vda_
   // member.
   void AsyncCreateVideoDecodeAccelerator(
@@ -95,7 +99,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   void AsyncCreateSharedMemory(size_t size);
   void AsyncDestroyVideoDecodeAccelerator();
 
-  scoped_refptr<base::MessageLoopProxy> compositor_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_refptr<base::MessageLoopProxy> main_message_loop_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
   base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> context_;
@@ -103,10 +107,10 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   // This event is signaled if we have been asked to Abort().
   base::WaitableEvent aborted_waiter_;
 
-  // This event is signaled by asynchronous tasks posted to the compositor
-  // message loop to indicate their completion.
+  // This event is signaled by asynchronous tasks posted to |message_loop_| to
+  // indicate their completion.
   // e.g. AsyncCreateVideoDecodeAccelerator()/AsyncCreateTextures() etc.
-  base::WaitableEvent compositor_loop_async_waiter_;
+  base::WaitableEvent message_loop_async_waiter_;
 
   // This event is signaled by asynchronous tasks posted to the renderer thread
   // message loop to indicate their completion. e.g. AsyncCreateSharedMemory.
@@ -126,7 +130,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   std::vector<uint32> created_textures_;
   std::vector<gpu::Mailbox> created_texture_mailboxes_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(RendererGpuVideoDecoderFactories);
+  DISALLOW_COPY_AND_ASSIGN(RendererGpuVideoDecoderFactories);
 };
 
 }  // namespace content

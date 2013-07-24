@@ -498,8 +498,10 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
 
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
     if (cmd_line->HasSwitch(switches::kEnableWebRtcHWDecoding)) {
-      scoped_refptr<media::GpuVideoDecoderFactories> gpu_factories =
-          RenderThreadImpl::current()->GetGpuFactories();
+      scoped_refptr<base::MessageLoopProxy> media_loop_proxy =
+          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy();
+      scoped_refptr<RendererGpuVideoDecoderFactories> gpu_factories =
+          RenderThreadImpl::current()->GetGpuFactories(media_loop_proxy);
       if (gpu_factories.get() != NULL)
         decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
     }

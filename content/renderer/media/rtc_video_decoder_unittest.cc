@@ -36,19 +36,25 @@ class RTCVideoDecoderTest : public ::testing::Test,
     mock_vda_ = new media::MockVideoDecodeAccelerator;
     EXPECT_CALL(*mock_gpu_factories_, GetMessageLoop())
         .WillRepeatedly(Return(vda_loop_proxy_));
+    EXPECT_CALL(*mock_gpu_factories_, CreateVideoDecodeAccelerator(_, _))
+        .WillRepeatedly(
+             Return(static_cast<media::VideoDecodeAccelerator*>(NULL)));
     EXPECT_CALL(*mock_gpu_factories_,
                 CreateVideoDecodeAccelerator(media::VP8PROFILE_MAIN, _))
-        .WillOnce(Return(mock_vda_));
+        .WillRepeatedly(Return(mock_vda_));
     EXPECT_CALL(*mock_gpu_factories_, Abort()).WillRepeatedly(Return());
     EXPECT_CALL(*mock_gpu_factories_, CreateSharedMemory(_))
         .WillRepeatedly(Return(static_cast<base::SharedMemory*>(NULL)));
     EXPECT_CALL(*mock_vda_, Destroy());
-    rtc_decoder_ = RTCVideoDecoder::Create(mock_gpu_factories_);
+    rtc_decoder_ =
+        RTCVideoDecoder::Create(webrtc::kVideoCodecVP8, mock_gpu_factories_);
   }
 
   virtual void TearDown() OVERRIDE {
     VLOG(2) << "TearDown";
     if (vda_thread_.IsRunning()) {
+      if (rtc_decoder_)
+        rtc_decoder_->Release();
       RunUntilIdle();  // Wait until all callbascks complete.
       vda_loop_proxy_->DeleteSoon(FROM_HERE, rtc_decoder_.release());
       // Make sure the decoder is released before stopping the thread.
@@ -102,6 +108,12 @@ class RTCVideoDecoderTest : public ::testing::Test,
   base::WaitableEvent idle_waiter_;
 };
 
+TEST_F(RTCVideoDecoderTest, CreateReturnsNullOnUnsupportedCodec) {
+  scoped_ptr<RTCVideoDecoder> null_rtc_decoder(
+      RTCVideoDecoder::Create(webrtc::kVideoCodecI420, mock_gpu_factories_));
+  EXPECT_EQ(NULL, null_rtc_decoder.get());
+}
+
 TEST_F(RTCVideoDecoderTest, InitDecodeReturnsErrorOnFeedbackMode) {
   codec_.codecType = webrtc::kVideoCodecVP8;
   codec_.codecSpecific.VP8.feedbackModeOn = true;
@@ -140,8 +152,6 @@ TEST_F(RTCVideoDecoderTest, ResetReturnsOk) {
 
 TEST_F(RTCVideoDecoderTest, ReleaseReturnsOk) {
   Initialize();
-  EXPECT_CALL(*mock_vda_, Reset())
-      .WillOnce(Invoke(this, &RTCVideoDecoderTest::NotifyResetDone));
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->Release());
 }
 

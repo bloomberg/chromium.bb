@@ -73,8 +73,7 @@ RTCVideoDecoder::RTCVideoDecoder(
     : weak_factory_(this),
       weak_this_(weak_factory_.GetWeakPtr()),
       factories_(factories),
-      vda_loop_proxy_(factories_->GetMessageLoop()),
-      create_shm_thread_("CreateSHMThread"),
+      vda_loop_proxy_(factories->GetMessageLoop()),
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       state_(UNINITIALIZED),
@@ -82,35 +81,25 @@ RTCVideoDecoder::RTCVideoDecoder(
       num_shm_buffers_(0),
       next_bitstream_buffer_id_(0),
       reset_bitstream_buffer_id_(ID_INVALID) {
-  create_shm_thread_.Start();
-  // Initialize directly if |vda_loop_proxy_| is the renderer thread.
-  base::WaitableEvent compositor_loop_async_waiter(false, false);
-  if (vda_loop_proxy_->BelongsToCurrentThread()) {
-    Initialize(&compositor_loop_async_waiter);
-    return;
-  }
-  // Post the task if |vda_loop_proxy_| is the compositor thread. Waiting here
-  // is safe because the compositor thread will not be stopped until the
-  // renderer thread shuts down.
+  DCHECK(!vda_loop_proxy_->BelongsToCurrentThread());
+  base::WaitableEvent message_loop_async_waiter(false, false);
+  // Waiting here is safe. The media thread is stopped in the child thread and
+  // the child thread is blocked when VideoDecoderFactory::CreateVideoDecoder
+  // runs.
   vda_loop_proxy_->PostTask(FROM_HERE,
                             base::Bind(&RTCVideoDecoder::Initialize,
                                        base::Unretained(this),
-                                       &compositor_loop_async_waiter));
-  compositor_loop_async_waiter.Wait();
+                                       &message_loop_async_waiter));
+  message_loop_async_waiter.Wait();
 }
 
 RTCVideoDecoder::~RTCVideoDecoder() {
   DVLOG(2) << "~RTCVideoDecoder";
-  factories_->Abort();
-  create_shm_thread_.Stop();
-  // Delete vda and remove |this| from the observer if vda thread is alive.
-  if (vda_loop_proxy_->BelongsToCurrentThread()) {
+  // Remove |this| from the observer if vda thread is alive.
+  if (vda_loop_proxy_->BelongsToCurrentThread())
     base::MessageLoop::current()->RemoveDestructionObserver(this);
-    DestroyVDA();
-  } else {
-    // VDA should have been destroyed in WillDestroyCurrentMessageLoop.
-    DCHECK(!vda_);
-  }
+  // VDA should have been destroyed.
+  DCHECK(!vda_);
 
   // Delete all shared memories.
   STLDeleteElements(&available_shm_segments_);
@@ -129,10 +118,23 @@ RTCVideoDecoder::~RTCVideoDecoder() {
 }
 
 scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
+    webrtc::VideoCodecType type,
     const scoped_refptr<media::GpuVideoDecoderFactories>& factories) {
-  scoped_ptr<RTCVideoDecoder> decoder(new RTCVideoDecoder(factories));
-  decoder->vda_.reset(factories->CreateVideoDecodeAccelerator(
-      media::VP8PROFILE_MAIN, decoder.get()));
+  scoped_ptr<RTCVideoDecoder> decoder;
+  // Convert WebRTC codec type to media codec profile.
+  media::VideoCodecProfile profile;
+  switch (type) {
+    case webrtc::kVideoCodecVP8:
+      profile = media::VP8PROFILE_MAIN;
+      break;
+    default:
+      DVLOG(2) << "Video codec not supported:" << type;
+      return decoder.Pass();
+  }
+
+  decoder.reset(new RTCVideoDecoder(factories));
+  decoder->vda_
+      .reset(factories->CreateVideoDecodeAccelerator(profile, decoder.get()));
   // vda can be NULL if VP8 is not supported.
   if (decoder->vda_ != NULL) {
     decoder->state_ = INITIALIZED;
@@ -158,14 +160,11 @@ int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
   }
   // Create some shared memory if the queue is empty.
   if (available_shm_segments_.size() == 0) {
-    // Unretained is safe because the destructor will wait until
-    // |create_shm_thread_| stops.
-    create_shm_thread_.message_loop_proxy()
-        ->PostTask(FROM_HERE,
-                   base::Bind(&RTCVideoDecoder::CreateSHM,
-                              base::Unretained(this),
-                              kMaxInFlightDecodes,
-                              kSharedMemorySegmentBytes));
+    vda_loop_proxy_->PostTask(FROM_HERE,
+                              base::Bind(&RTCVideoDecoder::CreateSHM,
+                                         weak_this_,
+                                         kMaxInFlightDecodes,
+                                         kSharedMemorySegmentBytes));
   }
   return WEBRTC_VIDEO_CODEC_OK;
 }
@@ -232,9 +231,19 @@ int32_t RTCVideoDecoder::RegisterDecodeCompleteCallback(
 
 int32_t RTCVideoDecoder::Release() {
   DVLOG(2) << "Release";
-  // Do not destroy VDA because the decoder will be recycled by
-  // RTCVideoDecoderFactory. Just reset VDA.
-  return Reset();
+  base::AutoLock auto_lock(lock_);
+  if (state_ == UNINITIALIZED) {
+    LOG(ERROR) << "Decoder not initialized.";
+    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
+  }
+  if (next_bitstream_buffer_id_ != 0)
+    reset_bitstream_buffer_id_ = next_bitstream_buffer_id_ - 1;
+  else
+    reset_bitstream_buffer_id_ = ID_LAST;
+  factories_->Abort();
+  vda_loop_proxy_->PostTask(
+      FROM_HERE, base::Bind(&RTCVideoDecoder::DestroyVDA, weak_this_));
+  return WEBRTC_VIDEO_CODEC_OK;
 }
 
 int32_t RTCVideoDecoder::Reset() {
@@ -661,16 +670,13 @@ scoped_ptr<RTCVideoDecoder::SHMBuffer> RTCVideoDecoder::GetSHM_Locked(
     ret = available_shm_segments_.back();
     available_shm_segments_.pop_back();
   }
-  // Post to the child thread to create shared memory if SHM cannot be reused
-  // or the queue is almost empty.
+  // Post to vda thread to create shared memory if SHM cannot be reused or the
+  // queue is almost empty.
   if (num_shm_buffers_ < kMaxNumSharedMemorySegments &&
       (ret == NULL || available_shm_segments_.size() <= 1)) {
-    create_shm_thread_.message_loop_proxy()->PostTask(
+    vda_loop_proxy_->PostTask(
         FROM_HERE,
-        // Unretained is safe because the destructor will wait until
-        // |create_shm_thread_| stops.
-        base::Bind(
-            &RTCVideoDecoder::CreateSHM, base::Unretained(this), 1, min_size));
+        base::Bind(&RTCVideoDecoder::CreateSHM, weak_this_, 1, min_size));
   }
   return scoped_ptr<SHMBuffer>(ret);
 }
@@ -680,7 +686,7 @@ void RTCVideoDecoder::PutSHM_Locked(scoped_ptr<SHMBuffer> shm_buffer) {
 }
 
 void RTCVideoDecoder::CreateSHM(int number, size_t min_size) {
-  DCHECK(create_shm_thread_.message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(vda_loop_proxy_->BelongsToCurrentThread());
   DVLOG(2) << "CreateSHM. size=" << min_size;
   int number_to_allocate;
   {
@@ -696,12 +702,10 @@ void RTCVideoDecoder::CreateSHM(int number, size_t min_size) {
       num_shm_buffers_++;
       PutSHM_Locked(
           scoped_ptr<SHMBuffer>(new SHMBuffer(shm, size_to_allocate)));
-      // Kick off the decoding.
-      vda_loop_proxy_->PostTask(
-          FROM_HERE,
-          base::Bind(&RTCVideoDecoder::RequestBufferDecode, weak_this_));
     }
   }
+  // Kick off the decoding.
+  RequestBufferDecode();
 }
 
 void RTCVideoDecoder::RecordBufferData(const BufferData& buffer_data) {

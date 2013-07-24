@@ -2965,7 +2965,8 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   }
 
   scoped_refptr<media::GpuVideoDecoderFactories> gpu_factories =
-      RenderThreadImpl::current()->GetGpuFactories();
+      RenderThreadImpl::current()->GetGpuFactories(
+          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy());
 
   WebMediaPlayerParams params(
       RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
