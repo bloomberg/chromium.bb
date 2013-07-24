@@ -273,6 +273,7 @@ clipboard_destroy(struct wl_listener *listener, void *data)
 		container_of(listener, struct clipboard, destroy_listener);
 
 	wl_list_remove(&clipboard->selection_listener.link);
+	wl_list_remove(&clipboard->destroy_listener.link);
 
 	free(clipboard);
 }
