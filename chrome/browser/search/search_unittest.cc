@@ -290,6 +290,35 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabled) {
   }
 }
 
+TEST_F(SearchTest, ShouldUseProcessPerSiteForInstantURL) {
+  EnableInstantExtendedAPIForTesting();
+
+  const SearchTestCase kTestCases[] = {
+    {"chrome-search://local-ntp",      true,  "Local NTP"},
+    {"chrome-search://online-ntp",     true,  "Online NTP"},
+    {"invalid-scheme://local-ntp",     false, "Invalid Local NTP URL"},
+    {"invalid-scheme://online-ntp",    false, "Invalid Online NTP URL"},
+    {"chrome-search://foo.com",        false, "Search result page"},
+    {"https://foo.com/instant?strk",   false,  ""},
+    {"https://foo.com/instant#strk",   false,  ""},
+    {"https://foo.com/instant?strk=0", false,  ""},
+    {"https://foo.com/url?strk",       false,  ""},
+    {"https://foo.com/alt?strk",       false,  ""},
+    {"http://foo.com/instant",         false,  "Non-HTTPS"},
+    {"http://foo.com/instant?strk",    false,  "Non-HTTPS"},
+    {"http://foo.com/instant?strk=1",  false,  "Non-HTTPS"},
+    {"https://foo.com/instant",        false,  "No search terms replacement"},
+    {"https://foo.com/?strk",          false,  "Non-exact path"},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    const SearchTestCase& test = kTestCases[i];
+    EXPECT_EQ(test.expected_result,
+              ShouldUseProcessPerSiteForInstantURL(GURL(test.url), profile()))
+        << test.url << " " << test.comment;
+  }
+}
+
 struct PrivilegedURLTestCase {
   bool add_as_alternate_url;
   const char* input_url;

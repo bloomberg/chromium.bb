@@ -108,6 +108,7 @@ class InstantNTPPrerenderer
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest, MANUAL_ShowsGoogleNTP);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_SearchesFromFakebox);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
 
   // Overridden from net::NetworkChangeNotifier::NetworkChangeObserver:
   // If the network status changes, resets InstantNTP.

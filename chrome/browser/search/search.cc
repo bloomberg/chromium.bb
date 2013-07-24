@@ -296,6 +296,12 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
           IsInstantURL(url, profile));
 }
 
+bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {
+  return ShouldAssignURLToInstantRenderer(url, profile) &&
+      (url.host() == chrome::kChromeSearchLocalNtpHost ||
+       url.host() == chrome::kChromeSearchOnlineNtpHost);
+}
+
 bool IsInstantNTP(const content::WebContents* contents) {
   if (!contents)
     return false;

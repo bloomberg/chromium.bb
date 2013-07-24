@@ -579,48 +579,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoFaviconOnNewTabPage) {
   EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
-  // Prior to setup, Instant has an ntp with a failed "google.com" load in
-  // it, which is rendered in the dedicated Instant renderer process.
-  //
-  // TODO(sreeram): Fix this up when we stop doing crazy things on init.
-  InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(browser()->profile());
-  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
-#if !defined(OS_MACOSX)
-  // The failed "google.com" load is deleted, which sometimes leads to the
-  // process shutting down on Mac.
-  EXPECT_EQ(1, instant_service->GetInstantProcessCount());
-#endif
-
-  // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantNTPSupport();
-
-  // The registered Instant render process should still exist.
-  EXPECT_EQ(1, instant_service->GetInstantProcessCount());
-  // And the Instant ntp should live inside it.
-  content::WebContents* ntp_contents = instant()->ntp_->contents();
-  EXPECT_TRUE(instant_service->IsInstantProcess(
-      ntp_contents->GetRenderProcessHost()->GetID()));
-
-  // Navigating to the NTP should use the Instant render process.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(chrome::kChromeUINewTabURL),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(instant_service->IsInstantProcess(
-      active_tab->GetRenderProcessHost()->GetID()));
-
-  // Navigating elsewhere should not use the Instant render process.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
-  EXPECT_FALSE(instant_service->IsInstantProcess(
-      active_tab->GetRenderProcessHost()->GetID()));
-}
-
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
@@ -949,54 +907,6 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_TRUE(old_render_process_id != new_render_process_id ||
               old_render_view_id != new_render_view_id);
-}
-
-// Test that renderer initiated navigations to an Instant URL from an
-// Instant process end up in an Instant process.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       RendererInitiatedNavigationInInstantProcess) {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser()->profile());
-  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
-
-  // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantNTPSupport();
-
-  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
-
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      instant_url(),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(instant_service->IsInstantProcess(
-      contents->GetRenderProcessHost()->GetID()));
-
-  std::string instant_url_with_query = instant_url().spec() + "q=3";
-  std::string add_link_script = base::StringPrintf(
-      "var a = document.createElement('a');"
-      "a.id = 'toClick';"
-      "a.href = '%s';"
-      "document.body.appendChild(a);",
-      instant_url_with_query.c_str());
-  EXPECT_TRUE(content::ExecuteScript(contents, add_link_script));
-
-  content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
-  EXPECT_TRUE(content::ExecuteScript(
-      contents, "document.getElementById('toClick').click();"));
-  observer.Wait();
-
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  contents = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(instant_service->IsInstantProcess(
-      contents->GetRenderProcessHost()->GetID()));
-  EXPECT_EQ(GURL(instant_url_with_query), contents->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AcceptingURLSearchDoesNotNavigate) {
@@ -1804,4 +1714,95 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Make sure the URL remains the same.
   EXPECT_EQ(ntp_url, ntp_contents->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
+  // Prior to setup, Instant has an ntp with a failed "google.com" load in
+  // it, which is rendered in the dedicated Instant renderer process.
+  //
+  // TODO(sreeram): Fix this up when we stop doing crazy things on init.
+  InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+#if !defined(OS_MACOSX)
+  // The failed "google.com" load is deleted, which sometimes leads to the
+  // process shutting down on Mac.
+  EXPECT_EQ(1, instant_service->GetInstantProcessCount());
+#endif
+
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // The registered Instant render process should still exist.
+  EXPECT_EQ(1, instant_service->GetInstantProcessCount());
+  // And the Instant ntp should live inside it.
+  content::WebContents* ntp_contents =
+      instant_service->ntp_prerenderer()->ntp()->contents();
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      ntp_contents->GetRenderProcessHost()->GetID()));
+
+  // Navigating to the NTP should use the Instant render process.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      active_tab->GetRenderProcessHost()->GetID()));
+
+  // Navigating elsewhere should not use the Instant render process.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
+  EXPECT_FALSE(instant_service->IsInstantProcess(
+      active_tab->GetRenderProcessHost()->GetID()));
+}
+
+// Test that renderer initiated navigations to an Instant URL from an
+// Instant process end up in an Instant process.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       RendererInitiatedNavigationInInstantProcess) {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      instant_url(),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      contents->GetRenderProcessHost()->GetID()));
+
+  std::string instant_url_with_query = instant_url().spec() + "q=3";
+  std::string add_link_script = base::StringPrintf(
+      "var a = document.createElement('a');"
+      "a.id = 'toClick';"
+      "a.href = '%s';"
+      "document.body.appendChild(a);",
+      instant_url_with_query.c_str());
+  EXPECT_TRUE(content::ExecuteScript(contents, add_link_script));
+
+  content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::NotificationService::AllSources());
+  EXPECT_TRUE(content::ExecuteScript(
+      contents, "document.getElementById('toClick').click();"));
+  observer.Wait();
+
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      contents->GetRenderProcessHost()->GetID()));
+  EXPECT_EQ(GURL(instant_url_with_query), contents->GetURL());
 }

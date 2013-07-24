@@ -935,7 +935,7 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   if (!profile)
     return false;
 
-  if (chrome::ShouldAssignURLToInstantRenderer(effective_url, profile))
+  if (chrome::ShouldUseProcessPerSiteForInstantURL(effective_url, profile))
     return true;
 
 #if !defined(OS_CHROMEOS)

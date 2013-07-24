@@ -112,6 +112,7 @@ class InstantService : public BrowserContextKeyedService,
                            MANUAL_ShowsGoogleNTP);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_SearchesFromFakebox);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
 
   // Overridden from BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
