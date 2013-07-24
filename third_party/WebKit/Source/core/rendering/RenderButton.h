@@ -48,6 +48,9 @@ public:
 
     void setupInnerStyle(RenderStyle*);
 
+    // <button> should allow whitespace even though RenderFlexibleBox doesn't.
+    virtual bool canHaveWhitespaceChildren() const OVERRIDE { return true; }
+
     virtual bool canHaveGeneratedChildren() const OVERRIDE;
     virtual bool hasControlClip() const { return true; }
     virtual LayoutRect controlClipRect(const LayoutPoint&) const;

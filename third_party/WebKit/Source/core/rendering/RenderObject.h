@@ -495,6 +495,13 @@ public:
     // rest of the rendering tree will move to a similar model.
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
 
+    virtual bool canHaveWhitespaceChildren() const
+    {
+        if (isTable() || isTableRow() || isTableSection() || isRenderTableCol() || isFrameSet() || isFlexibleBox() || isRenderGrid())
+            return false;
+        return true;
+    }
+
     bool isAnonymous() const { return m_bitfields.isAnonymous(); }
     bool isAnonymousBlock() const
     {
