@@ -16,6 +16,7 @@
 #include <gcrypt.h>
 #endif
 
+#include "base/debug/leak_annotations.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -80,8 +81,14 @@ class GcryptInitializer {
                 << " in " << kGnuTlsFiles[i];
         continue;
       }
-      if ((*pgnutls_global_init)() != 0)
-        LOG(ERROR) << "gnutls_global_init() failed";
+      {
+        // GnuTLS has a genuine small memory leak that is easier to annotate
+        // than suppress. See http://crbug.com/176888#c7
+        // TODO(earthdok): remove this once the leak is fixed.
+        ANNOTATE_SCOPED_MEMORY_LEAK;
+        if ((*pgnutls_global_init)() != 0)
+          LOG(ERROR) << "gnutls_global_init() failed";
+      }
       return;
     }
     LOG(ERROR) << "Cannot find libgnutls";
