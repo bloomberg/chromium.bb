@@ -746,12 +746,7 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
     }
 
     self.sendProgressEvent_('PROGRESS');
-
-    // We yield a few ms between copies to give the browser a chance to service
-    // events (like perhaps the user clicking to cancel the copy, for example).
-    setTimeout(function() {
-      self.serviceNextCopyTaskEntry_(task, onEntryServiced, errorCallback);
-    }, 10);
+    self.serviceNextCopyTaskEntry_(task, onEntryServiced, errorCallback);
   };
 
   this.serviceNextCopyTaskEntry_(task, onEntryServiced, errorCallback);
