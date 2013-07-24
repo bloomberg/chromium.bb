@@ -493,8 +493,8 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 
 void RenderTextWin::ItemizeLogicalText() {
   runs_.clear();
-  string_size_ = Size(0, GetFont().GetHeight());
-  common_baseline_ = 0;
+  string_size_ = Size(0, font_list().GetHeight());
+  common_baseline_ = font_list().GetBaseline();
 
   // Set Uniscribe's base text direction.
   script_state_.uBidiLevel =
@@ -569,14 +569,15 @@ void RenderTextWin::LayoutVisualText() {
     cached_hdc_ = CreateCompatibleDC(NULL);
 
   HRESULT hr = E_FAIL;
-  string_size_.set_height(0);
+  int ascent = font_list().GetBaseline();
+  int descent = font_list().GetHeight() - font_list().GetBaseline();
   for (size_t i = 0; i < runs_.size(); ++i) {
     internal::TextRun* run = runs_[i];
     LayoutTextRun(run);
 
-    string_size_.set_height(std::max(string_size_.height(),
-                                     run->font.GetHeight()));
-    common_baseline_ = std::max(common_baseline_, run->font.GetBaseline());
+    ascent = std::max(ascent, run->font.GetBaseline());
+    descent = std::max(descent,
+                       run->font.GetHeight() - run->font.GetBaseline());
 
     if (run->glyph_count > 0) {
       run->advance_widths.reset(new int[run->glyph_count]);
@@ -593,6 +594,8 @@ void RenderTextWin::LayoutVisualText() {
       DCHECK(SUCCEEDED(hr));
     }
   }
+  string_size_.set_height(ascent + descent);
+  common_baseline_ = ascent;
 
   // Build the array of bidirectional embedding levels.
   scoped_ptr<BYTE[]> levels(new BYTE[runs_.size()]);
