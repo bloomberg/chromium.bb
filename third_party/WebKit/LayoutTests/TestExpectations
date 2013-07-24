@@ -1727,4 +1727,4 @@ crbug.com/254914 [ Linux ] tables/mozilla/core/bloomberg.html [ ImageOnlyFailure
 crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
 crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ Failure ]
 
-
+crbug.com/263991 [ Win Debug ] editing/selection/fake-drag.html [ Failure Pass ]
