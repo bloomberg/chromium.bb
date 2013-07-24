@@ -115,8 +115,6 @@ deps = {
         Var('git_url') + '/external/trace-viewer.git@9740e3440e25b0df338592eecd4ca13deb8bbf10',
     'src/third_party/usrsctp/usrsctplib':
         Var('git_url') + '/external/usrsctplib.git@062bff767b4ad4c70476e94c7d0e2a62f57306bb',
-    'src/third_party/v8-i18n':
-        Var('git_url') + '/external/v8-i18n.git@890f459db164e836e3d3998d6980ffd68ecaad46',
     'src/third_party/webdriver/pylib':
         Var('git_url') + '/external/selenium/py.git@8212c8017c92a1ba740caf01c1acefb3674a6a44',
     'src/third_party/webgl_conformance':
