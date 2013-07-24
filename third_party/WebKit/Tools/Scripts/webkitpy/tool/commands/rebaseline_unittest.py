@@ -537,6 +537,25 @@ class TestAutoRebaseline(_BaseTestCase):
                 'foobarbaz1@chromium.org',
                 set(['24182', '234'])))
 
+    def test_tests_to_rebaseline_over_limit(self):
+        def blame(path):
+            result = ""
+            for i in range(0, self.command.MAX_LINES_TO_REBASELINE + 1):
+                result += "624c3081c0 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   13) crbug.com/24182 path/to/rebaseline-%s.html [ NeedsRebaseline ]\n" % i
+            return result
+        self.tool.scm().blame = blame
+
+        expected_list_of_tests = []
+        for i in range(0, self.command.MAX_LINES_TO_REBASELINE):
+            expected_list_of_tests.append("path/to/rebaseline-%s.html" % i)
+
+        min_revision = 9000
+        self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False), (
+                set(expected_list_of_tests),
+                5678,
+                'foobarbaz1@chromium.org',
+                set(['24182'])))
+
     def test_commit_message(self):
         author = "foo@chromium.org"
         revision = 1234

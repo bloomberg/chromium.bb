@@ -534,6 +534,10 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
     help_text = "Rebaselines any NeedsRebaseline lines in TestExpectations that have cycled through all the bots."
     AUTO_REBASELINE_BRANCH_NAME = "auto-rebaseline-temporary-branch"
 
+    # Rietveld uploader stinks. Limit the number of rebaselines in a given patch to keep upload from failing.
+    # FIXME: http://crbug.com/263676 Obviously we should fix the uploader here.
+    MAX_LINES_TO_REBASELINE = 200
+
     def __init__(self):
         super(AutoRebaseline, self).__init__(options=[
             # FIXME: Remove this option.
@@ -586,6 +590,10 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
             bugs.update(re.findall("crbug\.com\/(\d+)", line))
             tests.add(test)
+
+            if len(tests) >= self.MAX_LINES_TO_REBASELINE:
+                _log.info("Too many tests to rebaseline in one patch. Doing the first %d." % self.MAX_LINES_TO_REBASELINE)
+                break
 
         return tests, revision, author, bugs
 
