@@ -9,18 +9,15 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/common/three_d_api_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
 
 
-// ThreeDAPIInfoBarDelegate ---------------------------------------------
+// ThreeDAPIInfoBarDelegate ---------------------------------------------------
 
 class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a 3D API delegate and adds it to |infobar_service|.
+  // Creates a 3D API infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      const GURL& url,
                      content::ThreeDAPIType requester);
@@ -154,7 +151,7 @@ bool ThreeDAPIInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
 }
 
 
-// ThreeDAPIObserver ----------------------------------------------------
+// ThreeDAPIObserver ----------------------------------------------------------
 
 ThreeDAPIObserver::ThreeDAPIObserver() {
   content::GpuDataManager::GetInstance()->AddObserver(this);

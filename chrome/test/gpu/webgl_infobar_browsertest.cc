@@ -120,15 +120,14 @@ IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossInfobarReload) {
   infobar_added.Wait();
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
-  EXPECT_EQ(1u, infobar_service->infobar_count());
+  ASSERT_EQ(1u, infobar_service->infobar_count());
   InfoBarDelegate* delegate = infobar_service->infobar_at(0);
-  ASSERT_TRUE(delegate);
   ASSERT_TRUE(delegate->AsThreeDAPIInfoBarDelegate());
   delegate->AsConfirmInfoBarDelegate()->Cancel();
 
   // The page should reload and another message sent to the
   // DomAutomationController.
-  m = "";
+  m.clear();
   ASSERT_TRUE(message_queue.WaitForMessage(&m));
   EXPECT_EQ("\"LOADED\"", m);
 }
