@@ -21,6 +21,10 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 
@@ -53,6 +57,22 @@ gfx::NativeView WebContentsViewGuest::GetContentNativeView() const {
 
 gfx::NativeWindow WebContentsViewGuest::GetTopLevelNativeWindow() const {
   return guest_->embedder_web_contents()->GetView()->GetTopLevelNativeWindow();
+}
+
+void WebContentsViewGuest::OnGuestInitialized(WebContentsView* parent_view) {
+#if defined(USE_AURA) || defined(OS_WIN)
+  // In aura and windows, ScreenPositionClient doesn't work properly if we do
+  // not have the native view associated with this WebContentsViewGuest in the
+  // view hierarchy. We add this view as embedder's child here.
+  // This would go in WebContentsViewGuest::CreateView, but that is too early to
+  // access embedder_web_contents(). Therefore, we do it here.
+#if defined(USE_AURA)
+  // This can be win aura or chromeos.
+  parent_view->GetNativeView()->AddChild(platform_view_->GetNativeView());
+#elif defined(OS_WIN)
+  SetParent(platform_view_->GetNativeView(), parent_view->GetNativeView());
+#endif
+#endif  // defined(USE_AURA) || defined(OS_WIN)
 }
 
 void WebContentsViewGuest::GetContainerBounds(gfx::Rect* out) const {
@@ -189,7 +209,26 @@ void WebContentsViewGuest::TakeFocus(bool reverse) {
 }
 
 void WebContentsViewGuest::ShowContextMenu(const ContextMenuParams& params) {
+#if defined(USE_AURA) || defined(OS_WIN)
+  // Context menu uses ScreenPositionClient::ConvertPointToScreen() in aura and
+  // windows to calculate popup position. Guest's native view
+  // (platform_view_->GetNativeView()) is part of the embedder's view hierarchy,
+  // but is placed at (0, 0) w.r.t. the embedder's position. Therefore, |offset|
+  // is added to |params|.
+  gfx::Rect embedder_bounds;
+  guest_->embedder_web_contents()->GetView()->GetContainerBounds(
+      &embedder_bounds);
+  gfx::Rect guest_bounds;
+  GetContainerBounds(&guest_bounds);
+
+  gfx::Vector2d offset = guest_bounds.origin() - embedder_bounds.origin();
+  ContextMenuParams params_in_embedder = params;
+  params_in_embedder.x += offset.x();
+  params_in_embedder.y += offset.y();
+  platform_view_delegate_view_->ShowContextMenu(params_in_embedder);
+#else
   platform_view_delegate_view_->ShowContextMenu(params);
+#endif  // defined(USE_AURA) || defined(OS_WIN)
 }
 
 void WebContentsViewGuest::ShowPopupMenu(const gfx::Rect& bounds,

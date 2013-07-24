@@ -470,6 +470,10 @@ void BrowserPluginGuest::Initialize(
   // be attached.
   embedder_web_contents_ = embedder_web_contents;
 
+  WebContentsViewGuest* new_view =
+      static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
+  new_view->OnGuestInitialized(embedder_web_contents->GetView());
+
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
   new BrowserPluginGuestHelper(this, GetWebContents()->GetRenderViewHost());
 

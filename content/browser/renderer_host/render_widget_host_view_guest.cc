@@ -152,9 +152,10 @@ void RenderWidgetHostViewGuest::RenderProcessGone(
 }
 
 void RenderWidgetHostViewGuest::Destroy() {
-  platform_view_->Destroy();
   // The RenderWidgetHost's destruction led here, so don't call it.
   DestroyGuestView();
+
+  platform_view_->Destroy();
 }
 
 void RenderWidgetHostViewGuest::SetTooltipText(const string16& tooltip_text) {
@@ -501,6 +502,7 @@ void RenderWidgetHostViewGuest::SetParentNativeViewAccessible(
 #endif
 
 void RenderWidgetHostViewGuest::DestroyGuestView() {
+  host_->SetView(NULL);
   host_ = NULL;
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
