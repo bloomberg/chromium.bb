@@ -48,6 +48,10 @@ void SessionStateDelegateStub::UnlockScreen() {
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 
+bool SessionStateDelegateStub::IsUserSessionBlocked() const  {
+  return !IsActiveUserSessionStarted() || IsScreenLocked();
+}
+
 const base::string16 SessionStateDelegateStub::GetUserDisplayName(
     MultiProfileIndex index) const {
   return UTF8ToUTF16("stub-user");

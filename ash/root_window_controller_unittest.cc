@@ -370,6 +370,55 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
               session_modal_widget->GetNativeView()));
 }
 
+TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
+  UpdateDisplay("600x600");
+  Shell* shell = Shell::GetInstance();
+  internal::RootWindowController* controller =
+      shell->GetPrimaryRootWindowController();
+  aura::Window* lock_container =
+      Shell::GetContainer(controller->root_window(),
+                          internal::kShellWindowId_LockScreenContainer);
+  for (int block_reason = FIRST_BLOCK_REASON;
+       block_reason < NUMBER_OF_BLOCK_REASONS;
+       ++block_reason) {
+    views::Widget* session_modal_widget =
+          CreateModalWidget(gfx::Rect(300, 10, 100, 100));
+    EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+        internal::kShellWindowId_SystemModalContainer)->layout_manager(),
+            controller->GetSystemModalLayoutManager(
+                session_modal_widget->GetNativeView()));
+    EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+        internal::kShellWindowId_SystemModalContainer)->layout_manager(),
+            controller->GetSystemModalLayoutManager(NULL));
+    session_modal_widget->Close();
+
+    BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
+
+    EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+        internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
+            controller->GetSystemModalLayoutManager(NULL));
+
+    views::Widget* lock_modal_widget =
+        CreateModalWidgetWithParent(gfx::Rect(300, 10, 100, 100),
+                                    lock_container);
+    EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+        internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
+              controller->GetSystemModalLayoutManager(
+                  lock_modal_widget->GetNativeView()));
+
+    session_modal_widget =
+          CreateModalWidget(gfx::Rect(300, 10, 100, 100));
+    EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+        internal::kShellWindowId_SystemModalContainer)->layout_manager(),
+            controller->GetSystemModalLayoutManager(
+                session_modal_widget->GetNativeView()));
+    session_modal_widget->Close();
+
+    lock_modal_widget->Close();
+    UnblockUserSession();
+  }
+}
+
 // Test that GetFullscreenWindow() returns a fullscreen window only if the
 // fullscreen window is in the active workspace.
 TEST_F(RootWindowControllerTest, GetFullscreenWindow) {
@@ -412,21 +461,16 @@ TEST_F(RootWindowControllerTest, FocusBlockedWindow) {
       CreateTestWidget(gfx::Rect(0, 0, 100, 100))->GetNativeView();
   session_window->Show();
 
-  // Lock screen.
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
-  lock_window->Focus();
-  EXPECT_TRUE(lock_window->HasFocus());
-  session_window->Focus();
-  EXPECT_FALSE(session_window->HasFocus());
-  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
-
-  // Session not started yet.
-  SetSessionStarted(false);
-  lock_window->Focus();
-  EXPECT_TRUE(lock_window->HasFocus());
-  session_window->Focus();
-  EXPECT_FALSE(session_window->HasFocus());
-  SetSessionStarted(true);
+  for (int block_reason = FIRST_BLOCK_REASON;
+       block_reason < NUMBER_OF_BLOCK_REASONS;
+       ++block_reason) {
+    BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
+    lock_window->Focus();
+    EXPECT_TRUE(lock_window->HasFocus());
+    session_window->Focus();
+    EXPECT_FALSE(session_window->HasFocus());
+    UnblockUserSession();
+  }
 }
 
 }  // namespace test

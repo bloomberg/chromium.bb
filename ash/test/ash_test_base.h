@@ -94,6 +94,14 @@ class AshTestBase : public testing::Test {
   aura::test::EventGenerator& GetEventGenerator();
 
  protected:
+  enum UserSessionBlockReason {
+    FIRST_BLOCK_REASON,
+    BLOCKED_BY_LOCK_SCREEN = FIRST_BLOCK_REASON,
+    BLOCKED_BY_LOGIN_SCREEN,
+    BLOCKED_BY_USER_ADDING_SCREEN,
+    NUMBER_OF_BLOCK_REASONS
+  };
+
   // True if the running environment supports multiple displays,
   // or false otherwise (e.g. win8 bot).
   static bool SupportsMultipleDisplays();
@@ -109,6 +117,12 @@ class AshTestBase : public testing::Test {
   void SetSessionStarted(bool session_started);
   void SetUserLoggedIn(bool user_logged_in);
   void SetCanLockScreen(bool can_lock_screen);
+  void SetUserAddingScreenRunning(bool user_adding_screen_running);
+
+  // Methods to emulate blocking and unblocking user session with given
+  // |block_reason|.
+  void BlockUserSession(UserSessionBlockReason block_reason);
+  void UnblockUserSession();
 
  private:
   bool setup_called_;

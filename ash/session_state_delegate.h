@@ -56,6 +56,11 @@ class ASH_EXPORT SessionStateDelegate {
   // Unlocks the screen.
   virtual void UnlockScreen() = 0;
 
+  // Returns |true| if user session blocked by some overlying UI. It can be
+  // login screen, lock screen or screen for adding users into multi-profile
+  // session.
+  virtual bool IsUserSessionBlocked() const = 0;
+
   // Gets the displayed name for the user with the given |index|.
   // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
   virtual const base::string16 GetUserDisplayName(

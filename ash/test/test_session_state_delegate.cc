@@ -17,6 +17,7 @@ TestSessionStateDelegate::TestSessionStateDelegate()
       active_user_session_started_(false),
       can_lock_screen_(true),
       screen_locked_(false),
+      user_adding_screen_running_(false),
       logged_in_users_(1) {
 }
 
@@ -53,6 +54,11 @@ void TestSessionStateDelegate::UnlockScreen() {
   screen_locked_ = false;
 }
 
+bool TestSessionStateDelegate::IsUserSessionBlocked() const {
+  return !IsActiveUserSessionStarted() || IsScreenLocked() ||
+      user_adding_screen_running_;
+}
+
 void TestSessionStateDelegate::SetHasActiveUser(bool has_active_user) {
   has_active_user_ = has_active_user;
   if (!has_active_user)
@@ -74,6 +80,11 @@ void TestSessionStateDelegate::SetActiveUserSessionStarted(
 
 void TestSessionStateDelegate::SetCanLockScreen(bool can_lock_screen) {
   can_lock_screen_ = can_lock_screen;
+}
+
+void TestSessionStateDelegate::SetUserAddingScreenRunning(
+    bool user_adding_screen_running) {
+  user_adding_screen_running_ = user_adding_screen_running;
 }
 
 const base::string16 TestSessionStateDelegate::GetUserDisplayName(

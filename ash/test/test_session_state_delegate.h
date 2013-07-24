@@ -29,6 +29,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   virtual bool IsScreenLocked() const OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
+  virtual bool IsUserSessionBlocked() const OVERRIDE;
   virtual const base::string16 GetUserDisplayName(
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual const std::string GetUserEmail(
@@ -61,6 +62,10 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   // is an active user.
   void SetCanLockScreen(bool can_lock_screen);
 
+  // Updates the internal state that indicates whether user adding screen is
+  // running now.
+  void SetUserAddingScreenRunning(bool user_adding_screen_running);
+
  private:
   // Whether a session is in progress and there is an active user.
   bool has_active_user_;
@@ -76,6 +81,9 @@ class TestSessionStateDelegate : public SessionStateDelegate {
 
   // Whether the screen is currently locked.
   bool screen_locked_;
+
+  // Whether user addding screen is running now.
+  bool user_adding_screen_running_;
 
   // The number of users logged in.
   int logged_in_users_;

@@ -129,8 +129,7 @@ aura::Window* StackingController::GetSystemModalContainer(
   // background pages) assume that the window belongs to user session.
   SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
-  if ((!session_state_delegate->IsScreenLocked() &&
-       session_state_delegate->IsActiveUserSessionStarted()) ||
+  if (!session_state_delegate->IsUserSessionBlocked() ||
       !window->transient_parent()) {
     return GetContainerById(root,
                             internal::kShellWindowId_SystemModalContainer);

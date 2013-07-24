@@ -289,5 +289,38 @@ void AshTestBase::SetCanLockScreen(bool can_lock_screen) {
       SetCanLockScreen(can_lock_screen);
 }
 
+void AshTestBase::SetUserAddingScreenRunning(bool user_adding_screen_running) {
+  ash_test_helper_->test_shell_delegate()->test_session_state_delegate()->
+      SetUserAddingScreenRunning(user_adding_screen_running);
+}
+
+void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
+  switch (block_reason) {
+    case BLOCKED_BY_LOCK_SCREEN:
+      SetSessionStarted(true);
+      SetUserAddingScreenRunning(false);
+      Shell::GetInstance()->session_state_delegate()->LockScreen();
+      break;
+    case BLOCKED_BY_LOGIN_SCREEN:
+      SetUserAddingScreenRunning(false);
+      SetSessionStarted(false);
+      break;
+    case BLOCKED_BY_USER_ADDING_SCREEN:
+      SetUserAddingScreenRunning(true);
+      SetSessionStarted(true);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void AshTestBase::UnblockUserSession() {
+  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+  SetSessionStarted(true);
+  SetUserAddingScreenRunning(false);
+}
+
+
 }  // namespace test
 }  // namespace ash

@@ -46,6 +46,10 @@ void SessionStateDelegate::LockScreen() {
 void SessionStateDelegate::UnlockScreen() {
 }
 
+bool SessionStateDelegate::IsUserSessionBlocked() const {
+  return false;
+}
+
 const base::string16 SessionStateDelegate::GetUserDisplayName(
     ash::MultiProfileIndex index) const {
   NOTIMPLEMENTED();

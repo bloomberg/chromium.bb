@@ -258,13 +258,9 @@ RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
       container = GetContainer(kShellWindowId_SystemModalContainer);
     }
   } else {
-    user::LoginStatus login = Shell::GetInstance()->system_tray_delegate() ?
-        Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus() :
-        user::LOGGED_IN_NONE;
-    int modal_window_id = (login == user::LOGGED_IN_LOCKED ||
-                           login == user::LOGGED_IN_NONE) ?
-        kShellWindowId_LockSystemModalContainer :
-        kShellWindowId_SystemModalContainer;
+    int modal_window_id = Shell::GetInstance()->session_state_delegate()
+        ->IsUserSessionBlocked() ? kShellWindowId_LockSystemModalContainer :
+                                   kShellWindowId_SystemModalContainer;
     container = GetContainer(modal_window_id);
   }
   return container ? static_cast<SystemModalContainerLayoutManager*>(

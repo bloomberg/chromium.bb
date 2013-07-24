@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -52,6 +53,11 @@ void SessionStateDelegateChromeos::LockScreen() {
 void SessionStateDelegateChromeos::UnlockScreen() {
   // This is used only for testing thus far.
   NOTIMPLEMENTED();
+}
+
+bool SessionStateDelegateChromeos::IsUserSessionBlocked() const {
+  return !IsActiveUserSessionStarted() || IsScreenLocked() ||
+         chromeos::UserAddingScreen::Get()->IsRunning();
 }
 
 const base::string16 SessionStateDelegateChromeos::GetUserDisplayName(

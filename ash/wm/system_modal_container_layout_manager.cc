@@ -66,9 +66,7 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
          child->type() == aura::client::WINDOW_TYPE_POPUP);
   DCHECK(
       container_->id() != internal::kShellWindowId_LockSystemModalContainer ||
-      Shell::GetInstance()->session_state_delegate()->IsScreenLocked() ||
-      !Shell::GetInstance()->session_state_delegate()->
-          IsActiveUserSessionStarted());
+      Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked());
 
   child->AddObserver(this);
   if (child->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE)
@@ -121,11 +119,6 @@ void SystemModalContainerLayoutManager::OnWindowDestroying(
     modal_background_ = NULL;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// SystemModalContainerLayoutManager,
-//     SystemModalContainerEventFilter::Delegate implementation:
-
 bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
     aura::Window* window) {
   // We could get when we're at lock screen and there is modal window at
@@ -138,7 +131,7 @@ bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
     return true;
   // This container can not handle events if the screen is locked and it is not
   // above the lock screen layer (crbug.com/110920).
-  if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked() &&
+  if (Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked() &&
       container_->id() < ash::internal::kShellWindowId_LockScreenContainer)
     return true;
   return wm::GetActivatableWindow(window) == modal_window();

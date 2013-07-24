@@ -23,10 +23,7 @@ bool EventClientImpl::CanProcessEventsWithinSubtree(
   const aura::RootWindow* root_window = window ? window->GetRootWindow() : NULL;
   if (!root_window)
     return true;
-  ash::SessionStateDelegate* state_delegate =
-      Shell::GetInstance()->session_state_delegate();
-  if (!state_delegate->IsActiveUserSessionStarted() ||
-      state_delegate->IsScreenLocked()) {
+  if (Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked()) {
     const aura::Window* lock_screen_containers = Shell::GetContainer(
         root_window,
         kShellWindowId_LockScreenContainersContainer);

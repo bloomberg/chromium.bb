@@ -26,6 +26,7 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   virtual bool IsScreenLocked() const OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
+  virtual bool IsUserSessionBlocked() const OVERRIDE;
   virtual const base::string16 GetUserDisplayName(
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual const std::string GetUserEmail(

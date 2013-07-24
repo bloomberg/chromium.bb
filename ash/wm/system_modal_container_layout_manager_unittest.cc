@@ -311,33 +311,34 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   e1.ClickLeftButton();
   EXPECT_EQ(1, transient_delegate->mouse_presses());
 
-  // Create a window in the lock screen container and ensure that it receives
-  // the mouse event instead of the modal window (crbug.com/110920).
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
-  EventTestWindow* lock_delegate = new EventTestWindow(false);
-  scoped_ptr<aura::Window> lock(lock_delegate->OpenTestWindowWithParent(
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          ash::internal::kShellWindowId_LockScreenContainer)));
-  EXPECT_TRUE(wm::IsActiveWindow(lock.get()));
-  e1.ClickLeftButton();
-  EXPECT_EQ(1, lock_delegate->mouse_presses());
+  for (int block_reason = FIRST_BLOCK_REASON;
+       block_reason < NUMBER_OF_BLOCK_REASONS;
+       ++block_reason) {
+    // Create a window in the lock screen container and ensure that it receives
+    // the mouse event instead of the modal window (crbug.com/110920).
+    BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
+    EventTestWindow* lock_delegate = new EventTestWindow(false);
+    scoped_ptr<aura::Window> lock(lock_delegate->OpenTestWindowWithParent(
+        Shell::GetPrimaryRootWindowController()->GetContainer(
+            ash::internal::kShellWindowId_LockScreenContainer)));
+    EXPECT_TRUE(wm::IsActiveWindow(lock.get()));
+    e1.ClickLeftButton();
+    EXPECT_EQ(1, lock_delegate->mouse_presses());
 
-  // Make sure that a modal container created by the lock screen can still
-  // receive mouse events.
-  EventTestWindow* lock_modal_delegate = new EventTestWindow(true);
-  aura::Window* lock_modal =
-      lock_modal_delegate->OpenTestWindowWithParent(lock.get());
-  EXPECT_TRUE(wm::IsActiveWindow(lock_modal));
-  e1.ClickLeftButton();
-  EXPECT_EQ(1, lock_modal_delegate->mouse_presses());
-
-  // Verify that none of the other containers received any more mouse presses.
-  EXPECT_EQ(1, main_delegate->mouse_presses());
-  EXPECT_EQ(1, transient_delegate->mouse_presses());
-  EXPECT_EQ(1, lock_delegate->mouse_presses());
-  EXPECT_EQ(1, lock_modal_delegate->mouse_presses());
-
-  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+    // Make sure that a modal container created by the lock screen can still
+    // receive mouse events.
+    EventTestWindow* lock_modal_delegate = new EventTestWindow(true);
+    aura::Window* lock_modal =
+        lock_modal_delegate->OpenTestWindowWithParent(lock.get());
+    EXPECT_TRUE(wm::IsActiveWindow(lock_modal));
+    e1.ClickLeftButton();
+    // Verify that none of the other containers received any more mouse presses.
+    EXPECT_EQ(1, lock_modal_delegate->mouse_presses());
+    EXPECT_EQ(1, lock_delegate->mouse_presses());
+    EXPECT_EQ(1, main_delegate->mouse_presses());
+    EXPECT_EQ(1, transient_delegate->mouse_presses());
+    UnblockUserSession();
+  }
 }
 
 // Makes sure we don't crash if a modal window is shown while the parent window
@@ -407,34 +408,38 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
   EXPECT_FALSE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_FALSE(AllRootWindowsHaveLockedModalBackgrounds());
 
-  // Normal system modal window while locked.  Shows locked system modal
-  // background.
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
-  scoped_ptr<aura::Window> lock_parent(OpenTestWindowWithParent(
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          ash::internal::kShellWindowId_LockScreenContainer),
-      false));
-  scoped_ptr<aura::Window> lock_modal_window(OpenTestWindowWithParent(
-      lock_parent.get(), true));
-  lock_parent->Show();
-  lock_modal_window->Show();
-  EXPECT_FALSE(AllRootWindowsHaveModalBackgrounds());
-  EXPECT_TRUE(AllRootWindowsHaveLockedModalBackgrounds());
-  TestWindow::CloseTestWindow(lock_modal_window.release());
+  for (int block_reason = FIRST_BLOCK_REASON;
+       block_reason < NUMBER_OF_BLOCK_REASONS;
+       ++block_reason) {
+    // Normal system modal window while blocked.  Shows blocked system modal
+    // background.
+    BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
+    scoped_ptr<aura::Window> lock_parent(OpenTestWindowWithParent(
+        Shell::GetPrimaryRootWindowController()->GetContainer(
+            ash::internal::kShellWindowId_LockScreenContainer),
+        false));
+    scoped_ptr<aura::Window> lock_modal_window(OpenTestWindowWithParent(
+        lock_parent.get(), true));
+    lock_parent->Show();
+    lock_modal_window->Show();
+    EXPECT_FALSE(AllRootWindowsHaveModalBackgrounds());
+    EXPECT_TRUE(AllRootWindowsHaveLockedModalBackgrounds());
+    TestWindow::CloseTestWindow(lock_modal_window.release());
 
-  // Normal system modal window while locked, but it belongs to the normal
-  // window.  Shouldn't show locked system modal background, but normal.
-  scoped_ptr<aura::Window> modal_window2(
-      OpenTestWindowWithParent(parent.get(), true));
-  modal_window2->Show();
-  EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
-  EXPECT_FALSE(AllRootWindowsHaveLockedModalBackgrounds());
-  TestWindow::CloseTestWindow(modal_window2.release());
-
-  // Here we should check the behavior of the locked system modal dialog when
-  // unlocked, but such case isn't handled very well right now.
-  // See crbug.com/157660
-  // TODO(mukai): add the test case when the bug is fixed.
+    // Normal system modal window while blocked, but it belongs to the normal
+    // window.  Shouldn't show blocked system modal background, but normal.
+    scoped_ptr<aura::Window> modal_window(
+        OpenTestWindowWithParent(parent.get(), true));
+    modal_window->Show();
+    EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
+    EXPECT_FALSE(AllRootWindowsHaveLockedModalBackgrounds());
+    TestWindow::CloseTestWindow(modal_window.release());
+    UnblockUserSession();
+    // Here we should check the behavior of the locked system modal dialog when
+    // unlocked, but such case isn't handled very well right now.
+    // See crbug.com/157660
+    // TODO(mukai): add the test case when the bug is fixed.
+  }
 }
 
 TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
