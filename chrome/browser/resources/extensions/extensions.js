@@ -54,12 +54,16 @@ cr.define('extensions', function() {
       var toSend = null;
       // Files lack a check if they're a directory, but we can find out through
       // its item entry.
-      var fileIndex = e.dataTransfer.types.indexOf('Files');
-      if (e.dataTransfer.items[fileIndex].webkitGetAsEntry().isDirectory)
-        toSend = 'installDroppedDirectory';
+      for (var i = 0; i < e.dataTransfer.items.length; ++i) {
+        if (e.dataTransfer.items[i].kind == 'file' &&
+            e.dataTransfer.items[i].webkitGetAsEntry().isDirectory) {
+          toSend = 'installDroppedDirectory';
+          break;
+        }
+      }
       // Only process files that look like extensions. Other files should
       // navigate the browser normally.
-      else if (/\.(crx|user\.js)$/i.test(e.dataTransfer.files[0].name))
+      if (!toSend && /\.(crx|user\.js)$/i.test(e.dataTransfer.files[0].name))
         toSend = 'installDroppedFile';
 
       if (toSend) {
