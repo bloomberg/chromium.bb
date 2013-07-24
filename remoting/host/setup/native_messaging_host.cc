@@ -150,9 +150,13 @@ bool NativeMessagingHost::ProcessHello(
 bool NativeMessagingHost::ProcessClearPairedClients(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
-  pairing_registry_->ClearAllPairings(
-      base::Bind(&NativeMessagingHost::SendBooleanResult, weak_ptr_,
-                 base::Passed(&response)));
+  if (pairing_registry_) {
+    pairing_registry_->ClearAllPairings(
+        base::Bind(&NativeMessagingHost::SendBooleanResult, weak_ptr_,
+                   base::Passed(&response)));
+  } else {
+    SendBooleanResult(response.Pass(), false);
+  }
   return true;
 }
 
@@ -166,9 +170,13 @@ bool NativeMessagingHost::ProcessDeletePairedClient(
     return false;
   }
 
-  pairing_registry_->DeletePairing(
-      client_id, base::Bind(&NativeMessagingHost::SendBooleanResult, weak_ptr_,
-                            base::Passed(&response)));
+  if (pairing_registry_) {
+    pairing_registry_->DeletePairing(
+        client_id, base::Bind(&NativeMessagingHost::SendBooleanResult,
+                              weak_ptr_, base::Passed(&response)));
+  } else {
+    SendBooleanResult(response.Pass(), false);
+  }
   return true;
 }
 
@@ -237,9 +245,14 @@ bool NativeMessagingHost::ProcessGetDaemonConfig(
 bool NativeMessagingHost::ProcessGetPairedClients(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
-  pairing_registry_->GetAllPairings(
-      base::Bind(&NativeMessagingHost::SendPairedClientsResponse, weak_ptr_,
-                 base::Passed(&response)));
+  if (pairing_registry_) {
+    pairing_registry_->GetAllPairings(
+        base::Bind(&NativeMessagingHost::SendPairedClientsResponse, weak_ptr_,
+                   base::Passed(&response)));
+  } else {
+    scoped_ptr<base::ListValue> no_paired_clients(new base::ListValue);
+    SendPairedClientsResponse(response.Pass(), no_paired_clients.Pass());
+  }
   return true;
 }
 

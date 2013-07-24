@@ -1111,9 +1111,13 @@ bool HostNPScriptObject::ClearPairedClients(const NPVariant* args,
   }
 
   ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[0]));
-  pairing_registry_->ClearAllPairings(
-      base::Bind(&HostNPScriptObject::InvokeBooleanCallback, weak_ptr_,
-                 callback_obj));
+  if (pairing_registry_) {
+    pairing_registry_->ClearAllPairings(
+        base::Bind(&HostNPScriptObject::InvokeBooleanCallback, weak_ptr_,
+                   callback_obj));
+  } else {
+    InvokeBooleanCallback(callback_obj, false);
+  }
 
   return true;
 }
@@ -1138,10 +1142,14 @@ bool HostNPScriptObject::DeletePairedClient(const NPVariant* args,
 
   std::string client_id = StringFromNPVariant(args[0]);
   ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[1]));
-  pairing_registry_->DeletePairing(
-      client_id,
-      base::Bind(&HostNPScriptObject::InvokeBooleanCallback,
-                 weak_ptr_, callback_obj));
+  if (pairing_registry_) {
+    pairing_registry_->DeletePairing(
+        client_id,
+        base::Bind(&HostNPScriptObject::InvokeBooleanCallback,
+                   weak_ptr_, callback_obj));
+  } else {
+    InvokeBooleanCallback(callback_obj, false);
+  }
 
   return true;
 }
@@ -1325,9 +1333,14 @@ bool HostNPScriptObject::GetPairedClients(const NPVariant* args,
     return false;
   }
 
-  pairing_registry_->GetAllPairings(
-      base::Bind(&HostNPScriptObject::InvokeGetPairedClientsCallback,
-                 weak_ptr_, callback_obj));
+  if (pairing_registry_) {
+    pairing_registry_->GetAllPairings(
+        base::Bind(&HostNPScriptObject::InvokeGetPairedClientsCallback,
+                   weak_ptr_, callback_obj));
+  } else {
+    scoped_ptr<base::ListValue> no_paired_clients(new base::ListValue);
+    InvokeGetPairedClientsCallback(callback_obj, no_paired_clients.Pass());
+  }
   return true;
 }
 
