@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function requestURL(url, responseType, callback, opt_errorStatusCallback) {
+(function() {
+
+window.buildbot = window.buildbot || {};
+
+buildbot.requestURL =
+    function(url, responseType, callback, opt_errorStatusCallback) {
   var xhr = new XMLHttpRequest();
   if (responseType == "json")
     // WebKit doesn't handle xhr.responseType = "json" as of Chrome 25.
@@ -29,4 +34,6 @@ function requestURL(url, responseType, callback, opt_errorStatusCallback) {
 
   xhr.open("GET", url, true);
   xhr.send();
-}
+};
+
+})();

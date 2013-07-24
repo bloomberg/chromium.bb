@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var RUNNING = -1;
-var SUCCESS = 0;
-var WARNINGS = 1;
-var FAILURE = 2;
-var SKIPPED = 3;
-var EXCEPTION = 4;
-var RETRY = 5;
-var NOT_STARTED = 6;
+(function() {
+
+window.buildbot = window.buildbot || {};
+
+buildbot.RUNNING = -1;
+buildbot.SUCCESS = 0;
+buildbot.WARNINGS = 1;
+buildbot.FAILURE = 2;
+buildbot.SKIPPED = 3;
+buildbot.EXCEPTION = 4;
+buildbot.RETRY = 5;
+buildbot.NOT_STARTED = 6;
+
+})();

@@ -7,13 +7,15 @@
 // Notification object when event pages get reloaded.  See
 // http://crbug.com/165276.
 
+(function() {
+
 var statusURL = "http://chromium-status.appspot.com/current?format=raw";
 var statusHistoryURL =
   "http://chromium-status.appspot.com/allstatus?limit=20&format=json";
 var pollFrequencyInMs = 30000;
 var tryPollFrequencyInMs = 30000;
 
-var prefs = new Prefs;
+var prefs = new buildbot.PrefStore;
 
 function updateBadgeOnErrorStatus() {
   chrome.browserAction.setBadgeText({text:"?"});
@@ -33,7 +35,7 @@ function notifyStatusChange(treeState, status) {
 
 // The type parameter should be "open", "closed", or "throttled".
 function getLastStatusTime(callback, type) {
-  requestURL(statusHistoryURL, "text", function(text) {
+  buildbot.requestURL(statusHistoryURL, "text", function(text) {
     var entries = JSON.parse(text);
 
     for (var i = 0; i < entries.length; i++) {
@@ -115,88 +117,141 @@ function updateStatus(status) {
 }
 
 function requestStatus() {
-  requestURL(statusURL, "text", updateStatus, updateBadgeOnErrorStatus);
+  buildbot.requestURL(statusURL,
+                      "text",
+                      updateStatus,
+                      updateBadgeOnErrorStatus);
   setTimeout(requestStatus, pollFrequencyInMs);
 }
 
-var activeIssues = {};
 // Record of the last defunct build number we're aware of on each builder.  If
 // the build number is less than or equal to this number, the buildbot
 // information is not available and a request will return a 404.
 var lastDefunctTryJob = {};
 
-function fetchTryJobResults(fullPatchset, builder, buildnumber) {
+function fetchTryJobResults(fullPatchset, builder, buildnumber, completed) {
   var tryJobURL =
     "http://build.chromium.org/p/tryserver.chromium/json/builders/" +
         builder + "/builds/" + buildnumber;
 
   if (lastDefunctTryJob.hasOwnProperty(builder) &&
-      buildnumber <= lastDefunctTryJob[builder])
+      buildnumber <= lastDefunctTryJob[builder]) {
+    completed();
     return;
+  }
 
-  var onStatusError = function(status) {
-    if (status == 404)
-      lastDefunctTryJob[builder] = buildnumber;
-  };
-
-  requestURL(tryJobURL, "json", function(tryJobResult) {
+  buildbot.requestURL(tryJobURL, "json", function(tryJobResult) {
     if (!fullPatchset.full_try_job_results)
       fullPatchset.full_try_job_results = {};
 
     var key = builder + "-" + buildnumber;
     fullPatchset.full_try_job_results[key] = tryJobResult;
-  }, onStatusError);
+
+    completed();
+  }, function(errorStatus) {
+    if (errorStatus == 404) {
+      lastDefunctTryJob[builder] =
+          Math.max(lastDefunctTryJob[builder] || 0, buildnumber);
+    }
+    completed();
+  });
 }
 
-function fetchPatches(issue, completed) {
+// Enums corresponding to how much state has been loaded for an issue.
+var PATCHES_COMPLETE = 0;
+var TRY_JOBS_COMPLETE = 1;
+
+function fetchPatches(issue, updatedCallback) {
+  // Notify updated once after receiving all patchsets, and a second time after
+  // receiving all try job results.
   var patchsetsRetrieved = 0;
+  var tryJobResultsOutstanding = 0;
   issue.patchsets.forEach(function(patchset) {
     var patchURL = "https://codereview.chromium.org/api/" + issue.issue +
         "/" + patchset;
 
-    requestURL(patchURL, "json", function(patch) {
+    buildbot.requestURL(patchURL, "json", function(patch) {
       if (!issue.full_patchsets)
         issue.full_patchsets = {};
 
       issue.full_patchsets[patch.patchset] = patch;
 
       patch.try_job_results.forEach(function(results) {
-        if (results.buildnumber)
-          fetchTryJobResults(patch, results.builder, results.buildnumber);
+        if (results.buildnumber) {
+          tryJobResultsOutstanding++;
+
+          fetchTryJobResults(patch, results.builder, results.buildnumber,
+                             function() {
+            if (--tryJobResultsOutstanding == 0)
+              updatedCallback(TRY_JOBS_COMPLETE);
+          });
+        }
       });
 
       if (++patchsetsRetrieved == issue.patchsets.length)
-        completed(issue);
+        updatedCallback(PATCHES_COMPLETE);
     });
   });
 }
 
 function updateTryStatus(status) {
   var seen = {};
+  var activeIssues = buildbot.getActiveIssues();
   status.results.forEach(function(result) {
     var issueURL = "https://codereview.chromium.org/api/" + result.issue;
 
-    requestURL(issueURL, "json", function(issue) {
-      fetchPatches(issue, function() {activeIssues[issue.issue] = issue;});
+    buildbot.requestURL(issueURL, "json", function(issue) {
+      fetchPatches(issue, function(state) {
+        // If the issue already exists, wait until all the issue state has
+        // loaded before updating the issue so we don't lose try job information
+        // from the display.
+        if (activeIssues.getIssue(issue.issue)) {
+          if (state == TRY_JOBS_COMPLETE)
+            activeIssues.updateIssue(issue);
+        } else {
+          activeIssues.updateIssue(issue);
+        }
+      });
     });
 
     seen[result.issue] = true;
   });
 
-  for (var issue in activeIssues)
-    if (!seen[issue])
-      delete activeIssues[issue];
+  activeIssues.forEach(function(issue) {
+    if (!seen[issue.issue])
+      activeIssues.removeIssue(issue);
+  });
+}
+
+function fetchTryStatus(username) {
+  if (!username)
+    return;
+
+  var url = "https://codereview.chromium.org/search" +
+      // commit=2 is CLs with commit bit set, commit=3 is CLs with commit
+      // bit cleared, commit=1 is either.
+      "?closed=3&commit=1&limit=100&order=-modified&format=json&owner=" +
+      username.trim();
+  buildbot.requestURL(url, "json", updateTryStatus);
 }
 
 function requestTryStatus() {
+  var searchBaseURL = "https://codereview.chromium.org/search";
+
   prefs.getTryJobUsername(function(username) {
-    if (username) {
-      var url = "https://codereview.chromium.org/search" +
-          // commit=2 is CLs with commit bit set, commit=3 is CLs with commit
-          // bit cleared, commit=1 is either.
-          "?closed=3&commit=1&limit=100&order=-modified&format=json&owner=" +
-              username;
-      requestURL(url, "json", updateTryStatus);
+    if (username == null) {
+      var usernameScrapingURL = "https://codereview.chromium.org/search";
+      // Try scraping username from Rietveld if unset.
+      buildbot.requestURL(usernameScrapingURL, "text", function(text) {
+        var match = /([^<>\s]+@\S+)\s+\(.+\)/.exec(text);
+        if (match) {
+          username = match[1];
+          prefs.setTryJobUsername(username);
+          fetchTryStatus(username);
+        }
+      });
+    } else {
+      fetchTryStatus(username);
     }
 
     setTimeout(requestTryStatus, tryPollFrequencyInMs);
@@ -209,3 +264,5 @@ function main() {
 }
 
 main();
+
+})();

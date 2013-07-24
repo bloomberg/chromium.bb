@@ -2,36 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+(function(){
+
 var lkgrURL = 'http://chromium-status.appspot.com/lkgr';
+
+// Interval at which to reload the non-CL bot status.
+var botStatusRefreshIntervalInMs = 60 * 1000;
+// Interval at which to check for LKGR updates.
+var lkgrRefreshIntervalInMs = 60 * 1000;
 
 function getClassForTryJobResult(result) {
   // Some win bots seem to report a null result while building.
   if (result === null)
-    result = RUNNING;
+    result = buildbot.RUNNING;
 
   switch (parseInt(result)) {
-  case RUNNING:
+  case buildbot.RUNNING:
     return "running";
 
-  case SUCCESS:
+  case buildbot.SUCCESS:
     return "success";
 
-  case WARNINGS:
+  case buildbot.WARNINGS:
     return "warnings";
 
-  case FAILURE:
+  case buildbot.FAILURE:
     return "failure";
 
-  case SKIPPED:
+  case buildbot.SKIPPED:
     return "skipped";
 
-  case EXCEPTION:
+  case buildbot.EXCEPTION:
     return "exception";
 
-  case RETRY:
+  case buildbot.RETRY:
     return "retry";
 
-  case NOT_STARTED:
+  case buildbot.NOT_STARTED:
   default:
     return "never";
   }
@@ -65,14 +72,14 @@ function createTryJobAnchorTitle(tryJob, fullTryJob) {
   if (fullTryJob.currentStep)
     stepText.push("running " + fullTryJob.currentStep.name);
 
-  if (fullTryJob.results == FAILURE && fullTryJob.text) {
+  if (fullTryJob.results == buildbot.FAILURE && fullTryJob.text) {
     stepText.push(fullTryJob.text.join(" "));
   } else {
     // Sometimes a step can fail without setting the try job text.  Look
     // through all the steps to identify if this is the case.
     var text = [];
     fullTryJob.steps.forEach(function(step) {
-      if (step.results[0] == FAILURE)
+      if (step.results[0] == buildbot.FAILURE)
         text.push(step.results[1][0]);
     });
 
@@ -88,32 +95,12 @@ function createTryJobAnchorTitle(tryJob, fullTryJob) {
   return title;
 }
 
-// Create an iframe mimicking the horizontal_one_box_per_builder format and
-// reuse its CSS, to get the same visual styling.
 function createPatchsetStatusElement(patchset) {
-  var cssURL = "http://chromium-build.appspot.com/p/chromium/default.css";
-  var content =
-    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" " +
-    "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\
-    <html>\
-  <head>\
-    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\
-    <link href=\"" + cssURL + "\" rel=\"stylesheet\" type=\"text/css\" />\
-    <style>td {vertical-align: bottom;}</style>\
-  </head>\
-  <body vlink=\"#800080\">\
-    <table style=\"width: 100%\"><tr id=\"bot-table-row\"></tr></table>\
-  </body>\
-</html>";
-  var doc = (new DOMParser()).parseFromString(content, "text/xml");
-  var row = doc.getElementById("bot-table-row");
+  var table = document.createElement("div");
+  table.className = "issue-status";
 
   var tryJobs = filterOldTryJobs(patchset.try_job_results);
   tryJobs.forEach(function(tryJob) {
-    var cell = doc.createElement("td");
-    cell.className = "mini-box";
-    row.appendChild(cell);
-
     var key = tryJob.builder + "-" + tryJob.buildnumber;
     var fullTryJob = patchset.full_try_job_results &&
         patchset.full_try_job_results[key];
@@ -121,63 +108,90 @@ function createPatchsetStatusElement(patchset) {
     var tryJobAnchor = document.createElement("a");
     tryJobAnchor.textContent = "  ";
     tryJobAnchor.title = createTryJobAnchorTitle(tryJob, fullTryJob);
-    tryJobAnchor.className = "LastBuild " +
+    tryJobAnchor.className = "issue-status-build " +
       getClassForTryJobResult(tryJob.result);
     tryJobAnchor.target = "_blank";
     tryJobAnchor.href = tryJob.url;
-    cell.appendChild(tryJobAnchor);
+    table.appendChild(tryJobAnchor);
   });
 
-  var iframe = document.createElement("iframe");
-  iframe.className="statusiframe";
-  iframe.scrolling="no";
-  iframe.srcdoc = (new XMLSerializer).serializeToString(doc);
-  return iframe;
+  return table;
 }
 
-function addTryStatusRows(table) {
+function getLastFullPatchsetWithTryJobs(issue) {
+  var index = issue.patchsets.length - 1;
+  var fullPatchsets = issue.full_patchsets;
+  while (index >= 0 &&
+         (!fullPatchsets ||
+          !fullPatchsets[issue.patchsets[index]] ||
+          !fullPatchsets[issue.patchsets[index]].try_job_results ||
+          fullPatchsets[issue.patchsets[index]].try_job_results.length == 0)) {
+    index--;
+  }
+
+  return index >= 0 ? fullPatchsets[issue.patchsets[index]] : null;
+}
+
+function createTryStatusRow(issue) {
+  var table = document.getElementById("status-table");
+
+  // Order by decreasing issue number.
+  var position =
+      document.getElementsByClassName("trunk-status-row")[0].rowIndex;
+  while (position > 0 &&
+         parseInt(issue.issue) >
+             parseInt(table.rows[position - 1].getAttribute("data-issue"))) {
+    position--;
+  }
+
+  var row = table.insertRow(position);
+  row.setAttribute("data-issue", issue.issue);
+
+  return row;
+}
+
+function updateIssueDisplay(issue) {
   var codereviewBaseURL = "https://codereview.chromium.org";
 
-  var background = chrome.extension.getBackgroundPage();
+  var lastFullPatchset = getLastFullPatchsetWithTryJobs(issue);
 
-  var issues = [];
-  for (var key in background.activeIssues)
-    issues.push(background.activeIssues[key]);
+  var row = document.querySelector("*[data-issue='" + issue.issue + "']");
+  if (!lastFullPatchset) {
+    if (row)
+      row.parentNode.removeChild(row);
+    return;
+  }
 
-  // Sort issues in descending order.
-  issues.sort(function(a, b) {return parseInt(b.issue) - parseInt(a.issue);});
+  if (!row)
+    row = createTryStatusRow(issue);
 
-  issues.forEach(function(issue) {
-    var codereviewURL = codereviewBaseURL + "/" + issue.issue;
+  var label = row.childNodes[0] || row.insertCell(-1);
+  var status = row.childNodes[1] || row.insertCell(-1);
 
-    if (!issue.full_patchsets)
-      return;
+  label.className = "status-label";
+  var clAnchor = label.childNodes[0] ||
+    label.appendChild(document.createElement("a"));
+  clAnchor.textContent = "CL " + issue.issue;
+  clAnchor.href = codereviewBaseURL + "/" + issue.issue;
+  clAnchor.title = issue.subject;
+  if (lastFullPatchset && lastFullPatchset.message)
+    clAnchor.title += " | " + lastFullPatchset.message;
+  clAnchor.target = "_blank";
 
-    var lastPatchset = issue.patchsets[issue.patchsets.length - 1];
-    var lastFullPatchset = issue.full_patchsets[lastPatchset];
+  var statusElement = createPatchsetStatusElement(lastFullPatchset);
+  if (status.childElementCount < 1)
+    status.appendChild(statusElement);
+  else
+    status.replaceChild(statusElement, status.firstChild);
+}
 
-    if (!lastFullPatchset.try_job_results ||
-        lastFullPatchset.try_job_results.length == 0)
-      return;
+function removeIssueDisplay(issueNumber) {
+  var row = document.querySelector("*[data-issue='" + issueNumber + "']");
+  row.parentNode.removeChild(row);
+}
 
-    var row = table.insertRow(-1);
-    var label = row.insertCell(-1);
-    label.className = "status-label";
-    var clAnchor = document.createElement("a");
-    clAnchor.textContent = "CL " + issue.issue;
-    clAnchor.href = codereviewURL;
-    clAnchor.title = issue.subject;
-    if (lastFullPatchset.message)
-      clAnchor.title += " | " + lastFullPatchset.message;
-    clAnchor.target = "_blank";
-    label.appendChild(clAnchor);
-
-    var status = row.insertCell(-1);
-    status.appendChild(createPatchsetStatusElement(lastFullPatchset));
-  });
-
-  if (issues.length > 0)
-    table.insertRow(-1).insertCell().className = "spacer";
+function addTryStatusRows() {
+  buildbot.getActiveIssues().forEach(updateIssueDisplay);
 }
 
 function updateLKGR(lkgr) {
@@ -185,13 +199,16 @@ function updateLKGR(lkgr) {
   link.textContent = 'LKGR (' + lkgr + ')';
 }
 
-function addBotStatusRow(table, bot) {
+function addBotStatusRow(bot, className) {
+  var table = document.getElementById("status-table");
+
   var baseURL = "http://build.chromium.org/p/chromium" +
     (bot.id != "" ? "." + bot.id : "");
   var consoleURL = baseURL + "/console";
   var statusURL = baseURL + "/horizontal_one_box_per_builder";
 
   var row = table.insertRow(-1);
+  row.className = "trunk-status-row " + className;
   var label = row.insertCell(-1);
   label.className = "status-label";
   var labelAnchor = document.createElement("a");
@@ -202,15 +219,14 @@ function addBotStatusRow(table, bot) {
   label.appendChild(labelAnchor);
 
   var status = row.insertCell(-1);
-  status.className = "botstatus";
+  status.className = "trunk-status-cell";
   var statusIframe = document.createElement("iframe");
-  statusIframe.className = "statusiframe";
   statusIframe.scrolling = "no";
   statusIframe.src = statusURL;
   status.appendChild(statusIframe);
 }
 
-function addBotStatusRows(table) {
+function addBotStatusRows() {
   var closerBots = [
     {id: "", label: "Chromium"},
     {id: "win", label: "Win"},
@@ -230,25 +246,56 @@ function addBotStatusRows(table) {
   ];
 
   closerBots.forEach(function(bot) {
-    addBotStatusRow(table, bot);
+    addBotStatusRow(bot, "closer-status-row");
   });
 
-  table.insertRow(-1).insertCell().className = "spacer";
-
   otherBots.forEach(function(bot) {
-    addBotStatusRow(table, bot);
+    addBotStatusRow(bot, "other-status-row");
   });
 }
 
 function fillStatusTable() {
-  var table = document.getElementById("status-table");
-  addTryStatusRows(table);
-  addBotStatusRows(table);
+  addBotStatusRows();
+  addTryStatusRows();
 }
 
 function main() {
-  requestURL(lkgrURL, "text", updateLKGR);
+  buildbot.requestURL(lkgrURL, "text", updateLKGR);
   fillStatusTable();
+
+  buildbot.getActiveIssues().setEventCallback(function(request) {
+    // NOTE(wittman): It doesn't appear that we can reliably detect closing of
+    // the popup and remove the event callback, so ensure the popup window is
+    // displayed before processing the event.
+    if (!chrome.extension.getViews({type: "popup"}))
+      return;
+
+    switch (request.event) {
+    case "issueUpdated":
+    case "issueAdded":
+      updateIssueDisplay(buildbot.getActiveIssues().getIssue(request.issue));
+      break;
+
+    case "issueRemoved":
+      removeIssueDisplay(request.issue);
+      break;
+    }
+  });
+
+  setInterval(function() {
+    buildbot.requestURL(lkgrURL, "text", updateLKGR);
+  }, lkgrRefreshIntervalInMs);
+
+  setInterval(function() {
+    var botStatusElements =
+        document.getElementsByClassName("trunk-status-iframe");
+    for (var i = 0; i < botStatusElements.length; i++)
+      // Force a reload of the iframe in a way that doesn't cause cross-domain
+      // policy violations.
+      botStatusElements.item(i).src = botStatusElements.item(i).src;
+  }, botStatusRefreshIntervalInMs);
 }
 
 main();
+
+})();

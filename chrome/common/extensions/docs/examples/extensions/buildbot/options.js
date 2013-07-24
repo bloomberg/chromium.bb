@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var prefs = new Prefs;
+(function() {
+
+window.buildbot = window.buildbot || {};
+
+var prefs = new buildbot.PrefStore;
 
 // Initialize the checkbox checked state from the saved preference.
 function main() {
@@ -24,3 +28,5 @@ function main() {
 }
 
 main();
+
+})();

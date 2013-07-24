@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function Prefs() {
-  this.defaults_ = {prefs: {use_notifications: false,
-                            try_job_username: ""}};
-}
+(function() {
 
-Prefs.prototype = {
+window.buildbot = window.buildbot || {};
+
+buildbot.PrefStore = function() {
+  this.defaults_ = {prefs: {use_notifications: false,
+                            try_job_username: null}};
+};
+
+buildbot.PrefStore.prototype = {
   get_: function(key, callback) {
     chrome.storage.sync.get(this.defaults_,
         function (storage) {
@@ -39,3 +43,5 @@ Prefs.prototype = {
     this.set_("try_job_username", try_job_username);
   }
 };
+
+})();
