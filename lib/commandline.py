@@ -49,24 +49,24 @@ def DetermineCheckout(cwd):
         Chrome src/ directory.
   """
   debug_msg = 'Looking for %s checkout root.'
-  logging.debug(debug_msg, 'repo')
 
   # Determine checkout checkout_type and root.
   checkout_type = CHECKOUT_TYPE_UNKNOWN
-  root = git.FindRepoCheckoutRoot(cwd)
-  checkout_type = CHECKOUT_TYPE_REPO if root else checkout_type
-  if root is None:
-    logging.debug(debug_msg, 'gclient')
-    root = gclient.FindGclientCheckoutRoot(cwd)
-    checkout_type = CHECKOUT_TYPE_GCLIENT if root else checkout_type
+  logging.debug(debug_msg, 'gclient')
+  root = gclient.FindGclientCheckoutRoot(cwd)
+  checkout_type = CHECKOUT_TYPE_GCLIENT if root else checkout_type
   if root is None:
     logging.debug(debug_msg, 'git submodule')
     chrome_url = '%s/%s.git' % (
         constants.PUBLIC_GOB_URL, constants.CHROMIUM_SRC_PROJECT)
     root = git.FindGitSubmoduleCheckoutRoot(os.getcwd(), 'origin', chrome_url)
     checkout_type = CHECKOUT_TYPE_SUBMODULE if root else checkout_type
+  # Check for a repo checkout last, because in some cases a chrome checkout
+  # could be embedded within a Chrome OS checkout.
   if root is None:
-    checkout_type = CHECKOUT_TYPE_UNKNOWN
+    logging.debug(debug_msg, 'repo')
+    root = git.FindRepoCheckoutRoot(cwd)
+    checkout_type = CHECKOUT_TYPE_REPO if root else checkout_type
 
   # Determine the chrome src directory.
   chrome_src_dir = None

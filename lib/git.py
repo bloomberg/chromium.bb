@@ -72,14 +72,23 @@ def FindGitSubmoduleCheckoutRoot(path, remote, url):
     path: The path to start searching from.
     remote: The remote to compare the |url| with.
     url: The exact URL the |remote| needs to be pointed at.
+
+  Returns:
+    The path to the root of the git submodule checkout, or None if one wasn't
+    found.
   """
   def test_config(path):
     if os.path.isdir(path):
-      remote_url = cros_build_lib.RunCommand(
-          ['git', '--git-dir', path, 'config', 'remote.%s.url' % remote],
-          redirect_stdout=True, debug_level=logging.DEBUG).output.strip()
-      if remote_url == url:
-        return True
+      try:
+        remote_url = cros_build_lib.RunCommand(
+            ['git', '--git-dir', path, 'config', 'remote.%s.url' % remote],
+            redirect_stdout=True, debug_level=logging.DEBUG).output.strip()
+        if remote_url == url:
+          return True
+      except cros_build_lib.RunCommandError as e:
+        # Return code of '1' means the section or key specified is invalid.
+        if e.result.returncode != 1:
+          raise
     return False
 
   root_dir = osutils.FindInPathParents('.git', path, test_func=test_config)
