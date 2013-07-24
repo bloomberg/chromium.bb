@@ -58,16 +58,6 @@ KNOWN_INCOMPATIBLE = {
     'third_party/icu': [
         # Incompatible code from ICU's repository.
         'source/data/brkitr',
-
-        # Code we don't want to build/include by accident from ICU's repository.
-        'android',
-        'build',
-        'linux',
-        'mac',
-        'patches',
-        'public',
-        'source',
-        'windows',
     ],
 }
 
