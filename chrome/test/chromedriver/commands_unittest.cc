@@ -9,7 +9,10 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_chrome.h"
@@ -17,18 +20,18 @@
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/element_commands.h"
-#include "chrome/test/chromedriver/fake_session_accessor.h"
+#include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_commands.h"
 #include "chrome/test/chromedriver/window_commands.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webdriver/atoms.h"
 
-TEST(CommandsTest, GetStatus) {
-  base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
-  std::string session_id;
-  ASSERT_EQ(
-      kOk, ExecuteGetStatus(params, std::string(), &value, &session_id).code());
+namespace {
+
+void OnGetStatus(const Status& status,
+                 scoped_ptr<base::Value> value,
+                 const std::string& session_id) {
+  ASSERT_EQ(kOk, status.code());
   base::DictionaryValue* dict;
   ASSERT_TRUE(value->GetAsDictionary(&dict));
   base::Value* unused;
@@ -38,145 +41,188 @@ TEST(CommandsTest, GetStatus) {
   ASSERT_TRUE(dict->Get("build.version", &unused));
 }
 
+}  // namespace
+
+TEST(CommandsTest, GetStatus) {
+  base::DictionaryValue params;
+  ExecuteGetStatus(params, std::string(), base::Bind(&OnGetStatus));
+}
+
 namespace {
 
-Status ExecuteStubQuit(
+void ExecuteStubQuit(
     int* count,
     const base::DictionaryValue& params,
     const std::string& session_id,
-    scoped_ptr<base::Value>* value,
-    std::string* out_session_id) {
+    const CommandCallback& callback) {
   if (*count == 0) {
     EXPECT_STREQ("id", session_id.c_str());
   } else {
     EXPECT_STREQ("id2", session_id.c_str());
   }
   (*count)++;
-  return Status(kOk);
+  callback.Run(Status(kOk), scoped_ptr<base::Value>(), session_id);
+}
+
+void OnQuitAll(const Status& status,
+               scoped_ptr<base::Value> value,
+               const std::string& session_id) {
+  ASSERT_EQ(kOk, status.code());
+  ASSERT_FALSE(value.get());
 }
 
 }  // namespace
 
 TEST(CommandsTest, QuitAll) {
-  SessionMap map;
+  SessionThreadMap map;
   Session session("id");
   Session session2("id2");
-  map.Set(session.id,
-          scoped_refptr<SessionAccessor>(new FakeSessionAccessor(&session)));
-  map.Set(session2.id,
-          scoped_refptr<SessionAccessor>(new FakeSessionAccessor(&session2)));
+  map[session.id] = make_linked_ptr(new base::Thread("1"));
+  map[session2.id] = make_linked_ptr(new base::Thread("2"));
 
   int count = 0;
   Command cmd = base::Bind(&ExecuteStubQuit, &count);
   base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
-  std::string session_id;
-  Status status =
-      ExecuteQuitAll(cmd, &map, params, std::string(), &value, &session_id);
-  ASSERT_EQ(kOk, status.code());
-  ASSERT_FALSE(value.get());
+  base::MessageLoop loop;
+  ExecuteQuitAll(cmd, &map, params, std::string(), base::Bind(&OnQuitAll));
   ASSERT_EQ(2, count);
 }
 
-TEST(CommandsTest, Quit) {
-  SessionMap map;
-  Session session("id", scoped_ptr<Chrome>(new StubChrome()));
-  scoped_refptr<FakeSessionAccessor> session_accessor(
-      new FakeSessionAccessor(&session));
-  map.Set(session.id, session_accessor);
+namespace {
+
+Status ExecuteSimpleCommand(
+    const std::string& expected_id,
+    base::DictionaryValue* expected_params,
+    base::Value* value,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* return_value) {
+  EXPECT_EQ(expected_id, session->id);
+  EXPECT_TRUE(expected_params->Equals(&params));
+  return_value->reset(value->DeepCopy());
+  session->quit = true;
+  return Status(kOk);
+}
+
+void OnSimpleCommand(base::RunLoop* run_loop,
+                     const std::string& expected_session_id,
+                     base::Value* expected_value,
+                     const Status& status,
+                     scoped_ptr<base::Value> value,
+                     const std::string& session_id) {
+  ASSERT_EQ(kOk, status.code());
+  ASSERT_TRUE(expected_value->Equals(value.get()));
+  ASSERT_EQ(expected_session_id, session_id);
+  run_loop->Quit();
+}
+
+}  // namespace
+
+TEST(CommandsTest, ExecuteSessionCommand) {
+  SessionThreadMap map;
+  linked_ptr<base::Thread> thread(new base::Thread("1"));
+  ASSERT_TRUE(thread->Start());
+  std::string id("id");
+  thread->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&internal::CreateSessionOnSessionThreadForTesting, id));
+  map[id] = thread;
+
   base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
-  std::string out_session_id;
-  ASSERT_EQ(kOk,
-            ExecuteQuit(false, &map, params, session.id, &value,
-                        &out_session_id).code());
-  ASSERT_FALSE(map.Has(session.id));
-  ASSERT_TRUE(session_accessor->IsSessionDeleted());
-  ASSERT_FALSE(value.get());
+  params.SetInteger("param", 5);
+  base::FundamentalValue expected_value(6);
+  SessionCommand cmd = base::Bind(
+      &ExecuteSimpleCommand, id, &params, &expected_value);
+
+  base::MessageLoop loop;
+  base::RunLoop run_loop;
+  ExecuteSessionCommand(
+      &map,
+      cmd,
+      false,
+      params,
+      id,
+      base::Bind(&OnSimpleCommand, &run_loop, id, &expected_value));
+  run_loop.Run();
 }
 
 namespace {
 
-class DetachChrome : public StubChrome {
- public:
-  DetachChrome() : quit_called(false) {}
-  virtual ~DetachChrome() {}
+Status ShouldNotBeCalled(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  EXPECT_TRUE(false);
+  return Status(kOk);
+}
 
-  bool IsQuitCalled() {
-    return quit_called;
-  }
+void OnNoSuchSession(const Status& status,
+                     scoped_ptr<base::Value> value,
+                     const std::string& session_id) {
+  EXPECT_EQ(kNoSuchSession, status.code());
+  EXPECT_FALSE(value.get());
+}
 
-  // Overridden from Chrome:
-  virtual Status Quit() OVERRIDE {
-    quit_called = true;
-    return Status(kOk);
-  }
-
- private:
-  bool quit_called;
-};
+void OnNoSuchSessionIsOk(const Status& status,
+                         scoped_ptr<base::Value> value,
+                         const std::string& session_id) {
+  EXPECT_EQ(kOk, status.code());
+  EXPECT_FALSE(value.get());
+}
 
 }  // namespace
 
-TEST(CommandsTest, QuitWhenDetach) {
-  SessionMap map;
-  DetachChrome* chrome = new DetachChrome();
-  Session session("id", scoped_ptr<Chrome>(chrome));
-  session.detach = true;
-
-  scoped_refptr<FakeSessionAccessor> session_accessor(
-      new FakeSessionAccessor(&session));
+TEST(CommandsTest, ExecuteSessionCommandOnNoSuchSession) {
+  SessionThreadMap map;
   base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
-  std::string out_session_id;
+  ExecuteSessionCommand(&map,
+                        base::Bind(&ShouldNotBeCalled),
+                        false,
+                        params,
+                        "session",
+                        base::Bind(&OnNoSuchSession));
+}
 
-  map.Set(session.id, session_accessor);
-  ASSERT_EQ(kOk,
-            ExecuteQuit(true, &map, params, session.id, &value,
-                        &out_session_id).code());
-  ASSERT_FALSE(map.Has(session.id));
-  ASSERT_FALSE(value.get());
-  ASSERT_FALSE(chrome->IsQuitCalled());
-
-  map.Set(session.id, session_accessor);
-  ASSERT_EQ(kOk,
-            ExecuteQuit(false, &map, params, session.id, &value,
-                        &out_session_id).code());
-  ASSERT_FALSE(map.Has(session.id));
-  ASSERT_FALSE(value.get());
-  ASSERT_TRUE(chrome->IsQuitCalled());
+TEST(CommandsTest, ExecuteSessionCommandOnNoSuchSessionWhenItExpectsOk) {
+  SessionThreadMap map;
+  base::DictionaryValue params;
+  ExecuteSessionCommand(&map,
+                        base::Bind(&ShouldNotBeCalled),
+                        true,
+                        params,
+                        "session",
+                        base::Bind(&OnNoSuchSessionIsOk));
 }
 
 namespace {
 
-class FailsToQuitChrome : public StubChrome {
- public:
-  FailsToQuitChrome() {}
-  virtual ~FailsToQuitChrome() {}
-
-  // Overridden from Chrome:
-  virtual Status Quit() OVERRIDE {
-    return Status(kUnknownError);
-  }
-};
+void OnNoSuchSessionAndQuit(base::RunLoop* run_loop,
+                            const Status& status,
+                            scoped_ptr<base::Value> value,
+                            const std::string& session_id) {
+  run_loop->Quit();
+  EXPECT_EQ(kNoSuchSession, status.code());
+  EXPECT_FALSE(value.get());
+}
 
 }  // namespace
 
-TEST(CommandsTest, QuitFails) {
-  SessionMap map;
-  Session session("id", scoped_ptr<Chrome>(new FailsToQuitChrome()));
-  scoped_refptr<FakeSessionAccessor> session_accessor(
-      new FakeSessionAccessor(&session));
-  map.Set(session.id, session_accessor);
-  base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
-  std::string out_session_id;
-  ASSERT_EQ(kUnknownError,
-            ExecuteQuit(false, &map, params, session.id, &value,
-                        &out_session_id).code());
-  ASSERT_FALSE(map.Has(session.id));
-  ASSERT_TRUE(session_accessor->IsSessionDeleted());
-  ASSERT_FALSE(value.get());
+TEST(CommandsTest, ExecuteSessionCommandOnJustDeletedSession) {
+  SessionThreadMap map;
+  linked_ptr<base::Thread> thread(new base::Thread("1"));
+  ASSERT_TRUE(thread->Start());
+  std::string id("id");
+  map[id] = thread;
+
+  base::MessageLoop loop;
+  base::RunLoop run_loop;
+  ExecuteSessionCommand(&map,
+                        base::Bind(&ShouldNotBeCalled),
+                        false,
+                        base::DictionaryValue(),
+                        "session",
+                        base::Bind(&OnNoSuchSessionAndQuit, &run_loop));
+  run_loop.Run();
 }
 
 namespace {

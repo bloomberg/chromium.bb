@@ -9,7 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/test/chromedriver/session_map.h"
+#include "chrome/test/chromedriver/command.h"
+#include "chrome/test/chromedriver/session_thread_map.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,24 +20,15 @@ class Value;
 struct Session;
 class Status;
 
-typedef base::Callback<Status(
+// Quits a session.
+Status ExecuteQuit(
+    bool allow_detach,
     Session* session,
-    const base::DictionaryValue&,
-    scoped_ptr<base::Value>*)> SessionCommand;
-
-// Executes a given session command, after acquiring access to the appropriate
-// session.
-Status ExecuteSessionCommand(
-    SessionMap* session_map,
-    const SessionCommand& command,
     const base::DictionaryValue& params,
-    const std::string& session_id,
-    scoped_ptr<base::Value>* out_value,
-    std::string* out_session_id);
+    scoped_ptr<base::Value>* value);
 
 // Gets the capabilities of a particular session.
 Status ExecuteGetSessionCapabilities(
-    SessionMap* session_map,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
@@ -49,7 +41,6 @@ Status ExecuteGetCurrentWindowHandle(
 
 // Close the target window.
 Status ExecuteClose(
-    SessionMap* session_map,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);

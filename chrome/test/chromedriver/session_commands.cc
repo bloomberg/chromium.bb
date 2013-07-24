@@ -23,7 +23,6 @@
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/session.h"
-#include "chrome/test/chromedriver/session_map.h"
 #include "chrome/test/chromedriver/util.h"
 
 namespace {
@@ -43,53 +42,22 @@ bool WindowHandleToWebViewId(const std::string& window_handle,
   return true;
 }
 
-void ExecuteOnSessionThread(
-    const SessionCommand& command,
-    Session* session,
-    const base::DictionaryValue* params,
-    scoped_ptr<base::Value>* value,
-    Status* status,
-    base::WaitableEvent* event) {
-  *status = command.Run(session, *params, value);
-  event->Signal();
-}
-
 }  // namespace
 
-Status ExecuteSessionCommand(
-    SessionMap* session_map,
-    const SessionCommand& command,
+Status ExecuteQuit(
+    bool allow_detach,
+    Session* session,
     const base::DictionaryValue& params,
-    const std::string& session_id,
-    scoped_ptr<base::Value>* out_value,
-    std::string* out_session_id) {
-  *out_session_id = session_id;
-  scoped_refptr<SessionAccessor> session_accessor;
-  if (!session_map->Get(session_id, &session_accessor))
-    return Status(kNoSuchSession, session_id);
-  scoped_ptr<base::AutoLock> session_lock;
-  Session* session = session_accessor->Access(&session_lock);
-  if (!session)
-    return Status(kNoSuchSession, session_id);
-
-  Status status(kUnknownError);
-  base::WaitableEvent event(false, false);
-  session->thread.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&ExecuteOnSessionThread, command, session,
-                 &params, out_value, &status, &event));
-  event.Wait();
-  if (status.IsError() && session->chrome)
-    status.AddDetails("Session info: chrome=" + session->chrome->GetVersion());
-  // Delete the session, because concurrent requests might hold a reference to
-  // the SessionAccessor already.
-  if (!session_map->Has(session_id))
-    session_accessor->DeleteSession();
-  return status;
+    scoped_ptr<base::Value>* value) {
+  if (allow_detach && session->detach) {
+    return Status(kOk);
+  } else {
+    session->quit = true;
+    return session->chrome->Quit();
+  }
 }
 
 Status ExecuteGetSessionCapabilities(
-    SessionMap* session_map,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
@@ -111,7 +79,6 @@ Status ExecuteGetCurrentWindowHandle(
 }
 
 Status ExecuteClose(
-    SessionMap* session_map,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
@@ -135,7 +102,7 @@ Status ExecuteClose(
   if ((status.code() == kChromeNotReachable && is_last_web_view) ||
       (status.IsOk() && web_view_ids.empty())) {
     // If no window is open, close is the equivalent of calling "quit".
-    CHECK(session_map->Remove(session->id));
+    session->quit = true;
     return session->chrome->Quit();
   }
 

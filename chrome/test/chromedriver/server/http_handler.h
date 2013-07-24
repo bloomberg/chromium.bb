@@ -10,17 +10,21 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/test/chromedriver/command.h"
+#include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/element_commands.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/session_commands.h"
-#include "chrome/test/chromedriver/session_map.h"
+#include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/window_commands.h"
 
 namespace base {
 class DictionaryValue;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -50,13 +54,18 @@ struct CommandMapping {
   Command command;
 };
 
+typedef base::Callback<void(scoped_ptr<HttpResponse>)> HttpResponseSenderFunc;
+
 class HttpHandler {
  public:
   HttpHandler(Log* log, const std::string& url_base);
+  HttpHandler(const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+              Log* log,
+              const std::string& url_base);
   ~HttpHandler();
 
   void Handle(const net::HttpServerRequestInfo& request,
-              HttpResponse* response);
+              const HttpResponseSenderFunc& send_response_func);
   bool ShouldShutdown(const net::HttpServerRequestInfo& request);
 
  private:
@@ -70,22 +79,32 @@ class HttpHandler {
   Command WrapToCommand(const SessionCommand& session_command);
   Command WrapToCommand(const WindowCommand& window_command);
   Command WrapToCommand(const ElementCommand& element_command);
-  void HandleInternal(const net::HttpServerRequestInfo& request,
-                      HttpResponse* response);
-  bool HandleWebDriverCommand(
-      const net::HttpServerRequestInfo& request,
+  void HandleCommand(const net::HttpServerRequestInfo& request,
+                     const std::string& trimmed_path,
+                     const HttpResponseSenderFunc& send_response_func);
+  void PrepareResponse(const std::string& trimmed_path,
+                       const HttpResponseSenderFunc& send_response_func,
+                       const Status& status,
+                       scoped_ptr<base::Value> value,
+                       const std::string& session_id);
+  scoped_ptr<HttpResponse> PrepareResponseHelper(
       const std::string& trimmed_path,
-      HttpResponse* response);
+      const Status& status,
+      scoped_ptr<base::Value> value,
+      const std::string& session_id);
 
+  base::ThreadChecker thread_checker_;
   Log* log_;
-  base::Thread io_thread_;
   std::string url_base_;
+  bool received_shutdown_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
   SyncWebSocketFactory socket_factory_;
-  SessionMap session_map_;
+  SessionThreadMap session_thread_map_;
   scoped_ptr<CommandMap> command_map_;
   scoped_ptr<Adb> adb_;
   scoped_ptr<DeviceManager> device_manager_;
+
+  base::WeakPtrFactory<HttpHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpHandler);
 };

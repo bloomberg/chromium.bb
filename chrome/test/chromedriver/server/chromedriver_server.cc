@@ -7,14 +7,18 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
@@ -28,6 +32,23 @@
 #endif
 
 namespace {
+
+void SendHttpResponse(bool shutdown,
+                      const HttpResponseSenderFunc& send_response_func,
+                      scoped_ptr<HttpResponse> response) {
+  send_response_func.Run(response.Pass());
+  if (shutdown)
+    base::MessageLoop::current()->QuitWhenIdle();
+}
+
+void HandleHttpRequest(HttpHandler* handler,
+                       const net::HttpServerRequestInfo& request,
+                       const HttpResponseSenderFunc& send_response_func) {
+  handler->Handle(request,
+                  base::Bind(&SendHttpResponse,
+                             handler->ShouldShutdown(request),
+                             send_response_func));
+}
 
 void ReadRequestBody(const struct mg_request_info* const request_info,
                      struct mg_connection* const connection,
@@ -56,10 +77,21 @@ void ReadRequestBody(const struct mg_request_info* const request_info,
   }
 }
 
+typedef base::Callback<
+    void(const net::HttpServerRequestInfo&, const HttpResponseSenderFunc&)>
+    HttpRequestHandlerFunc;
+
 struct MongooseUserData {
-  HttpHandler* handler;
-  base::WaitableEvent* shutdown_event;
+  base::SingleThreadTaskRunner* cmd_task_runner;
+  HttpRequestHandlerFunc* handler_func;
 };
+
+void DoneProcessing(base::WaitableEvent* event,
+                    scoped_ptr<HttpResponse>* response_to_set,
+                    scoped_ptr<HttpResponse> response) {
+  *response_to_set = response.Pass();
+  event->Signal();
+}
 
 void* ProcessHttpRequest(mg_event event_raised,
                          struct mg_connection* connection,
@@ -74,16 +106,20 @@ void* ProcessHttpRequest(mg_event event_raised,
   request.path = request_info->uri;
   ReadRequestBody(request_info, connection, &request.data);
 
-  HttpResponse response;
-  user_data->handler->Handle(request, &response);
+  base::WaitableEvent event(false, false);
+  scoped_ptr<HttpResponse> response;
+  user_data->cmd_task_runner
+      ->PostTask(FROM_HERE,
+                 base::Bind(*user_data->handler_func,
+                            request,
+                            base::Bind(&DoneProcessing, &event, &response)));
+  event.Wait();
 
   // Don't allow HTTP keep alive.
-  response.AddHeader("connection", "close");
+  response->AddHeader("connection", "close");
   std::string data;
-  response.GetData(&data);
+  response->GetData(&data);
   mg_write(connection, data.data(), data.length());
-  if (user_data->handler->ShouldShutdown(request))
-    user_data->shutdown_event->Signal();
   return reinterpret_cast<void*>(true);
 }
 
@@ -103,7 +139,7 @@ void MakeMongooseOptions(const std::string& port,
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
 
-  base::AtExitManager exit;
+  base::AtExitManager at_exit;
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
   // Parse command line flags.
@@ -175,10 +211,16 @@ int main(int argc, char *argv[]) {
   if (!cmd_line->HasSwitch("verbose"))
     logging::SetMinLogLevel(logging::LOG_FATAL);
 
+  base::Thread io_thread("ChromeDriver IO");
+  CHECK(io_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+
   scoped_ptr<Log> log(new Logger(log_level));
-  HttpHandler handler(log.get(), url_base);
-  base::WaitableEvent shutdown_event(false, false);
-  MongooseUserData user_data = { &handler, &shutdown_event };
+  HttpHandler handler(io_thread.message_loop_proxy(), log.get(), url_base);
+  base::MessageLoop cmd_loop;
+  HttpRequestHandlerFunc handler_func =
+      base::Bind(&HandleHttpRequest, &handler);
+  MongooseUserData user_data = { cmd_loop.message_loop_proxy(), &handler_func };
 
   std::vector<std::string> args;
   MakeMongooseOptions(port, http_threads, &args);
@@ -210,8 +252,10 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  // Run until we receive command to shutdown.
-  shutdown_event.Wait();
-
-  return 0;
+  base::RunLoop cmd_run_loop;
+  cmd_run_loop.Run();
+  // Don't run destructors for objects passed via MongooseUserData,
+  // because ProcessHttpRequest may be accessing them.
+  // TODO(kkania): Fix when switching to net::HttpServer.
+  exit(0);
 }
