@@ -204,16 +204,6 @@ void NodeRenderingContext::moveToFlowThreadIfNeeded()
     flowThreadController->registerNamedFlowContentNode(m_node, m_parentFlowRenderer);
 }
 
-bool NodeRenderingContext::isOnEncapsulationBoundary() const
-{
-    return isOnUpperEncapsulationBoundary() || isLowerEncapsulationBoundary(m_parentDetails.insertionPoint()) || isLowerEncapsulationBoundary(m_node->parentNode());
-}
-
-bool NodeRenderingContext::isOnUpperEncapsulationBoundary() const
-{
-    return m_node->parentNode() && m_node->parentNode()->isShadowRoot();
-}
-
 void NodeRenderingContext::createRendererForElementIfNeeded()
 {
     ASSERT(!m_node->renderer());

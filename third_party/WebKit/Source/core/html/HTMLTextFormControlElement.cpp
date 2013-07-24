@@ -61,15 +61,6 @@ HTMLTextFormControlElement::~HTMLTextFormControlElement()
 {
 }
 
-bool HTMLTextFormControlElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
-{
-    // FIXME: We shouldn't force the pseudo elements down into the shadow, but
-    // this perserves the current behavior of WebKit.
-    if (childContext.node()->isPseudoElement())
-        return HTMLFormControlElementWithState::childShouldCreateRenderer(childContext);
-    return childContext.isOnEncapsulationBoundary() && HTMLFormControlElementWithState::childShouldCreateRenderer(childContext);
-}
-
 Node::InsertionNotificationRequest HTMLTextFormControlElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLFormControlElementWithState::insertedInto(insertionPoint);

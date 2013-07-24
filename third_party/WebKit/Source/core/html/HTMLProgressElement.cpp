@@ -64,11 +64,6 @@ RenderObject* HTMLProgressElement::createRenderer(RenderStyle* style)
     return new (document()->renderArena()) RenderProgress(this);
 }
 
-bool HTMLProgressElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
-{
-    return childContext.isOnUpperEncapsulationBoundary() && HTMLElement::childShouldCreateRenderer(childContext);
-}
-
 RenderProgress* HTMLProgressElement::renderProgress() const
 {
     if (renderer() && renderer()->isProgress())

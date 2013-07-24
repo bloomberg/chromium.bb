@@ -62,11 +62,6 @@ RenderObject* HTMLMeterElement::createRenderer(RenderStyle* style)
     return new (document()->renderArena()) RenderMeter(this);
 }
 
-bool HTMLMeterElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
-{
-    return childContext.isOnUpperEncapsulationBoundary() && HTMLElement::childShouldCreateRenderer(childContext);
-}
-
 void HTMLMeterElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == valueAttr || name == minAttr || name == maxAttr || name == lowAttr || name == highAttr || name == optimumAttr)

@@ -57,7 +57,6 @@ public:
     bool hasDistribution() const { return !m_distribution.isEmpty(); }
     void setDistribution(ContentDistribution& distribution) { m_distribution.swap(distribution); }
     void clearDistribution() { m_distribution.clear(); }
-    bool isShadowBoundary() const;
     bool isActive() const;
 
     PassRefPtr<NodeList> getDistributedNodes() const;
@@ -116,13 +115,6 @@ inline const InsertionPoint* toInsertionPoint(const Node* node)
 inline bool isActiveInsertionPoint(const Node* node)
 {
     return node->isInsertionPoint() && toInsertionPoint(node)->isActive();
-}
-
-inline bool isLowerEncapsulationBoundary(Node* node)
-{
-    if (!node || !node->isInsertionPoint())
-        return false;
-    return toInsertionPoint(node)->isShadowBoundary();
 }
 
 inline Node* parentNodeForDistribution(const Node* node)

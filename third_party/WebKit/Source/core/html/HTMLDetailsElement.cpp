@@ -98,15 +98,10 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
 
 bool HTMLDetailsElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
 {
-    if (!childContext.isOnEncapsulationBoundary())
-        return false;
-
     if (m_isOpen)
         return HTMLElement::childShouldCreateRenderer(childContext);
-
     if (!childContext.node()->hasTagName(summaryTag))
         return false;
-
     return childContext.node() == findMainSummary() && HTMLElement::childShouldCreateRenderer(childContext);
 }
 

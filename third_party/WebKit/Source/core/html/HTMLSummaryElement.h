@@ -37,7 +37,6 @@ private:
     HTMLSummaryElement(const QualifiedName&, Document*);
 
     virtual RenderObject* createRenderer(RenderStyle*);
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const OVERRIDE;
     virtual void defaultEventHandler(Event*);
 
     virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;

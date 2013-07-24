@@ -52,13 +52,6 @@ RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
     return new (document()->renderArena()) RenderBlock(this);
 }
 
-bool HTMLSummaryElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
-{
-    if (childContext.node()->isPseudoElement())
-        return true;
-    return childContext.isOnEncapsulationBoundary() && HTMLElement::childShouldCreateRenderer(childContext);
-}
-
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
     root->appendChild(DetailsMarkerControl::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
