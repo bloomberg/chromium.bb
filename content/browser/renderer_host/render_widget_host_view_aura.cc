@@ -1722,10 +1722,12 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult(
 
 static void CopyFromCompositingSurfaceFinished(
     const base::Callback<void(bool, const SkBitmap&)>& callback,
+    const cc::TextureMailbox::ReleaseCallback& release_callback,
     scoped_ptr<SkBitmap> bitmap,
     scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
     bool result) {
   bitmap_pixels_lock.reset();
+  release_callback.Run(0, false);
   callback.Run(result, *bitmap);
 }
 
@@ -1773,6 +1775,7 @@ void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
       pixels,
       base::Bind(&CopyFromCompositingSurfaceFinished,
                  callback,
+                 texture_mailbox->callback(),
                  base::Passed(&bitmap),
                  base::Passed(&bitmap_pixels_lock)));
 }
@@ -1802,6 +1805,14 @@ void RenderWidgetHostViewAura::PrepareBitmapCopyOutputResult(
       dst_size_in_pixel.width(),
       dst_size_in_pixel.height());
   callback.Run(true, bitmap);
+}
+
+static void CopyFromCompositingSurfaceFinishedForVideo(
+    const base::Callback<void(bool)>& callback,
+    const cc::TextureMailbox::ReleaseCallback& release_callback,
+    bool result) {
+  release_callback.Run(0, false);
+  callback.Run(result);
 }
 
 // static
@@ -1887,11 +1898,15 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
   }
 
   scoped_callback_runner.Release();
+  base::Callback<void(bool result)> finished_callback = base::Bind(
+      &CopyFromCompositingSurfaceFinishedForVideo,
+      callback,
+      texture_mailbox->callback());
   yuv_readback_pipeline->ReadbackYUV(
       texture_mailbox->name(),
       texture_mailbox->sync_point(),
       video_frame.get(),
-      callback);
+      finished_callback);
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {

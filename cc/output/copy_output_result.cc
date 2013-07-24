@@ -26,7 +26,10 @@ CopyOutputResult::CopyOutputResult(gfx::Size size,
   DCHECK(texture_mailbox_->IsTexture());
 }
 
-CopyOutputResult::~CopyOutputResult() {}
+CopyOutputResult::~CopyOutputResult() {
+  if (texture_mailbox_)
+    texture_mailbox_->RunReleaseCallback(0, false);
+}
 
 scoped_ptr<SkBitmap> CopyOutputResult::TakeBitmap() {
   return bitmap_.Pass();
