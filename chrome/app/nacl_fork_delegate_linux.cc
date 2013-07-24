@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -27,23 +28,40 @@
 
 namespace {
 
-// Using nacl_helper_bootstrap is not necessary on x86-64 because
-// NaCl's x86-64 sandbox is not zero-address-based.  Starting
-// nacl_helper through nacl_helper_bootstrap works on x86-64, but it
-// leaves nacl_helper_bootstrap mapped at a fixed address at the
-// bottom of the address space, which is undesirable because it
-// effectively defeats ASLR.
-#if defined(ARCH_CPU_X86_64)
-const bool kUseNaClBootstrap = false;
-#else
-const bool kUseNaClBootstrap = true;
-#endif
-
 // Note these need to match up with their counterparts in nacl_helper_linux.c
 // and nacl_helper_bootstrap_linux.c.
 const char kNaClHelperReservedAtZero[] =
     "--reserved_at_zero=0xXXXXXXXXXXXXXXXX";
 const char kNaClHelperRDebug[] = "--r_debug=0xXXXXXXXXXXXXXXXX";
+
+#if defined(ARCH_CPU_X86)
+bool NonZeroSegmentBaseIsSlow() {
+  base::CPU cpuid;
+  // Using a non-zero segment base is known to be very slow on Intel
+  // Atom CPUs.  See "Segmentation-based Memory Protection Mechanism
+  // on Intel Atom Microarchitecture: Coding Optimizations" (Leonardo
+  // Potenza, Intel).
+  //
+  // The following list of CPU model numbers is taken from:
+  // "Intel 64 and IA-32 Architectures Software Developer's Manual"
+  // (http://download.intel.com/products/processor/manual/325462.pdf),
+  // "Table 35-1. CPUID Signature Values of DisplayFamily_DisplayModel"
+  // (Volume 3C, 35-1), which contains:
+  //   "06_36H - Intel Atom S Processor Family
+  //    06_1CH, 06_26H, 06_27H, 06_35, 06_36 - Intel Atom Processor Family"
+  if (cpuid.family() == 6) {
+    switch (cpuid.model()) {
+      case 0x1c:
+      case 0x26:
+      case 0x27:
+      case 0x35:
+      case 0x36:
+        return true;
+    }
+  }
+  return false;
+}
+#endif
 
 }
 
@@ -63,6 +81,25 @@ void NaClForkDelegate::Init(const int sandboxdesc) {
   base::FileHandleMappingVector fds_to_map;
   fds_to_map.push_back(std::make_pair(fds[1], kNaClZygoteDescriptor));
   fds_to_map.push_back(std::make_pair(sandboxdesc, kNaClSandboxDescriptor));
+
+  // Using nacl_helper_bootstrap is not necessary on x86-64 because
+  // NaCl's x86-64 sandbox is not zero-address-based.  Starting
+  // nacl_helper through nacl_helper_bootstrap works on x86-64, but it
+  // leaves nacl_helper_bootstrap mapped at a fixed address at the
+  // bottom of the address space, which is undesirable because it
+  // effectively defeats ASLR.
+#if defined(ARCH_CPU_X86_64)
+  bool kUseNaClBootstrap = false;
+#elif defined(ARCH_CPU_X86)
+  // Performance vs. security trade-off: We prefer using a
+  // non-zero-address-based sandbox on x86-32 because it provides some
+  // ASLR and so is more secure.  However, on Atom CPUs, using a
+  // non-zero segment base is very slow, so we use a zero-based
+  // sandbox on those.
+  bool kUseNaClBootstrap = NonZeroSegmentBaseIsSlow();
+#else
+  bool kUseNaClBootstrap = true;
+#endif
 
   status_ = kNaClHelperUnused;
   base::FilePath helper_exe;
