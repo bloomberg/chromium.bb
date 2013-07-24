@@ -74,29 +74,13 @@ namespace autofill {
 // Called when the contents of a section have changed.
 - (void)update;
 
-// Fills the section with Autofill data that was triggered by a user
-// interaction with the originating |input|.
-- (void)fillForInput:(const autofill::DetailInput&)input;
-
 // Validate this section. Validation rules depend on |validationType|.
 - (BOOL)validateFor:(autofill::ValidationType)validationType;
 
 @end
 
 @interface AutofillSectionContainer (ForTesting)
-
-// Retrieve the field associated with the given type.
 - (NSControl<AutofillInputField>*)getField:(autofill::AutofillFieldType)type;
-
-// Sets the value for the field matching |input|. Does nothing if the field is
-// not part of this section.
-- (void)setFieldValue:(NSString*)text
-              forInput:(const autofill::DetailInput&)input;
-
-// Activates a given input field, determined by |input|. Does nothing if the
-// field is not part of this section.
-- (void)activateFieldForInput:(const autofill::DetailInput&)input;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_SECTION_CONTAINER_H_
