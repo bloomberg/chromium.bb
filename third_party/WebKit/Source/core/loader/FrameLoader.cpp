@@ -953,6 +953,18 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
     return true;
 }
 
+static bool shouldOpenInNewWindow(Frame* targetFrame, const FrameLoadRequest& request, const NavigationAction& action)
+{
+    if (!targetFrame && !request.frameName().isEmpty())
+        return true;
+    if (!request.formState())
+        return false;
+    NavigationPolicy navigationPolicy = NavigationPolicyCurrentTab;
+    if (!action.specifiesNavigationPolicy(&navigationPolicy))
+        return false;
+    return navigationPolicy != NavigationPolicyCurrentTab;
+}
+
 void FrameLoader::load(const FrameLoadRequest& passedRequest)
 {
     ASSERT(!m_suppressOpenerInNewFrame);
@@ -978,7 +990,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
 
     FrameLoadType newLoadType = determineFrameLoadType(request);
     NavigationAction action(request.resourceRequest(), newLoadType, request.formState(), request.triggeringEvent());
-    if (!targetFrame && !request.frameName().isEmpty()) {
+    if (shouldOpenInNewWindow(targetFrame, request, action)) {
         TemporaryChange<bool> changeOpener(m_suppressOpenerInNewFrame, request.shouldSendReferrer() == NeverSendReferrer);
         checkNewWindowPolicyAndContinue(request.formState(), request.frameName(), action);
         return;

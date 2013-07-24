@@ -1,0 +1,6 @@
+PASS results["method"] is "POST"
+PASS results["formValue"] is "b"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
