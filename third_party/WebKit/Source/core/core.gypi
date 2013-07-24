@@ -3746,6 +3746,7 @@
             'platform/SharedBufferTest.cpp',
             'platform/chromium/ClipboardChromiumTest.cpp',
             'platform/graphics/FontTest.cpp',
+            'platform/graphics/GraphicsContextTest.cpp',
             'platform/graphics/UnitBezierTest.cpp',
             'platform/graphics/chromium/AnimationTranslationUtilTest.cpp',
             'platform/graphics/chromium/Canvas2DLayerBridgeTest.cpp',

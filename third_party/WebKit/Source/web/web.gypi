@@ -304,7 +304,6 @@
       'tests/FrameLoaderClientImplTest.cpp',
       'tests/FrameTestHelpers.cpp',
       'tests/FrameTestHelpers.h',
-      'tests/GraphicsContextTest.cpp',
       'tests/GraphicsLayerTest.cpp',
       'tests/IDBBindingUtilitiesTest.cpp',
       'tests/IDBRequestTest.cpp',

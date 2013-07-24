@@ -24,12 +24,13 @@
 
 #include "config.h"
 
-#include <gtest/gtest.h>
+#include "core/platform/graphics/GraphicsContext.h"
+
 #include "SkCanvas.h"
 #include "core/platform/graphics/BitmapImage.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 
@@ -62,7 +63,7 @@ namespace {
         } \
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueTest)
+TEST(GraphicsContextTest, trackOpaqueTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 400, 400);
@@ -121,7 +122,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueClipTest)
+TEST(GraphicsContextTest, trackOpaqueClipTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 400, 400);
@@ -227,7 +228,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueClipTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackImageMask)
+TEST(GraphicsContextTest, trackImageMask)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 400, 400);
@@ -265,7 +266,7 @@ TEST(PlatformContextSkiaTest, trackImageMask)
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackImageMaskWithOpaqueRect)
+TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 400, 400);
@@ -306,7 +307,7 @@ TEST(PlatformContextSkiaTest, trackImageMaskWithOpaqueRect)
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueJoinTest)
+TEST(GraphicsContextTest, trackOpaqueJoinTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 400, 400);
@@ -364,7 +365,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueJoinTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueLineTest)
+TEST(GraphicsContextTest, trackOpaqueLineTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
@@ -459,7 +460,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueLineTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackOpaquePathTest)
+TEST(GraphicsContextTest, trackOpaquePathTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
@@ -518,7 +519,7 @@ TEST(PlatformContextSkiaTest, trackOpaquePathTest)
     path.clear();
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueImageTest)
+TEST(GraphicsContextTest, trackOpaqueImageTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
@@ -605,7 +606,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueImageTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueOvalTest)
+TEST(GraphicsContextTest, trackOpaqueOvalTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
@@ -657,7 +658,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueOvalTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueRoundedRectTest)
+TEST(GraphicsContextTest, trackOpaqueRoundedRectTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
@@ -703,7 +704,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueRoundedRectTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueTextTest)
+TEST(GraphicsContextTest, trackOpaqueTextTest)
 {
     int width = 200, height = 200;
     SkBitmap bitmap;
@@ -769,7 +770,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueTextTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueWritePixelsTest)
+TEST(GraphicsContextTest, trackOpaqueWritePixelsTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
@@ -826,7 +827,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueWritePixelsTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueDrawBitmapTest)
+TEST(GraphicsContextTest, trackOpaqueDrawBitmapTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
@@ -883,7 +884,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueDrawBitmapTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, trackOpaqueDrawBitmapRectTest)
+TEST(GraphicsContextTest, trackOpaqueDrawBitmapRectTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
@@ -936,7 +937,7 @@ TEST(PlatformContextSkiaTest, trackOpaqueDrawBitmapRectTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, contextTransparencyLayerTest)
+TEST(GraphicsContextTest, contextTransparencyLayerTest)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 400, 400);
@@ -971,7 +972,7 @@ TEST(PlatformContextSkiaTest, contextTransparencyLayerTest)
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, UnboundedDrawsAreClipped)
+TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 400, 400);
@@ -1017,7 +1018,7 @@ TEST(PlatformContextSkiaTest, UnboundedDrawsAreClipped)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(PlatformContextSkiaTest, PreserveOpaqueOnlyMattersForFirstLayer)
+TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 400, 400);
