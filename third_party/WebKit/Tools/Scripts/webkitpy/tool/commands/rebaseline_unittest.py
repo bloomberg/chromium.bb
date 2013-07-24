@@ -656,6 +656,7 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
                 ['echo', 'optimize-baselines', '--suffixes', 'wav,txt,png', 'path/to/rebaseline-without-modifiers.html'],
                 ['echo', 'optimize-baselines', '--suffixes', 'wav,txt,png', 'path/to/rebaseline-without-bug-number.html'],
                 ['echo', 'optimize-baselines', '--suffixes', 'wav,txt,png', 'path/to/rebaseline-with-modifiers.html'],
+                ['git', 'pull'],
             ])
         finally:
             builders._exact_matches = old_exact_matches

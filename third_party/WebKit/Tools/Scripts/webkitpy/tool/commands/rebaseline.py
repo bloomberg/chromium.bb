@@ -687,6 +687,11 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             # takes a long time and sometimes fails, but we don't want to commit if, e.g. the
             # tree is closed.
             self._run_git_cl_command(options, ['upload', '-f'])
+
+            # Uploading can take a very long time. Do another pull to make sure TestExpectations is up to date,
+            # so the dcommit can go through.
+            tool.executive.run_command(['git', 'pull'])
+
             self._run_git_cl_command(options, ['dcommit', '-f'])
         finally:
             self._run_git_cl_command(options, ['set_close'])
