@@ -1150,6 +1150,9 @@ llvm-configure() {
   llvm-link-clang
   # The --with-binutils-include is to allow llvm to build the gold plugin
   # re: --enable-targets  "x86" brings in both i686 and x86_64.
+  # Disabling zlib features for now to reduce set of shared lib deps.
+  # This may disable things like compressed debug info:
+  # https://code.google.com/p/nativeclient/issues/detail?id=3592
   local binutils_include="${TC_SRC_BINUTILS}/include"
   RunWithLog "llvm.configure" \
       env -i PATH="${PATH}" \
@@ -1158,6 +1161,7 @@ llvm-configure() {
              CXX="${CXX}" \
              ${srcdir}/configure \
              --enable-shared \
+             --enable-zlib=no \
              --disable-jit \
              --with-binutils-include=${binutils_include} \
              --enable-targets=x86,arm,mips \
@@ -1184,6 +1188,9 @@ llvm-configure-ninja() {
 
   llvm-link-clang
   local binutils_include="${TC_SRC_BINUTILS}/include"
+  # Disabling zlib features for now to reduce set of shared lib deps.
+  # This may disable things like compressed debug info:
+  # https://code.google.com/p/nativeclient/issues/detail?id=3592
   RunWithLog "llvm.configure.cmake" \
     env \
       cmake -G Ninja \
@@ -1193,6 +1200,7 @@ llvm-configure-ninja() {
       -DBUILD_SHARED_LIBS=ON \
       -DLLVM_TARGETS_TO_BUILD="X86;ARM;Mips" \
       -DLLVM_ENABLE_ASSERTIONS=ON \
+      -ULLVM_ENABLE_ZLIB \
       -DLLVM_BUILD_TESTS=ON \
       -DLLVM_APPEND_VC_REV=ON \
       -DLLVM_BINUTILS_INCDIR="${binutils_include}" \
