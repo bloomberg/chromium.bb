@@ -55,7 +55,10 @@ bool BrowserShortcutLauncherItemController::HasWindow(
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
   for (BrowserList::const_iterator it = ash_browser_list->begin();
        it != ash_browser_list->end(); ++it) {
-    if ((*it)->window()->GetNativeWindow() == window)
+    // During browser creation it is possible that this function is called
+    // before a browser got a window (see crbug.com/263563).
+    if ((*it)->window() &&
+        (*it)->window()->GetNativeWindow() == window)
       return true;
   }
   return false;
