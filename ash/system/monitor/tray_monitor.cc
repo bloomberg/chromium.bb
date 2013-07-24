@@ -5,7 +5,8 @@
 #include "ash/system/monitor/tray_monitor.h"
 
 #include "ash/system/tray/tray_item_view.h"
-#include "base/process_util.h"
+#include "base/process/memory.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/gpu_data_manager.h"
