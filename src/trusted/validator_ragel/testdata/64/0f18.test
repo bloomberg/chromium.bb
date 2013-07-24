@@ -2,15 +2,22 @@
   # Test handling of different sizes for instruction prefetch
   # illegal undefined sequence
   0f 18 21
-  # legal SSE prefetch instruction
-  0f 18 1c 24
 @dis:
      0:	0f 18                                        	(bad)  
-     2:	21 0f                                        	and    %ecx,(%rdi)
-     4:	18 1c 24                                     	sbb    %bl,(%rsp)
+     2:	21                                           	.byte 0x21
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: 0f 18  (bad)))
-  2: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x2: 21 0f  and %ecx,(%rdi)))
+  2: ('objdump failed to decode', Instruction(0x2: 21  .byte 0x21))
+----------------------------------------------------------------------
+@hex:
+  # legal SSE prefetch instruction
+  0f 18 1c 24
+@dis:
+     0:	0f 18 1c 24                                  	prefetcht2 (%rsp)
+@rdfa_output:
+  return code: 0
+@spec:
+  SAFE
