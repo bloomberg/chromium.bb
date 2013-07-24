@@ -41,16 +41,16 @@ tabpanel > div > div {
   white-space: pre-wrap;
 }
 
-#prefs ul {
+#tabpanel-prefs ul {
   list-style-type: none;
   padding-left: 0;
 }
 
-#prefs ul li {
+#tabpanel-prefs ul li {
   width: 100%;
 }
 
-#prefs ul li button {
+#tabpanel-prefs ul li button {
   background-color: transparent;
   border-style: solid;
   border-width: 1px;

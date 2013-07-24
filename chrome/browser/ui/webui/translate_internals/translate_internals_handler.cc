@@ -39,6 +39,9 @@ void TranslateInternalsHandler::RegisterMessages() {
 
 void TranslateInternalsHandler::OnLanguageDetection(
     const LanguageDetectionDetails& details) {
+  if (!TranslateManager::IsTranslatableURL(details.url))
+    return;
+
   base::DictionaryValue dict;
   dict.Set("time",
            new base::FundamentalValue(details.time.ToJsTime()));
