@@ -326,6 +326,11 @@ scoped_ptr<FileStreamWriter> FileSystemContext::CreateFileStreamWriter(
   return backend->CreateFileStreamWriter(url, offset, this);
 }
 
+scoped_ptr<FileSystemOperationRunner>
+FileSystemContext::CreateFileSystemOperationRunner() {
+  return make_scoped_ptr(new FileSystemOperationRunner(this));
+}
+
 void FileSystemContext::SetLocalFileChangeTracker(
     scoped_ptr<sync_file_system::LocalFileChangeTracker> tracker) {
   DCHECK(!change_tracker_.get());

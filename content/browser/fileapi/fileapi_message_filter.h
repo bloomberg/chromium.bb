@@ -32,6 +32,7 @@ class Time;
 namespace fileapi {
 class FileSystemURL;
 class FileSystemContext;
+class FileSystemOperationRunner;
 struct DirectoryEntry;
 }
 
@@ -169,7 +170,9 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                              int permissions,
                              base::PlatformFileError* error);
 
-  fileapi::FileSystemOperationRunner* operation_runner();
+  fileapi::FileSystemOperationRunner* operation_runner() {
+    return operation_runner_.get();
+  }
 
   int process_id_;
 
@@ -186,6 +189,8 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   net::URLRequestContext* request_context_;
 
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+
+  scoped_ptr<fileapi::FileSystemOperationRunner> operation_runner_;
 
   // Keep track of blob URLs registered in this process. Need to unregister
   // all of them when the renderer process dies.

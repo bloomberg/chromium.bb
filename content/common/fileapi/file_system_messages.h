@@ -12,6 +12,8 @@
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START FileSystemMsgStart
 
 IPC_STRUCT_TRAITS_BEGIN(fileapi::DirectoryEntry)

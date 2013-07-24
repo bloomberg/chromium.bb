@@ -9,7 +9,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/common/fileapi/file_system_messages.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/common_param_traits.h"
@@ -34,6 +36,15 @@ class FileAPIMessageFilterTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     file_system_context_ =
         fileapi::CreateFileSystemContextForTesting(NULL, base::FilePath());
+
+    std::vector<fileapi::FileSystemType> types;
+    file_system_context_->GetFileSystemTypes(&types);
+    for (size_t i = 0; i < types.size(); ++i) {
+      ChildProcessSecurityPolicyImpl::GetInstance()->
+          RegisterFileSystemPermissionPolicy(
+              types[i],
+              fileapi::FileSystemContext::GetPermissionPolicy(types[i]));
+    }
   }
 
   base::MessageLoop message_loop_;
@@ -86,6 +97,67 @@ TEST_F(FileAPIMessageFilterTest, BuildEmptyBlob) {
 
   // Nothing should be returned for a URL we didn't use.
   EXPECT_TRUE(controller->GetBlobDataFromUrl(kDifferentUrl) == NULL);
+}
+
+TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
+  scoped_refptr<FileAPIMessageFilter> filter(
+      new FileAPIMessageFilter(
+          0 /* process_id */,
+          browser_context_.GetRequestContext(),
+          file_system_context_.get(),
+          ChromeBlobStorageContext::GetFor(&browser_context_)));
+  filter->OnChannelConnected(0);
+
+  // Complete initialization.
+  message_loop_.RunUntilIdle();
+
+  IPC::ChannelProxy::MessageFilter* casted_filter =
+      static_cast<IPC::ChannelProxy::MessageFilter*>(filter.get());
+
+  int request_id = 0;
+  const GURL kUrl("filesystem:http://example.com/temporary/foo");
+  FileSystemHostMsg_ReadMetadata read_metadata(request_id++, kUrl);
+  EXPECT_TRUE(casted_filter->OnMessageReceived(read_metadata));
+
+  // Close the filter while it has inflight request.
+  filter->OnChannelClosing();
+
+  // This shouldn't cause DCHECK failure.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
+  scoped_refptr<FileAPIMessageFilter> filter1(
+      new FileAPIMessageFilter(
+          0 /* process_id */,
+          browser_context_.GetRequestContext(),
+          file_system_context_.get(),
+          ChromeBlobStorageContext::GetFor(&browser_context_)));
+  scoped_refptr<FileAPIMessageFilter> filter2(
+      new FileAPIMessageFilter(
+          1 /* process_id */,
+          browser_context_.GetRequestContext(),
+          file_system_context_.get(),
+          ChromeBlobStorageContext::GetFor(&browser_context_)));
+  filter1->OnChannelConnected(0);
+  filter2->OnChannelConnected(1);
+
+  // Complete initialization.
+  message_loop_.RunUntilIdle();
+
+  IPC::ChannelProxy::MessageFilter* casted_filter =
+      static_cast<IPC::ChannelProxy::MessageFilter*>(filter1.get());
+
+  int request_id = 0;
+  const GURL kUrl("filesystem:http://example.com/temporary/foo");
+  FileSystemHostMsg_ReadMetadata read_metadata(request_id++, kUrl);
+  EXPECT_TRUE(casted_filter->OnMessageReceived(read_metadata));
+
+  // Close the other filter before the request for filter1 is processed.
+  filter2->OnChannelClosing();
+
+  // This shouldn't cause DCHECK failure.
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace fileapi

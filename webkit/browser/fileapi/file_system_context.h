@@ -203,6 +203,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
       const FileSystemURL& url,
       int64 offset);
 
+  // Creates a new FileSystemOperationRunner.
+  scoped_ptr<FileSystemOperationRunner> CreateFileSystemOperationRunner();
+
   FileSystemTaskRunners* task_runners() { return task_runners_.get(); }
 
   FileSystemOperationRunner* operation_runner() {

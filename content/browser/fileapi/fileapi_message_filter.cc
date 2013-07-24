@@ -90,6 +90,7 @@ FileAPIMessageFilter::FileAPIMessageFilter(
 }
 
 void FileAPIMessageFilter::OnChannelConnected(int32 peer_pid) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserMessageFilter::OnChannelConnected(peer_pid);
 
   if (request_context_getter_.get()) {
@@ -98,9 +99,12 @@ void FileAPIMessageFilter::OnChannelConnected(int32 peer_pid) {
     request_context_getter_ = NULL;
     DCHECK(request_context_);
   }
+
+  operation_runner_ = context_->CreateFileSystemOperationRunner();
 }
 
 void FileAPIMessageFilter::OnChannelClosing() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserMessageFilter::OnChannelClosing();
 
   // Unregister all the blob URLs that are previously registered in this
@@ -128,7 +132,7 @@ void FileAPIMessageFilter::OnChannelClosing() {
   }
 
   on_close_callbacks_.Clear();
-  operation_runner()->Shutdown();
+  operation_runner_.reset();
   operations_.clear();
 }
 
@@ -736,10 +740,6 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
     const FileSystemURL& url, int permissions, base::PlatformFileError* error) {
   return CheckFileSystemPermissionsForProcess(context_, process_id_, url,
                                               permissions, error);
-}
-
-fileapi::FileSystemOperationRunner* FileAPIMessageFilter::operation_runner() {
-  return context_->operation_runner();
 }
 
 }  // namespace content
