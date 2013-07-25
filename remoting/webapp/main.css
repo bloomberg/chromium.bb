@@ -27,6 +27,14 @@ body {
   direction: __MSG_@@bidi_dir__;
 }
 
+/*
+* The "app-v2" class is added to the <body> node by remoting.init if it's
+* running as a V2 app.
+*/
+body.apps-v2 .apps-v1-only {
+  display: none !important;
+}
+
 a {
   text-decoration: none;
   color: #15c;

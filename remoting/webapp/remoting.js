@@ -45,6 +45,7 @@ remoting.init = function() {
   var manifest = chrome.runtime.getManifest();
   if (manifest && manifest.app && manifest.app.background) {
     remoting.isAppsV2 = true;
+    document.body.classList.add('apps-v2');
   }
 
   if (!remoting.isAppsV2) {
