@@ -71,7 +71,10 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
   filters.Append(FilterOperation::CreateBlurFilter(5.f));
   blur->SetBackgroundFilters(filters);
 
-#if defined(OS_WIN)
+// TODO(senorblanco): Mark this test fuzzy on all platforms for now, until
+// the next Skia roll. Then uncomment the #if below, and put it back to only
+// being fuzzy on Win.
+// #if defined(OS_WIN)
   // Windows has 2250 pixels off by at most 2: crbug.com/259922
   float percentage_pixels_large_error = 5.625f;  // 2250px / (200*200)
   float percentage_pixels_small_error = 0.0f;
@@ -85,7 +88,7 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
       average_error_allowed_in_bad_pixels,
       large_error_allowed,
       small_error_allowed));
-#endif
+// #endif
 
   RunPixelTest(GL_WITH_BITMAP,
                background,
