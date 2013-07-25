@@ -226,6 +226,10 @@ sub Parse
             die "Unrecognized IDL definition kind: \"" . ref($definition) . "\"";
         }
     }
+    # Sort so output independent of order in IDL file (e.g., for JSON output)
+    @{$document->callbackFunctions} = sort {$a->name cmp $b->name} @{$document->callbackFunctions};
+    @{$document->enumerations} = sort {$a->name cmp $b->name} @{$document->enumerations};
+    @{$document->interfaces} = sort {$a->name cmp $b->name} @{$document->interfaces};
     return $document;
 }
 
