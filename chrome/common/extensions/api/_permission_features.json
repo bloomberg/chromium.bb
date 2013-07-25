@@ -388,7 +388,7 @@
     ]
   },
   "musicManagerPrivate": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"],
     "whitelist": [
       "4B1D0E19C6C43C008C44A8278C8B5BFE15ABEB3C", // Music Manager
