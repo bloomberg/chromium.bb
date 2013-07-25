@@ -1784,7 +1784,7 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeF
         // When we have overflow clip, propagate the original spillout since it will include collapsed bottom margins
         // and bottom padding.  Set the axis we don't care about to be 1, since we want this overflow to always
         // be considered reachable.
-        LayoutRect clientRect(clientBoxRect());
+        LayoutRect clientRect(noOverflowRect());
         LayoutRect rectToApply;
         if (isHorizontalWritingMode())
             rectToApply = LayoutRect(clientRect.x(), clientRect.y(), 1, max<LayoutUnit>(0, oldClientAfterEdge - clientRect.y()));
@@ -1798,7 +1798,7 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeF
     // Allow our overflow to catch cases where the caret in an empty editable element with negative text indent needs to get painted.
     LayoutUnit textIndent = textIndentOffset();
     if (textIndent < 0) {
-        LayoutRect clientRect(clientBoxRect());
+        LayoutRect clientRect(noOverflowRect());
         LayoutRect rectToApply = LayoutRect(clientRect.x() + min<LayoutUnit>(0, textIndent), clientRect.y(), clientRect.width() - min<LayoutUnit>(0, textIndent), clientRect.height());
         addVisualOverflow(rectToApply);
     }

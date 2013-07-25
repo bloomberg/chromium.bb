@@ -173,7 +173,8 @@ public:
     // For horizontal-tb and vertical-lr they will match physical directions, but for horizontal-bt and vertical-rl, the top/bottom and left/right
     // respectively are flipped when compared to their physical counterparts.  For example minX is on the left in vertical-lr,
     // but it is on the right in vertical-rl.
-    LayoutRect layoutOverflowRect() const { return m_overflow ? m_overflow->layoutOverflowRect() : clientBoxRect(); }
+    LayoutRect noOverflowRect() const;
+    LayoutRect layoutOverflowRect() const { return m_overflow ? m_overflow->layoutOverflowRect() : noOverflowRect(); }
     IntRect pixelSnappedLayoutOverflowRect() const { return pixelSnappedIntRect(layoutOverflowRect()); }
     LayoutSize maxLayoutOverflow() const { return LayoutSize(layoutOverflowRect().maxX(), layoutOverflowRect().maxY()); }
     LayoutUnit logicalLeftLayoutOverflow() const { return style()->isHorizontalWritingMode() ? layoutOverflowRect().x() : layoutOverflowRect().y(); }

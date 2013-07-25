@@ -4221,7 +4221,7 @@ void RenderBox::addOverflowFromChild(RenderBox* child, const LayoutSize& delta)
 
 void RenderBox::addLayoutOverflow(const LayoutRect& rect)
 {
-    LayoutRect clientBox = clientBoxRect();
+    LayoutRect clientBox = noOverflowRect();
     if (clientBox.contains(rect) || rect.isEmpty())
         return;
     
@@ -4276,7 +4276,7 @@ void RenderBox::addVisualOverflow(const LayoutRect& rect)
         return;
         
     if (!m_overflow)
-        m_overflow = adoptPtr(new RenderOverflow(clientBoxRect(), borderBox));
+        m_overflow = adoptPtr(new RenderOverflow(noOverflowRect(), borderBox));
     
     m_overflow->addVisualOverflow(rect);
 }
@@ -4285,13 +4285,14 @@ void RenderBox::clearLayoutOverflow()
 {
     if (!m_overflow)
         return;
-    
-    if (visualOverflowRect() == borderBoxRect()) {
+
+    LayoutRect noOverflowRect = this->noOverflowRect();
+    if (visualOverflowRect() == noOverflowRect) {
         m_overflow.clear();
         return;
     }
-    
-    m_overflow->setLayoutOverflow(borderBoxRect());
+
+    m_overflow->setLayoutOverflow(noOverflowRect);
 }
 
 inline static bool percentageLogicalHeightIsResolvable(const RenderBox* box)
@@ -4467,6 +4468,34 @@ LayoutRect RenderBox::layoutOverflowRectForPropagation(RenderStyle* parentStyle)
     else if (style()->writingMode() == BottomToTopWritingMode || parentStyle->writingMode() == BottomToTopWritingMode)
         rect.setY(height() - rect.maxY());
 
+    return rect;
+}
+
+LayoutRect RenderBox::noOverflowRect() const
+{
+    // Because of the special coodinate system used for overflow rectangles and many other
+    // rectangles (not quite logical, not quite physical), we need to flip the block progression
+    // coordinate in vertical-rl and horizontal-bt writing modes. In other words, the rectangle
+    // returned is physical, except for the block direction progression coordinate (y in horizontal
+    // writing modes, x in vertical writing modes), which is always "logical top". Apart from the
+    // flipping, this method does the same as clientBoxRect().
+
+    LayoutUnit left = borderLeft();
+    LayoutUnit top = borderTop();
+    LayoutUnit right = borderRight();
+    LayoutUnit bottom = borderBottom();
+    LayoutRect rect(left, top, width() - left - right, height() - top - bottom);
+    flipForWritingMode(rect);
+    // Subtract space occupied by scrollbars. Order is important here: first flip, then subtract
+    // scrollbars. This may seem backwards and weird, since one would think that a horizontal
+    // scrollbar at the physical bottom in horizontal-bt ought to be at the logical top (physical
+    // bottom), between the logical top (physical bottom) border and the logical top (physical
+    // bottom) padding. But this is how the rest of the code expects us to behave. This is highly
+    // related to https://bugs.webkit.org/show_bug.cgi?id=76129
+    // FIXME: when the above mentioned bug is fixed, it should hopefully be possible to call
+    // clientBoxRect() or paddingBoxRect() in this method, rather than fiddling with the edges on
+    // our own.
+    rect.contract(verticalScrollbarWidth(), horizontalScrollbarHeight());
     return rect;
 }
 
