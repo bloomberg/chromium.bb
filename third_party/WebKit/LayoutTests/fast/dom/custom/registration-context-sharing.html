@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="test-harness-utils.js"></script>
+<body>
+<script>
+function TestRegistrationContextSharing(windowA, documentA,
+                                        windowB, documentB) {
+    this.windowA = windowA;
+    this.documentA = documentA;
+    this.windowB = windowB;
+    this.documentB = documentB;
+}
+
+TestRegistrationContextSharing.prototype.
+testRegistrationContextIsNotShared = function () {
+    this.testRegisterInAInstantiateInB_shouldNotActivateDefinition();
+    this.testRegisterSameName_definitionsShouldNotConflict();
+    this.testRegisterSameName_lazyWrappingShouldNotSharePrototypes();
+};
+
+TestRegistrationContextSharing.prototype.
+testRegisterInAInstantiateInB_shouldNotActivateDefinition = function () {
+
+    // Test that element x-u registered in document A is not activated when
+    // x-u is parsed in document B
+
+    var protoU = Object.create(this.windowA.HTMLElement.prototype);
+    protoU.createdCallback = function () {
+        assert_unreached('creating an x-u in a different context should ' +
+                         'not invoke a callback in this context');
+    };
+    this.documentA.register('x-u', {prototype: protoU});
+    this.documentB.body.innerHTML = '<x-u></x-u>';
+    // if protoU.createdCallback is not invoked; this passed
+};
+
+TestRegistrationContextSharing.prototype.
+testRegisterSameName_definitionsShouldNotConflict = function () {
+    // Test that registering two different custom elements with the same
+    // tag name in each document doesn't lead to any crossed wires
+
+    var invocations = [];
+    function created(name) {
+        return function () {
+            invocations.push('created ' + name + ' in ' + this.dataset.doc);
+        };
+    }
+
+    var protoAV = Object.create(this.windowA.HTMLElement.prototype);
+    protoAV.createdCallback = created('document A\'s element V');
+    this.documentA.register('x-v', {prototype: protoAV});
+
+    var protoBV = Object.create(this.windowB.HTMLElement.prototype);
+    protoBV.createdCallback = created('document B\'s element V');
+    this.documentB.register('x-v', {prototype: protoBV});
+
+    this.documentB.body.innerHTML = '<x-v data-doc="document B"></x-v>';
+    var div = this.documentA.createElement('div');
+    div.innerHTML = '<x-v data-doc="document A"></x-v>';
+
+    assert_array_equals(
+        invocations,
+        ['created document B\'s element V in document B',
+         'created document A\'s element V in document A'],
+        'should have invoked the created callbacks in reverse creation order');
+
+    assert_equals(
+        Object.getPrototypeOf(div.firstChild),
+        protoAV,
+        'the prototype of element V in document A should be the prototype ' +
+        'registered in document A');
+
+    assert_equals(
+        Object.getPrototypeOf(this.documentB.body.firstChild),
+        protoBV,
+        'the prototype of element V in document B should be the prototype ' +
+        'registered in document B');
+};
+
+TestRegistrationContextSharing.prototype.
+testRegisterSameName_lazyWrappingShouldNotSharePrototypes = function () {
+    // Registering two different custom elements with the same tag
+    // name should not mix up prototypes. These do not have any
+    // callbacks, to try to tickle lazy wrapping.
+
+    var protoAW = Object.create(this.windowA.HTMLElement.prototype);
+    this.documentA.register('x-w', {prototype: protoAW});
+
+    var protoBW = Object.create(this.windowB.HTMLElement.prototype);
+    protoBW.createdCallback = function () {};
+    this.documentB.register('x-w', {prototype: protoBW});
+
+    var elementA = this.documentA.createElement('x-w');
+    var elementB = this.documentB.createElement('x-w');
+
+    assert_equals(
+        Object.getPrototypeOf(elementB), protoBW,
+        'the prototype of element W in document B should be the prototype ' +
+        'registered in document B');
+
+    assert_equals(
+        Object.getPrototypeOf(elementA), protoAW,
+        'the prototype of element W in document A should be the prototype ' +
+        'registered in document A');
+};
+
+TestRegistrationContextSharing.prototype.
+testRegistrationContextIsShared = function () {
+    assert_equals(this.windowA, this.windowB,
+                  'this test must be run with one window');
+    this.testUpgrade_oneDefinitionShouldUpgradeMultipleDocuments();
+    this.testRegisterInAInstantiateInB_shouldActivateDefinition();
+};
+
+TestRegistrationContextSharing.prototype.
+testUpgrade_oneDefinitionShouldUpgradeMultipleDocuments = function () {
+    var documentAUpgradeCandidate = this.documentA.createElement('x-u');
+    documentAUpgradeCandidate.dataset.name = 'document A upgrade candidate';
+
+    var documentBUpgradeCandidate = this.documentB.createElement('x-u');
+    documentBUpgradeCandidate.dataset.name = 'document B upgrade candidate';
+
+    var invocations = [];
+    function created() {
+        invocations.push('created ' + this.dataset.name + ' with prototype ' +
+                         'tagged ' + this.prototypeTag);
+    }
+
+    var protoU = Object.create(this.windowA.HTMLElement.prototype);
+    protoU.prototypeTag = 'U';
+    protoU.createdCallback = created;
+    this.documentB.register('x-u', {prototype: protoU});
+
+    assert_array_equals(
+        invocations,
+        ['created document B upgrade candidate with prototype tagged U',
+         'created document A upgrade candidate with prototype tagged U'],
+        'the created callback should have been called for both elements ' +
+        'in reverse creation order');
+};
+
+TestRegistrationContextSharing.prototype.
+testRegisterInAInstantiateInB_shouldActivateDefinition = function () {
+    var invocations = [];
+    function created() {
+        invocations.push('created ' + this.dataset.name + ' with prototype ' +
+                         'tagged ' + this.prototypeTag);
+    }
+
+    var protoV = Object.create(this.windowA.HTMLElement.prototype);
+    protoV.prototypeTag = 'V';
+    protoV.createdCallback = created;
+    this.documentA.register('x-v', {prototype: protoV});
+
+    var div = this.documentB.createElement('div');
+    div.innerHTML = '<x-v data-name="document B element V"></x-v>';
+    assert_array_equals(
+        invocations,
+        ['created document B element V with prototype tagged V'],
+        'the created callback should have been called for the x-v element');
+};
+
+(function () {
+
+var t = async_test('registration context should not be shared with an ' +
+                   'iframe\'s document');
+
+withFrame(t.step_func(function (frameA) {
+    withFrame(t.step_func(function (frameB) {
+        var documentA = frameA.contentDocument;
+        var documentB = frameB.contentDocument;
+        var tester = new TestRegistrationContextSharing(
+            frameA.contentWindow, frameA.contentDocument,
+            frameB.contentWindow, frameB.contentDocument);
+        tester.testRegistrationContextIsNotShared();
+        frameA.remove();
+        frameB.remove();
+        t.done();
+    }), frameA.contentDocument);
+}));
+
+})();
+
+(function () {
+
+var t = async_test('registration context is shared with the template document');
+
+withFrame(t.step_func(function (frame) {
+    var documentA = frame.contentDocument;
+    documentA.body.innerHTML = '<template>foo</template>';
+    var documentB = documentA.body.firstChild.content.ownerDocument;
+    var tester = new TestRegistrationContextSharing(
+        frame.contentWindow, documentA, frame.contentWindow, documentB);
+    tester.testRegistrationContextIsShared();
+    frame.remove();
+    t.done();
+}));
+
+})();
+
+</script>

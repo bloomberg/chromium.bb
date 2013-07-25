@@ -29,7 +29,6 @@
 #include "core/dom/DocumentInit.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLImportsController.h"
 #include "core/page/Frame.h"
@@ -64,6 +63,13 @@ Frame* DocumentInit::ownerFrame() const
     return ownerFrame;
 }
 
+DocumentInit& DocumentInit::withRegistrationContext(CustomElementRegistrationContext* registrationContext)
+{
+    ASSERT(!m_registrationContext);
+    m_registrationContext = registrationContext;
+    return *this;
+}
+
 PassRefPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(Document* document) const
 {
     if (!RuntimeEnabledFeatures::customDOMElementsEnabled())
@@ -71,6 +77,9 @@ PassRefPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(D
 
     if (!document->isHTMLDocument() && !document->isXHTMLDocument())
         return 0;
+
+    if (m_registrationContext)
+        return m_registrationContext.get();
 
     return CustomElementRegistrationContext::create();
 }

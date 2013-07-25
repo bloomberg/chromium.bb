@@ -5042,7 +5042,7 @@ Document* Document::ensureTemplateDocument()
         return const_cast<Document*>(document);
 
     if (isHTMLDocument())
-        m_templateDocument = HTMLDocument::create(DocumentInit(blankURL()));
+        m_templateDocument = HTMLDocument::create(DocumentInit(blankURL()).withRegistrationContext(registrationContext()));
     else
         m_templateDocument = Document::create(DocumentInit(blankURL()));
 
