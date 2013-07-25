@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<style>
+.inlineBlock { display: inline-block; }
+.runin { display: run-in; }
+</style>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+function boom() {
+    figure = document.createElement('figure');
+    figure.setAttribute('class', 'runin');
+    document.documentElement.appendChild(figure);
+    fieldSet = document.createElement('fieldset');
+    document.documentElement.appendChild(fieldSet);
+    document.body.offsetTop;
+    fieldSet.setAttribute('class', 'inlineBlock');
+}
+window.onload = boom;
+</script>
+<body>
+<div>
+This test has PASSED if it did not crash.
+</div>
+</body>
+</html>

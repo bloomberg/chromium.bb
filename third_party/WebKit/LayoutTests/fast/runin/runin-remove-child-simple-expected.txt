@@ -1,0 +1,5 @@
+This test checks that dynamically changing 'display' to 'none' moves the run-in to its own block.
+
+For this test to pass there should be 1 line below with PASS:
+
+PASS(run-in)
