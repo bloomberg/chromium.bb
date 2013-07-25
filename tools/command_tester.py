@@ -208,6 +208,10 @@ win64_exit_via_ntdll_patch = [
     MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)]
 
 
+# Mach exception code for Mac OS X.
+EXC_BAD_ACCESS = 1
+
+
 # 32-bit processes on Mac OS X return SIGBUS in most of the cases where Linux
 # returns SIGSEGV, except for actual x86 segmentation violations. 64-bit
 # processes on Mac OS X behave differently.
@@ -264,6 +268,7 @@ status_map = {
         'linux2': [-11], # SIGSEGV
         'mac32': [-10], # SIGBUS
         'mac64': [-10], # SIGBUS
+        'mach_exception': EXC_BAD_ACCESS,
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
         },
@@ -278,6 +283,7 @@ status_map = {
         'linux2': [-11], # SIGSEGV
         'mac32': [-10], # SIGBUS
         'mac64': [-11], # SIGSEGV
+        'mach_exception': EXC_BAD_ACCESS,
         'win32':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
         'win64':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
         },
@@ -350,19 +356,15 @@ def ProcessOptions(argv):
 # thread, or additional output due to atexit functions, we scan the
 # output in reverse order for the signal signature.
 def GetNaClSignalInfoFromStderr(stderr):
-  sigNum = None
-  sigType = 'normal'
-
   lines = stderr.splitlines()
 
   # Scan for signal msg in reverse order
   for curline in reversed(lines):
-    words = curline.split()
-    if len(words) > 4 and words[0] == '**' and words[1] == 'Signal':
-      sigNum = int(words[2])
-      sigType = words[4]
-      break
-  return sigNum, sigType
+    match = re.match('\*\* (Signal|Mach exception) (\d+) from '
+                     '(trusted|untrusted) code', curline)
+    if match is not None:
+      return match.group(0)
+  return None
 
 def GetQemuSignalFromStderr(stderr, default):
   for line in reversed(stderr.splitlines()):
@@ -423,14 +425,24 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
   else:
     expected_statuses = [int(req_status)]
 
-  if expected_sigtype == 'normal':
-    expected_printed_signum = None
-  else:
-    assert sys.platform != 'win32'
-    assert len(expected_statuses) == 1
-    assert expected_statuses[0] < 0
-    expected_printed_signum = -expected_statuses[0]
-    expected_statuses = [IndirectSignal(expected_printed_signum)]
+  expected_printed_status = None
+  if expected_sigtype != 'normal':
+    if sys.platform == 'darwin':
+      # Mac OS X
+      default = '<mach_exception field missing for %r>' % req_status
+      expected_printed_status = '** Mach exception %s from %s code' % (
+          status_map.get(req_status, {}).get('mach_exception', default),
+          expected_sigtype)
+    else:
+      # Linux
+      assert sys.platform != 'win32'
+      assert len(expected_statuses) == 1
+      assert expected_statuses[0] < 0
+      expected_printed_signum = -expected_statuses[0]
+      expected_printed_status = '** Signal %d from %s code' % (
+          expected_printed_signum,
+          expected_sigtype)
+      expected_statuses = [IndirectSignal(expected_printed_signum)]
 
   # If an uncaught signal occurs under QEMU (on ARM), the exit status
   # contains the signal number, mangled as per IndirectSignal().  We
@@ -447,12 +459,11 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
     Print(msg)
     failed = True
   if using_nacl_signal_handler and stderr is not None:
-    expected_printed = (expected_printed_signum, expected_sigtype)
-    actual_printed = GetNaClSignalInfoFromStderr(stderr)
-    msg = ('\nERROR: Command printed the signal info %s to stderr '
-           'but we expected %s' %
-           (actual_printed, expected_printed))
-    if actual_printed != expected_printed:
+    actual_printed_status = GetNaClSignalInfoFromStderr(stderr)
+    msg = ('\nERROR: Command printed the signal info %r to stderr '
+           'but we expected %r' %
+           (actual_printed_status, expected_printed_status))
+    if actual_printed_status != expected_printed_status:
       Print(msg)
       failed = True
 

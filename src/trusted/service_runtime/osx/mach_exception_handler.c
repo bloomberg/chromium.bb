@@ -450,6 +450,18 @@ kern_return_t nacl_catch_exception_raise_state(
   return KERN_FAILURE;
 }
 
+static void PrintCrashMessage(int exception_type, int is_untrusted,
+                              x86_thread_state_t *regs) {
+  char buf[128];
+  int len = snprintf(
+      buf, sizeof(buf),
+      "\n** Mach exception %d from %s code: pc=%" NACL_PRIx64 "\n",
+      exception_type,
+      is_untrusted ? "untrusted" : "trusted",
+      (uint64_t) X86_REG_IP(regs));
+  write(2, buf, len);
+}
+
 kern_return_t nacl_catch_exception_raise_state_identity (
         mach_port_t exception_port,
         mach_port_t thread,
@@ -497,6 +509,8 @@ kern_return_t nacl_catch_exception_raise_state_identity (
      */
     return MACH_RCV_PORT_DIED;
   }
+
+  PrintCrashMessage(exception, is_untrusted, (x86_thread_state_t *) old_state);
 
   /*
    * Don't forward if the crash is untrusted, but unhandled.
