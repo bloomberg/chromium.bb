@@ -30,8 +30,9 @@
 #include "config.h"
 #include "core/loader/ResourceLoader.h"
 
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/ResourceLoaderHost.h"
+#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/Logging.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
@@ -41,6 +42,7 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 
@@ -137,8 +139,7 @@ void ResourceLoader::start()
     if (m_state == Terminated)
         return;
 
-    if (m_connectionState != ConnectionStateNew)
-        CRASH();
+    RELEASE_ASSERT(m_connectionState == ConnectionStateNew);
     m_connectionState = ConnectionStateStarted;
 
     m_loader = adoptPtr(WebKit::Platform::current()->createURLLoader());
@@ -163,8 +164,7 @@ void ResourceLoader::setDefersLoading(bool defers)
 void ResourceLoader::didDownloadData(WebKit::WebURLLoader*, int length)
 {
     RefPtr<ResourceLoader> protect(this);
-    if (m_connectionState != ConnectionStateReceivedResponse)
-        CRASH();
+    RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse);
     m_resource->didDownloadData(length);
 }
 
@@ -261,8 +261,7 @@ void ResourceLoader::willSendRequest(WebKit::WebURLLoader*, WebKit::WebURLReques
 
 void ResourceLoader::didReceiveCachedMetadata(WebKit::WebURLLoader*, const char* data, int length)
 {
-    if (m_connectionState != ConnectionStateReceivedResponse && m_connectionState != ConnectionStateReceivingData)
-        CRASH();
+    RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
     ASSERT(m_state == Initialized);
     m_resource->setSerializedCachedMetadata(data, length);
 }
@@ -282,8 +281,7 @@ void ResourceLoader::didReceiveResponse(WebKit::WebURLLoader*, const WebKit::Web
     bool isMultipartPayload = response.isMultipartPayload();
     bool isValidStateTransition = (m_connectionState == ConnectionStateStarted || m_connectionState == ConnectionStateReceivedResponse);
     // In the case of multipart loads, calls to didReceiveData & didReceiveResponse can be interleaved.
-    if (!isMultipartPayload && !isValidStateTransition)
-        CRASH();
+    RELEASE_ASSERT(isMultipartPayload || isValidStateTransition);
     m_connectionState = ConnectionStateReceivedResponse;
 
     // Reference the object in this method since the additional processing can do
@@ -318,15 +316,13 @@ void ResourceLoader::didReceiveResponse(WebKit::WebURLLoader*, const WebKit::Web
 
 void ResourceLoader::didReceiveData(WebKit::WebURLLoader*, const char* data, int length, int encodedDataLength)
 {
-    if (m_connectionState != ConnectionStateReceivedResponse && m_connectionState != ConnectionStateReceivingData)
-        CRASH();
+    RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
     m_connectionState = ConnectionStateReceivingData;
 
     // It is possible to receive data on uninitialized resources if it had an error status code, and we are running a nested message
     // loop. When this occurs, ignoring the data is the correct action.
     if (m_resource->response().httpStatusCode() >= 400 && !m_resource->shouldIgnoreHTTPStatusCodeErrors())
         return;
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(m_host->inspectedFrame(), m_resource->identifier(), encodedDataLength);
     ASSERT(m_state == Initialized);
 
     // Reference the object in this method since the additional processing can do
@@ -338,14 +334,11 @@ void ResourceLoader::didReceiveData(WebKit::WebURLLoader*, const char* data, int
     // Could be an issue with a giant local file.
     m_host->didReceiveData(m_resource, data, length, encodedDataLength, m_options);
     m_resource->appendData(data, length);
-
-    InspectorInstrumentation::didReceiveResourceData(cookie);
 }
 
 void ResourceLoader::didFinishLoading(WebKit::WebURLLoader*, double finishTime)
 {
-    if (m_connectionState != ConnectionStateReceivedResponse && m_connectionState != ConnectionStateReceivingData)
-        CRASH();
+    RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
     m_connectionState = ConnectionStateFinishedLoading;
     if (m_state != Initialized)
         return;

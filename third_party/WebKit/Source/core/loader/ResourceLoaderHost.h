@@ -75,8 +75,6 @@ public:
 
     virtual void refResourceLoaderHost() = 0;
     virtual void derefResourceLoaderHost() = 0;
-
-    virtual Frame* inspectedFrame() const = 0;
 };
 
 }

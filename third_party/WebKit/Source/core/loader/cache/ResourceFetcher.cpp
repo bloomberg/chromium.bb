@@ -1137,10 +1137,13 @@ void ResourceFetcher::didReceiveResponse(const CachedResource* resource, const R
 
 void ResourceFetcher::didReceiveData(const CachedResource* resource, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions& options)
 {
+    // FIXME: use frame of master document for imported documents.
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(frame(), resource->identifier(), encodedDataLength);
     if (options.sendLoadCallbacks != SendCallbacks)
         return;
     if (FrameLoader* loader = frameLoader())
         loader->notifier()->dispatchDidReceiveData(m_documentLoader, resource->identifier(), data, dataLength, encodedDataLength);
+    InspectorInstrumentation::didReceiveResourceData(cookie);
 }
 
 void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)
@@ -1186,12 +1189,6 @@ bool ResourceFetcher::shouldRequest(CachedResource* resource, const ResourceRequ
     if (resource->type() == CachedResource::ImageResource && shouldDeferImageLoad(request.url()))
         return false;
     return true;
-}
-
-Frame* ResourceFetcher::inspectedFrame() const
-{
-    // FIXME: return frame of master document for imported documents.
-    return m_documentLoader ? m_documentLoader->frame() : 0;
 }
 
 void ResourceFetcher::refResourceLoaderHost()

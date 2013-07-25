@@ -149,7 +149,6 @@ public:
     virtual bool shouldRequest(CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&) OVERRIDE;
     virtual void refResourceLoaderHost() OVERRIDE;
     virtual void derefResourceLoaderHost() OVERRIDE;
-    virtual Frame* inspectedFrame() const OVERRIDE;
 
     static const ResourceLoaderOptions& defaultCachedResourceOptions();
 private:
