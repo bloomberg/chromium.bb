@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -18,10 +18,10 @@ import tempfile
 import time
 import zlib
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
+
 import run_isolated
-
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def zip_file(compressor_constructor, compression_level, filename):
@@ -87,7 +87,7 @@ def main():
     temp_dir = tempfile.mkdtemp()
 
     # Create a directory of the required files
-    subprocess.check_call([os.path.join(BASE_DIR, 'isolate.py'),
+    subprocess.check_call([os.path.join(ROOT_DIR, 'isolate.py'),
                            'remap',
                            '-s', options.isolated,
                            '--outdir', temp_dir])
