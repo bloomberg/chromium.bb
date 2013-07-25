@@ -156,12 +156,15 @@ def InstallApk(options, test, print_step=False):
   RunCmd(['build/android/adb_install_apk.py'] + args, halt_on_failure=True)
 
 
-def RunInstrumentationSuite(options, test, flunk_on_failure=True):
+def RunInstrumentationSuite(options, test, flunk_on_failure=True,
+                            python_only=False):
   """Manages an invocation of test_runner.py for instrumentation tests.
 
   Args:
     options: options object
     test: An I_TEST namedtuple
+    flunk_on_failure: Flunk the step if tests fail.
+    Python: Run only host driven Python tests.
   """
   bb_annotations.PrintNamedStep('%s_instrumentation_tests' % test.name.lower())
 
@@ -183,6 +186,8 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True):
     args.extend(['-E', test.exclude_annotation])
   if test.extra_flags:
     args.extend(test.extra_flags)
+  if python_only:
+    args.append('-p')
 
   RunCmd(['build/android/test_runner.py', 'instrumentation'] + args,
          flunk_on_failure=flunk_on_failure)
