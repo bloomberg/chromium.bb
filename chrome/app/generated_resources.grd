@@ -12588,16 +12588,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL" desc="/drive directory label.">
         Google Drive
       </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_MY_DRIVE_LABEL" desc="Label for the Google Drive 'My Drive' collection. This should match translation message 4067434660812487349 of Drive Web interface." meaning="Label for 'My Drive' collection in ChromeOS Files.app.">
+      <message name="IDS_FILE_BROWSER_DRIVE_MY_DRIVE_LABEL" desc="A label for the 'My Drive' collection of Google Drive.">
         My Drive
       </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_SHARED_WITH_ME_COLLECTION_LABEL" desc="Label for the Google Drive 'Shared with me' collection. This should match translation message 8629632661309528847 of Drive Web interface." meaning="Label for files 'Shared with me' in ChromeOS Files.app.">
+      <message name="IDS_FILE_BROWSER_DRIVE_SHARED_WITH_ME_COLLECTION_LABEL" desc="A label for the 'shared with me' collection of Google Drive.">
         Shared with me
       </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_RECENT_COLLECTION_LABEL" desc="Label for the Google Drive 'Recent' collection. This should match translation message 327779651963668892 of Drive Web interface." meaning="Label for 'Recent'ly used files in ChromeOS Files.app.">
+      <message name="IDS_FILE_BROWSER_DRIVE_RECENT_COLLECTION_LABEL" desc="A label for the 'Recent' collection of Google Drive.">
         Recent
       </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_OFFLINE_COLLECTION_LABEL" desc="Label for the Google Drive 'Offline' collection. This should match translation message 7092967268927957493 of Drive Web interface." meaning="Label for 'Offline' available files in ChromeOS Files.app.">
+      <message name="IDS_FILE_BROWSER_DRIVE_OFFLINE_COLLECTION_LABEL" desc="A label for the 'Offline' collection of Google Drive.">
         Offline
       </message>
       <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_LABEL" desc="Downloads local directory label.">
