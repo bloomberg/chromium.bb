@@ -19,10 +19,8 @@
 #include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "content/child/child_process.h"
-#include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/npapi/webplugin.h"
-#include "content/child/quota_dispatcher.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -225,23 +223,6 @@ class HostDispatcherWrapper : public PluginDelegate::OutOfProcessProxy {
 
   scoped_ptr<ppapi::proxy::HostDispatcher> dispatcher_;
   scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
-};
-
-class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
- public:
-  typedef PluginDelegate::AvailableSpaceCallback PluginCallback;
-  explicit QuotaCallbackTranslator(const PluginCallback& cb) : callback_(cb) {}
-  virtual void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) OVERRIDE {
-    callback_.Run(std::max(static_cast<int64>(0), quota - usage));
-  }
-  virtual void DidGrantStorageQuota(int64 granted_quota) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void DidFail(quota::QuotaStatusCode error) OVERRIDE {
-    callback_.Run(0);
-  }
- private:
-  PluginCallback callback_;
 };
 
 class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
@@ -1077,21 +1058,6 @@ void PepperPluginDelegateImpl::ReadDirectory(
       ChildThread::current()->file_system_dispatcher();
   file_system_dispatcher->ReadDirectory(
       directory_path, success_callback, error_callback);
-}
-
-void PepperPluginDelegateImpl::QueryAvailableSpace(
-    const GURL& origin, quota::StorageType type,
-    const AvailableSpaceCallback& callback) {
-  ChildThread::current()->quota_dispatcher()->QueryStorageUsageAndQuota(
-      origin, type, new QuotaCallbackTranslator(callback));
-}
-
-void PepperPluginDelegateImpl::WillUpdateFile(const GURL& path) {
-  ChildThread::current()->Send(new FileSystemHostMsg_WillUpdate(path));
-}
-
-void PepperPluginDelegateImpl::DidUpdateFile(const GURL& path, int64_t delta) {
-  ChildThread::current()->Send(new FileSystemHostMsg_DidUpdate(path, delta));
 }
 
 void PepperPluginDelegateImpl::AsyncOpenFileSystemURL(

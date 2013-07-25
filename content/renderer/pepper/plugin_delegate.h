@@ -521,14 +521,6 @@ class PluginDelegate {
       const ReadDirectoryCallback& success_callback,
       const StatusCallback& error_callback) = 0;
 
-  // For quota handlings for FileIO API.
-  typedef base::Callback<void (int64)> AvailableSpaceCallback;
-  virtual void QueryAvailableSpace(const GURL& origin,
-                                   quota::StorageType type,
-                                   const AvailableSpaceCallback& callback) = 0;
-  virtual void WillUpdateFile(const GURL& file_path) = 0;
-  virtual void DidUpdateFile(const GURL& file_path, int64_t delta) = 0;
-
   // Synchronously returns the platform file path for a filesystem URL.
   virtual void SyncGetFileSystemPlatformPath(const GURL& url,
                                              base::FilePath* platform_path) = 0;

@@ -7,28 +7,49 @@
 
 #include <deque>
 
+#include "base/callback_forward.h"
 #include "base/files/file_util_proxy.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/pp_file_info.h"
-#include "ppapi/c/pp_instance.h"
 #include "url/gurl.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace content {
+namespace base {
+class MessageLoopProxy;
+}
 
-class PluginDelegate;
+namespace content {
 
 // This class is created per PPB_FileIO_Impl instance and provides
 // write operations for quota-managed files (i.e. files of
 // PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}).
 class QuotaFileIO {
  public:
+  // For quota handlings for FileIO API. This will be owned by QuotaFileIO.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    typedef base::Callback<void (int64)> AvailableSpaceCallback;
+    virtual void QueryAvailableSpace(
+        const GURL& origin,
+        quota::StorageType type,
+        const AvailableSpaceCallback& callback) = 0;
+    virtual void WillUpdateFile(const GURL& file_path) = 0;
+    virtual void DidUpdateFile(const GURL& file_path, int64_t delta) = 0;
+    // Returns a MessageLoopProxy instance associated with the message loop of
+    // the file thread in this renderer.
+    virtual scoped_refptr<base::MessageLoopProxy>
+        GetFileThreadMessageLoopProxy() = 0;
+  };
+
   typedef base::FileUtilProxy::WriteCallback WriteCallback;
   typedef base::FileUtilProxy::StatusCallback StatusCallback;
 
-  CONTENT_EXPORT QuotaFileIO(PP_Instance instance,
+  CONTENT_EXPORT QuotaFileIO(Delegate* delegate,
                              base::PlatformFile file,
                              const GURL& path_url,
                              PP_FileSystemType type);
@@ -57,9 +78,7 @@ class QuotaFileIO {
   CONTENT_EXPORT bool WillSetLength(int64_t length,
                                     const StatusCallback& callback);
 
-  // Returns the plugin delegate or NULL if the resource has outlived the
-  // instance.
-  PluginDelegate* GetPluginDelegate() const;
+  Delegate* delegate() const { return delegate_.get(); }
 
  private:
   class PendingOperationBase;
@@ -77,8 +96,7 @@ class QuotaFileIO {
   void DidQueryAvailableSpace(int64_t avail_space);
   void DidQueryForQuotaCheck();
 
-  // The plugin instance that owns this (via PPB_FileIO_Impl).
-  PP_Instance pp_instance_;
+  scoped_ptr<Delegate> delegate_;
 
   // The file information associated to this instance.
   base::PlatformFile file_;

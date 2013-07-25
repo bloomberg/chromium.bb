@@ -111,12 +111,6 @@ class MockPluginDelegate : public PluginDelegate {
       const GURL& directory_path,
       const ReadDirectoryCallback& success_callback,
       const StatusCallback& error_callback) OVERRIDE;
-  virtual void QueryAvailableSpace(
-      const GURL& origin,
-      quota::StorageType type,
-      const AvailableSpaceCallback& callback) OVERRIDE;
-  virtual void WillUpdateFile(const GURL& file_path) OVERRIDE;
-  virtual void DidUpdateFile(const GURL& file_path, int64_t delta) OVERRIDE;
   virtual void SyncGetFileSystemPlatformPath(
       const GURL& url,
       base::FilePath* platform_path) OVERRIDE;

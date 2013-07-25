@@ -224,17 +224,6 @@ void MockPluginDelegate::ReadDirectory(
     const StatusCallback& error_callback) {
 }
 
-void MockPluginDelegate::QueryAvailableSpace(
-    const GURL& origin, quota::StorageType type,
-    const AvailableSpaceCallback& callback) {
-}
-
-void MockPluginDelegate::WillUpdateFile(const GURL& file_path) {
-}
-
-void MockPluginDelegate::DidUpdateFile(const GURL& file_path, int64_t delta) {
-}
-
 void MockPluginDelegate::SyncGetFileSystemPlatformPath(
     const GURL& url,
     base::FilePath* platform_path) {

@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/platform_file.h"
-#include "content/renderer/pepper/mock_plugin_delegate.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppapi_unittest.h"
 #include "content/renderer/pepper/quota_file_io.h"
@@ -25,22 +24,17 @@ using base::PlatformFileError;
 namespace content {
 
 namespace {
-class QuotaMockPluginDelegate : public MockPluginDelegate {
+class QuotaMockDelegate : public QuotaFileIO::Delegate {
  public:
-  typedef PluginDelegate::AvailableSpaceCallback Callback;
+  typedef QuotaFileIO::Delegate::AvailableSpaceCallback Callback;
 
-  QuotaMockPluginDelegate()
+  QuotaMockDelegate()
       : available_space_(0),
         will_update_count_(0),
         file_thread_(MessageLoopProxy::current()),
         weak_factory_(this) {
   }
-  virtual ~QuotaMockPluginDelegate() {}
-
-  virtual scoped_refptr<MessageLoopProxy>
-      GetFileThreadMessageLoopProxy() OVERRIDE {
-    return file_thread_;
-  }
+  virtual ~QuotaMockDelegate() {}
 
   virtual void QueryAvailableSpace(
       const GURL& origin,
@@ -49,7 +43,7 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
     DCHECK_EQ(false, callback.is_null());
     MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(
-            &QuotaMockPluginDelegate::RunAvailableSpaceCallback,
+            &QuotaMockDelegate::RunAvailableSpaceCallback,
             weak_factory_.GetWeakPtr(), callback));
   }
 
@@ -65,6 +59,11 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
     available_space_ -= delta;
   }
 
+  virtual scoped_refptr<base::MessageLoopProxy>
+        GetFileThreadMessageLoopProxy() OVERRIDE {
+    return file_thread_;
+  }
+
   void set_available_space(int64 available) { available_space_ = available; }
   int64_t available_space() const { return available_space_; }
 
@@ -77,14 +76,15 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
   int will_update_count_;
   GURL file_path_;
   scoped_refptr<MessageLoopProxy> file_thread_;
-  base::WeakPtrFactory<QuotaMockPluginDelegate> weak_factory_;
+  base::WeakPtrFactory<QuotaMockDelegate> weak_factory_;
 };
 }  // namespace
 
 class QuotaFileIOTest : public PpapiUnittest {
  public:
   QuotaFileIOTest()
-      : weak_factory_(this) {}
+      : delegate_(NULL),
+        weak_factory_(this) {}
 
   virtual void SetUp() OVERRIDE {
     PpapiUnittest::SetUp();
@@ -102,9 +102,9 @@ class QuotaFileIOTest : public PpapiUnittest {
     ASSERT_EQ(base::PLATFORM_FILE_OK, error);
     ASSERT_NE(base::kInvalidPlatformFileValue, file_);
     ASSERT_FALSE(created);
+    delegate_ = new QuotaMockDelegate;  // Owned by QuotaFileIO.
     quota_file_io_.reset(new QuotaFileIO(
-        instance()->pp_instance(), file_, GURL(),
-        PP_FILESYSTEMTYPE_LOCALTEMPORARY));
+        delegate_, file_, GURL(), PP_FILESYSTEMTYPE_LOCALTEMPORARY));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -115,10 +115,6 @@ class QuotaFileIOTest : public PpapiUnittest {
   }
 
  protected:
-  virtual MockPluginDelegate* NewPluginDelegate() OVERRIDE {
-    return static_cast<MockPluginDelegate*>(new QuotaMockPluginDelegate);
-  }
-
   void WriteTestBody(bool will_operation) {
     // Attempt to write zero bytes.
     EXPECT_FALSE(quota_file_io_->Write(
@@ -129,7 +125,7 @@ class QuotaFileIOTest : public PpapiUnittest {
         0, "data", std::numeric_limits<int32_t>::min(),
         base::Bind(&QuotaFileIOTest::DidWrite, weak_factory_.GetWeakPtr())));
 
-    quota_plugin_delegate()->set_available_space(100);
+    delegate()->set_available_space(100);
     std::string read_buffer;
 
     // Write 8 bytes at offset 0 (-> length=8).
@@ -139,7 +135,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(100 - 8, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(100 - 8, delegate()->available_space());
     reset_results();
 
     if (will_operation) {
@@ -160,7 +156,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(100 - 10, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(100 - 10, delegate()->available_space());
     reset_results();
 
     if (will_operation) {
@@ -179,7 +175,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(100 - 15, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(100 - 15, delegate()->available_space());
     reset_results();
 
     if (will_operation) {
@@ -198,7 +194,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(100 - 15, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(100 - 15, delegate()->available_space());
     reset_results();
 
     if (will_operation) {
@@ -216,7 +212,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(100 - 24, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(100 - 24, delegate()->available_space());
     reset_results();
 
     if (will_operation) {
@@ -228,7 +224,7 @@ class QuotaFileIOTest : public PpapiUnittest {
       EXPECT_EQ(std::string("123355559012345\0\0\0\0\0XXXX", 24), read_buffer);
     }
 
-    quota_plugin_delegate()->set_available_space(5);
+    delegate()->set_available_space(5);
 
     // Quota error case.  Write 7 bytes at offset 23 (-> length is unchanged)
     data = "ABCDEFG";
@@ -236,7 +232,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status().front());
-    EXPECT_EQ(5, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(5, delegate()->available_space());
     reset_results();
 
     // Overlapping write.  Write 6 bytes at offset 2 (-> length is unchanged)
@@ -246,7 +242,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(5, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(5, delegate()->available_space());
     reset_results();
 
     // Overlapping + extending the file size, but within the quota.
@@ -256,7 +252,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(0, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(0, delegate()->available_space());
     reset_results();
 
     if (!will_operation) {
@@ -268,21 +264,21 @@ class QuotaFileIOTest : public PpapiUnittest {
   }
 
   void SetLengthTestBody(bool will_operation) {
-    quota_plugin_delegate()->set_available_space(100);
+    delegate()->set_available_space(100);
 
     SetLength(0, will_operation);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
     EXPECT_EQ(0, GetPlatformFileSize());
-    EXPECT_EQ(100, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(100, delegate()->available_space());
     reset_results();
 
     SetLength(8, will_operation);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(100 - 8, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(100 - 8, delegate()->available_space());
     reset_results();
 
     if (will_operation) {
@@ -296,7 +292,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(100 - 16, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(100 - 16, delegate()->available_space());
     reset_results();
 
     if (will_operation) {
@@ -310,7 +306,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(100 - 4, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(100 - 4, delegate()->available_space());
     reset_results();
 
     if (will_operation) {
@@ -324,7 +320,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
-    EXPECT_EQ(100, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(100, delegate()->available_space());
     reset_results();
 
     if (will_operation) {
@@ -334,19 +330,19 @@ class QuotaFileIOTest : public PpapiUnittest {
       EXPECT_EQ(0, GetPlatformFileSize());
     }
 
-    quota_plugin_delegate()->set_available_space(5);
+    delegate()->set_available_space(5);
 
     // Quota error case.
     SetLength(7, will_operation);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status().front());
-    EXPECT_EQ(5, quota_plugin_delegate()->available_space());
+    EXPECT_EQ(5, delegate()->available_space());
     reset_results();
   }
 
-  QuotaMockPluginDelegate* quota_plugin_delegate() {
-    return static_cast<QuotaMockPluginDelegate*>(delegate());
+  QuotaMockDelegate* delegate() {
+    return delegate_;
   }
 
   void Write(int64_t offset, const std::string& data, bool will_operation) {
@@ -428,6 +424,7 @@ class QuotaFileIOTest : public PpapiUnittest {
   scoped_ptr<QuotaFileIO> quota_file_io_;
   std::deque<int> bytes_written_;
   std::deque<PlatformFileError> status_;
+  QuotaMockDelegate* delegate_;
   base::WeakPtrFactory<QuotaFileIOTest> weak_factory_;
 };
 
@@ -448,7 +445,7 @@ TEST_F(QuotaFileIOTest, WillSetLength) {
 }
 
 TEST_F(QuotaFileIOTest, ParallelWrites) {
-  quota_plugin_delegate()->set_available_space(22);
+  delegate()->set_available_space(22);
   std::string read_buffer;
 
   const std::string data1[] = {
@@ -468,7 +465,7 @@ TEST_F(QuotaFileIOTest, ParallelWrites) {
     pop_result();
   }
 
-  EXPECT_EQ(22 - 15, quota_plugin_delegate()->available_space());
+  EXPECT_EQ(22 - 15, delegate()->available_space());
   EXPECT_EQ(15, GetPlatformFileSize());
   ReadPlatformFile(&read_buffer);
   EXPECT_EQ("123455559012345", read_buffer);
@@ -490,7 +487,7 @@ TEST_F(QuotaFileIOTest, ParallelWrites) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status().front());
   pop_result();
 
-  EXPECT_EQ(22 - 15, quota_plugin_delegate()->available_space());
+  EXPECT_EQ(22 - 15, delegate()->available_space());
   EXPECT_EQ(15, GetPlatformFileSize());
   ReadPlatformFile(&read_buffer);
   EXPECT_EQ("123355559012345", read_buffer);

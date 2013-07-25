@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
 
 using base::PlatformFile;
@@ -100,14 +99,8 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
     }
     DCHECK(buffer_.get());
 
-    PluginDelegate* plugin_delegate = quota_io_->GetPluginDelegate();
-    if (!plugin_delegate) {
-      DidFail(base::PLATFORM_FILE_ERROR_FAILED);
-      return;
-    }
-
     if (!base::PostTaskAndReplyWithResult(
-            plugin_delegate->GetFileThreadMessageLoopProxy().get(),
+            quota_io_->delegate()->GetFileThreadMessageLoopProxy().get(),
             FROM_HERE,
             base::Bind(&WriteAdapter,
                        quota_io_->file_,
@@ -190,14 +183,8 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
       return;
     }
 
-    PluginDelegate* plugin_delegate = quota_io_->GetPluginDelegate();
-    if (!plugin_delegate) {
-      DidFail(base::PLATFORM_FILE_ERROR_FAILED);
-      return;
-    }
-
     if (!base::FileUtilProxy::Truncate(
-            plugin_delegate->GetFileThreadMessageLoopProxy().get(),
+            quota_io_->delegate()->GetFileThreadMessageLoopProxy().get(),
             quota_io_->file_,
             length_,
             base::Bind(&SetLengthOperation::DidFinish,
@@ -227,11 +214,11 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
 // QuotaFileIO --------------------------------------------------------------
 
 QuotaFileIO::QuotaFileIO(
-    PP_Instance instance,
+    Delegate* delegate,
     PlatformFile file,
     const GURL& file_url,
     PP_FileSystemType type)
-    : pp_instance_(instance),
+    : delegate_(delegate),
       file_(file),
       file_url_(file_url),
       storage_type_(PPFileSystemTypeToQuotaStorageType(type)),
@@ -286,14 +273,6 @@ bool QuotaFileIO::WillSetLength(int64_t length,
   return RegisterOperationForQuotaChecks(op);
 }
 
-PluginDelegate* QuotaFileIO::GetPluginDelegate() const {
-  PepperPluginInstanceImpl* instance =
-      HostGlobals::Get()->GetInstance(pp_instance_);
-  if (instance)
-    return instance->delegate();
-  return NULL;
-}
-
 bool QuotaFileIO::RegisterOperationForQuotaChecks(
     PendingOperationBase* op_ptr) {
   scoped_ptr<PendingOperationBase> op(op_ptr);
@@ -303,14 +282,10 @@ bool QuotaFileIO::RegisterOperationForQuotaChecks(
     outstanding_quota_queries_ = 0;
     outstanding_errors_ = 0;
 
-    PluginDelegate* plugin_delegate = GetPluginDelegate();
-    if (!plugin_delegate)
-      return false;
-
     // Query the file size.
     ++outstanding_quota_queries_;
     if (!base::FileUtilProxy::GetFileInfoFromPlatformFile(
-            plugin_delegate->GetFileThreadMessageLoopProxy().get(),
+            delegate_->GetFileThreadMessageLoopProxy().get(),
             file_,
             base::Bind(&QuotaFileIO::DidQueryInfoForQuota,
                        weak_factory_.GetWeakPtr()))) {
@@ -321,7 +296,7 @@ bool QuotaFileIO::RegisterOperationForQuotaChecks(
 
     // Query the current available space.
     ++outstanding_quota_queries_;
-    plugin_delegate->QueryAvailableSpace(
+    delegate_->QueryAvailableSpace(
         file_url_.GetOrigin(), storage_type_,
         base::Bind(&QuotaFileIO::DidQueryAvailableSpace,
                    weak_factory_.GetWeakPtr()));
@@ -371,9 +346,7 @@ bool QuotaFileIO::CheckIfExceedsQuota(int64_t new_file_size) const {
 
 void QuotaFileIO::WillUpdate() {
   if (inflight_operations_++ == 0) {
-    PluginDelegate* plugin_delegate = GetPluginDelegate();
-    if (plugin_delegate)
-      plugin_delegate->WillUpdateFile(file_url_);
+    delegate_->WillUpdateFile(file_url_);
     DCHECK_EQ(0, max_written_offset_);
   }
 }
@@ -399,9 +372,7 @@ void QuotaFileIO::DidWrite(WriteOperation* op,
     int64_t growth = max_written_offset_ - cached_file_size_;
     growth = growth < 0 ? 0 : growth;
 
-    PluginDelegate* plugin_delegate = GetPluginDelegate();
-    if (plugin_delegate)
-      plugin_delegate->DidUpdateFile(file_url_, growth);
+    delegate_->DidUpdateFile(file_url_, growth);
     max_written_offset_ = 0;
   }
 }
@@ -413,10 +384,7 @@ void QuotaFileIO::DidSetLength(PlatformFileError error, int64_t new_file_size) {
   int64_t delta = (error != base::PLATFORM_FILE_OK) ? 0 :
       new_file_size - cached_file_size_;
 
-
-  PluginDelegate* plugin_delegate = GetPluginDelegate();
-  if (plugin_delegate)
-    plugin_delegate->DidUpdateFile(file_url_, delta);
+  delegate_->DidUpdateFile(file_url_, delta);
   inflight_operations_ = 0;
 }
 
