@@ -90,7 +90,7 @@ size_t __pnacl_irt_interface_wrapper(const char *interface_ident,
                                     &real_irt_ppapi_hook,
                                     sizeof real_irt_ppapi_hook) !=
       sizeof real_irt_ppapi_hook) {
-    return -1;
+    return 0;
   }
   /*
    * Copy the portion of the ppapihook interface that is not wrapped.
