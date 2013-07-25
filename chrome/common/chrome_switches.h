@@ -239,6 +239,7 @@ extern const char kHostResolverRetryAttempts[];
 extern const char kIgnoreUrlFetcherCertRequests[];
 extern const char kIncognito[];
 extern const char kInstallFromWebstore[];
+extern const char kInstantNewTabURL[];
 extern const char kInstantProcess[];
 extern const char kKeepAliveForTest[];
 extern const char kKioskMode[];

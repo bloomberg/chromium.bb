@@ -195,8 +195,16 @@ void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
 void SearchTabHelper::DetermineIfPageSupportsInstant() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  if (!chrome::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
-                                                profile)) {
+  // Use the underlying URL rather than the virtual URL when checking whether
+  // this navigation can land in the Instant process. Otherwise this check
+  // would fail if a URL like chrome://newtab is being rewritten to an Instant
+  // URL.
+  // TODO(samarth): actually check whether this WebContents is rendered in an
+  // Instant process rather than checking the URL.
+  const content::NavigationEntry* entry =
+      web_contents_->GetController().GetActiveEntry();
+  const GURL& current_url = entry ? entry->GetURL() : web_contents_->GetURL();
+  if (!chrome::ShouldAssignURLToInstantRenderer(current_url, profile)) {
     // The page is not in the Instant process. This page does not support
     // instant. If we send an IPC message to a page that is not in the Instant
     // process, it will never receive it and will never respond. Therefore,

@@ -583,4 +583,23 @@ TEST_F(SearchTest, CommandLineOverrides) {
   EXPECT_EQ("http://www.bar.com/webhp?a=b&strk", instant_url.spec());
 }
 
+TEST_F(SearchTest, ShouldShowInstantNTP_Default) {
+  EnableInstantExtendedAPIForTesting();
+  EXPECT_TRUE(ShouldShowInstantNTP());
+}
+
+TEST_F(SearchTest, ShouldShowInstantNTP_DisabledViaFinch) {
+  EnableInstantExtendedAPIForTesting();
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+                                                     "Group1 show_ntp:0"));
+  EXPECT_FALSE(ShouldShowInstantNTP());
+}
+
+TEST_F(SearchTest, ShouldShowInstantNTP_DisabledByInstantNewTabURLSwitch) {
+  EnableInstantExtendedAPIForTesting();
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kInstantNewTabURL, "http://example.com/newtab");
+  EXPECT_FALSE(ShouldShowInstantNTP());
+}
+
 }  // namespace chrome

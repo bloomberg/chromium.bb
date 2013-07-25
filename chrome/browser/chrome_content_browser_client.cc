@@ -2195,6 +2195,11 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   // actually handle them.
   handler->AddHandlerPair(&WillHandleBrowserAboutURL,
                           BrowserURLHandler::null_handler());
+
+  // Handler to rewrite chrome://newtab for InstantExtended.
+  handler->AddHandlerPair(&chrome::HandleNewTabURLRewrite,
+                          &chrome::HandleNewTabURLReverseRewrite);
+
   // chrome: & friends.
   handler->AddHandlerPair(&HandleWebUI, &HandleWebUIReverse);
 }

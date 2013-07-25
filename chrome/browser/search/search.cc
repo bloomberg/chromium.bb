@@ -161,6 +161,13 @@ bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
        google_util::StartsWithCommandLineGoogleBaseURL(url));
 }
 
+// Returns true if |url| matches --instant-new-tab-url.
+bool IsCommandLineInstantNTPURL(const GURL& url) {
+  const GURL ntp_url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kInstantNewTabURL));
+  return ntp_url.is_valid() && MatchesOriginAndPath(ntp_url, url);
+}
+
 // Returns true if |url| can be used as an Instant URL for |profile|.
 bool IsInstantURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
@@ -168,6 +175,9 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
 
   if (!url.is_valid())
     return false;
+
+  if (IsCommandLineInstantNTPURL(url))
+    return true;
 
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   if (!template_url)
@@ -316,11 +326,16 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
     return false;
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  return IsInstantExtendedAPIEnabled() &&
-         IsRenderedInInstantProcess(contents, profile) &&
-         (IsInstantURL(entry->GetVirtualURL(), profile) ||
-          entry->GetVirtualURL() == GetLocalInstantURL(profile)) &&
-         GetSearchTermsImpl(contents, entry).empty();
+  if (!IsInstantExtendedAPIEnabled() ||
+      !IsRenderedInInstantProcess(contents, profile))
+    return false;
+
+  if (IsInstantURL(entry->GetVirtualURL(), profile) ||
+      entry->GetVirtualURL() == GetLocalInstantURL(profile))
+    return GetSearchTermsImpl(contents, entry).empty();
+
+  return entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL) &&
+      IsCommandLineInstantNTPURL(entry->GetURL());
 }
 
 bool IsSuggestPrefEnabled(Profile* profile) {
@@ -380,6 +395,12 @@ bool ShouldPreferRemoteNTPOnStartup() {
 }
 
 bool ShouldShowInstantNTP() {
+  // If the instant-new-tab-url flag is set, we'll always just load the NTP
+  // directly instead of preloading contents using InstantNTP.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kInstantNewTabURL))
+    return false;
+
   FieldTrialFlags flags;
   if (GetFieldTrialInfo(
           base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
@@ -477,6 +498,39 @@ bool IsPreloadedInstantExtendedNTP(const content::WebContents* contents) {
   }
   return false;
 }
+
+bool HandleNewTabURLRewrite(GURL* url,
+                            content::BrowserContext* browser_context) {
+  if (!IsInstantExtendedAPIEnabled())
+    return false;
+
+  if (!url->SchemeIs(chrome::kChromeUIScheme) ||
+      url->host() != chrome::kChromeUINewTabHost)
+    return false;
+
+  const GURL ntp_url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kInstantNewTabURL));
+  if (!ntp_url.is_valid())
+    return false;
+
+  *url = ntp_url;
+  return true;
+}
+
+bool HandleNewTabURLReverseRewrite(GURL* url,
+                                   content::BrowserContext* browser_context) {
+  if (!IsInstantExtendedAPIEnabled())
+    return false;
+
+  const GURL ntp_url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kInstantNewTabURL));
+  if (!MatchesOriginAndPath(ntp_url, *url))
+    return false;
+
+  *url = GURL(chrome::kChromeUINewTabURL);
+  return true;
+}
+
 
 void EnableInstantExtendedAPIForTesting() {
   CommandLine* cl = CommandLine::ForCurrentProcess();

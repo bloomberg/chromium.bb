@@ -18,6 +18,7 @@ class TemplateURL;
 class TemplateURLRef;
 
 namespace content {
+class BrowserContext;
 class NavigationEntry;
 class WebContents;
 }
@@ -146,6 +147,17 @@ int GetInstantLoaderStalenessTimeoutSec();
 
 // Returns true if |contents| corresponds to a preloaded instant extended NTP.
 bool IsPreloadedInstantExtendedNTP(const content::WebContents* contents);
+
+// Rewrites |url| if
+//   1. |url| is kChromeUINewTabURL,
+//   2. InstantExtended is enabled, and
+//   3. The --instant-new-tab-url switch is set to a valid URL.
+// |url| is rewritten to the value of --instant-new-tab-url.
+bool HandleNewTabURLRewrite(GURL* url,
+                            content::BrowserContext* browser_context);
+// Reverses the operation from HandleNewTabURLRewrite.
+bool HandleNewTabURLReverseRewrite(GURL* url,
+                                   content::BrowserContext* browser_context);
 
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.
