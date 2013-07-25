@@ -2603,7 +2603,7 @@ frame_create(struct window *window, void *data)
 {
 	struct frame *frame;
 
-	frame = malloc(sizeof *frame);
+	frame = xmalloc(sizeof *frame);
 	memset(frame, 0, sizeof *frame);
 
 	frame->widget = window_add_widget(window, frame);
