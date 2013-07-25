@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_GPU_GPU_MEMORY_TRACKING_H_
 
 #include "base/basictypes.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 

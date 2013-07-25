@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_SANDBOX_UTIL_H_
 #define CONTENT_COMMON_SANDBOX_UTIL_H_
 
-#include "base/process.h"
+#include "base/process/process.h"
 #include "ipc/ipc_platform_file.h"
 
 // This file contains cross-platform sandbox code internal to content.

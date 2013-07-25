@@ -6,7 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/memory/shared_memory.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"

@@ -13,6 +13,7 @@ extern "C" {
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process/kill.h"
 #include "content/common/sandbox_mac.h"
 #include "content/test/test_content_client.h"
 #include "testing/multiprocess_func_list.h"

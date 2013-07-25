@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
+#include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"

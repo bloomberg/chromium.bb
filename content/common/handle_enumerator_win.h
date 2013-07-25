@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_HANDLE_ENUMERATOR_WIN_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 
 namespace content {

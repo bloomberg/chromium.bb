@@ -8,7 +8,7 @@
 
 // Multiply-included message file, hence no include guard.
 #include "base/memory/shared_memory.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "content/common/content_param_traits_macros.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/resource_response.h"

@@ -21,7 +21,7 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/process_util.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/string_util.h"
 // Linux/glibc doesn't natively have setproctitle().
 #include "content/common/set_process_title_linux.h"
