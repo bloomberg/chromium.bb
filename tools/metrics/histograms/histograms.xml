@@ -14135,6 +14135,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.Animation.CSSProperties" enum="MappedCSSProperties">
+  <summary>
+    Counts the number of times each CSS property is animated. There is no limit
+    on the number of times each property is counted per page view -- a property
+    that is animated multiple times during a single page view is counted each
+    time it animates.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.FeatureObserver" enum="FeatureObserver">
   <summary>
     Count of how many instances of WebCore::Page use various features. Each
