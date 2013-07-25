@@ -14,9 +14,10 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 def main():
   expected = sorted([
     'check_files.py',
-    'gtest_fake.py',
     'file1.txt',
+    'file1_copy.txt',
     'file2.txt',
+    'repeated_files.py',
   ])
   actual = sorted(os.listdir(ROOT_DIR))
   if expected != actual:

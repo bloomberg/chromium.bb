@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,10 +25,11 @@ import time
 from xml.dom import minidom
 import xml.parsers.expat
 
-import run_isolated
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if not ROOT_DIR in sys.path:
+  sys.path.insert(0, ROOT_DIR)
 
-# Scripts using run_test_cases as a library expect this function.
-from run_isolated import fix_python_path
+import run_isolated
 
 
 # These are known to influence the way the output is generated.
@@ -1600,7 +1601,7 @@ def process_args(argv):
 
   if options.run_all and options.max_failures is not None:
     parser.error('Use only one of --run-all or --max-failures')
-  return parser, options, fix_python_path(args)
+  return parser, options, run_isolated.fix_python_path(args)
 
 
 def main(argv):

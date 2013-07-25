@@ -306,7 +306,7 @@ if sys.platform != 'win32':
         (self._ROOT_PID,
           'execve("/home/foo_bar_user/out/unittests", '
             '["/home/foo_bar_user/out/unittests", '
-            '"--gtest_filter=AtExitTest.Basic"], [/* 44 vars */])         = 0'),
+            '"--random-flag"], [/* 44 vars */])         = 0'),
         (self._ROOT_PID,
           'open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND, 0666) = 8'),
       ]
@@ -323,7 +323,7 @@ if sys.platform != 'win32':
         },
       ]
       command = [
-        '/home/foo_bar_user/out/unittests', '--gtest_filter=AtExitTest.Basic',
+        '/home/foo_bar_user/out/unittests', '--random-flag',
       ]
       self._test_lines(lines, u'/home/foo_bar_user/src', files, command)
 

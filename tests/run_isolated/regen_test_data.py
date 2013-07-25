@@ -20,7 +20,7 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Ordering is important to keep this script simple.
 INCLUDES_TO_FIX = [
     ('manifest2.isolated', ['manifest1.isolated']),
-    ('check_files.isolated', ['gtest_fake.isolated', 'manifest2.isolated']),
+    ('check_files.isolated', ['manifest2.isolated', 'repeated_files.isolated']),
 ]
 
 

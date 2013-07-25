@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,19 +11,24 @@ See more info at http://code.google.com/p/googletest/.
 import os
 import sys
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if not ROOT_DIR in sys.path:
+  sys.path.insert(0, ROOT_DIR)
+
+import run_isolated
 import run_test_cases
 
 
 def main():
   """CLI frontend to validate arguments."""
-  run_test_cases.run_isolated.disable_buffering()
+  run_isolated.disable_buffering()
   parser = run_test_cases.OptionParserWithTestShardingAndFiltering(
       usage='%prog <options> [gtest]')
   options, args = parser.parse_args()
   if not args:
     parser.error('Please provide the executable to run')
 
-  cmd = run_test_cases.fix_python_path(args)
+  cmd = run_isolated.fix_python_path(args)
   try:
     tests = run_test_cases.list_test_cases(
         cmd,

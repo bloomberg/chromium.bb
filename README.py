@@ -27,13 +27,13 @@ Scripts are compartmentalized by their name:
 - trace_*.py:         Tracing infrastructure scripts. More information can be
                       found at
                       http://chromium.org/developers/testing/tracing-tools
-- *_test_cases.py:    Scripts specifically managing GTest executables. More
-                      information about google-test can be found at
+- googletest/*.py:    Scripts specifically managing GTest executables. More
+                      information about googletest can be found at
                       http://code.google.com/p/googletest/wiki/Primer
 
 A few scripts have strict dependency rules:
-- run_isolated.py, shard_test_cases.py and trace_inputs.py depends on no other
-  script so they can be run outside the checkout.
+- run_isolated.py and trace_inputs.py depends on no other script so they can be
+  run outside the checkout.
 - The pure tracing scripts (trace_*.py) do not know about isolate
   infrastructure.
 - Scripts without '_test_cases' suffix do not know about GTest.

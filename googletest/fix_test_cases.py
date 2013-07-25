@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -18,11 +18,15 @@ import subprocess
 import sys
 import tempfile
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if not ROOT_DIR in sys.path:
+  sys.path.insert(0, ROOT_DIR)
+
 import isolate
 import isolate_test_cases
+import run_isolated
 import run_test_cases
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def with_tempfile(function):
@@ -122,7 +126,8 @@ def trace_some(tempfilepath, isolated, test_cases, verbosity):
   with open(tempfilepath, 'w') as f:
     f.write('\n'.join(test_cases))
   cmd = [
-    sys.executable, os.path.join(ROOT_DIR, 'isolate_test_cases.py'),
+    sys.executable, os.path.join(
+        ROOT_DIR, 'googletest', 'isolate_test_cases.py'),
     '--isolated', isolated,
     '--test-case-file', tempfilepath,
     # Do not use --run-all here, we assume the test cases will pass inside the
@@ -210,7 +215,7 @@ def fix_all(isolated, all_test_cases, verbosity):
 
 
 def main():
-  run_test_cases.run_isolated.disable_buffering()
+  run_isolated.disable_buffering()
   parser = run_test_cases.OptionParserTestCases(
       usage='%prog <options> -s <something.isolated>')
   parser.add_option(

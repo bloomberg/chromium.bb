@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,7 +14,9 @@ import tempfile
 import unittest
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(BASE_DIR)
+GOOGLETEST_DIR = os.path.dirname(BASE_DIR)
+ROOT_DIR = os.path.dirname(GOOGLETEST_DIR)
+
 sys.path.insert(0, ROOT_DIR)
 
 import run_isolated
@@ -40,7 +42,7 @@ class FixTestCases(unittest.TestCase):
       cmd = cmd + ['--verbose'] * 3
     logging.info(cmd)
     proc = subprocess.Popen(
-        [sys.executable, os.path.join(ROOT_DIR, cmd[0])] + cmd[1:],
+        [sys.executable] + cmd,
         cwd=self.srcdir,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
@@ -78,7 +80,7 @@ class FixTestCases(unittest.TestCase):
     _copy('gtest_fake_base.py')
     _copy('gtest_fake_pass.py')
     shutil.copy(
-        os.path.join(ROOT_DIR, 'run_test_cases.py'),
+        os.path.join(GOOGLETEST_DIR, 'run_test_cases.py'),
         os.path.join(self.srcdir, 'run_test_cases.py'))
     shutil.copy(
         os.path.join(ROOT_DIR, 'run_isolated.py'),
@@ -86,14 +88,19 @@ class FixTestCases(unittest.TestCase):
 
     logging.debug('1. Create a .isolated file out of the .isolate file.')
     isolated = os.path.join(self.srcdir, 'gtest_fake_pass.isolated')
-    out = self._run(['isolate.py', 'check', '-i', isolate, '-s', isolated,
-                     '-V', 'chromeos', str(chromeos_value)])
+    out = self._run(
+        [
+          os.path.join(ROOT_DIR, 'isolate.py'),
+          'check', '-i', isolate, '-s', isolated,
+          '-V', 'chromeos', str(chromeos_value),
+        ])
     if not VERBOSE:
       self.assertEqual('', out)
 
     logging.debug('2. Run fix_test_cases.py on it.')
     # Give up on looking at stdout.
-    _ = self._run(['fix_test_cases.py', '-s', isolated])
+    _ = self._run(
+        [os.path.join(GOOGLETEST_DIR, 'fix_test_cases.py'), '-s', isolated])
 
     logging.debug('3. Asserting the content of the .isolated file.')
     with open(isolated) as f:

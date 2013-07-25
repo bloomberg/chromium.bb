@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,8 +14,10 @@ import sys
 import tempfile
 import unittest
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(BASE_DIR)
+GOOGLETEST_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(GOOGLETEST_DIR)
+
+sys.path.insert(0, GOOGLETEST_DIR)
 sys.path.insert(0, ROOT_DIR)
 
 import isolate
@@ -57,10 +59,10 @@ class IsolateTestCases(unittest.TestCase):
       else:
         shutil.rmtree(self.tempdir)
 
-  def _copy(self, *relpath):
+  def _copy(self, root, *relpath):
     relpath = os.path.join(*relpath)
     shutil.copy(
-        os.path.join(ROOT_DIR, relpath),
+        os.path.join(root, relpath),
         os.path.join(self.tempdir, relpath))
 
   def test_simple(self):
@@ -79,10 +81,10 @@ class IsolateTestCases(unittest.TestCase):
     os.mkdir(os.path.join(self.tempdir, 'tests'))
     os.mkdir(os.path.join(self.tempdir, 'tests', 'gtest_fake'))
     os.mkdir(os.path.join(self.tempdir, 'tests', 'isolate_test_cases'))
-    self._copy('isolate.py')
-    self._copy(gtest_fake_base_py)
-    self._copy(gtest_fake_pass_isolate)
-    self._copy(gtest_fake_pass_py)
+    self._copy(ROOT_DIR, 'isolate.py')
+    self._copy(GOOGLETEST_DIR, gtest_fake_base_py)
+    self._copy(GOOGLETEST_DIR, gtest_fake_pass_isolate)
+    self._copy(GOOGLETEST_DIR, gtest_fake_pass_py)
 
     basename = os.path.join(self.tempdir, 'isolated', 'gtest_fake_pass')
     isolated = basename + '.isolated'
@@ -102,7 +104,8 @@ class IsolateTestCases(unittest.TestCase):
     # Assert the content of the .isolated file.
     with open(isolated) as f:
       actual_isolated = json.load(f)
-    root_dir_gtest_fake_pass_py = os.path.join(ROOT_DIR, gtest_fake_pass_py)
+    root_dir_gtest_fake_pass_py = os.path.join(
+        GOOGLETEST_DIR, gtest_fake_pass_py)
     rel_gtest_fake_pass_py = os.path.join(u'gtest_fake', 'gtest_fake_pass.py')
     expected_isolated = {
       u'command': [u'../gtest_fake/gtest_fake_pass.py'],
@@ -123,7 +126,7 @@ class IsolateTestCases(unittest.TestCase):
 
     cmd = [
         sys.executable,
-        os.path.join(ROOT_DIR, 'isolate_test_cases.py'),
+        os.path.join(GOOGLETEST_DIR, 'isolate_test_cases.py'),
         # Forces 4 parallel jobs.
         '--jobs', '4',
         '--isolated', isolated,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,17 +14,11 @@ import os
 import subprocess
 import sys
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if not ROOT_DIR in sys.path:
+  sys.path.insert(0, ROOT_DIR)
+
 import run_isolated
-
-
-def fix_python_path(cmd):
-  """Returns the fixed command line to call the right python executable."""
-  out = cmd[:]
-  if out[0] == 'python':
-    out[0] = sys.executable
-  elif out[0].endswith('.py'):
-    out.insert(0, sys.executable)
-  return out
 
 
 def main():
@@ -45,7 +39,7 @@ def main():
   env = os.environ.copy()
   env['GTEST_TOTAL_SHARDS'] = str(options.shards)
   env['GTEST_SHARD_INDEX'] = str(options.index)
-  return subprocess.call(fix_python_path(args), env=env)
+  return subprocess.call(run_isolated.fix_python_path(args), env=env)
 
 
 if __name__ == '__main__':

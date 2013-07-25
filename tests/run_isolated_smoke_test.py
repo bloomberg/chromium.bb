@@ -140,36 +140,40 @@ class RunSwarmStep(unittest.TestCase):
 
   def test_result(self):
     # Loads an arbitrary .isolated on the file system.
-    isolated = os.path.join(self.data_dir, 'gtest_fake.isolated')
+    isolated = os.path.join(self.data_dir, 'repeated_files.isolated')
     expected = [
       'state.json',
-      self._store('gtest_fake.py'),
+      self._store('file1.txt'),
+      self._store('file1_copy.txt'),
+      self._store('repeated_files.py'),
       calc_sha1(isolated),
     ]
-    out, _, returncode = self._run(
+    out, err, returncode = self._run(
         self._generate_args_with_isolated(isolated))
     if not VERBOSE:
-      self.assertEqual(1070, len(out), out)
-    self.assertEqual(6, returncode)
+      self.assertEqual('Success\n', out, (out, err))
+    self.assertEqual(0, returncode)
     actual = list_files_tree(self.cache)
-    self.assertEqual(sorted(expected), actual)
+    self.assertEqual(sorted(set(expected)), actual)
 
   def test_hash(self):
     # Loads the .isolated from the store as a hash.
-    result_sha1 = self._store('gtest_fake.isolated')
+    result_sha1 = self._store('repeated_files.isolated')
     expected = [
       'state.json',
-      self._store('gtest_fake.py'),
+      self._store('file1.txt'),
+      self._store('file1_copy.txt'),
+      self._store('repeated_files.py'),
       result_sha1,
     ]
 
     out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
     if not VERBOSE:
       self.assertEqual('', err)
-      self.assertEqual(1070, len(out), out)
-    self.assertEqual(6, returncode)
+      self.assertEqual('Success\n', out, out)
+    self.assertEqual(0, returncode)
     actual = list_files_tree(self.cache)
-    self.assertEqual(sorted(expected), actual)
+    self.assertEqual(sorted(set(expected)), actual)
 
   def test_download_isolated(self):
     out_dir = None
@@ -232,14 +236,12 @@ class RunSwarmStep(unittest.TestCase):
   def test_includes(self):
     # Loads an .isolated that includes another one.
 
-    # References manifest1.isolated and gtest_fake.isolated. Maps file3.txt as
-    # file2.txt.
+    # References manifest2.isolated and repeated_files.isolated. Maps file3.txt
+    # as file2.txt.
     result_sha1 = self._store('check_files.isolated')
     expected = [
       'state.json',
       self._store('check_files.py'),
-      self._store('gtest_fake.py'),
-      self._store('gtest_fake.isolated'),
       self._store('file1.txt'),
       self._store('file3.txt'),
       # Maps file1.txt.
@@ -247,6 +249,8 @@ class RunSwarmStep(unittest.TestCase):
       # References manifest1.isolated. Maps file2.txt but it is overriden.
       self._store('manifest2.isolated'),
       result_sha1,
+      self._store('repeated_files.py'),
+      self._store('repeated_files.isolated'),
     ]
     out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
     if not VERBOSE:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,7 +13,8 @@ import tempfile
 import unittest
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(BASE_DIR)
+GOOGLETEST_DIR = os.path.dirname(BASE_DIR)
+ROOT_DIR = os.path.dirname(GOOGLETEST_DIR)
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(BASE_DIR, 'gtest_fake'))
 
@@ -29,7 +30,7 @@ class TraceTestCases(unittest.TestCase):
   def setUp(self):
     self.temp_file = None
 
-    self.initial_cwd = ROOT_DIR
+    self.initial_cwd = GOOGLETEST_DIR
     if sys.platform == 'win32':
       # Windows has no kernel mode concept of current working directory.
       self.initial_cwd = None
@@ -70,7 +71,7 @@ class TraceTestCases(unittest.TestCase):
 
     cmd = [
         sys.executable,
-        os.path.join(ROOT_DIR, 'trace_test_cases.py'),
+        os.path.join(GOOGLETEST_DIR, 'trace_test_cases.py'),
         # Forces 4 parallel jobs.
         '--jobs', '4',
         '--out', self.temp_file,
@@ -83,7 +84,7 @@ class TraceTestCases(unittest.TestCase):
         cmd,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         universal_newlines=True,
-        cwd=ROOT_DIR)
+        cwd=GOOGLETEST_DIR)
     out, err = proc.communicate() or ('', '')  # pylint is confused.
     self.assertEqual(0, proc.returncode, (out, err))
     lines = out.splitlines()
@@ -148,7 +149,7 @@ class TraceTestCases(unittest.TestCase):
           ],
           u'executable': trace_inputs.get_native_path_case(
             unicode(self.executable)),
-          u'initial_cwd': ROOT_DIR,
+          u'initial_cwd': GOOGLETEST_DIR,
         },
       }
       if sys.platform == 'win32':
