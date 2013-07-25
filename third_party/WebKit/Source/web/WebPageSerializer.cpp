@@ -99,7 +99,7 @@ KURL getSubResourceURLFromElement(Element* element)
     // Ignore javascript content.
     if (value.isEmpty() || value.stripWhiteSpace().startsWith("javascript:", false))
         return KURL();
-  
+
     return element->document()->completeURL(value);
 }
 
@@ -164,7 +164,7 @@ void retrieveResourcesForFrame(Frame* frame,
     visitedFrames->append(frame);
     if (!frameURLs->contains(frameURL))
         frameURLs->append(frameURL);
-  
+
     // Now get the resources associated with each node of the document.
     RefPtr<HTMLCollection> allNodes = frame->document()->all();
     for (unsigned i = 0; i < allNodes->length(); ++i) {
@@ -198,7 +198,7 @@ void WebPageSerializer::serialize(WebView* view, WebVector<WebPageSerializer::Re
         result.append(resource);
     }
 
-    *resourcesParam = result;         
+    *resourcesParam = result;
 }
 
 static PassRefPtr<SharedBuffer> serializePageToMHTML(Page* page, MHTMLArchive::EncodingPolicy encodingPolicy)
@@ -248,7 +248,7 @@ bool WebPageSerializer::retrieveAllResources(WebView* view,
     Vector<Frame*> visitedFrames;
     Vector<KURL> frameKURLs;
     Vector<KURL> resourceKURLs;
-    
+
     // Let's retrieve the resources from every frame in this page.
     framesToVisit.append(mainFrame->frame());
     while (!framesToVisit.isEmpty()) {
@@ -274,7 +274,7 @@ bool WebPageSerializer::retrieveAllResources(WebView* view,
     for (size_t i = 0; i < frameKURLs.size(); ++i)
         resultFrameURLs[i] = frameKURLs[i];
     *frameURLs = resultFrameURLs;
-    
+
     return true;
 }
 

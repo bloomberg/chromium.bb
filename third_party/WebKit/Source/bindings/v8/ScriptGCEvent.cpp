@@ -106,6 +106,6 @@ void ScriptGCEvent::gcEpilogueCallback(v8::GCType type, v8::GCCallbackFlags flag
         (*i)->didGC(gcEventData->startTime(), endTime, collectedBytes);
     gcEventData->clear();
 }
-    
+
 } // namespace WebCore
 

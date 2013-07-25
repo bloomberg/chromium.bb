@@ -57,10 +57,10 @@ namespace WebCore {
     typedef WTF::Vector<RefPtr<ArrayBuffer>, 1> ArrayBufferArray;
 
     // Helper function which pulls the values out of a JS sequence and into a MessagePortArray.
-    // Also validates the elements per sections 4.1.13 and 4.1.15 of the WebIDL spec and section 8.3.3 
+    // Also validates the elements per sections 4.1.13 and 4.1.15 of the WebIDL spec and section 8.3.3
     // of the HTML5 spec and generates exceptions as appropriate.
     // Returns true if the array was filled, or false if the passed value was not of an appropriate type.
-    bool extractTransferables(v8::Local<v8::Value>, MessagePortArray&, ArrayBufferArray&, v8::Isolate*); 
+    bool extractTransferables(v8::Local<v8::Value>, MessagePortArray&, ArrayBufferArray&, v8::Isolate*);
     bool getMessagePortArray(v8::Local<v8::Value>, MessagePortArray&, v8::Isolate*);
 
 } // namespace WebCore

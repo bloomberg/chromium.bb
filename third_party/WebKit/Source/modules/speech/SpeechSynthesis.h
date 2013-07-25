@@ -37,31 +37,31 @@
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
-    
+
 class PlatformSpeechSynthesizerClient;
 class SpeechSynthesisVoice;
-    
+
 class SpeechSynthesis : public PlatformSpeechSynthesizerClient, public ScriptWrappable, public RefCounted<SpeechSynthesis> {
 public:
     static PassRefPtr<SpeechSynthesis> create();
-    
+
     bool pending() const;
     bool speaking() const;
     bool paused() const;
-    
+
     void speak(SpeechSynthesisUtterance*);
     void cancel();
     void pause();
     void resume();
-    
+
     const Vector<RefPtr<SpeechSynthesisVoice> >& getVoices();
-    
+
     // Used in testing to use a mock platform synthesizer
     void setPlatformSynthesizer(PassOwnPtr<PlatformSpeechSynthesizer>);
-    
+
 private:
     SpeechSynthesis();
-    
+
     // PlatformSpeechSynthesizerClient override methods.
     virtual void voicesDidChange() OVERRIDE;
     virtual void didStartSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance>) OVERRIDE;
@@ -74,14 +74,14 @@ private:
     void startSpeakingImmediately(SpeechSynthesisUtterance*);
     void handleSpeakingCompleted(SpeechSynthesisUtterance*, bool errorOccurred);
     void fireEvent(const AtomicString& type, SpeechSynthesisUtterance*, unsigned long charIndex, const String& name);
-    
+
     OwnPtr<PlatformSpeechSynthesizer> m_platformSpeechSynthesizer;
     Vector<RefPtr<SpeechSynthesisVoice> > m_voiceList;
     SpeechSynthesisUtterance* m_currentSpeechUtterance;
     Deque<RefPtr<SpeechSynthesisUtterance> > m_utteranceQueue;
     bool m_isPaused;
 };
-    
+
 } // namespace WebCore
 
 #endif // SpeechSynthesisEvent_h

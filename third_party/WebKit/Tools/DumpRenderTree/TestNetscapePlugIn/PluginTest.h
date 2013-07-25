@@ -110,9 +110,9 @@ public:
         {
             registerCreateTestFunction(identifier, Register::create);
         }
-    
+
     private:
-        static PluginTest* create(NPP npp, const std::string& identifier) 
+        static PluginTest* create(NPP npp, const std::string& identifier)
         {
             return new TestClassTy(npp, identifier);
         }
@@ -141,7 +141,7 @@ protected:
             object->m_pluginTest = pluginTest;
             return object;
         }
-    
+
         // These should never be called.
         bool hasMethod(NPIdentifier methodName)
         {
@@ -154,7 +154,7 @@ protected:
             assert(false);
             return false;
         }
-        
+
         bool invokeDefault(const NPVariant*, uint32_t, NPVariant* result)
         {
             assert(false);
@@ -190,9 +190,9 @@ protected:
             : m_pluginTest(0)
         {
         }
-        
-        virtual ~Object() 
-        { 
+
+        virtual ~Object()
+        {
         }
 
         PluginTest* pluginTest() const { return m_pluginTest; }
@@ -241,7 +241,7 @@ protected:
         static NPClass* npClass()
         {
             static NPClass npClass = {
-                NP_CLASS_STRUCT_VERSION, 
+                NP_CLASS_STRUCT_VERSION,
                 NP_Allocate,
                 NP_Deallocate,
                 0, // NPClass::invalidate
@@ -255,19 +255,19 @@ protected:
                 0, // NPClass::enumerate
                 0  // NPClass::construct
             };
-            
+
             return &npClass;
         };
 
         PluginTest* m_pluginTest;
     };
-    
+
 private:
     typedef PluginTest* (*CreateTestFunction)(NPP, const std::string&);
-    
+
     static void registerCreateTestFunction(const std::string&, CreateTestFunction);
     static std::map<std::string, CreateTestFunction>& createTestFunctions();
-    
+
     std::string m_identifier;
 };
 

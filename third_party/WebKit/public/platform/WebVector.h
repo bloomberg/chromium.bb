@@ -131,7 +131,7 @@ public:
         WEBKIT_ASSERT(i < m_size);
         return m_ptr[i];
     }
-    
+
     bool contains(const T& value) const
     {
         for (size_t i = 0; i < m_size; i++) {

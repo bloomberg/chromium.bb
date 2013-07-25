@@ -830,7 +830,7 @@ void EventSender::replaySavedEvents()
     replayingSavedEvents = false;
 }
 
-// Because actual context menu is implemented by the browser side, 
+// Because actual context menu is implemented by the browser side,
 // this function does only what LayoutTests are expecting:
 // - Many test checks the count of items. So returning non-zero value makes sense.
 // - Some test compares the count before and after some action. So changing the count based on flags
@@ -850,14 +850,14 @@ static vector<WebString> makeMenuItemStringsFor(WebContextMenuData* contextMenu,
     vector<WebString> strings;
 
     if (contextMenu->isEditable) {
-        for (const char** item = editableMenuStrings; *item; ++item) 
+        for (const char** item = editableMenuStrings; *item; ++item)
             strings.push_back(WebString::fromUTF8(*item));
         WebVector<WebString> suggestions;
         MockSpellCheck::fillSuggestionList(contextMenu->misspelledWord, &suggestions);
-        for (size_t i = 0; i < suggestions.size(); ++i) 
+        for (size_t i = 0; i < suggestions.size(); ++i)
             strings.push_back(suggestions[i]);
     } else {
-        for (const char** item = nonEditableMenuStrings; *item; ++item) 
+        for (const char** item = nonEditableMenuStrings; *item; ++item)
             strings.push_back(WebString::fromUTF8(*item));
     }
 
@@ -871,7 +871,7 @@ void EventSender::contextClick(const CppArgumentList& arguments, CppVariant* res
 
     updateClickCountForButton(WebMouseEvent::ButtonRight);
 
-    // Clears last context menu data because we need to know if the context menu be requested 
+    // Clears last context menu data because we need to know if the context menu be requested
     // after following mouse events.
     m_lastContextMenuData.reset();
 

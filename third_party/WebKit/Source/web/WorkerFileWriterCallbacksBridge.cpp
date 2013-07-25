@@ -62,7 +62,7 @@ void WorkerFileWriterCallbacksBridge::postWriteToMainThread(long long position, 
 {
     ASSERT(!m_operationInProgress);
     m_operationInProgress = true;
-    dispatchTaskToMainThread(createCallbackTask(&writeOnMainThread, 
+    dispatchTaskToMainThread(createCallbackTask(&writeOnMainThread,
                                                 this, position, data));
 }
 
@@ -70,7 +70,7 @@ void WorkerFileWriterCallbacksBridge::postTruncateToMainThread(long long length)
 {
     ASSERT(!m_operationInProgress);
     m_operationInProgress = true;
-    dispatchTaskToMainThread(createCallbackTask(&truncateOnMainThread, 
+    dispatchTaskToMainThread(createCallbackTask(&truncateOnMainThread,
                                                 this, length));
 }
 

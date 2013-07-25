@@ -47,7 +47,7 @@ public:
     ~WebHTTPLoadInfo() { reset(); }
     WebHTTPLoadInfo(const WebHTTPLoadInfo& r) { assign(r); }
     WebHTTPLoadInfo& operator =(const WebHTTPLoadInfo& r)
-    { 
+    {
         assign(r);
         return *this;
     }

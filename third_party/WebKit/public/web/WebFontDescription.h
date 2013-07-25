@@ -57,7 +57,7 @@ struct WebFontDescription {
         SmoothingSubpixel
     };
 
-    enum Weight { 
+    enum Weight {
         Weight100,
         Weight200,
         Weight300,

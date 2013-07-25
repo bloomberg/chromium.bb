@@ -61,7 +61,7 @@ class WebRTCStatsResponse;
 //   size_t elementIndex = response.addElement(reportIndex, true, dateNow());
 //   For each statistic being reported on:
 //     response.addStatistic(reportIndex, true, elementIndex,
-//                           "name of statistic", "statistic value"); 
+//                           "name of statistic", "statistic value");
 //   Remote information (typically RTCP-derived) is added in the same way.
 // When finished adding information:
 // request.requestSucceeded(response);

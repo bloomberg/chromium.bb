@@ -327,7 +327,7 @@ void WebPageSerializerImpl::openTagToString(Element* element,
                     else {
                         // Get the absolute link
                         WebFrameImpl* subFrame = WebFrameImpl::fromFrameOwnerElement(element);
-                        String completeURL = subFrame ? subFrame->frame()->document()->url() : 
+                        String completeURL = subFrame ? subFrame->frame()->document()->url() :
                                                         param->document->completeURL(attrValue);
                         // Check whether we have local files for those link.
                         if (m_localLinks.contains(completeURL)) {

@@ -27,7 +27,7 @@
 #include "modules/speech/SpeechSynthesisEvent.h"
 
 namespace WebCore {
-    
+
 PassRefPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
 {
     return adoptRef(new SpeechSynthesisEvent());
@@ -51,5 +51,5 @@ SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned lo
 {
     ScriptWrappable::init(this);
 }
-    
+
 } // namespace WebCore

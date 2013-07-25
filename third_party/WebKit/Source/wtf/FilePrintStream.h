@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef FilePrintStream_h
@@ -38,14 +38,14 @@ public:
         Adopt,
         Borrow
     };
-    
+
     FilePrintStream(FILE*, AdoptionMode = Adopt);
     virtual ~FilePrintStream();
-    
+
     static PassOwnPtr<FilePrintStream> open(const char* filename, const char* mode);
-    
+
     FILE* file() { return m_file; }
-    
+
     void vprintf(const char* format, va_list) WTF_ATTRIBUTE_PRINTF(2, 0);
     void flush();
 

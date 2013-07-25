@@ -27,7 +27,7 @@
 namespace WTF {
 
     struct IdentityExtractor;
-    
+
     template<typename Value, typename HashFunctions, typename Traits> class HashSet;
     template<typename Value, typename HashFunctions, typename Traits>
     void deleteAllValues(const HashSet<Value, HashFunctions, Traits>&);
@@ -71,7 +71,7 @@ namespace WTF {
         template<typename HashTranslator, typename T> iterator find(const T&) const;
         template<typename HashTranslator, typename T> bool contains(const T&) const;
 
-        // The return value is a pair of an interator to the new value's location, 
+        // The return value is a pair of an interator to the new value's location,
         // and a bool that is true if an new entry was added.
         AddResult add(const ValueType&);
 
@@ -112,49 +112,49 @@ namespace WTF {
     template<typename T, typename U, typename V>
     inline void HashSet<T, U, V>::swap(HashSet& other)
     {
-        m_impl.swap(other.m_impl); 
+        m_impl.swap(other.m_impl);
     }
 
     template<typename T, typename U, typename V>
     inline int HashSet<T, U, V>::size() const
     {
-        return m_impl.size(); 
+        return m_impl.size();
     }
 
     template<typename T, typename U, typename V>
     inline int HashSet<T, U, V>::capacity() const
     {
-        return m_impl.capacity(); 
+        return m_impl.capacity();
     }
 
     template<typename T, typename U, typename V>
     inline bool HashSet<T, U, V>::isEmpty() const
     {
-        return m_impl.isEmpty(); 
+        return m_impl.isEmpty();
     }
 
     template<typename T, typename U, typename V>
     inline typename HashSet<T, U, V>::iterator HashSet<T, U, V>::begin() const
     {
-        return m_impl.begin(); 
+        return m_impl.begin();
     }
 
     template<typename T, typename U, typename V>
     inline typename HashSet<T, U, V>::iterator HashSet<T, U, V>::end() const
     {
-        return m_impl.end(); 
+        return m_impl.end();
     }
 
     template<typename T, typename U, typename V>
     inline typename HashSet<T, U, V>::iterator HashSet<T, U, V>::find(const ValueType& value) const
     {
-        return m_impl.find(value); 
+        return m_impl.find(value);
     }
 
     template<typename T, typename U, typename V>
     inline bool HashSet<T, U, V>::contains(const ValueType& value) const
     {
-        return m_impl.contains(value); 
+        return m_impl.contains(value);
     }
 
     template<typename Value, typename HashFunctions, typename Traits>
@@ -204,7 +204,7 @@ namespace WTF {
     template<typename T, typename U, typename V>
     inline void HashSet<T, U, V>::clear()
     {
-        m_impl.clear(); 
+        m_impl.clear();
     }
 
     template<typename T, typename U, typename V>
@@ -243,14 +243,14 @@ namespace WTF {
     inline void copyToVector(const C& collection, W& vector)
     {
         typedef typename C::const_iterator iterator;
-        
+
         vector.resize(collection.size());
-        
+
         iterator it = collection.begin();
         iterator end = collection.end();
         for (unsigned i = 0; it != end; ++it, ++i)
             vector[i] = *it;
-    }  
+    }
 
 } // namespace WTF
 

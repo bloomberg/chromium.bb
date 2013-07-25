@@ -43,7 +43,7 @@ void V8HTMLMediaElement::controllerAttrSetterCustom(v8::Local<v8::String>, v8::L
     }
 
     // 4.8.10.11.2 Media controllers: controller attribute.
-    // On setting, it must first remove the element's mediagroup attribute, if any, 
+    // On setting, it must first remove the element's mediagroup attribute, if any,
     HTMLMediaElement* imp = V8HTMLMediaElement::toNative(info.Holder());
     imp->setMediaGroup(String());
     // and then set the current media controller to the given value.

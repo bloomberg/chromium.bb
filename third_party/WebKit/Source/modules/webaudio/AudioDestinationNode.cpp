@@ -35,7 +35,7 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 
 namespace WebCore {
-    
+
 AudioDestinationNode::AudioDestinationNode(AudioContext* context, float sampleRate)
     : AudioNode(context, sampleRate)
     , m_currentSampleFrame(0)
@@ -57,9 +57,9 @@ void AudioDestinationNode::render(AudioBus* sourceBus, AudioBus* destinationBus,
     // since they can very seriously hurt performance.
     // This will take care of all AudioNodes because they all process within this scope.
     DenormalDisabler denormalDisabler;
-    
+
     context()->setAudioThread(currentThread());
-    
+
     if (!context()->isRunnable()) {
         destinationBus->zero();
         return;
@@ -75,7 +75,7 @@ void AudioDestinationNode::render(AudioBus* sourceBus, AudioBus* destinationBus,
     // This will cause the node(s) connected to us to process, which in turn will pull on their input(s),
     // all the way backwards through the rendering graph.
     AudioBus* renderedBus = input(0)->pull(destinationBus, numberOfFrames);
-    
+
     if (!renderedBus)
         destinationBus->zero();
     else if (renderedBus != destinationBus) {
@@ -88,7 +88,7 @@ void AudioDestinationNode::render(AudioBus* sourceBus, AudioBus* destinationBus,
 
     // Let the context take care of any business at the end of each render quantum.
     context()->handlePostRenderTasks();
-    
+
     // Advance current sample-frame.
     m_currentSampleFrame += numberOfFrames;
 }

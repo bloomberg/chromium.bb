@@ -153,7 +153,7 @@ WebRect WebFontImpl::estimateTextBounds(const WebTextRun& run, const WebFloatPoi
     return WebRect(leftBaseline.x - (fontMetrics.ascent() + fontMetrics.descent()) / 2,
                    leftBaseline.y - fontMetrics.ascent() - fontMetrics.lineGap(),
                    totalWidth + fontMetrics.ascent() + fontMetrics.descent(),
-                   fontMetrics.lineSpacing()); 
+                   fontMetrics.lineSpacing());
 }
 
 } // namespace WebKit

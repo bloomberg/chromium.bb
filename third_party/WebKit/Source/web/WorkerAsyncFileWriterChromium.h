@@ -65,7 +65,7 @@ public:
         return adoptPtr(new WorkerAsyncFileWriterChromium(webFileSystem, path, workerGlobalScope, client, type));
     }
     ~WorkerAsyncFileWriterChromium();
-    
+
     bool waitForOperationToComplete();
 
     // FileWriter

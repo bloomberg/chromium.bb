@@ -34,7 +34,7 @@
 #include <v8.h>
 
 namespace WebCore {
-    
+
     class ActiveDOMObject;
     class DOMDataStore;
     class EventTarget;
@@ -76,8 +76,8 @@ namespace WebCore {
         {
             return reinterpret_cast<WrapperTypeInfo*>(v8::External::Cast(*typeInfoWrapper)->Value());
         }
-        
-        
+
+
         bool equals(const WrapperTypeInfo* that) const
         {
             return this == that;
@@ -92,15 +92,15 @@ namespace WebCore {
 
             return false;
         }
-        
+
         v8::Handle<v8::FunctionTemplate> getTemplate(v8::Isolate* isolate, WrapperWorldType worldType) { return getTemplateFunction(isolate, worldType); }
-        
+
         void derefObject(void* object)
         {
-            if (derefObjectFunction) 
+            if (derefObjectFunction)
                 derefObjectFunction(object);
         }
-        
+
         void installPerContextPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
         {
             if (installPerContextPrototypePropertiesFunction)

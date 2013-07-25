@@ -56,7 +56,7 @@ public:
             setReturnValueFromStringSlow(info, stringImpl, isolate);
     }
 
-    void clearOnGC() 
+    void clearOnGC()
     {
         m_lastStringImpl = 0;
         m_lastV8String.clear();

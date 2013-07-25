@@ -90,7 +90,7 @@ bool BiquadFilterNode::setType(unsigned type)
 {
     if (type > BiquadProcessor::Allpass)
         return false;
-    
+
     biquadProcessor()->setType(static_cast<BiquadProcessor::FilterType>(type));
     return true;
 }
@@ -101,7 +101,7 @@ void BiquadFilterNode::getFrequencyResponse(const Float32Array* frequencyHz,
 {
     if (!frequencyHz || !magResponse || !phaseResponse)
         return;
-    
+
     int n = std::min(frequencyHz->length(),
                      std::min(magResponse->length(), phaseResponse->length()));
 

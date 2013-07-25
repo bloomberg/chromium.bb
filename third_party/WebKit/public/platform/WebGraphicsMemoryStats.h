@@ -45,7 +45,7 @@ struct WebGraphicsManagedMemoryStats {
     // of the buffer is known by the GPU process).
     bool backbufferRequested;
 
-    WebGraphicsManagedMemoryStats() 
+    WebGraphicsManagedMemoryStats()
         : bytesVisible(0)
         , bytesVisibleAndNearby(0)
         , bytesAllocated(0)

@@ -243,7 +243,7 @@ PassRefPtr<StringImpl> AtomicString::add(const UChar* s, unsigned length)
 
     if (!length)
         return StringImpl::empty();
-    
+
     UCharBuffer buffer = { s, length };
     return addToStringTable<UCharBuffer, UCharBufferTranslator>(buffer);
 }
@@ -323,7 +323,7 @@ PassRefPtr<StringImpl> AtomicString::add(StringImpl* baseString, unsigned start,
     SubstringLocation buffer = { baseString, start, length };
     return addToStringTable<SubstringLocation, SubstringTranslator>(buffer);
 }
-    
+
 typedef HashTranslatorCharBuffer<LChar> LCharBuffer;
 struct LCharBufferTranslator {
     static unsigned hash(const LCharBuffer& buf)

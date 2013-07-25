@@ -17,20 +17,20 @@
  *  Boston, MA 02110-1301, USA.
  *
  */
- 
+
 #ifndef RefCountedLeakCounter_h
 #define RefCountedLeakCounter_h
- 
+
 #include "wtf/Assertions.h"
 #include "wtf/Threading.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {
-    
+
     struct WTF_EXPORT RefCountedLeakCounter {
         static void suppressMessages(const char*);
         static void cancelMessageSuppression(const char*);
-        
+
         explicit RefCountedLeakCounter(const char* description);
         ~RefCountedLeakCounter();
 

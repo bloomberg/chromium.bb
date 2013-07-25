@@ -230,7 +230,7 @@ namespace WTF {
 
 #if COMPILER(CLANG) || GCC_VERSION_AT_LEAST(4, 6, 0) || (defined(_MSC_VER) && (_MSC_VER >= 1400) && (_MSC_VER < 1600) && !defined(__INTEL_COMPILER))
     // VC8 (VS2005) and later has __has_trivial_constructor and __has_trivial_destructor,
-    // but the implementation returns false for built-in types. We add the extra IsPod condition to 
+    // but the implementation returns false for built-in types. We add the extra IsPod condition to
     // work around this.
     template <typename T> struct HasTrivialConstructor {
         static const bool value = __has_trivial_constructor(T) || IsPod<RemoveConstVolatile<T> >::value;
@@ -244,9 +244,9 @@ namespace WTF {
     template<typename T> struct HasTrivialConstructor : public std::tr1::has_trivial_constructor<T> { };
     template<typename T> struct HasTrivialDestructor : public std::tr1::has_trivial_destructor<T> { };
 #else
-    // For compilers that don't support detection of trivial constructors and destructors in classes, 
-    // we use a template that returns true for any POD type that IsPod can detect (see IsPod caveats above), 
-    // but false for all other types (which includes all classes). This will give false negatives, which can hurt 
+    // For compilers that don't support detection of trivial constructors and destructors in classes,
+    // we use a template that returns true for any POD type that IsPod can detect (see IsPod caveats above),
+    // but false for all other types (which includes all classes). This will give false negatives, which can hurt
     // performance, but avoids false positives, which would result in incorrect behavior.
     template <typename T> struct HasTrivialConstructor {
         static const bool value = IsPod<RemoveConstVolatile<T> >::value;

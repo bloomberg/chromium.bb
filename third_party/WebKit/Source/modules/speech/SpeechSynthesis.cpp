@@ -61,7 +61,7 @@ const Vector<RefPtr<SpeechSynthesisVoice> >& SpeechSynthesis::getVoices()
 {
     if (m_voiceList.size())
         return m_voiceList;
-    
+
     // If the voiceList is empty, that's the cue to get the voices from the platform again.
     const Vector<RefPtr<PlatformSpeechSynthesisVoice> >& platformVoices = m_platformSpeechSynthesizer->voiceList();
     size_t voiceCount = platformVoices.size();
@@ -102,7 +102,7 @@ void SpeechSynthesis::startSpeakingImmediately(SpeechSynthesisUtterance* utteran
 void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance)
 {
     m_utteranceQueue.append(utterance);
-    
+
     // If the queue was empty, speak this immediately and add it to the queue.
     if (m_utteranceQueue.size() == 1)
         startSpeakingImmediately(utterance);
@@ -116,7 +116,7 @@ void SpeechSynthesis::cancel()
     m_utteranceQueue.clear();
     m_platformSpeechSynthesizer->cancel();
     current = 0;
-    
+
     // The platform should have called back immediately and cleared the current utterance.
     ASSERT(!m_currentSpeechUtterance);
 }
@@ -138,7 +138,7 @@ void SpeechSynthesis::fireEvent(const AtomicString& type, SpeechSynthesisUtteran
 {
     utterance->dispatchEvent(SpeechSynthesisEvent::create(type, charIndex, (currentTime() - utterance->startTime()), name));
 }
-    
+
 void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utterance, bool errorOccurred)
 {
     ASSERT(utterance);
@@ -152,13 +152,13 @@ void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utteranc
         ASSERT(firstUtterance == utterance);
         if (firstUtterance == utterance)
             m_utteranceQueue.removeFirst();
-        
+
         // Start the next job if there is one pending.
         if (!m_utteranceQueue.isEmpty())
             startSpeakingImmediately(m_utteranceQueue.first().get());
     }
 }
-    
+
 void SpeechSynthesis::boundaryEventOccurred(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance, SpeechBoundary boundary, unsigned charIndex)
 {
     DEFINE_STATIC_LOCAL(const String, wordBoundaryString, (ASCIILiteral("word")));
@@ -181,7 +181,7 @@ void SpeechSynthesis::didStartSpeaking(PassRefPtr<PlatformSpeechSynthesisUtteran
     if (utterance->client())
         fireEvent(eventNames().startEvent, static_cast<SpeechSynthesisUtterance*>(utterance->client()), 0, String());
 }
-    
+
 void SpeechSynthesis::didPauseSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance)
 {
     m_isPaused = true;
@@ -201,7 +201,7 @@ void SpeechSynthesis::didFinishSpeaking(PassRefPtr<PlatformSpeechSynthesisUttera
     if (utterance->client())
         handleSpeakingCompleted(static_cast<SpeechSynthesisUtterance*>(utterance->client()), false);
 }
-    
+
 void SpeechSynthesis::speakingErrorOccurred(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance)
 {
     if (utterance->client())

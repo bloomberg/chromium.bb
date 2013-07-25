@@ -51,7 +51,7 @@ public:
     // Do not call cancel when there is no write or truncate in progress.
     virtual void cancel() = 0;
 };
-    
+
 } // namespace WebKit
 
 #endif

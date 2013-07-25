@@ -128,7 +128,7 @@ public:
     PassRefPtr<DelayNode> createDelay(double maxDelayTime, ExceptionState&);
     PassRefPtr<PannerNode> createPanner();
     PassRefPtr<ConvolverNode> createConvolver();
-    PassRefPtr<DynamicsCompressorNode> createDynamicsCompressor();    
+    PassRefPtr<DynamicsCompressorNode> createDynamicsCompressor();
     PassRefPtr<AnalyserNode> createAnalyser();
     PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, ExceptionState&);
     PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
@@ -176,14 +176,14 @@ public:
     //
     // Thread Safety and Graph Locking:
     //
-    
+
     void setAudioThread(ThreadIdentifier thread) { m_audioThread = thread; } // FIXME: check either not initialized or the same
     ThreadIdentifier audioThread() const { return m_audioThread; }
     bool isAudioThread() const;
 
     // Returns true only after the audio thread has been started and then shutdown.
     bool isAudioThreadFinished() { return m_isAudioThreadFinished; }
-    
+
     // mustReleaseLock is set to true if we acquired the lock in this method call and caller must unlock(), false if it was previously acquired.
     void lock(bool& mustReleaseLock);
 
@@ -207,7 +207,7 @@ public:
             ASSERT(context);
             context->lock(m_mustReleaseLock);
         }
-        
+
         ~AutoLocker()
         {
             if (m_mustReleaseLock)
@@ -217,7 +217,7 @@ public:
         AudioContext* m_context;
         bool m_mustReleaseLock;
     };
-    
+
     // In AudioNode::deref() a tryLock() is used for calling finishDeref(), but if it fails keep track here.
     void addDeferredFinishDeref(AudioNode*);
 
@@ -245,15 +245,15 @@ public:
 
     void startRendering();
     void fireCompletionEvent();
-    
+
     static unsigned s_hardwareContextCount;
 
 protected:
     explicit AudioContext(Document*);
     AudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
-    
+
     static bool isSampleRateRangeGood(float sampleRate);
-    
+
 private:
     void constructCommon();
 
@@ -268,7 +268,7 @@ private:
 
     void scheduleNodeDeletion();
     static void deleteMarkedNodesDispatch(void* userData);
-    
+
     bool m_isInitialized;
     bool m_isAudioThreadFinished;
 
@@ -324,10 +324,10 @@ private:
     Mutex m_contextGraphMutex;
     volatile ThreadIdentifier m_audioThread;
     volatile ThreadIdentifier m_graphOwnerThread; // if the lock is held then this is the thread which owns it, otherwise == UndefinedThreadIdentifier
-    
+
     // Only accessed in the audio thread.
     Vector<AudioNode*> m_deferredFinishDerefList;
-    
+
     // HRTF Database loader
     RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 
@@ -337,12 +337,12 @@ private:
     EventTargetData m_eventTargetData;
 
     RefPtr<AudioBuffer> m_renderTarget;
-    
+
     bool m_isOfflineContext;
 
     AsyncAudioDecoder m_audioDecoder;
 
-    // This is considering 32 is large enough for multiple channels audio. 
+    // This is considering 32 is large enough for multiple channels audio.
     // It is somewhat arbitrary and could be increased if necessary.
     enum { MaxNumberOfChannels = 32 };
 

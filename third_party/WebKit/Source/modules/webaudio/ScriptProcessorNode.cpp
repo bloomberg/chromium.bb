@@ -139,7 +139,7 @@ void ScriptProcessorNode::process(size_t framesToProcess)
     // Additionally, there is a double-buffering for input and output which is exposed directly to JavaScript (see inputBuffer and outputBuffer below).
     // This node is the producer for inputBuffer and the consumer for outputBuffer.
     // The JavaScript code is the consumer of inputBuffer and the producer for outputBuffer.
-    
+
     // Get input and output busses.
     AudioBus* inputBus = this->input(0)->bus();
     AudioBus* outputBus = this->output(0)->bus();
@@ -150,7 +150,7 @@ void ScriptProcessorNode::process(size_t framesToProcess)
     ASSERT(isDoubleBufferIndexGood);
     if (!isDoubleBufferIndexGood)
         return;
-    
+
     AudioBuffer* inputBuffer = m_inputBuffers[doubleBufferIndex].get();
     AudioBuffer* outputBuffer = m_outputBuffers[doubleBufferIndex].get();
 
@@ -185,7 +185,7 @@ void ScriptProcessorNode::process(size_t framesToProcess)
     if (numberOfInputChannels)
         m_internalInputBus->copyFrom(*inputBus);
 
-    // Copy from the output buffer to the output. 
+    // Copy from the output buffer to the output.
     for (unsigned i = 0; i < numberOfOutputChannels; ++i)
         memcpy(outputBus->channel(i)->mutableData(), outputBuffer->getChannelData(i)->data() + m_bufferReadWriteIndex, sizeof(float) * framesToProcess);
 
@@ -200,11 +200,11 @@ void ScriptProcessorNode::process(size_t framesToProcess)
         if (m_isRequestOutstanding) {
             // We're late in handling the previous request. The main thread must be very busy.
             // The best we can do is clear out the buffer ourself here.
-            outputBuffer->zero();            
+            outputBuffer->zero();
         } else {
             // Reference ourself so we don't accidentally get deleted before fireProcessEvent() gets called.
             ref();
-            
+
             // Fire the event on the main thread, not this one (which is the realtime audio thread).
             m_doubleBufferIndexForEvent = m_doubleBufferIndex;
             m_isRequestOutstanding = true;
@@ -231,12 +231,12 @@ void ScriptProcessorNode::fireProcessEventDispatch(void* userData)
 void ScriptProcessorNode::fireProcessEvent()
 {
     ASSERT(isMainThread() && m_isRequestOutstanding);
-    
+
     bool isIndexGood = m_doubleBufferIndexForEvent < 2;
     ASSERT(isIndexGood);
     if (!isIndexGood)
         return;
-        
+
     AudioBuffer* inputBuffer = m_inputBuffers[m_doubleBufferIndexForEvent].get();
     AudioBuffer* outputBuffer = m_outputBuffers[m_doubleBufferIndexForEvent].get();
     ASSERT(outputBuffer);
@@ -247,7 +247,7 @@ void ScriptProcessorNode::fireProcessEvent()
     if (context()->scriptExecutionContext()) {
         // Let the audio thread know we've gotten to the point where it's OK for it to make another request.
         m_isRequestOutstanding = false;
-        
+
         // Call the JavaScript event handler which will do the audio processing.
         dispatchEvent(AudioProcessingEvent::create(inputBuffer, outputBuffer));
     }

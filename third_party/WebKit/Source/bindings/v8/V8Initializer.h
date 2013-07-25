@@ -35,7 +35,7 @@ public:
     static void initializeMainThreadIfNeeded(v8::Isolate*);
     static void initializeWorker(v8::Isolate*);
 };
-    
+
 } // namespace WebCore
 
 #endif // V8Initializer_h

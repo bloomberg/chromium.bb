@@ -47,7 +47,7 @@ struct WebMenuItemInfo {
         SubMenu
     };
 
-    WebMenuItemInfo() 
+    WebMenuItemInfo()
         : type(Option)
         , action(0)
         , textDirection(WebTextDirectionDefault)

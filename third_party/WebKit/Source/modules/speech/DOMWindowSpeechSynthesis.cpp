@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
-    
+
 DOMWindowSpeechSynthesis::DOMWindowSpeechSynthesis(DOMWindow* window)
     : DOMWindowProperty(window->frame())
 {
@@ -73,5 +73,5 @@ SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis()
         m_speechSynthesis = SpeechSynthesis::create();
     return m_speechSynthesis.get();
 }
-    
+
 } // namespace WebCore

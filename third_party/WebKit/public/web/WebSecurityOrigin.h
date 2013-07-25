@@ -92,7 +92,7 @@ public:
     // be used as a file.  Should be used in storage APIs only.
     WEBKIT_EXPORT WebString databaseIdentifier() const;
 
-    // Returns true if this WebSecurityOrigin can access usernames and 
+    // Returns true if this WebSecurityOrigin can access usernames and
     // passwords stored in password manager.
     WEBKIT_EXPORT bool canAccessPasswordManager() const;
 

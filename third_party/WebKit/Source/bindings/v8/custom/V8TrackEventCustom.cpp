@@ -42,7 +42,7 @@ void V8TrackEvent::trackAttrGetterCustom(v8::Local<v8::String> name, const v8::P
 {
     TrackEvent* trackEvent = V8TrackEvent::toNative(info.Holder());
     TrackBase* track = trackEvent->track();
-    
+
     if (!track) {
         v8SetReturnValueNull(info);
         return;
@@ -53,7 +53,7 @@ void V8TrackEvent::trackAttrGetterCustom(v8::Local<v8::String> name, const v8::P
         // This should never happen.
         ASSERT_NOT_REACHED();
         break;
-        
+
     case TrackBase::TextTrack:
         v8SetReturnValue(info, toV8Fast(static_cast<TextTrack*>(track), info, trackEvent));
         return;

@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 [
@@ -30,11 +30,11 @@
     readonly attribute DeviceAcceleration accelerationIncludingGravity;
     readonly attribute DeviceRotationRate rotationRate;
     readonly attribute double? interval;
-    [Custom] void initDeviceMotionEvent([Default=Undefined] optional DOMString type, 
-                                        [Default=Undefined] optional boolean bubbles, 
-                                        [Default=Undefined] optional boolean cancelable, 
-                                        [Default=Undefined] optional Acceleration acceleration, 
-                                        [Default=Undefined] optional Acceleration accelerationIncludingGravity, 
-                                        [Default=Undefined] optional RotationRate rotationRate, 
+    [Custom] void initDeviceMotionEvent([Default=Undefined] optional DOMString type,
+                                        [Default=Undefined] optional boolean bubbles,
+                                        [Default=Undefined] optional boolean cancelable,
+                                        [Default=Undefined] optional Acceleration acceleration,
+                                        [Default=Undefined] optional Acceleration accelerationIncludingGravity,
+                                        [Default=Undefined] optional RotationRate rotationRate,
                                         [Default=Undefined] optional double interval);
 };

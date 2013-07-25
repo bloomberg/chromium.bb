@@ -1,10 +1,10 @@
 // Copyright (c) 2005, 2007, Google Inc.
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
-// 
+//
 //     * Redistributions of source code must retain the above copyright
 // notice, this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
 //     * Neither the name of Google Inc. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -72,7 +72,7 @@ static size_t pagesize = 0;
 
 #if HAVE(MMAP)
 static bool use_mmap = true;
-#endif 
+#endif
 
 #if HAVE(VIRTUALALLOC)
 static bool use_VirtualAlloc = true;
@@ -94,12 +94,12 @@ static void* TryMmap(size_t size, size_t *actual_size, size_t alignment) {
   if (pagesize == 0) pagesize = getpagesize();
   if (alignment < pagesize) alignment = pagesize;
   size = ((size + alignment - 1) / alignment) * alignment;
-  
+
   // could theoretically return the "extra" bytes here, but this
   // is simple and correct.
-  if (actual_size) 
+  if (actual_size)
     *actual_size = size;
-    
+
   // Ask for extra memory if alignment > pagesize
   size_t extra = 0;
   if (alignment > pagesize) {
@@ -153,16 +153,16 @@ static void* TryVirtualAlloc(size_t size, size_t *actual_size, size_t alignment)
 
   // could theoretically return the "extra" bytes here, but this
   // is simple and correct.
-  if (actual_size) 
+  if (actual_size)
     *actual_size = size;
-    
+
   // Ask for extra memory if alignment > pagesize
   size_t extra = 0;
   if (alignment > pagesize) {
     extra = alignment - pagesize;
   }
   void* result = VirtualAlloc(NULL, size + extra,
-                              MEM_RESERVE | MEM_COMMIT | MEM_TOP_DOWN, 
+                              MEM_RESERVE | MEM_COMMIT | MEM_TOP_DOWN,
                               PAGE_READWRITE);
 
   if (result == NULL) {
@@ -195,7 +195,7 @@ static void* TryVirtualAlloc(size_t size, size_t *actual_size, size_t alignment)
 void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size, size_t alignment) {
   // Discard requests that overflow
   if (size + alignment < size) return NULL;
-    
+
   SpinLockHolder lock_holder(&spinlock);
 
   // Enforce minimum alignment
@@ -205,7 +205,7 @@ void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size, size_t alignment) {
   // more trying all allocators even if they failed before.
   for (int i = 0; i < 2; i++) {
 
-#if HAVE(MMAP)    
+#if HAVE(MMAP)
     if (use_mmap && !mmap_failure) {
       void* result = TryMmap(size, actual_size, alignment);
       if (result != NULL) return result;

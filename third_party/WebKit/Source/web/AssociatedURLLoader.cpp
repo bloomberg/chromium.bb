@@ -151,7 +151,7 @@ public:
     void enableErrorNotifications();
 
     // Stops loading and releases the DocumentThreadableLoader as early as possible.
-    void clearClient() { m_client = 0; } 
+    void clearClient() { m_client = 0; }
 
 private:
     ClientAdapter(AssociatedURLLoader*, WebURLLoaderClient*, const WebURLLoaderOptions&);

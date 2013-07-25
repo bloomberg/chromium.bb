@@ -95,7 +95,7 @@ void DynamicsCompressorNode::initialize()
     if (isInitialized())
         return;
 
-    AudioNode::initialize();    
+    AudioNode::initialize();
     m_dynamicsCompressor = adoptPtr(new DynamicsCompressor(sampleRate(), defaultNumberOfOutputChannels));
 }
 

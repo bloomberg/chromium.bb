@@ -59,7 +59,7 @@ public:
         m_innerHost->notifyDOMApplicationCache(static_cast<ApplicationCacheHost::EventID>(eventID), 0, 0);
     }
 
-    virtual void notifyProgressEventListener(const WebKit::WebURL&, int progressTotal, int progressDone) 
+    virtual void notifyProgressEventListener(const WebKit::WebURL&, int progressTotal, int progressDone)
     {
         m_innerHost->notifyDOMApplicationCache(ApplicationCacheHost::PROGRESS_EVENT, progressTotal, progressDone);
     }

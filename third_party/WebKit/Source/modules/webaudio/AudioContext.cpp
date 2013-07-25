@@ -82,7 +82,7 @@ const int UndefinedThreadIdentifier = 0xffffffff;
 const unsigned MaxNodesToDeletePerQuantum = 10;
 
 namespace WebCore {
-    
+
 bool AudioContext::isSampleRateRangeGood(float sampleRate)
 {
     // FIXME: It would be nice if the minimum sample-rate could be less than 44.1KHz,
@@ -93,7 +93,7 @@ bool AudioContext::isSampleRateRangeGood(float sampleRate)
 // Don't allow more than this number of simultaneous AudioContexts talking to hardware.
 const unsigned MaxHardwareContexts = 4;
 unsigned AudioContext::s_hardwareContextCount = 0;
-    
+
 PassRefPtr<AudioContext> AudioContext::create(Document* document)
 {
     ASSERT(document);
@@ -199,7 +199,7 @@ void AudioContext::lazyInitialize()
                     // Each time provideInput() is called, a portion of the audio stream is rendered. Let's call this time period a "render quantum".
                     // NOTE: for now default AudioContext does not need an explicit startRendering() call from JavaScript.
                     // We may want to consider requiring it for symmetry with OfflineAudioContext.
-                    m_destinationNode->startRendering();                    
+                    m_destinationNode->startRendering();
                     ++s_hardwareContextCount;
                 }
 
@@ -259,7 +259,7 @@ bool AudioContext::isRunnable() const
 {
     if (!isInitialized())
         return false;
-    
+
     // Check with the HRTF spatialization system to see if it's finished loading.
     return m_hrtfDatabaseLoader->isLoaded();
 }
@@ -346,16 +346,16 @@ PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(H
         es.throwDOMException(InvalidStateError);
         return 0;
     }
-        
+
     ASSERT(isMainThread());
     lazyInitialize();
-    
+
     // First check if this media element already has a source node.
     if (mediaElement->audioSourceNode()) {
         es.throwDOMException(InvalidStateError);
         return 0;
     }
-        
+
     RefPtr<MediaElementAudioSourceNode> node = MediaElementAudioSourceNode::create(this, mediaElement);
 
     mediaElement->setAudioSourceNode(node.get());
@@ -557,12 +557,12 @@ PassRefPtr<OscillatorNode> AudioContext::createOscillator()
 PassRefPtr<PeriodicWave> AudioContext::createPeriodicWave(Float32Array* real, Float32Array* imag, ExceptionState& es)
 {
     ASSERT(isMainThread());
-    
+
     if (!real || !imag || (real->length() != imag->length())) {
         es.throwDOMException(SyntaxError);
         return 0;
     }
-    
+
     lazyInitialize();
     return PeriodicWave::create(sampleRate(), real, imag);
 }
@@ -587,7 +587,7 @@ void AudioContext::refNode(AudioNode* node)
 {
     ASSERT(isMainThread());
     AutoLocker locker(this);
-    
+
     node->ref(AudioNode::RefTypeConnection);
     m_referencedNodes.append(node);
 }
@@ -595,7 +595,7 @@ void AudioContext::refNode(AudioNode* node)
 void AudioContext::derefNode(AudioNode* node)
 {
     ASSERT(isGraphOwner());
-    
+
     node->deref(AudioNode::RefTypeConnection);
 
     for (unsigned i = 0; i < m_referencedNodes.size(); ++i) {
@@ -640,15 +640,15 @@ bool AudioContext::tryLock(bool& mustReleaseLock)
 
     // Try to catch cases of using try lock on main thread - it should use regular lock.
     ASSERT(isAudioThread || isAudioThreadFinished());
-    
+
     if (!isAudioThread) {
         // In release build treat tryLock() as lock() (since above ASSERT(isAudioThread) never fires) - this is the best we can do.
         lock(mustReleaseLock);
         return true;
     }
-    
+
     bool hasLock;
-    
+
     if (thisThread == m_graphOwnerThread) {
         // Thread already has the lock.
         hasLock = true;
@@ -656,13 +656,13 @@ bool AudioContext::tryLock(bool& mustReleaseLock)
     } else {
         // Don't already have the lock - try to acquire it.
         hasLock = m_contextGraphMutex.tryLock();
-        
+
         if (hasLock)
             m_graphOwnerThread = thisThread;
 
         mustReleaseLock = hasLock;
     }
-    
+
     return hasLock;
 }
 
@@ -693,7 +693,7 @@ void AudioContext::addDeferredFinishDeref(AudioNode* node)
 void AudioContext::handlePreRenderTasks()
 {
     ASSERT(isAudioThread());
- 
+
     // At the beginning of every render quantum, try to update the internal rendering graph state (from main thread changes).
     // It's OK if the tryLock() fails, we'll just take slightly longer to pick up the changes.
     bool mustReleaseLock;
@@ -712,7 +712,7 @@ void AudioContext::handlePreRenderTasks()
 void AudioContext::handlePostRenderTasks()
 {
     ASSERT(isAudioThread());
- 
+
     // Must use a tryLock() here too.  Don't worry, the lock will very rarely be contended and this method is called frequently.
     // The worst that can happen is that there will be some nodes which will take slightly longer than usual to be deleted or removed
     // from the render graph (in which case they'll render silence).
@@ -746,7 +746,7 @@ void AudioContext::handleDeferredFinishDerefs()
         AudioNode* node = m_deferredFinishDerefList[i];
         node->finishDeref(AudioNode::RefTypeConnection);
     }
-    
+
     m_deferredFinishDerefList.clear();
 }
 
@@ -773,7 +773,7 @@ void AudioContext::scheduleNodeDeletion()
     if (!isGood)
         return;
 
-    // Make sure to call deleteMarkedNodes() on main thread.    
+    // Make sure to call deleteMarkedNodes() on main thread.
     if (m_nodesMarkedForDeletion.size() && !m_isDeletionScheduled) {
         m_nodesToDelete.append(m_nodesMarkedForDeletion);
         m_nodesMarkedForDeletion.clear();
@@ -830,7 +830,7 @@ void AudioContext::deleteMarkedNodes()
 
 void AudioContext::markSummingJunctionDirty(AudioSummingJunction* summingJunction)
 {
-    ASSERT(isGraphOwner());    
+    ASSERT(isGraphOwner());
     m_dirtySummingJunctions.add(summingJunction);
 }
 
@@ -843,13 +843,13 @@ void AudioContext::removeMarkedSummingJunction(AudioSummingJunction* summingJunc
 
 void AudioContext::markAudioNodeOutputDirty(AudioNodeOutput* output)
 {
-    ASSERT(isGraphOwner());    
+    ASSERT(isGraphOwner());
     m_dirtyAudioNodeOutputs.add(output);
 }
 
 void AudioContext::handleDirtyAudioSummingJunctions()
 {
-    ASSERT(isGraphOwner());    
+    ASSERT(isGraphOwner());
 
     for (HashSet<AudioSummingJunction*>::iterator i = m_dirtySummingJunctions.begin(); i != m_dirtySummingJunctions.end(); ++i)
         (*i)->updateRenderingState();
@@ -859,7 +859,7 @@ void AudioContext::handleDirtyAudioSummingJunctions()
 
 void AudioContext::handleDirtyAudioNodeOutputs()
 {
-    ASSERT(isGraphOwner());    
+    ASSERT(isGraphOwner());
 
     for (HashSet<AudioNodeOutput*>::iterator i = m_dirtyAudioNodeOutputs.begin(); i != m_dirtyAudioNodeOutputs.end(); ++i)
         (*i)->updateRenderingState();
@@ -933,7 +933,7 @@ void AudioContext::fireCompletionEvent()
     ASSERT(isMainThread());
     if (!isMainThread())
         return;
-        
+
     AudioBuffer* renderedBuffer = m_renderTarget.get();
 
     ASSERT(renderedBuffer);

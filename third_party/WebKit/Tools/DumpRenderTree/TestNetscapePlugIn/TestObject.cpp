@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "TestObject.h"
@@ -38,10 +38,10 @@ static NPObject *testAllocate(NPP npp, NPClass *theClass);
 static void testDeallocate(NPObject *obj);
 static bool testConstruct(NPObject* obj, const NPVariant* args, uint32_t argCount, NPVariant* result);
 
-static NPClass testClass = { 
+static NPClass testClass = {
     NP_CLASS_STRUCT_VERSION,
-    testAllocate, 
-    testDeallocate, 
+    testAllocate,
+    testDeallocate,
     0,
     testHasMethod,
     testInvoke,
@@ -121,7 +121,7 @@ static NPObject* testAllocate(NPP npp, NPClass* /*theClass*/)
     return reinterpret_cast<NPObject*>(newInstance);
 }
 
-static void testDeallocate(NPObject *obj) 
+static void testDeallocate(NPObject *obj)
 {
     TestObject* testObject = reinterpret_cast<TestObject*>(obj);
     if (testObject->testObject)
@@ -155,7 +155,7 @@ static bool testHasProperty(NPObject*, NPIdentifier name)
         if (testIdentifiers[i] == name)
             return true;
     }
-    
+
     return false;
 }
 
@@ -185,24 +185,24 @@ static bool testGetProperty(NPObject* npobj, NPIdentifier name, NPVariant* resul
         INT32_TO_NPVARIANT(npobj->referenceCount, *result);
         return true;
     }
-    
+
     return false;
 }
 
 static bool testEnumerate(NPObject* /*npobj*/, NPIdentifier **value, uint32_t *count)
 {
     *count = NUM_ENUMERATABLE_TEST_IDENTIFIERS;
-    
+
     *value = (NPIdentifier*)browser->memalloc(NUM_ENUMERATABLE_TEST_IDENTIFIERS * sizeof(NPIdentifier));
     memcpy(*value, testIdentifiers, sizeof(NPIdentifier) * NUM_ENUMERATABLE_TEST_IDENTIFIERS);
-    
+
     return true;
 }
 
 static bool testConstruct(NPObject* npobj, const NPVariant* /*args*/, uint32_t /*argCount*/, NPVariant* result)
 {
     browser->retainobject(npobj);
-    
+
     // Just return the same object.
     OBJECT_TO_NPVARIANT(npobj, *result);
     return true;

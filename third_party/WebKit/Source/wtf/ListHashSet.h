@@ -127,7 +127,7 @@ namespace WTF {
         template<typename T, typename HashTranslator> const_iterator find(const T&) const;
         template<typename T, typename HashTranslator> bool contains(const T&) const;
 
-        // The return value of add is a pair of an iterator to the new value's location, 
+        // The return value of add is a pair of an iterator to the new value's location,
         // and a bool that is true if an new entry was added.
         AddResult add(const ValueType&);
 
@@ -153,7 +153,7 @@ namespace WTF {
         void prependNode(Node*);
         void insertNodeBefore(Node* beforeNode, Node* newNode);
         void deleteAllNodes();
-        
+
         iterator makeIterator(Node*);
         const_iterator makeConstIterator(Node*) const;
         reverse_iterator makeReverseIterator(Node*);
@@ -171,15 +171,15 @@ namespace WTF {
         typedef ListHashSetNode<ValueArg, inlineCapacity> Node;
         typedef ListHashSetNodeAllocator<ValueArg, inlineCapacity> NodeAllocator;
 
-        ListHashSetNodeAllocator() 
+        ListHashSetNodeAllocator()
             : m_freeList(pool())
             , m_isDoneWithInitialFreeList(false)
-        { 
+        {
             memset(m_pool.pool, 0, sizeof(m_pool.pool));
         }
 
         Node* allocate()
-        { 
+        {
             Node* result = m_freeList;
 
             if (!result)
@@ -204,7 +204,7 @@ namespace WTF {
             return result;
         }
 
-        void deallocate(Node* node) 
+        void deallocate(Node* node)
         {
             if (inPool(node)) {
 #ifndef NDEBUG
@@ -553,19 +553,19 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     inline int ListHashSet<T, inlineCapacity, U>::size() const
     {
-        return m_impl.size(); 
+        return m_impl.size();
     }
 
     template<typename T, size_t inlineCapacity, typename U>
     inline int ListHashSet<T, inlineCapacity, U>::capacity() const
     {
-        return m_impl.capacity(); 
+        return m_impl.capacity();
     }
 
     template<typename T, size_t inlineCapacity, typename U>
     inline bool ListHashSet<T, inlineCapacity, U>::isEmpty() const
     {
-        return m_impl.isEmpty(); 
+        return m_impl.isEmpty();
     }
 
     template<typename T, size_t inlineCapacity, typename U>
@@ -583,7 +583,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     inline typename ListHashSet<T, inlineCapacity, U>::iterator ListHashSet<T, inlineCapacity, U>::begin()
     {
-        return makeIterator(m_head); 
+        return makeIterator(m_head);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
@@ -595,19 +595,19 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     inline typename ListHashSet<T, inlineCapacity, U>::const_iterator ListHashSet<T, inlineCapacity, U>::begin() const
     {
-        return makeConstIterator(m_head); 
+        return makeConstIterator(m_head);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
     inline typename ListHashSet<T, inlineCapacity, U>::const_iterator ListHashSet<T, inlineCapacity, U>::end() const
     {
-        return makeConstIterator(0); 
+        return makeConstIterator(0);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
     inline typename ListHashSet<T, inlineCapacity, U>::reverse_iterator ListHashSet<T, inlineCapacity, U>::rbegin()
     {
-        return makeReverseIterator(m_tail); 
+        return makeReverseIterator(m_tail);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
@@ -619,13 +619,13 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     inline typename ListHashSet<T, inlineCapacity, U>::const_reverse_iterator ListHashSet<T, inlineCapacity, U>::rbegin() const
     {
-        return makeConstReverseIterator(m_tail); 
+        return makeConstReverseIterator(m_tail);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
     inline typename ListHashSet<T, inlineCapacity, U>::const_reverse_iterator ListHashSet<T, inlineCapacity, U>::rend() const
     {
-        return makeConstReverseIterator(0); 
+        return makeConstReverseIterator(0);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
@@ -678,7 +678,7 @@ namespace WTF {
         ImplTypeIterator it = m_impl.template find<BaseTranslator>(value);
         if (it == m_impl.end())
             return end();
-        return makeIterator(*it); 
+        return makeIterator(*it);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
@@ -772,7 +772,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     typename ListHashSet<T, inlineCapacity, U>::AddResult ListHashSet<T, inlineCapacity, U>::insertBefore(const ValueType& beforeValue, const ValueType& newValue)
     {
-        return insertBefore(find(beforeValue), newValue); 
+        return insertBefore(find(beforeValue), newValue);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
@@ -794,7 +794,7 @@ namespace WTF {
     inline void ListHashSet<T, inlineCapacity, U>::clear()
     {
         deleteAllNodes();
-        m_impl.clear(); 
+        m_impl.clear();
         m_head = 0;
         m_tail = 0;
     }
@@ -862,7 +862,7 @@ namespace WTF {
     {
         if (!beforeNode)
             return appendNode(newNode);
-        
+
         newNode->m_next = beforeNode;
         newNode->m_prev = beforeNode->m_prev;
         if (beforeNode->m_prev)
@@ -884,27 +884,27 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U>
-    inline ListHashSetReverseIterator<T, inlineCapacity, U> ListHashSet<T, inlineCapacity, U>::makeReverseIterator(Node* position) 
+    inline ListHashSetReverseIterator<T, inlineCapacity, U> ListHashSet<T, inlineCapacity, U>::makeReverseIterator(Node* position)
     {
-        return ListHashSetReverseIterator<T, inlineCapacity, U>(this, position); 
+        return ListHashSetReverseIterator<T, inlineCapacity, U>(this, position);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
     inline ListHashSetConstReverseIterator<T, inlineCapacity, U> ListHashSet<T, inlineCapacity, U>::makeConstReverseIterator(Node* position) const
-    { 
-        return ListHashSetConstReverseIterator<T, inlineCapacity, U>(this, position); 
-    }
-    
-    template<typename T, size_t inlineCapacity, typename U>
-    inline ListHashSetIterator<T, inlineCapacity, U> ListHashSet<T, inlineCapacity, U>::makeIterator(Node* position) 
     {
-        return ListHashSetIterator<T, inlineCapacity, U>(this, position); 
+        return ListHashSetConstReverseIterator<T, inlineCapacity, U>(this, position);
+    }
+
+    template<typename T, size_t inlineCapacity, typename U>
+    inline ListHashSetIterator<T, inlineCapacity, U> ListHashSet<T, inlineCapacity, U>::makeIterator(Node* position)
+    {
+        return ListHashSetIterator<T, inlineCapacity, U>(this, position);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
     inline ListHashSetConstIterator<T, inlineCapacity, U> ListHashSet<T, inlineCapacity, U>::makeConstIterator(Node* position) const
-    { 
-        return ListHashSetConstIterator<T, inlineCapacity, U>(this, position); 
+    {
+        return ListHashSetConstIterator<T, inlineCapacity, U>(this, position);
     }
     template<bool, typename ValueType, typename HashTableType>
     void deleteAllValues(HashTableType& collection)

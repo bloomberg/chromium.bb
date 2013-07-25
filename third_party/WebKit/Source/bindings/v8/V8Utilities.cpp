@@ -138,7 +138,7 @@ void removeHiddenDependency(v8::Handle<v8::Object> object, v8::Local<v8::Value> 
         }
     }
 }
-    
+
 void transferHiddenDependency(v8::Handle<v8::Object> object, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex, v8::Isolate* isolate)
 {
     if (oldValue) {

@@ -1834,7 +1834,7 @@ void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOptions opt
         FrameView* view = page()->mainFrame()->view();
         PaintBehavior oldPaintBehavior = view->paintBehavior();
         if (isAcceleratedCompositingActive()) {
-            ASSERT(option == ForceSoftwareRenderingAndIgnoreGPUResidentContent);            
+            ASSERT(option == ForceSoftwareRenderingAndIgnoreGPUResidentContent);
             view->setPaintBehavior(oldPaintBehavior | PaintBehaviorFlattenCompositingLayers);
         }
 
@@ -1846,7 +1846,7 @@ void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOptions opt
         WebKit::Platform::current()->histogramCustomCounts("Renderer4.SoftwarePaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
 
         if (isAcceleratedCompositingActive()) {
-            ASSERT(option == ForceSoftwareRenderingAndIgnoreGPUResidentContent);            
+            ASSERT(option == ForceSoftwareRenderingAndIgnoreGPUResidentContent);
             view->setPaintBehavior(oldPaintBehavior);
         }
     }

@@ -122,7 +122,7 @@ public:
     // WebFilterOperations object.
     virtual void setFilters(const WebFilterOperations&) = 0;
 
-    // Set the root of the image filter graph for this layer. The 
+    // Set the root of the image filter graph for this layer. The
     // implementation should grab a ref on the passed-in filter in order
     // to retain ownership. The passed-in graph will be unref'ed by the
     // caller after this call.

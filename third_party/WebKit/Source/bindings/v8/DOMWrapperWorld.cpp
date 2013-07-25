@@ -223,7 +223,7 @@ void DOMWrapperWorld::clearIsolatedWorldContentSecurityPolicy(int worldID)
     isolatedWorldContentSecurityPolicies().remove(worldID);
 }
 
-typedef HashMap<int, OwnPtr<V8DOMActivityLogger>, WTF::IntHash<int>, WTF::UnsignedWithZeroKeyHashTraits<int> > DOMActivityLoggerMap; 
+typedef HashMap<int, OwnPtr<V8DOMActivityLogger>, WTF::IntHash<int>, WTF::UnsignedWithZeroKeyHashTraits<int> > DOMActivityLoggerMap;
 static DOMActivityLoggerMap& domActivityLoggers()
 {
     ASSERT(isMainThread());
@@ -234,13 +234,13 @@ static DOMActivityLoggerMap& domActivityLoggers()
 void DOMWrapperWorld::setActivityLogger(int worldId, PassOwnPtr<V8DOMActivityLogger> logger)
 {
     domActivityLoggers().set(worldId, logger);
-} 
+}
 
 V8DOMActivityLogger* DOMWrapperWorld::activityLogger(int worldId)
 {
     DOMActivityLoggerMap& loggers = domActivityLoggers();
-    DOMActivityLoggerMap::iterator it = loggers.find(worldId);   
+    DOMActivityLoggerMap::iterator it = loggers.find(worldId);
     return it == loggers.end() ? 0 : it->value.get();
-} 
+}
 
 } // namespace WebCore

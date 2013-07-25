@@ -649,7 +649,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
 
     if (!locationChangeBefore && m_frame->navigationScheduler()->locationChangePending())
         return true;
-        
+
     // DocumentWriter::replaceDocument can cause the DocumentLoader to get deref'ed and possible destroyed,
     // so protect it with a RefPtr.
     if (RefPtr<DocumentLoader> loader = m_frame->document()->loader())

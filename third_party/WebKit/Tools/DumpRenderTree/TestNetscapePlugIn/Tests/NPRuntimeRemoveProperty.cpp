@@ -35,7 +35,7 @@ public:
         : PluginTest(npp, identifier)
     {
     }
-    
+
 private:
     struct TestObject : Object<TestObject> {
     public:
@@ -48,7 +48,7 @@ private:
         {
             if (identifierIs(propertyName, "lastRemovedProperty"))
                 return true;
-            
+
             return false;
         }
 
@@ -61,7 +61,7 @@ private:
 
             if (pluginTest()->NPN_IdentifierIsString(m_lastRemovedProperty)) {
                 char* lastRemovedPropertyName = pluginTest()->NPN_UTF8FromIdentifier(m_lastRemovedProperty);
-                
+
                 STRINGZ_TO_NPVARIANT(lastRemovedPropertyName, *result);
                 return true;
             }
@@ -111,21 +111,21 @@ private:
 
             if (!NPVARIANT_IS_OBJECT(arguments[0]))
                 return false;
-            
+
             if (!NPVARIANT_IS_STRING(arguments[1]) && !NPVARIANT_IS_DOUBLE(arguments[1]))
                 return false;
-            
+
             NPIdentifier propertyName;
             if (NPVARIANT_IS_STRING(arguments[1])) {
                 string propertyNameString(arguments[1].value.stringValue.UTF8Characters,
                                           arguments[1].value.stringValue.UTF8Length);
-            
+
                 propertyName = pluginTest()->NPN_GetStringIdentifier(propertyNameString.c_str());
             } else {
                 int32_t number = static_cast<int32_t>(arguments[1].value.doubleValue);
                 propertyName = pluginTest()->NPN_GetIntIdentifier(number);
             }
-            
+
             pluginTest()->NPN_RemoveProperty(NPVARIANT_TO_OBJECT(arguments[0]), propertyName);
 
             VOID_TO_NPVARIANT(*result);
@@ -154,17 +154,17 @@ private:
     private:
         NPObject* m_testObject;
     };
-    
+
     virtual NPError NPP_GetValue(NPPVariable variable, void *value)
     {
         if (variable != NPPVpluginScriptableNPObject)
             return NPERR_GENERIC_ERROR;
-        
+
         *(NPObject**)value = PluginObject::create(this);
-        
+
         return NPERR_NO_ERROR;
     }
-    
+
 };
 
 static PluginTest::Register<NPRuntimeRemoveProperty> npRuntimeRemoveProperty("npruntime-remove-property");

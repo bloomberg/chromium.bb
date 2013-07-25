@@ -251,7 +251,7 @@ template<> inline bool V8StringResource<WithUndefinedOrNullCheck>::prepare()
     }
     return prepareBase();
 }
-    
+
 } // namespace WebCore
 
 #endif // V8StringResource_h

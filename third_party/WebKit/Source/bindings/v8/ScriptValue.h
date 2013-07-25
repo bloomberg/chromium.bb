@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -39,8 +39,8 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-#ifndef NDEBUG 
-#include "bindings/v8/V8GCController.h" 
+#ifndef NDEBUG
+#include "bindings/v8/V8GCController.h"
 #endif
 
 namespace WTF {
@@ -72,7 +72,7 @@ public:
 
     static ScriptValue createNull() { return ScriptValue(v8::Null()); }
 
-    ScriptValue& operator=(const ScriptValue& value) 
+    ScriptValue& operator=(const ScriptValue& value)
     {
         if (this != &value)
             m_value = value.m_value;

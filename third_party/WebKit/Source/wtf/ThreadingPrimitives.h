@@ -7,13 +7,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -60,7 +60,7 @@ struct PlatformMutex {
 struct PlatformCondition {
     size_t m_waitersGone;
     size_t m_waitersBlocked;
-    size_t m_waitersToUnblock; 
+    size_t m_waitersToUnblock;
     HANDLE m_blockLock;
     HANDLE m_blockQueue;
     HANDLE m_unblockLock;
@@ -72,7 +72,7 @@ struct PlatformCondition {
 typedef void* PlatformMutex;
 typedef void* PlatformCondition;
 #endif
-    
+
 class WTF_EXPORT Mutex {
     WTF_MAKE_NONCOPYABLE(Mutex); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -113,14 +113,14 @@ class WTF_EXPORT ThreadCondition {
 public:
     ThreadCondition();
     ~ThreadCondition();
-    
+
     void wait(Mutex&);
     // Returns true if the condition was signaled before absoluteTime, false if the absoluteTime was reached or is in the past.
     // The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
     bool timedWait(Mutex&, double absoluteTime);
     void signal();
     void broadcast();
-    
+
 private:
     PlatformCondition m_condition;
 };

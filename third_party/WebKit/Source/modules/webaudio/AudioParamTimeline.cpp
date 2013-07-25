@@ -81,9 +81,9 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event)
     ASSERT(isValid);
     if (!isValid)
         return;
-        
+
     MutexLocker locker(m_eventsLock);
-    
+
     unsigned i = 0;
     double insertTime = event.time();
     for (i = 0; i < m_events.size(); ++i) {

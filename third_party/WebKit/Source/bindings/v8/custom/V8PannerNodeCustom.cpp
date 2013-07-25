@@ -53,7 +53,7 @@ void V8PannerNode::panningModelAttrSetterCustom(v8::Local<v8::String> name, v8::
             return;
         }
     }
-    
+
     throwTypeError("Illegal panningModel", info.GetIsolate());
 }
 
@@ -77,7 +77,7 @@ void V8PannerNode::distanceModelAttrSetterCustom(v8::Local<v8::String> name, v8:
             return;
         }
     }
-    
+
     throwTypeError("Illegal distanceModel", info.GetIsolate());
 }
 

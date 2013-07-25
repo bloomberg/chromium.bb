@@ -42,7 +42,7 @@ private:
     {
         NPN_GetURL("javascript:removePlugin()", 0);
         return NPERR_NO_ERROR;
-    }        
+    }
 };
 
 static PluginTest::Register<GetURLWithJavaScriptURLDestroyingPlugin> getURLWithJavaScriptURLDestroyingPlugin("get-url-with-javascript-url-destroying-plugin");

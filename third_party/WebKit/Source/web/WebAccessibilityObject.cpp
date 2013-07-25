@@ -684,7 +684,7 @@ WebURL WebAccessibilityObject::url() const
 {
     if (isDetached())
         return WebURL();
-    
+
     return m_private->url();
 }
 

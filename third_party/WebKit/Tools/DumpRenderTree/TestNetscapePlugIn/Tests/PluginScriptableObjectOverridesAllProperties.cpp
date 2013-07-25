@@ -36,7 +36,7 @@ public:
         : PluginTest(npp, identifier)
     {
     }
-    
+
 private:
     class PluginObject : public Object<PluginObject> {
     public:
@@ -57,27 +57,27 @@ private:
         {
             static const char* message = "My name is ";
             char* propertyString = pluginTest()->NPN_UTF8FromIdentifier(propertyName);
-            
+
             int bufferLength = strlen(propertyString) + strlen(message) + 1;
             char* resultBuffer = static_cast<char*>(pluginTest()->NPN_MemAlloc(bufferLength));
             snprintf(resultBuffer, bufferLength, "%s%s", message, propertyString);
-            
+
             STRINGZ_TO_NPVARIANT(resultBuffer, *result);
 
             return true;
         }
     };
-    
+
     virtual NPError NPP_GetValue(NPPVariable variable, void *value)
     {
         if (variable != NPPVpluginScriptableNPObject)
             return NPERR_GENERIC_ERROR;
-        
+
         *(NPObject**)value = PluginObject::create(this);
-        
+
         return NPERR_NO_ERROR;
     }
-    
+
 };
 
 static PluginTest::Register<PluginScriptableObjectOverridesAllProperties> pluginScriptableObjectOverridesAllProperties("plugin-scriptable-object-overrides-all-properties");

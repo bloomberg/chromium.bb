@@ -100,7 +100,7 @@ private:
     {
         if (stream->pdata != this)
             m_didFail = true;
-        
+
         m_data.insert(m_data.end(), static_cast<char*>(buffer), static_cast<char*>(buffer) + len);
         return len;
     }

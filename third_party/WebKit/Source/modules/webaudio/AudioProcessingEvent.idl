@@ -26,5 +26,5 @@
     Conditional=WEB_AUDIO
 ] interface AudioProcessingEvent : Event {
     readonly attribute AudioBuffer inputBuffer;
-    readonly attribute AudioBuffer outputBuffer; 
+    readonly attribute AudioBuffer outputBuffer;
 };

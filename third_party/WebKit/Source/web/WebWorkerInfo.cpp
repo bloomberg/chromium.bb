@@ -35,7 +35,7 @@
 
 namespace WebKit {
 
-unsigned WebWorkerInfo::dedicatedWorkerCount() 
+unsigned WebWorkerInfo::dedicatedWorkerCount()
 {
     return WebCore::WorkerThread::workerThreadCount();
 }

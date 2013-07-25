@@ -53,7 +53,7 @@ void V8BiquadFilterNode::typeAttrSetterCustom(v8::Local<v8::String> name, v8::Lo
             return;
         }
     }
-    
+
     throwTypeError("Illegal BiquadFilterNode type", info.GetIsolate());
 }
 

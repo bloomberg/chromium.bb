@@ -108,11 +108,11 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [Custom, MeasureAs=CustomTestFeature] void customMethod();
     [Custom] void customMethodWithArgs(long longArg, DOMString strArg, TestObject objArg);
 
-    void addEventListener(DOMString type, 
-                          EventListener listener, 
+    void addEventListener(DOMString type,
+                          EventListener listener,
                           optional boolean useCapture);
-    void removeEventListener(DOMString type, 
-                             EventListener listener, 
+    void removeEventListener(DOMString type,
+                             EventListener listener,
                              optional boolean useCapture);
 
     // 'CallWith' extended attribute
@@ -184,7 +184,7 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
 
     readonly attribute any cachedAttribute1;
     readonly attribute any cachedAttribute2;
-    
+
     attribute any anyAttribute;
 
     attribute TestCallbackFunction callbackFunctionAttribute;

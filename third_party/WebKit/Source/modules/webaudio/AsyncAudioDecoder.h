@@ -56,7 +56,7 @@ private:
         static PassOwnPtr<DecodingTask> create(ArrayBuffer* audioData, float sampleRate, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback);
 
         void decode();
-        
+
     private:
         DecodingTask(ArrayBuffer* audioData, float sampleRate, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback);
 
@@ -75,7 +75,7 @@ private:
         RefPtr<AudioBufferCallback> m_errorCallback;
         RefPtr<AudioBuffer> m_audioBuffer;
     };
-    
+
     static void threadEntry(void* threadData);
     void runLoop();
 

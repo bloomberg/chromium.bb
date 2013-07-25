@@ -38,7 +38,7 @@ public:
 private:
     struct NPObjectWithoutInvokeDefault : Object<NPObjectWithoutInvokeDefault> { };
 
-    struct NPObjectWithInvokeDefault : Object<NPObjectWithInvokeDefault> { 
+    struct NPObjectWithInvokeDefault : Object<NPObjectWithInvokeDefault> {
     public:
         bool invokeDefault(const NPVariant*, uint32_t, NPVariant* result)
         {
@@ -57,9 +57,9 @@ private:
             object = NPObjectWithInvokeDefault::create(this);
         else
             object = NPObjectWithoutInvokeDefault::create(this);
-        
+
         *(NPObject**)value = object;
-        
+
         return NPERR_NO_ERROR;
     }
 };

@@ -238,7 +238,7 @@ TEST_F(WebFrameTest, FormWithNullFrame)
 TEST_F(WebFrameTest, ChromePageJavascript)
 {
     registerMockedChromeURLLoad("history.html");
- 
+
     // Pass true to enable JavaScript.
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_chromeURL + "history.html", true);
 
@@ -278,7 +278,7 @@ TEST_F(WebFrameTest, DispatchMessageEventWithOriginCheck)
 
     // Pass true to enable JavaScript.
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "postmessage_test.html", true);
-    
+
     // Send a message with the correct origin.
     WebSecurityOrigin correctOrigin(WebSecurityOrigin::create(toKURL(m_baseURL)));
     WebDOMEvent event = m_webView->mainFrame()->document().createEvent("MessageEvent");
@@ -1955,13 +1955,13 @@ public:
     {
     }
 
-    virtual void didCreateFrame(WebFrame* parent, WebFrame* child) 
+    virtual void didCreateFrame(WebFrame* parent, WebFrame* child)
     {
         m_frameCount++;
         if (!m_parent)
             m_parent = parent;
     }
-    
+
     int m_frameCount;
     WebFrame* m_parent;
 };
@@ -1976,7 +1976,7 @@ TEST_F(WebFrameTest, DidCreateFrame)
     TestDidCreateFrameWebFrameClient webFrameClient;
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "iframes_test.html", false, &webFrameClient);
 
-    EXPECT_EQ(webFrameClient.m_frameCount, 3); 
+    EXPECT_EQ(webFrameClient.m_frameCount, 3);
     EXPECT_EQ(webFrameClient.m_parent, m_webView->mainFrame());
 
     m_webView->close();
@@ -3176,7 +3176,7 @@ public:
         EXPECT_TRUE(!m_didAccessInitialDocument);
         m_didAccessInitialDocument = true;
     }
-    
+
     bool m_didAccessInitialDocument;
 };
 

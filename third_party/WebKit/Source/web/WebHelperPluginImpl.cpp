@@ -92,7 +92,7 @@ private:
     {
         // This should never be called since the only way to close the
         // invisible page is via closeHelperPlugin().
-        ASSERT_NOT_REACHED(); 
+        ASSERT_NOT_REACHED();
         m_widget->closeHelperPlugin();
     }
 

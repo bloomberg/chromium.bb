@@ -36,7 +36,7 @@
     const unsigned short ALLPASS = 7;
 
     [CustomSetter] attribute DOMString type;
-    
+
     readonly attribute AudioParam frequency; // in Hertz
     readonly attribute AudioParam detune; // in Cents
     readonly attribute AudioParam Q; // Quality factor

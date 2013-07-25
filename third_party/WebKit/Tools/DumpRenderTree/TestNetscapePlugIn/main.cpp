@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "PluginObject.h"
@@ -122,7 +122,7 @@ NPError STDCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs)
     pluginFuncs->urlnotify = NPP_URLNotify;
     pluginFuncs->getvalue = NPP_GetValue;
     pluginFuncs->setvalue = NPP_SetValue;
-    
+
     return NPERR_NO_ERROR;
 }
 
@@ -145,12 +145,12 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
 {
 #ifdef XP_MACOSX
     NPEventModel eventModel;
-    
+
     // Always turn on the CG model
     NPBool supportsCoreGraphics;
     if (browser->getvalue(instance, NPNVsupportsCoreGraphicsBool, &supportsCoreGraphics) != NPERR_NO_ERROR)
         supportsCoreGraphics = false;
-    
+
     if (!supportsCoreGraphics)
         return NPERR_INCOMPATIBLE_VERSION_ERROR;
 
@@ -197,7 +197,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
 
     string testIdentifier;
     const char* onNewScript = 0;
-    
+
     for (int i = 0; i < argc; i++) {
         if (strcasecmp(argn[i], "test") == 0)
             testIdentifier = argv[i];
@@ -336,7 +336,7 @@ NPError NPP_Destroy(NPP instance, NPSavedData **save)
 
         if (obj->onPaintEvent)
             free(obj->onPaintEvent);
-        
+
         if (obj->logDestroy)
             pluginLog(instance, "NPP_Destroy");
 
@@ -379,7 +379,7 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window)
             executeScript(obj, "eventSender.keyDown('A');");
         }
     }
-    
+
     return obj->pluginTest->NPP_SetWindow(window);
 }
 
@@ -405,7 +405,7 @@ NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, NPBool se
 
     if (obj->returnErrorFromNewStream)
         return NPERR_GENERIC_ERROR;
-    
+
     if (browser->version >= NPVERS_HAS_RESPONSE_HEADERS)
         notifyStream(obj, stream->url, stream->headers);
 
@@ -422,7 +422,7 @@ NPError NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason)
     if (obj->onStreamDestroy) {
         NPObject* windowObject = 0;
         NPError error = browser->getvalue(instance, NPNVWindowNPObject, &windowObject);
-        
+
         if (error == NPERR_NO_ERROR) {
             NPVariant onStreamDestroyVariant;
             if (browser->getproperty(instance, windowObject, browser->getstringidentifier(obj->onStreamDestroy), &onStreamDestroyVariant)) {
@@ -574,7 +574,7 @@ static int16_t handleEventCarbon(NPP instance, PluginObject* obj, EventRecord* e
             if (obj->eventLogging)
                 pluginLog(instance, "event %d", event->what);
     }
-    
+
     return 0;
 }
 #endif
@@ -583,7 +583,7 @@ static int16_t handleEventCocoa(NPP instance, PluginObject* obj, NPCocoaEvent* e
 {
     switch (event->type) {
         case NPCocoaEventWindowFocusChanged:
-            
+
         case NPCocoaEventFocusChanged:
             if (obj->eventLogging) {
                 if (event->data.focus.hasFocus)
@@ -622,7 +622,7 @@ static int16_t handleEventCocoa(NPP instance, PluginObject* obj, NPCocoaEvent* e
 
         case NPCocoaEventMouseDown:
             if (obj->eventLogging) {
-                pluginLog(instance, "mouseDown at (%d, %d)", 
+                pluginLog(instance, "mouseDown at (%d, %d)",
                        (int)event->data.mouse.pluginX,
                        (int)event->data.mouse.pluginY);
             }
@@ -631,12 +631,12 @@ static int16_t handleEventCocoa(NPP instance, PluginObject* obj, NPCocoaEvent* e
             return 1;
         case NPCocoaEventMouseUp:
             if (obj->eventLogging) {
-                pluginLog(instance, "mouseUp at (%d, %d)", 
+                pluginLog(instance, "mouseUp at (%d, %d)",
                        (int)event->data.mouse.pluginX,
                        (int)event->data.mouse.pluginY);
             }
             return 1;
-            
+
         case NPCocoaEventMouseMoved:
         case NPCocoaEventMouseEntered:
         case NPCocoaEventMouseExited:
@@ -645,7 +645,7 @@ static int16_t handleEventCocoa(NPP instance, PluginObject* obj, NPCocoaEvent* e
         case NPCocoaEventTextInput:
             return 1;
     }
-    
+
     return 0;
 }
 
@@ -840,12 +840,12 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value)
         *v = obj;
         return NPERR_NO_ERROR;
     }
-    
+
 #ifdef XP_MACOSX
     if (variable == NPPVpluginCoreAnimationLayer) {
         if (!obj->coreAnimationLayer)
             return NPERR_GENERIC_ERROR;
-        
+
         void **v = (void **)value;
         *v = (void*)CFRetain(obj->coreAnimationLayer);
         return NPERR_NO_ERROR;

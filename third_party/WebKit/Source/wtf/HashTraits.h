@@ -42,7 +42,7 @@ namespace WTF {
     template<typename T> struct GenericHashTraitsBase<false, T> {
         // The emptyValueIsZero flag is used to optimize allocation of empty hash tables with zeroed memory.
         static const bool emptyValueIsZero = false;
-        
+
         // The hasIsEmptyValueFunction flag allows the hash table to automatically generate code to check
         // for the empty value when it can be done with the equality operator, but allows custom functions
         // for cases like String that need them.
@@ -76,7 +76,7 @@ namespace WTF {
         typedef const T& PassInType;
         static void store(const T& value, T& storage) { storage = value; }
 
-        // Type for return value of functions that transfer ownership, such as take. 
+        // Type for return value of functions that transfer ownership, such as take.
         typedef T PassOutType;
         static PassOutType passOut(const T& value) { return value; }
         static T& passOut(T& value) { return value; } // Overloaded to avoid copying of non-temporary values.

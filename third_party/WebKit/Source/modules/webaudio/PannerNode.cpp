@@ -89,7 +89,7 @@ void PannerNode::pullInputs(size_t framesToProcess)
         // Recursively go through all nodes connected to us.
         notifyAudioSourcesConnectedToNode(this);
     }
-    
+
     AudioNode::pullInputs(framesToProcess);
 }
 
@@ -124,7 +124,7 @@ void PannerNode::process(size_t framesToProcess)
         // Snap to desired gain at the beginning.
         if (m_lastGain == -1.0)
             m_lastGain = totalGain;
-        
+
         // Apply gain in-place with de-zippering.
         destination->copyWithGainFrom(*destination, &m_lastGain, totalGain);
     } else {
@@ -154,7 +154,7 @@ void PannerNode::uninitialize()
 {
     if (!isInitialized())
         return;
-        
+
     m_panner.clear();
     AudioNode::uninitialize();
 }
@@ -212,7 +212,7 @@ bool PannerNode::setPanningModel(unsigned model)
     default:
         return false;
     }
-    
+
     return true;
 }
 
@@ -363,7 +363,7 @@ float PannerNode::dopplerRate()
             if (dopplerShift > 16.0)
                 dopplerShift = 16.0;
             else if (dopplerShift < 0.125)
-                dopplerShift = 0.125;   
+                dopplerShift = 0.125;
         }
     }
 
@@ -376,12 +376,12 @@ float PannerNode::distanceConeGain()
 
     double listenerDistance = m_position.distanceTo(listenerPosition);
     double distanceGain = m_distanceEffect.gain(listenerDistance);
-    
+
     m_distanceGain->setValue(static_cast<float>(distanceGain));
 
     // FIXME: could optimize by caching coneGain
     double coneGain = m_coneEffect.gain(m_position, m_orientation, listenerPosition);
-    
+
     m_coneGain->setValue(static_cast<float>(coneGain));
 
     return float(distanceGain * coneGain);
@@ -392,12 +392,12 @@ void PannerNode::notifyAudioSourcesConnectedToNode(AudioNode* node)
     ASSERT(node);
     if (!node)
         return;
-        
+
     // First check if this node is an AudioBufferSourceNode. If so, let it know about us so that doppler shift pitch can be taken into account.
     if (node->nodeType() == NodeTypeAudioBufferSource) {
         AudioBufferSourceNode* bufferSourceNode = static_cast<AudioBufferSourceNode*>(node);
         bufferSourceNode->setPannerNode(this);
-    } else {    
+    } else {
         // Go through all inputs to this node.
         for (unsigned i = 0; i < node->numberOfInputs(); ++i) {
             AudioNodeInput* input = node->input(i);

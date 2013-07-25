@@ -48,8 +48,8 @@ public:
     }
 
     virtual void log(const String& apiName, int argc, const v8::Handle<v8::Value>* argv, const String& extraInfo)
-    {   
-        m_domActivityLogger->log(WebString(apiName), argc, argv, WebString(extraInfo)); 
+    {
+        m_domActivityLogger->log(WebString(apiName), argc, argv, WebString(extraInfo));
     }
 
 private:

@@ -50,7 +50,7 @@ PassRefPtr<IDBKey> checkKeyFromValueAndKeyPathInternal(const ScriptValue& value,
 {
     IDBKeyPath idbKeyPath(keyPath);
     EXPECT_TRUE(idbKeyPath.isValid());
-    
+
     return createIDBKeyFromScriptValueAndKeyPath(0, value, idbKeyPath);
 }
 

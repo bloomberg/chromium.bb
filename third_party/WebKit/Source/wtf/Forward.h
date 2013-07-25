@@ -32,7 +32,7 @@ namespace WTF {
     template<typename T> class PassRefPtr;
     template<typename T> class RefPtr;
     template<typename T, size_t inlineCapacity> class Vector;
-    
+
     class ArrayBuffer;
     class ArrayBufferView;
     class AtomicString;

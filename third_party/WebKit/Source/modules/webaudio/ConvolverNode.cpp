@@ -101,7 +101,7 @@ void ConvolverNode::initialize()
 {
     if (isInitialized())
         return;
-        
+
     AudioNode::initialize();
 }
 
@@ -117,7 +117,7 @@ void ConvolverNode::uninitialize()
 void ConvolverNode::setBuffer(AudioBuffer* buffer)
 {
     ASSERT(isMainThread());
-    
+
     if (!buffer)
         return;
 

@@ -46,9 +46,9 @@ private:
             testDocumentOpen(m_npp);
             m_shouldOpen = false;
         }
-        
+
         return NPERR_NO_ERROR;
-    }        
+    }
 
     bool m_shouldOpen;
 };

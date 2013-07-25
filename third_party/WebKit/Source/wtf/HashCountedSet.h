@@ -37,36 +37,36 @@ namespace WTF {
         typedef typename ImplType::iterator iterator;
         typedef typename ImplType::const_iterator const_iterator;
         typedef typename ImplType::AddResult AddResult;
-        
+
         HashCountedSet() {}
 
         void swap(HashCountedSet&);
-        
+
         int size() const;
         int capacity() const;
         bool isEmpty() const;
-        
+
         // Iterators iterate over pairs of values and counts.
         iterator begin();
         iterator end();
         const_iterator begin() const;
         const_iterator end() const;
-        
+
         iterator find(const ValueType&);
         const_iterator find(const ValueType&) const;
         bool contains(const ValueType&) const;
         unsigned count(const ValueType&) const;
 
         // Increases the count if an equal value is already present
-        // the return value is a pair of an interator to the new value's 
+        // the return value is a pair of an interator to the new value's
         // location, and a bool that is true if an new entry was added.
         AddResult add(const ValueType&);
-        
+
         // Reduces the count of the value, and removes it if count
         // goes down to zero, returns true if the value is removed.
         bool remove(const ValueType&);
         bool remove(iterator);
- 
+
         // Removes the value, regardless of its count.
         void removeAll(iterator);
         void removeAll(const ValueType&);
@@ -83,65 +83,65 @@ namespace WTF {
     {
         m_impl.swap(other.m_impl);
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline int HashCountedSet<Value, HashFunctions, Traits>::size() const
     {
-        return m_impl.size(); 
+        return m_impl.size();
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline int HashCountedSet<Value, HashFunctions, Traits>::capacity() const
     {
-        return m_impl.capacity(); 
+        return m_impl.capacity();
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline bool HashCountedSet<Value, HashFunctions, Traits>::isEmpty() const
     {
-        return size() == 0; 
+        return size() == 0;
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline typename HashCountedSet<Value, HashFunctions, Traits>::iterator HashCountedSet<Value, HashFunctions, Traits>::begin()
     {
-        return m_impl.begin(); 
+        return m_impl.begin();
     }
 
     template<typename Value, typename HashFunctions, typename Traits>
     inline typename HashCountedSet<Value, HashFunctions, Traits>::iterator HashCountedSet<Value, HashFunctions, Traits>::end()
     {
-        return m_impl.end(); 
+        return m_impl.end();
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline typename HashCountedSet<Value, HashFunctions, Traits>::const_iterator HashCountedSet<Value, HashFunctions, Traits>::begin() const
     {
-        return m_impl.begin(); 
+        return m_impl.begin();
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline typename HashCountedSet<Value, HashFunctions, Traits>::const_iterator HashCountedSet<Value, HashFunctions, Traits>::end() const
     {
-        return m_impl.end(); 
+        return m_impl.end();
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline typename HashCountedSet<Value, HashFunctions, Traits>::iterator HashCountedSet<Value, HashFunctions, Traits>::find(const ValueType& value)
     {
-        return m_impl.find(value); 
+        return m_impl.find(value);
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline typename HashCountedSet<Value, HashFunctions, Traits>::const_iterator HashCountedSet<Value, HashFunctions, Traits>::find(const ValueType& value) const
     {
-        return m_impl.find(value); 
+        return m_impl.find(value);
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline bool HashCountedSet<Value, HashFunctions, Traits>::contains(const ValueType& value) const
     {
-        return m_impl.contains(value); 
+        return m_impl.contains(value);
     }
 
     template<typename Value, typename HashFunctions, typename Traits>
@@ -149,7 +149,7 @@ namespace WTF {
     {
         return m_impl.get(value);
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline typename HashCountedSet<Value, HashFunctions, Traits>::AddResult HashCountedSet<Value, HashFunctions, Traits>::add(const ValueType &value)
     {
@@ -157,13 +157,13 @@ namespace WTF {
         ++result.iterator->value;
         return result;
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline bool HashCountedSet<Value, HashFunctions, Traits>::remove(const ValueType& value)
     {
         return remove(find(value));
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline bool HashCountedSet<Value, HashFunctions, Traits>::remove(iterator it)
     {
@@ -181,13 +181,13 @@ namespace WTF {
         m_impl.remove(it);
         return true;
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline void HashCountedSet<Value, HashFunctions, Traits>::removeAll(const ValueType& value)
     {
         removeAll(find(value));
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline void HashCountedSet<Value, HashFunctions, Traits>::removeAll(iterator it)
     {
@@ -196,20 +196,20 @@ namespace WTF {
 
         m_impl.remove(it);
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits>
     inline void HashCountedSet<Value, HashFunctions, Traits>::clear()
     {
-        m_impl.clear(); 
+        m_impl.clear();
     }
-    
+
     template<typename Value, typename HashFunctions, typename Traits, typename VectorType>
     inline void copyToVector(const HashCountedSet<Value, HashFunctions, Traits>& collection, VectorType& vector)
     {
         typedef typename HashCountedSet<Value, HashFunctions, Traits>::const_iterator iterator;
-        
+
         vector.resize(collection.size());
-        
+
         iterator it = collection.begin();
         iterator end = collection.end();
         for (unsigned i = 0; it != end; ++it, ++i)
@@ -220,9 +220,9 @@ namespace WTF {
     inline void copyToVector(const HashCountedSet<Value, HashFunctions, Traits>& collection, Vector<Value>& vector)
     {
         typedef typename HashCountedSet<Value, HashFunctions, Traits>::const_iterator iterator;
-        
+
         vector.resize(collection.size());
-        
+
         iterator it = collection.begin();
         iterator end = collection.end();
         for (unsigned i = 0; it != end; ++it, ++i)

@@ -52,9 +52,9 @@ public:
     BiquadProcessor(AudioContext*, float sampleRate, size_t numberOfChannels, bool autoInitialize);
 
     virtual ~BiquadProcessor();
-    
+
     virtual PassOwnPtr<AudioDSPKernel> createKernel();
-        
+
     virtual void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess);
 
     // Get the magnitude and phase response of the filter at the given
@@ -65,7 +65,7 @@ public:
                               float* phaseResponse);
 
     void checkForDirtyCoefficients();
-    
+
     bool filterCoefficientsDirty() const { return m_filterCoefficientsDirty; }
     bool hasSampleAccurateValues() const { return m_hasSampleAccurateValues; }
 

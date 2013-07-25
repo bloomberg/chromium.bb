@@ -88,7 +88,7 @@ public:
     bool isolatedWorldHasContentSecurityPolicy();
 
     // Associate a logger with the world identified by worldId (worlId may be 0
-    // identifying the main world).  
+    // identifying the main world).
     static void setActivityLogger(int worldId, PassOwnPtr<V8DOMActivityLogger>);
     static V8DOMActivityLogger* activityLogger(int worldId);
 

@@ -42,7 +42,7 @@ PluginTest* PluginTest::create(NPP npp, const string& identifier)
 {
     if (identifier.empty())
         return new PluginTest(npp, identifier);
-        
+
     CreateTestFunction createTestFunction = createTestFunctions()[identifier];
     if (createTestFunction)
         return createTestFunction(npp, identifier);
@@ -206,7 +206,7 @@ int32_t PluginTest::NPN_IntFromIdentifier(NPIdentifier npIdentifier)
 NPObject* PluginTest::NPN_CreateObject(NPClass* npClass)
 {
     return browser->createobject(m_npp, npClass);
-}                                 
+}
 
 NPObject* PluginTest::NPN_RetainObject(NPObject* npObject)
 {
@@ -285,13 +285,13 @@ void PluginTest::notifyDone()
 void PluginTest::registerCreateTestFunction(const string& identifier, CreateTestFunction createTestFunction)
 {
     assert(!createTestFunctions().count(identifier));
- 
+
     createTestFunctions()[identifier] = createTestFunction;
 }
 
 std::map<std::string, PluginTest::CreateTestFunction>& PluginTest::createTestFunctions()
 {
     static std::map<std::string, CreateTestFunction> testFunctions;
-    
+
     return testFunctions;
 }

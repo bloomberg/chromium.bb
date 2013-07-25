@@ -49,14 +49,14 @@ NPError InvokeDestroysPluginWithinNPP_New::NPP_New(NPMIMEType pluginType, uint16
 {
     // Give the WebProcess enough time to be deadlocked waiting for the PluginProcess if things aren't working correctly.
     usleep(15000);
-    
+
     NPObject* windowObject = 0;
     if (NPN_GetValue(NPNVWindowNPObject, &windowObject) != NPERR_NO_ERROR)
         return NPERR_GENERIC_ERROR;
-    
+
     if (!windowObject)
         return NPERR_GENERIC_ERROR;
-    
+
     NPVariant result;
     if (!NPN_Invoke(windowObject, NPN_GetStringIdentifier("removePluginElement"), 0, 0, &result))
         return NPERR_GENERIC_ERROR;

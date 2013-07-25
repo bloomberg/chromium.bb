@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
@@ -32,7 +32,7 @@ namespace WTF {
 using std::swap;
 
 template<typename RandomAccessIterator, typename Predicate>
-inline void siftDown(RandomAccessIterator array, ptrdiff_t start, ptrdiff_t end, Predicate compareLess) 
+inline void siftDown(RandomAccessIterator array, ptrdiff_t start, ptrdiff_t end, Predicate compareLess)
 {
     ptrdiff_t root = start;
 
@@ -40,7 +40,7 @@ inline void siftDown(RandomAccessIterator array, ptrdiff_t start, ptrdiff_t end,
         ptrdiff_t child = root * 2 + 1;
         if (child < end && compareLess(array[child], array[child + 1]))
             child++;
-        
+
         if (compareLess(array[root], array[child])) {
             swap(array[root], array[child]);
             root = child;
@@ -50,10 +50,10 @@ inline void siftDown(RandomAccessIterator array, ptrdiff_t start, ptrdiff_t end,
 }
 
 template<typename RandomAccessIterator, typename Predicate>
-inline void heapify(RandomAccessIterator array, ptrdiff_t count, Predicate compareLess) 
+inline void heapify(RandomAccessIterator array, ptrdiff_t count, Predicate compareLess)
 {
     ptrdiff_t start = (count - 2) / 2;
-     
+
     while (start >= 0) {
         siftDown(array, start, count - 1, compareLess);
         start--;

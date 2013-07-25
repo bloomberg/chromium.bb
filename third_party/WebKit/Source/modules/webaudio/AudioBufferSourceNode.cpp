@@ -116,7 +116,7 @@ void AudioBufferSourceNode::process(size_t framesToProcess)
                              outputBus,
                              quantumFrameOffset,
                              bufferFramesToProcess);
-                             
+
         if (!bufferFramesToProcess) {
             outputBus->zero();
             return;
@@ -150,7 +150,7 @@ bool AudioBufferSourceNode::renderSilenceAndFinishIfNotLooping(AudioBus*, unsign
         if (framesToProcess > 0) {
             // We're not looping and we've reached the end of the sample data, but we still need to provide more output,
             // so generate silence for the remaining.
-            for (unsigned i = 0; i < numberOfChannels(); ++i) 
+            for (unsigned i = 0; i < numberOfChannels(); ++i)
                 memset(m_destinationChannels[i] + index, 0, sizeof(float) * framesToProcess);
         }
 
@@ -193,7 +193,7 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
 
     // Potentially zero out initial frames leading up to the offset.
     if (destinationFrameOffset) {
-        for (unsigned i = 0; i < numberOfChannels; ++i) 
+        for (unsigned i = 0; i < numberOfChannels; ++i)
             memset(m_destinationChannels[i], 0, sizeof(float) * destinationFrameOffset);
     }
 
@@ -206,7 +206,7 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
     // Avoid converting from time to sample-frames twice by computing
     // the grain end time first before computing the sample frame.
     unsigned endFrame = m_isGrain ? AudioUtilities::timeToSampleFrame(m_grainOffset + m_grainDuration, bufferSampleRate) : bufferLength;
-    
+
     // This is a HACK to allow for HRTF tail-time - avoids glitch at end.
     // FIXME: implement tailTime for each AudioNode for a more general solution to this problem.
     // https://bugs.webkit.org/show_bug.cgi?id=77224
@@ -262,7 +262,7 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
             int framesThisTime = min(framesToProcess, framesToEnd);
             framesThisTime = max(0, framesThisTime);
 
-            for (unsigned i = 0; i < numberOfChannels; ++i) 
+            for (unsigned i = 0; i < numberOfChannels; ++i)
                 memcpy(destinationChannels[i] + writeIndex, sourceChannels[i] + readIndex, sizeof(float) * framesThisTime);
 
             writeIndex += framesThisTime;
@@ -338,13 +338,13 @@ void AudioBufferSourceNode::reset()
 bool AudioBufferSourceNode::setBuffer(AudioBuffer* buffer)
 {
     ASSERT(isMainThread());
-    
+
     // The context must be locked since changing the buffer can re-configure the number of channels that are output.
     AudioContext::AutoLocker contextLocker(context());
-    
+
     // This synchronizes with process().
     MutexLocker processLocker(m_processLock);
-    
+
     if (buffer) {
         // Do any necesssary re-configuration to the buffer's number of channels.
         unsigned numberOfChannels = buffer->numberOfChannels();
@@ -357,13 +357,13 @@ bool AudioBufferSourceNode::setBuffer(AudioBuffer* buffer)
         m_sourceChannels = adoptArrayPtr(new const float* [numberOfChannels]);
         m_destinationChannels = adoptArrayPtr(new float* [numberOfChannels]);
 
-        for (unsigned i = 0; i < numberOfChannels; ++i) 
+        for (unsigned i = 0; i < numberOfChannels; ++i)
             m_sourceChannels[i] = buffer->getChannelData(i)->data();
     }
 
     m_virtualReadIndex = 0;
     m_buffer = buffer;
-    
+
     return true;
 }
 
@@ -387,7 +387,7 @@ void AudioBufferSourceNode::startGrain(double when, double grainOffset, double g
 
     if (!buffer())
         return;
-        
+
     // Do sanity checking of grain parameters versus buffer size.
     double bufferDuration = buffer()->duration();
 
@@ -406,13 +406,13 @@ void AudioBufferSourceNode::startGrain(double when, double grainOffset, double g
 
     m_isGrain = true;
     m_startTime = when;
-    
+
     // We call timeToSampleFrame here since at playbackRate == 1 we don't want to go through linear interpolation
     // at a sub-sample position since it will degrade the quality.
     // When aligned to the sample-frame the playback will be identical to the PCM data stored in the buffer.
     // Since playbackRate == 1 is very common, it's worth considering quality.
     m_virtualReadIndex = AudioUtilities::timeToSampleFrame(m_grainOffset, buffer()->sampleRate());
-    
+
     m_playbackState = SCHEDULED_STATE;
 }
 
@@ -426,13 +426,13 @@ double AudioBufferSourceNode::totalPitchRate()
     double dopplerRate = 1.0;
     if (m_pannerNode)
         dopplerRate = m_pannerNode->dopplerRate();
-    
+
     // Incorporate buffer's sample-rate versus AudioContext's sample-rate.
     // Normally it's not an issue because buffers are loaded at the AudioContext's sample-rate, but we can handle it in any case.
     double sampleRateFactor = 1.0;
     if (buffer())
         sampleRateFactor = buffer()->sampleRate() / sampleRate();
-    
+
     double basePitchRate = playbackRate()->value();
 
     double totalRate = dopplerRate * sampleRateFactor * basePitchRate;
@@ -442,7 +442,7 @@ double AudioBufferSourceNode::totalPitchRate()
     if (!totalRate)
         totalRate = 1; // zero rate is considered illegal
     totalRate = min(MaxRate, totalRate);
-    
+
     bool isTotalRateValid = !std::isnan(totalRate) && !std::isinf(totalRate);
     ASSERT(isTotalRateValid);
     if (!isTotalRateValid)

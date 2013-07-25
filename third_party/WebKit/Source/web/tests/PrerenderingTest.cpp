@@ -81,7 +81,7 @@ public:
         m_webPrerenders.pop_front();
         return retval;
     }
-    
+
     bool empty() const
     {
         return m_webPrerenders.empty();
@@ -129,7 +129,7 @@ public:
     {
         return m_addedPrerenders.size() + m_canceledPrerenders.size() + m_abandonedPrerenders.size();
     }
-    
+
     size_t addCount(const WebPrerender& prerender) const
     {
         return std::count_if(m_addedPrerenders.begin(), m_addedPrerenders.end(), std::bind1st(WebPrerenderEqual(), prerender));
@@ -187,7 +187,7 @@ public:
         if (m_webView)
             close();
     }
-    
+
     void initialize(const char* baseURL, const char* fileName)
     {
         ASSERT(!m_webView);
@@ -239,7 +239,7 @@ public:
 
         WebNode textNode = consoleListItem.firstChild();
         ASSERT(textNode.nodeName() == "#text");
-        
+
         return textNode.nodeValue().utf8().data();
     }
 
@@ -304,7 +304,7 @@ TEST_F(PrerenderingTest, CancelPrerender)
     EXPECT_EQ(1u, prerenderingSupport()->totalCount());
 
     executeScript("removePrerender()");
-    
+
     EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
     EXPECT_EQ(2u, prerenderingSupport()->totalCount());
 }
@@ -320,7 +320,7 @@ TEST_F(PrerenderingTest, AbandonPrerender)
     EXPECT_EQ(1u, prerenderingSupport()->totalCount());
 
     navigateAway();
-    
+
     EXPECT_EQ(1u, prerenderingSupport()->abandonCount(webPrerender));
     EXPECT_EQ(2u, prerenderingSupport()->totalCount());
 }
@@ -358,7 +358,7 @@ TEST_F(PrerenderingTest, ExtraData)
 TEST_F(PrerenderingTest, TwoPrerenders)
 {
     initialize("http://www.foo.com/", "prerender/multiple_prerenders.html");
-    
+
     WebPrerender firstPrerender = prerendererClient()->releaseWebPrerender();
     EXPECT_FALSE(firstPrerender.isNull());
     EXPECT_EQ(toWebURL("http://first-prerender.com/"), firstPrerender.url());
@@ -383,7 +383,7 @@ TEST_F(PrerenderingTest, TwoPrerenders)
 TEST_F(PrerenderingTest, TwoPrerendersRemovingFirstThenNavigating)
 {
     initialize("http://www.foo.com/", "prerender/multiple_prerenders.html");
-    
+
     WebPrerender firstPrerender = prerendererClient()->releaseWebPrerender();
     WebPrerender secondPrerender = prerendererClient()->releaseWebPrerender();
 
@@ -406,7 +406,7 @@ TEST_F(PrerenderingTest, TwoPrerendersRemovingFirstThenNavigating)
 TEST_F(PrerenderingTest, TwoPrerendersAddingThird)
 {
     initialize("http://www.foo.com/", "prerender/multiple_prerenders.html");
-    
+
     WebPrerender firstPrerender = prerendererClient()->releaseWebPrerender();
     WebPrerender secondPrerender = prerendererClient()->releaseWebPrerender();
 

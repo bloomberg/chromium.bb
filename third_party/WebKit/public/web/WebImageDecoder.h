@@ -62,7 +62,7 @@ public:
 
     // Returns true if image decoding failed.
     WEBKIT_EXPORT bool isFailed() const;
-    
+
     // Returns true if size information is available for the decoder.
     WEBKIT_EXPORT bool isSizeAvailable() const;
 

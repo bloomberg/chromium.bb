@@ -64,7 +64,7 @@ void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
     v8::Local<v8::Object> debuggerScript = m_debuggerScript.newLocal(m_isolate);
     ASSERT(!debuggerScript->IsUndefined());
     v8::Debug::SetDebugEventListener2(&WorkerScriptDebugServer::v8DebugEventCallback, v8::External::New(this));
-    
+
     v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8::String::NewSymbol("getWorkerScripts")));
     v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, 0, 0, m_isolate);
     if (value.IsEmpty())
@@ -101,7 +101,7 @@ void WorkerScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context>)
         result = m_workerGlobalScope->thread()->runLoop().runInMode(m_workerGlobalScope, m_debuggerTaskMode);
     // Keep waiting until execution is resumed.
     } while (result == MessageQueueMessageReceived && isPaused());
-    
+
     // The listener may have been removed in the nested loop.
     if (m_listener)
         m_listener->didContinue();

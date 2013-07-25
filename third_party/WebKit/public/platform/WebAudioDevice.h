@@ -44,7 +44,7 @@ public:
     protected:
         virtual ~RenderCallback() { }
     };
-  
+
     virtual ~WebAudioDevice() { }
 
     virtual void start() = 0;

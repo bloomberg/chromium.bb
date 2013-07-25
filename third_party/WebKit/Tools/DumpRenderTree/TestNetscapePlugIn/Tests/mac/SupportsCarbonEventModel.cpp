@@ -56,7 +56,7 @@ private:
             executeScript("document.getElementById('result').innerHTML = 'SUCCESS!'");
 
         return NPERR_NO_ERROR;
-    }        
+    }
 };
 
 static PluginTest::Register<SupportsCarbonEventModel> supportsCarbonEventModel("supports-carbon-event-model");

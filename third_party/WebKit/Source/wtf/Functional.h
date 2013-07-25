@@ -414,7 +414,7 @@ public:
         , m_p2(ParamStorageTraits<P2>::wrap(p2))
     {
     }
-    
+
     virtual typename FunctionWrapper::ResultType operator()()
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2));
@@ -460,7 +460,7 @@ public:
         , m_p4(ParamStorageTraits<P4>::wrap(p4))
     {
     }
-    
+
     virtual typename FunctionWrapper::ResultType operator()()
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4));
@@ -548,7 +548,7 @@ protected:
     }
 
     template<typename FunctionType> FunctionImpl<FunctionType>* impl() const
-    { 
+    {
         return static_cast<FunctionImpl<FunctionType>*>(m_impl.get());
     }
 

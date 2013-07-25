@@ -39,7 +39,7 @@ private:
     class TestObject : public Object<TestObject> { };
 
     // This is the scriptable object. It has a single "testObject" property and an "evaluate" function.
-    class ScriptableObject : public Object<ScriptableObject> { 
+    class ScriptableObject : public Object<ScriptableObject> {
     public:
         bool hasMethod(NPIdentifier methodName)
         {
@@ -77,9 +77,9 @@ private:
     {
         if (variable != NPPVpluginScriptableNPObject)
             return NPERR_GENERIC_ERROR;
-        
+
         *(NPObject**)value = ScriptableObject::create(this);
-        
+
         return NPERR_NO_ERROR;
     }
 };

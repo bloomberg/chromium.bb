@@ -34,7 +34,7 @@
 #include <algorithm>
 
 using namespace std;
- 
+
 namespace WebCore {
 
 AudioNodeInput::AudioNodeInput(AudioNode* node)
@@ -48,7 +48,7 @@ AudioNodeInput::AudioNodeInput(AudioNode* node)
 void AudioNodeInput::connect(AudioNodeOutput* output)
 {
     ASSERT(context()->isGraphOwner());
-    
+
     ASSERT(output && node());
     if (!output || !node())
         return;
@@ -56,7 +56,7 @@ void AudioNodeInput::connect(AudioNodeOutput* output)
     // Check if we're already connected to this output.
     if (m_outputs.contains(output))
         return;
-        
+
     output->addInput(this);
     m_outputs.add(output);
     changedOutputs();
@@ -81,7 +81,7 @@ void AudioNodeInput::disconnect(AudioNodeOutput* output)
         node()->deref(AudioNode::RefTypeConnection); // Note: it's important to return immediately after all deref() calls since the node may be deleted.
         return;
     }
-    
+
     // Otherwise, try to disconnect from disabled connections.
     if (m_disabledOutputs.contains(output)) {
         m_disabledOutputs.remove(output);
@@ -102,7 +102,7 @@ void AudioNodeInput::disable(AudioNodeOutput* output)
         return;
 
     ASSERT(m_outputs.contains(output));
-    
+
     m_disabledOutputs.add(output);
     m_outputs.remove(output);
     changedOutputs();
@@ -198,7 +198,7 @@ void AudioNodeInput::sumAllConnections(AudioBus* summingBus, size_t framesToProc
     ASSERT(summingBus);
     if (!summingBus)
         return;
-        
+
     summingBus->zero();
 
     AudioBus::ChannelInterpretation interpretation = node()->internalChannelInterpretation();
@@ -237,7 +237,7 @@ AudioBus* AudioNodeInput::pull(AudioBus* inPlaceBus, size_t framesToProcess)
 
     // Handle multiple connections case.
     sumAllConnections(internalSummingBus, framesToProcess);
-    
+
     return internalSummingBus;
 }
 

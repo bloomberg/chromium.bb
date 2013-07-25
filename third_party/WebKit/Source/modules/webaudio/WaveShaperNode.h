@@ -50,8 +50,8 @@ public:
 
     double latency() const { return latencyTime(); }
 
-private:    
-    explicit WaveShaperNode(AudioContext*);    
+private:
+    explicit WaveShaperNode(AudioContext*);
 
     WaveShaperProcessor* waveShaperProcessor() { return static_cast<WaveShaperProcessor*>(processor()); }
 };

@@ -64,10 +64,10 @@ V8PerIsolateData* V8PerIsolateData::create(v8::Isolate* isolate)
     return data;
 }
 
-void V8PerIsolateData::ensureInitialized(v8::Isolate* isolate) 
+void V8PerIsolateData::ensureInitialized(v8::Isolate* isolate)
 {
     ASSERT(isolate);
-    if (!isolate->GetData()) 
+    if (!isolate->GetData())
         create(isolate);
 }
 

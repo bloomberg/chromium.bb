@@ -28,7 +28,7 @@
 #include "../platform/WebVector.h"
 
 namespace WebKit {
-    
+
 class WebAudioSourceProviderClient;
 
 // Abstract interface for a pull-model client.

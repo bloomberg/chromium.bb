@@ -632,7 +632,7 @@ private:
     // request callback.
     bool m_dumpResourceRequestCallbacks;
 
-    // If true, the test_shell will output the MIME type for each resource that 
+    // If true, the test_shell will output the MIME type for each resource that
     // was loaded.
     bool m_dumpResourceResponseMIMETypes;
 

@@ -49,7 +49,7 @@ NPError LogNPPSetWindow::NPP_SetWindow(NPWindow* window)
         window->window ? "non-NULL" : "NULL", window->x, window->y, window->width, window->height,
         window->clipRect.left, window->clipRect.top, window->clipRect.right, window->clipRect.bottom,
         window->type);
-    
+
     char script[1536];
     snprintf(script, 1536, "window.setTimeout('windowWasSet(\"%s\");', 0);", message);
 

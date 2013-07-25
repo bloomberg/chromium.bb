@@ -37,11 +37,11 @@ class AnalyserNode : public AudioBasicInspectorNode {
 public:
     static PassRefPtr<AnalyserNode> create(AudioContext* context, float sampleRate)
     {
-        return adoptRef(new AnalyserNode(context, sampleRate));      
+        return adoptRef(new AnalyserNode(context, sampleRate));
     }
 
     virtual ~AnalyserNode();
-    
+
     // AudioNode
     virtual void process(size_t framesToProcess);
     virtual void reset();

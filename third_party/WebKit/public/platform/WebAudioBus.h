@@ -45,7 +45,7 @@ class WebAudioBus {
 public:
     WebAudioBus() : m_private(0) { }
     ~WebAudioBus() { reset(); }
-    
+
     // initialize() allocates memory of the given length for the given number of channels.
     WEBKIT_EXPORT void initialize(unsigned numberOfChannels, size_t length, double sampleRate);
 
@@ -55,11 +55,11 @@ public:
 
     // reset() releases the memory allocated from initialize().
     WEBKIT_EXPORT void reset();
-    
+
     WEBKIT_EXPORT unsigned numberOfChannels() const;
     WEBKIT_EXPORT size_t length() const;
     WEBKIT_EXPORT double sampleRate() const;
-    
+
     WEBKIT_EXPORT float* channelData(unsigned channelIndex);
 
 #if WEBKIT_IMPLEMENTATION

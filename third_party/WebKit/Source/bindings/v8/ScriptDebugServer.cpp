@@ -416,7 +416,7 @@ static ScriptDebugServer* toScriptDebugServer(v8::Handle<v8::Value> data)
 void ScriptDebugServer::breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     ASSERT(2 == args.Length());
-    
+
     ScriptDebugServer* thisPtr = toScriptDebugServer(args.Data());
     v8::Handle<v8::Value> exception;
     v8::Handle<v8::Array> hitBreakpoints;

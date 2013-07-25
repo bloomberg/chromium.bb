@@ -524,7 +524,7 @@ static bool testCallback(PluginObject* obj, const NPVariant* args, uint32_t argC
         browser->releasevariantvalue(&browserResult);
 
     browser->releaseobject(windowScriptObject);
-    
+
     VOID_TO_NPVARIANT(*result);
     return true;
 }
@@ -823,7 +823,7 @@ static bool testConstruct(PluginObject* obj, const NPVariant* args, uint32_t arg
 {
     if (!argCount || !NPVARIANT_IS_OBJECT(args[0]))
         return false;
-    
+
     return browser->construct(obj->npp, NPVARIANT_TO_OBJECT(args[0]), args + 1, argCount - 1, result);
 }
 
@@ -978,7 +978,7 @@ static bool testSetStatus(PluginObject* obj, const NPVariant* args, uint32_t arg
         NPString statusString = NPVARIANT_TO_STRING(args[0]);
         message = toCString(statusString);
     }
-    
+
     browser->status(obj->npp, message);
 
     free(message);
@@ -1293,7 +1293,7 @@ void testNPRuntime(NPP npp)
     // Invoke
     NPIdentifier testNPInvoke = browser->getstringidentifier("testNPInvoke");
     NPVariant args[7];
-    
+
     VOID_TO_NPVARIANT(args[0]);
     NULL_TO_NPVARIANT(args[1]);
     BOOLEAN_TO_NPVARIANT(true, args[2]);
@@ -1301,10 +1301,10 @@ void testNPRuntime(NPP npp)
     DOUBLE_TO_NPVARIANT(242.242, args[4]);
     STRINGZ_TO_NPVARIANT("Hello, World", args[5]);
     OBJECT_TO_NPVARIANT(windowScriptObject, args[6]);
-    
+
     NPVariant result;
     if (browser->invoke(npp, windowScriptObject, testNPInvoke, args, 7, &result))
         browser->releasevariantvalue(&result);
-    
+
     browser->releaseobject(windowScriptObject);
 }

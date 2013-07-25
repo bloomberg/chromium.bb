@@ -154,7 +154,7 @@ void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value
 
         if (args.Length() >= 4 && !args[3]->IsUndefined()) {
             String user = toWebCoreStringWithNullCheck(args[3]);
-            
+
             if (args.Length() >= 5 && !args[4]->IsUndefined()) {
                 String passwd = toWebCoreStringWithNullCheck(args[4]);
                 xmlHttpRequest->open(method, url, async, user, passwd, es);

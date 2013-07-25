@@ -38,9 +38,9 @@ public:
 
 private:
     // This is the test object.
-    class TestObject : public Object<TestObject> { 
+    class TestObject : public Object<TestObject> {
     public:
-        ~TestObject() 
+        ~TestObject()
         {
             if (wasShutdownCalled)
                 indicateTestFailure();
@@ -48,7 +48,7 @@ private:
     };
 
     // This is the scriptable object. It has a single "testObject" property.
-    class ScriptableObject : public Object<ScriptableObject> { 
+    class ScriptableObject : public Object<ScriptableObject> {
     public:
         bool hasProperty(NPIdentifier propertyName)
         {
@@ -77,9 +77,9 @@ private:
     {
         if (variable != NPPVpluginScriptableNPObject)
             return NPERR_GENERIC_ERROR;
-        
+
         *(NPObject**)value = ScriptableObject::create(this);
-        
+
         return NPERR_NO_ERROR;
     }
 

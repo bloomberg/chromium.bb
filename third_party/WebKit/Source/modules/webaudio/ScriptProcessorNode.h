@@ -64,7 +64,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
 
-    
+
 private:
     virtual double tailTime() const OVERRIDE;
     virtual double latencyTime() const OVERRIDE;

@@ -102,7 +102,7 @@ private:
         : m_context(context)
     {
     }
-    
+
     RefPtr<ScriptExecutionContext> m_context;
 };
 
@@ -113,7 +113,7 @@ Database::~Database()
         // Grab a pointer to the script execution here because we're releasing it when we pass it to
         // DerefContextTask::create.
         ScriptExecutionContext* scriptExecutionContext = m_scriptExecutionContext.get();
-        
+
         scriptExecutionContext->postTask(DerefContextTask::create(m_scriptExecutionContext.release()));
     }
 }

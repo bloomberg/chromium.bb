@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef StringBuilder_h
@@ -196,7 +196,7 @@ public:
         if (canShrink()) {
             if (is8Bit())
                 return AtomicString(characters8(), length());
-            return AtomicString(characters16(), length());            
+            return AtomicString(characters16(), length());
         }
 
         if (!m_string.isNull())
@@ -255,7 +255,7 @@ public:
         ASSERT(m_buffer);
         return m_buffer->characters16();
     }
-    
+
     bool is8Bit() const { return m_is8Bit; }
 
     void clear()
@@ -313,7 +313,7 @@ ALWAYS_INLINE UChar* StringBuilder::getBufferCharacters<UChar>()
 {
     ASSERT(!m_is8Bit);
     return m_bufferCharacters16;
-}    
+}
 
 template <typename CharType>
 bool equal(const StringBuilder& s, const CharType* buffer, unsigned length)

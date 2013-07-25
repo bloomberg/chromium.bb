@@ -373,7 +373,7 @@ v8::Handle<v8::FunctionTemplate> createRawTemplate(v8::Isolate* isolate)
     v8::HandleScope scope(isolate);
     v8::Local<v8::FunctionTemplate> result = v8::FunctionTemplate::New(V8ObjectConstructor::isValidConstructorMode);
     return scope.Close(result);
-}        
+}
 
 PassRefPtr<DOMStringList> toDOMStringList(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {

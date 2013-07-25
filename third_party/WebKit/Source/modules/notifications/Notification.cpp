@@ -115,26 +115,26 @@ Notification::Notification(ScriptExecutionContext* context, const String& title)
 {
     ScriptWrappable::init(this);
     m_notificationCenter = DOMWindowNotifications::webkitNotifications(toDocument(context)->domWindow());
-    
+
     ASSERT(m_notificationCenter->client());
     m_taskTimer->startOneShot(0);
 }
 #endif
 
-Notification::~Notification() 
+Notification::~Notification()
 {
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
 PassRefPtr<Notification> Notification::create(const KURL& url, ScriptExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
-{ 
+{
     RefPtr<Notification> notification(adoptRef(new Notification(url, context, es, provider)));
     notification->suspendIfNeeded();
     return notification.release();
 }
 
 PassRefPtr<Notification> Notification::create(const String& title, const String& body, const String& iconURI, ScriptExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
-{ 
+{
     RefPtr<Notification> notification(adoptRef(new Notification(title, body, iconURI, context, es, provider)));
     notification->suspendIfNeeded();
     return notification.release();
@@ -170,7 +170,7 @@ const AtomicString& Notification::interfaceName() const
     return eventNames().interfaceForNotification;
 }
 
-void Notification::show() 
+void Notification::show()
 {
     // prevent double-showing
     if (m_state == Idle && m_notificationCenter->client()) {
@@ -281,7 +281,7 @@ const String& Notification::permissionString(NotificationClient::Permission perm
     case NotificationClient::PermissionNotAllowed:
         return defaultPermission;
     }
-    
+
     ASSERT_NOT_REACHED();
     return deniedPermission;
 }

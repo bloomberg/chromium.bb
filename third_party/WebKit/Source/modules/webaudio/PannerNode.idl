@@ -36,10 +36,10 @@
     const unsigned short INVERSE_DISTANCE = 1;
     const unsigned short EXPONENTIAL_DISTANCE = 2;
 
-    // Default model for stereo is HRTF 
+    // Default model for stereo is HRTF
     [CustomSetter] attribute DOMString panningModel;
 
-    // Uses a 3D cartesian coordinate system 
+    // Uses a 3D cartesian coordinate system
     void setPosition(float x, float y, float z);
     void setOrientation(float x, float y, float z);
     void setVelocity(float x, float y, float z);

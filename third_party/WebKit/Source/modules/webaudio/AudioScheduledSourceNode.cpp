@@ -149,7 +149,7 @@ void AudioScheduledSourceNode::stop(double when)
     ASSERT(isMainThread());
     if (!(m_playbackState == SCHEDULED_STATE || m_playbackState == PLAYING_STATE))
         return;
-    
+
     when = max(0.0, when);
     m_endTime = when;
 }

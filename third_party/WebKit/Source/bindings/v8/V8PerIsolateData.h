@@ -59,7 +59,7 @@ public:
     {
         ASSERT(isolate);
         ASSERT(isolate->GetData());
-        return static_cast<V8PerIsolateData*>(isolate->GetData()); 
+        return static_cast<V8PerIsolateData*>(isolate->GetData());
     }
     static void dispose(v8::Isolate*);
 
@@ -94,7 +94,7 @@ public:
 
     V8HiddenPropertyName* hiddenPropertyName() { return m_hiddenPropertyName.get(); }
 
-    void registerDOMDataStore(DOMDataStore* domDataStore) 
+    void registerDOMDataStore(DOMDataStore* domDataStore)
     {
         ASSERT(m_domDataList.find(domDataStore) == notFound);
         m_domDataList.append(domDataStore);

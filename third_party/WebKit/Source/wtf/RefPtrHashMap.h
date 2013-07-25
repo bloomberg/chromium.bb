@@ -25,9 +25,9 @@ namespace WTF {
 
     // This specialization is a copy of HashMap for use with RefPtr keys, with overloaded functions
     // to allow for lookup by pointer instead of RefPtr, avoiding ref-count churn.
-    
+
      // FIXME: Find a way to do this with traits that doesn't require a copy of the HashMap template.
-    
+
     template<typename T, typename MappedArg, typename HashArg, typename KeyTraitsArg, typename MappedTraitsArg>
     class HashMap<RefPtr<T>, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> {
         WTF_MAKE_FAST_ALLOCATED;
@@ -48,7 +48,7 @@ namespace WTF {
         typedef typename MappedTraits::PeekType MappedPeekType;
 
         typedef typename ReferenceTypeMaker<MappedPassInType>::ReferenceType MappedPassInReferenceType;
-        
+
         typedef HashArg HashFunctions;
 
         typedef HashTable<KeyType, ValueType, KeyValuePairKeyExtractor<ValueType>,
@@ -85,13 +85,13 @@ namespace WTF {
         MappedPeekType inlineGet(RawKeyType) const;
 
         // replaces value but not key if key is already present
-        // return value is a pair of the iterator to the key location, 
+        // return value is a pair of the iterator to the key location,
         // and a boolean that's true if a new value was actually added
         AddResult set(const KeyType&, MappedPassInType);
         AddResult set(RawKeyType, MappedPassInType);
 
         // does nothing if key is already present
-        // return value is a pair of the iterator to the key location, 
+        // return value is a pair of the iterator to the key location,
         // and a boolean that's true if a new value was actually added
         AddResult add(const KeyType&, MappedPassInType);
         AddResult add(RawKeyType, MappedPassInType);
@@ -110,23 +110,23 @@ namespace WTF {
 
         HashTableType m_impl;
     };
-    
+
     template<typename T, typename U, typename V, typename W, typename X>
     inline void HashMap<RefPtr<T>, U, V, W, X>::swap(HashMap& other)
     {
-        m_impl.swap(other.m_impl); 
+        m_impl.swap(other.m_impl);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
     inline int HashMap<RefPtr<T>, U, V, W, X>::size() const
     {
-        return m_impl.size(); 
+        return m_impl.size();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
     inline int HashMap<RefPtr<T>, U, V, W, X>::capacity() const
-    { 
-        return m_impl.capacity(); 
+    {
+        return m_impl.capacity();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
@@ -197,21 +197,21 @@ namespace WTF {
 
     template<typename T, typename U, typename V, typename W, typename X>
     inline typename HashMap<RefPtr<T>, U, V, W, X>::AddResult
-    HashMap<RefPtr<T>, U, V, W, X>::inlineAdd(const KeyType& key, MappedPassInReferenceType mapped) 
+    HashMap<RefPtr<T>, U, V, W, X>::inlineAdd(const KeyType& key, MappedPassInReferenceType mapped)
     {
         return m_impl.template add<Translator>(key, mapped);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
     inline typename HashMap<RefPtr<T>, U, V, W, X>::AddResult
-    HashMap<RefPtr<T>, U, V, W, X>::inlineAdd(RawKeyType key, MappedPassInReferenceType mapped) 
+    HashMap<RefPtr<T>, U, V, W, X>::inlineAdd(RawKeyType key, MappedPassInReferenceType mapped)
     {
         return m_impl.template add<Translator>(key, mapped);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
     typename HashMap<RefPtr<T>, U, V, W, X>::AddResult
-    HashMap<RefPtr<T>, U, V, W, X>::set(const KeyType& key, MappedPassInType mapped) 
+    HashMap<RefPtr<T>, U, V, W, X>::set(const KeyType& key, MappedPassInType mapped)
     {
         AddResult result = inlineAdd(key, mapped);
         if (!result.isNewEntry) {
@@ -223,7 +223,7 @@ namespace WTF {
 
     template<typename T, typename U, typename V, typename W, typename X>
     typename HashMap<RefPtr<T>, U, V, W, X>::AddResult
-    HashMap<RefPtr<T>, U, V, W, X>::set(RawKeyType key, MappedPassInType mapped) 
+    HashMap<RefPtr<T>, U, V, W, X>::set(RawKeyType key, MappedPassInType mapped)
     {
         AddResult result = inlineAdd(key, mapped);
         if (!result.isNewEntry) {

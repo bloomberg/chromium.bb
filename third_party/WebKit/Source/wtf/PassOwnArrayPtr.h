@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef WTF_PassOwnArrayPtr_h
@@ -83,54 +83,54 @@ template<typename T> inline typename PassOwnArrayPtr<T>::PtrType PassOwnArrayPtr
     return ptr;
 }
 
-template<typename T, typename U> inline bool operator==(const PassOwnArrayPtr<T>& a, const PassOwnArrayPtr<U>& b) 
+template<typename T, typename U> inline bool operator==(const PassOwnArrayPtr<T>& a, const PassOwnArrayPtr<U>& b)
 {
-    return a.get() == b.get(); 
+    return a.get() == b.get();
 }
 
-template<typename T, typename U> inline bool operator==(const PassOwnArrayPtr<T>& a, const OwnArrayPtr<U>& b) 
+template<typename T, typename U> inline bool operator==(const PassOwnArrayPtr<T>& a, const OwnArrayPtr<U>& b)
 {
-    return a.get() == b.get(); 
+    return a.get() == b.get();
 }
 
-template<typename T, typename U> inline bool operator==(const OwnArrayPtr<T>& a, const PassOwnArrayPtr<U>& b) 
+template<typename T, typename U> inline bool operator==(const OwnArrayPtr<T>& a, const PassOwnArrayPtr<U>& b)
 {
-    return a.get() == b.get(); 
+    return a.get() == b.get();
 }
 
-template<typename T, typename U> inline bool operator==(const PassOwnArrayPtr<T>& a, U* b) 
+template<typename T, typename U> inline bool operator==(const PassOwnArrayPtr<T>& a, U* b)
 {
-    return a.get() == b; 
+    return a.get() == b;
 }
 
-template<typename T, typename U> inline bool operator==(T* a, const PassOwnArrayPtr<U>& b) 
+template<typename T, typename U> inline bool operator==(T* a, const PassOwnArrayPtr<U>& b)
 {
-    return a == b.get(); 
+    return a == b.get();
 }
 
-template<typename T, typename U> inline bool operator!=(const PassOwnArrayPtr<T>& a, const PassOwnArrayPtr<U>& b) 
+template<typename T, typename U> inline bool operator!=(const PassOwnArrayPtr<T>& a, const PassOwnArrayPtr<U>& b)
 {
-    return a.get() != b.get(); 
+    return a.get() != b.get();
 }
 
-template<typename T, typename U> inline bool operator!=(const PassOwnArrayPtr<T>& a, const OwnArrayPtr<U>& b) 
+template<typename T, typename U> inline bool operator!=(const PassOwnArrayPtr<T>& a, const OwnArrayPtr<U>& b)
 {
-    return a.get() != b.get(); 
+    return a.get() != b.get();
 }
 
-template<typename T, typename U> inline bool operator!=(const OwnArrayPtr<T>& a, const PassOwnArrayPtr<U>& b) 
+template<typename T, typename U> inline bool operator!=(const OwnArrayPtr<T>& a, const PassOwnArrayPtr<U>& b)
 {
-    return a.get() != b.get(); 
+    return a.get() != b.get();
 }
 
 template<typename T, typename U> inline bool operator!=(const PassOwnArrayPtr<T>& a, U* b)
 {
-    return a.get() != b; 
+    return a.get() != b;
 }
 
-template<typename T, typename U> inline bool operator!=(T* a, const PassOwnArrayPtr<U>& b) 
+template<typename T, typename U> inline bool operator!=(T* a, const PassOwnArrayPtr<U>& b)
 {
-    return a != b.get(); 
+    return a != b.get();
 }
 
 template<typename T> inline PassOwnArrayPtr<T> adoptArrayPtr(T* ptr)
@@ -145,12 +145,12 @@ template<typename T> inline void deleteOwnedArrayPtr(T* ptr)
         delete [] ptr;
 }
 
-template<typename T, typename U> inline PassOwnArrayPtr<T> static_pointer_cast(const PassOwnArrayPtr<U>& p) 
+template<typename T, typename U> inline PassOwnArrayPtr<T> static_pointer_cast(const PassOwnArrayPtr<U>& p)
 {
     return adoptArrayPtr(static_cast<T*>(p.leakPtr()));
 }
 
-template<typename T, typename U> inline PassOwnArrayPtr<T> const_pointer_cast(const PassOwnArrayPtr<U>& p) 
+template<typename T, typename U> inline PassOwnArrayPtr<T> const_pointer_cast(const PassOwnArrayPtr<U>& p)
 {
     return adoptArrayPtr(const_cast<T*>(p.leakPtr()));
 }

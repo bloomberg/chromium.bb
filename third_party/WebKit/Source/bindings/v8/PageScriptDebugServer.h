@@ -62,7 +62,7 @@ public:
 private:
     PageScriptDebugServer();
     virtual ~PageScriptDebugServer() { }
-    
+
     virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>);
     virtual void runMessageLoopOnPause(v8::Handle<v8::Context>);
     virtual void quitMessageLoopOnPause();

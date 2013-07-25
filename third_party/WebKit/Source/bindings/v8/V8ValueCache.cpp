@@ -56,7 +56,7 @@ void StringCache::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Stri
     stringImpl->deref();
 }
 
-void StringCache::remove(StringImpl* stringImpl) 
+void StringCache::remove(StringImpl* stringImpl)
 {
     ASSERT(m_stringCache.contains(stringImpl));
     m_stringCache.remove(stringImpl);

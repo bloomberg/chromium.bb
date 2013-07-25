@@ -124,7 +124,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
     m_wheelTicksY = e.wheelTicksY;
     m_granularity = e.scrollByPage ?
         ScrollByPageWheelEvent : ScrollByPixelWheelEvent;
-    
+
     m_type = PlatformEvent::Wheel;
 
     m_modifiers = 0;

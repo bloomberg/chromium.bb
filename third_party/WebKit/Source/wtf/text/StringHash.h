@@ -91,13 +91,13 @@ namespace WTF {
         {
             return CaseFoldingHash::hash(reinterpret_cast<const LChar*>(data), length);
         }
-        
+
         static inline bool equal(const StringImpl* a, const StringImpl* b)
         {
             return equalIgnoringCaseNonNull(a, b);
         }
 
-        static unsigned hash(const RefPtr<StringImpl>& key) 
+        static unsigned hash(const RefPtr<StringImpl>& key)
         {
             return hash(key.get());
         }

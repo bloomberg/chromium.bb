@@ -1002,9 +1002,9 @@ NavigatorContentUtilsClientImpl::NavigatorContentUtilsClientImpl(WebViewImpl* we
 }
 
 void NavigatorContentUtilsClientImpl::registerProtocolHandler(const String& scheme, const String& baseURL, const String& url, const String& title)
-{ 
+{
     m_webView->client()->registerProtocolHandler(scheme, baseURL, url, title);
-} 
+}
 #endif
 
 } // namespace WebKit

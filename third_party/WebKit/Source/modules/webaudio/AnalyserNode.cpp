@@ -58,7 +58,7 @@ void AnalyserNode::process(size_t framesToProcess)
     }
 
     AudioBus* inputBus = input(0)->bus();
-    
+
     // Give the analyser the audio which is passing through this AudioNode.
     m_analyser.writeInput(inputBus, framesToProcess);
 

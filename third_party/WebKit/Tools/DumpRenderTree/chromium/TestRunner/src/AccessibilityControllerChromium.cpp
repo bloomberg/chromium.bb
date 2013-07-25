@@ -101,7 +101,7 @@ AccessibilityUIElement* AccessibilityController::findAccessibleElementByIdRecurs
     if (!node.isNull() && node.isElementNode()) {
         WebElement element = node.to<WebElement>();
         element.getAttribute("id");
-        if (element.getAttribute("id") == id) 
+        if (element.getAttribute("id") == id)
             return m_elements.getOrCreate(obj);
     }
 

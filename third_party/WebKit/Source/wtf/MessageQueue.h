@@ -132,7 +132,7 @@ namespace WTF {
     template<typename DataType>
     inline PassOwnPtr<DataType> MessageQueue<DataType>::waitForMessage()
     {
-        MessageQueueWaitResult exitReason; 
+        MessageQueueWaitResult exitReason;
         OwnPtr<DataType> result = waitForMessageFilteredWithTimeout(exitReason, MessageQueue<DataType>::alwaysTruePredicate, infiniteTime());
         ASSERT(exitReason == MessageQueueTerminated || exitReason == MessageQueueMessageReceived);
         return result.release();

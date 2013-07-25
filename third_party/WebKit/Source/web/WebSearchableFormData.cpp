@@ -149,10 +149,10 @@ bool IsInDefaultState(HTMLFormControlElement* formElement)
     return true;
 }
 
-// Look for a suitable search text field in a given HTMLFormElement 
+// Look for a suitable search text field in a given HTMLFormElement
 // Return nothing if one of those items are found:
 //  - A text area field
-//  - A file upload field 
+//  - A file upload field
 //  - A Password field
 //  - More than one text field
 HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement* form)
@@ -192,14 +192,14 @@ HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement* form)
 }
 
 // Build a search string based on a given HTMLFormElement and HTMLInputElement
-// 
+//
 // Search string output example from www.google.com:
 // "hl=en&source=hp&biw=1085&bih=854&q={searchTerms}&btnG=Google+Search&aq=f&aqi=&aql=&oq="
-// 
+//
 // Return false if the provided HTMLInputElement is not found in the form
 bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString, WTF::TextEncoding* encoding, const HTMLInputElement* textElement)
 {
-    bool isElementFound = false;   
+    bool isElementFound = false;
 
     // FIXME: Consider refactoring this code so that we don't call form->associatedElements() twice.
     for (Vector<FormAssociatedElement*>::const_iterator i(form->associatedElements().begin()); i != form->associatedElements().end(); ++i) {
@@ -246,8 +246,8 @@ WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const W
     HTMLInputElement* inputElement = selectedInputElement.operator PassRefPtr<HTMLInputElement>().get();
 
     // Only consider forms that GET data.
-    // Allow HTTPS only when an input element is provided. 
-    if (equalIgnoringCase(formElement->getAttribute(methodAttr), "post") 
+    // Allow HTTPS only when an input element is provided.
+    if (equalIgnoringCase(formElement->getAttribute(methodAttr), "post")
         || (!IsHTTPFormSubmit(formElement.get()) && !inputElement))
         return;
 
@@ -260,9 +260,9 @@ WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const W
         // If the encoding isn't found webkit ends up replacing the params with
         // empty strings. So, we don't try to do anything here.
         return;
-    } 
+    }
 
-    // Look for a suitable search text field in the form when a 
+    // Look for a suitable search text field in the form when a
     // selectedInputElement is not provided.
     if (!inputElement) {
         inputElement = findSuitableSearchInputElement(formElement.get());
@@ -285,7 +285,7 @@ WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const W
     if (firstSubmitButton)
         firstSubmitButton->setActivatedSubmit(false);
 
-    // Return if the search string is not valid. 
+    // Return if the search string is not valid.
     if (!isValidSearchString)
         return;
 
@@ -294,7 +294,7 @@ WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const W
     RefPtr<FormData> formData = FormData::create(encodedString);
     url.setQuery(formData->flattenToString());
     m_url = url;
-    m_encoding = String(encoding.name()); 
+    m_encoding = String(encoding.name());
 }
 
 } // namespace WebKit
