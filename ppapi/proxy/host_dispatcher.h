@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"

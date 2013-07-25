@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "ppapi/proxy/mock_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"

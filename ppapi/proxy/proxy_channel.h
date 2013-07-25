@@ -6,7 +6,7 @@
 #define PPAPI_PROXY_PROXY_CHANNEL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sender.h"

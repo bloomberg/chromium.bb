@@ -12,7 +12,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "build/build_config.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_instance.h"
