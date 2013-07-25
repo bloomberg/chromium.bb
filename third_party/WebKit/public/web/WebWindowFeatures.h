@@ -100,6 +100,30 @@ struct WebWindowFeatures {
         , additionalFeatures(f.additionalFeatures)
     {
     }
+
+    operator WebCore::WindowFeatures() const
+    {
+        WebCore::WindowFeatures result;
+        result.x = x;
+        result.xSet = xSet;
+        result.y = y;
+        result.ySet = ySet;
+        result.width = width;
+        result.widthSet = widthSet;
+        result.height = height;
+        result.heightSet = heightSet;
+        result.menuBarVisible = menuBarVisible;
+        result.statusBarVisible = statusBarVisible;
+        result.toolBarVisible = toolBarVisible;
+        result.locationBarVisible = locationBarVisible;
+        result.scrollbarsVisible = scrollbarsVisible;
+        result.resizable = resizable;
+        result.fullscreen = fullscreen;
+        result.dialog = dialog;
+        for (size_t i = 0; i < additionalFeatures.size(); ++i)
+            result.additionalFeatures.append(additionalFeatures[i]);
+        return result;
+    }
 #endif
 };
 

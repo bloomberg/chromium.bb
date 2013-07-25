@@ -33,6 +33,7 @@
 #include "core/page/Page.h"
 #include "core/page/PageGroupLoadDeferrer.h"
 #include "core/page/PopupOpeningObserver.h"
+#include "core/page/WindowFeatures.h"
 #include "core/platform/ColorChooser.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/FileChooser.h"
@@ -180,9 +181,13 @@ void Chrome::runModal() const
     m_client->runModal();
 }
 
-void Chrome::setToolbarsVisible(bool b) const
+void Chrome::setWindowFeatures(const WindowFeatures& features) const
 {
-    m_client->setToolbarsVisible(b);
+    m_client->setToolbarsVisible(features.toolBarVisible || features.locationBarVisible);
+    m_client->setStatusbarVisible(features.statusBarVisible);
+    m_client->setScrollbarsVisible(features.scrollbarsVisible);
+    m_client->setMenubarVisible(features.menuBarVisible);
+    m_client->setResizable(features.resizable);
 }
 
 bool Chrome::toolbarsVisible() const
@@ -190,19 +195,9 @@ bool Chrome::toolbarsVisible() const
     return m_client->toolbarsVisible();
 }
 
-void Chrome::setStatusbarVisible(bool b) const
-{
-    m_client->setStatusbarVisible(b);
-}
-
 bool Chrome::statusbarVisible() const
 {
     return m_client->statusbarVisible();
-}
-
-void Chrome::setScrollbarsVisible(bool b) const
-{
-    m_client->setScrollbarsVisible(b);
 }
 
 bool Chrome::scrollbarsVisible() const
@@ -210,19 +205,9 @@ bool Chrome::scrollbarsVisible() const
     return m_client->scrollbarsVisible();
 }
 
-void Chrome::setMenubarVisible(bool b) const
-{
-    m_client->setMenubarVisible(b);
-}
-
 bool Chrome::menubarVisible() const
 {
     return m_client->menubarVisible();
-}
-
-void Chrome::setResizable(bool b) const
-{
-    m_client->setResizable(b);
 }
 
 bool Chrome::canRunBeforeUnloadConfirmPanel()

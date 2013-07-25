@@ -50,7 +50,8 @@ class SearchPopupMenu;
 
 struct DateTimeChooserParameters;
 struct ViewportArguments;
-    
+struct WindowFeatures;
+
 class Chrome : public HostWindow {
 public:
     ~Chrome();
@@ -92,19 +93,12 @@ public:
     bool canRunModalNow() const;
     void runModal() const;
 
-    void setToolbarsVisible(bool) const;
+    void setWindowFeatures(const WindowFeatures&) const;
+
     bool toolbarsVisible() const;
-
-    void setStatusbarVisible(bool) const;
     bool statusbarVisible() const;
-
-    void setScrollbarsVisible(bool) const;
     bool scrollbarsVisible() const;
-
-    void setMenubarVisible(bool) const;
     bool menubarVisible() const;
-
-    void setResizable(bool) const;
 
     bool canRunBeforeUnloadConfirmPanel();
     bool runBeforeUnloadConfirmPanel(const String& message, Frame*);

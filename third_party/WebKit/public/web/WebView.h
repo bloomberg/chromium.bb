@@ -64,6 +64,7 @@ struct WebActiveWheelFlingParameters;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
 struct WebPoint;
+struct WebWindowFeatures;
 
 class WebView : public WebWidget {
 public:
@@ -144,6 +145,11 @@ public:
 
     // Allows disabling domain relaxation.
     virtual void setDomainRelaxationForbidden(bool, const WebString& scheme) = 0;
+
+    // Allows setting the state of the various bars exposed via BarProp
+    // properties on the window object. The size related fields of
+    // WebWindowFeatures are ignored.
+    virtual void setWindowFeatures(const WebWindowFeatures&) = 0;
 
 
     // Closing -------------------------------------------------------------

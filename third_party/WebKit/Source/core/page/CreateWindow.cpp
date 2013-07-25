@@ -93,11 +93,7 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
     if (request.frameName() != "_blank")
         frame->tree()->setName(request.frameName());
 
-    page->chrome().setToolbarsVisible(features.toolBarVisible || features.locationBarVisible);
-    page->chrome().setStatusbarVisible(features.statusBarVisible);
-    page->chrome().setScrollbarsVisible(features.scrollbarsVisible);
-    page->chrome().setMenubarVisible(features.menuBarVisible);
-    page->chrome().setResizable(features.resizable);
+    page->chrome().setWindowFeatures(features);
 
     // 'x' and 'y' specify the location of the window, while 'width' and 'height'
     // specify the size of the viewport. We can only resize the window, so adjust

@@ -205,6 +205,7 @@ public:
     virtual bool isActive() const;
     virtual void setIsActive(bool value);
     virtual void setDomainRelaxationForbidden(bool, const WebString& scheme);
+    virtual void setWindowFeatures(const WebWindowFeatures&);
     virtual bool dispatchBeforeUnloadEvent();
     virtual void dispatchUnloadEvent();
     virtual WebFrame* mainFrame();

@@ -87,6 +87,7 @@
 #include "WebSettingsImpl.h"
 #include "WebTextInputInfo.h"
 #include "WebViewClient.h"
+#include "WebWindowFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -3592,6 +3593,11 @@ bool WebViewImpl::isActive() const
 void WebViewImpl::setDomainRelaxationForbidden(bool forbidden, const WebString& scheme)
 {
     SchemeRegistry::setDomainRelaxationForbiddenForURLScheme(forbidden, String(scheme));
+}
+
+void WebViewImpl::setWindowFeatures(const WebWindowFeatures& features)
+{
+    m_page->chrome().setWindowFeatures(features);
 }
 
 void WebViewImpl::setScrollbarColors(unsigned inactiveColor,
