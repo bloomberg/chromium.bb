@@ -11,7 +11,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/engine/syncer_command.h"
 #include "sync/syncable/entry_kernel.h"
-#include "sync/util/extensions_activity.h"
+#include "sync/util/extensions_activity_monitor.h"
 
 namespace syncer {
 
@@ -42,7 +42,7 @@ class SYNC_EXPORT_PRIVATE BuildCommitCommand : public SyncerCommand {
       syncable::BaseTransaction* trans,
       const sessions::OrderedCommitSet& batch_commit_set,
       sync_pb::ClientToServerMessage* commit_message,
-      ExtensionsActivity::Records* extensions_activity_buffer);
+      ExtensionsActivityMonitor::Records* extensions_activity_buffer);
   virtual ~BuildCommitCommand();
 
   // SyncerCommand implementation.
@@ -69,7 +69,7 @@ class SYNC_EXPORT_PRIVATE BuildCommitCommand : public SyncerCommand {
   // Output parameter; see constructor comment.
   sync_pb::ClientToServerMessage* commit_message_;
 
-  ExtensionsActivity::Records* extensions_activity_buffer_;
+  ExtensionsActivityMonitor::Records* extensions_activity_buffer_;
 };
 
 }  // namespace syncer

@@ -35,8 +35,7 @@ PasswordChangeProcessor::PasswordChangeProcessor(
     : ChangeProcessor(error_handler),
       model_associator_(model_associator),
       password_store_(password_store),
-      expected_loop_(base::MessageLoop::current()),
-      disconnected_(false) {
+      expected_loop_(base::MessageLoop::current()) {
   DCHECK(model_associator);
   DCHECK(error_handler);
 #if defined(OS_MACOSX)
@@ -56,10 +55,6 @@ void PasswordChangeProcessor::Observe(
     const content::NotificationDetails& details) {
   DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK(chrome::NOTIFICATION_LOGINS_CHANGED == type);
-
-  base::AutoLock lock(disconnect_lock_);
-  if (disconnected_)
-    return;
 
   syncer::WriteTransaction trans(FROM_HERE, share_handle());
 
@@ -167,9 +162,6 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(expected_loop_ == base::MessageLoop::current());
-  base::AutoLock lock(disconnect_lock_);
-  if (disconnected_)
-    return;
 
   syncer::ReadNode password_root(trans);
   if (password_root.InitByTagLookup(kPasswordTag) !=
@@ -228,10 +220,6 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
 
 void PasswordChangeProcessor::CommitChangesFromSyncModel() {
   DCHECK(expected_loop_ == base::MessageLoop::current());
-  base::AutoLock lock(disconnect_lock_);
-  if (disconnected_)
-    return;
-
   ScopedStopObserving<PasswordChangeProcessor> stop_observing(this);
 
   syncer::SyncError error = model_associator_->WriteToPasswordStore(
@@ -249,17 +237,9 @@ void PasswordChangeProcessor::CommitChangesFromSyncModel() {
   updated_passwords_.clear();
 }
 
-void PasswordChangeProcessor::Disconnect() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::AutoLock lock(disconnect_lock_);
-  disconnected_ = true;
-}
-
 void PasswordChangeProcessor::StartImpl(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  password_store_->ScheduleTask(
-      base::Bind(&PasswordChangeProcessor::StartObserving,
-                 base::Unretained(this)));
+  DCHECK(expected_loop_ == base::MessageLoop::current());
+  StartObserving();
 }
 
 void PasswordChangeProcessor::StartObserving() {

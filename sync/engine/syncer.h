@@ -17,7 +17,7 @@
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/util/extensions_activity.h"
+#include "sync/util/extensions_activity_monitor.h"
 
 namespace syncer {
 

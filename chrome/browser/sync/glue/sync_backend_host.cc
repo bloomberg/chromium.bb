@@ -158,7 +158,7 @@ class SyncBackendHost::Core
   //
   // Called to perform initialization of the syncapi on behalf of
   // SyncBackendHost::Initialize.
-  void DoInitialize(scoped_ptr<DoInitializeOptions> options);
+  void DoInitialize(const DoInitializeOptions& options);
 
   // Called to perform credential update on behalf of
   // SyncBackendHost::UpdateCredentials.
@@ -202,12 +202,17 @@ class SyncBackendHost::Core
   void DoFinishInitialProcessControlTypes();
 
   // The shutdown order is a bit complicated:
-  // 1) Call DoStopSyncManagerForShutdown() from |frontend_loop_| to request
-  //    sync manager to stop as soon as possible.
-  // 2) Post DoShutdown() to sync loop to clean up backend state, save
-  //    directory and destroy sync manager.
-  void DoStopSyncManagerForShutdown();
-  void DoShutdown(bool sync_disabled);
+  // 1) From |sync_thread_|, invoke the syncapi Shutdown call to do
+  //    a final SaveChanges, and close sqlite handles.
+  // 2) Then, from |frontend_loop_|, halt the sync_thread_ (which is
+  //    a blocking call). This causes syncapi thread-exit handlers
+  //    to run and make use of cached pointers to various components
+  //    owned implicitly by us.
+  // 3) Destroy this Core. That will delete syncapi components in a
+  //    safe order because the thread that was using them has exited
+  //    (in step 2).
+  void DoStopSyncManagerForShutdown(const base::Closure& closure);
+  void DoShutdown(bool stopping_sync);
   void DoDestroySyncManager();
 
   // Configuration methods that must execute on sync loop.
@@ -249,14 +254,15 @@ class SyncBackendHost::Core
   // Invoked when initialization of syncapi is complete and we can start
   // our timer.
   // This must be called from the thread on which SaveChanges is intended to
-  // be run on; the host's |registrar_->sync_thread()|.
+  // be run on; the host's |sync_thread_|.
   void StartSavingChanges();
 
   // Invoked periodically to tell the syncapi to persist its state
   // by writing to disk.
-  // This is called from the thread we were created on (which is sync thread),
-  // using a repeating timer that is kicked off as soon as the SyncManager
-  // tells us it completed initialization.
+  // This is called from the thread we were created on (which is the
+  // SyncBackendHost |sync_thread_|), using a repeating timer that is kicked
+  // off as soon as the SyncManager tells us it completed
+  // initialization.
   void SaveChanges();
 
   // Name used for debugging.
@@ -269,7 +275,7 @@ class SyncBackendHost::Core
   syncer::WeakHandle<SyncBackendHost> host_;
 
   // The loop where all the sync backend operations happen.
-  // Non-NULL only between calls to DoInitialize() and ~Core().
+  // Non-NULL only between calls to DoInitialize() and DoShutdown().
   base::MessageLoop* sync_loop_;
 
   // Our parent's registrar (not owned).  Non-NULL only between
@@ -288,8 +294,6 @@ class SyncBackendHost::Core
   // The top-level syncapi entry point.  Lives on the sync thread.
   scoped_ptr<syncer::SyncManager> sync_manager_;
 
-  base::WeakPtrFactory<Core> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
@@ -298,10 +302,11 @@ SyncBackendHost::SyncBackendHost(
     Profile* profile,
     const base::WeakPtr<SyncPrefs>& sync_prefs)
     : weak_ptr_factory_(this),
+      sync_thread_("Chrome_SyncThread"),
       frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
       name_(name),
-      core_(new Core(name_, profile_->GetPath().Append(kSyncDataFolderName),
+      core_(new Core(name, profile_->GetPath().Append(kSyncDataFolderName),
                      weak_ptr_factory_.GetWeakPtr())),
       initialization_state_(NOT_ATTEMPTED),
       sync_prefs_(sync_prefs),
@@ -314,6 +319,7 @@ SyncBackendHost::SyncBackendHost(
 
 SyncBackendHost::SyncBackendHost(Profile* profile)
     : weak_ptr_factory_(this),
+      sync_thread_("Chrome_SyncThread"),
       frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
       name_("Unknown"),
@@ -345,23 +351,23 @@ scoped_ptr<syncer::HttpPostProviderFactory> MakeHttpBridgeFactory(
 
 void SyncBackendHost::Initialize(
     SyncFrontend* frontend,
-    scoped_ptr<base::Thread> sync_thread,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& sync_service_url,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder,
-    scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-    scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+    syncer::SyncManagerFactory* sync_manager_factory,
+    syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function) {
-  registrar_.reset(new SyncBackendRegistrar(name_,
-                                            profile_,
-                                            sync_thread.Pass()));
-  CHECK(registrar_->sync_thread());
+  if (!sync_thread_.Start())
+    return;
 
   frontend_ = frontend;
   DCHECK(frontend);
 
+  registrar_.reset(new SyncBackendRegistrar(name_,
+                                            profile_,
+                                            sync_thread_.message_loop()));
   syncer::ModelSafeRoutingInfo routing_info;
   std::vector<syncer::ModelSafeWorker*> workers;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
@@ -383,13 +389,12 @@ void SyncBackendHost::Initialize(
   }
 
   initialization_state_ = CREATING_SYNC_MANAGER;
-
-  scoped_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
-      registrar_->sync_thread()->message_loop(),
+  InitCore(DoInitializeOptions(
+      sync_thread_.message_loop(),
       registrar_.get(),
       routing_info,
       workers,
-      extensions_activity_monitor_.GetExtensionsActivity(),
+      &extensions_activity_monitor_,
       event_handler,
       sync_service_url,
       base::Bind(&MakeHttpBridgeFactory,
@@ -397,23 +402,20 @@ void SyncBackendHost::Initialize(
                  NetworkTimeTracker::BuildNotifierUpdateCallback()),
       credentials,
       invalidator_->GetInvalidatorClientId(),
-      sync_manager_factory.Pass(),
+      sync_manager_factory,
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
       sync_prefs_->GetKeystoreEncryptionBootstrapToken(),
-      scoped_ptr<InternalComponentsFactory>(
-          new InternalComponentsFactoryImpl(factory_switches)).Pass(),
-      unrecoverable_error_handler.Pass(),
+      new InternalComponentsFactoryImpl(factory_switches),
+      unrecoverable_error_handler,
       report_unrecoverable_error_function,
       !cl->HasSwitch(switches::kSyncDisableOAuth2Token)));
-  InitCore(init_opts.Pass());
 }
 
 void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
-  DCHECK(registrar_->sync_thread()->IsRunning());
-  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoUpdateCredentials,
-                 core_.get(),
+  DCHECK(sync_thread_.IsRunning());
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&SyncBackendHost::Core::DoUpdateCredentials, core_.get(),
                  credentials));
 }
 
@@ -423,14 +425,14 @@ void SyncBackendHost::StartSyncingWithServer() {
   syncer::ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
 
-  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoStartSyncing,
                  core_.get(), routing_info));
 }
 
 void SyncBackendHost::SetEncryptionPassphrase(const std::string& passphrase,
                                               bool is_explicit) {
-  DCHECK(registrar_->sync_thread()->IsRunning());
+  DCHECK(sync_thread_.IsRunning());
   if (!IsNigoriEnabled()) {
     NOTREACHED() << "SetEncryptionPassphrase must never be called when nigori"
                     " is disabled.";
@@ -449,9 +451,8 @@ void SyncBackendHost::SetEncryptionPassphrase(const std::string& passphrase,
          cached_passphrase_type_ == syncer::IMPLICIT_PASSPHRASE);
 
   // Post an encryption task on the syncer thread.
-  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoSetEncryptionPassphrase,
-                 core_.get(),
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&SyncBackendHost::Core::DoSetEncryptionPassphrase, core_.get(),
                  passphrase, is_explicit));
 }
 
@@ -478,9 +479,8 @@ bool SyncBackendHost::SetDecryptionPassphrase(const std::string& passphrase) {
     return false;
 
   // Post a decryption task on the syncer thread.
-  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoSetDecryptionPassphrase,
-                 core_.get(),
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&SyncBackendHost::Core::DoSetDecryptionPassphrase, core_.get(),
                  passphrase));
 
   // Since we were able to decrypt the cached pending keys with the passphrase
@@ -496,19 +496,22 @@ bool SyncBackendHost::SetDecryptionPassphrase(const std::string& passphrase) {
   return true;
 }
 
-void SyncBackendHost::StopSyncManagerForShutdown() {
+void SyncBackendHost::StopSyncManagerForShutdown(
+    const base::Closure& closure) {
   DCHECK_GT(initialization_state_, NOT_ATTEMPTED);
   if (initialization_state_ == CREATING_SYNC_MANAGER) {
     // We post here to implicitly wait for the SyncManager to be created,
     // if needed.  We have to wait, since we need to shutdown immediately,
     // and we need to tell the SyncManager so it can abort any activity
     // (net I/O, data application).
-    DCHECK(registrar_->sync_thread()->IsRunning());
-    registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
-        base::Bind(&SyncBackendHost::Core::DoStopSyncManagerForShutdown,
-                   core_.get()));
+    DCHECK(sync_thread_.IsRunning());
+    sync_thread_.message_loop()->PostTask(FROM_HERE,
+        base::Bind(
+            &SyncBackendHost::Core::DoStopSyncManagerForShutdown,
+            core_.get(),
+            closure));
   } else {
-    core_->DoStopSyncManagerForShutdown();
+    core_->DoStopSyncManagerForShutdown(closure);
   }
 }
 
@@ -521,22 +524,44 @@ void SyncBackendHost::StopSyncingForShutdown() {
   // Stop listening for and forwarding locally-triggered sync refresh requests.
   notification_registrar_.RemoveAll();
 
-  DCHECK(registrar_->sync_thread()->IsRunning());
+  // Thread shutdown should occur in the following order:
+  // - Sync Thread
+  // - UI Thread (stops some time after we return from this call).
+  //
+  // In order to achieve this, we first shutdown components from the UI thread
+  // and send signals to abort components that may be busy on the sync thread.
+  // The callback (OnSyncerShutdownComplete) will happen on the sync thread,
+  // after which we'll shutdown components on the sync thread, and then be
+  // able to stop the sync loop.
+  if (sync_thread_.IsRunning()) {
+    StopSyncManagerForShutdown(
+        base::Bind(&SyncBackendRegistrar::OnSyncerShutdownComplete,
+                   base::Unretained(registrar_.get())));
 
-  registrar_->RequestWorkerStopOnUIThread();
-
-  StopSyncManagerForShutdown();
+    // Before joining the sync_thread_, we wait for the UIModelWorker to
+    // give us the green light that it is not depending on the frontend_loop_
+    // to process any more tasks. Stop() blocks until this termination
+    // condition is true.
+    base::Time stop_registrar_start_time = base::Time::Now();
+    if (registrar_)
+      registrar_->StopOnUIThread();
+    base::TimeDelta stop_registrar_time = base::Time::Now() -
+        stop_registrar_start_time;
+    UMA_HISTOGRAM_TIMES("Sync.Shutdown.StopRegistrarTime",
+                        stop_registrar_time);
+  } else {
+    // If the sync thread isn't running, then the syncer is effectively
+    // stopped.  Moreover, it implies that we never attempted initialization,
+    // so the registrar won't need stopping either.
+    DCHECK_EQ(initialization_state_, NOT_ATTEMPTED);
+    DCHECK(!registrar_.get());
+  }
 }
 
-scoped_ptr<base::Thread> SyncBackendHost::Shutdown(ShutdownOption option) {
+void SyncBackendHost::Shutdown(bool sync_disabled) {
   // StopSyncingForShutdown() (which nulls out |frontend_|) should be
   // called first.
   DCHECK(!frontend_);
-  DCHECK(registrar_->sync_thread()->IsRunning());
-
-  bool sync_disabled = (option == DISABLE_AND_CLAIM_THREAD);
-  bool sync_thread_claimed =
-      (option == DISABLE_AND_CLAIM_THREAD || option == STOP_AND_CLAIM_THREAD);
 
   if (invalidation_handler_registered_) {
     if (sync_disabled) {
@@ -547,25 +572,37 @@ scoped_ptr<base::Thread> SyncBackendHost::Shutdown(ShutdownOption option) {
   }
   invalidation_handler_registered_ = false;
 
-  // Shut down and destroy sync manager.
-  registrar_->sync_thread()->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoShutdown,
-                 core_.get(), sync_disabled));
-  core_ = NULL;
+  // TODO(tim): DCHECK(registrar_->StoppedOnUIThread()) would be nice.
+  if (sync_thread_.IsRunning()) {
+    sync_thread_.message_loop()->PostTask(FROM_HERE,
+        base::Bind(&SyncBackendHost::Core::DoShutdown, core_.get(),
+                   sync_disabled));
+  }
 
-  // Worker cleanup.
-  SyncBackendRegistrar* detached_registrar = registrar_.release();
-  detached_registrar->sync_thread()->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncBackendRegistrar::Shutdown,
-                 base::Unretained(detached_registrar)));
+  // Stop will return once the thread exits, which will be after DoShutdown
+  // runs. DoShutdown needs to run from sync_thread_ because the sync backend
+  // requires any thread that opened sqlite handles to relinquish them
+  // personally. We need to join threads, because otherwise the main Chrome
+  // thread (ui loop) can exit before DoShutdown finishes, at which point
+  // virtually anything the sync backend does (or the post-back to
+  // frontend_loop_ by our Core) will epically fail because the CRT won't be
+  // initialized.
+  // Since we are blocking the UI thread here, we need to turn ourselves in
+  // with the ThreadRestriction police.  For sentencing and how we plan to fix
+  // this, see bug 19757.
+  base::Time stop_thread_start_time = base::Time::Now();
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    sync_thread_.Stop();
+  }
+  base::TimeDelta stop_sync_thread_time = base::Time::Now() -
+      stop_thread_start_time;
+  UMA_HISTOGRAM_TIMES("Sync.Shutdown.StopSyncThreadTime",
+                      stop_sync_thread_time);
 
+  registrar_.reset();
   js_backend_.Reset();
-  if (sync_thread_claimed)
-    return detached_registrar->ReleaseSyncThread();
-  else
-    return scoped_ptr<base::Thread>();
+  core_ = NULL;  // Releases reference to core_.
 }
 
 void SyncBackendHost::UnregisterInvalidationIds() {
@@ -690,7 +727,7 @@ void SyncBackendHost::ConfigureDataTypes(
 }
 
 void SyncBackendHost::EnableEncryptEverything() {
-  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
      base::Bind(&SyncBackendHost::Core::DoEnableEncryptEverything,
                 core_.get()));
 }
@@ -756,10 +793,9 @@ SyncedDeviceTracker* SyncBackendHost::GetSyncedDeviceTracker() const {
   return core_->synced_device_tracker();
 }
 
-void SyncBackendHost::InitCore(scoped_ptr<DoInitializeOptions> options) {
-  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoInitialize,
-                 core_.get(), base::Passed(&options)));
+void SyncBackendHost::InitCore(const DoInitializeOptions& options) {
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&SyncBackendHost::Core::DoInitialize, core_.get(), options));
 }
 
 void SyncBackendHost::RequestConfigureSyncer(
@@ -778,7 +814,7 @@ void SyncBackendHost::RequestConfigureSyncer(
   config_types.to_purge = to_purge;
   config_types.to_journal = to_journal;
   config_types.to_unapply = to_unapply;
-  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
        base::Bind(&SyncBackendHost::Core::DoConfigureSyncer,
                   core_.get(),
                   reason,
@@ -840,7 +876,7 @@ void SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
 
   // Kick off the next step in SyncBackendHost initialization by downloading
   // any necessary control types.
-  registrar_->sync_thread()->message_loop()->PostTask(
+  sync_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoDownloadControlTypes,
                  core_.get(),
@@ -856,7 +892,7 @@ void SyncBackendHost::Observe(
 
   content::Details<const syncer::ModelTypeSet> state_details(details);
   const syncer::ModelTypeSet& types = *(state_details.ptr());
-  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoRefreshTypes, core_.get(), types));
 }
 
@@ -865,18 +901,18 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     SyncBackendRegistrar* registrar,
     const syncer::ModelSafeRoutingInfo& routing_info,
     const std::vector<syncer::ModelSafeWorker*>& workers,
-    const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
+    syncer::ExtensionsActivityMonitor* extensions_activity_monitor,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& service_url,
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
     const syncer::SyncCredentials& credentials,
     const std::string& invalidator_client_id,
-    scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+    syncer::SyncManagerFactory* sync_manager_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
-    scoped_ptr<InternalComponentsFactory> internal_components_factory,
-    scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+    InternalComponentsFactory* internal_components_factory,
+    syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function,
     bool use_oauth2_token)
@@ -884,19 +920,19 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       registrar(registrar),
       routing_info(routing_info),
       workers(workers),
-      extensions_activity(extensions_activity),
+      extensions_activity_monitor(extensions_activity_monitor),
       event_handler(event_handler),
       service_url(service_url),
       make_http_bridge_factory_fn(make_http_bridge_factory_fn),
       credentials(credentials),
       invalidator_client_id(invalidator_client_id),
-      sync_manager_factory(sync_manager_factory.Pass()),
+      sync_manager_factory(sync_manager_factory),
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
       restored_keystore_key_for_bootstrapping(
           restored_keystore_key_for_bootstrapping),
-      internal_components_factory(internal_components_factory.Pass()),
-      unrecoverable_error_handler(unrecoverable_error_handler.Pass()),
+      internal_components_factory(internal_components_factory),
+      unrecoverable_error_handler(unrecoverable_error_handler),
       report_unrecoverable_error_function(
           report_unrecoverable_error_function),
       use_oauth2_token(use_oauth2_token) {
@@ -911,13 +947,13 @@ SyncBackendHost::Core::Core(const std::string& name,
       sync_data_folder_path_(sync_data_folder_path),
       host_(backend),
       sync_loop_(NULL),
-      registrar_(NULL),
-      weak_ptr_factory_(this) {
+      registrar_(NULL) {
   DCHECK(backend.get());
 }
 
 SyncBackendHost::Core::~Core() {
   DCHECK(!sync_manager_.get());
+  DCHECK(!sync_loop_);
 }
 
 void SyncBackendHost::Core::OnSyncCycleCompleted(
@@ -954,9 +990,9 @@ void SyncBackendHost::Core::DoDownloadControlTypes(
       syncer::ModelTypeSet(),
       routing_info,
       base::Bind(&SyncBackendHost::Core::DoInitialProcessControlTypes,
-                 weak_ptr_factory_.GetWeakPtr()),
+                 this),
       base::Bind(&SyncBackendHost::Core::OnControlTypesDownloadRetry,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 this));
 }
 
 void SyncBackendHost::Core::DoRefreshTypes(syncer::ModelTypeSet types) {
@@ -994,8 +1030,7 @@ void SyncBackendHost::Core::OnInitializationComplete(
   // Sync manager initialization is complete, so we can schedule recurring
   // SaveChanges.
   sync_loop_->PostTask(FROM_HERE,
-                       base::Bind(&Core::StartSavingChanges,
-                                  weak_ptr_factory_.GetWeakPtr()));
+                       base::Bind(&Core::StartSavingChanges, this));
 
   host_.Call(FROM_HERE,
              &SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop,
@@ -1123,15 +1158,14 @@ void SyncBackendHost::Core::DoOnIncomingInvalidation(
   sync_manager_->OnIncomingInvalidation(invalidation_map);
 }
 
-void SyncBackendHost::Core::DoInitialize(
-    scoped_ptr<DoInitializeOptions> options) {
+void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   DCHECK(!sync_loop_);
-  sync_loop_ = options->sync_loop;
+  sync_loop_ = options.sync_loop;
   DCHECK(sync_loop_);
 
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.
-  if (options->delete_sync_data_folder) {
+  if (options.delete_sync_data_folder) {
     DeleteSyncDataFolder();
   }
 
@@ -1142,29 +1176,30 @@ void SyncBackendHost::Core::DoInitialize(
   }
 
   DCHECK(!registrar_);
-  registrar_ = options->registrar;
+  registrar_ = options.registrar;
   DCHECK(registrar_);
 
-  sync_manager_ = options->sync_manager_factory->CreateSyncManager(name_);
+  sync_manager_ = options.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
   sync_manager_->Init(sync_data_folder_path_,
-                      options->event_handler,
-                      options->service_url.host() + options->service_url.path(),
-                      options->service_url.EffectiveIntPort(),
-                      options->service_url.SchemeIsSecure(),
-                      options->make_http_bridge_factory_fn.Run().Pass(),
-                      options->workers,
-                      options->extensions_activity,
-                      options->registrar /* as SyncManager::ChangeDelegate */,
-                      options->credentials,
-                      options->invalidator_client_id,
-                      options->restored_key_for_bootstrapping,
-                      options->restored_keystore_key_for_bootstrapping,
-                      options->internal_components_factory.get(),
+                      options.event_handler,
+                      options.service_url.host() + options.service_url.path(),
+                      options.service_url.EffectiveIntPort(),
+                      options.service_url.SchemeIsSecure(),
+                      options.make_http_bridge_factory_fn.Run().Pass(),
+                      options.workers,
+                      options.extensions_activity_monitor,
+                      options.registrar /* as SyncManager::ChangeDelegate */,
+                      options.credentials,
+                      options.invalidator_client_id,
+                      options.restored_key_for_bootstrapping,
+                      options.restored_keystore_key_for_bootstrapping,
+                      scoped_ptr<InternalComponentsFactory>(
+                          options.internal_components_factory),
                       &encryptor_,
-                      options->unrecoverable_error_handler.Pass(),
-                      options->report_unrecoverable_error_function,
-                      options->use_oauth2_token);
+                      options.unrecoverable_error_handler,
+                      options.report_unrecoverable_error_function,
+                      options.use_oauth2_token);
 
   // |sync_manager_| may end up being NULL here in tests (in
   // synchronous initialization mode).
@@ -1247,7 +1282,7 @@ void SyncBackendHost::Core::DoInitialProcessControlTypes() {
                               sync_manager_->cache_guid()));
   synced_device_tracker_->InitLocalDeviceInfo(
       base::Bind(&SyncBackendHost::Core::DoFinishInitialProcessControlTypes,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 this));
 }
 
 void SyncBackendHost::Core::DoFinishInitialProcessControlTypes() {
@@ -1274,9 +1309,13 @@ void SyncBackendHost::Core::DoEnableEncryptEverything() {
   sync_manager_->GetEncryptionHandler()->EnableEncryptEverything();
 }
 
-void SyncBackendHost::Core::DoStopSyncManagerForShutdown() {
-  if (sync_manager_)
-    sync_manager_->StopSyncingForShutdown();
+void SyncBackendHost::Core::DoStopSyncManagerForShutdown(
+    const base::Closure& closure) {
+  if (sync_manager_) {
+    sync_manager_->StopSyncingForShutdown(closure);
+  } else {
+    sync_loop_->PostTask(FROM_HERE, closure);
+  }
 }
 
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
@@ -1292,8 +1331,9 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   if (sync_disabled)
     DeleteSyncDataFolder();
 
+  sync_loop_ = NULL;
+
   host_.Reset();
-  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void SyncBackendHost::Core::DoDestroySyncManager() {
@@ -1322,11 +1362,11 @@ void SyncBackendHost::Core::DoConfigureSyncer(
       config_types.to_unapply,
       routing_info,
       base::Bind(&SyncBackendHost::Core::DoFinishConfigureDataTypes,
-                 weak_ptr_factory_.GetWeakPtr(),
+                 this,
                  config_types.to_download,
                  ready_task),
       base::Bind(&SyncBackendHost::Core::DoRetryConfiguration,
-                 weak_ptr_factory_.GetWeakPtr(),
+                 this,
                  retry_callback));
 }
 
@@ -1481,7 +1521,7 @@ void SyncBackendHost::HandleActionableErrorEventOnFrontendLoop(
 }
 
 void SyncBackendHost::OnInvalidatorStateChange(syncer::InvalidatorState state) {
-  registrar_->sync_thread()->message_loop()->PostTask(
+  sync_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoOnInvalidatorStateChange,
                  core_.get(),
@@ -1499,7 +1539,7 @@ void SyncBackendHost::OnIncomingInvalidation(
     invalidator_->AcknowledgeInvalidation(it->first, it->second.ack_handle);
   }
 
-  registrar_->sync_thread()->message_loop()->PostTask(
+  sync_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoOnIncomingInvalidation,
                  core_.get(),
@@ -1597,10 +1637,6 @@ void SyncBackendHost::HandleConnectionStatusChangeOnFrontendLoop(
   DVLOG(1) << "Connection status changed: "
            << syncer::ConnectionStatusToString(status);
   frontend_->OnConnectionStatusChange(status);
-}
-
-base::MessageLoop* SyncBackendHost::GetSyncLoopForTesting() {
-  return registrar_->sync_thread()->message_loop();
 }
 
 #undef SDVLOG

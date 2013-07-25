@@ -31,7 +31,7 @@ TestInternalComponentsFactory::BuildContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,
     const std::vector<ModelSafeWorker*>& workers,
-    ExtensionsActivity* monitor,
+    ExtensionsActivityMonitor* monitor,
     const std::vector<SyncEngineEventListener*>& listeners,
     sessions::DebugInfoGetter* debug_info_getter,
     TrafficRecorder* traffic_recorder,

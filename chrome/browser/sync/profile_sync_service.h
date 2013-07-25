@@ -632,9 +632,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void ConfigureDataTypeManager();
 
   // Shuts down the backend sync components.
-  // |option| indicates if syncing is being disabled or not, and whether
-  // to claim ownership of sync thread from backend.
-  void ShutdownImpl(browser_sync::SyncBackendHost::ShutdownOption option);
+  // |sync_disabled| indicates if syncing is being disabled or not.
+  void ShutdownImpl(bool sync_disabled);
 
   // Return SyncCredentials from the TokenService.
   syncer::SyncCredentials GetCredentials();
@@ -901,6 +900,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // or must delay loading for some reason).
   browser_sync::FailedDataTypesHandler failed_data_types_handler_;
 
+  scoped_ptr<browser_sync::BackendUnrecoverableErrorHandler>
+      backend_unrecoverable_error_handler_;
+
   browser_sync::DataTypeManager::ConfigureStatus configure_status_;
 
   // If |true|, there is setup UI visible so we should not start downloading
@@ -910,16 +912,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // The set of currently enabled sync experiments.
   syncer::Experiments current_experiments_;
 
+  // Factory the backend will use to build the SyncManager.
+  syncer::SyncManagerFactory sync_manager_factory_;
+
   // Sync's internal debug info listener. Used to record datatype configuration
   // and association information.
   syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
-
-  // A thread where all the sync operations happen.
-  // OWNERSHIP Notes:
-  //     * Created when backend starts for the first time.
-  //     * If sync is disabled, PSS claims ownership from backend.
-  //     * If sync is reenabled, PSS passes ownership to new backend.
-  scoped_ptr<base::Thread> sync_thread_;
 
   // Specifies whenever to use oauth2 access token or ClientLogin token in
   // communications with sync and xmpp servers.

@@ -363,10 +363,6 @@ bool SyncTest::SetupSync() {
 }
 
 void SyncTest::CleanUpOnMainThread() {
-  for (size_t i = 0; i < clients_.size(); ++i) {
-    clients_[i]->service()->DisableForUser();
-  }
-
   // Some of the pending messages might rely on browser windows still being
   // around, so run messages both before and after closing all browsers.
   content::RunAllPendingInMessageLoop();

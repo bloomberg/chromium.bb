@@ -16,7 +16,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
-#include "chrome/browser/sync/glue/extensions_activity_monitor.h"
+#include "chrome/browser/sync/glue/chrome_extensions_activity_monitor.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -32,7 +32,6 @@
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/util/extensions_activity.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -177,13 +176,12 @@ class SyncBackendHost
   // Note: |unrecoverable_error_handler| may be invoked from any thread.
   void Initialize(
       SyncFrontend* frontend,
-      scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
-      scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-      scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+      syncer::SyncManagerFactory* sync_manager_factory,
+      syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function);
 
@@ -225,19 +223,10 @@ class SyncBackendHost
   virtual void StopSyncingForShutdown();
 
   // Called on |frontend_loop_| to kick off shutdown.
+  // |sync_disabled| indicates if syncing is being disabled or not.
   // See the implementation and Core::DoShutdown for details.
-  // Must be called *after* StopSyncingForShutdown. Caller should claim sync
-  // thread using STOP_AND_CLAIM_THREAD or DISABLE_AND_CLAIM_THREAD if sync
-  // backend might be recreated later because otherwise:
-  // * sync loop may be stopped on main loop and cause it to be blocked.
-  // * new/old backend may interfere with each other if new backend is created
-  //   before old one finishes cleanup.
-  enum ShutdownOption {
-    STOP,                      // Stop syncing and let backend stop sync thread.
-    STOP_AND_CLAIM_THREAD,     // Stop syncing and return sync thread.
-    DISABLE_AND_CLAIM_THREAD,  // Disable sync and return sync thread.
-  };
-  scoped_ptr<base::Thread> Shutdown(ShutdownOption option);
+  // Must be called *after* StopSyncingForShutdown.
+  void Shutdown(bool sync_disabled);
 
   // Removes all current registrations from the backend on the
   // InvalidationService.
@@ -304,8 +293,6 @@ class SyncBackendHost
   // Fetches the DeviceInfo tracker.
   virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const;
 
-  base::MessageLoop* GetSyncLoopForTesting();
-
  protected:
   // The types and functions below are protected so that test
   // subclasses can use them.
@@ -323,20 +310,18 @@ class SyncBackendHost
         SyncBackendRegistrar* registrar,
         const syncer::ModelSafeRoutingInfo& routing_info,
         const std::vector<syncer::ModelSafeWorker*>& workers,
-        const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
+        syncer::ExtensionsActivityMonitor* extensions_activity_monitor,
         const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
         const GURL& service_url,
         MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
         const syncer::SyncCredentials& credentials,
         const std::string& invalidator_client_id,
-        scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+        syncer::SyncManagerFactory* sync_manager_factory,
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
         const std::string& restored_keystore_key_for_bootstrapping,
-        scoped_ptr<syncer::InternalComponentsFactory>
-            internal_components_factory,
-        scoped_ptr<syncer::UnrecoverableErrorHandler>
-            unrecoverable_error_handler,
+        syncer::InternalComponentsFactory* internal_components_factory,
+        syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
         syncer::ReportUnrecoverableErrorFunction
             report_unrecoverable_error_function,
         bool use_oauth2_token);
@@ -346,27 +331,27 @@ class SyncBackendHost
     SyncBackendRegistrar* registrar;
     syncer::ModelSafeRoutingInfo routing_info;
     std::vector<syncer::ModelSafeWorker*> workers;
-    scoped_refptr<syncer::ExtensionsActivity> extensions_activity;
+    syncer::ExtensionsActivityMonitor* extensions_activity_monitor;
     syncer::WeakHandle<syncer::JsEventHandler> event_handler;
     GURL service_url;
     // Overridden by tests.
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn;
     syncer::SyncCredentials credentials;
     const std::string invalidator_client_id;
-    scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory;
+    syncer::SyncManagerFactory* const sync_manager_factory;
     std::string lsid;
     bool delete_sync_data_folder;
     std::string restored_key_for_bootstrapping;
     std::string restored_keystore_key_for_bootstrapping;
-    scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory;
-    scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler;
+    syncer::InternalComponentsFactory* internal_components_factory;
+    syncer::UnrecoverableErrorHandler* unrecoverable_error_handler;
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function;
     bool use_oauth2_token;
   };
 
   // Allows tests to perform alternate core initialization work.
-  virtual void InitCore(scoped_ptr<DoInitializeOptions> options);
+  virtual void InitCore(const DoInitializeOptions& options);
 
   // Request the syncer to reconfigure with the specfied params.
   // Virtual for testing.
@@ -525,11 +510,14 @@ class SyncBackendHost
 
   // Handles stopping the core's SyncManager, accounting for whether
   // initialization is done yet.
-  void StopSyncManagerForShutdown();
+  void StopSyncManagerForShutdown(const base::Closure& closure);
 
   base::WeakPtrFactory<SyncBackendHost> weak_ptr_factory_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  // A thread where all the sync operations happen.
+  base::Thread sync_thread_;
 
   // A reference to the MessageLoop used to construct |this|, so we know how
   // to safely talk back to the SyncFrontend.
@@ -540,16 +528,14 @@ class SyncBackendHost
   // Name used for debugging (set from profile_->GetDebugName()).
   const std::string name_;
 
-  // Our core, which communicates directly to the syncapi. Use refptr instead
-  // of WeakHandle because |core_| is created on UI loop but released on
-  // sync loop.
+  // Our core, which communicates directly to the syncapi.
   scoped_refptr<Core> core_;
 
   InitializationState initialization_state_;
 
   const base::WeakPtr<SyncPrefs> sync_prefs_;
 
-  ExtensionsActivityMonitor extensions_activity_monitor_;
+  ChromeExtensionsActivityMonitor extensions_activity_monitor_;
 
   scoped_ptr<SyncBackendRegistrar> registrar_;
 

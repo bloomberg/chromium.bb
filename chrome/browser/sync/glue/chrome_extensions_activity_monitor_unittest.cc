@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/extensions_activity_monitor.h"
+#include "chrome/browser/sync/glue/chrome_extensions_activity_monitor.h"
 
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
@@ -15,7 +15,6 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
-#include "sync/util/extensions_activity.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
@@ -75,7 +74,7 @@ class SyncChromeExtensionsActivityMonitorTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
 
  protected:
-  ExtensionsActivityMonitor monitor_;
+  ChromeExtensionsActivityMonitor monitor_;
   scoped_refptr<Extension> extension1_;
   scoped_refptr<Extension> extension2_;
   // IDs of |extension{1,2}_|.
@@ -107,8 +106,8 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, DISABLED_Basic) {
   FireBookmarksApiEvent<extensions::BookmarksGetTreeFunction>(extension2_, 33);
   const uint32 writes_by_extension2 = 8;
 
-  syncer::ExtensionsActivity::Records results;
-  monitor_.GetExtensionsActivity()->GetAndClearRecords(&results);
+  syncer::ExtensionsActivityMonitor::Records results;
+  monitor_.GetAndClearRecords(&results);
 
   EXPECT_EQ(2U, results.size());
   EXPECT_TRUE(results.find(id1_) != results.end());
@@ -125,8 +124,8 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, DISABLED_Put) {
   FireBookmarksApiEvent<extensions::BookmarksCreateFunction>(extension1_, 5);
   FireBookmarksApiEvent<extensions::BookmarksMoveFunction>(extension2_, 8);
 
-  syncer::ExtensionsActivity::Records results;
-  monitor_.GetExtensionsActivity()->GetAndClearRecords(&results);
+  syncer::ExtensionsActivityMonitor::Records results;
+  monitor_.GetAndClearRecords(&results);
 
   EXPECT_EQ(2U, results.size());
   EXPECT_EQ(5U, results[id1_].bookmark_write_count);
@@ -137,9 +136,9 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, DISABLED_Put) {
 
   // Simulate a commit failure, which augments the active record set with the
   // refugee records.
-  monitor_.GetExtensionsActivity()->PutRecords(results);
-  syncer::ExtensionsActivity::Records new_records;
-  monitor_.GetExtensionsActivity()->GetAndClearRecords(&new_records);
+  monitor_.PutRecords(results);
+  syncer::ExtensionsActivityMonitor::Records new_records;
+  monitor_.GetAndClearRecords(&new_records);
 
   EXPECT_EQ(2U, results.size());
   EXPECT_EQ(id1_, new_records[id1_].extension_id);
@@ -154,17 +153,17 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, DISABLED_Put) {
 TEST_F(SyncChromeExtensionsActivityMonitorTest, DISABLED_MultiGet) {
   FireBookmarksApiEvent<extensions::BookmarksCreateFunction>(extension1_, 5);
 
-  syncer::ExtensionsActivity::Records results;
-  monitor_.GetExtensionsActivity()->GetAndClearRecords(&results);
+  syncer::ExtensionsActivityMonitor::Records results;
+  monitor_.GetAndClearRecords(&results);
 
   EXPECT_EQ(1U, results.size());
   EXPECT_EQ(5U, results[id1_].bookmark_write_count);
 
-  monitor_.GetExtensionsActivity()->GetAndClearRecords(&results);
+  monitor_.GetAndClearRecords(&results);
   EXPECT_TRUE(results.empty());
 
   FireBookmarksApiEvent<extensions::BookmarksCreateFunction>(extension1_, 3);
-  monitor_.GetExtensionsActivity()->GetAndClearRecords(&results);
+  monitor_.GetAndClearRecords(&results);
 
   EXPECT_EQ(1U, results.size());
   EXPECT_EQ(3U, results[id1_].bookmark_write_count);

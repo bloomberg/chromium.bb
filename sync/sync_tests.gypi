@@ -49,6 +49,8 @@
         'test/fake_encryptor.h',
         'test/fake_sync_encryption_handler.h',
         'test/fake_sync_encryption_handler.cc',
+        'test/fake_extensions_activity_monitor.cc',
+        'test/fake_extensions_activity_monitor.h',
         'test/test_transaction_observer.cc',
         'test/test_transaction_observer.h',
         'test/null_directory_change_delegate.cc',

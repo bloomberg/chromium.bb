@@ -65,7 +65,7 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
     : sync_service_(sync_service),
       history_backend_(history_backend),
       expected_loop_(base::MessageLoop::current()),
-      abort_requested_(false),
+      pending_abort_(false),
       error_handler_(error_handler),
       num_db_accesses_(0),
       num_db_errors_(0) {
@@ -173,50 +173,43 @@ int TypedUrlModelAssociator::GetErrorPercentage() const {
 
 syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
   DVLOG(1) << "Associating TypedUrl Models";
+  syncer::SyncError error;
   DCHECK(expected_loop_ == base::MessageLoop::current());
-
+  if (IsAbortPending())
+    return syncer::SyncError();
   history::URLRows typed_urls;
   ++num_db_accesses_;
-  bool query_succeeded =
-      history_backend_ && history_backend_->GetAllTypedURLs(&typed_urls);
+  if (!history_backend_->GetAllTypedURLs(&typed_urls)) {
+    ++num_db_errors_;
+    return error_handler_->CreateAndUploadError(
+        FROM_HERE,
+        "Could not get the typed_url entries.",
+        model_type());
+  }
+
+  // Get all the visits.
+  std::map<history::URLID, history::VisitVector> visit_vectors;
+  for (history::URLRows::iterator ix = typed_urls.begin();
+       ix != typed_urls.end();) {
+    if (IsAbortPending())
+      return syncer::SyncError();
+    DCHECK_EQ(0U, visit_vectors.count(ix->id()));
+    if (!FixupURLAndGetVisits(&(*ix), &(visit_vectors[ix->id()])) ||
+        ShouldIgnoreUrl(ix->url()) ||
+        ShouldIgnoreVisits(visit_vectors[ix->id()])) {
+      // Ignore this URL if we couldn't load the visits or if there's some
+      // other problem with it (it was empty, or imported and never visited).
+      ix = typed_urls.erase(ix);
+    } else {
+      ++ix;
+    }
+  }
 
   history::URLRows new_urls;
   TypedUrlVisitVector new_visits;
   TypedUrlUpdateVector updated_urls;
+
   {
-    base::AutoLock au(abort_lock_);
-    if (abort_requested_) {
-      return syncer::SyncError(FROM_HERE,
-                               syncer::SyncError::DATATYPE_ERROR,
-                               "Association was aborted.",
-                               model_type());
-    }
-
-    // Must lock and check first to make sure |error_handler_| is valid.
-    if (!query_succeeded) {
-      ++num_db_errors_;
-      return error_handler_->CreateAndUploadError(
-          FROM_HERE,
-          "Could not get the typed_url entries.",
-          model_type());
-    }
-
-    // Get all the visits.
-    std::map<history::URLID, history::VisitVector> visit_vectors;
-    for (history::URLRows::iterator ix = typed_urls.begin();
-         ix != typed_urls.end();) {
-      DCHECK_EQ(0U, visit_vectors.count(ix->id()));
-      if (!FixupURLAndGetVisits(&(*ix), &(visit_vectors[ix->id()])) ||
-          ShouldIgnoreUrl(ix->url()) ||
-          ShouldIgnoreVisits(visit_vectors[ix->id()])) {
-        // Ignore this URL if we couldn't load the visits or if there's some
-        // other problem with it (it was empty, or imported and never visited).
-        ix = typed_urls.erase(ix);
-      } else {
-        ++ix;
-      }
-    }
-
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode typed_url_root(&trans);
     if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
@@ -231,6 +224,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
     std::set<std::string> current_urls;
     for (history::URLRows::iterator ix = typed_urls.begin();
          ix != typed_urls.end(); ++ix) {
+      if (IsAbortPending())
+        return syncer::SyncError();
       std::string tag = ix->url().spec();
       // Empty URLs should be filtered out by ShouldIgnoreUrl() previously.
       DCHECK(!tag.empty());
@@ -316,6 +311,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
     std::vector<int64> obsolete_nodes;
     int64 sync_child_id = typed_url_root.GetFirstChildId();
     while (sync_child_id != syncer::kInvalidId) {
+      if (IsAbortPending())
+        return syncer::SyncError();
       syncer::ReadNode sync_child_node(&trans);
       if (sync_child_node.InitByIdLookup(sync_child_id) !=
               syncer::BaseNode::INIT_OK) {
@@ -375,6 +372,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
       for (std::vector<int64>::const_iterator it = obsolete_nodes.begin();
            it != obsolete_nodes.end();
            ++it) {
+          if (IsAbortPending())
+            return syncer::SyncError();
         syncer::WriteNode sync_node(&trans);
         if (sync_node.InitByIdLookup(*it) != syncer::BaseNode::INIT_OK) {
           return error_handler_->CreateAndUploadError(
@@ -393,7 +392,7 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
   // to worry about the sync model getting out of sync, because changes are
   // propagated to the ChangeProcessor on this thread.
   WriteToHistoryBackend(&new_urls, &updated_urls, &new_visits, NULL);
-  return syncer::SyncError();
+  return error;
 }
 
 void TypedUrlModelAssociator::UpdateFromSyncDB(
@@ -481,8 +480,13 @@ syncer::SyncError TypedUrlModelAssociator::DisassociateModels() {
 }
 
 void TypedUrlModelAssociator::AbortAssociation() {
-  base::AutoLock lock(abort_lock_);
-  abort_requested_ = true;
+  base::AutoLock lock(pending_abort_lock_);
+  pending_abort_ = true;
+}
+
+bool TypedUrlModelAssociator::IsAbortPending() {
+  base::AutoLock lock(pending_abort_lock_);
+  return pending_abort_;
 }
 
 bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {

@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/sync_manager.h"
@@ -42,19 +41,19 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // |sync_loop|.  Must be created on the UI thread.
   SyncBackendRegistrar(const std::string& name,
                        Profile* profile,
-                       scoped_ptr<base::Thread> sync_thread);
+                       base::MessageLoop* sync_loop);
 
   // SyncBackendRegistrar must be destroyed as follows:
   //
-  //   1) On the UI thread, call RequestWorkerStopOnUIThread().
-  //   2) UI posts task to shut down syncer on sync thread.
-  //   3) If sync is disabled, call ReleaseSyncThread() on the UI thread.
-  //   3) UI posts SyncBackendRegistrar::ShutDown() on sync thread to
-  //      unregister workers from observing destruction of their working loops.
-  //   4) Workers notify registrar when unregistration finishes or working
-  //      loops are destroyed. Registrar destroys itself on last worker
-  //      notification. Sync thread will be stopped if ownership was not
-  //      released.
+  //   1) On the sync thread, call OnSyncerShutdownComplete() after
+  //      the syncer is shutdown.
+  //   2) Meanwhile, on the UI thread, call StopOnUIThread(), which
+  //      blocks until OnSyncerShutdownComplete() is called.
+  //   3) Destroy the SyncBackendRegistrar.
+  //
+  // This is to handle the complicated shutdown requirements of the
+  // UIModelWorker (since the UI thread is both the main thread and a
+  // thread which the syncer pushes changes to).
   virtual ~SyncBackendRegistrar();
 
   // Informs the SyncBackendRegistrar of the currently enabled set of types.
@@ -81,7 +80,10 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   syncer::ModelTypeSet GetLastConfiguredTypes() const;
 
   // Must be called from the UI thread. (See destructor comment.)
-  void RequestWorkerStopOnUIThread();
+  void StopOnUIThread();
+
+  // Must be called from the sync thread. (See destructor comment.)
+  void OnSyncerShutdownComplete();
 
   // Activates the given data type (which should belong to the given
   // group) and starts the given change processor.  Must be called
@@ -115,25 +117,9 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // syncer::WorkerLoopDestructionObserver implementation.
   virtual void OnWorkerLoopDestroyed(syncer::ModelSafeGroup group) OVERRIDE;
 
-  // Release ownership of |sync_thread_|. Called when sync is disabled.
-  scoped_ptr<base::Thread> ReleaseSyncThread();
-
-  // Unregister workers from loop destruction observation.
-  void Shutdown();
-
-  base::Thread* sync_thread();
-
  private:
   typedef std::map<syncer::ModelSafeGroup,
-      scoped_refptr<syncer::ModelSafeWorker> > WorkerMap;
-  typedef std::map<syncer::ModelType, ChangeProcessor*>
-      ProcessorMap;
-
-  // Callback after workers unregister from observing destruction of their
-  // working loops.
-  void OnWorkerUnregistrationDone(syncer::ModelSafeGroup group);
-
-  void RemoveWorker(syncer::ModelSafeGroup group);
+                   scoped_refptr<syncer::ModelSafeWorker> > WorkerMap;
 
   // Returns the change processor for the given model, or NULL if none
   // exists.  Must be called from |group|'s native thread.
@@ -154,6 +140,12 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
 
   Profile* const profile_;
 
+  base::MessageLoop* const sync_loop_;
+
+  const scoped_refptr<UIModelWorker> ui_worker_;
+
+  bool stopped_on_ui_thread_;
+
   // Protects all variables below.
   mutable base::Lock lock_;
 
@@ -171,20 +163,11 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   syncer::ModelSafeRoutingInfo routing_info_;
 
   // The change processors that handle the different data types.
-  ProcessorMap processors_;
+  std::map<syncer::ModelType, ChangeProcessor*> processors_;
 
   // The types that were enabled as of the last configuration. Updated on each
   // call to ConfigureDataTypes as well as SetInitialTypes.
   syncer::ModelTypeSet last_configured_types_;
-
-  // Parks stopped workers because they may still be referenced by syncer.
-  std::vector<scoped_refptr<syncer::ModelSafeWorker> > stopped_workers_;
-
-  // Declare |sync_thread_| at the end so that it will be destroyed before
-  // objects above because tasks on sync thread depend on those objects,
-  // e.g. Shutdown() depends on |lock_|, SyncManager::Init() depends on
-  // workers, etc.
-  scoped_ptr<base::Thread> sync_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendRegistrar);
 };

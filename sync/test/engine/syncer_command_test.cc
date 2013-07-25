@@ -17,8 +17,6 @@ SyncerCommandTestBase::~SyncerCommandTestBase() {
 }
 
 void SyncerCommandTestBase::SetUp() {
-  extensions_activity_ = new ExtensionsActivity();
-
   // The session always expects there to be a passive worker.
   workers()->push_back(
       make_scoped_refptr(new FakeModelWorker(GROUP_PASSIVE)));

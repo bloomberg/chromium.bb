@@ -81,16 +81,17 @@ void FakeSyncManager::Init(
     bool use_ssl,
     scoped_ptr<HttpPostProviderFactory> post_factory,
     const std::vector<ModelSafeWorker*>& workers,
-    ExtensionsActivity* extensions_activity,
+    ExtensionsActivityMonitor* extensions_activity_monitor,
     ChangeDelegate* change_delegate,
     const SyncCredentials& credentials,
     const std::string& invalidator_client_id,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
-    InternalComponentsFactory* internal_components_factory,
+    scoped_ptr<InternalComponentsFactory> internal_components_factory,
     Encryptor* encryptor,
-    scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
+    UnrecoverableErrorHandler* unrecoverable_error_handler,
+    ReportUnrecoverableErrorFunction
+        report_unrecoverable_error_function,
     bool use_oauth2_token) {
   sync_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   PurgePartiallySyncedTypes();
@@ -209,7 +210,10 @@ void FakeSyncManager::SaveChanges() {
   // Do nothing.
 }
 
-void FakeSyncManager::StopSyncingForShutdown() {
+void FakeSyncManager::StopSyncingForShutdown(const base::Closure& callback) {
+  if (!sync_task_runner_->PostTask(FROM_HERE, callback)) {
+    NOTREACHED();
+  }
 }
 
 void FakeSyncManager::ShutdownOnSyncThread() {

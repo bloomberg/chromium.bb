@@ -37,14 +37,14 @@ InternalComponentsFactoryImpl::BuildContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,
     const std::vector<ModelSafeWorker*>& workers,
-    ExtensionsActivity* extensions_activity,
+    ExtensionsActivityMonitor* monitor,
     const std::vector<SyncEngineEventListener*>& listeners,
     sessions::DebugInfoGetter* debug_info_getter,
     TrafficRecorder* traffic_recorder,
     const std::string& invalidation_client_id) {
   return scoped_ptr<sessions::SyncSessionContext>(
       new sessions::SyncSessionContext(
-          connection_manager, directory, workers, extensions_activity,
+          connection_manager, directory, workers, monitor,
           listeners, debug_info_getter,
           traffic_recorder,
           switches_.encryption_method == ENCRYPTION_KEYSTORE,

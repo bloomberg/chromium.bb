@@ -11,6 +11,10 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 
+namespace base {
+class MessageLoop;
+}
+
 namespace syncer {
 
 // Implementation of ModelSafeWorker for passive types.  All work is

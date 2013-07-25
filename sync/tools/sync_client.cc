@@ -341,11 +341,12 @@ int SyncClientMain(int argc, char* argv[]) {
                             base::Bind(&StubNetworkTimeUpdateCallback)));
   // Used only when committing bookmarks, so it's okay to leave this
   // as NULL.
-  ExtensionsActivity* extensions_activity = NULL;
+  ExtensionsActivityMonitor* extensions_activity_monitor = NULL;
   LoggingChangeDelegate change_delegate;
   const char kRestoredKeyForBootstrapping[] = "";
   const char kRestoredKeystoreKeyForBootstrapping[] = "";
   NullEncryptor null_encryptor;
+  LoggingUnrecoverableErrorHandler unrecoverable_error_handler;
   InternalComponentsFactoryImpl::Switches factory_switches = {
       InternalComponentsFactory::ENCRYPTION_KEYSTORE,
       InternalComponentsFactory::BACKOFF_NORMAL
@@ -359,16 +360,16 @@ int SyncClientMain(int argc, char* argv[]) {
                     kUseSsl,
                     post_factory.Pass(),
                     workers,
-                    extensions_activity,
+                    extensions_activity_monitor,
                     &change_delegate,
                     credentials,
                     invalidator_id,
                     kRestoredKeyForBootstrapping,
                     kRestoredKeystoreKeyForBootstrapping,
-                    new InternalComponentsFactoryImpl(factory_switches),
+                    scoped_ptr<InternalComponentsFactory>(
+                        new InternalComponentsFactoryImpl(factory_switches)),
                     &null_encryptor,
-                    scoped_ptr<UnrecoverableErrorHandler>(
-                        new LoggingUnrecoverableErrorHandler).Pass(),
+                    &unrecoverable_error_handler,
                     &LogUnrecoverableErrorContext, false);
   // TODO(akalin): Avoid passing in model parameters multiple times by
   // organizing handling of model types.

@@ -175,6 +175,7 @@ SyncManagerImpl::SyncManagerImpl(const std::string& name)
       invalidator_state_(DEFAULT_INVALIDATION_ERROR),
       traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord),
       encryptor_(NULL),
+      unrecoverable_error_handler_(NULL),
       report_unrecoverable_error_function_(NULL) {
   // Pre-fill |notification_info_map_|.
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
@@ -345,15 +346,15 @@ void SyncManagerImpl::Init(
     bool use_ssl,
     scoped_ptr<HttpPostProviderFactory> post_factory,
     const std::vector<ModelSafeWorker*>& workers,
-    ExtensionsActivity* extensions_activity,
+    ExtensionsActivityMonitor* extensions_activity_monitor,
     SyncManager::ChangeDelegate* change_delegate,
     const SyncCredentials& credentials,
     const std::string& invalidator_client_id,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
-    InternalComponentsFactory* internal_components_factory,
+    scoped_ptr<InternalComponentsFactory> internal_components_factory,
     Encryptor* encryptor,
-    scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
+    UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
     bool use_oauth2_token) {
   CHECK(!initialized_);
@@ -375,7 +376,7 @@ void SyncManagerImpl::Init(
   database_path_ = database_location.Append(
       syncable::Directory::kSyncDatabaseFilename);
   encryptor_ = encryptor;
-  unrecoverable_error_handler_ = unrecoverable_error_handler.Pass();
+  unrecoverable_error_handler_ = unrecoverable_error_handler;
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
 
   allstatus_.SetHasKeystoreKey(
@@ -401,7 +402,7 @@ void SyncManagerImpl::Init(
   share_.directory.reset(
       new syncable::Directory(
           backing_store.release(),
-          unrecoverable_error_handler_.get(),
+          unrecoverable_error_handler_,
           report_unrecoverable_error_function_,
           sync_encryption_handler_.get(),
           sync_encryption_handler_->GetCryptographerUnsafe()));
@@ -441,7 +442,7 @@ void SyncManagerImpl::Init(
       connection_manager_.get(),
       directory(),
       workers,
-      extensions_activity,
+      extensions_activity_monitor,
       listeners,
       &debug_info_event_listener_,
       &traffic_recorder_,
@@ -619,9 +620,9 @@ void SyncManagerImpl::RemoveObserver(SyncManager::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SyncManagerImpl::StopSyncingForShutdown() {
+void SyncManagerImpl::StopSyncingForShutdown(const base::Closure& callback) {
   DVLOG(2) << "StopSyncingForShutdown";
-  scheduler_->RequestStop();
+  scheduler_->RequestStop(callback);
   if (connection_manager_)
     connection_manager_->TerminateAllIO();
 }

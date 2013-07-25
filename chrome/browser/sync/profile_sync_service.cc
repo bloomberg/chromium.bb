@@ -472,21 +472,18 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
   if (delete_stale_data)
     ClearStaleErrors();
 
-  scoped_ptr<syncer::UnrecoverableErrorHandler>
-      backend_unrecoverable_error_handler(
-          new browser_sync::BackendUnrecoverableErrorHandler(
-              MakeWeakHandle(weak_factory_.GetWeakPtr())));
+  backend_unrecoverable_error_handler_.reset(
+    new browser_sync::BackendUnrecoverableErrorHandler(
+        MakeWeakHandle(weak_factory_.GetWeakPtr())));
 
   backend_->Initialize(
       this,
-      sync_thread_.Pass(),
       MakeWeakHandle(sync_js_controller_.AsWeakPtr()),
       sync_service_url_,
       credentials,
       delete_stale_data,
-      scoped_ptr<syncer::SyncManagerFactory>(
-          new syncer::SyncManagerFactory).Pass(),
-      backend_unrecoverable_error_handler.Pass(),
+      &sync_manager_factory_,
+      backend_unrecoverable_error_handler_.get(),
       &browser_sync::ChromeReportUnrecoverableError);
 }
 
@@ -724,21 +721,18 @@ void ProfileSyncService::Shutdown() {
   if (profile_)
     SigninGlobalError::GetForProfile(profile_)->RemoveProvider(this);
 
-  ShutdownImpl(browser_sync::SyncBackendHost::STOP);
-
-  if (sync_thread_)
-    sync_thread_->Stop();
+  ShutdownImpl(false);
 }
 
-void ProfileSyncService::ShutdownImpl(
-    browser_sync::SyncBackendHost::ShutdownOption option) {
-  if (!backend_)
-    return;
-
-  // First, we spin down the backend to stop change processing as soon as
-  // possible.
+void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
+  // First, we spin down the backend and wait for it to stop syncing completely
+  // before we Stop the data type manager.  This is to avoid a late sync cycle
+  // applying changes to the sync db that wouldn't get applied via
+  // ChangeProcessors, leading to back-from-the-dead bugs.
   base::Time shutdown_start_time = base::Time::Now();
-  backend_->StopSyncingForShutdown();
+  if (backend_) {
+    backend_->StopSyncingForShutdown();
+  }
 
   // Stop all data type controllers, if needed.  Note that until Stop
   // completes, it is possible in theory to have a ChangeProcessor apply a
@@ -764,7 +758,8 @@ void ProfileSyncService::ShutdownImpl(
   // shutting it down.
   scoped_ptr<SyncBackendHost> doomed_backend(backend_.release());
   if (doomed_backend) {
-    sync_thread_ = doomed_backend->Shutdown(option);
+    doomed_backend->Shutdown(sync_disabled);
+
     doomed_backend.reset();
   }
   base::TimeDelta shutdown_time = base::Time::Now() - shutdown_start_time;
@@ -802,7 +797,7 @@ void ProfileSyncService::DisableForUser() {
   // PSS clients don't think we're set up while we're shutting down.
   sync_prefs_.ClearPreferences();
   ClearUnrecoverableError();
-  ShutdownImpl(browser_sync::SyncBackendHost::DISABLE_AND_CLAIM_THREAD);
+  ShutdownImpl(true);
 }
 
 bool ProfileSyncService::HasSyncSetupCompleted() const {
@@ -883,11 +878,8 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 
   // Shut all data types down.
   base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&ProfileSyncService::ShutdownImpl,
-                 weak_factory_.GetWeakPtr(),
-                 delete_sync_database ?
-                     browser_sync::SyncBackendHost::DISABLE_AND_CLAIM_THREAD :
-                     browser_sync::SyncBackendHost::STOP_AND_CLAIM_THREAD));
+      base::Bind(&ProfileSyncService::ShutdownImpl, weak_factory_.GetWeakPtr(),
+                 delete_sync_database));
 }
 
 // TODO(zea): Move this logic into the DataTypeController/DataTypeManager.
@@ -1250,7 +1242,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // Sync disabled by domain admin. we should stop syncing until next
       // restart.
       sync_disabled_by_admin_ = true;
-      ShutdownImpl(browser_sync::SyncBackendHost::DISABLE_AND_CLAIM_THREAD);
+      ShutdownImpl(true);
       break;
     default:
       NOTREACHED();
@@ -2029,7 +2021,7 @@ void ProfileSyncService::StopAndSuppress() {
   if (backend_) {
     backend_->UnregisterInvalidationIds();
   }
-  ShutdownImpl(browser_sync::SyncBackendHost::STOP_AND_CLAIM_THREAD);
+  ShutdownImpl(false);
 }
 
 bool ProfileSyncService::IsStartSuppressed() const {

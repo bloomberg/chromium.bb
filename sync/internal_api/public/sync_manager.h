@@ -22,7 +22,6 @@
 #include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
-#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/protocol/sync_protocol_error.h"
@@ -37,13 +36,14 @@ class BaseTransaction;
 class DataTypeDebugInfoListener;
 class Encryptor;
 struct Experiments;
-class ExtensionsActivity;
+class ExtensionsActivityMonitor;
 class HttpPostProviderFactory;
 class InternalComponentsFactory;
 class JsBackend;
 class JsEventHandler;
 class SyncEncryptionHandler;
 class SyncScheduler;
+class UnrecoverableErrorHandler;
 struct UserShare;
 
 namespace sessions {
@@ -310,15 +310,15 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
       bool use_ssl,
       scoped_ptr<HttpPostProviderFactory> post_factory,
       const std::vector<ModelSafeWorker*>& workers,
-      ExtensionsActivity* extensions_activity,
+      ExtensionsActivityMonitor* extensions_activity_monitor,
       ChangeDelegate* change_delegate,
       const SyncCredentials& credentials,
       const std::string& invalidator_client_id,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
-      InternalComponentsFactory* internal_components_factory,
+      scoped_ptr<InternalComponentsFactory> internal_components_factory,
       Encryptor* encryptor,
-      scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
+      UnrecoverableErrorHandler* unrecoverable_error_handler,
       ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
       bool use_oauth2_token) = 0;
 
@@ -401,7 +401,7 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
   // If no scheduler exists, the callback is run immediately (from the loop
   // this was created on, which is the sync loop), as sync is effectively
   // stopped.
-  virtual void StopSyncingForShutdown() = 0;
+  virtual void StopSyncingForShutdown(const base::Closure& callback) = 0;
 
   // Issue a final SaveChanges, and close sqlite handles.
   virtual void ShutdownOnSyncThread() = 0;

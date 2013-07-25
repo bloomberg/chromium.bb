@@ -27,7 +27,7 @@ class SYNC_EXPORT InternalComponentsFactoryImpl
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
       const std::vector<ModelSafeWorker*>& workers,
-      ExtensionsActivity* extensions_activity,
+      ExtensionsActivityMonitor* monitor,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
       TrafficRecorder* traffic_recorder,

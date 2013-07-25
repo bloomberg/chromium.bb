@@ -70,15 +70,15 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       bool use_ssl,
       scoped_ptr<HttpPostProviderFactory> post_factory,
       const std::vector<ModelSafeWorker*>& workers,
-      ExtensionsActivity* extensions_activity,
+      ExtensionsActivityMonitor* extensions_activity_monitor,
       SyncManager::ChangeDelegate* change_delegate,
       const SyncCredentials& credentials,
       const std::string& invalidator_client_id,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
-      InternalComponentsFactory* internal_components_factory,
+      scoped_ptr<InternalComponentsFactory> internal_components_factory,
       Encryptor* encryptor,
-      scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
+      UnrecoverableErrorHandler* unrecoverable_error_handler,
       ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function,
       bool use_oauth2_token) OVERRIDE;
@@ -106,7 +106,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   virtual void RemoveObserver(SyncManager::Observer* observer) OVERRIDE;
   virtual SyncStatus GetDetailedStatus() const OVERRIDE;
   virtual void SaveChanges() OVERRIDE;
-  virtual void StopSyncingForShutdown() OVERRIDE;
+  virtual void StopSyncingForShutdown(const base::Closure& callback) OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;
   virtual UserShare* GetUserShare() OVERRIDE;
   virtual const std::string cache_guid() OVERRIDE;
@@ -360,7 +360,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   TrafficRecorder traffic_recorder_;
 
   Encryptor* encryptor_;
-  scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler_;
+  UnrecoverableErrorHandler* unrecoverable_error_handler_;
   ReportUnrecoverableErrorFunction report_unrecoverable_error_function_;
 
   // Sync's encryption handler. It tracks the set of encrypted types, manages

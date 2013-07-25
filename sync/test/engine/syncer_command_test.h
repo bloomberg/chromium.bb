@@ -22,7 +22,7 @@
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_connection_manager.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
-#include "sync/util/extensions_activity.h"
+#include "sync/test/fake_extensions_activity_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -131,7 +131,7 @@ class SyncerCommandTestBase : public testing::Test,
   void ResetContext() {
     context_.reset(new sessions::SyncSessionContext(
             mock_server_.get(), directory(),
-            GetWorkers(), extensions_activity_.get(),
+            GetWorkers(), &extensions_activity_monitor_,
             std::vector<SyncEngineEventListener*>(),
             &mock_debug_info_getter_,
             &traffic_recorder_,
@@ -210,7 +210,7 @@ class SyncerCommandTestBase : public testing::Test,
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   ModelSafeRoutingInfo routing_info_;
   NiceMock<MockDebugInfoGetter> mock_debug_info_getter_;
-  scoped_refptr<ExtensionsActivity> extensions_activity_;
+  FakeExtensionsActivityMonitor extensions_activity_monitor_;
   TrafficRecorder traffic_recorder_;
   DISALLOW_COPY_AND_ASSIGN(SyncerCommandTestBase);
 };

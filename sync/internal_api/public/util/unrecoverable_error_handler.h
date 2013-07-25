@@ -19,7 +19,8 @@ class UnrecoverableErrorHandler {
   // further, and will report an error status if queried.
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
                                     const std::string& message) = 0;
-  virtual ~UnrecoverableErrorHandler() {}
+ protected:
+  virtual ~UnrecoverableErrorHandler() { }
 };
 
 }  // namespace syncer

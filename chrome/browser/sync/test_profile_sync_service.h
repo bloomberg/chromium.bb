@@ -80,7 +80,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   static void SetHistoryServiceExpectations(ProfileMock* profile);
 
  protected:
-  virtual void InitCore(scoped_ptr<DoInitializeOptions> options) OVERRIDE;
+  virtual void InitCore(const DoInitializeOptions& options) OVERRIDE;
 
  private:
   void ContinueInitialization(
