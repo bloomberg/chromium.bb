@@ -34,11 +34,8 @@
 #include "core/dom/CustomElementDescriptor.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
-#include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
@@ -58,8 +55,6 @@ public:
     static bool isValidTypeName(const AtomicString& type);
     // FIXME: Move this to CustomElement
     static bool isCustomTagName(const AtomicString& localName);
-    // FIXME: Privatize this when CustomElementWrapper uses the definition map.
-    static CustomElementDescriptor describe(Element*);
 
     // Definitions
     virtual void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, ExceptionCode&) = 0;
@@ -70,20 +65,13 @@ public:
     static void setTypeExtension(Element*, const AtomicString& type);
 
     // Instance lifecycle
-    virtual void customElementWasDestroyed(Element*);
+    virtual void customElementWasDestroyed(Element*) = 0;
 
 protected:
     CustomElementRegistrationContext() { }
 
-    // Model
-    static const AtomicString& typeExtension(Element*);
-
     // Instance creation
-    virtual void didGiveTypeExtension(Element*) = 0;
-
-private:
-    typedef HashMap<Element*, AtomicString> TypeExtensionMap;
-    static TypeExtensionMap* typeExtensionMap();
+    virtual void didGiveTypeExtension(Element*, const AtomicString& type) = 0;
 };
 
 }

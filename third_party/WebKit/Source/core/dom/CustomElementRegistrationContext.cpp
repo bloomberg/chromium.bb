@@ -42,6 +42,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
 #include "core/svg/SVGElement.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -55,7 +56,8 @@ public:
     virtual void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString&, ExceptionCode& ec) OVERRIDE { ec = NotSupportedError; }
 
     virtual PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&) OVERRIDE;
-    virtual void didGiveTypeExtension(Element*) OVERRIDE { }
+    virtual void didGiveTypeExtension(Element*, const AtomicString&) OVERRIDE { }
+    virtual void customElementWasDestroyed(Element*) OVERRIDE { }
 };
 
 PassRefPtr<Element> NullRegistrationContext::createCustomTagElement(Document* document, const QualifiedName& tagName)
@@ -90,12 +92,12 @@ public:
     virtual void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, ExceptionCode&) OVERRIDE;
 
     virtual PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&) OVERRIDE;
-    virtual void didGiveTypeExtension(Element*) OVERRIDE;
+    virtual void didGiveTypeExtension(Element*, const AtomicString&) OVERRIDE;
 
     virtual void customElementWasDestroyed(Element*) OVERRIDE;
 
 private:
-    void resolve(Element*);
+    void resolve(Element*, const AtomicString& typeExtension);
     void didResolveElement(CustomElementDefinition*, Element*);
     void didCreateUnresolvedElement(const CustomElementDescriptor&, Element*);
 
@@ -136,18 +138,25 @@ PassRefPtr<Element> ActiveRegistrationContext::createCustomTagElement(Document* 
         return Element::create(tagName, document);
     }
 
-    resolve(element.get());
+    resolve(element.get(), nullAtom);
     return element.release();
 }
 
-void ActiveRegistrationContext::didGiveTypeExtension(Element* element)
+void ActiveRegistrationContext::didGiveTypeExtension(Element* element, const AtomicString& type)
 {
-    resolve(element);
+    resolve(element, type);
 }
 
-void ActiveRegistrationContext::resolve(Element* element)
+void ActiveRegistrationContext::resolve(Element* element, const AtomicString& typeExtension)
 {
-    const CustomElementDescriptor& descriptor = describe(element);
+    // If an element has a custom tag name it takes precedence over
+    // the "is" attribute (if any).
+    const AtomicString& type = isCustomTagName(element->localName())
+        ? element->localName()
+        : typeExtension;
+    ASSERT(!type.isNull());
+
+    CustomElementDescriptor descriptor(type, element->namespaceURI(), element->localName());
     CustomElementDefinition* definition = m_registry.find(descriptor);
     if (definition)
         didResolveElement(definition, element);
@@ -169,7 +178,6 @@ void ActiveRegistrationContext::didCreateUnresolvedElement(const CustomElementDe
 void ActiveRegistrationContext::customElementWasDestroyed(Element* element)
 {
     m_candidates.remove(element);
-    CustomElementRegistrationContext::customElementWasDestroyed(element);
 }
 
 PassRefPtr<CustomElementRegistrationContext> CustomElementRegistrationContext::create()
@@ -205,17 +213,6 @@ bool CustomElementRegistrationContext::isCustomTagName(const AtomicString& local
     return isValidTypeName(localName);
 }
 
-CustomElementDescriptor CustomElementRegistrationContext::describe(Element* element)
-{
-    // If an element has a custom tag name it takes precedence over
-    // the "is" attribute (if any).
-    const AtomicString& type = isCustomTagName(element->localName())
-        ? element->localName()
-        : typeExtension(element);
-
-    return CustomElementDescriptor(type, element->namespaceURI(), element->localName());
-}
-
 void CustomElementRegistrationContext::setIsAttributeAndTypeExtension(Element* element, const AtomicString& type)
 {
     ASSERT(element);
@@ -232,28 +229,7 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
     if (isCustomTagName(element->localName()))
         return; // custom tags take precedence over type extensions
 
-    TypeExtensionMap::AddResult result = typeExtensionMap()->add(element, type);
-    ASSERT(result.isNewEntry); // Type extensions should only be set once
-    element->document()->registrationContext()->didGiveTypeExtension(element);
-}
-
-void CustomElementRegistrationContext::customElementWasDestroyed(Element* element)
-{
-    ASSERT(element->isCustomElement());
-    typeExtensionMap()->remove(element);
-}
-
-const AtomicString& CustomElementRegistrationContext::typeExtension(Element* element)
-{
-    TypeExtensionMap::const_iterator it = typeExtensionMap()->find(element);
-    ASSERT(it != typeExtensionMap()->end());
-    return it->value;
-}
-
-CustomElementRegistrationContext::TypeExtensionMap* CustomElementRegistrationContext::typeExtensionMap()
-{
-    DEFINE_STATIC_LOCAL(TypeExtensionMap, typeExtensionMap, ());
-    return &typeExtensionMap;
+    element->document()->registrationContext()->didGiveTypeExtension(element, type);
 }
 
 } // namespace WebCore

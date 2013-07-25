@@ -35,7 +35,8 @@ namespace WebCore {
 
 void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descriptor, Element* element)
 {
-    m_upgradeCandidates.add(element, descriptor);
+    UpgradeCandidateMap::AddResult result = m_upgradeCandidates.add(element, descriptor);
+    ASSERT(result.isNewEntry);
 
     UnresolvedDefinitionMap::iterator it = m_unresolvedDefinitions.find(descriptor);
     if (it == m_unresolvedDefinitions.end())
