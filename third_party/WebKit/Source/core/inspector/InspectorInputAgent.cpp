@@ -33,17 +33,61 @@
 
 #include "core/inspector/InspectorClient.h"
 #include "core/page/Chrome.h"
+#include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/PlatformEvent.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/PlatformTouchEvent.h"
+#include "core/platform/PlatformTouchPoint.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/IntSize.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/WTFString.h"
+
+namespace {
+
+class SyntheticInspectorTouchPoint : public WebCore::PlatformTouchPoint {
+public:
+    SyntheticInspectorTouchPoint(unsigned id, State state, const WebCore::IntPoint& screenPos, const WebCore::IntPoint& pos, int radiusX, int radiusY, double rotationAngle, double force)
+    {
+        m_id = id;
+        m_screenPos = screenPos;
+        m_pos = pos;
+        m_state = state;
+        m_radiusY = radiusY;
+        m_radiusX = radiusX;
+        m_rotationAngle = rotationAngle;
+        m_force = force;
+    }
+};
+
+class SyntheticInspectorTouchEvent : public WebCore::PlatformTouchEvent {
+public:
+    SyntheticInspectorTouchEvent(const WebCore::PlatformEvent::Type type, unsigned modifiers, double timestamp)
+    {
+        m_type = type;
+        m_modifiers = modifiers;
+        m_timestamp = timestamp;
+    }
+
+    void append(const WebCore::PlatformTouchPoint& point)
+    {
+        m_touchPoints.append(point);
+    }
+};
+
+void ConvertInspectorPoint(WebCore::Page* page, const WebCore::IntPoint& point, WebCore::IntPoint* convertedPoint, WebCore::IntPoint* globalPoint)
+{
+    *convertedPoint = page->mainFrame()->view()->convertToContainingWindow(point);
+    *globalPoint = page->chrome().rootViewToScreen(WebCore::IntRect(point, WebCore::IntSize(0, 0))).location();
+}
+
+} // namespace
 
 namespace WebCore {
 
@@ -121,8 +165,8 @@ void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& t
 
     // Some platforms may have flipped coordinate systems, but the given coordinates
     // assume the origin is in the top-left of the window. Convert.
-    IntPoint convertedPoint = m_page->mainFrame()->view()->convertToContainingWindow(IntPoint(x, y));
-    IntPoint globalPoint = m_page->chrome().rootViewToScreen(IntRect(IntPoint(x, y), IntSize(0, 0))).location();
+    IntPoint convertedPoint, globalPoint;
+    ConvertInspectorPoint(m_page, IntPoint(x, y), &convertedPoint, &globalPoint);
 
     PlatformMouseEvent event(
         convertedPoint,
@@ -137,6 +181,93 @@ void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& t
         timestamp ? *timestamp : currentTime());
 
     m_client->dispatchMouseEvent(event);
+}
+
+void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& type, const RefPtr<JSONArray>& touchPoints, const int* modifiers, const double* timestamp)
+{
+    PlatformEvent::Type convertedType;
+    if (type == "touchStart") {
+        convertedType = PlatformEvent::TouchStart;
+    } else if (type == "touchEnd") {
+        convertedType = PlatformEvent::TouchEnd;
+    } else if (type == "touchMove") {
+        convertedType = PlatformEvent::TouchMove;
+    } else {
+        *error = "Unrecognized type: " + type;
+        return;
+    }
+
+    unsigned convertedModifiers = modifiers ? *modifiers : 0;
+
+    SyntheticInspectorTouchEvent event(convertedType, convertedModifiers, timestamp ? *timestamp : currentTime());
+
+    int autoId = 0;
+    JSONArrayBase::iterator iter;
+    for (iter = touchPoints->begin(); iter != touchPoints->end(); ++iter) {
+        RefPtr<JSONObject> pointObj;
+        String state;
+        int x, y, radiusX, radiusY, id;
+        double rotationAngle, force;
+        (*iter)->asObject(&pointObj);
+        if (!pointObj->getString("state", &state)) {
+            *error = "TouchPoint missing 'state'";
+            return;
+        }
+        if (!pointObj->getNumber("x", &x)) {
+            *error = "TouchPoint missing 'x' coordinate";
+            return;
+        }
+        if (!pointObj->getNumber("y", &y)) {
+            *error = "TouchPoint missing 'y' coordinate";
+            return;
+        }
+        if (!pointObj->getNumber("radiusX", &radiusX))
+            radiusX = 1;
+        if (!pointObj->getNumber("radiusY", &radiusY))
+            radiusY = 1;
+        if (!pointObj->getNumber("rotationAngle", &rotationAngle))
+            rotationAngle = 0.0f;
+        if (!pointObj->getNumber("force", &force))
+            force = 1.0f;
+        if (pointObj->getNumber("id", &id)) {
+            if (autoId > 0)
+                id = -1;
+            autoId = -1;
+        } else {
+            id = autoId++;
+        }
+        if (id < 0) {
+            *error = "All or none of the provided TouchPoints must supply positive integer ids.";
+            return;
+        }
+
+        PlatformTouchPoint::State convertedState;
+        if (state == "touchPressed") {
+            convertedState = PlatformTouchPoint::TouchPressed;
+        } else if (state == "touchReleased") {
+            convertedState = PlatformTouchPoint::TouchReleased;
+        } else if (state == "touchMoved") {
+            convertedState = PlatformTouchPoint::TouchMoved;
+        } else if (state == "touchStationary") {
+            convertedState = PlatformTouchPoint::TouchStationary;
+        } else if (state == "touchCancelled") {
+            convertedState = PlatformTouchPoint::TouchCancelled;
+        } else {
+            *error = "Unrecognized state: " + state;
+            return;
+        }
+
+        // Some platforms may have flipped coordinate systems, but the given coordinates
+        // assume the origin is in the top-left of the window. Convert.
+        IntPoint convertedPoint, globalPoint;
+        ConvertInspectorPoint(m_page, IntPoint(x, y), &convertedPoint, &globalPoint);
+
+        SyntheticInspectorTouchPoint point(id++, convertedState, globalPoint, convertedPoint, radiusX, radiusY, rotationAngle, force);
+        event.append(point);
+    }
+
+    EventHandler* handler = m_page->mainFrame()->eventHandler();
+    handler->handleTouchEvent(event);
 }
 
 } // namespace WebCore
