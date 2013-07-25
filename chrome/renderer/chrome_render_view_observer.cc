@@ -72,6 +72,7 @@ using WebKit::WebURL;
 using WebKit::WebURLRequest;
 using WebKit::WebView;
 using WebKit::WebVector;
+using WebKit::WebWindowFeatures;
 using extensions::APIPermission;
 
 // Delay in milliseconds that we'll wait before capturing the page contents
@@ -221,6 +222,7 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
 #endif
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetWindowFeatures, OnSetWindowFeatures)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -296,6 +298,11 @@ void ChromeRenderViewObserver::OnUpdateTopControlsState(
   render_view()->UpdateTopControlsState(constraints, current, animate);
 }
 #endif
+
+void ChromeRenderViewObserver::OnSetWindowFeatures(
+    const WebWindowFeatures& window_features) {
+  render_view()->GetWebView()->setWindowFeatures(window_features);
+}
 
 void ChromeRenderViewObserver::Navigate(const GURL& url) {
   // Execute cache clear operations that were postponed until a navigation

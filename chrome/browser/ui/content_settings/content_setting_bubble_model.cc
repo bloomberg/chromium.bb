@@ -547,15 +547,13 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
 void ContentSettingPopupBubbleModel::SetPopups() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBetterPopupBlocking)) {
-    IDMap<chrome::NavigateParams, IDMapOwnPointer>& blocked_popups =
+    std::map<int32, GURL> blocked_popups =
         PopupBlockerTabHelper::FromWebContents(web_contents())
             ->GetBlockedPopupRequests();
-    for (IDMap<chrome::NavigateParams, IDMapOwnPointer>::const_iterator
-             iter(&blocked_popups);
-         !iter.IsAtEnd();
-         iter.Advance()) {
-
-      std::string title(iter.GetCurrentValue()->url.spec());
+    for (std::map<int32, GURL>::const_iterator iter = blocked_popups.begin();
+         iter != blocked_popups.end();
+         ++iter) {
+      std::string title(iter->second.spec());
       // The popup may not have a valid URL.
       if (title.empty())
         title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
@@ -563,7 +561,7 @@ void ContentSettingPopupBubbleModel::SetPopups() {
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_DEFAULT_FAVICON),
           title,
-          iter.GetCurrentKey());
+          iter->first);
       add_popup(popup_item);
     }
     return;

@@ -1289,8 +1289,10 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
          params.disposition == NEW_BACKGROUND_TAB) &&
         !params.user_gesture && !CommandLine::ForCurrentProcess()->HasSwitch(
                                     switches::kDisablePopupBlocking)) {
-      if (popup_blocker_helper->MaybeBlockPopup(nav_params))
+      if (popup_blocker_helper->MaybeBlockPopup(nav_params,
+                                                WebWindowFeatures())) {
         return NULL;
+      }
     }
   }
 
@@ -1538,7 +1540,7 @@ bool Browser::ShouldCreateWebContents(
     else
       nav_params.disposition = disposition;
 
-    return !popup_blocker_helper->MaybeBlockPopup(nav_params);
+    return !popup_blocker_helper->MaybeBlockPopup(nav_params, features);
   }
 
   return true;

@@ -49,7 +49,6 @@
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
-#include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -312,25 +311,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::BrowserRenderingStats)
   IPC_STRUCT_TRAITS_MEMBER(total_touch_acked_latency)
   IPC_STRUCT_TRAITS_MEMBER(scroll_update_count)
   IPC_STRUCT_TRAITS_MEMBER(total_scroll_update_latency)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebWindowFeatures)
-  IPC_STRUCT_TRAITS_MEMBER(x)
-  IPC_STRUCT_TRAITS_MEMBER(xSet)
-  IPC_STRUCT_TRAITS_MEMBER(y)
-  IPC_STRUCT_TRAITS_MEMBER(ySet)
-  IPC_STRUCT_TRAITS_MEMBER(width)
-  IPC_STRUCT_TRAITS_MEMBER(widthSet)
-  IPC_STRUCT_TRAITS_MEMBER(height)
-  IPC_STRUCT_TRAITS_MEMBER(heightSet)
-  IPC_STRUCT_TRAITS_MEMBER(menuBarVisible)
-  IPC_STRUCT_TRAITS_MEMBER(statusBarVisible)
-  IPC_STRUCT_TRAITS_MEMBER(toolBarVisible)
-  IPC_STRUCT_TRAITS_MEMBER(locationBarVisible)
-  IPC_STRUCT_TRAITS_MEMBER(scrollbarsVisible)
-  IPC_STRUCT_TRAITS_MEMBER(resizable)
-  IPC_STRUCT_TRAITS_MEMBER(fullscreen)
-  IPC_STRUCT_TRAITS_MEMBER(dialog)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)

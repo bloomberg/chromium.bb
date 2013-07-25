@@ -374,6 +374,10 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateTopControlsState,
                     content::TopControlsState /* current */,
                     bool /* animate */)
 
+// Updates the window features of the render view.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,
+                    WebKit::WebWindowFeatures /* window_features */)
+
 // JavaScript related messages -----------------------------------------------
 
 // Notify the JavaScript engine in the render to change its parameters

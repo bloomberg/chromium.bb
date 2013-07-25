@@ -33,6 +33,7 @@ class Extension;
 
 namespace WebKit {
 class WebView;
+struct WebWindowFeatures;
 }
 
 namespace safe_browsing {
@@ -138,6 +139,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
                                 content::TopControlsState current,
                                 bool animate);
 #endif
+  void OnSetWindowFeatures(const WebKit::WebWindowFeatures& window_features);
 
   void CapturePageInfoLater(int page_id,
                             bool preliminary_capture,

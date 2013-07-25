@@ -9,13 +9,26 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "third_party/WebKit/public/web/WebWindowFeatures.h"
+
+using WebKit::WebWindowFeatures;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupBlockerTabHelper);
+
+struct PopupBlockerTabHelper::BlockedRequest {
+  BlockedRequest(const chrome::NavigateParams& params,
+                 const WebWindowFeatures& window_features)
+      : params(params), window_features(window_features) {}
+
+  chrome::NavigateParams params;
+  WebWindowFeatures window_features;
+};
 
 PopupBlockerTabHelper::PopupBlockerTabHelper(
     content::WebContents* web_contents)
@@ -49,7 +62,8 @@ void PopupBlockerTabHelper::PopupNotificationVisibilityChanged(
 }
 
 bool PopupBlockerTabHelper::MaybeBlockPopup(
-    const chrome::NavigateParams& params) {
+    const chrome::NavigateParams& params,
+    const WebWindowFeatures& window_features) {
   // A page can't spawn popups (or do anything else, either) until its load
   // commits, so when we reach here, the popup was spawned by the
   // NavigationController's last committed entry, not the active entry.  For
@@ -69,7 +83,7 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
           CONTENT_SETTING_ALLOW) {
     return false;
   } else {
-    blocked_popups_.Add(new chrome::NavigateParams(params));
+    blocked_popups_.Add(new BlockedRequest(params, window_features));
     TabSpecificContentSettings::FromWebContents(web_contents())->
         OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS, std::string());
     return true;
@@ -77,10 +91,14 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
 }
 
 void PopupBlockerTabHelper::ShowBlockedPopup(int32 id) {
-  chrome::NavigateParams* params = blocked_popups_.Lookup(id);
-  if (!params)
+  BlockedRequest* popup = blocked_popups_.Lookup(id);
+  if (!popup)
     return;
-  chrome::Navigate(params);
+  chrome::Navigate(&popup->params);
+  if (popup->params.target_contents) {
+    popup->params.target_contents->Send(new ChromeViewMsg_SetWindowFeatures(
+        popup->params.target_contents->GetRoutingID(), popup->window_features));
+  }
   blocked_popups_.Remove(id);
   if (blocked_popups_.IsEmpty())
     PopupNotificationVisibilityChanged(false);
@@ -90,7 +108,13 @@ size_t PopupBlockerTabHelper::GetBlockedPopupsCount() const {
   return blocked_popups_.size();
 }
 
-IDMap<chrome::NavigateParams, IDMapOwnPointer>&
-PopupBlockerTabHelper::GetBlockedPopupRequests() {
-  return blocked_popups_;
+std::map<int32, GURL> PopupBlockerTabHelper::GetBlockedPopupRequests() {
+  std::map<int32, GURL> result;
+  for (IDMap<BlockedRequest, IDMapOwnPointer>::const_iterator iter(
+           &blocked_popups_);
+       !iter.IsAtEnd();
+       iter.Advance()) {
+    result[iter.GetCurrentKey()] = iter.GetCurrentValue()->params.url;
+  }
+  return result;
 }
