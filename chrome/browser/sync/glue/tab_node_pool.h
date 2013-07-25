@@ -17,8 +17,8 @@ class ProfileSyncService;
 
 namespace browser_sync {
 
-// A pool for managing free/used tab sync nodes for the *local* session.
-// Performs lazy creation of sync nodes when necessary.
+// A pool for managing free/used tab sync nodes. Performs lazy creation
+// of sync nodes when necessary.
 // Note: We make use of the following "id's"
 // - a sync_id: an int64 used in |syncer::InitByIdLookup|
 // - a tab_id: created by session service, unique to this client
@@ -55,11 +55,9 @@ class TabNodePool {
   // Maximum limit of FreeNodes allowed on the client.
   static const size_t kFreeNodesHighWatermark;
 
-  static const int kInvalidTabNodeID;
-
   // Build a sync tag from tab_node_id.
   static std::string TabIdToTag(const std::string machine_tag,
-                                int tab_node_id);
+                                size_t tab_node_id);
 
   // Returns the sync_id for the next free tab node. If none are available,
   // creates a new tab node and adds it to free nodes pool. The free node can
@@ -81,7 +79,7 @@ class TabNodePool {
   // Note: this should only be called when we discover tab sync nodes from
   // previous sessions, not for freeing tab nodes we created through
   // GetFreeTabNode (use FreeTabNode below for that).
-  void AddTabNode(int64 sync_id, const SessionID& tab_id, int tab_node_id);
+  void AddTabNode(int64 sync_id, const SessionID& tab_id, size_t tab_node_id);
 
   // Returns the tab_id for |sync_id| if it is associated else returns
   // kInvalidTabID.
@@ -135,7 +133,7 @@ class TabNodePool {
 
   // The maximum used tab_node id for a sync node. A new sync node will always
   // be created with max_used_tab_node_id_ + 1.
-  int max_used_tab_node_id_;
+  size_t max_used_tab_node_id_;
 
   // The machine tag associated with this tab pool. Used in the title of new
   // sync nodes.

@@ -24,24 +24,20 @@ const size_t TabNodePool::kFreeNodesLowWatermark = 25;
 const size_t TabNodePool::kFreeNodesHighWatermark = 100;
 
 TabNodePool::TabNodePool(ProfileSyncService* sync_service)
-    : max_used_tab_node_id_(kInvalidTabNodeID),
-      sync_service_(sync_service) {}
-
-// static
-// We start vending tab node IDs at 0.
-const int TabNodePool::kInvalidTabNodeID = -1;
+    : max_used_tab_node_id_(0), sync_service_(sync_service) {}
 
 TabNodePool::~TabNodePool() {}
 
 // Static
 std::string TabNodePool::TabIdToTag(
-    const std::string machine_tag, int tab_node_id) {
-  return base::StringPrintf("%s %d", machine_tag.c_str(), tab_node_id);
+    const std::string machine_tag,
+    size_t tab_node_id) {
+  return base::StringPrintf("%s %" PRIuS "", machine_tag.c_str(), tab_node_id);
 }
 
 void TabNodePool::AddTabNode(int64 sync_id,
                              const SessionID& tab_id,
-                             int tab_node_id) {
+                             size_t tab_node_id) {
   DCHECK_GT(sync_id, syncer::kInvalidId);
   DCHECK_GT(tab_id.id(), kInvalidTabID);
   DCHECK(syncid_tabid_map_.find(sync_id) == syncid_tabid_map_.end());
@@ -78,7 +74,7 @@ int64 TabNodePool::GetFreeTabNode() {
       LOG(ERROR) << kNoSessionsFolderError;
       return syncer::kInvalidId;
     }
-    int tab_node_id = ++max_used_tab_node_id_;
+    size_t tab_node_id = ++max_used_tab_node_id_;
     std::string tab_node_tag = TabIdToTag(machine_tag_, tab_node_id);
     syncer::WriteNode tab_node(&trans);
     syncer::WriteNode::InitUniqueByCreationResult result =
@@ -178,7 +174,7 @@ void TabNodePool::Clear() {
   unassociated_nodes_.clear();
   free_nodes_pool_.clear();
   syncid_tabid_map_.clear();
-  max_used_tab_node_id_ = kInvalidTabNodeID;
+  max_used_tab_node_id_ = 0;
 }
 
 size_t TabNodePool::Capacity() const {
