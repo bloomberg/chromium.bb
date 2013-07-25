@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process.h"
-#include "base/process_util.h"
+#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/common/resource_messages.h"

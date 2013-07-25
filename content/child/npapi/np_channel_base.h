@@ -11,7 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "content/child/npapi/npobject_base.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_channel_handle.h"

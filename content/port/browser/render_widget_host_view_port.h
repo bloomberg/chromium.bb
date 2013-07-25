@@ -6,7 +6,7 @@
 #define CONTENT_PORT_BROWSER_RENDER_WIDGET_HOST_VIEW_PORT_H_
 
 #include "base/callback.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "cc/output/compositor_frame.h"
 #include "content/common/content_export.h"

@@ -19,7 +19,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
 #include "base/posix/unix_domain_socket_linux.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "content/common/sandbox_linux.h"
 #include "content/common/set_process_title.h"
 #include "content/common/zygote_commands_linux.h"

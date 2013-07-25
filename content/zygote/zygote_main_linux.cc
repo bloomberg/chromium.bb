@@ -24,7 +24,6 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
-#include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"

@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/scoped_native_library.h"
 #include "build/build_config.h"
 #include "content/child/child_thread.h"
