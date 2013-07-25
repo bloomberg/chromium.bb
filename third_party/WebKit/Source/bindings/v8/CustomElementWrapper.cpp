@@ -37,6 +37,7 @@
 #include "V8SVGElementWrapperFactory.h"
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/V8PerContextData.h"
+#include "core/dom/CustomElement.h"
 #include "core/dom/CustomElementRegistrationContext.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
@@ -101,9 +102,7 @@ v8::Handle<v8::Object> CustomElementWrapper<ElementType, WrapperType>::wrap(Pass
     if (!perContextData)
         return v8::Handle<v8::Object>();
 
-    CustomElementDescriptor descriptor = CustomElementRegistrationContext::describe(element.get());
-    CustomElementBinding* binding = perContextData->customElementBinding(descriptor.type());
-
+    CustomElementBinding* binding = perContextData->customElementBinding(CustomElement::definitionFor(element.get()));
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, binding->wrapperType(), element.get(), isolate);
     if (wrapper.IsEmpty())
         return v8::Handle<v8::Object>();

@@ -32,10 +32,12 @@
 #define CustomElementConstructorBuilder_h
 
 #include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8CustomElementLifecycleCallbacks.h"
 #include "core/dom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/QualifiedName.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 
@@ -87,6 +89,7 @@ private:
     WrapperTypeInfo* m_wrapperType;
     AtomicString m_namespaceURI;
     v8::Handle<v8::Function> m_constructor;
+    RefPtr<V8CustomElementLifecycleCallbacks> m_callbacks;
 };
 
 }

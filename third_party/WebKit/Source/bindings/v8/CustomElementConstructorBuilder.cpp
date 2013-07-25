@@ -42,7 +42,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8CustomElementLifecycleCallbacks.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/CustomElementCallbackDispatcher.h"
@@ -50,7 +49,6 @@
 #include "core/dom/CustomElementDescriptor.h"
 #include "core/dom/Document.h"
 #include "wtf/Assertions.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -160,7 +158,8 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
     v8::Handle<v8::Function> leftDocument = retrieveCallback(isolate, "leftDocumentCallback");
     v8::Handle<v8::Function> attributeChanged = retrieveCallback(isolate, "attributeChangedCallback");
 
-    return V8CustomElementLifecycleCallbacks::create(document, m_prototype, created, enteredDocument, leftDocument, attributeChanged);
+    m_callbacks = V8CustomElementLifecycleCallbacks::create(document, m_prototype, created, enteredDocument, leftDocument, attributeChanged);
+    return m_callbacks.get();
 }
 
 v8::Handle<v8::Function> CustomElementConstructorBuilder::retrieveCallback(v8::Isolate* isolate, const char* name)
@@ -240,14 +239,7 @@ bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
 {
     ASSERT(!m_constructor.IsEmpty());
 
-    V8PerContextData* perContextData = V8PerContextData::from(m_context);
-    if (!perContextData)
-        return false;
-
-    // Bindings retrieve the prototype when needed from per-context data.
-    perContextData->addCustomElementBinding(definition->descriptor().type(), CustomElementBinding::create(m_context->GetIsolate(), m_prototype, m_wrapperType));
-
-    return true;
+    return m_callbacks->setBinding(definition, CustomElementBinding::create(m_context->GetIsolate(), m_prototype, m_wrapperType));
 }
 
 ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const

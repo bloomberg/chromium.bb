@@ -32,12 +32,14 @@
 #include "bindings/v8/V8CustomElementLifecycleCallbacks.h"
 
 #include "V8Element.h"
+#include "bindings/v8/CustomElementBinding.h"
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/V8PerContextData.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
@@ -94,6 +96,7 @@ V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecu
     , m_enteredDocument(enteredDocument)
     , m_leftDocument(leftDocument)
     , m_attributeChanged(attributeChanged)
+    , m_owner(0)
 {
     m_prototype.makeWeak(&m_prototype, weakCallback<v8::Object>);
 
@@ -103,6 +106,44 @@ V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecu
 
     CALLBACK_LIST(MAKE_WEAK)
 #undef MAKE_WEAK
+}
+
+V8PerContextData* V8CustomElementLifecycleCallbacks::creationContextData()
+{
+    if (!scriptExecutionContext())
+        return 0;
+
+    v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
+    if (context.IsEmpty())
+        return 0;
+
+    return V8PerContextData::from(context);
+}
+
+V8CustomElementLifecycleCallbacks::~V8CustomElementLifecycleCallbacks()
+{
+    if (!m_owner)
+        return;
+
+    v8::HandleScope handleScope;
+    if (V8PerContextData* perContextData = creationContextData())
+        perContextData->clearCustomElementBinding(m_owner);
+}
+
+bool V8CustomElementLifecycleCallbacks::setBinding(CustomElementDefinition* owner, PassOwnPtr<CustomElementBinding> binding)
+{
+    ASSERT(!m_owner);
+
+    V8PerContextData* perContextData = creationContextData();
+    if (!perContextData)
+        return false;
+
+    m_owner = owner;
+
+    // Bindings retrieve the prototype when needed from per-context data.
+    perContextData->addCustomElementBinding(owner, binding);
+
+    return true;
 }
 
 void V8CustomElementLifecycleCallbacks::created(Element* element)

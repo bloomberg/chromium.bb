@@ -45,6 +45,8 @@ class Element;
 class CustomElement {
 public:
     static void define(Element*, PassRefPtr<CustomElementDefinition>);
+    static CustomElementDefinition* definitionFor(Element*);
+
     static void attributeDidChange(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
     static void didEnterDocument(Element*);
     static void didLeaveDocument(Element*);

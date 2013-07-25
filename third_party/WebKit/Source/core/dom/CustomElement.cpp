@@ -45,6 +45,11 @@ void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition>
     CustomElementCallbackScheduler::scheduleCreatedCallback(definition->callbacks(), element);
 }
 
+CustomElementDefinition* CustomElement::definitionFor(Element* element)
+{
+    return definitions().get(element);
+}
+
 void CustomElement::attributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     ASSERT(element->customElementState() == Element::Upgraded);

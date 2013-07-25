@@ -45,6 +45,7 @@
 
 namespace WebCore {
 
+class CustomElementDefinition;
 struct V8NPObject;
 typedef WTF::Vector<V8NPObject*> V8NPObjectVector;
 typedef WTF::HashMap<int, V8NPObjectVector> V8NPObjectMap;
@@ -108,8 +109,9 @@ public:
         m_activityLogger = logger;
     }
 
-    void addCustomElementBinding(const AtomicString& type, PassOwnPtr<CustomElementBinding>);
-    CustomElementBinding* customElementBinding(const AtomicString& type);
+    void addCustomElementBinding(CustomElementDefinition*, PassOwnPtr<CustomElementBinding>);
+    void clearCustomElementBinding(CustomElementDefinition*);
+    CustomElementBinding* customElementBinding(CustomElementDefinition*);
 
 private:
     explicit V8PerContextData(v8::Handle<v8::Context> context)
@@ -142,7 +144,7 @@ private:
     v8::Persistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
 
-    typedef WTF::HashMap<AtomicString, OwnPtr<CustomElementBinding> > CustomElementBindingMap;
+    typedef WTF::HashMap<CustomElementDefinition*, OwnPtr<CustomElementBinding> > CustomElementBindingMap;
     OwnPtr<CustomElementBindingMap> m_customElementBindings;
 };
 

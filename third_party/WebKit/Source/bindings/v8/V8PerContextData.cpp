@@ -131,15 +131,22 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
     return function;
 }
 
-void V8PerContextData::addCustomElementBinding(const AtomicString& type, PassOwnPtr<CustomElementBinding> binding)
+void V8PerContextData::addCustomElementBinding(CustomElementDefinition* definition, PassOwnPtr<CustomElementBinding> binding)
 {
-    ASSERT(!m_customElementBindings->contains(type));
-    m_customElementBindings->add(type, binding);
+    ASSERT(!m_customElementBindings->contains(definition));
+    m_customElementBindings->add(definition, binding);
 }
 
-CustomElementBinding* V8PerContextData::customElementBinding(const AtomicString& type)
+void V8PerContextData::clearCustomElementBinding(CustomElementDefinition* definition)
 {
-    CustomElementBindingMap::const_iterator it = m_customElementBindings->find(type);
+    CustomElementBindingMap::iterator it = m_customElementBindings->find(definition);
+    ASSERT(it != m_customElementBindings->end());
+    m_customElementBindings->remove(it);
+}
+
+CustomElementBinding* V8PerContextData::customElementBinding(CustomElementDefinition* definition)
+{
+    CustomElementBindingMap::const_iterator it = m_customElementBindings->find(definition);
     ASSERT(it != m_customElementBindings->end());
     return it->value.get();
 }

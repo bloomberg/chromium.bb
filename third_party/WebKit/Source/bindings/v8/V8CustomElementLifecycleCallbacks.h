@@ -35,18 +35,24 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "core/dom/CustomElementLifecycleCallbacks.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 #include <v8.h>
 
 namespace WebCore {
 
+class CustomElementLifecycleCallbacks;
 class Element;
 class ScriptExecutionContext;
+class V8PerContextData;
 
 class V8CustomElementLifecycleCallbacks : public CustomElementLifecycleCallbacks, ActiveDOMCallback {
 public:
     static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ScriptExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredDocument, v8::Handle<v8::Function> leftDocument, v8::Handle<v8::Function> attributeChanged);
 
-    virtual ~V8CustomElementLifecycleCallbacks() { }
+    virtual ~V8CustomElementLifecycleCallbacks();
+
+    bool setBinding(CustomElementDefinition* owner, PassOwnPtr<CustomElementBinding>);
 
 private:
     V8CustomElementLifecycleCallbacks(ScriptExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredDocument, v8::Handle<v8::Function> leftDocument, v8::Handle<v8::Function> attributeChanged);
@@ -58,6 +64,9 @@ private:
 
     void call(const ScopedPersistent<v8::Function>& weakCallback, Element*);
 
+    V8PerContextData* creationContextData();
+
+    CustomElementDefinition* m_owner;
     RefPtr<DOMWrapperWorld> m_world;
     ScopedPersistent<v8::Object> m_prototype;
     ScopedPersistent<v8::Function> m_created;
