@@ -78,7 +78,10 @@ const int kDogEarSize = 10;
 const int kNotificationPadding = 14;
 
 // Vertical padding above and below each detail section (in pixels).
-const int kDetailSectionInset = 10;
+const int kDetailSectionVerticalPadding = 10;
+
+// Horizontal padding before each detail section (in pixels).
+const int kDetailSectionIndent = 20;
 
 const int kAutocheckoutStepsAreaPadding = 28;
 const int kAutocheckoutStepInset = 20;
@@ -98,11 +101,10 @@ SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
 // A border color for the legal document view.
 SkColor kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
 
-// The top padding, in pixels, for the suggestions menu dropdown arrows.
-const int kMenuButtonTopOffset = 5;
-
-// The side padding, in pixels, for the suggestions menu dropdown arrows.
-const int kMenuButtonHorizontalPadding = 20;
+// The top and bottom padding, in pixels, for the suggestions menu dropdown
+// arrows.
+const int kMenuButtonTopInset = 3;
+const int kMenuButtonBottomInset = 6;
 
 // The padding around text in the overlay view.
 const int kOverlayTextPadding = 20;
@@ -121,21 +123,6 @@ const char kOverlayViewClassName[] = "autofill/OverlayView";
 
 typedef ui::MultiAnimation::Part Part;
 typedef ui::MultiAnimation::Parts Parts;
-
-views::Border* CreateLabelAlignmentBorder() {
-  // TODO(estade): this should be made to match the native textfield top
-  // inset. It's hard to get at, so for now it's hard-coded.
-  return views::Border::CreateEmptyBorder(4, 0, 0, 0);
-}
-
-// Returns a label that describes a details section.
-views::Label* CreateDetailsSectionLabel(const string16& text) {
-  views::Label* label = new views::Label(text);
-  label->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  label->SetFont(label->font().DeriveFont(0, gfx::Font::BOLD));
-  label->set_border(CreateLabelAlignmentBorder());
-  return label;
-}
 
 // Draws an arrow at the top of |canvas| pointing to |tip_x|.
 void DrawArrow(gfx::Canvas* canvas, int tip_x, const SkColor& color) {
@@ -844,31 +831,43 @@ AutofillDialogViews::SectionContainer::SectionContainer(
       forward_mouse_events_(false) {
   set_notify_enter_exit_on_child(true);
 
-  views::GridLayout* layout = new views::GridLayout(this);
-  layout->SetInsets(kDetailSectionInset, 0, kDetailSectionInset, 0);
-  SetLayoutManager(layout);
+  set_border(views::Border::CreateEmptyBorder(kDetailSectionVerticalPadding,
+                                              kDetailSectionIndent,
+                                              kDetailSectionVerticalPadding,
+                                              kDetailSectionIndent));
 
+  views::Label* label_view = new views::Label(label);
+  label_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  views::View* label_bar = new views::View();
+  views::GridLayout* label_bar_layout = new views::GridLayout(label_bar);
+  label_bar->SetLayoutManager(label_bar_layout);
   const int kColumnSetId = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
-  // TODO(estade): pull out these constants, and figure out better values
-  // for them.
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::LEADING,
-                        0,
-                        views::GridLayout::FIXED,
-                        180,
-                        0);
-  column_set->AddPaddingColumn(0, 30);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::LEADING,
-                        0,
-                        views::GridLayout::FIXED,
-                        300,
-                        0);
+  views::ColumnSet* columns = label_bar_layout->AddColumnSet(kColumnSetId);
+  // TODO(estade): do something about this '480'.
+  columns->AddColumn(views::GridLayout::LEADING,
+                     views::GridLayout::LEADING,
+                     0,
+                     views::GridLayout::FIXED,
+                     480,
+                     0);
+  columns->AddColumn(views::GridLayout::LEADING,
+                     views::GridLayout::LEADING,
+                     0,
+                     views::GridLayout::USE_PREF,
+                     0,
+                     0);
+  label_bar_layout->StartRow(0, kColumnSetId);
+  label_bar_layout->AddView(label_view);
+  label_bar_layout->AddView(proxy_button);
+  // TODO(estade): Make this the correct color, also sometimes hide the border.
+  label_bar->set_border(
+      views::Border::CreateSolidSidedBorder(0, 0, 1, 0, SK_ColorLTGRAY));
 
-  layout->StartRow(0, kColumnSetId);
-  layout->AddView(CreateDetailsSectionLabel(label));
-  layout->AddView(controls);
+  // TODO(estade): do something about this '7'.
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 7));
+  AddChildView(label_bar);
+  AddChildView(controls);
 }
 
 AutofillDialogViews::SectionContainer::~SectionContainer() {}
@@ -956,7 +955,6 @@ AutofillDialogViews::SuggestionView::SuggestionView(
           new DecoratedTextfield(string16(), string16(), autofill_dialog)) {
   // Label and icon.
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label_->set_border(CreateLabelAlignmentBorder());
   label_container_->AddChildView(icon_);
   label_container_->AddChildView(label_);
   label_container_->AddChildView(decorated_);
@@ -1725,31 +1723,11 @@ void AutofillDialogViews::CreateDetailsSection(DialogSection section) {
       controller_->LabelForSection(section),
       inputs_container,
       group->suggested_button);
+  DCHECK(group->suggested_button->parent());
   UpdateDetailsGroupState(*group);
 }
 
 views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
-  views::View* inputs_container = new views::View();
-  views::GridLayout* layout = new views::GridLayout(inputs_container);
-  inputs_container->SetLayoutManager(layout);
-
-  int kColumnSetId = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::LEADING,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
-  // A column for the menu button.
-  column_set->AddColumn(views::GridLayout::CENTER,
-                        views::GridLayout::LEADING,
-                        0,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
-  layout->StartRow(0, kColumnSetId);
-
   // The |info_view| holds |manual_inputs| and |suggested_info|, allowing the
   // dialog to toggle which is shown.
   views::View* info_view = new views::View();
@@ -1761,8 +1739,9 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
   SuggestionView* suggested_info =
       new SuggestionView(controller_->EditSuggestionText(), this);
   info_view->AddChildView(suggested_info);
-  layout->AddView(info_view);
 
+  // TODO(estade): It might be slightly more OO if this button were created
+  // and listened to by the section container.
   views::ImageButton* menu_button = new views::ImageButton(this);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   menu_button->SetImage(views::Button::STATE_NORMAL,
@@ -1774,17 +1753,16 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
   menu_button->SetImage(views::Button::STATE_DISABLED,
       rb.GetImageSkiaNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_D));
   menu_button->set_border(views::Border::CreateEmptyBorder(
-      kMenuButtonTopOffset,
-      kMenuButtonHorizontalPadding,
-      0,
-      kMenuButtonHorizontalPadding));
-  layout->AddView(menu_button);
+      kMenuButtonTopInset,
+      kDetailSectionIndent,
+      kMenuButtonBottomInset,
+      0));
 
   DetailsGroup* group = GroupForSection(section);
   group->suggested_button = menu_button;
   group->manual_input = manual_inputs;
   group->suggested_info = suggested_info;
-  return inputs_container;
+  return info_view;
 }
 
 // TODO(estade): we should be using Chrome-style constrained window padding
