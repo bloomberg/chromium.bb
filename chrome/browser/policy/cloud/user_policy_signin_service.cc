@@ -20,6 +20,7 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 #if defined(ENABLE_MANAGED_USERS)

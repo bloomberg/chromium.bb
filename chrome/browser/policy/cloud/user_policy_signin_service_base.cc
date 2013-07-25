@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_source.h"
 
 namespace policy {
 

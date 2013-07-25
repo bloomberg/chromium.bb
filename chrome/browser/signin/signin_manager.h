@@ -33,7 +33,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager_base.h"
-#include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -50,7 +49,6 @@ class SigninManagerDelegate;
 
 class SigninManager : public SigninManagerBase,
                       public GaiaAuthConsumer,
-                      public UbertokenConsumer,
                       public content::NotificationObserver {
  public:
   // The callback invoked once the OAuth token has been fetched during signin,
@@ -120,6 +118,7 @@ class SigninManager : public SigninManagerBase,
   // invalid username policy updates, we need to check this during
   // initialization and sign the user out.
   virtual void Initialize(Profile* profile, PrefService* local_state) OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
 
   // Invoked from an OAuthTokenFetchedCallback to complete user signin.
   virtual void CompletePendingSignin();
@@ -160,10 +159,6 @@ class SigninManager : public SigninManagerBase,
   virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
   virtual void OnGetUserInfoFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-
-  // UbertokenConsumer
-  virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;
-  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -260,8 +255,6 @@ class SigninManager : public SigninManagerBase,
   std::string password_;  // This is kept empty whenever possible.
   bool had_two_factor_error_;
 
-  void CleanupNotificationRegistration();
-
   // Result of the last client login, kept pending the lookup of the
   // canonical email.
   ClientLoginResult last_result_;
@@ -271,9 +264,6 @@ class SigninManager : public SigninManagerBase,
 
   // Registrar for notifications from the TokenService.
   content::NotificationRegistrar registrar_;
-
-  // UbertokenFetcher to login to user to the web property.
-  scoped_ptr<UbertokenFetcher> ubertoken_fetcher_;
 
   // OAuth revocation fetcher for sign outs.
   scoped_ptr<GaiaAuthFetcher> revoke_token_fetcher_;

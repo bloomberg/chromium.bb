@@ -6,24 +6,19 @@
 #define CHROME_BROWSER_SIGNIN_UBERTOKEN_FETCHER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
-#include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_oauth_client.h"
 
 // Allow to retrieves an uber-auth token for the user. This class uses the
-// |TokenService| and considers that the user is already logged in. It will then
-// retrieve the OAuth2 refresh token, use it to generate an OAuth2 access token
-// and finally use this access token to generate the uber-auth token.
+// |OAuth2TokenService| and considers that the user is already logged in. It
+// will use the OAuth2 access token to generate the uber-auth token.
 //
 // This class should be used on a single thread, but it can be whichever thread
 // that you like.
 //
 // This class can handle one request at a time.
 
+class GaiaAuthFetcher;
 class GoogleServiceAuthError;
 class Profile;
 
@@ -37,9 +32,8 @@ class UbertokenConsumer {
 };
 
 // Allows to retrieve an uber-auth token.
-class UbertokenFetcher : public content::NotificationObserver,
-                         public gaia::GaiaOAuthClient::Delegate,
-                         public GaiaAuthConsumer {
+class UbertokenFetcher : public GaiaAuthConsumer,
+                         public OAuth2TokenService::Consumer {
  public:
   UbertokenFetcher(Profile* profile, UbertokenConsumer* consumer);
   virtual ~UbertokenFetcher();
@@ -47,33 +41,23 @@ class UbertokenFetcher : public content::NotificationObserver,
   // Start fetching the token.
   void StartFetchingToken();
 
-  // Overriden from gaia::GaiaOAuthClient::Delegate:
-  virtual void OnGetTokensResponse(const std::string& refresh_token,
-                                   const std::string& access_token,
-                                   int expires_in_seconds) OVERRIDE;
-  virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
-
   // Overriden from GaiaAuthConsumer
   virtual void OnUberAuthTokenSuccess(const std::string& token) OVERRIDE;
   virtual void OnUberAuthTokenFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
 
-  // Overriden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Overriden from OAuth2TokenService::Consumer:
+  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                                 const std::string& access_token,
+                                 const base::Time& expiration_time) OVERRIDE;
+  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                                 const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
-  void StartFetchingUbertoken();
-
   Profile* profile_;
   UbertokenConsumer* consumer_;
-  content::NotificationRegistrar registrar_;
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
   scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
+  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
 
   DISALLOW_COPY_AND_ASSIGN(UbertokenFetcher);
 };

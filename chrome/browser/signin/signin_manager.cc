@@ -125,18 +125,6 @@ void SigninManager::InitTokenService() {
     token_service->LoadTokensFromDB();
 }
 
-void SigninManager::CleanupNotificationRegistration() {
-  content::Source<TokenService> token_service(
-      TokenServiceFactory::GetForProfile(profile_));
-  if (registrar_.IsRegistered(this,
-                              chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                              token_service)) {
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                      token_service);
-  }
-}
-
 std::string SigninManager::SigninTypeToString(
     SigninManager::SigninType type) {
   switch (type) {
@@ -202,15 +190,6 @@ void SigninManager::StartSignIn(const std::string& username,
                                   login_token,
                                   login_captcha,
                                   GaiaAuthFetcher::HostedAccountsNotAllowed);
-
-  // Register for token availability.  The signin manager will pre-login the
-  // user when the GAIA service token is ready for use.
-  if (delegate_->AreSigninCookiesAllowed()) {
-    TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                   content::Source<TokenService>(token_service));
-  }
 }
 
 void SigninManager::ProvideSecondFactorAccessCode(
@@ -312,7 +291,6 @@ void SigninManager::CopyCredentialsFrom(const SigninManager& source) {
 void SigninManager::ClearTransientSigninData() {
   DCHECK(IsInitialized());
 
-  CleanupNotificationRegistration();
   client_login_.reset();
   last_result_ = ClientLoginResult();
   possibly_invalid_username_.clear();
@@ -407,6 +385,11 @@ void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
     // have changed the policy since the last signin, so sign out the user.
     SignOut();
   }
+}
+
+void SigninManager::Shutdown() {
+  local_state_pref_registrar_.RemoveAll();
+  SigninManagerBase::Shutdown();
 }
 
 void SigninManager::OnGoogleServicesUsernamePatternChanged() {
@@ -651,60 +634,21 @@ void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
   OnClientLoginFailure(error);
 }
 
-void SigninManager::OnUbertokenSuccess(const std::string& token) {
-  ubertoken_fetcher_.reset();
-  if (client_login_.get() == NULL) {
-    client_login_.reset(
-        new GaiaAuthFetcher(this,
-                            GaiaConstants::kChromeSource,
-                            profile_->GetRequestContext()));
-  }
-
-  client_login_->StartMergeSession(token);
-}
-
-void SigninManager::OnUbertokenFailure(const GoogleServiceAuthError& error) {
-  LOG(WARNING) << " Unable to login the user to the web: " << error.ToString();
-  ubertoken_fetcher_.reset();
-}
-
 void SigninManager::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
-      TokenService::TokenAvailableDetails* tok_details =
-          content::Details<TokenService::TokenAvailableDetails>(
-              details).ptr();
+  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_TERMINATED, type);
 
-      // If a GAIA service token has become available, use it to pre-login the
-      // user to other services that depend on GAIA credentials.
-      if (tok_details->service() ==
-          GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
-        ubertoken_fetcher_.reset(new UbertokenFetcher(profile_, this));
-        ubertoken_fetcher_->StartFetchingToken();
-
-        // We only want to do this once per sign-in.
-        CleanupNotificationRegistration();
-      }
-      break;
-    }
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      // It's possible we're listening to a "stale" renderer because it was
-      // replaced with a new process by process-per-site. In either case,
-      // stop listening to it, but only reset signin_process_id_ tracking
-      // if this was from the current signin process.
-      registrar_.Remove(this,
-                        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                        source);
-      if (signin_process_id_ ==
-          content::Source<content::RenderProcessHost>(source)->GetID()) {
-        signin_process_id_ = kInvalidProcessId;
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
+  // It's possible we're listening to a "stale" renderer because it was
+  // replaced with a new process by process-per-site. In either case,
+  // stop listening to it, but only reset signin_process_id_ tracking
+  // if this was from the current signin process.
+  registrar_.Remove(this,
+                    content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                    source);
+  if (signin_process_id_ ==
+      content::Source<content::RenderProcessHost>(source)->GetID()) {
+    signin_process_id_ = kInvalidProcessId;
   }
 }
 
