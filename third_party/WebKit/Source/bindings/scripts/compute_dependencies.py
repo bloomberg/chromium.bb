@@ -287,7 +287,7 @@ def parse_idl_files(idl_files, global_constructors_filenames):
 
     # An IDL file's dependencies are partial interface files that extend it,
     # and files for other interfaces that this interfaces implements.
-    for idl_file_path, others in dependencies.iteritems():
+    for idl_file_path in dependencies.iterkeys():
         interface_name, _ = os.path.splitext(os.path.basename(idl_file_path))
         implemented_interfaces = implements_interfaces[interface_name]
         try:

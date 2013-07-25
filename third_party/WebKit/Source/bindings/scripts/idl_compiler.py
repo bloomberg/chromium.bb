@@ -97,18 +97,20 @@ def main():
     idl_filename = options.idl_filename
     basename = os.path.basename(idl_filename)
     interface_name, _ = os.path.splitext(basename)
+    output_directory = options.output_directory
     verbose = options.verbose
     if verbose:
         print idl_filename
 
-    definitions = idl_reader.read_idl_definitions(idl_filename, options.interface_dependencies_file, options.additional_idl_files, options.idl_attributes_file, verbose=options.verbose, outputdir=options.output_directory)
+    reader = idl_reader.IdlReader(options.interface_dependencies_file, options.additional_idl_files, options.idl_attributes_file, output_directory, verbose)
+    definitions = reader.read_idl_definitions(idl_filename)
     if not definitions:
         # We generate dummy .h and .cpp files just to tell build scripts
         # that outputs have been created.
-        code_generator_v8.generate_dummy_header_and_cpp(interface_name, options.output_directory)
+        code_generator_v8.generate_dummy_header_and_cpp(interface_name, output_directory)
         return
     if options.dump_json_and_pickle:
-        write_json_and_pickle(definitions, interface_name, options.output_directory)
+        write_json_and_pickle(definitions, interface_name, output_directory)
         return
     # FIXME: turn on code generator
     # Currently definitions must be None (so dummy .h and .cpp files are

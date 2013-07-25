@@ -40,9 +40,40 @@ class IDLInvalidExtendedAttributeError(Exception):
     pass
 
 
-def validate_extended_attributes(definitions, basename, idl_attributes_filename):
-    extended_attribute_validator = IDLExtendedAttributeValidator(idl_attributes_filename)
-    extended_attribute_validator.validate_extended_attributes(definitions, basename)
+class IDLExtendedAttributeValidator:
+    def __init__(self, extended_attributes_filename):
+        self.valid_extended_attributes = read_extended_attributes_file(extended_attributes_filename)
+
+    def validate_extended_attributes(self, definitions):
+        # FIXME: this should be done when parsing the file, rather than after.
+        for interface in definitions.interfaces.itervalues():
+            self.validate_extended_attributes_node(interface)
+            for attribute in interface.attributes:
+                self.validate_extended_attributes_node(attribute)
+            for operation in interface.operations:
+                self.validate_extended_attributes_node(operation)
+                for argument in operation.arguments:
+                    self.validate_extended_attributes_node(argument)
+
+    def validate_extended_attributes_node(self, node):
+        for name, values_string in node.extended_attributes.iteritems():
+            self.validate_name_values_string(name, values_string)
+
+    def validate_name_values_string(self, name, values_string):
+        if name == 'ImplementedBy':  # attribute added when merging interfaces
+            return
+        if name not in self.valid_extended_attributes:
+            raise IDLInvalidExtendedAttributeError('Unknown extended attribute [%s]' % name)
+        valid_values = self.valid_extended_attributes[name]
+        if '*' in valid_values:  # wildcard, any value ok
+            return
+        if values_string is None:
+            value_list = [None]
+        else:
+            value_list = re.split('[|&]', values_string)
+        for value in value_list:
+            if value not in valid_values:
+                raise IDLInvalidExtendedAttributeError('Invalid value "%s" found in extended attribute [%s=%s]' % (value, name, values_string))
 
 
 def read_extended_attributes_file(extended_attributes_filename):
@@ -66,45 +97,3 @@ def read_extended_attributes_file(extended_attributes_filename):
                     value = None
                 valid_extended_attributes[name].add(value)
     return valid_extended_attributes
-
-
-class IDLExtendedAttributeValidator:
-    def __init__(self, extended_attributes_filename):
-        self.valid_extended_attributes = read_extended_attributes_file(extended_attributes_filename)
-
-    def validate_extended_attributes(self, definitions, idl_filename):
-        # FIXME: this should be done when parsing the file, rather than after.
-        try:
-            for interface in definitions.interfaces.itervalues():
-                self.validate_extended_attributes_node(interface)
-                for attribute in interface.attributes:
-                    self.validate_extended_attributes_node(attribute)
-                for operation in interface.operations:
-                    self.validate_extended_attributes_node(operation)
-                    for argument in operation.arguments:
-                        self.validate_extended_attributes_node(argument)
-        except IDLInvalidExtendedAttributeError, error:
-            raise IDLInvalidExtendedAttributeError("""IDL ATTRIBUTE ERROR in file %s:
-%s
-If you want to add a new IDL extended attribute, please add it to bindings/scripts/IDLAttributes.txt and add an explanation to the Blink IDL document at http://chromium.org/blink/webidl
-""" % (idl_filename, str(error)))
-
-    def validate_extended_attributes_node(self, node):
-        for name, values_string in node.extended_attributes.iteritems():
-            self.validate_name_values_string(name, values_string)
-
-    def validate_name_values_string(self, name, values_string):
-        if name == 'ImplementedBy':  # attribute added when merging interfaces
-            return
-        if name not in self.valid_extended_attributes:
-            raise IDLInvalidExtendedAttributeError('Unknown extended attribute [%s]' % name)
-        valid_values = self.valid_extended_attributes[name]
-        if '*' in valid_values:  # wildcard, any value ok
-            return
-        if values_string is None:
-            value_list = [None]
-        else:
-            value_list = re.split('[|&]', values_string)
-        for value in value_list:
-            if value not in valid_values:
-                raise IDLInvalidExtendedAttributeError('Invalid value "%s" found in extended attribute [%s=%s]' % (value, name, values_string))

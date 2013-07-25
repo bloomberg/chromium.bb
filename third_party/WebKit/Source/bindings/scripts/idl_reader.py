@@ -36,22 +36,42 @@ import idl_validator
 import interface_dependency_resolver
 
 
-def read_idl_definitions(idl_filename, interface_dependencies_filename, additional_idl_filenames, idl_attributes_filename, verbose=False, outputdir=''):
-    """Returns an IdlDefinitions object for an IDL file, including all dependencies."""
-    basename = os.path.basename(idl_filename)
+class IdlReader:
+    def __init__(self, interface_dependencies_filename=None, additional_idl_filenames=None, idl_attributes_filename=None, outputdir='', verbose=False):
+        if idl_attributes_filename:
+            self.extended_attribute_validator = idl_validator.IDLExtendedAttributeValidator(idl_attributes_filename)
+        else:
+            self.extended_attribute_validator = None
 
-    definitions = read_idl_file(idl_filename, outputdir=outputdir)
-    if interface_dependencies_filename:
-        should_generate_bindings = interface_dependency_resolver.resolve_dependencies(definitions, idl_filename, interface_dependencies_filename, additional_idl_filenames, verbose=verbose, outputdir=outputdir)
-        if not should_generate_bindings:
-            return None
-    if idl_attributes_filename:
-        idl_validator.validate_extended_attributes(definitions, basename, idl_attributes_filename)
-    return definitions
+        if interface_dependencies_filename:
+            self.interface_dependency_resolver = interface_dependency_resolver.InterfaceDependencyResolver(interface_dependencies_filename, additional_idl_filenames, self)
+        else:
+            self.interface_dependency_resolver = None
 
+        self.parser = blink_idl_parser.BlinkIDLParser(outputdir=outputdir, verbose=verbose)
 
-def read_idl_file(idl_filename, verbose=False, outputdir=''):
-    """Returns an IdlDefinitions object for an IDL file, without any dependencies."""
-    parser = blink_idl_parser.BlinkIDLParser(verbose=verbose, outputdir=outputdir)
-    ast = blink_idl_parser.parse_file(parser, idl_filename)
-    return idl_definitions_builder.build_idl_definitions_from_ast(ast)
+    def read_idl_definitions(self, idl_filename):
+        """Returns an IdlDefinitions object for an IDL file, including all dependencies."""
+        basename = os.path.basename(idl_filename)
+        interface_name, _ = os.path.splitext(basename)
+        definitions = self.read_idl_file(idl_filename)
+        if self.interface_dependency_resolver:
+            should_generate_bindings = self.interface_dependency_resolver.resolve_dependencies(definitions, interface_name)
+            if not should_generate_bindings:
+                return None
+        return definitions
+
+    def read_idl_file(self, idl_filename):
+        """Returns an IdlDefinitions object for an IDL file, without any dependencies."""
+        ast = blink_idl_parser.parse_file(self.parser, idl_filename)
+        definitions = idl_definitions_builder.build_idl_definitions_from_ast(ast)
+        if self.extended_attribute_validator:
+            try:
+                self.extended_attribute_validator.validate_extended_attributes(definitions)
+            except idl_validator.IDLInvalidExtendedAttributeError, error:
+                raise idl_validator.IDLInvalidExtendedAttributeError("""IDL ATTRIBUTE ERROR in file %s:
+    %s
+    If you want to add a new IDL extended attribute, please add it to bindings/scripts/IDLAttributes.txt and add an explanation to the Blink IDL document at http://chromium.org/blink/webidl
+    """ % (idl_filename, str(error)))
+
+        return definitions
