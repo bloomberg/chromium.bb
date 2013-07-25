@@ -65,7 +65,15 @@ IN_PROC_BROWSER_TEST_F(AdViewTest, DISABLED_DisplayFirstAd) {
 
 // This test checks that <adview> attributes are also exposed as properties
 // (with the same name and value).
-IN_PROC_BROWSER_TEST_F(AdViewTest, PropertiesAreInSyncWithAttributes) {
+#if defined(OS_WIN)
+// Flaky on Win XP. (http://crbug.com/264362)
+#define MAYBE_PropertiesAreInSyncWithAttributes \
+    DISABLED_PropertiesAreInSyncWithAttributes
+#else
+#define MAYBE_PropertiesAreInSyncWithAttributes \
+    PropertiesAreInSyncWithAttributes
+#endif
+IN_PROC_BROWSER_TEST_F(AdViewTest, MAYBE_PropertiesAreInSyncWithAttributes) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ASSERT_TRUE(RunPlatformAppTest(
