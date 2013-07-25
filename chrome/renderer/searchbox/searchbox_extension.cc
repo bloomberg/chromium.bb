@@ -80,14 +80,6 @@ v8::Handle<v8::String> GenerateThumbnailURL(
                                            most_visited_item_id));
 }
 
-v8::Handle<v8::String> GenerateFaviconURL(
-    int render_view_id,
-    InstantRestrictedID most_visited_item_id) {
-  return UTF8ToV8String(base::StringPrintf("chrome-search://favicon/%d/%d",
-                                           render_view_id,
-                                           most_visited_item_id));
-}
-
 // Populates a Javascript MostVisitedItem object from |mv_item|.
 // NOTE: Includes "url", "title" and "domain" which are private data, so should
 // not be returned to the Instant page. These should be erased before returning
@@ -118,11 +110,10 @@ v8::Handle<v8::Object> GenerateMostVisitedItem(
     title = UTF8ToUTF16(mv_item.url.spec());
 
   v8::Handle<v8::Object> obj = v8::Object::New();
+  obj->Set(v8::String::New("renderViewId"), v8::Int32::New(render_view_id));
   obj->Set(v8::String::New("rid"), v8::Int32::New(restricted_id));
   obj->Set(v8::String::New("thumbnailUrl"),
            GenerateThumbnailURL(render_view_id, restricted_id));
-  obj->Set(v8::String::New("faviconUrl"),
-           GenerateFaviconURL(render_view_id, restricted_id));
   obj->Set(v8::String::New("title"), UTF16ToV8String(title));
   obj->Set(v8::String::New("domain"), UTF8ToV8String(mv_item.url.host()));
   obj->Set(v8::String::New("direction"), UTF8ToV8String(direction));

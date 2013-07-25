@@ -83,14 +83,22 @@ if (!chrome.embeddedSearch) {
       function GetMostVisitedItemsWrapper() {
         var mostVisitedItems = GetMostVisitedItems();
         for (var i = 0, item; item = mostVisitedItems[i]; ++i) {
+          item.faviconUrl = GenerateFaviconURL(item.renderViewId, item.rid);
           // These properties are private data and should not be returned to
           // the page. They are only accessible via getMostVisitedItemData().
           item.url = null;
           item.title = null;
           item.domain = null;
           item.direction = null;
+          item.renderViewId = null;
         }
         return mostVisitedItems;
+      }
+
+      function GenerateFaviconURL(renderViewId, rid) {
+        return "chrome-search://favicon/size/16@" +
+            window.devicePixelRatio + "x/" +
+            renderViewId + "/" + rid;
       }
 
       // =======================================================================

@@ -36,11 +36,13 @@ class SearchBox : public content::RenderViewObserver,
 
   // Generates the favicon URL of the most visited item specified by the
   // |transient_url|. If the |transient_url| is valid, returns true and fills in
-  // |url|. If the |transient_url| is invalid, returns false  and |url| is not
-  // set.
+  // |url|. If the |transient_url| is invalid, returns true and |url| is set to
+  // "chrome-search://favicon/" in order to prevent the invalid URL to be
+  // requested.
   //
-  // Valid form of |transient_url|:
-  //    chrome-search://favicon/<render_view_id>/<most_visited_item_id>
+  // Valid forms of |transient_url|:
+  //    chrome-search://favicon/<view_id>/<restricted_id>
+  //    chrome-search://favicon/<favicon_parameters>/<view_id>/<restricted_id>
   bool GenerateFaviconURLFromTransientURL(const GURL& transient_url,
                                           GURL* url) const;
 
