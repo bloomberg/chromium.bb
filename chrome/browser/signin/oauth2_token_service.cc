@@ -309,6 +309,14 @@ bool OAuth2TokenService::RefreshTokenIsAvailable() {
 scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
+  return StartRequestWithContext(GetRequestContext(), scopes, consumer);
+}
+
+scoped_ptr<OAuth2TokenService::Request>
+OAuth2TokenService::StartRequestWithContext(
+    net::URLRequestContextGetter* getter,
+    const ScopeSet& scopes,
+    Consumer* consumer) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
@@ -340,10 +348,7 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
   }
 
   pending_fetchers_[fetch_parameters] =
-      Fetcher::CreateAndStart(this,
-                              GetRequestContext(),
-                              refresh_token,
-                              scopes,
+      Fetcher::CreateAndStart(this, getter, refresh_token, scopes,
                               request->AsWeakPtr());
   return request.PassAs<Request>();
 }

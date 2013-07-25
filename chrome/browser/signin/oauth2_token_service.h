@@ -117,6 +117,14 @@ class OAuth2TokenService {
   virtual scoped_ptr<Request> StartRequest(const ScopeSet& scopes,
                                            Consumer* consumer);
 
+  // This method does the same as |StartRequest| except it uses the request
+  // context given by |getter| instead of using the one returned by
+  // |GetRequestContext| implemented by derived classes.
+  virtual scoped_ptr<Request> StartRequestWithContext(
+      net::URLRequestContextGetter* getter,
+      const ScopeSet& scopes,
+      Consumer* consumer);
+
   // Returns true if a refresh token exists. If false, calls to
   // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
   virtual bool RefreshTokenIsAvailable();

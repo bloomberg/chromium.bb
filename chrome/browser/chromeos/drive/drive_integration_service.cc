@@ -232,6 +232,13 @@ void DriveIntegrationService::Shutdown() {
     drive_notification_manager->RemoveObserver(this);
 
   RemoveDriveMountPoint();
+  debug_info_collector_.reset();
+  download_handler_.reset();
+  file_write_helper_.reset();
+  file_system_.reset();
+  drive_app_registry_.reset();
+  scheduler_.reset();
+  drive_service_.reset();
 }
 
 void DriveIntegrationService::AddObserver(

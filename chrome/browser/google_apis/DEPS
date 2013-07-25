@@ -8,14 +8,9 @@ include_rules = [
 specific_include_rules = {
   # AuthService should be gone. crbug.com/162157
   "auth_service\.(h|cc)": [
-    "!chrome/browser/chrome_notification_types.h",
     "!chrome/browser/profiles/profile.h",
-    "!chrome/browser/signin/token_service_factory.h",
-    "!chrome/browser/signin/token_service.h",
-    "!content/public/browser/notification_details.h",
-    "!content/public/browser/notification_observer.h",
-    "!content/public/browser/notification_registrar.h",
-    "!content/public/browser/notification_source.h",
-    "!content/public/browser/notification_types.h",
+    "!chrome/browser/signin/oauth2_token_service.h",
+    "!chrome/browser/signin/profile_oauth2_token_service.h",
+    "!chrome/browser/signin/profile_oauth2_token_service_factory.h",
   ],
 }
