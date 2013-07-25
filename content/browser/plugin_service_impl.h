@@ -24,6 +24,7 @@
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/common/pepper_plugin_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "url/gurl.h"
 

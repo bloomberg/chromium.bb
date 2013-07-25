@@ -318,6 +318,8 @@
     'renderer/pepper/pepper_platform_video_capture_impl.h',
     'renderer/pepper/pepper_plugin_delegate_impl.cc',
     'renderer/pepper/pepper_plugin_delegate_impl.h',
+    'renderer/pepper/pepper_plugin_registry.cc',
+    'renderer/pepper/pepper_plugin_registry.h',
     'renderer/pepper/pepper_proxy_channel_delegate_impl.cc',
     'renderer/pepper/pepper_proxy_channel_delegate_impl.h',
     'renderer/pepper/pepper_truetype_font.h',

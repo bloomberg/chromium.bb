@@ -284,8 +284,8 @@
     'common/page_state_serialization.h',
     'common/page_zoom.cc',
     'common/pepper_messages.h',
-    'common/pepper_plugin_registry.cc',
-    'common/pepper_plugin_registry.h',
+    'common/pepper_plugin_list.cc',
+    'common/pepper_plugin_list.h',
     'common/pepper_renderer_instance_data.cc',
     'common/pepper_renderer_instance_data.h',
     'common/plugin_carbon_interpose_constants_mac.cc',
@@ -455,8 +455,8 @@
       ],
     }, {  # enable_plugins == 0
       'sources!': [
-        'common/pepper_plugin_registry.cc',
-        'common/pepper_plugin_registry.h',
+        'common/pepper_plugin_list.cc',
+        'common/pepper_plugin_list.h',
       ],
     }],
     ['enable_gpu==1', {

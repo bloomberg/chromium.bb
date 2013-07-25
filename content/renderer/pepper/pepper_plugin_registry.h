@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_PEPPER_PLUGIN_REGISTRY_H_
-#define CONTENT_COMMON_PEPPER_PLUGIN_REGISTRY_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_REGISTRY_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_REGISTRY_H_
 
 #include <list>
 #include <map>
 
+#include "base/memory/ref_counted.h"
 #include "content/public/common/pepper_plugin_info.h"
 
-// TODO(jam): refactor
-#include "content/renderer/pepper/plugin_module.h"
+namespace webkit {
+namespace ppapi {
+class PluginModule;
+}
+}
 
 namespace content {
-
-// Constructs a PepperPluginInfo from a WebPluginInfo. Returns false if
-// the operation is not possible, in particular the WebPluginInfo::type
-// must be one of the pepper types.
-bool MakePepperPluginInfo(const WebPluginInfo& webplugin_info,
-                          PepperPluginInfo* pepper_info);
 
 // This class holds references to all of the known pepper plugin modules.
 //
@@ -31,20 +29,6 @@ class PepperPluginRegistry {
   ~PepperPluginRegistry();
 
   static PepperPluginRegistry* GetInstance();
-
-  // Computes the list of known pepper plugins.
-  //
-  // This method is static so that it can be used by the browser process, which
-  // has no need to load the pepper plugin modules. It will re-compute the
-  // plugin list every time it is called. Generally, code in the registry should
-  // be using the cached plugin_list_ instead.
-  CONTENT_EXPORT static void ComputeList(
-      std::vector<PepperPluginInfo>* plugins);
-
-  // Loads the (native) libraries but does not initialize them (i.e., does not
-  // call PPP_InitializeModule). This is needed by the zygote on Linux to get
-  // access to the plugins before entering the sandbox.
-  static void PreloadModules();
 
   // Retrieves the information associated with the given plugin info. The
   // return value will be NULL if there is no such plugin.
@@ -95,4 +79,4 @@ class PepperPluginRegistry {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_PEPPER_PLUGIN_REGISTRY_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_REGISTRY_H_
