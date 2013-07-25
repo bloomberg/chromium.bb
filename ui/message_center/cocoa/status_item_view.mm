@@ -177,7 +177,7 @@ const CGFloat kUnreadCountMinY = 4;
   if (unreadCount_ > 9)
     count = @"9+";
   else
-    count = [NSString stringWithFormat:@"%"PRIuS, unreadCount_];
+    count = [NSString stringWithFormat:@"%" PRIuS, unreadCount_];
 
   NSColor* fontColor = [self shouldHighlight] ? [NSColor whiteColor]
                                               : [NSColor blackColor];

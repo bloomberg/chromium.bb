@@ -34,7 +34,7 @@ std::string BasicHttpResponse::ToResponseString() const {
                       http_reason_phrase.c_str());
   base::StringAppendF(&response_builder, "Connection: close\r\n");
   base::StringAppendF(&response_builder,
-                      "Content-Length: %"PRIuS"\r\n",
+                      "Content-Length: %" PRIuS "\r\n",
                       content_.size());
   base::StringAppendF(&response_builder,
                       "Content-Type: %s\r\n",

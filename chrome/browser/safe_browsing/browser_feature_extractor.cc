@@ -118,7 +118,7 @@ static void AddNavigationFeatures(
     if (redirect_chain[i].SchemeIsSecure()) {
       printable_redirect = features::kSecureRedirectValue;
     }
-    AddFeature(base::StringPrintf("%s%s[%"PRIuS"]=%s",
+    AddFeature(base::StringPrintf("%s%s[%" PRIuS "]=%s",
                                   feature_prefix.c_str(),
                                   features::kRedirect,
                                   i,

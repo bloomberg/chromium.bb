@@ -44,7 +44,7 @@ class ChromiumLogger : public Logger {
       ::base::Time::Now().LocalExplode(&t);
 
       p += ::base::snprintf(p, limit - p,
-                    "%04d/%02d/%02d-%02d:%02d:%02d.%03d %"PRIu64" ",
+                    "%04d/%02d/%02d-%02d:%02d:%02d.%03d %" PRIu64 " ",
                     t.year,
                     t.month,
                     t.day_of_month,

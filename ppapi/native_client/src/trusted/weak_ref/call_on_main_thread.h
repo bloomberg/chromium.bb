@@ -165,8 +165,8 @@ class WeakRefMemberFuncBinder {
         data_(raw_data) {}
   void Invoke(int32_t err) {
     NaClLog2(kPpWeakRefModuleName, 4,
-             ("WeakRefMemberFuncBinder: Invoke obj 0x%"NACL_PRIxPTR
-              ", err%"NACL_PRId32"\n"),
+             ("WeakRefMemberFuncBinder: Invoke obj 0x%" NACL_PRIxPTR
+              ", err%" NACL_PRId32 "\n"),
              reinterpret_cast<uintptr_t>(object_), err);
     (object_->*raw_callback_fn_)(data_.get(), err);
     NaClLog2(kPpWeakRefModuleName, 4,
@@ -182,7 +182,7 @@ template <typename R, typename E>
 void WeakRefMemberFuncInvoker(
     WeakRefMemberFuncBinder<R, E> *binder, int32_t err) {
   NaClLog2(kPpWeakRefModuleName, 4,
-           "WeakRefMemberFuncInvoker: %"NACL_PRIxPTR" %"NACL_PRId32"\n",
+           "WeakRefMemberFuncInvoker: %" NACL_PRIxPTR " %" NACL_PRId32 "\n",
            (uintptr_t) binder,
            err);
   binder->Invoke(err);
@@ -210,7 +210,7 @@ pp::CompletionCallback WeakRefNewCallback(
   NaClLog2(kPpWeakRefModuleName, 4,
            "Entered WeakRefNewCallback\n");
   NaClLog2(kPpWeakRefModuleName, 4,
-           "object 0x%"NACL_PRIxPTR"\n",
+           "object 0x%" NACL_PRIxPTR "\n",
            reinterpret_cast<uintptr_t>(object));
   WeakRefMemberFuncBinder<R, E>* binder =
       new WeakRefMemberFuncBinder<R, E>(object,
@@ -218,7 +218,7 @@ pp::CompletionCallback WeakRefNewCallback(
                                         raw_data);
   CHECK(binder != NULL);
   NaClLog2(kPpWeakRefModuleName, 4,
-           "WeakRefNewCallback: binder %"NACL_PRIxPTR"\n",
+           "WeakRefNewCallback: binder %" NACL_PRIxPTR "\n",
            (uintptr_t) binder);
   void (*weak_ref_member_func_invoker_ptr)(
       WeakRefMemberFuncBinder<R, E>* binder,

@@ -631,7 +631,7 @@ bool Plugin::NexeIsContentHandler() const {
 
 
 Plugin* Plugin::New(PP_Instance pp_instance) {
-  PLUGIN_PRINTF(("Plugin::New (pp_instance=%"NACL_PRId32")\n", pp_instance));
+  PLUGIN_PRINTF(("Plugin::New (pp_instance=%" NACL_PRId32 ")\n", pp_instance));
   Plugin* plugin = new Plugin(pp_instance);
   PLUGIN_PRINTF(("Plugin::New (plugin=%p)\n", static_cast<void*>(plugin)));
   if (plugin == NULL) {
@@ -645,7 +645,7 @@ Plugin* Plugin::New(PP_Instance pp_instance) {
 // there is no need to log to JS console that there was an initialization
 // failure. Note that module loading functions will log their own errors.
 bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
-  PLUGIN_PRINTF(("Plugin::Init (argc=%"NACL_PRIu32")\n", argc));
+  PLUGIN_PRINTF(("Plugin::Init (argc=%" NACL_PRIu32 ")\n", argc));
   HistogramEnumerateOsArch(GetSandboxISA());
   init_time_ = NaClGetTimeOfDayMicroseconds();
 
@@ -740,7 +740,7 @@ Plugin::Plugin(PP_Instance pp_instance)
       time_of_last_progress_event_(0),
       nacl_interface_(NULL) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
-                 NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
+                 NACL_PRId32 ")\n", static_cast<void*>(this), pp_instance));
   callback_factory_.Initialize(this);
   nexe_downloader_.Initialize(this);
   nacl_interface_ = GetNaClInterface();
@@ -844,10 +844,10 @@ void Plugin::HistogramStartupTimeMedium(const std::string& name, float dt) {
 }
 
 void Plugin::NexeFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (pp_error=%"NACL_PRId32")\n",
+  PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (pp_error=%" NACL_PRId32 ")\n",
                  pp_error));
   struct NaClFileInfo info = nexe_downloader_.GetFileInfo();
-  PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (file_desc=%"NACL_PRId32")\n",
+  PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (file_desc=%" NACL_PRId32 ")\n",
                  info.desc));
   HistogramHTTPStatusCode(
       is_installed_ ?
@@ -953,7 +953,7 @@ void Plugin::CopyCrashLogToJsConsole() {
   size_t ix_start = 0;
   size_t ix_end;
 
-  PLUGIN_PRINTF(("Plugin::CopyCrashLogToJsConsole: got %"NACL_PRIuS" bytes\n",
+  PLUGIN_PRINTF(("Plugin::CopyCrashLogToJsConsole: got %" NACL_PRIuS " bytes\n",
                  fatal_msg.size()));
   while (nacl::string::npos != (ix_end = fatal_msg.find('\n', ix_start))) {
     LogLineToConsole(this, fatal_msg.substr(ix_start, ix_end - ix_start));
@@ -965,7 +965,7 @@ void Plugin::CopyCrashLogToJsConsole() {
 }
 
 void Plugin::NexeDidCrash(int32_t pp_error) {
-  PLUGIN_PRINTF(("Plugin::NexeDidCrash (pp_error=%"NACL_PRId32")\n",
+  PLUGIN_PRINTF(("Plugin::NexeDidCrash (pp_error=%" NACL_PRId32 ")\n",
                  pp_error));
   if (pp_error != PP_OK) {
     PLUGIN_PRINTF(("Plugin::NexeDidCrash: CallOnMainThread callback with"
@@ -1012,7 +1012,7 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
-  PLUGIN_PRINTF(("Plugin::BitcodeDidTranslate (pp_error=%"NACL_PRId32")\n",
+  PLUGIN_PRINTF(("Plugin::BitcodeDidTranslate (pp_error=%" NACL_PRId32 ")\n",
                  pp_error));
   if (pp_error != PP_OK) {
     // Error should have been reported by pnacl. Just return.
@@ -1080,7 +1080,7 @@ void Plugin::ReportDeadNexe() {
 
 void Plugin::NaClManifestBufferReady(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NaClManifestBufferReady (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   ErrorInfo error_info;
   set_manifest_url(nexe_downloader_.url());
   if (pp_error != PP_OK) {
@@ -1117,7 +1117,7 @@ void Plugin::NaClManifestBufferReady(int32_t pp_error) {
 
 void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   HistogramTimeSmall("NaCl.Perf.StartupTime.ManifestDownload",
                      nexe_downloader_.TimeSinceOpenMilliseconds());
   HistogramHTTPStatusCode(
@@ -1131,7 +1131,7 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   set_manifest_url(nexe_downloader_.url());
   struct NaClFileInfo info = nexe_downloader_.GetFileInfo();
   PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (file_desc=%"
-                 NACL_PRId32")\n", info.desc));
+                 NACL_PRId32 ")\n", info.desc));
   if (pp_error != PP_OK || info.desc == NACL_NO_FILE_DESC) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
@@ -1313,7 +1313,7 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json,
 void Plugin::UrlDidOpenForStreamAsFile(int32_t pp_error,
                                        FileDownloader*& url_downloader,
                                        PP_CompletionCallback callback) {
-  PLUGIN_PRINTF(("Plugin::UrlDidOpen (pp_error=%"NACL_PRId32
+  PLUGIN_PRINTF(("Plugin::UrlDidOpen (pp_error=%" NACL_PRId32
                  ", url_downloader=%p)\n", pp_error,
                  static_cast<void*>(url_downloader)));
   url_downloaders_.erase(url_downloader);
@@ -1513,7 +1513,7 @@ void Plugin::EnqueueProgressEvent(const char* event_type,
                                   uint64_t total_bytes) {
   PLUGIN_PRINTF(("Plugin::EnqueueProgressEvent ("
                  "event_type='%s', url='%s', length_computable=%d, "
-                 "loaded=%"NACL_PRIu64", total=%"NACL_PRIu64")\n",
+                 "loaded=%" NACL_PRIu64 ", total=%" NACL_PRIu64 ")\n",
                  event_type,
                  url.c_str(),
                  static_cast<int>(length_computable),
@@ -1541,7 +1541,7 @@ void Plugin::ReportSelLdrLoadStatus(int status) {
 
 void Plugin::DispatchProgressEvent(int32_t result) {
   PLUGIN_PRINTF(("Plugin::DispatchProgressEvent (result=%"
-                 NACL_PRId32")\n", result));
+                 NACL_PRId32 ")\n", result));
   if (result < 0) {
     return;
   }
@@ -1553,7 +1553,7 @@ void Plugin::DispatchProgressEvent(int32_t result) {
   progress_events_.pop();
   PLUGIN_PRINTF(("Plugin::DispatchProgressEvent ("
                  "event_type='%s', url='%s', length_computable=%d, "
-                 "loaded=%"NACL_PRIu64", total=%"NACL_PRIu64")\n",
+                 "loaded=%" NACL_PRIu64 ", total=%" NACL_PRIu64 ")\n",
                  event->event_type(),
                  event->url(),
                  static_cast<int>(event->length_computable()),

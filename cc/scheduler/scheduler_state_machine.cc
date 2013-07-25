@@ -83,12 +83,12 @@ std::string SchedulerStateMachine::ToString() {
                       main_thread_needs_layer_textures_);
   base::StringAppendF(&str, "inside_begin_frame_ = %d; ",
       inside_begin_frame_);
-  base::StringAppendF(&str, "last_frame_time_ = %"PRId64"; ",
+  base::StringAppendF(&str, "last_frame_time_ = %" PRId64 "; ",
       (last_begin_frame_args_.frame_time - base::TimeTicks())
           .InMilliseconds());
-  base::StringAppendF(&str, "last_deadline_ = %"PRId64"; ",
+  base::StringAppendF(&str, "last_deadline_ = %" PRId64 "; ",
       (last_begin_frame_args_.deadline - base::TimeTicks()).InMilliseconds());
-  base::StringAppendF(&str, "last_interval_ = %"PRId64"; ",
+  base::StringAppendF(&str, "last_interval_ = %" PRId64 "; ",
       last_begin_frame_args_.interval.InMilliseconds());
   base::StringAppendF(&str, "visible_ = %d; ", visible_);
   base::StringAppendF(&str, "can_start_ = %d; ", can_start_);

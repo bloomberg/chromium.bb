@@ -274,7 +274,7 @@ int main(int argc, char* argv[]) {
 
   fetcher->Start();
   std::printf(
-      "Request started at %s (ticks = %"PRId64")\n",
+      "Request started at %s (ticks = %" PRId64 ")\n",
       UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(start_time)).c_str(),
       start_ticks.ToInternalValue());
 
@@ -285,7 +285,7 @@ int main(int argc, char* argv[]) {
   const base::TimeTicks end_ticks = base::TimeTicks::Now();
 
   std::printf(
-      "Request ended at %s (ticks = %"PRId64")\n",
+      "Request ended at %s (ticks = %" PRId64 ")\n",
       UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(end_time)).c_str(),
       end_ticks.ToInternalValue());
 
@@ -294,7 +294,7 @@ int main(int argc, char* argv[]) {
   const base::TimeDelta delta_ticks = end_ticks - start_ticks;
 
   std::printf(
-      "Request took %"PRId64" ticks (%.2f ms)\n",
+      "Request took %" PRId64 " ticks (%.2f ms)\n",
       delta_ticks_internal, delta_ticks.InMillisecondsF());
 
   const net::URLRequestStatus status = fetcher->GetStatus();

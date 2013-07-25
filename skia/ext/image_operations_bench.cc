@@ -249,7 +249,7 @@ bool Benchmark::Run() const {
   const uint64 num_bytes = static_cast<uint64>(num_iterations_) *
       (GetBitmapSize(&source) + GetBitmapSize(&dest));
 
-  printf("%"PRIu64" MB/s,\telapsed = %"PRIu64" source=%d dest=%d\n",
+  printf("%" PRIu64 " MB/s,\telapsed = %" PRIu64 " source=%d dest=%d\n",
          static_cast<uint64>(elapsed_us == 0 ? 0 : num_bytes / elapsed_us),
          static_cast<uint64>(elapsed_us),
          GetBitmapSize(&source), GetBitmapSize(&dest));

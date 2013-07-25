@@ -206,9 +206,10 @@ TEST_F(WhitelistManagerTest, DownloadWhitelistRetry) {
   for (size_t i = 0; i < arraysize(kBackoffDelaysInMs); ++i) {
     DownloadWhitelist(net::HTTP_INTERNAL_SERVER_ERROR,
                       kDownloadWhitelistResponse);
-    SCOPED_TRACE(
-        base::StringPrintf("Testing retry %"PRIuS", expecting delay: %"PRId64,
-                           i, kBackoffDelaysInMs[i]));
+    SCOPED_TRACE(base::StringPrintf("Testing retry %" PRIuS
+                                    ", expecting delay: %" PRId64,
+                                    i,
+                                    kBackoffDelaysInMs[i]));
     EXPECT_EQ(
         kBackoffDelaysInMs[i],
         whitelist_manager_->download_interval().InMillisecondsRoundedUp());

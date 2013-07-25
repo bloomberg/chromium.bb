@@ -74,7 +74,7 @@ net::HttpResponseHeaders* BuildHttpHeaders(
   if (!last_modified_time.is_null()) {
     // Hash the time and make an etag to avoid exposing the exact
     // user installation time of the extension.
-    std::string hash = base::StringPrintf("%"PRId64"",
+    std::string hash = base::StringPrintf("%" PRId64,
                                           last_modified_time.ToInternalValue());
     hash = base::SHA1HashString(hash);
     std::string etag;

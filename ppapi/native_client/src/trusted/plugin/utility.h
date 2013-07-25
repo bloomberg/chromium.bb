@@ -44,7 +44,7 @@ extern FILE* NaClPluginLogFileEnv();
 #define PLUGIN_PRINTF(args) do {                                      \
     INIT_PLUGIN_LOGGING();                                            \
     if (0 != ::plugin::gNaClPluginDebugPrintEnabled) {                \
-      ::plugin::NaClPluginPrintLog("PLUGIN %"NACL_PRIu64": ",         \
+      ::plugin::NaClPluginPrintLog("PLUGIN %" NACL_PRIu64 ": ",       \
                                    NaClGetTimeOfDayMicroseconds());   \
       ::plugin::NaClPluginPrintLog args;                              \
     }                                                                 \

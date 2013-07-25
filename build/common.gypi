@@ -3133,10 +3133,7 @@
               # this is worth fixing.
               '-Wno-c++11-narrowing',
 
-              # This warns about code like |"0x%08"NACL_PRIxPTR| -- with C++11
-              # user-defined literals, this is now a string literal with a UD
-              # suffix. However, this is used heavily in NaCl code, so disable
-              # the warning for now.
+              # TODO(thakis): Remove, http://crbug.com/263960
               '-Wno-reserved-user-defined-literal',
 
               # Clang considers the `register` keyword as deprecated, but e.g.
@@ -3830,10 +3827,7 @@
                 # this is worth fixing.
                 '-Wno-c++11-narrowing',
 
-                # This warns about code like |"0x%08"NACL_PRIxPTR| -- with C++11
-                # user-defined literals, this is now a string literal with a UD
-                # suffix. However, this is used heavily in NaCl code, so disable
-                # the warning for now.
+                # TODO(thakis): Remove, http://crbug.com/263960
                 '-Wno-reserved-user-defined-literal',
 
                 # Don't die on dtoa code that uses a char as an array index.
@@ -4141,6 +4135,7 @@
             '-Wno-unnamed-type-template-args',
             # Match OS X clang C++11 warning settings.
             '-Wno-c++11-narrowing',
+            # TODO(thakis): Remove, http://crbug.com/263960
             '-Wno-reserved-user-defined-literal',
           ],
         },

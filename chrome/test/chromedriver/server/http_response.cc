@@ -122,7 +122,7 @@ void HttpResponse::GetData(std::string* data) const {
   std::string length;
   if (!GetHeader(kContentLengthHeader, &length)) {
     *data += base::StringPrintf(
-        "%s:%"PRIuS"\r\n",
+        "%s:%" PRIuS "\r\n",
         kContentLengthHeader, body_.length());
   }
   *data += "\r\n";

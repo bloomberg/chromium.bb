@@ -537,8 +537,8 @@ void PluginReverseInterface::QuotaRequest_MainThreadResponse(
     int32_t err) {
   NaClLog(4,
           "PluginReverseInterface::QuotaRequest_MainThreadResponse:"
-          " (resource=%"NACL_PRIx32", offset=%"NACL_PRId64", requested=%"
-          NACL_PRId64", err=%"NACL_PRId32")\n",
+          " (resource=%" NACL_PRIx32 ", offset=%" NACL_PRId64 ", requested=%"
+          NACL_PRId64 ", err=%" NACL_PRId32 ")\n",
           request->data.resource,
           request->offset, request->bytes_requested, err);
   nacl::MutexLocker take(&mu_);
@@ -556,8 +556,8 @@ int64_t PluginReverseInterface::RequestQuotaForWrite(
     nacl::string file_id, int64_t offset, int64_t bytes_to_write) {
   NaClLog(4,
           "PluginReverseInterface::RequestQuotaForWrite:"
-          " (file_id='%s', offset=%"NACL_PRId64", bytes_to_write=%"
-          NACL_PRId64")\n", file_id.c_str(), offset, bytes_to_write);
+          " (file_id='%s', offset=%" NACL_PRId64 ", bytes_to_write=%"
+          NACL_PRId64 ")\n", file_id.c_str(), offset, bytes_to_write);
   QuotaData quota_data;
   {
     nacl::MutexLocker take(&mu_);
@@ -605,7 +605,7 @@ void PluginReverseInterface::AddQuotaManagedFile(const nacl::string& file_id,
   PP_Resource resource = file_io.pp_resource();
   NaClLog(4,
           "PluginReverseInterface::AddQuotaManagedFile: "
-          "(file_id='%s', file_io_ref=%"NACL_PRIx32")\n",
+          "(file_id='%s', file_io_ref=%" NACL_PRIx32 ")\n",
           file_id.c_str(), resource);
   nacl::MutexLocker take(&mu_);
   uint64_t file_key = STRTOULL(file_id.c_str(), NULL, 10);
@@ -670,7 +670,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
   }
   //  Get connection capability to service runtime where the IMC
   //  server/SRPC client is waiting for a rendezvous.
-  NaClLog(4, "ServiceRuntime: got 0x%"NACL_PRIxPTR"\n",
+  NaClLog(4, "ServiceRuntime: got 0x%" NACL_PRIxPTR "\n",
           (uintptr_t) out_conn_cap);
   nacl::DescWrapper* conn_cap = plugin_->wrapper_factory()->MakeGenericCleanup(
       out_conn_cap);

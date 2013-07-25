@@ -341,7 +341,7 @@ void PnaclCoordinator::ExitWithError() {
 // Signal that Pnacl translation completed normally.
 void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::TranslateFinished (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   // Bail out if there was an earlier error (e.g., pexe load failure).
   if (translate_finish_error_ != PP_OK) {
     ExitWithError();
@@ -475,7 +475,7 @@ void PnaclCoordinator::CachedNexeOpenedForWrite(int32_t pp_error) {
   }
   if (num_read < 0) {
     PLUGIN_PRINTF(("PnaclCoordinator::CachedNexeOpenedForWrite read failed "
-                   "(error=%"NACL_PRId32")\n", num_read));
+                   "(error=%" NACL_PRId32 ")\n", num_read));
     NexeWasCopiedToCache(PP_ERROR_FAILED);
     return;
   }
@@ -488,8 +488,8 @@ void PnaclCoordinator::DidCopyNexeToCachePartial(int32_t pp_error,
                                                  int32_t num_read_prev,
                                                  int64_t cur_offset) {
   PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial "
-                 "(pp_error=%"NACL_PRId32", num_read_prev=%"NACL_PRId32""
-                 ", cur_offset=%"NACL_PRId64").\n",
+                 "(pp_error=%" NACL_PRId32 ", num_read_prev=%" NACL_PRId32
+                 ", cur_offset=%" NACL_PRId64 ").\n",
                  pp_error, num_read_prev, cur_offset));
   // Assume we are done.
   if (pp_error == PP_OK) {
@@ -498,7 +498,7 @@ void PnaclCoordinator::DidCopyNexeToCachePartial(int32_t pp_error,
   }
   if (pp_error < PP_OK) {
     PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial failed (err=%"
-                   NACL_PRId32")\n", pp_error));
+                   NACL_PRId32 ")\n", pp_error));
     NexeWasCopiedToCache(pp_error);
     return;
   }
@@ -507,15 +507,15 @@ void PnaclCoordinator::DidCopyNexeToCachePartial(int32_t pp_error,
   nacl::DescWrapper* read_wrapper = temp_nexe_file_->read_wrapper();
   if (pp_error != num_read_prev) {
     PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial partial "
-                   "write (bytes_written=%"NACL_PRId32" vs "
-                   "read=%"NACL_PRId32")\n", pp_error, num_read_prev));
+                   "write (bytes_written=%" NACL_PRId32 " vs "
+                   "read=%" NACL_PRId32 ")\n", pp_error, num_read_prev));
     CHECK(pp_error < num_read_prev);
     // Seek back to re-read the bytes that were not written.
     nacl_off64_t seek_result =
         read_wrapper->Seek(pp_error - num_read_prev, SEEK_CUR);
     if (seek_result < 0) {
       PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial seek failed "
-                     "(err=%"NACL_PRId64")\n", seek_result));
+                     "(err=%" NACL_PRId64 ")\n", seek_result));
       NexeWasCopiedToCache(PP_ERROR_FAILED);
       return;
     }
@@ -526,7 +526,7 @@ void PnaclCoordinator::DidCopyNexeToCachePartial(int32_t pp_error,
   int32_t num_read =
     nacl::assert_cast<int32_t>(read_wrapper->Read(buf, sizeof buf));
   PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial read (bytes=%"
-                 NACL_PRId32")\n", num_read));
+                 NACL_PRId32 ")\n", num_read));
   // Hit EOF or something.
   if (num_read == 0) {
     NexeWasCopiedToCache(PP_OK);
@@ -534,14 +534,14 @@ void PnaclCoordinator::DidCopyNexeToCachePartial(int32_t pp_error,
   }
   if (num_read < 0) {
     PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial read failed "
-                   "(error=%"NACL_PRId32")\n", num_read));
+                   "(error=%" NACL_PRId32 ")\n", num_read));
     NexeWasCopiedToCache(PP_ERROR_FAILED);
     return;
   }
   pp::CompletionCallback cb = callback_factory_.NewCallback(
       &PnaclCoordinator::DidCopyNexeToCachePartial, num_read, next_offset);
   PLUGIN_PRINTF(("PnaclCoordinator::CopyNexeToCache Writing ("
-                 "bytes=%"NACL_PRId32", buf=%p, file_io=%p)\n", num_read, buf,
+                 "bytes=%" NACL_PRId32 ", buf=%p, file_io=%p)\n", num_read, buf,
                  cached_nexe_file_->write_file_io()));
   cached_nexe_file_->write_file_io()->Write(next_offset, buf, num_read, cb);
 }
@@ -568,7 +568,7 @@ void PnaclCoordinator::CorruptCacheFileWasDeleted(int32_t delete_pp_error,
     // The cache file was certainly already opened by the time we tried
     // to write to it, so it should certainly be deletable.
     PLUGIN_PRINTF(("PnaclCoordinator::CorruptCacheFileWasDeleted "
-                   "delete failed with pp_error=%"NACL_PRId32"\n",
+                   "delete failed with pp_error=%" NACL_PRId32 "\n",
                    delete_pp_error));
     // fall through and report the original error.
   }
@@ -594,7 +594,7 @@ void PnaclCoordinator::CorruptCacheFileWasDeleted(int32_t delete_pp_error,
 
 void PnaclCoordinator::NexeFileWasRenamed(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::NexeFileWasRenamed (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
     if (pp_error == PP_ERROR_NOACCESS) {
       ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_RENAME_NOACCESS,
@@ -635,7 +635,7 @@ void PnaclCoordinator::NexeFileWasRenamed(int32_t pp_error) {
 
 void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::NexeReadDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
     if (pp_error == PP_ERROR_FILENOTFOUND) {
       ReportPpapiError(ERROR_PNACL_CACHE_FETCH_NOTFOUND,
@@ -666,7 +666,7 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
 
 void PnaclCoordinator::ResourceInfoWasRead(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginCoordinator::ResourceInfoWasRead (pp_error=%"
-                NACL_PRId32")\n", pp_error));
+                NACL_PRId32 ")\n", pp_error));
   // Second step of loading resources: call StartLoad.
   pp::CompletionCallback resources_cb =
       callback_factory_.NewCallback(&PnaclCoordinator::ResourcesDidLoad);
@@ -675,7 +675,7 @@ void PnaclCoordinator::ResourceInfoWasRead(int32_t pp_error) {
 
 void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::ResourcesDidLoad (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
     // Finer-grained error code should have already been reported by
     // the PnaclResources class.
@@ -717,7 +717,7 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
 
 void PnaclCoordinator::FileSystemDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::FileSystemDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
     if (pp_error == PP_ERROR_NOACCESS) {
       ReportPpapiError(
@@ -756,7 +756,7 @@ void PnaclCoordinator::FileSystemDidOpen(int32_t pp_error) {
 
 void PnaclCoordinator::DirectoryWasCreated(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::DirectoryWasCreated (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_ERROR_FILEEXISTS && pp_error != PP_OK) {
     // Directory did not exist and could not be created.
     if (pp_error == PP_ERROR_NOACCESS) {
@@ -878,7 +878,7 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
 
 void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::NexeFdDidOpen (pp_error=%"
-                 NACL_PRId32", hit=%d, handle=%d)\n", pp_error,
+                 NACL_PRId32 ", hit=%d, handle=%d)\n", pp_error,
                  is_cache_hit_ == PP_TRUE,
                  nexe_handle_));
   if (pp_error < PP_OK) {
@@ -923,7 +923,7 @@ void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
 
 void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::CachedFileDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   if (pp_error == PP_OK) {
     // Cache hit -- no need to stream the rest of the file.
     streaming_downloader_.reset(NULL);
@@ -942,7 +942,7 @@ void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
 
 void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeStreamDidFinish (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
     // Defer reporting the error and cleanup until after the translation
     // thread returns, because it may be accessing the coordinator's
@@ -971,7 +971,7 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
 void PnaclCoordinator::BitcodeStreamGotData(int32_t pp_error,
                                             FileStreamData data) {
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeStreamGotData (pp_error=%"
-                 NACL_PRId32", data=%p)\n", pp_error, data ? &(*data)[0] : 0));
+                 NACL_PRId32 ", data=%p)\n", pp_error, data ? &(*data)[0] : 0));
   DCHECK(translate_thread_.get());
 
   translate_thread_->PutBytes(data, pp_error);
@@ -1029,7 +1029,7 @@ void PnaclCoordinator::GetCurrentProgress(int64_t* bytes_loaded,
 
 void PnaclCoordinator::ObjectFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::ObjectFileDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
     ReportPpapiError(ERROR_PNACL_CREATE_TEMP,
                      pp_error,
@@ -1049,7 +1049,7 @@ void PnaclCoordinator::ObjectFileDidOpen(int32_t pp_error) {
 
 void PnaclCoordinator::RunTranslate(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::RunTranslate (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+                 NACL_PRId32 ")\n", pp_error));
   // Invoke llc followed by ld off the main thread.  This allows use of
   // blocking RPCs that would otherwise block the JavaScript main thread.
   pp::CompletionCallback report_translate_finished =

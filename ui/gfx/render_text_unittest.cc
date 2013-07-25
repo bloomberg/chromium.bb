@@ -29,11 +29,11 @@ namespace {
 // Various weak, LTR, RTL, and Bidi string cases with three characters each.
 const wchar_t kWeak[] =      L" . ";
 const wchar_t kLtr[] =       L"abc";
-const wchar_t kLtrRtl[] =    L"a"L"\x5d0\x5d1";
-const wchar_t kLtrRtlLtr[] = L"a"L"\x5d1"L"b";
+const wchar_t kLtrRtl[] =    L"a" L"\x5d0\x5d1";
+const wchar_t kLtrRtlLtr[] = L"a" L"\x5d1" L"b";
 const wchar_t kRtl[] =       L"\x5d0\x5d1\x5d2";
-const wchar_t kRtlLtr[] =    L"\x5d0\x5d1"L"a";
-const wchar_t kRtlLtrRtl[] = L"\x5d0"L"a"L"\x5d1";
+const wchar_t kRtlLtr[] =    L"\x5d0\x5d1" L"a";
+const wchar_t kRtlLtrRtl[] = L"\x5d0" L"a" L"\x5d1";
 
 // Checks whether |range| contains |index|. This is not the same as calling
 // |range.Contains(ui::Range(index))| - as that would return true when

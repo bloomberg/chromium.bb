@@ -30,7 +30,7 @@ TempFile::TempFile(Plugin* plugin) : plugin_(plugin),
   PLUGIN_PRINTF(("TempFile::TempFile\n"));
   ++next_identifier;
   SNPRINTF(reinterpret_cast<char *>(identifier_), sizeof identifier_,
-           "%"NACL_PRIu32, next_identifier);
+           "%" NACL_PRIu32, next_identifier);
 }
 
 TempFile::~TempFile() {

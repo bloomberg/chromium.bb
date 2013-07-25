@@ -208,7 +208,7 @@ void ScriptablePlugin::GetAllPropertyNames(std::vector<pp::Var>* properties,
 pp::Var ScriptablePlugin::Call(const pp::Var& name,
                                const std::vector<pp::Var>& args,
                                pp::Var* exception) {
-  PLUGIN_PRINTF(("ScriptablePlugin::Call (name=%s, %"NACL_PRIuS
+  PLUGIN_PRINTF(("ScriptablePlugin::Call (name=%s, %" NACL_PRIuS
                  " args)\n", name.DebugString().c_str(), args.size()));
   return Error("Call", name.DebugString().c_str(),
                "method invocation is not supported", exception);
@@ -217,7 +217,7 @@ pp::Var ScriptablePlugin::Call(const pp::Var& name,
 
 pp::Var ScriptablePlugin::Construct(const std::vector<pp::Var>& args,
                                     pp::Var* exception) {
-  PLUGIN_PRINTF(("ScriptablePlugin::Construct (%"NACL_PRIuS
+  PLUGIN_PRINTF(("ScriptablePlugin::Construct (%" NACL_PRIuS
                  " args)\n", args.size()));
   return Error("constructor", "Construct", "constructor is not supported",
                exception);
