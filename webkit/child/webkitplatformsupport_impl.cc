@@ -27,7 +27,7 @@
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "content/public/common/webplugininfo.h"
-#include "grit/webkit_chromium_resources.h"
+#include "grit/blink_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
 #include "net/base/data_url.h"

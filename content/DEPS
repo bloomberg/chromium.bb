@@ -27,10 +27,10 @@ include_rules = [
   "-cc/base/scoped_ptr_vector.h",
 
   "+crypto",
+  "+grit/blink_resources.h",
   "+grit/content_resources.h",
   "+grit/ui_resources.h",
   "+grit/ui_strings.h",
-  "+grit/webkit_chromium_resources.h",
   "+grit/webkit_resources.h",
   "+grit/webkit_strings.h",
   "+grit/webui_resources_map.h",

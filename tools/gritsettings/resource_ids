@@ -66,15 +66,9 @@
   "chrome_frame/resources/chrome_frame_resources.grd": {
     "includes": [8000],
   },
-  # WebKit.grd can be in two different places depending on whether we are
-  # in a chromium checkout or a webkit-only checkout.
-  "third_party/WebKit/Source/WebKit/chromium/WebKit.grd": {
+  "third_party/WebKit/public/blink_resources.grd": {
     "includes": [8500],
   },
-  "WebKit.grd": {
-    "includes": [8500],
-  },
-
   "ui/base/strings/app_locale_settings.grd": {
     "messages": [9000],
   },
