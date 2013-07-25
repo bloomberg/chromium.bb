@@ -90,6 +90,18 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback);
 
+  // Tells the device specified by |device_path| to register to the cellular
+  // network with id |network_id|. If |network_id| is empty then registration
+  // will proceed in automatic mode, which will cause the modem to register
+  // with the home network.
+  // This call is only available on cellular devices and will fail with
+  // Error.NotSupported on all other technologies.
+  void RegisterCellularNetwork(
+      const std::string& device_path,
+      const std::string& network_id,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback);
+
   // Tells the device to set the modem carrier firmware, as specified by
   // |carrier|.
   //

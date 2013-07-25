@@ -178,6 +178,18 @@ void NetworkDeviceHandler::ProposeScan(
       base::Bind(&ProposeScanCallback, device_path, callback, error_callback));
 }
 
+void NetworkDeviceHandler::RegisterCellularNetwork(
+    const std::string& device_path,
+    const std::string& network_id,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetShillDeviceClient()->Register(
+      dbus::ObjectPath(device_path),
+      network_id,
+      callback,
+      base::Bind(&HandleShillCallFailure, device_path, error_callback));
+}
+
 void NetworkDeviceHandler::SetCarrier(
     const std::string& device_path,
     const std::string& carrier,

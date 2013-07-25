@@ -9,19 +9,25 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/network/device_state.h"
+#include "chromeos/network/network_device_handler.h"
+#include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -68,9 +74,24 @@ content::WebUIDataSource* CreateChooseMobileNetworkUIHTMLSource() {
   return source;
 }
 
+chromeos::NetworkDeviceHandler* GetNetworkDeviceHandler() {
+  return chromeos::NetworkHandler::Get()->network_device_handler();
+}
+
+chromeos::NetworkStateHandler* GetNetworkStateHandler() {
+  return chromeos::NetworkHandler::Get()->network_state_handler();
+}
+
+void NetworkOperationErrorCallback(
+    const std::string& operation_name,
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) {
+  NET_LOG_ERROR("Operation failed: " + error_name, operation_name);
+}
+
 class ChooseMobileNetworkHandler
     : public WebUIMessageHandler,
-      public NetworkLibrary::NetworkDeviceObserver {
+      public NetworkStateHandlerObserver {
  public:
   ChooseMobileNetworkHandler();
   virtual ~ChooseMobileNetworkHandler();
@@ -78,9 +99,8 @@ class ChooseMobileNetworkHandler
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // NetworkDeviceObserver implementation.
-  virtual void OnNetworkDeviceFoundNetworks(
-      NetworkLibrary* cros, const NetworkDevice* device) OVERRIDE;
+  // NetworkStateHandlerObserver implementation.
+  virtual void DeviceListChanged() OVERRIDE;
 
  private:
   // Handlers for JS WebUI messages.
@@ -99,20 +119,27 @@ class ChooseMobileNetworkHandler
 // ChooseMobileNetworkHandler implementation.
 
 ChooseMobileNetworkHandler::ChooseMobileNetworkHandler()
-    : is_page_ready_(false), has_pending_results_(false) {
-  NetworkLibrary* cros = NetworkLibrary::Get();
-  if (const NetworkDevice* cellular = cros->FindCellularDevice()) {
-    device_path_ = cellular->device_path();
-    cros->AddNetworkDeviceObserver(device_path_, this);
+    : is_page_ready_(false),
+      has_pending_results_(false) {
+  NetworkStateHandler* handler = GetNetworkStateHandler();
+  const DeviceState* cellular = handler->GetDeviceStateByType(
+      flimflam::kTypeCellular);
+  if (!cellular) {
+    NET_LOG_ERROR(
+        "A cellular device is not available.",
+        "Cannot initiate a cellular network scan without a cellular device.");
+    return;
   }
-  cros->RequestCellularScan();
+  handler->AddObserver(this, FROM_HERE);
+  device_path_ = cellular->path();
+  GetNetworkDeviceHandler()->ProposeScan(
+      device_path_,
+      base::Bind(&base::DoNothing),
+      base::Bind(&NetworkOperationErrorCallback, "ProposeScan"));
 }
 
 ChooseMobileNetworkHandler::~ChooseMobileNetworkHandler() {
-  if (!device_path_.empty()) {
-    NetworkLibrary* cros = NetworkLibrary::Get();
-    cros->RemoveNetworkDeviceObserver(device_path_, this);
-  }
+  GetNetworkStateHandler()->RemoveObserver(this, FROM_HERE);
 }
 
 void ChooseMobileNetworkHandler::RegisterMessages() {
@@ -130,14 +157,20 @@ void ChooseMobileNetworkHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ChooseMobileNetworkHandler::OnNetworkDeviceFoundNetworks(
-    NetworkLibrary* cros,
-    const NetworkDevice* device) {
+void ChooseMobileNetworkHandler::DeviceListChanged() {
+  const DeviceState* cellular = GetNetworkStateHandler()->GetDeviceState(
+      device_path_);
   networks_list_.Clear();
+  if (!cellular) {
+    LOG(WARNING) << "Cellular device with path '" << device_path_
+                 << "' disappeared.";
+    return;
+  }
+  const DeviceState::CellularScanResults& scan_results =
+      cellular->scan_results();
   std::set<std::string> network_ids;
-  const CellularNetworkList& found_networks = device->found_cellular_networks();
-  for (CellularNetworkList::const_iterator it = found_networks.begin();
-       it != found_networks.end(); ++it) {
+  for (DeviceState::CellularScanResults::const_iterator it =
+      scan_results.begin(); it != scan_results.end(); ++it) {
     // We need to remove duplicates from the list because same network with
     // different technologies are listed multiple times. But ModemManager
     // Register API doesn't allow technology to be specified so just show unique
@@ -173,8 +206,12 @@ void ChooseMobileNetworkHandler::HandleCancel(const ListValue* args) {
   }
 
   // Switch to automatic mode.
-  NetworkLibrary* cros = NetworkLibrary::Get();
-  cros->RequestCellularRegister(std::string());
+  GetNetworkDeviceHandler()->RegisterCellularNetwork(
+      device_path_,
+      "",  // An empty string is for registration with the home network.
+      base::Bind(&base::DoNothing),
+      base::Bind(&NetworkOperationErrorCallback,
+                 "Register in automatic mode."));
 }
 
 void ChooseMobileNetworkHandler::HandleConnect(const ListValue* args) {
@@ -186,8 +223,12 @@ void ChooseMobileNetworkHandler::HandleConnect(const ListValue* args) {
     return;
   }
 
-  NetworkLibrary* cros = NetworkLibrary::Get();
-  cros->RequestCellularRegister(network_id);
+  GetNetworkDeviceHandler()->RegisterCellularNetwork(
+      device_path_,
+      network_id,
+      base::Bind(&base::DoNothing),
+      base::Bind(&NetworkOperationErrorCallback,
+                 std::string("Register to network: ") + network_id));
 }
 
 void ChooseMobileNetworkHandler::HandlePageReady(const ListValue* args) {
