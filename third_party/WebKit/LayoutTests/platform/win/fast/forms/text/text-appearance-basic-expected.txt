@@ -72,7 +72,7 @@ layer at (446,137) size 273x28
     RenderText {#text} at (0,0) size 33x27
       text run at (0,0) width 33: "foo"
 layer at (17,194) size 224x24
-  RenderBlock {DIV} at (3,4) size 224x25
+  RenderBlock {DIV} at (3,4.50) size 224x24
     RenderText {#text} at (0,0) size 28x23
       text run at (0,0) width 28: "foo"
 layer at (266,186) size 300x33

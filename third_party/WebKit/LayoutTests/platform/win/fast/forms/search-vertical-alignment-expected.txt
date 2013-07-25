@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
         RenderTextControl {INPUT} at (2,0) size 155x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 149x39
             RenderBlock {DIV} at (2,13) size 13x13
-            RenderBlock {DIV} at (18,11) size 118x17
+            RenderBlock {DIV} at (18,11.50) size 118x16
             RenderBlock {DIV} at (137,15) size 9x9
         RenderText {#text} at (159,12) size 4x19
           text run at (159,12) width 4: " "
@@ -23,9 +23,9 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,117) size 784x20
         RenderTextControl {INPUT} at (2,2) size 155x16 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,0) size 149x16
-            RenderBlock {DIV} at (2,1) size 13x14
+            RenderBlock {DIV} at (2,1.50) size 13x13
             RenderBlock {DIV} at (18,0) size 118x16
-            RenderBlock {DIV} at (137,3) size 9x10
+            RenderBlock {DIV} at (137,3.50) size 9x9
         RenderText {#text} at (159,0) size 4x19
           text run at (159,0) width 4: " "
         RenderTextControl {INPUT} at (165,2) size 153x16 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -35,7 +35,7 @@ layer at (0,0) size 800x600
           RenderFlexibleBox {DIV} at (3,0) size 149x12
             RenderBlock {DIV} at (2,0) size 13x13
             RenderBlock {DIV} at (18,3) size 118x6
-            RenderBlock {DIV} at (137,1) size 9x10
+            RenderBlock {DIV} at (137,1.50) size 9x9
         RenderText {#text} at (159,0) size 4x19
           text run at (159,0) width 4: " "
         RenderTextControl {INPUT} at (165,3) size 153x12 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -45,7 +45,7 @@ layer at (31,79) size 118x16
     RenderText {#text} at (0,0) size 25x16
       text run at (0,0) width 25: "Text"
 layer at (175,79) size 149x16
-  RenderBlock {DIV} at (2,14) size 149x17
+  RenderBlock {DIV} at (2,14.50) size 149x16
     RenderText {#text} at (0,0) size 25x16
       text run at (0,0) width 25: "Text"
 layer at (31,127) size 118x16

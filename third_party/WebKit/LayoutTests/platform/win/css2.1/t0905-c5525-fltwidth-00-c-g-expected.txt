@@ -9,7 +9,7 @@ layer at (0,0) size 785x776
           text run at (0,37) width 80: "width "
           text run at (80,37) width 551: "of the viewport, on the left of the 50% ruler"
           text run at (0,74) width 72: "mark."
-      RenderBlock (floating) {DIV} at (0,143) size 385x380 [color=#FFFFFF] [bgcolor=#0000FF]
+      RenderBlock (floating) {DIV} at (0,143) size 384.50x380 [color=#FFFFFF] [bgcolor=#0000FF]
         RenderText {#text} at (0,0) size 384x379
           text run at (0,0) width 384: "ignore this float text ignore this float text ignore this"
           text run at (0,20) width 42: "float "

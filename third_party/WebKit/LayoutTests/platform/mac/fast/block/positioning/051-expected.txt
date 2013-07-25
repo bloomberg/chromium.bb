@@ -82,23 +82,23 @@ layer at (84,4994) size 200x200
     RenderText zI: -1 {#text} at (71,41) size 58x97
       text run at (71,41) width 58: "6"
 layer at (0,0) size 785x5270 layerType: foreground only
-  RenderBlock {HTML} at (0,0) size 785x5270
-    RenderBody {BODY} at (8,21) size 769x5233
+  RenderBlock {HTML} at (0,0) size 785x5269.88
+    RenderBody {BODY} at (8,21.44) size 769x5232.44
       RenderBlock {H1} at (0,0) size 769x37
         RenderText {#text} at (0,0) size 294x37
           text run at (0,0) width 294: "Layered Presentation"
-      RenderBlock {P} at (0,58) size 769x19
+      RenderBlock {P} at (0,58.44) size 769x18
         RenderText {#text} at (0,0) size 733x18
           text run at (0,0) width 398: "Robert O'Callahan pointed out to me some mistakes in this test "
           text run at (398,0) width 335: "that I have not yet had the time to examine or correct."
-      RenderBlock {P} at (0,92) size 769x19
+      RenderBlock {P} at (0,92.44) size 769x18
         RenderText {#text} at (0,0) size 463x18
           text run at (0,0) width 463: "In each of the following, 1 should be the top layer and 8 the bottom layer:"
-      RenderBlock {P} at (0,4578) size 769x19
+      RenderBlock {P} at (0,4578.44) size 769x18
         RenderText {#text} at (0,0) size 349x18
           text run at (0,0) width 349: "Using assumed default value of z-index (may not pass):"
 layer at (24,148) size 620x620
-  RenderBlock (relative positioned) {DIV} at (16,126) size 620x621 [border: (10px solid #000000)]
+  RenderBlock (relative positioned) {DIV} at (16,126.44) size 620x620 [border: (10px solid #000000)]
 layer at (84,208) size 200x200
   RenderBlock (positioned) {P} at (60,60) size 200x200 [color=#FFFFFF] [bgcolor=#990066]
     RenderText {#text} at (50,41) size 469x97
@@ -132,19 +132,19 @@ layer at (234,158) size 200x200
     RenderText {#text} at (71,41) size 58x97
       text run at (71,41) width 58: "1"
 layer at (24,784) size 620x620
-  RenderBlock (relative positioned) {DIV} at (16,762) size 620x621 [border: (10px solid #000000)]
+  RenderBlock (relative positioned) {DIV} at (16,762.44) size 620x620 [border: (10px solid #000000)]
 layer at (234,1194) size 200x200
   RenderBlock (positioned) {P} at (210,410) size 200x200 [color=#FFFFFF] [bgcolor=#009999]
     RenderText {#text} at (71,41) size 58x97
       text run at (71,41) width 58: "5"
 layer at (24,1420) size 620x620
-  RenderBlock (relative positioned) {DIV} at (16,1398) size 620x621 [border: (10px solid #000000)]
+  RenderBlock (relative positioned) {DIV} at (16,1398.44) size 620x620 [border: (10px solid #000000)]
 layer at (234,1830) size 200x200
   RenderBlock (positioned) {P} at (210,410) size 200x200 [color=#FFFFFF] [bgcolor=#009999]
     RenderText {#text} at (71,41) size 58x97
       text run at (71,41) width 58: "5"
 layer at (24,2056) size 620x620
-  RenderBlock (relative positioned) {DIV} at (16,2034) size 620x621 [border: (10px solid #000000)]
+  RenderBlock (relative positioned) {DIV} at (16,2034.44) size 620x620 [border: (10px solid #000000)]
 layer at (384,2416) size 200x200
   RenderBlock (positioned) {P} at (360,360) size 200x200 [color=#FFFFFF] [bgcolor=#00CC00]
     RenderText {#text} at (71,41) size 58x97
@@ -154,7 +154,7 @@ layer at (434,2266) size 200x200
     RenderText {#text} at (71,41) size 58x97
       text run at (71,41) width 58: "3"
 layer at (24,2692) size 620x620
-  RenderBlock (relative positioned) {DIV} at (16,2670) size 620x621 [border: (10px solid #000000)]
+  RenderBlock (relative positioned) {DIV} at (16,2670.44) size 620x620 [border: (10px solid #000000)]
 layer at (84,3052) size 200x200
   RenderBlock (positioned) {P} at (60,360) size 200x200 [color=#FFFFFF] [bgcolor=#0000FF]
     RenderText {#text} at (71,41) size 58x97
@@ -168,7 +168,7 @@ layer at (384,3052) size 200x200
     RenderText {#text} at (71,41) size 58x97
       text run at (71,41) width 58: "4"
 layer at (24,3328) size 620x620
-  RenderBlock (relative positioned) {DIV} at (16,3306) size 620x621 [border: (10px solid #000000)]
+  RenderBlock (relative positioned) {DIV} at (16,3306.44) size 620x620 [border: (10px solid #000000)]
 layer at (34,3338) size 600x600 layerType: background only
 layer at (84,3688) size 200x200
   RenderBlock (positioned) zI: -9 {P} at (50,350) size 200x200 [color=#FFFFFF] [bgcolor=#0000FF]
@@ -185,7 +185,7 @@ layer at (384,3688) size 200x200
     RenderText zI: 9 {#text} at (71,41) size 58x97
       text run at (71,41) width 58: "4"
 layer at (24,3964) size 620x620
-  RenderBlock (relative positioned) {DIV} at (16,3942) size 620x621 [border: (10px solid #000000)]
+  RenderBlock (relative positioned) {DIV} at (16,3942.44) size 620x620 [border: (10px solid #000000)]
 layer at (34,3974) size 600x600
   RenderBlock (positioned) {DIV} at (10,10) size 600x600
 layer at (234,4374) size 200x200
@@ -193,7 +193,7 @@ layer at (234,4374) size 200x200
     RenderText {#text} at (71,41) size 58x97
       text run at (71,41) width 58: "5"
 layer at (24,4634) size 620x620
-  RenderBlock (relative positioned) {DIV} at (16,4612) size 620x621 [border: (10px solid #000000)]
+  RenderBlock (relative positioned) {DIV} at (16,4612.44) size 620x620 [border: (10px solid #000000)]
 layer at (34,4644) size 600x600
   RenderBlock (positioned) {DIV} at (10,10) size 600x600
 layer at (234,5044) size 200x200

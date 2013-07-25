@@ -13,16 +13,16 @@ layer at (0,0) size 800x336
             RenderListMarker at (-17,0) size 7x18: bullet
             RenderText {#text} at (0,0) size 106x18
               text run at (0,0) width 106: "Orange orange..."
-          RenderBlock {UL} at (0,18) size 409x54
-            RenderListItem {LI} at (40,0) size 369x18
+          RenderBlock {UL} at (0,18) size 408.75x54
+            RenderListItem {LI} at (40,0) size 368.75x18
               RenderListMarker at (-17,0) size 7x18: white bullet
               RenderText {#text} at (0,0) size 114x18
                 text run at (0,0) width 114: "...orange orange..."
-            RenderListItem {LI} at (40,18) size 369x18
+            RenderListItem {LI} at (40,18) size 368.75x18
               RenderListMarker at (-17,0) size 7x18: white bullet
               RenderText {#text} at (0,0) size 114x18
                 text run at (0,0) width 114: "...orange orange..."
-            RenderListItem {LI} at (40,36) size 369x18
+            RenderListItem {LI} at (40,36) size 368.75x18
               RenderListMarker at (-17,0) size 7x18: white bullet
               RenderText {#text} at (0,0) size 106x18
                 text run at (0,0) width 106: "...orange orange."

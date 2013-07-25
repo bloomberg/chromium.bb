@@ -1,8 +1,8 @@
 layer at (0,0) size 785x791
   RenderView at (0,0) size 785x600
 layer at (0,0) size 785x790
-  RenderBlock {HTML} at (0,0) size 785x791
-    RenderBody {BODY} at (8,8) size 769x775 [bgcolor=#CCCCCC]
+  RenderBlock {HTML} at (0,0) size 785x790.33
+    RenderBody {BODY} at (8,8) size 769x774.33 [bgcolor=#CCCCCC]
       RenderBlock {P} at (0,0) size 769x20
         RenderText {#text} at (0,0) size 337x19
           text run at (0,0) width 337: "The style declarations which apply to the text below are:"
@@ -52,7 +52,7 @@ layer at (0,0) size 785x790
         RenderText {#text} at (81,48) size 405x15
           text run at (81,48) width 3: " "
           text run at (84,48) width 402: "The line spacing in the whole paragraph should be 12pt, with font-size 10pt."
-      RenderTable {TABLE} at (0,464) size 769x311 [border: (1px outset #808080)]
+      RenderTable {TABLE} at (0,464.33) size 769x310 [border: (1px outset #808080)]
         RenderTableSection {TBODY} at (1,1) size 767x308
           RenderTableRow {TR} at (0,0) size 767x28
             RenderTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]

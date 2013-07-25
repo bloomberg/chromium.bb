@@ -15,7 +15,7 @@ layer at (0,0) size 800x255
             text run at (9,8) width 45: "xxx"
         RenderText {#text} at (54,8) size 15x16
           text run at (54,8) width 15: " "
-        RenderImage {IMG} at (69,8) size 10x11
+        RenderImage {IMG} at (69,8.50) size 10x10
         RenderText {#text} at (79,8) size 15x16
           text run at (79,8) width 15: " "
         RenderInline {SPAN} at (0,0) size 114x39
@@ -23,7 +23,7 @@ layer at (0,0) size 800x255
             text run at (94,8) width 114: "xxx"
         RenderText {#text} at (208,8) size 15x16
           text run at (208,8) width 15: " "
-        RenderImage {IMG} at (223,8) size 10x11
+        RenderImage {IMG} at (223,8.50) size 10x10
         RenderText {#text} at (233,8) size 15x16
           text run at (233,8) width 15: " "
         RenderInline {SPAN} at (0,0) size 45x16
@@ -31,7 +31,7 @@ layer at (0,0) size 800x255
             text run at (248,8) width 45: "xxx"
         RenderText {#text} at (293,8) size 15x16
           text run at (293,8) width 15: " "
-        RenderImage {IMG} at (308,8) size 10x11
+        RenderImage {IMG} at (308,8.50) size 10x10
         RenderText {#text} at (318,8) size 15x16
           text run at (318,8) width 15: " "
         RenderInline {SPAN} at (0,0) size 45x16
@@ -39,7 +39,7 @@ layer at (0,0) size 800x255
             text run at (333,8) width 45: "xxx"
         RenderText {#text} at (378,8) size 15x16
           text run at (378,8) width 15: " "
-        RenderImage {IMG} at (393,8) size 10x11
+        RenderImage {IMG} at (393,8.50) size 10x10
         RenderText {#text} at (403,8) size 15x16
           text run at (403,8) width 15: " "
         RenderInline {BIG} at (0,0) size 60x21
@@ -47,7 +47,7 @@ layer at (0,0) size 800x255
             text run at (418,8) width 60: "xxx"
         RenderText {#text} at (478,8) size 15x16
           text run at (478,8) width 15: " "
-        RenderImage {IMG} at (493,8) size 20x21
+        RenderImage {IMG} at (493,8.50) size 20x20
         RenderText {#text} at (513,8) size 15x16
           text run at (513,8) width 15: " "
         RenderInline {SPAN} at (0,0) size 45x16
@@ -55,14 +55,14 @@ layer at (0,0) size 800x255
             text run at (528,8) width 45: "xxx"
         RenderText {#text} at (573,8) size 15x16
           text run at (573,8) width 15: " "
-        RenderImage {IMG} at (588,8) size 65x66
+        RenderImage {IMG} at (588,8.50) size 65x65
         RenderText {#text} at (653,8) size 15x16
           text run at (653,8) width 15: " "
         RenderInline {SPAN} at (0,0) size 45x16
           RenderText {#text} at (668,8) size 45x16
             text run at (668,8) width 45: "xxx"
         RenderText {#text} at (0,0) size 0x0
-        RenderImage {IMG} at (9,73) size 35x36
+        RenderImage {IMG} at (9,73.50) size 35x35
         RenderText {#text} at (44,73) size 15x16
           text run at (44,73) width 15: " "
         RenderInline {SPAN} at (0,0) size 90x31
@@ -70,7 +70,7 @@ layer at (0,0) size 800x255
             text run at (59,73) width 90: "xxx"
         RenderText {#text} at (149,73) size 15x16
           text run at (149,73) width 15: " "
-        RenderImage {IMG} at (164,73) size 50x51
+        RenderImage {IMG} at (164,73.50) size 50x50
         RenderText {#text} at (214,73) size 15x16
           text run at (214,73) width 15: " "
         RenderInline {SPAN} at (0,0) size 45x16
@@ -78,7 +78,7 @@ layer at (0,0) size 800x255
             text run at (229,73) width 45: "xxx"
         RenderText {#text} at (274,73) size 15x16
           text run at (274,73) width 15: " "
-        RenderImage {IMG} at (289,73) size 15x16
+        RenderImage {IMG} at (289,73.50) size 15x15
         RenderText {#text} at (304,73) size 15x16
           text run at (304,73) width 15: " "
         RenderInline {BIG} at (0,0) size 60x21
@@ -86,5 +86,5 @@ layer at (0,0) size 800x255
             text run at (319,73) width 60: "xxx"
         RenderText {#text} at (379,73) size 15x16
           text run at (379,73) width 15: " "
-        RenderImage {IMG} at (394,73) size 90x91
+        RenderImage {IMG} at (394,73.50) size 90x90
         RenderText {#text} at (0,0) size 0x0

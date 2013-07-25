@@ -22,17 +22,17 @@ layer at (0,0) size 800x198
         RenderText {#text} at (57,18) size 445x18
           text run at (57,18) width 445: " to each other. This should still remain true even after a window resize."
       RenderBlock {DIV} at (0,52) size 784x122
-        RenderImage {OBJECT} at (0,0) size 118x118
+        RenderImage {OBJECT} at (0,0) size 117.59x118
         RenderText {#text} at (117,104) size 5x18
           text run at (117,104) width 5: " "
-        RenderImage {OBJECT} at (121,0) size 119x118
+        RenderImage {OBJECT} at (121.59,0) size 117.59x118
         RenderText {#text} at (239,104) size 5x18
           text run at (239,104) width 5: " "
-        RenderImage {OBJECT} at (243,0) size 118x118
+        RenderImage {OBJECT} at (243.19,0) size 117.59x118
         RenderText {#text} at (360,104) size 5x18
           text run at (360,104) width 5: " "
-        RenderImage {OBJECT} at (364,0) size 119x118
+        RenderImage {OBJECT} at (364.78,0) size 117.59x118
         RenderText {#text} at (482,104) size 5x18
           text run at (482,104) width 5: " "
-        RenderImage {OBJECT} at (486,0) size 118x118
+        RenderImage {OBJECT} at (486.38,0) size 117.59x118
         RenderText {#text} at (0,0) size 0x0

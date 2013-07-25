@@ -13,7 +13,7 @@ layer at (0,0) size 800x259
             text run at (13,12) width 50: "X"
         RenderText {#text} at (63,29) size 50x51
           text run at (63,29) width 50: " "
-        RenderImage {IMG} at (113,19) size 50x51
+        RenderImage {IMG} at (113,19.50) size 50x50
         RenderText {#text} at (163,29) size 150x51
           text run at (163,29) width 150: " X "
         RenderInline {SPAN} at (0,0) size 50x51

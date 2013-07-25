@@ -75,15 +75,15 @@ layer at (0,0) size 800x381
               RenderText {#text} at (1,1) size 84x19
                 text run at (1,1) width 84: "padding: 10%"
             RenderTableCell {TD} at (161,82) size 60x37 [r=3 c=1 rs=1 cs=1]
-              RenderButton {BUTTON} at (3,3) size 26x32 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                RenderBlock (anonymous) at (7,7) size 11x17
+              RenderButton {BUTTON} at (3,3) size 25.59x31.59 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                RenderBlock (anonymous) at (7.80,7.80) size 10x16
                   RenderImage {IMG} at (0,3) size 10x10
             RenderTableCell {TD} at (221,90) size 150x22 [r=3 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 104x19
                 text run at (1,1) width 104: "(32, 26) (28, 22)"
             RenderTableCell {TD} at (371,76) size 126x50 [r=3 c=3 rs=1 cs=1]
-              RenderButton {INPUT} at (3,3) size 46x45 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                RenderBlock (anonymous) at (14,14) size 18x17
+              RenderButton {INPUT} at (3,3) size 45.78x44.78 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                RenderBlock (anonymous) at (14.39,14.39) size 17x16
                   RenderText {#text} at (0,0) size 17x16
                     text run at (0,0) width 17: "foo"
             RenderTableCell {TD} at (497,90) size 160x22 [r=3 c=4 rs=1 cs=1]

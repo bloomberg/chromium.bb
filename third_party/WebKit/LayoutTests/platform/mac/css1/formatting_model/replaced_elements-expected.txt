@@ -37,13 +37,13 @@ layer at (0,0) size 785x2341
       RenderBlock {P} at (0,316) size 769x18
         RenderText {#text} at (0,0) size 400x18
           text run at (0,0) width 400: "The above image should be a 15px square aligned at the center."
-      RenderImage {IMG} at (192,350) size 385x385
+      RenderImage {IMG} at (192.25,350) size 384.50x385
       RenderBlock {P} at (0,751) size 769x36
         RenderText {#text} at (0,0) size 766x36
           text run at (0,0) width 766: "The above image should be a square resized so its width is 50% of the its parent element, and centered horizontally within"
           text run at (0,18) width 123: "the parent element: "
           text run at (123,18) width 395: "the document body in the first half, and the table in the second."
-      RenderImage {IMG} at (384,803) size 385x385
+      RenderImage {IMG} at (384.50,803) size 384.50x385
       RenderBlock {P} at (0,1204) size 769x36
         RenderText {#text} at (0,0) size 758x36
           text run at (0,0) width 758: "The above image should be a square resized so its width is 50% of its parent element, and aligned at the right edge of the"
@@ -73,13 +73,13 @@ layer at (0,0) size 785x2341
               RenderBlock {P} at (4,135) size 747x18
                 RenderText {#text} at (0,0) size 400x18
                   text run at (0,0) width 400: "The above image should be a 15px square aligned at the center."
-              RenderImage {IMG} at (190,169) size 375x374
+              RenderImage {IMG} at (190.75,169) size 373.50x374
               RenderBlock {P} at (4,559) size 747x36
                 RenderText {#text} at (0,0) size 722x36
                   text run at (0,0) width 722: "The above image should be a square resized so its width is 50% of the its parent element, and centered horizontally"
                   text run at (0,18) width 167: "within the parent element: "
                   text run at (167,18) width 395: "the document body in the first half, and the table in the second."
-              RenderImage {IMG} at (377,611) size 374x374
+              RenderImage {IMG} at (377.50,611) size 373.50x374
               RenderBlock {P} at (4,1001) size 747x36
                 RenderText {#text} at (0,0) size 735x36
                   text run at (0,0) width 735: "The above image should be a square resized so its width is 50% of its parent element, and aligned at the right edge of"

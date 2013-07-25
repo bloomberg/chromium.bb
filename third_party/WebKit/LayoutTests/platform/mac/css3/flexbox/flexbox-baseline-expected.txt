@@ -35,11 +35,11 @@ layer at (0,0) size 800x494
     RenderBlock {DIV} at (0,100) size 800x72
       RenderText {#text} at (0,32) size 71x18
         text run at (0,32) width 71: "before text "
-      RenderFlexibleBox {DIV} at (71,5) size 152x68 [bgcolor=#D3D3D3]
-        RenderBlock {H2} at (0,19) size 114x29
+      RenderFlexibleBox {DIV} at (71,5) size 152x67.81 [bgcolor=#D3D3D3]
+        RenderBlock {H2} at (0,19.91) size 114x28
           RenderText {#text} at (0,0) size 114x28
             text run at (0,0) width 114: "h2 baseline"
-        RenderBlock {DIV} at (114,0) size 38x68
+        RenderBlock {DIV} at (114,0) size 38x67.81
           RenderText {#text} at (0,0) size 38x18
             text run at (0,0) width 38: "above"
       RenderText {#text} at (223,32) size 59x18
@@ -47,11 +47,11 @@ layer at (0,0) size 800x494
     RenderBlock {DIV} at (0,172) size 800x72
       RenderText {#text} at (0,5) size 71x18
         text run at (0,5) width 71: "before text "
-      RenderFlexibleBox {DIV} at (71,5) size 142x68 [bgcolor=#D3D3D3]
-        RenderBlock {DIV} at (0,0) size 51x68
+      RenderFlexibleBox {DIV} at (71,5) size 142x67.81 [bgcolor=#D3D3D3]
+        RenderBlock {DIV} at (0,0) size 51x67.81
           RenderText {#text} at (0,0) size 51x18
             text run at (0,0) width 51: "baseline"
-        RenderBlock {H2} at (51,19) size 91x29
+        RenderBlock {H2} at (51,19.91) size 91x28
           RenderText {#text} at (0,0) size 91x28
             text run at (0,0) width 91: "h2 below"
       RenderText {#text} at (213,5) size 59x18
@@ -97,8 +97,8 @@ layer at (0,0) size 800x494
       RenderText {#text} at (0,11) size 183x18
         text run at (0,11) width 183: "should align with the middle "
       RenderFlexibleBox {DIV} at (183,5) size 40x40 [bgcolor=#D3D3D3]
-        RenderBlock {DIV} at (0,0) size 40x21 [border: none (1px solid #000000) none]
-        RenderBlock {DIV} at (0,20) size 40x20
+        RenderBlock {DIV} at (0,0) size 40x20.50 [border: none (1px solid #000000) none]
+        RenderBlock {DIV} at (0,20.50) size 40x19.50
       RenderText {#text} at (223,11) size 124x18
         text run at (223,11) width 124: " of the grey flexbox"
     RenderBlock {DIV} at (0,455) size 800x39
@@ -198,12 +198,12 @@ layer at (400,0) size 360x417
           RenderTableCell {TD} at (105,2) size 22x20 [r=0 c=2 rs=1 cs=1]
             RenderText {#text} at (1,1) size 20x18
               text run at (1,1) width 20: "top"
-          RenderTableCell {TD} at (129,2) size 154x80 [r=0 c=3 rs=1 cs=1]
-            RenderFlexibleBox {DIV} at (1,11) size 152x68 [bgcolor=#808080]
-              RenderBlock {H2} at (0,19) size 114x29
+          RenderTableCell {TD} at (129,2) size 154x79.81 [r=0 c=3 rs=1 cs=1]
+            RenderFlexibleBox {DIV} at (1,11) size 152x67.81 [bgcolor=#808080]
+              RenderBlock {H2} at (0,19.91) size 114x28
                 RenderText {#text} at (0,0) size 114x28
                   text run at (0,0) width 114: "h2 baseline"
-              RenderBlock {DIV} at (114,0) size 38x68
+              RenderBlock {DIV} at (114,0) size 38x67.81
                 RenderText {#text} at (0,0) size 38x18
                   text run at (0,0) width 38: "above"
     RenderBlock {DIV} at (0,347) size 360x70

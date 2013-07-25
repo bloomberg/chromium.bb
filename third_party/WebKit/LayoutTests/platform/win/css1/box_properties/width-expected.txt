@@ -22,12 +22,12 @@ layer at (0,0) size 785x1391
         RenderText {#text} at (0,0) size 271x19
           text run at (0,0) width 271: "The square above should be fifty pixels wide."
       RenderBlock (anonymous) at (0,209) size 769x385
-        RenderImage {IMG} at (0,0) size 385x385
+        RenderImage {IMG} at (0,0) size 384.50x385
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,610) size 769x20
         RenderText {#text} at (0,0) size 641x19
           text run at (0,0) width 641: "The square above should be half as wide as the image's parent element (either the BODY or the table cell)."
-      RenderBlock {P} at (0,646) size 385x100
+      RenderBlock {P} at (0,646) size 384.50x100
         RenderText {#text} at (0,0) size 361x79
           text run at (0,0) width 361: "This paragraph should be half the width of its parent element"
           text run at (0,20) width 358: "(either the BODY or the table, which should itself be half as"
