@@ -255,14 +255,14 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd, UINT message,
   // This differs slightly from the WebKit code in WebKit/win/WebView.cpp
   // where their original code looks buggy.
   static int last_click_position_x;
-  static int last_click_position_Y;
+  static int last_click_position_y;
   static WebMouseEvent::Button last_click_button = WebMouseEvent::ButtonLeft;
 
   double current_time = result.timeStampSeconds;
   bool cancel_previous_click =
       (abs(last_click_position_x - result.x) >
           (::GetSystemMetrics(SM_CXDOUBLECLK) / 2))
-      || (abs(last_click_position_x - result.y) >
+      || (abs(last_click_position_y - result.y) >
           (::GetSystemMetrics(SM_CYDOUBLECLK) / 2))
       || ((current_time - g_last_click_time) * 1000.0 > ::GetDoubleClickTime());
 
@@ -272,7 +272,7 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd, UINT message,
     } else {
       g_last_click_count = 1;
       last_click_position_x = result.x;
-      last_click_position_x = result.y;
+      last_click_position_y = result.y;
     }
     g_last_click_time = current_time;
     last_click_button = result.button;
@@ -281,7 +281,7 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd, UINT message,
     if (cancel_previous_click) {
       g_last_click_count = 0;
       last_click_position_x = 0;
-      last_click_position_x = 0;
+      last_click_position_y = 0;
       g_last_click_time = 0;
     }
   }
