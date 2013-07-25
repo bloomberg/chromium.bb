@@ -1028,20 +1028,9 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
     if (document->isPluginDocument() && document->isSandboxed(SandboxPlugins))
         document = SinkDocument::create(DocumentInit(url, frame));
     bool shouldReuseDefaultView = frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument() && frame->document()->isSecureTransitionTo(url);
-
-    RefPtr<DOMWindow> originalDOMWindow;
-    if (shouldReuseDefaultView)
-        originalDOMWindow = frame->domWindow();
-    frame->loader()->clear(!shouldReuseDefaultView, !shouldReuseDefaultView);
-
-    if (!shouldReuseDefaultView) {
-        frame->setDOMWindow(DOMWindow::create(frame));
-    } else {
-        // Note that the old Document is still attached to the DOMWindow; the
-        // setDocument() call below will detach the old Document.
-        ASSERT(originalDOMWindow);
-        frame->setDOMWindow(originalDOMWindow);
-    }
+    FrameLoader::ClearOptions options = shouldReuseDefaultView ? 0 : (FrameLoader::ClearWindowProperties | FrameLoader::ClearScriptObjects | FrameLoader::ClearWindowObject);
+    frame->loader()->clear(options);
+    frame->ensureDOMWindow();
 
     frame->loader()->setOutgoingReferrer(url);
     frame->domWindow()->setDocument(document);
