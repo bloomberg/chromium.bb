@@ -1697,7 +1697,7 @@ crbug.com/254985 [ Win ] fast/events/space-scroll-event.html [ Crash Pass ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-count.html [ Pass Failure ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-fixed-layout.html [ Pass Failure ]
 
-crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
+crbug.com/256226 webmidi/requestmidiaccess.html [ Skip ]
 
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Pass Failure ]
 
