@@ -143,6 +143,8 @@ cr.define('help', function() {
         };
       }
 
+      cr.ui.FocusManager.disableMouseFocusOnButtons();
+
       // Attempt to update.
       chrome.send('onPageLoaded');
     },
