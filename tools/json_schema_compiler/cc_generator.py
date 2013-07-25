@@ -620,7 +620,7 @@ class _Generator(object):
       (c.Append('const base::ListValue* list = NULL;')
         .Append('if (!%(src_var)s->GetAsList(&list))')
         .Append('  return %(failure_value)s;'))
-      item_type = underlying_type.item_type
+      item_type = self._type_helper.FollowRef(underlying_type.item_type)
       if item_type.property_type == PropertyType.ENUM:
         c.Concat(self._GenerateListValueToEnumArrayConversion(
                      item_type,

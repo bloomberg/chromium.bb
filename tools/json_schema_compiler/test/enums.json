@@ -62,6 +62,26 @@
         ]
       },
       {
+        "name": "takesEnumArray",
+        "type": "function",
+        "description": "Takes an enum array as its parameter.",
+        "parameters": [
+          {
+            "name": "values",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["foo", "bar", "baz"]
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "takesEnumAsType",
         "type": "function",
         "description": "Takes an enum type as its parameter.",
@@ -69,6 +89,25 @@
           {
             "name": "enumeration",
             "$ref": "Enumeration"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "takesEnumArrayAsType",
+        "type": "function",
+        "description": "Takes an enum type array as its parameter.",
+        "parameters": [
+          {
+            "name": "values",
+            "type": "array",
+            "items": {
+              "$ref": "Enumeration"
+            }
           },
           {
             "name": "callback",

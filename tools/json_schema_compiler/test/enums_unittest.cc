@@ -5,8 +5,10 @@
 #include "tools/json_schema_compiler/test/enums.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "tools/json_schema_compiler/test/test_util.h"
 
 using namespace test::api::enums;
+using json_schema_compiler::test_util::List;
 
 TEST(JsonSchemaCompilerEnumsTest, EnumTypePopulate) {
   {
@@ -50,6 +52,27 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
     value.Set("optional_enumeration", Value::CreateStringValue("two"));
     ASSERT_TRUE(HasEnumeration::Populate(value, &enumeration));
     EXPECT_TRUE(value.Equals(enumeration.ToValue().get()));
+  }
+}
+
+TEST(JsonSchemaCompilerEnumsTest, EnumsArrayAsType) {
+  {
+    ListValue params_value;
+    params_value.Append(List(Value::CreateStringValue("one"),
+                             Value::CreateStringValue("two")).release());
+    scoped_ptr<TakesEnumArrayAsType::Params> params(
+        TakesEnumArrayAsType::Params::Create(params_value));
+    ASSERT_TRUE(params);
+    EXPECT_EQ(2U, params->values.size());
+    EXPECT_EQ(ENUMERATION_ONE, params->values[0]);
+    EXPECT_EQ(ENUMERATION_TWO, params->values[1]);
+  }
+  {
+    ListValue params_value;
+    params_value.Append(List(Value::CreateStringValue("invalid")).release());
+    scoped_ptr<TakesEnumArrayAsType::Params> params(
+        TakesEnumArrayAsType::Params::Create(params_value));
+    EXPECT_FALSE(params);
   }
 }
 
@@ -121,6 +144,27 @@ TEST(JsonSchemaCompilerEnumsTest, TakesEnumParamsCreate) {
     scoped_ptr<TakesEnum::Params> params(
         TakesEnum::Params::Create(params_value));
     EXPECT_FALSE(params.get());
+  }
+}
+
+TEST(JsonSchemaCompilerEnumsTest, TakesEnumArrayParamsCreate) {
+  {
+    ListValue params_value;
+    params_value.Append(List(Value::CreateStringValue("foo"),
+                             Value::CreateStringValue("bar")).release());
+    scoped_ptr<TakesEnumArray::Params> params(
+        TakesEnumArray::Params::Create(params_value));
+    ASSERT_TRUE(params);
+    EXPECT_EQ(2U, params->values.size());
+    EXPECT_EQ(TakesEnumArray::Params::VALUES_TYPE_FOO, params->values[0]);
+    EXPECT_EQ(TakesEnumArray::Params::VALUES_TYPE_BAR, params->values[1]);
+  }
+  {
+    ListValue params_value;
+    params_value.Append(List(Value::CreateStringValue("invalid")).release());
+    scoped_ptr<TakesEnumArray::Params> params(
+        TakesEnumArray::Params::Create(params_value));
+    EXPECT_FALSE(params);
   }
 }
 
