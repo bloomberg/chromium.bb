@@ -1106,8 +1106,7 @@ class IsolateNoOutdir(IsolateBase):
 class IsolateOther(IsolateBase):
   def test_run_mixed(self):
     # Test when a user mapped from a directory and then replay from another
-    # directory. It's a specific use-case of the builder/tester setup of the
-    # chromium CI setup.
+    # directory. This is a very rare corner case.
     indir = os.path.join(self.tempdir, 'input')
     os.mkdir(indir)
     for i in ('simple.py', 'simple.isolate'):

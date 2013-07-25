@@ -19,6 +19,11 @@ import tempfile
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+# Default servers.
+ISOLATE_SERVER = 'https://isolateserver.appspot.com/'
+SWARM_SERVER = 'https://chromium-swarm.appspot.com/'
+
+
 def run(cmd, verbose):
   if verbose:
     cmd = cmd + ['--verbose']
@@ -33,11 +38,11 @@ def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
       '-i', '--isolate-server',
-      default='https://isolateserver.appspot.com/',
+      default=ISOLATE_SERVER,
       help='Isolate server to use default:%default')
   parser.add_option(
       '-s', '--swarm-server',
-      default='https://chromium-swarm.appspot.com/',
+      default=SWARM_SERVER,
       help='Isolate server to use default:%default')
   parser.add_option('-v', '--verbose', action='store_true')
   options, args = parser.parse_args()

@@ -178,7 +178,7 @@ class Manifest(object):
       'cleanup': 'root',
     }
 
-    # These flags are chromium-specific.
+    # These flags are googletest specific.
     if self.test_filter and self.test_filter != '*':
       test_case['env_vars']['GTEST_FILTER'] = self.test_filter
     if self.shards > 1:

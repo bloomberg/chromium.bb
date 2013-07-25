@@ -30,6 +30,11 @@ import run_test_cases
 OSES = {'win32': 'win', 'linux2': 'linux', 'darwin': 'mac'}
 
 
+# Default servers.
+SWARM_SERVER = 'https://chromium-swarm-dev.appspot.com/'
+ISOLATE_SERVER = 'https://isolateserver-dev.appspot.com/'
+
+
 class Runner(object):
   def __init__(self, isolate_server, swarm_server, add_task, progress, tempdir):
     self.isolate_server = isolate_server
@@ -178,11 +183,11 @@ def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
       '-i', '--isolate-server',
-      default='https://isolateserver-dev.appspot.com/',
+      default=ISOLATE_SERVER,
       help='Isolate server to use default:%default')
   parser.add_option(
       '-s', '--swarm-server',
-      default='https://chromium-swarm-dev.appspot.com/',
+      default=SWARM_SERVER,
       help='Isolate server to use default:%default')
   parser.add_option(
       '-l', '--logs',

@@ -21,6 +21,11 @@ import run_isolated
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+# Default servers.
+ISOLATE_SERVER = 'https://isolateserver-dev.appspot.com/'
+SWARM_SERVER = 'https://chromium-swarm-dev.appspot.com'
+
+
 def run(cmd, verbose):
   if verbose:
     print('Running: %s' % ' '.join(cmd))
@@ -109,11 +114,11 @@ def main():
   parser.add_option(
       '-u', '--swarm-url',
       metavar='URL',
-      default='https://chromium-swarm-dev.appspot.com',
+      default=SWARM_SERVER,
       help='Specify the url of the Swarm server. Defaults to %default')
   parser.add_option(
       '-d', '--data-server',
-      default='https://isolateserver-dev.appspot.com/',
+      default=ISOLATE_SERVER,
       metavar='URL',
       help='The server where all the test data is stored. Defaults to %default')
   parser.add_option('-v', '--verbose', action='store_true')

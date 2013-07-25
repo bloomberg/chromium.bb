@@ -8,7 +8,8 @@
 Run ./isolate.py --help for more detailed information.
 
 See more information at
-http://dev.chromium.org/developers/testing/isolated-testing
+https://code.google.com/p/swarming/wiki/IsolateDesign
+https://code.google.com/p/swarming/wiki/IsolateUserGuide
 """
 
 import ast
@@ -1528,7 +1529,7 @@ class SavedState(Flattenable):
   def to_isolated(self):
     """Creates a .isolated dictionary out of the saved state.
 
-    http://chromium.org/developers/testing/isolated-testing/design
+    https://code.google.com/p/swarming/wiki/IsolateDesign
     """
     def strip(data):
       """Returns a 'files' entry with only the whitelisted keys."""
@@ -2260,9 +2261,7 @@ def parse_isolated_option(parser, options, cwd, require_isolated):
     options.isolated = os.path.normpath(
         os.path.join(cwd, options.isolated.replace('/', os.path.sep)))
   if require_isolated and not options.isolated:
-    parser.error('--isolated is required. Visit http://chromium.org/developers/'
-                 'testing/isolated-testing#TOC-Where-can-I-find-the-.isolated-'
-                 'file- to see how to create the .isolated file.')
+    parser.error('--isolated is required.')
   if options.isolated and not options.isolated.endswith('.isolated'):
     parser.error('--isolated value must end with \'.isolated\'')
 

@@ -15,8 +15,7 @@ import subprocess
 import sys
 
 
-# This is copied from scripts/common/chromium_utils.py, which we can't import
-# because this script must be a standalone script.
+# This is copied from Chromium's project build/scripts/common/chromium_utils.py.
 def RemoveDirectory(*path):
   """Recursively removes a directory, even if it's marked read-only.
 
@@ -56,18 +55,17 @@ def RemoveDirectory(*path):
 
   def RmTreeOnError(function, path, excinfo):
     """This works around a problem whereby python 2.x on Windows has no ability
-    to check for symbolic links.  os.path.islink always returns False.  But
-    shutil.rmtree will fail if invoked on a symbolic link whose target was
-    deleted before the link.  E.g., reproduce like this:
+    to check for symbolic links. os.path.islink() always returns False but
+    shutil.rmtree() will fail if invoked on a symbolic link whose target was
+    deleted before the link. E.g., reproduce like this:
     > mkdir test
     > mkdir test\1
     > mklink /D test\current test\1
-    > python -c "import chromium_utils; chromium_utils.RemoveDirectory('test')"
-    To avoid this issue, we pass this error-handling function to rmtree.  If
-    we see the exact sort of failure, we ignore it.  All other failures we re-
-    raise.
+    > python -c "import shutl; shutil.rmtree('test')"
+    To avoid this issue, we pass this error-handling function to rmtree. If we
+    see the exact sort of failure, we ignore it.  All other failures we
+    re-raise.
     """
-
     exception_type = excinfo[0]
     exception_value = excinfo[1]
     # If shutil.rmtree encounters a symbolic link on Windows, os.listdir will

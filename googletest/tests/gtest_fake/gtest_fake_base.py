@@ -43,9 +43,7 @@ def get_footer(number, total):
     '[==========] %(number)d test from %(total)d test case ran. (30 ms total)\n'
     '[  PASSED  ] %(number)d test.\n'
     '\n'
-    '  YOU HAVE 5 DISABLED TESTS\n'
-    '\n'
-    '  YOU HAVE 2 tests with ignored failures (FAILS prefix)\n') % {
+    '  YOU HAVE 5 DISABLED TESTS\n') % {
       'number': number,
       'total': total,
     }
@@ -68,8 +66,6 @@ def parse_args(all_tests, need_arg):
       print '%s.' % fixture
       for case in cases:
         print '  ' + case
-    print '  YOU HAVE 2 tests with ignored failures (FAILS prefix)'
-    print ''
     sys.exit(0)
 
   if options.gtest_filter:

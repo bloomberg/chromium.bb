@@ -695,7 +695,7 @@ if sys.platform != 'win32':
       lines = [
           # It's fine as long as there is nothing after.
         ( self._ROOT_PID,
-          'openat(AT_FDCWD, "/tmp/.org.chromium.Chromium.NLRojh/Plugins", '
+          'openat(AT_FDCWD, "/tmp/random_dir/Plugins", '
           'O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC'),
       ]
       expected = {

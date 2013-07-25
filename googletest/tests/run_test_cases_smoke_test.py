@@ -486,9 +486,7 @@ class RunTestCases(unittest.TestCase):
           os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_fail.py'),
         ])
 
-    expected_out = (
-      'Foo.\n  Bar1\n  Bar2\n  Bar3\nBaz.\n  Fail\n'
-      '  YOU HAVE 2 tests with ignored failures (FAILS prefix)\n\n')
+    expected_out = 'Foo.\n  Bar1\n  Bar2\n  Bar3\nBaz.\n  Fail\n'
     self.assertEqual('', err)
     self.assertEqual(expected_out, out)
     self.assertEqual(0, return_code)
