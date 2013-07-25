@@ -23,8 +23,7 @@
 #include "base/safe_numerics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/size.h"
+#include "webkit/support/webkit_support_gfx.h"
 
 #if defined(OS_WIN)
 #include "windows.h"
@@ -81,9 +80,8 @@ class Image {
     if (fread(source.get(), 1, byte_length, stdin) != byte_length)
       return false;
 
-    if (!gfx::PNGCodec::Decode(source.get(), byte_length,
-                               gfx::PNGCodec::FORMAT_RGBA,
-                               &data_, &w_, &h_)) {
+    if (!webkit_support::DecodePNG(source.get(), byte_length,
+                                   &data_, &w_, &h_)) {
       Clear();
       return false;
     }
@@ -107,8 +105,8 @@ class Image {
 
     file_util::CloseFile(f);
 
-    if (!gfx::PNGCodec::Decode(&compressed[0], compressed.size(),
-                               gfx::PNGCodec::FORMAT_RGBA, &data_, &w_, &h_)) {
+    if (!webkit_support::DecodePNG(&compressed[0], compressed.size(),
+                                   &data_, &w_, &h_)) {
       Clear();
       return false;
     }
@@ -317,10 +315,9 @@ int DiffImages(const base::FilePath& file1, const base::FilePath& file2,
     return kStatusSame;
 
   std::vector<unsigned char> png_encoding;
-  gfx::PNGCodec::Encode(diff_image.data(), gfx::PNGCodec::FORMAT_RGBA,
-                        gfx::Size(diff_image.w(), diff_image.h()),
-                        diff_image.w() * 4, false,
-                        std::vector<gfx::PNGCodec::Comment>(), &png_encoding);
+  webkit_support::EncodeRGBAPNG(
+      diff_image.data(), diff_image.w(), diff_image.h(),
+      diff_image.w() * 4, &png_encoding);
   if (file_util::WriteFile(out_file,
           reinterpret_cast<char*>(&png_encoding.front()),
           base::checked_numeric_cast<int>(png_encoding.size())) < 0)

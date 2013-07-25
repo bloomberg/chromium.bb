@@ -356,6 +356,7 @@
         'content_shell_lib',
         'content_shell_pak',
         '../third_party/mesa/mesa.gyp:osmesa',
+        '../tools/imagediff/image_diff.gyp:image_diff',
       ],
       'include_dirs': [
         '..',
@@ -484,6 +485,16 @@
             },
           ],
         }],  # OS=="mac"
+        ['OS=="android"', {
+          'dependencies!': [
+            '../tools/imagediff/image_diff.gyp:image_diff',
+          ],
+        }],  # OS=="android"
+        ['OS=="android" and android_webview_build==0', {
+          'dependencies': [
+            '../tools/imagediff/image_diff.gyp:image_diff#host',
+          ],
+        }],  # OS=="android" and android_webview_build==0
       ],
     },
     {

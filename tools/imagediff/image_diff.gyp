@@ -12,10 +12,20 @@
       'type': 'executable',
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../ui/ui.gyp:ui',
+        '../../webkit/support/webkit_support.gyp:webkit_support_gfx',
       ],
       'sources': [
         'image_diff.cc',
+      ],
+      'conditions': [
+       ['OS=="android" and android_webview_build==0', {
+         # The Chromium Android port will compare images on host rather
+         # than target (a device or emulator) for performance reasons.
+         'toolsets': ['host'],
+       }],
+       ['OS=="android" and android_webview_build==1', {
+         'type': 'none',
+       }],
       ],
     },
   ],
