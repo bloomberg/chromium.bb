@@ -4,7 +4,9 @@
 
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
+#include "content/renderer/pepper/url_request_info_util.h"
 #include "content/renderer/pepper/url_response_info_util.h"
 #include "net/base/net_errors.h"
 #include "ppapi/c/pp_errors.h"
@@ -24,8 +26,6 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
-#include "webkit/plugins/ppapi/url_request_info_util.h"
 
 using WebKit::WebFrame;
 using WebKit::WebString;

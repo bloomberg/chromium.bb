@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
+#include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/render_widget_fullscreen.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
-#include "webkit/plugins/ppapi/fullscreen_container.h"
 
 namespace webkit {
 namespace ppapi {

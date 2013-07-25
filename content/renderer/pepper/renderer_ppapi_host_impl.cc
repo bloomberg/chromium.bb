@@ -8,11 +8,16 @@
 #include "base/logging.h"
 #include "base/process/process_handle.h"
 #include "content/common/sandbox_util.h"
+#include "content/renderer/pepper/fullscreen_container.h"
+#include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/plugin_delegate.h"
+#include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "ipc/ipc_message.h"
@@ -23,11 +28,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "ui/gfx/point.h"
-#include "webkit/plugins/ppapi/fullscreen_container.h"
-#include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using webkit::ppapi::HostGlobals;
 using webkit::ppapi::PluginInstance;

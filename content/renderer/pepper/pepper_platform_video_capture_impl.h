@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 #include "media/video/capture/video_capture.h"
 #include "media/video/capture/video_capture_types.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 class GURL;
 

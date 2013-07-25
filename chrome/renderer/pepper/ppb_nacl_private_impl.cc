@@ -18,6 +18,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/renderer/ppapi_plugin_instance.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -33,7 +34,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace {
 

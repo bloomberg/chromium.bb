@@ -31,6 +31,7 @@
 #include "content/renderer/gpu/mailbox_output_surface.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_process_visibility_manager.h"
 #include "content/renderer/render_thread_impl.h"
@@ -57,7 +58,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 #include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
 #include "webkit/renderer/cursor_utils.h"
 
@@ -971,6 +971,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
                                        &optimized_copy_rect,
                                        &dib_scale_factor);
   if (optimized_instance) {
+#if defined(ENABLE_PLUGINS)
     // This plugin can be optimize-painted and we can just ask it to paint
     // itself. We don't actually need the TransportDIB in this case.
     //
@@ -1005,6 +1006,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
       if (!is_accelerated_compositing_active_)
         software_stats_.total_paint_time += paint_time;
     }
+#endif
   } else {
     // Normal painting case.
     base::TimeTicks paint_begin_ticks;

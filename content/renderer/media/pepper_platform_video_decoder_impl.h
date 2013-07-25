@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 #include "media/video/video_decode_accelerator.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace content {
 

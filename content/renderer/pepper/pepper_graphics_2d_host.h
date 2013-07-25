@@ -11,11 +11,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace gfx {
 class Point;

@@ -5,13 +5,13 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDERER_PPAPI_HOST_H_
 #define CONTENT_PUBLIC_RENDERER_RENDERER_PPAPI_HOST_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "base/process.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace base {
 class FilePath;
@@ -38,7 +38,6 @@ class WebPluginContainer;
 namespace webkit {
 namespace ppapi {
 class PluginInstance;
-class PluginModule;
 }
 }
 

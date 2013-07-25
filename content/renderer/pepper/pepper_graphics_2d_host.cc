@@ -9,6 +9,11 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/common.h"
+#include "content/renderer/pepper/gfx_conversion.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/ppb_image_data_impl.h"
+#include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
@@ -28,11 +33,6 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
-#include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/gfx_conversion.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
-#include "webkit/plugins/ppapi/ppb_image_data_impl.h"
-#include "webkit/plugins/ppapi/resource_helper.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

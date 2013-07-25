@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -16,7 +17,6 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 using ppapi::host::HostMessageContext;
 using webkit::ppapi::PluginDelegate;

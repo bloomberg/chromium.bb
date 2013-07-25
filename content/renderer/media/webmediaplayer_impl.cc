@@ -28,6 +28,7 @@
 #include "content/renderer/media/webmediaplayer_params.h"
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "content/renderer/media/webmediasourceclient_impl.h"
+#include "content/renderer/pepper/ppapi_webplugin_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_loop.h"
@@ -55,7 +56,6 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
-#include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 using WebKit::WebCanvas;

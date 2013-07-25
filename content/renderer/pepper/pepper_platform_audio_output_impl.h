@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 #include "media/audio/audio_output_ipc.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace media {
 class AudioParameters;

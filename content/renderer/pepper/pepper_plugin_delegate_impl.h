@@ -19,12 +19,12 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/render_view_pepper_helper.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 #include "ui/base/ime/text_input_type.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace base {
 class FilePath;

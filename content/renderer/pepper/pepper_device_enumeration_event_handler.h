@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 
 namespace content {
 

@@ -4,13 +4,13 @@
 
 #include "chrome/renderer/pepper/pepper_flash_fullscreen_host.h"
 
+#include "content/public/renderer/ppapi_plugin_instance.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace chrome {
 

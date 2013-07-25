@@ -10,11 +10,11 @@
 
 #if defined(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/crypto/ppapi_decryptor.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/ppapi_webplugin_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
-#include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #elif defined(OS_ANDROID)
 #include "content/renderer/media/android/proxy_media_keys.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"

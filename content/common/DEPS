@@ -6,6 +6,9 @@ include_rules = [
   "-webkit/child",
   "-webkit/renderer",
 
+  # TODO(jam): remove this
+  "+content/renderer/pepper/plugin_module.h",
+
   # TODO(ananta|jamesr|scottmg) http://crbug.com/237249
   "!webkit/child/websocketstreamhandle_impl.h",
 

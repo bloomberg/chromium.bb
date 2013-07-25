@@ -8,6 +8,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "content/public/common/referrer.h"
+#include "content/public/renderer/ppapi_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -36,7 +37,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/point.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 using webkit::ppapi::PluginInstance;
 

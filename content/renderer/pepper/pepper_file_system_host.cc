@@ -10,6 +10,7 @@
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -21,7 +22,6 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 namespace content {
 

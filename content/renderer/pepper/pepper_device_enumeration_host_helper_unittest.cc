@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "content/renderer/pepper/mock_plugin_delegate.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/host_message_context.h"
@@ -18,7 +19,6 @@
 #include "ppapi/proxy/resource_message_test_sink.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 
 namespace content {
 

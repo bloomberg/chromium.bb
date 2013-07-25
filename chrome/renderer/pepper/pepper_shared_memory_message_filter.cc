@@ -8,12 +8,12 @@
 #include "base/memory/shared_memory.h"
 #include "base/process_util.h"
 #include "content/public/common/content_client.h"
+#include "content/public/renderer/ppapi_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace chrome {
 

@@ -11,10 +11,10 @@
 #include "base/rand_util.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
+#include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
-#include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
 using cricket::CaptureState;
 using cricket::VideoFormat;
@@ -85,6 +85,7 @@ bool PpFrameWriter::IsScreencast() const {
 
 void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
                              int64 time_stamp_ns) {
+#if defined(ENABLE_PLUGINS)
   base::AutoLock auto_lock(lock_);
   // This assumes the handler of the SignalFrameCaptured won't call Start/Stop.
   // TODO(ronghuawu): Avoid the using of lock. One way is to post this call to
@@ -132,6 +133,7 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
   // This signals to libJingle that a new VideoFrame is available.
   // libJingle have no assumptions on what thread this signal come from.
   SignalFrameCaptured(this, &frame);
+#endif
 }
 
 // PpFrameWriterProxy is a helper class to make sure the user won't use

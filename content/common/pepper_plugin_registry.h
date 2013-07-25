@@ -9,7 +9,9 @@
 #include <map>
 
 #include "content/public/common/pepper_plugin_info.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
+
+// TODO(jam): refactor
+#include "content/renderer/pepper/plugin_module.h"
 
 namespace content {
 
@@ -24,8 +26,7 @@ bool MakePepperPluginInfo(const WebPluginInfo& webplugin_info,
 // It keeps two lists. One list of preloaded in-process modules, and one list
 // is a list of all live modules (some of which may be out-of-process and hence
 // not preloaded).
-class PepperPluginRegistry
-    : public webkit::ppapi::PluginDelegate::ModuleLifetime {
+class PepperPluginRegistry {
  public:
   ~PepperPluginRegistry();
 
@@ -64,9 +65,7 @@ class PepperPluginRegistry
   void AddLiveModule(const base::FilePath& path,
                      webkit::ppapi::PluginModule* module);
 
-  // ModuleLifetime implementation.
-  virtual void PluginModuleDead(
-      webkit::ppapi::PluginModule* dead_module) OVERRIDE;
+  void PluginModuleDead(webkit::ppapi::PluginModule* dead_module);
 
  private:
   PepperPluginRegistry();

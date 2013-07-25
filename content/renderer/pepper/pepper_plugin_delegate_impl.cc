@@ -57,7 +57,13 @@
 #include "content/renderer/pepper/pepper_platform_video_capture_impl.h"
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
+#include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/ppapi_webplugin_impl.h"
+#include "content/renderer/pepper/ppb_tcp_server_socket_private_impl.h"
+#include "content/renderer/pepper/ppb_tcp_socket_private_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
+#include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/pepper/url_response_info_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -95,12 +101,6 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
-#include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
-#include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
-#include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
-#include "webkit/plugins/ppapi/resource_helper.h"
 
 using WebKit::WebView;
 using WebKit::WebFrame;
@@ -413,7 +413,6 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   // module's destructor will remove itself.
   module = new webkit::ppapi::PluginModule(
       info->name, path,
-      PepperPluginRegistry::GetInstance(),
       permissions);
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module.get());
 

@@ -12,9 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_parameters.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 class GURL;
 

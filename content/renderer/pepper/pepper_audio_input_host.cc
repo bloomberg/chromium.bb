@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ipc/ipc_message.h"
 #include "media/audio/shared_memory_util.h"
@@ -17,7 +18,6 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 namespace content {
 

@@ -34,6 +34,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "webkit/common/plugins/ppapi/ppapi_utils.h"
 #include "webkit/plugins/plugin_constants.h"
 

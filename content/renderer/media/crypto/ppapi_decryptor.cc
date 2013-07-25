@@ -12,13 +12,13 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "content/renderer/pepper/content_decryptor_delegate.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
-#include "webkit/plugins/ppapi/content_decryptor_delegate.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 namespace content {
 

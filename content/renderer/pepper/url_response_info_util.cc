@@ -5,13 +5,13 @@
 #include "content/renderer/pepper/url_response_info_util.h"
 
 #include "base/files/file_path.h"
+#include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 
 using webkit::ppapi::PPB_FileRef_Impl;
 using WebKit::WebHTTPHeaderVisitor;

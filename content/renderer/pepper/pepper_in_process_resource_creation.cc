@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
@@ -30,7 +31,6 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 // Note that the code in the creation functions in this file should generally
 // be the same as that in ppapi/proxy/resource_creation_proxy.cc. See

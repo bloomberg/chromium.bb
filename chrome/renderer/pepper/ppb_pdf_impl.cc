@@ -14,6 +14,7 @@
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/common/referrer.h"
+#include "content/public/renderer/ppapi_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/webkit_resources.h"
@@ -35,7 +36,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 using ppapi::PpapiGlobals;
 using webkit::ppapi::PluginInstance;

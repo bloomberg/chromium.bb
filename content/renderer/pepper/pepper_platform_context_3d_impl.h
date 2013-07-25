@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 #ifdef ENABLE_GPU
 

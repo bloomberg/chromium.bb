@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_IMAGE_2D_IMPL_H_
 
 #include "base/basictypes.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 
 namespace content {
 

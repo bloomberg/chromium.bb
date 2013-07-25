@@ -11,11 +11,11 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/shared_impl/file_io_state_manager.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 using ppapi::host::ReplyMessageContext;
 using webkit::ppapi::PluginDelegate;

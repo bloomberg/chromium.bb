@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "chrome/renderer/pepper/ppb_pdf_impl.h"
+#include "content/public/renderer/ppapi_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ipc/ipc_message_macros.h"
@@ -28,7 +29,6 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;

@@ -184,7 +184,7 @@ void PepperPluginRegistry::PluginModuleDead(
       return;
     }
   }
-  NOTREACHED();  // Should have always found the module above.
+  // Can occur in tests.
 }
 
 PepperPluginRegistry::~PepperPluginRegistry() {
@@ -209,7 +209,7 @@ PepperPluginRegistry::PepperPluginRegistry() {
       continue;  // Out of process plugins need no special pre-initialization.
 
     scoped_refptr<webkit::ppapi::PluginModule> module =
-        new webkit::ppapi::PluginModule(current.name, current.path, this,
+        new webkit::ppapi::PluginModule(current.name, current.path,
             ppapi::PpapiPermissions(current.permissions));
     AddLiveModule(current.path, module.get());
     if (current.is_internal) {

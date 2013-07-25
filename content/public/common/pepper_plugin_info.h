@@ -11,11 +11,25 @@
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
 #include "content/public/common/webplugininfo.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/ppb.h"
 
 namespace content {
 
 struct CONTENT_EXPORT PepperPluginInfo {
+  typedef const void* (*GetInterfaceFunc)(const char*);
+  typedef int (*PPP_InitializeModuleFunc)(PP_Module, PPB_GetInterface);
+  typedef void (*PPP_ShutdownModuleFunc)();
+
+  struct EntryPoints {
+    // This structure is POD, with the constructor initializing to NULL.
+    CONTENT_EXPORT EntryPoints();
+
+    GetInterfaceFunc get_interface;
+    PPP_InitializeModuleFunc initialize_module;
+    PPP_ShutdownModuleFunc shutdown_module;  // Optional, may be NULL.
+  };
+
   PepperPluginInfo();
   ~PepperPluginInfo();
 
@@ -42,7 +56,7 @@ struct CONTENT_EXPORT PepperPluginInfo {
 
   // When is_internal is set, this contains the function pointers to the
   // entry points for the internal plugins.
-  webkit::ppapi::PluginModule::EntryPoints internal_entry_points;
+  EntryPoints internal_entry_points;
 
   // Permission bits from ppapi::Permission.
   uint32 permissions;

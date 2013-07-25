@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/renderer/pepper/resource_creation_impl.h"
 #include "ppapi/proxy/connection.h"
-#include "webkit/plugins/ppapi/resource_creation_impl.h"
 
 namespace content {
 
@@ -20,7 +20,7 @@ class RendererPpapiHostImpl;
 // (See pepper_in_process_router.h for more information.)
 //
 // This is a bit confusing. The "old-style" resources live in
-// webkit/plugins/ppapi and are created by the ResourceCreationImpl in that
+// content/renderer/pepper and are created by the ResourceCreationImpl in that
 // directory. The "new-style" IPC-only resources are in ppapi/proxy and are
 // created by the RessourceCreationProxy in that directory.
 //

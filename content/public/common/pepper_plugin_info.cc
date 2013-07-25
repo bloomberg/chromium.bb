@@ -8,6 +8,12 @@
 
 namespace content {
 
+PepperPluginInfo::EntryPoints::EntryPoints()
+    : get_interface(NULL),
+      initialize_module(NULL),
+      shutdown_module(NULL) {
+}
+
 PepperPluginInfo::PepperPluginInfo()
     : is_internal(false),
       is_out_of_process(false),

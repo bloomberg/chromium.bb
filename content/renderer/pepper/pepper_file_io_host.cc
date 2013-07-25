@@ -11,6 +11,10 @@
 #include "base/files/file_util_proxy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/ppb_file_ref_impl.h"
+#include "content/renderer/pepper/quota_file_io.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -19,10 +23,6 @@
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
-#include "webkit/plugins/ppapi/quota_file_io.h"
 
 namespace content {
 

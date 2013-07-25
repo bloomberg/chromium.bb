@@ -4,6 +4,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/public/test/render_view_test.h"
+#include "content/renderer/pepper/url_request_info_util.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/url_request_info_resource.h"
 #include "ppapi/shared_impl/test_globals.h"
@@ -16,7 +17,6 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/user_agent/user_agent_util.h"
-#include "webkit/plugins/ppapi/url_request_info_util.h"
 
 // This test is a end-to-end test from the resource to the WebKit request
 // object. The actual resource implementation is so simple, it makes sense to
@@ -51,9 +51,6 @@ class TestWebFrameClient : public WebFrameClient {
 using ppapi::proxy::URLRequestInfoResource;
 using ppapi::URLRequestInfoData;
 
-// TODO(brettw) move to content namespace when url_request_info_util.h is moved
-// to this directory. This file used to be in webkit/plugins/ppapi and had to
-// be moved in advance of the rest of the files to make things compile.
 namespace webkit {
 namespace ppapi {
 

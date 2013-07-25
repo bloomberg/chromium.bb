@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -18,7 +19,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebFileChooserCompletion.h"
 #include "third_party/WebKit/public/web/WebFileChooserParams.h"
-#include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 
 namespace content {
 

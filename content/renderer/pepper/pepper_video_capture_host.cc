@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 
+#include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -15,8 +17,6 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance_impl.h"
 
 using ppapi::HostResource;
 using ppapi::TrackedCallback;
