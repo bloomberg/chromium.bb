@@ -81,6 +81,9 @@ cr.define('options', function() {
         chrome.send('SyncSetupStopSyncing');
         self.closeOverlay_();
       };
+      $('sync-configure-content').onclick = function() {
+        self.onConfigurationClicked_();
+      };
     },
 
     showOverlay_: function() {
@@ -108,6 +111,29 @@ cr.define('options', function() {
     onEncryptionRadioChanged_: function() {
       var visible = $('full-encryption-option').checked;
       $('sync-custom-passphrase').hidden = !visible;
+    },
+
+    onConfigurationClicked_: function() {
+      // Avoid to foucus on labeled checkboxes and radio buttons.
+      // We don't want to show focus rings for them when labels are clicked.
+      if (event.target.tagName == 'INPUT')
+        return;
+      for (var node = event.target; node; node = node.parentNode) {
+        if (node.tagName != 'LABEL')
+          continue;
+        var control = node.control;
+        if (!control || control.disabled)
+          return;
+        if (control.type == 'checkbox') {
+          control.checked = !control.checked;
+          event.preventDefault();
+        } else if (control.type == 'radio') {
+          control.checked = !control.checked;
+          this.onEncryptionRadioChanged_();
+          event.preventDefault();
+        }
+        return;
+      }
     },
 
     /**
