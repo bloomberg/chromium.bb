@@ -46,7 +46,7 @@ static int totalPagesMeasuredCSSSampleId() { return 1; }
 //         to detect new values in CSSPropertyID and add them to the
 //         end of this function. This file would be checked in.
 //         https://code.google.com/p/chromium/issues/detail?id=234940
-static int mapCSSPropertyIdToCSSSampleId(int id)
+int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
 {
     CSSPropertyID cssPropertyID = convertToCSSPropertyID(id);
 
@@ -537,7 +537,7 @@ void UseCounter::updateMeasurements()
     bool needsPagesMeasuredUpdate = false;
     for (int i = firstCSSProperty; i <= lastCSSProperty; ++i) {
         if (m_CSSFeatureBits.quickGet(i)) {
-            int cssSampleId = mapCSSPropertyIdToCSSSampleId(i);
+            int cssSampleId = mapCSSPropertyIdToCSSSampleIdForHistogram(i);
             HistogramSupport::histogramEnumeration("WebCore.FeatureObserver.CSSProperties", cssSampleId, maximumCSSSampleId());
             needsPagesMeasuredUpdate = true;
         }

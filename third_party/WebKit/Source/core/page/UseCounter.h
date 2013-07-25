@@ -174,6 +174,8 @@ public:
     static UseCounter* getFrom(const CSSStyleSheet*);
     static UseCounter* getFrom(const StyleSheetContents*);
 
+    static int mapCSSPropertyIdToCSSSampleIdForHistogram(int id);
+
 private:
     bool recordMeasurement(Feature feature)
     {

@@ -32,11 +32,13 @@
 #include "CSSPropertyNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/EventNames.h"
+#include "core/page/UseCounter.h"
 #include "core/page/animation/AnimationControllerPrivate.h"
 #include "core/page/animation/CSSPropertyAnimation.h"
 #include "core/page/animation/CompositeAnimation.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "public/platform/Platform.h"
 
 using namespace std;
 
@@ -56,6 +58,9 @@ KeyframeAnimation::KeyframeAnimation(const CSSAnimationData* animation, RenderOb
     // Update the m_transformFunctionListValid flag based on whether the function lists in the keyframes match.
     validateTransformFunctionList();
     checkForMatchingFilterFunctionLists();
+    HashSet<CSSPropertyID>::const_iterator endProperties = m_keyframes.endProperties();
+    for (HashSet<CSSPropertyID>::const_iterator it = m_keyframes.beginProperties(); it != endProperties; ++it)
+        WebKit::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(*it));
 }
 
 KeyframeAnimation::~KeyframeAnimation()

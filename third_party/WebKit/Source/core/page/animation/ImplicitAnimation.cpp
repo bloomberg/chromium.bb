@@ -29,12 +29,14 @@
 #include "config.h"
 
 #include "core/dom/EventNames.h"
+#include "core/page/UseCounter.h"
 #include "core/page/animation/AnimationControllerPrivate.h"
 #include "core/page/animation/CSSPropertyAnimation.h"
 #include "core/page/animation/CompositeAnimation.h"
 #include "core/page/animation/ImplicitAnimation.h"
 #include "core/page/animation/KeyframeAnimation.h"
 #include "core/rendering/RenderBoxModelObject.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 
@@ -47,6 +49,7 @@ ImplicitAnimation::ImplicitAnimation(const CSSAnimationData* transition, CSSProp
     , m_fromStyle(fromStyle)
 {
     ASSERT(animatingProperty != CSSPropertyInvalid);
+    WebKit::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(m_animatingProperty));
 }
 
 ImplicitAnimation::~ImplicitAnimation()
