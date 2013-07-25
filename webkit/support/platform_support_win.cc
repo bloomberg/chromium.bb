@@ -12,7 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/win/resource_util.h"
-#include "grit/blink_resources.h"
+#include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/support/test_webkit_platform_support.h"

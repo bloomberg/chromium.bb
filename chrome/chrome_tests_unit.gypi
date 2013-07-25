@@ -2331,7 +2331,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
           ],
           'link_settings': {
             'libraries': [

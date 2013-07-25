@@ -452,7 +452,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
 
             'browser/ui/views/accessibility/browser_views_accessibility_browsertest.cc',
           ],
@@ -1923,7 +1923,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
@@ -2161,7 +2161,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
@@ -2544,7 +2544,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
