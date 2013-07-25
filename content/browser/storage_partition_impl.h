@@ -31,18 +31,25 @@ class StoragePartitionImpl : public StoragePartition {
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
   virtual DOMStorageContextImpl* GetDOMStorageContext() OVERRIDE;
   virtual IndexedDBContextImpl* GetIndexedDBContext() OVERRIDE;
-  virtual void AsyncClearDataForOrigin(
-      uint32 storage_mask,
+
+  virtual void ClearDataForOrigin(
+      uint32 remove_mask,
+      uint32 quota_storage_remove_mask,
       const GURL& storage_origin,
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
-  virtual void AsyncClearData(uint32 storage_mask) OVERRIDE;
-  virtual void AsyncClearDataBetween(
-      uint32 storage_mask,
-      const base::Time& begin,
-      const base::Time& end,
-      const base::Closure& callback) OVERRIDE;
+  virtual void ClearDataForUnboundedRange(
+      uint32 remove_mask,
+      uint32 quota_storage_remove_mask) OVERRIDE;
+  virtual void ClearDataForRange(uint32 remove_mask,
+                                 uint32 quota_storage_remove_mask,
+                                 const base::Time& begin,
+                                 const base::Time& end,
+                                 const base::Closure& callback) OVERRIDE;
 
   WebRTCIdentityStore* GetWebRTCIdentityStore();
+
+  struct DataDeletionHelper;
+  struct QuotaManagedDataDeletionHelper;
 
  private:
   friend class StoragePartitionImplMap;
@@ -58,6 +65,10 @@ class StoragePartitionImpl : public StoragePartition {
                                       bool in_memory,
                                       const base::FilePath& profile_path);
 
+  // Quota managed data uses a different bitmask for types than
+  // StoragePartition uses. This method generates that mask.
+  static int GenerateQuotaClientMask(uint32 remove_mask);
+
   CONTENT_EXPORT StoragePartitionImpl(
       const base::FilePath& partition_path,
       quota::QuotaManager* quota_manager,
@@ -67,6 +78,14 @@ class StoragePartitionImpl : public StoragePartition {
       DOMStorageContextImpl* dom_storage_context,
       IndexedDBContextImpl* indexed_db_context,
       scoped_ptr<WebRTCIdentityStore> webrtc_identity_store);
+
+  void ClearDataImpl(uint32 remove_mask,
+                     uint32 quota_storage_remove_mask,
+                     const GURL& remove_origin,
+                     net::URLRequestContextGetter* rq_context,
+                     const base::Time begin,
+                     const base::Time end,
+                     const base::Closure& callback);
 
   // Used by StoragePartitionImplMap.
   //

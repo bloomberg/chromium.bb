@@ -496,7 +496,9 @@ void StoragePartitionImplMap::AsyncObliterate(
        ++it) {
     const StoragePartitionConfig& config = it->first;
     if (config.partition_domain == partition_domain) {
-      it->second->AsyncClearData(StoragePartition::kAllStorage);
+      it->second->ClearDataForUnboundedRange(
+          StoragePartition::REMOVE_DATA_MASK_ALL,
+          StoragePartition::kAllStorage);
       if (!config.in_memory) {
         paths_to_keep.push_back(it->second->GetPath());
       }
