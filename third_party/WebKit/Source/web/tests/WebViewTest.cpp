@@ -185,6 +185,37 @@ protected:
     std::string m_baseURL;
 };
 
+TEST_F(WebViewTest, SetBaseBackgroundColor)
+{
+    const WebColor kWhite    = 0xFFFFFFFF;
+    const WebColor kBlue     = 0xFF0000FF;
+    const WebColor kDarkCyan = 0xFF227788;
+    const WebColor kTranslucentPutty = 0x80BFB196;
+
+    WebView* webView = FrameTestHelpers::createWebView();
+    EXPECT_EQ(kWhite, webView->backgroundColor());
+
+    webView->setBaseBackgroundColor(kBlue);
+    EXPECT_EQ(kBlue, webView->backgroundColor());
+
+    FrameTestHelpers::loadFrame(webView->mainFrame(),
+        "data:text/html,<html><head><style>body {background-color:#227788}</style></head></html>");
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    EXPECT_EQ(kDarkCyan, webView->backgroundColor());
+
+    FrameTestHelpers::loadFrame(webView->mainFrame(),
+        "data:text/html,<html><head><style>body {background-color:rgba(255,0,0,0.5)}</style></head></html>");
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    // Expected: red (50% alpha) blended atop base of kBlue.
+    EXPECT_EQ(0xFF7F0080, webView->backgroundColor());
+
+    webView->setBaseBackgroundColor(kTranslucentPutty);
+    // Expected: red (50% alpha) blended atop kTranslucentPutty. Note the alpha.
+    EXPECT_EQ(0xBFE93B32, webView->backgroundColor());
+
+    webView->close();
+}
+
 TEST_F(WebViewTest, FocusIsInactive)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), "visible_iframe.html");

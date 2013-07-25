@@ -198,6 +198,7 @@ public:
     virtual void setPageEncoding(const WebString& encoding);
     virtual bool isTransparent() const;
     virtual void setIsTransparent(bool value);
+    virtual void setBaseBackgroundColor(WebColor);
     virtual bool tabsToLinks() const;
     virtual void setTabsToLinks(bool value);
     virtual bool tabKeyCyclesThroughElements() const;
@@ -324,6 +325,8 @@ public:
 
     void setIgnoreInputEvents(bool newValue);
     WebDevToolsAgentPrivate* devToolsAgentPrivate() { return m_devToolsAgent.get(); }
+
+    WebCore::Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
     PageOverlayList* pageOverlays() const { return m_pageOverlays.get(); }
 
@@ -834,6 +837,7 @@ private:
     bool m_showDebugBorders;
     bool m_continuousPaintingEnabled;
     bool m_showScrollBottleneckRects;
+    WebColor m_baseBackgroundColor;
 };
 
 } // namespace WebKit

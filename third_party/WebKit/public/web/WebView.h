@@ -31,6 +31,7 @@
 #ifndef WebView_h
 #define WebView_h
 
+#include "../platform/WebColor.h"
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
 #include "WebDragOperation.h"
@@ -128,6 +129,16 @@ public:
     // some custom background rendered behind it.
     virtual bool isTransparent() const = 0;
     virtual void setIsTransparent(bool) = 0;
+
+    // Sets the base color used for this WebView's background. This is in effect
+    // the default background color used for pages with no background-color
+    // style in effect, or used as the alpha-blended basis for any pages with
+    // translucent background-color style. (For pages with opaque
+    // background-color style, this property is effectively ignored).
+    // Setting this takes effect for the currently loaded page, if any, and
+    // persists across subsequent navigations. Defaults to white prior to the
+    // first call to this method.
+    virtual void setBaseBackgroundColor(WebColor) = 0;
 
     // Controls whether pressing Tab key advances focus to links.
     virtual bool tabsToLinks() const = 0;
