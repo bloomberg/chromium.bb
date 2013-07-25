@@ -404,8 +404,6 @@ webkit.org/b/82509 [ Linux ] svg/text/append-text-node-to-tspan.html [ ImageOnly
 webkit.org/b/82954 [ Debug Mac Win ] svg/W3C-SVG-1.1/animate-elem-77-t.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/82954 [ Debug Mac Win ] svg/W3C-SVG-1.1/text-text-05-t.svg [ ImageOnlyFailure Pass ]
 
-webkit.org/b/83183 [ Mac Win ] svg/as-image/animated-svg-as-image-no-fixed-intrinsic-size.html [ ImageOnlyFailure Pass ]
-
 webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg [ ImageOnlyFailure ]
 
 # Many WIN and Linux SVG tests containing text are flaky. It seems different fonts are used at different times.
@@ -420,9 +418,6 @@ webkit.org/b/83303 [ Win ] svg/as-background-image/svg-as-background-3.html [ Im
 webkit.org/b/83303 [ Debug ] svg/custom/mouse-move-on-svg-container-standalone.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Debug ] svg/custom/mouse-move-on-svg-root-standalone.svg [ ImageOnlyFailure Pass ]
 
-# This fails image 5-10% of the time. Probably a race condition on timers.
-webkit.org/b/83471 svg/as-image/animated-svg-as-image-same-image.html [ ImageOnlyFailure Pass ]
-
 webkit.org/b/84230 [ Mac ] svg/as-image/img-preserveAspectRatio-support-1.html [ Pass Timeout ]
 
 webkit.org/b/84719 [ Win ] svg/text/select-text-svgfont.html [ Failure Pass ]
@@ -431,8 +426,6 @@ webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ ImageOnlyFailure Pa
 webkit.org/b/84854 [ Linux ] svg/batik/text/verticalTextOnPath.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/84854 [ Win7 ] svg/batik/text/textOnPath.svg [ Failure ImageOnlyFailure Pass ]
 webkit.org/b/84854 [ Win7 ] svg/batik/text/verticalTextOnPath.svg [ Failure ImageOnlyFailure Pass ]
-
-webkit.org/b/85107 svg/as-image/animated-svg-as-image.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg [ Pass Timeout ]
 
