@@ -54,12 +54,12 @@
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 #include "content/renderer/pepper/pepper_platform_image_2d_impl.h"
 #include "content/renderer/pepper/pepper_platform_video_capture_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
+#include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
-#include "content/renderer/pepper/ppapi_webplugin_impl.h"
 #include "content/renderer/pepper/ppb_tcp_server_socket_private_impl.h"
 #include "content/renderer/pepper/ppb_tcp_socket_private_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
@@ -112,10 +112,9 @@ namespace {
 // This class wraps a dispatcher and has the same lifetime. A dispatcher has
 // the same lifetime as a plugin module, which is longer than any particular
 // RenderView or plugin instance.
-class HostDispatcherWrapper
-    : public webkit::ppapi::PluginDelegate::OutOfProcessProxy {
+class HostDispatcherWrapper : public PluginDelegate::OutOfProcessProxy {
  public:
-  HostDispatcherWrapper(webkit::ppapi::PluginModule* module,
+  HostDispatcherWrapper(PluginModule* module,
                         base::ProcessId peer_pid,
                         int plugin_child_id,
                         const ppapi::PpapiPermissions& perms,
@@ -174,8 +173,7 @@ class HostDispatcherWrapper
     // isn't true for browser tag support.
     if (host) {
       RenderView* render_view = host->GetRenderViewForInstance(instance);
-      webkit::ppapi::PluginInstance* plugin_instance =
-          host->GetPluginInstance(instance);
+      PepperPluginInstance* plugin_instance = host->GetPluginInstance(instance);
       render_view->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
           plugin_child_id_,
           instance,
@@ -212,7 +210,7 @@ class HostDispatcherWrapper
   ppapi::proxy::HostDispatcher* dispatcher() { return dispatcher_.get(); }
 
  private:
-  webkit::ppapi::PluginModule* module_;
+  PluginModule* module_;
 
   base::ProcessId peer_pid_;
 
@@ -230,7 +228,7 @@ class HostDispatcherWrapper
 
 class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
  public:
-  typedef webkit::ppapi::PluginDelegate::AvailableSpaceCallback PluginCallback;
+  typedef PluginDelegate::AvailableSpaceCallback PluginCallback;
   explicit QuotaCallbackTranslator(const PluginCallback& cb) : callback_(cb) {}
   virtual void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) OVERRIDE {
     callback_.Run(std::max(static_cast<int64>(0), quota - usage));
@@ -247,7 +245,7 @@ class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
 
 class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
  public:
-  PluginInstanceLockTarget(webkit::ppapi::PluginInstanceImpl* plugin)
+  PluginInstanceLockTarget(PepperPluginInstanceImpl* plugin)
       : plugin_(plugin) {}
 
   virtual void OnLockMouseACK(bool succeeded) OVERRIDE {
@@ -265,7 +263,7 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
   }
 
  private:
-  webkit::ppapi::PluginInstanceImpl* plugin_;
+  PepperPluginInstanceImpl* plugin_;
 };
 
 void DoNotifyCloseFile(int file_open_id, base::PlatformFileError /* unused */) {
@@ -274,8 +272,7 @@ void DoNotifyCloseFile(int file_open_id, base::PlatformFileError /* unused */) {
 }
 
 void DidOpenFileSystemURL(
-    const webkit::ppapi::PluginDelegate::AsyncOpenFileSystemURLCallback&
-        callback,
+    const PluginDelegate::AsyncOpenFileSystemURLCallback& callback,
     base::PlatformFile file,
     int file_open_id,
     quota::QuotaLimitType quota_policy) {
@@ -293,18 +290,17 @@ void DidOpenFileSystemURL(
 }
 
 void DidFailOpenFileSystemURL(
-    const webkit::ppapi::PluginDelegate::AsyncOpenFileSystemURLCallback&
-        callback,
+    const PluginDelegate::AsyncOpenFileSystemURLCallback& callback,
     base::PlatformFileError error_code) {
   base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
   callback.Run(error_code,
                base::PassPlatformFile(&invalid_file),
                quota::kQuotaLimitTypeUnknown,
-               webkit::ppapi::PluginDelegate::NotifyCloseFileCallback());
+               PluginDelegate::NotifyCloseFileCallback());
 }
 
 void CreateHostForInProcessModule(RenderViewImpl* render_view,
-                                  webkit::ppapi::PluginModule* module,
+                                  PluginModule* module,
                                   const WebPluginInfo& webplugin_info) {
   // First time an in-process plugin was used, make a host for it.
   const PepperPluginInfo* info =
@@ -349,28 +345,27 @@ WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePepperWebPlugin(
     const WebPluginInfo& webplugin_info,
     const WebKit::WebPluginParams& params) {
   bool pepper_plugin_was_registered = false;
-  scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
+  scoped_refptr<PluginModule> pepper_module(
       CreatePepperPluginModule(webplugin_info, &pepper_plugin_was_registered));
 
   if (pepper_plugin_was_registered) {
     if (!pepper_module.get())
       return NULL;
-    return new webkit::ppapi::WebPluginImpl(
+    return new PepperWebPluginImpl(
         pepper_module.get(), params, AsWeakPtr(), render_view_->AsWeakPtr());
   }
 
   return NULL;
 }
 
-scoped_refptr<webkit::ppapi::PluginModule>
-PepperPluginDelegateImpl::CreatePepperPluginModule(
+scoped_refptr<PluginModule> PepperPluginDelegateImpl::CreatePepperPluginModule(
     const WebPluginInfo& webplugin_info,
     bool* pepper_plugin_was_registered) {
   *pepper_plugin_was_registered = true;
 
   // See if a module has already been loaded for this plugin.
   base::FilePath path(webplugin_info.path);
-  scoped_refptr<webkit::ppapi::PluginModule> module =
+  scoped_refptr<PluginModule> module =
       PepperPluginRegistry::GetInstance()->GetLiveModule(path);
   if (module.get()) {
     if (!module->GetEmbedderState()) {
@@ -389,10 +384,10 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
       PepperPluginRegistry::GetInstance()->GetInfoForPlugin(webplugin_info);
   if (!info) {
     *pepper_plugin_was_registered = false;
-    return scoped_refptr<webkit::ppapi::PluginModule>();
+    return scoped_refptr<PluginModule>();
   } else if (!info->is_out_of_process) {
     // In-process plugin not preloaded, it probably couldn't be initialized.
-    return scoped_refptr<webkit::ppapi::PluginModule>();
+    return scoped_refptr<PluginModule>();
   }
 
   ppapi::PpapiPermissions permissions =
@@ -406,14 +401,12 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
       path, &channel_handle, &peer_pid, &plugin_child_id));
   if (channel_handle.name.empty()) {
     // Couldn't be initialized.
-    return scoped_refptr<webkit::ppapi::PluginModule>();
+    return scoped_refptr<PluginModule>();
   }
 
   // AddLiveModule must be called before any early returns since the
   // module's destructor will remove itself.
-  module = new webkit::ppapi::PluginModule(
-      info->name, path,
-      permissions);
+  module = new PluginModule(info->name, path, permissions);
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module.get());
 
   if (!CreateOutOfProcessModule(module.get(),
@@ -423,13 +416,13 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
                                 peer_pid,
                                 plugin_child_id,
                                 false))  // is_external = false
-    return scoped_refptr<webkit::ppapi::PluginModule>();
+    return scoped_refptr<PluginModule>();
 
   return module;
 }
 
 scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
-    webkit::ppapi::PluginModule* plugin_module) {
+    PluginModule* plugin_module) {
   DCHECK(plugin_module);
   DCHECK(!plugin_module->GetBroker());
 
@@ -456,7 +449,7 @@ scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
 }
 
 RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
-    webkit::ppapi::PluginModule* module,
+    PluginModule* module,
     const base::FilePath& path,
     ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
@@ -475,7 +468,7 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
                                 is_external));
   if (!dispatcher->Init(
           channel_handle,
-          webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
+          PluginModule::GetLocalGetInterfaceFunc(),
           GetPreferences(),
           hung_filter.get()))
     return NULL;
@@ -529,7 +522,7 @@ void PepperPluginDelegateImpl::ViewWillInitiatePaint() {
   // Notify all of our instances that we started painting. This is used for
   // internal bookkeeping only, so we know that the set can not change under
   // us.
-  for (std::set<webkit::ppapi::PluginInstanceImpl*>::iterator i =
+  for (std::set<PepperPluginInstanceImpl*>::iterator i =
            active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->ViewWillInitiatePaint();
@@ -539,9 +532,8 @@ void PepperPluginDelegateImpl::ViewInitiatedPaint() {
   // Notify all instances that we painted.  The same caveats apply as for
   // ViewFlushedPaint regarding instances closing themselves, so we take
   // similar precautions.
-  std::set<webkit::ppapi::PluginInstanceImpl*> plugins = active_instances_;
-  for (std::set<webkit::ppapi::PluginInstanceImpl*>::iterator i =
-          plugins.begin();
+  std::set<PepperPluginInstanceImpl*> plugins = active_instances_;
+  for (std::set<PepperPluginInstanceImpl*>::iterator i = plugins.begin();
        i != plugins.end(); ++i) {
     if (active_instances_.find(*i) != active_instances_.end())
       (*i)->ViewInitiatedPaint();
@@ -553,9 +545,8 @@ void PepperPluginDelegateImpl::ViewFlushedPaint() {
   // we it may ask to close itself as a result. This will, in turn, modify our
   // set, possibly invalidating the iterator. So we iterate on a copy that
   // won't change out from under us.
-  std::set<webkit::ppapi::PluginInstanceImpl*> plugins = active_instances_;
-  for (std::set<webkit::ppapi::PluginInstanceImpl*>::iterator i =
-           plugins.begin();
+  std::set<PepperPluginInstanceImpl*> plugins = active_instances_;
+  for (std::set<PepperPluginInstanceImpl*>::iterator i = plugins.begin();
        i != plugins.end(); ++i) {
     // The copy above makes sure our iterator is never invalid if some plugins
     // are destroyed. But some plugin may decide to close all of its views in
@@ -578,17 +569,17 @@ void PepperPluginDelegateImpl::ViewFlushedPaint() {
   }
 }
 
-webkit::ppapi::PluginInstanceImpl*
-PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
-    const gfx::Rect& paint_bounds,
-    TransportDIB** dib,
-    gfx::Rect* location,
-    gfx::Rect* clip,
-    float* scale_factor) {
-  for (std::set<webkit::ppapi::PluginInstanceImpl*>::iterator i =
+PepperPluginInstanceImpl* PepperPluginDelegateImpl::
+    GetBitmapForOptimizedPluginPaint(
+        const gfx::Rect& paint_bounds,
+        TransportDIB** dib,
+        gfx::Rect* location,
+        gfx::Rect* clip,
+        float* scale_factor) {
+  for (std::set<PepperPluginInstanceImpl*>::iterator i =
            active_instances_.begin();
        i != active_instances_.end(); ++i) {
-    webkit::ppapi::PluginInstanceImpl* instance = *i;
+    PepperPluginInstanceImpl* instance = *i;
     // In Flash fullscreen , the plugin contents should be painted onto the
     // fullscreen widget instead of the web page.
     if (!instance->FlashIsFullscreenOrPending() &&
@@ -600,7 +591,7 @@ PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
 }
 
 void PepperPluginDelegateImpl::PluginFocusChanged(
-    webkit::ppapi::PluginInstanceImpl* instance,
+    PepperPluginInstanceImpl* instance,
     bool focused) {
   if (focused)
     focused_plugin_ = instance;
@@ -611,25 +602,25 @@ void PepperPluginDelegateImpl::PluginFocusChanged(
 }
 
 void PepperPluginDelegateImpl::PluginTextInputTypeChanged(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   if (focused_plugin_ == instance && render_view_)
     render_view_->PpapiPluginTextInputTypeChanged();
 }
 
 void PepperPluginDelegateImpl::PluginCaretPositionChanged(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   if (focused_plugin_ == instance && render_view_)
     render_view_->PpapiPluginCaretPositionChanged();
 }
 
 void PepperPluginDelegateImpl::PluginRequestedCancelComposition(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   if (focused_plugin_ == instance && render_view_)
     render_view_->PpapiPluginCancelComposition();
 }
 
 void PepperPluginDelegateImpl::PluginSelectionChanged(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   if (focused_plugin_ == instance && render_view_)
     render_view_->PpapiPluginSelectionChanged();
 }
@@ -740,14 +731,14 @@ bool PepperPluginDelegateImpl::CanComposeInline() const {
 }
 
 void PepperPluginDelegateImpl::PluginCrashed(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   render_view_->PluginCrashed(instance->module()->path(),
                               instance->module()->GetPeerProcessId());
   UnSetAndDeleteLockTargetAdapter(instance);
 }
 
 void PepperPluginDelegateImpl::InstanceCreated(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   active_instances_.insert(instance);
 
   // Set the initial focus.
@@ -755,7 +746,7 @@ void PepperPluginDelegateImpl::InstanceCreated(
 }
 
 void PepperPluginDelegateImpl::InstanceDeleted(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   active_instances_.erase(instance);
   UnSetAndDeleteLockTargetAdapter(instance);
 
@@ -767,7 +758,7 @@ void PepperPluginDelegateImpl::InstanceDeleted(
 
 scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
 PepperPluginDelegateImpl::CreateResourceCreationAPI(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   RendererPpapiHostImpl* host_impl = static_cast<RendererPpapiHostImpl*>(
       instance->module()->GetEmbedderState());
   return host_impl->CreateInProcessResourceCreationAPI(instance);
@@ -783,15 +774,15 @@ WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePluginReplacement(
       render_view_, file_path);
 }
 
-webkit::ppapi::PluginDelegate::PlatformImage2D*
+PluginDelegate::PlatformImage2D*
 PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
   return PepperPlatformImage2DImpl::Create(width, height);
 }
 
-webkit::ppapi::PluginDelegate::PlatformGraphics2D*
-PepperPluginDelegateImpl::GetGraphics2D(
-    webkit::ppapi::PluginInstanceImpl* instance,
-    PP_Resource resource) {
+PluginDelegate::PlatformGraphics2D*
+    PepperPluginDelegateImpl::GetGraphics2D(
+        PepperPluginInstanceImpl* instance,
+        PP_Resource resource) {
   ppapi::host::ResourceHost* host =
       GetRendererResourceHost(instance->pp_instance(), resource);
   if (!host)
@@ -801,7 +792,7 @@ PepperPluginDelegateImpl::GetGraphics2D(
   return result;
 }
 
-webkit::ppapi::PluginDelegate::PlatformContext3D*
+PluginDelegate::PlatformContext3D*
     PepperPluginDelegateImpl::CreateContext3D() {
   // If accelerated compositing of plugins is disabled, fail to create a 3D
   // context, because it won't be visible. This allows graceful fallback in the
@@ -812,19 +803,19 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
   return new PlatformContext3DImpl;
 }
 
-webkit::ppapi::PluginDelegate::PlatformVideoCapture*
-PepperPluginDelegateImpl::CreateVideoCapture(
-    const std::string& device_id,
-    const GURL& document_url,
-    PlatformVideoCaptureEventHandler* handler) {
+PluginDelegate::PlatformVideoCapture*
+    PepperPluginDelegateImpl::CreateVideoCapture(
+        const std::string& device_id,
+        const GURL& document_url,
+        PlatformVideoCaptureEventHandler* handler) {
   return new PepperPlatformVideoCaptureImpl(AsWeakPtr(), device_id,
                                             document_url, handler);
 }
 
-webkit::ppapi::PluginDelegate::PlatformVideoDecoder*
-PepperPluginDelegateImpl::CreateVideoDecoder(
-    media::VideoDecodeAccelerator::Client* client,
-    int32 command_buffer_route_id) {
+PluginDelegate::PlatformVideoDecoder*
+    PepperPluginDelegateImpl::CreateVideoDecoder(
+        media::VideoDecodeAccelerator::Client* client,
+        int32 command_buffer_route_id) {
   return new PlatformVideoDecoderImpl(client, command_buffer_route_id);
 }
 
@@ -850,36 +841,33 @@ uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputBufferSize() {
   return thread->GetAudioHardwareConfig()->GetOutputBufferSize();
 }
 
-webkit::ppapi::PluginDelegate::PlatformAudioOutput*
-PepperPluginDelegateImpl::CreateAudioOutput(
-    uint32_t sample_rate,
-    uint32_t sample_count,
-    webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client) {
+PluginDelegate::PlatformAudioOutput*
+    PepperPluginDelegateImpl::CreateAudioOutput(
+        uint32_t sample_rate,
+        uint32_t sample_count,
+        PluginDelegate::PlatformAudioOutputClient* client) {
   return PepperPlatformAudioOutputImpl::Create(
       static_cast<int>(sample_rate), static_cast<int>(sample_count),
       GetRoutingID(), client);
 }
 
-webkit::ppapi::PluginDelegate::PlatformAudioInput*
-PepperPluginDelegateImpl::CreateAudioInput(
+PluginDelegate::PlatformAudioInput* PepperPluginDelegateImpl::CreateAudioInput(
     const std::string& device_id,
     const GURL& document_url,
     uint32_t sample_rate,
     uint32_t sample_count,
-    webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client) {
+    PluginDelegate::PlatformAudioInputClient* client) {
   return PepperPlatformAudioInputImpl::Create(
       AsWeakPtr(), device_id, document_url, static_cast<int>(sample_rate),
       static_cast<int>(sample_count), client);
 }
 
 // If a broker has not already been created for this plugin, creates one.
-webkit::ppapi::PluginDelegate::Broker*
-PepperPluginDelegateImpl::ConnectToBroker(
-    webkit::ppapi::PPB_Broker_Impl* client) {
+PluginDelegate::Broker* PepperPluginDelegateImpl::ConnectToBroker(
+    PPB_Broker_Impl* client) {
   DCHECK(client);
 
-  webkit::ppapi::PluginModule* plugin_module =
-      webkit::ppapi::ResourceHelper::GetPluginModule(client);
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(client);
   if (!plugin_module)
     return NULL;
 
@@ -892,7 +880,7 @@ PepperPluginDelegateImpl::ConnectToBroker(
   }
 
   int request_id = pending_permission_requests_.Add(
-      new base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>(client->AsWeakPtr()));
+      new base::WeakPtr<PPB_Broker_Impl>(client->AsWeakPtr()));
   if (!render_view_->Send(
           new ViewHostMsg_RequestPpapiBrokerPermission(
               render_view_->routing_id(),
@@ -912,16 +900,15 @@ PepperPluginDelegateImpl::ConnectToBroker(
 void PepperPluginDelegateImpl::OnPpapiBrokerPermissionResult(
     int request_id,
     bool result) {
-  scoped_ptr<base::WeakPtr<webkit::ppapi::PPB_Broker_Impl> > client_ptr(
+  scoped_ptr<base::WeakPtr<PPB_Broker_Impl> > client_ptr(
       pending_permission_requests_.Lookup(request_id));
   DCHECK(client_ptr.get());
   pending_permission_requests_.Remove(request_id);
-  base::WeakPtr<webkit::ppapi::PPB_Broker_Impl> client = *client_ptr;
+  base::WeakPtr<PPB_Broker_Impl> client = *client_ptr;
   if (!client.get())
     return;
 
-  webkit::ppapi::PluginModule* plugin_module =
-      webkit::ppapi::ResourceHelper::GetPluginModule(client.get());
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(client.get());
   if (!plugin_module)
     return;
 
@@ -959,14 +946,14 @@ void PepperPluginDelegateImpl::OnAsyncFileOpened(
 }
 
 void PepperPluginDelegateImpl::OnSetFocus(bool has_focus) {
-  for (std::set<webkit::ppapi::PluginInstanceImpl*>::iterator i =
+  for (std::set<PepperPluginInstanceImpl*>::iterator i =
            active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->SetContentAreaFocus(has_focus);
 }
 
 void PepperPluginDelegateImpl::PageVisibilityChanged(bool is_visible) {
-  for (std::set<webkit::ppapi::PluginInstanceImpl*>::iterator i =
+  for (std::set<PepperPluginInstanceImpl*>::iterator i =
            active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->PageVisibilityChanged(is_visible);
@@ -1140,7 +1127,7 @@ uint32 PepperPluginDelegateImpl::TCPSocketCreate() {
 }
 
 void PepperPluginDelegateImpl::TCPSocketConnect(
-    webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+    PPB_TCPSocket_Private_Impl* socket,
     uint32 socket_id,
     const std::string& host,
     uint16_t port) {
@@ -1151,7 +1138,7 @@ void PepperPluginDelegateImpl::TCPSocketConnect(
 }
 
 void PepperPluginDelegateImpl::TCPSocketConnectWithNetAddress(
-      webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+      PPB_TCPSocket_Private_Impl* socket,
       uint32 socket_id,
       const PP_NetAddress_Private& addr) {
   RegisterTCPSocket(socket, socket_id);
@@ -1202,7 +1189,7 @@ void PepperPluginDelegateImpl::TCPSocketSetOption(
 }
 
 void PepperPluginDelegateImpl::RegisterTCPSocket(
-    webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+    PPB_TCPSocket_Private_Impl* socket,
     uint32 socket_id) {
   tcp_sockets_.AddWithID(socket, socket_id);
 }
@@ -1265,9 +1252,8 @@ bool PepperPluginDelegateImpl::X509CertificateParseDER(
   return succeeded;
 }
 
-webkit::ppapi::FullscreenContainer*
-PepperPluginDelegateImpl::CreateFullscreenContainer(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+FullscreenContainer* PepperPluginDelegateImpl::CreateFullscreenContainer(
+    PepperPluginInstanceImpl* instance) {
   return render_view_->CreatePepperFullscreenContainer(instance);
 }
 
@@ -1288,7 +1274,7 @@ void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
 }
 
 void PepperPluginDelegateImpl::HandleDocumentLoad(
-    webkit::ppapi::PluginInstanceImpl* instance,
+    PepperPluginInstanceImpl* instance,
     const WebKit::WebURLResponse& response) {
   DCHECK(!instance->document_loader());
 
@@ -1346,7 +1332,7 @@ void PepperPluginDelegateImpl::HandleDocumentLoad(
 }
 
 RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
-    scoped_refptr<webkit::ppapi::PluginModule> module,
+    scoped_refptr<PluginModule> module,
     const base::FilePath& path,
     ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
@@ -1372,26 +1358,24 @@ ppapi::Preferences PepperPluginDelegateImpl::GetPreferences() {
   return ppapi::Preferences(render_view_->webkit_preferences());
 }
 
-bool PepperPluginDelegateImpl::LockMouse(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+bool PepperPluginDelegateImpl::LockMouse(PepperPluginInstanceImpl* instance) {
   return GetMouseLockDispatcher(instance)->LockMouse(
       GetOrCreateLockTargetAdapter(instance));
 }
 
-void PepperPluginDelegateImpl::UnlockMouse(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+void PepperPluginDelegateImpl::UnlockMouse(PepperPluginInstanceImpl* instance) {
   GetMouseLockDispatcher(instance)->UnlockMouse(
       GetOrCreateLockTargetAdapter(instance));
 }
 
 bool PepperPluginDelegateImpl::IsMouseLocked(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   return GetMouseLockDispatcher(instance)->IsMouseLockedTo(
       GetOrCreateLockTargetAdapter(instance));
 }
 
 void PepperPluginDelegateImpl::DidChangeCursor(
-    webkit::ppapi::PluginInstanceImpl* instance,
+    PepperPluginInstanceImpl* instance,
     const WebKit::WebCursorInfo& cursor) {
   // Update the cursor appearance immediately if the requesting plugin is the
   // one which receives the last mouse event. Otherwise, the new cursor won't be
@@ -1403,7 +1387,7 @@ void PepperPluginDelegateImpl::DidChangeCursor(
 }
 
 void PepperPluginDelegateImpl::DidReceiveMouseEvent(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   last_mouse_event_target_ = instance;
 }
 
@@ -1496,8 +1480,7 @@ void PepperPluginDelegateImpl::OnTCPSocketConnectACK(
     int32_t result,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
-  webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
-      tcp_sockets_.Lookup(socket_id);
+  PPB_TCPSocket_Private_Impl* socket = tcp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnConnectCompleted(result, local_addr, remote_addr);
   if (result != PP_OK)
@@ -1509,8 +1492,7 @@ void PepperPluginDelegateImpl::OnTCPSocketSSLHandshakeACK(
     uint32 socket_id,
     bool succeeded,
     const ppapi::PPB_X509Certificate_Fields& certificate_fields) {
-  webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
-      tcp_sockets_.Lookup(socket_id);
+  PPB_TCPSocket_Private_Impl* socket = tcp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnSSLHandshakeCompleted(succeeded, certificate_fields);
 }
@@ -1519,8 +1501,7 @@ void PepperPluginDelegateImpl::OnTCPSocketReadACK(uint32 plugin_dispatcher_id,
                                                   uint32 socket_id,
                                                   int32_t result,
                                                   const std::string& data) {
-  webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
-      tcp_sockets_.Lookup(socket_id);
+  PPB_TCPSocket_Private_Impl* socket = tcp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnReadCompleted(result, data);
 }
@@ -1528,8 +1509,7 @@ void PepperPluginDelegateImpl::OnTCPSocketReadACK(uint32 plugin_dispatcher_id,
 void PepperPluginDelegateImpl::OnTCPSocketWriteACK(uint32 plugin_dispatcher_id,
                                                    uint32 socket_id,
                                                    int32_t result) {
-  webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
-      tcp_sockets_.Lookup(socket_id);
+  PPB_TCPSocket_Private_Impl* socket = tcp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnWriteCompleted(result);
 }
@@ -1538,8 +1518,7 @@ void PepperPluginDelegateImpl::OnTCPSocketSetOptionACK(
     uint32 plugin_dispatcher_id,
     uint32 socket_id,
     int32_t result) {
-  webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
-      tcp_sockets_.Lookup(socket_id);
+  PPB_TCPSocket_Private_Impl* socket = tcp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnSetOptionCompleted(result);
 }
@@ -1649,7 +1628,7 @@ int PepperPluginDelegateImpl::GetSessionID(PP_DeviceType_Dev type,
 
 MouseLockDispatcher::LockTarget*
     PepperPluginDelegateImpl::GetOrCreateLockTargetAdapter(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   MouseLockDispatcher::LockTarget* target = mouse_lock_instances_[instance];
   if (target)
     return target;
@@ -1659,7 +1638,7 @@ MouseLockDispatcher::LockTarget*
 }
 
 void PepperPluginDelegateImpl::UnSetAndDeleteLockTargetAdapter(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   LockTargetMap::iterator it = mouse_lock_instances_.find(instance);
   if (it != mouse_lock_instances_.end()) {
     MouseLockDispatcher::LockTarget* target = it->second;
@@ -1670,7 +1649,7 @@ void PepperPluginDelegateImpl::UnSetAndDeleteLockTargetAdapter(
 }
 
 MouseLockDispatcher* PepperPluginDelegateImpl::GetMouseLockDispatcher(
-    webkit::ppapi::PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   if (instance->flash_fullscreen()) {
     RenderWidgetFullscreenPepper* container =
         static_cast<RenderWidgetFullscreenPepper*>(

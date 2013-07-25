@@ -10,7 +10,6 @@
 #include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 
-using webkit::ppapi::HostGlobals;
 using WebKit::WebBindings;
 
 namespace ppapi {
@@ -22,12 +21,12 @@ NPObjectVar::NPObjectVar(PP_Instance instance,
     : pp_instance_(instance),
       np_object_(np_object) {
   WebBindings::retainObject(np_object_);
-  HostGlobals::Get()->host_var_tracker()->AddNPObjectVar(this);
+  content::HostGlobals::Get()->host_var_tracker()->AddNPObjectVar(this);
 }
 
 NPObjectVar::~NPObjectVar() {
   if (pp_instance())
-    HostGlobals::Get()->host_var_tracker()->RemoveNPObjectVar(this);
+    content::HostGlobals::Get()->host_var_tracker()->RemoveNPObjectVar(this);
   WebBindings::releaseObject(np_object_);
 }
 
@@ -41,7 +40,7 @@ PP_VarType NPObjectVar::GetType() const {
 
 void NPObjectVar::InstanceDeleted() {
   DCHECK(pp_instance_);
-  HostGlobals::Get()->host_var_tracker()->RemoveNPObjectVar(this);
+  content::HostGlobals::Get()->host_var_tracker()->RemoveNPObjectVar(this);
   pp_instance_ = 0;
 }
 

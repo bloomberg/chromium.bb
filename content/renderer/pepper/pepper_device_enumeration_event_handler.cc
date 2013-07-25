@@ -32,7 +32,7 @@ PepperDeviceEnumerationEventHandler::~PepperDeviceEnumerationEventHandler() {
 }
 
 int PepperDeviceEnumerationEventHandler::RegisterEnumerateDevicesCallback(
-    const webkit::ppapi::PluginDelegate::EnumerateDevicesCallback& callback) {
+    const PluginDelegate::EnumerateDevicesCallback& callback) {
   enumerate_callbacks_[next_id_] = callback;
   return next_id_++;
 }
@@ -129,8 +129,7 @@ void PepperDeviceEnumerationEventHandler::NotifyDevicesEnumerated(
     return;
   }
 
-  webkit::ppapi::PluginDelegate::EnumerateDevicesCallback callback =
-      iter->second;
+  PluginDelegate::EnumerateDevicesCallback callback = iter->second;
 
   std::vector<ppapi::DeviceRefData> devices;
   if (succeeded) {

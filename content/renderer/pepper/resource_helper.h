@@ -13,10 +13,9 @@ namespace ppapi {
 class Resource;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
-class PluginInstanceImpl;
+class PepperPluginInstanceImpl;
 class PluginModule;
 class PluginDelegate;
 
@@ -29,7 +28,7 @@ class ResourceHelper {
  public:
   // Returns the instance implementation object for the given resource, or NULL
   // if the resource has outlived its instance.
-  static PluginInstanceImpl* GetPluginInstance(
+  static PepperPluginInstanceImpl* GetPluginInstance(
       const ::ppapi::Resource* resource);
 
   // Returns the module for the given resource, or NULL if the resource has
@@ -41,13 +40,13 @@ class ResourceHelper {
   static PluginDelegate* GetPluginDelegate(const ::ppapi::Resource* resource);
 
   // Returns the instance implementation object for the pp_instance.
-  static PluginInstanceImpl* PPInstanceToPluginInstance(PP_Instance instance);
+  static PepperPluginInstanceImpl* PPInstanceToPluginInstance(
+      PP_Instance instance);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceHelper);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_RESOURCE_IMPL_HELPER_H_

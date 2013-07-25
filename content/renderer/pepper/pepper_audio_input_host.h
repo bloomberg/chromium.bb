@@ -25,7 +25,7 @@ class RendererPpapiHostImpl;
 
 class PepperAudioInputHost
     : public ppapi::host::ResourceHost,
-      public webkit::ppapi::PluginDelegate::PlatformAudioInputClient,
+      public PluginDelegate::PlatformAudioInputClient,
       public PepperDeviceEnumerationHostHelper::Delegate {
  public:
   PepperAudioInputHost(RendererPpapiHostImpl* host,
@@ -44,7 +44,7 @@ class PepperAudioInputHost
   virtual void StreamCreationFailed() OVERRIDE;
 
   // PepperDeviceEnumerationHostHelper::Delegate implementation.
-  virtual webkit::ppapi::PluginDelegate* GetPluginDelegate() OVERRIDE;
+  virtual PluginDelegate* GetPluginDelegate() OVERRIDE;
 
  private:
   int32_t OnOpen(ppapi::host::HostMessageContext* context,
@@ -75,7 +75,7 @@ class PepperAudioInputHost
 
   // PluginDelegate audio input object that we delegate audio IPC through.
   // We don't own this pointer but are responsible for calling Shutdown on it.
-  webkit::ppapi::PluginDelegate::PlatformAudioInput* audio_input_;
+  PluginDelegate::PlatformAudioInput* audio_input_;
 
   PepperDeviceEnumerationHostHelper enumeration_helper_;
 

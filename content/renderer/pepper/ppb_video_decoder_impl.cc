@@ -90,8 +90,7 @@ PP_VideoDecodeError_Dev MediaToPPError(
 
 }  // namespace
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PP_Instance instance)
     : PPB_VideoDecoder_Shared(instance),
@@ -299,5 +298,4 @@ void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
   NOTREACHED() << "PlatformVideoDecoder::Initialize() is synchronous!";
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

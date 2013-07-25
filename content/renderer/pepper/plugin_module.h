@@ -44,16 +44,15 @@ namespace WebKit {
 class WebPluginContainer;
 }  // namespace WebKit
 
-namespace webkit {
-namespace ppapi {
-
+namespace content {
+  
+class PepperPluginInstanceImpl;
 class PluginDelegate;
-class PluginInstanceImpl;
 
 // Represents one plugin library loaded into one renderer. This library may
 // have multiple instances.
 //
-// Note: to get from a PP_Instance to a PluginInstance*, use the
+// Note: to get from a PP_Instance to a PepperPluginInstance*, use the
 // ResourceTracker.
 class CONTENT_EXPORT PluginModule :
     public base::RefCounted<PluginModule>,
@@ -67,7 +66,7 @@ class CONTENT_EXPORT PluginModule :
     virtual ~EmbedderState() {}
   };
 
-  typedef std::set<PluginInstanceImpl*> PluginInstanceSet;
+  typedef std::set<PepperPluginInstanceImpl*> PluginInstanceSet;
 
   // You must call one of the Init functions after the constructor to create a
   // module of the type you desire.
@@ -90,8 +89,7 @@ class CONTENT_EXPORT PluginModule :
   // Initializes this module as an internal plugin with the given entrypoints.
   // This is used for "plugins" compiled into Chrome. Returns true on success.
   // False means that the plugin can not be used.
-  bool InitAsInternalPlugin(
-      const content::PepperPluginInfo::EntryPoints& entry_points);
+  bool InitAsInternalPlugin(const PepperPluginInfo::EntryPoints& entry_points);
 
   // Initializes this module using the given library path as the plugin.
   // Returns true on success. False means that the plugin can not be used.
@@ -111,7 +109,7 @@ class CONTENT_EXPORT PluginModule :
   // Returns a result code indicating whether the proxy started successfully or
   // there was an error.
   PP_ExternalPluginResult InitAsProxiedExternalPlugin(
-      PluginInstanceImpl* instance);
+      PepperPluginInstanceImpl* instance);
 
   bool IsProxied() const;
 
@@ -130,7 +128,7 @@ class CONTENT_EXPORT PluginModule :
 
   // Returns a pointer to the local GetInterface function for retrieving
   // PPB interfaces.
-  static content::PepperPluginInfo::GetInterfaceFunc GetLocalGetInterfaceFunc();
+  static PepperPluginInfo::GetInterfaceFunc GetLocalGetInterfaceFunc();
 
   // Returns whether an interface is supported. This method can be called from
   // the browser process and used for interface matching before plugin
@@ -147,16 +145,17 @@ class CONTENT_EXPORT PluginModule :
   const base::FilePath& path() const { return path_; }
   const ::ppapi::PpapiPermissions& permissions() const { return permissions_; }
 
-  PluginInstanceImpl* CreateInstance(PluginDelegate* delegate,
-                                     content::RenderView* render_view,
-                                     WebKit::WebPluginContainer* container,
-                                     const GURL& plugin_url);
+  PepperPluginInstanceImpl* CreateInstance(
+      PluginDelegate* delegate,
+      RenderView* render_view,
+      WebKit::WebPluginContainer* container,
+      const GURL& plugin_url);
 
   // Returns "some" plugin instance associated with this module. This is not
   // guaranteed to be any one in particular. This is normally used to execute
   // callbacks up to the browser layer that are not inherently per-instance,
   // but the delegate lives only on the plugin instance so we need one of them.
-  PluginInstanceImpl* GetSomeInstance() const;
+  PepperPluginInstanceImpl* GetSomeInstance() const;
 
   const PluginInstanceSet& GetAllInstances() const { return instances_; }
 
@@ -167,8 +166,8 @@ class CONTENT_EXPORT PluginModule :
   // This module is associated with a set of instances. The PluginInstance
   // object declares its association with this module in its destructor and
   // releases us in its destructor.
-  void InstanceCreated(PluginInstanceImpl* instance);
-  void InstanceDeleted(PluginInstanceImpl* instance);
+  void InstanceCreated(PepperPluginInstanceImpl* instance);
+  void InstanceDeleted(PepperPluginInstanceImpl* instance);
 
   scoped_refptr< ::ppapi::CallbackTracker> GetCallbackTracker();
 
@@ -207,8 +206,7 @@ class CONTENT_EXPORT PluginModule :
   // Calls the InitializeModule entrypoint. The entrypoint must have been
   // set and the plugin must not be out of process (we don't maintain
   // entrypoints in that case).
-  bool InitializeModule(
-      const content::PepperPluginInfo::EntryPoints& entry_points);
+  bool InitializeModule(const PepperPluginInfo::EntryPoints& entry_points);
 
   // See EmbedderState above.
   scoped_ptr<EmbedderState> embedder_state_;
@@ -244,7 +242,7 @@ class CONTENT_EXPORT PluginModule :
   // Contains pointers to the entry points of the actual plugin implementation.
   // These will be NULL for out-of-process plugins, which is indicated by the
   // presence of the out_of_process_proxy_ value.
-  content::PepperPluginInfo::EntryPoints entry_points_;
+  PepperPluginInfo::EntryPoints entry_points_;
 
   // The name and file location of the module.
   const std::string name_;
@@ -261,7 +259,6 @@ class CONTENT_EXPORT PluginModule :
   DISALLOW_COPY_AND_ASSIGN(PluginModule);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PLUGIN_MODULE_H_

@@ -14,10 +14,9 @@
 
 struct PP_Var;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
-class PluginInstanceImpl;
+class PepperPluginInstanceImpl;
 
 // MessageChannel implements bidirectional postMessage functionality, allowing
 // calls from JavaScript to plugins and vice-versa. See
@@ -45,7 +44,7 @@ class MessageChannel {
     base::WeakPtr<MessageChannel> message_channel;
   };
 
-  explicit MessageChannel(PluginInstanceImpl* instance);
+  explicit MessageChannel(PepperPluginInstanceImpl* instance);
   ~MessageChannel();
 
   // Post a message to the onmessage handler for this channel's instance
@@ -66,7 +65,7 @@ class MessageChannel {
 
   NPObject* np_object() { return np_object_; }
 
-  PluginInstanceImpl* instance() {
+  PepperPluginInstanceImpl* instance() {
     return instance_;
   }
 
@@ -77,7 +76,7 @@ class MessageChannel {
   void StopQueueingJavaScriptMessages();
 
  private:
-  PluginInstanceImpl* instance_;
+  PepperPluginInstanceImpl* instance_;
 
   // We pass all non-postMessage calls through to the passthrough_object_.
   // This way, a plugin can use PPB_Class or PPP_Class_Deprecated and also
@@ -104,7 +103,7 @@ class MessageChannel {
   base::WeakPtrFactory<MessageChannel> weak_ptr_factory_;
 
   // TODO(teravest): Remove all the tricky DRAIN_CANCELLED logic once
-  // webkit::ppapi::PluginInstance::ResetAsProxied() is gone.
+  // PluginInstance::ResetAsProxied() is gone.
   std::deque<WebKit::WebSerializedScriptValue> early_message_queue_;
   enum EarlyMessageQueueState {
     QUEUE_MESSAGES,       // Queue JS messages.
@@ -117,7 +116,6 @@ class MessageChannel {
   DISALLOW_COPY_AND_ASSIGN(MessageChannel);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_MESSAGE_CHANNEL_H_

@@ -12,8 +12,7 @@
 #include "base/lazy_instance.h"
 #include "content/common/content_export.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // This class provides functionality to manage custom PPAPI interface
 // factories.
@@ -49,8 +48,7 @@ class PpapiInterfaceFactoryManager {
   DISALLOW_COPY_AND_ASSIGN(PpapiInterfaceFactoryManager);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PLUGIN_INTERFACE_FACTORY_H_
 

@@ -6,36 +6,34 @@
 
 #include "base/logging.h"
 #include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/shared_impl/resource.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // static
-PluginInstanceImpl* ResourceHelper::GetPluginInstance(
+PepperPluginInstanceImpl* ResourceHelper::GetPluginInstance(
     const ::ppapi::Resource* resource) {
   return PPInstanceToPluginInstance(resource->pp_instance());
 }
 
-PluginInstanceImpl* ResourceHelper::PPInstanceToPluginInstance(
+PepperPluginInstanceImpl* ResourceHelper::PPInstanceToPluginInstance(
     PP_Instance instance) {
   return HostGlobals::Get()->GetInstance(instance);
 }
 
 PluginModule* ResourceHelper::GetPluginModule(
     const ::ppapi::Resource* resource) {
-  PluginInstanceImpl* instance = GetPluginInstance(resource);
+  PepperPluginInstanceImpl* instance = GetPluginInstance(resource);
   return instance ? instance->module() : NULL;
 }
 
 PluginDelegate* ResourceHelper::GetPluginDelegate(
     const ::ppapi::Resource* resource) {
-  PluginInstanceImpl* instance = GetPluginInstance(resource);
+  PepperPluginInstanceImpl* instance = GetPluginInstance(resource);
   return instance ? instance->delegate() : NULL;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 

@@ -35,12 +35,6 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace webkit {
-namespace npapi {
-class WebPlugin;
-}
-}
-
 namespace content {
 class NPObjectStub;
 class PluginChannelHost;

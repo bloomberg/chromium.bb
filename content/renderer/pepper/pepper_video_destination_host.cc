@@ -53,7 +53,7 @@ int32_t PepperVideoDestinationHost::OnHostMsgOpen(
   if (!gurl.is_valid())
     return PP_ERROR_BADARGUMENT;
 
-  content::FrameWriterInterface* frame_writer = NULL;
+  FrameWriterInterface* frame_writer = NULL;
   if (!VideoDestinationHandler::Open(NULL /* factory */,
                                      NULL /* registry */,
                                      gurl.spec(),
@@ -76,10 +76,10 @@ int32_t PepperVideoDestinationHost::OnHostMsgPutFrame(
       image_data_resource.host_resource(), true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
-  webkit::ppapi::PPB_ImageData_Impl* image_data_impl =
-      static_cast<webkit::ppapi::PPB_ImageData_Impl*>(enter.object());
+  PPB_ImageData_Impl* image_data_impl =
+      static_cast<PPB_ImageData_Impl*>(enter.object());
 
-  if (!webkit::ppapi::PPB_ImageData_Impl::IsImageDataFormatSupported(
+  if (!PPB_ImageData_Impl::IsImageDataFormatSupported(
           image_data_impl->format()))
     return PP_ERROR_BADARGUMENT;
 

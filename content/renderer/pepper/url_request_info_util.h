@@ -17,8 +17,7 @@ class WebFrame;
 class WebURLRequest;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // Creates the WebKit URL request from the current request info. Returns true
 // on success, false if the request is invalid (in which case *dest may be
@@ -32,7 +31,6 @@ CONTENT_EXPORT bool CreateWebURLRequest(::ppapi::URLRequestInfoData* data,
 CONTENT_EXPORT bool URLRequestRequiresUniversalAccess(
     const ::ppapi::URLRequestInfoData& data);
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_URL_REQUEST_INFO_UTIL_H_

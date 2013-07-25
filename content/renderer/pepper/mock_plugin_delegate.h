@@ -10,23 +10,23 @@
 struct PP_NetAddress_Private;
 namespace ppapi { class PPB_X509Certificate_Fields; }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class MockPluginDelegate : public PluginDelegate {
  public:
   MockPluginDelegate();
   virtual ~MockPluginDelegate();
 
-  virtual void PluginFocusChanged(PluginInstanceImpl* instance,
+  virtual void PluginFocusChanged(PepperPluginInstanceImpl* instance,
                                   bool focused) OVERRIDE;
   virtual void PluginTextInputTypeChanged(
-      PluginInstanceImpl* instance) OVERRIDE;
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void PluginCaretPositionChanged(
-      PluginInstanceImpl* instance) OVERRIDE;
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void PluginRequestedCancelComposition(
-      PluginInstanceImpl* instance) OVERRIDE;
-  virtual void PluginSelectionChanged(PluginInstanceImpl* instance) OVERRIDE;
+      PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual void PluginSelectionChanged(
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void SimulateImeSetComposition(
       const base::string16& text,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
@@ -34,16 +34,16 @@ class MockPluginDelegate : public PluginDelegate {
       int selection_end) OVERRIDE;
   virtual void SimulateImeConfirmComposition(
       const base::string16& text) OVERRIDE;
-  virtual void PluginCrashed(PluginInstanceImpl* instance) OVERRIDE;
-  virtual void InstanceCreated(PluginInstanceImpl* instance) OVERRIDE;
-  virtual void InstanceDeleted(PluginInstanceImpl* instance) OVERRIDE;
+  virtual void PluginCrashed(PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual void InstanceCreated(PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual void InstanceDeleted(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
-      CreateResourceCreationAPI(PluginInstanceImpl* instance) OVERRIDE;
+      CreateResourceCreationAPI(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
   virtual WebKit::WebPlugin* CreatePluginReplacement(
       const base::FilePath& file_path) OVERRIDE;
   virtual PlatformImage2D* CreateImage2D(int width, int height) OVERRIDE;
-  virtual PlatformGraphics2D* GetGraphics2D(PluginInstanceImpl* instance,
+  virtual PlatformGraphics2D* GetGraphics2D(PepperPluginInstanceImpl* instance,
                                             PP_Resource graphics_2d) OVERRIDE;
   virtual PlatformContext3D* CreateContext3D() OVERRIDE;
   virtual PlatformVideoDecoder* CreateVideoDecoder(
@@ -162,19 +162,20 @@ class MockPluginDelegate : public PluginDelegate {
       const std::vector<char>& der,
       ::ppapi::PPB_X509Certificate_Fields* fields) OVERRIDE;
   virtual FullscreenContainer* CreateFullscreenContainer(
-      PluginInstanceImpl* instance) OVERRIDE;
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual gfx::Size GetScreenSize() OVERRIDE;
   virtual std::string GetDefaultEncoding() OVERRIDE;
   virtual void ZoomLimitsChanged(double minimum_factor,
                                  double maximum_factor) OVERRIDE;
   virtual base::SharedMemory* CreateAnonymousSharedMemory(size_t size) OVERRIDE;
   virtual ::ppapi::Preferences GetPreferences() OVERRIDE;
-  virtual bool LockMouse(PluginInstanceImpl* instance) OVERRIDE;
-  virtual void UnlockMouse(PluginInstanceImpl* instance) OVERRIDE;
-  virtual bool IsMouseLocked(PluginInstanceImpl* instance) OVERRIDE;
-  virtual void DidChangeCursor(PluginInstanceImpl* instance,
+  virtual bool LockMouse(PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual void UnlockMouse(PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual bool IsMouseLocked(PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual void DidChangeCursor(PepperPluginInstanceImpl* instance,
                                const WebKit::WebCursorInfo& cursor) OVERRIDE;
-  virtual void DidReceiveMouseEvent(PluginInstanceImpl* instance) OVERRIDE;
+  virtual void DidReceiveMouseEvent(
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
   virtual bool IsInFullscreenMode() OVERRIDE;
   virtual bool IsPageVisible() const OVERRIDE;
@@ -188,9 +189,9 @@ class MockPluginDelegate : public PluginDelegate {
       bool should_close_source) const OVERRIDE;
   virtual bool IsRunningInProcess(PP_Instance instance) const OVERRIDE;
   virtual void HandleDocumentLoad(
-      PluginInstanceImpl* instance,
+      PepperPluginInstanceImpl* instance,
       const WebKit::WebURLResponse& response) OVERRIDE;
-  virtual content::RendererPpapiHost* CreateExternalPluginModule(
+  virtual RendererPpapiHost* CreateExternalPluginModule(
       scoped_refptr<PluginModule> module,
       const base::FilePath& path,
       ::ppapi::PpapiPermissions permissions,
@@ -199,7 +200,6 @@ class MockPluginDelegate : public PluginDelegate {
       int plugin_child_id) OVERRIDE;
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_MOCK_PLUGIN_DELEGATE_H_

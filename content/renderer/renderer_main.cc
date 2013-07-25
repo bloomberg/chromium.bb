@@ -202,8 +202,8 @@ int RendererMain(const MainFunctionParams& parameters) {
   }
 
 #if defined(ENABLE_PLUGINS)
-  webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager =
-      webkit::ppapi::PpapiInterfaceFactoryManager::GetInstance();
+  PpapiInterfaceFactoryManager* factory_manager =
+      PpapiInterfaceFactoryManager::GetInstance();
   factory_manager->RegisterFactory(ContentPPAPIInterfaceFactory);
 
   // Load pepper plugins before engaging the sandbox.

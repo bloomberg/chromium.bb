@@ -34,11 +34,10 @@ class RendererPpapiHostImpl;
 // When we convert all resources to use the new-style, we can just use the
 // ResourceCreationProxy for all resources. This class is just glue to manage
 // the temporary "two different cases."
-class PepperInProcessResourceCreation
-    : public webkit::ppapi::ResourceCreationImpl {
+class PepperInProcessResourceCreation : public ResourceCreationImpl {
  public:
   PepperInProcessResourceCreation(RendererPpapiHostImpl* host_impl,
-                                  webkit::ppapi::PluginInstanceImpl* instance);
+                                  PepperPluginInstanceImpl* instance);
   virtual ~PepperInProcessResourceCreation();
 
   // ResourceCreation_API implementation.

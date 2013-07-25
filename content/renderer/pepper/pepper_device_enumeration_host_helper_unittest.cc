@@ -24,7 +24,7 @@ namespace content {
 
 namespace {
 
-class TestPluginDelegate : public webkit::ppapi::MockPluginDelegate {
+class TestPluginDelegate : public MockPluginDelegate {
  public:
   TestPluginDelegate() : last_used_id_(0) {
   }
@@ -79,19 +79,19 @@ class TestResourceHost : public ppapi::host::ResourceHost,
   TestResourceHost(ppapi::host::PpapiHost* host,
                    PP_Instance instance,
                    PP_Resource resource,
-                   webkit::ppapi::PluginDelegate* delegate)
+                   PluginDelegate* delegate)
       : ResourceHost(host, instance, resource),
         delegate_(delegate) {
   }
 
   virtual ~TestResourceHost() {}
 
-  virtual webkit::ppapi::PluginDelegate* GetPluginDelegate() OVERRIDE {
+  virtual PluginDelegate* GetPluginDelegate() OVERRIDE {
     return delegate_;
   }
 
  private:
-  webkit::ppapi::PluginDelegate* delegate_;
+  PluginDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestResourceHost);
 };

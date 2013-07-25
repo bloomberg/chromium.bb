@@ -8,7 +8,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "content/public/common/referrer.h"
-#include "content/public/renderer/ppapi_plugin_instance.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -37,8 +37,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/point.h"
-
-using webkit::ppapi::PluginInstance;
 
 namespace chrome {
 
@@ -179,7 +177,8 @@ int32_t PepperPDFHost::OnHostMsgGetLocalizedString(
 
 int32_t PepperPDFHost::OnHostMsgDidStartLoading(
     ppapi::host::HostMessageContext* context) {
-  PluginInstance* instance = host_->GetPluginInstance(pp_instance());
+  content::PepperPluginInstance* instance =
+      host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
   instance->GetRenderView()->DidStartLoading();
@@ -188,7 +187,8 @@ int32_t PepperPDFHost::OnHostMsgDidStartLoading(
 
 int32_t PepperPDFHost::OnHostMsgDidStopLoading(
     ppapi::host::HostMessageContext* context) {
-  PluginInstance* instance = host_->GetPluginInstance(pp_instance());
+  content::PepperPluginInstance* instance =
+      host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
   instance->GetRenderView()->DidStopLoading();
@@ -197,7 +197,8 @@ int32_t PepperPDFHost::OnHostMsgDidStopLoading(
 
 int32_t PepperPDFHost::OnHostMsgSetContentRestriction(
     ppapi::host::HostMessageContext* context, int restrictions) {
-  PluginInstance* instance = host_->GetPluginInstance(pp_instance());
+  content::PepperPluginInstance* instance =
+      host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
   instance->GetRenderView()->Send(
@@ -226,7 +227,8 @@ int32_t PepperPDFHost::OnHostMsgUserMetricsRecordAction(
 
 int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
     ppapi::host::HostMessageContext* context) {
-  PluginInstance* instance = host_->GetPluginInstance(pp_instance());
+  content::PepperPluginInstance* instance =
+      host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -245,7 +247,8 @@ int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
 int32_t PepperPDFHost::OnHostMsgPrint(
     ppapi::host::HostMessageContext* context) {
 #if defined(ENABLE_PRINTING)
-  PluginInstance* instance = host_->GetPluginInstance(pp_instance());
+  content::PepperPluginInstance* instance =
+      host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -265,7 +268,8 @@ int32_t PepperPDFHost::OnHostMsgPrint(
 
 int32_t PepperPDFHost::OnHostMsgSaveAs(
     ppapi::host::HostMessageContext* context) {
-  PluginInstance* instance = host_->GetPluginInstance(pp_instance());
+  content::PepperPluginInstance* instance =
+      host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
   GURL url = instance->GetPluginURL();

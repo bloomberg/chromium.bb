@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "chrome/renderer/pepper/ppb_pdf_impl.h"
-#include "content/public/renderer/ppapi_plugin_instance.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ipc/ipc_message_macros.h"
@@ -89,7 +89,7 @@ int32_t PepperFlashRendererHost::OnGetProxyForURL(
 int32_t PepperFlashRendererHost::OnSetInstanceAlwaysOnTop(
     ppapi::host::HostMessageContext* host_context,
     bool on_top) {
-  webkit::ppapi::PluginInstance* plugin_instance =
+  content::PepperPluginInstance* plugin_instance =
       host_->GetPluginInstance(pp_instance());
   if (plugin_instance)
     plugin_instance->SetAlwaysOnTop(on_top);
@@ -206,8 +206,8 @@ int32_t PepperFlashRendererHost::OnNavigate(
     const ppapi::URLRequestInfoData& data,
     const std::string& target,
     bool from_user_action) {
-  // If our PluginInstance is already destroyed, just return a failure.
-  webkit::ppapi::PluginInstance* plugin_instance =
+  // If our PepperPluginInstance is already destroyed, just return a failure.
+  content::PepperPluginInstance* plugin_instance =
       host_->GetPluginInstance(pp_instance());
   if (!plugin_instance)
     return PP_ERROR_FAILED;
@@ -242,7 +242,7 @@ int32_t PepperFlashRendererHost::OnNavigate(
 int32_t PepperFlashRendererHost::OnIsRectTopmost(
     ppapi::host::HostMessageContext* host_context,
     const PP_Rect& rect) {
-  webkit::ppapi::PluginInstance* plugin_instance =
+  content::PepperPluginInstance* plugin_instance =
       host_->GetPluginInstance(pp_instance());
   if (plugin_instance && plugin_instance->IsRectTopmost(
       gfx::Rect(rect.point.x, rect.point.y,rect.size.width, rect.size.height)))

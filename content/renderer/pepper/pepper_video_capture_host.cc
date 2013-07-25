@@ -5,7 +5,7 @@
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -22,8 +22,6 @@ using ppapi::HostResource;
 using ppapi::TrackedCallback;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
-using webkit::ppapi::HostGlobals;
-using webkit::ppapi::PPB_Buffer_Impl;
 
 namespace {
 
@@ -241,8 +239,8 @@ void PepperVideoCaptureHost::OnDeviceInfoReceived(
           info, buffer_host_resources, size)));
 }
 
-webkit::ppapi::PluginDelegate* PepperVideoCaptureHost::GetPluginDelegate() {
-  webkit::ppapi::PluginInstanceImpl* instance =
+PluginDelegate* PepperVideoCaptureHost::GetPluginDelegate() {
+  PepperPluginInstanceImpl* instance =
       renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
   if (instance)
     return instance->delegate();
@@ -257,13 +255,13 @@ int32_t PepperVideoCaptureHost::OnOpen(
   if (platform_video_capture_.get())
     return PP_ERROR_FAILED;
 
-  webkit::ppapi::PluginDelegate* plugin_delegate = GetPluginDelegate();
+  PluginDelegate* plugin_delegate = GetPluginDelegate();
   if (!plugin_delegate)
     return PP_ERROR_FAILED;
 
   SetRequestedInfo(requested_info, buffer_count);
 
-  webkit::ppapi::PluginInstance* instance =
+  PepperPluginInstance* instance =
       renderer_ppapi_host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;

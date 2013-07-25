@@ -7,8 +7,7 @@
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/resource_helper.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 PPB_X509Certificate_Private_Impl::PPB_X509Certificate_Private_Impl(
     PP_Instance instance) :
@@ -34,5 +33,4 @@ bool PPB_X509Certificate_Private_Impl::ParseDER(
 PPB_X509Certificate_Private_Impl::~PPB_X509Certificate_Private_Impl() {
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

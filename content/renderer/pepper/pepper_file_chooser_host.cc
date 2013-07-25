@@ -106,8 +106,7 @@ void PepperFileChooserHost::StoreChosenFiles(
     base::FilePath file_path(files[i].path);
 #endif
 
-    webkit::ppapi::PPB_FileRef_Impl* ref =
-        webkit::ppapi::PPB_FileRef_Impl::CreateExternal(
+    PPB_FileRef_Impl* ref = PPB_FileRef_Impl::CreateExternal(
         pp_instance(), file_path, files[i].display_name);
     ppapi::PPB_FileRef_CreateInfo create_info;
     ppapi::proxy::PPB_FileRef_Proxy::SerializeFileRef(ref->GetReference(),

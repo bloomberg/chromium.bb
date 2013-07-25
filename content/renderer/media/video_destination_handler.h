@@ -13,16 +13,11 @@
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/media/base/videocapturer.h"
 
-namespace webkit {
-namespace ppapi {
-class PPB_ImageData_Impl;
-}
-}
-
 namespace content {
 
 class MediaStreamDependencyFactory;
 class MediaStreamRegistryInterface;
+class PPB_ImageData_Impl;
 
 // Interface used by the effects pepper plugin to output the processed frame
 // to the video track.
@@ -30,7 +25,7 @@ class CONTENT_EXPORT FrameWriterInterface {
  public:
   // The ownership of the |image_data| deosn't transfer. So the implementation
   // of this interface should make a copy of the |image_data| before return.
-  virtual void PutFrame(webkit::ppapi::PPB_ImageData_Impl* image_data,
+  virtual void PutFrame(PPB_ImageData_Impl* image_data,
                         int64 time_stamp_ns) = 0;
   virtual ~FrameWriterInterface() {}
 };
@@ -59,7 +54,7 @@ class CONTENT_EXPORT PpFrameWriter
 
   // FrameWriterInterface implementation.
   // This method will be called by the Pepper host from render thread.
-  virtual void PutFrame(webkit::ppapi::PPB_ImageData_Impl* image_data,
+  virtual void PutFrame(PPB_ImageData_Impl* image_data,
                         int64 time_stamp_ns) OVERRIDE;
 
  private:

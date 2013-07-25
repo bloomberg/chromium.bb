@@ -8,8 +8,7 @@
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_TCPServerSocket_Private_Impl
     : public ::ppapi::PPB_TCPServerSocket_Shared {
@@ -34,7 +33,6 @@ class PPB_TCPServerSocket_Private_Impl
   DISALLOW_COPY_AND_ASSIGN(PPB_TCPServerSocket_Private_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_TCP_SERVER_SOCKET_PRIVATE_IMPL_H_

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "content/renderer/pepper/common.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -18,8 +18,7 @@ using ppapi::PlatformFileToInt;
 using ppapi::thunk::PPB_Broker_API;
 using ppapi::TrackedCallback;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // PPB_Broker_Impl ------------------------------------------------------
 
@@ -53,7 +52,8 @@ int32_t PPB_Broker_Impl::Connect(
     return PP_ERROR_FAILED;
   }
 
-  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PepperPluginInstanceImpl* plugin_instance =
+      ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
 
@@ -80,7 +80,8 @@ int32_t PPB_Broker_Impl::GetHandle(int32_t* handle) {
 }
 
 GURL PPB_Broker_Impl::GetDocumentUrl() {
-  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PepperPluginInstanceImpl* plugin_instance =
+      ResourceHelper::GetPluginInstance(this);
   return plugin_instance->container()->element().document().url();
 }
 
@@ -99,5 +100,4 @@ void PPB_Broker_Impl::BrokerConnected(int32_t handle, int32_t result) {
   connect_callback_->Run(result);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

@@ -15,10 +15,9 @@ struct NPObject;
 typedef struct _NPVariant NPVariant;
 typedef void* NPIdentifier;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
-class PluginInstanceImpl;
+class PepperPluginInstanceImpl;
 class PluginObject;
 
 // Utilities -------------------------------------------------------------------
@@ -38,7 +37,8 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result);
 //
 // The returned PP_Var will have a refcount of 1, this passing ownership of
 // the reference to the caller. This is suitable for returning to a plugin.
-PP_Var NPVariantToPPVar(PluginInstanceImpl* instance, const NPVariant* variant);
+PP_Var NPVariantToPPVar(PepperPluginInstanceImpl* instance,
+                        const NPVariant* variant);
 
 // Returns a NPIdentifier that corresponds to the given PP_Var. The contents
 // of the PP_Var will be copied. Returns 0 if the given PP_Var is not a a
@@ -64,13 +64,13 @@ PP_Var NPIdentifierToPPVar(NPIdentifier id);
 // Note: this could easily be changed to take a PP_Instance instead if that
 // makes certain calls in the future easier. Currently all callers have a
 // PluginInstance so that's what we use here.
-CONTENT_EXPORT PP_Var NPObjectToPPVar(PluginInstanceImpl* instance,
+CONTENT_EXPORT PP_Var NPObjectToPPVar(PepperPluginInstanceImpl* instance,
                                       NPObject* object);
 
 // This version creates a default v8::Context rather than using the one from
 // the container of |instance|. It is only for use in unit tests, where we don't
 // have a real container for |instance|.
-CONTENT_EXPORT PP_Var NPObjectToPPVarForTest(PluginInstanceImpl* instance,
+CONTENT_EXPORT PP_Var NPObjectToPPVarForTest(PepperPluginInstanceImpl* instance,
                                              NPObject* object);
 
 // PPResultAndExceptionToNPResult ----------------------------------------------
@@ -152,7 +152,7 @@ class PPResultAndExceptionToNPResult {
 // WebKit to the plugin.
 class PPVarArrayFromNPVariantArray {
  public:
-  PPVarArrayFromNPVariantArray(PluginInstanceImpl* instance,
+  PPVarArrayFromNPVariantArray(PepperPluginInstanceImpl* instance,
                                size_t size,
                                const NPVariant* variants);
   ~PPVarArrayFromNPVariantArray();
@@ -172,7 +172,7 @@ class PPVarArrayFromNPVariantArray {
 // is used when converting 'this' pointer from WebKit to the plugin.
 class PPVarFromNPObject {
  public:
-  PPVarFromNPObject(PluginInstanceImpl* instance, NPObject* object);
+  PPVarFromNPObject(PepperPluginInstanceImpl* instance, NPObject* object);
   ~PPVarFromNPObject();
 
   PP_Var var() const { return var_; }
@@ -259,7 +259,6 @@ class TryCatch {
   PP_Var* exception_;
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_NPAPI_GLUE_H_

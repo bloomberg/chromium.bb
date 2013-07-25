@@ -22,7 +22,7 @@ class PepperDeviceEnumerationEventHandler
   virtual ~PepperDeviceEnumerationEventHandler();
 
   int RegisterEnumerateDevicesCallback(
-      const webkit::ppapi::PluginDelegate::EnumerateDevicesCallback& callback);
+      const PluginDelegate::EnumerateDevicesCallback& callback);
   void UnregisterEnumerateDevicesCallback(int request_id);
 
   int RegisterOpenDeviceCallback(
@@ -62,8 +62,7 @@ class PepperDeviceEnumerationEventHandler
 
   int next_id_;
 
-  typedef std::map<int,
-                   webkit::ppapi::PluginDelegate::EnumerateDevicesCallback>
+  typedef std::map<int, PluginDelegate::EnumerateDevicesCallback>
       EnumerateCallbackMap;
   EnumerateCallbackMap enumerate_callbacks_;
 

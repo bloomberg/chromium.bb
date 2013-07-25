@@ -10,8 +10,8 @@
 
 #if defined(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/crypto/ppapi_decryptor.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
-#include "content/renderer/pepper/ppapi_webplugin_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
@@ -23,10 +23,10 @@
 namespace content {
 
 #if defined(ENABLE_PEPPER_CDMS)
-// Returns the PluginInstanceImpl associated with the Helper Plugin.
+// Returns the PepperPluginInstanceImpl associated with the Helper Plugin.
 // If a non-NULL pointer is returned, the caller must call closeHelperPlugin()
 // when the Helper Plugin is no longer needed.
-static scoped_refptr<webkit::ppapi::PluginInstanceImpl> CreateHelperPlugin(
+static scoped_refptr<PepperPluginInstanceImpl> CreateHelperPlugin(
     const std::string& plugin_type,
     WebKit::WebMediaPlayerClient* web_media_player_client,
     WebKit::WebFrame* web_frame) {
@@ -40,8 +40,8 @@ static scoped_refptr<webkit::ppapi::PluginInstanceImpl> CreateHelperPlugin(
 
   DCHECK(!web_plugin->isPlaceholder());  // Prevented by Blink.
   // Only Pepper plugins are supported, so it must be a ppapi object.
-  webkit::ppapi::WebPluginImpl* ppapi_plugin =
-      static_cast<webkit::ppapi::WebPluginImpl*>(web_plugin);
+  PepperWebPluginImpl* ppapi_plugin =
+      static_cast<PepperWebPluginImpl*>(web_plugin);
   return ppapi_plugin->instance();
 }
 
@@ -58,7 +58,7 @@ static scoped_ptr<media::MediaKeys> CreatePpapiDecryptor(
 
   std::string plugin_type = GetPepperType(key_system);
   DCHECK(!plugin_type.empty());
-  const scoped_refptr<webkit::ppapi::PluginInstanceImpl>& plugin_instance =
+  const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance =
       CreateHelperPlugin(plugin_type, web_media_player_client, web_frame);
   if (!plugin_instance.get()) {
     DLOG(ERROR) << "ProxyDecryptor: plugin instance creation failed.";

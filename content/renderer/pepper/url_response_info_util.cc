@@ -13,7 +13,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
-using webkit::ppapi::PPB_FileRef_Impl;
 using WebKit::WebHTTPHeaderVisitor;
 using WebKit::WebString;
 using WebKit::WebURLResponse;

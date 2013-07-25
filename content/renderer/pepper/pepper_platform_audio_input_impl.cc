@@ -25,7 +25,7 @@ PepperPlatformAudioInputImpl* PepperPlatformAudioInputImpl::Create(
     const GURL& document_url,
     int sample_rate,
     int frames_per_buffer,
-    webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client) {
+    PluginDelegate::PlatformAudioInputClient* client) {
   scoped_refptr<PepperPlatformAudioInputImpl> audio_input(
       new PepperPlatformAudioInputImpl());
   if (audio_input->Initialize(plugin_delegate, device_id, document_url,
@@ -143,7 +143,7 @@ bool PepperPlatformAudioInputImpl::Initialize(
     const GURL& document_url,
     int sample_rate,
     int frames_per_buffer,
-    webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client) {
+    PluginDelegate::PlatformAudioInputClient* client) {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
   if (!plugin_delegate.get() || !client)

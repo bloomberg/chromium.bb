@@ -10,8 +10,7 @@
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PluginDelegate;
 
@@ -47,7 +46,6 @@ class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl {
   DISALLOW_COPY_AND_ASSIGN(PPB_TCPSocket_Private_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_TCP_SOCKET_PRIVATE_IMPL_H_

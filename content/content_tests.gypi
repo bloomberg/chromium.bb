@@ -437,7 +437,7 @@
         'renderer/pepper/mock_plugin_delegate.cc',
         'renderer/pepper/mock_plugin_delegate.h',
         'renderer/pepper/mock_resource.h',
-        'renderer/pepper/ppapi_plugin_instance_unittest.cc',
+        'renderer/pepper/pepper_plugin_instance_unittest.cc',
         'renderer/pepper/ppapi_unittest.cc',
         'renderer/pepper/ppapi_unittest.h',
         'renderer/pepper/quota_file_io_unittest.cc',

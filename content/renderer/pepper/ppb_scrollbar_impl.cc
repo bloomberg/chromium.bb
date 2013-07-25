@@ -9,8 +9,8 @@
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/event_conversion.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
@@ -33,8 +33,7 @@ using WebKit::WebRect;
 using WebKit::WebScrollbar;
 using WebKit::WebPluginScrollbar;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // static
 PP_Resource PPB_Scrollbar_Impl::Create(PP_Instance instance,
@@ -54,7 +53,8 @@ PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {
 }
 
 void PPB_Scrollbar_Impl::Init(bool vertical) {
-  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PepperPluginInstanceImpl* plugin_instance =
+      ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return;
   scrollbar_.reset(WebPluginScrollbar::createForPlugin(
@@ -247,5 +247,4 @@ void PPB_Scrollbar_Impl::NotifyInvalidate() {
   Invalidate(&pp_rect);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

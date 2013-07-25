@@ -25,8 +25,7 @@ class DecoderBuffer;
 class VideoDecoderConfig;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_Buffer_Impl;
 
@@ -189,7 +188,6 @@ class ContentDecryptorDelegate {
   DISALLOW_COPY_AND_ASSIGN(ContentDecryptorDelegate);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_CONTENT_DECRYPTOR_DELEGATE_H_

@@ -42,7 +42,7 @@ class CONTENT_EXPORT PepperVideoDestinationHost
 
   base::WeakPtrFactory<PepperVideoDestinationHost> weak_factory_;
 
-  scoped_ptr<content::FrameWriterInterface> frame_writer_;
+  scoped_ptr<FrameWriterInterface> frame_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperVideoDestinationHost);
 };

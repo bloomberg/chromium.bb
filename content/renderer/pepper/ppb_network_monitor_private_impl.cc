@@ -11,8 +11,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 PPB_NetworkMonitor_Private_Impl::PPB_NetworkMonitor_Private_Impl(
     PP_Instance instance,
@@ -85,5 +84,4 @@ void PPB_NetworkMonitor_Private_Impl::OnNetworkListChanged(
   callback_(user_data_, list_resource);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

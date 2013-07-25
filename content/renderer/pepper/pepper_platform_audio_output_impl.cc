@@ -21,7 +21,7 @@ PepperPlatformAudioOutputImpl* PepperPlatformAudioOutputImpl::Create(
     int sample_rate,
     int frames_per_buffer,
     int source_render_view_id,
-    webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client) {
+    PluginDelegate::PlatformAudioOutputClient* client) {
   scoped_refptr<PepperPlatformAudioOutputImpl> audio_output(
       new PepperPlatformAudioOutputImpl());
   if (audio_output->Initialize(sample_rate, frames_per_buffer,
@@ -116,7 +116,7 @@ bool PepperPlatformAudioOutputImpl::Initialize(
     int sample_rate,
     int frames_per_buffer,
     int source_render_view_id,
-    webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client) {
+    PluginDelegate::PlatformAudioOutputClient* client) {
   DCHECK(client);
   client_ = client;
 

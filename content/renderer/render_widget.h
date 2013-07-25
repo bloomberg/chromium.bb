@@ -64,13 +64,8 @@ namespace ui {
 class Range;
 }
 
-namespace webkit {
-namespace ppapi {
-class PluginInstanceImpl;
-}  // namespace ppapi
-}  // namespace webkit
-
 namespace content {
+class PepperPluginInstanceImpl;
 class RenderWidgetCompositor;
 class RenderWidgetTest;
 struct GpuRenderingStats;
@@ -381,7 +376,7 @@ class CONTENT_EXPORT RenderWidget
   //
   // A return value of null means optimized painting can not be used and we
   // should continue with the normal painting code path.
-  virtual webkit::ppapi::PluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
+  virtual PepperPluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,

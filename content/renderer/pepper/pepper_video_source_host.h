@@ -36,12 +36,12 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
  private:
   // This helper object receives frames on a video worker thread and passes
   // them on to us.
-  class FrameReceiver : public content::FrameReaderInterface,
+  class FrameReceiver : public FrameReaderInterface,
                         public base::RefCountedThreadSafe<FrameReceiver> {
    public:
     explicit FrameReceiver(const base::WeakPtr<PepperVideoSourceHost>& host);
 
-    // content::FrameReaderInterface implementation.
+    // FrameReaderInterface implementation.
     virtual bool GotFrame(cricket::VideoFrame* frame) OVERRIDE;
 
     void OnGotFrame(scoped_ptr<cricket::VideoFrame> frame);
@@ -75,7 +75,7 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
 
   ppapi::host::ReplyMessageContext reply_context_;
 
-  scoped_ptr<content::VideoSourceHandler> source_handler_;
+  scoped_ptr<VideoSourceHandler> source_handler_;
   scoped_refptr<FrameReceiver> frame_receiver_;
   std::string stream_url_;
   scoped_ptr<cricket::VideoFrame> last_frame_;

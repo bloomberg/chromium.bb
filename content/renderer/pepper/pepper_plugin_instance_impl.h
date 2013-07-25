@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PPAPI_PLUGIN_INSTANCE_IMPL_H_
-#define CONTENT_RENDERER_PEPPER_PPAPI_PLUGIN_INSTANCE_IMPL_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_INSTANCE_IMPL_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_INSTANCE_IMPL_H_
 
 #include <set>
 #include <string>
@@ -16,7 +16,7 @@
 #include "base/strings/string16.h"
 #include "cc/layers/texture_layer_client.h"
 #include "content/common/content_export.h"
-#include "content/public/renderer/ppapi_plugin_instance.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/ppp_pdf.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
@@ -92,8 +92,7 @@ namespace v8 {
 class Isolate;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class ContentDecryptorDelegate;
 class FullscreenContainer;
@@ -107,21 +106,21 @@ class PPB_URLLoader_Impl;
 
 // Represents one time a plugin appears on one web page.
 //
-// Note: to get from a PP_Instance to a PluginInstance*, use the
+// Note: to get from a PP_Instance to a PepperPluginInstance*, use the
 // ResourceTracker.
-class CONTENT_EXPORT PluginInstanceImpl
-    : public base::RefCounted<PluginInstanceImpl>,
-      public base::SupportsWeakPtr<PluginInstanceImpl>,
-      public NON_EXPORTED_BASE(PluginInstance),
+class CONTENT_EXPORT PepperPluginInstanceImpl
+    : public base::RefCounted<PepperPluginInstanceImpl>,
+      public base::SupportsWeakPtr<PepperPluginInstanceImpl>,
+      public NON_EXPORTED_BASE(PepperPluginInstance),
       public ::ppapi::PPB_Instance_Shared {
  public:
-  // Create and return a PluginInstanceImpl object which supports the most
+  // Create and return a PepperPluginInstanceImpl object which supports the most
   // recent version of PPP_Instance possible by querying the given
   // get_plugin_interface function. If the plugin does not support any valid
   // PPP_Instance interface, returns NULL.
-  static PluginInstanceImpl* Create(
+  static PepperPluginInstanceImpl* Create(
       PluginDelegate* delegate,
-      content::RenderView* render_view,
+      RenderView* render_view,
       PluginModule* module,
       WebKit::WebPluginContainer* container,
       const GURL& plugin_url);
@@ -352,8 +351,8 @@ class CONTENT_EXPORT PluginInstanceImpl
 
   ContentDecryptorDelegate* GetContentDecryptorDelegate();
 
-  // webkit::ppapi::PluginInstance implementation
-  virtual content::RenderView* GetRenderView() OVERRIDE;
+  // PluginInstance implementation
+  virtual RenderView* GetRenderView() OVERRIDE;
   virtual WebKit::WebPluginContainer* GetContainer() OVERRIDE;
   virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual const GURL& GetPluginURL() OVERRIDE;
@@ -508,11 +507,11 @@ class CONTENT_EXPORT PluginInstanceImpl
   v8::Isolate* GetIsolate() const;
 
  private:
-  friend class base::RefCounted<PluginInstanceImpl>;
+  friend class base::RefCounted<PepperPluginInstanceImpl>;
   friend class PpapiUnittest;
 
   // Delete should be called by the WebPlugin before this destructor.
-  virtual ~PluginInstanceImpl();
+  virtual ~PepperPluginInstanceImpl();
 
   // Class to record document load notifications and play them back once the
   // real document loader becomes available. Used only by NaCl instances.
@@ -540,7 +539,7 @@ class CONTENT_EXPORT PluginInstanceImpl
   };
 
   // Implements PPB_Gamepad_API. This is just to avoid having an excessive
-  // number of interfaces implemented by PluginInstanceImpl.
+  // number of interfaces implemented by PepperPluginInstanceImpl.
   class GamepadImpl : public ::ppapi::thunk::PPB_Gamepad_API,
                       public ::ppapi::Resource {
    public:
@@ -554,16 +553,16 @@ class CONTENT_EXPORT PluginInstanceImpl
     PluginDelegate* delegate_;
   };
 
-  // See the static Create functions above for creating PluginInstanceImpl
+  // See the static Create functions above for creating PepperPluginInstanceImpl
   // objects. This constructor is private so that we can hide the
   // PPP_Instance_Combined details while still having 1 constructor to maintain
   // for member initialization.
-  PluginInstanceImpl(PluginDelegate* delegate,
-                     content::RenderView* render_view,
-                     PluginModule* module,
-                     ::ppapi::PPP_Instance_Combined* instance_interface,
-                     WebKit::WebPluginContainer* container,
-                     const GURL& plugin_url);
+  PepperPluginInstanceImpl(PluginDelegate* delegate,
+                           RenderView* render_view,
+                           PluginModule* module,
+                           ::ppapi::PPP_Instance_Combined* instance_interface,
+                           WebKit::WebPluginContainer* container,
+                           const GURL& plugin_url);
 
   bool LoadFindInterface();
   bool LoadInputEventInterface();
@@ -649,7 +648,7 @@ class CONTENT_EXPORT PluginInstanceImpl
   void ResetSizeAttributesAfterFullscreen();
 
   PluginDelegate* delegate_;
-  content::RenderView* render_view_;
+  RenderView* render_view_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;
   // If this is the NaCl plugin, we create a new module when we switch to the
@@ -689,7 +688,7 @@ class CONTENT_EXPORT PluginInstanceImpl
   // already a weak ptr pending (HasWeakPtrs is true), code should update the
   // view_data_ but not send updates. This also allows us to cancel scheduled
   // view change events.
-  base::WeakPtrFactory<PluginInstanceImpl> view_change_weak_ptr_factory_;
+  base::WeakPtrFactory<PepperPluginInstanceImpl> view_change_weak_ptr_factory_;
 
   // The current device context for painting in 2D and 3D.
   scoped_refptr<PPB_Graphics3D_Impl> bound_graphics_3d_;
@@ -855,10 +854,9 @@ class CONTENT_EXPORT PluginInstanceImpl
   v8::Isolate* isolate_;
 
   friend class PpapiPluginInstanceTest;
-  DISALLOW_COPY_AND_ASSIGN(PluginInstanceImpl);
+  DISALLOW_COPY_AND_ASSIGN(PepperPluginInstanceImpl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PPAPI_PLUGIN_INSTANCE_IMPL_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_INSTANCE_IMPL_H_

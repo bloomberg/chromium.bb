@@ -15,9 +15,9 @@
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "ipc/ipc_message.h"
@@ -28,11 +28,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "ui/gfx/point.h"
-
-using webkit::ppapi::HostGlobals;
-using webkit::ppapi::PluginInstance;
-using webkit::ppapi::PluginInstanceImpl;
-using webkit::ppapi::PluginModule;
 
 namespace content {
 // static
@@ -113,7 +108,8 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForInProcess(
 // static
 RendererPpapiHostImpl* RendererPpapiHostImpl::GetForPPInstance(
     PP_Instance pp_instance) {
-  PluginInstanceImpl* instance = HostGlobals::Get()->GetInstance(pp_instance);
+  PepperPluginInstanceImpl* instance =
+      HostGlobals::Get()->GetInstance(pp_instance);
   if (!instance)
     return NULL;
 
@@ -125,14 +121,14 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::GetForPPInstance(
 
 scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
 RendererPpapiHostImpl::CreateInProcessResourceCreationAPI(
-    PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   return scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>(
       new PepperInProcessResourceCreation(this, instance));
 }
 
 PepperBrowserConnection*
 RendererPpapiHostImpl::GetBrowserConnection(PP_Instance instance) const {
-  PluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
+  PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
     return NULL;
 
@@ -146,7 +142,7 @@ RendererPpapiHostImpl::GetBrowserConnection(PP_Instance instance) const {
   return delegate->pepper_browser_connection();
 }
 
-webkit::ppapi::PluginInstanceImpl* RendererPpapiHostImpl::GetPluginInstanceImpl(
+PepperPluginInstanceImpl* RendererPpapiHostImpl::GetPluginInstanceImpl(
     PP_Instance instance) const {
   return GetAndValidateInstance(instance);
 }
@@ -157,7 +153,7 @@ ppapi::host::PpapiHost* RendererPpapiHostImpl::GetPpapiHost() {
 
 RenderView* RendererPpapiHostImpl::GetRenderViewForInstance(
     PP_Instance instance) const {
-  PluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
+  PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
     return NULL;
 
@@ -171,14 +167,14 @@ bool RendererPpapiHostImpl::IsValidInstance(PP_Instance instance) const {
   return !!GetAndValidateInstance(instance);
 }
 
-webkit::ppapi::PluginInstance* RendererPpapiHostImpl::GetPluginInstance(
+PepperPluginInstance* RendererPpapiHostImpl::GetPluginInstance(
     PP_Instance instance) const {
   return GetAndValidateInstance(instance);
 }
 
 WebKit::WebPluginContainer* RendererPpapiHostImpl::GetContainerForInstance(
       PP_Instance instance) const {
-  PluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
+  PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
     return NULL;
   return instance_object->container();
@@ -191,7 +187,7 @@ base::ProcessId RendererPpapiHostImpl::GetPluginPID() const {
 }
 
 bool RendererPpapiHostImpl::HasUserGesture(PP_Instance instance) const {
-  PluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
+  PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
     return false;
 
@@ -202,13 +198,11 @@ bool RendererPpapiHostImpl::HasUserGesture(PP_Instance instance) const {
 }
 
 int RendererPpapiHostImpl::GetRoutingIDForWidget(PP_Instance instance) const {
-  webkit::ppapi::PluginInstanceImpl* plugin_instance =
-      GetAndValidateInstance(instance);
+  PepperPluginInstanceImpl* plugin_instance = GetAndValidateInstance(instance);
   if (!plugin_instance)
     return 0;
   if (plugin_instance->flash_fullscreen()) {
-    webkit::ppapi::FullscreenContainer* container =
-        plugin_instance->fullscreen_container();
+    FullscreenContainer* container = plugin_instance->fullscreen_container();
     return static_cast<RenderWidgetFullscreenPepper*>(container)->routing_id();
   }
   return GetRenderViewForInstance(instance)->GetRoutingID();
@@ -217,8 +211,7 @@ int RendererPpapiHostImpl::GetRoutingIDForWidget(PP_Instance instance) const {
 gfx::Point RendererPpapiHostImpl::PluginPointToRenderView(
     PP_Instance instance,
     const gfx::Point& pt) const {
-  webkit::ppapi::PluginInstanceImpl* plugin_instance =
-      GetAndValidateInstance(instance);
+  PepperPluginInstanceImpl* plugin_instance = GetAndValidateInstance(instance);
   if (!plugin_instance)
     return pt;
 
@@ -269,9 +262,10 @@ void RendererPpapiHostImpl::CreateBrowserResourceHost(
   }
 }
 
-PluginInstanceImpl* RendererPpapiHostImpl::GetAndValidateInstance(
+PepperPluginInstanceImpl* RendererPpapiHostImpl::GetAndValidateInstance(
     PP_Instance pp_instance) const {
-  PluginInstanceImpl* instance = HostGlobals::Get()->GetInstance(pp_instance);
+  PepperPluginInstanceImpl* instance =
+      HostGlobals::Get()->GetInstance(pp_instance);
   if (!instance)
     return NULL;
   if (!instance->IsValidInstanceOf(module_))

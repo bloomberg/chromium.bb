@@ -12,7 +12,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "content/renderer/pepper/quota_file_io.h"
 #include "ppapi/c/pp_errors.h"
@@ -31,8 +31,6 @@ using ppapi::PPTimeToTime;
 using ppapi::host::ReplyMessageContext;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_FileRef_API;
-using webkit::ppapi::PPB_FileRef_Impl;
-using webkit::ppapi::PluginDelegate;
 
 namespace {
 
@@ -66,8 +64,8 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
       open_flags_(0),
       weak_factory_(this) {
   // TODO(victorhsieh): eliminate plugin_delegate_ as it's no longer needed.
-  webkit::ppapi::PluginInstanceImpl* plugin_instance =
-      webkit::ppapi::HostGlobals::Get()->GetInstance(instance);
+  PepperPluginInstanceImpl* plugin_instance =
+      HostGlobals::Get()->GetInstance(instance);
   plugin_delegate_ = plugin_instance ? plugin_instance->delegate() : NULL;
 }
 
@@ -480,7 +478,7 @@ void PepperFileIOHost::ExecutePlatformOpenFileCallback(
   if (file_ != base::kInvalidPlatformFileValue &&
       (file_system_type_ == PP_FILESYSTEMTYPE_LOCALTEMPORARY ||
        file_system_type_ == PP_FILESYSTEMTYPE_LOCALPERSISTENT)) {
-    quota_file_io_.reset(new webkit::ppapi::QuotaFileIO(
+    quota_file_io_.reset(new QuotaFileIO(
         pp_instance(), file_, file_system_url_, file_system_type_));
   }
 

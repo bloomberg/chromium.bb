@@ -8,8 +8,8 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/c/ppp_graphics_3d.h"
@@ -29,8 +29,7 @@ using WebKit::WebFrame;
 using WebKit::WebPluginContainer;
 using WebKit::WebString;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 const int32 kCommandBufferSize = 1024 * 1024;
@@ -236,7 +235,8 @@ bool PPB_Graphics3D_Impl::Init(PPB_Graphics3D_API* share_context,
 
 bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
                                   const int32_t* attrib_list) {
-  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PepperPluginInstanceImpl* plugin_instance =
+      ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return false;
 
@@ -307,7 +307,7 @@ void PPB_Graphics3D_Impl::SendContextLost() {
   // By the time we run this, the instance may have been deleted, or in the
   // process of being deleted. Even in the latter case, we don't want to send a
   // callback after DidDestroy.
-  PluginInstanceImpl* instance = ResourceHelper::GetPluginInstance(this);
+  PepperPluginInstanceImpl* instance = ResourceHelper::GetPluginInstance(this);
   if (!instance || !instance->container())
     return;
 
@@ -324,5 +324,4 @@ void PPB_Graphics3D_Impl::SendContextLost() {
     ppp_graphics_3d->Graphics3DContextLost(this_pp_instance);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

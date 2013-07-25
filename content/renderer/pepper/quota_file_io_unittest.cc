@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/platform_file.h"
 #include "content/renderer/pepper/mock_plugin_delegate.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppapi_unittest.h"
 #include "content/renderer/pepper/quota_file_io.h"
 
@@ -22,8 +22,7 @@ using base::MessageLoopProxy;
 using base::PlatformFile;
 using base::PlatformFileError;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 class QuotaMockPluginDelegate : public MockPluginDelegate {
@@ -497,5 +496,4 @@ TEST_F(QuotaFileIOTest, ParallelWrites) {
   EXPECT_EQ("123355559012345", read_buffer);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

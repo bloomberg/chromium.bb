@@ -17,8 +17,7 @@
 
 using ::ppapi::thunk::PPB_Buffer_API;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 PPB_Buffer_Impl::PPB_Buffer_Impl(PP_Instance instance)
     : Resource(::ppapi::OBJECT_IS_IMPL, instance),
@@ -109,5 +108,4 @@ BufferAutoMapper::~BufferAutoMapper() {
     api_->Unmap();
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

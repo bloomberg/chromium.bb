@@ -15,8 +15,7 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_broker_api.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_Broker_Impl : public ::ppapi::Resource,
                         public ::ppapi::thunk::PPB_Broker_API,
@@ -54,7 +53,6 @@ class PPB_Broker_Impl : public ::ppapi::Resource,
   DISALLOW_COPY_AND_ASSIGN(PPB_Broker_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_BROKER_IMPL_H_

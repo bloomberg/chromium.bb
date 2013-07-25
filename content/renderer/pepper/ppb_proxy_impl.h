@@ -7,16 +7,14 @@
 
 struct PPB_Proxy_Private;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_Proxy_Impl {
  public:
   static const PPB_Proxy_Private* GetInterface();
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_PROXY_IMPL_H_
 

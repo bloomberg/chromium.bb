@@ -25,8 +25,7 @@ class GLES2Implementation;
 }  // namespace gles2
 }  // namespace gpu
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_VideoDecoder_Impl : public ::ppapi::PPB_VideoDecoder_Shared,
                               public media::VideoDecodeAccelerator::Client {
@@ -82,7 +81,6 @@ class PPB_VideoDecoder_Impl : public ::ppapi::PPB_VideoDecoder_Shared,
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoDecoder_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_VIDEO_DECODER_IMPL_H_

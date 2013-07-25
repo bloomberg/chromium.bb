@@ -12,8 +12,7 @@
 
 using ppapi::StringVar;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -96,5 +95,4 @@ const PPB_UMA_Private* PPB_UMA_Private_Impl::GetInterface() {
   return &ppb_uma;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
@@ -24,12 +24,12 @@ namespace content {
 
 scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const std::string& key_system,
-    const scoped_refptr<webkit::ppapi::PluginInstanceImpl>& plugin_instance,
+    const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance,
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
     const media::KeyMessageCB& key_message_cb,
     const base::Closure& destroy_plugin_cb) {
-  webkit::ppapi::ContentDecryptorDelegate* plugin_cdm_delegate =
+  ContentDecryptorDelegate* plugin_cdm_delegate =
       plugin_instance->GetContentDecryptorDelegate();
   if (!plugin_cdm_delegate) {
     DVLOG(1) << "PpapiDecryptor: plugin cdm delegate creation failed.";
@@ -47,8 +47,8 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
 }
 
 PpapiDecryptor::PpapiDecryptor(
-    const scoped_refptr<webkit::ppapi::PluginInstanceImpl>& plugin_instance,
-    webkit::ppapi::ContentDecryptorDelegate* plugin_cdm_delegate,
+    const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance,
+    ContentDecryptorDelegate* plugin_cdm_delegate,
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
     const media::KeyMessageCB& key_message_cb,

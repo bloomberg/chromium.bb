@@ -12,8 +12,7 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_Buffer_Impl : public ::ppapi::Resource,
                         public ::ppapi::thunk::PPB_Buffer_API {
@@ -74,7 +73,6 @@ class BufferAutoMapper {
   DISALLOW_COPY_AND_ASSIGN(BufferAutoMapper);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_BUFFER_IMPL_H_

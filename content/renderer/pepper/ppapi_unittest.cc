@@ -8,16 +8,15 @@
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/mock_plugin_delegate.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppapi_interface_factory.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -84,13 +83,13 @@ void PpapiUnittest::SetUp() {
   module_ = new PluginModule("Mock plugin", base::FilePath(),
                              ::ppapi::PpapiPermissions());
   ::ppapi::PpapiGlobals::Get()->ResetMainThreadMessageLoopForTesting();
-  content::PepperPluginInfo::EntryPoints entry_points;
+  PepperPluginInfo::EntryPoints entry_points;
   entry_points.get_interface = &MockGetInterface;
   entry_points.initialize_module = &MockInitializeModule;
   ASSERT_TRUE(module_->InitAsInternalPlugin(entry_points));
 
   // Initialize the mock instance.
-  instance_ = PluginInstanceImpl::Create(
+  instance_ = PepperPluginInstanceImpl::Create(
       delegate_.get(), NULL, module(), NULL, GURL());
 }
 
@@ -165,5 +164,4 @@ TEST_F(PpapiCustomInterfaceFactoryTest, BasicFactoryTest) {
   EXPECT_FALSE(result());
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

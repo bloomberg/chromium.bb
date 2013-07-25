@@ -9,8 +9,7 @@
 
 using WebKit::WebKeyboardEvent;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -28,5 +27,4 @@ uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   return NativeKeycodeToUsbKeycode(key_event.nativeKeyCode);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

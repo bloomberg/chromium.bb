@@ -13,15 +13,14 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
 
 using base::PlatformFile;
 using base::PlatformFileError;
 using quota::StorageType;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 StorageType PPFileSystemTypeToQuotaStorageType(PP_FileSystemType type) {
@@ -288,7 +287,8 @@ bool QuotaFileIO::WillSetLength(int64_t length,
 }
 
 PluginDelegate* QuotaFileIO::GetPluginDelegate() const {
-  PluginInstanceImpl* instance = HostGlobals::Get()->GetInstance(pp_instance_);
+  PepperPluginInstanceImpl* instance =
+      HostGlobals::Get()->GetInstance(pp_instance_);
   if (instance)
     return instance->delegate();
   return NULL;
@@ -420,5 +420,4 @@ void QuotaFileIO::DidSetLength(PlatformFileError error, int64_t new_file_size) {
   inflight_operations_ = 0;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

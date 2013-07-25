@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
@@ -42,7 +42,7 @@ namespace content {
 
 PepperInProcessResourceCreation::PepperInProcessResourceCreation(
     RendererPpapiHostImpl* host_impl,
-    webkit::ppapi::PluginInstanceImpl* instance)
+    PepperPluginInstanceImpl* instance)
     : ResourceCreationImpl(instance),
       host_impl_(host_impl) {
 }

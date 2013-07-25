@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PPAPI_WEBPLUGIN_IMPL_H_
-#define CONTENT_RENDERER_PEPPER_PPAPI_WEBPLUGIN_IMPL_H_
+#ifndef CONTENT_RENDERER_PEPPER_PPEPPER_WEBPLUGIN_IMPL_H_
+#define CONTENT_RENDERER_PEPPER_PPEPPER_WEBPLUGIN_IMPL_H_
 
 #include <string>
 #include <vector>
@@ -26,22 +26,21 @@ struct WebPluginParams;
 struct WebPrintParams;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
+class PepperPluginInstanceImpl;
 class PluginDelegate;
-class PluginInstanceImpl;
 class PluginModule;
 class PPB_URLLoader_Impl;
 
-class WebPluginImpl : public WebKit::WebPlugin {
+class PepperWebPluginImpl : public WebKit::WebPlugin {
  public:
-  WebPluginImpl(PluginModule* module,
-                const WebKit::WebPluginParams& params,
-                const base::WeakPtr<PluginDelegate>& plugin_delegate,
-                const base::WeakPtr<content::RenderView>& render_view);
+  PepperWebPluginImpl(PluginModule* module,
+                      const WebKit::WebPluginParams& params,
+                      const base::WeakPtr<PluginDelegate>& plugin_delegate,
+                      const base::WeakPtr<RenderView>& render_view);
 
-  PluginInstanceImpl* instance() { return instance_.get(); }
+  PepperPluginInstanceImpl* instance() { return instance_.get(); }
 
   // WebKit::WebPlugin implementation.
   virtual WebKit::WebPluginContainer* container() const;
@@ -92,24 +91,23 @@ class WebPluginImpl : public WebKit::WebPlugin {
   virtual bool isPlaceholder() OVERRIDE;
 
  private:
-  friend class base::DeleteHelper<WebPluginImpl>;
+  friend class base::DeleteHelper<PepperWebPluginImpl>;
 
-  virtual ~WebPluginImpl();
+  virtual ~PepperWebPluginImpl();
   struct InitData;
 
   scoped_ptr<InitData> init_data_;  // Cleared upon successful initialization.
   // True if the instance represents the entire document in a frame instead of
   // being an embedded resource.
   bool full_frame_;
-  scoped_refptr<PluginInstanceImpl> instance_;
+  scoped_refptr<PepperPluginInstanceImpl> instance_;
   gfx::Rect plugin_rect_;
   PP_Var instance_object_;
   WebKit::WebPluginContainer* container_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);
+  DISALLOW_COPY_AND_ASSIGN(PepperWebPluginImpl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PPAPI_WEBPLUGIN_IMPL_H_
+#endif  // CONTENT_RENDERER_PEPPER_PPEPPER_WEBPLUGIN_IMPL_H_

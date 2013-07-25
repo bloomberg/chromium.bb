@@ -11,30 +11,22 @@
 #include "content/renderer/render_widget_fullscreen.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 
-namespace webkit {
-namespace ppapi {
-
-class PluginInstanceImpl;
-
-}  // namespace ppapi
-}  // namespace webkit
-
 namespace WebKit {
 class WebLayer;
 }
 
 namespace content {
+class PepperPluginInstanceImpl;
 
 // A RenderWidget that hosts a fullscreen pepper plugin. This provides a
 // FullscreenContainer that the plugin instance can callback into to e.g.
 // invalidate rects.
-class RenderWidgetFullscreenPepper :
-    public RenderWidgetFullscreen,
-    public webkit::ppapi::FullscreenContainer {
+class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
+                                     public FullscreenContainer {
  public:
   static RenderWidgetFullscreenPepper* Create(
       int32 opener_id,
-      webkit::ppapi::PluginInstanceImpl* plugin,
+      PepperPluginInstanceImpl* plugin,
       const GURL& active_url,
       const WebKit::WebScreenInfo& screen_info);
 
@@ -51,7 +43,7 @@ class RenderWidgetFullscreenPepper :
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Could be NULL when this widget is closing.
-  webkit::ppapi::PluginInstanceImpl* plugin() const { return plugin_; }
+  PepperPluginInstanceImpl* plugin() const { return plugin_; }
 
   MouseLockDispatcher* mouse_lock_dispatcher() const {
     return mouse_lock_dispatcher_.get();
@@ -60,7 +52,7 @@ class RenderWidgetFullscreenPepper :
   bool is_compositing() const { return !!layer_; }
 
  protected:
-  RenderWidgetFullscreenPepper(webkit::ppapi::PluginInstanceImpl* plugin,
+  RenderWidgetFullscreenPepper(PepperPluginInstanceImpl* plugin,
                                const GURL& active_url,
                                const WebKit::WebScreenInfo& screen_info);
   virtual ~RenderWidgetFullscreenPepper();
@@ -70,7 +62,7 @@ class RenderWidgetFullscreenPepper :
   virtual void DidInitiatePaint() OVERRIDE;
   virtual void DidFlushPaint() OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual webkit::ppapi::PluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
+  virtual PepperPluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,
@@ -90,7 +82,7 @@ class RenderWidgetFullscreenPepper :
   GURL active_url_;
 
   // The plugin instance this widget wraps.
-  webkit::ppapi::PluginInstanceImpl* plugin_;
+  PepperPluginInstanceImpl* plugin_;
 
   WebKit::WebLayer* layer_;
 

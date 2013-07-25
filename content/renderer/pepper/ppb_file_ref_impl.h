@@ -17,8 +17,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "url/gurl.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 using ::ppapi::StringVar;
 
@@ -120,7 +119,6 @@ class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared {
   DISALLOW_COPY_AND_ASSIGN(PPB_FileRef_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_FILE_REF_IMPL_H_

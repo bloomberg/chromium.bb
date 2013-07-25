@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ipc/ipc_message.h"
 #include "media/audio/shared_memory_util.h"
@@ -83,8 +83,8 @@ void PepperAudioInputHost::StreamCreationFailed() {
                  base::SyncSocket::kInvalidHandle);
 }
 
-webkit::ppapi::PluginDelegate* PepperAudioInputHost::GetPluginDelegate() {
-  webkit::ppapi::PluginInstanceImpl* instance =
+PluginDelegate* PepperAudioInputHost::GetPluginDelegate() {
+  PepperPluginInstanceImpl* instance =
       renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
   if (instance)
     return instance->delegate();
@@ -101,11 +101,11 @@ int32_t PepperAudioInputHost::OnOpen(
   if (audio_input_)
     return PP_ERROR_FAILED;
 
-  webkit::ppapi::PluginDelegate* plugin_delegate = GetPluginDelegate();
+  PluginDelegate* plugin_delegate = GetPluginDelegate();
   if (!plugin_delegate)
     return PP_ERROR_FAILED;
 
-  webkit::ppapi::PluginInstanceImpl* instance =
+  PepperPluginInstanceImpl* instance =
       renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;

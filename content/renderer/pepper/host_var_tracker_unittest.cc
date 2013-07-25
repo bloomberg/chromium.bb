@@ -11,7 +11,7 @@
 #include "content/renderer/pepper/mock_resource.h"
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/npobject_var.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -19,8 +19,7 @@
 
 using ppapi::NPObjectVar;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -84,8 +83,9 @@ class HostVarTrackerTest : public PpapiUnittest {
 
 TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
   // Make a second instance (the test harness already creates & manages one).
-  scoped_refptr<PluginInstanceImpl> instance2(
-      PluginInstanceImpl::Create(delegate(), NULL, module(), NULL, GURL()));
+  scoped_refptr<PepperPluginInstanceImpl> instance2(
+      PepperPluginInstanceImpl::Create(
+          delegate(), NULL, module(), NULL, GURL()));
   PP_Instance pp_instance2 = instance2->pp_instance();
 
   // Make an object var.
@@ -134,5 +134,4 @@ TEST_F(HostVarTrackerTest, ReuseVar) {
   var_tracker->ReleaseVar(static_cast<int32_t>(pp_object3.value.as_id));
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

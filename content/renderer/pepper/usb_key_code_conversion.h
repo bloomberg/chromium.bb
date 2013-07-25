@@ -11,8 +11,7 @@ namespace WebKit {
 class WebKeyboardEvent;
 }  // namespace WebKit
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // Returns a 32-bit "USB Key Code" for the key identifier by the supplied
 // WebKeyboardEvent. The supplied event must be a KeyDown or KeyUp.
@@ -21,7 +20,6 @@ namespace ppapi {
 // is returned.
 uint32_t UsbKeyCodeForKeyboardEvent(const WebKit::WebKeyboardEvent& key_event);
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_USB_KEY_CODE_CONVERSION_H_

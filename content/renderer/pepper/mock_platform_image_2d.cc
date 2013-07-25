@@ -6,8 +6,7 @@
 
 #include "skia/ext/platform_canvas.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 MockPlatformImage2D::MockPlatformImage2D(int width, int height)
   : width_(width),
@@ -30,5 +29,4 @@ TransportDIB* MockPlatformImage2D::GetTransportDIB() const {
   return NULL;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

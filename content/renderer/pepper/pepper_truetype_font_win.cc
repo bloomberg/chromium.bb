@@ -152,7 +152,7 @@ DWORD PepperTrueTypeFontWin::GetFontData(HDC hdc,
     LOGFONTW logfont;
     if (!::GetObject(font_, sizeof(LOGFONTW), &logfont))
       return GDI_ERROR;
-    content::RenderThread* render_thread = content::RenderThread::Get();
+    RenderThread* render_thread = RenderThread::Get();
     if (!render_thread)
       return GDI_ERROR;
     render_thread->PreCacheFont(logfont);

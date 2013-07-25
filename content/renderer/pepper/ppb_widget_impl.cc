@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper/ppb_widget_impl.h"
 
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/resource_helper.h"
@@ -18,8 +18,7 @@ using ppapi::thunk::PPB_ImageData_API;
 using ppapi::thunk::PPB_InputEvent_API;
 using ppapi::thunk::PPB_Widget_API;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 PPB_Widget_Impl::PPB_Widget_Impl(PP_Instance instance)
     : Resource(::ppapi::OBJECT_IS_IMPL, instance),
@@ -65,7 +64,8 @@ void PPB_Widget_Impl::SetScale(float scale) {
 }
 
 void PPB_Widget_Impl::Invalidate(const PP_Rect* dirty) {
-  PluginInstanceImpl* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  PepperPluginInstanceImpl* plugin_instance =
+      ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return;
   const PPP_Widget_Dev* widget = static_cast<const PPP_Widget_Dev*>(
@@ -75,6 +75,5 @@ void PPB_Widget_Impl::Invalidate(const PP_Rect* dirty) {
   widget->Invalidate(pp_instance(), pp_resource(), dirty);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 

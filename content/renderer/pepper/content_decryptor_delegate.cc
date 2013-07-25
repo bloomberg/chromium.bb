@@ -33,8 +33,7 @@ using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -1047,5 +1046,4 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
   return true;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

@@ -15,9 +15,9 @@
 #include "base/time/time.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #include "content/renderer/pepper/ppapi_interface_factory.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_gpu_blacklist_private_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/ppb_proxy_impl.h"
@@ -141,8 +141,7 @@ using ppapi::thunk::EnterResource;
 using ppapi::thunk::PPB_Graphics2D_API;
 using ppapi::thunk::PPB_InputEvent_API;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -155,7 +154,7 @@ namespace {
 // TODO(raymes): I'm not sure if it is completely necessary to leak the
 // HostGlobals. Figure out the shutdown sequence and find a way to do this
 // more elegantly.
-webkit::ppapi::HostGlobals* host_globals = NULL;
+HostGlobals* host_globals = NULL;
 
 // Maintains all currently loaded plugin libs for validating PP_Module
 // identifiers.
@@ -240,7 +239,8 @@ PP_Bool IsOutOfProcess() {
 }
 
 void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
-  PluginInstanceImpl* plugin_instance = host_globals->GetInstance(instance);
+  PepperPluginInstanceImpl* plugin_instance =
+      host_globals->GetInstance(instance);
   if (!plugin_instance)
     return;
 
@@ -253,7 +253,8 @@ void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
 }
 
 PP_Var GetDocumentURL(PP_Instance instance, PP_URLComponents_Dev* components) {
-  PluginInstanceImpl* plugin_instance = host_globals->GetInstance(instance);
+  PepperPluginInstanceImpl* plugin_instance =
+      host_globals->GetInstance(instance);
   if (!plugin_instance)
     return PP_MakeUndefined();
   return plugin_instance->GetDocumentURL(instance, components);
@@ -343,9 +344,9 @@ const void* GetInterface(const char* name) {
 // given structure. Returns true on success.
 bool LoadEntryPointsFromLibrary(
     const base::NativeLibrary& library,
-    content::PepperPluginInfo::EntryPoints* entry_points) {
+    PepperPluginInfo::EntryPoints* entry_points) {
   entry_points->get_interface =
-      reinterpret_cast<content::PepperPluginInfo::GetInterfaceFunc>(
+      reinterpret_cast<PepperPluginInfo::GetInterfaceFunc>(
           base::GetFunctionPointerFromNativeLibrary(library,
                                                     "PPP_GetInterface"));
   if (!entry_points->get_interface) {
@@ -354,7 +355,7 @@ bool LoadEntryPointsFromLibrary(
   }
 
   entry_points->initialize_module =
-      reinterpret_cast<content::PepperPluginInfo::PPP_InitializeModuleFunc>(
+      reinterpret_cast<PepperPluginInfo::PPP_InitializeModuleFunc>(
           base::GetFunctionPointerFromNativeLibrary(library,
                                                     "PPP_InitializeModule"));
   if (!entry_points->initialize_module) {
@@ -365,7 +366,7 @@ bool LoadEntryPointsFromLibrary(
   // It's okay for PPP_ShutdownModule to not be defined and shutdown_module to
   // be NULL.
   entry_points->shutdown_module =
-      reinterpret_cast<content::PepperPluginInfo::PPP_ShutdownModuleFunc>(
+      reinterpret_cast<PepperPluginInfo::PPP_ShutdownModuleFunc>(
           base::GetFunctionPointerFromNativeLibrary(library,
                                                     "PPP_ShutdownModule"));
 
@@ -426,7 +427,7 @@ PluginModule::~PluginModule() {
   if (!is_crashed_) {
     // When the plugin crashes, we immediately tell the lifetime delegate that
     // we're gone, so we don't want to tell it again.
-    content::PepperPluginRegistry::GetInstance()->PluginModuleDead(this);
+    PepperPluginRegistry::GetInstance()->PluginModuleDead(this);
   }
 
   // Don't add stuff here, the two notifications that the module object has
@@ -444,7 +445,7 @@ PluginModule::EmbedderState* PluginModule::GetEmbedderState() {
 }
 
 bool PluginModule::InitAsInternalPlugin(
-    const content::PepperPluginInfo::EntryPoints& entry_points) {
+    const PepperPluginInfo::EntryPoints& entry_points) {
   if (InitializeModule(entry_points)) {
     entry_points_ = entry_points;
     return true;
@@ -457,7 +458,7 @@ bool PluginModule::InitAsLibrary(const base::FilePath& path) {
   if (!library)
     return false;
 
-  content::PepperPluginInfo::EntryPoints entry_points;
+  PepperPluginInfo::EntryPoints entry_points;
 
   if (!LoadEntryPointsFromLibrary(library, &entry_points) ||
       !InitializeModule(entry_points)) {
@@ -487,7 +488,7 @@ scoped_refptr<PluginModule>
 }
 
 PP_ExternalPluginResult PluginModule::InitAsProxiedExternalPlugin(
-    PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   DCHECK(out_of_process_proxy_.get());
   // InitAsProxied (for the trusted/out-of-process case) initializes only the
   // module, and one or more instances are added later. In this case, the
@@ -522,8 +523,7 @@ const PPB_Core* PluginModule::GetCore() {
 }
 
 // static
-content::PepperPluginInfo::GetInterfaceFunc
-    PluginModule::GetLocalGetInterfaceFunc() {
+PepperPluginInfo::GetInterfaceFunc PluginModule::GetLocalGetInterfaceFunc() {
   return &GetInterface;
 }
 
@@ -532,12 +532,12 @@ bool PluginModule::SupportsInterface(const char* name) {
   return !!InternalGetInterface(name);
 }
 
-PluginInstanceImpl* PluginModule::CreateInstance(
+PepperPluginInstanceImpl* PluginModule::CreateInstance(
     PluginDelegate* delegate,
-    content::RenderView* render_view,
+    RenderView* render_view,
     WebKit::WebPluginContainer* container,
     const GURL& plugin_url) {
-  PluginInstanceImpl* instance = PluginInstanceImpl::Create(
+  PepperPluginInstanceImpl* instance = PepperPluginInstanceImpl::Create(
       delegate, render_view, this, container, plugin_url);
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
@@ -548,7 +548,7 @@ PluginInstanceImpl* PluginModule::CreateInstance(
   return instance;
 }
 
-PluginInstanceImpl* PluginModule::GetSomeInstance() const {
+PepperPluginInstanceImpl* PluginModule::GetSomeInstance() const {
   // This will generally crash later if there is not actually any instance to
   // return, so we force a crash now to make bugs easier to track down.
   CHECK(!instances_.empty());
@@ -565,11 +565,11 @@ const void* PluginModule::GetPluginInterface(const char* name) const {
   return entry_points_.get_interface(name);
 }
 
-void PluginModule::InstanceCreated(PluginInstanceImpl* instance) {
+void PluginModule::InstanceCreated(PepperPluginInstanceImpl* instance) {
   instances_.insert(instance);
 }
 
-void PluginModule::InstanceDeleted(PluginInstanceImpl* instance) {
+void PluginModule::InstanceDeleted(PepperPluginInstanceImpl* instance) {
   if (out_of_process_proxy_)
     out_of_process_proxy_->RemoveInstance(instance->pp_instance());
   instances_.erase(instance);
@@ -588,7 +588,7 @@ void PluginModule::PluginCrashed() {
        i != instances_.end(); ++i)
     (*i)->InstanceCrashed();
 
-  content::PepperPluginRegistry::GetInstance()->PluginModuleDead(this);
+  PepperPluginRegistry::GetInstance()->PluginModuleDead(this);
 }
 
 void PluginModule::SetReserveInstanceIDCallback(
@@ -619,7 +619,7 @@ void PluginModule::ResetHostGlobalsForTest() {
 }
 
 bool PluginModule::InitializeModule(
-    const content::PepperPluginInfo::EntryPoints& entry_points) {
+    const PepperPluginInfo::EntryPoints& entry_points) {
   DCHECK(!out_of_process_proxy_.get()) << "Don't call for proxied modules.";
   DCHECK(entry_points.initialize_module != NULL);
   int retval = entry_points.initialize_module(pp_module(), &GetInterface);
@@ -630,5 +630,4 @@ bool PluginModule::InitializeModule(
   return true;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

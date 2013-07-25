@@ -7,16 +7,15 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/renderer/pepper/mock_platform_image_2d.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 MockPluginDelegate::MockPluginDelegate() {
 }
@@ -24,23 +23,24 @@ MockPluginDelegate::MockPluginDelegate() {
 MockPluginDelegate::~MockPluginDelegate() {
 }
 
-void MockPluginDelegate::PluginFocusChanged(PluginInstanceImpl* instance,
+void MockPluginDelegate::PluginFocusChanged(PepperPluginInstanceImpl* instance,
                                             bool focused) {
 }
 
 void MockPluginDelegate::PluginTextInputTypeChanged(
-    PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
 }
 
 void MockPluginDelegate::PluginCaretPositionChanged(
-    PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
 }
 
 void MockPluginDelegate::PluginRequestedCancelComposition(
-    PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
 }
 
-void MockPluginDelegate::PluginSelectionChanged(PluginInstanceImpl* instance) {
+void MockPluginDelegate::PluginSelectionChanged(
+    PepperPluginInstanceImpl* instance) {
 }
 
 void MockPluginDelegate::SimulateImeSetComposition(
@@ -54,17 +54,18 @@ void MockPluginDelegate::SimulateImeConfirmComposition(
     const base::string16& text) {
 }
 
-void MockPluginDelegate::PluginCrashed(PluginInstanceImpl* instance) {
+void MockPluginDelegate::PluginCrashed(PepperPluginInstanceImpl* instance) {
 }
 
-void MockPluginDelegate::InstanceCreated(PluginInstanceImpl* instance) {
+void MockPluginDelegate::InstanceCreated(PepperPluginInstanceImpl* instance) {
 }
 
-void MockPluginDelegate::InstanceDeleted(PluginInstanceImpl* instance) {
+void MockPluginDelegate::InstanceDeleted(PepperPluginInstanceImpl* instance) {
 }
 
 scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
-MockPluginDelegate::CreateResourceCreationAPI(PluginInstanceImpl* instance) {
+    MockPluginDelegate::CreateResourceCreationAPI(
+        PepperPluginInstanceImpl* instance) {
   return scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>();
 }
 
@@ -84,7 +85,7 @@ MockPluginDelegate::PlatformImage2D* MockPluginDelegate::CreateImage2D(
 }
 
 PluginDelegate::PlatformGraphics2D* MockPluginDelegate::GetGraphics2D(
-    PluginInstanceImpl* instance,
+    PepperPluginInstanceImpl* instance,
     PP_Resource graphics_2d) {
   return NULL;
 }
@@ -321,7 +322,7 @@ bool MockPluginDelegate::X509CertificateParseDER(
 }
 
 FullscreenContainer* MockPluginDelegate::CreateFullscreenContainer(
-    PluginInstanceImpl* instance) {
+    PepperPluginInstanceImpl* instance) {
   return NULL;
 }
 
@@ -346,22 +347,23 @@ base::SharedMemory* MockPluginDelegate::CreateAnonymousSharedMemory(
   return ::ppapi::Preferences();
 }
 
-bool MockPluginDelegate::LockMouse(PluginInstanceImpl* instance) {
+bool MockPluginDelegate::LockMouse(PepperPluginInstanceImpl* instance) {
   return false;
 }
 
-void MockPluginDelegate::UnlockMouse(PluginInstanceImpl* instance) {
+void MockPluginDelegate::UnlockMouse(PepperPluginInstanceImpl* instance) {
 }
 
-bool MockPluginDelegate::IsMouseLocked(PluginInstanceImpl* instance) {
+bool MockPluginDelegate::IsMouseLocked(PepperPluginInstanceImpl* instance) {
   return false;
 }
 
-void MockPluginDelegate::DidChangeCursor(PluginInstanceImpl* instance,
+void MockPluginDelegate::DidChangeCursor(PepperPluginInstanceImpl* instance,
                                          const WebKit::WebCursorInfo& cursor) {
 }
 
-void MockPluginDelegate::DidReceiveMouseEvent(PluginInstanceImpl* instance) {
+void MockPluginDelegate::DidReceiveMouseEvent(
+    PepperPluginInstanceImpl* instance) {
 }
 
 void MockPluginDelegate::SampleGamepads(WebKit::WebGamepads* data) {
@@ -397,11 +399,11 @@ bool MockPluginDelegate::IsRunningInProcess(PP_Instance instance) const {
 }
 
 void MockPluginDelegate::HandleDocumentLoad(
-    PluginInstanceImpl* instance,
+    PepperPluginInstanceImpl* instance,
     const WebKit::WebURLResponse& response) {
 }
 
-content::RendererPpapiHost* MockPluginDelegate::CreateExternalPluginModule(
+RendererPpapiHost* MockPluginDelegate::CreateExternalPluginModule(
     scoped_refptr<PluginModule> module,
     const base::FilePath& path,
     ::ppapi::PpapiPermissions permissions,
@@ -411,5 +413,4 @@ content::RendererPpapiHost* MockPluginDelegate::CreateExternalPluginModule(
   return NULL;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

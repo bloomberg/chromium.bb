@@ -16,8 +16,7 @@
 #include "url/gurl.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PluginDelegate;
 
@@ -111,7 +110,6 @@ class QuotaFileIO {
   DISALLOW_COPY_AND_ASSIGN(QuotaFileIO);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_QUOTA_FILE_IO_H_

@@ -35,8 +35,7 @@ using ppapi::TestGlobals;
 using ppapi::TestEqual;
 using ppapi::VarTracker;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -383,5 +382,4 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
   }
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

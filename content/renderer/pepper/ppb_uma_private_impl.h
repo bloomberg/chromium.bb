@@ -7,15 +7,13 @@
 
 #include "ppapi/c/private/ppb_uma_private.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_UMA_Private_Impl {
  public:
   static const PPB_UMA_Private* GetInterface();
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_UMA_PRIVATE_IMPL_H_

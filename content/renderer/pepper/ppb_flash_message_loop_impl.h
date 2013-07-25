@@ -11,8 +11,7 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_flash_message_loop_api.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_Flash_MessageLoop_Impl
     : public ::ppapi::Resource,
@@ -48,7 +47,6 @@ class PPB_Flash_MessageLoop_Impl
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_MessageLoop_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_FLASH_MESSAGE_LOOP_IMPL_H_

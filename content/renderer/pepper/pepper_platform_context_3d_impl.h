@@ -24,8 +24,7 @@ namespace content {
 class ContextProviderCommandBuffer;
 class GpuChannelHost;
 
-class PlatformContext3DImpl
-    : public webkit::ppapi::PluginDelegate::PlatformContext3D {
+class PlatformContext3DImpl : public PluginDelegate::PlatformContext3D {
  public:
   explicit PlatformContext3DImpl();
   virtual ~PlatformContext3DImpl();

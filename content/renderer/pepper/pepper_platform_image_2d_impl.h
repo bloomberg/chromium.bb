@@ -11,8 +11,7 @@
 namespace content {
 
 // Implements the Image2D using a TransportDIB.
-class PepperPlatformImage2DImpl
-    : public webkit::ppapi::PluginDelegate::PlatformImage2D {
+class PepperPlatformImage2DImpl : public PluginDelegate::PlatformImage2D {
  public:
   virtual ~PepperPlatformImage2DImpl();
 

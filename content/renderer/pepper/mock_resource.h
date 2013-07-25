@@ -7,8 +7,7 @@
 
 #include "ppapi/shared_impl/resource.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // Tests can derive from this to implement special test-specific resources.
 // It's assumed that a test will only need one mock resource, so it can
@@ -22,7 +21,6 @@ class MockResource : public ::ppapi::Resource {
   virtual ~MockResource() {}
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_MOCK_RESOURCE_H_

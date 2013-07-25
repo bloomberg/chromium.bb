@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -13,8 +13,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/safe_integer_conversions.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -41,7 +40,7 @@ class MockPlatformGraphics2D : public PluginDelegate::PlatformGraphics2D {
                              const PP_Point* top_left) OVERRIDE {
     return false;
   }
-  virtual bool BindToInstance(PluginInstanceImpl* new_instance) OVERRIDE {
+  virtual bool BindToInstance(PepperPluginInstanceImpl* new_instance) OVERRIDE {
     bound_instance_ = new_instance;
     return true;
   }
@@ -62,7 +61,7 @@ class MockPlatformGraphics2D : public PluginDelegate::PlatformGraphics2D {
  private:
   PPB_ImageData_Impl* image_data_;
   float scale_;
-  PluginInstanceImpl* bound_instance_;
+  PepperPluginInstanceImpl* bound_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPlatformGraphics2D);
 };
@@ -123,5 +122,4 @@ TEST_F(PpapiPluginInstanceTest, GetBitmap2xScale) {
   EXPECT_EQ(scale, bitmap_scale);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

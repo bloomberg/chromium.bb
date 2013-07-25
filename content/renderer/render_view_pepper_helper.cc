@@ -17,13 +17,13 @@ WebKit::WebPlugin* RenderViewPepperHelper::CreatePepperWebPlugin(
   return NULL;
 }
 
-webkit::ppapi::PluginInstanceImpl*
-RenderViewPepperHelper::GetBitmapForOptimizedPluginPaint(
-    const gfx::Rect& paint_bounds,
-    TransportDIB** dib,
-    gfx::Rect* location,
-    gfx::Rect* clip,
-    float* scale_factor) {
+PepperPluginInstanceImpl*
+    RenderViewPepperHelper::GetBitmapForOptimizedPluginPaint(
+        const gfx::Rect& paint_bounds,
+        TransportDIB** dib,
+        gfx::Rect* location,
+        gfx::Rect* clip,
+        float* scale_factor) {
   return NULL;
 }
 

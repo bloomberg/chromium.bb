@@ -26,16 +26,16 @@ namespace content {
 class PepperPluginDelegateImpl;
 
 class PepperPlatformVideoCaptureImpl
-    : public webkit::ppapi::PluginDelegate::PlatformVideoCapture,
+    : public PluginDelegate::PlatformVideoCapture,
       public media::VideoCapture::EventHandler {
  public:
   PepperPlatformVideoCaptureImpl(
       const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
       const std::string& device_id,
       const GURL& document_url,
-      webkit::ppapi::PluginDelegate::PlatformVideoCaptureEventHandler* handler);
+      PluginDelegate::PlatformVideoCaptureEventHandler* handler);
 
-  // webkit::ppapi::PluginDelegate::PlatformVideoCapture implementation.
+  // PluginDelegate::PlatformVideoCapture implementation.
   virtual void StartCapture(
       media::VideoCapture::EventHandler* handler,
       const media::VideoCaptureCapability& capability) OVERRIDE;
@@ -77,7 +77,7 @@ class PepperPlatformVideoCaptureImpl
 
   scoped_ptr<media::VideoCaptureHandlerProxy> handler_proxy_;
 
-  webkit::ppapi::PluginDelegate::PlatformVideoCaptureEventHandler* handler_;
+  PluginDelegate::PlatformVideoCaptureEventHandler* handler_;
 
   media::VideoCapture* video_capture_;
 

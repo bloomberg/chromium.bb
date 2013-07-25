@@ -19,7 +19,6 @@
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 
 using ppapi::host::HostMessageContext;
-using webkit::ppapi::PluginDelegate;
 
 namespace content {
 

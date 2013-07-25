@@ -22,7 +22,7 @@ class RendererPpapiHostImpl;
 
 class PepperVideoCaptureHost
   : public ppapi::host::ResourceHost,
-    public webkit::ppapi::PluginDelegate::PlatformVideoCaptureEventHandler,
+    public PluginDelegate::PlatformVideoCaptureEventHandler,
     public PepperDeviceEnumerationHostHelper::Delegate {
  public:
   PepperVideoCaptureHost(RendererPpapiHostImpl* host,
@@ -53,7 +53,7 @@ class PepperVideoCaptureHost
       const media::VideoCaptureParams& device_info) OVERRIDE;
 
   // PepperDeviceEnumerationHostHelper::Delegate implementation.
-  virtual webkit::ppapi::PluginDelegate* GetPluginDelegate() OVERRIDE;
+  virtual PluginDelegate* GetPluginDelegate() OVERRIDE;
 
  private:
   int32_t OnOpen(ppapi::host::HostMessageContext* context,
@@ -78,8 +78,7 @@ class PepperVideoCaptureHost
 
   bool SetStatus(PP_VideoCaptureStatus_Dev status, bool forced);
 
-  scoped_refptr<webkit::ppapi::PluginDelegate::PlatformVideoCapture>
-      platform_video_capture_;
+  scoped_refptr<PluginDelegate::PlatformVideoCapture> platform_video_capture_;
 
   // Buffers of video frame.
   struct BufferInfo {
@@ -88,7 +87,7 @@ class PepperVideoCaptureHost
 
     bool in_use;
     void* data;
-    scoped_refptr<webkit::ppapi::PPB_Buffer_Impl> buffer;
+    scoped_refptr<PPB_Buffer_Impl> buffer;
   };
 
   RendererPpapiHostImpl* renderer_ppapi_host_;

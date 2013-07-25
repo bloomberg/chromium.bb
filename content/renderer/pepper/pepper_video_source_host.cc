@@ -66,7 +66,7 @@ PepperVideoSourceHost::PepperVideoSourceHost(
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
       weak_factory_(this),
-      source_handler_(new content::VideoSourceHandler(NULL)),
+      source_handler_(new VideoSourceHandler(NULL)),
       frame_receiver_(new FrameReceiver(weak_factory_.GetWeakPtr())),
       get_frame_pending_(false) {
 }
@@ -160,9 +160,9 @@ void PepperVideoSourceHost::SendGetFrameReply() {
     return;
   }
 
-  webkit::ppapi::PPB_ImageData_Impl* image_data =
-      static_cast<webkit::ppapi::PPB_ImageData_Impl*>(enter_resource.object());
-  webkit::ppapi::ImageDataAutoMapper mapper(image_data);
+  PPB_ImageData_Impl* image_data =
+      static_cast<PPB_ImageData_Impl*>(enter_resource.object());
+  ImageDataAutoMapper mapper(image_data);
   if (!mapper.is_valid()) {
     SendGetFrameErrorReply(PP_ERROR_FAILED);
     return;

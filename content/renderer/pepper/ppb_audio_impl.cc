@@ -22,8 +22,7 @@ using ppapi::thunk::PPB_Audio_API;
 using ppapi::thunk::PPB_AudioConfig_API;
 using ppapi::TrackedCallback;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // PPB_Audio_Impl --------------------------------------------------------------
 
@@ -157,5 +156,4 @@ void PPB_Audio_Impl::OnSetStreamInfo(
                 socket_handle, sample_frame_count_);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

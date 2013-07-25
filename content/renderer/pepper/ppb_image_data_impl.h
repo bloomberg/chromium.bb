@@ -18,8 +18,7 @@
 class SkBitmap;
 class SkCanvas;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class CONTENT_EXPORT PPB_ImageData_Impl
     : public ::ppapi::Resource,
@@ -191,7 +190,6 @@ class ImageDataAutoMapper {
   DISALLOW_COPY_AND_ASSIGN(ImageDataAutoMapper);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_IMAGE_DATA_IMPL_H_

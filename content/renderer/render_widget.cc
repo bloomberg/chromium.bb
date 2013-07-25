@@ -31,7 +31,7 @@
 #include "content/renderer/gpu/mailbox_output_surface.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_process_visibility_manager.h"
 #include "content/renderer/render_thread_impl.h"
@@ -965,7 +965,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   TransportDIB* optimized_dib = NULL;
   gfx::Rect optimized_copy_rect, optimized_copy_location;
   float dib_scale_factor;
-  webkit::ppapi::PluginInstanceImpl* optimized_instance =
+  PepperPluginInstanceImpl* optimized_instance =
       GetBitmapForOptimizedPluginPaint(rect, &optimized_dib,
                                        &optimized_copy_location,
                                        &optimized_copy_rect,
@@ -2021,13 +2021,12 @@ void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
   }
 }
 
-webkit::ppapi::PluginInstanceImpl*
-    RenderWidget::GetBitmapForOptimizedPluginPaint(
-        const gfx::Rect& paint_bounds,
-        TransportDIB** dib,
-        gfx::Rect* location,
-        gfx::Rect* clip,
-        float* scale_factor) {
+PepperPluginInstanceImpl* RenderWidget::GetBitmapForOptimizedPluginPaint(
+    const gfx::Rect& paint_bounds,
+    TransportDIB** dib,
+    gfx::Rect* location,
+    gfx::Rect* clip,
+    float* scale_factor) {
   // Bare RenderWidgets don't support optimized plugin painting.
   return NULL;
 }

@@ -10,9 +10,9 @@
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/npobject_var.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/pp_var.h"
@@ -26,8 +26,7 @@ using ppapi::StringVar;
 using ppapi::Var;
 using WebKit::WebBindings;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -119,7 +118,7 @@ class ObjectAccessorTryCatch : public TryCatch {
 
   NPObjectVar* object() { return object_.get(); }
 
-  PluginInstanceImpl* GetPluginInstance() {
+  PepperPluginInstanceImpl* GetPluginInstance() {
     return HostGlobals::Get()->GetInstance(object()->pp_instance());
   }
 
@@ -332,7 +331,7 @@ PP_Var CallDeprecated(PP_Var var,
   ObjectAccessorTryCatch accessor(var, exception);
   if (accessor.has_exception())
     return PP_MakeUndefined();
-  PluginInstanceImpl* plugin = accessor.GetPluginInstance();
+  PepperPluginInstanceImpl* plugin = accessor.GetPluginInstance();
   if (plugin && plugin->IsProcessingUserGesture()) {
     WebKit::WebScopedUserGesture user_gesture(
         plugin->CurrentUserGestureToken());
@@ -389,7 +388,8 @@ bool IsInstanceOfDeprecated(PP_Var var,
 PP_Var CreateObjectDeprecated(PP_Instance pp_instance,
                               const PPP_Class_Deprecated* ppp_class,
                               void* ppp_class_data) {
-  PluginInstanceImpl* instance = HostGlobals::Get()->GetInstance(pp_instance);
+  PepperPluginInstanceImpl* instance =
+      HostGlobals::Get()->GetInstance(pp_instance);
   if (!instance) {
     DLOG(ERROR) << "Create object passed an invalid instance.";
     return PP_MakeNull();
@@ -432,6 +432,5 @@ const PPB_Var_Deprecated* PPB_Var_Deprecated_Impl::GetVarDeprecatedInterface() {
   return &var_deprecated_interface;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 

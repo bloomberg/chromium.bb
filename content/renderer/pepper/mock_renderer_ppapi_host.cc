@@ -28,7 +28,7 @@ bool MockRendererPpapiHost::IsValidInstance(PP_Instance instance) const {
   return instance == pp_instance_;
 }
 
-webkit::ppapi::PluginInstance* MockRendererPpapiHost::GetPluginInstance(
+PepperPluginInstance* MockRendererPpapiHost::GetPluginInstance(
     PP_Instance instance) const {
   NOTIMPLEMENTED();
   return NULL;

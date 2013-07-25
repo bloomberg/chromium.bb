@@ -35,8 +35,7 @@ using WebKit::WebFrame;
 using WebKit::WebURL;
 using WebKit::WebURLRequest;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -201,5 +200,4 @@ bool URLRequestRequiresUniversalAccess(
       url_util::FindAndCompareScheme(data.url, "javascript", NULL);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

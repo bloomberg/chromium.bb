@@ -51,10 +51,9 @@ class TestWebFrameClient : public WebFrameClient {
 using ppapi::proxy::URLRequestInfoResource;
 using ppapi::URLRequestInfoData;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
-class URLRequestInfoTest : public content::RenderViewTest {
+class URLRequestInfoTest : public RenderViewTest {
  public:
   URLRequestInfoTest() : pp_instance_(1234) {
   }
@@ -253,5 +252,4 @@ TEST_F(URLRequestInfoTest, SetHeaders) {
 
 // TODO(bbudge) Unit tests for AppendDataToBody, AppendFileToBody.
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

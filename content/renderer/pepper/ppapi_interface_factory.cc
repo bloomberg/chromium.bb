@@ -8,8 +8,7 @@
 
 #include "base/logging.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 base::LazyInstance<PpapiInterfaceFactoryManager>
     g_ppapi_interface_factory_manager = LAZY_INSTANCE_INITIALIZER;
@@ -57,6 +56,5 @@ PpapiInterfaceFactoryManager* PpapiInterfaceFactoryManager::GetInstance() {
   return &g_ppapi_interface_factory_manager.Get();
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 

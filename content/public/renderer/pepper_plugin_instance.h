@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_PPAPI_PLUGIN_INSTANCE_H_
-#define CONTENT_PUBLIC_PPAPI_PLUGIN_INSTANCE_H_
+#ifndef CONTENT_PUBLIC_RENDERER_PEPPER_PLUGIN_INSTANCE_H_
+#define CONTENT_PUBLIC_RENDERER_PEPPER_PLUGIN_INSTANCE_H_
 
 #include "base/basictypes.h"
 #include "base/process/process_handle.h"
@@ -15,10 +15,6 @@ class GURL;
 
 namespace base {
 class FilePath;
-}
-
-namespace content {
-class RenderView;
 }
 
 namespace gfx {
@@ -40,20 +36,20 @@ namespace WebKit {
 class WebPluginContainer;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
+class RenderView;
 
-class PluginInstance {
+class PepperPluginInstance {
  public:
-  static CONTENT_EXPORT PluginInstance* Get(PP_Instance instance_id);
+  static CONTENT_EXPORT PepperPluginInstance* Get(PP_Instance instance_id);
 
-  virtual ~PluginInstance() {}
+  virtual ~PepperPluginInstance() {}
 
   virtual content::RenderView* GetRenderView() = 0;
 
   virtual WebKit::WebPluginContainer* GetContainer() = 0;
 
-  virtual ::ppapi::VarTracker* GetVarTracker() = 0;
+  virtual ppapi::VarTracker* GetVarTracker() = 0;
 
   virtual const GURL& GetPluginURL() = 0;
 
@@ -72,7 +68,7 @@ class PluginInstance {
   // Switches this instance with one that uses the out of process IPC proxy.
   virtual PP_ExternalPluginResult SwitchToOutOfProcessProxy(
       const base::FilePath& file_path,
-      ::ppapi::PpapiPermissions permissions,
+      ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
       base::ProcessId plugin_pid,
       int plugin_child_id) = 0;
@@ -93,13 +89,12 @@ class PluginInstance {
 
   virtual bool IsRectTopmost(const gfx::Rect& rect) = 0;
 
-  virtual int32_t Navigate(const ::ppapi::URLRequestInfoData& request,
+  virtual int32_t Navigate(const ppapi::URLRequestInfoData& request,
                            const char* target,
                            bool from_user_action) = 0;
 
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
-#endif  // CONTENT_PUBLIC_PPAPI_PLUGIN_INSTANCE_H_
+#endif  // CONTENT_PUBLIC_RENDERER_PEPPER_PLUGIN_INSTANCE_H_

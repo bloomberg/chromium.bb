@@ -11,15 +11,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/c/pp_instance.h"
 
 using ppapi::ArrayBufferVar;
 using WebKit::WebArrayBuffer;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 HostArrayBufferVar::HostArrayBufferVar(uint32 size_in_bytes)
     : buffer_(WebArrayBuffer::create(size_in_bytes, 1 /* element_size */)),
@@ -63,8 +62,7 @@ bool HostArrayBufferVar::CopyToNewShmem(
     PP_Instance instance,
     int* host_shm_handle_id,
     base::SharedMemoryHandle* plugin_shm_handle) {
-  webkit::ppapi::PluginInstanceImpl* i =
-      webkit::ppapi::HostGlobals::Get()->GetInstance(instance);
+  PepperPluginInstanceImpl* i = HostGlobals::Get()->GetInstance(instance);
   scoped_ptr<base::SharedMemory> shm(i->delegate()->CreateAnonymousSharedMemory(
       ByteLength()));
   if (!shm)
@@ -99,5 +97,4 @@ bool HostArrayBufferVar::CopyToNewShmem(
   return true;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

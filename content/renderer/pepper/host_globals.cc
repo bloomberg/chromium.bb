@@ -11,8 +11,8 @@
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/id_assignment.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -30,8 +30,7 @@ using ppapi::ResourceTracker;
 using WebKit::WebConsoleMessage;
 using WebKit::WebString;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -119,14 +118,14 @@ HostGlobals::~HostGlobals() {
 
 ::ppapi::thunk::ResourceCreationAPI* HostGlobals::GetResourceCreationAPI(
     PP_Instance pp_instance) {
-  PluginInstanceImpl* instance = GetInstance(pp_instance);
+  PepperPluginInstanceImpl* instance = GetInstance(pp_instance);
   if (!instance)
     return NULL;
   return &instance->resource_creation();
 }
 
 PP_Module HostGlobals::GetModuleForInstance(PP_Instance instance) {
-  PluginInstanceImpl* inst = GetInstance(instance);
+  PepperPluginInstanceImpl* inst = GetInstance(instance);
   if (!inst)
     return 0;
   return inst->module()->pp_module();
@@ -150,7 +149,7 @@ void HostGlobals::LogWithSource(PP_Instance instance,
                                 PP_LogLevel level,
                                 const std::string& source,
                                 const std::string& value) {
-  PluginInstanceImpl* instance_object =
+  PepperPluginInstanceImpl* instance_object =
       HostGlobals::Get()->GetInstance(instance);
   if (instance_object) {
     instance_object->container()->element().document().frame()->
@@ -186,7 +185,8 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
 }
 
 base::TaskRunner* HostGlobals::GetFileTaskRunner(PP_Instance instance) {
-  scoped_refptr<PluginInstanceImpl> plugin_instance = GetInstance(instance);
+  scoped_refptr<PepperPluginInstanceImpl> plugin_instance =
+      GetInstance(instance);
   DCHECK(plugin_instance.get());
   scoped_refptr<base::MessageLoopProxy> message_loop =
       plugin_instance->delegate()->GetFileThreadMessageLoopProxy();
@@ -236,7 +236,7 @@ PluginModule* HostGlobals::GetModule(PP_Module module) {
   return found->second;
 }
 
-PP_Instance HostGlobals::AddInstance(PluginInstanceImpl* instance) {
+PP_Instance HostGlobals::AddInstance(PepperPluginInstanceImpl* instance) {
   DCHECK(instance_map_.find(instance->pp_instance()) == instance_map_.end());
 
   // Use a random number for the instance ID. This helps prevent some
@@ -268,7 +268,7 @@ void HostGlobals::InstanceCrashed(PP_Instance instance) {
   host_var_tracker_.DidDeleteInstance(instance);
 }
 
-PluginInstanceImpl* HostGlobals::GetInstance(PP_Instance instance) {
+PepperPluginInstanceImpl* HostGlobals::GetInstance(PP_Instance instance) {
   DLOG_IF(ERROR, !CheckIdType(instance, ::ppapi::PP_ID_TYPE_INSTANCE))
       << instance << " is not a PP_Instance.";
   InstanceMap::iterator found = instance_map_.find(instance);
@@ -281,5 +281,4 @@ bool HostGlobals::IsHostGlobals() const {
   return true;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

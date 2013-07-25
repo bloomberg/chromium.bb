@@ -10,8 +10,7 @@
 #include "content/renderer/pepper/ppb_tcp_socket_private_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 PPB_TCPServerSocket_Private_Impl::PPB_TCPServerSocket_Private_Impl(
     PP_Instance instance)
@@ -78,5 +77,4 @@ void PPB_TCPServerSocket_Private_Impl::SendStopListening() {
   plugin_delegate->TCPServerSocketStopListening(pp_resource(), socket_id_);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

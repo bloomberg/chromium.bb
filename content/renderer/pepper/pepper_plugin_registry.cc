@@ -40,8 +40,7 @@ const PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
   return &plugin_list_[plugin_list_.size() - 1];
 }
 
-webkit::ppapi::PluginModule* PepperPluginRegistry::GetLiveModule(
-    const base::FilePath& path) {
+PluginModule* PepperPluginRegistry::GetLiveModule(const base::FilePath& path) {
   NonOwningModuleMap::iterator it = live_modules_.find(path);
   if (it == live_modules_.end())
     return NULL;
@@ -49,13 +48,12 @@ webkit::ppapi::PluginModule* PepperPluginRegistry::GetLiveModule(
 }
 
 void PepperPluginRegistry::AddLiveModule(const base::FilePath& path,
-                                         webkit::ppapi::PluginModule* module) {
+                                         PluginModule* module) {
   DCHECK(live_modules_.find(path) == live_modules_.end());
   live_modules_[path] = module;
 }
 
-void PepperPluginRegistry::PluginModuleDead(
-    webkit::ppapi::PluginModule* dead_module) {
+void PepperPluginRegistry::PluginModuleDead(PluginModule* dead_module) {
   // DANGER: Don't dereference the dead_module pointer! It may be in the
   // process of being deleted.
 
@@ -92,9 +90,9 @@ PepperPluginRegistry::PepperPluginRegistry() {
     if (current.is_out_of_process)
       continue;  // Out of process plugins need no special pre-initialization.
 
-    scoped_refptr<webkit::ppapi::PluginModule> module =
-        new webkit::ppapi::PluginModule(current.name, current.path,
-            ppapi::PpapiPermissions(current.permissions));
+    scoped_refptr<PluginModule> module = new PluginModule(
+        current.name, current.path,
+        ppapi::PpapiPermissions(current.permissions));
     AddLiveModule(current.path, module.get());
     if (current.is_internal) {
       if (!module->InitAsInternalPlugin(current.internal_entry_points)) {

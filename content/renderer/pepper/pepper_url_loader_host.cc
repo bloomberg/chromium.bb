@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/url_request_info_util.h"
 #include "content/renderer/pepper/url_response_info_util.h"
@@ -83,7 +83,7 @@ PepperURLLoaderHost::~PepperURLLoaderHost() {
   // will get queued inside WebKit.
   if (main_document_loader_) {
     // The PluginInstance has a non-owning pointer to us.
-    webkit::ppapi::PluginInstanceImpl* instance_object =
+    PepperPluginInstanceImpl* instance_object =
         renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
     if (instance_object) {
       DCHECK(instance_object->document_loader() == this);
@@ -235,8 +235,7 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   // the file refs.
   ppapi::URLRequestInfoData filled_in_request_data = request_data;
 
-  if (webkit::ppapi::URLRequestRequiresUniversalAccess(
-          filled_in_request_data) &&
+  if (URLRequestRequiresUniversalAccess(filled_in_request_data) &&
       !has_universal_access_) {
     ppapi::PpapiGlobals::Get()->LogWithSource(
         pp_instance(), PP_LOGLEVEL_ERROR, std::string(),
@@ -254,8 +253,7 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   if (!frame)
     return PP_ERROR_FAILED;
   WebURLRequest web_request;
-  if (!webkit::ppapi::CreateWebURLRequest(&filled_in_request_data, frame,
-                                          &web_request))
+  if (!CreateWebURLRequest(&filled_in_request_data, frame, &web_request))
     return PP_ERROR_FAILED;
   web_request.setRequestorProcessID(renderer_ppapi_host_->GetPluginPID());
 
@@ -331,7 +329,7 @@ void PepperURLLoaderHost::Close() {
 }
 
 WebKit::WebFrame* PepperURLLoaderHost::GetFrame() {
-  webkit::ppapi::PluginInstance* instance_object =
+  PepperPluginInstance* instance_object =
       renderer_ppapi_host_->GetPluginInstance(pp_instance());
   if (!instance_object)
     return NULL;

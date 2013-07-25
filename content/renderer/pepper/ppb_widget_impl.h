@@ -18,8 +18,7 @@ namespace ppapi {
 struct InputEventData;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_ImageData_Impl;
 
@@ -59,7 +58,6 @@ class PPB_Widget_Impl : public ::ppapi::Resource,
   DISALLOW_COPY_AND_ASSIGN(PPB_Widget_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_WIDGET_IMPL_H_

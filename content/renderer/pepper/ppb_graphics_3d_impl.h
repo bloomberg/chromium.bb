@@ -10,8 +10,7 @@
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/shared_impl/resource.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
  public:
@@ -88,7 +87,6 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
   DISALLOW_COPY_AND_ASSIGN(PPB_Graphics3D_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_GRAPHICS_3D_IMPL_H_

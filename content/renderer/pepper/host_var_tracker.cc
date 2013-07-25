@@ -7,14 +7,13 @@
 #include "base/logging.h"
 #include "content/renderer/pepper/host_array_buffer_var.h"
 #include "content/renderer/pepper/npobject_var.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "ppapi/c/pp_var.h"
 
 using ppapi::ArrayBufferVar;
 using ppapi::NPObjectVar;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 HostVarTracker::HostVarTracker()
   : VarTracker(SINGLE_THREADED),
@@ -169,5 +168,4 @@ bool HostVarTracker::StopTrackingSharedMemoryHandle(
   return true;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

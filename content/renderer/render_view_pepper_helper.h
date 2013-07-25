@@ -30,12 +30,6 @@ namespace ui {
 class Range;
 }
 
-namespace webkit {
-namespace ppapi {
-class PluginInstanceImpl;
-}
-}
-
 namespace WebKit {
 struct WebCompositionUnderline;
 struct WebPluginParams;
@@ -43,6 +37,7 @@ class WebPlugin;
 }
 
 namespace content {
+class PepperPluginInstanceImpl;
 struct WebPluginInfo;
 
 class CONTENT_EXPORT RenderViewPepperHelper {
@@ -56,7 +51,7 @@ class CONTENT_EXPORT RenderViewPepperHelper {
 
   // Called by RenderView to implement the corresponding function in its base
   // class RenderWidget (see that for more).
-  virtual webkit::ppapi::PluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
+  virtual PepperPluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,

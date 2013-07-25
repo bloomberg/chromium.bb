@@ -20,8 +20,7 @@
 
 using ::ppapi::thunk::PPB_ImageData_API;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 PPB_ImageData_Impl::PPB_ImageData_Impl(PP_Instance instance,
                                        PPB_ImageData_Shared::ImageDataType type)
@@ -274,5 +273,4 @@ const SkBitmap* ImageDataSimpleBackend::GetMappedBitmap() const {
   return &skia_bitmap_;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

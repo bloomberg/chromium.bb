@@ -10,8 +10,7 @@
 
 using ppapi::thunk::PPB_Flash_MessageLoop_API;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_Flash_MessageLoop_Impl::State
     : public base::RefCounted<PPB_Flash_MessageLoop_Impl::State> {
@@ -112,5 +111,4 @@ void PPB_Flash_MessageLoop_Impl::InternalQuit(int32_t result) {
     state_->run_callback().Run(result);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

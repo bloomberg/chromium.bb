@@ -10,8 +10,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/renderer/pepper/npapi_glue.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/pp_resource.h"
@@ -29,8 +29,7 @@ using ppapi::StringVar;
 using ppapi::Var;
 using WebKit::WebBindings;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -83,8 +82,7 @@ bool WrapperClass_Invoke(NPObject* object, NPIdentifier method_name,
   // object to ensure that it is not destroyed courtsey an incoming
   // ExecuteScript call which destroys the plugin module and in turn the
   // dispatcher.
-  scoped_refptr<webkit::ppapi::PluginModule> ref(
-      accessor.object()->instance()->module());
+  scoped_refptr<PluginModule> ref(accessor.object()->instance()->module());
 
   return result_converter.SetResult(accessor.object()->ppp_class()->Call(
       accessor.object()->ppp_class_data(), accessor.identifier(),
@@ -104,8 +102,7 @@ bool WrapperClass_InvokeDefault(NPObject* np_object, const NPVariant* argv,
   // object to ensure that it is not destroyed courtsey an incoming
   // ExecuteScript call which destroys the plugin module and in turn the
   // dispatcher.
-  scoped_refptr<webkit::ppapi::PluginModule> ref(
-      obj->instance()->module());
+  scoped_refptr<PluginModule> ref(obj->instance()->module());
 
   result_converter.SetResult(obj->ppp_class()->Call(
       obj->ppp_class_data(), PP_MakeUndefined(), argc, args.array(),
@@ -265,7 +262,7 @@ struct PluginObject::NPObjectWrapper : public NPObject {
   PluginObject* obj;
 };
 
-PluginObject::PluginObject(PluginInstanceImpl* instance,
+PluginObject::PluginObject(PepperPluginInstanceImpl* instance,
                            NPObjectWrapper* object_wrapper,
                            const PPP_Class_Deprecated* ppp_class,
                            void* ppp_class_data)
@@ -290,7 +287,7 @@ PluginObject::~PluginObject() {
   instance_->RemovePluginObject(this);
 }
 
-PP_Var PluginObject::Create(PluginInstanceImpl* instance,
+PP_Var PluginObject::Create(PepperPluginInstanceImpl* instance,
                             const PPP_Class_Deprecated* ppp_class,
                             void* ppp_class_data) {
   // This will internally end up calling our AllocateObjectWrapper via the
@@ -355,6 +352,5 @@ NPObject* PluginObject::AllocateObjectWrapper() {
   return wrapper;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 

@@ -22,8 +22,7 @@ class WebGamepads;
 class WebInputEvent;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // Converts the given WebKit event to one or possibly multiple PP_InputEvents.
 // The generated events will be filled into the given vector. On failure, no
@@ -48,7 +47,6 @@ std::vector<linked_ptr<WebKit::WebInputEvent> > CreateSimulatedWebInputEvents(
 // type should not be "Undefined" since there's no corresponding PPAPI class.
 PP_InputEvent_Class ClassifyInputEvent(WebKit::WebInputEvent::Type type);
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_EVENT_CONVERSION_H_

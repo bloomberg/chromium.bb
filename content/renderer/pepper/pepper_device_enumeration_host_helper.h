@@ -26,13 +26,8 @@ namespace IPC {
 class Message;
 }
 
-namespace webkit {
-namespace ppapi {
-class PluginDelegate;
-}
-}
-
 namespace content {
+class PluginDelegate;
 
 // Resource hosts that support device enumeration can use this class to filter
 // and process PpapiHostMsg_DeviceEnumeration_* messages.
@@ -47,7 +42,7 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
 
     // TODO(yzshen): Move the relevant functionality out of PluginDelegate and
     // get rid of this method.
-    virtual webkit::ppapi::PluginDelegate* GetPluginDelegate() = 0;
+    virtual PluginDelegate* GetPluginDelegate() = 0;
   };
 
   // |resource_host| and |delegate| must outlive this object.

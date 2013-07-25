@@ -19,8 +19,7 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // Some of the backend functionality of this class is implemented by the
 // PPB_Audio_Shared so it can be shared with the proxy.
@@ -80,7 +79,6 @@ class PPB_Audio_Impl : public ::ppapi::Resource,
   DISALLOW_COPY_AND_ASSIGN(PPB_Audio_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_AUDIO_IMPL_H_

@@ -60,8 +60,7 @@ inline size_t hash_value(const HashedHandle& handle) {
 #endif
 }  // namespace BASE_HASH_NAMESPACE
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 namespace V8VarConverter {
 
 namespace {
@@ -466,5 +465,4 @@ bool FromV8Value(v8::Handle<v8::Value> val,
 }
 
 }  // namespace V8VarConverter
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

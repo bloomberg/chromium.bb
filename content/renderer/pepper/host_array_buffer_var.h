@@ -11,8 +11,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // Represents a host-side ArrayBufferVar.
 class HostArrayBufferVar : public ::ppapi::ArrayBufferVar {
@@ -43,7 +42,6 @@ class HostArrayBufferVar : public ::ppapi::ArrayBufferVar {
   DISALLOW_COPY_AND_ASSIGN(HostArrayBufferVar);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // PPAPI_CONTENT_RENDERER_PEPPER_HOST_ARRAY_BUFFER_VAR_H_

@@ -14,10 +14,9 @@ struct PPP_Class_Deprecated;
 typedef struct NPObject NPObject;
 typedef struct _NPVariant NPVariant;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
-class PluginInstanceImpl;
+class PepperPluginInstanceImpl;
 
 // A PluginObject is a JS-accessible object implemented by the plugin.
 //
@@ -29,11 +28,11 @@ class PluginObject {
 
   // Allocates a new PluginObject and returns it as a PP_Var with a
   // refcount of 1.
-  static PP_Var Create(PluginInstanceImpl* instance,
+  static PP_Var Create(PepperPluginInstanceImpl* instance,
                        const PPP_Class_Deprecated* ppp_class,
                        void* ppp_class_data);
 
-  PluginInstanceImpl* instance() const { return instance_; }
+  PepperPluginInstanceImpl* instance() const { return instance_; }
 
   const PPP_Class_Deprecated* ppp_class() { return ppp_class_; }
   void* ppp_class_data() { return ppp_class_data_; };
@@ -68,12 +67,12 @@ class PluginObject {
   //
   // The NPObjectWrapper (an NPObject) should already have the reference
   // incremented on it, and this class will take ownership of that reference.
-  PluginObject(PluginInstanceImpl* instance,
+  PluginObject(PepperPluginInstanceImpl* instance,
                NPObjectWrapper* object_wrapper,
                const PPP_Class_Deprecated* ppp_class,
                void* ppp_class_data);
 
-  PluginInstanceImpl* instance_;
+  PepperPluginInstanceImpl* instance_;
 
   // Holds a pointer to the NPObject wrapper backing the var. This class
   // derives from NPObject and we hold a reference to it, so it must be
@@ -89,7 +88,6 @@ class PluginObject {
   DISALLOW_COPY_AND_ASSIGN(PluginObject);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PLUGIN_OBJECT_H_

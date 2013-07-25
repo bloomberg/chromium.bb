@@ -18,7 +18,6 @@
 
 using cricket::CaptureState;
 using cricket::VideoFormat;
-using webkit::ppapi::PPB_ImageData_Impl;
 using webrtc::VideoTrackInterface;
 using webrtc::VideoTrackVector;
 
@@ -100,7 +99,7 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
     LOG(ERROR) << "PpFrameWriter::PutFrame - Called with NULL image_data.";
     return;
   }
-  webkit::ppapi::ImageDataAutoMapper mapper(image_data);
+  ImageDataAutoMapper mapper(image_data);
   if (!mapper.is_valid()) {
     LOG(ERROR) << "PpFrameWriter::PutFrame - "
                << "The image could not be mapped and is unusable.";
@@ -148,7 +147,7 @@ class PpFrameWriterProxy : public FrameWriterInterface {
 
   virtual ~PpFrameWriterProxy() {}
 
-  virtual void PutFrame(webkit::ppapi::PPB_ImageData_Impl* image_data,
+  virtual void PutFrame(PPB_ImageData_Impl* image_data,
                         int64 time_stamp_ns) OVERRIDE {
     writer_->PutFrame(image_data, time_stamp_ns);
   }

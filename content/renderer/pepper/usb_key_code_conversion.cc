@@ -8,8 +8,7 @@
 
 using WebKit::WebKeyboardEvent;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 #if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_WIN)
 
@@ -19,5 +18,4 @@ uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
 
 #endif
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

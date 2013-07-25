@@ -8,9 +8,9 @@
 #include "base/callback.h"
 #include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -117,7 +117,7 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
       return PP_ERROR_FAILED;
   }
 
-  webkit::ppapi::PluginInstance* plugin_instance =
+  PepperPluginInstance* plugin_instance =
       renderer_ppapi_host_->GetPluginInstance(pp_instance());
   if (!plugin_instance)
     return PP_ERROR_FAILED;

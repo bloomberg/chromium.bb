@@ -15,8 +15,7 @@
 // Conversions for graphics types between our gfx library and PPAPI.
 // The style of naming is to match the PP_Bool conversions.
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 inline gfx::Point PP_ToGfxPoint(const PP_Point& p) {
   return gfx::Point(p.x, p.y);
@@ -42,7 +41,6 @@ inline PP_Size PP_FromGfxSize(const gfx::Size& s) {
   return PP_MakeSize(s.width(), s.height());
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_GFX_CONVERSION_H_

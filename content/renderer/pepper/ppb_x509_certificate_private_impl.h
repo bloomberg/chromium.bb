@@ -14,8 +14,7 @@ namespace ppapi {
 class PPB_X509Certificate_Fields;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_X509Certificate_Private_Impl :
     public ::ppapi::PPB_X509Certificate_Private_Shared {
@@ -31,7 +30,6 @@ class PPB_X509Certificate_Private_Impl :
   DISALLOW_COPY_AND_ASSIGN(PPB_X509Certificate_Private_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_X509_CERTIFICATE_PRIVATE_IMPL_H_

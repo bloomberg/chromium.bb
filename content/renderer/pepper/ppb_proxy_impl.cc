@@ -14,8 +14,7 @@ using ppapi::PpapiGlobals;
 using ppapi::thunk::EnterResource;
 using ppapi::thunk::PPB_URLLoader_API;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -75,5 +74,4 @@ const PPB_Proxy_Private* PPB_Proxy_Impl::GetInterface() {
   return &ppb_proxy;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

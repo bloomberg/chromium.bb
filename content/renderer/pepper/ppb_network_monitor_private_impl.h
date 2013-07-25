@@ -13,8 +13,7 @@
 #include "ppapi/thunk/ppb_network_monitor_private_api.h"
 #include "webkit/glue/network_list_observer.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_NetworkMonitor_Private_Impl
     : public ::ppapi::Resource,
@@ -47,7 +46,6 @@ class PPB_NetworkMonitor_Private_Impl
   DISALLOW_COPY_AND_ASSIGN(PPB_NetworkMonitor_Private_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_NETWORK_MONITOR_PRIVATE_IMPL_H_

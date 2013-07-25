@@ -15,11 +15,10 @@ namespace base {
 class MessageLoop;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class MockPluginDelegate;
-class PluginInstanceImpl;
+class PepperPluginInstanceImpl;
 class PluginModule;
 
 class PpapiUnittest : public testing::Test {
@@ -32,7 +31,7 @@ class PpapiUnittest : public testing::Test {
 
   MockPluginDelegate* delegate() { return delegate_.get(); }
   PluginModule* module() const { return module_.get(); }
-  PluginInstanceImpl* instance() const { return instance_.get(); }
+  PepperPluginInstanceImpl* instance() const { return instance_.get(); }
 
   // Provides access to the interfaces implemented by the test. The default one
   // implements PPP_INSTANCE.
@@ -52,14 +51,13 @@ class PpapiUnittest : public testing::Test {
 
   // Note: module must be declared first since we want it to get destroyed last.
   scoped_refptr<PluginModule> module_;
-  scoped_refptr<PluginInstanceImpl> instance_;
+  scoped_refptr<PepperPluginInstanceImpl> instance_;
 
   scoped_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiUnittest);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPAPI_UNITTEST_H_

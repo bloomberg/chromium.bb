@@ -15,8 +15,7 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class AudioHelper : public PluginDelegate::PlatformAudioOutputClient {
  public:
@@ -57,7 +56,6 @@ class AudioHelper : public PluginDelegate::PlatformAudioOutputClient {
   DISALLOW_COPY_AND_ASSIGN(AudioHelper);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_AUDIO_HELPER_H_

@@ -8,8 +8,7 @@
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "skia/ext/platform_canvas.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class MockPlatformImage2D : public PluginDelegate::PlatformImage2D {
  public:
@@ -26,7 +25,6 @@ class MockPlatformImage2D : public PluginDelegate::PlatformImage2D {
   int height_;
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_MOCK_PLATFORM_IMAGE_2D_H_

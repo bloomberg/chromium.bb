@@ -22,7 +22,7 @@ class MessageLoopProxy;
 namespace content {
 
 class PepperPlatformAudioOutputImpl
-    : public webkit::ppapi::PluginDelegate::PlatformAudioOutput,
+    : public PluginDelegate::PlatformAudioOutput,
       public media::AudioOutputIPCDelegate,
       public base::RefCountedThreadSafe<PepperPlatformAudioOutputImpl> {
  public:
@@ -32,7 +32,7 @@ class PepperPlatformAudioOutputImpl
       int sample_rate,
       int frames_per_buffer,
       int source_render_view_id,
-      webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client);
+      PluginDelegate::PlatformAudioOutputClient* client);
 
   // PlatformAudioOutput implementation (called on main thread).
   virtual bool StartPlayback() OVERRIDE;
@@ -59,7 +59,7 @@ class PepperPlatformAudioOutputImpl
       int sample_rate,
       int frames_per_buffer,
       int source_render_view_id,
-      webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client);
+      PluginDelegate::PlatformAudioOutputClient* client);
 
   // I/O thread backends to above functions.
   void InitializeOnIOThread(const media::AudioParameters& params);
@@ -69,7 +69,7 @@ class PepperPlatformAudioOutputImpl
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.
-  webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client_;
+  PluginDelegate::PlatformAudioOutputClient* client_;
 
   // Used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
   // I/O thread except to send messages and get the message loop.

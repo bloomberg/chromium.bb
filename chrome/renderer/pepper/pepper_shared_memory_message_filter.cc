@@ -8,7 +8,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "content/public/common/content_client.h"
-#include "content/public/renderer/ppapi_plugin_instance.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
@@ -55,7 +55,7 @@ void PepperSharedMemoryMessageFilter::OnHostMsgCreateSharedMemory(
 
   base::SharedMemoryHandle host_shm_handle;
   shm->ShareToProcess(base::GetCurrentProcessHandle(), &host_shm_handle);
-  *host_handle_id = webkit::ppapi::PluginInstance::Get(instance)->
+  *host_handle_id = content::PepperPluginInstance::Get(instance)->
       GetVarTracker()->TrackSharedMemoryHandle(instance, host_shm_handle, size);
 
   base::PlatformFile host_handle =

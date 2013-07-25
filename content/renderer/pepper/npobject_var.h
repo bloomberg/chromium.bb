@@ -66,6 +66,6 @@ class NPObjectVar : public Var {
   DISALLOW_COPY_AND_ASSIGN(NPObjectVar);
 };
 
-}  // namespace
+}  // ppapi
 
 #endif  // CONTENT_RENDERER_PEPPER_NPOBJECT_VAR_H_

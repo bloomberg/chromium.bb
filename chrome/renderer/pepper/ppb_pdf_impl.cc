@@ -14,7 +14,7 @@
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/common/referrer.h"
-#include "content/public/renderer/ppapi_plugin_instance.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/webkit_resources.h"
@@ -38,7 +38,6 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using ppapi::PpapiGlobals;
-using webkit::ppapi::PluginInstance;
 using WebKit::WebElement;
 using WebKit::WebView;
 using content::RenderThread;
@@ -134,7 +133,8 @@ static const ResourceImageInfo kResourceImageMap[] = {
 #if defined(ENABLE_PRINTING)
 
 WebKit::WebElement GetWebElement(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::Get(instance_id);
+  content::PepperPluginInstance* instance =
+      content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return WebKit::WebElement();
   return instance->GetContainer()->element();
@@ -167,7 +167,8 @@ bool IsPrintingEnabled(PP_Instance instance_id) {
 
 PP_Var GetLocalizedString(PP_Instance instance_id,
                           PP_ResourceString string_id) {
-  PluginInstance* instance = PluginInstance::Get(instance_id);
+  content::PepperPluginInstance* instance =
+      content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return PP_MakeUndefined();
 
@@ -193,7 +194,7 @@ PP_Resource GetFontFileWithFallback(
     PP_PrivateFontCharset charset) {
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   // Validate the instance before using it below.
-  if (!PluginInstance::Get(instance_id))
+  if (!content::PepperPluginInstance::Get(instance_id))
     return 0;
 
   scoped_refptr<ppapi::StringVar> face_name(ppapi::StringVar::FromPPVar(
@@ -287,21 +288,24 @@ void SearchString(PP_Instance instance,
 }
 
 void DidStartLoading(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::Get(instance_id);
+  content::PepperPluginInstance* instance =
+      content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return;
   instance->GetRenderView()->DidStartLoading();
 }
 
 void DidStopLoading(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::Get(instance_id);
+  content::PepperPluginInstance* instance =
+      content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return;
   instance->GetRenderView()->DidStopLoading();
 }
 
 void SetContentRestriction(PP_Instance instance_id, int restrictions) {
-  PluginInstance* instance = PluginInstance::Get(instance_id);
+  content::PepperPluginInstance* instance =
+      content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return;
   instance->GetRenderView()->Send(
@@ -321,7 +325,8 @@ void UserMetricsRecordAction(PP_Instance instance, PP_Var action) {
 }
 
 void HasUnsupportedFeature(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::Get(instance_id);
+  content::PepperPluginInstance* instance =
+      content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return;
 
@@ -336,7 +341,8 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
 }
 
 void SaveAs(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::Get(instance_id);
+  content::PepperPluginInstance* instance =
+      content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return;
   GURL url = instance->GetPluginURL();
@@ -373,7 +379,8 @@ PP_Resource GetResourceImageForScale(PP_Instance instance_id,
     return 0;
 
   // Validate the instance.
-  PluginInstance* instance = PluginInstance::Get(instance_id);
+  content::PepperPluginInstance* instance =
+      content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return 0;
 

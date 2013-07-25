@@ -11,8 +11,7 @@
 // todo(nfullagar): Remove this private interface when the SRPC proxy is
 // permanently disabled.
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -35,6 +34,5 @@ const PPB_GpuBlacklist_Private* PPB_GpuBlacklist_Private_Impl::GetInterface() {
   return &ppb_gpu_blacklist;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 

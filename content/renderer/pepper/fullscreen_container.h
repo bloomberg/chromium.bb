@@ -13,8 +13,7 @@ struct WebCursorInfo;
 struct WebRect;
 }  // namespace WebKit
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // This class is like a lightweight WebPluginContainer for fullscreen PPAPI
 // plugins, that only handles painting.
@@ -42,7 +41,6 @@ class FullscreenContainer {
   virtual ~FullscreenContainer() {}
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_FULLSCREEN_CONTAINER_IMPL_H_

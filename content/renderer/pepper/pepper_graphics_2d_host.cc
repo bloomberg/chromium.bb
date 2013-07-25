@@ -11,7 +11,7 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/gfx_conversion.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/c/pp_bool.h"
@@ -41,8 +41,6 @@
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
-using webkit::ppapi::ImageDataAutoMapper;
-using webkit::ppapi::PPB_ImageData_Impl;
 
 namespace content {
 
@@ -296,7 +294,7 @@ bool PepperGraphics2DHost::ReadImageData(PP_Resource image,
 }
 
 bool PepperGraphics2DHost::BindToInstance(
-    webkit::ppapi::PluginInstanceImpl* new_instance) {
+    PepperPluginInstanceImpl* new_instance) {
   if (new_instance && new_instance->pp_instance() != pp_instance())
     return false;  // Can't bind other instance's contexts.
   if (bound_instance_ == new_instance)
@@ -338,7 +336,7 @@ void PepperGraphics2DHost::Paint(WebKit::WebCanvas* canvas,
   gfx::Size image_size = gfx::ToFlooredSize(
       gfx::ScaleSize(pixel_image_size, scale_));
 
-  webkit::ppapi::PluginInstance* plugin_instance =
+  PepperPluginInstance* plugin_instance =
       renderer_ppapi_host_->GetPluginInstance(pp_instance());
   if (!plugin_instance)
     return;
@@ -413,7 +411,7 @@ bool PepperGraphics2DHost::IsAlwaysOpaque() const {
   return is_always_opaque_;
 }
 
-webkit::ppapi::PPB_ImageData_Impl* PepperGraphics2DHost::ImageData() {
+PPB_ImageData_Impl* PepperGraphics2DHost::ImageData() {
   return image_data_.get();
 }
 
@@ -602,8 +600,7 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
         operation.type = QueuedOperation::PAINT;
       }
 
-      gfx::Rect clip = webkit::ppapi::PP_ToGfxRect(
-          bound_instance_->view_data().clip_rect);
+      gfx::Rect clip = PP_ToGfxRect(bound_instance_->view_data().clip_rect);
       is_plugin_visible = !clip.IsEmpty();
 
       // Set |no_update_visible| to false if the change overlaps the visible

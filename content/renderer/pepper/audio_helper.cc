@@ -10,8 +10,7 @@
 
 using ppapi::TrackedCallback;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // AudioHelper -----------------------------------------------------------------
 
@@ -84,5 +83,4 @@ void AudioHelper::SetCreateCallback(
   create_callback_ = create_callback;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

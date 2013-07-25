@@ -5,7 +5,7 @@
 #include "chrome/renderer/pepper/pepper_flash_drm_renderer_host.h"
 
 #include "base/files/file_path.h"
-#include "content/public/renderer/ppapi_plugin_instance.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -46,7 +46,7 @@ int32_t PepperFlashDRMRendererHost::OnResourceMessageReceived(
 
 int32_t PepperFlashDRMRendererHost::OnGetVoucherFile(
     ppapi::host::HostMessageContext* context) {
-  webkit::ppapi::PluginInstance* plugin_instance =
+  content::PepperPluginInstance* plugin_instance =
       renderer_ppapi_host_->GetPluginInstance(pp_instance());
   if (!plugin_instance)
     return PP_ERROR_FAILED;

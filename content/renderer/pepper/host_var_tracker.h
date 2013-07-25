@@ -27,8 +27,7 @@ class NPObjectVar;
 class Var;
 }
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 // Adds NPObject var tracking to the standard PPAPI VarTracker for use in the
 // renderer.
@@ -104,7 +103,6 @@ class HostVarTracker : public ::ppapi::VarTracker {
   DISALLOW_COPY_AND_ASSIGN(HostVarTracker);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_HOST_VAR_TRACKER_H_

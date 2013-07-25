@@ -28,7 +28,7 @@
 #include "content/renderer/media/webmediaplayer_params.h"
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "content/renderer/media/webmediasourceclient_impl.h"
-#include "content/renderer/pepper/ppapi_webplugin_impl.h"
+#include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_loop.h"

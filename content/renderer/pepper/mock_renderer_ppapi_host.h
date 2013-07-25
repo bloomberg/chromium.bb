@@ -11,14 +11,8 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/resource_message_test_sink.h"
 
-namespace webkit {
-namespace ppapi {
-class PluginInstance;
-class PluginModule;
-}
-}
-
 namespace content {
+class PluginModule;
 
 // A mock RendererPpapiHost for testing resource hosts. Messages sent by
 // resources through this will get added to the test sink.
@@ -39,7 +33,7 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   // RendererPpapiHost.
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
-  virtual webkit::ppapi::PluginInstance* GetPluginInstance(
+  virtual PepperPluginInstance* GetPluginInstance(
       PP_Instance instance) const OVERRIDE;
   virtual RenderView* GetRenderViewForInstance(
       PP_Instance instance) const OVERRIDE;

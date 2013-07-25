@@ -11,9 +11,9 @@
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/host_var_tracker.h"
 #include "content/renderer/pepper/npobject_var.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/c/pp_var.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -32,14 +32,13 @@ using WebKit::WebArrayBuffer;
 using WebKit::WebBindings;
 using WebKit::WebPluginContainer;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
 const char kInvalidPluginValue[] = "Error: Plugin returned invalid value.";
 
-PP_Var NPObjectToPPVarImpl(PluginInstanceImpl* instance,
+PP_Var NPObjectToPPVarImpl(PepperPluginInstanceImpl* instance,
                            NPObject* object,
                            v8::Local<v8::Context> context) {
   DCHECK(object);
@@ -122,7 +121,7 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result) {
   return true;
 }
 
-PP_Var NPVariantToPPVar(PluginInstanceImpl* instance,
+PP_Var NPVariantToPPVar(PepperPluginInstanceImpl* instance,
                         const NPVariant* variant) {
   switch (variant->type) {
     case NPVariantType_Void:
@@ -172,7 +171,7 @@ PP_Var NPIdentifierToPPVar(NPIdentifier id) {
   return PP_MakeInt32(int_value);
 }
 
-PP_Var NPObjectToPPVar(PluginInstanceImpl* instance, NPObject* object) {
+PP_Var NPObjectToPPVar(PepperPluginInstanceImpl* instance, NPObject* object) {
   WebPluginContainer* container = instance->container();
   // It's possible that container() is NULL if the plugin has been removed from
   // the DOM (but the PluginInstance is not destroyed yet).
@@ -184,7 +183,8 @@ PP_Var NPObjectToPPVar(PluginInstanceImpl* instance, NPObject* object) {
   return NPObjectToPPVarImpl(instance, object, context);
 }
 
-PP_Var NPObjectToPPVarForTest(PluginInstanceImpl* instance, NPObject* object) {
+PP_Var NPObjectToPPVarForTest(PepperPluginInstanceImpl* instance,
+                              NPObject* object) {
   v8::Isolate* test_isolate = v8::Isolate::New();
   PP_Var result = PP_MakeUndefined();
   {
@@ -280,7 +280,7 @@ void PPResultAndExceptionToNPResult::ThrowException() {
 // PPVarArrayFromNPVariantArray ------------------------------------------------
 
 PPVarArrayFromNPVariantArray::PPVarArrayFromNPVariantArray(
-    PluginInstanceImpl* instance,
+    PepperPluginInstanceImpl* instance,
     size_t size,
     const NPVariant* variants)
     : size_(size) {
@@ -299,7 +299,7 @@ PPVarArrayFromNPVariantArray::~PPVarArrayFromNPVariantArray() {
 
 // PPVarFromNPObject -----------------------------------------------------------
 
-PPVarFromNPObject::PPVarFromNPObject(PluginInstanceImpl* instance,
+PPVarFromNPObject::PPVarFromNPObject(PepperPluginInstanceImpl* instance,
                                      NPObject* object)
     : var_(NPObjectToPPVar(instance, object)) {
 }
@@ -353,5 +353,4 @@ void TryCatch::Catch(void* self, const char* message) {
   static_cast<TryCatch*>(self)->SetException(message);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

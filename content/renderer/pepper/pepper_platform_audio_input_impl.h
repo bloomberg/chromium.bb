@@ -35,7 +35,7 @@ class PepperPluginDelegateImpl;
 // I/O thread.
 
 class PepperPlatformAudioInputImpl
-    : public webkit::ppapi::PluginDelegate::PlatformAudioInput,
+    : public PluginDelegate::PlatformAudioInput,
       public media::AudioInputIPCDelegate,
       public base::RefCountedThreadSafe<PepperPlatformAudioInputImpl> {
  public:
@@ -47,7 +47,7 @@ class PepperPlatformAudioInputImpl
       const GURL& document_url,
       int sample_rate,
       int frames_per_buffer,
-      webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client);
+      PluginDelegate::PlatformAudioInputClient* client);
 
   // PlatformAudioInput implementation (called on main thread).
   virtual void StartCapture() OVERRIDE;
@@ -78,7 +78,7 @@ class PepperPlatformAudioInputImpl
       const GURL& document_url,
       int sample_rate,
       int frames_per_buffer,
-      webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client);
+      PluginDelegate::PlatformAudioInputClient* client);
 
   // I/O thread backends to above functions.
   void InitializeOnIOThread(int session_id);
@@ -94,7 +94,7 @@ class PepperPlatformAudioInputImpl
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.
-  webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client_;
+  PluginDelegate::PlatformAudioInputClient* client_;
 
   // Used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
   // I/O THREAD.

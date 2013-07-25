@@ -16,7 +16,7 @@
 namespace content {
 
 class PlatformVideoDecoderImpl
-    : public webkit::ppapi::PluginDelegate::PlatformVideoDecoder,
+    : public PluginDelegate::PlatformVideoDecoder,
       public media::VideoDecodeAccelerator::Client {
  public:
   PlatformVideoDecoderImpl(

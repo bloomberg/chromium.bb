@@ -12,8 +12,8 @@
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/host_array_buffer_var.h"
 #include "content/renderer/pepper/npapi_glue.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/pepper/v8_var_converter.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
@@ -38,9 +38,7 @@ using WebKit::WebDOMMessageEvent;
 using WebKit::WebPluginContainer;
 using WebKit::WebSerializedScriptValue;
 
-namespace webkit {
-
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -328,7 +326,7 @@ MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {
 
 MessageChannel::MessageChannelNPObject::~MessageChannelNPObject() {}
 
-MessageChannel::MessageChannel(PluginInstanceImpl* instance)
+MessageChannel::MessageChannel(PepperPluginInstanceImpl* instance)
     : instance_(instance),
       passthrough_object_(NULL),
       np_object_(NULL),
@@ -405,7 +403,7 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
 
 void MessageChannel::StopQueueingJavaScriptMessages() {
   // We PostTask here instead of draining the message queue directly
-  // since we haven't finished initializing the WebPluginImpl yet, so
+  // since we haven't finished initializing the PepperWebPluginImpl yet, so
   // the plugin isn't available in the DOM.
   early_message_queue_state_ = DRAIN_PENDING;
   base::MessageLoop::current()->PostTask(
@@ -425,7 +423,7 @@ void MessageChannel::DrainEarlyMessageQueue() {
   // Take a reference on the PluginInstance. This is because JavaScript code
   // may delete the plugin, which would destroy the PluginInstance and its
   // corresponding MessageChannel.
-  scoped_refptr<PluginInstanceImpl> instance_ref(instance_);
+  scoped_refptr<PepperPluginInstanceImpl> instance_ref(instance_);
 
   if (early_message_queue_state_ == DRAIN_CANCELLED) {
     early_message_queue_state_ = QUEUE_MESSAGES;
@@ -516,5 +514,4 @@ void MessageChannel::SetPassthroughObject(NPObject* passthrough) {
   passthrough_object_ = passthrough;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

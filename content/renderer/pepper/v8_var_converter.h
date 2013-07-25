@@ -12,8 +12,7 @@
 #include "v8/include/v8.h"
 #include "content/common/content_export.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 namespace V8VarConverter {
 
 // Converts the given PP_Var to a v8::Value. True is returned upon success.
@@ -29,7 +28,6 @@ bool CONTENT_EXPORT FromV8Value(v8::Handle<v8::Value> val,
                                 PP_Var* result);
 
 }  // namespace V8VarConverter
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H

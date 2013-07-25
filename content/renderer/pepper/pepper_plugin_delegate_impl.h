@@ -35,12 +35,6 @@ class PepperFilePath;
 class PPB_X509Certificate_Fields;
 }
 
-namespace webkit {
-namespace ppapi {
-class PluginModule;
-}
-}
-
 namespace WebKit {
 class WebGamepads;
 struct WebCompositionUnderline;
@@ -51,11 +45,12 @@ class ContextProviderCommandBuffer;
 class GamepadSharedMemoryReader;
 class PepperBrokerImpl;
 class PepperDeviceEnumerationEventHandler;
+class PluginModule;
 class RenderViewImpl;
 struct WebPluginInfo;
 
 class PepperPluginDelegateImpl
-    : public webkit::ppapi::PluginDelegate,
+    : public PluginDelegate,
       public RenderViewPepperHelper,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl>,
       public RenderViewObserver {
@@ -103,7 +98,7 @@ class PepperPluginDelegateImpl
   virtual void ViewWillInitiatePaint() OVERRIDE;
   virtual void ViewInitiatedPaint() OVERRIDE;
   virtual void ViewFlushedPaint() OVERRIDE;
-  virtual webkit::ppapi::PluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
+  virtual PepperPluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,
@@ -136,31 +131,27 @@ class PepperPluginDelegateImpl
   virtual void WillHandleMouseEvent() OVERRIDE;
 
   // PluginDelegate implementation.
-  virtual void PluginFocusChanged(webkit::ppapi::PluginInstanceImpl* instance,
+  virtual void PluginFocusChanged(PepperPluginInstanceImpl* instance,
                                   bool focused) OVERRIDE;
   virtual void PluginTextInputTypeChanged(
-      webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void PluginCaretPositionChanged(
-      webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void PluginRequestedCancelComposition(
-      webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void PluginSelectionChanged(
-      webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void SimulateImeSetComposition(
       const string16& text,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end) OVERRIDE;
   virtual void SimulateImeConfirmComposition(const string16& text) OVERRIDE;
-  virtual void PluginCrashed(
-      webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
-  virtual void InstanceCreated(
-      webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
-  virtual void InstanceDeleted(
-      webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
+  virtual void PluginCrashed(PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual void InstanceCreated(PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual void InstanceDeleted(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
-      CreateResourceCreationAPI(
-          webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
+      CreateResourceCreationAPI(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
   virtual WebKit::WebPlugin* CreatePluginReplacement(
       const base::FilePath& file_path) OVERRIDE;
@@ -178,7 +169,7 @@ class PepperPluginDelegateImpl
       PlatformAudioInputClient* client) OVERRIDE;
   virtual PlatformImage2D* CreateImage2D(int width, int height) OVERRIDE;
   virtual PlatformGraphics2D* GetGraphics2D(
-      webkit::ppapi::PluginInstanceImpl* instance,
+      PepperPluginInstanceImpl* instance,
       PP_Resource resource) OVERRIDE;
   virtual PlatformContext3D* CreateContext3D() OVERRIDE;
   virtual PlatformVideoCapture* CreateVideoCapture(
@@ -188,8 +179,7 @@ class PepperPluginDelegateImpl
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id) OVERRIDE;
-  virtual Broker* ConnectToBroker(
-      webkit::ppapi::PPB_Broker_Impl* client) OVERRIDE;
+  virtual Broker* ConnectToBroker(PPB_Broker_Impl* client) OVERRIDE;
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
                                           bool final_result) OVERRIDE;
@@ -252,13 +242,12 @@ class PepperPluginDelegateImpl
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy() OVERRIDE;
   virtual uint32 TCPSocketCreate() OVERRIDE;
-  virtual void TCPSocketConnect(
-      webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
-      uint32 socket_id,
-      const std::string& host,
-      uint16_t port) OVERRIDE;
+  virtual void TCPSocketConnect(PPB_TCPSocket_Private_Impl* socket,
+                                uint32 socket_id,
+                                const std::string& host,
+                                uint16_t port) OVERRIDE;
   virtual void TCPSocketConnectWithNetAddress(
-      webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+      PPB_TCPSocket_Private_Impl* socket,
       uint32 socket_id,
       const PP_NetAddress_Private& addr) OVERRIDE;
   virtual void TCPSocketSSLHandshake(
@@ -275,9 +264,8 @@ class PepperPluginDelegateImpl
       uint32 socket_id,
       PP_TCPSocket_Option name,
       const ppapi::SocketOptionData& value) OVERRIDE;
-  virtual void RegisterTCPSocket(
-      webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
-      uint32 socket_id) OVERRIDE;
+  virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
+                                 uint32 socket_id) OVERRIDE;
   virtual void TCPServerSocketListen(
       PP_Resource socket_resource,
       const PP_NetAddress_Private& addr,
@@ -293,9 +281,8 @@ class PepperPluginDelegateImpl
   virtual bool X509CertificateParseDER(
       const std::vector<char>& der,
       ppapi::PPB_X509Certificate_Fields* fields) OVERRIDE;
-  virtual webkit::ppapi::FullscreenContainer*
-      CreateFullscreenContainer(
-          webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
+  virtual FullscreenContainer* CreateFullscreenContainer(
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual gfx::Size GetScreenSize() OVERRIDE;
   virtual std::string GetDefaultEncoding() OVERRIDE;
   virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor)
@@ -303,15 +290,13 @@ class PepperPluginDelegateImpl
   virtual base::SharedMemory* CreateAnonymousSharedMemory(size_t size)
       OVERRIDE;
   virtual ::ppapi::Preferences GetPreferences() OVERRIDE;
-  virtual bool LockMouse(webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
-  virtual void UnlockMouse(
-      webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
-  virtual bool IsMouseLocked(
-      webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
-  virtual void DidChangeCursor(webkit::ppapi::PluginInstanceImpl* instance,
+  virtual bool LockMouse(PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual void UnlockMouse(PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual bool IsMouseLocked(PepperPluginInstanceImpl* instance) OVERRIDE;
+  virtual void DidChangeCursor(PepperPluginInstanceImpl* instance,
                                const WebKit::WebCursorInfo& cursor) OVERRIDE;
   virtual void DidReceiveMouseEvent(
-      webkit::ppapi::PluginInstanceImpl* instance) OVERRIDE;
+      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual bool IsInFullscreenMode() OVERRIDE;
   virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
   virtual bool IsPageVisible() const OVERRIDE;
@@ -320,10 +305,10 @@ class PepperPluginDelegateImpl
       const EnumerateDevicesCallback& callback) OVERRIDE;
   virtual void StopEnumerateDevices(int request_id) OVERRIDE;
   virtual void HandleDocumentLoad(
-      webkit::ppapi::PluginInstanceImpl* instance,
+      PepperPluginInstanceImpl* instance,
       const WebKit::WebURLResponse& response) OVERRIDE;
-  virtual content::RendererPpapiHost* CreateExternalPluginModule(
-      scoped_refptr<webkit::ppapi::PluginModule> module,
+  virtual RendererPpapiHost* CreateExternalPluginModule(
+      scoped_refptr<PluginModule> module,
       const base::FilePath& path,
       ::ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
@@ -374,18 +359,17 @@ class PepperPluginDelegateImpl
   // the second is that the plugin failed to initialize. In this case,
   // |*pepper_plugin_was_registered| will be set to true and the caller should
   // not fall back on any other plugin types.
-  scoped_refptr<webkit::ppapi::PluginModule>
-  CreatePepperPluginModule(const WebPluginInfo& webplugin_info,
-                           bool* pepper_plugin_was_registered);
+  scoped_refptr<PluginModule> CreatePepperPluginModule(
+      const WebPluginInfo& webplugin_info,
+      bool* pepper_plugin_was_registered);
 
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
-  scoped_refptr<PepperBrokerImpl> CreateBroker(
-      webkit::ppapi::PluginModule* plugin_module);
+  scoped_refptr<PepperBrokerImpl> CreateBroker(PluginModule* plugin_module);
 
   // Create a new HostDispatcher for proxying, hook it to the PluginModule,
   // and perform other common initialization.
   RendererPpapiHost* CreateOutOfProcessModule(
-      webkit::ppapi::PluginModule* module,
+      PluginModule* module,
       const base::FilePath& path,
       ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
@@ -394,12 +378,11 @@ class PepperPluginDelegateImpl
       bool is_external);
 
   MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter(
-      webkit::ppapi::PluginInstanceImpl* instance);
-  void UnSetAndDeleteLockTargetAdapter(
-      webkit::ppapi::PluginInstanceImpl* instance);
+      PepperPluginInstanceImpl* instance);
+  void UnSetAndDeleteLockTargetAdapter(PepperPluginInstanceImpl* instance);
 
   MouseLockDispatcher* GetMouseLockDispatcher(
-      webkit::ppapi::PluginInstanceImpl* instance);
+      PepperPluginInstanceImpl* instance);
 
   // Share a given handle with the target process.
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
@@ -416,26 +399,25 @@ class PepperPluginDelegateImpl
   // the browser.
   PepperBrowserConnection pepper_browser_connection_;
 
-  std::set<webkit::ppapi::PluginInstanceImpl*> active_instances_;
-  typedef std::map<webkit::ppapi::PluginInstanceImpl*,
+  std::set<PepperPluginInstanceImpl*> active_instances_;
+  typedef std::map<PepperPluginInstanceImpl*,
                    MouseLockDispatcher::LockTarget*> LockTargetMap;
   LockTargetMap mouse_lock_instances_;
 
   IDMap<AsyncOpenFileCallback> pending_async_open_files_;
 
-  IDMap<webkit::ppapi::PPB_TCPSocket_Private_Impl> tcp_sockets_;
+  IDMap<PPB_TCPSocket_Private_Impl> tcp_sockets_;
 
   IDMap<ppapi::PPB_TCPServerSocket_Shared> tcp_server_sockets_;
 
   typedef IDMap<scoped_refptr<PepperBrokerImpl>, IDMapOwnPointer> BrokerMap;
   BrokerMap pending_connect_broker_;
 
-  typedef IDMap<base::WeakPtr<webkit::ppapi::PPB_Broker_Impl> >
-      PermissionRequestMap;
+  typedef IDMap<base::WeakPtr<PPB_Broker_Impl> > PermissionRequestMap;
   PermissionRequestMap pending_permission_requests_;
 
   // Whether or not the focus is on a PPAPI plugin
-  webkit::ppapi::PluginInstanceImpl* focused_plugin_;
+  PepperPluginInstanceImpl* focused_plugin_;
 
   // Current text input composition text. Empty if no composition is in
   // progress.
@@ -445,7 +427,7 @@ class PepperPluginDelegateImpl
   // if the last mouse event went to elements other than Pepper plugins.
   // |last_mouse_event_target_| is not owned by this class. We can know about
   // when it is destroyed via InstanceDeleted().
-  webkit::ppapi::PluginInstanceImpl* last_mouse_event_target_;
+  PepperPluginInstanceImpl* last_mouse_event_target_;
 
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 

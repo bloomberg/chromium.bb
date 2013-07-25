@@ -8,8 +8,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_var.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 inline PP_Bool BoolToPPBool(bool value) {
   return value ? PP_TRUE : PP_FALSE;
@@ -19,8 +18,7 @@ inline bool PPBoolToBool(PP_Bool value) {
   return (PP_TRUE == value);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_COMMON_H_
 

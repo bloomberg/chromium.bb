@@ -18,7 +18,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/public/renderer/ppapi_plugin_instance.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -159,8 +159,8 @@ PP_ExternalPluginResult StartPpapiProxy(PP_Instance instance) {
   InstanceInfo instance_info = it->second;
   map.erase(it);
 
-  webkit::ppapi::PluginInstance* plugin_instance =
-      webkit::ppapi::PluginInstance::Get(instance);
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
   if (!plugin_instance) {
     DLOG(ERROR) << "GetInstance() failed";
     return PP_EXTERNAL_PLUGIN_ERROR_MODULE;

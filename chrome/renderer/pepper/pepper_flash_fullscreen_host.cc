@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/pepper/pepper_flash_fullscreen_host.h"
 
-#include "content/public/renderer/ppapi_plugin_instance.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -39,7 +39,7 @@ int32_t PepperFlashFullscreenHost::OnResourceMessageReceived(
 int32_t PepperFlashFullscreenHost::OnSetFullscreen(
     ppapi::host::HostMessageContext* context,
     bool fullscreen) {
-  webkit::ppapi::PluginInstance* plugin_instance =
+  content::PepperPluginInstance* plugin_instance =
       renderer_ppapi_host_->GetPluginInstance(pp_instance());
   if (plugin_instance) {
     plugin_instance->FlashSetFullscreen(fullscreen, true);

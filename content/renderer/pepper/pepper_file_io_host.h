@@ -18,15 +18,9 @@
 #include "ppapi/thunk/ppb_file_ref_api.h"
 
 using ppapi::host::ReplyMessageContext;
-using webkit::ppapi::PluginDelegate;
-
-namespace webkit {
-namespace ppapi {
-class QuotaFileIO;
-}  // namespace ppapi
-}  // namespace webkit
 
 namespace content {
+class QuotaFileIO;
 
 class PepperFileIOHost : public ppapi::host::ResourceHost,
                          public base::SupportsWeakPtr<PepperFileIOHost> {
@@ -97,7 +91,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
                                     int bytes_written);
 
   // TODO(victorhsieh): eliminate plugin_delegate_ as it's no longer needed.
-  webkit::ppapi::PluginDelegate* plugin_delegate_;  // Not owned.
+  PluginDelegate* plugin_delegate_;  // Not owned.
 
   base::PlatformFile file_;
 
@@ -117,7 +111,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
 
   // Pointer to a QuotaFileIO instance, which is valid only while a file
   // of type PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY} is opened.
-  scoped_ptr<webkit::ppapi::QuotaFileIO> quota_file_io_;
+  scoped_ptr<QuotaFileIO> quota_file_io_;
 
   bool is_running_in_process_;
 

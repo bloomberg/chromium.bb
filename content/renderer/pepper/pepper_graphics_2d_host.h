@@ -22,22 +22,15 @@ class Point;
 class Rect;
 }
 
-namespace webkit {
-namespace ppapi {
-class PPB_ImageData_Impl;
-class PluginInstanceImpl;
-}  // namespace ppapi
-}  // namespace webkit
-
-using webkit::ppapi::PPB_ImageData_Impl;
-
 namespace content {
-
+  
+class PepperPluginInstanceImpl;
+class PPB_ImageData_Impl;
 class RendererPpapiHost;
 
 class CONTENT_EXPORT PepperGraphics2DHost
     : public ppapi::host::ResourceHost,
-      public webkit::ppapi::PluginDelegate::PlatformGraphics2D,
+      public PluginDelegate::PlatformGraphics2D,
       public base::SupportsWeakPtr<PepperGraphics2DHost> {
  public:
   static PepperGraphics2DHost* Create(RendererPpapiHost* host,
@@ -57,8 +50,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // PlatformGraphics2D overrides.
   virtual bool ReadImageData(PP_Resource image,
                              const PP_Point* top_left) OVERRIDE;
-  virtual bool BindToInstance(
-      webkit::ppapi::PluginInstanceImpl* new_instance) OVERRIDE;
+  virtual bool BindToInstance(PepperPluginInstanceImpl* new_instance) OVERRIDE;
   virtual void Paint(WebKit::WebCanvas* canvas,
                      const gfx::Rect& plugin_rect,
                      const gfx::Rect& paint_rect) OVERRIDE;
@@ -142,7 +134,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   // Non-owning pointer to the plugin instance this context is currently bound
   // to, if any. If the context is currently unbound, this will be NULL.
-  webkit::ppapi::PluginInstanceImpl* bound_instance_;
+  PepperPluginInstanceImpl* bound_instance_;
 
   // Keeps track of all drawing commands queued before a Flush call.
   struct QueuedOperation;

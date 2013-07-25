@@ -19,7 +19,7 @@ PepperPlatformVideoCaptureImpl::PepperPlatformVideoCaptureImpl(
     const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
     const std::string& device_id,
     const GURL& document_url,
-    webkit::ppapi::PluginDelegate::PlatformVideoCaptureEventHandler* handler)
+    PluginDelegate::PlatformVideoCaptureEventHandler* handler)
     : plugin_delegate_(plugin_delegate),
       device_id_(device_id),
       session_id_(0),

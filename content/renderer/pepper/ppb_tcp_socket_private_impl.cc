@@ -5,13 +5,12 @@
 #include "content/renderer/pepper/ppb_tcp_socket_private_impl.h"
 
 #include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_delegate.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/shared_impl/socket_option_data.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 PPB_TCPSocket_Private_Impl::PPB_TCPSocket_Private_Impl(
     PP_Instance instance, uint32 socket_id)
@@ -123,12 +122,11 @@ void PPB_TCPSocket_Private_Impl::SendSetOption(
 
 PluginDelegate* PPB_TCPSocket_Private_Impl::GetPluginDelegate(
     PP_Instance instance) {
-  PluginInstanceImpl* plugin_instance =
+  PepperPluginInstanceImpl* plugin_instance =
       HostGlobals::Get()->GetInstance(instance);
   if (!plugin_instance)
     return NULL;
   return plugin_instance->delegate();
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

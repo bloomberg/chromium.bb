@@ -7,15 +7,13 @@
 
 struct PPB_Var_Deprecated;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_Var_Deprecated_Impl {
  public:
   static const PPB_Var_Deprecated* GetVarDeprecatedInterface();
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_VAR_DEPRECATED_IMPL_H_

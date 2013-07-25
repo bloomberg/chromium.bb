@@ -16,8 +16,7 @@
 #include "third_party/WebKit/public/web/WebPluginScrollbarClient.h"
 #include "ui/gfx/rect.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
                            public ::ppapi::thunk::PPB_Scrollbar_API,
@@ -72,7 +71,6 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   DISALLOW_COPY_AND_ASSIGN(PPB_Scrollbar_Impl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_SCROLLBAR_IMPL_H_

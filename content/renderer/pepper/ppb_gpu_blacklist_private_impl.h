@@ -7,16 +7,14 @@
 
 #include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 class PPB_GpuBlacklist_Private_Impl {
  public:
   static const PPB_GpuBlacklist_Private* GetInterface();
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_GPU_BLACKLIST_PRIVATE_IMPL_H_
 

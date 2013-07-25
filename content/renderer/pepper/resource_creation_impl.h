@@ -9,10 +9,9 @@
 #include "base/compiler_specific.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
-class PluginInstanceImpl;
+class PepperPluginInstanceImpl;
 
 // This is an abstract class.  ResourceCreationAPI functions that implement
 // "old-style" resources are handled here. See
@@ -20,7 +19,7 @@ class PluginInstanceImpl;
 // that implement "new-style" resources.
 class ResourceCreationImpl : public ::ppapi::thunk::ResourceCreationAPI {
  public:
-  explicit ResourceCreationImpl(PluginInstanceImpl* instance);
+  explicit ResourceCreationImpl(PepperPluginInstanceImpl* instance);
   virtual ~ResourceCreationImpl();
 
   // ResourceCreationAPI implementation.
@@ -145,7 +144,6 @@ class ResourceCreationImpl : public ::ppapi::thunk::ResourceCreationAPI {
   DISALLOW_COPY_AND_ASSIGN(ResourceCreationImpl);
 };
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_RESOURCE_CREATION_IMPL_H_

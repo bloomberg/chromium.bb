@@ -35,8 +35,7 @@ using WebKit::WebTouchEvent;
 using WebKit::WebTouchPoint;
 using WebKit::WebUChar;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -731,5 +730,4 @@ PP_InputEvent_Class ClassifyInputEvent(WebInputEvent::Type type) {
   }
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

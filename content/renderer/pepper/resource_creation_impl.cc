@@ -31,10 +31,9 @@ using ppapi::PPB_InputEvent_Shared;
 using ppapi::PPB_ResourceArray_Shared;
 using ppapi::StringVar;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
-ResourceCreationImpl::ResourceCreationImpl(PluginInstanceImpl* instance) {
+ResourceCreationImpl::ResourceCreationImpl(PepperPluginInstanceImpl* instance) {
 }
 
 ResourceCreationImpl::~ResourceCreationImpl() {
@@ -313,5 +312,4 @@ PP_Resource ResourceCreationImpl::CreateX509CertificatePrivate(
   return PPB_X509Certificate_Private_Impl::CreateResource(instance);
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content

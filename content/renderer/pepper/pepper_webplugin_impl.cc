@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/ppapi_webplugin_impl.h"
+#include "content/renderer/pepper/pepper_webplugin_impl.h"
 
 #include <cmath>
 
@@ -10,8 +10,8 @@
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/npobject_var.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_plugin_instance_impl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -43,23 +43,22 @@ using WebKit::WebURL;
 using WebKit::WebVector;
 using WebKit::WebView;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
-struct WebPluginImpl::InitData {
+struct PepperWebPluginImpl::InitData {
   scoped_refptr<PluginModule> module;
   base::WeakPtr<PluginDelegate> delegate;
-  base::WeakPtr<content::RenderView> render_view;
+  base::WeakPtr<RenderView> render_view;
   std::vector<std::string> arg_names;
   std::vector<std::string> arg_values;
   GURL url;
 };
 
-WebPluginImpl::WebPluginImpl(
+PepperWebPluginImpl::PepperWebPluginImpl(
     PluginModule* plugin_module,
     const WebPluginParams& params,
     const base::WeakPtr<PluginDelegate>& plugin_delegate,
-    const base::WeakPtr<content::RenderView>& render_view)
+    const base::WeakPtr<RenderView>& render_view)
     : init_data_(new InitData()),
       full_frame_(params.loadManually),
       instance_object_(PP_MakeUndefined()),
@@ -78,14 +77,14 @@ WebPluginImpl::WebPluginImpl(
   base::debug::SetCrashKeyValue("subresource_url", init_data_->url.spec());
 }
 
-WebPluginImpl::~WebPluginImpl() {
+PepperWebPluginImpl::~PepperWebPluginImpl() {
 }
 
-WebKit::WebPluginContainer* WebPluginImpl::container() const {
+WebKit::WebPluginContainer* PepperWebPluginImpl::container() const {
   return container_;
 }
 
-bool WebPluginImpl::initialize(WebPluginContainer* container) {
+bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
   // The plugin delegate may have gone away.
   if (!init_data_->delegate.get())
     return false;
@@ -121,7 +120,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   return true;
 }
 
-void WebPluginImpl::destroy() {
+void PepperWebPluginImpl::destroy() {
   // Tell |container_| to clear references to this plugin's script objects.
   if (container_)
     container_->clearScriptObjects();
@@ -136,7 +135,7 @@ void WebPluginImpl::destroy() {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-NPObject* WebPluginImpl::scriptableObject() {
+NPObject* PepperWebPluginImpl::scriptableObject() {
   // Call through the plugin to get its instance object. The plugin should pass
   // us a reference which we release in destroy().
   if (instance_object_.type == PP_VARTYPE_UNDEFINED)
@@ -158,20 +157,20 @@ NPObject* WebPluginImpl::scriptableObject() {
   return message_channel_np_object;
 }
 
-NPP WebPluginImpl::pluginNPP() {
+NPP PepperWebPluginImpl::pluginNPP() {
   return instance_->instanceNPP();
 }
 
-bool WebPluginImpl::getFormValue(WebString& value) {
+bool PepperWebPluginImpl::getFormValue(WebString& value) {
   return false;
 }
 
-void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& rect) {
+void PepperWebPluginImpl::paint(WebCanvas* canvas, const WebRect& rect) {
   if (!instance_->FlashIsFullscreenOrPending())
     instance_->Paint(canvas, plugin_rect_, rect);
 }
 
-void WebPluginImpl::updateGeometry(
+void PepperWebPluginImpl::updateGeometry(
     const WebRect& window_rect,
     const WebRect& clip_rect,
     const WebVector<WebRect>& cut_outs_rects,
@@ -185,124 +184,124 @@ void WebPluginImpl::updateGeometry(
   }
 }
 
-void WebPluginImpl::updateFocus(bool focused) {
+void PepperWebPluginImpl::updateFocus(bool focused) {
   instance_->SetWebKitFocus(focused);
 }
 
-void WebPluginImpl::updateVisibility(bool visible) {
+void PepperWebPluginImpl::updateVisibility(bool visible) {
 }
 
-bool WebPluginImpl::acceptsInputEvents() {
+bool PepperWebPluginImpl::acceptsInputEvents() {
   return true;
 }
 
-bool WebPluginImpl::handleInputEvent(const WebKit::WebInputEvent& event,
-                                     WebKit::WebCursorInfo& cursor_info) {
+bool PepperWebPluginImpl::handleInputEvent(const WebKit::WebInputEvent& event,
+                                           WebKit::WebCursorInfo& cursor_info) {
   if (instance_->FlashIsFullscreenOrPending())
     return false;
   return instance_->HandleInputEvent(event, &cursor_info);
 }
 
-void WebPluginImpl::didReceiveResponse(
+void PepperWebPluginImpl::didReceiveResponse(
     const WebKit::WebURLResponse& response) {
   DCHECK(!instance_->document_loader());
   instance_->HandleDocumentLoad(response);
 }
 
-void WebPluginImpl::didReceiveData(const char* data, int data_length) {
+void PepperWebPluginImpl::didReceiveData(const char* data, int data_length) {
   WebKit::WebURLLoaderClient* document_loader = instance_->document_loader();
   if (document_loader)
     document_loader->didReceiveData(NULL, data, data_length, 0);
 }
 
-void WebPluginImpl::didFinishLoading() {
+void PepperWebPluginImpl::didFinishLoading() {
   WebKit::WebURLLoaderClient* document_loader = instance_->document_loader();
   if (document_loader)
     document_loader->didFinishLoading(NULL, 0.0);
 }
 
-void WebPluginImpl::didFailLoading(const WebKit::WebURLError& error) {
+void PepperWebPluginImpl::didFailLoading(const WebKit::WebURLError& error) {
   WebKit::WebURLLoaderClient* document_loader = instance_->document_loader();
   if (document_loader)
     document_loader->didFail(NULL, error);
 }
 
-void WebPluginImpl::didFinishLoadingFrameRequest(const WebKit::WebURL& url,
-                                                 void* notify_data) {
+void PepperWebPluginImpl::didFinishLoadingFrameRequest(
+    const WebKit::WebURL& url,
+    void* notify_data) {
 }
 
-void WebPluginImpl::didFailLoadingFrameRequest(
+void PepperWebPluginImpl::didFailLoadingFrameRequest(
     const WebKit::WebURL& url,
     void* notify_data,
     const WebKit::WebURLError& error) {
 }
 
-bool WebPluginImpl::hasSelection() const {
+bool PepperWebPluginImpl::hasSelection() const {
   return !selectionAsText().isEmpty();
 }
 
-WebString WebPluginImpl::selectionAsText() const {
+WebString PepperWebPluginImpl::selectionAsText() const {
   return instance_->GetSelectedText(false);
 }
 
-WebString WebPluginImpl::selectionAsMarkup() const {
+WebString PepperWebPluginImpl::selectionAsMarkup() const {
   return instance_->GetSelectedText(true);
 }
 
-WebURL WebPluginImpl::linkAtPosition(const WebPoint& position) const {
+WebURL PepperWebPluginImpl::linkAtPosition(const WebPoint& position) const {
   return GURL(instance_->GetLinkAtPosition(position));
 }
 
-void WebPluginImpl::setZoomLevel(double level, bool text_only) {
+void PepperWebPluginImpl::setZoomLevel(double level, bool text_only) {
   instance_->Zoom(WebView::zoomLevelToZoomFactor(level), text_only);
 }
 
-bool WebPluginImpl::startFind(const WebKit::WebString& search_text,
-                              bool case_sensitive,
-                              int identifier) {
+bool PepperWebPluginImpl::startFind(const WebKit::WebString& search_text,
+                                    bool case_sensitive,
+                                    int identifier) {
   return instance_->StartFind(search_text, case_sensitive, identifier);
 }
 
-void WebPluginImpl::selectFindResult(bool forward) {
+void PepperWebPluginImpl::selectFindResult(bool forward) {
   instance_->SelectFindResult(forward);
 }
 
-void WebPluginImpl::stopFind() {
+void PepperWebPluginImpl::stopFind() {
   instance_->StopFind();
 }
 
-bool WebPluginImpl::supportsPaginatedPrint() {
+bool PepperWebPluginImpl::supportsPaginatedPrint() {
   return instance_->SupportsPrintInterface();
 }
 
-bool WebPluginImpl::isPrintScalingDisabled() {
+bool PepperWebPluginImpl::isPrintScalingDisabled() {
   return instance_->IsPrintScalingDisabled();
 }
 
-int WebPluginImpl::printBegin(const WebPrintParams& print_params) {
+int PepperWebPluginImpl::printBegin(const WebPrintParams& print_params) {
   return instance_->PrintBegin(print_params);
 }
 
-bool WebPluginImpl::printPage(int page_number,
-                              WebKit::WebCanvas* canvas) {
+bool PepperWebPluginImpl::printPage(int page_number,
+                                    WebKit::WebCanvas* canvas) {
   return instance_->PrintPage(page_number, canvas);
 }
 
-void WebPluginImpl::printEnd() {
+void PepperWebPluginImpl::printEnd() {
   return instance_->PrintEnd();
 }
 
-bool WebPluginImpl::canRotateView() {
+bool PepperWebPluginImpl::canRotateView() {
   return instance_->CanRotateView();
 }
 
-void WebPluginImpl::rotateView(RotationType type) {
+void PepperWebPluginImpl::rotateView(RotationType type) {
   instance_->RotateView(type);
 }
 
-bool WebPluginImpl::isPlaceholder() {
+bool PepperWebPluginImpl::isPlaceholder() {
   return false;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
