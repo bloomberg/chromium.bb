@@ -136,7 +136,19 @@ TEST_F(KernelProxyTest, MemMountIO) {
   int fd1, fd2, fd3;
   int len;
 
+  // Fail to delete non existant "/foo"
+  EXPECT_EQ(-1, ki_rmdir("/foo"));
+  EXPECT_EQ(ENOENT, errno);
+
   // Create "/foo"
+  EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
+  EXPECT_EQ(-1, ki_mkdir("/foo", S_IREAD | S_IWRITE));
+  EXPECT_EQ(EEXIST, errno);
+
+  // Delete "/foo"
+  EXPECT_EQ(0, ki_rmdir("/foo"));
+
+  // Recreate "/foo"
   EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
 
   // Fail to open "/foo/bar"
