@@ -46,7 +46,7 @@ surface_flush_device(cairo_surface_t *surface)
 		cairo_device_flush(device);
 }
 
-void
+static int
 blur_surface(cairo_surface_t *surface, int margin)
 {
 	int32_t width, height, stride, x, y, z, w;
@@ -63,6 +63,8 @@ blur_surface(cairo_surface_t *surface, int margin)
 	src = cairo_image_surface_get_data(surface);
 
 	dst = malloc(height * stride);
+	if (dst == NULL)
+		return -1;
 
 	half = size / 2;
 	a = 0;
@@ -129,6 +131,8 @@ blur_surface(cairo_surface_t *surface, int margin)
 
 	free(dst);
 	cairo_surface_mark_dirty(surface);
+
+	return 0;
 }
 
 void
@@ -324,6 +328,9 @@ theme_create(void)
 	cairo_pattern_t *pattern;
 
 	t = malloc(sizeof *t);
+	if (t == NULL)
+		return NULL;
+
 	t->margin = 32;
 	t->width = 6;
 	t->titlebar_height = 27;
@@ -334,8 +341,11 @@ theme_create(void)
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	rounded_rect(cr, 32, 32, 96, 96, t->frame_radius);
 	cairo_fill(cr);
+	if (cairo_status (cr) != CAIRO_STATUS_SUCCESS)
+		goto err_shadow;
 	cairo_destroy(cr);
-	blur_surface(t->shadow, 64);
+	if (blur_surface(t->shadow, 64) == -1)
+		goto err_shadow;
 
 	t->active_frame =
 		cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
@@ -350,6 +360,10 @@ theme_create(void)
 
 	rounded_rect(cr, 0, 0, 128, 128, t->frame_radius);
 	cairo_fill(cr);
+
+	if (cairo_status(cr) != CAIRO_STATUS_SUCCESS)
+		goto err_active_frame;
+
 	cairo_destroy(cr);
 
 	t->inactive_frame =
@@ -359,9 +373,22 @@ theme_create(void)
 	cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, 1);
 	rounded_rect(cr, 0, 0, 128, 128, t->frame_radius);
 	cairo_fill(cr);
+
+	if (cairo_status (cr) != CAIRO_STATUS_SUCCESS)
+		goto err_inactive_frame;
+
 	cairo_destroy(cr);
 
 	return t;
+
+ err_inactive_frame:
+	cairo_surface_destroy(t->inactive_frame);
+ err_active_frame:
+	cairo_surface_destroy(t->active_frame);
+ err_shadow:
+	cairo_surface_destroy(t->shadow);
+	free(t);
+	return NULL;
 }
 
 void
