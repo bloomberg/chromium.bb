@@ -63,12 +63,12 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
           file_task_runner.get()));
 
-  // Setting up additional mount point providers.
-  ScopedVector<fileapi::FileSystemBackend> additional_providers;
+  // Setting up additional filesystem backends.
+  ScopedVector<fileapi::FileSystemBackend> additional_backends;
   GetContentClient()->browser()->GetAdditionalFileSystemBackends(
       browser_context,
       profile_path,
-      &additional_providers);
+      &additional_backends);
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       new fileapi::FileSystemContext(
@@ -76,7 +76,7 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
           BrowserContext::GetMountPoints(browser_context),
           browser_context->GetSpecialStoragePolicy(),
           quota_manager_proxy,
-          additional_providers.Pass(),
+          additional_backends.Pass(),
           profile_path,
           CreateBrowserFileSystemOptions(is_incognito));
 
@@ -104,9 +104,7 @@ bool CheckFileSystemPermissionsForProcess(
     return false;
   }
 
-  fileapi::FileSystemBackend* mount_point_provider =
-      context->GetFileSystemBackend(url.type());
-  if (!mount_point_provider) {
+  if (!context->GetFileSystemBackend(url.type())) {
     *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
     return false;
   }

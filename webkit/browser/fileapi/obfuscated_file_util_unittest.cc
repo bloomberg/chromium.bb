@@ -142,8 +142,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
     // Every time we create a new sandbox_file_system helper,
     // it creates another context, which creates another path manager,
-    // another sandbox_mount_point_provider, and
-    // another OFU.  We need to pass in the context to skip all that.
+    // another sandbox_backend, and another OFU.
+    // We need to pass in the context to skip all that.
     file_system_context_ = CreateFileSystemContextForTesting(
         quota_manager_->proxy(),
         data_dir_.path());

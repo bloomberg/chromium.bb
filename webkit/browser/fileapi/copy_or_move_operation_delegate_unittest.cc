@@ -127,26 +127,23 @@ class CopyOrMoveOperationTestHelper {
         CreateFileSystemContextForTesting(quota_manager_proxy_.get(), base_dir);
 
     // Prepare the origin's root directory.
-    FileSystemBackend* mount_point_provider =
+    FileSystemBackend* backend =
         file_system_context_->GetFileSystemBackend(src_type_);
-    mount_point_provider->OpenFileSystem(
-        origin_, src_type_,
-        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::Bind(&ExpectOk));
-    mount_point_provider =
-        file_system_context_->GetFileSystemBackend(dest_type_);
+    backend->OpenFileSystem(origin_, src_type_,
+                            OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                            base::Bind(&ExpectOk));
+    backend = file_system_context_->GetFileSystemBackend(dest_type_);
     if (dest_type_ == kFileSystemTypeTest) {
-      TestFileSystemBackend* test_provider =
-          static_cast<TestFileSystemBackend*>(mount_point_provider);
+      TestFileSystemBackend* test_backend =
+          static_cast<TestFileSystemBackend*>(backend);
       scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
           new TestValidatorFactory);
-      test_provider->set_require_copy_or_move_validator(true);
-      test_provider->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
+      test_backend->set_require_copy_or_move_validator(true);
+      test_backend->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
     }
-    mount_point_provider->OpenFileSystem(
-        origin_, dest_type_,
-        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::Bind(&ExpectOk));
+    backend->OpenFileSystem(origin_, dest_type_,
+                            OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                            base::Bind(&ExpectOk));
     base::MessageLoop::current()->RunUntilIdle();
 
     // Grant relatively big quota initially.

@@ -49,8 +49,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
       OpenFileSystemCallback;
   virtual ~FileSystemBackend() {}
 
-  // Returns true if this mount point provider can handle |type|.
-  // One mount point provider may be able to handle multiple filesystem types.
+  // Returns true if this filesystem backend can handle |type|.
+  // One filesystem backend may be able to handle multiple filesystem types.
   virtual bool CanHandleType(FileSystemType type) const = 0;
 
   // This method is called right after the backend is registered in the
@@ -60,7 +60,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
 
   // Opens the filesystem for the given |origin_url| and |type|.
   // This verifies if it is allowed to request (or create) the filesystem
-  // and if it can access (or create) the root directory of the mount point.
+  // and if it can access (or create) the root directory.
   // If |mode| is CREATE_IF_NONEXISTENT calling this may also create
   // the root directory (and/or related database entries etc) for
   // the filesystem if it doesn't exist.
@@ -70,22 +70,22 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
       OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback) = 0;
 
-  // Returns the specialized FileSystemFileUtil for this mount point.
+  // Returns the specialized FileSystemFileUtil for this backend.
   // It is ok to return NULL if the filesystem doesn't support synchronous
   // version of FileUtil.
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) = 0;
 
-  // Returns the specialized AsyncFileUtil for this mount point.
+  // Returns the specialized AsyncFileUtil for this backend.
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) = 0;
 
-  // Returns the specialized CopyOrMoveFileValidatorFactory for this mount
-  // point and |type|.  If |error_code| is PLATFORM_FILE_OK and the result
-  // is NULL, then no validator is required.
+  // Returns the specialized CopyOrMoveFileValidatorFactory for this backend
+  // and |type|.  If |error_code| is PLATFORM_FILE_OK and the result is NULL,
+  // then no validator is required.
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type, base::PlatformFileError* error_code) = 0;
 
   // Returns a new instance of the specialized FileSystemOperation for this
-  // mount point based on the given triplet of |origin_url|, |file_system_type|
+  // backend based on the given triplet of |origin_url|, |file_system_type|
   // and |virtual_path|. On failure to create a file system operation, set
   // |error_code| correspondingly.
   // This method is usually dispatched by
@@ -118,8 +118,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
       int64 offset,
       FileSystemContext* context) const = 0;
 
-  // Returns the specialized FileSystemQuotaUtil for this mount point.
-  // This could return NULL if this mount point does not support quota.
+  // Returns the specialized FileSystemQuotaUtil for this backend.
+  // This could return NULL if this backend does not support quota.
   virtual FileSystemQuotaUtil* GetQuotaUtil() = 0;
 };
 

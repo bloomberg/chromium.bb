@@ -94,11 +94,11 @@ class ObfuscatedOriginEnumerator
 };
 
 void DidOpenFileSystem(
-    base::WeakPtr<SandboxFileSystemBackend> mount_point_provider,
+    base::WeakPtr<SandboxFileSystemBackend> sandbox_backend,
     const base::Callback<void(base::PlatformFileError error)>& callback,
     base::PlatformFileError* error) {
-  if (mount_point_provider.get())
-    mount_point_provider.get()->CollectOpenFileSystemMetrics(*error);
+  if (sandbox_backend.get())
+    sandbox_backend.get()->CollectOpenFileSystemMetrics(*error);
   callback.Run(*error);
 }
 
