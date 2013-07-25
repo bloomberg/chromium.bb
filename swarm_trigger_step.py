@@ -26,13 +26,6 @@ import run_isolated
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_PATH = os.path.join(ROOT_DIR, 'tools')
 
-# TODO(maruel): This shouldn't be necessary here.
-CLEANUP_SCRIPT_NAME = 'swarm_cleanup.py'
-CLEANUP_SCRIPT_PATH = os.path.join(TOOLS_PATH, CLEANUP_SCRIPT_NAME)
-
-RUN_TEST_NAME = 'run_isolated.py'
-RUN_TEST_PATH = os.path.join(ROOT_DIR, RUN_TEST_NAME)
-
 
 PLATFORM_MAPPING = {
   'cygwin': 'Windows',
@@ -47,48 +40,57 @@ class Failure(Exception):
 
 
 class Manifest(object):
-  def __init__(self, manifest_hash, test_name, shards, test_filter, switches):
+  def __init__(
+      self, manifest_hash, test_name, shards, test_filter, os_image,
+      working_dir, data_server, verbose, profile):
     """Populates a manifest object.
       Args:
         manifest_hash - The manifest's sha-1 that the slave is going to fetch.
         test_name - The name to give the test request.
         shards - The number of swarm shards to request.
         test_filter - The gtest filter to apply when running the test.
-        switches - An object with properties to apply to the test request.
+        os_image - OS to run on.
+        working_dir - Relative working directory to start the script.
+        data_server - isolate server url.
+        verbose - if True, have the slave print more details.
+        profile - if True, have the slave print more timing data.
     """
-
     self.manifest_hash = manifest_hash
-    self.test_filter = test_filter
-    self.shards = shards
-    self.verbose = bool(switches.verbose)
-    self.profile = bool(switches.profile)
+    self._test_name = test_name
+    self._shards = shards
+    self._test_filter = test_filter
+    self._target_platform = PLATFORM_MAPPING[os_image]
+    self._working_dir = working_dir
 
-    self.tasks = []
-    self.target_platform = PLATFORM_MAPPING[switches.os_image]
-    self.working_dir = switches.working_dir
-    self.test_name = test_name
-    self.base_url = switches.data_server.rstrip('/')
-    self.data_server_retrieval = self.base_url + '/content/retrieve/default/'
-    self.data_server_storage = self.base_url + '/content/store/default/'
-    self.data_server_has = self.base_url + '/content/contains/default'
-    self.zip_file_hash = ''
-    self._token = None
+    base_url = data_server.rstrip('/')
+    self.data_server_retrieval = base_url + '/content/retrieve/default/'
+    self._data_server_storage = base_url + '/content/store/default/'
+    self._data_server_has = base_url + '/content/contains/default'
+    self._data_server_get_token = base_url + '/content/get_token'
 
-  def token(self):
-    if not self._token:
-      result = run_isolated.url_open(self.base_url + '/content/get_token')
+    self.verbose = bool(verbose)
+    self.profile = bool(profile)
+
+    self._zip_file_hash = ''
+    self._tasks = []
+    self._files = {}
+    self._token_cache = None
+
+  def _token(self):
+    if not self._token_cache:
+      result = run_isolated.url_open(self._data_server_get_token)
       if not result:
         # TODO(maruel): Implement authentication.
         raise Failure('Failed to get token, need authentication')
       # Quote it right away, so creating the urls is simpler.
-      self._token = urllib.quote(result.read())
-    return self._token
+      self._token_cache = urllib.quote(result.read())
+    return self._token_cache
 
   def add_task(self, task_name, actions, time_out=600):
     """Appends a new task to the swarm manifest file."""
     # See swarming/src/common/test_request_message.py TestObject constructor for
     # the valid flags.
-    self.tasks.append(
+    self._tasks.append(
         {
           'action': actions,
           'decorate_output': self.verbose,
@@ -96,15 +98,21 @@ class Manifest(object):
           'time_out': time_out,
         })
 
-  def zip(self):
-    """Zip up all the files necessary to run a shard."""
+  def add_file(self, source_path, rel_path):
+    self._files[source_path] = rel_path
+
+  def zip_and_upload(self):
+    """Zips up all the files necessary to run a shard and uploads to Swarming
+    master.
+    """
+    assert not self._zip_file_hash
     start_time = time.time()
 
     zip_memory_file = StringIO.StringIO()
     zip_file = zipfile.ZipFile(zip_memory_file, 'w')
 
-    zip_file.write(RUN_TEST_PATH, RUN_TEST_NAME)
-    zip_file.write(CLEANUP_SCRIPT_PATH, CLEANUP_SCRIPT_NAME)
+    for source, relpath in self._files.iteritems():
+      zip_file.write(source, relpath)
 
     zip_file.close()
     print 'Zipping completed, time elapsed: %f' % (time.time() - start_time)
@@ -113,11 +121,11 @@ class Manifest(object):
     zip_contents = zip_memory_file.getvalue()
     zip_memory_file.close()
 
-    self.zip_file_hash = hashlib.sha1(zip_contents).hexdigest()
+    self._zip_file_hash = hashlib.sha1(zip_contents).hexdigest()
 
     response = run_isolated.url_open(
-        self.data_server_has + '?token=%s' % self.token(),
-        data=self.zip_file_hash,
+        self._data_server_has + '?token=%s' % self._token(),
+        data=self._zip_file_hash,
         content_type='application/octet-stream')
     if response is None:
       print >> sys.stderr, (
@@ -131,7 +139,7 @@ class Manifest(object):
     print 'Zip file not on server, starting uploading.'
 
     url = '%s%s?priority=0&token=%s' % (
-        self.data_server_storage, self.zip_file_hash, self.token())
+        self._data_server_storage, self._zip_file_hash, self._token())
     response = run_isolated.url_open(
         url, data=zip_contents, content_type='application/octet-stream')
     if response is None:
@@ -141,71 +149,92 @@ class Manifest(object):
     return True
 
   def to_json(self):
-    """Export the current configuration into a swarm-readable manifest file"""
-    cmd = [
-      'python', RUN_TEST_NAME,
-      '--hash', self.manifest_hash,
-      '--remote', self.data_server_retrieval.rstrip('/') + '-gzip/',
-    ]
-    if self.verbose or self.profile:
-      # Have it print the profiling section.
-      cmd.append('--verbose')
-    self.add_task('Run Test', cmd)
+    """Exports the current configuration into a swarm-readable manifest file.
 
-    # Clean up
-    self.add_task('Clean Up', ['python', CLEANUP_SCRIPT_NAME])
-
-    # Construct test case
+    This function doesn't mutate the object.
+    """
     test_case = {
-      'test_case_name': self.test_name,
+      'test_case_name': self._test_name,
       'data': [
-        [self.data_server_retrieval + urllib.quote(self.zip_file_hash),
+        [self.data_server_retrieval + urllib.quote(self._zip_file_hash),
          'swarm_data.zip'],
       ],
-      'tests': self.tasks,
+      'tests': self._tasks,
       'env_vars': {},
       'configurations': [
         {
-          'min_instances': self.shards,
-          'config_name': self.target_platform,
+          'min_instances': self._shards,
+          'config_name': self._target_platform,
           'dimensions': {
-            'os': self.target_platform,
+            'os': self._target_platform,
           },
         },
       ],
-      'working_dir': self.working_dir,
+      'working_dir': self._working_dir,
       'restart_on_failure': True,
       'cleanup': 'root',
     }
 
     # These flags are googletest specific.
-    if self.test_filter and self.test_filter != '*':
-      test_case['env_vars']['GTEST_FILTER'] = self.test_filter
-    if self.shards > 1:
+    if self._test_filter and self._test_filter != '*':
+      test_case['env_vars']['GTEST_FILTER'] = self._test_filter
+    if self._shards > 1:
       test_case['env_vars']['GTEST_SHARD_INDEX'] = '%(instance_index)s'
       test_case['env_vars']['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
 
-    return json.dumps(test_case)
+    return json.dumps(test_case, separators=(',',':'))
 
 
-def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
+def chromium_setup(manifest):
+  """Sets up the commands to run.
+
+  Highly chromium specific.
+  """
+  cleanup_script_name = 'swarm_cleanup.py'
+  cleanup_script_path = os.path.join(TOOLS_PATH, cleanup_script_name)
+  run_test_name = 'run_isolated.py'
+  run_test_path = os.path.join(ROOT_DIR, run_test_name)
+
+  manifest.add_file(run_test_path, run_test_name)
+  manifest.add_file(cleanup_script_path, cleanup_script_name)
+  run_cmd = [
+    'python', run_test_name,
+    '--hash', manifest.manifest_hash,
+    '--remote', manifest.data_server_retrieval.rstrip('/') + '-gzip/',
+  ]
+  if manifest.verbose or manifest.profile:
+    # Have it print the profiling section.
+    run_cmd.append('--verbose')
+  manifest.add_task('Run Test', run_cmd)
+
+  # Clean up
+  manifest.add_task('Clean Up', ['python', cleanup_script_name])
+
+
+def process_manifest(
+    file_sha1, test_name, shards, test_filter, os_image, working_dir,
+    data_server, swarm_url, verbose, profile):
   """Process the manifest file and send off the swarm test request."""
   try:
-    manifest = Manifest(file_sha1, test_name, shards, test_filter, options)
+    manifest = Manifest(
+        file_sha1, test_name, shards, test_filter, os_image, working_dir,
+        data_server, verbose, profile)
   except ValueError as e:
     print >> sys.stderr, 'Unable to process %s: %s' % (test_name, e)
     return 1
 
+  chromium_setup(manifest)
+
   # Zip up relevent files
   print "Zipping up files..."
-  if not manifest.zip():
+  if not manifest.zip_and_upload():
     return 1
 
   # Send test requests off to swarm.
   print('Sending test requests to swarm.')
-  print('Server: %s' % options.swarm_url)
+  print('Server: %s' % swarm_url)
   print('Job name: %s' % test_name)
-  test_url = options.swarm_url.rstrip('/') + '/test'
+  test_url = swarm_url.rstrip('/') + '/test'
   manifest_text = manifest.to_json()
   result = run_isolated.url_open(test_url, data={'request': manifest_text})
   if not result:
@@ -266,12 +295,17 @@ def main(argv):
   try:
     # Send off the hash swarm test requests.
     for (file_sha1, test_name, shards, testfilter) in options.run_from_hash:
-      exit_code = ProcessManifest(
+      exit_code = process_manifest(
           file_sha1,
           options.test_name_prefix + test_name,
           int(shards),
           testfilter,
-          options)
+          options.os_image,
+          options.working_dir,
+          options.data_server,
+          options.swarm_url,
+          options.verbose,
+          options.profile)
       highest_exit_code = max(highest_exit_code, exit_code)
   except Failure as e:
     print >> sys.stderr, e.args[0]

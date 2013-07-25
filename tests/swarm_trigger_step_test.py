@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import hashlib
 import json
 import os
 import StringIO
@@ -17,69 +16,64 @@ sys.path.insert(0, ROOT_DIR)
 import swarm_trigger_step
 
 FILE_NAME = u'test.isolated'
-FILE_HASH = unicode(hashlib.sha1(FILE_NAME).hexdigest())
+FILE_HASH = u'brodoyouevenhash'
 TEST_NAME = u'unit_tests'
-CLEANUP_SCRIPT_NAME = u'swarm_cleanup.py'
 STDOUT_FOR_TRIGGER_LEN = 188
 
 
-class Options(object):
-  def __init__(self, working_dir=u'swarm_tests', shards=1,
-               os_image='win32', swarm_url=u'http://localhost:8080',
-               data_server=u'http://localhost:8081'):
-    self.working_dir = working_dir
-    self.shards = shards
-    self.os_image = os_image
-    self.swarm_url = swarm_url
-    self.data_server = data_server
-    self.verbose = False
-    self.profile = False
+def chromium_tasks(retrieval_url):
+  return [
+    {
+      u'action': [
+        u'python', u'run_isolated.py',
+        u'--hash', FILE_HASH,
+        u'--remote', retrieval_url + u'default-gzip/',
+      ],
+      u'decorate_output': False,
+      u'test_name': u'Run Test',
+      u'time_out': 600,
+    },
+    {
+      u'action' : [
+          u'python', u'swarm_cleanup.py',
+      ],
+      u'decorate_output': False,
+      u'test_name': u'Clean Up',
+      u'time_out': 600,
+    }
+  ]
 
 
-def GenerateExpectedJSON(options):
-  retrieval_url = options.data_server + '/content/retrieve/'
-
+def generate_expected_json(
+    shards,
+    os_image,
+    working_dir,
+    data_server,
+    profile):
+  retrieval_url = data_server + '/content/retrieve/'
+  os_value = unicode(swarm_trigger_step.PLATFORM_MAPPING[os_image])
   expected = {
     u'cleanup': u'root',
     u'configurations': [
       {
-        u'config_name': swarm_trigger_step.PLATFORM_MAPPING[options.os_image],
+        u'config_name': os_value,
         u'dimensions': {
-          u'os': swarm_trigger_step.PLATFORM_MAPPING[options.os_image],
+          u'os': os_value,
         },
-        u'min_instances': options.shards,
+        u'min_instances': shards,
       },
     ],
     u'data': [[retrieval_url + u'default/', u'swarm_data.zip']],
     u'env_vars': {},
     u'restart_on_failure': True,
     u'test_case_name': TEST_NAME,
-    u'tests' : [
-      {
-        u'action': [
-          u'python', unicode(swarm_trigger_step.RUN_TEST_NAME),
-          u'--hash', FILE_HASH,
-          u'--remote', retrieval_url + u'default-gzip/',
-        ],
-        u'decorate_output': False,
-        u'test_name': u'Run Test',
-        u'time_out': 600,
-      },
-      {
-        u'action' : [
-            u'python', CLEANUP_SCRIPT_NAME,
-        ],
-        u'decorate_output': False,
-        u'test_name': u'Clean Up',
-        u'time_out': 600,
-      }
-    ],
-    u'working_dir': options.working_dir,
+    u'tests': chromium_tasks(retrieval_url),
+    u'working_dir': unicode(working_dir),
   }
-  if options.shards > 1:
+  if shards > 1:
     expected[u'env_vars'][u'GTEST_SHARD_INDEX'] = u'%(instance_index)s'
     expected[u'env_vars'][u'GTEST_TOTAL_SHARDS'] = u'%(num_instances)s'
-  if options.profile:
+  if profile:
     expected[u'tests'][0][u'action'].append(u'--verbose')
   return expected
 
@@ -132,57 +126,119 @@ class ManifestTest(auto_stub.TestCase):
     self.mock(sys, 'stderr', StringIO.StringIO())
 
   def test_basic_manifest(self):
-    options = Options(shards=2)
     manifest = swarm_trigger_step.Manifest(
-        FILE_HASH, TEST_NAME, options.shards, '*', options)
+        manifest_hash=FILE_HASH,
+        test_name=TEST_NAME,
+        shards=2,
+        test_filter='*',
+        os_image='win32',
+        working_dir='swarm_tests',
+        data_server='http://localhost:8081',
+        verbose=False,
+        profile=False)
 
+    swarm_trigger_step.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
 
-    expected = GenerateExpectedJSON(options)
+    expected = generate_expected_json(
+        shards=2,
+        os_image='win32',
+        working_dir='swarm_tests',
+        data_server='http://localhost:8081',
+        profile=False)
     self.assertEqual(expected, manifest_json)
 
   def test_basic_linux(self):
     """A basic linux manifest test to ensure that windows specific values
        aren't used.
     """
-    options = Options(os_image='linux2')
     manifest = swarm_trigger_step.Manifest(
-        FILE_HASH, TEST_NAME, options.shards, '*', options)
+        manifest_hash=FILE_HASH,
+        test_name=TEST_NAME,
+        shards=1,
+        test_filter='*',
+        os_image='linux2',
+        working_dir='swarm_tests',
+        data_server='http://localhost:8081',
+        verbose=False,
+        profile=False)
 
+    swarm_trigger_step.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
 
-    expected = GenerateExpectedJSON(options)
+    expected = generate_expected_json(
+        shards=1,
+        os_image='linux2',
+        working_dir='swarm_tests',
+        data_server='http://localhost:8081',
+        profile=False)
     self.assertEqual(expected, manifest_json)
 
   def test_basic_linux_profile(self):
-    options = Options(os_image='linux2')
-    options.profile = True
     manifest = swarm_trigger_step.Manifest(
-        FILE_HASH, TEST_NAME, options.shards, '*', options)
+        manifest_hash=FILE_HASH,
+        test_name=TEST_NAME,
+        shards=1,
+        test_filter='*',
+        os_image='linux2',
+        working_dir='swarm_tests',
+        data_server='http://localhost:8081',
+        verbose=False,
+        profile=True)
 
+    swarm_trigger_step.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
 
-    expected = GenerateExpectedJSON(options)
+    expected = generate_expected_json(
+        shards=1,
+        os_image='linux2',
+        working_dir='swarm_tests',
+        data_server='http://localhost:8081',
+        profile=True)
     self.assertEqual(expected, manifest_json)
 
   def test_process_manifest_success(self):
-    swarm_trigger_step.run_isolated.url_open = MockUrlOpenNoZip
-    options = Options()
-    self.assertEqual(
-        0,
-        swarm_trigger_step.ProcessManifest(
-            FILE_HASH, TEST_NAME, options.shards, '*', options))
-    self.assertTrue(len(sys.stdout.getvalue()) > STDOUT_FOR_TRIGGER_LEN)
+    self.mock(swarm_trigger_step.run_isolated, 'url_open', MockUrlOpenNoZip)
+
+    result = swarm_trigger_step.process_manifest(
+        file_sha1=FILE_HASH,
+        test_name=TEST_NAME,
+        shards=1,
+        test_filter='*',
+        os_image='linux2',
+        working_dir='swarm_tests',
+        data_server='http://localhost:8081',
+        swarm_url='http://localhost:8082',
+        verbose=False,
+        profile=False)
+    self.assertEqual(0, result)
+
+    # Just assert it printed enough, since it contains variable output.
+    out = sys.stdout.getvalue()
+    self.assertTrue(len(out) > STDOUT_FOR_TRIGGER_LEN)
+    self.assertTrue('Zip file not on server, starting uploading.' in out)
     self.mock(sys, 'stdout', StringIO.StringIO())
 
   def test_process_manifest_success_zip_already_uploaded(self):
-    swarm_trigger_step.run_isolated.url_open = MockUrlOpenHasZip
-    options = Options()
-    self.assertEqual(
-        0,
-        swarm_trigger_step.ProcessManifest(
-            FILE_HASH, TEST_NAME, options.shards, '*', options))
-    self.assertTrue(len(sys.stdout.getvalue()) > STDOUT_FOR_TRIGGER_LEN)
+    self.mock(swarm_trigger_step.run_isolated, 'url_open', MockUrlOpenHasZip)
+
+    result = swarm_trigger_step.process_manifest(
+        file_sha1=FILE_HASH,
+        test_name=TEST_NAME,
+        shards=1,
+        test_filter='*',
+        os_image='linux2',
+        working_dir='swarm_tests',
+        data_server='http://localhost:8081',
+        swarm_url='http://localhost:8082',
+        verbose=False,
+        profile=False)
+    self.assertEqual(0, result)
+
+    # Just assert it printed enough, since it contains variable output.
+    out = sys.stdout.getvalue()
+    self.assertTrue(len(out) > STDOUT_FOR_TRIGGER_LEN)
+    self.assertTrue('Zip file already on server, no need to reupload.' in out)
     self.mock(sys, 'stdout', StringIO.StringIO())
 
   def test_no_dir(self):
