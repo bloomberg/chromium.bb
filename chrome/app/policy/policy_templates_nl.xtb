@@ -86,6 +86,11 @@
 
       Als dit beleid niet is ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME"/> toestaan de volgende soorten inhoud te verwerken.</translation>
+<translation id="6647965994887675196">Als dit wordt ingesteld op 'true' (waar), kunnen bewaakte gebruikers worden gemaakt en gebruikt.
+
+          Als dit wordt ingesteld op 'false' (niet waar) of niet wordt geconfigureerd, wordt het maken van en inloggen voor bewaakte gebruikers uitgeschakeld. Alle bestaande bewaakte gebruikers worden verborgen.
+
+          OPMERKING: het standaardgedrag voor zakelijke en consumentenapparaten verschilt: op consumentenapparaten zijn bewaakte gebruikers standaard ingeschakeld, maar op zakelijke apparaten zijn ze standaard uitgeschakeld.</translation>
 <translation id="5469825884154817306">Afbeeldingen blokkeren op deze sites</translation>
 <translation id="8412312801707973447">Uitvoer van online OCSP/CRL-controles</translation>
 <translation id="6649397154027560979">Dit  beleid is verouderd, gebruik URLBlacklist.
@@ -593,7 +598,7 @@ Als deze instelling op 'True' wordt ingesteld, melden de aangemelde apparaten re
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites, op basis van het beleid 'DefaultPluginsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="4423597592074154136">Proxyinstellingen handmatig specificeren</translation>
 <translation id="209586405398070749">Stabiel kanaal</translation>
-<translation id="8170878842291747619">Hiermee wordt de geïntegreerde service Google Vertalen ingeschakeld in <ph name="PRODUCT_NAME"/>.
+<translation id="8170878842291747619">Hiermee wordt de geïntegreerde service Google Translate ingeschakeld in <ph name="PRODUCT_NAME"/>.
 
       Als u deze instelling inschakelt, wordt in <ph name="PRODUCT_NAME"/> een geïntegreerde werkbalk weergegeven waarin de gebruiker wordt gevraagd of deze de pagina wil laten vertalen (indien van toepassing).
 
@@ -1121,6 +1126,7 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 
           Als u het beleid niet instelt, wordt de modus voor hoog contrast uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen de modus voor hoog contrast op elk moment in- of uitschakelen en de status op het inlogscherm is permanent tussen gebruikers.</translation>
 <translation id="8580857153747395000">Waarschuwen als sites worden bezocht die zich niet in de inhoudspakketten bevinden.</translation>
+<translation id="350796261613621561">Maken van bewaakte gebruikers inschakelen.</translation>
 <translation id="602728333950205286">Instant-URL voor standaardzoekprovider</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
 <translation id="6559057113164934677">Niet toestaan dat sites toegang krijgen tot de camera en microfoon</translation>
@@ -1146,6 +1152,9 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 <translation id="8864975621965365890">Hiermee onderdrukt u de prompt die wordt weergegeven wanneer een site wordt weergegeven door <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Coderingen voor standaardzoekprovider</translation>
 <translation id="285480231336205327">Modus voor hoog contrast inschakelen</translation>
+<translation id="5366977351895725771">Als dit is ingesteld op 'false' (niet waar) wordt het maken van bewaakte gebruikers uitgeschakeld voor deze gebruiker. Bestaande bewaakte gebruikers blijven beschikbaar.
+
+          Als dit is ingesteld op 'true' (waar) of niet is geconfigureerd, kunnen bewaakte gebruikers worden gemaakt en beheerd door deze gebruiker.</translation>
 <translation id="8101760444435022591">Omdat soft-fail, online certificaatintrekkingscontroles de veiligheid niet aantoonbaar verhogen, worden deze standaard uitgeschakeld in versie 19 en hoger van <ph name="PRODUCT_NAME"/>. Door dit beleid op 'true' in te stellen, wordt het eerdere gedrag hersteld en worden online OCSP/CRL-controles uitgevoerd.
 
       Als het beleid niet is ingesteld, of is ingesteld op 'false', voert Chrome geen online intrekkingscontroles uit in Chrome 19 en hoger.</translation>

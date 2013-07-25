@@ -443,7 +443,7 @@
 <translation id="8373486119359090598">הפעל מחוות מתקדמות</translation>
 <translation id="5197255632782567636">אינטרנט</translation>
 <translation id="8787254343425541995">אפשר שרתי proxy עבור רשתות משותפות</translation>
-<translation id="4755860829306298968">נהל חסימת פלאגין...</translation>
+<translation id="4755860829306298968">נהל חסימת יישומי פלאגין...</translation>
 <translation id="8879284080359814990">הצ&amp;ג ככרטיסייה</translation>
 <translation id="4314714876846249089"><ph name="PRODUCT_NAME"/>
           נתקל בבעיות בגישה לרשת.
@@ -2410,7 +2410,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="4578576389176790381">תוכן מ-<ph name="ELEMENTS_HOST_NAME"/>, מפיצה ידועה של תוכנות זדוניות, הוכנס לדף האינטרנט הזה. סביר מאוד שביקור בדף זה יגרום לפגיעה ב-Mac שלך על ידי תוכנה זדונית.</translation>
 <translation id="2208158072373999562">ארכיון Zip</translation>
 <translation id="2756798847867733934">כרטיס SIM מושבת</translation>
-<translation id="5464632865477611176">הרץ בפעם הזאת</translation>
+<translation id="5464632865477611176">הפעל באופן חד פעמי</translation>
 <translation id="4268025649754414643">קידוד מפתח</translation>
 <translation id="916745092148443205">הדגשה של מחוות הקשה</translation>
 <translation id="1168020859489941584">פותח ב-<ph name="TIME_REMAINING"/>...</translation>
@@ -3882,7 +3882,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="7538714048953037041">רשת Wimax</translation>
 <translation id="641087317769093025">לא ניתן לבטל את הדחיסה של התוסף</translation>
 <translation id="5263972071113911534">לפני <ph name="NUMBER_MANY"/> ימים</translation>
-<translation id="7461850476009326849">סגור פלאגאינים בודדים...</translation>
+<translation id="7461850476009326849">השבת חלק מיישומי הפלאגין...</translation>
 <translation id="4097411759948332224">שלח צילום מסך של דף זה</translation>
 <translation id="2231990265377706070">סימן קריאה</translation>
 <translation id="7199540622786492483"><ph name="PRODUCT_NAME"/> אינו מעודכן מכיוון שלא הופעל במשך זמן מה. יש עדכון זמין והוא יחול ברגע שתבצע הפעלה מחדש.</translation>

@@ -69,6 +69,11 @@
 <translation id="3816312845600780067">Salli automaattisen kirjautumisen peruutusnäppäin</translation>
 <translation id="3214164532079860003">Tämä käytäntö (sen ollessa käytössä) pakottaa etusivun tuomisen nykyisestä oletusselaimesta. Jos käytäntö ei ole käytössä, etusivua ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjältä voidaan kysyä, haluaako hän tuoda etusivun, tai sivu voidaan tuoda automaattisesti.</translation>
 <translation id="5330684698007383292">Anna tuotteen <ph name="PRODUCT_FRAME_NAME"/> käsitellä seuraavia sisältötyyppejä</translation>
+<translation id="6647965994887675196">Jos asetuksen arvo on tosi, valvottuja käyttäjiä voi luoda ja käyttää.
+
+          Jos asetuksen arvo on epätosi tai sitä ei ole määritetty, valvottujen käyttäjien luominen ja kirjautuminen ei ole käytössä. Kaikki olemassa olevat valvotut käyttäjät piilotetaan.
+
+          HUOMAA: kuluttajien ja yrityskäyttöön tarkoitettujen laitteiden oletuskäytös eroaa toisistaan: kuluttajien laitteilla valvotut käyttäjät ovat käytössä oletuksena, kun taas yrityslaitteilla ne ovat oletuksena pois käytöstä.</translation>
 <translation id="5469825884154817306">Estä kuvat näissä sivustoissa</translation>
 <translation id="8412312801707973447">OCSP-/CRL-tarkistusten suorittaminen</translation>
 <translation id="6649397154027560979">Tämä käytäntö ei ole enää käytössä, käytä URLBlacklist-käytäntöä sen sijaan.
@@ -884,6 +889,7 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 
           Jos tätä käytäntöä ei määritetä, suuri kontrasti -tila ei ole käytössä kirjautumisnäytön ensimmäisellä näyttökerralla. Käyttäjät voivat ottaa suuri kontrasti -tilan käyttöön tai pois käytöstä milloin tahansa, ja sen tila kirjautumisnäytössä pysyy samana, vaikka käyttäjä vaihtuisi.</translation>
 <translation id="8580857153747395000">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan.</translation>
+<translation id="350796261613621561">Ota valvottujen käyttäjien luominen käyttöön.</translation>
 <translation id="602728333950205286">Oletushakupalvelun Instant-URL-osoite</translation>
 <translation id="3030000825273123558">Ota tilastoraportit käyttöön</translation>
 <translation id="6559057113164934677">Älä anna minkään sivuston käyttää kameraa ja mikrofonia</translation>
@@ -901,6 +907,9 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 <translation id="8864975621965365890">Torjuu hylkäyskehotuksen, joka tulee näkyviin, kun sivu on hahmonnettu tuotteella <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Oletushakupalvelun merkkijärjestelmät</translation>
 <translation id="285480231336205327">Ota suuri kontrasti -tila käyttöön</translation>
+<translation id="5366977351895725771">Jos asetuksen arvo on epätosi, tämä käyttäjä ei voi luoda valvottuja käyttäjiä. Kaikki aiemmin luodut valvotut käyttäjät ovat kuitenkin käytettävissä.
+
+          Jos asetuksen arvo on tosi tai sitä ei ole määritetty, tämä käyttäjä voi luoda ja hallinnoida valvottuja käyttäjiä.</translation>
 <translation id="8101760444435022591">OCSP- ja CRL-tarkistukset eivät tarjoa merkittävää suojaushyötyä, joten ne ovat oletuksena poissa käytöstä tuotteen <ph name="PRODUCT_NAME"/> versiosta 19 lähtien. Jos tälle käytännölle asetetaan tosi-arvo, aikaisempi toiminnallisuus palautetaan ja OCSP- ja CRL-tarkistukset suoritetaan.
 
       Jos tätä käytäntöä ei aseteta tai jos sille asetetaan epätosi-arvo, Chromen versiossa 19 ja myöhemmissä ei suoriteta näitä tarkistuksia.</translation>

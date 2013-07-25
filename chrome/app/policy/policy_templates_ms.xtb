@@ -87,6 +87,11 @@
 
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada mahu mengimport atau tidak, atau pengimportan mungkin berlaku secara automatik.</translation>
 <translation id="5330684698007383292">Benarkan <ph name="PRODUCT_FRAME_NAME"/> mengendalikan jenis kandungan berikut</translation>
+<translation id="6647965994887675196">Jika ditetapkan kepada benar, pengguna diselia boleh dihasilkan dan digunakan.
+
+          Jika ditetapkan kepada palsu atau tidak dikonfigurasi, penghasilan dan log masuk pengguna diselia akan dilumpuhkan. Semua pengguna diselia yang sedia ada akan disembunyikan.
+
+          PERHATIAN: Gelagat lalai untuk peranti pengguna dan perusahaan berbeza: pada peranti pengguna, pengguna diselia didayakan secara lalai tetapi pada peranti perusahaan, pengguna diselia dilumpuhkan secara lalai.</translation>
 <translation id="5469825884154817306">Sekat imej pada tapak ini</translation>
 <translation id="8412312801707973447">Sama ada semakan OCSP/CRL dalam talian dilaksanakan</translation>
 <translation id="6649397154027560979">Dasar ini tidak akan digunakan lagi, sebaliknya, sila gunakan URLBlacklist.
@@ -1126,6 +1131,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika dasar ini dibiarkan tanpa ditetapkan, mod kontras tinggi dilumpuhkan apabila skrin log masuk mula-mula dipaparkan. Pengguna boleh mendayakan atau melumpuhkan mod kontras tinggi pada bila-bila masa dan statusnya pada skrin log masuk yang berterusan antara pengguna.</translation>
 <translation id="8580857153747395000">Beri amaran apabila melawat tapak web di luar pek kandungan.</translation>
+<translation id="350796261613621561">Dayakan penghasilan pengguna diselia.</translation>
 <translation id="602728333950205286">URL semerta pembekal carian lalai</translation>
 <translation id="3030000825273123558">Dayakan laporan metrik</translation>
 <translation id="6559057113164934677">Jangan benarkan mana-mana tapak mengakses kamera dan mikrofon</translation>
@@ -1151,6 +1157,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="8864975621965365890">Menyekat gesaan penolakan yang dipaparkan apabila tapak dipaparkan oleh <ph name="PRODUCT_FRAME_NAME"/> .</translation>
 <translation id="3264793472749429012">Pengekodan pembekal carian lalai</translation>
 <translation id="285480231336205327">Dayakan mod kontras tinggi</translation>
+<translation id="5366977351895725771">Jika ditetapkan kepada palsu, penghasilan pengguna diselia oleh pengguna ini akan dilumpuhkan. Mana-mana pengguna diselia yang sedia ada masih akan tersedia.
+
+          Jika ditetapkan kepada benar atau tidak dikonfigurasi, pengguna diselia boleh dihasilkan dan diuruskan oleh pengguna ini.</translation>
 <translation id="8101760444435022591">Berasaskan fakta bahawa semakan kegagalan lembut, pembatalan dalam talian tidak memberikan sebarang manfaat keselamatan yang berkesan, semakan ini dilumpuhkan secara lalai dalam <ph name="PRODUCT_NAME"/> versi 19 dan yang lebih baharu. Dengan menetapkan dasar ini kepada benar, gelagat terdahulu dipulihkan dan semakan OCSP/CRL dalam talian akan dilaksanakan.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka Chrome tidak akan melaksanakan semakan pembatalan dalam talian dalam Chrome 19 dan yang lebih baharu.</translation>

@@ -90,6 +90,11 @@
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5330684698007383292">Allow <ph name="PRODUCT_FRAME_NAME"/> to handle the following content types</translation>
+<translation id="6647965994887675196">If set to true, supervised users can be created and used.
+
+          If set to false or not configured, supervised-user creation and login will be disabled. All existing supervised users will be hidden.
+
+          NOTE: The default behaviour for consumer and enterprise devices differs: on consumer devices, supervised users are enabled by default, but on enterprise devices they are disabled by default.</translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
 <translation id="6649397154027560979">This policy is deprecated, please use URLBlacklist instead.
@@ -1129,6 +1134,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           If this policy is left unset, high contrast mode is disabled when the login screen is first shown. Users can enable or disable high contrast mode at any time and its status on the login screen is persisted between users.</translation>
 <translation id="8580857153747395000">Warn when visiting sites outside of content packs.</translation>
+<translation id="350796261613621561">Enable creation of supervised users.</translation>
 <translation id="602728333950205286">Default search provider instant URL</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="6559057113164934677">Do not allow any site to access the camera and microphone</translation>
@@ -1154,6 +1160,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="8864975621965365890">Suppresses the turn-down prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Default search provider encodings</translation>
 <translation id="285480231336205327">Enable high contrast mode</translation>
+<translation id="5366977351895725771">If set to false, supervised-user creation by this user will be disabled. Any existing supervised users will still be available.
+
+          If set to true or not configured, supervised users can be created and managed by this user.</translation>
 <translation id="8101760444435022591">In light of the fact that soft-fail online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME"/> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
 
       If the policy is not set, or is set to false, then Chrome will not perform online revocation checks in Chrome 19 and later.</translation>

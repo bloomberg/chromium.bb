@@ -69,6 +69,11 @@
 <translation id="3816312845600780067">Ativar o atalho de teclado de resgate para o início de sessão automático</translation>
 <translation id="3214164532079860003">Quando esta política está ativada, força a importação da página inicial a partir do navegador predefinido atual. Se estiver desativada, a página inicial não é importada. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-la ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME"/> processe os seguintes tipos de conteúdo</translation>
+<translation id="6647965994887675196">Se definido como &quot;true&quot;, é possível criar e utilizar utilizadores supervisionados.
+
+          Se definido como &quot;false&quot; ou não configurado, é desativada a criação e o início de sessão de utilizadores supervisionados. Todos os utilizadores supervisionados ficarão ocultos.
+
+          NOTA: O comportamento predefinido para dispositivos empresariais e de consumidor difere: em dispositivos de consumidor, os utilizadores supervisionados estão ativados por predefinição, enquanto que nos dispositivos empresariais estão desativados por predefinição.</translation>
 <translation id="5469825884154817306">Bloquear imagens nesses sites</translation>
 <translation id="8412312801707973447">Se são ou não efetuadas verificações OCSP/CRL on-line</translation>
 <translation id="6649397154027560979">Esta política está desatualizada. Em vez disso, utilize URLBlacklist.
@@ -887,6 +892,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, o modo de alto contraste é desativado quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar o modo de alto contraste a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="8580857153747395000">Avisar quando estiver a visitar sites fora dos pacotes de conteúdo.</translation>
+<translation id="350796261613621561">Permitir a criação de utilizadores supervisionados.</translation>
 <translation id="602728333950205286">URL instantâneo do fornecedor de pesquisas predefinido</translation>
 <translation id="3030000825273123558">Ativar relatório de métricas</translation>
 <translation id="6559057113164934677">Não permitir que nenhum site aceda à câmara e microfone</translation>
@@ -904,6 +910,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8864975621965365890">Suprime o pedido de recusa que aparece quando um site é convertido por <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Codificações do fornecedor de pesquisas predefinido</translation>
 <translation id="285480231336205327">Ativar modo de alto contraste</translation>
+<translation id="5366977351895725771">Se definido como &quot;false&quot;, é desativada a criação de utilizadores supervisionados por parte deste utilizador. Todos os utilizadores supervisionados continuarão disponíveis.
+
+          Se definido como &quot;true&quot; ou não configurado, é possível criar e gerir utilizadores supervisionados por parte deste utilizador.</translation>
 <translation id="8101760444435022591">Uma vez que as verificações de revogação on-line &quot;softfail&quot; não oferecem nenhum benefício de segurança eficaz, estas estão desativadas por predefinição na versão 19 do <ph name="PRODUCT_NAME"/> e posterior. Ao definir esta política como verdadeira, o comportamento anterior é restaurado e são efetuadas as verificações OCSP/CRL on-line.
 
       Se a política não estiver definida ou estiver definida como falsa, o Chrome não irá efetuar verificações de revogação on-line no Chrome 19 e posterior.</translation>

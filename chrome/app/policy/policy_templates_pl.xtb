@@ -69,6 +69,11 @@
 <translation id="3816312845600780067">Włącz automatyczne logowanie skrótem klawiszowym</translation>
 <translation id="3214164532079860003">W przypadku włączenia ta zasada wymusza zaimportowanie strony startowej z bieżącej przeglądarki domyślnej. Jeśli zasada będzie wyłączona, strona startowa nie zostanie zaimportowana. Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, czy zaimportować stronę, lub importowanie może odbyć się automatycznie.</translation>
 <translation id="5330684698007383292">Zezwalaj <ph name="PRODUCT_FRAME_NAME"/> na obsługę tych typów treści</translation>
+<translation id="6647965994887675196">Jeśli ta zasada ma wartość „prawda”, można tworzyć użytkowników nadzorowanych i logować się jako oni.
+
+          Jeśli ma ona wartość „fałsz” lub nie jest skonfigurowana, tworzenie użytkowników nadzorowanych i logowanie się jako oni jest wyłączone. Wszyscy istniejący użytkownicy nadzorowani zostają ukryci.
+
+          UWAGA: działanie domyślne różni się na urządzeniach dla użytkowników indywidualnych i dla firm. Na tych pierwszych funkcja użytkowników nadzorowanych jest domyślnie włączona, a na drugich – wyłączona.</translation>
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
 <translation id="8412312801707973447">Czy wykonywane jest sprawdzanie OCSP/CRL online</translation>
 <translation id="6649397154027560979">Ta zasada została wycofana, zamiast niej użyj URLBlacklist.
@@ -870,6 +875,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 
           Jeśli zasada pozostanie nieustawiona, po pierwszym wyświetleniu ekranu logowania tryb wysokiego kontrastu jest wyłączony. Użytkownicy mogą go w każdej chwili włączyć lub wyłączyć i jego stan na ekranie logowania jest trwały dla wszystkich użytkowników.</translation>
 <translation id="8580857153747395000">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści.</translation>
+<translation id="350796261613621561">Włącz tworzenie użytkowników nadzorowanych.</translation>
 <translation id="602728333950205286">Adres URL wyszukiwania dynamicznego od domyślnego dostawcy wyszukiwania</translation>
 <translation id="3030000825273123558">Włącz raportowanie statystyk</translation>
 <translation id="6559057113164934677">Nie pozwalaj żadnym stronom na dostęp do kamery i mikrofonu</translation>
@@ -887,6 +893,9 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="8864975621965365890">Pomija monit o odinstalowanie wyświetlany wtedy, gdy witryna jest renderowana przez <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Kodowania obsługiwane przez domyślnego dostawcę wyszukiwania</translation>
 <translation id="285480231336205327">Włącz tryb wysokiego kontrastu</translation>
+<translation id="5366977351895725771">Jeśli ta zasada ma wartość „fałsz”, ten użytkownik nie może tworzyć użytkowników nadzorowanych. Dotychczasowi użytkownicy nadzorowani będą nadal dostępni.
+
+          Jeśli ma ona wartość „prawda” lub nie jest skonfigurowana, ten użytkownik może tworzyć użytkowników nadzorowanych i zarządzać nimi.</translation>
 <translation id="8101760444435022591">Ponieważ sprawdzanie online, czy certyfikat nie został unieważniony (ignorowany z powodu błędu sieci) nie poprawia bezpieczeństwa, w <ph name="PRODUCT_NAME"/> 19 i nowszych wersjach jest domyślnie wyłączone. W przypadku włączenia tej zasady przywrócone zostanie wcześniejsze zachowanie i będzie wykonywane sprawdzanie OCSP/CRL online.
 
       Jeśli ta zasada nie zostanie ustawiona lub będzie wyłączona, Chrome w wersji 19 lub nowszej nie będzie sprawdzał unieważnień online.</translation>

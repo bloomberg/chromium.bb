@@ -89,6 +89,11 @@
 
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="5330684698007383292">Cho phép <ph name="PRODUCT_FRAME_NAME"/> xử lý các loại nội dung sau</translation>
+<translation id="6647965994887675196">Nếu đặt thành đúng, bạn có thể tạo và sử dụng tài khoản người dùng bị giám sát.
+
+          Nếu đặt thành sai hoặc không định cấu hình, tính năng tạo và đăng nhập tài khoản người dùng bị giám sát sẽ bị tắt. Tất cả tài khoản người dùng bị giám sát hiện có sẽ bị ẩn.
+
+          LƯU Ý: Chế độ mặc định đối với các thiết bị dành cho người tiêu dùng và doanh nghiệp khác nhau: trên thiết bị dành cho người tiêu dùng, tài khoản người dùng bị giám sát được bật theo mặc định nhưng trên thiết bị dành cho doanh nghiệp, các tài khoản này được tắt theo mặc định.</translation>
 <translation id="5469825884154817306">Chặn hình ảnh trên các trang web này</translation>
 <translation id="8412312801707973447">Liệu các kiểm tra OCSP/CRL trực tuyến có được thực hiện hay không</translation>
 <translation id="6649397154027560979">Chính sách này không còn được dùng nữa, thay vào đó hãy sử dụng URLBlacklist.
@@ -1097,6 +1102,7 @@
 
           Nếu không đặt chính sách này, chế độ tương phản cao bị tắt khi màn hình đăng nhập hiển thị lần đầu. Người dùng có thể bật hoặc tắt chế độ tương phản cao bất cứ lúc nào và trạng thái của chế độ này trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
 <translation id="8580857153747395000">Cảnh báo khi truy cập vào các trang web bên ngoài gói nội dung.</translation>
+<translation id="350796261613621561">Bật tính năng tạo tài khoản người dùng bị giám sát.</translation>
 <translation id="602728333950205286">URL instant của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="3030000825273123558">Bật báo cáo số liệu</translation>
 <translation id="6559057113164934677">Không cho phép bất kỳ trang web nào truy cập vào máy ảnh và micrô</translation>
@@ -1122,6 +1128,9 @@
 <translation id="8864975621965365890">Loại bỏ lời nhắc từ chối xuất hiện khi một trang web được hiển thị bởi <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Mã hóa của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="285480231336205327">Bật chế độ tương phản cao</translation>
+<translation id="5366977351895725771">Nếu đặt thành sai, tác vụ tạo tài khoản người dùng bị giám sát của người dùng này sẽ bị tắt. Mọi tài khoản người dùng bị giám sát hiện có sẽ vẫn khả dụng.
+
+          Nếu đặt thành đúng hoặc không định cấu hình, người dùng này có thể tạo và quản lý tài khoản người dùng bị giám sát.</translation>
 <translation id="8101760444435022591">Cân nhắc sự thật rằng các kiểm tra lỗi phần mềm, thu hồi trực tuyến không cung cấp lợi ích bảo mật thực sự nào, chúng bị tắt theo mặc định trong <ph name="PRODUCT_NAME"/> phiên bản 19 và cao hơn. Bằng cách đặt chính sách này thành đúng, hoạt động trước đó được khôi phục và các kiểm tra OCSP/CRL trực tuyến sẽ được thực hiện.
 
       Nếu chính sách không được đặt hoặc được đặt thành sai, khi đó Chrome sẽ không thực hiện các kiểm tra thu hồi trực tuyến trong Chrome 19 và cao hơn.</translation>

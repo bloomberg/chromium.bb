@@ -788,7 +788,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="6327653052522436195">Ort</translation>
 <translation id="6828153365543658583">Anmeldung auf die folgenden Nutzer beschränken:</translation>
-<translation id="8106045200081704138">Mit mir geteilt</translation>
+<translation id="8106045200081704138">Für mich freigegeben</translation>
 <translation id="1652965563555864525">&amp;Stummschalten</translation>
 <translation id="4200983522494130825">&amp;Neuer Tab</translation>
 <translation id="7979036127916589816">Synchronisierungsfehler</translation>
@@ -3490,7 +3490,7 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="1197979282329025000">Beim Abrufen der Druckerfunktionen für Drucker &quot;<ph name="PRINTER_NAME"/>&quot; ist ein Fehler aufgetreten. Dieser Drucker konnte nicht mit <ph name="CLOUD_PRINT_NAME"/> registriert werden.</translation>
 <translation id="890308499387283275">Chrome kann Datei nicht herunterladen.</translation>
 <translation id="6557565812667414268">Nur für High DPI-Displays aktiviert</translation>
-<translation id="5469954281417596308">Lesezeichen-Manager</translation>
+<translation id="5469954281417596308">Lesezeichenmanager</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
 <translation id="4151234098429563754">Diese Seite enthält ein Skript von nicht authentifizierten Quellen.</translation>
 <translation id="1143142264369994168">Signaturgeber des Zertifikats</translation>

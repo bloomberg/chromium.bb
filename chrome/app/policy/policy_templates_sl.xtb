@@ -90,6 +90,11 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj jo uvozi, ali pa bo uvoz izveden samodejno.</translation>
 <translation id="5330684698007383292">Dovoli, da <ph name="PRODUCT_FRAME_NAME"/> obravnava te vrste vsebine.</translation>
+<translation id="6647965994887675196">Če je pravilnik vklopljen, je mogoče ustvariti in uporabiti nadzorovane uporabnike.
+
+          Če pravilnik ni vklopljen ali ni nastavljen, ustvarjanje in prijava nadzorovanih uporabnikov nista mogoča. Vsi obstoječi nadzorovani uporabniki so skriti.
+
+          OPOMBA: Privzeta nastavitev se razlikuje v napravah za potrošnike in napravah za podjetja: v napravah za potrošnike so nadzorovani uporabniki privzeto omogočeni, v napravah za podjetja pa privzeto onemogočeni.</translation>
 <translation id="5469825884154817306">Blokiranje slik na teh mestih</translation>
 <translation id="8412312801707973447">Ali se izvaja spletni pregled OCSP/CRL</translation>
 <translation id="6649397154027560979">Ta pravilnik je zastarel, Namesto njega uporabite URLBlacklist.
@@ -1131,6 +1136,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če ta pravilnik ni vklopljen, je visokokontrastni način onemogočen, ko je prvič prikazan prijavni zaslon. Uporabniki lahko kadar koli omogočijo ali onemogočijo lupo, pri čemer se njegovo stanje na prijavnem zaslonu ohrani med uporabniki.</translation>
 <translation id="8580857153747395000">Opozori pri odpiranju spletnih mest zunaj paketov vsebine.</translation>
+<translation id="350796261613621561">Omogočanje ustvarjanja nadzorovanih uporabnikov.</translation>
 <translation id="602728333950205286">Privzeti URL iskalnika za dinamično iskanje</translation>
 <translation id="3030000825273123558">Omogoči pošiljanje podatkov</translation>
 <translation id="6559057113164934677">Ne dovoli nobenemu spletnemu mestu dostopa do kamere in mikrofona</translation>
@@ -1156,6 +1162,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8864975621965365890">Ne prikaže poziva za preklop, ki se prikaže, ko se spletno mesto upodablja z <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Privzeto kodiranje iskalnika</translation>
 <translation id="285480231336205327">Omogoči visokokontrastni način</translation>
+<translation id="5366977351895725771">Če pravilnik ni vklopljen, ta uporabnik ne more ustvarjati nadzorovanih uporabnikov. Obstoječi nadzorovani uporabniki so še vedno na voljo.
+
+          Če je pravilnik vklopljen ali ni nastavljen, lahko ta uporabnik ustvarja in upravlja nadzorovane uporabnike.</translation>
 <translation id="8101760444435022591">Ker mehko preverjanje preklica ne zagotavlja dodatne varnosti, je v brskalniku <ph name="PRODUCT_NAME"/> različice 19 ali novejšem privzeto onemogočeno. Če ta pravilnik omogočite, so obnovljene prejšnje nastavitve in spletni pregled OCSP/CRL se izvaja.
 
       Če pravilnik ni nastavljen ali ga onemogočite, Google Chrome v različici 19 ali novejši ne bo izvajal spletnega pregleda preklica.</translation>

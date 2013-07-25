@@ -66,6 +66,11 @@
 <translation id="3816312845600780067">Activa les tecles de drecera d'ajuda per a l'inici automàtic</translation>
 <translation id="3214164532079860003">Si està activada, aquesta política fa que la pàgina d'inici s'importi des del navegador predeterminat actual. Si està desactivada, la pàgina d'inici no s'importarà. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="5330684698007383292">Permet que <ph name="PRODUCT_FRAME_NAME"/> gestioni els tipus de contingut següents</translation>
+<translation id="6647965994887675196">Si es defineix com a vertader, es poden crear usuaris supervisats i es poden fer servir.
+
+          Si es defineix com a fals o bé no es configura, l'inici de sessió i la creació d'usuaris supervisats es desactivaran. S'amagaran tots els usuaris supervisats existents.
+
+          NOTA: el comportament predeterminat dels dispositius de consumidor i d'empresa és diferent. Als dispositius de consumidor els usuaris supervisats estan activats de manera predeterminada, mentre que als dispositius d'empresa estan desactivats per defecte.</translation>
 <translation id="5469825884154817306">Bloqueja les imatges en aquests llocs</translation>
 <translation id="8412312801707973447">Si es realitzen comprovacions OCSP/CRL en línia</translation>
 <translation id="6649397154027560979">Aquesta política està obsoleta, feu servir URLBlacklist al seu lloc-.
@@ -895,6 +900,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 
           Si no s'estableix aquesta política, el mode de contrast elevat es desactivarà quan la pantalla d'inici de sessió es mostri per primera vegada. Els usuaris poden activar o desactivar el mode de contrast elevat en qualsevol moment i el seu estat a la pantalla d'inici de sessió es mantindrà entre els usuaris.</translation>
 <translation id="8580857153747395000">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
+<translation id="350796261613621561">Activa la creació d'usuaris supervisats.</translation>
 <translation id="602728333950205286">URL instantani del proveïdor de cerca predeterminat</translation>
 <translation id="3030000825273123558">Activa la creació d'informes de mètriques</translation>
 <translation id="6559057113164934677">No permetis que cap lloc accedeixi a la càmera ni al micròfon</translation>
@@ -912,6 +918,9 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="8864975621965365890">Suprimeix l'avís de desactivació que apareix quan un lloc <ph name="PRODUCT_FRAME_NAME"/> renderitza un lloc.</translation>
 <translation id="3264793472749429012">Codificacions del proveïdor de cerca predeterminat</translation>
 <translation id="285480231336205327">Activa el mode de contrast elevat</translation>
+<translation id="5366977351895725771">Si es defineix com a fals, la creació d'usuaris supervisats per part d'aquest usuari es desactivarà. Els usuaris supervisats existents continuaran estant disponibles.
+
+          Si es defineix com a vertader o bé no es configura, aquest usuari pot crear i gestionar usuaris supervisats.</translation>
 <translation id="8101760444435022591">Com que les comprovacions de revocació en línia que no requereixen cap atenció no proporcionen cap benefici de seguretat eficaç, estan desactivades de manera predeterminada a la versió 19 del producte <ph name="PRODUCT_NAME"/> i posteriors. En definir aquesta política a «true» (cert), es restaurarà el comportament anterior i es realitzaran les comprovacions OCSP/CRL en línia.
 
       Si no es defineix la política o si es defineix a «false» (fals), Chrome no realitzarà cap comprovació de revocació en línia a Chrome 19 i posteriors.</translation>

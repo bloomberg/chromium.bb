@@ -73,6 +73,11 @@
 <translation id="3816312845600780067">Omogući tipkovni prečac za izbjegavanje automatske prijave</translation>
 <translation id="3214164532079860003">Ako je omogućeno, ovo pravilo prisilno uvozi početnu stranicu iz trenutačno zadanog preglednika. Ako je onemogućeno, početna se stranica ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti stranicu ili do uvoza može doći automatski.</translation>
 <translation id="5330684698007383292">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME"/> rukovanje sljedećim vrstama sadržaja</translation>
+<translation id="6647965994887675196">Ako je postavljeno na točno, mogu se izrađivati i upotrebljavati nadzirani korisnici.
+
+          Ako je postavljeno na netočno ili nije konfigurirano, izrada i prijava nadziranih korisnika bit će onemogućena. Svi postojeći nadzirani korisnici bit će skriveni.
+
+          NAPOMENA: zadano se ponašanje za potrošačke i poslovne uređaje razlikuje: na potrošačkim su uređajima nadzirani korisnici omogućeni prema zadanim postavkama, a na poslovnim su uređajima onemogućeni prema zadanim postavkama.</translation>
 <translation id="5469825884154817306">Blokiraj slike na ovim web-lokacijama</translation>
 <translation id="8412312801707973447">Izvršavaju li se mrežne provjere OCSP/CRL</translation>
 <translation id="6649397154027560979">Pravilo je obustavljeno, upotrijebite URLBlacklist.
@@ -888,6 +893,7 @@
 
           Ako se to pravilo ne postavi, način visokog kontrasta onemogućen je pri prvom prikazivanju zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti način visokog kontrasta u bilo kojem trenutku, a njegov status na zaslonu za prijavu zadržat će se i za sljedeće korisnike.</translation>
 <translation id="8580857153747395000">Upozori kada se posjećuju web-lokacije izvan paketa sadržaja.</translation>
+<translation id="350796261613621561">Omogući izradu nadziranih korisnika.</translation>
 <translation id="602728333950205286">Instant URL zadanog davatelja usluge pretraživanja</translation>
 <translation id="3030000825273123558">Omogući izvješće o metrici</translation>
 <translation id="6559057113164934677">Ne dopuštaj nijednoj web-lokaciji pristupanje kameri i mikrofonu</translation>
@@ -905,6 +911,9 @@
 <translation id="8864975621965365890">Zaustavlja upit za odbijanje koji se pojavljuje kada web-lokaciju generira <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Kodiranja zadanog davatelja usluge pretraživanja</translation>
 <translation id="285480231336205327">Omogućavanje načina visokog kontrasta</translation>
+<translation id="5366977351895725771">Ako je postavljeno na netočno, korisnik neće moći izrađivati nadzirane korisnike. Postojeći nadzirani korisnici i dalje će biti dostupni.
+
+          Ako je postavljeno na točno ili nije konfigurirano, korisnik može izrađivati nadzirane korisnike i upravljati njima.</translation>
 <translation id="8101760444435022591">Budući da &quot;soft-fail&quot;, mrežne provjere opoziva ne pružaju učinkovitu zaštitu sigurnosti, onemogućuju se prema zadanim postavkama na usluzi <ph name="PRODUCT_NAME"/> verzije 19 i novijih verzija. Postavljanjem tog pravila na vrijednost &quot;istinito&quot;, prethodno se ponašanje vraća i mrežne provjere OCSP/CRL bit će izvršene.
 
       Ako to pravilo nije postavljeno ili je postavljeno na vrijednost &quot;lažno&quot;, Chrome neće vršiti mrežne provjere opoziva u Chromeu 19 i novijim verzijama.</translation>

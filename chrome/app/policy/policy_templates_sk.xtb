@@ -85,6 +85,11 @@
       Ak je zakázané, domovská stránka sa neimportuje.
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce domovskú stránku importovať, alebo môže import prebehnúť automaticky.</translation>
 <translation id="5330684698007383292">Povoliť doplnku <ph name="PRODUCT_FRAME_NAME"/> spracovávať nasledujúce typy obsahu</translation>
+<translation id="6647965994887675196">Ak toto pravidlo nastavíte na hodnotu true, bude možné vytvárať a používať kontrolovaných používateľov.
+
+          Ak toto pravidlo nenakonfigurujete alebo ho nastavíte na hodnotu false, bude vytváranie a prihlasovanie kontrolovaných používateľov zakázané. Všetci existujúci kontrolovaní používatelia budú skrytí.
+
+          POZNÁMKA: Predvolené správanie pre zákaznícke a podnikové zariadenia sa líši. V zákazníckych zariadeniach budú kontrolovaní používatelia v predvolenom nastavení povolení, zatiaľ čo v podnikových zariadeniach budú zakázaní.</translation>
 <translation id="5469825884154817306">Blokovať obrázky na týchto stránkach</translation>
 <translation id="8412312801707973447">Či sa majú vykonávať kontroly OCSP/CRL online</translation>
 <translation id="6649397154027560979">Podpora tohto pravidla je ukončená. Použite namiesto neho pravidlo URLBlacklist.
@@ -1112,6 +1117,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Ak toto pravidlo ponecháte nenastavené, bude režim vysokého kontrastu pri prvom zobrazení prihlasovacej obrazovky zakázaný. Používatelia budú môcť režim vysokého kontrastu kedykoľvek povoliť alebo zakázať a jeho stav na prihlasovacej obrazovke sa zachová aj po zmene používateľov.</translation>
 <translation id="8580857153747395000">Upozorniť na návštevu stránky, ktorá je mimo balíkov obsahu.</translation>
+<translation id="350796261613621561">Povoliť vytváranie kontrolovaných používateľov.</translation>
 <translation id="602728333950205286">Adresa URL dynamického vyhľadávania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="3030000825273123558">Povoliť hlásenia o metrikách</translation>
 <translation id="6559057113164934677">Nepovoliť žiadnym stránkam používať kameru a mikrofón</translation>
@@ -1137,6 +1143,9 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8864975621965365890">Potlačí výzvu o zamietnutie, ktorá sa zobrazí pri vykreslení stránky rámcom <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Kódovania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="285480231336205327">Povoliť režim s vysokým kontrastom</translation>
+<translation id="5366977351895725771">Ak toto pravidlo nastavíte na hodnotu false, bude vytváranie a prihlasovanie kontrolovaných používateľov zakázané. Všetci existujúci kontrolovaní používatelia budú stále k dispozícii.
+
+          Ak toto pravidlo nenakonfigurujete alebo ho nastavíte na hodnotu true, tento používateľ bude môcť vytvárať a spravovať kontrolovaných používateľov.</translation>
 <translation id="8101760444435022591">Vzhľadom na skutočnosť, že kontroly zrušenia typu soft-fail neposkytujú z hľadiska bezpečnosti žiadne efektívne výhody, sú v predvolenom nastavení prehliadača <ph name="PRODUCT_NAME"/> verzie 19 a novších zakázané. Ak toto pravidlo nastavíte na hodnotu true, obnoví sa predchádzajúca konfigurácia a začnú sa vykonávať kontroly OCSP/CLR online.
 
       Ak pravidlo nenastavíte alebo ho nastavíte na hodnotu false, prehliadač Chrome verzie 19 a novších nebude vykonávať kontroly zrušenia online.</translation>

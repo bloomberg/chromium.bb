@@ -66,7 +66,7 @@
 <translation id="479384608159513044">Attiva gruppo di app OS X per Avvio applicazioni.</translation>
 <translation id="390181652609784098">Ora puoi accedere ai tuoi Preferiti, alla tua cronologia e ad altre impostazioni su tutti i dispositivi su cui esegui l'accesso.</translation>
 <translation id="368260109873638734">Dettagli sui problemi di questo sito web</translation>
-<translation id="7409233648990234464">Riavvia Powerwash</translation>
+<translation id="7409233648990234464">Riavvia ed esegui Powerwash</translation>
 <translation id="7428534988046001922">Le seguenti applicazioni sono ora installate:</translation>
 <translation id="787386463582943251">Aggiungi indirizzo email</translation>
 <translation id="2833791489321462313">Richiedi la password per riattivazione da sospensione</translation>
@@ -3191,7 +3191,7 @@ Per queste e per ulteriori istruzioni, controlla le tue email all'indirizzo <ph 
 <translation id="6442187272350399447">Strepitoso</translation>
 <translation id="7317938878466090505"><ph name="PROFILE_NAME"/> (corrente)</translation>
 <translation id="6774230405643443657">Abilita la decodifica differita delle immagini.</translation>
-<translation id="2148999191776934271"><ph name="HOUR"/>:<ph name="MINUTE"/> rimanenti al completamento della ricarica</translation>
+<translation id="2148999191776934271"><ph name="HOUR"/>:<ph name="MINUTE"/> per completare la ricarica</translation>
 <translation id="6007237601604674381">Spostamento non riuscito. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="907841381057066561">Operazione di creazione di un file zip temporaneo durante la creazione del pacchetto non riuscita.</translation>
 <translation id="1881456419707551346">Dettagli connessione</translation>
@@ -4318,7 +4318,7 @@ Per queste e per ulteriori istruzioni, controlla le tue email all'indirizzo <ph 
 <translation id="8119381715954636144">Identità non verificata</translation>
 <translation id="1497270430858433901">Hai ottenuto l'utilizzo gratuito di <ph name="DATA_AMOUNT"/> in data <ph name="DATE"/></translation>
 <translation id="1779652936965200207">Inserisci questa passkey su &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
-<translation id="8307376264102990850">Calcolo del tempo rimanente al completamento della ricarica</translation>
+<translation id="8307376264102990850">Calcolo del tempo per completare la ricarica</translation>
 <translation id="636850387210749493">Registrazione aziendale</translation>
 <translation id="4602466770786743961">Consenti sempre a <ph name="HOST"/> di accedere alla webcam e al microfono</translation>
 <translation id="852573274664085347">La modifica al tocco può essere inizializzata toccando un campo di testo o un testo selezionato.</translation>

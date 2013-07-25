@@ -3467,7 +3467,7 @@ Public Exponent(<ph name="PUBLIC_EXPONENT_NUM_BITS"/>비트):
 <translation id="5293659407874396561"><ph name="SUBJECT"/>(<ph name="ISSUER"/>)</translation>
 <translation id="2115926821277323019">유효한 URL이어야 함</translation>
 <translation id="3464726836683998962">모바일 데이터 로밍 사용 안 함</translation>
-<translation id="8986494364107987395">사용 통계 및 충돌 보고서를 Google에 자동으로 보내기</translation>
+<translation id="8986494364107987395">사용 통계 및 오류 보고서를 Google에 자동으로 보내기</translation>
 <translation id="7070714457904110559">위치 정보 기능에 실험실 확장 프로그램을 사용하도록 설정합니다. 여기에는 운영체제 위치 API를 사용(가능한 경우)하고 더 정확한 위치 확인을 위해 로컬 네트워크 설정 데이터를 Google 위치 서비스에 전송하는 기능이 포함됩니다.</translation>
 <translation id="6701535245008341853">프로필을 가져올 수 없습니다.</translation>
 <translation id="8303655282093186569">병음 입력 설정</translation>

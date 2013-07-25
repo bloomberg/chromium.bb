@@ -86,6 +86,11 @@
 
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="5330684698007383292">Payagan ang <ph name="PRODUCT_FRAME_NAME"/> na pangasiwaan ang mga sumusunod na uri ng nilalaman</translation>
+<translation id="6647965994887675196">Kung nakatakda sa true, maaaring gumawa at gumamit ng mga pinapangasiwaang user.
+
+          Kung nakatakda sa false o hindi naka-configure, idi-disable ang paggawa at pag-log in ng pinapangasiwaang user. Itatago ang lahat ng umiiral na pinapangasiwaang user.
+
+          TANDAAN: Magkaiba ang default na pagkilos ng mga device ng consumer at enterprise device: sa mga device ng consumer, naka-enable ang mga pinapangasiwaang user bilang default, ngunit sa mga enterprise device, naka-disable sila bilang default.</translation>
 <translation id="5469825884154817306">I-block ang mga larawan sa mga site na ito</translation>
 <translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
 <translation id="6649397154027560979">Hindi na ginagamit ang patakarang ito, sa halip mangyaring gamitin ang URLBlacklist.
@@ -1111,6 +1116,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable ang high contrast mode kapag unang ipinakita ang screen sa pag-login. Maaaring i-enable o i-disable ng mga user ang high contrast mode anumang oras at mananatili ang katayuan nito sa screen sa pag-login sa pagitan ng mga user.</translation>
 <translation id="8580857153747395000">Magbabala kapag bumibisita sa mga site sa labas ng mga pack ng nilalaman.</translation>
+<translation id="350796261613621561">I-enable ang paggawa ng mga pinapangasiwaang user.</translation>
 <translation id="602728333950205286">Instant na URL ng default na provider ng paghahanap</translation>
 <translation id="3030000825273123558">Paganahin ang pag-uulat ng mga sukatan</translation>
 <translation id="6559057113164934677">Huwag payagan ang anumang site na i-access ang camera at mikropono</translation>
@@ -1136,6 +1142,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8864975621965365890">Pinipigilan ang turndown na prompt na lumilitaw kapag na-render ang isang site ng <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Mga pag-encode ng default na provider ng paghahanap</translation>
 <translation id="285480231336205327">Paganahin ang mataas na contrast mode</translation>
+<translation id="5366977351895725771">Kung nakatakda sa false, idi-disable ang paggawa ng pinapangasiwaang user para sa user na ito. Magiging available pa rin ang sinumang mga umiiral na pinapangasiwaang user.
+
+          Kung nakatakda sa true o hindi naka-configure, maaaring gumawa at mamahala ng mga pinapangasiwaang user ang user na ito.</translation>
 <translation id="8101760444435022591">Dahil walang mabisang pakinabang sa seguridad ang hindi pa pinal at mga pagsusuri sa pagbawi sa online, hindi pinapagana ang mga iyon bilang default sa  bersyon 19 at mas bago ng <ph name="PRODUCT_NAME"/>. Sa pamamagitan ng pagtatakda sa patakarang ito sa true, ipapanumbalik ang nakaraang paggalaw at isasagawa ang mga online na pagsusuri ng OCSP/CRL.
 
       Kung hindi nakatakda ang patakarang ito, o kung nakatakda ito sa false, hindi magsasagawa ng mga pagsusuri sa pagbawi sa online ang Chrome sa Chrome 19 at mas mabago.</translation>

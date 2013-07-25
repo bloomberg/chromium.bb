@@ -69,6 +69,11 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 <translation id="3816312845600780067">Tastaturkürzel zur Umgehung der automatischen Anmeldung aktivieren</translation>
 <translation id="3214164532079860003">Bei Aktivierung erzwingt diese Richtlinie, dass die Startseite vom aktuellen Standardbrowser importiert wird. Wenn sie deaktiviert ist, wird die Startseite nicht importiert. Sollte sie nicht konfiguriert sein, so wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="5330684698007383292">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME"/> zulassen</translation>
+<translation id="6647965994887675196">Wurde &quot;true&quot; festgelegt, können betreute Nutzer erstellt und verwendet werden.
+
+          Wurde &quot;false&quot; oder &quot;not configured&quot; festgelegt, wird die Erstellung und Anmeldung betreuter Nutzer deaktiviert. Alle vorhandenen betreuten Nutzer werden ausgeblendet.
+
+          Hinweis: Das Standardverhalten bei Geräten für Kunden und bei Geräten für Unternehmen ist unterschiedlich: Bei Geräten für Kunden sind betreute Nutzer standardmäßig aktiviert, bei Geräten für Unternehmen hingegen sind sie standardmäßig deaktiviert.</translation>
 <translation id="5469825884154817306">Bilder auf diesen Websites blockieren</translation>
 <translation id="8412312801707973447">Ob online OCSP-/CRL-Prüfungen durchgeführt werden</translation>
 <translation id="6649397154027560979">Diese Richtlinie wird nicht mehr verwendet, nutzen Sie stattdessen die Richtlinie &quot;URLBlacklist&quot;.
@@ -883,6 +888,7 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 
           Falls diese Richtlinie nicht konfiguriert wird, ist der Modus mit hohem Kontrast deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können den Modus mit hohem Kontrast jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.</translation>
 <translation id="8580857153747395000">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
+<translation id="350796261613621561">Erstellung von betreuten Nutzern aktivieren</translation>
 <translation id="602728333950205286">Google Instant-URL der Standardsuchmaschine</translation>
 <translation id="3030000825273123558">Messdatenberichte aktivieren</translation>
 <translation id="6559057113164934677">Keine Website darf auf meine Kamera oder mein Mikrofon zugreifen</translation>
@@ -900,6 +906,9 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 <translation id="8864975621965365890">Unterdrückung des Hinweises auf Einstellung des Frames, der beim Rendern einer Website durch <ph name="PRODUCT_FRAME_NAME"/> erscheint</translation>
 <translation id="3264793472749429012">Standardsuchmaschinen-Codierungen</translation>
 <translation id="285480231336205327">Modus mit hohem Kontrast aktivieren</translation>
+<translation id="5366977351895725771">Wurde &quot;false&quot; festgelegt, kann dieser Nutzer keine betreuten Nutzer erstellen. Alle vorhandenen betreuten Nutzer sind weiterhin verfügbar.
+
+          Wurde &quot;true&quot; oder &quot;not configured&quot; festgelegt, kann dieser Nutzer betreute Nutzer erstellen und verwalten.</translation>
 <translation id="8101760444435022591">Da Online-Überprüfungen zu SoftFail-Zertifikatssperren keinen wirkungsvollen Sicherheitseffekt bieten, werden sie ab <ph name="PRODUCT_NAME"/>-Version 19 standardmäßig deaktiviert. Wenn Sie diese Richtlinie auf &quot;true&quot; setzen, wird das vorherige Verhalten wiederhergestellt und es werden online OCSP-/CRL-Prüfungen durchgeführt.
 
       Falls die Richtlinie nicht konfiguriert oder auf &quot;false&quot; eingestellt ist, führt Chrome ab Version 19 keine Online-Überprüfungen auf Zertifikatssperren mehr durch.</translation>

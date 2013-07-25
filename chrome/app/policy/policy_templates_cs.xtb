@@ -86,6 +86,11 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 
      Není-li nastavena, může se uživatelům zobrazit výzva, zda chtějí domovskou stránku importovat, nebo může import probíhat automaticky.</translation>
 <translation id="5330684698007383292">Umožnit pluginu <ph name="PRODUCT_FRAME_NAME"/> zpracovávat následující typy obsahu</translation>
+<translation id="6647965994887675196">Pokud tuto zásadu nastavíte na hodnotu true, lze vytvářet a používat uživatele pod dohledem.
+
+          Pokud tuto zásadu nenakonfigurujete nebo ji nastavíte na hodnotu false, bude vytváření a přihlašování uživatelů pod dohledem zakázáno. Všichni existující uživatelé pod dohledem budou skryti.
+
+          POZNÁMKA: Výchozí chování pro zákaznická a podniková zařízení se liší. V zákaznických zařízeních budou uživatelé pod dohledem ve výchozím nastavení aktivní, zatímco v podnikových zařízeních nikoli.</translation>
 <translation id="5469825884154817306">Blokovat obrázky na těchto stránkách</translation>
 <translation id="8412312801707973447">Zda se budou provádět online kontroly OCSP/CRL</translation>
 <translation id="6649397154027560979">Podpora této zásady byla ukončena, použijte prosím namísto ní seznam URLBlacklist.
@@ -1121,6 +1126,7 @@ Pokud tuto zásadu nastavíte, uživatelé ji budou moci dočasně přepsat akti
 
 Pokud tuto zásadu nenastavíte, bude při prvním zobrazení obrazovky přihlášení režim vysokého kontrastu deaktivován. Uživatelé budou moci režim vysokého kontrastu kdykoli aktivovat nebo deaktivovat a zvolený stav na přihlašovací obrazovce přetrvá i u jiných uživatelů.</translation>
 <translation id="8580857153747395000">Při návštěvě webů mimo obsahové balíčky se zobrazí varování.</translation>
+<translation id="350796261613621561">Povolení vytváření uživatelů pod dohledem</translation>
 <translation id="602728333950205286">Adresa URL dynamického vyhledávání výchozího poskytovatele vyhledávání</translation>
 <translation id="3030000825273123558">Povolit hlášení o metrikách</translation>
 <translation id="6559057113164934677">Nedovolit žádnému webu používat kameru a mikrofon</translation>
@@ -1146,6 +1152,9 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení obrazovky přihlá
 <translation id="8864975621965365890">Potlačuje oznámení o ukončení podpory, která se zobrazuje, když je web vykreslován pomocí pluginu <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Kódování výchozího poskytovatele vyhledávání</translation>
 <translation id="285480231336205327">Aktivovat vysoce kontrastní režim</translation>
+<translation id="5366977351895725771">Pokud tuto zásadu nastavíte na hodnotu false, vytváření a přihlašování uživatelů pod dohledem bude zakázáno. Všichni existující uživatelé pod dohledem budou stále k dispozici.
+
+          Pokud tuto zásahu nenakonfigurujete nebo ji nastavíte na hodnotu true, tento uživatel bude moci vytvářet a spravovat uživatele pod dohledem.</translation>
 <translation id="8101760444435022591">Vzhledem k tomu, že online kontroly zamítnutých certifikátů nepřinášejí žádné efektivní bezpečnostní výhody a také snadno selhávají, jsou v prohlížeči <ph name="PRODUCT_NAME"/> verze 19 a vyšší ve výchozím nastavení deaktivovány. Nastavíte-li tuto zásadu na hodnotu True, obnoví se předchozí chování a budou prováděny online kontroly OCSP/CRL.
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, nebude Chrome verze 19 a vyšší provádět online kontroly zamítnutých certifikátů.</translation>

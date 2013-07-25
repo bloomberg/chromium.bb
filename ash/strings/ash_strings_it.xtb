@@ -107,7 +107,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="2372145515558759244">Sincronizzazione applicazioni...</translation>
 <translation id="7256405249507348194">Errore non riconosciuto: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Controllo AAA non riuscito</translation>
-<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> rimanenti al completamento della ricarica</translation>
+<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> per completare la ricarica</translation>
 <translation id="5787281376604286451">Feedback vocale attivato.
 Premi Ctrl+Alt+Z per disattivarlo.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -195,7 +195,7 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="4015692727874266537">Accedi a un altro account...</translation>
 <translation id="5941711191222866238">Riduci a icona</translation>
 <translation id="6911468394164995108">Connetti a un'altra...</translation>
-<translation id="412065659894267608"><ph name="HOUR"/> ore e <ph name="MINUTE"/> min rimanenti al completamento della ricarica</translation>
+<translation id="412065659894267608"><ph name="HOUR"/> h e <ph name="MINUTE"/> m per completare la ricarica</translation>
 <translation id="6359806961507272919">SMS da <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Gestore</translation>
 </translationbundle>

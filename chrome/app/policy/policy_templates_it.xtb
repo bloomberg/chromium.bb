@@ -66,6 +66,11 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 <translation id="3816312845600780067">Attivazione scorciatoia da tastiera bailout per accesso automatico</translation>
 <translation id="3214164532079860003">Se è attiva, questa norma impone l'importazione della pagina iniziale dal browser predefinito corrente. Se non è attiva, la pagina iniziale non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5330684698007383292">Consenti a <ph name="PRODUCT_FRAME_NAME"/> di gestire i seguenti tipi di contenuti</translation>
+<translation id="6647965994887675196">Se questa norma è impostata su true, è possibile creare e utilizzare utenti controllati.
+
+          Se questa norma è impostata su false o non è configurata, la creazione di utenti controllati e il relativo accesso saranno disattivati. Tutti gli utenti controllati esistenti saranno nascosti.
+
+          NOTA. Il comportamento predefinito per dispositivi consumer ed enterprise è diverso: sui dispositivi consumer, gli utenti controllati sono abilitati per impostazione predefinita, mentre sui dispositivi enterprise sono disabilitati per impostazione predefinita.</translation>
 <translation id="5469825884154817306">Blocca immagini su questi siti</translation>
 <translation id="8412312801707973447">Esecuzione dei controlli OCSP/CRL online</translation>
 <translation id="6649397154027560979">Questa norma non è più supportata; utilizza la norma URLBlacklist.
@@ -874,6 +879,7 @@ Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attiva
 
 Se la norma non viene impostata, la modalità ad alto contrasto viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la modalità ad alto contrasto in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
 <translation id="8580857153747395000">Avvisa quando vengono visitati siti non presenti nei pacchetti di contenuti.</translation>
+<translation id="350796261613621561">Attivazione della creazione di utenti controllati.</translation>
 <translation id="602728333950205286">URL di ricerca istantanea del provider di ricerca predefinito</translation>
 <translation id="3030000825273123558">Attiva rapporti sulle metriche</translation>
 <translation id="6559057113164934677">Non consentire ad alcun sito di accedere alla fotocamera e al microfono</translation>
@@ -891,6 +897,9 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
 <translation id="8864975621965365890">Consente di eliminare il messaggio di richiesta di turndown che compare quando un sito viene visualizzato da <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Codifiche del provider di ricerca predefinito</translation>
 <translation id="285480231336205327">Attiva modalità ad alto contrasto</translation>
+<translation id="5366977351895725771">Se questa norma è impostata su false, la creazione di utenti controllati da parte di questo utente sarà disabilitata. Gli eventuali utenti controllati esistenti saranno comunque disponibili.
+
+          Se questa norma è impostata su true o non è configurata, questo utente può creare e gestire utenti controllati.</translation>
 <translation id="8101760444435022591">Alla luce del fatto che i controlli della revoca online soft-fail non offrono un effettivo vantaggio per la sicurezza, sono disattivati per impostazione predefinita nella versione 19 e versioni successive di <ph name="PRODUCT_NAME"/>. Se questa norma viene impostata su true, viene ripristinato il comportamento precedente e vengono effettuati i controlli OCSP/CRL online.
 
       Se la norma non viene impostata o viene impostata su false, Chrome non effettuerà i controlli della revoca online in Chrome 19 e versioni successive.</translation>

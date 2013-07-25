@@ -83,6 +83,11 @@ Kama sera hii haijawekwa, kishale kikubwa huzimwa wakati skrini ya kuingia katik
 
       Ikiwa hautawekwa, huenda mtumiaji akaombwa kuleta, au huenda uletaji ukatendeka kiotomatiki.</translation>
 <translation id="5330684698007383292">Ruhusu <ph name="PRODUCT_FRAME_NAME"/> kushughulikia aina zifuatazo za maudhui</translation>
+<translation id="6647965994887675196">Kama iwekwa kuwa kweli, watumiaji wanaosimamiwa wanaweza kuundwa na kutumiwa.
+
+         Kama imewekwa kuwa uwongo au haijasanidiwa, uundaji wa mtumiaji wa kusimamiwa na kuingia katika akaunti kutalemazwa. Watumiaji wote wa kusimamiwa watafichwa.
+
+          KUMBUKA: Tabia chaguo-msingi ya vifaa vya watumiaji na biashara zinatofautiana: kwenye vifaa vya watumiaji watumiaji wa kusimamiwa huwashwa kama chaguo-msingi, lakini kwenye vifaa vya biashara wao huzimwa kama chaguo-msingi.</translation>
 <translation id="5469825884154817306">Zuia picha katika tovuti hizi</translation>
 <translation id="8412312801707973447">Ikiwa ukaguzi wa mtandaoni wa OCSP/CRL umeatekelezwa</translation>
 <translation id="6649397154027560979">Sera hii imeacha kuendesha huduma, tafadhali tumia URL Zilizoondolewa Idhini badala yake. 
@@ -1039,15 +1044,15 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
 
       Vifaa <ph name="PRODUCT_OS_NAME"/> vinakagua visasisho kiotomatiki wakati mpangilio huu haujasanidiwa au umewekwa kuwa Sivyo.</translation>
 <translation id="6190022522129724693">Mpangilio chaguo-msingi za ibukizi</translation>
-<translation id="847472800012384958">Usiruhusu tovuti yoyote kuonyesha viibukizi</translation>
+<translation id="847472800012384958">Usiruhusu tovuti yoyote kuonyesha madirisha ibukizi</translation>
 <translation id="4733471537137819387">Sera zinazohusiana na uthibitishaji wa HTTP jumuishi.</translation>
 <translation id="8951350807133946005">Weka saraka ya akiba ya diski</translation>
 <translation id="2592091433672667839">Muda wa shughuli kabla ya seva ya skrini kuonyeshwa kwenye skrini ya kuingia katika modi ya rejareja</translation>
 <translation id="166427968280387991">Seva ya proksi</translation>
-<translation id="2805707493867224476">Ruhusu tovuti zote zionyeshe viibukizi</translation>
+<translation id="2805707493867224476">Ruhusu tovuti zote zionyeshe madirisha ibukizi</translation>
 <translation id="1727394138581151779">Zuia programu jalizi zote</translation>
 <translation id="8118665053362250806">Weka ukubwa wa media ya akiba ya diski</translation>
-<translation id="7079519252486108041">Zuia viibukizi kwenye tovuti hizi</translation>
+<translation id="7079519252486108041">Zuia madirisha ibukizi kwenye tovuti hizi</translation>
 <translation id="1859633270756049523">Punguza urefu wa kipindi</translation>
 <translation id="7433714841194914373">Wezesha Papo hapo</translation>
 <translation id="4983201894483989687">Ruhusu kuendesha programu jalizi ambazo zimepitwa na wakati.</translation>
@@ -1101,6 +1106,7 @@ Iwapo sera hii imewekwa kwa haitumiki, hali ya juu ya utofautishaji itazimwa wak
 Iwapo utaweka sera hii, watumiaji wanaweza kwa muda kuipuuza kwa kuwasha au kuzima hali ya juu ya utofautishaji. Hata hivyo, chaguo la mtumiaji halitaendelea na chaguo-msingi  hurejeshwa tena wakati wowote skrini ya kuingia katika akaunto inapoonyeshwa upya au mtumiaji anaposalia bila kufanya kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja. 
 Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini ya kuingia katika akaunti inapoonyeshwa kwanza. Watumiaji wanaweza kuwasha au kuzima hali ya juu ya utofautishaji wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inaendelea kati ya watumiaji.</translation>
 <translation id="8580857153747395000">Onya ninapotembelea tovuti zilizo nje ya mafurushi ya maudhui.</translation>
+<translation id="350796261613621561">Washa uundaji wa watumiaji wa kusimamiwa.</translation>
 <translation id="602728333950205286">URL ya papo hapo ya kitoaji chaguo-msingi cha utafutaji</translation>
 <translation id="3030000825273123558">Wezesha kuripoti kwa metriki</translation>
 <translation id="6559057113164934677">Usiruhusu tovuti yoyote kufikia kamera na maikrofoni yangu</translation>
@@ -1126,6 +1132,9 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
 <translation id="8864975621965365890">Didimiza kukataa kuuliza ambako huonekana tovuti inapotolewa na <ph name="PRODUCT_FRAME_NAME"/> .</translation>
 <translation id="3264793472749429012">Usimbaji wa kitoaji chaguo-msingi cha utafutaji</translation>
 <translation id="285480231336205327">Wezesha modi ya juu ya kulinganua</translation>
+<translation id="5366977351895725771">Kama imewekwa kama uongo, uundaji wa mtumiaji wa kusimamiwa na mtumiaji huyu utazimwa. Bado mtumiaji yeyote wa kusimamiwa wa sasa atapatikana.
+
+          Kama ikiwekwa kuwa kweli au haijasanidiwa,watumiaji wa kusimamiwa wanaweza kuundwa na kusimamiwa na mtumiaji huyu.</translation>
 <translation id="8101760444435022591">Kwa sababu ya Ndivyo kwamba kushindwa kwa baadhi ya vipengee, ukaguzi wa ubatilishaji wa mtandaoni hautio usalama bora unaofanya inayofanya kazi, utalemazwa kwa chaguo-msingi katika toleo la 19 la <ph name="PRODUCT_NAME"/> na baadaye. Kwa kuweka sera hii kuwa kweli, tabia ya awali inahifadhiwa upya na ukaguzi wa mtandaoni wa OCSP/CRL utatekelezwa.
 
       Ikiwa sera hii haitawekwa, au kuwekwa kwenye Sivyo, basi Chrome haitatekeleza ukaguzi wa ubatilishaji wa mtandao katika Chrome 19 na baadaye.</translation>

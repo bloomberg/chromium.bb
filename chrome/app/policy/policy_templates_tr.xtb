@@ -88,6 +88,11 @@ politikayı geçersiz kılamaz.
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME"/> için aşağıdaki içerik türlerini işlemeye izin ver</translation>
+<translation id="6647965994887675196">True (doğru) olarak ayarlanırsa, denetlenen kullanıcılar oluşturulabilir ve kullanılabilir
+
+          False (yanlış) olarak ayarlanır veya yapılandırılmazsa, denetlenen kullanıcı oluşturma ve denetlenen kullanıcı girişi özellikleri devre dışı bırakılır. Mevcut tüm denetlenen kullanıcılar gizlenir.
+
+          NOT: Tüketicilere ve kuruluşlara yönelik cihazlarda varsayılan davranış farklıdır: Tüketicilere yönelik cihazlarda, denetlenen kullanıcılar varsayılan olarak etkindir, ancak kuruluşlara yönelik cihazlarda bunlar varsayılan olarak devre dışıdır.</translation>
 <translation id="5469825884154817306">Bu sitelerdeki resimleri engelle</translation>
 <translation id="8412312801707973447">Çevrimiçi OCSP/CRL denetimlerinin yapılıp yapılmayacağı</translation>
 <translation id="6649397154027560979">Bu politika kullanımdan kaldırılmıştır; lütfen bunun yerine URLBlacklist'i kullanın.
@@ -1114,6 +1119,7 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
 
           Bu politika ayarlanmadan bırakılırsa, giriş ekranı ilk kez gösterildiğinde yüksek kontrast modu devre dışıdır. Kullanıcılar yüksek kontrast modunu her zaman etkinleştirebilir veya devre dışı bırakabilir ve yüksek kontrast modunun giriş ekranındaki durumu kullanıcılar arasında kalıcıdır.</translation>
 <translation id="8580857153747395000">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar.</translation>
+<translation id="350796261613621561">Denetlenen kullanıcılar oluşturmayı etkinleştir.</translation>
 <translation id="602728333950205286">Varsayılan arama sağlayıcı anında arama URL'si</translation>
 <translation id="3030000825273123558">Ölçüm raporlamayı etkinleştir</translation>
 <translation id="6559057113164934677">Hiçbir sitenin kamera ve mikrofona erişmesine izin verme</translation>
@@ -1139,6 +1145,9 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
 <translation id="8864975621965365890">Bir site <ph name="PRODUCT_FRAME_NAME"/> tarafından oluşturulduğunda görülen reddetme sorusunu engeller.</translation>
 <translation id="3264793472749429012">Varsayılan arama sağlayıcı kodlamaları</translation>
 <translation id="285480231336205327">Yüksek kontrast modunu etkinleştir</translation>
+<translation id="5366977351895725771">False (yanlış) olarak ayarlanırsa, bu kullanıcının denetlenen kullanıcı oluşturma yetkisi devre dışı bırakılır. Mevcut tüm denetlenen kullanıcılar kullanılabilir olmaya devam eder.
+
+          True (doğru) olarak ayarlanırsa veya yapılandırılmazsa, bu kullanıcı denetlenen kullanıcılar oluşturabilir ve denetlenen kullanıcıları yönetebilir.</translation>
 <translation id="8101760444435022591">Kısmi çökme bağlamında, çevrimiçi iptal denetimleri güvenlik açısından etkili yararlar sağlamaz, bunlar <ph name="PRODUCT_NAME"/> sürüm 19 ve daha yeni sürümlerde varsayılan olarak devre dışı bırakılmıştır. Bu politika true değerine ayarlandığında, önceki çalışma biçimi geri yüklenir ve çevrimiçi OCSP/CRL denetimleri yapılır.
 
       Politika ayarlanmazsa veya false değerine ayarlanırsa, Chrome 19 ve daha yeni sürümlerde çevrimiçi iptal denetimleri yapılmaz.</translation>

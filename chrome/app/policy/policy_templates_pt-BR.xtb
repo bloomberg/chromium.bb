@@ -71,6 +71,11 @@
 <translation id="3816312845600780067">Ativar atalho do teclado dp plano de salvação para login automático</translation>
 <translation id="3214164532079860003">Caso ativada, esta política força a página inicial a ser importada do navegador padrão atual. Se desativada, a página inicial não é importada. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME"/> trabalhe com os tipos de conteúdo a seguir</translation>
+<translation id="6647965994887675196">Se definida com verdadeira, será possível criar e utilizar usuários supervisionados.
+
+          Se definida como falsa ou não configurada, a criação e o login de usuários supervisionados serão desativados. Todos os usuários supervisionados existentes serão ocultos.
+
+          OBSERVAÇÃO: há uma diferença entre o comportamento padrão em dispositivos corporativos e de consumidores: em dispositivos de consumidores, os usuários supervisionados são ativados por padrão. Já em dispositivos corporativos, o padrão é os usuários supervisionados estarem desativados.</translation>
 <translation id="5469825884154817306">Bloquear imagens nestes sites</translation>
 <translation id="8412312801707973447">Define se as verificações on-line de OCSP/CRL devem ser executadas</translation>
 <translation id="6649397154027560979">Esta política teve o uso suspenso. Em vez dela, use URLBlacklist.
@@ -840,6 +845,7 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
 
           Se esta política não for definida, o modo de alto contraste será desativado quando a tela de login for exibida pela primeira vez. Os usuários podem ativar ou desativar o modo de alto contraste a qualquer momento e seu status na tela de login continuará entre os usuários.</translation>
 <translation id="8580857153747395000">Avisar ao visitar sites fora de pacotes de conteúdo.</translation>
+<translation id="350796261613621561">Ativa a criação de usuários supervisionados.</translation>
 <translation id="602728333950205286">URL instantâneo do provedor de pesquisa padrão</translation>
 <translation id="3030000825273123558">Ativa relatórios de métricas</translation>
 <translation id="6559057113164934677">Não permitir que nenhum site acesse minha câmera e meu microfone</translation>
@@ -857,6 +863,9 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
 <translation id="8864975621965365890">Remove a solicitação de recusa que aparece quando um site é processado pelo <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Codificações do provedor de pesquisa padrão</translation>
 <translation id="285480231336205327">Ativar modo de alto contraste</translation>
+<translation id="5366977351895725771">Se definida como falsa, a criação de usuários supervisionados por este usuário será desativada. Quaisquer usuários supervisionados existentes permanecerão disponíveis.
+
+          Se definida como verdadeira ou não configurada, este usuário poderá criar e gerenciar usuários supervisionados.</translation>
 <translation id="8101760444435022591">Levando em consideração que as verificações soft-fail de revogação on-line não oferecem qualquer benefício de segurança eficaz, elas são desativadas por padrão nas versões 19 e posteriores do <ph name="PRODUCT_NAME"/>. Ao configurar true para esta política, o comportamento anterior será restaurado e as verificações on-line de OCSP/CRL serão realizadas. Se essa política não for configurada, ou for configurada para como false, o Google Chrome não realizará verificações de revogação on-line no Google Chrome 19 e posteriores.</translation>
 <translation id="5469484020713359236">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para definir cookies. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política &quot;DefaultCookiesSetting&quot;, caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="1504431521196476721">Declaração remota</translation>

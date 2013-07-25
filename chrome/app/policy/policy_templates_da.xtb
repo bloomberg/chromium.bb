@@ -69,6 +69,11 @@
 <translation id="3816312845600780067">Aktivér nødtastaturgenvej til automatisk login</translation>
 <translation id="3214164532079860003">Denne politik tvinger import af startsiden fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis den er deaktiveret, importeres startsiden ikke. Hvis den ikke er angivet, kan brugeren blive spurgt, om den skal importeres, eller også sker det automatisk.</translation>
 <translation id="5330684698007383292">Tillad, at <ph name="PRODUCT_FRAME_NAME"/> håndterer følgende indholdstyper</translation>
+<translation id="6647965994887675196">Hvis dette er angivet som sandt, kan overvågede brugere oprettes og anvendes.
+
+          Hvis dette er angivet som falsk eller ikke er konfigureret, vil oprettelse af overvågede brugere og login for sådanne brugere være deaktiveret. Alle eksisterende overvågede brugere vil blive skjult.
+
+          BEMÆRK! Forbruger- og virksomhedsenheder opfører sig som standard forskelligt. På forbrugerenheder er overvågede brugere som standard aktiveret, men på virksomhedsenheder er de som standard deaktiveret.</translation>
 <translation id="5469825884154817306">Bloker billeder på disse websites</translation>
 <translation id="8412312801707973447">Om der udføres online kontrol af OCSP/CRL</translation>
 <translation id="6649397154027560979">Denne politik er ved at blive udfaset. Brug i stedet URLBlacklist.
@@ -932,6 +937,7 @@
 
           Hvis denne politik ikke indstilles, deaktiveres høj kontrast, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere Høj kontrast, og dens status på loginskærmen fastholdes hos brugerne.</translation>
 <translation id="8580857153747395000">Vis en advarsel, når du er på websites uden for indholdspakkerne.</translation>
+<translation id="350796261613621561">Aktivér oprettelse af overvågede brugere.</translation>
 <translation id="602728333950205286">Direkte webadresse til standardsøgemaskinen</translation>
 <translation id="3030000825273123558">Aktivér datarapportering</translation>
 <translation id="6559057113164934677">Tillad ikke, at websites får adgang til kameraet og mikrofonen</translation>
@@ -949,6 +955,9 @@
 <translation id="8864975621965365890">Undertrykker opfordringen til afvisning, som vises, når et website gengives af <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Kodninger for standardsøgemaskinen</translation>
 <translation id="285480231336205327">Aktivér høj kontrast</translation>
+<translation id="5366977351895725771">Hvis dette er angivet som falsk, vil oprettelse af overvågede brugere være deaktiveret for denne bruger. Alle eksisterende overvågede brugere vil stadig være tilgængelige.
+
+          Hvis dette er angivet som sandt eller ikke er konfigureret, kan overvågede brugere oprettes og administreres af denne bruger.</translation>
 <translation id="8101760444435022591">Set i lyset af det faktum, at soft-fail online tilbagekaldelsesundersøgelser ikke har nogen effektive sikkerhedsfordele, deaktiveres de som standard i <ph name="PRODUCT_NAME"/> version 19 eller nyere. Hvis du indstiller denne politik til sand, gendannes den forrige adfærd, og der udføres online OCSP/CRL-undersøgelser. 
 
       Hvis politikken ikke angives eller indstilles til falsk, udfører Chrome ikke online tilbagekaldelsesundersøgelser i Chrome 19 eller nyere.</translation>

@@ -72,6 +72,11 @@
 <translation id="3816312845600780067">Habilitar combinación de teclas para acceso directo de rescate para el acceso automático</translation>
 <translation id="3214164532079860003">Esta política, si se habilita, fuerza la importación de la página principal del navegador predeterminado actual. Si la política se inhabilita, la página principal no se importará. Si no se configura esta opción, se le puede preguntar al usuario si desea importar la página principal o la importación puede realizarse de forma automática.</translation>
 <translation id="5330684698007383292">Permitir que <ph name="PRODUCT_FRAME_NAME"/> gestione los siguientes tipos de contenido</translation>
+<translation id="6647965994887675196">Si está configurada en verdadero, pueden crearse y utilizarse usuarios supervisados.
+
+          Si está configurada en falso o si no está configurada, la creación y el acceso de usuarios supervisados estarán inhabilitados. Todos los usuarios supervisados existentes estarán ocultos.
+
+          NOTA: El comportamiento predeterminado en dispositivos para consumidores y empresas difiere: en los dispositivos para consumidores, los usuarios supervisados están habilitados de forma predeterminada; en cambio, en los dispositivos para empresas, los usuarios supervisados están inhabilitados de forma predeterminada.</translation>
 <translation id="5469825884154817306">Bloquear imágenes en estos sitios</translation>
 <translation id="8412312801707973447">Se realizan comprobaciones OCSP/CRL si estás conectado.</translation>
 <translation id="6649397154027560979">Esta política dejó de estar disponible. Utiliza URLBlacklist en su lugar.
@@ -884,6 +889,7 @@ Si este parámetro se establece como verdadero o no se configura, los usuarios p
 
           Si no se establece esta política, el modo de contraste alto se inhabilitará la primera vez que se muestre la pantalla de acceso. Los usuarios pueden habilitar o inhabilitar el modo de contraste alto en cualquier momento, y su estado en la pantalla de acceso permanece entre usuarios.</translation>
 <translation id="8580857153747395000">Advertir cuando se visitan sitios fuera de los paquetes de contenido</translation>
+<translation id="350796261613621561">Habilita la creación de usuarios supervisados.</translation>
 <translation id="602728333950205286">URL instantánea del proveedor de búsqueda predeterminado</translation>
 <translation id="3030000825273123558">Activar los informes estadísticos</translation>
 <translation id="6559057113164934677">No permitir que ningún sitio acceda a la cámara ni al micrófono</translation>
@@ -901,6 +907,9 @@ Si este parámetro se establece como verdadero o no se configura, los usuarios p
 <translation id="8864975621965365890">Elimina el mensaje de desactivación que aparece cuando <ph name="PRODUCT_FRAME_NAME"/> muestra un sitio.</translation>
 <translation id="3264793472749429012">Codificación del proveedor de búsqueda predeterminado</translation>
 <translation id="285480231336205327">Habilitar el modo de contraste alto</translation>
+<translation id="5366977351895725771">Si está configurada en falso, la creación de usuarios supervisados por este usuario estará inhabilitada. Los usuarios supervisados existentes seguirán estando disponibles.
+
+          Si está configurada en verdadero o si no está configurada, este usuario podrá crear y administrar usuarios supervisados.</translation>
 <translation id="8101760444435022591">Teniendo en cuenta que las comprobaciones de revocación en línea de fallos leves no proporcionan ventajas de seguridad efectivas, se desactivan de forma predeterminada en la versión 19 y posteriores de <ph name="PRODUCT_NAME"/>. Al establecer el valor de esta política en &quot;true&quot;, se restaura el comportamiento anterior y se realizan comprobaciones OCSP/CRL en línea.
 
       Si no se establece esta política, o si se establece el valor &quot;false&quot;, Chrome no realizará comprobaciones de revocación en línea en Chrome 19 y versiones posteriores.</translation>

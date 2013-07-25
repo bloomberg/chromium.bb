@@ -69,6 +69,11 @@
 <translation id="3816312845600780067">Aktifkan pintasan keyboard penyelamatan untuk masuk otomatis</translation>
 <translation id="3214164532079860003">Kebijakan ini memaksa beranda diimpor dari browser default yang sedang digunakan, jika diaktifkan. Jika dinonaktifkan, beranda tidak diimpor. Jika tidak disetel, pengguna mungkin akan ditanya apakah ingin mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="5330684698007383292">Izinkan <ph name="PRODUCT_FRAME_NAME"/> menangani jenis konten berikut</translation>
+<translation id="6647965994887675196">Jika disetel ke true, pengguna yang diawasi dapat dibuat dan digunakan.
+
+          Jika disetel ke false atau tidak dikonfigurasi, pembuatan dan info masuk pengguna yang diawasi akan dinonaktifkan. Semua pengguna diawasi yang sudah ada akan tersembunyi.
+
+          CATATAN: Perilaku default untuk perangkat pelanggan dan perusahaan berbeda: pada perangkat pelanggan, pengguna yang diawasi diaktifkan secara default, namun pada perangkat perusahaan, pengguna yang diawasi dinonaktifkan secara default.</translation>
 <translation id="5469825884154817306">Cekal gambar pada situs ini</translation>
 <translation id="8412312801707973447">Apakah pemeriksaan OCSP/CRL online dilakukan atau tidak</translation>
 <translation id="6649397154027560979">Kebijakan ini tidak lagi digunakan, gunakan URLBlacklist sebagai gantinya.
@@ -884,6 +889,7 @@
 
           Jika kebijakan ini tidak disetel, mode kontras tinggi dinonaktifkan saat layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan mode kontras tinggi kapan saja dan statusnya di layar masuk bersifat permanen antar pengguna.</translation>
 <translation id="8580857153747395000">Peringatkan saat mengunjungi situs di luar paket konten.</translation>
+<translation id="350796261613621561">Mengaktifkan pembuatan pengguna yang diawasi.</translation>
 <translation id="602728333950205286">URL sekejap penyedia penelusuran default</translation>
 <translation id="3030000825273123558">Aktifkan pelaporan metrik</translation>
 <translation id="6559057113164934677">Jangan izinkan situs apa pun mengakses kamera dan mikrofon</translation>
@@ -901,6 +907,9 @@
 <translation id="8864975621965365890">Menimpa permintaan penghentian yang muncul saat situs dirender oleh <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Penyandiaksaraan penyedia penelusuran default</translation>
 <translation id="285480231336205327">Aktifkan mode kontras tinggi</translation>
+<translation id="5366977351895725771">Jika disetel ke false, pembuatan pengguna yang diawasi oleh pengguna ini akan dinonaktifkan. Pengguna diawasi mana pun yang sudah ada akan tetap tersedia.
+
+          Jika disetel ke true atau tidak dikonfigurasi, pengguna yang diawasi dapat dibuat dan dikelola oleh pengguna ini.</translation>
 <translation id="8101760444435022591">Mengingat bahwa pemeriksaan pembatalan online, kegagalan-lunak tidak memberikan manfaat keamanan yang efektif, pemeriksaan tersebut dinonaktifkan secara default dalam <ph name="PRODUCT_NAME"/> versi 19 dan yang lebih baru. Dengan menyetel kebijakan ini ke true, perilaku sebelumnya dipulihkan dan akan dilakukan pemeriksaan OCSP/CRL online.
 
       Jika kebijakan tidak disetel, atau disetel ke false, maka Chrome tidak akan melakukan pemeriksaan pembatalan online dalam Chrome 19 dan yang lebih baru.</translation>

@@ -90,6 +90,11 @@
 
       Om policyn inte ställs in kan användaren tillfrågas om han eller hon vill importera, eller så kan importen göras automatiskt.</translation>
 <translation id="5330684698007383292">Tillåt att <ph name="PRODUCT_FRAME_NAME"/> hanterar följande innehållstyper</translation>
+<translation id="6647965994887675196">Om &quot;true&quot; anges kan övervakade användare skapas och användas.
+
+          Om &quot;false&quot; anges eller om ingen konfiguration utförs inaktiveras alternativet att skapa övervakade användare och att logga in. Alla befintliga övervakade användare döljs.
+
+          OBS! Standardbeteendet skiljer sig åt mellan kund- och företagsenheter: på kundenheter aktiveras övervakade användare som standard men på företagsenheter inaktiveras de som standard.</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
 <translation id="8412312801707973447">Anger huruvida OCSP/CRL-onlinekontroller ska utföras</translation>
 <translation id="6649397154027560979">Den här principen är föråldrad, använd URLBlacklist i stället.
@@ -1126,6 +1131,7 @@
 
           Om den här principen inte anges är högkontrastläget inaktiverat första gången som inloggningsskärmen visas. Användarna kan aktivera eller inaktivera högkontrastläget när som helst och dess status på inloggningsskärmen sparas.</translation>
 <translation id="8580857153747395000">Varna när du besöker webbplatser utanför innehållspaketet.</translation>
+<translation id="350796261613621561">Aktivera alternativet att skapa övervakade användare.</translation>
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
 <translation id="3030000825273123558">Aktivera statistikrapportering</translation>
 <translation id="6559057113164934677">Tillåt inte att webbplatser kommer åt min kamera och mikrofon</translation>
@@ -1151,6 +1157,9 @@
 <translation id="8864975621965365890">Ser till att avvisningsmeddelandet som visas när en webbplats renderas av <ph name="PRODUCT_FRAME_NAME"/> inte visas.</translation>
 <translation id="3264793472749429012">Kodningar för standardsökleverantör</translation>
 <translation id="285480231336205327">Aktivera läge för hög kontrast</translation>
+<translation id="5366977351895725771">Om &quot;false&quot; anges inaktiveras alternativet att skapa övervakade användare för den här användaren. Eventuella befintliga övervakade användare är fortfarande tillgängliga.
+
+          Om &quot;true&quot; anges eller ingen konfiguration utförs kan den här användaren skapa och hantera övervakade användare.</translation>
 <translation id="8101760444435022591">Eftersom återkallelsekontroller online vid programfel inte ger någon effektiv säkerhetsfördel är de inaktiverade som standard i <ph name="PRODUCT_NAME"/> version 19 och senare. Om du aktiverar den här policyn återställs den tidigare inställningen och OCSP/CRL-onlinekontroller utförs.
 
       Om policyn inte ställs in eller ställs in på falskt görs ingen återkallelsekontroll online i Chrome 19.</translation>

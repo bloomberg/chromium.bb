@@ -89,6 +89,11 @@
 
       Jei jis nenustatytas, naudotojo gali būti paklausta, ar importuoti, arba gali būti automatiškai pradėta importuoti.</translation>
 <translation id="5330684698007383292">Leisti „<ph name="PRODUCT_FRAME_NAME"/>“ naudoti šių tipų turinį</translation>
+<translation id="6647965994887675196">Jei ši politika galioja, galima sukurti ir naudoti prižiūrimus naudotojus.
+
+          Jei ši politika negalioja arba yra nesukonfigūruota, prižiūrimo naudotojo kūrimas ir prisijungimas bus neleidžiamas. Visi esami prižiūrimi naudotojai bus paslėpti.
+
+          PASTABA: numatytoji klientų ir įmonės įrenginių elgsena skiriasi: klientų įrenginiuose prižiūrimi naudotojai pagal numatytuosius nustatymus yra įgalinti, o įmonės įrenginiuose – neleidžiami.</translation>
 <translation id="5469825884154817306">Blokuoti vaizdus šiose svetainėse</translation>
 <translation id="8412312801707973447">Ar atliekami OCSP / CRL patikrinimai prisijungus</translation>
 <translation id="6649397154027560979">Ši politika nebenaudojama, vietoje jos naudokite politiką „URLBlacklist“.
@@ -1130,6 +1135,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei ši politika nenustatyta, didelio kontrasto režimas yra išjungtas, kai prisijungimo ekranas rodomas pirmą kartą. Naudotojai gali bet kada įgalinti arba išjungti didelio kontrasto režimą, o jo būsena skirtingiems naudotojams prisijungimo ekrane bus vienoda.</translation>
 <translation id="8580857153747395000">Įspėti, kai apsilankoma svetainėse, neesančiose turinio paketuose.</translation>
+<translation id="350796261613621561">Įgalinti prižiūrimų naudotojų kūrimą.</translation>
 <translation id="602728333950205286">Numatytojo paieškos teikėjo intuityviosios paieškos URL</translation>
 <translation id="3030000825273123558">Įgalinti metrikos ataskaitų teikimą</translation>
 <translation id="6559057113164934677">Neleisti jokiai svetainei pasiekti kameros ir mikrofono</translation>
@@ -1155,6 +1161,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="8864975621965365890">Nerodomas raginimas išjungti, kuris rodomas, kai svetainę pateikia „<ph name="PRODUCT_FRAME_NAME"/>“.</translation>
 <translation id="3264793472749429012">Numatytojo paieškos teikėjo koduotės</translation>
 <translation id="285480231336205327">Įgalinti didelio kontrasto būseną</translation>
+<translation id="5366977351895725771">Jei ši politika negalioja, šis naudotojas negalės kurti prižiūrimų naudotojų. Visi esami naudotojai bus vis tiek pasiekiami.
+
+          Jei ši politika galioja arba yra nesukonfigūruota, šis naudotojas gali kurti ir tvarkyti prižiūrimus naudotojus.</translation>
 <translation id="8101760444435022591">Atsiradus programiniam gedimui, prisijungus atliekami panaikinimo patikrinimai neužtikrina tinkamo saugumo, todėl jie pagal numatytuosius nustatymus neleidžiami 19 ir naujesnių versijų „<ph name="PRODUCT_NAME"/>“. Nustačius šią politiką į „true“ (tiesa), atkuriama ankstesnė elgsena ir atliekami OCSP / CRL patikrinimai prisijungus.
 
       Nenustačius politikos arba nustačius į „false“ (netiesa), „Chrome“ neatlieka panaikinimo patikrinimų prisijungus 19 ir naujesnių versijų „Chrome“.</translation>

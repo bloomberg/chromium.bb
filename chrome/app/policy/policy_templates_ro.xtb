@@ -69,6 +69,11 @@
 <translation id="3816312845600780067">Activați comanda rapidă de la tastatură de rezervă pentru conectarea automată</translation>
 <translation id="3214164532079860003">Dacă este activată, această politică forțează importarea paginii de pornire din browserul prestabilit actual. Dacă este dezactivată, pagina de pornire nu este importată. Dacă nu este setată, este posibil ca utilizatorul să fie întrebat dacă se efectuează importarea sau aceasta ar putea avea loc în mod automat.</translation>
 <translation id="5330684698007383292">Permiteți ca <ph name="PRODUCT_FRAME_NAME"/> să gestioneze următoarele tipuri de conținut</translation>
+<translation id="6647965994887675196">Dacă această politică este activată, pot fi creați și folosiți utilizatori monitorizați.
+
+          Dacă această politică nu este activată sau configurată, crearea și conectarea utilizatorilor monitorizați vor fi dezactivate. Toți utilizatorii monitorizați existenți vor fi ascunși.
+
+          NOTĂ: comportamentul prestabilit pentru dispozitivele destinate consumatorilor și întreprinderilor diferă: utilizatorii monitorizați sunt activați în mod prestabilit pe dispozitivele destinate consumatorilor, iar pe dispozitivele destinate întreprinderilor, aceștia sunt dezactivați în mod prestabilit.</translation>
 <translation id="5469825884154817306">Blocați imagini de pe aceste site-uri</translation>
 <translation id="8412312801707973447">Această politică stabilește dacă sunt efectuate verificări OCSP/CRL online</translation>
 <translation id="6649397154027560979">Această politică este învechită. Utilizați, în schimb, URLBlacklist.
@@ -884,6 +889,7 @@
 
           Dacă această politică nu este configurată, modul de contrast ridicat este dezactivat la afișarea inițială a ecranului de conectare. Utilizatorii pot oricând să activeze sau să dezactiveze modul de contrast ridicat, iar starea sa pe ecranul de conectare persistă de la un utilizator la altul.</translation>
 <translation id="8580857153747395000">Utilizatorii sunt avertizați când accesează site-uri din afara pachetelor de conținut.</translation>
+<translation id="350796261613621561">Permiteți crearea utilizatorilor monitorizați.</translation>
 <translation id="602728333950205286">Adresa URL instant a furnizorului de căutare prestabilit</translation>
 <translation id="3030000825273123558">Activați raportarea statisticilor</translation>
 <translation id="6559057113164934677">Nu permiteți niciunui site să acceseze camera și microfonul</translation>
@@ -901,6 +907,9 @@
 <translation id="8864975621965365890">Elimină solicitarea de refuzare care apare atunci când un site web este redat de <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Codificări pentru furnizorul de căutare prestabilit</translation>
 <translation id="285480231336205327">Activați modul de contrast ridicat</translation>
+<translation id="5366977351895725771">Dacă această politică nu este activată, crearea utilizatorilor monitorizați de către acest utilizator va fi dezactivată. Utilizatorii monitorizați existenți vor fi în continuare disponibili.
+
+          Dacă această politică este activată sau nu este configurată, acest utilizator poate crea și gestiona utilizatori monitorizați.</translation>
 <translation id="8101760444435022591">Deoarece software-ul poate eșua, verificările de revocare online nu oferă avantaje de securitate clare, acestea fiind dezactivate în mod prestabilit în <ph name="PRODUCT_NAME"/> versiunea 19 și versiunile ulterioare. Prin activarea acestei politici, comportamentul anterior este restabilit și sunt efectuate verificări OCSP/CRL online.
 
       Dacă politica nu este setată sau nu este activată, atunci Chrome nu va efectua verificări de revocare online în Chrome 19 și versiunile ulterioare.</translation>

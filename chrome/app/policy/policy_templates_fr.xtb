@@ -90,6 +90,11 @@ Si elle est désactivée, la page d'accueil n'est pas importée.
 
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="5330684698007383292">Autoriser <ph name="PRODUCT_FRAME_NAME"/> à gérer les types de contenu suivants</translation>
+<translation id="6647965994887675196">Si cette règle est associée à la valeur &quot;true&quot;, vous pouvez créer et utiliser des comptes utilisateur supervisés.
+
+          Si elle est associée à la valeur &quot;false&quot; ou si elle n'est pas configurée, la création et la connexion des comptes utilisateur supervisés sont désactivées. Tous les utilisateurs supervisés existants sont alors masqués.
+
+          REMARQUE : Le comportement par défaut des appareils grand public diffère de celui des appareils professionnels : sur les appareils grand public, les comptes utilisateur supervisés sont autorisés par défaut, contrairement aux appareils professionnels.</translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
 <translation id="8412312801707973447">Si des contrôles OCSP/CRL en ligne sont effectués</translation>
 <translation id="6649397154027560979">Cette règle a été abandonnée. Veuillez utiliser URLBlacklist à la place.
@@ -1123,6 +1128,7 @@ Cette règle n'est prise en compte que si la règle &quot;DefaultSearchProviderE
 
           Si vous ne définissez pas cette règle, le mode Contraste élevé est désactivé au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou le désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
 <translation id="8580857153747395000">Prévenir lors de la consultation de sites en dehors des packs de contenu</translation>
+<translation id="350796261613621561">Autoriser la création de comptes utilisateur supervisés</translation>
 <translation id="602728333950205286">URL de recherche instantanée du moteur de recherche par défaut</translation>
 <translation id="3030000825273123558">Activer la génération de rapports sur les statistiques</translation>
 <translation id="6559057113164934677">Interdire à tous les sites d'accéder à la caméra et au microphone</translation>
@@ -1148,6 +1154,9 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="8864975621965365890">Supprime l'invite de fermeture qui s'affiche lors du rendu d'un site par <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Codages du moteur de recherche par défaut</translation>
 <translation id="285480231336205327">Activer le mode Contraste élevé</translation>
+<translation id="5366977351895725771">Si cette règle est associée à la valeur &quot;false&quot;, la création de comptes utilisateur supervisés par cet utilisateur est désactivée. Les utilisateurs supervisés existants restent disponibles.
+
+          Si elle est associée à la valeur &quot;true&quot; ou si elle n'est pas configurée, cet utilisateur peut créer et gérer des comptes utilisateur supervisés.</translation>
 <translation id="8101760444435022591">Étant donné que les contrôles de révocation en ligne, parfois sujets à erreur, ne présentent aucun avantage concret en termes de sécurité, ils sont désactivés par défaut dans les versions 19 et ultérieures de <ph name="PRODUCT_NAME"/>. L'activation de cette règle restaure le comportement précédent. Des contrôles OCSP/CRL sont alors effectués.
 
        Si cette règle n'est pas définie ou si elle est définie sur &quot;false&quot;, Google Chrome n'effectue aucun contrôle de révocation en ligne dans les versions 19 et ultérieures.</translation>

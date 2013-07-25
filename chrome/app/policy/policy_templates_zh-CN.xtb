@@ -66,6 +66,11 @@
 <translation id="3816312845600780067">启用停止自动登录的键盘快捷键</translation>
 <translation id="3214164532079860003">如果启用此政策，就会强制从当前默认浏览器导入主页。如果停用此政策，就不会导入主页。如果未设置此政策，系统就会询问用户是否导入主页，或者系统自动进行导入。</translation>
 <translation id="5330684698007383292">允许 <ph name="PRODUCT_FRAME_NAME"/>处理以下内容类型</translation>
+<translation id="6647965994887675196">如果此政策的值设置为 True，则您可以创建和使用受监管用户帐户。
+
+          如果此政策的值设置为 False 或未配置，则系统将停用受监管用户创建和登录功能，并会隐藏所有现有的受监管用户。
+
+          请注意，普通用户设备和企业设备的默认行为有所不同：默认情况下，系统会在普通用户设备上启用受监管用户，而在企业设备上停用受监管用户。</translation>
 <translation id="5469825884154817306">在这些网站上阻止图片</translation>
 <translation id="8412312801707973447">是否执行在线 OCSP/CRL 检查</translation>
 <translation id="6649397154027560979">此政策已弃用，请改用 URLBlacklist。
@@ -885,6 +890,7 @@
 
           如果未设置此政策，则登录屏幕初次显示时会停用高反差模式。用户可以随时启用或停用高反差模式，并且其在登录屏幕上的启用或停用状态对于各用户均有效。</translation>
 <translation id="8580857153747395000">在访问非内容包内的网站时发出警告。</translation>
+<translation id="350796261613621561">启用创建受监管用户的功能。</translation>
 <translation id="602728333950205286">默认搜索服务提供商的即搜即得网址</translation>
 <translation id="3030000825273123558">启用指标报告</translation>
 <translation id="6559057113164934677">不允许任何网站使用摄像头和麦克风</translation>
@@ -902,6 +908,9 @@
 <translation id="8864975621965365890">浏览使用 <ph name="PRODUCT_FRAME_NAME"/>呈现的网站时，阻止显示“停止支持”的提示。</translation>
 <translation id="3264793472749429012">默认搜索服务提供商的编码</translation>
 <translation id="285480231336205327">启用高反差模式</translation>
+<translation id="5366977351895725771">如果此政策的值设置为 False，此用户将无法创建受监管用户。不过，所有目前受监管的用户帐户仍然可供访问。
+
+          如果此政策的值设置为 True 或未配置，这位用户即可创建并管理受监管用户。</translation>
 <translation id="8101760444435022591">鉴于软故障和在线撤消检查未提供有效的安全优势，因此它们在 <ph name="PRODUCT_NAME"/>版本 19 及更高版本中默认停用。将此政策设置为 true，即可恢复以前的行为，系统将执行在线 OCSP/CRL 检查。
 
       如果未设置此政策或将其设置为 false，Chrome 浏览器 19 及更高版本就不会执行在线撤消检查。</translation>

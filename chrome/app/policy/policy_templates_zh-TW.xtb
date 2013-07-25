@@ -69,6 +69,11 @@
 <translation id="3816312845600780067">啟用停止自動登入的鍵盤快速鍵</translation>
 <translation id="3214164532079860003">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入首頁。如果停用這項政策，則不會匯入首頁。如果未設定這項政策，系統會自動匯入首頁，或詢問使用者是否要匯入首頁。</translation>
 <translation id="5330684698007383292">允許 <ph name="PRODUCT_FRAME_NAME"/> 處理列出的內容類型</translation>
+<translation id="6647965994887675196">如果設為 True，即可建立並使用受監督的使用者。
+
+          如果設為 False 或不予設定，則無法建立及登入受監督的使用者帳戶。系統將全面隱藏現有的受監督使用者。
+
+          注意：一般使用者和企業客戶的裝置對於這項設定的預設值有所不同。在預設狀態下，一般使用者的裝置會啟用建立受監督使用者的功能，但企業戶的裝置則會停用這項功能。</translation>
 <translation id="5469825884154817306">封鎖這些網站的圖片</translation>
 <translation id="8412312801707973447">不論線上 OCSP/CRL 檢查是否執行</translation>
 <translation id="6649397154027560979">這項政策已淘汰，請改用 URLBlacklist。
@@ -894,6 +899,7 @@
 
           如果您未設定這項政策，則系統會在初次顯示登入畫面時停用高反差模式。使用者隨時都可以啟用或停用高反差模式，而高反差模式在登入畫面的狀態則視使用者的選擇而定 (均為永久性)。</translation>
 <translation id="8580857153747395000">瀏覽非內容套件內網站時顯示警告。</translation>
+<translation id="350796261613621561">啟用建立受監督使用者的功能。</translation>
 <translation id="602728333950205286">預設搜尋引擎互動智慧搜尋網址</translation>
 <translation id="3030000825273123558">啟用計量報告</translation>
 <translation id="6559057113164934677">不允許任何網站使用攝影機和麥克風</translation>
@@ -911,6 +917,9 @@
 <translation id="8864975621965365890">瀏覽使用 <ph name="PRODUCT_FRAME_NAME"/>轉譯的網站時，隱藏停止支援提示。</translation>
 <translation id="3264793472749429012">預設搜尋引擎編碼</translation>
 <translation id="285480231336205327">啟用高反差模式</translation>
+<translation id="5366977351895725771">如果設為 False，這位使用者將無法建立受監督的使用者。目前如有任何受監督的使用者帳戶，則仍然可供存取。
+
+          如果設為 True 或不予設定，這位使用者即可建立並管理受監督的使用者。</translation>
 <translation id="8101760444435022591">由於軟失敗線上撤銷檢查不會提供有效的安全性效益，因此在 <ph name="PRODUCT_NAME"/> 版本 19 和更新版本中，根據預設這些檢查已停用。將這項政策設定為 True，系統會還原先前行為，並且會執行線上 OCSP/CRL 檢查。
 
       如果您沒有設定這項政策，或將政策設定為 False，則 Chrome 不會在 Chrome 19 和更新版本中執行線上撤銷檢查。</translation>

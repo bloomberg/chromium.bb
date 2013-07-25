@@ -77,6 +77,11 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="3816312845600780067">Aktiver hurtigtasten for avbrytelse av automatisk pålogging</translation>
 <translation id="3214164532079860003">Denne retningslinjen tvinger startsiden til å bli importert fra nåværende standard nettleser hvis den er aktivert. Hvis retningslinjen er deaktivert, importeres ikke startsiden. Hvis retningslinjen ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5330684698007383292">Gi <ph name="PRODUCT_FRAME_NAME"/> tillatelse til å håndtere de følgende innholdstypene</translation>
+<translation id="6647965994887675196">Hvis angitt til «true», kan overvåkede brukere opprettes og brukes.
+
+          Hvis angitt til «false» eller ikke konfigurert, er oppretting og bruk av overvåkede brukere deaktivert. Alle eksisterende overvåkede brukere skjules.
+
+          MERK: Standardatferden for forbruker- og bedriftsenheter er ikke den samme. På forbrukerenheter er overvåkede brukere aktivert som standard, men på bedriftsenheter er de deaktivert.</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
 <translation id="6649397154027560979">Denne innstillingen er avviklet. Bruk URLBlacklist i stedet.
@@ -1039,6 +1044,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis denne innstillingen angis, deaktiveres høykontrastmodus når påloggingssiden vises for første gang. Brukere kan aktivere eller deaktivere høykontrastmodus når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
 <translation id="8580857153747395000">Advarsel når nettsteder som ikke inngår i innholdspakker åpnes.</translation>
+<translation id="350796261613621561">Aktiver oppretting av overvåkede brukere.</translation>
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
 <translation id="6559057113164934677">Forby nettsteder fra å bruke kameraet og mikrofonen min</translation>
@@ -1064,6 +1070,9 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="8864975621965365890">Ignorerer avslagsforespørselen som vises når et nettsted gjengis av <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Kodinger av standard søkeleverandør</translation>
 <translation id="285480231336205327">Aktiver modus for høy kontrast</translation>
+<translation id="5366977351895725771">Hvis angitt til «false» kan ikke denne brukeren opprette overvåkede brukere. Eksisterende overvåkede brukere er fortsatt tilgjengelige.
+
+          Hvis angitt til «true» eller ikke konfigurert, kan denne brukeren opprette og administrere overvåkede brukere.</translation>
 <translation id="8101760444435022591">Som et resultat av at opphevelsekontroller for myke systemstopp ikke gir noen effektiv sikkerhetsfordel, blir de som standard deaktivert for versjon 19 og nyere av <ph name="PRODUCT_NAME"/>. Hvis du angir denne innstillingen som Sann, gjenopprettes tidligere atferd. I tillegg blir OCSP/CRL-kontroller på nettet utført.</translation>
 <translation id="5469484020713359236">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får angi informasjonskapsler.
 

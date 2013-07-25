@@ -82,6 +82,11 @@
 <translation id="3816312845600780067">Pääsu klaviatuuri otsetee lubamine automaatseks sisselogimiseks</translation>
 <translation id="3214164532079860003">Kui see reegel on lubatud, siis imporditakse avaleht praegusest vaikebrauserist. Kui reegel on keelatud, siis avalehte ei impordita. Kui reegel ei ole määratud, siis võidakse avaleht automaatselt importida või kasutajalt küsida, kas ta soovib selle importida.</translation>
 <translation id="5330684698007383292">Pistikprogrammil <ph name="PRODUCT_FRAME_NAME"/> järgmiste sisutüüpide töötlemise lubamine</translation>
+<translation id="6647965994887675196">Kui väärtuseks on seatud valik Tõene, saab luua ja kasutada järelevalvega kasutajaid.
+
+          Kui väärtuseks on seatud valik Väär või Seadistamata, siis on järelevalvega kasutajate loomine ja sisselogimine keelatud. Kõik olemasolevad järelevalvega kasutajad peidetakse.
+
+          MÄRKUS. Tavatarbijatele ja ettevõtetele mõeldud seadmete vaikekäitumine on erinev: tarbijate seadmetes on järelevalvega kasutajad vaikimisi lubatud, kuid ettevõtete seadmetes vaikimisi keelatud.</translation>
 <translation id="5469825884154817306">Blokeeri kujutised nendel saitidel</translation>
 <translation id="8412312801707973447">Kontrolli võrgus OCSP-d/CRL-i</translation>
 <translation id="6649397154027560979">Selle reegli tugi on katkestatud, kasutage selle asemel üksust URLBlacklist.
@@ -1101,6 +1106,7 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 
          Kui jätate reegli määramata, on suure kontrastsusega režiim algselt keelatud. Kasutaja võib suure kontrastsusega režiimi igal ajal lubada või keelata ja selle olek jääb sisselogimisekraanil kasutajati püsivaks.</translation>
 <translation id="8580857153747395000">Hoiata sisupakettidest väljaspool olevate saitide külastamisel.</translation>
+<translation id="350796261613621561">Järelevalvega kasutajate loomise lubamine.</translation>
 <translation id="602728333950205286">Vaikeotsingupakkuja Instant-URL</translation>
 <translation id="3030000825273123558">Luba mõõdikute aruandlus</translation>
 <translation id="6559057113164934677">Keela kõikidel saitidel juurdepääs kaamerale ja mikrofonile</translation>
@@ -1126,6 +1132,9 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 <translation id="8864975621965365890">Keelab tagasilükkamisviiba, mis kuvatakse, kui saiti renderdab <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Vaikeotsingupakkuja kodeeringud</translation>
 <translation id="285480231336205327">Luba kõrge kontrastiga režiim</translation>
+<translation id="5366977351895725771">Kui väärtuseks on seatud valik Väär, siis keelatakse sellel kasutajal järelevalvega kasutajate loomine. Kõik olemasolevad järelevalvega kasutajad on ikka saadaval.
+
+          Kui väärtuseks on seatud valik Tõene või Seadistamata, saab see kasutaja luua ja hallata järelevalvega kasutajaid.</translation>
 <translation id="8101760444435022591">Osalise nurjumise puhul ei suurenda tagasivõtmise kontrollimine turvalisust, mistõttu on kontrollimine vaikimisi rakenduse <ph name="PRODUCT_NAME"/> 19. ja hilisemates versioonides vaikimisi keelatud. Selle reegli lubamisel taastatakse varasem käitumine ja võrgus ei kontrollita OCSP-d/CRL-i.
 
       Kui jätate selle reegli määramata või keelate selle, siis ei kontrolli Chrome 19. ja hilisemates versioonides võrgus tagasivõtmist.</translation>

@@ -69,6 +69,11 @@
 <translation id="3816312845600780067">Kiváltó billentyűparancs engedélyezése az automatikus bejelentkezéshez</translation>
 <translation id="3214164532079860003">Ez a házirend -- ha engedélyezve van -- kikényszeríti a kezdőlap importálását az alapértelmezett böngészőből. Ha le van tiltva, akkor nem kerül sor a kezdőlap importálására. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="5330684698007383292">A következő tartalomtípusok kezelésének engedélyezése a(z) <ph name="PRODUCT_FRAME_NAME"/> számára</translation>
+<translation id="6647965994887675196">Ha „igaz” értékre van állítva, megengedett a felügyelt felhasználók létrehozása és használata.
+
+          Ha „hamis” értékre van állítva, illetve nincs beállítva, a felügyelt felhasználók létrehozása és bejelentkezése nem lehetséges. Az összes meglévő felügyelt felhasználó rejtve lesz.
+
+          MEGJEGYZÉS: a fogyasztói és vállalati eszközök alapértelmezett működése eltérő. A fogyasztói eszközökön alapértelmezés szerint engedélyezettek a felügyelt felhasználók, míg a vállalati eszközökön le vannak tiltva.</translation>
 <translation id="5469825884154817306">Képek letiltása ezeken az webhelyeken</translation>
 <translation id="8412312801707973447">Végbemenjenek-e online OCSP-/CRL-ellenőrzések</translation>
 <translation id="6649397154027560979">Ez a házirend megszűnt. Kérjük, használja helyette az URLBlacklist házirendet.
@@ -884,6 +889,7 @@ Ez a beállítás a TLS-domainű tanúsítványbővítmények tesztelésére has
 
           Ha nem állítja be ezt a házirendet, akkor a nagy kontrasztú mód le lesz tiltva a bejelentkezési képernyő első megjelenítésekor. A felhasználók bármikor engedélyezhetik vagy letilthatják a nagy kontrasztú módot, és annak állapota mindegyik felhasználó esetében megmarad a bejelentkezési képernyőn.</translation>
 <translation id="8580857153747395000">Figyelmeztetés tartalomcsomagokon kívüli webhelyek felkeresése esetén.</translation>
+<translation id="350796261613621561">Felügyelt felhasználók létrehozásának engedélyezése.</translation>
 <translation id="602728333950205286">Alapértelmezett keresési szolgáltató azonnali URL-je</translation>
 <translation id="3030000825273123558">Mutatók jelentéseinek engedélyezése</translation>
 <translation id="6559057113164934677">Ne engedje webhelyek hozzáférését a kamerához és mikrofonhoz</translation>
@@ -901,6 +907,9 @@ Ez a beállítás a TLS-domainű tanúsítványbővítmények tesztelésére has
 <translation id="8864975621965365890">Elrejti a kikapcsolási figyelmeztetést, amely akkor jelenik meg, ha egy webhelyet a(z) <ph name="PRODUCT_FRAME_NAME"/> jeleníti meg.</translation>
 <translation id="3264793472749429012">Alapértelmezett keresési szolgáltató kódolásai</translation>
 <translation id="285480231336205327">Nagy kontrasztú mód engedélyezése</translation>
+<translation id="5366977351895725771">Ha „hamis” értékre van állítva, a felhasználó nem hozhat létre felügyelt felhasználókat. Az összes meglévő felügyelt felhasználó továbbra is elérhető lesz.
+
+          Ha „igaz” értékre van állítva, illetve nincs beállítva, a felhasználó létrehozhat és kezelhet felügyelt felhasználókat.</translation>
 <translation id="8101760444435022591">Figyelemmel arra, hogy a hibajavító mechanizmus szerint működő internetes visszavonási ellenőrzések nem nyújtanak megfelelő biztonságot, a(z) <ph name="PRODUCT_NAME"/> 19-es és további verzióiban alapértelmezés szerint ki vannak kapcsolva. A házirend igaz értékre állításával visszaállítódik a korábbi viselkedés, és a rendszer online módú OCSP/CRL-ellenőrzéseket végez.
 
       Ha a házirend nincs beállítva, vagy értéke hamis, akkor a Chrome nem végez online visszavonási ellenőrzéseket a Chrome 19-es és újabb verzióinál.</translation>

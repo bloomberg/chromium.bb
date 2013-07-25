@@ -90,6 +90,11 @@
 
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
 <translation id="5330684698007383292">Atļauja produktam <ph name="PRODUCT_FRAME_NAME"/> apstrādāt tālāk norādītos satura veidus</translation>
+<translation id="6647965994887675196">Iestatot vērtību uz “true”, var tikt veidoti un izmantoti uzraudzītie lietotāju konti.
+
+          Ja vērtība tiek iestatīta uz “false” vai arī netiek konfigurēta, uzraudzīto lietotāju kontu veidošana un pieteikšanās tiks atspējota. Visi esošie uzraudzītie lietotāju konti tiks slēpti.
+
+          PIEZĪME. Noklusējuma darbības klientu un uzņēmumu ierīcēs atšķiras: klientu ierīcēs uzraudzītie lietotāju konti pēc noklusējuma ir iespējoti, taču uzņēmumu ierīcēs — atspējoti.</translation>
 <translation id="5469825884154817306">Bloķē attēlus šajās vietnēs</translation>
 <translation id="8412312801707973447">Vai tiek veiktas OCSP/CRL pārbaudes tiešsaistē</translation>
 <translation id="6649397154027560979">Šīs politikas darbība ir pārtraukta. Lūdzu, tās vietā izmantojiet politiku URLBlacklist.
@@ -1120,6 +1125,7 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
           Ja šī politika nav iestatīta, augsta kontrasta režīms ir atspējots, kad pirmo reizi tiek parādīts pieteikšanās ekrāns. Lietotājs var jebkurā brīdī iespējot vai atspējot augsta kontrasta režīmu, un tā statuss pieteikšanās ekrānā tiek saglabāts visiem lietotājiem.</translation>
 <translation id="8580857153747395000">Brīdināt, kad tiek apmeklētas satura pakotnēs neiekļautas vietnes.</translation>
+<translation id="350796261613621561">Iespējot uzraudzīto lietotāju kontu veidošanu</translation>
 <translation id="602728333950205286">Noklusējuma meklētājprogrammas dinamisko mekl. rezultātu URL</translation>
 <translation id="3030000825273123558">Iespējot metrikas ziņošanu</translation>
 <translation id="6559057113164934677">Neļaut nevienai vietnei piekļūt kamerai un mikrofonam</translation>
@@ -1145,6 +1151,9 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="8864975621965365890">Aizliedz noraidīšanas uzvedni, kas tiek parādīta, ja vietni renderē spraudnis <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Noklusējuma meklētājprogrammas kodējumi</translation>
 <translation id="285480231336205327">Iespējot augsta kontrasta režīmu</translation>
+<translation id="5366977351895725771">Iestatot vērtību uz “false”, šim lietotājam tiks atspējota iespēja veidot uzraudzītos lietotāju kontus. Visi esošie uzraudzītie lietotāju konti joprojām būs pieejami.
+
+          Ja vērtība tiek iestatīta uz “true” vai netiek konfigurēta, šis lietotājs var veidot un pārvaldīt uzraudzītos lietotāju kontus.</translation>
 <translation id="8101760444435022591">Ņemot vērā to, ka pastāvīgas atteices atsaukšanas pārbaudes tiešsaistē nenodrošina nevienu efektīvu drošības priekšrocību, tās tiek atspējotas pēc noklusējuma produkta <ph name="PRODUCT_NAME"/> 19. vai jaunākā versijā. Iestatot šo politiku uz Patiesa, tiek atjaunota iepriekšējā darbība un tiek veiktas OCSP/CRL pārbaudes tiešsaistē.
 
       Ja politika netiek iestatīta vai iestatīta uz Aplama, pārlūks Chrome neveic atsaukšanas pārbaudes tiešsaistē pārlūka Chrome 19. vai jaunākā versijā.</translation>

@@ -941,7 +941,7 @@
 <translation id="5361686177218315158">Ngoại lệ máy ảnh và micrô Adobe Flash Player khác nhau.</translation>
 <translation id="3395011312013575824">Đang gửi.</translation>
 <translation id="5043766625767731235">Tiếp tục chặn plug-in không có hộp cát</translation>
-<translation id="4667176955651319626">Chặn dữ liệu web và cookie bên thứ ba</translation>
+<translation id="4667176955651319626">Chặn dữ liệu web và cookie của bên thứ ba</translation>
 <translation id="6686490380836145850">Đóng tab phía bên phải</translation>
 <translation id="8366694425498033255">Phím chọn</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> giờ</translation>
@@ -2574,7 +2574,7 @@ Bạn cần đăng nhập để sử dụng tính năng này.</translation>
 <translation id="994901932508062332">Tháng vừa qua</translation>
 <translation id="1720318856472900922">Xác thực Máy chủ TLS WWW</translation>
 <translation id="62243461820985415">Chrome không thể tải xuống hình nền này.</translation>
-<translation id="1752977958630076881">Chỉ giữ dữ liệu cục bộ cho đến khi tôi thoát trình duyệt của mình</translation>
+<translation id="1752977958630076881">Chỉ lưu giữ dữ liệu cục bộ cho đến khi tôi thoát trình duyệt của mình</translation>
 <translation id="8550022383519221471">Dịch vụ đồng bộ hóa không khả dụng cho tên miền của bạn.</translation>
 <translation id="1658424621194652532">Trang này đang truy cập micrô của bạn.</translation>
 <translation id="3355823806454867987">Thay đổi thiết lập proxy...</translation>
