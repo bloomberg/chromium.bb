@@ -906,19 +906,6 @@ crbug.com/227396 fast/gradients/unprefixed-generated-gradients.html [ ImageOnlyF
 crbug.com/227396 css3/compositing/effect-background-blend-mode-tiled.html [ ImageOnlyFailure ]
 crbug.com/227396 css3/compositing/effect-background-blend-mode.html [ ImageOnlyFailure ]
 
-# CSS Background Blending tests that need rebasing
-crbug.com/251239 css3/compositing/background-blend-mode-gradient-color.html [ NeedsRebaseline ]
-crbug.com/251239 css3/compositing/background-blend-mode-gradient-gradient.html [ NeedsRebaseline ]
-crbug.com/251239 css3/compositing/background-blend-mode-gradient-image.html [ NeedsRebaseline ]
-crbug.com/251239 css3/compositing/background-blend-mode-multiple-background-layers.html [ NeedsRebaseline ]
-crbug.com/251727 css3/compositing/background-blend-mode-default-value.html [ NeedsRebaseline ]
-crbug.com/251727 css3/compositing/background-blend-mode-different-image-formats.html [ NeedsRebaseline ]
-crbug.com/251727 css3/compositing/background-blend-mode-image-color.html [ NeedsRebaseline ]
-crbug.com/251727 css3/compositing/background-blend-mode-image-image.html [ NeedsRebaseline ]
-crbug.com/251727 css3/compositing/background-blend-mode-single-layer-no-blending.html [ NeedsRebaseline ]
-crbug.com/251240 css3/compositing/background-blend-mode-image-svg.html [ NeedsRebaseline ]
-crbug.com/251240 css3/compositing/background-blend-mode-svg-color.html [ NeedsRebaseline ]
-
 # IETC grid layout
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83913 ietestcenter/css3/grid/grid-items-003.htm [ ImageOnlyFailure ]
