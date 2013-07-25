@@ -189,5 +189,26 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, MAYBE_Basic) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, NoSearchForSensitiveData) {
+  // None of the following input strings should be accepted because they may
+  // contain private data.
+  const char* inputs[] = {
+    // file: scheme is bad.
+    "file://filename",
+    "FILE://filename",
+    // URLs with usernames, ports, queries or refs are bad.
+    "http://username:password@hostname/",
+    "http://www.example.com:1000",
+    "http://foo:1000",
+    "http://hostname/?query=q",
+    "http://hostname/path#ref",
+    // A https URL with path is bad.
+    "https://hostname/path",
+  };
+
+  for (size_t i = 0; i < arraysize(inputs); ++i)
+    EXPECT_EQ("", RunQuery(inputs[i], ""));
+}
+
 }  // namespace test
 }  // namespace app_list
