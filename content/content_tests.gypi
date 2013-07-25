@@ -428,6 +428,7 @@
         'renderer/media/test_response_generator.h',
         'renderer/media/video_capture_impl_unittest.cc',
         'renderer/media/video_capture_message_filter_unittest.cc',
+        'renderer/media/video_destination_handler_unittest.cc',
         'renderer/media/webaudiosourceprovider_impl_unittest.cc',
         'renderer/paint_aggregator_unittest.cc',
         'renderer/pepper/host_var_tracker_unittest.cc',
@@ -606,6 +607,7 @@
           ],
           'sources!': [
             'browser/plugin_loader_posix_unittest.cc',
+            'renderer/media/video_destination_handler_unittest.cc',
           ],
         }],
         ['enable_webrtc==1', {
@@ -621,7 +623,6 @@
             'renderer/media/media_stream_impl_unittest.cc',
             'renderer/media/rtc_peer_connection_handler_unittest.cc',
             'renderer/media/rtc_video_decoder_unittest.cc',
-            'renderer/media/video_destination_handler_unittest.cc',
             'renderer/media/video_source_handler_unittest.cc',
             'renderer/media/webrtc_audio_device_unittest.cc',
             'renderer/media/webrtc_identity_service_unittest.cc',
@@ -633,6 +634,10 @@
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
             '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine',
           ]
+        }, {
+          'sources!': [
+            'renderer/media/video_destination_handler_unittest.cc',
+          ],
         }],
         ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
           'sources': [

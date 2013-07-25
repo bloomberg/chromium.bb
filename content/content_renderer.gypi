@@ -677,6 +677,8 @@
         ['exclude', '^renderer/pepper/'],
       ],
       'sources!': [
+        'renderer/media/video_destination_handler.cc',
+        'renderer/media/video_destination_handler.h',
         'renderer/render_widget_fullscreen_pepper.cc',
         'renderer/render_widget_fullscreen_pepper.h',
       ],

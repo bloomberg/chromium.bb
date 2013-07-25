@@ -85,7 +85,6 @@ bool PpFrameWriter::IsScreencast() const {
 
 void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
                              int64 time_stamp_ns) {
-#if defined(ENABLE_PLUGINS)
   base::AutoLock auto_lock(lock_);
   // This assumes the handler of the SignalFrameCaptured won't call Start/Stop.
   // TODO(ronghuawu): Avoid the using of lock. One way is to post this call to
@@ -133,7 +132,6 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
   // This signals to libJingle that a new VideoFrame is available.
   // libJingle have no assumptions on what thread this signal come from.
   SignalFrameCaptured(this, &frame);
-#endif
 }
 
 // PpFrameWriterProxy is a helper class to make sure the user won't use
