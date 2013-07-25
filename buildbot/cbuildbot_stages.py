@@ -1358,18 +1358,11 @@ class BranchUtilStage(bs.BuilderStage):
 
   COMMIT_MESSAGE = 'Bump %(target)s after branching %(branch)s'
 
-  @staticmethod
-  def _NormalizeRef(ref):
-    """Convert git branch refs into fully qualified form."""
-    if ref and not ref.startswith('refs/'):
-      ref = 'refs/heads/%s' % ref
-    return ref
-
   def __init__(self, options, build_config):
     super(BranchUtilStage, self).__init__(options, build_config)
     self.dryrun = self._options.debug_forced
-    self.dest_ref = self._NormalizeRef(self._options.branch_name)
-    self.rename_to = self._NormalizeRef(self._options.rename_to)
+    self.dest_ref = git.NormalizeRef(self._options.branch_name)
+    self.rename_to = git.NormalizeRef(self._options.rename_to)
 
   def RunPush(self, project, src_ref=None, dest_ref=None, force=False):
     """Perform a git push for a project.

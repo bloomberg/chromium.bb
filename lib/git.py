@@ -207,6 +207,13 @@ def StripRefs(ref):
   return ref
 
 
+def NormalizeRef(ref):
+  """Convert git branch refs into fully qualified form."""
+  if ref and not ref.startswith('refs/'):
+    ref = 'refs/heads/%s' % ref
+  return ref
+
+
 class Manifest(object):
   """SAX handler that parses the manifest document.
 
@@ -299,8 +306,13 @@ class Manifest(object):
     # 'repo manifest -r' adds an 'upstream' attribute to the project tag for the
     # manifests it generates.  We can use the attribute to get a valid branch
     # instead of a sha1 for these types of manifests.
-    local_rev = rev = attrs.get('upstream', attrs['revision'])
-    if rev.startswith('refs/heads/'):
+    pre_rev = attrs.get('upstream', attrs['revision'])
+    # In cases where the revision is a branch name, make sure it is in refs/*
+    # form.
+    if not IsSHA1(pre_rev):
+      pre_rev = NormalizeRef(pre_rev)
+    local_rev = rev = pre_rev
+    if rev.startswith('refs/'):
       local_rev = 'refs/remotes/%s/%s' % (remote_name, StripRefsHeads(rev))
     attrs['local_revision'] = local_rev
 
