@@ -172,7 +172,7 @@ class BluetoothDetailedView : public TrayDetailsView,
             IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING, list[i].display_name);
         new_connecting_devices.insert(list[i].address);
         UpdateBluetoothDeviceList(&connecting_devices_, list[i]);
-      } else if (list[i].connected) {
+      } else if (list[i].connected && list[i].paired) {
         new_connected_devices.insert(list[i].address);
         UpdateBluetoothDeviceList(&connected_devices_, list[i]);
       } else if (list[i].paired) {

@@ -679,8 +679,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ConnectToBluetoothDevice(const std::string& address) OVERRIDE {
     device::BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
-    if (!device || device->IsConnecting() || device->IsConnected())
+    if (!device || device->IsConnecting() ||
+        (device->IsConnected() && device->IsPaired())) {
       return;
+    }
     if (device->IsPaired() && !device->IsConnectable())
       return;
     if (device->IsPaired() || !device->IsPairable()) {
