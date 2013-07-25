@@ -14,6 +14,15 @@
 
         var worker = new Worker('resources/worker-importscripts-onerror-sameorigin.js');
 
+        var workerOnerror;
+        worker.onmessage = function (e) {
+            workerOnerror = e.data;
+            shouldBeEqualToString("workerOnerror.message", "Uncaught This is a custom error message.");
+            shouldBeEqualToString("workerOnerror.filename", "http://127.0.0.1:8000/workers/resources/worker-importscripts-onerror-sameorigin.js");
+            shouldEvaluateTo("workerOnerror.lineno", 5);
+            shouldEvaluateTo("workerOnerror.column", 0);
+        };
+
         var onerrorMessage, onerrorURL, onerrorLine;
         worker.onerror = function (e) {
             onerrorMessage = e.message;
@@ -21,7 +30,7 @@
             onerrorLine = e.lineno;
             shouldBeEqualToString("onerrorMessage", "Uncaught This is a custom error message.");
             shouldBeEqualToString("onerrorURL", "http://127.0.0.1:8000/workers/resources/worker-importscripts-onerror-sameorigin.js");
-            shouldEvaluateTo("onerrorLine", 1);
+            shouldEvaluateTo("onerrorLine", 5);
 
             e.preventDefault();
             finishJSTest();
