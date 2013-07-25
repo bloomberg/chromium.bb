@@ -147,6 +147,21 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateEditUrlWithoutParams) {
       url_generator_.GenerateEditUrlWithoutParams("XXX").spec());
 }
 
+TEST_F(GDataWapiUrlGeneratorTest, GenerateEditUrlWithEmbedOrigin) {
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/XXX?v=3&alt=json"
+      "&showroot=true&embedOrigin=chrome-extension%3A%2F%2Ftest",
+      url_generator_.GenerateEditUrlWithEmbedOrigin(
+          "XXX",
+          GURL("chrome-extension://test")).spec());
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/XXX?v=3&alt=json"
+      "&showroot=true",
+      url_generator_.GenerateEditUrlWithEmbedOrigin(
+          "XXX",
+          GURL()).spec());
+}
+
 TEST_F(GDataWapiUrlGeneratorTest, GenerateContentUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full/"

@@ -46,11 +46,13 @@ using google_apis::GetResourceEntryCallback;
 using google_apis::GetResourceEntryRequest;
 using google_apis::GetResourceListCallback;
 using google_apis::GetResourceListRequest;
+using google_apis::GetShareUrlCallback;
 using google_apis::GetUploadStatusRequest;
 using google_apis::HTTP_NOT_IMPLEMENTED;
 using google_apis::InitiateUploadCallback;
 using google_apis::InitiateUploadExistingFileRequest;
 using google_apis::InitiateUploadNewFileRequest;
+using google_apis::Link;
 using google_apis::ProgressCallback;
 using google_apis::RemoveResourceFromDirectoryRequest;
 using google_apis::RenameResourceRequest;
@@ -94,6 +96,30 @@ void ParseResourceEntryAndRun(const GetResourceEntryCallback& callback,
   }
 
   callback.Run(error, entry.Pass());
+}
+
+// Extracts an url to the sharing dialog and returns it via |callback|. If
+// the share url doesn't exist, then an empty url is returned.
+void ParseShareUrlAndRun(const GetShareUrlCallback& callback,
+                         GDataErrorCode error,
+                         scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!value) {
+    callback.Run(error, GURL());
+    return;
+  }
+
+  // Parsing ResourceEntry is cheap enough to do on UI thread.
+  scoped_ptr<ResourceEntry> entry =
+      google_apis::ResourceEntry::ExtractAndParse(*value);
+  if (!entry) {
+    callback.Run(GDATA_PARSE_ERROR, GURL());
+    return;
+  }
+
+  const Link* share_link = entry->GetLinkByType(Link::LINK_SHARE);
+  callback.Run(error, share_link ? share_link->href() : GURL());
 }
 
 void ParseAboutResourceAndRun(
@@ -301,7 +327,24 @@ CancelCallback GDataWapiService::GetResourceEntry(
       new GetResourceEntryRequest(sender_.get(),
                                   url_generator_,
                                   resource_id,
+                                  GURL(),
                                   base::Bind(&ParseResourceEntryAndRun,
+                                             callback)));
+}
+
+CancelCallback GDataWapiService::GetShareUrl(
+    const std::string& resource_id,
+    const GURL& embed_origin,
+    const GetShareUrlCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  return sender_->StartRequestWithRetry(
+      new GetResourceEntryRequest(sender_.get(),
+                                  url_generator_,
+                                  resource_id,
+                                  embed_origin,
+                                  base::Bind(&ParseShareUrlAndRun,
                                              callback)));
 }
 

@@ -42,6 +42,7 @@ using google_apis::GetAppListCallback;
 using google_apis::GetContentCallback;
 using google_apis::GetResourceEntryCallback;
 using google_apis::GetResourceListCallback;
+using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_BAD_REQUEST;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_NOT_FOUND;
@@ -457,6 +458,49 @@ CancelCallback FakeDriveService::GetResourceEntry(
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_NOT_FOUND, base::Passed(&null)));
+  return CancelCallback();
+}
+
+CancelCallback FakeDriveService::GetShareUrl(
+    const std::string& resource_id,
+    const GURL& /* embed_origin */,
+    const GetShareUrlCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (offline_) {
+    scoped_ptr<ResourceEntry> null;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION,
+                   GURL()));
+    return CancelCallback();
+  }
+
+  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  if (entry) {
+    // Share urls are stored in the resource entry, and they do not rely on the
+    // embedding origin.
+    scoped_ptr<ResourceEntry> resource_entry =
+        ResourceEntry::CreateFrom(*entry);
+    const Link* share_url = resource_entry->GetLinkByType(Link::LINK_SHARE);
+    if (share_url) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, HTTP_SUCCESS, share_url->href()));
+    } else {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, HTTP_SUCCESS, GURL()));
+    }
+    return CancelCallback();
+  }
+
+  scoped_ptr<ResourceEntry> null;
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_NOT_FOUND, GURL()));
   return CancelCallback();
 }
 

@@ -850,12 +850,14 @@ TEST_F(FileSystemTest, GetShareUrl) {
   ASSERT_TRUE(LoadFullResourceList());
 
   const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  const GURL kEmbedOrigin("chrome-extension://test-id");
 
   // Try to fetch the URL for the sharing dialog.
   FileError error = FILE_ERROR_FAILED;
   GURL share_url;
   file_system_->GetShareUrl(
       kFileInRoot,
+      kEmbedOrigin,
       google_apis::test_util::CreateCopyResultCallback(&error, &share_url));
   test_util::RunBlockingPoolTask();
 
@@ -869,6 +871,7 @@ TEST_F(FileSystemTest, GetShareUrlNotAvailable) {
 
   const base::FilePath kFileInRoot(
       FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
+  const GURL kEmbedOrigin("chrome-extension://test-id");
 
   // Try to fetch the URL for the sharing dialog.
   FileError error = FILE_ERROR_FAILED;
@@ -876,6 +879,7 @@ TEST_F(FileSystemTest, GetShareUrlNotAvailable) {
 
   file_system_->GetShareUrl(
       kFileInRoot,
+      kEmbedOrigin,
       google_apis::test_util::CreateCopyResultCallback(&error, &share_url));
   test_util::RunBlockingPoolTask();
 

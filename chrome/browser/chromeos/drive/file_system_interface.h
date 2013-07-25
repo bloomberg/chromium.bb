@@ -386,10 +386,11 @@ class FileSystemInterface {
   // and returns it to the callback.
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
 
-  // Fetches the url to the sharing dialog for the specified file or directory.
-  // |callback| must not be null.
+  // Fetches the url to the sharing dialog to be embedded in |embed_origin|,
+  // for the specified file or directory. |callback| must not be null.
   virtual void GetShareUrl(
       const base::FilePath& file_path,
+      const GURL& embed_origin,
       const GetShareUrlCallback& callback) = 0;
 
   // Returns miscellaneous metadata of the file system like the largest

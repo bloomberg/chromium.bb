@@ -162,6 +162,24 @@ GURL GDataWapiUrlGenerator::GenerateEditUrlWithoutParams(
   return base_url_.Resolve(kGetEditURLPrefix + net::EscapePath(resource_id));
 }
 
+GURL GDataWapiUrlGenerator::GenerateEditUrlWithEmbedOrigin(
+    const std::string& resource_id, const GURL& embed_origin) const {
+  GURL url = GenerateEditUrl(resource_id);
+  if (!embed_origin.is_empty()) {
+    // Construct a valid serialized embed origin from an url, according to
+    // WD-html5-20110525. Such string has to be built manually, since
+    // GURL::spec() always adds the trailing slash. Moreover, ports are
+    // currently not supported.
+    DCHECK(!embed_origin.has_port());
+    DCHECK(!embed_origin.has_path() || embed_origin.path() == "/");
+    const std::string serialized_embed_origin =
+        embed_origin.scheme() + "://" + embed_origin.host();
+    url = net::AppendOrReplaceQueryParameter(
+        url, "embedOrigin", serialized_embed_origin);
+  }
+  return url;
+}
+
 GURL GDataWapiUrlGenerator::GenerateContentUrl(
     const std::string& resource_id) const {
   if (resource_id.empty()) {

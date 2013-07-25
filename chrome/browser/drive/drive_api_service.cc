@@ -43,6 +43,8 @@ using google_apis::GetFileRequest;
 using google_apis::GetFilelistRequest;
 using google_apis::GetResourceEntryCallback;
 using google_apis::GetResourceListCallback;
+using google_apis::GetShareUrlCallback;
+using google_apis::HTTP_NOT_IMPLEMENTED;
 using google_apis::HTTP_SUCCESS;
 using google_apis::InitiateUploadCallback;
 using google_apis::ProgressCallback;
@@ -459,6 +461,20 @@ CancelCallback DriveAPIService::GetResourceEntry(
       url_generator_,
       resource_id,
       base::Bind(&ParseResourceEntryAndRun, callback)));
+}
+
+CancelCallback DriveAPIService::GetShareUrl(
+    const std::string& resource_id,
+    const GURL& embed_origin,
+    const GetShareUrlCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(mtomasz): Implement this, once it is supported by the Drive API.
+  NOTIMPLEMENTED();
+  callback.Run(HTTP_NOT_IMPLEMENTED, GURL());
+
+  return CancelCallback();
 }
 
 CancelCallback DriveAPIService::GetAboutResource(

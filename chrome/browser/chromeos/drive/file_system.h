@@ -138,6 +138,7 @@ class FileSystem : public FileSystemInterface,
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   virtual void GetShareUrl(
       const base::FilePath& file_path,
+      const GURL& embed_origin,
       const GetShareUrlCallback& callback) OVERRIDE;
   virtual void GetMetadata(
       const GetFilesystemMetadataCallback& callback) OVERRIDE;
@@ -299,13 +300,14 @@ class FileSystem : public FileSystemInterface,
   // and then uses it to ask for the share url. |callback| must not be null.
   void GetShareUrlAfterGetResourceEntry(
       const base::FilePath& file_path,
+      const GURL& embed_origin,
       const GetShareUrlCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
   void OnGetResourceEntryForGetShareUrl(
       const GetShareUrlCallback& callback,
       google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceEntry> entry);
+      const GURL& share_url);
 
   // Used to get Drive related preferences.
   PrefService* pref_service_;

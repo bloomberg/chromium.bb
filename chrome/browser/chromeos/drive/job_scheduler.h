@@ -102,6 +102,11 @@ class JobScheduler
                         const ClientContext& context,
                         const google_apis::GetResourceEntryCallback& callback);
 
+  // Adds a GetShareUrl operation to the queue.
+  void GetShareUrl(const std::string& resource_id,
+                   const GURL& embed_origin,
+                   const ClientContext& context,
+                   const google_apis::GetShareUrlCallback& callback);
 
   // Adds a DeleteResource operation to the queue.
   void DeleteResource(const std::string& resource_id,
@@ -269,6 +274,13 @@ class JobScheduler
       const google_apis::GetAboutResourceCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::AboutResource> about_resource);
+
+  // Callback for job finishing with a GetShareUrlCallback.
+  void OnGetShareUrlJobDone(
+      JobID job_id,
+      const google_apis::GetShareUrlCallback& callback,
+      google_apis::GDataErrorCode error,
+      const GURL& share_url);
 
   // Callback for job finishing with a GetAppListCallback.
   void OnGetAppListJobDone(

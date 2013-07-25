@@ -105,6 +105,7 @@ class GetResourceEntryRequest : public GetDataRequest {
   GetResourceEntryRequest(RequestSender* sender,
                           const GDataWapiUrlGenerator& url_generator,
                           const std::string& resource_id,
+                          const GURL& embed_origin,
                           const GetDataCallback& callback);
   virtual ~GetResourceEntryRequest();
 
@@ -116,6 +117,8 @@ class GetResourceEntryRequest : public GetDataRequest {
   const GDataWapiUrlGenerator url_generator_;
   // Resource id of the requested entry.
   const std::string resource_id_;
+  // Embed origin for an url to the sharing dialog. Can be empty.
+  const GURL& embed_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(GetResourceEntryRequest);
 };

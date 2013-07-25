@@ -806,6 +806,23 @@ TEST_F(FakeDriveServiceTest, GetResourceEntry_Offline) {
   EXPECT_FALSE(resource_entry);
 }
 
+TEST_F(FakeDriveServiceTest, GetShareUrl) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "gdata/root_feed.json"));
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL share_url;
+  fake_service_.GetShareUrl(
+      kResourceId,
+      GURL(),  // embed origin
+      test_util::CreateCopyResultCallback(&error, &share_url));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_FALSE(share_url.is_empty());
+}
+
 TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));

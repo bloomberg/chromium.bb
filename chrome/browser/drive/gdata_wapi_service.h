@@ -90,6 +90,10 @@ class GDataWapiService : public DriveServiceInterface,
   virtual google_apis::CancelCallback GetResourceEntry(
       const std::string& resource_id,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
+  virtual google_apis::CancelCallback GetShareUrl(
+      const std::string& resource_id,
+      const GURL& embed_origin,
+      const google_apis::GetShareUrlCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetAboutResource(
       const google_apis::GetAboutResourceCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetAppList(

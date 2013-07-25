@@ -673,6 +673,7 @@ void FileSystem::OnGetAboutResource(
 
 void FileSystem::GetShareUrl(
     const base::FilePath& file_path,
+    const GURL& embed_origin,
     const GetShareUrlCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -683,11 +684,13 @@ void FileSystem::GetShareUrl(
       base::Bind(&FileSystem::GetShareUrlAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
+                 embed_origin,
                  callback));
 }
 
 void FileSystem::GetShareUrlAfterGetResourceEntry(
     const base::FilePath& file_path,
+    const GURL& embed_origin,
     const GetShareUrlCallback& callback,
     FileError error,
     scoped_ptr<ResourceEntry> entry) {
@@ -704,8 +707,9 @@ void FileSystem::GetShareUrlAfterGetResourceEntry(
     return;
   }
 
-  scheduler_->GetResourceEntry(
+  scheduler_->GetShareUrl(
       entry->resource_id(),
+      embed_origin,
       ClientContext(USER_INITIATED),
       base::Bind(&FileSystem::OnGetResourceEntryForGetShareUrl,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -715,7 +719,7 @@ void FileSystem::GetShareUrlAfterGetResourceEntry(
 void FileSystem::OnGetResourceEntryForGetShareUrl(
     const GetShareUrlCallback& callback,
     google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
+    const GURL& share_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -724,16 +728,13 @@ void FileSystem::OnGetResourceEntryForGetShareUrl(
     callback.Run(error, GURL());
     return;
   }
-  DCHECK(entry);
 
-  const google_apis::Link* share_link =
-      entry->GetLinkByType(google_apis::Link::LINK_SHARE);
-  if (!share_link) {
+  if (share_url.is_empty()) {
     callback.Run(FILE_ERROR_FAILED, GURL());
     return;
   }
 
-  callback.Run(FILE_ERROR_OK, share_link->href());
+  callback.Run(FILE_ERROR_OK, share_url);
 }
 
 void FileSystem::Search(const std::string& search_query,

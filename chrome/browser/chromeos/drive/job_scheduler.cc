@@ -334,6 +334,29 @@ void JobScheduler::GetResourceEntry(
   StartJob(new_job);
 }
 
+void JobScheduler::GetShareUrl(
+    const std::string& resource_id,
+    const GURL& embed_origin,
+    const ClientContext& context,
+    const google_apis::GetShareUrlCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  JobEntry* new_job = CreateNewJob(TYPE_GET_SHARE_URL);
+  new_job->context = context;
+  new_job->task = base::Bind(
+      &DriveServiceInterface::GetShareUrl,
+      base::Unretained(drive_service_),
+      resource_id,
+      embed_origin,
+      base::Bind(&JobScheduler::OnGetShareUrlJobDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 new_job->job_info.job_id,
+                 callback));
+  new_job->abort_callback = google_apis::CreateErrorRunCallback(callback);
+  StartJob(new_job);
+}
+
 void JobScheduler::DeleteResource(
     const std::string& resource_id,
     const google_apis::EntryActionCallback& callback) {
@@ -850,6 +873,18 @@ void JobScheduler::OnGetAboutResourceJobDone(
     callback.Run(error, about_resource.Pass());
 }
 
+void JobScheduler::OnGetShareUrlJobDone(
+    JobID job_id,
+    const google_apis::GetShareUrlCallback& callback,
+    google_apis::GDataErrorCode error,
+    const GURL& share_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (OnJobDone(job_id, error))
+    callback.Run(error, share_url);
+}
+
 void JobScheduler::OnGetAppListJobDone(
     JobID job_id,
     const google_apis::GetAppListCallback& callback,
@@ -952,6 +987,7 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
     case TYPE_GET_CHANGE_LIST:
     case TYPE_CONTINUE_GET_RESOURCE_LIST:
     case TYPE_GET_RESOURCE_ENTRY:
+    case TYPE_GET_SHARE_URL:
     case TYPE_DELETE_RESOURCE:
     case TYPE_COPY_RESOURCE:
     case TYPE_COPY_HOSTED_DOCUMENT:

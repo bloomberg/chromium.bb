@@ -481,6 +481,7 @@ TEST_F(GDataWapiRequestsTest, GetResourceEntryRequest_ValidResourceId) {
         request_sender_.get(),
         *url_generator_,
         "file:2_file_resource_id",  // resource ID
+        GURL(),  // embed origin
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&result_code, &result_data)));
@@ -508,6 +509,7 @@ TEST_F(GDataWapiRequestsTest, GetResourceEntryRequest_InvalidResourceId) {
         request_sender_.get(),
         *url_generator_,
         "<invalid>",  // resource ID
+        GURL(),  // embed origin
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&result_code, &result_data)));

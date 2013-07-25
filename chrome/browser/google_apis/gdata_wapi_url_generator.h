@@ -94,6 +94,13 @@ class GDataWapiUrlGenerator {
   // edit urls.
   GURL GenerateEditUrlWithoutParams(const std::string& resource_id) const;
 
+  // Generates a URL for getting or editing the resource entry of the given
+  // resource ID with additionally passed embed origin. This is used to fetch
+  // share urls for the sharing dialog to be embedded with the |embed_origin|
+  // origin.
+  GURL GenerateEditUrlWithEmbedOrigin(const std::string& resource_id,
+                                      const GURL& embed_origin) const;
+
   // Generates a URL for editing the contents in the directory specified
   // by the given resource ID.
   GURL GenerateContentUrl(const std::string& resource_id) const;

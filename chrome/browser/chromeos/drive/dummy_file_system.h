@@ -81,6 +81,7 @@ class DummyFileSystem : public FileSystemInterface {
       const GetAvailableSpaceCallback& callback) OVERRIDE {}
   virtual void GetShareUrl(
       const base::FilePath& file_path,
+      const GURL& embed_origin,
       const GetShareUrlCallback& callback) OVERRIDE {}
   virtual void GetMetadata(
       const GetFilesystemMetadataCallback& callback) OVERRIDE {}

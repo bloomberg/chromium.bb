@@ -200,6 +200,7 @@ void FakeFileSystem::GetAvailableSpace(
 
 void FakeFileSystem::GetShareUrl(
     const base::FilePath& file_path,
+    const GURL& embed_origin,
     const GetShareUrlCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
