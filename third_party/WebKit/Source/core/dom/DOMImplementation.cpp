@@ -31,6 +31,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
@@ -257,7 +258,7 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceUR
     if (namespaceURI == SVGNames::svgNamespaceURI)
         doc = SVGDocument::create();
     else if (namespaceURI == HTMLNames::xhtmlNamespaceURI)
-        doc = Document::createXHTML();
+        doc = Document::createXHTML(DocumentInit().withRegistrationContext(m_document->registrationContext()));
     else
         doc = Document::create();
 
@@ -372,7 +373,7 @@ bool DOMImplementation::isTextMIMEType(const String& mimeType)
 
 PassRefPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& title)
 {
-    RefPtr<HTMLDocument> d = HTMLDocument::create();
+    RefPtr<HTMLDocument> d = HTMLDocument::create(DocumentInit().withRegistrationContext(m_document->registrationContext()));
     d->open();
     d->write("<!doctype html><html><body></body></html>");
     if (!title.isNull())

@@ -11,11 +11,11 @@ PASS foo.cloneNode().callbacksCalled is true
 PASS foo.cloneNode(true).firstChild.callbacksCalled is true
 PASS bar.cloneNode().callbacksCalled is true
 PASS bar.cloneNode(true).firstChild.callbacksCalled is true
-PASS foreignFoo.callbacksCalled is undefined.
-PASS foreignFoo.firstChild.callbacksCalled is undefined.
+PASS foreignFoo.callbacksCalled is true
+PASS foreignFoo.firstChild.callbacksCalled is true
 PASS importedFoo.callbacksCalled is true
 PASS importedFoo.firstChild.callbacksCalled is true
-PASS window.callbacksCalled is []
+PASS window.callbacksCalled is ['div', 'x-foo']
 PASS importedBar.callbacksCalled is true
 PASS importedBar.firstChild.callbacksCalled is true
 PASS window.callbacksCalled is ['X-FOO', 'DIV']

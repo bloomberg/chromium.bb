@@ -1,4 +1,5 @@
  
 PASS registration context should not be shared with an iframe's document 
 PASS registration context is shared with the template document 
+PASS registration context is shared with DOMImplementation-created documents 
 

@@ -40,8 +40,8 @@ var foreignDoc = document.implementation.createDocument('http://www.w3.org/1999/
 
 var foreignFoo = foreignDoc.createElement('x-foo');
 foreignFoo.appendChild(foreignDoc.createElement('div', 'x-bar'));
-shouldBeUndefined("foreignFoo.callbacksCalled");
-shouldBeUndefined("foreignFoo.firstChild.callbacksCalled");
+shouldBeTrue("foreignFoo.callbacksCalled");
+shouldBeTrue("foreignFoo.firstChild.callbacksCalled");
 importedFoo = document.importNode(foreignFoo)
 shouldBeTrue("importedFoo.callbacksCalled");
 shouldBeTrue("importedFoo.firstChild.callbacksCalled");
@@ -49,7 +49,8 @@ shouldBeTrue("importedFoo.firstChild.callbacksCalled");
 window.callbacksCalled = [];
 var foreignBar = foreignDoc.createElement('div', 'x-bar');
 foreignBar.appendChild(foreignDoc.createElement('x-foo'));
-shouldBe("window.callbacksCalled", "[]");
+shouldBe("window.callbacksCalled", "['div', 'x-foo']");
+window.callbacksCalled = [];
 importedBar = document.importNode(foreignBar);
 shouldBeTrue("importedBar.callbacksCalled");
 shouldBeTrue("importedBar.firstChild.callbacksCalled");
