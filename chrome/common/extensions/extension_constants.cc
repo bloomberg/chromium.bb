@@ -150,7 +150,10 @@ const int kExtensionIconSizes[] = {
   EXTENSION_ICON_MEDIUM,  // 48
   EXTENSION_ICON_SMALL,  // 32
   EXTENSION_ICON_SMALLISH,  // 24
-  EXTENSION_ICON_BITTY  // 16
+  EXTENSION_ICON_BITTY,  // 16
+  // Additional 2x resources to load.
+  2 * EXTENSION_ICON_MEDIUM,  // 96
+  2 * EXTENSION_ICON_SMALL  // 64
 };
 
 const size_t kNumExtensionIconSizes =
