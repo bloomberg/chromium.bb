@@ -106,18 +106,18 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 }
 
 struct x11_data_source {
-	struct wl_data_source base;
+	struct weston_data_source base;
 	struct weston_wm *wm;
 };
 
 static void
-data_source_accept(struct wl_data_source *source,
+data_source_accept(struct weston_data_source *source,
 		   uint32_t time, const char *mime_type)
 {
 }
 
 static void
-data_source_send(struct wl_data_source *base,
+data_source_send(struct weston_data_source *base,
 		 const char *mime_type, int32_t fd)
 {
 	struct x11_data_source *source = (struct x11_data_source *) base;
@@ -140,7 +140,7 @@ data_source_send(struct wl_data_source *base,
 }
 
 static void
-data_source_cancel(struct wl_data_source *source)
+data_source_cancel(struct weston_data_source *source)
 {
 }
 
@@ -421,7 +421,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 static void
 weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_type)
 {
-	struct wl_data_source *source;
+	struct weston_data_source *source;
 	struct weston_seat *seat = weston_wm_pick_seat(wm);
 	int p[2];
 
@@ -621,7 +621,7 @@ weston_wm_set_selection(struct wl_listener *listener, void *data)
 	struct weston_seat *seat = data;
 	struct weston_wm *wm =
 		container_of(listener, struct weston_wm, selection_listener);
-	struct wl_data_source *source = seat->selection_data_source;
+	struct weston_data_source *source = seat->selection_data_source;
 	const char **p, **end;
 	int has_text_plain = 0;
 

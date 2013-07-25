@@ -32,7 +32,7 @@
 #include "compositor.h"
 
 struct clipboard_source {
-	struct wl_data_source base;
+	struct weston_data_source base;
 	struct wl_array contents;
 	struct clipboard *clipboard;
 	struct wl_event_source *event_source;
@@ -99,13 +99,13 @@ clipboard_source_data(int fd, uint32_t mask, void *data)
 }
 
 static void
-clipboard_source_accept(struct wl_data_source *source,
+clipboard_source_accept(struct weston_data_source *source,
 			uint32_t time, const char *mime_type)
 {
 }
 
 static void
-clipboard_source_send(struct wl_data_source *base,
+clipboard_source_send(struct weston_data_source *base,
 		      const char *mime_type, int32_t fd)
 {
 	struct clipboard_source *source =
@@ -120,7 +120,7 @@ clipboard_source_send(struct wl_data_source *base,
 }
 
 static void
-clipboard_source_cancel(struct wl_data_source *source)
+clipboard_source_cancel(struct weston_data_source *source)
 {
 }
 
@@ -226,7 +226,7 @@ clipboard_set_selection(struct wl_listener *listener, void *data)
 	struct clipboard *clipboard =
 		container_of(listener, struct clipboard, selection_listener);
 	struct weston_seat *seat = data;
-	struct wl_data_source *source = seat->selection_data_source;
+	struct weston_data_source *source = seat->selection_data_source;
 	const char **mime_types;
 	int p[2];
 

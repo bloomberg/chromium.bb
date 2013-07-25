@@ -277,20 +277,20 @@ struct weston_touch_grab {
 
 struct wl_data_offer {
 	struct wl_resource *resource;
-	struct wl_data_source *source;
+	struct weston_data_source *source;
 	struct wl_listener source_destroy_listener;
 };
 
-struct wl_data_source {
+struct weston_data_source {
 	struct wl_resource *resource;
 	struct wl_signal destroy_signal;
 	struct wl_array mime_types;
 
-	void (*accept)(struct wl_data_source *source,
+	void (*accept)(struct weston_data_source *source,
 		       uint32_t serial, const char *mime_type);
-	void (*send)(struct wl_data_source *source,
+	void (*send)(struct weston_data_source *source,
 		     const char *mime_type, int32_t fd);
-	void (*cancel)(struct wl_data_source *source);
+	void (*cancel)(struct weston_data_source *source);
 };
 
 struct weston_pointer {
@@ -385,7 +385,7 @@ wl_data_device_manager_init(struct wl_display *display);
 
 void
 weston_seat_set_selection(struct weston_seat *seat,
-			  struct wl_data_source *source, uint32_t serial);
+			  struct weston_data_source *source, uint32_t serial);
 
 struct weston_xkb_info {
 	struct xkb_keymap *keymap;
@@ -454,7 +454,7 @@ struct weston_seat {
 	struct wl_list drag_resource_list;
 
 	uint32_t selection_serial;
-	struct wl_data_source *selection_data_source;
+	struct weston_data_source *selection_data_source;
 	struct wl_listener selection_data_source_listener;
 	struct wl_signal selection_signal;
 

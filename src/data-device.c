@@ -29,7 +29,7 @@
 
 struct weston_drag {
 	struct wl_client *client;
-	struct wl_data_source *data_source;
+	struct weston_data_source *data_source;
 	struct wl_listener data_source_listener;
 	struct weston_surface *focus;
 	struct wl_resource *focus_resource;
@@ -107,8 +107,8 @@ destroy_offer_data_source(struct wl_listener *listener, void *data)
 }
 
 static struct wl_resource *
-wl_data_source_send_offer(struct wl_data_source *source,
-			  struct wl_resource *target)
+weston_data_source_send_offer(struct weston_data_source *source,
+			      struct wl_resource *target)
 {
 	struct wl_data_offer *offer;
 	char **p;
@@ -141,7 +141,8 @@ data_source_offer(struct wl_client *client,
 		  struct wl_resource *resource,
 		  const char *type)
 {
-	struct wl_data_source *source = wl_resource_get_user_data(resource);
+	struct weston_data_source *source =
+		wl_resource_get_user_data(resource);
 	char **p;
 
 	p = wl_array_add(&source->mime_types, sizeof *p);
@@ -230,7 +231,8 @@ weston_drag_set_focus(struct weston_drag *drag, struct weston_surface *surface,
 	serial = wl_display_next_serial(display);
 
 	if (drag->data_source)
-		offer = wl_data_source_send_offer(drag->data_source, resource);
+		offer = weston_data_source_send_offer(drag->data_source,
+						      resource);
 
 	wl_data_device_send_enter(resource, serial, surface->resource,
 				  sx, sy, offer);
@@ -429,7 +431,7 @@ destroy_selection_data_source(struct wl_listener *listener, void *data)
 
 WL_EXPORT void
 weston_seat_set_selection(struct weston_seat *seat,
-			  struct wl_data_source *source, uint32_t serial)
+			  struct weston_data_source *source, uint32_t serial)
 {
 	struct wl_resource *data_device, *offer;
 	struct wl_resource *focus = NULL;
@@ -453,8 +455,8 @@ weston_seat_set_selection(struct weston_seat *seat,
 		data_device = wl_resource_find_for_client(&seat->drag_resource_list,
 							  wl_resource_get_client(focus));
 		if (data_device && source) {
-			offer = wl_data_source_send_offer(seat->selection_data_source,
-							  data_device);
+			offer = weston_data_source_send_offer(seat->selection_data_source,
+							      data_device);
 			wl_data_device_send_selection(data_device, offer);
 		} else if (data_device) {
 			wl_data_device_send_selection(data_device, NULL);
@@ -493,7 +495,8 @@ static const struct wl_data_device_interface data_device_interface = {
 static void
 destroy_data_source(struct wl_resource *resource)
 {
-	struct wl_data_source *source = wl_resource_get_user_data(resource);
+	struct weston_data_source *source =
+		wl_resource_get_user_data(resource);
 	char **p;
 
 	wl_signal_emit(&source->destroy_signal, source);
@@ -507,14 +510,14 @@ destroy_data_source(struct wl_resource *resource)
 }
 
 static void
-client_source_accept(struct wl_data_source *source,
+client_source_accept(struct weston_data_source *source,
 		     uint32_t time, const char *mime_type)
 {
 	wl_data_source_send_target(source->resource, mime_type);
 }
 
 static void
-client_source_send(struct wl_data_source *source,
+client_source_send(struct weston_data_source *source,
 		   const char *mime_type, int32_t fd)
 {
 	wl_data_source_send_send(source->resource, mime_type, fd);
@@ -522,7 +525,7 @@ client_source_send(struct wl_data_source *source,
 }
 
 static void
-client_source_cancel(struct wl_data_source *source)
+client_source_cancel(struct weston_data_source *source)
 {
 	wl_data_source_send_cancelled(source->resource);
 }
@@ -531,7 +534,7 @@ static void
 create_data_source(struct wl_client *client,
 		   struct wl_resource *resource, uint32_t id)
 {
-	struct wl_data_source *source;
+	struct weston_data_source *source;
 
 	source = malloc(sizeof *source);
 	if (source == NULL) {
@@ -596,7 +599,7 @@ WL_EXPORT void
 wl_data_device_set_keyboard_focus(struct weston_seat *seat)
 {
 	struct wl_resource *data_device, *focus, *offer;
-	struct wl_data_source *source;
+	struct weston_data_source *source;
 
 	if (!seat->keyboard)
 		return;
@@ -612,7 +615,7 @@ wl_data_device_set_keyboard_focus(struct weston_seat *seat)
 
 	source = seat->selection_data_source;
 	if (source) {
-		offer = wl_data_source_send_offer(source, data_device);
+		offer = weston_data_source_send_offer(source, data_device);
 		wl_data_device_send_selection(data_device, offer);
 	}
 }
