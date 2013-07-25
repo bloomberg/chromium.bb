@@ -191,7 +191,7 @@ protected:
     virtual void dispatchRegionLayoutUpdateEvent() { m_dispatchRegionLayoutUpdateEvent = false; }
     virtual void dispatchRegionOversetChangeEvent() { m_dispatchRegionOversetChangeEvent = false; }
 
-    void initializeRegionsComputedAutoHeight(RenderRegion* = 0);
+    void initializeRegionsOverrideLogicalContentHeight(RenderRegion* = 0);
 
     virtual void autoGenerateRegionsToBlockOffset(LayoutUnit) { };
 

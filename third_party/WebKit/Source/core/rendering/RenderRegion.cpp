@@ -45,9 +45,9 @@ RenderRegion::RenderRegion(Element* element, RenderFlowThread* flowThread)
     : RenderBlock(element)
     , m_flowThread(flowThread)
     , m_parentNamedFlowThread(0)
-    , m_computedAutoHeight(-1)
     , m_isValid(false)
     , m_hasCustomRegionStyle(false)
+    , m_hasAutoLogicalHeight(false)
 {
 }
 
@@ -60,9 +60,9 @@ LayoutUnit RenderRegion::pageLogicalWidth() const
 LayoutUnit RenderRegion::pageLogicalHeight() const
 {
     ASSERT(m_flowThread);
-    if (hasComputedAutoHeight() && !m_flowThread->inConstrainedLayoutPhase()) {
+    if (hasOverrideHeight() && !m_flowThread->inConstrainedLayoutPhase()) {
         ASSERT(hasAutoLogicalHeight());
-        return computedAutoHeight();
+        return overrideLogicalContentHeight();
     }
     return m_flowThread->isHorizontalWritingMode() ? contentHeight() : contentWidth();
 }
@@ -79,9 +79,9 @@ LayoutUnit RenderRegion::maxPageLogicalHeight() const
 LayoutUnit RenderRegion::logicalHeightOfAllFlowThreadContent() const
 {
     ASSERT(m_flowThread);
-    if (hasComputedAutoHeight() && !m_flowThread->inConstrainedLayoutPhase()) {
+    if (hasOverrideHeight() && !m_flowThread->inConstrainedLayoutPhase()) {
         ASSERT(hasAutoLogicalHeight());
-        return computedAutoHeight();
+        return overrideLogicalContentHeight();
     }
     return m_flowThread->isHorizontalWritingMode() ? contentHeight() : contentWidth();
 }
@@ -242,7 +242,7 @@ void RenderRegion::updateRegionHasAutoLogicalHeightFlag()
         if (m_hasAutoLogicalHeight)
             incrementAutoLogicalHeightCount();
         else {
-            clearComputedAutoHeight();
+            clearOverrideLogicalContentHeight();
             decrementAutoLogicalHeightCount();
         }
     }
@@ -283,7 +283,7 @@ void RenderRegion::layoutBlock(bool relayoutChildren, LayoutUnit)
 
         if (hasAutoLogicalHeight() && !m_flowThread->inConstrainedLayoutPhase()) {
             m_flowThread->invalidateRegions();
-            clearComputedAutoHeight();
+            clearOverrideLogicalContentHeight();
             return;
         }
 
@@ -626,22 +626,20 @@ void RenderRegion::updateLogicalHeight()
     if (!hasAutoLogicalHeight())
         return;
 
-    // We want to update the logical height based on the computed auto-height
-    // only if the view is in the layout phase in which all the
-    // auto logical height regions have a computed auto-height.
+    // We want to update the logical height based on the computed override logical
+    // content height only if the view is in the layout phase
+    // in which all the auto logical height regions have their override logical height set.
     if (!m_flowThread->inConstrainedLayoutPhase())
         return;
 
     // There may be regions with auto logical height that during the prerequisite layout phase
     // did not have the chance to layout flow thread content. Because of that, these regions do not
-    // have a computedAutoHeight and they will not be able to fragment any flow
+    // have an overrideLogicalContentHeight computed and they will not be able to fragment any flow
     // thread content.
-    if (!hasComputedAutoHeight())
+    if (!hasOverrideHeight())
         return;
 
-    LayoutUnit autoHeight = hasOverrideHeight() ? overrideLogicalContentHeight() : computedAutoHeight();
-
-    LayoutUnit newLogicalHeight = autoHeight + borderAndPaddingLogicalHeight();
+    LayoutUnit newLogicalHeight = overrideLogicalContentHeight() + borderAndPaddingLogicalHeight();
     ASSERT(newLogicalHeight < LayoutUnit::max() / 2);
     if (newLogicalHeight > logicalHeight())
         setLogicalHeight(newLogicalHeight);
