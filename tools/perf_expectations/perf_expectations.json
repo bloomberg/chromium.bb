@@ -740,7 +740,7 @@
  "xp-release/sizes/chrome.dll/chrome.dll": {"reva": 203454, "revb": 203508, "type": "absolute", "better": "lower", "improve": 55459814, "regress": 61312205, "sha1": "b01d47d9"},
  "xp-release/sizes/chrome.exe/chrome.exe": {"reva": 183841, "revb": 184954, "type": "absolute", "better": "lower", "improve": 720358, "regress": 796186, "sha1": "b5aa4523"},
  "xp-release/sizes/mini_installer.exe/mini_installer.exe": {"reva": 212973, "revb": 213132, "type": "absolute", "better": "lower", "improve": 28051174, "regress": 31094247, "sha1": "303dac45"},
- "xp-release/sizes/npchrome_frame.dll/npchrome_frame.dll": {"reva": 212047, "revb": 212054, "type": "absolute", "better": "lower", "improve": 2722380, "regress": 3008948, "sha1": "6d412793"},
+ "xp-release/sizes/npchrome_frame.dll/npchrome_frame.dll": {"reva": 213618, "revb": 213647, "type": "absolute", "better": "lower", "improve": 2320128, "regress": 2567040, "sha1": "a9618db1"},
  "xp-release/sizes/setup.exe/setup.exe": {"reva": 183841, "revb": 184954, "type": "absolute", "better": "lower", "improve": 1080780, "regress": 1195085, "sha1": "c56e884e"},
  "load": true
 }
