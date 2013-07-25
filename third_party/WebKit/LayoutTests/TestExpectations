@@ -2398,6 +2398,3 @@ crbug.com/263879 [ Mac ] tables/mozilla_expected_failures/bugs/bug1725.html [ Ne
 crbug.com/263879 [ Mac ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ NeedsRebaseline ]
 crbug.com/263879 [ Mac ] tables/mozilla_expected_failures/bugs/bug3166-18.html [ NeedsRebaseline ]
 crbug.com/263879 [ Mac ] virtual/gpu/compositedscrolling/overflow/theme-affects-visual-overflow.html [ NeedsRebaseline ]
-
-# Part of a 2-sided patch; re-enabled immediately after chromium side lands.
-Bug(eroman) crypto/  [ Skip ]
