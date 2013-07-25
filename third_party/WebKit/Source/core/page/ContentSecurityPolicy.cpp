@@ -456,11 +456,7 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end,
     if (position < end && *position == '/') {
         // host/path || host/ || /
         //     ^            ^    ^
-        if (!parseHost(beginHost, position, host, hostHasWildcard)
-            || !parsePath(position, end, path)
-            || position != end)
-            return false;
-        return true;
+        return parseHost(beginHost, position, host, hostHasWildcard) && parsePath(position, end, path);
     }
 
     if (position < end && *position == ':') {
@@ -497,7 +493,6 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end,
         //              ^                          ^
         if (position == beginHost)
             return false;
-
         beginPath = position;
     }
 
