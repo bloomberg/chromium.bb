@@ -90,10 +90,10 @@ public:
 
 void MockWebMediaStreamCenter::didCreateMediaStream(WebMediaStream& stream)
 {
-    WebVector<WebMediaStreamTrack> audioComponents;
-    stream.audioSources(audioComponents);
-    for (size_t i = 0; i < audioComponents.size(); ++i) {
-        WebMediaStreamSource source = audioComponents[i].source();
+    WebVector<WebMediaStreamTrack> audioTracks;
+    stream.audioTracks(audioTracks);
+    for (size_t i = 0; i < audioTracks.size(); ++i) {
+        WebMediaStreamSource source = audioTracks[i].source();
         if (source.requiresAudioConsumer()) {
             MockWebAudioDestinationConsumer* consumer = new MockWebAudioDestinationConsumer();
             source.addAudioConsumer(consumer);

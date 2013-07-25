@@ -59,17 +59,11 @@ public:
 
     WEBKIT_EXPORT void assign(const WebMediaStream&);
 
-    // DEPRECATED
-    WEBKIT_EXPORT void initialize(const WebString& label, const WebVector<WebMediaStreamSource>& audioSources, const WebVector<WebMediaStreamSource>& videoSources);
-
     WEBKIT_EXPORT void initialize(const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks);
     WEBKIT_EXPORT void initialize(const WebString& label, const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks);
 
     WEBKIT_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
-
-    // DEPRECATED
-    WEBKIT_EXPORT WebString label() const;
 
     WEBKIT_EXPORT WebString id() const;
 
@@ -78,10 +72,6 @@ public:
 
     WEBKIT_EXPORT void addTrack(const WebMediaStreamTrack&);
     WEBKIT_EXPORT void removeTrack(const WebMediaStreamTrack&);
-
-    // DEPRECATED
-    void audioSources(WebVector<WebMediaStreamTrack>& tracks) const { audioTracks(tracks); }
-    void videoSources(WebVector<WebMediaStreamTrack>& tracks) const { videoTracks(tracks); }
 
     // Extra data associated with this WebMediaStream.
     // If non-null, the extra data pointer will be deleted when the object is destroyed.
