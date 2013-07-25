@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "media/audio/shared_memory_util.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 
 // Hard coded values from PepperPlatformAudioOutputImpl.
 // TODO(dalecurtis): PPAPI shouldn't hard code these values for all clients.
@@ -128,12 +129,20 @@ void PPB_Audio_Shared::StartThread() {
 void PPB_Audio_Shared::StopThread() {
 #if !defined(OS_NACL)
   if (audio_thread_.get()) {
-    audio_thread_->Join();
+    // In general, the audio thread should not do Pepper calls, but it might
+    // anyway (for example, our Audio test does CallOnMainThread). If it did
+    // a pepper call which acquires the lock (most of them do), and we try to
+    // shut down the thread and Join it while holding the lock, we would
+    // deadlock. So we give up the lock here so that the thread at least _can_
+    // make Pepper calls without causing deadlock.
+    CallWhileUnlocked(base::Bind(&base::DelegateSimpleThread::Join,
+                                 base::Unretained(audio_thread_.get())));
     audio_thread_.reset();
   }
 #else
   if (thread_active_) {
-    int result = thread_functions.thread_join(thread_id_);
+    // See comment above about why we unlock here.
+    int result = CallWhileUnlocked(thread_functions.thread_join, thread_id_);
     DCHECK_EQ(0, result);
     thread_active_ = false;
   }

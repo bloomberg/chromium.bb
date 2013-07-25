@@ -187,6 +187,7 @@
         'proxy/serialized_var_unittest.cc',
         'proxy/talk_resource_unittest.cc',
         'proxy/websocket_resource_unittest.cc',
+        'shared_impl/proxy_lock_unittest.cc',
         'shared_impl/resource_tracker_unittest.cc',
         'shared_impl/thread_aware_callback_unittest.cc',
         'shared_impl/time_conversion_unittest.cc',

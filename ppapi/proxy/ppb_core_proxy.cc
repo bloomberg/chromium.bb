@@ -62,6 +62,7 @@ void CallOnMainThread(int delay_in_ms,
 #endif
   if (!callback.func)
     return;
+  ProxyAutoLock lock;
   PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostDelayedTask(
       FROM_HERE,
       RunWhileLocked(base::Bind(&CallbackWrapper, callback, result)),

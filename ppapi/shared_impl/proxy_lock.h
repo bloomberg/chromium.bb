@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/threading/thread_checker.h"
 
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
@@ -132,21 +133,153 @@ ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2, P3, P4, P5),
 }
 void PPAPI_SHARED_EXPORT CallWhileUnlocked(const base::Closure& closure);
 
-// CallWhileLocked locks the ProxyLock and runs the given closure immediately.
-// The lock is released when CallWhileLocked returns. This function assumes the
-// lock is not held. This is mostly for use in RunWhileLocked; see below.
-void PPAPI_SHARED_EXPORT CallWhileLocked(const base::Closure& closure);
+namespace internal {
 
-// RunWhileLocked binds the given closure with CallWhileLocked and returns the
-// new Closure. This is for cases where you want to run a task, but you want to
-// ensure that the ProxyLock is acquired for the duration of the task.
-// Example usage:
+template <typename RunType>
+class RunWhileLockedHelper;
+
+template <>
+class RunWhileLockedHelper<void ()> {
+ public:
+  typedef base::Callback<void ()> CallbackType;
+  explicit RunWhileLockedHelper(const CallbackType& callback)
+      : callback_(new CallbackType(callback)) {
+    // Copying |callback| may adjust reference counts for bound Vars or
+    // Resources; we should have the lock already.
+    ProxyLock::AssertAcquired();
+    // CallWhileLocked and destruction might happen on a different thread from
+    // creation.
+    thread_checker_.DetachFromThread();
+  }
+  void CallWhileLocked() {
+    // Bind thread_checker_ to this thread so we can check in the destructor.
+    DCHECK(thread_checker_.CalledOnValidThread());
+    ProxyAutoLock lock;
+    {
+      // Use a scope and local Callback to ensure that the callback is cleared
+      // before the lock is released, even in the unlikely event that Run()
+      // throws an exception.
+      scoped_ptr<CallbackType> temp_callback(callback_.Pass());
+      temp_callback->Run();
+    }
+  }
+
+ private:
+  scoped_ptr<CallbackType> callback_;
+
+  // Used to ensure that the Callback is run and deleted on the same thread.
+  base::ThreadChecker thread_checker_;
+};
+
+template <typename P1>
+class RunWhileLockedHelper<void (P1)> {
+ public:
+  typedef base::Callback<void (P1)> CallbackType;
+  explicit RunWhileLockedHelper(const CallbackType& callback)
+      : callback_(new CallbackType(callback)) {
+    ProxyLock::AssertAcquired();
+    thread_checker_.DetachFromThread();
+  }
+  void CallWhileLocked(P1 p1) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    ProxyAutoLock lock;
+    {
+      scoped_ptr<CallbackType> temp_callback(callback_.Pass());
+      temp_callback->Run(p1);
+    }
+  }
+
+ private:
+  scoped_ptr<CallbackType> callback_;
+  base::ThreadChecker thread_checker_;
+};
+
+template <typename P1, typename P2>
+class RunWhileLockedHelper<void (P1, P2)> {
+ public:
+  typedef base::Callback<void (P1, P2)> CallbackType;
+  explicit RunWhileLockedHelper(const CallbackType& callback)
+      : callback_(new CallbackType(callback)) {
+    ProxyLock::AssertAcquired();
+    thread_checker_.DetachFromThread();
+  }
+  void CallWhileLocked(P1 p1, P2 p2) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    ProxyAutoLock lock;
+    {
+      scoped_ptr<CallbackType> temp_callback(callback_.Pass());
+      temp_callback->Run(p1, p2);
+    }
+  }
+
+ private:
+  scoped_ptr<CallbackType> callback_;
+  base::ThreadChecker thread_checker_;
+};
+
+template <typename P1, typename P2, typename P3>
+class RunWhileLockedHelper<void (P1, P2, P3)> {
+ public:
+  typedef base::Callback<void (P1, P2, P3)> CallbackType;
+  explicit RunWhileLockedHelper(const CallbackType& callback)
+      : callback_(new CallbackType(callback)) {
+    ProxyLock::AssertAcquired();
+    thread_checker_.DetachFromThread();
+  }
+  void CallWhileLocked(P1 p1, P2 p2, P3 p3) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    ProxyAutoLock lock;
+    {
+      scoped_ptr<CallbackType> temp_callback(callback_.Pass());
+      temp_callback->Run(p1, p2, p3);
+    }
+  }
+
+ private:
+  scoped_ptr<CallbackType> callback_;
+  base::ThreadChecker thread_checker_;
+};
+
+}  // namespace internal
+
+// RunWhileLocked wraps the given Callback in a new Callback that, when invoked:
+//  1) Locks the ProxyLock.
+//  2) Runs the original Callback (forwarding arguments, if any).
+//  3) Clears the original Callback (while the lock is held).
+//  4) Unlocks the ProxyLock.
+// Note that it's important that the callback is cleared in step (3), in case
+// clearing the Callback causes a destructor (e.g., for a Resource) to run,
+// which should hold the ProxyLock to avoid data races.
+//
+// This is for cases where you want to run a task or store a Callback, but you
+// want to ensure that the ProxyLock is acquired for the duration of the task
+// that the Callback runs.
+// EXAMPLE USAGE:
 //   GetMainThreadMessageLoop()->PostDelayedTask(
 //     FROM_HERE,
 //     RunWhileLocked(base::Bind(&CallbackWrapper, callback, result)),
 //     delay_in_ms);
-inline base::Closure RunWhileLocked(const base::Closure& closure) {
-  return base::Bind(CallWhileLocked, closure);
+//
+// In normal usage like the above, this all should "just work". However, if you
+// do something unusual, you may get a runtime crash due to deadlock. Here are
+// the ways that the returned Callback must be used to avoid a deadlock:
+// (1) copied to another Callback. After that, the original callback can be
+// destroyed with or without the proxy lock acquired, while the newly assigned
+// callback has to conform to these same restrictions. Or
+// (2) run without proxy lock acquired (e.g., being posted to a MessageLoop
+// and run there). The callback must be destroyed on the same thread where it
+// was run (but can be destroyed with or without the proxy lock acquired). Or
+// (3) destroyed without the proxy lock acquired.
+// TODO(dmichael): This won't actually fail until
+//                 https://codereview.chromium.org/19492014/ lands.
+template <class FunctionType>
+inline base::Callback<FunctionType>
+RunWhileLocked(const base::Callback<FunctionType>& callback) {
+  internal::RunWhileLockedHelper<FunctionType>* helper =
+      new internal::RunWhileLockedHelper<FunctionType>(callback);
+  return base::Bind(
+      &internal::RunWhileLockedHelper<FunctionType>::CallWhileLocked,
+      base::Owned(helper));
 }
 
 }  // namespace ppapi

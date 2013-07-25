@@ -59,9 +59,4 @@ void CallWhileUnlocked(const base::Closure& closure) {
   closure.Run();
 }
 
-void CallWhileLocked(const base::Closure& closure) {
-  ProxyAutoLock lock;
-  closure.Run();
-}
-
 }  // namespace ppapi
