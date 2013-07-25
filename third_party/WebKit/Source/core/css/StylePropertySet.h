@@ -73,8 +73,9 @@ public:
         // FIXME: Remove this.
         CSSProperty toCSSProperty() const { return CSSProperty(propertyMetadata(), const_cast<CSSValue*>(propertyValue())); }
 
+        const StylePropertyMetadata& propertyMetadata() const;
+
     private:
-        StylePropertyMetadata propertyMetadata() const;
         const CSSValue* propertyValue() const;
 
         const StylePropertySet& m_propertySet;
@@ -226,7 +227,7 @@ private:
     friend class StylePropertySet;
 };
 
-inline StylePropertyMetadata StylePropertySet::PropertyReference::propertyMetadata() const
+inline const StylePropertyMetadata& StylePropertySet::PropertyReference::propertyMetadata() const
 {
     if (m_propertySet.isMutable())
         return static_cast<const MutableStylePropertySet&>(m_propertySet).m_propertyVector.at(m_index).metadata();

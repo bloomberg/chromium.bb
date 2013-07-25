@@ -43,12 +43,12 @@ struct StylePropertyMetadata {
 
     CSSPropertyID shorthandID() const;
 
-    unsigned m_propertyID : 10;
-    unsigned m_isSetFromShorthand : 1;
-    unsigned m_indexInShorthandsVector : 2; // If this property was set as part of an ambiguous shorthand, gives the index in the shorthands vector.
-    unsigned m_important : 1;
-    unsigned m_implicit : 1; // Whether or not the property was set implicitly as the result of a shorthand.
-    unsigned m_inherited : 1;
+    uint16_t m_propertyID : 10;
+    uint16_t m_isSetFromShorthand : 1;
+    uint16_t m_indexInShorthandsVector : 2; // If this property was set as part of an ambiguous shorthand, gives the index in the shorthands vector.
+    uint16_t m_important : 1;
+    uint16_t m_implicit : 1; // Whether or not the property was set implicitly as the result of a shorthand.
+    uint16_t m_inherited : 1;
 };
 
 class CSSProperty {
@@ -80,7 +80,7 @@ public:
     static CSSPropertyID resolveDirectionAwareProperty(CSSPropertyID, TextDirection, WritingMode);
     static bool isInheritedProperty(CSSPropertyID);
 
-    StylePropertyMetadata metadata() const { return m_metadata; }
+    const StylePropertyMetadata& metadata() const { return m_metadata; }
 
 private:
     StylePropertyMetadata m_metadata;

@@ -477,8 +477,11 @@ bool MutableStylePropertySet::removePropertiesInSet(const CSSPropertyID* set, un
 
 int StylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
 {
+    // Convert here propertyID into an uint16_t to compare it with the metadata's m_propertyID to avoid
+    // the compiler converting it to an int multiple times in the loop.
+    uint16_t id = static_cast<uint16_t>(propertyID);
     for (int n = propertyCount() - 1 ; n >= 0; --n) {
-        if (propertyID == propertyAt(n).id()) {
+        if (id == propertyAt(n).propertyMetadata().m_propertyID) {
             // Only enabled properties should be part of the style.
             ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID));
             return n;
