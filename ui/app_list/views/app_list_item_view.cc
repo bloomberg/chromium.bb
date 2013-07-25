@@ -140,11 +140,13 @@ void AppListItemView::SetUIState(UIState state) {
   ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
   switch (ui_state_) {
     case UI_STATE_NORMAL:
-      title_->SetVisible(true);
+      title_->SetVisible(!model_->is_installing());
+      progress_bar_->SetVisible(model_->is_installing());
       layer()->SetTransform(gfx::Transform());
       break;
     case UI_STATE_DRAGGING:
       title_->SetVisible(false);
+      progress_bar_->SetVisible(false);
       const gfx::Rect bounds(layer()->bounds().size());
       layer()->SetTransform(gfx::GetScaleTransform(
           bounds.CenterPoint(),
