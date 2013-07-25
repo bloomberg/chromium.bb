@@ -68,7 +68,7 @@ public:
     bool isFeatureAllowed() const;
     bool validateOptions();
     bool findTagName(const AtomicString& customElementType, QualifiedName& tagName);
-    PassRefPtr<CustomElementLifecycleCallbacks> createCallbacks(Document*);
+    PassRefPtr<CustomElementLifecycleCallbacks> createCallbacks();
     bool createConstructor(Document*, CustomElementDefinition*);
     bool didRegisterDefinition(CustomElementDefinition*) const;
 

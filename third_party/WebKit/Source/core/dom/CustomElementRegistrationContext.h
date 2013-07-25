@@ -36,8 +36,10 @@
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
+#include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 

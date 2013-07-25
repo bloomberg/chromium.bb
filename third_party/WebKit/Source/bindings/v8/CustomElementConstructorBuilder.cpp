@@ -143,11 +143,11 @@ bool CustomElementConstructorBuilder::findTagName(const AtomicString& customElem
     return false;
 }
 
-PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::createCallbacks(Document* document)
+PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::createCallbacks()
 {
     ASSERT(!m_prototype.IsEmpty());
 
-    RefPtr<Document> protect(document);
+    RefPtr<ScriptExecutionContext> scriptExecutionContext(toScriptExecutionContext(m_context));
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
@@ -158,7 +158,7 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
     v8::Handle<v8::Function> leftDocument = retrieveCallback(isolate, "leftDocumentCallback");
     v8::Handle<v8::Function> attributeChanged = retrieveCallback(isolate, "attributeChangedCallback");
 
-    m_callbacks = V8CustomElementLifecycleCallbacks::create(document, m_prototype, created, enteredDocument, leftDocument, attributeChanged);
+    m_callbacks = V8CustomElementLifecycleCallbacks::create(scriptExecutionContext.get(), m_prototype, created, enteredDocument, leftDocument, attributeChanged);
     return m_callbacks.get();
 }
 

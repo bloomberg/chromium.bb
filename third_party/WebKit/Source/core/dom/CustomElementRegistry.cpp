@@ -92,7 +92,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
 
     ASSERT(!observer.registrationContextWentAway());
 
-    RefPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks(document);
+    RefPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks();
 
     // Consulting the constructor builder could execute script and
     // kill the document.
