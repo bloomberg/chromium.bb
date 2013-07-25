@@ -51,8 +51,6 @@ env.AddNodeToTestSuite(
 # This crash in trusted code should produce a crash dump.
 # DISABLED due to flakiness (http://crbug.com/247114).
 # crash_test_url = 'trusted_crash_in_startup.html'
-# if env.Bit('pnacl_generate_pexe'):
-#   crash_test_url += '?is_pnacl=true'
 # node = env.PPAPIBrowserTester(
 #     'breakpad_trusted_crash_in_startup_test.out',
 #     python_tester_script=env.File('crash_dump_tester.py'),

@@ -10,11 +10,6 @@
 
 Import('env')
 
-# TODO(jvoung): Make a pnacl version of the nmf / or make the pexe generator
-# compatible with CopyLibsForExtension().
-if env.Bit('pnacl_generate_pexe'):
-  Return()
-
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
                      'extension_mime_handler')

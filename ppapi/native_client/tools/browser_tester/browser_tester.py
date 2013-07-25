@@ -56,10 +56,6 @@ def BuildArgParser():
                     metavar='DEST SRC',
                     help='Add a redirect to the HTTP server, '
                     'requests for SRC will result in a redirect (302) to DEST.')
-  parser.add_option('--prefer_portable_in_manifest',
-                    dest='prefer_portable_in_manifest',
-                    action='store_true', default=False,
-                    help='Use portable programs in manifest if available.')
   parser.add_option('-f', '--file', dest='files', action='append',
                     type='string', default=[],
                     metavar='FILENAME',

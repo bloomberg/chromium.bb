@@ -41,19 +41,11 @@ tester.addAsyncTest('trusted_crash_during_startup', function(status) {
     status.log('Received error: ' + error);
     // This error occurs only because NACL_CRASH_TEST is set.  We would
     // not normally expect to get this error in the browser.
-    // For PNaCl, the crash will occur while starting the compiler process.
-    var test_args = getTestArguments({ 'is_pnacl': 'false' });
-    if (test_args['is_pnacl'] != 'false') {
-      var expected_error = ('NaCl module load failed: PnaclCoordinator: ' +
-                            'Compile process could not be created');
-      status.assert(begins_with(embed.lastError, expected_error));
-    } else {
-      var expected_error_prefix = 'NaCl module load failed: ServiceRuntime: ';
-      var suffix1 = 'command channel creation failed';
-      var suffix2 = 'failed to start';
-      status.assert(error == expected_error_prefix + suffix1 ||
-                    error == expected_error_prefix + suffix2);
-    }
+    var expected_error_prefix = 'NaCl module load failed: ServiceRuntime: ';
+    var suffix1 = 'command channel creation failed';
+    var suffix2 = 'failed to start';
+    status.assert(error == expected_error_prefix + suffix1 ||
+                  error == expected_error_prefix + suffix2);
     status.pass();
   }), true);
 
