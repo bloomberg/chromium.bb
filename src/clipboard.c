@@ -38,6 +38,7 @@ struct clipboard_source {
 	struct wl_event_source *event_source;
 	uint32_t serial;
 	int refcount;
+	int fd;
 };
 
 struct clipboard {
@@ -58,8 +59,10 @@ clipboard_source_unref(struct clipboard_source *source)
 	if (source->refcount > 0)
 		return;
 
-	if (source->event_source)
+	if (source->event_source) {
 		wl_event_source_remove(source->event_source);
+		close(source->fd);
+	}
 	wl_signal_emit(&source->base.destroy_signal,
 		       &source->base);
 	s = source->base.mime_types.data;
@@ -87,6 +90,7 @@ clipboard_source_data(int fd, uint32_t mask, void *data)
 	len = read(fd, p, size);
 	if (len == 0) {
 		wl_event_source_remove(source->event_source);
+		close(fd);
 		source->event_source = NULL;
 	} else if (len < 0) {
 		clipboard_source_unref(source);
@@ -256,8 +260,10 @@ clipboard_set_selection(struct wl_listener *listener, void *data)
 	clipboard->source =
 		clipboard_source_create(clipboard, mime_types[0],
 					seat->selection_serial, p[0]);
-	if (clipboard->source == NULL)
+	if (clipboard->source == NULL) {
+		close(p[0]);
 		return;
+	}
 }
 
 static void
