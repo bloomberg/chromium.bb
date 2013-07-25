@@ -18,7 +18,7 @@
 
 namespace syncer {
 
-class ExtensionsActivityMonitor;
+class ExtensionsActivity;
 class ServerConnectionManager;
 class SyncEngineEventListener;
 class SyncScheduler;
@@ -81,7 +81,7 @@ class SYNC_EXPORT InternalComponentsFactory {
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
       const std::vector<ModelSafeWorker*>& workers,
-      ExtensionsActivityMonitor* monitor,
+      ExtensionsActivity* extensions_activity,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
       TrafficRecorder* traffic_recorder,

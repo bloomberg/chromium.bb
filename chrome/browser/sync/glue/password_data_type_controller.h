@@ -35,7 +35,9 @@ class PasswordDataTypeController : public NonFrontendDataTypeController {
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE;
   virtual bool StartModels() OVERRIDE;
-  virtual void CreateSyncComponents() OVERRIDE;
+  virtual ProfileSyncComponentsFactory::SyncComponents CreateSyncComponents()
+      OVERRIDE;
+  virtual void DisconnectProcessor(ChangeProcessor* processor) OVERRIDE;
 
  private:
   scoped_refptr<PasswordStore> password_store_;

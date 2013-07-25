@@ -93,25 +93,19 @@ class MockSyncFrontend : public SyncFrontend {
 
 class FakeSyncManagerFactory : public syncer::SyncManagerFactory {
  public:
-  FakeSyncManagerFactory() : fake_manager_(NULL) {}
+  explicit FakeSyncManagerFactory(FakeSyncManager** fake_manager)
+     : fake_manager_(fake_manager) {
+    *fake_manager_ = NULL;
+  }
   virtual ~FakeSyncManagerFactory() {}
 
   // SyncManagerFactory implementation.  Called on the sync thread.
   virtual scoped_ptr<SyncManager> CreateSyncManager(
       std::string name) OVERRIDE {
-    DCHECK(!fake_manager_);
-    fake_manager_ = new FakeSyncManager(initial_sync_ended_types_,
-                                        progress_marker_types_,
-                                        configure_fail_types_);
-    return scoped_ptr<SyncManager>(fake_manager_);
-  }
-
-  // Returns NULL until CreateSyncManager() is called on the sync
-  // thread.  Called on the main thread, but only after
-  // OnBackendInitialized() is called (which is strictly after
-  // CreateSyncManager is called on the sync thread).
-  FakeSyncManager* fake_manager() {
-    return fake_manager_;
+    *fake_manager_ = new FakeSyncManager(initial_sync_ended_types_,
+                                         progress_marker_types_,
+                                         configure_fail_types_);
+    return scoped_ptr<SyncManager>(*fake_manager_);
   }
 
   void set_initial_sync_ended_types(syncer::ModelTypeSet types) {
@@ -130,7 +124,7 @@ class FakeSyncManagerFactory : public syncer::SyncManagerFactory {
   syncer::ModelTypeSet initial_sync_ended_types_;
   syncer::ModelTypeSet progress_marker_types_;
   syncer::ModelTypeSet configure_fail_types_;
-  FakeSyncManager* fake_manager_;
+  FakeSyncManager** fake_manager_;
 };
 
 class SyncBackendHostTest : public testing::Test {
@@ -151,6 +145,8 @@ class SyncBackendHostTest : public testing::Test {
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
 
+    fake_manager_factory_.reset(new FakeSyncManagerFactory(&fake_manager_));
+
     // These types are always implicitly enabled.
     enabled_types_.PutAll(syncer::ControlTypes());
 
@@ -169,7 +165,7 @@ class SyncBackendHostTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     if (backend_) {
       backend_->StopSyncingForShutdown();
-      backend_->Shutdown(false);
+      backend_->Shutdown(SyncBackendHost::STOP);
     }
     backend_.reset();
     sync_prefs_.reset();
@@ -186,14 +182,17 @@ class SyncBackendHostTest : public testing::Test {
   void InitializeBackend(bool expect_success) {
     EXPECT_CALL(mock_frontend_, OnBackendInitialized(_, _, expect_success)).
         WillOnce(InvokeWithoutArgs(QuitMessageLoop));
-    backend_->Initialize(&mock_frontend_,
-                         syncer::WeakHandle<syncer::JsEventHandler>(),
-                         GURL(std::string()),
-                         credentials_,
-                         true,
-                         &fake_manager_factory_,
-                         &handler_,
-                         NULL);
+    backend_->Initialize(
+        &mock_frontend_,
+        scoped_ptr<base::Thread>(),
+        syncer::WeakHandle<syncer::JsEventHandler>(),
+        GURL(std::string()),
+        credentials_,
+        true,
+        fake_manager_factory_.PassAs<syncer::SyncManagerFactory>(),
+        scoped_ptr<syncer::UnrecoverableErrorHandler>(
+            new syncer::TestUnrecoverableErrorHandler).Pass(),
+        NULL);
     base::RunLoop run_loop;
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
                                    run_loop.QuitClosure(),
@@ -202,7 +201,6 @@ class SyncBackendHostTest : public testing::Test {
     // |fake_manager_factory_|'s fake_manager() is set on the sync
     // thread, but we can rely on the message loop barriers to
     // guarantee that we see the updated value.
-    fake_manager_ = fake_manager_factory_.fake_manager();
     DCHECK(fake_manager_);
   }
 
@@ -255,12 +253,11 @@ class SyncBackendHostTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   StrictMock<MockSyncFrontend> mock_frontend_;
   syncer::SyncCredentials credentials_;
-  syncer::TestUnrecoverableErrorHandler handler_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<SyncPrefs> sync_prefs_;
   scoped_ptr<SyncBackendHost> backend_;
+  scoped_ptr<FakeSyncManagerFactory> fake_manager_factory_;
   FakeSyncManager* fake_manager_;
-  FakeSyncManagerFactory fake_manager_factory_;
   syncer::ModelTypeSet enabled_types_;
 };
 
@@ -302,8 +299,8 @@ TEST_F(SyncBackendHostTest, FirstTimeSync) {
 TEST_F(SyncBackendHostTest, Restart) {
   sync_prefs_->SetSyncSetupCompleted();
   syncer::ModelTypeSet all_but_nigori = enabled_types_;
-  fake_manager_factory_.set_progress_marker_types(enabled_types_);
-  fake_manager_factory_.set_initial_sync_ended_types(enabled_types_);
+  fake_manager_factory_->set_progress_marker_types(enabled_types_);
+  fake_manager_factory_->set_initial_sync_ended_types(enabled_types_);
   InitializeBackend(true);
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Empty());
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -333,8 +330,8 @@ TEST_F(SyncBackendHostTest, PartialTypes) {
   syncer::ModelTypeSet partial_types(syncer::NIGORI, syncer::BOOKMARKS);
   syncer::ModelTypeSet full_types =
       Difference(enabled_types_, partial_types);
-  fake_manager_factory_.set_progress_marker_types(enabled_types_);
-  fake_manager_factory_.set_initial_sync_ended_types(full_types);
+  fake_manager_factory_->set_progress_marker_types(enabled_types_);
+  fake_manager_factory_->set_initial_sync_ended_types(full_types);
 
   // Bringing up the backend should purge all partial types, then proceed to
   // download the Nigori.
@@ -512,8 +509,8 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypes) {
   // Set sync manager behavior before passing it down. All types have progress
   // markers and initial sync ended except the new types.
   syncer::ModelTypeSet old_types = enabled_types_;
-  fake_manager_factory_.set_progress_marker_types(old_types);
-  fake_manager_factory_.set_initial_sync_ended_types(old_types);
+  fake_manager_factory_->set_progress_marker_types(old_types);
+  fake_manager_factory_->set_initial_sync_ended_types(old_types);
   syncer::ModelTypeSet new_types(syncer::APP_SETTINGS,
                                  syncer::EXTENSION_SETTINGS);
   enabled_types_.PutAll(new_types);
@@ -552,8 +549,8 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypesWithPartialTypes) {
   syncer::ModelTypeSet partial_types(syncer::NIGORI, syncer::BOOKMARKS);
   syncer::ModelTypeSet full_types =
       Difference(enabled_types_, partial_types);
-  fake_manager_factory_.set_progress_marker_types(old_types);
-  fake_manager_factory_.set_initial_sync_ended_types(full_types);
+  fake_manager_factory_->set_progress_marker_types(old_types);
+  fake_manager_factory_->set_initial_sync_ended_types(full_types);
   syncer::ModelTypeSet new_types(syncer::APP_SETTINGS,
                                  syncer::EXTENSION_SETTINGS);
   enabled_types_.PutAll(new_types);
@@ -605,8 +602,8 @@ TEST_F(SyncBackendHostTest, DownloadControlTypes) {
   syncer::ModelTypeSet new_types(syncer::EXPERIMENTS, syncer::DEVICE_INFO);
   syncer::ModelTypeSet old_types =
       Difference(enabled_types_, new_types);
-  fake_manager_factory_.set_progress_marker_types(old_types);
-  fake_manager_factory_.set_initial_sync_ended_types(old_types);
+  fake_manager_factory_->set_progress_marker_types(old_types);
+  fake_manager_factory_->set_initial_sync_ended_types(old_types);
 
   // Bringing up the backend should download the new types without downloading
   // any old types.
@@ -628,7 +625,7 @@ TEST_F(SyncBackendHostTest, DownloadControlTypes) {
 // be successful, but it returned no results.  This means that the usual
 // download retry logic will not be invoked.
 TEST_F(SyncBackendHostTest, SilentlyFailToDownloadControlTypes) {
-  fake_manager_factory_.set_configure_fail_types(syncer::ModelTypeSet::All());
+  fake_manager_factory_->set_configure_fail_types(syncer::ModelTypeSet::All());
   InitializeBackend(false);
 }
 
@@ -669,7 +666,7 @@ TEST_F(SyncBackendHostTest, AttemptForwardLocalRefreshRequestLate) {
   fake_manager_->WaitForSyncThread();
   EXPECT_FALSE(types.Equals(fake_manager_->GetLastRefreshRequestTypes()));
 
-  backend_->Shutdown(false);
+  backend_->Shutdown(SyncBackendHost::STOP);
   backend_.reset();
 }
 

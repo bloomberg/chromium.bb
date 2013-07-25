@@ -64,26 +64,23 @@ scoped_ptr<syncer::HttpPostProviderFactory> MakeTestHttpBridgeFactory() {
 }  // namespace
 
 void SyncBackendHostForProfileSyncTest::InitCore(
-    const DoInitializeOptions& options) {
-  DoInitializeOptions test_options = options;
-  test_options.make_http_bridge_factory_fn =
+    scoped_ptr<DoInitializeOptions> options) {
+  options->make_http_bridge_factory_fn =
       base::Bind(&MakeTestHttpBridgeFactory);
-  test_options.credentials.email = "testuser@gmail.com";
-  test_options.credentials.sync_token = "token";
-  test_options.restored_key_for_bootstrapping = "";
+  options->credentials.email = "testuser@gmail.com";
+  options->credentials.sync_token = "token";
+  options->restored_key_for_bootstrapping = "";
   syncer::StorageOption storage = storage_option_;
 
   // It'd be nice if we avoided creating the InternalComponentsFactory in the
   // first place, but SyncBackendHost will have created one by now so we must
   // free it. Grab the switches to pass on first.
   InternalComponentsFactory::Switches factory_switches =
-      test_options.internal_components_factory->GetSwitches();
-  delete test_options.internal_components_factory;
+      options->internal_components_factory->GetSwitches();
+  options->internal_components_factory.reset(
+      new TestInternalComponentsFactory(factory_switches, storage));
 
-  test_options.internal_components_factory =
-      new TestInternalComponentsFactory(factory_switches, storage);
-
-  SyncBackendHost::InitCore(test_options);
+  SyncBackendHost::InitCore(options.Pass());
   if (synchronous_init_ && !base::MessageLoop::current()->is_running()) {
     // The SyncBackend posts a task to the current loop when
     // initialization completes.

@@ -69,8 +69,15 @@ class SYNC_EXPORT ModelSafeWorker
       public base::MessageLoop::DestructionObserver {
  public:
   // Subclass should implement to observe destruction of the loop where
-  // it actually does work.
+  // it actually does work. Called on UI thread immediately after worker is
+  // created.
   virtual void RegisterForLoopDestruction() = 0;
+
+  // Called on sync loop from SyncBackendRegistrar::ShutDown(). Post task to
+  // working loop to stop observing loop destruction and invoke
+  // |unregister_done_callback|.
+  virtual void UnregisterForLoopDestruction(
+      base::Callback<void(ModelSafeGroup)> unregister_done_callback);
 
   // If not stopped, call DoWorkAndWaitUntilDoneImpl() to do work. Otherwise
   // return CANNOT_DO_WORK.
@@ -103,7 +110,14 @@ class SYNC_EXPORT ModelSafeWorker
   // Return true if the worker was stopped. Thread safe.
   bool IsStopped();
 
+  // Subclass should call this in RegisterForLoopDestruction() from the loop
+  // where work is done.
+  void SetWorkingLoopToCurrent();
+
  private:
+  void UnregisterForLoopDestructionAsync(
+      base::Callback<void(ModelSafeGroup)> unregister_done_callback);
+
   // Whether the worker should/can do more work. Set when sync is disabled or
   // when the worker's working thread is to be destroyed.
   base::Lock stopped_lock_;
@@ -115,6 +129,11 @@ class SYNC_EXPORT ModelSafeWorker
 
   // Notified when working thread of the worker is to be destroyed.
   WorkerLoopDestructionObserver* observer_;
+
+  // Remember working loop for posting task to unregister destruction
+  // observation from sync thread when shutting down sync.
+  base::MessageLoop* working_loop_;
+  base::WaitableEvent working_loop_set_wait_;
 };
 
 // A map that details which ModelSafeGroup each ModelType

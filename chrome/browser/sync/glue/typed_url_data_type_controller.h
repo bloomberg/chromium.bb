@@ -44,8 +44,9 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE;
-  virtual void CreateSyncComponents() OVERRIDE;
-  virtual void StopModels() OVERRIDE;
+  virtual ProfileSyncComponentsFactory::SyncComponents CreateSyncComponents()
+      OVERRIDE;
+  virtual void DisconnectProcessor(ChangeProcessor* processor) OVERRIDE;
 
  private:
   virtual ~TypedUrlDataTypeController();

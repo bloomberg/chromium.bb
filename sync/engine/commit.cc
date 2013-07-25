@@ -66,7 +66,7 @@ bool PrepareCommitMessage(
     ModelTypeSet requested_types,
     sessions::OrderedCommitSet* commit_set,
     sync_pb::ClientToServerMessage* commit_message,
-    ExtensionsActivityMonitor::Records* extensions_activity_buffer) {
+    ExtensionsActivity::Records* extensions_activity_buffer) {
   TRACE_EVENT0("sync", "PrepareCommitMessage");
 
   commit_set->Clear();
@@ -104,7 +104,7 @@ SyncerError BuildAndPostCommitsImpl(ModelTypeSet requested_types,
                                     sessions::OrderedCommitSet* commit_set) {
   while (!syncer->ExitRequested()) {
     sync_pb::ClientToServerMessage commit_message;
-    ExtensionsActivityMonitor::Records extensions_activity_buffer;
+    ExtensionsActivity::Records extensions_activity_buffer;
 
     if (!PrepareCommitMessage(session,
                               requested_types,
@@ -154,9 +154,9 @@ SyncerError BuildAndPostCommitsImpl(ModelTypeSet requested_types,
     // If the commit failed, return the data to the ExtensionsActivityMonitor.
     if (session->status_controller().
         model_neutral_state().num_successful_bookmark_commits == 0) {
-      ExtensionsActivityMonitor* extensions_activity_monitor =
-          session->context()->extensions_monitor();
-      extensions_activity_monitor->PutRecords(extensions_activity_buffer);
+      ExtensionsActivity* extensions_activity =
+          session->context()->extensions_activity();
+      extensions_activity->PutRecords(extensions_activity_buffer);
     }
 
     if (processing_result != SYNCER_OK) {

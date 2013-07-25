@@ -34,7 +34,7 @@ PasswordModelAssociator::PasswordModelAssociator(
     : sync_service_(sync_service),
       password_store_(password_store),
       password_node_id_(syncer::kInvalidId),
-      abort_association_pending_(false),
+      abort_association_requested_(false),
       expected_loop_(base::MessageLoop::current()),
       error_handler_(error_handler) {
   DCHECK(sync_service_);
@@ -45,17 +45,14 @@ PasswordModelAssociator::PasswordModelAssociator(
 #endif
 }
 
-PasswordModelAssociator::~PasswordModelAssociator() {}
+PasswordModelAssociator::~PasswordModelAssociator() {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
 
 syncer::SyncError PasswordModelAssociator::AssociateModels(
     syncer::SyncMergeResult* local_merge_result,
     syncer::SyncMergeResult* syncer_merge_result) {
-  syncer::SyncError error;
   DCHECK(expected_loop_ == base::MessageLoop::current());
-  {
-    base::AutoLock lock(abort_association_pending_lock_);
-    abort_association_pending_ = false;
-  }
 
   // We must not be holding a transaction when we interact with the password
   // store, as it can post tasks to the UI thread which can itself be blocked
@@ -76,10 +73,14 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
                              model_type());
   }
 
-  std::set<std::string> current_passwords;
   PasswordVector new_passwords;
   PasswordVector updated_passwords;
   {
+    base::AutoLock lock(association_lock_);
+    if (abort_association_requested_)
+      return syncer::SyncError();
+
+    std::set<std::string> current_passwords;
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode password_root(&trans);
     if (password_root.InitByTagLookup(kPasswordTag) !=
@@ -94,9 +95,6 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
     for (std::vector<content::PasswordForm*>::iterator ix =
              passwords.begin();
          ix != passwords.end(); ++ix) {
-      if (IsAbortPending()) {
-        return syncer::SyncError();
-      }
       std::string tag = MakeTag(**ix);
 
       syncer::ReadNode node(&trans);
@@ -176,14 +174,9 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
   // We must not be holding a transaction when we interact with the password
   // store, as it can post tasks to the UI thread which can itself be blocked
   // on our transaction, resulting in deadlock. (http://crbug.com/70658)
-  error = WriteToPasswordStore(&new_passwords,
-                               &updated_passwords,
-                               NULL);
-  if (error.IsSet()) {
-    return error;
-  }
-
-  return error;
+  return WriteToPasswordStore(&new_passwords,
+                              &updated_passwords,
+                              NULL);
 }
 
 bool PasswordModelAssociator::DeleteAllNodes(
@@ -238,8 +231,8 @@ bool PasswordModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
 void PasswordModelAssociator::AbortAssociation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::AutoLock lock(abort_association_pending_lock_);
-  abort_association_pending_ = true;
+  base::AutoLock lock(association_lock_);
+  abort_association_requested_ = true;
 }
 
 bool PasswordModelAssociator::CryptoReadyIfNecessary() {
@@ -258,11 +251,6 @@ bool PasswordModelAssociator::InitSyncNodeFromChromeId(
     const std::string& node_id,
     syncer::BaseNode* sync_node) {
   return false;
-}
-
-bool PasswordModelAssociator::IsAbortPending() {
-  base::AutoLock lock(abort_association_pending_lock_);
-  return abort_association_pending_;
 }
 
 int64 PasswordModelAssociator::GetSyncIdFromChromeId(

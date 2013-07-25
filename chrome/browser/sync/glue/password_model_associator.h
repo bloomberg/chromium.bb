@@ -118,10 +118,6 @@ class PasswordModelAssociator
   static void WriteToSyncNode(const content::PasswordForm& password_form,
                               syncer::WriteNode* node);
 
-  // Called at various points in model association to determine if the
-  // user requested an abort.
-  bool IsAbortPending();
-
  private:
   typedef std::map<std::string, int64> PasswordToSyncIdMap;
   typedef std::map<int64, std::string> SyncIdToPasswordMap;
@@ -130,11 +126,9 @@ class PasswordModelAssociator
   PasswordStore* password_store_;
   int64 password_node_id_;
 
-  // Abort association pending flag and lock.  If this is set to true
-  // (via the AbortAssociation method), return from the
-  // AssociateModels method as soon as possible.
-  base::Lock abort_association_pending_lock_;
-  bool abort_association_pending_;
+  // Set true by AbortAssociation.
+  bool abort_association_requested_;
+  base::Lock association_lock_;
 
   base::MessageLoop* expected_loop_;
 

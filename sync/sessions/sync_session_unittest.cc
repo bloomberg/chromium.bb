@@ -16,7 +16,7 @@
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
-#include "sync/test/fake_extensions_activity_monitor.h"
+#include "sync/util/extensions_activity.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -38,6 +38,8 @@ class SyncSessionTest : public testing::Test,
   }
 
   virtual void SetUp() {
+    extensions_activity_ = new ExtensionsActivity();
+
     routes_.clear();
     routes_[BOOKMARKS] = GROUP_UI;
     routes_[AUTOFILL] = GROUP_DB;
@@ -60,7 +62,7 @@ class SyncSessionTest : public testing::Test,
             NULL,
             NULL,
             workers,
-            &extensions_activity_monitor_,
+            extensions_activity_.get(),
             std::vector<SyncEngineEventListener*>(),
             NULL,
             NULL,
@@ -146,7 +148,7 @@ class SyncSessionTest : public testing::Test,
   scoped_ptr<SyncSessionContext> context_;
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   ModelSafeRoutingInfo routes_;
-  FakeExtensionsActivityMonitor extensions_activity_monitor_;
+  scoped_refptr<ExtensionsActivity> extensions_activity_;
 };
 
 TEST_F(SyncSessionTest, MoreToDownloadIfDownloadFailed) {
