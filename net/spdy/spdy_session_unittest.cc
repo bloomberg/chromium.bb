@@ -2906,6 +2906,91 @@ TEST_P(SpdySessionTest, SpdySessionKeyPrivacyMode) {
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
 }
 
+// Delegate that creates another stream when its stream is closed.
+class StreamCreatingDelegate : public test::StreamDelegateDoNothing {
+ public:
+  StreamCreatingDelegate(const base::WeakPtr<SpdyStream>& stream,
+                         const base::WeakPtr<SpdySession>& session)
+      : StreamDelegateDoNothing(stream),
+        session_(session) {}
+
+  virtual ~StreamCreatingDelegate() {}
+
+  virtual void OnClose(int status) OVERRIDE {
+    GURL url("http://www.google.com");
+    ignore_result(
+        CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
+                                  session_, url, MEDIUM, BoundNetLog()));
+  }
+
+ private:
+  const base::WeakPtr<SpdySession> session_;
+};
+
+// Create another stream in response to a stream being reset. Nothing
+// should blow up. This is a regression test for
+// http://crbug.com/263690 .
+TEST_P(SpdySessionTest, CreateStreamOnStreamReset) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, MEDIUM, true));
+  MockWrite writes[] = {
+    CreateMockWrite(*req, 0),
+  };
+
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_REFUSED_STREAM));
+  MockRead reads[] = {
+    CreateMockRead(*rst, 1),
+    MockRead(ASYNC, 0, 2)  // EOF
+  };
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+
+  GURL url("http://www.google.com");
+  base::WeakPtr<SpdyStream> spdy_stream =
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
+                                session, url, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream.get() != NULL);
+  EXPECT_EQ(0u, spdy_stream->stream_id());
+
+  StreamCreatingDelegate delegate(spdy_stream, session);
+  spdy_stream->SetDelegate(&delegate);
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+  spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
+
+  EXPECT_EQ(0u, spdy_stream->stream_id());
+
+  data.RunFor(1);
+
+  EXPECT_EQ(1u, spdy_stream->stream_id());
+
+  // Cause the stream to be reset, which should cause another stream
+  // to be created.
+  data.RunFor(1);
+
+  EXPECT_EQ(NULL, spdy_stream.get());
+  EXPECT_TRUE(delegate.StreamIsClosed());
+  EXPECT_EQ(0u, session->num_active_streams());
+  EXPECT_EQ(1u, session->num_created_streams());
+}
+
 // The tests below are only for SPDY/3 and above.
 
 TEST_P(SpdySessionTest, SendCredentials) {

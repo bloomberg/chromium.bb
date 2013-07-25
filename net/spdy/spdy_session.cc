@@ -554,8 +554,11 @@ int SpdySession::GetPushStream(
   return OK;
 }
 
+// {,Try}CreateStream() and TryAccessStream() can be called with
+// |in_io_loop_| set if a stream is being created in response to
+// another being closed due to received data.
+
 Error SpdySession::TryAccessStream(const GURL& url) {
-  CHECK(!in_io_loop_);
   DCHECK_NE(availability_state_, STATE_CLOSED);
 
   if (is_secure_ && certificate_error_code_ != OK &&
@@ -575,7 +578,6 @@ Error SpdySession::TryAccessStream(const GURL& url) {
 int SpdySession::TryCreateStream(SpdyStreamRequest* request,
                                  base::WeakPtr<SpdyStream>* stream) {
   CHECK(request);
-  CHECK(!in_io_loop_);
 
   if (availability_state_ == STATE_GOING_AWAY)
     return ERR_FAILED;
@@ -602,7 +604,6 @@ int SpdySession::TryCreateStream(SpdyStreamRequest* request,
 
 int SpdySession::CreateStream(const SpdyStreamRequest& request,
                               base::WeakPtr<SpdyStream>* stream) {
-  CHECK(!in_io_loop_);
   DCHECK_GE(request.priority(), MINIMUM_PRIORITY);
   DCHECK_LT(request.priority(), NUM_PRIORITIES);
 
