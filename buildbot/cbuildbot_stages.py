@@ -1398,7 +1398,7 @@ class BranchUtilStage(bs.BuilderStage):
     """Performs per-project push operations."""
     ls_remote = cros_build_lib.RunCommandCaptureOutput(
         ['git', 'ls-remote', project['remote_alias'],
-        self._options.branch_name],
+        self.dest_ref],
         cwd=project['local_path']).output.strip()
 
     if self.rename_to and ls_remote:
@@ -1411,7 +1411,7 @@ class BranchUtilStage(bs.BuilderStage):
     elif ls_remote and not self._options.force_create:
       raise BranchError('Project %s already contains branch %s.  Run with '
                         '--force-create to overwrite.'
-                        % (project['name'], self._options.branch_name))
+                        % (project['name'], self.dest_ref))
     else:
       self.RunPush(project, force=self._options.force_create)
 
@@ -1426,7 +1426,6 @@ class BranchUtilStage(bs.BuilderStage):
     Args:
       manifest: A git.Manifest object.
     """
-    branch_name = self._options.branch_name
     for project in ('chromiumos/manifest', 'chromeos/manifest-internal'):
       manifest_project = manifest.projects[project]
       manifest_path = manifest_project['local_path']
@@ -1436,14 +1435,14 @@ class BranchUtilStage(bs.BuilderStage):
           manifest_path, manifest_version.PUSH_BRANCH,
           branch_point=manifest_project['revision'])
       full_manifest = os.path.join(manifest_project['local_path'], 'full.xml')
-      result = re.sub(r'\brevision="[^"]*"', 'revision="%s"' % branch_name,
+      result = re.sub(r'\brevision="[^"]*"', 'revision="%s"' % self.dest_ref,
                     osutils.ReadFile(full_manifest))
       osutils.WriteFile(full_manifest, result)
 
       git.RunGit(manifest_path, ['add', '-A'], print_cmd=True)
-      message = 'Fix up manifest after branching %s.' % branch_name
+      message = 'Fix up manifest after branching %s.' % self.dest_ref
       git.RunGit(manifest_path, ['commit', '-m', message], print_cmd=True)
-      push_to = git.RemoteRef(push_remote, branch_name)
+      push_to = git.RemoteRef(push_remote, self.dest_ref)
       git.GitPush(manifest_path, manifest_version.PUSH_BRANCH, push_to,
                   dryrun=self.dryrun, force=self.dryrun)
 
