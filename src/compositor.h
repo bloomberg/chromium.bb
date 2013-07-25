@@ -275,7 +275,7 @@ struct weston_touch_grab {
 	struct weston_touch *touch;
 };
 
-struct wl_data_offer {
+struct weston_data_offer {
 	struct wl_resource *resource;
 	struct weston_data_source *source;
 	struct wl_listener source_destroy_listener;

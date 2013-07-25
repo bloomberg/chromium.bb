@@ -51,7 +51,7 @@ static void
 data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t serial, const char *mime_type)
 {
-	struct wl_data_offer *offer = wl_resource_get_user_data(resource);
+	struct weston_data_offer *offer = wl_resource_get_user_data(resource);
 
 	/* FIXME: Check that client is currently focused by the input
 	 * device that is currently dragging this data source.  Should
@@ -65,7 +65,7 @@ static void
 data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 		   const char *mime_type, int32_t fd)
 {
-	struct wl_data_offer *offer = wl_resource_get_user_data(resource);
+	struct weston_data_offer *offer = wl_resource_get_user_data(resource);
 
 	if (offer->source)
 		offer->source->send(offer->source, mime_type, fd);
@@ -88,7 +88,7 @@ static const struct wl_data_offer_interface data_offer_interface = {
 static void
 destroy_data_offer(struct wl_resource *resource)
 {
-	struct wl_data_offer *offer = wl_resource_get_user_data(resource);
+	struct weston_data_offer *offer = wl_resource_get_user_data(resource);
 
 	if (offer->source)
 		wl_list_remove(&offer->source_destroy_listener.link);
@@ -98,9 +98,9 @@ destroy_data_offer(struct wl_resource *resource)
 static void
 destroy_offer_data_source(struct wl_listener *listener, void *data)
 {
-	struct wl_data_offer *offer;
+	struct weston_data_offer *offer;
 
-	offer = container_of(listener, struct wl_data_offer,
+	offer = container_of(listener, struct weston_data_offer,
 			     source_destroy_listener);
 
 	offer->source = NULL;
@@ -110,7 +110,7 @@ static struct wl_resource *
 weston_data_source_send_offer(struct weston_data_source *source,
 			      struct wl_resource *target)
 {
-	struct wl_data_offer *offer;
+	struct weston_data_offer *offer;
 	char **p;
 
 	offer = malloc(sizeof *offer);
