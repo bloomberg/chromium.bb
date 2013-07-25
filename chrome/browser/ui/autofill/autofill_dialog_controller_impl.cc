@@ -101,6 +101,9 @@ const char kAutofillDialogOrigin[] = "Chrome Autofill dialog";
 // HSL shift to gray out an image.
 const color_utils::HSL kGrayImageShift = {-1, 0, 0.8};
 
+// Limit Wallet items refresh rate to at most once per minute.
+const int kWalletItemsRefreshRateSeconds = 60;
+
 // Returns true if |card_type| is supported by Wallet.
 bool IsWalletSupportedCard(const std::string& card_type) {
   return card_type == autofill::kVisaCard ||
@@ -643,6 +646,17 @@ void AutofillDialogControllerImpl::Hide() {
     view_->Hide();
 }
 
+void AutofillDialogControllerImpl::TabActivated() {
+  // If the user switched away from this tab and then switched back, reload the
+  // Wallet items, in case they've changed.
+  int seconds_elapsed_since_last_refresh =
+      (base::TimeTicks::Now() - last_wallet_items_fetch_timestamp_).InSeconds();
+  if (IsPayingWithWallet() && wallet_items_ &&
+      seconds_elapsed_since_last_refresh >= kWalletItemsRefreshRateSeconds) {
+    GetWalletItems();
+  }
+}
+
 void AutofillDialogControllerImpl::OnAutocheckoutError() {
   DCHECK_EQ(AUTOCHECKOUT_IN_PROGRESS, autocheckout_state_);
   GetMetricLogger().LogAutocheckoutDuration(
@@ -901,7 +915,15 @@ bool AutofillDialogControllerImpl::IsSubmitPausedOn(
 }
 
 void AutofillDialogControllerImpl::GetWalletItems() {
+  if (wallet_items_) {
+    previously_selected_instrument_id_ = ActiveInstrument()->object_id();
+    previously_selected_shipping_address_id_ =
+        ActiveShippingAddress()->object_id();
+  }
+
+  last_wallet_items_fetch_timestamp_ = base::TimeTicks::Now();
   wallet_items_.reset();
+
   // The "Loading..." page should be showing now, which should cause the
   // account chooser to hide.
   view_->UpdateAccountChooser();
@@ -2092,6 +2114,10 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
       GURL settings_url(chrome::kChromeUISettingsURL);
       url = settings_url.Resolve(chrome::kAutofillSubPage);
     } else {
+      // Reset |last_wallet_items_fetch_timestamp_| to ensure that the Wallet
+      // data is refreshed as soon as the user switches back to this tab after
+      // potentially editing his data.
+      last_wallet_items_fetch_timestamp_ = base::TimeTicks();
       url = SectionForSuggestionsMenuModel(*model) == SECTION_SHIPPING ?
           wallet::GetManageAddressesUrl() : wallet::GetManageInstrumentsUrl();
     }
@@ -2489,9 +2515,14 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
           addresses[i]->DisplayName(),
           addresses[i]->DisplayNameDetail());
 
-      if (addresses[i]->object_id() == wallet_items_->default_address_id())
+      const std::string default_shipping_address_id =
+          !previously_selected_shipping_address_id_.empty() ?
+              previously_selected_shipping_address_id_ :
+              wallet_items_->default_address_id();
+      if (addresses[i]->object_id() == default_shipping_address_id)
         suggested_shipping_.SetCheckedItem(key);
     }
+    previously_selected_shipping_address_id_.clear();
 
     if (!IsSubmitPausedOn(wallet::VERIFY_CVV)) {
       const std::vector<wallet::WalletItems::MaskedInstrument*>& instruments =
@@ -2519,12 +2550,16 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
         if (allowed) {
           if (first_active_instrument_key.empty())
             first_active_instrument_key = key;
-          if (instruments[i]->object_id() ==
-              wallet_items_->default_instrument_id()) {
+
+          const std::string default_instrument_id =
+              !previously_selected_instrument_id_.empty() ?
+                  previously_selected_instrument_id_ :
+                  wallet_items_->default_instrument_id();
+          if (instruments[i]->object_id() == default_instrument_id)
             default_instrument_key = key;
-          }
         }
       }
+      previously_selected_instrument_id_.clear();
 
       // TODO(estade): this should have a URL sublabel.
       suggested_cc_billing_.AddKeyedItem(

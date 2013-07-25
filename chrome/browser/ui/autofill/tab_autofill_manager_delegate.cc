@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -44,6 +45,14 @@ TabAutofillManagerDelegate::~TabAutofillManagerDelegate() {
   // this point (in particular, the WebContentsImpl destructor has already
   // finished running and we are now in the base class destructor).
   DCHECK(!popup_controller_);
+}
+
+void TabAutofillManagerDelegate::TabActivated(int reason) {
+  if (reason != TabStripModelObserver::CHANGE_REASON_USER_GESTURE)
+    return;
+
+  if (dialog_controller_.get())
+    dialog_controller_->TabActivated();
 }
 
 PersonalDataManager* TabAutofillManagerDelegate::GetPersonalDataManager() {

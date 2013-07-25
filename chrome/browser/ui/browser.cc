@@ -88,6 +88,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
+#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -1083,6 +1084,9 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   // This needs to be called after UpdateSearchState().
   if (instant_controller_)
     instant_controller_->ActiveTabChanged();
+
+  autofill::TabAutofillManagerDelegate::FromWebContents(new_contents)->
+      TabActivated(reason);
 }
 
 void Browser::TabMoved(WebContents* contents,

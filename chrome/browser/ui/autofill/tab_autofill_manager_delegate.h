@@ -37,6 +37,9 @@ class TabAutofillManagerDelegate
  public:
   virtual ~TabAutofillManagerDelegate();
 
+  // Called when the tab corresponding to |this| instance is activated.
+  void TabActivated(int reason);
+
   // AutofillManagerDelegate implementation.
   virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;

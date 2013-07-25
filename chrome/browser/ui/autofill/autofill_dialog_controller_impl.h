@@ -92,6 +92,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   void Show();
   void Hide();
 
+  // Called when the tab hosting this dialog is activated by a user gesture.
+  // Used to trigger a refresh of the user's Wallet data.
+  void TabActivated();
+
   // Adds a step in the flow to the Autocheckout UI.
   void AddAutocheckoutStep(AutocheckoutStepType step_type);
 
@@ -596,6 +600,15 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Recently received items retrieved via |wallet_client_|.
   scoped_ptr<wallet::WalletItems> wallet_items_;
   scoped_ptr<wallet::FullWallet> full_wallet_;
+
+  // The last active instrument and shipping address object ids. These
+  // variables are only set (i.e. non-empty) when the Wallet items are being
+  // re-fetched.
+  std::string previously_selected_instrument_id_;
+  std::string previously_selected_shipping_address_id_;
+
+  // When the Wallet items were last fetched.
+  base::TimeTicks last_wallet_items_fetch_timestamp_;
 
   // Local machine signals to pass along on each request to trigger (or
   // discourage) risk challenges; sent if the user is up to date on legal docs.

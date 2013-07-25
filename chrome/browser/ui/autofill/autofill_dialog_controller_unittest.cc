@@ -2284,4 +2284,59 @@ TEST_F(AutofillDialogControllerTest, GeneratedCardBubbleShown) {
   controller()->ViewClosed();
 }
 
+TEST_F(AutofillDialogControllerTest, ReloadWalletItemsOnActivation) {
+  // Switch into Wallet mode and initialize some Wallet data.
+  SwitchToWallet();
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestNonDefaultShippingAddress());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  // Initially, the default entries should be selected.
+  ui::MenuModel* cc_billing_model =
+      controller()->MenuModelForSection(SECTION_CC_BILLING);
+  ui::MenuModel* shipping_model =
+      controller()->MenuModelForSection(SECTION_SHIPPING);
+  // "add", "manage", and 2 suggestions.
+  ASSERT_EQ(4, cc_billing_model->GetItemCount());
+  EXPECT_TRUE(cc_billing_model->IsItemCheckedAt(0));
+  // "use billing", "add", "manage", and 2 suggestions.
+  ASSERT_EQ(5, shipping_model->GetItemCount());
+  EXPECT_TRUE(shipping_model->IsItemCheckedAt(2));
+
+  // Select entries other than the defaults.
+  cc_billing_model->ActivatedAt(1);
+  shipping_model->ActivatedAt(1);
+  // "add", "manage", and 2 suggestions.
+  ASSERT_EQ(4, cc_billing_model->GetItemCount());
+  EXPECT_TRUE(cc_billing_model->IsItemCheckedAt(1));
+  // "use billing", "add", "manage", and 2 suggestions.
+  ASSERT_EQ(5, shipping_model->GetItemCount());
+  EXPECT_TRUE(shipping_model-> IsItemCheckedAt(1));
+
+  // Simulate switching away from the tab and back.  This should issue a request
+  // for wallet items.
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
+  controller()->TabActivated();
+
+  // Simulate a response that includes different items.
+  wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentExpired());
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestNonDefaultShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  // The previously selected entries should still be selected.
+  // "add", "manage", and 3 suggestions.
+  ASSERT_EQ(5, cc_billing_model->GetItemCount());
+  EXPECT_TRUE(cc_billing_model->IsItemCheckedAt(2));
+  // "use billing", "add", "manage", and 1 suggestion.
+  ASSERT_EQ(4, shipping_model->GetItemCount());
+  EXPECT_TRUE(shipping_model->IsItemCheckedAt(1));
+}
+
 }  // namespace autofill
