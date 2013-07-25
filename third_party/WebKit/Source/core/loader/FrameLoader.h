@@ -121,7 +121,6 @@ public:
     void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);
 
     bool isLoading() const;
-    bool frameHasLoaded() const;
 
     int numPendingOrLoadingRequests(bool recurse) const;
     String referrer() const;

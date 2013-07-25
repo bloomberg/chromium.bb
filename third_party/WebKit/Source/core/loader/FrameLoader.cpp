@@ -482,6 +482,9 @@ void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, boo
 
 void FrameLoader::receivedFirstData()
 {
+    if (m_stateMachine.creatingInitialEmptyDocument())
+        return;
+
     dispatchDidCommitLoad();
     dispatchDidClearWindowObjectsInAllWorlds();
 
@@ -1168,11 +1171,6 @@ bool FrameLoader::isLoading() const
     return docLoader->isLoading();
 }
 
-bool FrameLoader::frameHasLoaded() const
-{
-    return m_stateMachine.committedFirstRealDocumentLoad() || (m_provisionalDocumentLoader && !m_stateMachine.creatingInitialEmptyDocument()); 
-}
-
 void FrameLoader::setDocumentLoader(DocumentLoader* loader)
 {
     if (!loader && !m_documentLoader)
@@ -1469,7 +1467,7 @@ void FrameLoader::checkLoadCompleteForThisFrame()
                     history()->restoreScrollPositionAndViewState();
             }
 
-            if (m_stateMachine.creatingInitialEmptyDocument() || !m_stateMachine.committedFirstRealDocumentLoad())
+            if (!m_stateMachine.committedFirstRealDocumentLoad())
                 return;
 
             m_progressTracker->progressCompleted();
@@ -2272,9 +2270,6 @@ void FrameLoader::didChangeIcons(IconType type)
 
 void FrameLoader::dispatchDidCommitLoad()
 {
-    if (m_stateMachine.creatingInitialEmptyDocument())
-        return;
-
     m_client->dispatchDidCommitLoad();
 
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());

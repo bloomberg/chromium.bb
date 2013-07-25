@@ -129,11 +129,6 @@ void HistoryController::updateBackForwardListForFragmentScroll()
 
 void HistoryController::saveDocumentState()
 {
-    // FIXME: Reading this bit of FrameLoader state here is unfortunate.  I need to study
-    // this more to see if we can remove this dependency.
-    if (m_frame->loader()->stateMachine()->creatingInitialEmptyDocument())
-        return;
-
     // For a standard page load, we will have a previous item set, which will be used to
     // store the form state.  However, in some cases we will have no previous item, and
     // the current item is the right place to save the state.  One example is when we
@@ -586,14 +581,11 @@ PassRefPtr<HistoryItem> HistoryController::createItemTree(Frame* targetFrame, bo
         }
 
         for (Frame* child = m_frame->tree()->firstChild(); child; child = child->tree()->nextSibling()) {
-            FrameLoader* childLoader = child->loader();
-            bool hasChildLoaded = childLoader->frameHasLoaded();
-
             // If the child is a frame corresponding to an <object> element that never loaded,
             // we don't want to create a history item, because that causes fallback content
             // to be ignored on reload.
-            
-            if (!(!hasChildLoaded && childLoader->isHostedByObjectElement()))
+            FrameLoader* childLoader = child->loader();
+            if (childLoader->stateMachine()->startedFirstRealLoad() || !childLoader->isHostedByObjectElement())
                 bfItem->addChildItem(childLoader->history()->createItemTree(targetFrame, clipAtTarget));
         }
     }

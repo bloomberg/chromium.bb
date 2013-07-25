@@ -628,10 +628,6 @@ void DocumentLoader::ensureWriter(const String& mimeType, const KURL& overriding
     bool userChosen = !overrideEncoding().isNull();
     m_writer = createWriterFor(m_frame, 0, documentURL(), mimeType, encoding, false, false);
     m_writer->setDocumentWasLoadedAsPartOfNavigation();
-
-    if (frameLoader()->stateMachine()->creatingInitialEmptyDocument())
-        return;
-
     // This should be set before receivedFirstData().
     if (!overridingURL.isEmpty())
         m_frame->document()->setBaseURLOverride(overridingURL);
