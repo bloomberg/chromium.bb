@@ -66,14 +66,6 @@ public:
     }
 
     // WebFrameClient implementation.
-    virtual void willPerformClientRedirect(WebKit::WebFrame* frame, const WebKit::WebURL& from, const WebKit::WebURL& to, double interval, double fireTime)
-    {
-        Base::willPerformClientRedirect(frame, from, to, interval, fireTime);
-    }
-    virtual void didCancelClientRedirect(WebKit::WebFrame* frame)
-    {
-        Base::didCancelClientRedirect(frame);
-    }
     virtual void didStartProvisionalLoad(WebKit::WebFrame* frame)
     {
         Base::didStartProvisionalLoad(frame);
