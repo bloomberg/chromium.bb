@@ -65,7 +65,8 @@ class ApplyPatchException(PatchException):
     else:
       s += '.'
     if self.files:
-      s += '  The conflicting files were: %s\n' % ', '.join(sorted(self.files))
+      s += '  The conflicting file is amongst: %s\n' % (
+           ', '.join(sorted(self.files)))
     if self.message:
       s += '  %s' % (self.message,)
     return s
