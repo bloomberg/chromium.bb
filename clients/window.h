@@ -53,6 +53,13 @@ struct rectangle {
 	int32_t height;
 };
 
+void *
+fail_on_null(void *p);
+void *
+xmalloc(size_t s);
+char *
+xstrdup(const char *s);
+
 struct display *
 display_create(int *argc, char *argv[]);
 

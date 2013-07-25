@@ -4190,10 +4190,7 @@ window_create_internal(struct display *display,
 	struct window *window;
 	struct surface *surface;
 
-	window = malloc(sizeof *window);
-	if (window == NULL)
-		return NULL;
-
+	window = xmalloc(sizeof *window);
 	memset(window, 0, sizeof *window);
 	wl_list_init(&window->subsurface_list);
 	window->display = display;
@@ -4206,6 +4203,7 @@ window_create_internal(struct display *display,
 		window->shell_surface =
 			wl_shell_get_shell_surface(display->shell,
 						   surface->surface);
+		fail_on_null(window->shell_surface);
 	}
 
 	window->type = type;
@@ -4251,13 +4249,7 @@ window_create(struct display *display)
 struct window *
 window_create_custom(struct display *display)
 {
-	struct window *window;
-
-	window = window_create_internal(display, NULL, TYPE_CUSTOM);
-	if (!window)
-		return NULL;
-
-	return window;
+	return window_create_internal(display, NULL, TYPE_CUSTOM);
 }
 
 struct window *
@@ -4268,8 +4260,6 @@ window_create_transient(struct display *display, struct window *parent,
 
 	window = window_create_internal(parent->display,
 					parent, TYPE_TRANSIENT);
-	if (!window)
-		return NULL;
 
 	window->x = x;
 	window->y = y;
@@ -5308,4 +5298,27 @@ keysym_modifiers_get_mask(struct wl_array *modifiers_map,
 		return XKB_MOD_INVALID;
 
 	return 1 << index;
+}
+
+void *
+fail_on_null(void *p)
+{
+	if (p == NULL) {
+		fprintf(stderr, "wayland-scanner: out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	return p;
+}
+
+void *
+xmalloc(size_t s)
+{
+	return fail_on_null(malloc(s));
+}
+
+char *
+xstrdup(const char *s)
+{
+	return fail_on_null(strdup(s));
 }

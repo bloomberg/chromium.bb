@@ -247,9 +247,7 @@ clickdot_create(struct display *display)
 {
 	struct clickdot *clickdot;
 
-	clickdot = malloc(sizeof *clickdot);
-	if (clickdot == NULL)
-		return clickdot;
+	clickdot = xmalloc(sizeof *clickdot);
 	memset(clickdot, 0, sizeof *clickdot);
 
 	clickdot->window = window_create(display);
