@@ -428,7 +428,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_showDebugBorders(false)
     , m_continuousPaintingEnabled(false)
     , m_showScrollBottleneckRects(false)
-    , m_baseBackgroundColor(Color::white)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -2463,11 +2462,11 @@ WebColor WebViewImpl::backgroundColor() const
     if (isTransparent())
         return Color::transparent;
     if (!m_page)
-        return m_baseBackgroundColor;
+        return Color::white;
     FrameView* view = m_page->mainFrame()->view();
     StyleColor backgroundColor = view->documentBackgroundColor();
     if (!backgroundColor.isValid())
-        return m_baseBackgroundColor;
+        return Color::white;
     return backgroundColor.rgb();
 }
 
@@ -3578,19 +3577,6 @@ void WebViewImpl::setIsTransparent(bool isTransparent)
 bool WebViewImpl::isTransparent() const
 {
     return m_isTransparent;
-}
-
-void WebViewImpl::setBaseBackgroundColor(WebColor color)
-{
-    if (m_baseBackgroundColor == color)
-        return;
-
-    m_baseBackgroundColor = color;
-
-    m_page->mainFrame()->view()->setBaseBackgroundColor(color);
-
-    if (m_layerTreeView)
-        m_layerTreeView->setBackgroundColor(backgroundColor());
 }
 
 void WebViewImpl::setIsActive(bool active)

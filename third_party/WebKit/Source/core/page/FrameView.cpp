@@ -2041,11 +2041,8 @@ void FrameView::setBaseBackgroundColor(const StyleColor& backgroundColor)
     else
         m_baseBackgroundColor = backgroundColor.color();
 
-    if (RenderLayerBacking* backing = renderView() ? renderView()->layer()->backing() : 0) {
-        backing->updateContentsOpaque();
-        if (backing->graphicsLayer())
-            backing->graphicsLayer()->setNeedsDisplay();
-    }
+    if (renderView() && renderView()->layer()->backing())
+        renderView()->layer()->backing()->updateContentsOpaque();
     recalculateScrollbarOverlayStyle();
 }
 
