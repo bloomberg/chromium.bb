@@ -79,12 +79,6 @@ TextStream& operator<<(TextStream& ts, const IntPoint& p)
     return ts << "(" << p.x() << "," << p.y() << ")";
 }
 
-TextStream& operator<<(TextStream& ts, const LayoutPoint& p)
-{
-    // FIXME: These should be printed as floats. Keeping them ints for consistency with pervious test expectations.
-    return ts << "(" << p.x().toInt() << "," << p.y().toInt() << ")";
-}
-
 TextStream& operator<<(TextStream& ts, const FloatPoint& p)
 {
     ts << "(" << TextStream::FormatNumberRespectingIntegers(p.x());
@@ -253,9 +247,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
     if (adjustForTableCells)
         r.move(0, -toRenderTableCell(o.containingBlock())->intrinsicPaddingBefore());
 
-    // FIXME: Convert layout test results to report sub-pixel values, in the meantime using enclosingIntRect
-    // for consistency with old results.
-    ts << " " << enclosingIntRect(r);
+    ts << " " << r;
 
     if (!(o.isText() && !o.isBR())) {
         if (o.isFileUploadControl())
