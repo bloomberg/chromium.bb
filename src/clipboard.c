@@ -134,6 +134,9 @@ clipboard_source_create(struct clipboard *clipboard,
 	char **s;
 
 	source = malloc(sizeof *source);
+	if (source == NULL)
+		return NULL;
+
 	wl_array_init(&source->contents);
 	wl_array_init(&source->base.mime_types);
 	source->base.resource = NULL;
@@ -146,13 +149,27 @@ clipboard_source_create(struct clipboard *clipboard,
 	source->serial = serial;
 
 	s = wl_array_add(&source->base.mime_types, sizeof *s);
+	if (s == NULL)
+		goto err_add;
 	*s = strdup(mime_type);
-
+	if (*s == NULL)
+		goto err_strdup;
 	source->event_source =
 		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
 				     clipboard_source_data, source);
+	if (source->event_source == NULL)
+		goto err_source;
 
 	return source;
+
+ err_source:
+	free(*s);
+ err_strdup:
+	wl_array_release(&source->base.mime_types);
+ err_add:
+	free(source);
+
+	return NULL;
 }
 
 struct clipboard_client {
