@@ -146,7 +146,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "restore_scissor_on_fbo_change",
-        "flush_on_context_switch",
         "delete_instead_of_resize_fbo"  // Only need this on the ICS driver.
       ]
     },

@@ -2828,8 +2828,6 @@ bool GLES2DecoderImpl::MakeCurrent() {
   }
 
   ProcessFinishedAsyncTransfers();
-  if (workarounds().flush_on_context_switch)
-    glFlush();
 
   // Rebind the FBO if it was unbound by the context.
   if (workarounds().unbind_fbo_on_context_switch)
