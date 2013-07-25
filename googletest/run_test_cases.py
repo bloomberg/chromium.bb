@@ -500,39 +500,42 @@ def filter_shards(tests, index, shards):
   return tests[min_bound:max_bound]
 
 
-def filter_bad_tests(tests, disabled, fails, flaky):
-  """Filters out DISABLED_, FAILS_ or FLAKY_ test cases."""
-  def starts_with(a, b, prefix):
-    return a.startswith(prefix) or b.startswith(prefix)
-
-  def valid(test):
-    if not '.' in test:
-      logging.error('Ignoring unknown test %s', test)
-      return False
-    fixture, case = test.split('.', 1)
-    if not disabled and starts_with(fixture, case, 'DISABLED_'):
-      return False
-    if not fails and starts_with(fixture, case, 'FAILS_'):
-      return False
-    if not flaky and starts_with(fixture, case, 'FLAKY_'):
-      return False
-    return True
-
-  return [test for test in tests if valid(test)]
+def _starts_with(a, b, prefix):
+  return a.startswith(prefix) or b.startswith(prefix)
 
 
-def chromium_valid(test, pre, manual):
-  """Returns True if the test case is valid to be selected."""
-  def starts_with(a, b, prefix):
-    return a.startswith(prefix) or b.startswith(prefix)
-
+def is_valid_test_case(test, disabled):
+  """Returns False on malformed or DISABLED_ test cases."""
   if not '.' in test:
     logging.error('Ignoring unknown test %s', test)
     return False
   fixture, case = test.split('.', 1)
-  if not pre and starts_with(fixture, case, 'PRE_'):
+  if not disabled and _starts_with(fixture, case, 'DISABLED_'):
     return False
-  if not manual and starts_with(fixture, case, 'MANUAL_'):
+  return True
+
+
+def filter_bad_tests(tests, disabled):
+  """Filters out malformed or DISABLED_ test cases."""
+  return [test for test in tests if is_valid_test_case(test, disabled)]
+
+
+def chromium_is_valid_test_case(test, disabled, fails, flaky, pre, manual):
+  """Return False on chromium specific bad tests in addition to
+  is_valid_test_case().
+
+  FAILS_, FLAKY_, PRE_, MANUAL_ and other weird Chromium-specific test cases.
+  """
+  if not is_valid_test_case(test, disabled):
+    return False
+  fixture, case = test.split('.', 1)
+  if not fails and _starts_with(fixture, case, 'FAILS_'):
+    return False
+  if not flaky and _starts_with(fixture, case, 'FLAKY_'):
+    return False
+  if not pre and _starts_with(fixture, case, 'PRE_'):
+    return False
+  if not manual and _starts_with(fixture, case, 'MANUAL_'):
     return False
   if test == 'InProcessBrowserTest.Empty':
     return False
@@ -540,9 +543,27 @@ def chromium_valid(test, pre, manual):
 
 
 def chromium_filter_bad_tests(tests, disabled, fails, flaky, pre, manual):
-  """Filters out PRE_, MANUAL_, and other weird Chromium-specific test cases."""
-  tests = filter_bad_tests(tests, disabled, fails, flaky)
-  return [test for test in tests if chromium_valid(test, pre, manual)]
+  """Filters out chromium specific bad tests in addition to filter_bad_tests().
+
+  Filters out FAILS_, FLAKY_, PRE_, MANUAL_ and other weird Chromium-specific
+  test cases.
+  """
+  return [
+    test for test in tests if chromium_is_valid_test_case(
+        test, disabled, fails, flaky, pre, manual)
+  ]
+
+
+def chromium_filter_pre_tests(test_case_results):
+  """Filters out PRE_ test case results."""
+  return (
+      i for i in test_case_results if chromium_is_valid_test_case(
+          i['test_case'],
+          disabled=True,
+          fails=True,
+          flaky=True,
+          pre=False,
+          manual=True))
 
 
 def parse_gtest_cases(out, seed):
@@ -590,8 +611,7 @@ def parse_gtest_cases(out, seed):
   return tests
 
 
-def list_test_cases(
-    cmd, cwd, index, shards, disabled, fails, flaky, pre, manual, seed):
+def list_test_cases(cmd, cwd, index, shards, seed, disabled):
   """Returns the list of test cases according to the specified criterias."""
   tests = parse_gtest_cases(gtest_list_tests(cmd, cwd), seed)
 
@@ -599,6 +619,13 @@ def list_test_cases(
   # in inbalanced shards.
   if shards:
     tests = filter_shards(tests, index, shards)
+  return filter_bad_tests(tests, disabled)
+
+
+def chromium_list_test_cases(
+    cmd, cwd, index, shards, seed, disabled, fails, flaky, pre, manual):
+  """Returns the list of test cases according to the specified criterias."""
+  tests = list_test_cases(cmd, cwd, index, shards, seed, disabled)
   return chromium_filter_bad_tests(tests, disabled, fails, flaky, pre, manual)
 
 
@@ -827,11 +854,6 @@ def convert_to_lines(generator):
     yield accumulator
 
 
-def chromium_filter_tests(data):
-  """Returns a generator that removes funky PRE_ chromium-specific tests."""
-  return (d for d in data if chromium_valid(d['test_case'], False, True))
-
-
 class ResetableTimeout(object):
   """A resetable timeout that acts as a float.
 
@@ -860,22 +882,47 @@ class ResetableTimeout(object):
     return self.timeout
 
 
-class Runner(object):
+class GoogleTestRunner(object):
   """Immutable settings to run many test cases in a loop."""
   def __init__(
-      self, cmd, cwd_dir, timeout, progress, retries, decider, verbose,
-      add_task, add_serial_task):
+      self,
+      cmd,
+      cwd_dir,
+      timeout,
+      progress,
+      retries,
+      decider,
+      verbose,
+      add_task,
+      add_serial_task,
+      filter_results):
+    """Defines how to run a googletest executable.
+
+    Arguments:
+    - cmd: command line to start with.
+    - cwd_dir: directory to start the app in.
+    - timeout: timeout while waiting for output.
+    - progress: object to present the user with status updates.
+    - retries: number of allowed retries. For example if 2, the test case will
+      be tried 3 times in total.
+    - decider: object to decide if the run should be stopped early.
+    - verbose: inconditionally prints output.
+    - add_task: function to add the task back when failing, for retry.
+    - add_serial_task: function to add the task back when failing too often so
+                       it should be run serially.
+    - filter_results: optional function to filter undesired extraneous test case
+                      run without our consent.
+    """
     self.cmd = cmd[:]
     self.cwd_dir = cwd_dir
     self.timeout = timeout
     self.progress = progress
-    # The number of retries. For example if 2, the test case will be tried 3
-    # times in total.
     self.retries = retries
     self.decider = decider
     self.verbose = verbose
     self.add_task = add_task
     self.add_serial_task = add_serial_task
+    self.filter_results = filter_results or (lambda x: x)
     # It is important to remove the shard environment variables since it could
     # conflict with --gtest_filter.
     self.env = setup_gtest_env()
@@ -911,12 +958,10 @@ class Runner(object):
     gen_lines_utf8 = (
       line.decode('ascii', 'ignore').encode('utf-8') for line in gen_lines)
     gen_test_cases = process_output(gen_lines_utf8, test_cases)
-    gen_test_cases_filtered = chromium_filter_tests(gen_test_cases)
-
     last_timestamp = proc.start
     got_failure_at_least_once = False
     results = []
-    for i in gen_test_cases_filtered:
+    for i in self.filter_results(gen_test_cases):
       results.append(i)
       now = timeout.reset()
       test_case_has_passed = (i['returncode'] == 0)
@@ -983,6 +1028,11 @@ class Runner(object):
       yield results[-1]
 
   def _retry(self, priority, test_case, try_count):
+    """Adds back the same task again only if relevant.
+
+    It may add it either at lower (e.g. higher value) priority or at the end of
+    the serially executed list.
+    """
     if try_count + 1 < self.retries:
       # The test failed and needs to be retried normally.
       # Leave a buffer of ~40 test cases before retrying.
@@ -996,6 +1046,12 @@ class Runner(object):
     return priority
 
 
+class ChromiumGoogleTestRunner(GoogleTestRunner):
+  def __init__(self, *args, **kwargs):
+    super(ChromiumGoogleTestRunner, self).__init__(
+        *args, filter_results=chromium_filter_pre_tests, **kwargs)
+
+
 def get_test_cases(
     cmd, cwd, whitelist, blacklist, index, shards, seed, disabled, fails, flaky,
     manual):
@@ -1005,17 +1061,17 @@ def get_test_cases(
   """
   try:
     # List all the test cases if a whitelist is used.
-    tests = list_test_cases(
+    tests = chromium_list_test_cases(
         cmd,
         cwd,
         index=index,
         shards=shards,
+        seed=seed,
         disabled=disabled,
         fails=fails,
         flaky=flaky,
         pre=False,
-        manual=manual,
-        seed=seed)
+        manual=manual)
   except Failure, e:
     print('Failed to list test cases')
     print(e.args[0])
@@ -1265,9 +1321,16 @@ def run_test_cases(
     serial_tasks.put((priority, func, args, kwargs))
 
   with ThreadPool(progress, jobs, jobs, len(test_cases)) as pool:
-    runner = Runner(
-        cmd, cwd, timeout, progress, retries, decider, verbose,
-        pool.add_task, add_serial_task)
+    runner = ChromiumGoogleTestRunner(
+        cmd,
+        cwd,
+        timeout,
+        progress,
+        retries,
+        decider,
+        verbose,
+        pool.add_task,
+        add_serial_task)
     function = runner.map
     progress.use_cr_only = not no_cr
     # Cluster the test cases right away.

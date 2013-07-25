@@ -24,23 +24,27 @@ def main():
   run_isolated.disable_buffering()
   parser = run_test_cases.OptionParserWithTestShardingAndFiltering(
       usage='%prog <options> [gtest]')
+
+  # Override default seed value to default to 0.
+  parser.set_defaults(seed=0)
+
   options, args = parser.parse_args()
   if not args:
     parser.error('Please provide the executable to run')
 
   cmd = run_isolated.fix_python_path(args)
   try:
-    tests = run_test_cases.list_test_cases(
+    tests = run_test_cases.chromium_list_test_cases(
         cmd,
         os.getcwd(),
         index=options.index,
         shards=options.shards,
+        seed=options.seed,
         disabled=options.disabled,
         fails=options.fails,
         flaky=options.flaky,
         pre=False,
-        manual=options.manual,
-        seed=0)
+        manual=options.manual)
     for test in tests:
       print test
   except run_test_cases.Failure, e:
