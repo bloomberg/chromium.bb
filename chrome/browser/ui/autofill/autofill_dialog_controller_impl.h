@@ -679,6 +679,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // recoverable.
   bool wallet_server_validation_recoverable_;
 
+  // Whether |callback_| was Run() with a filled |form_structure_|.
+  bool data_was_passed_back_;
+
   typedef std::map<AutofillFieldType,
       std::pair<base::string16, base::string16> > TypeErrorInputMap;
   typedef std::map<DialogSection, TypeErrorInputMap> WalletValidationErrors;

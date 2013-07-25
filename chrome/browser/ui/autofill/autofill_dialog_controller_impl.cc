@@ -2341,6 +2341,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       is_submitting_(false),
       choose_another_instrument_or_address_(false),
       wallet_server_validation_recoverable_(true),
+      data_was_passed_back_(false),
       autocheckout_state_(AUTOCHECKOUT_NOT_STARTED),
       was_ui_latency_logged_(false),
       deemphasized_render_view_(false) {
@@ -3213,6 +3214,7 @@ void AutofillDialogControllerImpl::FinishSubmit() {
   // Callback should be called as late as possible.
   callback_.Run(&form_structure_, !wallet_items_ ? std::string() :
       wallet_items_->google_transaction_id());
+  data_was_passed_back_ = true;
 
   // This might delete us.
   if (GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE)
@@ -3409,6 +3411,9 @@ AutofillMetrics::DialogInitialUserStateMetric
 }
 
 void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
+  if (!data_was_passed_back_)
+    return;
+
   if (newly_saved_card_) {
     AutofillCreditCardBubbleController::ShowNewCardSavedBubble(
         web_contents(), newly_saved_card_->TypeAndLastFourDigits());
