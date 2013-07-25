@@ -198,6 +198,10 @@ bool IsIntermediateRedirect(PageTransition transition) {
   return (transition & content::PAGE_TRANSITION_CHAIN_END) == 0;
 }
 
+bool IsFormSubmit(PageTransition transition) {
+  return (transition & content::PAGE_TRANSITION_FORM_SUBMIT) != 0;
+}
+
 bool ShouldExcludeTransitionForPrediction(PageTransition transition) {
   return IsBackForward(transition) || IsHomePage(transition) ||
       IsIntermediateRedirect(transition);
@@ -441,7 +445,8 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
       if (!last_visited.is_null() &&
           last_visited > visits[i].time - max_age &&
           last_visited < visits[i].time - min_age) {
-        next_urls_currently_found.insert(visits[i].url_id);
+        if (!IsFormSubmit(visits[i].transition))
+          next_urls_currently_found.insert(visits[i].url_id);
       }
     }
     if (i == static_cast<int>(visits.size()) - 1 ||
@@ -715,6 +720,7 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
   PrerenderProperties* prerender_properties = NULL;
 
   for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
+    RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_EXAMINE_NEXT_URL);
     url_info.reset(new LocalPredictorURLInfo(info->candidate_urls_[i]));
 
     // We need to check whether we can issue a prerender for this URL.
@@ -813,11 +819,13 @@ void PrerenderLocalPredictor::IssuePrerender(
             p->prerender_handle.get())) {
       new_prerender_handle->OnCancel();
       new_prerender_handle.reset(NULL);
+      RecordEvent(EVENT_ISSUE_PRERENDER_ALREADY_PRERENDERING);
       break;
     }
   }
 
   if (new_prerender_handle.get()) {
+    RecordEvent(EVENT_ISSUE_PRERENDER_NEW_PRERENDER);
     // The new prerender does not match any existing prerenders. Update
     // prerender_properties so that it reflects the new entry.
     prerender_properties->url_id = url_id;
@@ -829,8 +837,10 @@ void PrerenderLocalPredictor::IssuePrerender(
     prerender_properties->prerender_handle.swap(new_prerender_handle);
     // new_prerender_handle now represents the old previou prerender that we
     // are replacing. So we need to cancel it.
-    if (new_prerender_handle)
+    if (new_prerender_handle) {
       new_prerender_handle->OnCancel();
+      RecordEvent(EVENT_ISSUE_PRERENDER_CANCELLED_OLD_PRERENDER);
+    }
   }
 
   RecordEvent(EVENT_ADD_VISIT_PRERENDERING);
