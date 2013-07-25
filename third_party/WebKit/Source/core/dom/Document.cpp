@@ -437,6 +437,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_lastHandledUserGestureTimestamp(0)
     , m_prerenderer(Prerenderer::create(this))
     , m_textAutosizer(TextAutosizer::create(this))
+    , m_registrationContext(initializer.registrationContext(this))
     , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)
     , m_scheduledTasksAreSuspended(false)
     , m_sharedObjectPoolClearTimer(this, &Document::sharedObjectPoolClearTimerFired)
@@ -475,12 +476,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         m_nodeListCounts[i] = 0;
 
     InspectorCounters::incrementCounter(InspectorCounters::DocumentCounter);
-
-    bool shouldProcessCustomElements =
-        (isHTMLDocument() || isXHTMLDocument())
-        && RuntimeEnabledFeatures::customDOMElementsEnabled();
-    if (shouldProcessCustomElements)
-        m_registrationContext = CustomElementRegistrationContext::create();
 }
 
 static void histogramMutationEventUsage(const unsigned short& listenerTypes)

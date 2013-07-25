@@ -30,9 +30,12 @@
 
 #include "core/dom/SecurityContext.h"
 #include "weborigin/KURL.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
+class CustomElementRegistrationContext;
+class Document;
 class Frame;
 class HTMLImport;
 class Settings;
@@ -55,6 +58,8 @@ public:
 
     Frame* ownerFrame() const;
     Settings* settings() const;
+
+    PassRefPtr<CustomElementRegistrationContext> registrationContext(Document*) const;
 
 private:
     KURL m_url;

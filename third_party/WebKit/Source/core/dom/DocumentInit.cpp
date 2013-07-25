@@ -28,6 +28,9 @@
 #include "config.h"
 #include "core/dom/DocumentInit.h"
 
+#include "RuntimeEnabledFeatures.h"
+#include "core/dom/CustomElementRegistrationContext.h"
+#include "core/dom/Document.h"
 #include "core/html/HTMLImportsController.h"
 #include "core/page/Frame.h"
 
@@ -59,6 +62,17 @@ Frame* DocumentInit::ownerFrame() const
     if (!ownerFrame)
         ownerFrame = m_frame->loader()->opener();
     return ownerFrame;
+}
+
+PassRefPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(Document* document) const
+{
+    if (!RuntimeEnabledFeatures::customDOMElementsEnabled())
+        return 0;
+
+    if (!document->isHTMLDocument() && !document->isXHTMLDocument())
+        return 0;
+
+    return CustomElementRegistrationContext::create();
 }
 
 } // namespace WebCore
