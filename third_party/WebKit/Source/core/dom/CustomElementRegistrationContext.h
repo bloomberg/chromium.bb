@@ -32,6 +32,8 @@
 #define CustomElementRegistrationContext_h
 
 #include "core/dom/CustomElementDescriptor.h"
+#include "core/dom/CustomElementRegistry.h"
+#include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
 #include "wtf/PassRefPtr.h"
@@ -40,15 +42,15 @@
 namespace WebCore {
 
 class CustomElementConstructorBuilder;
+class CustomElementDefinition;
 class Document;
 class Element;
 
 class CustomElementRegistrationContext : public RefCounted<CustomElementRegistrationContext> {
 public:
-    static PassRefPtr<CustomElementRegistrationContext> nullRegistrationContext();
     static PassRefPtr<CustomElementRegistrationContext> create();
 
-    virtual ~CustomElementRegistrationContext() { }
+    ~CustomElementRegistrationContext() { }
 
     // Model
     // FIXME: Move this to CustomElementRegistry
@@ -57,21 +59,31 @@ public:
     static bool isCustomTagName(const AtomicString& localName);
 
     // Definitions
-    virtual void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, ExceptionCode&) = 0;
+    void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, ExceptionCode&);
 
     // Instance creation
-    virtual PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&) = 0;
+    PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&);
     static void setIsAttributeAndTypeExtension(Element*, const AtomicString& type);
     static void setTypeExtension(Element*, const AtomicString& type);
 
     // Instance lifecycle
-    virtual void customElementWasDestroyed(Element*) = 0;
+    void customElementWasDestroyed(Element*);
 
 protected:
     CustomElementRegistrationContext() { }
 
     // Instance creation
-    virtual void didGiveTypeExtension(Element*, const AtomicString& type) = 0;
+    void didGiveTypeExtension(Element*, const AtomicString& type);
+
+private:
+    void resolve(Element*, const AtomicString& typeExtension);
+    void didResolveElement(CustomElementDefinition*, Element*);
+    void didCreateUnresolvedElement(const CustomElementDescriptor&, Element*);
+
+    CustomElementRegistry m_registry;
+
+    // Element creation
+    CustomElementUpgradeCandidateMap m_candidates;
 };
 
 }

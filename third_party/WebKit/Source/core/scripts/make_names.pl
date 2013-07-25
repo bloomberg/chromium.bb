@@ -860,7 +860,7 @@ print F <<END
     if (!document)
         return 0;
 
-    if (CustomElementRegistrationContext::isCustomTagName(qName.localName())) {
+    if (CustomElementRegistrationContext::isCustomTagName(qName.localName()) && document->registrationContext()) {
         RefPtr<Element> element = document->registrationContext()->createCustomTagElement(document, qName);
         ASSERT_WITH_SECURITY_IMPLICATION(element->is$parameters{namespace}Element());
         return static_pointer_cast<$parameters{namespace}Element>(element.release());

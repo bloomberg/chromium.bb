@@ -479,9 +479,8 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     bool shouldProcessCustomElements =
         (isHTMLDocument() || isXHTMLDocument())
         && RuntimeEnabledFeatures::customDOMElementsEnabled();
-    m_registrationContext = shouldProcessCustomElements
-        ? CustomElementRegistrationContext::create()
-        : CustomElementRegistrationContext::nullRegistrationContext();
+    if (shouldProcessCustomElements)
+        m_registrationContext = CustomElementRegistrationContext::create();
 }
 
 static void histogramMutationEventUsage(const unsigned short& listenerTypes)
@@ -720,7 +719,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
 
     RefPtr<Element> element;
 
-    if (CustomElementRegistrationContext::isCustomTagName(localName))
+    if (CustomElementRegistrationContext::isCustomTagName(localName) && registrationContext())
         element = registrationContext()->createCustomTagElement(this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
     else
         element = createElement(localName, ec);
@@ -744,7 +743,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     }
 
     RefPtr<Element> element;
-    if (CustomElementRegistrationContext::isCustomTagName(qName.localName()))
+    if (CustomElementRegistrationContext::isCustomTagName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(this, qName);
     else
         element = createElementNS(namespaceURI, qualifiedName, ec);
@@ -762,6 +761,11 @@ ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicS
 
 ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, const Dictionary& options, ExceptionCode& ec)
 {
+    if (!registrationContext()) {
+        ec = NotSupportedError;
+        return ScriptValue();
+    }
+
     CustomElementConstructorBuilder constructorBuilder(state, &options);
     registrationContext()->registerElement(this, &constructorBuilder, name, ec);
     return constructorBuilder.bindingsReturnValue();

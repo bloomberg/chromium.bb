@@ -49,7 +49,7 @@ class Document;
 class CustomElementRegistry {
     WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
 protected:
-    friend class ActiveRegistrationContext;
+    friend class CustomElementRegistrationContext;
 
     CustomElementRegistry() { }
     virtual ~CustomElementRegistry() { }
