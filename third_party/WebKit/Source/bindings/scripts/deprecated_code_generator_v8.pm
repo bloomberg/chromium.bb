@@ -5462,7 +5462,6 @@ sub NativeToJSValue
     AddIncludesForType($type);
 
     if ($type eq "SerializedScriptValue") {
-        AddToImplIncludes("$type.h");
         my $returnValue = "$nativeValue ? $nativeValue->deserialize() : v8::Handle<v8::Value>(v8::Null($getIsolate))";
         return "${indent}v8SetReturnValue(${getCallbackInfo}, $returnValue);" if $isReturnValue;
         return "$indent$receiver $returnValue;";
