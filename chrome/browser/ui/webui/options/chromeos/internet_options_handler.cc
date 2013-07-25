@@ -1011,14 +1011,8 @@ void InternetOptionsHandler::DisableWifiCallback(const base::ListValue* args) {
 void InternetOptionsHandler::EnableCellularCallback(
     const base::ListValue* args) {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  if (!handler->IsTechnologyEnabled(NetworkStateHandler::kMatchTypeMobile)) {
-    handler->SetTechnologyEnabled(
-        NetworkStateHandler::kMatchTypeMobile, true,
-        base::Bind(&ShillError, "EnableCellularCallback"));
-    return;
-  }
-  const DeviceState* device = handler->GetDeviceStateByType(
-      NetworkStateHandler::kMatchTypeMobile);
+  const DeviceState* device =
+      handler->GetDeviceStateByType(flimflam::kTypeCellular);
   if (!device) {
     LOG(ERROR) << "Mobile device not found.";
     return;
@@ -1026,6 +1020,12 @@ void InternetOptionsHandler::EnableCellularCallback(
   if (!device->sim_lock_type().empty()) {
     SimDialogDelegate::ShowDialog(GetNativeWindow(),
                                   SimDialogDelegate::SIM_DIALOG_UNLOCK);
+    return;
+  }
+  if (!handler->IsTechnologyEnabled(flimflam::kTypeCellular)) {
+    handler->SetTechnologyEnabled(
+        flimflam::kTypeCellular, true,
+        base::Bind(&ShillError, "EnableCellularCallback"));
     return;
   }
   if (device->IsSimAbsent()) {
