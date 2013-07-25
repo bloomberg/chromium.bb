@@ -1709,8 +1709,6 @@ crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Fai
 crbug.com/260744 [ Debug ] fast/js/regress/function-dot-apply.html  [ Timeout ]
 crbug.com/260744 [ Debug ] fast/js/regress/inline-arguments-local-escape.html  [ Timeout ]
 
-crbug.com/263991 [ Win Debug ] editing/selection/fake-drag.html [ Failure Pass ]
-
 crbug.com/263879 compositing/direct-image-compositing.html [ NeedsRebaseline ]
 crbug.com/263879 compositing/shadows/shadow-drawing.html [ NeedsRebaseline ]
 crbug.com/263879 css1/basic/inheritance.html [ NeedsRebaseline ]
