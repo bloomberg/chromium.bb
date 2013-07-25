@@ -149,6 +149,7 @@ class ImageResourceFetcher;
 class InputTagSpeechDispatcher;
 class JavaBridgeDispatcher;
 class LoadProgressTracker;
+class MIDIDispatcher;
 class MediaStreamClient;
 class MediaStreamDispatcher;
 class MouseLockDispatcher;
@@ -508,6 +509,7 @@ class CONTENT_EXPORT RenderViewImpl
                                        const WebKit::WebString& title);
   virtual WebKit::WebPageVisibilityState visibilityState() const;
   virtual WebKit::WebUserMediaClient* userMediaClient();
+  virtual WebKit::WebMIDIClient* webMIDIClient();
   virtual void draggableRegionsChanged();
 
 #if defined(OS_ANDROID)
@@ -1415,6 +1417,9 @@ class CONTENT_EXPORT RenderViewImpl
   MediaStreamClient* media_stream_client_;
   WebKit::WebUserMediaClient* web_user_media_client_;
 
+  // MIDIClient attached to this view; lazily initialized.
+  MIDIDispatcher* midi_dispatcher_;
+
   DevToolsAgent* devtools_agent_;
 
   // The current accessibility mode.
@@ -1535,9 +1540,9 @@ class CONTENT_EXPORT RenderViewImpl
   // DOM automation bindings are enabled.
   scoped_ptr<DomAutomationController> dom_automation_controller_;
 
-   // Allows JS to read out a variety of internal various metrics. The JS object
-   // is only exposed when the stats collection bindings are enabled.
-   scoped_ptr<StatsCollectionController> stats_collection_controller_;
+  // Allows JS to read out a variety of internal various metrics. The JS object
+  // is only exposed when the stats collection bindings are enabled.
+  scoped_ptr<StatsCollectionController> stats_collection_controller_;
 
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop

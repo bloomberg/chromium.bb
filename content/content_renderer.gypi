@@ -200,6 +200,8 @@
     'renderer/media/media_stream_dispatcher.h',
     'renderer/media/media_stream_dispatcher_eventhandler.h',
     'renderer/media/media_stream_impl.h',
+    'renderer/media/midi_dispatcher.cc',
+    'renderer/media/midi_dispatcher.h',
     'renderer/media/midi_message_filter.cc',
     'renderer/media/midi_message_filter.h',
     'renderer/media/pepper_platform_video_decoder_impl.cc',

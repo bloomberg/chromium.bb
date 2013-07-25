@@ -20,8 +20,8 @@ RendererWebMIDIAccessorImpl::~RendererWebMIDIAccessorImpl() {
   midi_message_filter()->RemoveClient(client_);
 }
 
-void RendererWebMIDIAccessorImpl::requestAccess(bool access) {
-  midi_message_filter()->RequestAccess(client_, access ? 1 : 0);
+void RendererWebMIDIAccessorImpl::startSession() {
+  midi_message_filter()->StartSession(client_);
 }
 
 void RendererWebMIDIAccessorImpl::sendMIDIData(

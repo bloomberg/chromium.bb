@@ -97,6 +97,7 @@
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_impl.h"
+#include "content/renderer/media/midi_dispatcher.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -6082,6 +6083,12 @@ WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {
 WebKit::WebUserMediaClient* RenderViewImpl::userMediaClient() {
   EnsureMediaStreamClient();
   return web_user_media_client_;
+}
+
+WebKit::WebMIDIClient* RenderViewImpl::webMIDIClient() {
+  if (!midi_dispatcher_)
+    midi_dispatcher_ = new MIDIDispatcher(this);
+  return midi_dispatcher_;
 }
 
 void RenderViewImpl::draggableRegionsChanged() {

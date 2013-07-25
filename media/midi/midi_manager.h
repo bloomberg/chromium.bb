@@ -36,24 +36,19 @@ class MEDIA_EXPORT MIDIManagerClient {
 // Manages access to all MIDI hardware.
 class MEDIA_EXPORT MIDIManager {
  public:
-  enum AccessType {
-    kNoSystemExclusive,
-    kSystemExclusive
-  };
-
   static MIDIManager* Create();
 
   MIDIManager();
   virtual ~MIDIManager();
 
-  // A client calls RequestAccess() to receive and send MIDI data.
-  // If access is approved, the MIDI system is lazily initialized
+  // A client calls StartSession() to receive and send MIDI data.
+  // If the session is ready to start, the MIDI system is lazily initialized
   // and the client is registered to receive MIDI data.
-  // Returns |true| if access is approved.
-  bool RequestAccess(MIDIManagerClient* client, int access);
+  // Returns |true| if the session succeeds to start.
+  bool StartSession(MIDIManagerClient* client);
 
-  // A client calls ReleaseAccess() to stop receiving MIDI data.
-  void ReleaseAccess(MIDIManagerClient* client);
+  // A client calls ReleaseSession() to stop receiving MIDI data.
+  void EndSession(MIDIManagerClient* client);
 
   // SendMIDIData() sends one or more messages at the given time.
   // |port_index| represents the specific output port from output_ports().

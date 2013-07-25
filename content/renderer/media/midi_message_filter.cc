@@ -40,7 +40,7 @@ bool MIDIMessageFilter::OnMessageReceived(const IPC::Message& message) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MIDIMessageFilter, message)
-    IPC_MESSAGE_HANDLER(MIDIMsg_AccessApproved, OnAccessApproved)
+    IPC_MESSAGE_HANDLER(MIDIMsg_SessionStarted, OnSessionStarted)
     IPC_MESSAGE_HANDLER(MIDIMsg_DataReceived, OnDataReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -65,8 +65,7 @@ void MIDIMessageFilter::OnChannelClosing() {
   channel_ = NULL;
 }
 
-void MIDIMessageFilter::RequestAccess(
-    WebKit::WebMIDIAccessorClient* client, int access) {
+void MIDIMessageFilter::StartSession(WebKit::WebMIDIAccessorClient* client) {
   // Generate and keep track of a "client id" which is sent to the browser
   // to ask permission to talk to MIDI hardware.
   // This id is handed back when we receive the answer in OnAccessApproved().
@@ -75,13 +74,13 @@ void MIDIMessageFilter::RequestAccess(
     clients_[client] = client_id;
 
     io_message_loop_->PostTask(FROM_HERE,
-        base::Bind(&MIDIMessageFilter::RequestAccessOnIOThread, this,
-                   client_id, access));
+        base::Bind(&MIDIMessageFilter::StartSessionOnIOThread, this,
+                   client_id));
   }
 }
 
-void MIDIMessageFilter::RequestAccessOnIOThread(int client_id, int access) {
-  Send(new MIDIHostMsg_RequestAccess(client_id, access));
+void MIDIMessageFilter::StartSessionOnIOThread(int client_id) {
+  Send(new MIDIHostMsg_StartSession(client_id));
 }
 
 void MIDIMessageFilter::RemoveClient(WebKit::WebMIDIAccessorClient* client) {
@@ -92,22 +91,20 @@ void MIDIMessageFilter::RemoveClient(WebKit::WebMIDIAccessorClient* client) {
 
 // Received from browser.
 
-void MIDIMessageFilter::OnAccessApproved(
+void MIDIMessageFilter::OnSessionStarted(
     int client_id,
-    int access,
     bool success,
     MIDIPortInfoList inputs,
     MIDIPortInfoList outputs) {
   // Handle on the main JS thread.
   main_message_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&MIDIMessageFilter::HandleAccessApproved, this,
-                 client_id, access, success, inputs, outputs));
+      base::Bind(&MIDIMessageFilter::HandleSessionStarted, this,
+                 client_id, success, inputs, outputs));
 }
 
-void MIDIMessageFilter::HandleAccessApproved(
+void MIDIMessageFilter::HandleSessionStarted(
     int client_id,
-    int access,
     bool success,
     MIDIPortInfoList inputs,
     MIDIPortInfoList outputs) {
@@ -133,11 +130,10 @@ void MIDIMessageFilter::HandleAccessApproved(
           UTF8ToUTF16(outputs[i].version));
     }
   }
-
-  if (success)
-    client->didAllowAccess();
-  else
-    client->didBlockAccess();
+  // TODO(toyoshim): Reports device initialization failure to JavaScript as
+  // "NotSupportedError" or something when |success| is false.
+  // http://crbug.com/260315
+  client->didStartSession();
 }
 
 WebKit::WebMIDIAccessorClient*

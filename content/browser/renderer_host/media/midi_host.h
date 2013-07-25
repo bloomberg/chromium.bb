@@ -38,8 +38,8 @@ class CONTENT_EXPORT MIDIHost
       size_t length,
       double timestamp) OVERRIDE;
 
-  // Request access to MIDI hardware.
-  void OnRequestAccess(int client_id, int access);
+  // Start session to access MIDI hardware.
+  void OnStartSession(int client_id);
 
   // Data to be sent to a MIDI output port.
   void OnSendData(int port,

@@ -26,7 +26,7 @@ MIDIHost::MIDIHost(media::MIDIManager* midi_manager)
 
 MIDIHost::~MIDIHost() {
   if (midi_manager_)
-    midi_manager_->ReleaseAccess(this);
+    midi_manager_->EndSession(this);
 }
 
 void MIDIHost::OnChannelClosing() {
@@ -45,7 +45,7 @@ bool MIDIHost::OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(MIDIHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(MIDIHostMsg_RequestAccess, OnRequestAccess)
+    IPC_MESSAGE_HANDLER(MIDIHostMsg_StartSession, OnStartSession)
     IPC_MESSAGE_HANDLER(MIDIHostMsg_SendData, OnSendData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -53,24 +53,23 @@ bool MIDIHost::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-void MIDIHost::OnRequestAccess(int client_id, int access) {
+void MIDIHost::OnStartSession(int client_id) {
   MIDIPortInfoList input_ports;
   MIDIPortInfoList output_ports;
 
-  // Ask permission and register to receive MIDI data.
-  bool approved = false;
+  // Initialize devices and register to receive MIDI data.
+  bool success = false;
   if (midi_manager_) {
-    approved = midi_manager_->RequestAccess(this, access);
-    if (approved) {
+    success = midi_manager_->StartSession(this);
+    if (success) {
       input_ports = midi_manager_->input_ports();
       output_ports = midi_manager_->output_ports();
     }
   }
 
-  Send(new MIDIMsg_AccessApproved(
+  Send(new MIDIMsg_SessionStarted(
        client_id,
-       access,
-       approved,
+       success,
        input_ports,
        output_ports));
 }

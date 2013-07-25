@@ -22,11 +22,11 @@ class RendererWebMIDIAccessorImpl
   virtual ~RendererWebMIDIAccessorImpl();
 
   // WebKit::WebMIDIAccessor implementation.
-  virtual void requestAccess(bool access) OVERRIDE;
+  virtual void startSession();
   virtual void sendMIDIData(unsigned port_index,
                             const unsigned char* data,
                             size_t length,
-                            double timestamp) OVERRIDE;
+                            double timestamp);
 
  private:
   WebKit::WebMIDIAccessorClient* client_;

@@ -22,9 +22,8 @@ IPC_STRUCT_TRAITS_BEGIN(media::MIDIPortInfo)
 IPC_STRUCT_TRAITS_END()
 
 // Renderer request to browser for access to MIDI services.
-IPC_MESSAGE_CONTROL2(MIDIHostMsg_RequestAccess,
-                     int /* client id */,
-                     int /* access */)
+IPC_MESSAGE_CONTROL1(MIDIHostMsg_StartSession,
+                     int /* client id */)
 
 IPC_MESSAGE_CONTROL3(MIDIHostMsg_SendData,
                      int /* port */,
@@ -33,9 +32,8 @@ IPC_MESSAGE_CONTROL3(MIDIHostMsg_SendData,
 
 // Messages sent from the browser to the renderer.
 
-IPC_MESSAGE_CONTROL5(MIDIMsg_AccessApproved,
+IPC_MESSAGE_CONTROL4(MIDIMsg_SessionStarted,
                      int /* client id */,
-                     int /* access */,
                      bool /* success */,
                      media::MIDIPortInfoList /* input ports */,
                      media::MIDIPortInfoList /* output ports */)

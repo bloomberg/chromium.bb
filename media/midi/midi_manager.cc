@@ -19,12 +19,7 @@ MIDIManager::MIDIManager()
 
 MIDIManager::~MIDIManager() {}
 
-bool MIDIManager::RequestAccess(MIDIManagerClient* client, int access) {
-  // TODO(crogers): determine if user prompt is necessary here.
-  // For now, simply don't allow sysex.
-  if (access != kNoSystemExclusive)
-    return false;
-
+bool MIDIManager::StartSession(MIDIManagerClient* client) {
   // Lazily initialize the MIDI back-end.
   if (!initialized_)
     initialized_ = Initialize();
@@ -37,7 +32,7 @@ bool MIDIManager::RequestAccess(MIDIManagerClient* client, int access) {
   return initialized_;
 }
 
-void MIDIManager::ReleaseAccess(MIDIManagerClient* client) {
+void MIDIManager::EndSession(MIDIManagerClient* client) {
   base::AutoLock auto_lock(clients_lock_);
   ClientList::iterator i = clients_.find(client);
   if (i != clients_.end())
