@@ -171,7 +171,6 @@ void ActiveRegistrationContext::didResolveElement(CustomElementDefinition* defin
 
 void ActiveRegistrationContext::didCreateUnresolvedElement(const CustomElementDescriptor& descriptor, Element* element)
 {
-    element->setCustomElementState(Element::UpgradeCandidate);
     m_candidates.add(descriptor, element);
 }
 

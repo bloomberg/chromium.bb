@@ -32,7 +32,7 @@
 #include "core/dom/CustomElement.h"
 
 #include "core/dom/CustomElementCallbackScheduler.h"
-#include "core/dom/CustomElementRegistrationContext.h"
+#include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/Element.h"
 
 namespace WebCore {
@@ -70,13 +70,20 @@ void CustomElement::didLeaveDocument(Element* element)
 
 void CustomElement::wasDestroyed(Element* element)
 {
-    definitions().remove(element);
+    switch (element->customElementState()) {
+    case Element::NotCustomElement:
+        ASSERT_NOT_REACHED();
+        break;
 
-    // FIXME: Elements should only depend on their document's
-    // registration context at creation; maintain a mapping to
-    // registration context for upgrade candidates.
-    if (element->document() && element->document()->registrationContext())
-        element->document()->registrationContext()->customElementWasDestroyed(element);
+    case Element::UpgradeCandidate:
+        CustomElementUpgradeCandidateMap::elementWasDestroyed(element);
+        break;
+
+    case Element::Defined:
+    case Element::Upgraded:
+        definitions().remove(element);
+        break;
+    }
 }
 
 void CustomElement::DefinitionMap::add(Element* element, PassRefPtr<CustomElementDefinition> definition)
@@ -100,8 +107,8 @@ CustomElementDefinition* CustomElement::DefinitionMap::get(Element* element)
 
 CustomElement::DefinitionMap& CustomElement::definitions()
 {
-    DEFINE_STATIC_LOCAL(DefinitionMap, definitionMap, ());
-    return definitionMap;
+    DEFINE_STATIC_LOCAL(DefinitionMap, map, ());
+    return map;
 }
 
 } // namespace WebCore

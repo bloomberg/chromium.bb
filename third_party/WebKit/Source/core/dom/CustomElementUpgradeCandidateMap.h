@@ -45,6 +45,9 @@ class CustomElementUpgradeCandidateMap {
     WTF_MAKE_NONCOPYABLE(CustomElementUpgradeCandidateMap);
 public:
     CustomElementUpgradeCandidateMap() { }
+    ~CustomElementUpgradeCandidateMap();
+
+    static void elementWasDestroyed(Element*);
 
     void add(const CustomElementDescriptor&, Element*);
     void remove(Element*);
@@ -53,6 +56,12 @@ public:
     ElementSet takeUpgradeCandidatesFor(const CustomElementDescriptor&);
 
 private:
+    // Maps elements to upgrade candidate maps observing their destruction
+    typedef HashMap<Element*, CustomElementUpgradeCandidateMap*> DestructionObserverMap;
+    static DestructionObserverMap& destructionObservers();
+    static void registerForElementDestructionNotification(Element*, CustomElementUpgradeCandidateMap*);
+    static void unregisterForElementDestructionNotification(Element*, CustomElementUpgradeCandidateMap*);
+
     typedef HashMap<Element*, CustomElementDescriptor> UpgradeCandidateMap;
     UpgradeCandidateMap m_upgradeCandidates;
 

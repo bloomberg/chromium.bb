@@ -31,10 +31,23 @@
 #include "config.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
 
+#include "core/dom/Element.h"
+
 namespace WebCore {
+
+CustomElementUpgradeCandidateMap::~CustomElementUpgradeCandidateMap()
+{
+    UpgradeCandidateMap::const_iterator::Keys end = m_upgradeCandidates.end().keys();
+    for (UpgradeCandidateMap::const_iterator::Keys it = m_upgradeCandidates.begin().keys(); it != end; ++it)
+        unregisterForElementDestructionNotification(*it, this);
+}
 
 void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descriptor, Element* element)
 {
+    element->setCustomElementState(Element::UpgradeCandidate);
+
+    registerForElementDestructionNotification(element, this);
+
     UpgradeCandidateMap::AddResult result = m_upgradeCandidates.add(element, descriptor);
     ASSERT(result.isNewEntry);
 
@@ -46,9 +59,10 @@ void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descri
 
 void CustomElementUpgradeCandidateMap::remove(Element* element)
 {
+    unregisterForElementDestructionNotification(element, this);
+
     UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
-    if (candidate == m_upgradeCandidates.end())
-        return;
+    ASSERT(candidate != m_upgradeCandidates.end());
 
     UnresolvedDefinitionMap::iterator elements = m_unresolvedDefinitions.find(candidate->value);
     ASSERT(elements != m_unresolvedDefinitions.end());
@@ -60,10 +74,38 @@ ListHashSet<Element*> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor
 {
     const ListHashSet<Element*>& candidates = m_unresolvedDefinitions.take(descriptor);
 
-    for (ElementSet::const_iterator candidate = candidates.begin(); candidate != candidates.end(); ++candidate)
+    for (ElementSet::const_iterator candidate = candidates.begin(); candidate != candidates.end(); ++candidate) {
+        unregisterForElementDestructionNotification(*candidate, this);
         m_upgradeCandidates.remove(*candidate);
+    }
 
     return candidates;
+}
+
+void CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element)
+{
+    DestructionObserverMap::iterator it = destructionObservers().find(element);
+    if (it == destructionObservers().end())
+        return;
+    it->value->remove(element); // will also remove the destruction observer
+}
+
+CustomElementUpgradeCandidateMap::DestructionObserverMap& CustomElementUpgradeCandidateMap::destructionObservers()
+{
+    DEFINE_STATIC_LOCAL(DestructionObserverMap, map, ());
+    return map;
+}
+
+void CustomElementUpgradeCandidateMap::registerForElementDestructionNotification(Element* element, CustomElementUpgradeCandidateMap* observer)
+{
+    DestructionObserverMap::AddResult result = destructionObservers().add(element, observer);
+    ASSERT(result.isNewEntry);
+}
+
+void CustomElementUpgradeCandidateMap::unregisterForElementDestructionNotification(Element* element, CustomElementUpgradeCandidateMap* observer)
+{
+    CustomElementUpgradeCandidateMap* map = destructionObservers().take(element);
+    ASSERT(map == observer);
 }
 
 }

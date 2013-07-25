@@ -44,8 +44,13 @@ class Element;
 
 class CustomElement {
 public:
+    // API for registration contexts
     static void define(Element*, PassRefPtr<CustomElementDefinition>);
+
+    // API for wrapper creation, which uses a definition as a key
     static CustomElementDefinition* definitionFor(Element*);
+
+    // API for Element to kick off changes
 
     static void attributeDidChange(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
     static void didEnterDocument(Element*);
@@ -54,6 +59,8 @@ public:
 
 private:
     CustomElement();
+
+    // Maps resolved elements to their definitions
 
     class DefinitionMap {
         WTF_MAKE_NONCOPYABLE(DefinitionMap);
@@ -69,7 +76,6 @@ private:
         typedef HashMap<Element*, RefPtr<CustomElementDefinition> > ElementDefinitionHashMap;
         ElementDefinitionHashMap m_definitions;
     };
-
     static DefinitionMap& definitions();
 };
 
