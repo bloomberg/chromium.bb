@@ -6,11 +6,12 @@
 
 #include <math.h>
 
-#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/win/wrapped_window_proc.h"
 
 namespace base {
 
@@ -25,13 +26,11 @@ enum MessageLoopProblems {
 
 }  // namespace
 
+static const wchar_t kWndClassFormat[] = L"Chrome_MessagePumpWindow_%p";
+
 // Message sent to get an additional time slice for pumping (processing) another
 // task (a series of such messages creates a continuous task pump).
-const int kMsgHaveWork = WM_USER + 1;
-
-// Identifies the timer used to wake up the UI message pump to run delayed
-// tasks.
-const int kMessageTimerId = 1;
+static const int kMsgHaveWork = WM_USER + 1;
 
 //-----------------------------------------------------------------------------
 // MessagePumpWin public:
@@ -98,12 +97,15 @@ int MessagePumpWin::GetCurrentDelay() const {
 // MessagePumpForUI public:
 
 MessagePumpForUI::MessagePumpForUI()
-    : message_filter_(new MessageFilter) {
-  CHECK(message_window_.Create(base::Bind(&MessagePumpForUI::HandleMessage,
-                                          base::Unretained(this))));
+    : atom_(0),
+      message_filter_(new MessageFilter) {
+  InitMessageWnd();
 }
 
 MessagePumpForUI::~MessagePumpForUI() {
+  DestroyWindow(message_hwnd_);
+  UnregisterClass(MAKEINTATOM(atom_),
+                  GetModuleFromAddress(&WndProcThunk));
 }
 
 void MessagePumpForUI::ScheduleWork() {
@@ -111,7 +113,9 @@ void MessagePumpForUI::ScheduleWork() {
     return;  // Someone else continued the pumping.
 
   // Make sure the MessagePump does some work for us.
-  if (PostMessage(message_window_.hwnd(), kMsgHaveWork, 0, 0))
+  BOOL ret = PostMessage(message_hwnd_, kMsgHaveWork,
+                         reinterpret_cast<WPARAM>(this), 0);
+  if (ret)
     return;  // There was room in the Window Message queue.
 
   // We have failed to insert a have-work message, so there is a chance that we
@@ -128,8 +132,6 @@ void MessagePumpForUI::ScheduleWork() {
 }
 
 void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
-  DCHECK(message_window_.CalledOnValidThread());
-
   //
   // We would *like* to provide high resolution timers.  Windows timers using
   // SetTimer() have a 10ms granularity.  We have to use WM_TIMER as a wakeup
@@ -159,7 +161,9 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
 
   // Create a WM_TIMER event that will wake us up to check for any pending
   // timers (in case we are running within a nested, external sub-pump).
-  if (SetTimer(message_window_.hwnd(), kMessageTimerId, delay_msec, NULL))
+  BOOL ret = SetTimer(message_hwnd_, reinterpret_cast<UINT_PTR>(this),
+                      delay_msec, NULL);
+  if (ret)
     return;
   // If we can't set timers, we are in big trouble... but cross our fingers for
   // now.
@@ -168,27 +172,48 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
                             MESSAGE_LOOP_PROBLEM_MAX);
 }
 
+void MessagePumpForUI::PumpOutPendingPaintMessages() {
+  // If we are being called outside of the context of Run, then don't try to do
+  // any work.
+  if (!state_)
+    return;
+
+  // Create a mini-message-pump to force immediate processing of only Windows
+  // WM_PAINT messages.  Don't provide an infinite loop, but do enough peeking
+  // to get the job done.  Actual common max is 4 peeks, but we'll be a little
+  // safe here.
+  const int kMaxPeekCount = 20;
+  int peek_count;
+  for (peek_count = 0; peek_count < kMaxPeekCount; ++peek_count) {
+    MSG msg;
+    if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE | PM_QS_PAINT))
+      break;
+    ProcessMessageHelper(msg);
+    if (state_->should_quit)  // Handle WM_QUIT.
+      break;
+  }
+  // Histogram what was really being used, to help to adjust kMaxPeekCount.
+  DHISTOGRAM_COUNTS("Loop.PumpOutPendingPaintMessages Peeks", peek_count);
+}
+
 //-----------------------------------------------------------------------------
 // MessagePumpForUI private:
 
-bool MessagePumpForUI::HandleMessage(UINT message,
-                                     WPARAM wparam,
-                                     LPARAM lparam,
-                                     LRESULT* result) {
+// static
+LRESULT CALLBACK MessagePumpForUI::WndProcThunk(
+    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
   switch (message) {
     case kMsgHaveWork:
-      HandleWorkMessage();
+      reinterpret_cast<MessagePumpForUI*>(wparam)->HandleWorkMessage();
       break;
     case WM_TIMER:
-      HandleTimerMessage();
+      reinterpret_cast<MessagePumpForUI*>(wparam)->HandleTimerMessage();
       break;
   }
-  return false;
+  return DefWindowProc(hwnd, message, wparam, lparam);
 }
 
 void MessagePumpForUI::DoRunLoop() {
-  DCHECK(message_window_.CalledOnValidThread());
-
   // IF this was just a simple PeekMessage() loop (servicing all possible work
   // queues), then Windows would try to achieve the following order according
   // to MSDN documentation about PeekMessage with no filter):
@@ -226,7 +251,7 @@ void MessagePumpForUI::DoRunLoop() {
     // don't want to disturb that timer if it is already in flight.  However,
     // if we did do all remaining delayed work, then lets kill the WM_TIMER.
     if (more_work_is_plausible && delayed_work_time_.is_null())
-      KillTimer(message_window_.hwnd(), kMessageTimerId);
+      KillTimer(message_hwnd_, reinterpret_cast<UINT_PTR>(this));
     if (state_->should_quit)
       break;
 
@@ -242,6 +267,24 @@ void MessagePumpForUI::DoRunLoop() {
 
     WaitForWork();  // Wait (sleep) until we have work to do again.
   }
+}
+
+void MessagePumpForUI::InitMessageWnd() {
+  // Generate a unique window class name.
+  string16 class_name = StringPrintf(kWndClassFormat, this);
+
+  HINSTANCE instance = GetModuleFromAddress(&WndProcThunk);
+  WNDCLASSEX wc = {0};
+  wc.cbSize = sizeof(wc);
+  wc.lpfnWndProc = base::win::WrappedWindowProc<WndProcThunk>;
+  wc.hInstance = instance;
+  wc.lpszClassName = class_name.c_str();
+  atom_ = RegisterClassEx(&wc);
+  DCHECK(atom_);
+
+  message_hwnd_ = CreateWindow(MAKEINTATOM(atom_), 0, 0, 0, 0, 0, 0,
+                               HWND_MESSAGE, 0, instance, 0);
+  DCHECK(message_hwnd_);
 }
 
 void MessagePumpForUI::WaitForWork() {
@@ -301,7 +344,7 @@ void MessagePumpForUI::HandleWorkMessage() {
 }
 
 void MessagePumpForUI::HandleTimerMessage() {
-  KillTimer(message_window_.hwnd(), kMessageTimerId);
+  KillTimer(message_hwnd_, reinterpret_cast<UINT_PTR>(this));
 
   // If we are being called outside of the context of Run, then don't do
   // anything.  This could correspond to a MessageBox call or something of
@@ -345,7 +388,7 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   }
 
   // While running our main message pump, we discard kMsgHaveWork messages.
-  if (msg.message == kMsgHaveWork && msg.hwnd == message_window_.hwnd())
+  if (msg.message == kMsgHaveWork && msg.hwnd == message_hwnd_)
     return ProcessPumpReplacementMessage();
 
   if (CallMsgFilter(const_cast<MSG*>(&msg), kMessageFilterCode))
@@ -392,7 +435,7 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   }
 
   DCHECK(!have_message || kMsgHaveWork != msg.message ||
-         msg.hwnd != message_window_.hwnd());
+         msg.hwnd != message_hwnd_);
 
   // Since we discarded a kMsgHaveWork message, we must update the flag.
   int old_have_work = InterlockedExchange(&have_work_, 0);
