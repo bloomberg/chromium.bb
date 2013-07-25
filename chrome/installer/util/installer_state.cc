@@ -214,8 +214,8 @@ void InstallerState::Initialize(const CommandLine& command_line,
     }
 
     bool keep_binaries = false;
-    // Look for a product that is not the binaries and that is not being
-    // uninstalled. If not found, binaries are uninstalled too.
+    // Look for a multi-install product that is not the binaries and that is not
+    // being uninstalled. If not found, binaries are uninstalled too.
     for (size_t i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
       BrowserDistribution::Type type =
           static_cast<BrowserDistribution::Type>(i);
@@ -223,8 +223,19 @@ void InstallerState::Initialize(const CommandLine& command_line,
       if (type == BrowserDistribution::CHROME_BINARIES)
         continue;
 
-      if (machine_state.GetProductState(system_install(), type) == NULL) {
+      const ProductState* product_state =
+          machine_state.GetProductState(system_install(), type);
+      if (product_state == NULL) {
         // The product is not installed.
+        continue;
+      }
+
+      if (!product_state->is_multi_install() &&
+          type != BrowserDistribution::CHROME_BROWSER) {
+        // The product is not sharing the binaries. It is ordinarily impossible
+        // for single-install Chrome to be installed along with any
+        // multi-install product. Treat single-install Chrome the same as any
+        // multi-install product just in case the impossible happens.
         continue;
       }
 
