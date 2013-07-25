@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_SANDBOXED_PROCESS_LAUNCHER_DELEGATE_H_
 #define CONTENT_PUBLIC_COMMON_SANDBOXED_PROCESS_LAUNCHER_DELEGATE_H_
 
-#include "base/process.h"
+#include "base/process/process.h"
 
 namespace base {
 class FilePath;

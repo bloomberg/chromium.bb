@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_GPU_DATA_MANAGER_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_GPU_DATA_MANAGER_OBSERVER_H_
 
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "content/common/content_export.h"
 #include "content/public/common/gpu_memory_stats.h"
 #include "content/public/common/three_d_api_types.h"

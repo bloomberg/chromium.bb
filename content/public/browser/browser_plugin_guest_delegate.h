@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_DELEGATE_H_
 
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 

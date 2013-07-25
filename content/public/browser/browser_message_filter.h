@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_MESSAGE_FILTER_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_MESSAGE_FILTER_H_
 
-#include "base/process.h"
+#include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"

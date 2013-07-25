@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_CHILD_PROCESS_DATA_H_
 #define CONTENT_PUBLIC_BROWSER_CHILD_PROCESS_DATA_H_
 
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 

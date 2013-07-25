@@ -167,7 +167,7 @@ public class ChildProcessLauncher {
         return;
     }
 
-    // Represents an invalid process handle; same as base/process.h kNullProcessHandle.
+    // Represents an invalid process handle; same as base/process/process.h kNullProcessHandle.
     private static final int NULL_PROCESS_HANDLE = 0;
 
     // Map from pid to ChildService connection.

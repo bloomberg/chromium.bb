@@ -5,9 +5,12 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/process_util.h"
+#include "base/files/file_path.h"
+#include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"

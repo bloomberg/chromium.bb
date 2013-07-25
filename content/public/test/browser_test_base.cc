@@ -7,13 +7,16 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
-#include "base/process_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+
+#if defined(OS_POSIX)
+#include "base/process/process_handle.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

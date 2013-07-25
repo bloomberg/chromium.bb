@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"

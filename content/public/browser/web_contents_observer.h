@@ -5,8 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_OBSERVER_H_
 
-#include "base/process.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/page_transition_types.h"

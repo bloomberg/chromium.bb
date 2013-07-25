@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "base/process.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"

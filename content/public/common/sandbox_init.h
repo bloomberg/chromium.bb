@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_COMMON_SANDBOX_INIT_H_
 
 #include "base/callback_forward.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
