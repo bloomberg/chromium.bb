@@ -108,6 +108,25 @@ public:
 
     bool hasAutoLogicalHeight() const { return m_hasAutoLogicalHeight; }
 
+    const LayoutUnit& computedAutoHeight() const
+    {
+        ASSERT(hasComputedAutoHeight());
+        return m_computedAutoHeight;
+    }
+
+    void setComputedAutoHeight(LayoutUnit computedAutoHeight)
+    {
+        ASSERT(computedAutoHeight >= 0);
+        m_computedAutoHeight = computedAutoHeight;
+    }
+
+    void clearComputedAutoHeight()
+    {
+        m_computedAutoHeight = -1;
+    }
+
+    bool hasComputedAutoHeight() const { return (m_computedAutoHeight >= 0); }
+
     virtual void updateLogicalHeight() OVERRIDE;
 
     // The top of the nearest page inside the region. For RenderRegions, this is just the logical top of the
@@ -188,6 +207,8 @@ private:
     };
     typedef HashMap<const RenderObject*, ObjectRegionStyleInfo > RenderObjectRegionStyleMap;
     RenderObjectRegionStyleMap m_renderObjectRegionStyle;
+
+    LayoutUnit m_computedAutoHeight;
 
     bool m_isValid : 1;
     bool m_hasCustomRegionStyle : 1;
