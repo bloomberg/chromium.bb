@@ -222,7 +222,7 @@ crbug.com/24182 [ Win ] http/tests/history/back-to-post.php [ Pass Timeout ]
 crbug.com/255183 [ Debug ] http/tests/cache/cancel-image-via-src-change.html [ Failure Pass ]
 
 # The test has been timing out since landed in r130587.
-webkit.org/b/98659 [ Debug ] fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
+webkit.org/b/98659 [ Debug ] fast/dom/gc-dom-tree-lifetime.html [ Slow ]
 
 crbug.com/24182 [ Debug ] fast/js/toString-and-valueOf-override.html [ Timeout ]
 
@@ -1274,7 +1274,7 @@ crbug.com/237250 [ SnowLeopard Debug ] media/video-zoom.html [ Crash Pass ]
 crbug.com/237250 [ SnowLeopard Debug ] media/video-set-rate-from-pause.html [ Crash Pass ]
 #crbug.com/237250 [ Lion Debug ] media/video-zoom-controls.html [ Crash Pass ]
 crbug.com/237270 [ Win7 ] transforms/2d/transform-2d.html [ Pass Timeout ]
-crbug.com/237270 [ Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Pass Timeout ]
+crbug.com/237270 [ Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Slow ]
 
 crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Pass Timeout ]
 crbug.com/251129 [ Linux Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ Failure Pass ]
@@ -1463,8 +1463,6 @@ crbug.com/231875 fast/css/preserve-user-specified-zoom-level-on-reload.html [ Fa
 crbug.com/231878 fast/dom/HTMLLinkElement/prefetch.html [ Failure ]
 crbug.com/231878 fast/dom/HTMLLinkElement/subresource.html [ Failure ]
 crbug.com/231880 fast/dom/Window/open-window-min-size.html [ Failure ]
-crbug.com/231908 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Failure ]
-crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure ]
 crbug.com/231914 fast/forms/state-restore-broken-state.html [ Failure ]
 crbug.com/231917 [ Win Mac Release ] fast/parser/external-entities-in-xslt.xml [ Failure ]
 crbug.com/231917 [ Win Lion Debug ] fast/parser/external-entities-in-xslt.xml [ Failure ]
@@ -1491,7 +1489,6 @@ crbug.com/246143 [ Win Linux Debug ] animations/suspend-transform-animation.html
 crbug.com/243242 [ Linux Win ] virtual/softwarecompositing/layer-creation/overlap-animation-container.html [ Failure Pass ]
 crbug.com/243248 [ Mac Win ] fast/events/attempt-scroll-with-no-scrollbars.html [ Failure Pass ]
 crbug.com/243249 http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
-crbug.com/111316 fast/dom/call-a-constructor-as-a-function.html [ Failure ]
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-color.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-hue.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-luminosity.html [ Crash ]
