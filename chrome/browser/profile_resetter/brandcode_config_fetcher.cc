@@ -27,12 +27,20 @@ const char kPostXml[] =
 "      >\n"
 "    <updatecheck />\n"
 "    <data name=\"install\" "
-    "index=\"skipfirstrunui-importsearch-defaultbrowser\" />\n"
+    "index=\"__BRANDCODE_PLACEHOLDER__\" />\n"
 "  </app>\n"
 "</request>";
 
-std::string GetUploadData() {
-  return kPostXml;
+// Returns the query to the server which can be used to retrieve the config.
+// |brand| is a brand code, it mustn't be empty.
+std::string GetUploadData(const std::string& brand) {
+  DCHECK(!brand.empty());
+  std::string data(kPostXml);
+  const std::string placeholder("__BRANDCODE_PLACEHOLDER__");
+  size_t placeholder_pos = data.find(placeholder);
+  DCHECK(placeholder_pos != std::string::npos);
+  data.replace(placeholder_pos, placeholder.size(), brand);
+  return data;
 }
 
 // Extracts json master prefs from xml.
@@ -130,15 +138,17 @@ bool XmlConfigParser::IsParsingData() const {
 } // namespace
 
 BrandcodeConfigFetcher::BrandcodeConfigFetcher(const FetchCallback& callback,
-                                               const GURL& url)
+                                               const GURL& url,
+                                               const std::string& brandcode)
     : fetch_callback_(callback) {
+  DCHECK(!brandcode.empty());
   config_fetcher_.reset(net::URLFetcher::Create(0 /* ID used for testing */,
                                                 url,
                                                 net::URLFetcher::POST,
                                                 this));
   config_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
-  config_fetcher_->SetUploadData("text/xml", GetUploadData());
+  config_fetcher_->SetUploadData("text/xml", GetUploadData(brandcode));
   config_fetcher_->AddExtraRequestHeader("Accept: text/xml");
   config_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                 net::LOAD_DO_NOT_SAVE_COOKIES |

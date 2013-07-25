@@ -28,6 +28,7 @@ const char kResetProfileSettingsLearnMoreUrl[] =
 namespace options {
 
 ResetProfileSettingsHandler::ResetProfileSettingsHandler() {
+  google_util::GetBrand(&brandcode_);
 }
 
 ResetProfileSettingsHandler::~ResetProfileSettingsHandler() {
@@ -68,8 +69,8 @@ void ResetProfileSettingsHandler::RegisterMessages() {
 
 void ResetProfileSettingsHandler::HandleResetProfileSettings(
     const ListValue* /*value*/) {
-  DCHECK(config_fetcher_);
-  if (config_fetcher_->IsActive()) {
+  DCHECK(brandcode_.empty() || config_fetcher_);
+  if (config_fetcher_ && config_fetcher_->IsActive()) {
     // Reset once the prefs are fetched.
     config_fetcher_->SetCallback(
         base::Bind(&ResetProfileSettingsHandler::ResetProfile,
@@ -84,11 +85,13 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
 }
 
 void ResetProfileSettingsHandler::OnShowResetProfileDialog(const ListValue*) {
-  // TODO(vasilii): use a real request.
+  if (brandcode_.empty())
+    return;
   config_fetcher_.reset(new BrandcodeConfigFetcher(
       base::Bind(&ResetProfileSettingsHandler::OnSettingsFetched,
                  Unretained(this)),
-      GURL("https://tools.google.com/service/update2")));
+      GURL("https://tools.google.com/service/update2"),
+      brandcode_));
 }
 
 void ResetProfileSettingsHandler::OnSettingsFetched() {
@@ -100,13 +103,18 @@ void ResetProfileSettingsHandler::OnSettingsFetched() {
 void ResetProfileSettingsHandler::ResetProfile() {
   DCHECK(resetter_);
   DCHECK(!resetter_->IsActive());
-  DCHECK(config_fetcher_);
-  DCHECK(!config_fetcher_->IsActive());
 
-  scoped_ptr<BrandcodedDefaultSettings> default_settings =
-      config_fetcher_->GetSettings();
-  config_fetcher_.reset();
-  // If we failed to fetch BrandcodedDefaultSettings, use default settings.
+  scoped_ptr<BrandcodedDefaultSettings> default_settings;
+  if (config_fetcher_) {
+    DCHECK(!config_fetcher_->IsActive());
+    default_settings = config_fetcher_->GetSettings();
+    config_fetcher_.reset();
+  } else {
+    DCHECK(brandcode_.empty());
+  }
+
+  // If failed to fetch BrandcodedDefaultSettings or this is an organic
+  // installation, use default settings.
   if (!default_settings)
     default_settings.reset(new BrandcodedDefaultSettings);
   resetter_->Reset(

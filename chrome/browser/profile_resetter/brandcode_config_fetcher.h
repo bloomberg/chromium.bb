@@ -20,7 +20,8 @@ class BrandcodeConfigFetcher : public net::URLFetcherDelegate {
   typedef base::Callback<void ()> FetchCallback;
 
   BrandcodeConfigFetcher(const FetchCallback& callback,
-                         const GURL& url);
+                         const GURL& url,
+                         const std::string& brandcode);
   virtual ~BrandcodeConfigFetcher();
 
   bool IsActive() const { return config_fetcher_; }

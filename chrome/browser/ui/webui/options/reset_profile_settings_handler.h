@@ -54,6 +54,9 @@ class ResetProfileSettingsHandler
 
   scoped_ptr<BrandcodeConfigFetcher> config_fetcher_;
 
+  // Contains Chrome brand code; empty for organic Chrome.
+  std::string brandcode_;
+
   DISALLOW_COPY_AND_ASSIGN(ResetProfileSettingsHandler);
 };
 

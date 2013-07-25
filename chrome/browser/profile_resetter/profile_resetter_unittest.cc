@@ -72,6 +72,9 @@ const char kXmlConfig[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 using extensions::Extension;
 using extensions::Manifest;
 
+
+// ProfileResetterTest --------------------------------------------------------
+
 // ProfileResetterTest sets up the extension, WebData and TemplateURL services.
 class ProfileResetterTest : public ExtensionServiceTestBase,
                             public ProfileResetterTestBase {
@@ -101,6 +104,125 @@ BrowserContextKeyedService* ProfileResetterTest::CreateTemplateURLService(
   return new TemplateURLService(static_cast<Profile*>(context));
 }
 
+
+// PinnedTabsResetTest --------------------------------------------------------
+
+class PinnedTabsResetTest : public BrowserWithTestWindowTest,
+                            public ProfileResetterTestBase {
+ protected:
+  virtual void SetUp() OVERRIDE;
+
+  content::WebContents* CreateWebContents();
+};
+
+void PinnedTabsResetTest::SetUp() {
+  BrowserWithTestWindowTest::SetUp();
+  resetter_.reset(new ProfileResetter(profile()));
+}
+
+content::WebContents* PinnedTabsResetTest::CreateWebContents() {
+  return content::WebContents::Create(
+      content::WebContents::CreateParams(profile()));
+}
+
+
+// ConfigParserTest -----------------------------------------------------------
+
+// URLFetcher delegate that simply records the upload data.
+struct URLFetcherRequestListener : net::URLFetcherDelegate {
+  URLFetcherRequestListener();
+  virtual ~URLFetcherRequestListener();
+
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  std::string upload_data;
+  net::URLFetcherDelegate* real_delegate;
+};
+
+URLFetcherRequestListener::URLFetcherRequestListener()
+    : real_delegate(NULL) {
+}
+
+URLFetcherRequestListener::~URLFetcherRequestListener() {
+}
+
+void URLFetcherRequestListener::OnURLFetchComplete(
+    const net::URLFetcher* source) {
+  const net::TestURLFetcher* test_fetcher =
+      static_cast<const net::TestURLFetcher*>(source);
+  upload_data = test_fetcher->upload_data();
+  DCHECK(real_delegate);
+  real_delegate->OnURLFetchComplete(source);
+}
+
+class ConfigParserTest : public testing::Test {
+ protected:
+  ConfigParserTest();
+  virtual ~ConfigParserTest();
+
+  scoped_ptr<BrandcodeConfigFetcher> WaitForRequest(const GURL& url);
+
+  net::FakeURLFetcherFactory& factory() { return factory_; }
+
+ private:
+  scoped_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(
+      const GURL& url,
+      net::URLFetcherDelegate* fetcher_delegate,
+      const std::string& response_data,
+      bool success);
+
+  MOCK_METHOD0(Callback, void(void));
+
+  base::MessageLoop loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
+  URLFetcherRequestListener request_listener_;
+  net::FakeURLFetcherFactory factory_;
+};
+
+ConfigParserTest::ConfigParserTest()
+    : loop_(base::MessageLoop::TYPE_IO),
+      ui_thread_(content::BrowserThread::UI, &loop_),
+      io_thread_(content::BrowserThread::IO, &loop_),
+      factory_(NULL, base::Bind(&ConfigParserTest::CreateFakeURLFetcher,
+                                base::Unretained(this))) {
+}
+
+ConfigParserTest::~ConfigParserTest() {}
+
+scoped_ptr<BrandcodeConfigFetcher> ConfigParserTest::WaitForRequest(
+    const GURL& url) {
+  EXPECT_CALL(*this, Callback());
+  scoped_ptr<BrandcodeConfigFetcher> fetcher(
+      new BrandcodeConfigFetcher(base::Bind(&ConfigParserTest::Callback,
+                                            base::Unretained(this)),
+                                 url,
+                                 "ABCD"));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_FALSE(fetcher->IsActive());
+  // Look for the brand code in the request.
+  EXPECT_NE(std::string::npos, request_listener_.upload_data.find("ABCD"));
+  return fetcher.Pass();
+}
+
+scoped_ptr<net::FakeURLFetcher> ConfigParserTest::CreateFakeURLFetcher(
+    const GURL& url,
+    net::URLFetcherDelegate* fetcher_delegate,
+    const std::string& response_data,
+    bool success) {
+  request_listener_.real_delegate = fetcher_delegate;
+  scoped_ptr<net::FakeURLFetcher> fetcher(
+      new net::FakeURLFetcher(url, &request_listener_, response_data, success));
+  scoped_refptr<net::HttpResponseHeaders> download_headers =
+      new net::HttpResponseHeaders("");
+  download_headers->AddHeader("Content-Type: text/xml");
+  fetcher->set_response_headers(download_headers);
+  return fetcher.Pass();
+}
+
+
+// helper functions -----------------------------------------------------------
+
 scoped_refptr<Extension> CreateExtension(const std::string& name,
                                          const base::FilePath& path,
                                          Manifest::Location location,
@@ -121,78 +243,6 @@ scoped_refptr<Extension> CreateExtension(const std::string& name,
       &error);
   EXPECT_TRUE(extension.get() != NULL) << error;
   return extension;
-}
-
-class PinnedTabsResetTest : public BrowserWithTestWindowTest,
-                            public ProfileResetterTestBase {
- protected:
-  virtual void SetUp() OVERRIDE;
-
-  content::WebContents* CreateWebContents();
-};
-
-void PinnedTabsResetTest::SetUp() {
-  BrowserWithTestWindowTest::SetUp();
-  resetter_.reset(new ProfileResetter(profile()));
-}
-
-content::WebContents* PinnedTabsResetTest::CreateWebContents() {
-  return content::WebContents::Create(
-      content::WebContents::CreateParams(profile()));
-}
-
-class ConfigParserTest : public testing::Test {
- protected:
-  ConfigParserTest();
-  virtual ~ConfigParserTest();
-
-  MOCK_METHOD0(Callback, void(void));
-
-  scoped_ptr<BrandcodeConfigFetcher> WaitForRequest(const GURL& url);
-
-  static scoped_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(
-      const GURL& url,
-      net::URLFetcherDelegate* d,
-      const std::string& response_data,
-      bool success);
-
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
-};
-
-ConfigParserTest::ConfigParserTest()
-    : loop_(base::MessageLoop::TYPE_IO),
-      ui_thread_(content::BrowserThread::UI, &loop_),
-      io_thread_(content::BrowserThread::IO, &loop_) {
-}
-
-ConfigParserTest::~ConfigParserTest() {}
-
-scoped_ptr<BrandcodeConfigFetcher> ConfigParserTest::WaitForRequest(
-    const GURL& url) {
-  EXPECT_CALL(*this, Callback());
-  scoped_ptr<BrandcodeConfigFetcher> fetcher(
-      new BrandcodeConfigFetcher(base::Bind(&ConfigParserTest::Callback,
-                                            base::Unretained(this)),
-                                 url));
-  base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_FALSE(fetcher->IsActive());
-  return fetcher.Pass();
-}
-
-scoped_ptr<net::FakeURLFetcher> ConfigParserTest::CreateFakeURLFetcher(
-    const GURL& url,
-    net::URLFetcherDelegate* d,
-    const std::string& response_data,
-    bool success) {
-  scoped_ptr<net::FakeURLFetcher> fetcher(
-      new net::FakeURLFetcher(url, d, response_data, success));
-  scoped_refptr<net::HttpResponseHeaders> download_headers =
-      new net::HttpResponseHeaders("");
-  download_headers->AddHeader("Content-Type: text/xml");
-  fetcher->set_response_headers(download_headers);
-  return fetcher.Pass();
 }
 
 void ReplaceString(std::string* str,
@@ -523,9 +573,8 @@ TEST_F(ProfileResetterTest, ResetFewFlags) {
 
 // Tries to load unavailable config file.
 TEST_F(ConfigParserTest, NoConnectivity) {
-  net::FakeURLFetcherFactory factory(NULL);
   const std::string url("http://test");
-  factory.SetFakeResponse(url, "", false);
+  factory().SetFakeResponse(url, "", false);
 
   scoped_ptr<BrandcodeConfigFetcher> fetcher = WaitForRequest(GURL(url));
   EXPECT_FALSE(fetcher->GetSettings());
@@ -533,16 +582,13 @@ TEST_F(ConfigParserTest, NoConnectivity) {
 
 // Tries to load available config file.
 TEST_F(ConfigParserTest, ParseConfig) {
-  net::FakeURLFetcherFactory factory(
-      NULL,
-      base::Bind(&ConfigParserTest::CreateFakeURLFetcher));
   const std::string url("http://test");
   std::string xml_config(kXmlConfig);
   ReplaceString(&xml_config, "placeholder_for_data", kDistributionConfig);
   ReplaceString(&xml_config,
                 "placeholder_for_id",
                 "abbaabbaabbaabbaabbaabbaabbaabba");
-  factory.SetFakeResponse(url, xml_config, true);
+  factory().SetFakeResponse(url, xml_config, true);
 
   scoped_ptr<BrandcodeConfigFetcher> fetcher = WaitForRequest(GURL(url));
   scoped_ptr<BrandcodedDefaultSettings> settings = fetcher->GetSettings();
