@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -656,20 +657,28 @@ IN_PROC_BROWSER_TEST_F(BlockedAppApiTest, MAYBE_OpenAppFromIframe) {
       LoadExtension(test_data_dir_.AppendASCII("app_process"));
   ASSERT_TRUE(app);
 
-  content::WindowedNotificationObserver blocker_observer(
-      chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
-      content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(
       browser(), GetTestBaseURL("app_process").Resolve("path3/container.html"));
-
-  blocker_observer.Wait();
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   BlockedContentTabHelper* blocked_content_tab_helper =
       BlockedContentTabHelper::FromWebContents(tab);
-  std::vector<WebContents*> blocked_contents;
-  blocked_content_tab_helper->GetBlockedContents(&blocked_contents);
-  EXPECT_EQ(blocked_contents.size(), 1u);
+  PopupBlockerTabHelper* popup_blocker_tab_helper =
+      PopupBlockerTabHelper::FromWebContents(tab);
+  if (!blocked_content_tab_helper->GetBlockedContentsCount() &&
+      (!popup_blocker_tab_helper ||
+       !popup_blocker_tab_helper->GetBlockedPopupsCount())) {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+        content::NotificationService::AllSources());
+    observer.Wait();
+  }
+
+  EXPECT_EQ(1u,
+            blocked_content_tab_helper->GetBlockedContentsCount() +
+                (popup_blocker_tab_helper
+                     ? popup_blocker_tab_helper->GetBlockedPopupsCount()
+                     : 0));
 }
 
 // Tests that if an extension launches an app via chrome.tabs.create with an URL
