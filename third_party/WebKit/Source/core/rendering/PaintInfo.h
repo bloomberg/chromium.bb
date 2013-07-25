@@ -32,8 +32,8 @@
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/PaintPhase.h"
-#include <wtf/HashMap.h>
-#include <wtf/ListHashSet.h>
+#include "wtf/HashMap.h"
+#include "wtf/ListHashSet.h"
 
 namespace WebCore {
 

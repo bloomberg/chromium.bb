@@ -27,10 +27,10 @@
 
 #include "CSSPropertyNames.h"
 #include "core/rendering/style/StyleInheritedData.h"
-#include <wtf/HashSet.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/Vector.h>
+#include "wtf/HashSet.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

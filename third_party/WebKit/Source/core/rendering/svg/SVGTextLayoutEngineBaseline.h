@@ -21,7 +21,7 @@
 #define SVGTextLayoutEngineBaseline_h
 
 #include "core/rendering/style/SVGRenderStyleDefs.h"
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

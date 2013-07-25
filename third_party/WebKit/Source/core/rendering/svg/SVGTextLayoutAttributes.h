@@ -21,10 +21,10 @@
 #define SVGTextLayoutAttributes_h
 
 #include "core/rendering/svg/SVGTextMetrics.h"
-#include <wtf/HashMap.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

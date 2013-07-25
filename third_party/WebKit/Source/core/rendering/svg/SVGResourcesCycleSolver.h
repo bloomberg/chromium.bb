@@ -20,8 +20,8 @@
 #ifndef SVGResourcesCycleSolver_h
 #define SVGResourcesCycleSolver_h
 
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

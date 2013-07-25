@@ -26,13 +26,13 @@
 #include "config.h"
 #include "core/rendering/RenderThemeChromiumFontProvider.h"
 
+#include <windows.h>
+
 #include "CSSValueKeywords.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/win/HWndDC.h"
 #include "core/platform/win/SystemInfo.h"
-
-#include <windows.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 #define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(structName, member) \
     offsetof(structName, member) + \

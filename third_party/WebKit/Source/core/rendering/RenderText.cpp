@@ -42,8 +42,8 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/break_lines.h"
-#include <wtf/text/StringBuffer.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/text/StringBuffer.h"
+#include "wtf/unicode/CharacterNames.h"
 
 using namespace std;
 using namespace WTF;

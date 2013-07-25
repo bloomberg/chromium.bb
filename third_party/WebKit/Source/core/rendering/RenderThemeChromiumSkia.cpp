@@ -35,8 +35,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderThemeChromiumFontProvider.h"
-
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 

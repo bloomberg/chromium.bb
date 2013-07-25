@@ -20,10 +20,10 @@
 #ifndef SVGResources_h
 #define SVGResources_h
 
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

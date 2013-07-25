@@ -23,7 +23,7 @@
 #include "core/rendering/svg/SVGTextFragment.h"
 #include "core/svg/SVGPoint.h"
 #include "core/svg/SVGRect.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

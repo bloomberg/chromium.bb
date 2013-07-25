@@ -30,7 +30,7 @@
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/StyleImage.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

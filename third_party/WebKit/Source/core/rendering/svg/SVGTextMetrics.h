@@ -20,7 +20,7 @@
 #ifndef SVGTextMetrics_h
 #define SVGTextMetrics_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

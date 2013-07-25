@@ -26,7 +26,7 @@
 #define RenderTableSection_h
 
 #include "core/rendering/RenderTable.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

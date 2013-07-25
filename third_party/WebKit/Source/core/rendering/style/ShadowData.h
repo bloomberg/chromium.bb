@@ -28,8 +28,8 @@
 #include "core/css/StyleColor.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/LayoutRect.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

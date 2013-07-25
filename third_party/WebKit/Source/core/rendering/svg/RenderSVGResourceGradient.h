@@ -29,7 +29,7 @@
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGGradientElement.h"
 
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

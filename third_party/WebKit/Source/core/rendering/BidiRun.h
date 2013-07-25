@@ -26,7 +26,7 @@
 
 #include "core/platform/text/BidiResolver.h"
 #include "core/rendering/RenderText.h"
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

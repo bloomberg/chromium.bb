@@ -31,8 +31,8 @@
 #define FlowThreadController_h
 
 #include "core/rendering/RenderView.h"
-#include <wtf/ListHashSet.h>
-#include <wtf/OwnPtr.h>
+#include "wtf/ListHashSet.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

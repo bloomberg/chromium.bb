@@ -30,7 +30,7 @@
 #ifndef StyleShader_h
 #define StyleShader_h
 
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

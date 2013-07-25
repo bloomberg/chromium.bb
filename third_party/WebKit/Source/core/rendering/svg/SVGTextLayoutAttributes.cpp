@@ -18,11 +18,11 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/SVGTextLayoutAttributes.h"
 
 #include <stdio.h>
-#include <wtf/text/CString.h>
+
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

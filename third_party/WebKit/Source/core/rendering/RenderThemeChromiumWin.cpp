@@ -48,7 +48,7 @@
 #include "public/platform/WebColor.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/win/WebThemeEngine.h"
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
 
 
 // FIXME: This dependency should eventually be removed.

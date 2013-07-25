@@ -45,7 +45,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/graphics/SVGImage.h"
-#include <wtf/UnusedParam.h>
+#include "wtf/UnusedParam.h"
 
 using namespace std;
 

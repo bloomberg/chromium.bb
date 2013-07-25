@@ -26,8 +26,8 @@
 #define CursorList_h
 
 #include "core/rendering/style/CursorData.h"
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

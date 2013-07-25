@@ -31,8 +31,8 @@
 #include "core/svg/SVGMaskElement.h"
 #include "core/svg/SVGUnitTypes.h"
 
-#include <wtf/UnusedParam.h>
-#include <wtf/Vector.h>
+#include "wtf/UnusedParam.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

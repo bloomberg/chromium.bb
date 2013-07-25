@@ -28,7 +28,7 @@
 #include "CSSPropertyNames.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/CollapsedBorderValue.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

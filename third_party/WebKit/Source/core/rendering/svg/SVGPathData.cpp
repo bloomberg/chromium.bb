@@ -30,7 +30,7 @@
 #include "core/svg/SVGPolygonElement.h"
 #include "core/svg/SVGPolylineElement.h"
 #include "core/svg/SVGRectElement.h"
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

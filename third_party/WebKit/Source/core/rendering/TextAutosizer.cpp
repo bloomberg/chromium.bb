@@ -19,8 +19,9 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/TextAutosizer.h"
+
+#include <algorithm>
 
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
@@ -34,10 +35,8 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
-
-#include <algorithm>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

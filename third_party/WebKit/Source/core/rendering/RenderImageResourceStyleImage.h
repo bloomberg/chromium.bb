@@ -28,7 +28,7 @@
 
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/style/StyleImage.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

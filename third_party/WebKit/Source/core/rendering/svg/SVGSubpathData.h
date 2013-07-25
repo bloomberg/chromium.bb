@@ -21,7 +21,7 @@
 #define SVGSubpathData_h
 
 #include "core/platform/graphics/Path.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

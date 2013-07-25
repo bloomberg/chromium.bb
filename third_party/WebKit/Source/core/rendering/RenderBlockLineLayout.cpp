@@ -41,10 +41,10 @@
 #include "core/rendering/shapes/ShapeInsideInfo.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
-#include <wtf/RefCountedLeakCounter.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/unicode/CharacterNames.h>
-#include <wtf/Vector.h>
+#include "wtf/RefCountedLeakCounter.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
+#include "wtf/unicode/CharacterNames.h"
 
 using namespace std;
 using namespace WTF;

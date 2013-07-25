@@ -28,8 +28,8 @@
 
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/rendering/ColumnInfo.h"
-#include <wtf/HashMap.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

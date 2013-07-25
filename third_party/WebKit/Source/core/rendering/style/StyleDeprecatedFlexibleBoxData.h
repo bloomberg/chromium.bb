@@ -25,8 +25,8 @@
 #ifndef StyleDeprecatedFlexibleBoxData_h
 #define StyleDeprecatedFlexibleBoxData_h
 
-#include <wtf/RefCounted.h>
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

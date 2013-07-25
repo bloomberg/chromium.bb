@@ -32,10 +32,10 @@
 #ifndef StyleVariableData_h
 #define StyleVariableData_h
 
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 

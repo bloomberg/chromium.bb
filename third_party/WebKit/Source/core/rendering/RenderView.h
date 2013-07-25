@@ -26,7 +26,7 @@
 #include "core/platform/PODFreeListArena.h"
 #include "core/rendering/LayoutState.h"
 #include "core/rendering/RenderBlock.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

@@ -25,7 +25,7 @@
 #include "core/rendering/svg/SVGTextFragment.h"
 #include "core/rendering/svg/SVGTextLayoutAttributes.h"
 #include "core/rendering/svg/SVGTextMetrics.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

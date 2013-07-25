@@ -30,8 +30,8 @@
 #include "core/svg/SVGPatternElement.h"
 #include "core/svg/SVGUnitTypes.h"
 
-#include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

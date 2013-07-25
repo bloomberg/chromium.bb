@@ -37,7 +37,7 @@
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

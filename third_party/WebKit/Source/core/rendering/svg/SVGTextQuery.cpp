@@ -28,7 +28,7 @@
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGTextMetrics.h"
 
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 

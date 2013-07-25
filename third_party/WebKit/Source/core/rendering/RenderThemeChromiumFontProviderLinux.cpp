@@ -29,8 +29,8 @@
 #include "CSSValueKeywords.h"
 #include "core/platform/graphics/FontDescription.h"
 
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

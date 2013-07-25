@@ -36,10 +36,9 @@
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/filters/SourceGraphic.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
-
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

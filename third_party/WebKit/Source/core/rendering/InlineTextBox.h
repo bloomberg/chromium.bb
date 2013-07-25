@@ -26,7 +26,7 @@
 #include "core/platform/graphics/TextRun.h"
 #include "core/rendering/InlineBox.h"
 #include "core/rendering/RenderText.h" // so textRenderer() can be inline
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

@@ -28,7 +28,7 @@
 
 #include "core/platform/Scrollbar.h"
 #include "core/rendering/style/RenderStyleConstants.h"
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

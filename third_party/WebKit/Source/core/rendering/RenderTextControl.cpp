@@ -26,7 +26,7 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/unicode/CharacterNames.h"
 
 using namespace std;
 

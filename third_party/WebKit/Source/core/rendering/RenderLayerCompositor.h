@@ -30,7 +30,7 @@
 #include "core/page/Frame.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
 #include "core/rendering/RenderLayer.h"
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

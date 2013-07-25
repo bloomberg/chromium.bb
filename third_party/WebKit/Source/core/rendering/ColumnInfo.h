@@ -27,7 +27,7 @@
 #define ColumnInfo_h
 
 #include "core/platform/LayoutUnit.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
