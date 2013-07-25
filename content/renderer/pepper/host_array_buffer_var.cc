@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppapi_plugin_instance_impl.h"

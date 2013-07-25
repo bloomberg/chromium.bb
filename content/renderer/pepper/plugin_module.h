@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/native_library.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/renderer/pepper/plugin_delegate.h"
