@@ -44,7 +44,7 @@
         'command': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)',
-          '../tools/swarm_client/run_test_cases.py',
+          '../tools/swarm_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_tracked': [
@@ -62,6 +62,8 @@
       'variables': {
         'isolate_dependency_tracked': [
           '../testing/test_env.py',
+          '../tools/swarm_client/run_isolated.py',
+          '../tools/swarm_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
           'browser/safe_browsing/two_phase_testserver.py',
         ],
@@ -70,7 +72,6 @@
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
-          '../tools/swarm_client/',
           '<(PRODUCT_DIR)/pyproto/',
         ],
       },
@@ -89,7 +90,7 @@
       'variables': {
         'command': [
           '../testing/test_env.py',
-          '../tools/swarm_client/run_test_cases.py',
+          '../tools/swarm_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_untracked': [

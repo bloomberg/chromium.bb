@@ -60,7 +60,8 @@ def main():
   parser.disable_interspersed_args()
   options, args = parser.parse_args()
 
-  swarm_client_dir = os.path.join(ROOT_DIR, 'tools', 'swarm_client')
+  swarm_client_dir = os.path.join(
+      ROOT_DIR, 'tools', 'swarm_client', 'googletest')
   sys.path.insert(0, swarm_client_dir)
 
   cmd = [

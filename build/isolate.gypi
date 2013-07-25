@@ -44,7 +44,7 @@
         '<(DEPTH)/tools/swarm_client/isolate.py',
         '<(DEPTH)/tools/swarm_client/isolateserver_archive.py',
         '<(DEPTH)/tools/swarm_client/run_isolated.py',
-        '<(DEPTH)/tools/swarm_client/run_test_cases.py',
+        '<(DEPTH)/tools/swarm_client/googletest/run_test_cases.py',
         '<(DEPTH)/tools/swarm_client/short_expression_finder.py',
         '<(DEPTH)/tools/swarm_client/trace_inputs.py',
 
