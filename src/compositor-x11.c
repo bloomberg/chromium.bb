@@ -934,7 +934,7 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 			return output;
 	}
 
-	return NULL;
+	assert(0);
 }
 
 #ifdef HAVE_XCB_XKB
