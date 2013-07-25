@@ -1468,6 +1468,9 @@ _release.add_config('parrot64-release',
   # TODO(moch): Need to setup machines in the lab with this configuration
   # Until then disabling hw_tests so that builder works
   hw_tests=[],
+  # TODO(sosa): Restore temp removal of vm testing once devserver bug
+  # crbug.com/251309 is fixed.
+  vm_tests=None,
 )
 
 _release.add_config('peppy-release',
