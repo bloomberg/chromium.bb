@@ -75,6 +75,8 @@ namespace WebCore {
 
     v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
+    v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*);
+
     inline v8::Handle<v8::Value> argumentOrNull(const v8::FunctionCallbackInfo<v8::Value>& args, int index)
     {
         return index >= args.Length() ? v8::Local<v8::Value>() : args[index];
@@ -402,25 +404,29 @@ namespace WebCore {
         }
     };
 
+    // Converts a JavaScript value to an array as per the Web IDL specification:
+    // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
     template <class T, class V8T>
     Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, v8::Isolate* isolate, bool* success = 0)
     {
         if (success)
             *success = true;
 
-        if (!value->IsArray())
+        v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
+        uint32_t length = 0;
+        if (value->IsArray())
+            length = v8::Local<v8::Array>::Cast(v8Value)->Length();
+        else if (toV8Sequence(value, length, isolate).IsEmpty())
             return Vector<RefPtr<T> >();
 
         Vector<RefPtr<T> > result;
-        v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(value));
-        v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(v8Value);
-        size_t length = array->Length();
-        for (size_t i = 0; i < length; ++i) {
-            v8::Handle<v8::Value> element = array->Get(i);
+        v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
+        for (uint32_t i = 0; i < length; ++i) {
+            v8::Handle<v8::Value> element = object->Get(i);
 
             if (V8T::HasInstance(element, isolate, worldType(isolate))) {
-                v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(element);
-                result.append(V8T::toNative(object));
+                v8::Handle<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
+                result.append(V8T::toNative(elementObject));
             } else {
                 if (success)
                     *success = false;
@@ -431,19 +437,23 @@ namespace WebCore {
         return result;
     }
 
+    // Converts a JavaScript value to an array as per the Web IDL specification:
+    // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
     template <class T>
-    Vector<T> toNativeArray(v8::Handle<v8::Value> value)
+    Vector<T> toNativeArray(v8::Handle<v8::Value> value, v8::Isolate* isolate)
     {
-        if (!value->IsArray())
+        v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
+        uint32_t length = 0;
+        if (value->IsArray())
+            length = v8::Local<v8::Array>::Cast(v8Value)->Length();
+        else if (toV8Sequence(value, length, isolate).IsEmpty())
             return Vector<T>();
 
         Vector<T> result;
         typedef NativeValueTraits<T> TraitsType;
-        v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(value));
-        v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(v8Value);
-        size_t length = array->Length();
-        for (size_t i = 0; i < length; ++i)
-            result.append(TraitsType::nativeValue(array->Get(i)));
+        v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
+        for (uint32_t i = 0; i < length; ++i)
+            result.append(TraitsType::nativeValue(object->Get(i)));
         return result;
     }
 
@@ -462,17 +472,25 @@ namespace WebCore {
     Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     // Validates that the passed object is a sequence type per WebIDL spec
-    // http://www.w3.org/TR/2012/WD-WebIDL-20120207/#es-sequence
+    // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-sequence
     inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length, v8::Isolate* isolate)
     {
-        if (!value->IsObject()) {
+        // Attempt converting to a sequence if the value is not already an array but is
+        // any kind of object except for a native Date object or a native RegExp object.
+        ASSERT(!value->IsArray());
+        // FIXME: Do we really need to special case Date and RegExp object?
+        // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22806
+        if (!value->IsObject() || value->IsDate() || value->IsRegExp()) {
             throwTypeError(isolate);
             return v8Undefined();
         }
 
-        v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(value));
+        v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
         v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
 
+        // FIXME: The specification states that the length property should be used as fallback, if value
+        // is not a platform object that supports indexed properties. If it supports indexed properties,
+        // length should actually be one greater than value’s maximum indexed property index.
         V8TRYCATCH(v8::Local<v8::Value>, lengthValue, object->Get(v8::String::NewSymbol("length")));
 
         if (lengthValue->IsUndefined() || lengthValue->IsNull()) {

@@ -282,7 +282,7 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
         return;
     }
-    V8TRYCATCH_VOID(Vector<int>, x, toNativeArray<int>(args[0]));
+    V8TRYCATCH_VOID(Vector<int>, x, toNativeArray<int>(args[0], args.GetIsolate()));
     imp->func(x);
 
     return;
@@ -355,7 +355,7 @@ static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0]));
+    V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0], args.GetIsolate()));
     imp->nullableArrayArg(arrayArg);
 
     return;
@@ -422,7 +422,7 @@ static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>&
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0]));
+    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0], args.GetIsolate()));
     Vector<String> result = imp->stringArrayFunction(values, es);
     if (es.throwIfNeeded())
         return;
@@ -445,7 +445,7 @@ static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0]));
+    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0], args.GetIsolate()));
     Vector<String> result = imp->stringArrayFunction2(values, es);
     if (es.throwIfNeeded())
         return;

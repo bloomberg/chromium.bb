@@ -5162,7 +5162,7 @@ sub JSValueToNative
             AddToImplIncludes("V8${arrayOrSequenceType}.h");
             return "(toRefPtrNativeArray<${arrayOrSequenceType}, V8${arrayOrSequenceType}>($value, $getIsolate))";
         }
-        return "toNativeArray<" . GetNativeType($arrayOrSequenceType) . ">($value)";
+        return "toNativeArray<" . GetNativeType($arrayOrSequenceType) . ">($value, $getIsolate)";
     }
 
     AddIncludesForType($type);

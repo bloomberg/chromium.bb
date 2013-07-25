@@ -1839,7 +1839,7 @@ static void floatArrayAttrGetterCallback(v8::Local<v8::String> name, const v8::P
 static void floatArrayAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<float>, v, toNativeArray<float>(value));
+    V8TRYCATCH_VOID(Vector<float>, v, toNativeArray<float>(value, info.GetIsolate()));
     imp->setFloatArray(v);
     return;
 }
@@ -1868,7 +1868,7 @@ static void doubleArrayAttrGetterCallback(v8::Local<v8::String> name, const v8::
 static void doubleArrayAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<double>, v, toNativeArray<double>(value));
+    V8TRYCATCH_VOID(Vector<double>, v, toNativeArray<double>(value, info.GetIsolate()));
     imp->setDoubleArray(v);
     return;
 }
@@ -4094,7 +4094,7 @@ static void overloadedMethod7Method(const v8::FunctionCallbackInfo<v8::Value>& a
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0]));
+    V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0], args.GetIsolate()));
     imp->overloadedMethod(arrayArg);
 
     return;
@@ -4120,7 +4120,7 @@ static void overloadedMethod9Method(const v8::FunctionCallbackInfo<v8::Value>& a
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0]));
+    V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0], args.GetIsolate()));
     imp->overloadedMethod(arrayArg);
 
     return;
@@ -4133,7 +4133,7 @@ static void overloadedMethod10Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    V8TRYCATCH_VOID(Vector<unsigned>, arrayArg, toNativeArray<unsigned>(args[0]));
+    V8TRYCATCH_VOID(Vector<unsigned>, arrayArg, toNativeArray<unsigned>(args[0], args.GetIsolate()));
     imp->overloadedMethod(arrayArg);
 
     return;
@@ -4429,7 +4429,7 @@ static void methodWithUnsignedLongSequenceMethod(const v8::FunctionCallbackInfo<
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    V8TRYCATCH_VOID(Vector<unsigned>, unsignedLongSequence, toNativeArray<unsigned>(args[0]));
+    V8TRYCATCH_VOID(Vector<unsigned>, unsignedLongSequence, toNativeArray<unsigned>(args[0], args.GetIsolate()));
     imp->methodWithUnsignedLongSequence(unsignedLongSequence);
 
     return;
@@ -4450,7 +4450,7 @@ static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>&
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0]));
+    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0], args.GetIsolate()));
     Vector<String> result = imp->stringArrayFunction(values, es);
     if (es.throwIfNeeded())
         return;
