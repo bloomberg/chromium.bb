@@ -9,6 +9,7 @@
 #if defined(__native_client__) && defined(__GLIBC__)
 
 #include "nacl_io/kernel_wrap.h"
+
 #include <alloca.h>
 #include <dirent.h>
 #include <errno.h>
@@ -16,10 +17,11 @@
 #include <irt_syscalls.h>
 #include <nacl_stat.h>
 #include <string.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+
 #include "nacl_io/kernel_intercept.h"
+#include "nacl_io/osmman.h"
 
 
 namespace {
@@ -95,32 +97,45 @@ static const int d_name_shift = offsetof (dirent, d_name) -
 
 EXTERN_C_BEGIN
 
+// Macro to get the REAL function pointer
 #define REAL(name) __nacl_irt_##name##_real
-#define WRAP(name) __nacl_irt_##name##_wrap
-#define MUX(name) __nacl_irt_##name
-#define DECLARE(name) typeof(MUX(name)) REAL(name);
-#define DO_WRAP(name) do { \
-    REAL(name) = MUX(name); \
-    MUX(name) = (typeof(REAL(name))) WRAP(name); \
-  } while (0)
 
-DECLARE(chdir)
-DECLARE(close)
-DECLARE(dup)
-DECLARE(dup2)
-DECLARE(fstat)
-DECLARE(getcwd)
-DECLARE(getdents)
-DECLARE(mkdir)
-DECLARE(open)
-DECLARE(read)
-DECLARE(rmdir)
-DECLARE(seek)
-DECLARE(stat)
-DECLARE(write)
-DECLARE(mmap)
-DECLARE(munmap)
-DECLARE(open_resource)
+// Macro to get the WRAP function
+#define WRAP(name) __nacl_irt_##name##_wrap
+
+// Declare REAL function pointer and assign it the REAL function.
+#define DECLARE_REAL_PTR(name) \
+  typeof(__nacl_irt_##name) REAL(name) = __nacl_irt_##name;
+
+// Switch IRT's pointer to the REAL pointer
+#define USE_REAL(name) \
+  __nacl_irt_##name = (typeof(__nacl_irt_##name)) REAL(name)
+
+// Switch IRT's pointer to the WRAP function
+#define USE_WRAP(name) \
+  __nacl_irt_##name = (typeof(__nacl_irt_##name)) WRAP(name)
+
+
+#define EXPAND_SYMBOL_LIST_OPERATION(OP) \
+  OP(chdir); \
+  OP(close); \
+  OP(dup); \
+  OP(dup2);  \
+  OP(fstat); \
+  OP(getcwd);  \
+  OP(getdents);  \
+  OP(mkdir); \
+  OP(open); \
+  OP(read); \
+  OP(rmdir); \
+  OP(seek); \
+  OP(stat); \
+  OP(write); \
+  OP(mmap); \
+  OP(munmap); \
+  OP(open_resource);
+
+EXPAND_SYMBOL_LIST_OPERATION(DECLARE_REAL_PTR);
 
 int access(const char* path, int amode) NOTHROW {
   return ki_access(path, amode);
@@ -430,28 +445,18 @@ uint64_t usec_since_epoch() {
   return tv.tv_usec + (tv.tv_sec * 1000000);
 }
 
+static bool s_wrapped = false;
 void kernel_wrap_init() {
-  static bool wrapped = false;
+  if (!s_wrapped) {
+    EXPAND_SYMBOL_LIST_OPERATION(USE_WRAP)
+    s_wrapped = true;
+  }
+}
 
-  if (!wrapped) {
-    wrapped = true;
-    DO_WRAP(chdir);
-    DO_WRAP(close);
-    DO_WRAP(dup);
-    DO_WRAP(dup2);
-    DO_WRAP(fstat);
-    DO_WRAP(getcwd);
-    DO_WRAP(getdents);
-    DO_WRAP(mkdir);
-    DO_WRAP(open);
-    DO_WRAP(read);
-    DO_WRAP(rmdir);
-    DO_WRAP(seek);
-    DO_WRAP(stat);
-    DO_WRAP(write);
-    DO_WRAP(mmap);
-    DO_WRAP(munmap);
-    DO_WRAP(open_resource);
+void kernel_wrap_uninit() {
+  if (s_wrapped) {
+    EXPAND_SYMBOL_LIST_OPERATION(USE_REAL)
+    s_wrapped = false;
   }
 }
 

@@ -3,14 +3,22 @@
 // found in the LICENSE file.
 
 #include <errno.h>
+
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/kernel_wrap.h"
+#include "nacl_io/osmman.h"
 #include "nacl_io/pepper_interface.h"
 #include "nacl_io/pepper_interface.h"
 #include "nacl_io/real_pepper_interface.h"
 
 using namespace nacl_io;
+
+#define ON_NOSYS_RETURN(x)    \
+  if (!ki_is_initialized()) { \
+    errno = ENOSYS;           \
+    return x;                 \
+  }
 
 static KernelProxy* s_kp;
 
@@ -38,10 +46,13 @@ int ki_is_initialized() {
 }
 
 void ki_uninit() {
+  kernel_wrap_uninit();
   s_kp = NULL;
 }
 
+
 int ki_chdir(const char* path) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->chdir(path);
 }
 
@@ -61,135 +72,162 @@ char* ki_getcwd(char* buf, size_t size) {
 }
 
 char* ki_getwd(char* buf) {
+  ON_NOSYS_RETURN(NULL);
   return s_kp->getwd(buf);
 }
 
 int ki_dup(int oldfd) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->dup(oldfd);
 }
 
 int ki_dup2(int oldfd, int newfd) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->dup2(oldfd, newfd);
 }
 
 int ki_chmod(const char *path, mode_t mode) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->chmod(path, mode);
 }
 
 int ki_stat(const char *path, struct stat *buf) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->stat(path, buf);
 }
 
 int ki_mkdir(const char *path, mode_t mode) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->mkdir(path, mode);
 }
 
 int ki_rmdir(const char *path) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->rmdir(path);
 }
 
 int ki_mount(const char *source, const char *target, const char *filesystemtype,
              unsigned long mountflags, const void *data) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->mount(source, target, filesystemtype, mountflags, data);
 }
 
 int ki_umount(const char *path) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->umount(path);
 }
 
 int ki_open(const char *path, int oflag) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->open(path, oflag);
 }
 
 ssize_t ki_read(int fd, void *buf, size_t nbyte) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->read(fd, buf, nbyte);
 }
 
 ssize_t ki_write(int fd, const void *buf, size_t nbyte) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->write(fd, buf, nbyte);
 }
 
 int ki_fstat(int fd, struct stat *buf){
+  ON_NOSYS_RETURN(-1);
   return s_kp->fstat(fd, buf);
 }
 
 int ki_getdents(int fd, void *buf, unsigned int count) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->getdents(fd, buf, count);
 }
 
 int ki_ftruncate(int fd, off_t length) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->ftruncate(fd, length);
 }
 
 int ki_fsync(int fd) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->fsync(fd);
 }
 
 int ki_isatty(int fd) {
-  if (!ki_is_initialized())
-    return 0;
+  ON_NOSYS_RETURN(0);
   return s_kp->isatty(fd);
 }
 
 int ki_close(int fd) {
-  if (!ki_is_initialized())
-    return 0;
+  ON_NOSYS_RETURN(-1);
   return s_kp->close(fd);
 }
 
 off_t ki_lseek(int fd, off_t offset, int whence) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->lseek(fd, offset, whence);
 }
 
 int ki_remove(const char* path) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->remove(path);
 }
 
 int ki_unlink(const char* path) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->unlink(path);
 }
 
 int ki_access(const char* path, int amode) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->access(path, amode);
 }
 
 int ki_link(const char* oldpath, const char* newpath) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->link(oldpath, newpath);
 }
 
 int ki_symlink(const char* oldpath, const char* newpath) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->symlink(oldpath, newpath);
 }
 
 void* ki_mmap(void* addr, size_t length, int prot, int flags, int fd,
               off_t offset) {
+  ON_NOSYS_RETURN(MAP_FAILED);
   return s_kp->mmap(addr, length, prot, flags, fd, offset);
 }
 
 int ki_munmap(void* addr, size_t length) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->munmap(addr, length);
 }
 
 int ki_open_resource(const char* file) {
-  return s_kp->open_resource(file);
+  ON_NOSYS_RETURN(-1);  return s_kp->open_resource(file);
 }
 
 int ki_ioctl(int d, int request, char* argp) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->ioctl(d, request, argp);
 }
 
 int ki_chown(const char* path, uid_t owner, gid_t group) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->chown(path, owner, group);
 }
 
 int ki_fchown(int fd, uid_t owner, gid_t group) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->fchown(fd, owner, group);
 }
 
 int ki_lchown(const char* path, uid_t owner, gid_t group) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->lchown(path, owner, group);
 }
 
 int ki_utime(const char* filename, const struct utimbuf* times) {
+  ON_NOSYS_RETURN(-1);
   return s_kp->utime(filename, times);
 }

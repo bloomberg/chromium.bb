@@ -325,6 +325,10 @@ uint64_t usec_since_epoch() {
 // Do nothing for Windows, we replace the library at link time.
 void kernel_wrap_init() {
 }
+
+void kernel_wrap_uninit() {
+}
+
 EXTERN_C_END
 
 #endif   // defined(WIN32)

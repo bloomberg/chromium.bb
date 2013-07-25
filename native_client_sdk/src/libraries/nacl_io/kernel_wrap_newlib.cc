@@ -19,37 +19,47 @@
 
 EXTERN_C_BEGIN
 
+// Macro to get the REAL function pointer
 #define REAL(name) __nacl_irt_##name##_real
+
+// Macro to get the WRAP function
 #define WRAP(name) __nacl_irt_##name##_wrap
-#define STRUCT_NAME(group) __libnacl_irt_##group
-#define DECLARE_STRUCT(group) \
-  extern struct nacl_irt_##group STRUCT_NAME(group);
-#define DECLARE_STRUCT_VERSION(group, version) \
-  extern struct nacl_irt_##group##_##version STRUCT_NAME(group);
-#define MUX(group, name) STRUCT_NAME(group).name
-#define DECLARE(group, name) typeof(MUX(group, name)) REAL(name);
-#define DO_WRAP(group, name) do { \
-    REAL(name) = MUX(group, name); \
-    MUX(group, name) = (typeof(REAL(name))) WRAP(name); \
-  } while (0)
 
-DECLARE_STRUCT(fdio)
-DECLARE_STRUCT(filename)
-DECLARE_STRUCT(memory)
+// Declare REAL function pointer and assign it the REAL function.
+#define DECLARE_REAL_PTR(group, name) \
+  typeof(__libnacl_irt_##group.name) REAL(name) = __libnacl_irt_##group.name;
 
-DECLARE(fdio, close)
-DECLARE(fdio, dup)
-DECLARE(fdio, dup2)
-DECLARE(fdio, fstat)
-DECLARE(fdio, getdents)
-DECLARE(fdio, read)
-DECLARE(fdio, seek)
-DECLARE(fdio, write)
-DECLARE(filename, open)
-DECLARE(filename, stat)
-DECLARE(memory, mmap)
-DECLARE(memory, munmap)
+// Switch IRT's pointer to the REAL pointer
+#define USE_REAL(group, name) \
+  __libnacl_irt_##group.name = (typeof(REAL(name))) REAL(name); \
 
+// Switch the IRT's pointer to the WRAP function
+#define USE_WRAP(group, name) \
+  __libnacl_irt_##group.name = (typeof(REAL(name))) WRAP(name); \
+
+
+
+extern struct nacl_irt_fdio __libnacl_irt_fdio;
+extern struct nacl_irt_filename __libnacl_irt_filename;
+extern struct nacl_irt_memory __libnacl_irt_memory;
+
+// Create function pointers to the REAL implementation
+#define EXPAND_SYMBOL_LIST_OPERATION(OP) \
+  OP(fdio, close); \
+  OP(fdio, dup); \
+  OP(fdio, dup2); \
+  OP(fdio, fstat); \
+  OP(fdio, getdents); \
+  OP(fdio, read); \
+  OP(fdio, seek); \
+  OP(fdio, write); \
+  OP(filename, open); \
+  OP(filename, stat); \
+  OP(memory, mmap); \
+  OP(memory, munmap);
+
+
+EXPAND_SYMBOL_LIST_OPERATION(DECLARE_REAL_PTR);
 
 int access(const char* path, int amode) {
   return ki_access(path, amode);
@@ -268,26 +278,20 @@ uint64_t usec_since_epoch() {
   return tv.tv_usec + (tv.tv_sec * 1000000);
 }
 
+static bool s_wrapped = false;
 void kernel_wrap_init() {
-  static bool wrapped = false;
-
-  if (!wrapped) {
-    wrapped = true;
-    DO_WRAP(fdio, close);
-    DO_WRAP(fdio, dup);
-    DO_WRAP(fdio, dup2);
-    DO_WRAP(fdio, fstat);
-    DO_WRAP(fdio, getdents);
-    DO_WRAP(fdio, read);
-    DO_WRAP(fdio, seek);
-    DO_WRAP(fdio, write);
-    DO_WRAP(filename, open);
-    DO_WRAP(filename, stat);
-    DO_WRAP(memory, mmap);
-    DO_WRAP(memory, munmap);
+  if (!s_wrapped) {
+    EXPAND_SYMBOL_LIST_OPERATION(USE_WRAP);
+    s_wrapped = true;
   }
 }
 
+void kernel_wrap_uninit() {
+  if (s_wrapped) {
+    EXPAND_SYMBOL_LIST_OPERATION(USE_REAL);
+    s_wrapped = false;
+  }
+}
 
 EXTERN_C_END
 
