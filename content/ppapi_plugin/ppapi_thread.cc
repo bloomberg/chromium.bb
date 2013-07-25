@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "content/child/browser_font_resource_trusted.h"
 #include "content/child/child_process.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/sandbox_util.h"
@@ -207,6 +208,17 @@ void PpapiThread::PreCacheFont(const void* logfontw) {
 
 void PpapiThread::SetActiveURL(const std::string& url) {
   GetContentClient()->SetActiveURL(GURL(url));
+}
+
+PP_Resource PpapiThread::CreateBrowserFont(
+    ppapi::proxy::Connection connection,
+    PP_Instance instance,
+    const PP_BrowserFont_Trusted_Description& desc,
+    const ppapi::Preferences& prefs) {
+  if (!BrowserFontResource_Trusted::IsPPFontDescriptionValid(desc))
+    return 0;
+  return (new BrowserFontResource_Trusted(
+        connection, instance, desc, prefs))->GetReference();
 }
 
 uint32 PpapiThread::Register(ppapi::proxy::PluginDispatcher* plugin_dispatcher) {

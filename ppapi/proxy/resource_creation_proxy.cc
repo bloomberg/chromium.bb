@@ -7,7 +7,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/proxy/audio_input_resource.h"
-#include "ppapi/proxy/browser_font_resource_trusted.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/ext_crx_file_system_private_resource.h"
 #include "ppapi/proxy/file_chooser_resource.h"
@@ -384,10 +383,8 @@ PP_Resource ResourceCreationProxy::CreateBrowserFont(
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
-  if (!BrowserFontResource_Trusted::IsPPFontDescriptionValid(*description))
-    return 0;
-  return (new BrowserFontResource_Trusted(GetConnection(), instance,
-      *description, dispatcher->preferences()))->GetReference();
+  return PluginGlobals::Get()->CreateBrowserFont(
+      GetConnection(), instance, *description, dispatcher->preferences());
 }
 
 PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,

@@ -78,6 +78,11 @@ class PpapiDispatcher : public ProxyChannel,
   virtual std::string GetUILanguage() OVERRIDE;
   virtual void PreCacheFont(const void* logfontw) OVERRIDE;
   virtual void SetActiveURL(const std::string& url) OVERRIDE;
+  virtual PP_Resource CreateBrowserFont(
+      ppapi::proxy::Connection connection,
+      PP_Instance instance,
+      const PP_BrowserFont_Trusted_Description& desc,
+      const ppapi::Preferences& prefs) OVERRIDE;
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -167,6 +172,15 @@ void PpapiDispatcher::PreCacheFont(const void* logfontw) {
 
 void PpapiDispatcher::SetActiveURL(const std::string& url) {
   NOTIMPLEMENTED();
+}
+
+PP_Resource PpapiDispatcher::CreateBrowserFont(
+    ppapi::proxy::Connection connection,
+    PP_Instance instance,
+    const PP_BrowserFont_Trusted_Description& desc,
+    const ppapi::Preferences& prefs) {
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 bool PpapiDispatcher::OnMessageReceived(const IPC::Message& msg) {

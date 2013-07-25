@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "content/child/browser_font_resource_trusted.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
@@ -15,7 +16,6 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/host/ppapi_host.h"
-#include "ppapi/proxy/browser_font_resource_trusted.h"
 #include "ppapi/proxy/ext_crx_file_system_private_resource.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/file_io_resource.h"
@@ -53,12 +53,11 @@ PepperInProcessResourceCreation::~PepperInProcessResourceCreation() {
 PP_Resource PepperInProcessResourceCreation::CreateBrowserFont(
     PP_Instance instance,
     const PP_BrowserFont_Trusted_Description* description) {
-  if (!ppapi::proxy::BrowserFontResource_Trusted::IsPPFontDescriptionValid(
-      *description))
+  if (!BrowserFontResource_Trusted::IsPPFontDescriptionValid(*description))
     return 0;
   ppapi::Preferences prefs(
       host_impl_->GetRenderViewForInstance(instance)->GetWebkitPreferences());
-  return (new ppapi::proxy::BrowserFontResource_Trusted(
+  return (new BrowserFontResource_Trusted(
       host_impl_->in_process_router()->GetPluginConnection(instance),
       instance,
       *description,

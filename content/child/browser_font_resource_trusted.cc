@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/proxy/browser_font_resource_trusted.h"
+#include "content/child/browser_font_resource_trusted.h"
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/proxy/connection.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
@@ -34,8 +35,7 @@ using WebKit::WebRect;
 using WebKit::WebTextRun;
 using WebKit::WebCanvas;
 
-namespace ppapi {
-namespace proxy {
+namespace content {
 
 namespace {
 
@@ -143,7 +143,7 @@ bool PPTextRunToWebTextRun(const PP_BrowserFont_Trusted_TextRun& text,
 // Assumes the given PP_FontDescription has been validated.
 WebFontDescription PPFontDescToWebFontDesc(
     const PP_BrowserFont_Trusted_Description& font,
-    const Preferences& prefs) {
+    const ppapi::Preferences& prefs) {
   // Verify that the enums match so we can just static cast.
   COMPILE_ASSERT(static_cast<int>(WebFontDescription::Weight100) ==
                  static_cast<int>(PP_BROWSERFONT_TRUSTED_WEIGHT_100),
@@ -248,10 +248,10 @@ bool BrowserFontResource_Trusted::IsPPFontDescriptionValid(
 }
 
 BrowserFontResource_Trusted::BrowserFontResource_Trusted(
-    Connection connection,
+    ppapi::proxy::Connection connection,
     PP_Instance instance,
     const PP_BrowserFont_Trusted_Description& desc,
-    const Preferences& prefs)
+    const ppapi::Preferences& prefs)
     : PluginResource(connection, instance),
       font_(WebFont::create(PPFontDescToWebFontDesc(desc, prefs))) {
 }
@@ -259,7 +259,7 @@ BrowserFontResource_Trusted::BrowserFontResource_Trusted(
 BrowserFontResource_Trusted::~BrowserFontResource_Trusted() {
 }
 
-thunk::PPB_BrowserFont_Trusted_API*
+ppapi::thunk::PPB_BrowserFont_Trusted_API*
 BrowserFontResource_Trusted::AsPPB_BrowserFont_Trusted_API() {
   return this;
 }
@@ -425,5 +425,4 @@ void BrowserFontResource_Trusted::DrawTextToCanvas(
   }
 }
 
-}  // namespace proxy
-}  // namespace ppapi
+}  // namespace content

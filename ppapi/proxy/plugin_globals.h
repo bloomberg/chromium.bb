@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local_storage.h"
+#include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -24,7 +25,12 @@ namespace IPC {
 class Sender;
 }
 
+struct PP_BrowserFont_Trusted_Description;
+
 namespace ppapi {
+
+struct Preferences;
+
 namespace proxy {
 
 class MessageLoopResource;
@@ -78,6 +84,12 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
 
   // Sets the active url which is reported by breakpad.
   void SetActiveURL(const std::string& url);
+
+  PP_Resource CreateBrowserFont(
+      Connection connection,
+      PP_Instance instance,
+      const PP_BrowserFont_Trusted_Description& desc,
+      const Preferences& prefs);
 
   // Getters for the plugin-specific versions.
   PluginResourceTracker* plugin_resource_tracker() {

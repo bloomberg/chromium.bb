@@ -282,6 +282,14 @@ void PluginProxyTestHarness::PluginDelegateMock::SetActiveURL(
     const std::string& url) {
 }
 
+PP_Resource PluginProxyTestHarness::PluginDelegateMock::CreateBrowserFont(
+    Connection connection,
+    PP_Instance instance,
+    const PP_BrowserFont_Trusted_Description& desc,
+    const Preferences& prefs) {
+  return 0;
+}
+
 // PluginProxyTest -------------------------------------------------------------
 
 PluginProxyTest::PluginProxyTest() : PluginProxyTestHarness(SINGLETON_GLOBALS) {

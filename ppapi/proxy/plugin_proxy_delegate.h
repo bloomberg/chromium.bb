@@ -34,6 +34,14 @@ class PPAPI_PROXY_EXPORT PluginProxyDelegate {
 
   // Sets the active url which is reported by breakpad.
   virtual void SetActiveURL(const std::string& url) = 0;
+
+  // Validates the font description, and uses it to create a
+  // BrowserFontResource_Trusted resource.
+  virtual PP_Resource CreateBrowserFont(
+      Connection connection,
+      PP_Instance instance,
+      const PP_BrowserFont_Trusted_Description& desc,
+      const Preferences& prefs) = 0;
 };
 
 }  // namespace proxy

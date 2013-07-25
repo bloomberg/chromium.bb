@@ -181,6 +181,15 @@ void PluginGlobals::SetActiveURL(const std::string& url) {
   plugin_proxy_delegate_->SetActiveURL(url);
 }
 
+PP_Resource PluginGlobals::CreateBrowserFont(
+    Connection connection,
+    PP_Instance instance,
+    const PP_BrowserFont_Trusted_Description& desc,
+    const ppapi::Preferences& prefs) {
+  return plugin_proxy_delegate_->CreateBrowserFont(
+      connection, instance, desc, prefs);
+}
+
 MessageLoopResource* PluginGlobals::loop_for_main_thread() {
   return loop_for_main_thread_.get();
 }

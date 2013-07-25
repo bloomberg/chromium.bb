@@ -6,6 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../components/tracing.gyp:tracing',
+    '../skia/skia.gyp:skia',
     '../ui/ui.gyp:ui',
     '../url/url.gyp:url_lib',
   ],
@@ -128,6 +129,12 @@
     ['OS=="android"', {
       'includes': [
         '../build/android/cpufeatures.gypi',
+      ],
+    }],
+    ['enable_plugins==1', {
+      'sources': [
+        'child/browser_font_resource_trusted.cc',
+        'child/browser_font_resource_trusted.h',
       ],
     }],
     ['OS=="ios"', {

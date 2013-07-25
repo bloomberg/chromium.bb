@@ -25,8 +25,6 @@
           'proxy/broker_dispatcher.h',
           'proxy/broker_resource.cc',
           'proxy/broker_resource.h',
-          'proxy/browser_font_resource_trusted.cc',
-          'proxy/browser_font_resource_trusted.h',
           'proxy/browser_font_singleton_resource.cc',
           'proxy/browser_font_singleton_resource.h',
           'proxy/connection.h',
@@ -217,7 +215,6 @@
             'sources!': [
               'proxy/audio_input_resource.cc',
               'proxy/broker_dispatcher.cc',
-              'proxy/browser_font_resource_trusted.cc',
               'proxy/browser_font_singleton_resource.cc',
               'proxy/device_enumeration_resource_helper.cc',
               'proxy/flash_clipboard_resource.cc',
