@@ -33,6 +33,7 @@
 
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
+#include <string>
 
 #if INSIDE_WEBKIT
 #include <wtf/Forward.h>
@@ -88,10 +89,15 @@ public:
     bool isEmpty() const { return !length(); }
     bool isNull() const { return m_private.isNull(); }
 
-    BLINK_COMMON_EXPORT WebCString utf8() const;
+    BLINK_COMMON_EXPORT std::string utf8() const;
 
     BLINK_COMMON_EXPORT static WebString fromUTF8(const char* data, size_t length);
     BLINK_COMMON_EXPORT static WebString fromUTF8(const char* data);
+
+    static WebString fromUTF8(const std::string& s)
+    {
+        return fromUTF8(s.data(), s.length());
+    }
 
     template <int N> WebString(const char (&data)[N])
     {
@@ -113,7 +119,6 @@ public:
     BLINK_COMMON_EXPORT WebString& operator=(const WTF::AtomicString&);
     BLINK_COMMON_EXPORT operator WTF::AtomicString() const;
 #else
-
     WebString(const base::string16& s)
     {
         assign(s.data(), s.length());
@@ -150,12 +155,6 @@ public:
     operator base::NullableString16() const
     {
         return base::NullableString16(operator base::string16(), m_private.isNull());
-    }
-
-    template <class UTF8String>
-    static WebString fromUTF8(const UTF8String& s)
-    {
-        return fromUTF8(s.data(), s.length());
     }
 #endif
 

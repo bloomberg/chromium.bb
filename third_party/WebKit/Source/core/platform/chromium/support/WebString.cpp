@@ -34,6 +34,7 @@
 #include "public/platform/WebCString.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebKit {
@@ -79,9 +80,10 @@ const WebUChar* WebString::data16() const
     return !m_private.isNull() && !is8Bit() ? m_private->characters16() : 0;
 }
 
-WebCString WebString::utf8() const
+std::string WebString::utf8() const
 {
-    return WTF::String(m_private.get()).utf8();
+    StringUTF8Adaptor utf8(m_private.get());
+    return std::string(utf8.data(), utf8.length());
 }
 
 WebString WebString::fromUTF8(const char* data, size_t length)
