@@ -51,7 +51,7 @@ function polygonXIntercepts(polygon, y) {
         if (Math.max(v1.y, v2.y) < y || Math.min(v1.y, v2.y) > y)
             continue;
 
-        if (v1.y == y && v2.y == y) {  // horizontal edge 
+        if (v1.y == y && v2.y == y) {  // horizontal edge
             if (y != polygon.maxY)
                 continue;
 
@@ -68,9 +68,9 @@ function polygonXIntercepts(polygon, y) {
         else {
             var interceptX;
 
-            if (v1.y == y) 
+            if (v1.y == y)
                 interceptX = v1.x;
-            else if (v2.y == y) 
+            else if (v2.y == y)
                 interceptX = v2.x;
             else
                 interceptX = ((y - v1.y) * (v2.x - v1.x) / (v2.y - v1.y)) + v1.x;
