@@ -497,9 +497,10 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
       OnNetworkConnectionStateChanged(network);
   } else {
     if (network->path() == default_network_path_ &&
-        key != flimflam::kSignalStrengthProperty) {
-      // WiFi signal strength updates are too noisy, so don't
-      // trigger default network updates for those changes.
+        key != flimflam::kSignalStrengthProperty &&
+        key != shill::kWifiFrequencyListProperty) {
+      // WiFi SignalStrength and WifiFrequencyList updates are too noisy, so
+      // don't trigger default network updates for those changes.
       OnDefaultNetworkChanged();
     }
     std::string detail = network->name() + "." + key;
