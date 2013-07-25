@@ -121,7 +121,7 @@ def run_tests(
 
 
 @with_tempfile
-def trace_some(tempfilepath, isolated, test_cases, verbosity):
+def trace_some(tempfilepath, isolated, test_cases, blacklist, verbosity):
   """Traces the test cases."""
   with open(tempfilepath, 'w') as f:
     f.write('\n'.join(test_cases))
@@ -133,12 +133,14 @@ def trace_some(tempfilepath, isolated, test_cases, verbosity):
     # Do not use --run-all here, we assume the test cases will pass inside the
     # checkout.
   ]
+  for i in blacklist:
+    cmd.extend(('--trace-blacklist', i))
   add_verbosity(cmd, verbosity)
   logging.debug(cmd)
   return subprocess.call(cmd)
 
 
-def fix_all(isolated, all_test_cases, verbosity):
+def fix_all(isolated, all_test_cases, blacklist, verbosity):
   """Runs all the test cases in a gtest executable and trace the failing tests.
 
   Returns True on success.
@@ -147,9 +149,9 @@ def fix_all(isolated, all_test_cases, verbosity):
   """
   # These environment variables could have adverse side-effects.
   # TODO(maruel): Be more intelligent about it, for now be safe.
-  blacklist = set(run_test_cases.KNOWN_GTEST_ENV_VARS) - set([
+  env_blacklist = set(run_test_cases.KNOWN_GTEST_ENV_VARS) - set([
     'GTEST_SHARD_INDEX', 'GTEST_TOTAL_SHARDS'])
-  for i in blacklist:
+  for i in env_blacklist:
     if i in os.environ:
       print >> sys.stderr, 'Please unset %s' % i
       return False
@@ -208,7 +210,7 @@ def fix_all(isolated, all_test_cases, verbosity):
 
     # Trace the test cases and update the .isolate file.
     print('\nTracing the %d failing tests.' % len(failures))
-    if trace_some(isolated, failures, verbosity):
+    if trace_some(isolated, failures, blacklist, verbosity):
       logging.info('The tracing itself failed.')
       return False
     previous_failures.update(failures)
@@ -221,6 +223,12 @@ def main():
   parser.add_option(
       '-s', '--isolated',
       help='The isolated file')
+  parser.add_option(
+      '--trace-blacklist',
+      action='append', default=[],
+      help='List of regexp to use as blacklist filter for files to consider '
+           'important, not to be confused with --blacklist which blacklists '
+           'test case.')
   options, args = parser.parse_args()
 
   if args:
@@ -233,7 +241,8 @@ def main():
     parser.error('A command must be defined')
   if not test_cases:
     parser.error('No test case to run')
-  return not fix_all(options.isolated, test_cases, options.verbose)
+  return not fix_all(
+      options.isolated, test_cases, options.trace_blacklist, options.verbose)
 
 
 if __name__ == '__main__':

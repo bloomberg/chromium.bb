@@ -14,6 +14,7 @@ and isolate_test_cases.py uses the same filename for the trace by default.
 
 import logging
 import os
+import re
 import subprocess
 import sys
 
@@ -30,7 +31,7 @@ import trace_test_cases
 
 def isolate_test_cases(
     cmd, test_cases, jobs, isolated_file, isolate_file,
-    root_dir, reldir, variables):
+    root_dir, reldir, variables, blacklist):
   assert os.path.isabs(root_dir) and os.path.isdir(root_dir), root_dir
 
   logname = isolated_file + '.log'
@@ -40,10 +41,15 @@ def isolate_test_cases(
   results = trace_test_cases.trace_test_cases(
       cmd, cwd_dir, test_cases, jobs, logname)
 
+  def effective_blacklist(f):
+    return (
+        isolate.chromium_default_blacklist(f) or
+        any(re.match(b, f) for b in blacklist))
+
   api = trace_inputs.get_api()
   logs = dict(
       (i.pop('trace'), i)
-      for i in api.parse_log(logname, isolate.chromium_default_blacklist, None))
+      for i in api.parse_log(logname, effective_blacklist, None))
   exception = None
   try:
     inputs = []
@@ -136,8 +142,16 @@ def main():
       usage='%prog <options> --isolated <.isolated>')
   parser.format_description = lambda *_: parser.description
   isolate.add_variable_option(parser)
+  parser.add_option(
+      '--trace-blacklist',
+      action='append', default=[],
+      help='List of regexp to use as blacklist filter for files to consider '
+           'important, not to be confused with --blacklist which blacklists '
+           'test case.')
+
   # TODO(maruel): Add support for options.timeout.
   parser.remove_option('--timeout')
+
   options, args = parser.parse_args()
   if args:
     parser.error('Unsupported arg: %s' % args)
@@ -160,7 +174,8 @@ def main():
         config.saved_state.isolate_filepath,
         config.root_dir,
         config.saved_state.relative_cwd,
-        config.saved_state.variables)
+        config.saved_state.variables,
+        options.trace_blacklist)
   except isolate.ExecutionError, e:
     print >> sys.stderr, str(e)
     return 1

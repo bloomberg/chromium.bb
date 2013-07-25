@@ -99,8 +99,12 @@ class FixTestCases(unittest.TestCase):
 
     logging.debug('2. Run fix_test_cases.py on it.')
     # Give up on looking at stdout.
-    _ = self._run(
-        [os.path.join(GOOGLETEST_DIR, 'fix_test_cases.py'), '-s', isolated])
+    cmd = [
+      os.path.join(GOOGLETEST_DIR, 'fix_test_cases.py'),
+      '-s', isolated,
+      '--trace-blacklist', '.*\\.run_test_cases',
+    ]
+    _ = self._run(cmd)
 
     logging.debug('3. Asserting the content of the .isolated file.')
     with open(isolated) as f:
@@ -171,5 +175,7 @@ class FixTestCases(unittest.TestCase):
 
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv
+  if VERBOSE:
+    unittest.TestCase.maxDiff = None
   logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
   unittest.main()
