@@ -8,7 +8,7 @@
     <script src="../js/resources/js-test-pre.js"></script>
     <script src="resources/onerror-test.js"></script>
 </head>
-<body onload="throwException('exception in onload');">
+<body onload="setTimeout(function () { throwException('exception in setTimeout'); }, 0); throwException('exception in onload');">
     <script>
         description("This test should trigger 'window.onerror' multiple times, and successfully handle the errors.");
 
@@ -19,7 +19,6 @@
 
         dumpOnErrorArgumentValuesAndReturn(true, callback);
 
-        setTimeout(function () { throwException('exception in setTimeout'); }, 0);
         throwException('Inline exception.');
     </script>
     <script src="../js/resources/js-test-post.js"></script>
