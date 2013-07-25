@@ -36,7 +36,6 @@
 #endif
 
 #include "RuntimeEnabledFeatures.h"
-#include "webp/format_constants.h"
 
 #if CPU(BIG_ENDIAN) || CPU(MIDDLE_ENDIAN)
 inline WEBP_CSP_MODE outputMode(bool hasAlpha) { return hasAlpha ? MODE_rgbA : MODE_RGBA; }
@@ -205,7 +204,8 @@ bool WEBPImageDecoder::updateDemuxer()
 
     m_haveAlreadyParsedThisData = true;
 
-    if (m_data->size() < RIFF_HEADER_SIZE + CHUNK_HEADER_SIZE)
+    const unsigned webpHeaderSize = 20;
+    if (m_data->size() < webpHeaderSize)
         return false; // Wait for headers so that WebPDemuxPartial doesn't return null.
 
     WebPDemuxDelete(m_demux);
