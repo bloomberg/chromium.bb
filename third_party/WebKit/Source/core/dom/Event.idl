@@ -72,7 +72,7 @@
              attribute boolean          returnValue;
              attribute boolean          cancelBubble;
 
-    [EnabledAtRuntime=experimentalShadowDOM] readonly attribute NodeList path;
+    [EnabledAtRuntime=ShadowDOM] readonly attribute NodeList path;
 
     [Custom] readonly attribute Clipboard        clipboardData;
 };

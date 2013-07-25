@@ -52,7 +52,6 @@ public:
 
         bool m_originalCSSExclusionsEnabled;
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
-        bool m_originalExperimentalShadowDOMEnabled;
         bool m_originalExperimentalWebSocketEnabled;
         bool m_originalStyleScoped;
         EditingBehaviorType m_originalEditingBehavior;
@@ -109,7 +108,6 @@ public:
     // be removed or moved onto internals.runtimeFlags:
     void setAuthorShadowDOMForAnyElementEnabled(bool);
     void setCSSExclusionsEnabled(bool);
-    void setExperimentalShadowDOMEnabled(bool);
     void setExperimentalWebSocketEnabled(bool);
     void setLangAttributeAwareFormControlUIEnabled(bool);
     void setLazyLayoutEnabled(bool);

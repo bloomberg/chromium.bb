@@ -101,9 +101,9 @@
     [RaisesException] boolean webkitMatchesSelector([Default=Undefined] optional DOMString selectors);
 
     // Shadow DOM API
-    [EnabledAtRuntime=experimentalShadowDOM, Reflect, PerWorldBindings] attribute DOMString pseudo;
-    [EnabledAtRuntime=experimentalShadowDOM, RaisesException] ShadowRoot createShadowRoot();
-    [EnabledAtRuntime=experimentalShadowDOM, PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
+    [EnabledAtRuntime=ShadowDOM, Reflect, PerWorldBindings] attribute DOMString pseudo;
+    [EnabledAtRuntime=ShadowDOM, RaisesException] ShadowRoot createShadowRoot();
+    [EnabledAtRuntime=ShadowDOM, PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
 
     // To-be-deprecated prefixed Shadow DOM API
     [Reflect=pseudo, ImplementedAs=pseudo, PerWorldBindings] attribute DOMString webkitPseudo;

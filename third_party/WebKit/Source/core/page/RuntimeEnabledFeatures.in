@@ -38,7 +38,6 @@ EncryptedMedia status=experimental
 EncryptedMediaAnyVersion status=stable
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
-ExperimentalShadowDOM status=experimental
 FileSystem status=stable
 FontLoadEvents status=experimental
 Fullscreen status=stable
@@ -72,6 +71,7 @@ RowSpanLogicalHeightSpreading status=test
 ScriptedSpeech status=stable
 SeamlessIFrames status=experimental
 SessionStorage status=stable
+ShadowDOM status=experimental
 SharedWorker custom
 SpeechInput status=stable
 SpeechSynthesis status=experimental

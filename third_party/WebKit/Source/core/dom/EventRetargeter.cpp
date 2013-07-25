@@ -115,7 +115,7 @@ void EventRetargeter::calculateEventPath(Node* node, Event* event)
 
 void EventRetargeter::calculateAdjustedEventPathForEachNode(EventPath& eventPath)
 {
-    if (!RuntimeEnabledFeatures::experimentalShadowDOMEnabled())
+    if (!RuntimeEnabledFeatures::shadowDOMEnabled())
         return;
     TreeScope* lastScope = 0;
     size_t eventPathSize = eventPath.size();
