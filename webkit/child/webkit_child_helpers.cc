@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
+#include "base/process/process_metrics.h"
 #include "v8/include/v8.h"
 
 namespace webkit_glue {

@@ -10,7 +10,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/process_iterator.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_handle.h"
 

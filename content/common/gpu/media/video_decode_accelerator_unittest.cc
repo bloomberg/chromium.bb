@@ -32,6 +32,7 @@
 #include "base/format_macros.h"
 #include "base/md5.h"
 #include "base/platform_file.h"
+#include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
+#include "base/process/process_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ProcessUtilTestIos, Memory) {

@@ -6,7 +6,7 @@
 
 #include "base/atomicops.h"
 #include "base/logging.h"
-#include "base/process_util.h"
+#include "base/process/memory.h"
 
 namespace {
 

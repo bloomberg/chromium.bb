@@ -9,7 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/process_util.h"
+#include "base/process/memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/wrapped_window_proc.h"
 

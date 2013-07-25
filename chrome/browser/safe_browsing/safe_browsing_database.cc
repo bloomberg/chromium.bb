@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
+#include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/prefix_set.h"

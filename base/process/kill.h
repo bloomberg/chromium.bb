@@ -9,7 +9,7 @@
 #define BASE_PROCESS_KILL_H_
 
 #include "base/files/file_path.h"
-#include "base/process.h"
+#include "base/process/process_handle.h"
 #include "base/time/time.h"
 
 namespace base {

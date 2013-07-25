@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_iterator.h"
-#include "base/process_util.h"
 #include "base/win/object_watcher.h"
 
 namespace base {

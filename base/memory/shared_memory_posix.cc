@@ -14,7 +14,7 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/process_util.h"
+#include "base/process/process_metrics.h"
 #include "base/safe_strerror_posix.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"

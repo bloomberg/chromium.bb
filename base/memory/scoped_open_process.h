@@ -5,8 +5,7 @@
 #ifndef BASE_MEMORY_SCOPED_OPEN_PROCESS_H_
 #define BASE_MEMORY_SCOPED_OPEN_PROCESS_H_
 
-#include "base/process.h"
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
 
 namespace base {
 

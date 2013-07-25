@@ -12,7 +12,7 @@
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/port.h"
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
 #include "base/profiler/alternate_timer.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/valgrind/memcheck.h"

@@ -6,7 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/process_util.h"
+#include "base/process/memory.h"
 #include "base/win/wrapped_window_proc.h"
 
 const wchar_t kMessageWindowClassName[] = L"Chrome_MessageWindow";

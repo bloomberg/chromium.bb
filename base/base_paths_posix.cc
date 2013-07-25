@@ -17,7 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/nix/xdg_util.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
+#include "base/process/process_metrics.h"
 #include "build/build_config.h"
 
 #if defined(OS_FREEBSD)

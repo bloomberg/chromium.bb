@@ -5,9 +5,9 @@
 #ifndef BASE_PROCESS_MEMORY_H_
 #define BASE_PROCESS_MEMORY_H_
 
-#include "base/basictypes.h"
 #include "base/base_export.h"
-#include "base/process.h"
+#include "base/basictypes.h"
+#include "base/process/process_handle.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)

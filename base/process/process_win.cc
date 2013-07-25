@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/process/process.h"
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
 #include "base/win/windows_version.h"
 
 namespace base {

@@ -12,7 +12,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/process.h"
+#include "base/process/process_handle.h"
 #include "base/time/time.h"
 
 #if defined(OS_MACOSX)

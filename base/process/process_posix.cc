@@ -4,12 +4,12 @@
 
 #include "base/process/process.h"
 
-#include <sys/types.h>
-#include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/time.h>
+#include <sys/types.h>
 
-#include "base/process_util.h"
 #include "base/logging.h"
+#include "base/process/kill.h"
 
 namespace base {
 

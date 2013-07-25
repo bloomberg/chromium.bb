@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
