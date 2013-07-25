@@ -94,6 +94,8 @@ const char kCryptohomeAsyncTpmAttestationCreateEnrollRequest[] =
 const char kCryptohomeAsyncTpmAttestationEnroll[] = "AsyncTpmAttestationEnroll";
 const char kCryptohomeAsyncTpmAttestationCreateCertRequest[] =
     "AsyncTpmAttestationCreateCertRequest";
+const char kCryptohomeAsyncTpmAttestationCreateCertRequestByProfile[] =
+    "AsyncTpmAttestationCreateCertRequestByProfile";
 const char kCryptohomeAsyncTpmAttestationFinishCertRequest[] =
     "AsyncTpmAttestationFinishCertRequest";
 const char kCryptohomeTpmAttestationDoesKeyExist[] =
