@@ -109,13 +109,19 @@ def is_url(path):
   return bool(re.match(r'^https?://.+$', path))
 
 
-def chromium_default_blacklist(f):
+def default_blacklist(f):
   """Filters unimportant files normally ignored."""
   return (
-      f.endswith(('.pyc', '.swp', '.run_test_cases', 'testserver.log')) or
+      f.endswith(('.pyc', '.swp')) or
       _GIT_PATH in f or
       _SVN_PATH in f or
       f in ('.git', '.svn'))
+
+
+def chromium_default_blacklist(f):
+  """Filters unimportant files normally ignored."""
+  return (
+      default_blacklist(f) or f.endswith(('.run_test_cases', 'testserver.log')))
 
 
 def path_starts_with(prefix, path):
@@ -1356,14 +1362,24 @@ def load_isolate_for_config(isolate_dir, content, variables):
   return config.command, dependencies, touched, config.read_only
 
 
+def save_isolated(isolated, data):
+  """Writes one or multiple .isolated files.
+
+  Note: this reference implementation does not create child .isolated file so it
+  always returns an empty list.
+
+  Returns the list of child isolated files that are included by |isolated|.
+  """
+  trace_inputs.write_json(isolated, data, True)
+  return []
+
+
 def chromium_save_isolated(isolated, data, variables):
   """Writes one or many .isolated files.
 
   This slightly increases the cold cache cost but greatly reduce the warm cache
   cost by splitting low-churn files off the master .isolated file. It also
   reduces overall isolateserver memcache consumption.
-
-  Returns the list of child isolated files that are included by |isolated|.
   """
   slaves = []
 
@@ -1390,7 +1406,7 @@ def chromium_save_isolated(isolated, data, variables):
         isolateserver_archive.sha1_file(slavepath))
     files.append(os.path.basename(slavepath))
 
-  trace_inputs.write_json(isolated, data, True)
+  files.extend(save_isolated(isolated, data))
   return files
 
 
