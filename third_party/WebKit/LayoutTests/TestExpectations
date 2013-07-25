@@ -734,7 +734,7 @@ crbug.com/66751 http/tests/local/link-stylesheet-load-order.html [ Failure Pass 
 webkit.org/b/90363 [ Debug ] fast/overflow/lots-of-sibling-inline-boxes.html [ Pass Timeout ]
 webkit.org/b/90363 [ Release ] fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ]
 
-crbug.com/68436 [ Debug ] fast/dom/DOMImplementation/createDocument-with-used-doctype.html [ Pass Timeout ]
+crbug.com/68436 [ Debug ] fast/dom/DOMImplementation/createDocument-with-used-doctype.html [ Slow ]
 
 # These have been flaky for as long as we have test history.
 webkit.org/b/52063 [ Win ] http/tests/navigation/ping-cross-origin.html [ Pass Timeout ]
