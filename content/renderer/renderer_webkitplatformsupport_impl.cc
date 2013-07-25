@@ -1137,6 +1137,12 @@ void RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(
 //------------------------------------------------------------------------------
 
 WebKit::WebCrypto* RendererWebKitPlatformSupportImpl::crypto() {
+  // Use a mock implementation for testing in-progress work.
+  WebKit::WebCrypto* crypto =
+      GetContentClient()->renderer()->OverrideWebCrypto();
+  if (crypto)
+    return crypto;
+
   if (!web_crypto_)
     web_crypto_.reset(new WebCryptoImpl());
   return web_crypto_.get();
