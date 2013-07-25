@@ -45,24 +45,23 @@ def DeviceInfo(serial, options):
   install_output = GetCmdOutput(
     ['%s/build/android/adb_install_apk.py' % constants.DIR_SOURCE_ROOT, '--apk',
      '%s/build/android/CheckInstallApk-debug.apk' % constants.DIR_SOURCE_ROOT])
-  install_speed_found = re.findall('(\d+) KB/s', install_output)
-  if install_speed_found:
-    install_speed = int(install_speed_found[0])
-  else:
-    install_speed = 'Unknown'
-  if 'Error' in battery:
-    ac_power = 'Unknown'
-    battery_level = 'Unknown'
-    battery_temp = 'Unknown'
-  else:
-    ac_power = re.findall('AC powered: (\w+)', battery)[0]
-    battery_level = int(re.findall('level: (\d+)', battery)[0])
-    battery_temp = float(re.findall('temperature: (\d+)', battery)[0]) / 10
-  sub_info = device_adb.GetSubscriberInfo()
-  imei_slice = ''
-  device_id = re.findall('Device ID = (\d+)', sub_info)
-  if device_id and len(device_id):
-    imei_slice = device_id[0][-6:]
+
+  def _GetData(re_expression, line, lambda_function=lambda x:x):
+    if not line:
+      return 'Unknown'
+    found = re.findall(re_expression, line)
+    if found and len(found):
+      return lambda_function(found[0])
+    return 'Unknown'
+
+  install_speed = _GetData('(\d+) KB/s', install_output)
+  ac_power = _GetData('AC powered: (\w+)', battery)
+  battery_level = _GetData('level: (\d+)', battery)
+  battery_temp = _GetData('temperature: (\d+)', battery,
+                          lambda x: float(x) / 10.0)
+  imei_slice = _GetData('Device ID = (\d+)',
+                        device_adb.GetSubscriberInfo(),
+                        lambda x: x[-6:])
   report = ['Device %s (%s)' % (serial, device_type),
             '  Build: %s (%s)' %
               (device_build, device_adb.GetBuildFingerprint()),
