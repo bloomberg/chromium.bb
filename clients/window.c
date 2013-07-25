@@ -4237,13 +4237,7 @@ window_create_internal(struct display *display,
 struct window *
 window_create(struct display *display)
 {
-	struct window *window;
-
-	window = window_create_internal(display, NULL, TYPE_NONE);
-	if (!window)
-		return NULL;
-
-	return window;
+	return window_create_internal(display, NULL, TYPE_NONE);
 }
 
 struct window *
