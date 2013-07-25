@@ -961,7 +961,7 @@ class Runner(object):
         yield i
 
     if proc.returncode and not got_failure_at_least_once:
-      if len(test_cases) == 1:
+      if results and len(test_cases) == 1:
         # Crash after pass.
         results[-1]['returncode'] = proc.returncode
 
@@ -979,8 +979,8 @@ class Runner(object):
 
     # Only yield once the process completed when there is only one test case as
     # a safety precaution.
-    if len(test_cases) == 1:
-      yield i
+    if results and len(test_cases) == 1:
+      yield results[-1]
 
   def _retry(self, priority, test_case, try_count):
     if try_count + 1 < self.retries:
