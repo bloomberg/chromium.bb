@@ -816,7 +816,10 @@ private:
     bool requiresScrollableArea() const
     {
         // We don't use hasOverflowClip as it is not set on a lot of cases (e.g. non-block and root).
-        return renderer()->style()->overflowX() != OVISIBLE || canResize() || usesCompositedScrolling();
+        // FIXME: It's wrong to check for scrollbars here but the scrollbar / scrollablearea code is
+        // entangled and racy at the moment so we need to hold onto the ScrollableArea as long as we
+        // have scrollbars. This check will go away once the scrollbars have been moved to RenderLayerScrollableArea.
+        return renderer()->style()->overflowX() != OVISIBLE || canResize() || usesCompositedScrolling() || m_hBar || m_vBar;
     }
 
     enum CollectLayersBehavior {
