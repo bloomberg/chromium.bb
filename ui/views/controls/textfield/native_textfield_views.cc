@@ -1224,12 +1224,12 @@ bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
         // forward/back of the browser history.
         if (alt)
           break;
-        size_t cursor_position = model_->GetCursorPosition();
+        const ui::Range selection_range = GetSelectedRange();
         model_->MoveCursor(
             control ? gfx::WORD_BREAK : gfx::CHARACTER_BREAK,
             (key_code == ui::VKEY_RIGHT) ? gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT,
             shift);
-        cursor_changed = model_->GetCursorPosition() != cursor_position;
+        cursor_changed = GetSelectedRange() != selection_range;
         break;
       }
       case ui::VKEY_END:

@@ -74,7 +74,7 @@ class UI_EXPORT SelectionModel {
   LogicalCursorDirection caret_affinity() const { return caret_affinity_; }
 
   bool operator==(const SelectionModel& sel) const;
-  bool operator!=(const SelectionModel& sel) { return !(*this == sel); }
+  bool operator!=(const SelectionModel& sel) const { return !(*this == sel); }
 
   std::string ToString() const;
 
