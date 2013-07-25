@@ -75,6 +75,7 @@ class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public HTMLImport,
 public:
     enum State {
         StateLoading,
+        StateWritten,
         StateError,
         StateReady
     };
@@ -93,6 +94,7 @@ public:
     virtual HTMLImport* parent() OVERRIDE;
     virtual Document* document() OVERRIDE;
     virtual void wasDetachedFromDocument() OVERRIDE;
+    virtual void didFinishParsing() OVERRIDE;
 
 private:
     HTMLImportLoader(HTMLImport*, const KURL&, const CachedResourceHandle<CachedScript>&);
@@ -102,8 +104,10 @@ private:
     virtual void dataReceived(CachedResource*, const char* data, int length) OVERRIDE;
     virtual void notifyFinished(CachedResource*) OVERRIDE;
 
-    State startParsing(const ResourceResponse&);
-    State finish();
+    State startWritingAndParsing(const ResourceResponse&);
+    State finishWriting();
+    State finishParsing();
+
     void setState(State);
     void dispose();
 
@@ -128,6 +132,7 @@ public:
     virtual HTMLImport* parent() OVERRIDE;
     virtual Document* document() OVERRIDE;
     virtual void wasDetachedFromDocument() OVERRIDE;
+    virtual void didFinishParsing() OVERRIDE;
 
     void addImport(PassRefPtr<HTMLImportLoader>);
     void showSecurityErrorMessage(const String&);

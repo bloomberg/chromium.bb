@@ -38,6 +38,7 @@
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/loader/cache/ResourceFetcher.h"
+#include "core/page/ContentSecurityPolicy.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
@@ -82,7 +83,8 @@ void LinkImport::process()
         HTMLImportsController::provideTo(m_owner->document());
     }
 
-    HTMLImportsController* controller = m_owner->document()->import()->controller();
+    HTMLImport* parent = m_owner->document()->import();
+    HTMLImportsController* controller = parent->controller();
     if (RefPtr<HTMLImportLoader> found = controller->findLinkFor(builder.url())) {
         m_loader = found;
         return;
@@ -90,11 +92,11 @@ void LinkImport::process()
 
     FetchRequest request = builder.build(true);
     request.setPotentiallyCrossOriginEnabled(controller->securityOrigin(), DoNotAllowStoredCredentials);
-    CachedResourceHandle<CachedRawResource> resource = controller->fetcher()->requestRawResource(request);
+    CachedResourceHandle<CachedRawResource> resource = m_owner->document()->fetcher()->requestImport(request);
     if (!resource)
         return;
 
-    m_loader = HTMLImportLoader::create(controller, builder.url(), resource);
+    m_loader = HTMLImportLoader::create(parent, builder.url(), resource);
 }
 
 void LinkImport::ownerRemoved()
@@ -131,7 +133,7 @@ HTMLImportLoader::~HTMLImportLoader()
 
 void HTMLImportLoader::responseReceived(CachedResource*, const ResourceResponse& response)
 {
-    setState(startParsing(response));
+    setState(startWritingAndParsing(response));
 }
 
 void HTMLImportLoader::dataReceived(CachedResource*, const char* data, int length)
@@ -142,7 +144,7 @@ void HTMLImportLoader::dataReceived(CachedResource*, const char* data, int lengt
 
 void HTMLImportLoader::notifyFinished(CachedResource*)
 {
-    setState(finish());
+    setState(finishWriting());
 }
 
 void HTMLImportLoader::setState(State state)
@@ -152,46 +154,54 @@ void HTMLImportLoader::setState(State state)
 
     m_state = state;
 
+    if (m_state == StateReady || m_state == StateError || m_state == StateWritten) {
+        if (RefPtr<DocumentWriter> writer = m_writer.release())
+            writer->end();
+    }
+
     if (m_state == StateReady || m_state == StateError)
         dispose();
 }
 
 void HTMLImportLoader::dispose()
 {
-    if (m_writer) {
-        m_writer->end();
-        m_writer.clear();
-    }
-
     if (m_resource) {
         m_resource->removeClient(this);
         m_resource = 0;
     }
 
-
     if (HTMLImportsController* controller = this->controller())
         controller->didLoad(this);
 }
 
-HTMLImportLoader::State HTMLImportLoader::startParsing(const ResourceResponse& response)
+HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceResponse& response)
 {
     // Current canAccess() implementation isn't sufficient for catching cross-domain redirects: http://crbug.com/256976
-    if (!controller()->fetcher()->canAccess(m_resource.get()))
+    if (!m_parent->document()->fetcher()->canAccess(m_resource.get()))
         return StateError;
 
     m_importedDocument = HTMLDocument::create(DocumentInit(response.url(), 0, this));
+    m_importedDocument->initContentSecurityPolicy(ContentSecurityPolicyResponseHeaders(response));
     m_writer = DocumentWriter::create(m_importedDocument.get(), response.mimeType(), response.textEncodingName());
 
     return StateLoading;
 }
 
-HTMLImportLoader::State HTMLImportLoader::finish()
+HTMLImportLoader::State HTMLImportLoader::finishWriting()
 {
     if (!m_parent)
         return StateError;
     // The writer instance indicates that a part of the document can be already loaded.
     // We don't take such a case as an error because the partially-loaded document has been visible from script at this point.
     if (m_resource->loadFailedOrCanceled() && !m_writer)
+        return StateError;
+
+    return StateWritten;
+}
+
+HTMLImportLoader::State HTMLImportLoader::finishParsing()
+{
+    if (!m_parent)
         return StateError;
     return StateReady;
 }
@@ -231,6 +241,12 @@ void HTMLImportLoader::wasDetachedFromDocument()
     // cleared before Document is destroyed by HTMLImportLoader::importDestroyed().
     ASSERT_NOT_REACHED();
 }
+
+void HTMLImportLoader::didFinishParsing()
+{
+    setState(finishParsing());
+}
+
 
 void HTMLImportsController::provideTo(Document* master)
 {
@@ -301,8 +317,12 @@ ResourceFetcher* HTMLImportsController::fetcher() const
 bool HTMLImportsController::haveChildrenLoaded(HTMLImport* parent) const
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
-        if (!m_imports[i]->isDone() && m_imports[i]->parent() == parent)
-            return false;
+        if (!m_imports[i]->isDone()) {
+            for (HTMLImport* ancestor = m_imports[i]->parent(); ancestor; ancestor = ancestor->parent()) {
+                if (ancestor == parent)
+                    return false;
+            }
+        }
     }
 
     return true;
@@ -326,6 +346,10 @@ Document* HTMLImportsController::document()
 void HTMLImportsController::wasDetachedFromDocument()
 {
     clear();
+}
+
+void HTMLImportsController::didFinishParsing()
+{
 }
 
 } // namespace WebCore

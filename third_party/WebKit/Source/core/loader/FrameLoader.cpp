@@ -536,7 +536,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
     if (dispatch)
         dispatchDidClearWindowObjectsInAllWorlds();
 
-    m_frame->document()->initContentSecurityPolicy();
+    m_frame->document()->initContentSecurityPolicy(m_documentLoader ? ContentSecurityPolicyResponseHeaders(m_documentLoader->response()) : ContentSecurityPolicyResponseHeaders());
 
     Settings* settings = m_frame->document()->settings();
     if (settings) {
@@ -548,22 +548,6 @@ void FrameLoader::didBeginDocument(bool dispatch)
         String dnsPrefetchControl = m_documentLoader->response().httpHeaderField("X-DNS-Prefetch-Control");
         if (!dnsPrefetchControl.isEmpty())
             m_frame->document()->parseDNSPrefetchControlHeader(dnsPrefetchControl);
-
-        String policyValue = m_documentLoader->response().httpHeaderField("Content-Security-Policy");
-        if (!policyValue.isEmpty())
-            m_frame->document()->contentSecurityPolicy()->didReceiveHeader(policyValue, ContentSecurityPolicy::Enforce);
-
-        policyValue = m_documentLoader->response().httpHeaderField("Content-Security-Policy-Report-Only");
-        if (!policyValue.isEmpty())
-            m_frame->document()->contentSecurityPolicy()->didReceiveHeader(policyValue, ContentSecurityPolicy::Report);
-
-        policyValue = m_documentLoader->response().httpHeaderField("X-WebKit-CSP");
-        if (!policyValue.isEmpty())
-            m_frame->document()->contentSecurityPolicy()->didReceiveHeader(policyValue, ContentSecurityPolicy::PrefixedEnforce);
-
-        policyValue = m_documentLoader->response().httpHeaderField("X-WebKit-CSP-Report-Only");
-        if (!policyValue.isEmpty())
-            m_frame->document()->contentSecurityPolicy()->didReceiveHeader(policyValue, ContentSecurityPolicy::PrefixedReport);
 
         String headerContentLanguage = m_documentLoader->response().httpHeaderField("Content-Language");
         if (!headerContentLanguage.isEmpty()) {

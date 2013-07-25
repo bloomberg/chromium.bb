@@ -53,6 +53,7 @@ public:
     Frame* frame() const { return m_frame; }
     HTMLImport* import() const { return m_import; }
 
+    bool hasSecurityContext() const { return frameForSecurityContext(); }
     bool shouldTreatURLAsSrcdocDocument() const;
     bool shouldSetURL() const;
     SandboxFlags sandboxFlags() const;
@@ -64,6 +65,8 @@ public:
     PassRefPtr<CustomElementRegistrationContext> registrationContext(Document*) const;
 
 private:
+    Frame* frameForSecurityContext() const;
+
     KURL m_url;
     Frame* m_frame;
     HTMLImport* m_import;

@@ -42,21 +42,36 @@ bool DocumentInit::shouldSetURL() const
 
 bool DocumentInit::shouldTreatURLAsSrcdocDocument() const
 {
+    ASSERT(m_frame);
     return m_frame->loader()->shouldTreatURLAsSrcdocDocument(m_url);
+}
+
+Frame* DocumentInit::frameForSecurityContext() const
+{
+    if (m_frame)
+        return m_frame;
+    if (m_import)
+        return m_import->frame();
+    return 0;
 }
 
 SandboxFlags DocumentInit::sandboxFlags() const
 {
-    return m_frame->loader()->effectiveSandboxFlags();
+    ASSERT(frameForSecurityContext());
+    return frameForSecurityContext()->loader()->effectiveSandboxFlags();
 }
 
 Settings* DocumentInit::settings() const
 {
-    return m_frame->settings();
+    ASSERT(frameForSecurityContext());
+    return frameForSecurityContext()->settings();
 }
 
 Frame* DocumentInit::ownerFrame() const
 {
+    if (!m_frame)
+        return 0;
+
     Frame* ownerFrame = m_frame->tree()->parent();
     if (!ownerFrame)
         ownerFrame = m_frame->loader()->opener();

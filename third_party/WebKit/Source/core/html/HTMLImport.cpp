@@ -42,4 +42,14 @@ bool HTMLImport::haveChildrenLoaded()
     return true;
 }
 
+Frame* HTMLImport::frame()
+{
+    return master()->frame();
+}
+
+Document* HTMLImport::master()
+{
+    return controller()->document();
+}
+
 } // namespace WebCore

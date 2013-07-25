@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLImport.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -93,7 +94,10 @@ static CachedResource* createResource(CachedResource::Type type, const ResourceR
         return new CachedTextTrack(request);
     case CachedResource::ShaderResource:
         return new CachedShader(request);
+    case CachedResource::ImportResource:
+        return new CachedRawResource(request, type);
     }
+
     ASSERT_NOT_REACHED();
     return 0;
 }
@@ -111,6 +115,7 @@ static ResourceLoadPriority loadPriority(CachedResource::Type type, const FetchR
     case CachedResource::Script:
     case CachedResource::FontResource:
     case CachedResource::RawResource:
+    case CachedResource::ImportResource:
         return ResourceLoadPriorityMedium;
     case CachedResource::ImageResource:
         return request.forPreload() ? ResourceLoadPriorityVeryLow : ResourceLoadPriorityLow;
@@ -188,7 +193,11 @@ CachedResource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
 
 Frame* ResourceFetcher::frame() const
 {
-    return m_documentLoader ? m_documentLoader->frame() : 0;
+    if (m_documentLoader)
+        return m_documentLoader->frame();
+    if (m_document && m_document->import())
+        return m_document->import()->frame();
+    return 0;
 }
 
 CachedResourceHandle<CachedImage> ResourceFetcher::requestImage(FetchRequest& request)
@@ -234,6 +243,11 @@ CachedResourceHandle<CachedTextTrack> ResourceFetcher::requestTextTrack(FetchReq
 CachedResourceHandle<CachedShader> ResourceFetcher::requestShader(FetchRequest& request)
 {
     return static_cast<CachedShader*>(requestResource(CachedResource::ShaderResource, request).get());
+}
+
+CachedResourceHandle<CachedRawResource> ResourceFetcher::requestImport(FetchRequest& request)
+{
+    return static_cast<CachedRawResource*>(requestResource(CachedResource::ImportResource, request).get());
 }
 
 CachedResourceHandle<CachedCSSStyleSheet> ResourceFetcher::requestCSSStyleSheet(FetchRequest& request)
@@ -294,6 +308,7 @@ bool ResourceFetcher::checkInsecureContent(CachedResource::Type type, const KURL
     case CachedResource::XSLStyleSheet:
     case CachedResource::SVGDocumentResource:
     case CachedResource::CSSStyleSheet:
+    case CachedResource::ImportResource:
         // These resource can inject script into the current document (Script,
         // XSL) or exfiltrate the content of the current document (CSS).
         if (Frame* f = frame()) {
@@ -350,6 +365,7 @@ bool ResourceFetcher::canRequest(CachedResource::Type type, const KURL& url, con
     case CachedResource::LinkSubresource:
     case CachedResource::TextTrackResource:
     case CachedResource::ShaderResource:
+    case CachedResource::ImportResource:
         // By default these types of resources can be loaded from any origin.
         // FIXME: Are we sure about CachedResource::FontResource?
         if (options.requestOriginPolicy == RestrictToSameOrigin && !m_document->securityOrigin()->canRequest(url)) {
@@ -372,6 +388,7 @@ bool ResourceFetcher::canRequest(CachedResource::Type type, const KURL& url, con
             return false;
         break;
     case CachedResource::Script:
+    case CachedResource::ImportResource:
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowScriptFromSource(url))
             return false;
 
@@ -432,7 +449,7 @@ bool ResourceFetcher::canAccess(CachedResource* resource)
     String error;
     switch (resource->type()) {
     case CachedResource::Script:
-    case CachedResource::RawResource:
+    case CachedResource::ImportResource:
         if (resource->options().requestOriginPolicy == PotentiallyCrossOriginEnabled
             && !m_document->securityOrigin()->canRequest(resource->response().url())
             && !resource->passesAccessControlCheck(m_document->securityOrigin(), error)) {
@@ -444,6 +461,20 @@ bool ResourceFetcher::canAccess(CachedResource* resource)
     default:
         ASSERT_NOT_REACHED(); // FIXME: generalize to non-script resources
         return false;
+    }
+
+    return true;
+}
+
+bool ResourceFetcher::shouldLoadNewResource() const
+{
+    if (!frame())
+        return false;
+    if (m_documentLoader) {
+        if (m_documentLoader != frame()->loader()->activeDocumentLoader())
+            return false;
+        if (m_documentLoader->isStopping())
+            return false;
     }
 
     return true;
@@ -502,13 +533,13 @@ CachedResourceHandle<CachedResource> ResourceFetcher::requestResource(CachedReso
     }
 
     if ((policy != Use || resource->stillNeedsLoad()) && FetchRequest::NoDefer == request.defer()) {
-        if (!frame() || m_documentLoader != frame()->loader()->activeDocumentLoader() || m_documentLoader->isStopping()) {
+        if (!shouldLoadNewResource()) {
             if (resource->inCache())
                 memoryCache()->remove(resource.get());
             return 0;
         }
 
-        if (!m_documentLoader->scheduleArchiveLoad(resource.get(), request.resourceRequest()))
+        if (!m_documentLoader || !m_documentLoader->scheduleArchiveLoad(resource.get(), request.resourceRequest()))
             resource->load(this, request.options());
 
         // We don't support immediate loads, but we do support immediate failure.
@@ -568,6 +599,7 @@ void ResourceFetcher::determineTargetType(ResourceRequest& request, CachedResour
         break;
     case CachedResource::ShaderResource:
     case CachedResource::RawResource:
+    case CachedResource::ImportResource:
         targetType = ResourceRequest::TargetIsSubresource;
         break;
     case CachedResource::LinkPrefetch:
@@ -607,7 +639,7 @@ ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const Res
     if (request.isConditional())
         return ReloadIgnoringCacheData;
 
-    if (m_documentLoader->isLoadingInAPISense()) {
+    if (m_documentLoader && m_documentLoader->isLoadingInAPISense()) {
         // For POST requests, we mutate the main resource's cache policy to avoid form resubmission.
         // This policy should not be inherited by subresources.
         ResourceRequestCachePolicy mainResourceCachePolicy = m_documentLoader->request().cachePolicy();
@@ -920,7 +952,8 @@ void ResourceFetcher::didLoadResource(CachedResource* resource)
             info->setInitialRequest(resource->resourceRequest());
             info->setFinalResponse(resource->response());
             info->setLoadFinishTime(resource->loadFinishTime());
-            initiatorDocument->domWindow()->performance()->addResourceTiming(*info, initiatorDocument);
+            if (DOMWindow* initiatorWindow = initiatorDocument->domWindow())
+                initiatorWindow->performance()->addResourceTiming(*info, initiatorDocument);
             m_resourceTimingInfoMap.remove(it);
         }
     }
@@ -1092,7 +1125,9 @@ void ResourceFetcher::clearPendingPreloads()
 
 inline FrameLoader* ResourceFetcher::frameLoader()
 {
-    return frame() ? frame()->loader() : 0;
+    if (Frame* frame = this->frame())
+        return frame->loader();
+    return 0;
 }
 
 void ResourceFetcher::didFinishLoading(const CachedResource* resource, double finishTime, const ResourceLoaderOptions& options)

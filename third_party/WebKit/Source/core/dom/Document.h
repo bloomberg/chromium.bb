@@ -69,6 +69,7 @@ class CachedScript;
 class CanvasRenderingContext;
 class CharacterData;
 class Comment;
+class ContentSecurityPolicyResponseHeaders;
 class ContextFeatures;
 class CustomElementRegistrationContext;
 class DOMImplementation;
@@ -903,7 +904,7 @@ public:
 
     void initSecurityContext();
     void initSecurityContext(const DocumentInit&);
-    void initContentSecurityPolicy();
+    void initContentSecurityPolicy(const ContentSecurityPolicyResponseHeaders&);
 
     void updateURLForPushOrReplaceState(const KURL&);
     void statePopped(PassRefPtr<SerializedScriptValue>);

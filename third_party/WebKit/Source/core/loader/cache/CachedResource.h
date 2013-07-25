@@ -69,7 +69,8 @@ public:
         LinkPrefetch,
         LinkSubresource,
         TextTrackResource,
-        ShaderResource
+        ShaderResource,
+        ImportResource
     };
 
     enum Status {

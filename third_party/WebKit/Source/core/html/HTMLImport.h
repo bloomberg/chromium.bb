@@ -34,6 +34,7 @@
 namespace WebCore {
 
 class Document;
+class Frame;
 class HTMLImportsController;
 
 class HTMLImport {
@@ -41,11 +42,14 @@ public:
     virtual ~HTMLImport() { }
 
     bool haveChildrenLoaded();
+    Frame* frame();
+    Document* master();
 
     virtual HTMLImportsController* controller() = 0;
     virtual HTMLImport* parent() = 0;
     virtual Document* document() = 0;
     virtual void wasDetachedFromDocument() = 0;
+    virtual void didFinishParsing() = 0;
 };
 
 } // namespace WebCore

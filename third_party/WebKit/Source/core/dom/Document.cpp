@@ -4109,6 +4109,9 @@ void Document::finishedParsing()
 
     // Parser should have picked up all preloads by now
     m_fetcher->clearPreloads();
+
+    if (m_import)
+        m_import->didFinishParsing();
 }
 
 void Document::sharedObjectPoolClearTimerFired(Timer<Document>*)
@@ -4208,7 +4211,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         return;
     }
 
-    if (!initializer.frame()) {
+    if (!initializer.hasSecurityContext()) {
         // No source for a security context.
         // This can occur via document.implementation.createDocument().
         m_cookieURL = KURL(ParsedURLString, emptyString());
@@ -4280,12 +4283,11 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     setSecurityOrigin(ownerFrame->document()->securityOrigin());
 }
 
-void Document::initContentSecurityPolicy()
+void Document::initContentSecurityPolicy(const ContentSecurityPolicyResponseHeaders& headers)
 {
-    if (!m_frame->tree()->parent() || (!shouldInheritSecurityOriginFromOwner(m_url) && !isPluginDocument()))
-        return;
-
-    contentSecurityPolicy()->copyStateFrom(m_frame->tree()->parent()->document()->contentSecurityPolicy());
+    if (m_frame && m_frame->tree()->parent() && (shouldInheritSecurityOriginFromOwner(m_url) || isPluginDocument()))
+        contentSecurityPolicy()->copyStateFrom(m_frame->tree()->parent()->document()->contentSecurityPolicy());
+    contentSecurityPolicy()->didReceiveHeaders(headers);
 }
 
 void Document::didUpdateSecurityOrigin()

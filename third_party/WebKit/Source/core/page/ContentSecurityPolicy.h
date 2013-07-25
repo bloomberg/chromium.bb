@@ -41,11 +41,29 @@ namespace WebCore {
 class CSPDirectiveList;
 class DOMStringList;
 class KURL;
+class ResourceResponse;
 class ScriptExecutionContext;
 class SecurityOrigin;
 
 typedef int SandboxFlags;
 typedef Vector<OwnPtr<CSPDirectiveList> > CSPDirectiveListVector;
+
+class ContentSecurityPolicyResponseHeaders {
+public:
+    ContentSecurityPolicyResponseHeaders() { }
+    explicit ContentSecurityPolicyResponseHeaders(const ResourceResponse&);
+
+    const String& contentSecurityPolicy() const { return m_contentSecuitryPolicy; }
+    const String& contentSecurityPolicyReportOnly() const { return m_contentSecurityPolicyReportOnly; }
+    const String& xWebKitCSP() const { return m_xWebKitCSP; }
+    const String& xWebKitCSPReportOnly() const { return m_xWebKitCSPReportOnly; }
+
+private:
+    String m_contentSecuitryPolicy;
+    String m_contentSecurityPolicyReportOnly;
+    String m_xWebKitCSP;
+    String m_xWebKitCSPReportOnly;
+};
 
 class ContentSecurityPolicy {
     WTF_MAKE_FAST_ALLOCATED;
@@ -79,6 +97,7 @@ public:
         BlockReflectedXSS
     };
 
+    void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
     void didReceiveHeader(const String&, HeaderType);
 
     // These functions are wrong because they assume that there is only one header.
@@ -141,6 +160,7 @@ private:
     explicit ContentSecurityPolicy(ScriptExecutionContext*);
 
     void logToConsole(const String& message, const String& contextURL = String(), const WTF::OrdinalNumber& contextLine = WTF::OrdinalNumber::beforeFirst(), ScriptState* = 0) const;
+    void addPolicyFromHeaderValue(const String&, HeaderType);
 
     ScriptExecutionContext* m_scriptExecutionContext;
     bool m_overrideInlineStyleAllowed;

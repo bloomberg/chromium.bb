@@ -41,6 +41,7 @@
 #include "core/page/UseCounter.h"
 #include "core/platform/JSONValues.h"
 #include "core/platform/network/FormData.h"
+#include "core/platform/network/ResourceResponse.h"
 #include "weborigin/KURL.h"
 #include "weborigin/KnownPorts.h"
 #include "weborigin/SchemeRegistry.h"
@@ -162,6 +163,14 @@ UseCounter::Feature getUseCounterType(ContentSecurityPolicy::HeaderType type)
 }
 
 } // namespace
+
+ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(const ResourceResponse& response)
+    : m_contentSecuitryPolicy(response.httpHeaderField("Content-Security-Policy"))
+    , m_contentSecurityPolicyReportOnly(response.httpHeaderField("Content-Security-Policy-Report-Only"))
+    , m_xWebKitCSP(response.httpHeaderField("X-WebKit-CSP"))
+    , m_xWebKitCSPReportOnly(response.httpHeaderField("X-WebKit-CSP-Report-Only"))
+{
+}
 
 static bool skipExactly(const UChar*& position, const UChar* end, UChar delimiter)
 {
@@ -1416,10 +1425,27 @@ void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other)
 {
     ASSERT(m_policies.isEmpty());
     for (CSPDirectiveListVector::const_iterator iter = other->m_policies.begin(); iter != other->m_policies.end(); ++iter)
-        didReceiveHeader((*iter)->header(), (*iter)->headerType());
+        addPolicyFromHeaderValue((*iter)->header(), (*iter)->headerType());
+}
+
+void ContentSecurityPolicy::didReceiveHeaders(const ContentSecurityPolicyResponseHeaders& headers)
+{
+    if (!headers.contentSecurityPolicy().isEmpty())
+        didReceiveHeader(headers.contentSecurityPolicy(), ContentSecurityPolicy::Enforce);
+    if (!headers.contentSecurityPolicyReportOnly().isEmpty())
+        didReceiveHeader(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicy::Report);
+    if (!headers.xWebKitCSP().isEmpty())
+        didReceiveHeader(headers.xWebKitCSP(), ContentSecurityPolicy::PrefixedEnforce);
+    if (!headers.xWebKitCSPReportOnly().isEmpty())
+        didReceiveHeader(headers.xWebKitCSPReportOnly(), ContentSecurityPolicy::PrefixedReport);
 }
 
 void ContentSecurityPolicy::didReceiveHeader(const String& header, HeaderType type)
+{
+    addPolicyFromHeaderValue(header, type);
+}
+
+void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, HeaderType type)
 {
     if (m_scriptExecutionContext->isDocument()) {
         Document* document = toDocument(m_scriptExecutionContext);

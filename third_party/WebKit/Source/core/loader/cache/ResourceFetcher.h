@@ -90,6 +90,7 @@ public:
     CachedResourceHandle<CachedResource> requestLinkResource(CachedResource::Type, FetchRequest&);
     CachedResourceHandle<CachedTextTrack> requestTextTrack(FetchRequest&);
     CachedResourceHandle<CachedShader> requestShader(FetchRequest&);
+    CachedResourceHandle<CachedRawResource> requestImport(FetchRequest&);
 
     // Logs an access denied message to the console for the specified URL.
     void printAccessDeniedMessage(const KURL&) const;
@@ -156,6 +157,7 @@ private:
     explicit ResourceFetcher(DocumentLoader*);
 
     FrameLoader* frameLoader();
+    bool shouldLoadNewResource() const;
 
     CachedResourceHandle<CachedResource> requestResource(CachedResource::Type, FetchRequest&);
     CachedResourceHandle<CachedResource> revalidateResource(const FetchRequest&, CachedResource*);
