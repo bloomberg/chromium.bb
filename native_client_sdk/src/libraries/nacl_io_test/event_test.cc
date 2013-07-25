@@ -74,9 +74,11 @@ const int TIMEOUT_NEVER = -1;
 const int TIMEOUT_VERY_LONG = 1000;
 
 // We subtract TIMEOUT_SLOP from the expected minimum timed due to rounding
-// and clock drift converting between absolute and relative time.
-// 1 for LT comparison, 1 for rounding, etc...
-const int TIMEOUT_SLOP = 2;
+// and clock drift converting between absolute and relative time.  This should
+// only be 1 for Less Than, and 1 for rounding, but we use 10 since we don't
+// care about real precision, aren't testing of the underlying
+// implementations and don't want flakiness.
+const int TIMEOUT_SLOP = 10;
 
 TEST(EventTest, EmitterBasic) {
   ScopedRef<EventEmitterTester> emitter(new EventEmitterTester());
