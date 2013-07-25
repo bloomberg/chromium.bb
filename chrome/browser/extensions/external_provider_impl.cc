@@ -39,6 +39,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/external_pref_cache_loader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -394,13 +395,19 @@ void ExternalProviderImpl::CreateExternalProviders(
     external_apps_path_id = chrome::DIR_MANAGED_USERS_DEFAULT_APPS;
 #endif
 
+#if defined(OS_CHROMEOS)
+  typedef chromeos::ExternalPrefCacheLoader PrefLoader;
+#else
+  typedef ExternalPrefLoader PrefLoader;
+#endif
+
   if (!is_chromeos_demo_session) {
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(
             new ExternalProviderImpl(
                 service,
-                new ExternalPrefLoader(external_apps_path_id,
-                                       check_admin_permissions_on_mac),
+                new PrefLoader(external_apps_path_id,
+                               check_admin_permissions_on_mac),
                 profile,
                 Manifest::EXTERNAL_PREF,
                 Manifest::EXTERNAL_PREF_DOWNLOAD,

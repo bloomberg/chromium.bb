@@ -38,6 +38,8 @@ class ExternalPrefLoader : public ExternalLoader {
   virtual const base::FilePath GetBaseCrxFilePath() OVERRIDE;
 
  protected:
+  virtual ~ExternalPrefLoader() {}
+
   virtual void StartLoading() OVERRIDE;
   bool IsOptionSet(Options option) {
     return (options_ & option) != 0;
@@ -45,8 +47,6 @@ class ExternalPrefLoader : public ExternalLoader {
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
-
-  virtual ~ExternalPrefLoader() {}
 
   // Actually searches for and loads candidate standalone extension preference
   // files in the path corresponding to |base_path_id|.
