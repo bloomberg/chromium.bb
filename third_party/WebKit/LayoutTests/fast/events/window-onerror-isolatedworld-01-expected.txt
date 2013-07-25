@@ -1,0 +1,45 @@
+Test that window.onerror and "error" event listeners from main world are invoked for uncaught exceptions in scripts running in isolate worlds as well as for exceptions in the main world.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+window.onerror: "Uncaught Error: Error in isolated world inline script." at  (Line: 11, Column: 18)
+Returning 'true': the error should not be reported in the console as an unhandled exception.
+Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world inline script." at :11
+PASS eventPassedToTheErrorListener is window.event
+PASS eventCurrentTarget is window
+Calling e.preventDefault(): the error should not be reported in the console as an unhandled exception.
+window.onerror: "Uncaught Error: Error in main world inline script." at window-onerror-isolatedworld-01.html (Line: 33, Column: 18)
+Returning 'true': the error should not be reported in the console as an unhandled exception.
+Handling 'error' event (phase 2): "Uncaught Error: Error in main world inline script." at window-onerror-isolatedworld-01.html:33
+PASS eventPassedToTheErrorListener is window.event
+PASS eventCurrentTarget is window
+Calling e.preventDefault(): the error should not be reported in the console as an unhandled exception.
+window.onerror: "Uncaught Error: Error in isolated world load handler." at  (Line: 8, Column: 22)
+Returning 'true': the error should not be reported in the console as an unhandled exception.
+Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world load handler." at :8
+PASS eventPassedToTheErrorListener is window.event
+PASS eventCurrentTarget is window
+Calling e.preventDefault(): the error should not be reported in the console as an unhandled exception.
+window.onerror: "Uncaught Error: Error in main world load handler." at window-onerror-isolatedworld-01.html (Line: 30, Column: 22)
+Returning 'true': the error should not be reported in the console as an unhandled exception.
+Handling 'error' event (phase 2): "Uncaught Error: Error in main world load handler." at window-onerror-isolatedworld-01.html:30
+PASS eventPassedToTheErrorListener is window.event
+PASS eventCurrentTarget is window
+Calling e.preventDefault(): the error should not be reported in the console as an unhandled exception.
+window.onerror: "Uncaught Error: Error in isolated world setTimeout callback." at  (Line: 6, Column: 26)
+Returning 'true': the error should not be reported in the console as an unhandled exception.
+Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world setTimeout callback." at :6
+PASS eventPassedToTheErrorListener is window.event
+PASS eventCurrentTarget is window
+Calling e.preventDefault(): the error should not be reported in the console as an unhandled exception.
+window.onerror: "Uncaught Error: Error in main world setTimeout callback." at window-onerror-isolatedworld-01.html (Line: 28, Column: 26)
+Returning 'true': the error should not be reported in the console as an unhandled exception.
+Handling 'error' event (phase 2): "Uncaught Error: Error in main world setTimeout callback." at window-onerror-isolatedworld-01.html:28
+PASS eventPassedToTheErrorListener is window.event
+PASS eventCurrentTarget is window
+Calling e.preventDefault(): the error should not be reported in the console as an unhandled exception.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

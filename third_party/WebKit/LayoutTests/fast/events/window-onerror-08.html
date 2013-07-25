@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        window.isOnErrorTest = true;
+    </script>
+    <script src="../js/resources/js-test-pre.js"></script>
+    <script src="resources/onerror-test.js"></script>
+    <script>
+        var onerrorMessage, onerrorURL, onerrorLine, onerrorColumn;
+        window.onerror = function (message, url, line, column) {
+            onerrorMessage = message;
+            onerrorURL = url;
+            onerrorLine = line;
+            onerrorColumn = column;
+
+            shouldBeEqualToString('window.event.type', 'error');
+            shouldBe('onerrorMessage', 'window.event.message');
+            shouldBe('stripURL(onerrorURL)', 'stripURL(window.event.filename)');
+            shouldBe('onerrorLine', 'window.event.lineno');
+
+            // FIXME: Update this once the event interface has columns.
+            shouldBeUndefined('window.event.column');
+            return true;
+        };
+    </script>
+</head>
+<body>
+    <p>This tests that when 'window.onerror' handler is called, 'window.event' is the corresponding ErrorEvent object.</p>
+    <script>
+        throwException();
+    </script>
+    <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

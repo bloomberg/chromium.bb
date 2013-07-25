@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        window.jsTestIsAsync = true;
+        window.isOnErrorTest = true;
+    </script>
+    <script src="../js/resources/js-test-pre.js"></script>
+    <script src="resources/onerror-test.js"></script>
+</head>
+<body>
+    <script>
+        description('Test that window.onerror and "error" event listeners from main world are invoked for uncaught exceptions in scripts running in isolate worlds as well as for exceptions in the main world.');
+
+        function callback(errorsHandled) {
+            if (errorsHandled === 12)
+                finishJSTest();
+        }
+
+        dumpOnErrorArgumentValuesAndReturn(true, callback);
+        dumpErrorEventAndPreventDefault(callback);
+
+        var exceptions = function(worldType)
+        {
+            window.addEventListener("load", function(e) {
+                // Do the following call from load listener to make sure error in the setTimeout callback always happens after the error in this listener.
+                setTimeout(function() {
+                    throw new Error("Error in " + worldType + " world setTimeout callback.");
+                }, 0);
+                throw new Error("Error in " + worldType + " world load handler.");
+            }, false);
+
+            throw new Error("Error in " + worldType + " world inline script.");
+        }
+
+        if (window.testRunner)
+            testRunner.evaluateScriptInIsolatedWorld(1, "(" + exceptions + ")('isolated')");
+
+        exceptions("main");
+
+    </script>
+    <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
