@@ -87,7 +87,9 @@ bool ChromeWebContentsViewDelegateViews::Focus() {
 }
 
 void ChromeWebContentsViewDelegateViews::TakeFocus(bool reverse) {
-  GetFocusManager()->AdvanceFocus(reverse);
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager)
+    focus_manager->AdvanceFocus(reverse);
 }
 
 void ChromeWebContentsViewDelegateViews::StoreFocus() {
