@@ -331,7 +331,7 @@ static TextStream& operator<<(TextStream& ts, const RenderSVGShape& shape)
     SVGLengthContext lengthContext(svgElement);
 
     if (svgElement->hasTagName(SVGNames::rectTag)) {
-        SVGRectElement* element = static_cast<SVGRectElement*>(svgElement);
+        SVGRectElement* element = toSVGRectElement(svgElement);
         writeNameValuePair(ts, "x", element->xCurrentValue().value(lengthContext));
         writeNameValuePair(ts, "y", element->yCurrentValue().value(lengthContext));
         writeNameValuePair(ts, "width", element->widthCurrentValue().value(lengthContext));
