@@ -529,6 +529,12 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   error_strings->SetString("heading",
       l10n_util::GetStringUTF16(options.heading_resource_id));
 
+  std::string icon_class = (error_code == net::ERR_INTERNET_DISCONNECTED &&
+                            error_domain == net::kErrorDomain)
+                               ? "icon-offline"
+                               : "icon-generic";
+  error_strings->SetString("iconClass", icon_class);
+
   base::DictionaryValue* summary = new base::DictionaryValue;
   summary->SetString("msg",
       l10n_util::GetStringUTF16(options.summary_resource_id));

@@ -55,7 +55,11 @@ a {
   text-decoration: none;
 }
 
-.error-img {
+.icon {
+  -webkit-user-select: none;
+}
+
+.icon-generic {
   /**
    * Can't access chrome://theme/IDR_ERROR_NETWORK_GENERIC from an untrusted
    * renderer process, so embed the resource manually.
@@ -63,7 +67,12 @@ a {
   content: -webkit-image-set(
       url('../../app/theme/default_100_percent/common/error_network_generic.png') 1x,
       url('../../app/theme/default_200_percent/common/error_network_generic.png') 2x);
-  -webkit-user-select: none;
+}
+
+.icon-offline {
+  content: -webkit-image-set(
+      url('../../app/theme/default_100_percent/common/error_network_offline.png') 1x,
+      url('../../app/theme/default_200_percent/common/error_network_offline.png') 2x);
 }
 
 #content-top {
@@ -320,7 +329,7 @@ function updateForDnsProbe(strings) {
  <div id="box">
   <div id="content-top">
     <h1>
-     <div><img class="error-img"></div>
+     <div><img class="icon" jseval="this.classList.add(iconClass)"></div>
      <span i18n-content="heading"></span>
     </h1>
 
@@ -347,7 +356,7 @@ function updateForDnsProbe(strings) {
 <div id="sub-frame-error">
   <!-- Show details when hovering over the icon, in case the details are
        hidden because they're too large. -->
-  <img class="error-img" jsvalues=".title:errorDetails">
+  <img class="icon" jseval="this.classList.add(iconClass)" jsvalues=".title:errorDetails">
   <div id="sub-frame-error-details" jsvalues=".innerHTML:errorDetails"></div>
 </div>
 </body>
