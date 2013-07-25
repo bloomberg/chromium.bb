@@ -29,7 +29,8 @@ function onload() {
     tabHeader.addEventListener('click', selectTab.bind(null, tabContent.id));
     $('navigation').appendChild(tabHeader);
   }
-  selectTab('devices-tab');
+  var selectedTabName = window.location.hash.slice(1) || 'devices';
+  selectTab(selectedTabName + '-tab');
   chrome.send('init-ui');
 }
 
