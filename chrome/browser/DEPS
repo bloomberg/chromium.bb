@@ -106,7 +106,4 @@ include_rules = [
   "+third_party/WebKit/public/web/WebScreenInfo.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebWindowFeatures.h",
-
-  # These should be burned down. http://crbug.com/237267
-  "!third_party/WebKit/public/web/WebView.h",
 ]

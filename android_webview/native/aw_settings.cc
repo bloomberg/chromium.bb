@@ -13,8 +13,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/page_zoom.h"
 #include "jni/AwSettings_jni.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
@@ -115,8 +115,8 @@ void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
     render_view_host_ext->SetTextZoomLevel(0);
   } else {
     prefs.force_enable_zoom = false;
-    render_view_host_ext->SetTextZoomLevel(
-        WebKit::WebView::zoomFactorToZoomLevel(text_size_percent / 100.0f));
+    render_view_host_ext->SetTextZoomLevel(content::ZoomFactorToZoomLevel(
+        text_size_percent / 100.0f));
   }
 
   prefs.standard_font_family_map[webkit_glue::kCommonScript] =

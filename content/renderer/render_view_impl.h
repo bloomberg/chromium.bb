@@ -496,6 +496,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
   virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
   virtual void zoomLevelChanged();
+  virtual double zoomLevelToZoomFactor(double zoom_level) const;
+  virtual double zoomFactorToZoomLevel(double factor) const;
   virtual void registerProtocolHandler(const WebKit::WebString& scheme,
                                        const WebKit::WebString& base_url,
                                        const WebKit::WebString& url,

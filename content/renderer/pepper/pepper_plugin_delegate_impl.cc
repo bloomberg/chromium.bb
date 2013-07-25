@@ -33,6 +33,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/page_zoom.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/renderer_restrict_dispatch_group.h"
@@ -102,7 +104,6 @@
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
-using WebKit::WebView;
 using WebKit::WebFrame;
 
 namespace content {
@@ -1268,8 +1269,8 @@ std::string PepperPluginDelegateImpl::GetDefaultEncoding() {
 
 void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
                                                  double maximum_factor) {
-  double minimum_level = WebView::zoomFactorToZoomLevel(minimum_factor);
-  double maximum_level = WebView::zoomFactorToZoomLevel(maximum_factor);
+  double minimum_level = ZoomFactorToZoomLevel(minimum_factor);
+  double maximum_level = ZoomFactorToZoomLevel(maximum_factor);
   render_view_->webview()->zoomLimitsChanged(minimum_level, maximum_level);
 }
 

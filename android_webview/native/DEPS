@@ -9,7 +9,4 @@ include_rules = [
   "+components/navigation_interception",
   "+components/user_prefs",
   "+components/web_contents_delegate_android",
-
-  # These should be burned down. http://crbug.com/237267
-  "!third_party/WebKit/public/web/WebView.h",
 ]

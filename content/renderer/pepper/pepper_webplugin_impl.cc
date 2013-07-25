@@ -8,6 +8,7 @@
 
 #include "base/debug/crash_logging.h"
 #include "base/message_loop/message_loop.h"
+#include "content/public/common/page_zoom.h"
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/npobject_var.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -26,7 +27,6 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
 
 using ppapi::NPObjectVar;
@@ -41,7 +41,6 @@ using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
-using WebKit::WebView;
 
 namespace content {
 
@@ -254,7 +253,7 @@ WebURL PepperWebPluginImpl::linkAtPosition(const WebPoint& position) const {
 }
 
 void PepperWebPluginImpl::setZoomLevel(double level, bool text_only) {
-  instance_->Zoom(WebView::zoomLevelToZoomFactor(level), text_only);
+  instance_->Zoom(content::ZoomLevelToZoomFactor(level), text_only);
 }
 
 bool PepperWebPluginImpl::startFind(const WebKit::WebString& search_text,

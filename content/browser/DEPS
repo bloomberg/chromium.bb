@@ -66,7 +66,6 @@ include_rules = [
   "!third_party/WebKit/public/web/WebBindings.h",
   "!third_party/WebKit/public/web/WebKit.h",
   "!third_party/WebKit/public/web/WebSecurityOrigin.h",
-  "!third_party/WebKit/public/web/WebView.h",
   "!third_party/WebKit/public/web/android/WebInputEventFactory.h",
   "!third_party/WebKit/public/web/gtk/WebInputEventFactory.h",
   "!third_party/WebKit/public/web/linux/WebFontInfo.h",

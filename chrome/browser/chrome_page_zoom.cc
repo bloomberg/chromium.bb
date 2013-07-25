@@ -14,8 +14,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
-#include "third_party/WebKit/public/web/WebView.h"
 
 using content::UserMetricsAction;
 
@@ -36,7 +36,7 @@ std::vector<double> PresetZoomValues(PageZoomValueType value_type,
   for (size_t i = 0; i < kPresetZoomFactorsSize; i++) {
     double zoom_value = kPresetZoomFactors[i];
     if (value_type == PAGE_ZOOM_VALUE_TYPE_LEVEL)
-      zoom_value = WebKit::WebView::zoomFactorToZoomLevel(zoom_value);
+      zoom_value = content::ZoomFactorToZoomLevel(zoom_value);
     if (content::ZoomValuesEqual(zoom_value, custom_value))
       found_custom = true;
     zoom_values.push_back(zoom_value);
@@ -44,10 +44,10 @@ std::vector<double> PresetZoomValues(PageZoomValueType value_type,
   // If the preset array did not contain the custom value, append it to the
   // vector and then sort.
   double min = value_type == PAGE_ZOOM_VALUE_TYPE_LEVEL ?
-      WebKit::WebView::zoomFactorToZoomLevel(content::kMinimumZoomFactor) :
+      content::ZoomFactorToZoomLevel(content::kMinimumZoomFactor) :
       content::kMinimumZoomFactor;
   double max = value_type == PAGE_ZOOM_VALUE_TYPE_LEVEL ?
-      WebKit::WebView::zoomFactorToZoomLevel(content::kMaximumZoomFactor) :
+      content::ZoomFactorToZoomLevel(content::kMaximumZoomFactor) :
       content::kMaximumZoomFactor;
   if (!found_custom && custom_value > min && custom_value < max) {
     zoom_values.push_back(custom_value);

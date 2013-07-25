@@ -12,6 +12,8 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/page_zoom.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/history_item_serialization.h"
@@ -1830,10 +1832,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
 #endif
 
 TEST_F(RenderViewImplTest, ZoomLimit) {
-  const double kMinZoomLevel =
-      WebKit::WebView::zoomFactorToZoomLevel(kMinimumZoomFactor);
-  const double kMaxZoomLevel =
-      WebKit::WebView::zoomFactorToZoomLevel(kMaximumZoomFactor);
+  const double kMinZoomLevel = ZoomFactorToZoomLevel(kMinimumZoomFactor);
+  const double kMaxZoomLevel = ZoomFactorToZoomLevel(kMaximumZoomFactor);
 
   ViewMsg_Navigate_Params params;
   params.page_id = -1;
@@ -1849,9 +1849,8 @@ TEST_F(RenderViewImplTest, ZoomLimit) {
   EXPECT_DOUBLE_EQ(kMinZoomLevel, view()->GetWebView()->zoomLevel());
 
   // It should work even when the zoom limit is temporarily changed in the page.
-  view()->GetWebView()->zoomLimitsChanged(
-      WebKit::WebView::zoomFactorToZoomLevel(1.0),
-      WebKit::WebView::zoomFactorToZoomLevel(1.0));
+  view()->GetWebView()->zoomLimitsChanged(ZoomFactorToZoomLevel(1.0),
+                                          ZoomFactorToZoomLevel(1.0));
   params.url = GURL("data:text/html,max_zoomlimit_test");
   view()->OnSetZoomLevelForLoadingURL(params.url, kMaxZoomLevel);
   view()->OnNavigate(params);

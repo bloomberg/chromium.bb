@@ -79,7 +79,6 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
@@ -1468,8 +1467,7 @@ void BrowserOptionsHandler::HandleDefaultFontSize(const ListValue* args) {
 void BrowserOptionsHandler::HandleDefaultZoomFactor(const ListValue* args) {
   double zoom_factor;
   if (ExtractDoubleValue(args, &zoom_factor)) {
-    default_zoom_level_.SetValue(
-        WebKit::WebView::zoomFactorToZoomLevel(zoom_factor));
+    default_zoom_level_.SetValue(content::ZoomFactorToZoomLevel(zoom_factor));
   }
 }
 
@@ -1670,7 +1668,7 @@ void BrowserOptionsHandler::SetupPageZoomSelector() {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   double default_zoom_level = pref_service->GetDouble(prefs::kDefaultZoomLevel);
   double default_zoom_factor =
-      WebKit::WebView::zoomLevelToZoomFactor(default_zoom_level);
+      content::ZoomLevelToZoomFactor(default_zoom_level);
 
   // Generate a vector of zoom factors from an array of known presets along with
   // the default factor added if necessary.

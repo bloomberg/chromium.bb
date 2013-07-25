@@ -35,6 +35,10 @@ CONTENT_EXPORT extern const double kEpsilon;
 // considered equal.
 CONTENT_EXPORT bool ZoomValuesEqual(double value_a, double value_b);
 
+// Converts between zoom factors and levels.
+CONTENT_EXPORT double ZoomLevelToZoomFactor(double zoom_level);
+CONTENT_EXPORT double ZoomFactorToZoomLevel(double factor);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_PAGE_ZOOM_H_

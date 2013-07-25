@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "cc/layers/texture_layer.h"
+#include "content/public/common/page_zoom.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/event_conversion.h"
@@ -2209,7 +2210,7 @@ void PepperPluginInstanceImpl::ZoomChanged(PP_Instance instance,
   // plugin.  If we're in an iframe, then don't do anything.
   if (!IsFullPagePlugin())
     return;
-  container()->zoomLevelChanged(WebView::zoomFactorToZoomLevel(factor));
+  container()->zoomLevelChanged(content::ZoomFactorToZoomLevel(factor));
 }
 
 void PepperPluginInstanceImpl::ZoomLimitsChanged(PP_Instance instance,

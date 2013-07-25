@@ -73,12 +73,12 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/layout.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
@@ -2053,7 +2053,7 @@ int WebContentsImpl::GetZoomPercent(bool* enable_increment,
   // Calculate the zoom percent from the factor. Round up to the nearest whole
   // number.
   int percent = static_cast<int>(
-      WebKit::WebView::zoomLevelToZoomFactor(GetZoomLevel()) * 100 + 0.5);
+      ZoomLevelToZoomFactor(GetZoomLevel()) * 100 + 0.5);
   *enable_decrement = percent > minimum_zoom_percent_;
   *enable_increment = percent < maximum_zoom_percent_;
   return percent;

@@ -38,11 +38,11 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/page_zoom.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -164,8 +164,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
     success = args->GetDouble(3, &height);
     DCHECK(success);
 
-    double zoom =
-        WebKit::WebView::zoomLevelToZoomFactor(web_contents->GetZoomLevel());
+    double zoom = content::ZoomLevelToZoomFactor(web_contents->GetZoomLevel());
     gfx::Rect rect(x * zoom, y * zoom, width * zoom, height * zoom);
 
     browser->window()->ShowAvatarBubble(web_ui()->GetWebContents(), rect);
