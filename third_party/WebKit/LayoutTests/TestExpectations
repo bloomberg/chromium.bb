@@ -2405,16 +2405,3 @@ crbug.com/263879 [ Mac ] virtual/gpu/compositedscrolling/overflow/theme-affects-
 
 # Part of a 2-sided patch; re-enabled immediately after chromium side lands.
 Bug(eroman) crypto/  [ Skip ]
-
-#crbug.com/264021 [ Linux ] fast/forms/placeholder-position.html [ ImageOnlyFailure Pass ]
-
-# Below test case need to rebaseline after crbug.com/254914
-# Text and image both
-crbug.com/254914 [ Win Mac ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ NeedsRebaseline ]
-crbug.com/254914 [ Win Mac ] tables/mozilla/core/bloomberg.html [ NeedsRebaseline ]
-# Image only
-crbug.com/254914 [ Linux ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ NeedsRebaseline ]
-crbug.com/254914 [ Linux ] tables/mozilla/core/bloomberg.html [ NeedsRebaseline ]
-# Text only
-crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ NeedsRebaseline ]
-crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ NeedsRebaseline ]

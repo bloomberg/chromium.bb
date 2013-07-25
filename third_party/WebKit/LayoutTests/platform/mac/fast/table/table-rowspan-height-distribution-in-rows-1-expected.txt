@@ -33,9 +33,20 @@ Test 3 - One rowSpan cell and specified rowSpan cell height
 row0 col0
 PASS
 row1 col0	row1 col1 - rowspan=4
-PASS
+FAIL:
+Expected 57 for height, but got 32. 
+
+<tr data-expected-height="57">
+	  <td>row1 col0</td>
+	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4</td>
+	</tr>
 row2 col0
-PASS
+FAIL:
+Expected 57 for height, but got 58. 
+
+<tr data-expected-height="57">
+      <td>row2 col0</td>
+    </tr>
 row3 col0
 PASS
 row4 col0
@@ -48,19 +59,14 @@ row0 col0
 PASS
 row1 col0	row1 col1 - rowspan=4
 FAIL:
-Expected 33 for height, but got 23. 
+Expected 59 for height, but got 60. 
 
-<tr data-expected-height="33">
+<tr data-expected-height="59">
 	  <td>row1 col0</td>
 	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4</td>
 	</tr>
 row2 col0
-FAIL:
-Expected 130 for height, but got 131. 
-
-<tr data-expected-height="130">
-      <td style="height:70px">row2 col0</td>
-    </tr>
+PASS
 row3 col0
 PASS
 row4 col0
@@ -86,9 +92,20 @@ PASS
 row1 col0
 PASS
 row2 col0 - rowspan=4 vertical-align=text-top	row2 col1 vertical-align=sub
-PASS
+FAIL:
+Expected 77 for height, but got 32. 
+
+<tr data-expected-height="77">
+      <td rowspan="4" style="vertical-align:text-top; height:300px">row2 col0 - rowspan=4 vertical-align=text-top</td>
+      <td style="vertical-align:sub">row2 col1 vertical-align=sub</td>
+    </tr>
 row3 col1 vertical-align=middle
-PASS
+FAIL:
+Expected 77 for height, but got 78. 
+
+<tr data-expected-height="77">
+      <td style="vertical-align:middle">row3 col1 vertical-align=middle</td>
+    </tr>
 row4 col1 vertical-align=super
 PASS
 row5 col1 vertical-align=text-bottom
@@ -121,9 +138,9 @@ Expected 39 for height, but got 34.
     </tr>
 row1 col1	row1 col2	row1 col3
 FAIL:
-Expected 47 for height, but got 29. 
+Expected 48 for height, but got 29. 
 
-<tr data-expected-height="47">
+<tr data-expected-height="48">
         <td rowspan="3" style="height:200px">row1 col1</td>
         <td rowspan="2" style="height:100px">row1 col2</td>
         <td>row1 col3</td>

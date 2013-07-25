@@ -32,11 +32,11 @@ layer at (0,0) size 785x716
                     text run at (4,52) width 73: "Tech Stocks"
                 RenderBR {BR} at (77,65) size 0x0
               RenderText {#text} at (0,0) size 0x0
-              RenderInline {A} at (0,0) size 115x19
-                RenderInline {FONT} at (0,0) size 115x16 [color=#FFFFFF]
-                  RenderText {#text} at (4,68) size 115x16
-                    text run at (4,68) width 115: "Stocks on the Move"
-                RenderBR {BR} at (119,81) size 0x0
+              RenderInline {A} at (0,0) size 117x19
+                RenderInline {FONT} at (0,0) size 117x16 [color=#FFFFFF]
+                  RenderText {#text} at (4,68) size 117x16
+                    text run at (4,68) width 117: "Stocks on the Move"
+                RenderBR {BR} at (121,81) size 0x0
               RenderText {#text} at (0,0) size 0x0
               RenderInline {A} at (0,0) size 64x19
                 RenderInline {FONT} at (0,0) size 64x16 [color=#FFFFFF]
@@ -213,7 +213,7 @@ layer at (0,0) size 785x716
                 RenderBR {BR} at (75,634) size 0x0
               RenderBR {BR} at (4,637) size 0x19
             RenderTableCell {TD} at (148,0) size 486x24 [bgcolor=#660000] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=3]
-              RenderImage {IMG} at (10.50,4) size 465x16
+              RenderImage {IMG} at (10,4) size 466x16
           RenderTableRow {TR} at (0,28) size 634x83
             RenderTableCell {TD} at (148,28) size 128x69 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderInline {A} at (0,0) size 120x19
@@ -368,22 +368,22 @@ layer at (0,0) size 785x716
                     text run at (4,311) width 147: "our customer letters now."
               RenderBR {BR} at (151,324) size 0x0
       RenderBlock {P} at (0,679) size 769x13
-        RenderInline {FONT} at (0,0) size 435x13
+        RenderInline {FONT} at (0,0) size 432x13
           RenderText {#text} at (0,0) size 200x13
             text run at (0,0) width 200: "\x{A9}1999 Bloomberg L.P. All rights reserved. "
-          RenderInline {A} at (0,0) size 80x13
-            RenderText {#text} at (200,0) size 80x13
-              text run at (200,0) width 80: "Terms of Service"
-          RenderText {#text} at (280,0) size 6x13
-            text run at (280,0) width 6: ", "
-          RenderInline {A} at (0,0) size 68x13
-            RenderText {#text} at (286,0) size 68x13
-              text run at (286,0) width 68: "Privacy Policy"
-          RenderText {#text} at (354,0) size 24x13
-            text run at (354,0) width 24: " and "
+          RenderInline {A} at (0,0) size 79x13
+            RenderText {#text} at (200,0) size 79x13
+              text run at (200,0) width 79: "Terms of Service"
+          RenderText {#text} at (279,0) size 6x13
+            text run at (279,0) width 6: ", "
+          RenderInline {A} at (0,0) size 66x13
+            RenderText {#text} at (285,0) size 66x13
+              text run at (285,0) width 66: "Privacy Policy"
+          RenderText {#text} at (351,0) size 24x13
+            text run at (351,0) width 24: " and "
           RenderInline {A} at (0,0) size 54x13
-            RenderText {#text} at (378,0) size 54x13
-              text run at (378,0) width 54: "Trademarks"
-          RenderText {#text} at (432,0) size 3x13
-            text run at (432,0) width 3: "."
+            RenderText {#text} at (375,0) size 54x13
+              text run at (375,0) width 54: "Trademarks"
+          RenderText {#text} at (429,0) size 3x13
+            text run at (429,0) width 3: "."
         RenderText {#text} at (0,0) size 0x0
