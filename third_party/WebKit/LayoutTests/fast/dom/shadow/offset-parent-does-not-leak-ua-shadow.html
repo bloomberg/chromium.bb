@@ -21,7 +21,7 @@ var host = document.createElement('div');
 container.appendChild(host);
 var child = document.createElement('div');
 host.appendChild(child);
-var shadow = host.webkitCreateShadowRoot();
+var shadow = host.createShadowRoot();
 configureShadowRoot(shadow);
 shouldBe('child.offsetParent', 'shadow.positionedElement');
 

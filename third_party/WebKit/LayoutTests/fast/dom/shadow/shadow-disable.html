@@ -14,9 +14,9 @@ function testToAddShadowRoot(element, success) {
     debug(element.nodeName);
 
     if (success)
-        shouldNotBe("element.webkitCreateShadowRoot()", "null");
+        shouldNotBe("element.createShadowRoot()", "null");
     else
-        shouldThrow("element.webkitCreateShadowRoot()");
+        shouldThrow("element.createShadowRoot()");
 }
 
 var elementsToSuccess = [

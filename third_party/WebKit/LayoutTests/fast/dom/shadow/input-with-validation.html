@@ -11,7 +11,7 @@ if (window.internals)
     internals.settings.setAuthorShadowDOMForAnyElementEnabled(true);
 
 var input = document.getElementById('password');
-var shadowRoot = input.webkitCreateShadowRoot();
+var shadowRoot = input.createShadowRoot();
 shadowRoot.innerHTML = "<shadow></shadow>";
 
 document.getElementById('submit').click();

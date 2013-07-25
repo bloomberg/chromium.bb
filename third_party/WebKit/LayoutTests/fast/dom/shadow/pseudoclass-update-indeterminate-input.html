@@ -29,7 +29,7 @@ input2.indeterminate = true;
 input4.indeterminate = true;
 input5.indeterminate = true;
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 shadowRoot.innerHTML = '<content select="span, input:indeterminate"></content>';
 
 setTimeout(function() {

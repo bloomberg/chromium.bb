@@ -23,7 +23,7 @@ function listener(event) {
 }
 
 function addShadowDOM(host) {
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     var div = document.createElement('div');
     shadowRoot.appendChild(div);
     div.id = 'inner-div';

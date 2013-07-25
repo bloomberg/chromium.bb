@@ -21,8 +21,8 @@
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-host1.webkitCreateShadowRoot().innerHTML = '<content select=":enabled"></content>';
-host2.webkitCreateShadowRoot().innerHTML = '<content select=":enabled"></content>';
+host1.createShadowRoot().innerHTML = '<content select=":enabled"></content>';
+host2.createShadowRoot().innerHTML = '<content select=":enabled"></content>';
 
 setTimeout(function() {
     select2.setAttribute('disabled', true);

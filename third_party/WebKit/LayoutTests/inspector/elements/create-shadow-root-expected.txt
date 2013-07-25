@@ -8,7 +8,7 @@ Running: testDumpInitial
   </div>
 
 Running: testCreateShadowRoot
-===== After webkitCreateShadowRoot =====
+===== After createShadowRoot =====
 - <div id="container">
     - #document-fragment
           <div id="shadow-1"></div>
@@ -16,7 +16,7 @@ Running: testCreateShadowRoot
   </div>
 
 Running: testCreateSecondShadowRoot
-===== After second webkitCreateShadowRoot =====
+===== After second createShadowRoot =====
 - <div id="container">
     - #document-fragment
           <div id="shadow-1"></div>

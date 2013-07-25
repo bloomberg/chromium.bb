@@ -7,7 +7,7 @@ function appendBrElement(node)
 
 function addShadowTreeWithDivElement(node)
 {
-    node.webkitCreateShadowRoot();
+    node.createShadowRoot();
     internals.oldestShadowRoot(node).innerHTML = '<div>b</div>';
 }
 

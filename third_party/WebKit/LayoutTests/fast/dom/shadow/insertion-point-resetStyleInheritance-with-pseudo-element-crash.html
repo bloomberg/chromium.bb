@@ -11,7 +11,7 @@ if (window.testRunner)
 
 function runTests() {
     var host = document.getElementById("host");
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     shadowRoot.innerHTML = "<content id='content'>"
     shadowRoot.getElementById("content").resetStyleInheritance = true;
 }

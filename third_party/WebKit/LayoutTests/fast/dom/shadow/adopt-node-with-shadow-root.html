@@ -9,7 +9,7 @@
 <script>
 function test() {
     var foreignDocument = document.getElementById('root').contentDocument;
-    shadow = foreignDocument.getElementById('s').webkitCreateShadowRoot();
+    shadow = foreignDocument.getElementById('s').createShadowRoot();
     shouldThrow("document.adoptNode(shadow)");
     location.reload();
 }

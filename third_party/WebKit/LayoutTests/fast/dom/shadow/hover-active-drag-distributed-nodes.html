@@ -53,7 +53,7 @@ function shouldHaveTextColor(element, col) {
 }
 
 var host = document.getElementById('host');
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 var temp = document.getElementById('template');
 shadowRoot.appendChild(temp.content.cloneNode(true));
 var div = shadowRoot.querySelector('div');

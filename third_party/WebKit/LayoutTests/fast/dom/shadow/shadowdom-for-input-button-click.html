@@ -13,7 +13,7 @@ if (window.internals)
 description('Make sure that mouse click on an input button with shadow nodes works.');
 var clickCount = 0;
 var input = document.querySelector('input');
-var root = input.webkitCreateShadowRoot();
+var root = input.createShadowRoot();
 root.innerHTML = '<span style="margin:8px;">Foo</span><shadow></shadow><span>Bar</span>';
 var inputRect = input.getBoundingClientRect();
 var shadowNodeRect = root.firstChild.getBoundingClientRect();

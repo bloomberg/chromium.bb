@@ -4,47 +4,47 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 DIV
-PASS element.webkitCreateShadowRoot() is not null
+PASS element.createShadowRoot() is not null
 SPAN
-PASS element.webkitCreateShadowRoot() is not null
+PASS element.createShadowRoot() is not null
 A
-PASS element.webkitCreateShadowRoot() is not null
+PASS element.createShadowRoot() is not null
 SECTION
-PASS element.webkitCreateShadowRoot() is not null
+PASS element.createShadowRoot() is not null
 INPUT
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 tref
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 AUDIO
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 VIDEO
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 SELECT
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 IMG
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 TEXTAREA
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 IFRAME
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 CANVAS
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 METER
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 PROGRESS
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 OBJECT
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 EMBED
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 KEYGEN
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 VIDEO
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 AUDIO
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 FIELDSET
-PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 PASS successfullyParsed is true
 
 TEST COMPLETE

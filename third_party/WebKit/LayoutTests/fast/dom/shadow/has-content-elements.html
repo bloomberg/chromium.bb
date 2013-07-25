@@ -43,10 +43,10 @@ function doCommonTest() {
     // Case for nested shadow subtree
     shadowRoot.innerHTML = '<div>in shadow root</div>';
     var innerDiv1 = shadowRoot.querySelector('div');
-    innerShadowRoot1 = innerDiv1.webkitCreateShadowRoot();
+    innerShadowRoot1 = innerDiv1.createShadowRoot();
     innerShadowRoot1.innerHTML = "<div><content></content></div>";
     var innerDiv2 = innerShadowRoot1.querySelector('div');
-    innerShadowRoot2 = innerDiv2.webkitCreateShadowRoot();
+    innerShadowRoot2 = innerDiv2.createShadowRoot();
     innerShadowRoot2.innerHTML = "<div><content title='debugstop'></content></div>";
     
     shouldBeFalse("internals.hasContentElement(shadowRoot)");
@@ -57,7 +57,7 @@ function doCommonTest() {
 
     // Case for multiple shadow subtrees
     shadowRoot.innerHTML = "<div><div><div><content></content></div></div></div>";
-    youngerShadowRoot = host.webkitCreateShadowRoot();
+    youngerShadowRoot = host.createShadowRoot();
     // Modifying older shadow root or younger shadow root doesn't affect the other.
     shouldBeTrue("internals.hasContentElement(shadowRoot)");
     shouldBeFalse("internals.hasContentElement(youngerShadowRoot)");
@@ -74,13 +74,13 @@ function doCommonTest() {
 debug('In the case host is in document');
 host = document.createElement('div');
 wrapper.appendChild(host);
-shadowRoot = host.webkitCreateShadowRoot();
+shadowRoot = host.createShadowRoot();
 doCommonTest();
 wrapper.innerHTML = "";
 
 debug('In the case host is not in document');
 host = document.createElement('div');
-shadowRoot = host.webkitCreateShadowRoot();
+shadowRoot = host.createShadowRoot();
 doCommonTest();
 wrapper.innerHTML = "";
 
@@ -89,7 +89,7 @@ var host = document.createElement('div');
 var content = document.createElement('content');
 var div1 = document.createElement('div');
 var div2 = document.createElement('div');
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 div1.appendChild(content);
 shouldBeFalse('internals.hasContentElement(shadowRoot)');
 shadowRoot.appendChild(div1);

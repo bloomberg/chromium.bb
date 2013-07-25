@@ -23,7 +23,7 @@
     var kbd = document.createElement('kbd');
     label.appendChild(kbd);
 
-    var labelShadow = label.webkitCreateShadowRoot();
+    var labelShadow = label.createShadowRoot();
 
     var select = document.createElement('select');
     select.setAttribute('multiple', 'multiple');

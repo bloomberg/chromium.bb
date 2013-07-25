@@ -10,7 +10,7 @@
 <script>
 function createShadowRoot()
 {
-    var root = host.webkitCreateShadowRoot();
+    var root = host.createShadowRoot();
     root.appendChild(document.createElement('content'));
     var styles = document.createElement('style');
     styles.textContent = '@host { * { border: 1px solid black; background-color: red } } content::-webkit-distributed(div) { font-size: 24px }';

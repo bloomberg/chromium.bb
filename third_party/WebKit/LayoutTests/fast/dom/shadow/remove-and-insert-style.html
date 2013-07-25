@@ -45,10 +45,10 @@ function shouldHaveBackgroundColor(element, bg)
     shouldBeEqualToString("backgroundColor", bg);
 }
 
-var sr = host.webkitCreateShadowRoot();
+var sr = host.createShadowRoot();
 sr.appendChild(t.content.cloneNode(true));
 var container = sr.querySelector('#container');
-var sr2 = container.webkitCreateShadowRoot();
+var sr2 = container.createShadowRoot();
 sr2.appendChild(t2.content.cloneNode(true));
 
 jsTestIsAsync = true;

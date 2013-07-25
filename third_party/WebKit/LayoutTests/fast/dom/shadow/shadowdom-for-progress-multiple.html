@@ -15,10 +15,10 @@ progress::-webkit-progress-inner-element {
 if (window.internals)
     internals.settings.setAuthorShadowDOMForAnyElementEnabled(true);
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 shadowRoot.innerHTML = "<shadow></shadow><span>(after)</span>";
 
-var younger = host.webkitCreateShadowRoot();
+var younger = host.createShadowRoot();
 younger.innerHTML = "<div style='margin: 0 10px 0 10px; height: 1em; width: 10em;'><shadow></shadow></div>";
 </script>
 

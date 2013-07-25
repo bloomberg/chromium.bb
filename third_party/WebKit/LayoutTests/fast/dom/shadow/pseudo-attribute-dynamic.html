@@ -21,14 +21,14 @@
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 var div = document.createElement('div');
-div.webkitPseudo = 'x-foo';
+div.pseudo = 'x-foo';
 div.innerHTML = "This should be blue.";
 shadowRoot.appendChild(div);
 
 setTimeout(function() {
-    div.webkitPseudo = 'x-bar';
+    div.pseudo = 'x-bar';
     if (window.testRunner)
         testRunner.notifyDone();
 }, 0);

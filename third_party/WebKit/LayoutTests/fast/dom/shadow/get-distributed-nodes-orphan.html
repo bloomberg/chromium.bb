@@ -23,7 +23,7 @@ function assertNodeList(nodeList, expectedNodes)
 }
 
 var host = document.createElement('div');
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 var child = document.createElement('div');
 var rootChild = document.createElement('div');
 var content = document.createElement('content');
@@ -43,7 +43,7 @@ debug('');
 
 debug('Reprojection case');
 shadowRoot.appendChild(rootChild);
-var shadowRoot2 = rootChild.webkitCreateShadowRoot();
+var shadowRoot2 = rootChild.createShadowRoot();
 var content2 = document.createElement('content');
 var rootChildChild = document.createElement('div');
 shadowRoot2.appendChild(content2);

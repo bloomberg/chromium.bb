@@ -9,7 +9,7 @@
 <script>
 function doTest() {
     var input = document.getElementById('password');
-    var shadowRoot = input.webkitCreateShadowRoot();
+    var shadowRoot = input.createShadowRoot();
 
     document.getElementById('submit').click();
     if (window.testRunner) {

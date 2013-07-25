@@ -32,10 +32,10 @@
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-host1.webkitCreateShadowRoot().innerHTML = '<content select="input:checked">';
-host2.webkitCreateShadowRoot().innerHTML = '<content select="input:checked">';
-host3.webkitCreateShadowRoot().innerHTML = '<content select="input:checked">';
-host4.webkitCreateShadowRoot().innerHTML = '<content select="input:checked">';
+host1.createShadowRoot().innerHTML = '<content select="input:checked">';
+host2.createShadowRoot().innerHTML = '<content select="input:checked">';
+host3.createShadowRoot().innerHTML = '<content select="input:checked">';
+host4.createShadowRoot().innerHTML = '<content select="input:checked">';
 
 setTimeout(function() {
     input1.checked = true;

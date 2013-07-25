@@ -6,7 +6,7 @@
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
-var shadowRoot = document.getElementById('shadowhost').webkitCreateShadowRoot();
+var shadowRoot = document.getElementById('shadowhost').createShadowRoot();
 shadowRoot.innerHTML = "<content></content>";
 
 var textNode = document.getElementById('shadowhost').firstChild.firstChild;

@@ -13,7 +13,7 @@
 <script>
 function createShadowDOM(shadowRoot, name) {
     var hostInShadowRoot = document.createElement('span');
-    var nestedShadowRoot = hostInShadowRoot.webkitCreateShadowRoot();
+    var nestedShadowRoot = hostInShadowRoot.createShadowRoot();
     var spanInShadow = createSpanWithText('SPAN IN NESTED IN SHADOW ' + name);
     nestedShadowRoot.appendChild(spanInShadow);
 
@@ -37,10 +37,10 @@ var host = document.createElement('div');
 var spanInHost = createSpanWithText('IN HOST');
 host.appendChild(spanInHost);
 
-var olderShadowRoot = host.webkitCreateShadowRoot();
+var olderShadowRoot = host.createShadowRoot();
 var spans1 = createShadowDOM(olderShadowRoot, 'OLDER');
 
-var youngerShadowRoot = host.webkitCreateShadowRoot();
+var youngerShadowRoot = host.createShadowRoot();
 var spans2 = createShadowDOM(youngerShadowRoot, 'YOUNGER');
 
 var container = document.getElementById('container');

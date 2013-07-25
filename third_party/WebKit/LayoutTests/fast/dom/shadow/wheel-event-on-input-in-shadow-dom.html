@@ -22,7 +22,7 @@ function createInput(name) {
     return div;
 }
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 var shadowDiv = createInput('shadow');
 shadowRoot.appendChild(shadowDiv);
 

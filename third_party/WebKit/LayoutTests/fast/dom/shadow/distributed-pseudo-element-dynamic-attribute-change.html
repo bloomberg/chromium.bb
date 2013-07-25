@@ -10,7 +10,7 @@
 <script>
 if (window.testRunner)
     testRunner.waitUntilDone();
-var shadowRoot = document.getElementById('host').webkitCreateShadowRoot();
+var shadowRoot = document.getElementById('host').createShadowRoot();
 shadowRoot.innerHTML = '<style>content::-webkit-distributed(.selected) { ' +
     'background: green; }</style>' +
     '<content></content>';

@@ -6,7 +6,7 @@ if (window.testRunner)
     testRunner.waitUntilDone();
 
 function addShadowRoot(inNode) {
-    var root = inNode.webkitCreateShadowRoot();
+    var root = inNode.createShadowRoot();
     root.innerHTML = '<style>@host { *.selected { background: green; } }</style>I should be green!';
 }
     

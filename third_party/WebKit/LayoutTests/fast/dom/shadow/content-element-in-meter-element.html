@@ -26,7 +26,7 @@ testFuncs.push(function contentElementInMeterElement(callIfDone) {
 
     document.getElementById('actual-container').appendChild(div);
 
-    var sr = div.webkitCreateShadowRoot();
+    var sr = div.createShadowRoot();
 
     var meter = document.createElement('meter');
     var content = document.createElement('content');

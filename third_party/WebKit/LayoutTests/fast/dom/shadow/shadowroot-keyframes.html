@@ -26,21 +26,21 @@ function getBackgroundColor(element) {
     return window.getComputedStyle(element).backgroundColor;
 }
 
-var shadowRootWithKeyframe = document.getElementById("d1").webkitCreateShadowRoot();
+var shadowRootWithKeyframe = document.getElementById("d1").createShadowRoot();
 shadowRootWithKeyframe.innerHTML = '<style>@-webkit-keyframes "anim" {' +
     'from { background-color:red; } to { background-color: blue; } }' +
     '#box { height: 100px; width: 100px; background: red; ' +
     '-webkit-animation: "anim" 0.5s both; }</style>' +
     '<div id="box"></div>';
 
-var shadowRootWithoutKeyframe = document.getElementById("d2").webkitCreateShadowRoot();
+var shadowRootWithoutKeyframe = document.getElementById("d2").createShadowRoot();
 shadowRootWithoutKeyframe.applyAuthorStyles = false;
 shadowRootWithoutKeyframe.innerHTML = '<style>' +
     '#box { height: 100px; width: 100px; background: red; ' +
     '-webkit-animation: "anim" 0.5s both; }</style>' +
     '<div id="box"></div>';
 
-var shadowRootWithApplyAuthorStyles = document.getElementById("d3").webkitCreateShadowRoot();
+var shadowRootWithApplyAuthorStyles = document.getElementById("d3").createShadowRoot();
 shadowRootWithApplyAuthorStyles.applyAuthorStyles = true;
 shadowRootWithApplyAuthorStyles.innerHTML = '<style>' +
     '#box { height: 100px; width: 100px; background: red; ' +

@@ -62,17 +62,17 @@ testCase(function()
     shadowRoot.appendChild(div);
     shouldBe('internals.countElementShadow(shadowRoot)', '0');
 
-    div.webkitCreateShadowRoot();
+    div.createShadowRoot();
     shouldBe('internals.countElementShadow(shadowRoot)', '1');
 
-    div.webkitCreateShadowRoot();
+    div.createShadowRoot();
     shouldBe('internals.countElementShadow(shadowRoot)', '1');
 });
 
 testCase(function()
 {
     debug('Should be counted by each shadow root (multiple shadow root case)');
-    youngerShadowRoot = host.webkitCreateShadowRoot();
+    youngerShadowRoot = host.createShadowRoot();
 
     var div = createDOM('div', {}, createShadowRoot());
 

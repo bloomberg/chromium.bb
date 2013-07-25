@@ -15,7 +15,7 @@ function computedBackgroundColor(elem) {
 
 var container = document.getElementById('container');
 
-var shadowRoot = container.webkitCreateShadowRoot();
+var shadowRoot = container.createShadowRoot();
 
 var link = document.createElement('link');
 link.setAttribute('rel', 'stylesheet');

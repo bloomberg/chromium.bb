@@ -17,7 +17,7 @@ function createInput(name) {
 }
 
 function runTest() {
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     var shadowInput = createInput('shadow');
     shadowRoot.appendChild(shadowInput);
 

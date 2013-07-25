@@ -10,7 +10,7 @@
 if (window.internals)
     internals.settings.setAuthorShadowDOMForAnyElementEnabled(true);
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 shadowRoot.innerHTML = "<shadow></shadow><span>(after)</span>";
 </script>
 

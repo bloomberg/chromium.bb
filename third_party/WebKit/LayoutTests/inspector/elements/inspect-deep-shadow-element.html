@@ -20,7 +20,7 @@ function test()
             InspectorTest.completeTest();
         }
     }
-    InspectorTest.evaluateInConsole("inspect(host.webkitShadowRoot.firstChild.firstChild.firstChild)");
+    InspectorTest.evaluateInConsole("inspect(host.shadowRoot.firstChild.firstChild.firstChild)");
 }
 
 </script>
@@ -40,7 +40,7 @@ Tests that inspect element action works for deep shadow elements.
 
 <script>
     var host = document.querySelector('#host');
-    var sr = host.webkitCreateShadowRoot();
+    var sr = host.createShadowRoot();
     sr.innerHTML = "<div><div><span id='shadow'>Shadow</span></div></div>";
 </script>
 

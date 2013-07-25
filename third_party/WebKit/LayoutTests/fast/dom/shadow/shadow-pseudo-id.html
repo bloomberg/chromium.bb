@@ -25,22 +25,22 @@ div::foobar {
 <div id="host3"></div>
 
 <script>
-var shadowRoot1 = host1.webkitCreateShadowRoot();
+var shadowRoot1 = host1.createShadowRoot();
 var div1 = document.createElement('div');
 div1.innerHTML = "pseudo is x-shadow: This should be red.";
-div1.webkitPseudo = "x-shadow";
+div1.pseudo = "x-shadow";
 shadowRoot1.appendChild(div1);
 
-var shadowRoot2 = host2.webkitCreateShadowRoot();
+var shadowRoot2 = host2.createShadowRoot();
 var div2 = document.createElement('div');
 div2.innerHTML = "pseudo is -test: This should not be red.";
-div2.webkitPseudo = "-test";
+div2.pseudo = "-test";
 shadowRoot2.appendChild(div2);
 
-var shadowRoot3 = host3.webkitCreateShadowRoot();
+var shadowRoot3 = host3.createShadowRoot();
 var div3 = document.createElement('div');
 div3.innerHTML = "pseudo is foobar: This should not be red.";
-div3.webkitPseudo = "foobar";
+div3.pseudo = "foobar";
 shadowRoot3.appendChild(div3);
 </script>
 

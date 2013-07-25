@@ -8,7 +8,7 @@ if (window.testRunner)
 
 var a = document.querySelector('a');
 var b = document.querySelector('b');
-var sr = a.webkitCreateShadowRoot();
+var sr = a.createShadowRoot();
 sr.innerHTML = '<content></content>';
 var content = sr.firstChild;
 

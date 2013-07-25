@@ -8,7 +8,7 @@
 description('Calling ShadowRoot.cloneNode() should throw a DataCloneError exception.');
 
 var host = document.createElement('div');
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 shouldThrow('shadowRoot.cloneNode()', '"DataCloneError: An object could not be cloned."');
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

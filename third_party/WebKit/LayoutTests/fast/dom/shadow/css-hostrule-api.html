@@ -9,7 +9,7 @@
 <script>
 description("Test whether CSSHostRule API works correctly or not.");
 var host = document.getElementById('host');
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 shadowRoot.innerHTML = '<style id="style1">@host {}</style><div>Shadow Text</div>';
   
 debug("Before inserting a border rule into @host @-rules:");

@@ -3,7 +3,7 @@
 <head>
 <script>
 function runTest() {
-  var shadow = document.querySelector('#test2').webkitCreateShadowRoot();
+  var shadow = document.querySelector('#test2').createShadowRoot();
   var template = document.querySelector('template');
   shadow.appendChild(template.content);
 }

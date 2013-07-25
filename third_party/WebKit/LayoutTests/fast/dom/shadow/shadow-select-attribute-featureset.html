@@ -110,7 +110,7 @@ testCase(function()
 {
     debug('Multiple ShadowRoot case');
 
-    var anotherShadowRoot = host.webkitCreateShadowRoot();
+    var anotherShadowRoot = host.createShadowRoot();
 
     shadowRoot.innerHTML = '<content select="#foo"></content>';
     anotherShadowRoot.innerHTML = '<content select="#bar"></content><content select="div[baz],.bar"></content>';
@@ -151,7 +151,7 @@ testCase(function()
     shadowRoot.innerHTML = '<content select="#foo"></content>';
 
     var div = document.createElement('div');
-    var nestedShadowRoot = div.webkitCreateShadowRoot();
+    var nestedShadowRoot = div.createShadowRoot();
     nestedShadowRoot.innerHTML = '<content select="#bar"></content>';
     shadowRoot.appendChild(div);
 

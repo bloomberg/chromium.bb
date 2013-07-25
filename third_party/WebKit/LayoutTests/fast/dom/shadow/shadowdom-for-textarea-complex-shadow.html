@@ -22,7 +22,7 @@ var p = document.createElement('p');
 p.innerHTML = "paragraph<b>bold</b>paragraph";
 host.appendChild(p);
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 
 // <content></content><div style="margin: 20px"><shadow></shadow></div>
 shadowRoot.appendChild(document.createElement('content'));

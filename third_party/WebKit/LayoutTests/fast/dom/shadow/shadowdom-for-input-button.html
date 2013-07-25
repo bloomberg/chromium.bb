@@ -36,19 +36,19 @@ if (window.internals)
 <script>
 var hosts1 = document.querySelectorAll('#shadow input');
 for (var i = 0; i < hosts1.length; ++i)
-    hosts1[i].webkitCreateShadowRoot().innerHTML = '[<shadow></shadow>]';
+    hosts1[i].createShadowRoot().innerHTML = '[<shadow></shadow>]';
 
 var hosts2 = document.querySelectorAll('#no-shadow input');
 for (var i = 0; i < hosts2.length; ++i)
-    hosts2[i].webkitCreateShadowRoot().innerHTML = '[]';
+    hosts2[i].createShadowRoot().innerHTML = '[]';
 
 var hosts3 = document.querySelectorAll('#only-shadow input');
 for (var i = 0; i < hosts3.length; ++i)
-    hosts3[i].webkitCreateShadowRoot().innerHTML = '<shadow />';
+    hosts3[i].createShadowRoot().innerHTML = '<shadow />';
 
 var hosts4 = document.querySelectorAll('#complex-shadow input');
 for (var i = 0; i < hosts4.length; ++i)
-    hosts4[i].webkitCreateShadowRoot().innerHTML = 'prefix <span style="color:red;">&hearts;</span><shadow></shadow> suffix';
+    hosts4[i].createShadowRoot().innerHTML = 'prefix <span style="color:red;">&hearts;</span><shadow></shadow> suffix';
 </script>
 
 </body>

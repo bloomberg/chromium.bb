@@ -5,7 +5,7 @@
 <script>
 if (window.testRunner)
     window.testRunner.waitUntilDone();
-var root = document.querySelector('#host').webkitCreateShadowRoot();
+var root = document.querySelector('#host').createShadowRoot();
 root.innerHTML = '<style>invalid { }</style>' +
                  'text<content></content>';
 window.setTimeout(function() {

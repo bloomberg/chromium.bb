@@ -12,7 +12,7 @@
 
         var a = document.getElementById("A");
         var b = document.getElementById("B");
-        shadow = b.webkitCreateShadowRoot();
+        shadow = b.createShadowRoot();
         shouldBeDefined("shadow.innerHTML");
         shouldBeDefined("shadow.getElementById");
         shadow.innerHTML = "<style scoped>div { color: red; }</style><content></content><div id='C'>CCC</div>";

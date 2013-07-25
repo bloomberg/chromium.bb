@@ -41,7 +41,7 @@ Tests that $0 works with shadow dom.
 <div><div><div id="host"></div></div></div>
 <script>
   var host = document.querySelector('#host');
-  var sr = host.webkitCreateShadowRoot();
+  var sr = host.createShadowRoot();
   sr.innerHTML = "<div><div><div id='shadow'><input id='user-agent-host' type='range'></div></div></div>";
 </script>
 

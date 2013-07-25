@@ -4,10 +4,10 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function webkitCreateShadowRoot(id)
+function createShadowRoot(id)
 {
     var container = document.getElementById("container");
-    var root = container.webkitCreateShadowRoot();
+    var root = container.createShadowRoot();
     root.innerHTML = "<div id='" + id + "'></div>";
 }
 
@@ -30,15 +30,15 @@ function test()
         function testCreateShadowRoot(next)
         {
             InspectorTest.evaluateInPage(
-                "webkitCreateShadowRoot('shadow-1')",
-                expandAndDumpContainerNode("===== After webkitCreateShadowRoot =====", next));
+                "createShadowRoot('shadow-1')",
+                expandAndDumpContainerNode("===== After createShadowRoot =====", next));
         },
 
         function testCreateSecondShadowRoot(next)
         {
             InspectorTest.evaluateInPage(
-                "webkitCreateShadowRoot('shadow-2')",
-                expandAndDumpContainerNode("===== After second webkitCreateShadowRoot =====", next));
+                "createShadowRoot('shadow-2')",
+                expandAndDumpContainerNode("===== After second createShadowRoot =====", next));
         }
     ]);
 

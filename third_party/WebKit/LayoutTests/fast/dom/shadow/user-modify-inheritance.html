@@ -34,7 +34,7 @@ function getUserModifyProperty(id) {
 }
 
 function prepareNodeInShadowRoot(host, contentEditableAttributeValueForNode) {
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     var nodeInShadow = document.createElement('div');
     if (contentEditableAttributeValueForNode != null)
         nodeInShadow.setAttribute('contenteditable', contentEditableAttributeValueForNode);

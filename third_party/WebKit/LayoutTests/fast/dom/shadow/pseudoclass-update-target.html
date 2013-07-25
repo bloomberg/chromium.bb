@@ -19,7 +19,7 @@ if (window.testRunner)
 
 location.hash = '#target1';
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 shadowRoot.innerHTML = '<content select="div:target"></content>';
 
 setTimeout(function() {

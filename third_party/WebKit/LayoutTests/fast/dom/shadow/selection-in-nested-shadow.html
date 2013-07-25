@@ -12,12 +12,12 @@
 <pre id="console"></pre>
 
 <script>
-var shadowRoot1 = host1.webkitCreateShadowRoot();
+var shadowRoot1 = host1.createShadowRoot();
 shadowRoot1.innerHTML = '<div id="target1">Element in Shadow DOM</div>';
 
-var shadowRoot2 = host2.webkitCreateShadowRoot();
+var shadowRoot2 = host2.createShadowRoot();
 var host3 = document.createElement('div');
-var shadowRoot3 = host3.webkitCreateShadowRoot();
+var shadowRoot3 = host3.createShadowRoot();
 shadowRoot2.appendChild(host3);
 shadowRoot3.innerHTML = '<div id="target2">Element in nested Shadow DOM</div>';
 

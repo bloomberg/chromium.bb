@@ -14,21 +14,21 @@ jsTestIsAsync = true;
 function createElementLikeDetails()
 {
     var details = document.createElement('div');
-    var shadowRoot = details.webkitCreateShadowRoot();
+    var shadowRoot = details.createShadowRoot();
 
     shadowRoot.innerHTML = '<content select="div.summary"></content><content></content>';
 
     var defaultSummary = document.createElement('div');
-    defaultSummary.webkitCreateShadowRoot().innerHTML = 'Default Summary';
+    defaultSummary.createShadowRoot().innerHTML = 'Default Summary';
     shadowRoot.firstChild.appendChild(defaultSummary);
 
     return details;    
 }
 
-var shadowRoot1 = host.webkitCreateShadowRoot();
+var shadowRoot1 = host.createShadowRoot();
 shadowRoot1.innerHTML = 'something 1';
 
-var shadowRoot2 = host.webkitCreateShadowRoot();
+var shadowRoot2 = host.createShadowRoot();
 var details = createElementLikeDetails();
 details.innerHTML = '<shadow id="shadow">something 2</shadow>';
 shadowRoot2.appendChild(details);

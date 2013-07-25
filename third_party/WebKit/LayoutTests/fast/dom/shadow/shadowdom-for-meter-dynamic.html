@@ -13,7 +13,7 @@ if (window.internals)
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 shadowRoot.innerHTML = "<shadow></shadow><span>(after)</span>";
 
 setTimeout(function() {

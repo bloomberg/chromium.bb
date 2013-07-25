@@ -17,7 +17,7 @@
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 shadowRoot.innerHTML = '<content select="#selected"></content>';
 
 setTimeout(function() {

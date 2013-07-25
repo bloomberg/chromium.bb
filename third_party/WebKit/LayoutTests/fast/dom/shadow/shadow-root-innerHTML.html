@@ -17,7 +17,7 @@ if (window.testRunner) {
 
 host = document.createElement("div");
 document.body.appendChild(host);
-root = host.webkitCreateShadowRoot();
+root = host.createShadowRoot();
 
 var div1 = document.createElement("div");
 div1.setAttribute("id", "div1");

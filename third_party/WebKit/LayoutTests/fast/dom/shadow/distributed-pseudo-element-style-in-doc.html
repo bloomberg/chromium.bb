@@ -17,7 +17,7 @@
 <script>
 function runTest() {
   var host = document.querySelector('#shadowhost');
-  var shadow = host.webkitCreateShadowRoot();
+  var shadow = host.createShadowRoot();
   shadow.innerHTML = document.querySelector('template').innerHTML;
 }
 </script>

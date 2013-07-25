@@ -7,11 +7,11 @@
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 shadowRoot.innerHTML = "<p>oldest shadow</p>"
 
 setTimeout(function() {
-    var shadowRoot2 = host.webkitCreateShadowRoot();
+    var shadowRoot2 = host.createShadowRoot();
     shadowRoot2.innerHTML = "<p>younger shadow</p>";
 
     if (window.testRunner)

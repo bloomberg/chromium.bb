@@ -20,9 +20,9 @@ var A = createDiv('A');
 var B = createDiv('B');
 var C = createDiv('C');
 var D = createDiv('D');
-var shadowRootA = A.webkitCreateShadowRoot();
-var shadowRootB = B.webkitCreateShadowRoot();
-var shadowRootC = C.webkitCreateShadowRoot();
+var shadowRootA = A.createShadowRoot();
+var shadowRootB = B.createShadowRoot();
+var shadowRootC = C.createShadowRoot();
 
 shadowRootA.appendChild(B);
 shadowRootB.appendChild(C);

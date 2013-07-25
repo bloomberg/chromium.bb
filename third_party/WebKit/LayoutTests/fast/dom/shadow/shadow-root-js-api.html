@@ -21,7 +21,7 @@ shouldThrow("new window.WebKitShadowRoot(document.createElement('div'))");
 
 var shadowHost = document.createElement('div');
 document.body.appendChild(shadowHost);
-var shadowRoot = shadowHost.webkitCreateShadowRoot();
+var shadowRoot = shadowHost.createShadowRoot();
 
 shouldBeTrue("shadowRoot instanceof window.WebKitShadowRoot");
 
@@ -57,7 +57,7 @@ shouldBeNull("shadowRoot.querySelector('.foo')");
 shouldBe("shadowRoot.querySelectorAll('div')", "[div1, div2]");
 shouldBe("shadowRoot.querySelectorAll('foo')", "[]");
 
-var youngerShadowRoot = shadowHost.webkitCreateShadowRoot();
+var youngerShadowRoot = shadowHost.createShadowRoot();
 shouldNotBe("youngerShadowRoot", "shadowRoot");
 
 

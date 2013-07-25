@@ -7,7 +7,7 @@
 <div id="host1"></div>
 
 <script>
-var shadowRoot1 = host1.webkitCreateShadowRoot();
+var shadowRoot1 = host1.createShadowRoot();
 shadowRoot1.innerHTML =
     '<div id="host2">' +
         '<content><div title="debugstop">content fallback element</div></content>' +
@@ -16,7 +16,7 @@ shadowRoot1.innerHTML =
     '</div>';
 
 var host2 = shadowRoot1.getElementById('host2');
-var shadowRoot2 = host2.webkitCreateShadowRoot();
+var shadowRoot2 = host2.createShadowRoot();
 shadowRoot2.innerHTML =
     '<div id="host3">' +
         '<content select="div"></content>' + 
@@ -25,7 +25,7 @@ shadowRoot2.innerHTML =
     '</div>';
 
 var host3 = shadowRoot2.getElementById('host3');
-var shadowRoot3 = host3.webkitCreateShadowRoot();
+var shadowRoot3 = host3.createShadowRoot();
 shadowRoot3.innerHTML =
     '<content select="div"></content>'
 

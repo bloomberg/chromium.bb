@@ -12,8 +12,8 @@ description('Confirms shadow.olderShadowRoot returns correct ShadowRoot');
 function testCase(f)
 {
     host = document.createElement('div');
-    oldestShadowRoot = host.webkitCreateShadowRoot();
-    youngerShadowRoot = host.webkitCreateShadowRoot();
+    oldestShadowRoot = host.createShadowRoot();
+    youngerShadowRoot = host.createShadowRoot();
 
     container.appendChild(host);
 
@@ -73,8 +73,8 @@ testCase(function()
 {
     debug('nested ShadowDOM case');
     nestedHost = document.createElement('div');
-    nestedOldestShadowRoot = nestedHost.webkitCreateShadowRoot();
-    nestedYoungerShadowRoot = nestedHost.webkitCreateShadowRoot();
+    nestedOldestShadowRoot = nestedHost.createShadowRoot();
+    nestedYoungerShadowRoot = nestedHost.createShadowRoot();
     oldestShadowRoot.appendChild(nestedHost);
 
     shadow1 = document.createElement('shadow');

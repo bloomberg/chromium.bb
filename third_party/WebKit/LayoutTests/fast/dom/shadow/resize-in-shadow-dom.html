@@ -19,7 +19,7 @@ function createBox(name) {
     return div;
 }
 
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 var box = createBox('dark');
 shadowRoot.appendChild(box);
 

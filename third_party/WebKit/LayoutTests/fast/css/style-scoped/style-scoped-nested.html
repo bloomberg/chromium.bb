@@ -42,7 +42,7 @@ document.getElementById("parent").appendChild(styleForParent);
 debug("A new scoped style is inserted into the parent node of the target. A tag rule in the inserted scoped style wins an id rule and a class rule in existing styles.");
 shouldBe("window.getComputedStyle(target).color", '"rgb(0, 0, 255)"');
 
-var shadowRoot = target.webkitCreateShadowRoot();
+var shadowRoot = target.createShadowRoot();
 shadowRoot.innerHTML = '<span id="targetInShadow" class="target"></span>';
 var targetInShadow = shadowRoot.getElementById("targetInShadow");
 shadowRoot.applyAuthorStyles = true;

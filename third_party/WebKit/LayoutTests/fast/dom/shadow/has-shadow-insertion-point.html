@@ -40,7 +40,7 @@ function doTest() {
     shadowRoot.innerHTML = "<div><div><div><shadow></shadow></div></div></div>";
     shouldBeTrue("internals.hasShadowInsertionPoint(shadowRoot)");
 
-    youngerShadowRoot = host.webkitCreateShadowRoot(host);
+    youngerShadowRoot = host.createShadowRoot(host);
     // Modifying older shadow root or younger shadow root doesn't affect the other.
     shouldBeTrue("internals.hasShadowInsertionPoint(shadowRoot)");
     shouldBeFalse("internals.hasShadowInsertionPoint(youngerShadowRoot)");
@@ -57,13 +57,13 @@ function doTest() {
 debug('In the case host is in document');
 host = document.createElement('div');
 wrapper.appendChild(host);
-shadowRoot = host.webkitCreateShadowRoot();
+shadowRoot = host.createShadowRoot();
 doTest();
 wrapper.innerHTML = "";
 
 debug('In the case host is not in document');
 host = document.createElement('div');
-shadowRoot = host.webkitCreateShadowRoot();
+shadowRoot = host.createShadowRoot();
 doTest();
 wrapper.innerHTML = "";
 
@@ -72,7 +72,7 @@ var host = document.createElement('div');
 var shadow = document.createElement('shadow');
 var div1 = document.createElement('div');
 var div2 = document.createElement('div');
-var shadowRoot = host.webkitCreateShadowRoot();
+var shadowRoot = host.createShadowRoot();
 div1.appendChild(shadow);
 shouldBeFalse('internals.hasShadowInsertionPoint(shadowRoot)');
 shadowRoot.appendChild(div1);

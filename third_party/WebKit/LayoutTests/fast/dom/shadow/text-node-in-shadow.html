@@ -9,7 +9,7 @@ span {
 <script>
 function testChildTextOfShadowRoot() {
     var host = document.getElementById("host");
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     var span = document.createElement('span')
     span.textContent = "foo";
     shadowRoot.appendChild(span);
@@ -20,7 +20,7 @@ function testChildTextOfShadowRoot() {
 
 function testChildTextOfShadowRootWithResetStyleInheritance() {
     var host = document.getElementById("hostResetStyleInheritance");
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     var span = document.createElement('span')
     span.textContent = "foo";
     shadowRoot.appendChild(span);
@@ -32,7 +32,7 @@ function testChildTextOfShadowRootWithResetStyleInheritance() {
 
 function testDistributedText() {
     var host = document.getElementById("hostWithDistribution");
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     shadowRoot.innerHTML = "<span id='span1'><content></content></span>"
     document.body.offsetLeft;
     shadowRoot.getElementById("span1").style.fontSize = '5em';
@@ -40,7 +40,7 @@ function testDistributedText() {
 
 function testDistributedTextWithResetStyleInheritance() {
     var host = document.getElementById("hostResetStyleInheritanceWithDistribution");
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     shadowRoot.innerHTML = "<span id='span2'><content id='content'></content></span>"
     shadowRoot.getElementById("content").resetStyleInheritance = true;
     document.body.offsetLeft;

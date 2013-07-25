@@ -12,7 +12,7 @@ testRunner.dumpAsText();
 testRunner.waitUntilDone();
 
 (function() {
-  var aDivShadow = aDiv.webkitCreateShadowRoot();
+  var aDivShadow = aDiv.createShadowRoot();
   var bDiv = document.createElement("div");
   aDivShadow.appendChild(bDiv);
 

@@ -10,11 +10,11 @@
 <pre id="console"></pre>
 
 <script>
-var shadowRoot1 = host1.webkitCreateShadowRoot();
+var shadowRoot1 = host1.createShadowRoot();
 shadowRoot1.innerHTML = '<div id="host2"><content select="span"><div id="fallback">fallback element</div></content><div id="div">This should be selected.</div></div>';
 
 var host2 = shadowRoot1.getElementById('host2');
-var shadowRoot2 = host2.webkitCreateShadowRoot();
+var shadowRoot2 = host2.createShadowRoot();
 shadowRoot2.innerHTML = '<content select="div"></content>';
 
 var content = shadowRoot2.getElementsByTagName('content').item(0);

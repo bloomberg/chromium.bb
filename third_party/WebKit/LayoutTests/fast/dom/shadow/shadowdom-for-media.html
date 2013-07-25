@@ -11,7 +11,7 @@
 
 <script>
 function addShadowDOM(host) {
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     shadowRoot.innerHTML = "<div style='margin: 10px'><shadow></shadow></div>"
     return shadowRoot;
 }

@@ -16,14 +16,14 @@
 <div id="host4">
 </div>
 <script>
-host1.webkitCreateShadowRoot().innerHTML = "<td>C</td><td>D</td>"
-host2.webkitCreateShadowRoot().innerHTML = "<td>H</td><content /><td>J</td>";
-host3.webkitCreateShadowRoot().innerHTML = "<content select='no-match'><td>L</td></content>";
+host1.createShadowRoot().innerHTML = "<td>C</td><td>D</td>"
+host2.createShadowRoot().innerHTML = "<td>H</td><content /><td>J</td>";
+host3.createShadowRoot().innerHTML = "<content select='no-match'><td>L</td></content>";
 
 var td = document.createElement("td");
 td.innerHTML = "M";
 host4.appendChild(td);
-shadow4 = host4.webkitCreateShadowRoot();
+shadow4 = host4.createShadowRoot();
 shadow4.innerHTML = "<table border><tr id='contentParent'></tr></table>";
 shadow4.getElementById("contentParent").appendChild(document.createElement("content"));
 </script>
