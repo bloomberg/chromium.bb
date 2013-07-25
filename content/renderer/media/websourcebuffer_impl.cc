@@ -4,9 +4,26 @@
 
 #include "content/renderer/media/websourcebuffer_impl.h"
 
+#include "base/float_util.h"
 #include "media/filters/chunk_demuxer.h"
 
 namespace content {
+
+static base::TimeDelta DoubleToTimeDelta(double time) {
+  DCHECK(!base::IsNaN(time));
+  DCHECK_GE(time, 0);
+  if (time == std::numeric_limits<double>::infinity())
+    return media::kInfiniteDuration();
+
+  base::TimeDelta max_time = base::TimeDelta::FromInternalValue(kint64max - 1);
+  double max_time_in_seconds = max_time.InSecondsF();
+
+  if (time >= max_time_in_seconds)
+    return max_time;
+
+  return base::TimeDelta::FromMicroseconds(
+      time * base::Time::kMicrosecondsPerSecond);
+}
 
 WebSourceBufferImpl::WebSourceBufferImpl(
     const std::string& id, media::ChunkDemuxer* demuxer)
@@ -35,6 +52,10 @@ void WebSourceBufferImpl::append(const unsigned char* data, unsigned length) {
 
 void WebSourceBufferImpl::abort() {
   demuxer_->Abort(id_);
+}
+
+void WebSourceBufferImpl::remove(double start, double end) {
+  demuxer_->Remove(id_, DoubleToTimeDelta(start), DoubleToTimeDelta(end));
 }
 
 bool WebSourceBufferImpl::setTimestampOffset(double offset) {

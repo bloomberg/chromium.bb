@@ -110,6 +110,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // it can accept a new segment.
   void Abort(const std::string& id);
 
+  // Remove buffers between |start| and |end| for the source buffer
+  // associated with |id|.
+  void Remove(const std::string& id, base::TimeDelta start,
+              base::TimeDelta end);
+
   // Returns the current presentation duration.
   double GetDuration();
   double GetDuration_Locked();
@@ -119,7 +124,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   void SetDuration(double duration);
 
   // Sets a time |offset| to be applied to subsequent buffers appended to the
-  // source buffer assicated with |id|. Returns true if the offset is set
+  // source buffer associated with |id|. Returns true if the offset is set
   // properly, false if the offset cannot be applied because we're in the
   // middle of parsing a media segment.
   bool SetTimestampOffset(const std::string& id, base::TimeDelta offset);

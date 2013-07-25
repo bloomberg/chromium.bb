@@ -144,6 +144,15 @@ class ChunkDemuxerStream : public DemuxerStream {
   // Returns true if buffers were successfully added.
   bool Append(const StreamParser::BufferQueue& buffers);
 
+  // Removes buffers between |start| and |end| according to the steps
+  // in the "Coded Frame Removal Algorithm" in the Media Source
+  // Extensions Spec.
+  // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-coded-frame-removal
+  //
+  // |duration| is the current duration of the presentation. It is
+  // required by the computation outlined in the spec.
+  void Remove(TimeDelta start, TimeDelta end, TimeDelta duration);
+
   // Signal to the stream that duration has changed to |duration|.
   void OnSetDuration(TimeDelta duration);
 
@@ -475,6 +484,12 @@ bool ChunkDemuxerStream::Append(const StreamParser::BufferQueue& buffers) {
     CompletePendingReadIfPossible_Locked();
 
   return true;
+}
+
+void ChunkDemuxerStream::Remove(TimeDelta start, TimeDelta end,
+                                TimeDelta duration) {
+  base::AutoLock auto_lock(lock_);
+  stream_->Remove(start, end, duration);
 }
 
 void ChunkDemuxerStream::OnSetDuration(TimeDelta duration) {
@@ -941,6 +956,19 @@ void ChunkDemuxer::Abort(const std::string& id) {
   DCHECK(!id.empty());
   CHECK(IsValidId(id));
   source_state_map_[id]->Abort();
+}
+
+void ChunkDemuxer::Remove(const std::string& id, base::TimeDelta start,
+                          base::TimeDelta end) {
+  DVLOG(1) << "Remove(" << id << ", " << start.InSecondsF()
+           << ", " << end.InSecondsF() << ")";
+  base::AutoLock auto_lock(lock_);
+
+  if (id == source_id_audio_ && audio_)
+    audio_->Remove(start, end, duration_);
+
+  if (id == source_id_video_ && video_)
+    video_->Remove(start, end, duration_);
 }
 
 double ChunkDemuxer::GetDuration() {

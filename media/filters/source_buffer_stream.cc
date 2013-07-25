@@ -469,6 +469,64 @@ bool SourceBufferStream::Append(
   return true;
 }
 
+void SourceBufferStream::Remove(base::TimeDelta start, base::TimeDelta end,
+                                base::TimeDelta duration) {
+  DCHECK(start >= base::TimeDelta()) << start.InSecondsF();
+  DCHECK(start < end) << "start " << start.InSecondsF()
+                      << " end " << end.InSecondsF();
+  DCHECK(duration != kNoTimestamp());
+
+  base::TimeDelta remove_end_timestamp = duration;
+  base::TimeDelta keyframe_timestamp = FindKeyframeAfterTimestamp(end);
+  if (keyframe_timestamp != kNoTimestamp()) {
+    remove_end_timestamp = keyframe_timestamp;
+  } else if (end < remove_end_timestamp) {
+    remove_end_timestamp = end;
+  }
+
+  RangeList::iterator itr = ranges_.begin();
+
+  while (itr != ranges_.end()) {
+    SourceBufferRange* range = *itr;
+    if (range->GetStartTimestamp() >= remove_end_timestamp)
+      break;
+
+    // Split off any remaining end piece and add it to |ranges_|.
+    SourceBufferRange* new_range =
+        range->SplitRange(remove_end_timestamp, false);
+    if (new_range) {
+      itr = ranges_.insert(++itr, new_range);
+      --itr;
+    }
+
+    // If the current range now is completely covered by the removal
+    // range then delete it and move on.
+    if (start <= range->GetStartTimestamp()) {
+      if (selected_range_ == range)
+          SetSelectedRange(NULL);
+
+        delete range;
+        itr = ranges_.erase(itr);
+        continue;
+    }
+
+    // Truncate the current range so that it only contains data before
+    // the removal range.
+    BufferQueue saved_buffers;
+    range->TruncateAt(start, &saved_buffers, false);
+
+    // Check to see if the current playback position was removed and
+    // update the selected range appropriately.
+    if (!saved_buffers.empty()) {
+      SetSelectedRange(NULL);
+      SetSelectedRangeIfNeeded(saved_buffers.front()->GetDecodeTimestamp());
+    }
+
+    // Move on to the next range.
+    ++itr;
+  }
+}
+
 void SourceBufferStream::ResetSeekState() {
   SetSelectedRange(NULL);
   track_buffer_.clear();

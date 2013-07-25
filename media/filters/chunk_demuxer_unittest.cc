@@ -2659,4 +2659,15 @@ TEST_F(ChunkDemuxerTest, TestGCDuringSeek) {
   CheckExpectedRanges(kSourceId, "{ [500,592) [792,815) }");
 }
 
+TEST_F(ChunkDemuxerTest, RemoveBeforeInitSegment) {
+    EXPECT_CALL(*this, DemuxerOpened());
+    demuxer_->Initialize(
+        &host_, CreateInitDoneCB(kNoTimestamp(), PIPELINE_OK));
+
+    EXPECT_EQ(ChunkDemuxer::kOk, AddId(kSourceId, true, true));
+
+    demuxer_->Remove(kSourceId, base::TimeDelta::FromMilliseconds(0),
+                     base::TimeDelta::FromMilliseconds(1));
+}
+
 }  // namespace media

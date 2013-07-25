@@ -108,6 +108,17 @@ class SourceBufferStreamTest : public testing::Test {
     stream_->Seek(timestamp);
   }
 
+  void RemoveInMs(int start, int end, int duration) {
+    Remove(base::TimeDelta::FromMilliseconds(start),
+           base::TimeDelta::FromMilliseconds(end),
+           base::TimeDelta::FromMilliseconds(duration));
+  }
+
+  void Remove(base::TimeDelta start, base::TimeDelta end,
+              base::TimeDelta duration) {
+    stream_->Remove(start, end, duration);
+  }
+
   void CheckExpectedRanges(const std::string& expected) {
     Ranges<base::TimeDelta> r = stream_->GetBufferedTime();
 
@@ -2823,6 +2834,134 @@ TEST_F(SourceBufferStreamTest, EndNotSelected_During_PendingSeek) {
   EXPECT_TRUE(stream_->IsSeekPending());
   stream_->MarkEndOfStream();
   EXPECT_TRUE(stream_->IsSeekPending());
+}
+
+
+// Removing exact start & end of a range.
+TEST_F(SourceBufferStreamTest, Remove_WholeRange1) {
+  Seek(0);
+  NewSegmentAppend("10K 40 70K 100 130K");
+  CheckExpectedRangesByTimestamp("{ [10,160) }");
+  RemoveInMs(10, 160, 160);
+  CheckExpectedRangesByTimestamp("{ }");
+}
+
+// Removal range starts before range and ends exactly at end.
+TEST_F(SourceBufferStreamTest, Remove_WholeRange2) {
+  Seek(0);
+  NewSegmentAppend("10K 40 70K 100 130K");
+  CheckExpectedRangesByTimestamp("{ [10,160) }");
+  RemoveInMs(0, 160, 160);
+  CheckExpectedRangesByTimestamp("{ }");
+}
+
+// Removal range starts at the start of a range and ends beyond the
+// range end.
+TEST_F(SourceBufferStreamTest, Remove_WholeRange3) {
+  Seek(0);
+  NewSegmentAppend("10K 40 70K 100 130K");
+  CheckExpectedRangesByTimestamp("{ [10,160) }");
+  RemoveInMs(10, 200, 200);
+  CheckExpectedRangesByTimestamp("{ }");
+}
+
+// Removal range starts before range start and ends after the range end.
+TEST_F(SourceBufferStreamTest, Remove_WholeRange4) {
+  Seek(0);
+  NewSegmentAppend("10K 40 70K 100 130K");
+  CheckExpectedRangesByTimestamp("{ [10,160) }");
+  RemoveInMs(0, 200, 200);
+  CheckExpectedRangesByTimestamp("{ }");
+}
+
+// Removes multiple ranges.
+TEST_F(SourceBufferStreamTest, Remove_WholeRange5) {
+  Seek(0);
+  NewSegmentAppend("10K 40 70K 100 130K");
+  NewSegmentAppend("1000K 1030 1060K 1090 1120K");
+  NewSegmentAppend("2000K 2030 2060K 2090 2120K");
+  CheckExpectedRangesByTimestamp("{ [10,160) [1000,1150) [2000,2150) }");
+  RemoveInMs(10, 3000, 3000);
+  CheckExpectedRangesByTimestamp("{ }");
+}
+
+// Verifies a [0-infinity) range removes everything.
+TEST_F(SourceBufferStreamTest, Remove_ZeroToInfinity) {
+  Seek(0);
+  NewSegmentAppend("10K 40 70K 100 130K");
+  NewSegmentAppend("1000K 1030 1060K 1090 1120K");
+  NewSegmentAppend("2000K 2030 2060K 2090 2120K");
+  CheckExpectedRangesByTimestamp("{ [10,160) [1000,1150) [2000,2150) }");
+  Remove(base::TimeDelta(), kInfiniteDuration(), kInfiniteDuration());
+  CheckExpectedRangesByTimestamp("{ }");
+}
+
+// Removal range starts at the beginning of the range and ends in the
+// middle of the range. This test verifies that full GOPs are removed.
+TEST_F(SourceBufferStreamTest, Remove_Partial1) {
+  Seek(0);
+  NewSegmentAppend("10K 40 70K 100 130K");
+  NewSegmentAppend("1000K 1030 1060K 1090 1120K");
+  CheckExpectedRangesByTimestamp("{ [10,160) [1000,1150) }");
+  RemoveInMs(0, 80, 2200);
+  CheckExpectedRangesByTimestamp("{ [130,160) [1000,1150) }");
+}
+
+// Removal range starts in the middle of a range and ends at the exact
+// end of the range.
+TEST_F(SourceBufferStreamTest, Remove_Partial2) {
+  Seek(0);
+  NewSegmentAppend("10K 40 70K 100 130K");
+  NewSegmentAppend("1000K 1030 1060K 1090 1120K");
+  CheckExpectedRangesByTimestamp("{ [10,160) [1000,1150) }");
+  RemoveInMs(40, 160, 2200);
+  CheckExpectedRangesByTimestamp("{ [10,40) [1000,1150) }");
+}
+
+// Removal range starts and ends within a range.
+TEST_F(SourceBufferStreamTest, Remove_Partial3) {
+  Seek(0);
+  NewSegmentAppend("10K 40 70K 100 130K");
+  NewSegmentAppend("1000K 1030 1060K 1090 1120K");
+  CheckExpectedRangesByTimestamp("{ [10,160) [1000,1150) }");
+  RemoveInMs(40, 120, 2200);
+  CheckExpectedRangesByTimestamp("{ [10,40) [130,160) [1000,1150) }");
+}
+
+// Removal range starts in the middle of one range and ends in the
+// middle of another range.
+TEST_F(SourceBufferStreamTest, Remove_Partial4) {
+  Seek(0);
+  NewSegmentAppend("10K 40 70K 100 130K");
+  NewSegmentAppend("1000K 1030 1060K 1090 1120K");
+  NewSegmentAppend("2000K 2030 2060K 2090 2120K");
+  CheckExpectedRangesByTimestamp("{ [10,160) [1000,1150) [2000,2150) }");
+  RemoveInMs(40, 2030, 2200);
+  CheckExpectedRangesByTimestamp("{ [10,40) [2060,2150) }");
+}
+
+// Test behavior when the current positing is removed and new buffers
+// are appended over the removal range.
+TEST_F(SourceBufferStreamTest, Remove_CurrentPosition) {
+  Seek(0);
+  NewSegmentAppend("0K 30 60 90K 120 150 180K 210 240 270K 300 330");
+  CheckExpectedRangesByTimestamp("{ [0,360) }");
+  CheckExpectedBuffers("0K 30 60 90K 120");
+
+  // Remove a range that includes the next buffer (i.e., 150).
+  RemoveInMs(150, 210, 360);
+  CheckExpectedRangesByTimestamp("{ [0,150) [270,360) }");
+
+  // Verify that no next buffer is returned.
+  CheckNoNextBuffer();
+
+  // Append some buffers to fill the gap that was created.
+  NewSegmentAppend("120K 150 180 210K 240");
+  CheckExpectedRangesByTimestamp("{ [0,360) }");
+
+  // Verify that buffers resume at the next keyframe after the
+  // current position.
+  CheckExpectedBuffers("210K 240 270K 300 330");
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.

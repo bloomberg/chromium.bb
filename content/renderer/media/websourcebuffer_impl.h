@@ -26,6 +26,8 @@ class WebSourceBufferImpl : public WebKit::WebSourceBuffer {
   virtual WebKit::WebTimeRanges buffered() OVERRIDE;
   virtual void append(const unsigned char* data, unsigned length) OVERRIDE;
   virtual void abort() OVERRIDE;
+  // TODO(acolwell): Add OVERRIDE when Blink-side changes land.
+  virtual void remove(double start, double end);
   virtual bool setTimestampOffset(double offset) OVERRIDE;
   virtual void removedFromMediaSource() OVERRIDE;
 
