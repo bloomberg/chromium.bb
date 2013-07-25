@@ -40,6 +40,7 @@
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderView.h"
@@ -418,6 +419,7 @@ void RenderImage::paintAreaElementFocusRing(PaintInfo& paintInfo)
 
     // FIXME: Clip path instead of context when Skia pathops is ready.
     // https://crbug.com/251206
+    GraphicsContextStateSaver savedContext(*paintInfo.context);
     paintInfo.context->clip(absoluteContentBox());
     paintInfo.context->drawFocusRing(path, outlineWidth,
         areaElementStyle->outlineOffset(),
