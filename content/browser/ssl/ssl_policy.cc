@@ -24,17 +24,6 @@
 #include "webkit/common/resource_type.h"
 
 
-namespace {
-
-const char kDot = '.';
-
-bool IsIntranetHost(const std::string& host) {
-  const size_t dot = host.find(kDot);
-  return dot == std::string::npos || dot == host.length() - 1;
-}
-
-}  // namespace
-
 namespace content {
 
 SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
@@ -122,14 +111,6 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
   if (!entry->GetSSL().cert_id) {
     entry->GetSSL().security_style = SECURITY_STYLE_UNAUTHENTICATED;
     return;
-  }
-
-  if (!(entry->GetSSL().cert_status & net::CERT_STATUS_COMMON_NAME_INVALID)) {
-    // CAs issue certificates for intranet hosts to everyone.  Therefore, we
-    // mark intranet hosts as being non-unique.
-    if (IsIntranetHost(entry->GetURL().host())) {
-      entry->GetSSL().cert_status |= net::CERT_STATUS_NON_UNIQUE_NAME;
-    }
   }
 
   if (net::IsCertStatusError(entry->GetSSL().cert_status)) {
