@@ -409,9 +409,10 @@ namespace downloads {
                             GetFileIconCallback callback);
 
     // Open the downloaded file now if the $ref:DownloadItem is complete;
-    // returns an error through $ref:runtime.lastError otherwise. An
-    // $ref:onChanged event will fire when the item is opened for the first
-    // time.
+    // returns an error through $ref:runtime.lastError otherwise. Requires the
+    // <code>"downloads.open"</code> permission in addition to the
+    // <code>"downloads"</code> permission. An $ref:onChanged event will fire
+    // when the item is opened for the first time.
     // |downloadId|: The identifier for the downloaded file.
     static void open(long downloadId);
 

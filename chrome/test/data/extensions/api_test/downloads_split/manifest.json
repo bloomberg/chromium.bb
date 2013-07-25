@@ -6,6 +6,8 @@
   "incognito": "split",
   "web_accessible_resources": ["empty.html"],
   "permissions": [
+    "downloads",
+    "downloads.open",
     "http://*/*",
     "file://*"
   ]

@@ -5197,7 +5197,10 @@ Make sure you do not expose any sensitive information.
         Use your microphone and camera
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS" desc="Permission string for access to downloads.">
-        Manage your downloads and open downloaded files
+        Manage your downloads
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS_OPEN" desc="Permission string for access to downloads.">
+        Open downloaded files
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE" desc="Permission string for write access to the file system.">
         Write to files that you have opened in the application

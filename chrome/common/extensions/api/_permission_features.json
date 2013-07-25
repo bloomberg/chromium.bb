@@ -193,6 +193,10 @@
       "extension", "packaged_app"
     ]
   },
+  "downloads.open": {
+    "channel": "beta",
+    "extension_types": ["extension"]
+  },
   "dial": {
     "channel": "stable",
     "extension_types": ["extension"],

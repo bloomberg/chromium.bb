@@ -65,6 +65,7 @@ class PermissionMessage {
     kWebConnectable,
     kActivityLogPrivate,
     kBluetoothDevices,
+    kDownloadsOpen,
     kEnumBoundary,
   };
 
