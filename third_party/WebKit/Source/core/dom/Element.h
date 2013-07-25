@@ -32,6 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/CollectionType.h"
+#include "core/page/FocusDirection.h"
 #include "core/platform/ScrollTypes.h"
 #include "core/rendering/RegionOversetState.h"
 
@@ -507,6 +508,10 @@ public:
     virtual void focus(bool restorePreviousSelection = true, FocusDirection = FocusDirectionNone);
     virtual void updateFocusAppearance(bool restorePreviousSelection);
     virtual void blur();
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection);
+    virtual void dispatchBlurEvent(Element* newFocusedElement);
+    void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement);
+    void dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement);
 
     String innerText();
     String outerText();

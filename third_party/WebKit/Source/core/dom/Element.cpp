@@ -50,7 +50,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentSharedObjectPool.h"
 #include "core/dom/ElementRareData.h"
+#include "core/dom/EventDispatcher.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/FocusEvent.h"
 #include "core/dom/FullscreenController.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
@@ -2057,6 +2059,32 @@ void Element::blur()
         else
             doc->setFocusedElement(0);
     }
+}
+
+void Element::dispatchFocusEvent(Element* oldFocusedElement, FocusDirection)
+{
+    RefPtr<FocusEvent> event = FocusEvent::create(eventNames().focusEvent, false, false, document()->defaultView(), 0, oldFocusedElement);
+    EventDispatcher::dispatchEvent(this, FocusEventDispatchMediator::create(event.release()));
+}
+
+void Element::dispatchBlurEvent(Element* newFocusedElement)
+{
+    RefPtr<FocusEvent> event = FocusEvent::create(eventNames().blurEvent, false, false, document()->defaultView(), 0, newFocusedElement);
+    EventDispatcher::dispatchEvent(this, BlurEventDispatchMediator::create(event.release()));
+}
+
+void Element::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement)
+{
+    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(eventType == eventNames().focusinEvent || eventType == eventNames().DOMFocusInEvent);
+    dispatchScopedEventDispatchMediator(FocusInEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, oldFocusedElement)));
+}
+
+void Element::dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement)
+{
+    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(eventType == eventNames().focusoutEvent || eventType == eventNames().DOMFocusOutEvent);
+    dispatchScopedEventDispatchMediator(FocusOutEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, newFocusedElement)));
 }
 
 String Element::innerText()

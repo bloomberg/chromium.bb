@@ -32,7 +32,6 @@
 #include "core/dom/TreeScope.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/inspector/InspectorCounters.h"
-#include "core/page/FocusDirection.h"
 #include "core/platform/TreeShared.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/rendering/style/RenderStyleConstants.h"
@@ -669,8 +668,6 @@ public:
 
     void dispatchSubtreeModifiedEvent();
     bool dispatchDOMActivateEvent(int detail, PassRefPtr<Event> underlyingEvent);
-    void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement);
-    void dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement);
 
     bool dispatchKeyEvent(const PlatformKeyboardEvent&);
     bool dispatchWheelEvent(const PlatformWheelEvent&);
@@ -681,8 +678,6 @@ public:
     void dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions = SendNoEvents, SimulatedClickVisualOptions = ShowPressedLook);
 
     virtual bool dispatchBeforeLoadEvent(const String& sourceURL);
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection);
-    virtual void dispatchBlurEvent(Element* newFocusedElement);
     virtual void dispatchChangeEvent();
     virtual void dispatchInputEvent();
 
