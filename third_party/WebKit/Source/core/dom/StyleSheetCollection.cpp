@@ -3,11 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
  * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
- * Copyright (C) 2008, 2009, 2011, 2012 Google Inc. All rights reserved.
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
- * Copyright (C) Research In Motion Limited 2010-2011. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -66,17 +65,25 @@ void StyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool createdBy
     // since styles outside of the body and head continue to be shunted into the head
     // (and thus can shift to end up before dynamically added DOM content that is also
     // outside the body).
-    if (createdByParser && document()->body()) {
+    if (createdByParser && document()->body())
         m_styleSheetCandidateNodes.parserAdd(node);
-        return;
-    }
+    else
+        m_styleSheetCandidateNodes.add(node);
 
-    m_styleSheetCandidateNodes.add(node);
+    if (!isHTMLStyleElement(node))
+        return;
+
+    ContainerNode* scopingNode = toHTMLStyleElement(node)->scopingNode();
+    if (!isTreeScopeRoot(scopingNode))
+        m_scopingNodesForStyleScoped.add(scopingNode);
 }
 
-void StyleSheetCollection::removeStyleSheetCandidateNode(Node* node)
+void StyleSheetCollection::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
 {
     m_styleSheetCandidateNodes.remove(node);
+
+    if (!isTreeScopeRoot(scopingNode))
+        m_scopingNodesForStyleScoped.remove(scopingNode);
 }
 
 void StyleSheetCollection::collectStyleSheets(DocumentStyleSheetCollection* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
@@ -264,14 +271,25 @@ bool StyleSheetCollection::updateActiveStyleSheets(DocumentStyleSheetCollection*
         document()->clearStyleResolver();
     } else {
         StyleResolver* styleResolver = document()->styleResolver();
+        styleResolver->setBuildScopedStyleTreeInDocumentOrder(!scopingNodesForStyleScoped());
         if (styleResolverUpdateType == Reset) {
-            styleResolver->resetAuthorStyle();
+            if (DocumentOrderedList* styleScopedScopingNodes = scopingNodesForStyleScoped()) {
+                for (DocumentOrderedList::iterator it = styleScopedScopingNodes->begin(); it != styleScopedScopingNodes->end(); ++it)
+                    styleResolver->resetAuthorStyle(toContainerNode(*it));
+            }
+            if (ListHashSet<Node*, 4>* removedNodes = scopingNodesRemoved()) {
+                for (ListHashSet<Node*, 4>::iterator it = removedNodes->begin(); it != removedNodes->end(); ++it)
+                    styleResolver->resetAuthorStyle(toContainerNode(*it));
+            }
+            ASSERT(m_treeScope->rootNode() == document());
+            styleResolver->resetAuthorStyle(toContainerNode(m_treeScope->rootNode()));
             styleResolver->appendAuthorStyleSheets(0, activeCSSStyleSheets);
         } else {
             ASSERT(styleResolverUpdateType == Additive);
             styleResolver->appendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
         }
     }
+    m_scopingNodesForStyleScoped.didRemoveScopingNodes();
     m_activeAuthorStyleSheets.swap(activeCSSStyleSheets);
     m_styleSheetsForStyleSheetList.swap(styleSheets);
 

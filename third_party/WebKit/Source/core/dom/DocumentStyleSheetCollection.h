@@ -63,7 +63,7 @@ public:
     const Vector<RefPtr<CSSStyleSheet> >& injectedAuthorStyleSheets() const;
 
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
-    void removeStyleSheetCandidateNode(Node*);
+    void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode = 0);
 
     void clearPageUserSheet();
     void updatePageUserSheet();
@@ -100,6 +100,7 @@ public:
     void setUsesBeforeAfterRulesOverride(bool b) { m_usesBeforeAfterRulesOverride = b; }
     bool usesRemUnits() const { return m_usesRemUnits; }
     void setUsesRemUnit(bool b) { m_usesRemUnits = b; }
+    bool hasScopedStyleSheet() { return m_collectionForDocument.scopingNodesForStyleScoped(); }
 
     void combineCSSFeatureFlags(const RuleFeatureSet&);
     void resetCSSFeatureFlags(const RuleFeatureSet&);

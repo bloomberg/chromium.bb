@@ -233,9 +233,9 @@ void DocumentStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool c
     m_collectionForDocument.addStyleSheetCandidateNode(node, createdByParser);
 }
 
-void DocumentStyleSheetCollection::removeStyleSheetCandidateNode(Node* node)
+void DocumentStyleSheetCollection::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
 {
-    m_collectionForDocument.removeStyleSheetCandidateNode(node);
+    m_collectionForDocument.removeStyleSheetCandidateNode(node, scopingNode);
 }
 
 static bool styleSheetsUseRemUnits(const Vector<RefPtr<CSSStyleSheet> >& sheets)

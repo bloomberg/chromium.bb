@@ -30,8 +30,10 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
+#include "core/dom/StyleSheetScopingNodeList.h"
 #include "core/dom/TreeScope.h"
 #include "wtf/FastAllocBase.h"
+#include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -39,6 +41,7 @@
 
 namespace WebCore {
 
+class ContainerNode;
 class CSSStyleSheet;
 class DocumentStyleSheetCollection;
 class Node;
@@ -52,7 +55,7 @@ public:
     explicit StyleSheetCollection(TreeScope*);
 
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
-    void removeStyleSheetCandidateNode(Node*);
+    void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode);
 
     Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() { return m_activeAuthorStyleSheets; }
     Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList() { return m_styleSheetsForStyleSheetList; }
@@ -60,6 +63,8 @@ public:
     const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
 
     DocumentOrderedList& styleSheetCandidateNodes() { return m_styleSheetCandidateNodes; }
+    DocumentOrderedList* scopingNodesForStyleScoped() { return m_scopingNodesForStyleScoped.scopingNodes(); }
+    ListHashSet<Node*, 4>* scopingNodesRemoved() { return m_scopingNodesForStyleScoped.scopingNodesRemoved(); }
 
     enum StyleResolverUpdateType {
         Reconstruct,
@@ -85,6 +90,7 @@ private:
     bool m_hadActiveLoadingStylesheet;
 
     DocumentOrderedList m_styleSheetCandidateNodes;
+    StyleSheetScopingNodeList m_scopingNodesForStyleScoped;
 };
 
 }

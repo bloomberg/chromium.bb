@@ -103,6 +103,12 @@ private:
     ScopedStyleRegistrationState m_scopedStyleRegistrationState;
 };
 
+inline bool isHTMLStyleElement(Node* node)
+{
+    ASSERT(node);
+    return node->hasTagName(HTMLNames::styleTag);
+}
+
 inline HTMLStyleElement* toHTMLStyleElement(Node* node)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::styleTag));

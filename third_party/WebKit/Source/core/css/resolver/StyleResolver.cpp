@@ -143,8 +143,7 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
             fontSelector()->addFontFaceRule((*it)->fontFaceRule());
     }
 #endif
-
-    // FIXME: Stylesheet candidate nodes are sorted in document order, but scoping nodes are not sorted.
+    m_styleTree.setBuildInDocumentOrder(!styleSheetCollection->hasScopedStyleSheet());
     appendAuthorStyleSheets(0, styleSheetCollection->activeAuthorStyleSheets());
 }
 
@@ -173,11 +172,6 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
 
     if (RuntimeEnabledFeatures::cssViewportEnabled())
         collectViewportRules();
-}
-
-void StyleResolver::resetAuthorStyle()
-{
-    m_styleTree.clear();
 }
 
 void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)

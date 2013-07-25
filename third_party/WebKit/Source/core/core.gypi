@@ -1939,6 +1939,8 @@
             'dom/StyleElement.h',
             'dom/StyleSheetCollection.cpp',
             'dom/StyleSheetCollection.h',
+            'dom/StyleSheetScopingNodeList.cpp',
+            'dom/StyleSheetScopingNodeList.h',
             'dom/TagNodeList.cpp',
             'dom/TagNodeList.h',
             'dom/Text.cpp',

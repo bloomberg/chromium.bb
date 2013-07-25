@@ -29,6 +29,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventSender.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -90,41 +91,40 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
     if (!inDocument())
         return;
 
-    bool scopedValueChanged = false;
     if (scoped) {
+        if (m_scopedStyleRegistrationState == RegisteredAsScoped)
+            return;
+
         // As any <style> in a shadow tree is treated as "scoped",
         // need to remove the <style> from its shadow root.
+        ContainerNode* scopingNode = 0;
         if (m_scopedStyleRegistrationState == RegisteredInShadowRoot) {
-            unregisterWithScopingNode(containingShadowRoot());
-            scopedValueChanged = true;
+            scopingNode = containingShadowRoot();
+            unregisterWithScopingNode(scopingNode);
         }
+        document()->styleSheetCollection()->removeStyleSheetCandidateNode(this, scopingNode);
+        registerWithScopingNode(true);
 
-        if (m_scopedStyleRegistrationState != RegisteredAsScoped) {
-            registerWithScopingNode(true);
-            scopedValueChanged = true;
-        }
-
-        if (scopedValueChanged)
-            document()->modifiedStyleSheet(sheet());
+        document()->styleSheetCollection()->addStyleSheetCandidateNode(this, false);
+        document()->modifiedStyleSheet(sheet());
         return;
     }
 
     // If the <style> was scoped, need to remove the <style> from the scoping
     // element, i.e. the parent node.
-    if (m_scopedStyleRegistrationState == RegisteredAsScoped) {
-        unregisterWithScopingNode(parentNode());
-        scopedValueChanged = true;
-    }
+    if (m_scopedStyleRegistrationState != RegisteredAsScoped)
+        return;
+
+    document()->styleSheetCollection()->removeStyleSheetCandidateNode(this, parentNode());
+    unregisterWithScopingNode(parentNode());
 
     // As any <style> in a shadow tree is treated as "scoped",
     // need to add the <style> to its shadow root.
-    if (isInShadowTree() && m_scopedStyleRegistrationState != RegisteredInShadowRoot) {
+    if (isInShadowTree())
         registerWithScopingNode(false);
-        scopedValueChanged = true;
-    }
 
-    if (scopedValueChanged)
-        document()->modifiedStyleSheet(sheet());
+    document()->styleSheetCollection()->addStyleSheetCandidateNode(this, false);
+    document()->modifiedStyleSheet(sheet());
 }
 
 void HTMLStyleElement::finishParsingChildren()
@@ -190,8 +190,8 @@ void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint)
     // That is, because willRemove() is also called if an ancestor is removed from the document.
     // Now, if we want to register <style scoped> even if it's not inDocument,
     // we'd need to find a way to discern whether that is the case, or whether <style scoped> itself is about to be removed.
+    ContainerNode* scope = 0;
     if (m_scopedStyleRegistrationState != NotRegistered) {
-        ContainerNode* scope;
         if (m_scopedStyleRegistrationState == RegisteredInShadowRoot) {
             scope = containingShadowRoot();
             if (!scope)
@@ -202,7 +202,7 @@ void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint)
     }
 
     if (insertionPoint->inDocument())
-        StyleElement::removedFromDocument(document(), this);
+        StyleElement::removedFromDocument(document(), this, scope);
 }
 
 void HTMLStyleElement::didNotifySubtreeInsertions(ContainerNode* insertionPoint)

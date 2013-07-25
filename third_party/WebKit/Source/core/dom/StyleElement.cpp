@@ -28,6 +28,7 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Element.h"
 #include "core/dom/ScriptableDocumentParser.h"
+#include "core/html/HTMLStyleElement.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
@@ -65,11 +66,11 @@ void StyleElement::processStyleSheet(Document* document, Element* element)
     process(element);
 }
 
-void StyleElement::removedFromDocument(Document* document, Element* element)
+void StyleElement::removedFromDocument(Document* document, Element* element, ContainerNode* scopingNode)
 {
     ASSERT(document);
     ASSERT(element);
-    document->styleSheetCollection()->removeStyleSheetCandidateNode(element);
+    document->styleSheetCollection()->removeStyleSheetCandidateNode(element, scopingNode);
 
     RefPtr<StyleSheet> removedSheet = m_sheet;
 
@@ -87,7 +88,7 @@ void StyleElement::clearDocumentData(Document* document, Element* element)
         m_sheet->clearOwnerNode();
 
     if (element->inDocument())
-        document->styleSheetCollection()->removeStyleSheetCandidateNode(element);
+        document->styleSheetCollection()->removeStyleSheetCandidateNode(element, isHTMLStyleElement(element) ? toHTMLStyleElement(element)->scopingNode() :  0);
 }
 
 void StyleElement::childrenChanged(Element* element)
