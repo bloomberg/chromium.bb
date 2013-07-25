@@ -72,16 +72,29 @@ CString TextEncoding::encode(const String& string, UnencodableHandling handling)
     if (string.isEmpty())
         return "";
 
+    OwnPtr<TextCodec> textCodec = newTextCodec(*this);
+    CString encodedString;
+    if (string.is8Bit())
+        encodedString = textCodec->encode(string.characters8(), string.length(), handling);
+    else
+        encodedString = textCodec->encode(string.characters16(), string.length(), handling);
+    return encodedString;
+}
+
+CString TextEncoding::normalizeAndEncode(const String& string, UnencodableHandling handling) const
+{
+    if (!m_name)
+        return CString();
+
+    if (string.isEmpty())
+        return "";
+
     // Text exclusively containing Latin-1 characters (U+0000..U+00FF) is left
     // unaffected by NFC. This is effectively the same as saying that all
     // Latin-1 text is already normalized to NFC.
     // Source: http://unicode.org/reports/tr15/
     if (string.is8Bit())
         return newTextCodec(*this)->encode(string.characters8(), string.length(), handling);
-
-    // FIXME: What's the right place to do normalization?
-    // It's a little strange to do it inside the encode function.
-    // Perhaps normalization should be an explicit step done before calling encode.
 
     const UChar* source = string.characters16();
     size_t length = string.length();
