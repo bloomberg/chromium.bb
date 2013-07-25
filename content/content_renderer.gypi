@@ -346,8 +346,6 @@
     'renderer/pepper/plugin_module.h',
     'renderer/pepper/plugin_object.cc',
     'renderer/pepper/plugin_object.h',
-    'renderer/pepper/ppapi_interface_factory.cc',
-    'renderer/pepper/ppapi_interface_factory.h',
     'renderer/pepper/ppb_audio_impl.cc',
     'renderer/pepper/ppb_audio_impl.h',
     'renderer/pepper/ppb_broker_impl.cc',

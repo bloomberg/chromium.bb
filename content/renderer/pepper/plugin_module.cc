@@ -13,11 +13,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/time/time.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
-#include "content/renderer/pepper/ppapi_interface_factory.h"
 #include "content/renderer/pepper/ppb_gpu_blacklist_private_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/ppb_proxy_impl.h"
@@ -292,7 +292,7 @@ const PPB_Testing_Dev testing_interface = {
 const void* InternalGetInterface(const char* name) {
   // Allow custom interface factories first stab at the GetInterface call.
   const void* custom_interface =
-      PpapiInterfaceFactoryManager::GetInstance()->GetInterface(name);
+      GetContentClient()->renderer()->CreatePPAPIInterface(name);
   if (custom_interface)
     return custom_interface;
 

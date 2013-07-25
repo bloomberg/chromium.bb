@@ -10,7 +10,6 @@
 #include "content/renderer/pepper/mock_plugin_delegate.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppapi_interface_factory.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
@@ -120,48 +119,6 @@ void PpapiUnittest::ShutdownModule() {
 void PpapiUnittest::SetViewSize(int width, int height) const {
   instance_->view_data_.rect = PP_FromGfxRect(gfx::Rect(0, 0, width, height));
   instance_->view_data_.clip_rect = instance_->view_data_.rect;
-}
-
-// Tests whether custom PPAPI interface factories are called when PPAPI
-// interfaces are requested.
-class PpapiCustomInterfaceFactoryTest : public PpapiUnittest {
- public:
-  PpapiCustomInterfaceFactoryTest() {}
-  virtual ~PpapiCustomInterfaceFactoryTest() {}
-
-  bool result() {
-    return result_;
-  }
-
-  void reset_result() {
-    result_ = false;
-  }
-
-  static const void* InterfaceFactory(const std::string& interface_name) {
-    result_ = true;
-    return NULL;
-  }
-
- private:
-  static bool result_;
-};
-
-bool PpapiCustomInterfaceFactoryTest::result_ = false;
-
-// This test validates whether custom PPAPI interface factories are invoked in
-// response to PluginModule::GetPluginInterface calls.
-TEST_F(PpapiCustomInterfaceFactoryTest, BasicFactoryTest) {
-  PpapiInterfaceFactoryManager::GetInstance()->RegisterFactory(
-      PpapiCustomInterfaceFactoryTest::InterfaceFactory);
-  (*PluginModule::GetLocalGetInterfaceFunc())("DummyInterface");
-  EXPECT_TRUE(result());
-
-  reset_result();
-  PpapiInterfaceFactoryManager::GetInstance()->UnregisterFactory(
-      PpapiCustomInterfaceFactoryTest::InterfaceFactory);
-
-  (*PluginModule::GetLocalGetInterfaceFunc())("DummyInterface");
-  EXPECT_FALSE(result());
 }
 
 }  // namespace content

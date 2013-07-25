@@ -28,7 +28,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
-#include "content/renderer/pepper/ppapi_interface_factory.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
@@ -107,11 +106,6 @@ class MemoryObserver : public base::MessageLoop::TaskObserver {
  private:
   DISALLOW_COPY_AND_ASSIGN(MemoryObserver);
 };
-
-
-const void* ContentPPAPIInterfaceFactory(const std::string& interface_name) {
-  return GetContentClient()->renderer()->CreatePPAPIInterface(interface_name);
-}
 
 }  // namespace
 
@@ -202,10 +196,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   }
 
 #if defined(ENABLE_PLUGINS)
-  PpapiInterfaceFactoryManager* factory_manager =
-      PpapiInterfaceFactoryManager::GetInstance();
-  factory_manager->RegisterFactory(ContentPPAPIInterfaceFactory);
-
   // Load pepper plugins before engaging the sandbox.
   PepperPluginRegistry::GetInstance();
 #endif
