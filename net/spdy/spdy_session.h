@@ -590,17 +590,21 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // stream may hold the last reference to the session.
   void CloseCreatedStreamIterator(CreatedStreamSet::iterator it, int status);
 
-  // Calls CloseActiveStreamIterator() and then SendResetStreamFrame().
+  // Calls EnqueueResetStreamFrame() and then
+  // CloseActiveStreamIterator().
   void ResetStreamIterator(ActiveStreamMap::iterator it,
                            SpdyRstStreamStatus status,
                            const std::string& description);
 
-  // Send a RST_STREAM frame with the given parameters. There must be
-  // no active stream with the given ID.
-  void SendResetStreamFrame(SpdyStreamId stream_id,
-                            RequestPriority priority,
-                            SpdyRstStreamStatus status,
-                            const std::string& description);
+  // Send a RST_STREAM frame with the given parameters. There should
+  // either be no active stream with the given ID, or that active
+  // stream should be closed shortly after this function is called.
+  //
+  // TODO(akalin): Rename this to EnqueueResetStreamFrame().
+  void EnqueueResetStreamFrame(SpdyStreamId stream_id,
+                               RequestPriority priority,
+                               SpdyRstStreamStatus status,
+                               const std::string& description);
 
   // Calls DoReadLoop and then if |availability_state_| is
   // STATE_CLOSED, calls RemoveFromPool().

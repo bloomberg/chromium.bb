@@ -134,10 +134,6 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
   }
 }
 
-SpdyStream::Delegate* SpdyStream::GetDelegate() {
-  return delegate_;
-}
-
 void SpdyStream::PushedStreamReplayData() {
   DCHECK_EQ(type_, SPDY_PUSH_STREAM);
   DCHECK_NE(stream_id_, 0u);

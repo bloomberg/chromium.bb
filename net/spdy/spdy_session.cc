@@ -1033,21 +1033,22 @@ void SpdySession::CloseCreatedStreamIterator(CreatedStreamSet::iterator it,
 void SpdySession::ResetStreamIterator(ActiveStreamMap::iterator it,
                                       SpdyRstStreamStatus status,
                                       const std::string& description) {
+  // Send the RST_STREAM frame first as CloseActiveStreamIterator()
+  // may close us.
   SpdyStreamId stream_id = it->first;
   RequestPriority priority = it->second.stream->priority();
+  EnqueueResetStreamFrame(stream_id, priority, status, description);
+
   // Removes any pending writes for the stream except for possibly an
   // in-flight one.
   CloseActiveStreamIterator(it, ERR_SPDY_PROTOCOL_ERROR);
-
-  SendResetStreamFrame(stream_id, priority, status, description);
 }
 
-void SpdySession::SendResetStreamFrame(SpdyStreamId stream_id,
-                                       RequestPriority priority,
-                                       SpdyRstStreamStatus status,
-                                       const std::string& description) {
+void SpdySession::EnqueueResetStreamFrame(SpdyStreamId stream_id,
+                                          RequestPriority priority,
+                                          SpdyRstStreamStatus status,
+                                          const std::string& description) {
   DCHECK_NE(stream_id, 0u);
-  DCHECK(active_streams_.find(stream_id) == active_streams_.end());
 
   net_log().AddEvent(
       NetLog::TYPE_SPDY_SESSION_SEND_RST_STREAM,
@@ -1394,7 +1395,11 @@ void SpdySession::DcheckClosed() const {
 void SpdySession::StartGoingAway(SpdyStreamId last_good_stream_id,
                                  Error status) {
   DCHECK_GE(availability_state_, STATE_GOING_AWAY);
+
   // The loops below are carefully written to avoid reentrancy problems.
+  //
+  // TODO(akalin): Any of the functions below can cause |this| to be
+  // deleted, so handle that below (and add tests for it).
 
   for (int i = 0; i < NUM_PRIORITIES; ++i) {
     PendingStreamRequestQueue queue;
@@ -1688,7 +1693,13 @@ void SpdySession::DeleteStream(scoped_ptr<SpdyStream> stream, int status) {
 
   write_queue_.RemovePendingWritesForStream(stream->GetWeakPtr());
 
+  // |stream->OnClose()| may end up closing |this|, so detect that.
+  base::WeakPtr<SpdySession> weak_this = GetWeakPtr();
+
   stream->OnClose(status);
+
+  if (!weak_this)
+    return;
 
   switch (availability_state_) {
     case STATE_AVAILABLE:
@@ -1773,7 +1784,7 @@ void SpdySession::OnStreamError(SpdyStreamId stream_id,
   if (it == active_streams_.end()) {
     // We still want to send a frame to reset the stream even if we
     // don't know anything about it.
-    SendResetStreamFrame(
+    EnqueueResetStreamFrame(
         stream_id, IDLE, RST_STREAM_PROTOCOL_ERROR, description);
     return;
   }
@@ -1947,9 +1958,9 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   if (availability_state_ == STATE_GOING_AWAY) {
     // TODO(akalin): This behavior isn't in the SPDY spec, although it
     // probably should be.
-    SendResetStreamFrame(stream_id, request_priority,
-                         RST_STREAM_REFUSED_STREAM,
-                         "OnSyn received when going away");
+    EnqueueResetStreamFrame(stream_id, request_priority,
+                            RST_STREAM_REFUSED_STREAM,
+                            "OnSyn received when going away");
     return;
   }
 
@@ -1957,8 +1968,8 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
     std::string description = base::StringPrintf(
         "Received invalid OnSyn associated stream id %d for stream %d",
         associated_stream_id, stream_id);
-    SendResetStreamFrame(stream_id, request_priority,
-                         RST_STREAM_REFUSED_STREAM, description);
+    EnqueueResetStreamFrame(stream_id, request_priority,
+                            RST_STREAM_REFUSED_STREAM, description);
     return;
   }
 
@@ -1969,8 +1980,9 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   // Verify that the response had a URL for us.
   GURL gurl = GetUrlFromHeaderBlock(headers, GetProtocolVersion(), true);
   if (!gurl.is_valid()) {
-    SendResetStreamFrame(stream_id, request_priority, RST_STREAM_PROTOCOL_ERROR,
-                         "Pushed stream url was invalid: " + gurl.spec());
+    EnqueueResetStreamFrame(
+        stream_id, request_priority, RST_STREAM_PROTOCOL_ERROR,
+        "Pushed stream url was invalid: " + gurl.spec());
     return;
   }
 
@@ -1978,7 +1990,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   ActiveStreamMap::iterator associated_it =
       active_streams_.find(associated_stream_id);
   if (associated_it == active_streams_.end()) {
-    SendResetStreamFrame(
+    EnqueueResetStreamFrame(
         stream_id, request_priority, RST_STREAM_INVALID_STREAM,
         base::StringPrintf(
             "Received OnSyn with inactive associated stream %d",
@@ -1992,7 +2004,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   if (trusted_spdy_proxy_.Equals(host_port_pair())) {
     // Disallow pushing of HTTPS content.
     if (gurl.SchemeIs("https")) {
-      SendResetStreamFrame(
+      EnqueueResetStreamFrame(
           stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
           base::StringPrintf(
               "Rejected push of Cross Origin HTTPS content %d",
@@ -2001,7 +2013,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   } else {
     GURL associated_url(associated_it->second.stream->GetUrlFromHeaders());
     if (associated_url.GetOrigin() != gurl.GetOrigin()) {
-      SendResetStreamFrame(
+      EnqueueResetStreamFrame(
           stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
           base::StringPrintf(
               "Rejected Cross Origin Push Stream %d",
@@ -2015,9 +2027,10 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
       unclaimed_pushed_streams_.lower_bound(gurl);
   if (pushed_it != unclaimed_pushed_streams_.end() &&
       pushed_it->first == gurl) {
-    SendResetStreamFrame(stream_id, request_priority, RST_STREAM_PROTOCOL_ERROR,
-                         "Received duplicate pushed stream with url: " +
-                         gurl.spec());
+    EnqueueResetStreamFrame(
+        stream_id, request_priority, RST_STREAM_PROTOCOL_ERROR,
+        "Received duplicate pushed stream with url: " +
+        gurl.spec());
     return;
   }
 

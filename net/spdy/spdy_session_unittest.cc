@@ -1833,6 +1833,83 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedMutuallyClosingStreams) {
   EXPECT_TRUE(session == NULL);
 }
 
+// Delegate that closes a given session when the stream is closed.
+class SessionClosingDelegate : public test::StreamDelegateDoNothing {
+ public:
+  SessionClosingDelegate(const base::WeakPtr<SpdyStream>& stream,
+                         const base::WeakPtr<SpdySession>& session_to_close)
+      : StreamDelegateDoNothing(stream),
+        session_to_close_(session_to_close) {}
+
+  virtual ~SessionClosingDelegate() {}
+
+  virtual void OnClose(int status) OVERRIDE {
+    session_to_close_->CloseSessionOnError(ERR_ABORTED, "Aborted");
+  }
+
+ private:
+  base::WeakPtr<SpdySession> session_to_close_;
+};
+
+// Close an activated stream that closes its session. Nothing should
+// blow up. This is a regression test for http://crbug.com/263691 .
+TEST_P(SpdySessionTest, CloseActivatedStreamThatClosesSession) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, MEDIUM, true));
+  MockWrite writes[] = {
+    CreateMockWrite(*req, 0),
+  };
+
+  MockRead reads[] = {
+    MockRead(ASYNC, 0, 1)  // EOF
+  };
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+
+  GURL url("http://www.google.com");
+  base::WeakPtr<SpdyStream> spdy_stream =
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
+                                session, url, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream.get() != NULL);
+  EXPECT_EQ(0u, spdy_stream->stream_id());
+
+  SessionClosingDelegate delegate(spdy_stream, session);
+  spdy_stream->SetDelegate(&delegate);
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+  spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
+
+  EXPECT_EQ(0u, spdy_stream->stream_id());
+
+  data.RunFor(1);
+
+  EXPECT_EQ(1u, spdy_stream->stream_id());
+
+  // Ensure we don't crash while closing the stream (which closes the
+  // session).
+  spdy_stream->Cancel();
+
+  EXPECT_EQ(NULL, spdy_stream.get());
+  EXPECT_TRUE(delegate.StreamIsClosed());
+  EXPECT_TRUE(session == NULL);
+}
+
 TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 

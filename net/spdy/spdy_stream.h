@@ -170,7 +170,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // than once. For push streams, calling this may cause buffered data
   // to be sent to the delegate (from a posted task).
   void SetDelegate(Delegate* delegate);
-  Delegate* GetDelegate();
 
   // Detach the delegate from the stream, which must not yet be
   // closed, and cancel it.
