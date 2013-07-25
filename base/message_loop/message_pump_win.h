@@ -17,6 +17,7 @@
 #include "base/message_loop/message_pump_observer.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "base/win/message_window.h"
 #include "base/win/scoped_handle.h"
 
 namespace base {
@@ -169,18 +170,14 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   virtual void ScheduleWork();
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time);
 
-  // Applications can call this to encourage us to process all pending WM_PAINT
-  // messages.  This method will process all paint messages the Windows Message
-  // queue can provide, up to some fixed number (to avoid any infinite loops).
-  void PumpOutPendingPaintMessages();
-
  private:
-  static LRESULT CALLBACK WndProcThunk(HWND window_handle,
-                                       UINT message,
-                                       WPARAM wparam,
-                                       LPARAM lparam);
+  // Handles messages received by |message_window_|.
+  bool HandleMessage(UINT message,
+                     WPARAM wparam,
+                     LPARAM lparam,
+                     LRESULT* result);
+
   virtual void DoRunLoop();
-  void InitMessageWnd();
   void WaitForWork();
   void HandleWorkMessage();
   void HandleTimerMessage();
@@ -188,13 +185,10 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   bool ProcessMessageHelper(const MSG& msg);
   bool ProcessPumpReplacementMessage();
 
-  // Atom representing the registered window class.
-  ATOM atom_;
+  scoped_ptr<MessageFilter> message_filter_;
 
   // A hidden message-only window.
-  HWND message_hwnd_;
-
-  scoped_ptr<MessageFilter> message_filter_;
+  win::MessageWindow message_window_;
 };
 
 //-----------------------------------------------------------------------------
