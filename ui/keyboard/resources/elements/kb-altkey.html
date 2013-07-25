@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-accent-key" attributes="char" on-pointerover="over"
+<polymer-element name="kb-altkey" attributes="char" on-pointerover="over"
     on-pointerout="out" on-pointerup="up">
   <template>
     <style>
@@ -35,7 +35,7 @@
       return !(node.compareDocumentPosition(event.relatedTarget)
           & Node.DOCUMENT_POSITION_CONTAINED_BY);
     };
-    Polymer('kb-accent-key', {
+    Polymer('kb-altkey', {
       over: function(event) {
         if (isRelevantEvent(this, event)) {
           // Dragging over an accent key is equivalent to pressing on the accent

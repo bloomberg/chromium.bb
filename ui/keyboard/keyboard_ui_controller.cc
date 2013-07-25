@@ -19,13 +19,14 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
       content::WebUIDataSource::Create(keyboard::kKeyboardWebUIHost);
 
   source->SetDefaultResource(IDR_KEYBOARD_WEBUI_INDEX);
-
-  source->AddResourcePath("elements/kb-accent-container.html",
-                          IDR_KEYBOARD_ELEMENTS_ACCENT_CONTAINER);
-  source->AddResourcePath("elements/kb-accent-key.html",
-                          IDR_KEYBOARD_ELEMENTS_ACCENT_KEY);
-  source->AddResourcePath("elements/kb-accent-set.html",
-                          IDR_KEYBOARD_ELEMENTS_ACCENT_SET);
+  source->AddResourcePath("elements/kb-altkey.html",
+                          IDR_KEYBOARD_ELEMENTS_ALTKEY);
+  source->AddResourcePath("elements/kb-altkey-container.html",
+                          IDR_KEYBOARD_ELEMENTS_ALTKEY_CONTAINER);
+  source->AddResourcePath("elements/kb-altkey-data.html",
+                          IDR_KEYBOARD_ELEMENTS_ALTKEY_DATA);
+  source->AddResourcePath("elements/kb-altkey-set.html",
+                          IDR_KEYBOARD_ELEMENTS_ALTKEY_SET);
   source->AddResourcePath("elements/kb-key.html", IDR_KEYBOARD_ELEMENTS_KEY);
   source->AddResourcePath("elements/kb-key-base.html",
                           IDR_KEYBOARD_ELEMENTS_KEY_BASE);
@@ -38,6 +39,8 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
                           IDR_KEYBOARD_IMAGES_MICROPHONE);
   source->AddResourcePath("images/microphone-green.svg",
                           IDR_KEYBOARD_IMAGES_MICROPHONE_GREEN);
+  source->AddResourcePath("layouts/latin-accents.js",
+                          IDR_KEYBOARD_LAYOUTS_LATIN_ACCENTS);
   source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
   source->AddResourcePath("polymer.min.js", IDR_KEYBOARD_POLYMER);
   source->AddResourcePath("voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS);

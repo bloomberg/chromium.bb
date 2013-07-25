@@ -7,13 +7,13 @@
 <template>
   <kb-keyset id="qwerty-upper">
     <kb-row class="top">
-      <kb-key>Q</kb-key><kb-key>W</kb-key><kb-key accents="E">E</kb-key><kb-key>R</kb-key>
-      <kb-key>T</kb-key><kb-key>Y</kb-key><kb-key accents="U">U</kb-key>
-      <kb-key accents="I">I</kb-key><kb-key accents="O">O</kb-key><kb-key>P</kb-key>
+      <kb-key>Q</kb-key><kb-key>W</kb-key><kb-key>E</kb-key><kb-key>R</kb-key>
+      <kb-key>T</kb-key><kb-key>Y</kb-key><kb-key>U</kb-key>
+      <kb-key>I</kb-key><kb-key>O</kb-key><kb-key>P</kb-key>
     </kb-row>
     <kb-row>
       <div class="half-key-spacer"></div>
-      <kb-key accents="A">A</kb-key><kb-key>S</kb-key><kb-key>D</kb-key><kb-key>F</kb-key>
+      <kb-key>A</kb-key><kb-key>S</kb-key><kb-key>D</kb-key><kb-key>F</kb-key>
       <kb-key>G</kb-key><kb-key>H</kb-key><kb-key>J</kb-key><kb-key>K</kb-key>
       <kb-key>L</kb-key>
       <div class="half-key-spacer"></div>
@@ -32,68 +32,19 @@
       <kb-key class="dark">.</kb-key>
       <kb-key class="return dark" char="&#000A;">enter</kb-key>
     </kb-row>
-    <kb-accent-container hidden>
-      <kb-accent-set id="E" offset=2>
-        <kb-accent-key>&#x00C9;</kb-accent-key>
-        <kb-accent-key>3</kb-accent-key>
-        <kb-accent-key class="active">E</kb-accent-key>
-        <kb-accent-key>&#x00C8;</kb-accent-key>
-        <kb-accent-key>&#x00CA;</kb-accent-key>
-        <kb-accent-key>&#x00CB;</kb-accent-key>
-        <kb-accent-key>&#x0112;</kb-accent-key>
-      </kb-accent-set>
-      <kb-accent-set id="U" offset=3>
-        <kb-accent-key>&#x00DB;</kb-accent-key>
-        <kb-accent-key>&#x00DA;</kb-accent-key>
-        <kb-accent-key>7</kb-accent-key>
-        <kb-accent-key class="active">U</kb-accent-key>
-        <kb-accent-key>&#x00D9;</kb-accent-key>
-        <kb-accent-key>&#x00DC;</kb-accent-key>
-        <kb-accent-key>&#x016A;</kb-accent-key>
-      </kb-accent-set>
-      <kb-accent-set id="I" offset=4>
-        <kb-accent-key>&#x00CF;</kb-accent-key>
-        <kb-accent-key>&#x00CD;</kb-accent-key>
-        <kb-accent-key>&#x00CC;</kb-accent-key>
-        <kb-accent-key>8</kb-accent-key>
-        <kb-accent-key class="active">I</kb-accent-key>
-        <kb-accent-key>&#x00CE;</kb-accent-key>
-        <kb-accent-key>&#x012A;</kb-accent-key>
-      </kb-accent-set>
-      <kb-accent-set id="O" offset=7>
-        <kb-accent-key>&#x0152;</kb-accent-key>
-        <kb-accent-key>&#x014C;</kb-accent-key>
-        <kb-accent-key>&#x00D4;</kb-accent-key>
-        <kb-accent-key>&#x00D2;</kb-accent-key>
-        <kb-accent-key>&#x00D3;</kb-accent-key>
-        <kb-accent-key>&#x00D5;</kb-accent-key>
-        <kb-accent-key>9</kb-accent-key>
-        <kb-accent-key class="active">O</kb-accent-key>
-        <kb-accent-key>&#x00D6;</kb-accent-key>
-      </kb-accent-set>
-      <kb-accent-set id="A" offset=0>
-        <kb-accent-key class="active">A</kb-accent-key>
-        <kb-accent-key>&#x00C1;</kb-accent-key>
-        <kb-accent-key>&#x00C0;</kb-accent-key>
-        <kb-accent-key>&#x00C2;</kb-accent-key>
-        <kb-accent-key>&#x00C3;</kb-accent-key>
-        <kb-accent-key>&#x00C4;</kb-accent-key>
-        <kb-accent-key>&#x00C5;</kb-accent-key>
-        <kb-accent-key>&#x00C6;</kb-accent-key>
-        <kb-accent-key>&#x0100;</kb-accent-key>
-      </kb-accent-set>
-    </kb-accent-container>
+    <kb-altkey-container hidden>
+    </kb-altkey-container>
   </kb-keyset>
 
   <kb-keyset id="qwerty-lower" isDefault=true>
     <kb-row class="top">
-      <kb-key>q</kb-key><kb-key>w</kb-key><kb-key accents="e">e</kb-key><kb-key>r</kb-key>
-      <kb-key>t</kb-key><kb-key>y</kb-key><kb-key accents="u">u</kb-key>
-      <kb-key accents="i">i</kb-key><kb-key accents="o">o</kb-key><kb-key>p</kb-key>
+      <kb-key>q</kb-key><kb-key>w</kb-key><kb-key>e</kb-key><kb-key>r</kb-key>
+      <kb-key>t</kb-key><kb-key>y</kb-key><kb-key>u</kb-key>
+      <kb-key>i</kb-key><kb-key>o</kb-key><kb-key>p</kb-key>
     </kb-row>
     <kb-row>
       <div class="half-key-spacer"></div>
-      <kb-key accents="a">a</kb-key><kb-key>s</kb-key><kb-key>d</kb-key><kb-key>f</kb-key>
+      <kb-key>a</kb-key><kb-key>s</kb-key><kb-key>d</kb-key><kb-key>f</kb-key>
       <kb-key>g</kb-key><kb-key>h</kb-key><kb-key>j</kb-key><kb-key>k</kb-key>
       <kb-key>l</kb-key>
       <div class="half-key-spacer"></div>
@@ -112,57 +63,8 @@
       <kb-key class="dark">.</kb-key>
       <kb-key class='return dark' char="&#x000A;">enter</kb-key>
     </kb-row>
-    <kb-accent-container hidden>
-      <kb-accent-set id="e" offset=2>
-        <kb-accent-key>&#x00E8;</kb-accent-key>
-        <kb-accent-key>&#x00E9;</kb-accent-key>
-        <kb-accent-key class="active">e</kb-accent-key>
-        <kb-accent-key>3</kb-accent-key>
-        <kb-accent-key>&#x00EA;</kb-accent-key>
-        <kb-accent-key>&#x00EB;</kb-accent-key>
-        <kb-accent-key>&#x0113;</kb-accent-key>
-      </kb-accent-set>
-      <kb-accent-set id="u" offset=3>
-        <kb-accent-key>&#x00F9;</kb-accent-key>
-        <kb-accent-key>&#x00FA;</kb-accent-key>
-        <kb-accent-key>7</kb-accent-key>
-        <kb-accent-key class="active">u</kb-accent-key>
-        <kb-accent-key>&#x00FB;</kb-accent-key>
-        <kb-accent-key>&#x00FC;</kb-accent-key>
-        <kb-accent-key>&#x016B;</kb-accent-key>
-      </kb-accent-set>
-      <kb-accent-set id="i" offset=4>
-        <kb-accent-key>&#x00EE;</kb-accent-key>
-        <kb-accent-key>&#x00ED;</kb-accent-key>
-        <kb-accent-key>&#x00EC;</kb-accent-key>
-        <kb-accent-key>8</kb-accent-key>
-        <kb-accent-key class="active">i</kb-accent-key>
-        <kb-accent-key>&#x00EF;</kb-accent-key>
-        <kb-accent-key>&#x012B;</kb-accent-key>
-      </kb-accent-set>
-      <kb-accent-set id="o" offset=7>
-        <kb-accent-key>&#x00F8;</kb-accent-key>
-        <kb-accent-key>&#x0153;</kb-accent-key>
-        <kb-accent-key>&#x00F6;</kb-accent-key>
-        <kb-accent-key>&#x00F4;</kb-accent-key>
-        <kb-accent-key>&#x00F2;</kb-accent-key>
-        <kb-accent-key>&#x00F5;</kb-accent-key>
-        <kb-accent-key>9</kb-accent-key>
-        <kb-accent-key class="active">o</kb-accent-key>
-        <kb-accent-key>&#x00F3;</kb-accent-key>
-      </kb-accent-set>
-      <kb-accent-set id="a" offset=0>
-        <kb-accent-key class="active">a</kb-accent-key>
-        <kb-accent-key>&#x00E0;</kb-accent-key>
-        <kb-accent-key>&#x00E1;</kb-accent-key>
-        <kb-accent-key>&#x00E2;</kb-accent-key>
-        <kb-accent-key>&#x00E3;</kb-accent-key>
-        <kb-accent-key>&#x00E4;</kb-accent-key>
-        <kb-accent-key>&#x00E5;</kb-accent-key>
-        <kb-accent-key>&#x00E6;</kb-accent-key>
-        <kb-accent-key>&#x0101;</kb-accent-key>
-      </kb-accent-set>
-    </kb-accent-container>
+    <kb-altkey-container hidden>
+    </kb-altkey-container>
   </kb-keyset>
 
   <kb-keyset id="qwerty-symbol">

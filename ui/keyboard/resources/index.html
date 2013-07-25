@@ -13,9 +13,17 @@
     <script src="polymer.min.js"></script>
     <script src="api_adapter.js"></script>
     <script src="voice_input.js"></script>
-    <link rel="import" href="elements/kb-accent-container.html">
-    <link rel="import" href="elements/kb-accent-set.html">
-    <link rel="import" href="elements/kb-accent-key.html">
+    <script src="main.js"></script>
+
+    <!-- TODO(kevers): Dynamically load alternative keys based on locale. -->
+    <script src="layouts/latin-accents.js"></script>
+    <script src="layouts/symbol-altkeys.js"></script>
+
+    <link rel="import" href="elements/kb-altkey-container.html">
+    <link rel="import" href="elements/kb-altkey.html">
+    <link rel="import" href="elements/kb-altkey-data.html">
+    <link rel="import" href="elements/kb-altkey-set.html">
+
     <link rel="import" href="elements/kb-key-base.html">
     <link rel="import" href="elements/kb-key.html">
     <link rel="import" href="elements/kb-keyboard.html">
@@ -26,7 +34,6 @@
     <link id="dvorak" rel="import" href="layouts/dvorak.html">
     <link id="qwerty" rel="import" href="layouts/qwerty.html">
     <!--TODO(stevet): Import 'Open Sans' font. -->
-    <script src="main.js"></script>
   </head>
   <body>
     <kb-keyboard id="keyboard" touch-action="none" layout="qwerty">

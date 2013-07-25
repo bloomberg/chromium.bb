@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-accent-set" attributes="offset">
+<polymer-element name="kb-altkey-set" attributes="offset char">
   <template>
     <style>
       /* TODO(stevet): Migrate this to main.css using custom pseudo
@@ -33,7 +33,7 @@
         */
       }
 
-      content::-webkit-distributed(kb-accent-key) {
+      content::-webkit-distributed(kb-altkey) {
         -webkit-flex: 1 auto;
         background-color: #3b3b3e;
         border-left: 1px solid rgba(0, 0, 0, 0.15);
@@ -43,12 +43,12 @@
         font-weight: 100;
       }
 
-      content::-webkit-distributed(kb-accent-key:first-child) {
+      content::-webkit-distributed(kb-altkey:first-child) {
         border-top-left-radius: 2px;
         border-bottom-left-radius: 2px;
       }
 
-      content::-webkit-distributed(kb-accent-key:last-child) {
+      content::-webkit-distributed(kb-altkey:last-child) {
         border-top-right-radius: 2px;
         border-bottom-right-radius: 2px;
       }
@@ -56,8 +56,8 @@
     <content select="*"></content>
   </template>
   <script>
-    Polymer('kb-accent-set', {
-      offset: 0
+    Polymer('kb-altkey-set', {
+      offset: 0,
     });
   </script>
 </polymer-element>

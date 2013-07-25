@@ -1,5 +1,5 @@
 <!--
-  -- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+  -- Copyright 2013 The Chromium Authors. All rights reserved.
   -- Use of this source code is governed by a BSD-style license that can be
   -- found in the LICENSE file.
   -->
@@ -17,8 +17,9 @@
       }
     </style>
     <content select="kb-row"></content>
-    <content select="kb-accent-container" id="accentContainer"
+    <content select="kb-altkey-container" id="altkeyContainer"
         touch-action="none"></content>
+    <kb-altkey-data id="altkeyMetadata"></kb-altkey-data> 
   </template>
   <script>
     Polymer('kb-keyset', {
@@ -30,23 +31,46 @@
           detail.toKeyset = this.nextKeyset;
       },
       keyLongpress: function(event, detail) {
-        if (detail.accents) {
-          var accentContainer = this.$.accentContainer.getDistributedNodes()[0];
-          var activeAccentKeySet = accentContainer.querySelector('#' +
-              detail.accents);
-          if (!activeAccentKeySet)
-            return;
-          accentContainer.keyset = detail.accents;
-          event.target.classList.remove('active');
-          activeAccentKeySet.style.width = event.target.clientWidth *
-              activeAccentKeySet.childElementCount + 'px';
-          activeAccentKeySet.style.height = event.target.clientHeight + 'px';
-          activeAccentKeySet.style.top = event.target.offsetTop + 'px';
-          var leftOffset = activeAccentKeySet.offset * event.target.clientWidth;
-          activeAccentKeySet.style.left = event.target.offsetLeft - leftOffset +
-              'px';
-          accentContainer.hidden = false;
+        if (!detail.char)
+          return;
+
+        var altkeyContainer = this.$.altkeyContainer.getDistributedNodes()[0];
+        if (!altkeyContainer)
+          return;
+
+        var altkeyMetadata = this.$.altkeyMetadata;
+        var altkeys = altkeyMetadata.getAltkeys(detail.char,
+                                                !!detail.superscript);
+        if (!altkeys)
+          return;
+
+        var id = altkeys.id;
+        var activeAltKeySet = altkeyContainer.querySelector('#' + id);
+        if (!activeAltKeySet) {
+          var keyWidth = event.target.clientWidth;
+          var leftMargin = event.target.offsetLeft;
+          var maxLeftOffset = Math.round(leftMargin / keyWidth);
+          var rightMargin = this.clientWidth - leftMargin - keyWidth;
+          var maxRightOffset = Math.round(rightMargin / keyWidth);
+          activeAltKeySet = altkeyMetadata.createAltkeySet(detail.char,
+                                                           maxLeftOffset,
+                                                           maxRightOffset,
+                                                           detail.superscript);
+          altkeyContainer.appendChild(activeAltKeySet);
         }
+
+        altkeyContainer.keyset = id;
+        event.target.classList.remove('active');
+        activeAltKeySet.style.width = event.target.clientWidth *
+            activeAltKeySet.childElementCount + 'px';
+        activeAltKeySet.style.height = event.target.clientHeight + 'px';
+        activeAltKeySet.style.top = event.target.offsetTop + 'px';
+        var leftOffset = activeAltKeySet.offset * event.target.clientWidth;
+        activeAltKeySet.style.left = event.target.offsetLeft - leftOffset +
+            'px';
+        var nodes = activeAltKeySet.childNodes;
+        nodes[activeAltKeySet.offset].classList.add('active');
+        altkeyContainer.hidden = false;
       }
     });
   </script>

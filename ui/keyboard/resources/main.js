@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ function importHTML(content) {
     });
   }
   return dom;
-};
+}
 
 /**
  * Replace all kb-key-sequence elements with generated kb-key elements.
@@ -41,7 +41,7 @@ function expandHTML(importedContent) {
       element.parentNode.replaceChild(generatedDom, element);
     });
   }
-};
+}
 
 /**
   * Flatten the keysets which represents a keyboard layout. It has two steps:
@@ -54,7 +54,7 @@ function flattenKeysets(content) {
   var importedContent = importHTML(content);
   expandHTML(importedContent);
   return importedContent;
-};
+}
 
 addEventListener('resize', onResize);
 

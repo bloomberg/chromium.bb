@@ -122,7 +122,7 @@
         this.longPressTimer = this.asyncMethod(function() {
           var detail = {
             char: this.char || this.textContent,
-            accents: this.accents
+            superscript: this.superscript
           };
           if (this.keysetRules && this.keysetRules.long != undefined) {
             detail.toKeyset = this.keysetRules.long[TO_KEYSET - OFFSET];

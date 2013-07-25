@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-accent-container" attributes="keyset" on-pointerup="up">
+<polymer-element name="kb-altkey-container" attributes="keyset" on-pointerup="up">
   <template>
     <style>
       @host {
@@ -22,7 +22,7 @@
     <content select="#{{keyset}}"></content>
   </template>
   <script>
-    Polymer('kb-accent-container', {
+    Polymer('kb-altkey-container', {
       resetActiveElement: function() {
         var activeAccentKeySet = this.querySelector('#' + this.keyset);
         var offset = activeAccentKeySet.offset;

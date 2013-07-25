@@ -70,7 +70,7 @@ kb-key.dark {
   border-top: 2px solid #3a3a3c;
 }
 
-kb-accent-key::x-key {
+kb-altkey::x-key {
   bottom: 0;
   height: 1.2em;
   left: 0;
