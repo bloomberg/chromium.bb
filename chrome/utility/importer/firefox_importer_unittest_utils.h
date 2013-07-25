@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
 #include "chrome/utility/importer/nss_decryptor.h"
 
 class FFDecryptorServerChannelListener;

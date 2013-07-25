@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/ppapi_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"

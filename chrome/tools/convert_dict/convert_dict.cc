@@ -18,7 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
-#include "base/process_util.h"
+#include "base/process/memory.h"
 #include "base/strings/string_util.h"
 #include "chrome/tools/convert_dict/aff_reader.h"
 #include "chrome/tools/convert_dict/dic_reader.h"

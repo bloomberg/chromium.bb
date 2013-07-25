@@ -6,7 +6,7 @@
 // It's useful for testing Chrome with a cold database.
 
 #include "base/files/file_path.h"
-#include "base/process_util.h"
+#include "base/process/memory.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/test_file_util.h"

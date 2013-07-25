@@ -31,7 +31,7 @@
 #include "base/platform_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
-#include "base/process_util.h"
+#include "base/process/memory.h"
 #include "base/strings/string_util.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/directory_reader.h"

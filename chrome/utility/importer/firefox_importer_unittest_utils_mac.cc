@@ -10,6 +10,8 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/process/kill.h"
+#include "base/process/launch.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
 #include "ipc/ipc_channel.h"
