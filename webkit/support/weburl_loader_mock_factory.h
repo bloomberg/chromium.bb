@@ -95,11 +95,11 @@ class WebURLLoaderMockFactory {
   typedef std::map<WebURLLoaderMock*, WebKit::WebURLRequest> LoaderToRequestMap;
   LoaderToRequestMap pending_loaders_;
 
-  typedef std::map<WebKit::WebURL, WebKit::WebURLError> URLToErrorMap;
+  typedef std::map<GURL, WebKit::WebURLError> URLToErrorMap;
   URLToErrorMap url_to_error_info_;
 
   // Table of the registered URLs and the responses that they should receive.
-  typedef std::map<WebKit::WebURL, ResponseInfo> URLToResponseMap;
+  typedef std::map<GURL, ResponseInfo> URLToResponseMap;
   URLToResponseMap url_to_reponse_info_;
 
   WebKit::WebURLRequest last_handled_asynchronous_request_;
