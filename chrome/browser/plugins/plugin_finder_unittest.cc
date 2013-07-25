@@ -69,4 +69,5 @@ TEST(PluginFinderTest, JsonSyntax) {
           << "Invalid security status \"" << status_str << "\"";
     }
   }
+  delete version;
 }
