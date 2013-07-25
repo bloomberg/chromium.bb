@@ -284,7 +284,7 @@ deps_os = {
         'src/chrome/tools/test/reference_build/chrome_linux':
             Var('git_url') + '/chromium/reference_builds/chrome_linux.git@216cf5b1b3e97e285e0ee361f54e8f7a30c6af00',
         'src/third_party/chromite':
-            Var('git_url') + '/chromiumos/chromite.git@785fedc51fc430445d8f397440012ea3b489bac9',
+            Var('git_url') + '/chromiumos/chromite.git@93281fa6a9fa1af48aae02d0a9c142a4450af51e',
         'src/third_party/cros_dbus_cplusplus/source':
             Var('git_url') + '/chromiumos/third_party/dbus-cplusplus.git@5e8f6d9db5c2abfb91d91f751184f25bb5cd0900',
         'src/third_party/cros_system_api':
