@@ -804,9 +804,6 @@ webkit.org/b/66974 [ Debug ] fast/events/keydown-1.html [ Pass Timeout ]
 # SVG painting in high DPI mode is broken in DRT.
 webkit.org/b/92511 svg/as-image/animated-svg-repaints-completely-in-hidpi.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/72039 http/tests/download/literal-utf-8.html [ Missing Pass ]
-webkit.org/b/72039 editing/pasteboard/drag-files-to-editable-element.html [ Missing Pass ]
-
 webkit.org/b/111023 fast/loader/unload-hyperlink-targeted.html [ Pass Timeout ]
 webkit.org/b/111023 fast/dom/Window/Location/set-location-after-close.html [ Pass Timeout ]
 # These tests time out 50% of the time.
@@ -910,17 +907,17 @@ crbug.com/227396 css3/compositing/effect-background-blend-mode-tiled.html [ Imag
 crbug.com/227396 css3/compositing/effect-background-blend-mode.html [ ImageOnlyFailure ]
 
 # CSS Background Blending tests that need rebasing
-crbug.com/251239 css3/compositing/background-blend-mode-gradient-color.html [ Missing ]
-crbug.com/251239 css3/compositing/background-blend-mode-gradient-gradient.html [ Missing ]
-crbug.com/251239 css3/compositing/background-blend-mode-gradient-image.html [ Missing ]
-crbug.com/251239 css3/compositing/background-blend-mode-multiple-background-layers.html [ Missing ]
-crbug.com/251727 css3/compositing/background-blend-mode-default-value.html [ Missing ]
-crbug.com/251727 css3/compositing/background-blend-mode-different-image-formats.html [ Missing ]
-crbug.com/251727 css3/compositing/background-blend-mode-image-color.html [ Missing ]
-crbug.com/251727 css3/compositing/background-blend-mode-image-image.html [ Missing ]
-crbug.com/251727 css3/compositing/background-blend-mode-single-layer-no-blending.html [ Missing ]
-crbug.com/251240 css3/compositing/background-blend-mode-image-svg.html [ Missing ]
-crbug.com/251240 css3/compositing/background-blend-mode-svg-color.html [ Missing ]
+crbug.com/251239 css3/compositing/background-blend-mode-gradient-color.html [ NeedsRebaseline ]
+crbug.com/251239 css3/compositing/background-blend-mode-gradient-gradient.html [ NeedsRebaseline ]
+crbug.com/251239 css3/compositing/background-blend-mode-gradient-image.html [ NeedsRebaseline ]
+crbug.com/251239 css3/compositing/background-blend-mode-multiple-background-layers.html [ NeedsRebaseline ]
+crbug.com/251727 css3/compositing/background-blend-mode-default-value.html [ NeedsRebaseline ]
+crbug.com/251727 css3/compositing/background-blend-mode-different-image-formats.html [ NeedsRebaseline ]
+crbug.com/251727 css3/compositing/background-blend-mode-image-color.html [ NeedsRebaseline ]
+crbug.com/251727 css3/compositing/background-blend-mode-image-image.html [ NeedsRebaseline ]
+crbug.com/251727 css3/compositing/background-blend-mode-single-layer-no-blending.html [ NeedsRebaseline ]
+crbug.com/251240 css3/compositing/background-blend-mode-image-svg.html [ NeedsRebaseline ]
+crbug.com/251240 css3/compositing/background-blend-mode-svg-color.html [ NeedsRebaseline ]
 
 # IETC grid layout
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
