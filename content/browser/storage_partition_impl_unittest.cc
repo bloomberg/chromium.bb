@@ -98,10 +98,8 @@ class StoragePartitionShaderClearTest : public testing::Test {
 void ClearData(content::StoragePartitionImpl* sp,
                const base::Closure& cb) {
   base::Time time;
-  sp->ClearDataForRange(
-      StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
-      StoragePartition::kAllStorage,
-      time, time, cb);
+  sp->AsyncClearDataBetween(content::StoragePartition::kShaderStorage,
+                           time, time, cb);
 }
 
 TEST_F(StoragePartitionShaderClearTest, ClearShaderCache) {
