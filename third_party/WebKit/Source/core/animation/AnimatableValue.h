@@ -47,12 +47,16 @@ public:
     static const AnimatableValue* neutralValue();
     virtual bool isNeutral() const { return false; }
 
+    static const AnimatableValue* deferredSnapshotValue();
+    virtual bool isDeferredSnapshot() const { return false; }
+
     static PassRefPtr<AnimatableValue> interpolate(const AnimatableValue*, const AnimatableValue*, double fraction);
     // For noncommutative values read add(A, B) to mean the value A with B composed onto it.
     static PassRefPtr<AnimatableValue> add(const AnimatableValue*, const AnimatableValue*);
 
 protected:
     enum AnimatableType {
+        TypeDeferred,
         TypeNeutral,
         TypeNumber,
         TypeUnknown,

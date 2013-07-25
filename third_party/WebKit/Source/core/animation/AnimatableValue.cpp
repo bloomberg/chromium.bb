@@ -34,6 +34,7 @@
 #include "core/animation/AnimatableNeutral.h"
 #include "core/animation/AnimatableNumber.h"
 #include "core/animation/AnimatableUnknown.h"
+#include "core/animation/DeferredAnimatableValue.h"
 
 #include <algorithm>
 
@@ -52,6 +53,12 @@ const AnimatableValue* AnimatableValue::neutralValue()
 {
     static AnimatableNeutral* neutralSentinelValue = AnimatableNeutral::create().leakRef();
     return neutralSentinelValue;
+}
+
+const AnimatableValue* AnimatableValue::deferredSnapshotValue()
+{
+    static DeferredAnimatableValue* deferredAnimatableValueSentinel = DeferredAnimatableValue::create().leakRef();
+    return deferredAnimatableValueSentinel;
 }
 
 PassRefPtr<AnimatableValue> AnimatableValue::interpolate(const AnimatableValue* left, const AnimatableValue* right, double fraction)
