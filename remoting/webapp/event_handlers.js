@@ -104,13 +104,12 @@ function onLoad() {
     }
   }
   remoting.init();
-}
 
-function onBeforeUnload() {
-  return remoting.promptClose();
+  window.addEventListener('resize', remoting.onResize, false);
+  if (!remoting.isAppsV2) {
+    window.addEventListener('beforeunload', remoting.promptClose, false);
+    window.addEventListener('unload', remoting.disconnect, false);
+  }
 }
 
 window.addEventListener('load', onLoad, false);
-window.addEventListener('beforeunload', onBeforeUnload, false);
-window.addEventListener('resize', remoting.onResize, false);
-window.addEventListener('unload', remoting.disconnect, false);

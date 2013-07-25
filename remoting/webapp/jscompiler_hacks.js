@@ -168,7 +168,7 @@ chrome.runtime = {
     /** @type {string} */
     message: ''
   },
-  /** @return {{version: string}} */
+  /** @return {{version: string, app: {background: Object}}} */
   getManifest: function() {}
 };
 

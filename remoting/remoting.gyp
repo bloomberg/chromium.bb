@@ -165,6 +165,7 @@
       'webapp/host_settings.js',
       'webapp/host_setup_dialog.js',
       'webapp/host_table_entry.js',
+      'webapp/identity.js',
       'webapp/l10n.js',
       'webapp/log_to_server.js',
       'webapp/menu_button.js',
@@ -2020,7 +2021,6 @@
         ],
         'remoting_webapp_apps_v2_js_files': [
           'webapp/background.js',
-          'webapp/identity.js',
         ],
       },
       'dependencies': [

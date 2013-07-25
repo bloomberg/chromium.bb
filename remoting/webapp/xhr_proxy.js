@@ -87,7 +87,3 @@ remoting.XMLHttpRequestProxy.prototype.OPENED = 1;
 remoting.XMLHttpRequestProxy.prototype.HEADERS_RECEIVED = 2;
 remoting.XMLHttpRequestProxy.prototype.LOADING = 3;
 remoting.XMLHttpRequestProxy.prototype.DONE = 4;
-
-// Since the WCS driver code constructs XHRs directly, the only mechanism for
-// proxying them is to replace the XMLHttpRequest constructor.
-//XMLHttpRequest = remoting.XMLHttpRequestProxy;

@@ -45,6 +45,13 @@ remoting.WcsSandboxContent.prototype.onMessage_ = function(event) {
 
   switch (event.data['command']) {
 
+    case 'proxyXhrs':
+      // Since the WCS driver code constructs XHRs directly, the only
+      // mechanism for proxying them is to replace the XMLHttpRequest
+      // constructor.
+      XMLHttpRequest = remoting.XMLHttpRequestProxy;
+      break;
+
     case 'sendIq':
       /** @type {string} */
       var stanza = event.data['stanza'];

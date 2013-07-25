@@ -31,6 +31,13 @@ remoting.WcsSandboxContainer = function(sandbox) {
   this.pendingXhrs_ = {};
 
   window.addEventListener('message', this.onMessage_.bind(this), false);
+
+  if (remoting.isAppsV2) {
+    var message = {
+      'command': 'proxyXhrs'
+    };
+    this.sandbox_.postMessage(message, '*');
+  }
 };
 
 /**
