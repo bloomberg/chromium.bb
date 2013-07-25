@@ -18,8 +18,8 @@
 #include "third_party/WebKit/public/platform/WebSocketStreamHandleClient.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "webkit/child/webkitplatformsupport_impl.h"
+#include "webkit/child/websocketstreamhandle_bridge.h"
 #include "webkit/child/websocketstreamhandle_delegate.h"
-#include "webkit/glue/websocketstreamhandle_bridge.h"
 
 using WebKit::WebData;
 using WebKit::WebSocketStreamError;
@@ -78,8 +78,7 @@ class WebSocketStreamHandleImpl::Context
 
 WebSocketStreamHandleImpl::Context::Context(WebSocketStreamHandleImpl* handle)
     : handle_(handle),
-      client_(NULL),
-      bridge_(NULL) {
+      client_(NULL) {
 }
 
 void WebSocketStreamHandleImpl::Context::Connect(

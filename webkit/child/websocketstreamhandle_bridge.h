@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
-#define WEBKIT_GLUE_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
+#ifndef WEBKIT_CHILD_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
+#define WEBKIT_CHILD_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
 
 #include <vector>
 
@@ -40,4 +40,4 @@ class WebSocketStreamHandleBridge
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
+#endif  // WEBKIT_CHILD_WEBSOCKETSTREAMHANDLE_BRIDGE_H_

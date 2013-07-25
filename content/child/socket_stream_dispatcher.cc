@@ -19,8 +19,8 @@
 #include "content/common/socket_stream_messages.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
+#include "webkit/child/websocketstreamhandle_bridge.h"
 #include "webkit/child/websocketstreamhandle_delegate.h"
-#include "webkit/glue/websocketstreamhandle_bridge.h"
 
 namespace content {
 
