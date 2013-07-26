@@ -29,16 +29,19 @@ namespace chromeos {
 
 // A wrapper for the consumer passed to StartRequest, which doesn't call
 // through to the target Consumer unless the refresh token validation is
-// complete.
+// complete.  Additionally implements the Request interface, so that it
+// can be passed back to the caller and directly deleted when cancelling
+// the request.
 class DeviceOAuth2TokenService::ValidatingConsumer
     : public OAuth2TokenService::Consumer,
+      public OAuth2TokenService::Request,
       public gaia::GaiaOAuthClient::Delegate {
  public:
   explicit ValidatingConsumer(DeviceOAuth2TokenService* token_service,
                               Consumer* consumer);
   virtual ~ValidatingConsumer();
 
-  void StartValidation();
+  void StartValidation(scoped_ptr<Request> request);
 
   // OAuth2TokenService::Consumer
   virtual void OnGetTokenSuccess(
@@ -73,8 +76,13 @@ class DeviceOAuth2TokenService::ValidatingConsumer
   bool token_validation_done_;
   bool token_is_valid_;
 
+  // The request instance returned by OAuth2TokenService, which we're
+  // wrapping.  If the this object is deleted, |request_| will also be
+  // deleted and the OAuth2TokenService won't call back on this object.
+  scoped_ptr<OAuth2TokenService::Request> request_;
+
   // OAuth2TokenService::Consumer results
-  const Request* request_;
+  bool token_fetch_done_;
   std::string access_token_;
   base::Time expiration_time_;
   scoped_ptr<GoogleServiceAuthError> error_;
@@ -87,14 +95,16 @@ DeviceOAuth2TokenService::ValidatingConsumer::ValidatingConsumer(
           consumer_(consumer),
           token_validation_done_(false),
           token_is_valid_(false),
-          request_(NULL) {
+          token_fetch_done_(false) {
 }
 
 DeviceOAuth2TokenService::ValidatingConsumer::~ValidatingConsumer() {
 }
 
-void DeviceOAuth2TokenService::ValidatingConsumer::StartValidation() {
+void DeviceOAuth2TokenService::ValidatingConsumer::StartValidation(
+    scoped_ptr<Request> request) {
   DCHECK(!gaia_oauth_client_);
+  request_ = request.Pass();
   gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
       g_browser_process->system_request_context()));
 
@@ -153,7 +163,7 @@ void DeviceOAuth2TokenService::ValidatingConsumer::OnGetTokenSuccess(
       const Request* request,
       const std::string& access_token,
       const base::Time& expiration_time) {
-  request_ = request;
+  token_fetch_done_ = true;
   access_token_ = access_token;
   expiration_time_ = expiration_time;
   if (token_validation_done_)
@@ -163,7 +173,7 @@ void DeviceOAuth2TokenService::ValidatingConsumer::OnGetTokenSuccess(
 void DeviceOAuth2TokenService::ValidatingConsumer::OnGetTokenFailure(
       const Request* request,
       const GoogleServiceAuthError& error) {
-  request_ = request;
+  token_fetch_done_ = true;
   error_.reset(new GoogleServiceAuthError(error.state()));
   if (token_validation_done_)
     InformConsumer();
@@ -173,21 +183,21 @@ void DeviceOAuth2TokenService::ValidatingConsumer::RefreshTokenIsValid(
     bool is_valid) {
   token_validation_done_ = true;
   token_is_valid_ = is_valid;
-  // If we have a request pointer, then the minting is complete.
-  if (request_)
+  if (token_fetch_done_)
     InformConsumer();
 }
 
 void DeviceOAuth2TokenService::ValidatingConsumer::InformConsumer() {
-  DCHECK(request_);
+  DCHECK(token_fetch_done_);
   DCHECK(token_validation_done_);
   if (!token_is_valid_) {
-    consumer_->OnGetTokenFailure(request_, GoogleServiceAuthError(
+    consumer_->OnGetTokenFailure(request_.get(), GoogleServiceAuthError(
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   } else if (error_) {
-    consumer_->OnGetTokenFailure(request_, *error_.get());
+    consumer_->OnGetTokenFailure(request_.get(), *error_.get());
   } else {
-    consumer_->OnGetTokenSuccess(request_, access_token_, expiration_time_);
+    consumer_->OnGetTokenSuccess(request_.get(), access_token_,
+                                 expiration_time_);
   }
   token_service_->OnValidationComplete(this, token_is_valid_);
 }
@@ -197,26 +207,17 @@ DeviceOAuth2TokenService::DeviceOAuth2TokenService(
     PrefService* local_state)
     : refresh_token_is_valid_(false),
       max_refresh_token_validation_retries_(3),
-      pending_validators_(new std::set<ValidatingConsumer*>()),
       url_request_context_getter_(getter),
       local_state_(local_state) {
 }
 
 DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
-  STLDeleteElements(pending_validators_.get());
 }
 
 net::URLRequestContextGetter* DeviceOAuth2TokenService::GetRequestContext() {
   return url_request_context_getter_.get();
 }
 
-
-// TODO(davidroche): if the caller deletes the returned Request while
-// the fetches are in-flight, the OAuth2TokenService class won't call
-// back into the ValidatingConsumer and we'll end up with stale values
-// in pending_validators_ until this object is deleted.  Probably not a
-// big deal, but it should be resolved by returning a Request that this
-// object owns.
 scoped_ptr<OAuth2TokenService::Request> DeviceOAuth2TokenService::StartRequest(
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
@@ -225,12 +226,13 @@ scoped_ptr<OAuth2TokenService::Request> DeviceOAuth2TokenService::StartRequest(
   if (refresh_token_is_valid_) {
     return OAuth2TokenService::StartRequest(scopes, consumer).Pass();
   } else {
-    ValidatingConsumer* validating_consumer = new ValidatingConsumer(this,
-                                                                     consumer);
-    pending_validators_->insert(validating_consumer);
+    scoped_ptr<ValidatingConsumer> validating_consumer(
+        new ValidatingConsumer(this, consumer));
 
-    validating_consumer->StartValidation();
-    return OAuth2TokenService::StartRequest(scopes, validating_consumer).Pass();
+    scoped_ptr<Request> request = OAuth2TokenService::StartRequest(
+        scopes, validating_consumer.get());
+    validating_consumer->StartValidation(request.Pass());
+    return validating_consumer.PassAs<Request>();
   }
 }
 
@@ -239,14 +241,6 @@ void DeviceOAuth2TokenService::OnValidationComplete(
     bool refresh_token_is_valid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   refresh_token_is_valid_ = refresh_token_is_valid;
-  std::set<ValidatingConsumer*>::iterator iter = pending_validators_->find(
-      validator);
-  if (iter != pending_validators_->end()) {
-    delete *iter;
-    pending_validators_->erase(iter);
-  } else {
-    LOG(ERROR) << "OnValidationComplete called for unknown validator";
-  }
 }
 
 // static
