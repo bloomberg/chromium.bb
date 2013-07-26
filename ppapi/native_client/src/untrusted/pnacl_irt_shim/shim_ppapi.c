@@ -66,11 +66,6 @@ static int wrap_ppapi_start(const struct PP_StartFunctions *funcs) {
   return (*real_irt_ppapi_hook.ppapi_start)(&wrapped_ppapi_methods);
 }
 
-static struct nacl_irt_ppapihook ppapi_hook = {
-  wrap_ppapi_start,
-  NULL
-};
-
 size_t __pnacl_irt_interface_wrapper(const char *interface_ident,
                                      void *table, size_t tablesize) {
   /*
@@ -93,16 +88,14 @@ size_t __pnacl_irt_interface_wrapper(const char *interface_ident,
     return 0;
   }
   /*
-   * Copy the portion of the ppapihook interface that is not wrapped.
-   */
-  ppapi_hook.ppapi_register_thread_creator =
-      real_irt_ppapi_hook.ppapi_register_thread_creator;
-  /*
    * Copy the interface structure into the client.
    */
-  if (sizeof ppapi_hook <= tablesize) {
-    memcpy(table, &ppapi_hook, sizeof ppapi_hook);
-    return sizeof ppapi_hook;
+  struct nacl_irt_ppapihook *dest = table;
+  if (sizeof *dest <= tablesize) {
+    dest->ppapi_start = wrap_ppapi_start;
+    dest->ppapi_register_thread_creator =
+        real_irt_ppapi_hook.ppapi_register_thread_creator;
+    return sizeof *dest;
   }
   return 0;
 }
