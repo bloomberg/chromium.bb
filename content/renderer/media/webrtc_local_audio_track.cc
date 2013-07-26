@@ -86,10 +86,6 @@ webrtc::AudioSourceInterface* WebRtcLocalAudioTrack::GetSource() const {
   return track_source_;
 }
 
-cricket::AudioRenderer* WebRtcLocalAudioTrack::FrameInput() {
-  return NULL;
-}
-
 std::string WebRtcLocalAudioTrack::kind() const {
   return kAudioTrackKind;
 }

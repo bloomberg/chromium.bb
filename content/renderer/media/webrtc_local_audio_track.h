@@ -77,7 +77,6 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
 
   // webrtc::AudioTrackInterface implementation.
   virtual webrtc::AudioSourceInterface* GetSource() const OVERRIDE;
-  virtual cricket::AudioRenderer* FrameInput() OVERRIDE;
 
   // webrtc::MediaStreamTrack implementation.
   virtual std::string kind() const OVERRIDE;
