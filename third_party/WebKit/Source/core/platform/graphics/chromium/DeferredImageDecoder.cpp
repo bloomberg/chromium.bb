@@ -220,8 +220,7 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
     if (!s_enabled
         || !m_actualDecoder
         || !m_actualDecoder->isSizeAvailable()
-        || m_actualDecoder->filenameExtension() == "ico"
-        || m_actualDecoder->filenameExtension() == "gif")
+        || m_actualDecoder->filenameExtension() == "ico")
         return;
 
     activateLazyDecoding();
