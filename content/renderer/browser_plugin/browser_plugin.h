@@ -121,6 +121,13 @@ class CONTENT_EXPORT BrowserPlugin :
   // window objects.
   void TrackObjectLifetime(const NPVariant* request, int id);
 
+  // If the request with id |request_id| is pending then informs the
+  // BrowserPlugin that the guest's permission request has been allowed or
+  // denied by the embedder. Returns whether the request was pending.
+  bool RespondPermissionIfRequestIsPending(int request_id,
+                                           bool allow,
+                                           const std::string& user_input);
+
   // Returns true if |point| lies within the bounds of the plugin rectangle.
   // Not OK to use this function for making security-sensitive decision since it
   // can return false positives when the plugin has rotation transformation
@@ -128,9 +135,6 @@ class CONTENT_EXPORT BrowserPlugin :
   bool InBounds(const gfx::Point& point) const;
 
   gfx::Point ToLocalCoordinates(const gfx::Point& point) const;
-  // Called by browser plugin binding.
-  void OnEmbedderDecidedPermission(int request_id, bool allow,
-                                   const std::string& user_input);
 
   // Called when a guest instance ID has been allocated by the browser process.
   void OnInstanceIDAllocated(int guest_instance_id);
@@ -295,13 +299,6 @@ class CONTENT_EXPORT BrowserPlugin :
   void RespondPermission(int request_id,
                          bool allow,
                          const std::string& user_input);
-
-  // If the request with id |request_id| is pending then informs the
-  // BrowserPlugin that the guest's permission request has been allowed or
-  // denied by the embedder.
-  void RespondPermissionIfRequestIsPending(int request_id,
-                                           bool allow,
-                                           const std::string& user_input);
 
   // Called when the tracked object of |id| ID becomes unreachable in
   // JavaScript.

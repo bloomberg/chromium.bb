@@ -973,21 +973,16 @@ void BrowserPlugin::RespondPermission(
           request_id, allow, user_input));
 }
 
-void BrowserPlugin::RespondPermissionIfRequestIsPending(
+bool BrowserPlugin::RespondPermissionIfRequestIsPending(
     int request_id, bool allow, const std::string& user_input) {
   PendingPermissionRequests::iterator iter =
       pending_permission_requests_.find(request_id);
   if (iter == pending_permission_requests_.end())
-    return;
+    return false;
 
   pending_permission_requests_.erase(iter);
   RespondPermission(request_id, allow, user_input);
-}
-
-void BrowserPlugin::OnEmbedderDecidedPermission(int request_id,
-                                                bool allow,
-                                                const std::string& user_input) {
-  RespondPermissionIfRequestIsPending(request_id, allow, user_input);
+  return true;
 }
 
 bool BrowserPlugin::initialize(WebPluginContainer* container) {

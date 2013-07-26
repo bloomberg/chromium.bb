@@ -67,7 +67,14 @@ WebView.prototype.setupDialogEvent_ = function() {
   var ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN = '<webview>: ' +
       'An action has already been taken for this "dialog" event.';
 
-  var WARNING_MSG_DIALOG_BLOCKED = '<webview>: A dialog was blocked.';
+  var showWarningMessage = function(dialogType) {
+    var VOWELS = ['a', 'e', 'i', 'o', 'u'];
+    var WARNING_MSG_DIALOG_BLOCKED = '<webview>: %1 %2 dialog was blocked.';
+    var article = (VOWELS.indexOf(dialogType.charAt(0)) >= 0) ? 'An' : 'A';
+    var output = WARNING_MSG_DIALOG_BLOCKED.replace('%1', article);
+    output = output.replace('%2', dialogType);
+    console.log(output);
+  };
 
   var DIALOG_EVENT_ATTRIBUTES = [
     'defaultPromptText',
@@ -80,11 +87,15 @@ WebView.prototype.setupDialogEvent_ = function() {
   var node = this.webviewNode_;
   var browserPluginNode = this.browserPluginNode_;
 
-  var onTrackedObjectGone = function(requestId, e) {
+  var onTrackedObjectGone = function(requestId, dialogType, e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
     if (detail.id != requestId)
       return;
-    browserPluginNode['-internal-setPermission'](requestId, false, '');
+    // If the request was pending then show a warning indiciating that a new
+    // window was blocked.
+    if (browserPluginNode['-internal-setPermission'](requestId, false, '')) {
+      showWarningMessage(dialogType);
+    }
   }
 
   browserPluginNode.addEventListener('-internal-dialog', function(e) {
@@ -98,8 +109,9 @@ WebView.prototype.setupDialogEvent_ = function() {
     var actionTaken = false;
 
     var validateCall = function() {
-      if (actionTaken)
+      if (actionTaken) {
         throw new Error(ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN);
+      }
       actionTaken = true;
     };
 
@@ -115,19 +127,26 @@ WebView.prototype.setupDialogEvent_ = function() {
       }
     };
     evt.dialog = dialog;
-    // Make browser plugin track lifetime of |window|.
-    var onTrackedObjectGoneWithRequestId =
-        $Function.bind(onTrackedObjectGone, self, requestId);
-    browserPluginNode.addEventListener('-internal-trackedobjectgone',
-        onTrackedObjectGoneWithRequestId);
-    browserPluginNode['-internal-trackObjectLifetime'](dialog, requestId);
 
     var defaultPrevented = !node.dispatchEvent(evt);
-    if (!actionTaken && !defaultPrevented) {
+    if (actionTaken) {
+      return;
+    }
+
+    if (defaultPrevented) {
+      // Tell the JavaScript garbage collector to track lifetime of |dialog| and
+      // call back when the dialog object has been collected.
+      var onTrackedObjectGoneWithRequestId =
+          $Function.bind(
+              onTrackedObjectGone, self, requestId, detail.messageType);
+      browserPluginNode.addEventListener('-internal-trackedobjectgone',
+          onTrackedObjectGoneWithRequestId);
+      browserPluginNode['-internal-trackObjectLifetime'](dialog, requestId);
+    } else {
       actionTaken = true;
       // The default action is equivalent to canceling the dialog.
       browserPluginNode['-internal-setPermission'](requestId, false, '');
-      console.warn(WARNING_MSG_DIALOG_BLOCKED);
+      showWarningMessage(detail.messageType);
     }
   });
 };

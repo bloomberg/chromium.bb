@@ -411,7 +411,10 @@ WebView.prototype.setupNewWindowEvent_ = function() {
 
   var ERROR_MSG_WEBVIEW_EXPECTED = '<webview> element expected.';
 
-  var WARNING_MSG_NEWWINDOW_BLOCKED = '<webview>: A new window was blocked.';
+  var showWarningMessage = function() {
+    var WARNING_MSG_NEWWINDOW_BLOCKED = '<webview>: A new window was blocked.';
+    console.warn(WARNING_MSG_NEWWINDOW_BLOCKED);
+  };
 
   var NEW_WINDOW_EVENT_ATTRIBUTES = [
     'initialHeight',
@@ -427,10 +430,15 @@ WebView.prototype.setupNewWindowEvent_ = function() {
 
   var onTrackedObjectGone = function(requestId, e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
-    if (detail.id != requestId)
+    if (detail.id != requestId) {
       return;
-    browserPluginNode['-internal-setPermission'](requestId, false, '');
-  }
+    }
+    // If the request was pending then show a warning indiciating that a dialog
+    // was blocked.
+    if (browserPluginNode['-internal-setPermission'](requestId, false, '')) {
+      showWarningMessage();
+    }
+  };
 
   browserPluginNode.addEventListener('-internal-newwindow', function(e) {
     var evt = new Event('newwindow', { bubbles: true, cancelable: true });
@@ -443,8 +451,9 @@ WebView.prototype.setupNewWindowEvent_ = function() {
     var actionTaken = false;
 
     var validateCall = function () {
-      if (actionTaken)
+      if (actionTaken) {
         throw new Error(ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN);
+      }
       actionTaken = true;
     };
 
@@ -478,20 +487,26 @@ WebView.prototype.setupNewWindowEvent_ = function() {
       }
     };
     evt.window = window;
-    // Make browser plugin track lifetime of |window|.
-    var onTrackedObjectGoneWithRequestId =
-        $Function.bind(onTrackedObjectGone, self, requestId);
-    browserPluginNode.addEventListener('-internal-trackedobjectgone',
-        onTrackedObjectGoneWithRequestId);
-    browserPluginNode['-internal-trackObjectLifetime'](window, requestId);
 
     var defaultPrevented = !node.dispatchEvent(evt);
-    if (!actionTaken && !defaultPrevented) {
+    if (actionTaken) {
+      return;
+    }
+
+    if (defaultPrevented) {
+      // Make browser plugin track lifetime of |window|.
+      var onTrackedObjectGoneWithRequestId =
+          $Function.bind(onTrackedObjectGone, self, requestId);
+      browserPluginNode.addEventListener('-internal-trackedobjectgone',
+          onTrackedObjectGoneWithRequestId);
+      browserPluginNode['-internal-trackObjectLifetime'](window, requestId);
+    } else {
       actionTaken = true;
       // The default action is to discard the window.
       browserPluginNode['-internal-setPermission'](requestId, false, '');
-      console.warn(WARNING_MSG_NEWWINDOW_BLOCKED);
+      showWarningMessage();
     }
+
   });
 };
 
@@ -536,6 +551,15 @@ WebView.prototype.getPermissionTypes_ = function() {
  * @private
  */
 WebView.prototype.setupPermissionEvent_ = function() {
+  var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
+      'Permission has already been decided for this "permissionrequest" event.';
+
+  var showWarningMessage = function(permission) {
+    var WARNING_MSG_PERMISSION_DENIED = '<webview>: ' +
+        'The permission request for "%1" has been denied.';
+    console.warn(WARNING_MSG_PERMISSION_DENIED.replace('%1', permission));
+  };
+
   var PERMISSION_TYPES = this.getPermissionTypes_();
 
   var EXPOSED_PERMISSION_EVENT_ATTRIBS = [
@@ -546,20 +570,21 @@ WebView.prototype.setupPermissionEvent_ = function() {
       'userGesture'
   ];
 
-  var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
-      'Permission has already been decided for this "permissionrequest" event.';
-
   var self = this;
   var node = this.webviewNode_;
   var browserPluginNode = this.browserPluginNode_;
   var internalevent = '-internal-permissionrequest';
 
-  var onTrackedObjectGone = function(requestId, e) {
+  var onTrackedObjectGone = function(requestId, permission, e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
     if (detail.id != requestId)
       return;
-    browserPluginNode['-internal-setPermission'](requestId, false, '');
-  }
+    // If the request was pending then show a warning indiciating that the
+    // permission was denied.
+    if (browserPluginNode['-internal-setPermission'](requestId, false, '')) {
+      showWarningMessage(permission);
+    }
+  };
 
   browserPluginNode.addEventListener(internalevent, function(e) {
     var evt = new Event('permissionrequest', {bubbles: true, cancelable: true});
@@ -570,44 +595,52 @@ WebView.prototype.setupPermissionEvent_ = function() {
     });
     var requestId = detail.requestId;
 
-    if (detail.requestId !== undefined &&
-        PERMISSION_TYPES.indexOf(detail.permission) >= 0) {
-      // TODO(lazyboy): Also fill in evt.details (see webview specs).
-      // http://crbug.com/141197.
-      var decisionMade = false;
-      // Construct the event.request object.
-      var request = {
-        allow: function() {
-          if (decisionMade) {
-            throw new Error(ERROR_MSG_PERMISSION_ALREADY_DECIDED);
-          } else {
-            browserPluginNode['-internal-setPermission'](requestId, true, '');
-            decisionMade = true;
-          }
-        },
-        deny: function() {
-          if (decisionMade) {
-            throw new Error(ERROR_MSG_PERMISSION_ALREADY_DECIDED);
-          } else {
-            browserPluginNode['-internal-setPermission'](requestId, false, '');
-            decisionMade = true;
-          }
-        }
-      };
-      evt.request = request;
+    if (detail.requestId == undefined ||
+        PERMISSION_TYPES.indexOf(detail.permission) < 0) {
+      return;
+    }
 
+    // TODO(lazyboy): Also fill in evt.details (see webview specs).
+    // http://crbug.com/141197.
+    var decisionMade = false;
+
+    var validateCall = function() {
+      if (decisionMade) {
+        throw new Error(ERROR_MSG_PERMISSION_ALREADY_DECIDED);
+      }
+      decisionMade = true;
+    };
+
+    // Construct the event.request object.
+    var request = {
+      allow: function() {
+        validateCall();
+        browserPluginNode['-internal-setPermission'](requestId, true, '');
+      },
+      deny: function() {
+        validateCall();
+        browserPluginNode['-internal-setPermission'](requestId, false, '');
+      }
+    };
+    evt.request = request;
+
+    var defaultPrevented = !node.dispatchEvent(evt);
+    if (decisionMade) {
+      return;
+    }
+
+    if (defaultPrevented) {
       // Make browser plugin track lifetime of |request|.
       var onTrackedObjectGoneWithRequestId =
-          $Function.bind(onTrackedObjectGone, self, requestId);
+          $Function.bind(
+              onTrackedObjectGone, self, requestId, detail.permission);
       browserPluginNode.addEventListener('-internal-trackedobjectgone',
           onTrackedObjectGoneWithRequestId);
       browserPluginNode['-internal-trackObjectLifetime'](request, requestId);
-
-      var defaultPrevented = !node.dispatchEvent(evt);
-      if (!decisionMade && !defaultPrevented) {
-        decisionMade = true;
-        browserPluginNode['-internal-setPermission'](requestId, false, '');
-      }
+    } else {
+      decisionMade = true;
+      browserPluginNode['-internal-setPermission'](requestId, false, '');
+      showWarningMessage(detail.permission);
     }
   });
 };

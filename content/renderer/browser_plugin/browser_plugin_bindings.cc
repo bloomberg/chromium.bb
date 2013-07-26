@@ -362,8 +362,10 @@ class BrowserPluginBindingSetPermission : public BrowserPluginMethodBinding {
     int request_id = IntFromNPVariant(args[0]);
     bool allow = NPVARIANT_TO_BOOLEAN(args[1]);
     std::string user_input = StringFromNPVariant(args[2]);
-    bindings->instance()->OnEmbedderDecidedPermission(
-        request_id, allow, user_input);
+    bool request_was_pending =
+        bindings->instance()->RespondPermissionIfRequestIsPending(
+            request_id, allow, user_input);
+    BOOLEAN_TO_NPVARIANT(request_was_pending, *result);
     return true;
   }
 
