@@ -150,23 +150,22 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       return PRE_SYNCED;
     }
 
-    // No auth in progress check for an auth error.
-    AuthError auth_error =
+    // Check for sync errors if the sync service is enabled.
+    if (service) {
+      // Since there is no auth in progress, check for an auth error first.
+      AuthError auth_error =
           SigninGlobalError::GetForProfile(service->profile())->
               GetLastAuthError();
-    if (auth_error.state() != AuthError::NONE) {
-      if (status_label && link_label)
-        signin_ui_util::GetStatusLabelsForAuthError(
-            service->profile(), signin, status_label, link_label);
-      return SYNC_ERROR;
-    }
+      if (auth_error.state() != AuthError::NONE) {
+        if (status_label && link_label)
+          signin_ui_util::GetStatusLabelsForAuthError(
+              service->profile(), signin, status_label, link_label);
+        return SYNC_ERROR;
+      }
 
-    // We dont have an auth error. Check for sync errors if the sync service
-    // is enabled.
-    if (service) {
+      // We don't have an auth error. Check for an actionable error.
       ProfileSyncService::Status status;
       service->QueryDetailedSyncStatus(&status);
-
       if (ShouldShowActionOnUI(status.sync_protocol_error)) {
         if (status_label) {
           GetStatusForActionableError(status.sync_protocol_error,

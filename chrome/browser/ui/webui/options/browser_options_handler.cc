@@ -1374,7 +1374,8 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
 
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  SigninManagerBase* signin = service->signin();
+  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+  DCHECK(signin);
   sync_status->SetBoolean("signoutAllowed", !signout_prohibited);
   sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());
   sync_status->SetBoolean("syncSystemEnabled", !!service);
@@ -1385,7 +1386,6 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
 
   string16 status_label;
   string16 link_label;
-  DCHECK(signin);
   bool status_has_error = sync_ui_util::GetStatusLabels(
       service, *signin, sync_ui_util::WITH_HTML, &status_label, &link_label) ==
           sync_ui_util::SYNC_ERROR;
