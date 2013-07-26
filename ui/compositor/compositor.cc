@@ -477,8 +477,6 @@ Compositor::Compositor(CompositorDelegate* delegate,
       compositor_lock_(NULL) {
   root_web_layer_ = cc::Layer::Create();
   root_web_layer_->SetAnchorPoint(gfx::PointF(0.f, 0.f));
-  // TODO(piman): remove after crbug.com/235302 is fixed.
-  root_web_layer_->SetMasksToBounds(true);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
