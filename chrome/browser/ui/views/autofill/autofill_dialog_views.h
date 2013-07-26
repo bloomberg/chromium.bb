@@ -35,6 +35,7 @@ class Image;
 }
 
 namespace views {
+class BubbleBorder;
 class Checkbox;
 class Combobox;
 class FocusableBorder;
@@ -292,12 +293,19 @@ class AutofillDialogViews : public AutofillDialogView,
     virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
     // views::View implementation:
+    virtual gfx::Insets GetInsets() const OVERRIDE;
     virtual void Layout() OVERRIDE;
     virtual const char* GetClassName() const OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
     virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
    private:
+    // Gets the border of the non-client frame view as a BubbleBorder.
+    views::BubbleBorder* GetBubbleBorder();
+
+    // Gets the bounds of this view without the frame view's bubble border.
+    gfx::Rect ContentBoundsSansBubbleBorder();
+
     // Child View. Front and center.
     views::ImageView* image_view_;
     // Child View. When visible, below |image_view_|.

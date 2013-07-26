@@ -50,6 +50,9 @@ int GetOffScreenLength(const gfx::Rect& monitor_bounds,
 
 namespace views {
 
+// static
+const char BubbleFrameView::kViewClassName[] = "BubbleFrameView";
+
 BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
     : bubble_border_(NULL),
       content_margins_(content_margins),
@@ -186,7 +189,7 @@ void BubbleFrameView::Layout() {
 }
 
 const char* BubbleFrameView::GetClassName() const {
-  return "BubbleFrameView";
+  return kViewClassName;
 }
 
 void BubbleFrameView::ChildPreferredSizeChanged(View* child) {

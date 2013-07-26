@@ -22,6 +22,9 @@ class BubbleBorder;
 class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
                                      public ButtonListener {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   explicit BubbleFrameView(const gfx::Insets& content_margins);
   virtual ~BubbleFrameView();
 

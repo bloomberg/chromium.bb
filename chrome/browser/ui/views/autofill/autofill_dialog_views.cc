@@ -33,6 +33,8 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -535,7 +537,6 @@ AutofillDialogViews::OverlayView::OverlayView(views::ButtonListener* listener)
     : image_view_(new views::ImageView()),
       message_stack_(new views::View()),
       button_(new views::BlueButton(listener, string16())) {
-  set_border(views::Border::CreateEmptyBorder(12, 12, 12, 12));
   set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
       GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
 
@@ -620,8 +621,12 @@ void AutofillDialogViews::OverlayView::AnimationEnded(
   fade_out_.reset();
 }
 
+gfx::Insets AutofillDialogViews::OverlayView::GetInsets() const {
+  return gfx::Insets(12, 12, 12, 12);
+}
+
 void AutofillDialogViews::OverlayView::Layout() {
-  gfx::Rect bounds = GetContentsBounds();
+  gfx::Rect bounds = ContentBoundsSansBubbleBorder();
   if (!message_stack_->visible()) {
     image_view_->SetBoundsRect(bounds);
     return;
@@ -653,8 +658,9 @@ const char* AutofillDialogViews::OverlayView::GetClassName() const {
 void AutofillDialogViews::OverlayView::OnPaint(gfx::Canvas* canvas) {
   // BubbleFrameView doesn't mask the window, it just draws the border via
   // image assets. Match that rounding here.
-  static const SkScalar kCornerRadius = SkIntToScalar(2);
-  gfx::Rect rect = GetContentsBounds();
+  gfx::Rect rect = ContentBoundsSansBubbleBorder();
+  const SkScalar kCornerRadius = SkIntToScalar(
+      GetBubbleBorder() ? GetBubbleBorder()->GetBorderCornerRadius() : 2);
   gfx::Path window_mask;
   window_mask.addRoundRect(gfx::RectToSkRect(rect),
                            kCornerRadius, kCornerRadius);
@@ -704,6 +710,24 @@ void AutofillDialogViews::OverlayView::PaintChildren(gfx::Canvas* canvas) {
     canvas->SaveLayerAlpha((1 - fade_out_->GetCurrentValue()) * 255);
 
   views::View::PaintChildren(canvas);
+}
+
+views::BubbleBorder* AutofillDialogViews::OverlayView::GetBubbleBorder() {
+  views::View* frame = GetWidget()->non_client_view()->frame_view();
+  std::string bubble_frame_view_name(views::BubbleFrameView::kViewClassName);
+  if (frame->GetClassName() == bubble_frame_view_name)
+    return static_cast<views::BubbleFrameView*>(frame)->bubble_border();
+  NOTREACHED();
+  return NULL;
+}
+
+gfx::Rect AutofillDialogViews::OverlayView::ContentBoundsSansBubbleBorder() {
+  gfx::Rect bounds = GetContentsBounds();
+  int bubble_width = 5;
+  if (GetBubbleBorder())
+    bubble_width = GetBubbleBorder()->GetBorderThickness();
+  bounds.Inset(bubble_width, bubble_width, bubble_width, bubble_width);
+  return bounds;
 }
 
 // AutofillDialogViews::NotificationArea ---------------------------------------
