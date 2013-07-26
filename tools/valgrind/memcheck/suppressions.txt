@@ -1194,8 +1194,6 @@
    fun:_ZN7WebCoreL28reportFatalErrorInMainThreadEPKcS1_
    fun:_ZN2v88internal2V823FatalProcessOutOfMemoryEPKcb
    ...
-   fun:_ZN7WebCore16ScriptController8evaluateERKNS_16ScriptSourceCodeE
-   fun:_ZN7WebCore13ScriptElement13executeScriptERKNS_16ScriptSourceCodeE
    fun:_ZN7WebCore16HTMLScriptRunner36executePendingScriptAndDispatchEventERNS_13PendingScriptE
 }
 
