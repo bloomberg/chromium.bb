@@ -557,7 +557,6 @@ OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
       auto_accept_(AUTO_ACCEPT_NONE),
       source_(SyncPromoUI::SOURCE_UNKNOWN),
       switched_to_advanced_(false),
-      original_source_(SyncPromoUI::SOURCE_UNKNOWN),
       untrusted_navigations_since_signin_visit_(0),
       untrusted_confirmation_required_(false),
       do_not_clear_pending_email_(false) {
@@ -915,8 +914,15 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   if (!email.empty())
     helper->email_ = email;
 
-  if (continue_url.is_valid())
+  if (continue_url.is_valid()) {
+    // Set |original_continue_url_| if it is currently empty. |continue_url|
+    // could be modified by gaia pages, thus we need to record the original
+    // continue url to navigate back to the right page when sync setup is
+    // complete.
+    if (helper->original_continue_url_.is_empty())
+      helper->original_continue_url_ = continue_url;
     helper->continue_url_ = continue_url;
+  }
 }
 
 // static
@@ -968,7 +974,6 @@ void OneClickSigninHelper::CleanTransientState() {
   auto_accept_ = AUTO_ACCEPT_NONE;
   source_ = SyncPromoUI::SOURCE_UNKNOWN;
   switched_to_advanced_ = false;
-  original_source_ = SyncPromoUI::SOURCE_UNKNOWN;
   continue_url_ = GURL();
   untrusted_navigations_since_signin_visit_ = 0;
   untrusted_confirmation_required_ = false;
@@ -1160,11 +1165,6 @@ void OneClickSigninHelper::DidStopLoading(
       return;
     }
 
-    // Initialize |original_source_| if this is the first time the page has
-    // finished loading.
-    if (original_source_ == SyncPromoUI::SOURCE_UNKNOWN)
-      original_source_ = source_;
-
     // In explicit sign ins, the user may have changed the box
     // "Let me choose what to sync".  This is reflected as a change in the
     // source of the continue URL.  Make one last check of the current URL
@@ -1177,7 +1177,6 @@ void OneClickSigninHelper::DidStopLoading(
     SyncPromoUI::Source source =
         SyncPromoUI::GetSourceForSyncPromoURL(url);
     if (source != source_) {
-      original_source_ = source_;
       source_ = source;
       force_same_tab_navigation = source == SyncPromoUI::SOURCE_SETTINGS;
       switched_to_advanced_ = source == SyncPromoUI::SOURCE_SETTINGS;
@@ -1220,10 +1219,12 @@ void OneClickSigninHelper::DidStopLoading(
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
       break;
     case AUTO_ACCEPT_EXPLICIT: {
+      SyncPromoUI::Source original_source =
+          SyncPromoUI::GetSourceForSyncPromoURL(original_continue_url_);
       if (switched_to_advanced_) {
-        LogHistogramValue(original_source_,
+        LogHistogramValue(original_source,
                           one_click_signin::HISTOGRAM_WITH_ADVANCED);
-        LogHistogramValue(original_source_,
+        LogHistogramValue(original_source,
                           one_click_signin::HISTOGRAM_ACCEPTED);
       } else {
         LogHistogramValue(source_, one_click_signin::HISTOGRAM_ACCEPTED);
@@ -1282,10 +1283,9 @@ void OneClickSigninHelper::DidStopLoading(
       // requested a gaia sign in, so that when sign in and sync setup are
       // successful, we can redirect to the correct URL, or auto-close the gaia
       // sign in tab.
-      if (original_source_ == SyncPromoUI::SOURCE_SETTINGS ||
-          (original_source_ == SyncPromoUI::SOURCE_WEBSTORE_INSTALL &&
+      if (original_source == SyncPromoUI::SOURCE_SETTINGS ||
+          (original_source == SyncPromoUI::SOURCE_WEBSTORE_INSTALL &&
            source_ == SyncPromoUI::SOURCE_SETTINGS)) {
-        redirect_url_ = continue_url_;
         ProfileSyncService* sync_service =
             ProfileSyncServiceFactory::GetForProfile(profile);
         if (sync_service)
@@ -1306,10 +1306,9 @@ void OneClickSigninHelper::DidStopLoading(
 }
 
 void OneClickSigninHelper::OnStateChanged() {
-  // No redirect url after sync setup is set, thus no need to watch for sync
-  // state changes.
-  if (redirect_url_.is_empty())
-    return;
+  // We only add observer for ProfileSyncService when original_continue_url_ is
+  // not empty.
+  DCHECK(!original_continue_url_.is_empty());
 
   content::WebContents* contents = web_contents();
   Profile* profile =
@@ -1318,10 +1317,11 @@ void OneClickSigninHelper::OnStateChanged() {
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   // At this point, the sign in process is complete, and control has been handed
-  // back to the sync engine. Close the gaia sign in tab if |redirect_url_|
-  // contains the |auto_close| parameter. Otherwise, wait for sync setup to
-  // complete and then navigate to |redirect_url_|.
-  if (SyncPromoUI::IsAutoCloseEnabledInURL(redirect_url_)) {
+  // back to the sync engine. Close the gaia sign in tab if
+  // |original_continue_url_| contains the |auto_close| parameter. Otherwise,
+  // wait for sync setup to complete and then navigate to
+  // |original_continue_url_|.
+  if (SyncPromoUI::IsAutoCloseEnabledInURL(original_continue_url_)) {
     // Close the gaia sign in tab via a task to make sure we aren't in the
     // middle of any webui handler code.
     base::MessageLoop::current()->PostTask(
@@ -1333,14 +1333,15 @@ void OneClickSigninHelper::OnStateChanged() {
       return;
 
     if (sync_service->sync_initialized()) {
-      contents->GetController().LoadURL(redirect_url_,
+      contents->GetController().LoadURL(original_continue_url_,
                                         content::Referrer(),
                                         content::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                         std::string());
     }
   }
 
-  // Clear the redirect URL.
-  redirect_url_ = GURL();
+  // Clears |original_continue_url_| here instead of in CleanTransientState,
+  // because it is used in OnStateChanged which occurs later.
+  original_continue_url_ = GURL();
   sync_service->RemoveObserver(this);
 }

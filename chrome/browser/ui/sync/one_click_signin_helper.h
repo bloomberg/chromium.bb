@@ -234,11 +234,9 @@ class OneClickSigninHelper
   AutoAccept auto_accept_;
   SyncPromoUI::Source source_;
   bool switched_to_advanced_;
-  // When switching to advanced settings, we want to track the original source.
-  SyncPromoUI::Source original_source_;
   GURL continue_url_;
-  // Redirect URL after sync setup is complete.
-  GURL redirect_url_;
+  // The orignal continue URL after sync setup is complete.
+  GURL original_continue_url_;
   std::string error_message_;
 
   // Number of navigations since starting a sign in that is outside the
