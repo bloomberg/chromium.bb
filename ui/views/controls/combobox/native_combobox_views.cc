@@ -120,11 +120,19 @@ bool NativeComboboxViews::OnKeyPressed(const ui::KeyEvent& key_event) {
   if (selected_index_ == -1)
     selected_index_ = 0;
 
+  bool show_menu = false;
   int new_index = selected_index_;
   switch (key_event.key_code()) {
-    // Move to the next item if any.
+    // Show the menu on Space.
+    case ui::VKEY_SPACE:
+      show_menu = true;
+      break;
+
+    // Show the menu on Alt+Down (like Windows) or move to the next item if any.
     case ui::VKEY_DOWN:
-      if (new_index < (combobox_->model()->GetItemCount() - 1))
+      if (key_event.IsAltDown())
+        show_menu = true;
+      else if (new_index < (combobox_->model()->GetItemCount() - 1))
         new_index++;
       break;
 
@@ -150,7 +158,10 @@ bool NativeComboboxViews::OnKeyPressed(const ui::KeyEvent& key_event) {
       return false;
   }
 
-  if (new_index != selected_index_) {
+  if (show_menu) {
+    UpdateFromModel();
+    ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
+  } else if (new_index != selected_index_) {
     selected_index_ = new_index;
     combobox_->SelectionChanged();
     SchedulePaint();
