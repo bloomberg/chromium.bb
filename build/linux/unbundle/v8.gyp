@@ -26,7 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 {
-  'includes': ['../../build/common.gypi'],
+  'includes': ['../../build/toolchain.gypi', '../../build/features.gypi'],
   'targets': [
     {
       'target_name': 'v8',
