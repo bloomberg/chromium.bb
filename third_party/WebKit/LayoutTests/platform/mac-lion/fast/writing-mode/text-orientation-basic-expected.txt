@@ -18,7 +18,7 @@ layer at (0,0) size 785x704
           text run at (0,54) width 103: "API deficiency. "
           text run at (103,54) width 603: "There is no way to tell CoreText to use upright horizontal glyphs when rendering a vertical line."
       RenderBlock {DIV} at (0,88) size 388x600
-        RenderBlock {DIV} at (0,0) size 194x401 [border: (1px solid #008000)]
+        RenderBlock {DIV} at (0,0) size 194x400.78 [border: (1px solid #008000)]
           RenderInline {SPAN} at (0,0) size 40x173
             RenderText {#text} at (2,1) size 40x173
               text run at (2,1) width 173: "Hello world"

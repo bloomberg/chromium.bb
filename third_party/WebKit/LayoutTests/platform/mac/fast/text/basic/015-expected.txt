@@ -56,7 +56,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 253x18
           text run at (0,0) width 253: "\x{201C}Dolor\x{201D} should not break into two lines."
 layer at (8,406) size 45x20
-  RenderBlock (positioned) {DIV} at (8,406) size 45x20
-    RenderBlock {DIV} at (0,0) size 45x20 [border: (1px solid #00FFFF)]
+  RenderBlock (positioned) {DIV} at (8,406) size 44.81x20
+    RenderBlock {DIV} at (0,0) size 44.81x20 [border: (1px solid #00FFFF)]
       RenderText {#text} at (1,1) size 43x18
         text run at (1,1) width 43: "Dolor"

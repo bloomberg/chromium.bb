@@ -98,7 +98,7 @@ layer at (166,0) size 634x600
       RenderBlock (anonymous) at (320,0) size 274x584
         RenderBlock {HR} at (0,0) size 2x584 [border: (1px inset #EEEEEE)]
         RenderBlock {P} at (34,0) size 240x584
-          RenderBlock (floating) {SPAN} at (0,320) size 74x264 [border: (1px solid #FF0000)]
+          RenderBlock (floating) {SPAN} at (0,320.16) size 74x263.84 [border: (1px solid #FF0000)]
             RenderText {#text} at (7,1) size 24x118
               text run at (7,1) width 118: "float:right:"
             RenderInline {SPAN} at (0,0) size 24x25
