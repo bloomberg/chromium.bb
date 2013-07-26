@@ -61,27 +61,50 @@ function buildTaskManager(areConflicting) {
   var queue = [];
 
   /**
-   * Name of the current step of the currently running task if present,
-   * otherwise, null. For diagnostics only.
-   * It's set when the task is started and before each asynchronous operation.
+   * Count of unfinished callbacks of the current task.
+   * @type {number}
    */
-  var stepName = null;
+  var taskPendingCallbackCount = 0;
+
+  /**
+   * Required callbacks that are not yet called. Includes both task and non-task
+   * callbacks. This is a map from unique callback id to the stack at the moment
+   * when the callback was wrapped. This stack identifies the callback.
+   * Used only for diagnostics.
+   * @type {Object.<number, string>}
+   */
+  var pendingCallbacks = {};
+
+  /**
+   * True if currently executed code is a part of a task.
+   * @type {boolean}
+   */
+  var isInTask = false;
 
   /**
    * Starts the first queued task.
    */
   function startFirst() {
     verify(queue.length >= 1, 'startFirst: queue is empty');
+    verify(!isInTask, 'startFirst: already in task');
+    isInTask = true;
 
     // Start the oldest queued task, but don't remove it from the queue.
     verify(
-        stepName == null,
-        'tasks.startFirst: stepName is not null: ' + stepName +
-        ', queue = ' + JSON.stringify(queue));
+        taskPendingCallbackCount == 0,
+        'tasks.startFirst: still have pending task callbacks: ' +
+        taskPendingCallbackCount +
+        ', queue = ' + JSON.stringify(queue) +
+        ', pendingCallbacks = ' + JSON.stringify(pendingCallbacks));
     var entry = queue[0];
-    stepName = entry.name + '-initial';
     console.log('Starting task ' + entry.name);
-    entry.task(finish);
+
+    entry.task(function() {});  // TODO(vadimt): Don't pass parameter.
+
+    verify(isInTask, 'startFirst: not in task at exit');
+    isInTask = false;
+    if (taskPendingCallbackCount == 0)
+      finish();
   }
 
   /**
@@ -126,23 +149,12 @@ function buildTaskManager(areConflicting) {
    */
   function finish() {
     verify(queue.length >= 1,
-           'tasks.finish: The task queue is empty; step = ' + stepName);
+           'tasks.finish: The task queue is empty');
     console.log('Finishing task ' + queue[0].name);
     queue.shift();
-    stepName = null;
 
     if (queue.length >= 1)
       startFirst();
-  }
-
-  /**
-   * Associates a name with the current step of the task. Used for diagnostics
-   * only. A task is a chain of asynchronous events; debugSetStepName should be
-   * called before starting any asynchronous operation.
-   * @param {string} step Name of new step.
-   */
-  function debugSetStepName(step) {
-    stepName = step;
   }
 
   // Limiting 1 error report per background page load.
@@ -187,15 +199,46 @@ function buildTaskManager(areConflicting) {
   }
 
   /**
+   * Unique ID of the next callback.
+   * @type {number}
+   */
+  var nextCallbackId = 0;
+
+  /**
    * Adds error processing to an API callback.
    * @param {Function} callback Callback to instrument.
+   * @param {boolean=} opt_dontRequire True if the callback is not required to
+   *     be invoked.
    * @return {Function} Instrumented callback.
    */
-  function wrapCallback(callback) {
+  function wrapCallback(callback, opt_dontRequire) {
+    verify(!(opt_dontRequire && isInTask), 'Unrequired callback in a task.');
+    var callbackId = nextCallbackId++;
+    var isTaskCallback = isInTask;
+    if (isTaskCallback)
+      ++taskPendingCallbackCount;
+    if (!opt_dontRequire)
+      pendingCallbacks[callbackId] = new Error().stack;
+
     return function() {
       // This is the wrapper for the callback.
       try {
-        return callback.apply(null, arguments);
+        if (isTaskCallback) {
+          verify(!isInTask, 'wrapCallback: already in task');
+          isInTask = true;
+        }
+        if (!opt_dontRequire)
+          delete pendingCallbacks[callbackId];
+
+        // Call the original callback.
+        callback.apply(null, arguments);
+
+        if (isTaskCallback) {
+          verify(isInTask, 'wrapCallback: not in task at exit');
+          isInTask = false;
+          if (--taskPendingCallbackCount == 0)
+            finish();
+        }
       } catch (error) {
         var message = 'Uncaught exception:\n' + error.stack;
         console.error(message);
@@ -233,7 +276,8 @@ function buildTaskManager(areConflicting) {
         alert('Argument ' + callbackParameter + ' of ' + functionName +
               ' is not a function');
       }
-      arguments[callbackParameter] = wrapCallback(callback);
+      arguments[callbackParameter] = wrapCallback(
+          callback, functionName == 'addListener');
       return originalFunction.apply(namespace, arguments);
     };
   }
@@ -242,20 +286,17 @@ function buildTaskManager(areConflicting) {
   instrumentApiFunction(chrome.runtime.onSuspend, 'addListener', 0);
 
   chrome.runtime.onSuspend.addListener(function() {
+    var stringifiedPendingCallbacks = JSON.stringify(pendingCallbacks);
     verify(
-        queue.length == 0,
-        'Incomplete task when unloading event page, queue = ' +
-        JSON.stringify(queue) + ', step = ' + stepName);
-    verify(
-        stepName == null,
-        'Step name not null when unloading event page, queue = ' +
-        JSON.stringify(queue) + ', step = ' + stepName);
+        queue.length == 0 && stringifiedPendingCallbacks == '{}',
+        'Incomplete task or pending callbacks when unloading event page,' +
+        ' queue = ' + JSON.stringify(queue) +
+        ', pendingCallbacks = ' + stringifiedPendingCallbacks);
   });
 
   return {
     add: add,
-    // TODO(vadimt): Replace with instrumenting callbacks.
-    debugSetStepName: debugSetStepName,
+    debugSetStepName: function() {},  // TODO(vadimt): remove
     instrumentApiFunction: instrumentApiFunction,
     wrapCallback: wrapCallback
   };
@@ -338,7 +379,6 @@ function buildAttemptManager(
    *     the planning is done.
    */
   function planForNext(callback) {
-    tasks.debugSetStepName('planForNext-get-storage');
     storage.get(currentDelayStorageKey, function(items) {
       console.log('planForNext-get-storage ' + JSON.stringify(items));
       scheduleNextAttempt(items[currentDelayStorageKey]);
