@@ -19,6 +19,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/base/events/event.h"
+#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/theme_provider.h"
@@ -41,7 +42,7 @@
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/focus/widget_focus_manager.h"
-#include "ui/views/ime/input_method_win.h"
+#include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/aero_tooltip_manager.h"
 #include "ui/views/widget/drop_target_win.h"
 #include "ui/views/widget/monitor_win.h"
@@ -211,7 +212,8 @@ bool NativeWidgetWin::HasCapture() const {
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
-  return new InputMethodWin(GetMessageHandler(), GetNativeWindow(), NULL);
+  return new InputMethodBridge(GetMessageHandler(), ui::GetSharedInputMethod(),
+                               true);
 }
 
 internal::InputMethodDelegate* NativeWidgetWin::GetInputMethodDelegate() {
