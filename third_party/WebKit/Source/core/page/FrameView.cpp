@@ -341,6 +341,9 @@ void FrameView::prepareForDetach()
 {
     RELEASE_ASSERT(!isInLayout());
 
+    if (ScrollAnimator* scrollAnimator = existingScrollAnimator())
+        scrollAnimator->cancelAnimations();
+
     detachCustomScrollbars();
     // When the view is no longer associated with a frame, it needs to be removed from the ax object cache
     // right now, otherwise it won't be able to reach the topDocument()'s axObject cache later.

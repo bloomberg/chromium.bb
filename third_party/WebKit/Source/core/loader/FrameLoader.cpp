@@ -377,34 +377,6 @@ bool FrameLoader::closeURL()
     return true;
 }
 
-bool FrameLoader::didOpenURL()
-{
-    if (m_frame->navigationScheduler()->redirectScheduledDuringLoad()) {
-        // A redirect was scheduled before the document was created.
-        // This can happen when one frame changes another frame's location.
-        return false;
-    }
-
-    m_frame->navigationScheduler()->cancel();
-    m_frame->editor()->clearLastEditCommand();
-
-    m_isComplete = false;
-    m_didCallImplicitClose = false;
-
-    // If we are still in the process of initializing an empty document then
-    // its frame is not in a consistent state for rendering, so avoid setJSStatusBarText
-    // since it may cause clients to attempt to render the frame.
-    if (!m_stateMachine.creatingInitialEmptyDocument()) {
-        DOMWindow* window = m_frame->domWindow();
-        window->setStatus(String());
-        window->setDefaultStatus(String());
-    }
-
-    started();
-
-    return true;
-}
-
 void FrameLoader::didExplicitOpen()
 {
     m_isComplete = false;
@@ -761,8 +733,6 @@ void FrameLoader::resetMultipleFormSubmissionProtection()
     m_submittedFormURL = KURL();
 }
 
-// This does the same kind of work that didOpenURL does, except it relies on the fact
-// that a higher level already checked that the URLs match and the scrolling is the right thing to do.
 void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation)
 {
     // If we have a state object, we cannot also be a new navigation.
@@ -1228,12 +1198,10 @@ void FrameLoader::clearProvisionalLoad()
 
 void FrameLoader::commitProvisionalLoad()
 {
+    ASSERT(m_client->hasWebView());
+    ASSERT(m_state == FrameStateProvisional);
     RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
     RefPtr<Frame> protect(m_frame);
-
-    LOG(Loading, "WebCoreLoading %s: About to commit provisional load from previous URL '%s' to new URL '%s'", m_frame->tree()->uniqueName().string().utf8().data(),
-        m_frame->document() ? m_frame->document()->url().elidedString().utf8().data() : "",
-        pdl ? pdl->url().elidedString().utf8().data() : "<no provisional DocumentLoader>");
 
     if (m_loadType != FrameLoadTypeReplace)
         closeOldDataSources();
@@ -1244,49 +1212,22 @@ void FrameLoader::commitProvisionalLoad()
         pdl->timing()->setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_frame->document()->url()));
     }
 
-    transitionToCommitted();
-    didOpenURL();
-
-    LOG(Loading, "WebCoreLoading %s: Finished committing provisional load to URL %s", m_frame->tree()->uniqueName().string().utf8().data(),
-        m_frame->document() ? m_frame->document()->url().elidedString().utf8().data() : "");
-}
-
-void FrameLoader::transitionToCommitted()
-{
-    ASSERT(m_client->hasWebView());
-    ASSERT(m_state == FrameStateProvisional);
-
-    if (m_state != FrameStateProvisional)
-        return;
-
     clearAllowNavigationViaBeforeUnloadConfirmationPanel();
-
-    if (FrameView* view = m_frame->view()) {
-        if (ScrollAnimator* scrollAnimator = view->existingScrollAnimator())
-            scrollAnimator->cancelAnimations();
-    }
 
     // The call to closeURL() invokes the unload event handler, which can execute arbitrary
     // JavaScript. If the script initiates a new load, we need to abandon the current load,
     // or the two will stomp each other.
-    DocumentLoader* pdl = m_provisionalDocumentLoader.get();
     if (m_documentLoader)
         closeURL();
     if (pdl != m_provisionalDocumentLoader)
         return;
 
-    // Nothing else can interupt this commit - set the Provisional->Committed transition in stone
-    if (m_documentLoader)
-        m_documentLoader->stopLoadingSubresources();
-
     setDocumentLoader(m_provisionalDocumentLoader.get());
     setProvisionalDocumentLoader(0);
-
     if (pdl != m_documentLoader) {
         ASSERT(m_state == FrameStateComplete);
         return;
     }
-
     setState(FrameStateCommittedPage);
 
     if (isLoadingMainFrame())
@@ -1297,6 +1238,24 @@ void FrameLoader::transitionToCommitted()
 
     if (!m_stateMachine.creatingInitialEmptyDocument() && !m_stateMachine.committedFirstRealDocumentLoad())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
+
+    // A redirect was scheduled before the first real document was committed.
+    // This can happen when one frame changes another frame's location.
+    if (m_frame->navigationScheduler()->redirectScheduledDuringLoad())
+        return;
+    m_frame->navigationScheduler()->cancel();
+    m_frame->editor()->clearLastEditCommand();
+
+    // If we are still in the process of initializing an empty document then
+    // its frame is not in a consistent state for rendering, so avoid setJSStatusBarText
+    // since it may cause clients to attempt to render the frame.
+    if (!m_stateMachine.creatingInitialEmptyDocument()) {
+        DOMWindow* window = m_frame->domWindow();
+        window->setStatus(String());
+        window->setDefaultStatus(String());
+    }
+    m_didCallImplicitClose = false;
+    started();
 }
 
 void FrameLoader::closeOldDataSources()

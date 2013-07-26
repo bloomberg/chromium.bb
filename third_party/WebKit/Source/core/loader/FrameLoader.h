@@ -262,7 +262,6 @@ private:
     FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
 
     void clearProvisionalLoad();
-    void transitionToCommitted();
     void frameLoadCompleted();
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);
@@ -301,8 +300,6 @@ private:
     void closeAndRemoveChild(Frame*);
 
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation);
-
-    bool didOpenURL();
 
     void scheduleCheckCompleted();
     void scheduleCheckLoadComplete();
