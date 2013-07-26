@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "third_party/zlib/zlib.h"
-#include "third_party/zlib/zutil.h"
 
 namespace {
 
@@ -18,6 +17,11 @@ const size_t kGzipZlibHeaderDifferenceBytes = 16;
 // Pass an integer greater than the following get a gzip header instead of a
 // zlib header when calling deflateInit2_.
 const int kWindowBitsToGetGzipHeader = 16;
+
+// This describes the amount of memory zlib uses to compress data. It can go
+// from 1 to 9, with 8 being the default. For details, see:
+// http://www.zlib.net/manual.html (search for memLevel).
+const int kZlibMemoryLevel = 8;
 
 // This code is taken almost verbatim from third_party/zlib/compress.c. The only
 // difference is deflateInit2_ is called which sets the window bits to be > 16.
@@ -45,7 +49,7 @@ int GzipCompressHelper(Bytef* dest,
                             Z_DEFAULT_COMPRESSION,
                             Z_DEFLATED,
                             MAX_WBITS + kWindowBitsToGetGzipHeader,
-                            DEF_MEM_LEVEL,
+                            kZlibMemoryLevel,
                             Z_DEFAULT_STRATEGY,
                             ZLIB_VERSION,
                             sizeof(z_stream));
