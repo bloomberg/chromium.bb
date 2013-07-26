@@ -268,6 +268,11 @@ void AutofillCreditCardBubbleController::Show(bool was_anchor_click) {
     return;
 
   bubble_ = CreateBubble();
+  if (!bubble_) {
+    // TODO(dbeam): Make a bubble on all applicable platforms.
+    return;
+  }
+
   bubble_->Show();
 
   if (IsGeneratedCardBubble() && !was_anchor_click) {
