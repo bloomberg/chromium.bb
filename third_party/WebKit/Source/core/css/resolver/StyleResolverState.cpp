@@ -25,27 +25,9 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/NodeRenderingTraversal.h"
-#include "core/dom/VisitedLinkState.h"
 #include "core/page/Page.h"
 
 namespace WebCore {
-
-ElementResolveContext::ElementResolveContext(Element* element)
-    : m_element(element)
-    , m_elementLinkState(element ? element->document()->visitedLinkState()->determineLinkState(element) : NotInsideLink)
-    , m_distributedToInsertionPoint(false)
-    , m_resetStyleInheritance(false)
-{
-    NodeRenderingTraversal::ParentDetails parentDetails;
-    m_parentNode = NodeRenderingTraversal::parent(element, &parentDetails);
-    m_distributedToInsertionPoint = parentDetails.insertionPoint();
-    m_resetStyleInheritance = parentDetails.resetStyleInheritance();
-
-    Node* documentElement = document()->documentElement();
-    RenderStyle* documentStyle = document()->renderStyle();
-    m_rootElementStyle = documentElement && element != documentElement ? documentElement->renderStyle() : documentStyle;
-}
 
 StyleResolverState::StyleResolverState(const Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
     : m_regionForStyling(0)

@@ -24,9 +24,9 @@
 
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css/SelectorChecker.h"
+#include "core/css/resolver/ElementResolveContext.h"
 #include "core/css/resolver/MatchRequest.h"
 #include "core/css/resolver/MatchResult.h"
-#include "core/css/resolver/StyleResolverState.h" // For ElementResolveContext
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 

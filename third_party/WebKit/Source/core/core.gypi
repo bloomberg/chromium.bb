@@ -751,6 +751,8 @@
             'css/StyleSheetContents.h',
             'css/StyleSheetList.cpp',
             'css/StyleSheetList.h',
+            'css/resolver/ElementResolveContext.cpp',
+            'css/resolver/ElementResolveContext.h',
             'css/resolver/ElementStyleResources.cpp',
             'css/resolver/ElementStyleResources.h',
             'css/resolver/FilterOperationResolver.cpp',

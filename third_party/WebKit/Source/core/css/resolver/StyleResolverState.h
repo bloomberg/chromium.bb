@@ -26,6 +26,7 @@
 
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToStyleMap.h"
+#include "core/css/resolver/ElementResolveContext.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/dom/Element.h"
@@ -37,40 +38,6 @@ namespace WebCore {
 
 class FontDescription;
 class RenderRegion;
-
-// ElementResolveContext is immutable and serves as an input to the style resolve process.
-class ElementResolveContext {
-public:
-    ElementResolveContext()
-        : m_element(0)
-        , m_parentNode(0)
-        , m_rootElementStyle(0)
-        , m_elementLinkState(NotInsideLink)
-        , m_distributedToInsertionPoint(false)
-        , m_resetStyleInheritance(false)
-    {
-    }
-
-    explicit ElementResolveContext(Element*);
-
-    Document* document() const { return m_element->document(); }
-    bool isDocumentElement() const { return m_element && m_element == m_element->document()->documentElement(); }
-
-    Element* element() const { return m_element; }
-    const ContainerNode* parentNode() const { return m_parentNode; }
-    RenderStyle* rootElementStyle() const { return m_rootElementStyle; }
-    EInsideLink elementLinkState() const { return m_elementLinkState; }
-    bool distributedToInsertionPoint() const { return m_distributedToInsertionPoint; }
-    bool resetStyleInheritance() const { return m_resetStyleInheritance; }
-
-private:
-    Element* m_element;
-    ContainerNode* m_parentNode;
-    RenderStyle* m_rootElementStyle;
-    EInsideLink m_elementLinkState;
-    bool m_distributedToInsertionPoint;
-    bool m_resetStyleInheritance;
-};
 
 class StyleResolverState {
 WTF_MAKE_NONCOPYABLE(StyleResolverState);
