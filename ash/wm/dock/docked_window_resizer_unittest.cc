@@ -634,7 +634,8 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne)
   // window and the mouse pointer does not leave the dock area the window
   // should stay docked.
   ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(w2.get(), 60, 0));
-  DragMove(-40, -10);
+  // Drag up as well as left to avoid attaching panels to launcher shelf.
+  DragMove(-40, -40);
   // Release the mouse and the window should be still attached to the edge.
   DragEnd();
 

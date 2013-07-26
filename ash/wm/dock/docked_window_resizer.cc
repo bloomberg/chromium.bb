@@ -174,7 +174,7 @@ bool DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
       (dock_alignment == internal::DOCKED_ALIGNMENT_NONE && was_docked_)) {
     const int distance = bounds.x() - dock_bounds.x();
     if (distance < kSnapToDockDistance && distance > -kStickyDistance) {
-      offset->set_x(dock_bounds.x() - bounds.x());
+      offset->set_x(-distance);
       return true;
     }
   }
@@ -182,7 +182,7 @@ bool DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
       (dock_alignment == internal::DOCKED_ALIGNMENT_NONE && was_docked_)) {
     const int distance = dock_bounds.right() - bounds.right();
     if (distance < kSnapToDockDistance && distance > -kStickyDistance) {
-      offset->set_x(dock_bounds.right() - bounds.right());
+      offset->set_x(distance);
       return true;
     }
   }
@@ -204,8 +204,12 @@ void DockedWindowResizer::FinishDragging() {
       !(details_.bounds_change & WindowResizer::kBoundsChange_Resizes) &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableDockedWindows)) {
-    should_dock = internal::DockedWindowLayoutManager::ShouldWindowDock(
-        window, last_location_);
+    const bool attached_panel =
+        window->type() == aura::client::WINDOW_TYPE_PANEL &&
+        window->GetProperty(internal::kPanelAttachedKey);
+    should_dock = !attached_panel &&
+        internal::DockedWindowLayoutManager::ShouldWindowDock(window,
+                                                              last_location_);
   }
 
   // Check if desired docked state is not same as current.
