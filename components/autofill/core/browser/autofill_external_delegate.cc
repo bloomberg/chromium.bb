@@ -48,6 +48,9 @@ void AutofillExternalDelegate::OnQuery(int query_id,
                                        const FormFieldData& field,
                                        const gfx::RectF& element_bounds,
                                        bool display_warning_if_disabled) {
+  // TODO(csharp): Remove once Autofill test flakiness is fixed.
+  LOG(INFO) << "AutofillExternalDelegate::OnQuery";
+
   autofill_query_form_ = form;
   autofill_query_field_ = field;
   display_warning_if_disabled_ = display_warning_if_disabled;
@@ -61,6 +64,9 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     const std::vector<base::string16>& autofill_labels,
     const std::vector<base::string16>& autofill_icons,
     const std::vector<int>& autofill_unique_ids) {
+  // TODO(csharp): Remove once Autofill test flakiness is fixed.
+  LOG(INFO) << "AutofillExternalDelegate::OnSuggestionsReturned";
+
   if (query_id != autofill_query_id_)
     return;
 

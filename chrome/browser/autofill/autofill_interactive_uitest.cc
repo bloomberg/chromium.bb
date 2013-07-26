@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -75,14 +76,17 @@ class AutofillManagerTestDelegateImpl
   AutofillManagerTestDelegateImpl() {}
 
   virtual void DidPreviewFormData() OVERRIDE {
+    LOG(INFO) << "DidPreviewFormData";
     loop_runner_->Quit();
   }
 
   virtual void DidFillFormData() OVERRIDE {
+    LOG(INFO) << "DidFillFormData";
     loop_runner_->Quit();
   }
 
   virtual void DidShowSuggestions() OVERRIDE {
+    LOG(INFO) << "DidShowSuggestions";
     loop_runner_->Quit();
   }
 
@@ -303,14 +307,6 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   }
 
   void SendKeyToPopupAndWait(ui::KeyboardCode key) {
-    // TODO(isherman): Remove this condition once the WebKit popup UI code is
-    // removed.
-    if (!external_delegate()) {
-      // When testing the WebKit-based UI, route all keys to the page.
-      SendKeyToPageAndWait(key);
-      return;
-    }
-
     // When testing the native UI, route popup-targeted key presses via the
     // external delegate.
     content::NativeWebKeyboardEvent event;
@@ -332,7 +328,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   AutofillManagerTestDelegateImpl test_delegate_;
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DISABLED_AutofillSelectViaTab) {
+// Temporarily renabled to help track down flakiness. crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
   CreateTestProfile();
 
   // Load the test page.
@@ -341,6 +338,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DISABLED_AutofillSelectViaTab) {
 
   // Focus a fillable field.
   FocusFirstNameField();
+
+  // Enable all logging to help track down the flakiness.
+  // TODO(csharp): Remove once this flakiness is fixed.
+  logging::SetMinLogLevel(0);
 
   // Press the down arrow to initiate Autofill and wait for the popup to be
   // shown.
