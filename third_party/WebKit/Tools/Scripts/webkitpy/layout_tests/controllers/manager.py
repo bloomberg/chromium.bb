@@ -139,12 +139,11 @@ class Manager(object):
         return self._is_http_test(test_file) or self._is_perf_test(test_file)
 
     def _test_is_expected_missing(self, test_file):
-        return (self._expectations.model().has_keyword(test_file, test_expectations.MISSING_KEYWORD)
-            or self._expectations.model().has_keyword(test_file, test_expectations.NEEDS_REBASELINE_KEYWORD)
-            or self._expectations.model().has_keyword(test_file, test_expectations.NEEDS_MANUAL_REBASELINE_KEYWORD))
+        expectations = self._expectations.model().get_expectations(test_file)
+        return test_expectations.MISSING in expectations or test_expectations.NEEDS_REBASELINE in expectations or test_expectations.NEEDS_MANUAL_REBASELINE in expectations
 
     def _test_is_slow(self, test_file):
-        return self._expectations.has_modifier(test_file, test_expectations.SLOW)
+        return test_expectations.SLOW in self._expectations.model().get_expectations(test_file)
 
     def needs_servers(self, test_names):
         return any(self._test_requires_lock(test_name) for test_name in test_names)

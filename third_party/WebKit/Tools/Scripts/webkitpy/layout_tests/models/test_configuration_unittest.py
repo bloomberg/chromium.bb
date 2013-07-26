@@ -167,7 +167,7 @@ class TestConfigurationConverterTest(unittest.TestCase):
 
         errors = []
         self.assertEqual(converter.to_config_set(set(['xp', 'foo']), errors), set())
-        self.assertEqual(errors, ["Unrecognized modifier 'foo'"])
+        self.assertEqual(errors, ["Unrecognized specifier 'foo'"])
 
         self.assertEqual(converter.to_config_set(set(['xp', 'x86_64'])), set())
 

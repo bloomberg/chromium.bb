@@ -80,7 +80,7 @@ def summarized_results(port, expected, passing, flaky, only_include_failing=Fals
         initial_results.add(get_result('failures/expected/crash.html', test_expectations.TIMEOUT), expected, test_is_slow)
 
         # we only list hang.html here, since normally this is WontFix
-        initial_results.add(get_result('failures/expected/hang.html', test_expectations.TIMEOUT), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/hang.html', test_expectations.SKIP), expected, test_is_slow)
 
     if flaky:
         retry_results = run_results(port, extra_skipped_tests)
@@ -126,13 +126,13 @@ class SummarizedResultsTest(unittest.TestCase):
 
     def test_num_failures_by_type(self):
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
-        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 0, 'SKIP': 0, 'TIMEOUT': 2, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 1})
+        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 0, 'REBASELINE': 0, 'SKIP': 0, 'SLOW': 0, 'TIMEOUT': 2, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 1, 'WONTFIX': 0})
 
         summary = summarized_results(self.port, expected=True, passing=False, flaky=False)
-        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 1, 'SKIP': 0, 'TIMEOUT': 1, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 1})
+        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 1, 'REBASELINE': 0, 'SKIP': 0, 'SLOW': 0, 'TIMEOUT': 1, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 1, 'WONTFIX': 0})
 
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
-        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 0, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 4, 'SKIP': 1, 'TIMEOUT': 0, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 0})
+        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 0, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 4, 'REBASELINE': 0, 'SKIP': 1, 'SLOW': 0, 'TIMEOUT': 0, 'IMAGE+TEXT': 0, 'FAIL': 0, 'AUDIO': 0, 'WONTFIX': 0})
 
     def test_svn_revision(self):
         self.port._options.builder_name = 'dummy builder'

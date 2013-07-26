@@ -143,7 +143,7 @@ class BotTestExpectations(object):
         line.original_string = test_path
         line.name = test_path
         line.filename = test_path
-        line.modifiers = bug_urls if bug_urls else ""
+        line.specifiers = bug_urls if bug_urls else ""
         line.expectations = sorted(map(self.results_json.expectation_for_type, flaky_types))
         return line
 
@@ -161,16 +161,12 @@ class BotTestExpectations(object):
     def unexpected_results_by_path(self):
         """For tests with unexpected results, returns original expectations + results."""
         def exp_to_string(exp):
-            return (TestExpectations.EXPECTATIONS_TO_STRING.get(exp, None) or
-                    TestExpectations.MODIFIERS_TO_STRING.get(exp, None)).upper()
+            return TestExpectations.EXPECTATIONS_TO_STRING.get(exp, None).upper()
 
         def string_to_exp(string):
             # Needs a bit more logic than the method above,
             # since a PASS is 0 and evaluates to False.
             result = TestExpectations.EXPECTATIONS.get(string.lower(), None)
-            if not result is None:
-                return result
-            result = TestExpectations.MODIFIERS.get(string.lower(), None)
             if not result is None:
                 return result
             raise ValueError(string)

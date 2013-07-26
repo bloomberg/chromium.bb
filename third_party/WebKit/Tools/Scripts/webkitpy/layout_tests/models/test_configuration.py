@@ -157,7 +157,7 @@ class TestConfigurationConverter(object):
                 configurations = self._specifier_to_configuration_set.get(expanded_specifier)
                 if not configurations:
                     if error_list is not None:
-                        error_list.append("Unrecognized modifier '" + expanded_specifier + "'")
+                        error_list.append("Unrecognized specifier '" + expanded_specifier + "'")
                     return set()
                 category = self._specifier_sorter.category_for_specifier(expanded_specifier)
                 matching_sets.setdefault(category, set()).update(configurations)
@@ -233,7 +233,7 @@ class TestConfigurationConverter(object):
 
     def to_specifiers_list(self, test_configuration_set):
         """Convert a set of TestConfiguration instances into one or more list of specifiers."""
-        # Easy out: if the set is all configurations, the modifier is empty.
+        # Easy out: if the set is all configurations, the specifier is empty.
         if len(test_configuration_set) == len(self._all_test_configurations):
             return [[]]
 
