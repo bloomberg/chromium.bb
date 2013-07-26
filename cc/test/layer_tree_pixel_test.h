@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/layers/solid_color_layer.h"
 #include "cc/test/layer_tree_test.h"
 
 #ifndef CC_TEST_LAYER_TREE_PIXEL_TEST_H_
@@ -18,6 +19,8 @@ class CopyOutputRequest;
 class CopyOutputResult;
 class LayerTreeHost;
 class PixelComparator;
+class SolidColorLayer;
+class TextureLayer;
 class TextureMailbox;
 
 class LayerTreePixelTest : public LayerTreeTest {
@@ -38,6 +41,9 @@ class LayerTreePixelTest : public LayerTreeTest {
   virtual void BeginTest() OVERRIDE;
   virtual void SetupTree() OVERRIDE;
   virtual void AfterTest() OVERRIDE;
+  virtual void EndTest() OVERRIDE;
+
+  void TryEndTest();
 
   scoped_refptr<SolidColorLayer> CreateSolidColorLayer(gfx::Rect rect,
                                                        SkColor color);
@@ -46,6 +52,8 @@ class LayerTreePixelTest : public LayerTreeTest {
       SkColor color,
       int border_width,
       SkColor border_color);
+  scoped_refptr<TextureLayer> CreateTextureLayer(gfx::Rect rect,
+                                                 const SkBitmap& bitmap);
 
   enum PixelTestType {
     GL_WITH_DEFAULT,
@@ -67,6 +75,14 @@ class LayerTreePixelTest : public LayerTreeTest {
       gfx::Size size,
       const TextureMailbox& texture_mailbox);
 
+  TextureMailbox CopyBitmapToTextureMailboxAsTexture(const SkBitmap& bitmap);
+
+  void ReleaseTextureMailbox(
+      scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+      uint32 texture,
+      uint32 sync_point,
+      bool lost_resource);
+
   // Common CSS colors defined for tests to use.
   enum Colors {
     kCSSOrange = 0xffffa500,
@@ -75,13 +91,13 @@ class LayerTreePixelTest : public LayerTreeTest {
   };
 
   scoped_ptr<PixelComparator> pixel_comparator_;
-
- protected:
   PixelTestType test_type_;
   scoped_refptr<Layer> content_root_;
   Layer* readback_target_;
   base::FilePath ref_file_;
   scoped_ptr<SkBitmap> result_bitmap_;
+  std::vector<scoped_refptr<TextureLayer> > texture_layers_;
+  int pending_texture_mailbox_callbacks_;
 };
 
 }  // namespace cc
