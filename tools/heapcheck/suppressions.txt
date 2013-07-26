@@ -1007,53 +1007,6 @@
    fun:~TestStorageMonitorLinux
 }
 {
-   bug_222687b
-   Heapcheck:Leak
-   fun:base::internal::WeakReferenceOwner::GetRef
-   fun:base::WeakPtrFactory::GetWeakPtr
-   fun:chrome::StorageMonitorLinux::Init
-   fun:SetUp
-}
-{
-   bug_222687c
-   Heapcheck:Leak
-   fun:base::internal::WeakReferenceOwner::GetRef
-   fun:base::WeakPtrFactory::GetWeakPtr
-   fun:MtabWatcherLinux
-   fun:CreateMtabWatcherLinuxOnFileThread
-}
-{
-   bug_222687d
-   Heapcheck:Leak
-   ...
-   fun:CreateMtabWatcherLinuxOnFileThread
-}
-{
-   bug_222687e
-   Heapcheck:Leak
-   fun:MessageLoop
-   fun:StorageMonitorLinuxTest
-   fun:StorageMonitorLinuxTest_*_Test
-}
-{
-   bug_222687f
-   Heapcheck:Leak
-   fun:std::basic_string::_Rep::_S_create
-   fun:base::FilePath::clear
-   fun:CancelOnMessageLoopThread
-   fun:WillDestroyCurrentMessageLoop
-   fun:~MessageLoop
-   fun:~StorageMonitorLinuxTest
-}
-{
-   bug_262974
-   Heapcheck:Leak
-   fun:std::basic_string::_Rep::_S_create
-   fun:base::FilePath::Append
-   fun:base::FilePath::AppendASCII
-   fun:SetUp
-}
-{
    bug_263748a
    Heapcheck:Leak
    ...
