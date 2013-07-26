@@ -52,7 +52,7 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -436,7 +436,7 @@ void OpenCurrentURL(Browser* browser) {
   const extensions::Extension* extension =
       browser->profile()->GetExtensionService()->GetInstalledApp(url);
   if (extension) {
-    AppLauncherHandler::RecordAppLaunchType(
+    CoreAppLauncherHandler::RecordAppLaunchType(
         extension_misc::APP_LAUNCH_OMNIBOX_LOCATION,
         extension->GetType());
   }

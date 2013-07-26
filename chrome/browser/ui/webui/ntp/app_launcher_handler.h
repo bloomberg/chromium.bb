@@ -106,21 +106,12 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // page_index].
   void HandleGenerateAppForLink(const base::ListValue* args);
 
-  // Callback for the "recordAppLaunchByURL" message. Takes an escaped URL and a
-  // launch source (integer), and if the URL represents an app, records the
-  // action for UMA.
-  void HandleRecordAppLaunchByUrl(const base::ListValue* args);
-
   // Other registered message callbacks with unused |args|.
   void StopShowingAppLauncherPromo(const base::ListValue* args);
   void OnLearnMore(const base::ListValue* args);
 
   // Register app launcher preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  // Records the given type of app launch for UMA.
-  static void RecordAppLaunchType(extension_misc::AppLaunchBucket bucket,
-                                  extensions::Manifest::Type app_type);
 
   // Records an app launch from the search view of the app list.
   static void RecordAppListSearchLaunch(const extensions::Extension* extension);
@@ -144,12 +135,6 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
 
   // Records a web store launch in the appropriate histograms.
   static void RecordWebStoreLaunch();
-
-  // Records an app launch in the corresponding |bucket| of the app launch
-  // histogram if the |escaped_url| corresponds to an installed app.
-  static void RecordAppLaunchByUrl(Profile* profile,
-                                   std::string escaped_url,
-                                   extension_misc::AppLaunchBucket bucket);
 
   // Prompts the user to re-enable the app for |extension_id|.
   void PromptToEnableApp(const std::string& extension_id);

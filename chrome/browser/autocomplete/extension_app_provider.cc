@@ -17,7 +17,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/notification_source.h"
@@ -54,7 +54,7 @@ void ExtensionAppProvider::LaunchAppFromOmnibox(
   if (!extension)
     return;
 
-  AppLauncherHandler::RecordAppLaunchType(
+  CoreAppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_OMNIBOX_APP,
       extension->GetType());
 

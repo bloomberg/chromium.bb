@@ -38,6 +38,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
@@ -109,6 +110,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     web_ui->AddMessageHandler(new FaviconWebUIHandler());
     web_ui->AddMessageHandler(new MetricsHandler());
     web_ui->AddMessageHandler(new NewTabPageHandler());
+    web_ui->AddMessageHandler(new CoreAppLauncherHandler());
     if (NewTabUI::IsDiscoveryInNTPEnabled())
       web_ui->AddMessageHandler(new SuggestionsHandler());
     // Android doesn't have a sync promo/username on NTP.

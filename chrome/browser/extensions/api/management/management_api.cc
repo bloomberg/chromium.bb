@@ -48,7 +48,7 @@
 #include "extensions/common/url_pattern.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #endif
 
 using base::IntToString;
@@ -437,7 +437,7 @@ bool ManagementLaunchAppFunction::RunImpl() {
                                                   launch_container,
                                                   NEW_FOREGROUND_TAB));
 #if !defined(OS_ANDROID)
-  AppLauncherHandler::RecordAppLaunchType(
+  CoreAppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_EXTENSION_API,
       extension->GetType());
 #endif

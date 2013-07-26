@@ -44,7 +44,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -136,7 +136,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!extension)
     return;
 
-  AppLauncherHandler::RecordAppLaunchType(
+  CoreAppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_BOOKMARK_BAR,
       extension->GetType());
 }

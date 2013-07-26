@@ -69,7 +69,7 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -236,7 +236,7 @@ bool ParseCommaSeparatedIntegers(const std::string& str,
 }
 
 void RecordCmdLineAppHistogram(extensions::Manifest::Type app_type) {
-  AppLauncherHandler::RecordAppLaunchType(
+  CoreAppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP,
       app_type);
 }
@@ -250,7 +250,7 @@ void RecordAppLaunches(Profile* profile,
     const extensions::Extension* extension =
         extension_service->GetInstalledApp(cmd_line_urls.at(i));
     if (extension) {
-      AppLauncherHandler::RecordAppLaunchType(
+      CoreAppLauncherHandler::RecordAppLaunchType(
           extension_misc::APP_LAUNCH_CMD_LINE_URL,
           extension->GetType());
     }
@@ -259,7 +259,7 @@ void RecordAppLaunches(Profile* profile,
     const extensions::Extension* extension =
         extension_service->GetInstalledApp(autolaunch_tabs.at(i).url);
     if (extension) {
-      AppLauncherHandler::RecordAppLaunchType(
+      CoreAppLauncherHandler::RecordAppLaunchType(
           extension_misc::APP_LAUNCH_AUTOLAUNCH,
           extension->GetType());
     }
@@ -522,7 +522,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
       if (extension) {
         RecordCmdLineAppHistogram(extension->GetType());
       } else {
-        AppLauncherHandler::RecordAppLaunchType(
+        CoreAppLauncherHandler::RecordAppLaunchType(
             extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY,
             extensions::Manifest::TYPE_HOSTED_APP);
       }

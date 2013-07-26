@@ -7,8 +7,10 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_resource_cache_factory.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/common/url_constants.h"
@@ -51,6 +53,8 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
     // We should not be launched without an ExtensionService.
     DCHECK(service);
     web_ui->AddMessageHandler(new AppLauncherHandler(service));
+    web_ui->AddMessageHandler(new CoreAppLauncherHandler());
+    web_ui->AddMessageHandler(new MetricsHandler());
   }
 #endif
 

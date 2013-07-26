@@ -2134,6 +2134,8 @@
         'browser/ui/webui/net_internals/net_internals_ui.h',
         'browser/ui/webui/ntp/app_launcher_handler.cc',
         'browser/ui/webui/ntp/app_launcher_handler.h',
+        'browser/ui/webui/ntp/core_app_launcher_handler.cc',
+        'browser/ui/webui/ntp/core_app_launcher_handler.h',
         'browser/ui/webui/ntp/app_resource_cache_factory.cc',
         'browser/ui/webui/ntp/app_resource_cache_factory.h',
         'browser/ui/webui/ntp/favicon_webui_handler.cc',

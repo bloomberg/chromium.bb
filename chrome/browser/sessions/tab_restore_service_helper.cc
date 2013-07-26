@@ -16,7 +16,6 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
@@ -24,6 +23,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/session_storage_namespace.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
+#endif
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -40,7 +43,7 @@ void RecordAppLaunch(Profile* profile, const TabRestoreService::Tab& tab) {
   if (!extension)
     return;
 
-  AppLauncherHandler::RecordAppLaunchType(
+  CoreAppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED,
       extension->GetType());
 #endif  // !defined(OS_ANDROID)
