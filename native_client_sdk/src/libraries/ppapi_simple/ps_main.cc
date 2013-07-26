@@ -9,8 +9,8 @@
 #include "ppapi_simple/ps_main.h"
 
 
-void* PSMainCreate(PP_Instance inst, PSMainFunc_t func, const char* argv[]) {
-  PSInstance* pInst = new PSInstance(inst, argv);
+void* PSMainCreate(PP_Instance inst, PSMainFunc_t func) {
+  PSInstance* pInst = new PSInstance(inst);
   pInst->SetMain(func);
   return pInst;
 }

@@ -10,9 +10,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
-#include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -88,7 +89,7 @@ int PSInstance::MainThread(int argc, char *argv[]) {
   return ret;
 }
 
-PSInstance::PSInstance(PP_Instance instance, const char *argv[])
+PSInstance::PSInstance(PP_Instance instance)
     : pp::Instance(instance),
       pp::MouseLock(this),
       pp::Graphics3DClient(this),
@@ -102,13 +103,6 @@ PSInstance::PSInstance(PP_Instance instance, const char *argv[])
 #ifdef NACL_SDK_DEBUG
   SetVerbosity(PSV_LOG);
 #endif
-
-  // Place PPAPI_MAIN_USE arguments into properties map
-  while (*argv) {
-    std::string key = *argv++;
-    std::string val = *argv++;
-    properties_[key] = val;
-  }
 
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE |
                      PP_INPUTEVENT_CLASS_KEYBOARD |
@@ -129,54 +123,35 @@ bool PSInstance::Init(uint32_t arg,
 
   si->inst_ = this;
   si->argc_ = 1;
-  si->argv_ = new char *[arg*2+1];
+  si->argv_ = new char *[arg+1];
   si->argv_[0] = NULL;
 
-  // Process arguments passed into Module INIT from JavaScript
+  // Process embed attributes into the environment.
+  // Converted the attribute names to uppercase as environment variables are
+  // case sensitive but are almost universally uppercase in practice.
   for (uint32_t i = 0; i < arg; i++) {
-    // If we start with PM prefix set the instance argument map
-    if (0 == strncmp(argn[i], "ps_", 3)) {
-      std::string key = argn[i];
-      std::string val = argv[i];
-      properties_[key] = val;
-      continue;
-    }
-
-    // Chrome passed @dev as an internal extra attribute in
-    // some cases.  Ignore this.
-    if (0 == strcmp(argn[i], "@dev")) {
-      continue;
-    }
-
-    // If this is the 'src' tag, then get the NMF name.
-    if (!strcmp("src", argn[i])) {
-      char *name = new char[strlen(argv[i]) + 1];
-      strcpy(name, argv[i]);
-      si->argv_[0] = name;
-    } else {
-      // Otherwise turn html tag attributes into arguments
-      // that get passed to the main funciton.  Attributes
-      // without values get transformed into "--name" and
-      // attributes with values become "--name=value".
-      int arglen = strlen(argn[i]) + 3;
-      if (argv[i] && argv[i][0])
-        arglen += strlen(argv[i]) + 1;
-
-      char* arg = new char[arglen];
-      if (argv[i] && argv[i][0])
-        sprintf(arg, "--%s=%s", argn[i], argv[i]);
-      else
-        sprintf(arg, "--%s", argn[i]);
-
-      si->argv_[si->argc_++] = arg;
-    }
+    std::string key = argn[i];
+    std::transform(key.begin(), key.end(), key.begin(), toupper);
+    setenv(key.c_str(), argv[i], 1);
   }
 
-  // If src was not found, set the first arg to something
-  if (NULL == si->argv_[0]) {
-    char *name = new char[5];
-    strcpy(name, "NMF?");
-    si->argv_[0] = name;
+  // Set a default value for SRC.
+  setenv("SRC", "NMF?", 0);
+  // Use the src tag name if ARG0 is not explicitly specified.
+  setenv("ARG0", getenv("SRC"), 0);
+
+  // Walk ARG0..ARGn populating argv until an argument is missing.
+  for (;;) {
+    std::ostringstream arg_stream;
+    arg_stream << "ARG" << si->argc_;
+    std::string arg_name = arg_stream.str();
+    const char* next_arg = getenv(arg_name.c_str());
+    if (NULL == next_arg)
+      break;
+
+    char* value = new char[strlen(next_arg) + 1];
+    strcpy(value, next_arg);
+    si->argv_[si->argc_++] = value;
   }
 
   PSInterfaceInit();
@@ -208,39 +183,31 @@ bool PSInstance::Init(uint32_t arg,
   return ret == 0;
 }
 
-const char* PSInstance::GetProperty(const char* key, const char* def) {
-  PropertyMap_t::iterator it = properties_.find(key);
-  if (it != properties_.end()) {
-    return it->second.c_str();
-  }
-  return def;
-}
-
 // Processes the properties set at compile time via the
 // initialization macro, or via dynamically set embed attributes
 // through instance DidCreate.
 bool PSInstance::ProcessProperties() {
-  // Get the default values
-  const char* stdin_path = GetProperty("ps_stdin", "/dev/stdin");
-  const char* stdout_path = GetProperty("ps_stdout", "/dev/stdout");
-  const char* stderr_path = GetProperty("ps_stderr", "/dev/console3");
-  const char* verbosity = GetProperty("ps_verbosity", NULL);
-  const char* tty_prefix = GetProperty("ps_tty_prefix", NULL);
+  // Set default values
+  setenv("PS_STDIN", "/dev/stdin", 0);
+  setenv("PS_STDOUT", "/dev/stdout", 0);
+  setenv("PS_STDERR", "/dev/console3", 0);
 
   // Reset verbosity if passed in
+  const char* verbosity = getenv("PS_VERBOSITY");
   if (verbosity) SetVerbosity(static_cast<Verbosity>(atoi(verbosity)));
 
   // Enable NaCl IO to map STDIN, STDOUT, and STDERR
   nacl_io_init_ppapi(PSGetInstanceId(), PSGetInterface);
-  int fd0 = open(stdin_path, O_RDONLY);
+  int fd0 = open(getenv("PS_STDIN"), O_RDONLY);
   dup2(fd0, 0);
 
-  int fd1 = open(stdout_path, O_WRONLY);
+  int fd1 = open(getenv("PS_STDOUT"), O_WRONLY);
   dup2(fd1, 1);
 
-  int fd2 = open(stderr_path, O_WRONLY);
+  int fd2 = open(getenv("PS_STDERR"), O_WRONLY);
   dup2(fd2, 2);
 
+  const char* tty_prefix = getenv("PS_TTY_PREFIX");
   if (tty_prefix) {
     fd_tty_ = open("/dev/tty", O_WRONLY);
     if (fd_tty_ >= 0) {

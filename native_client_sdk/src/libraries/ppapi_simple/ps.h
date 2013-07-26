@@ -69,64 +69,16 @@ extern void* PSUserCreateInstance(PP_Instance inst);
 
 
 /**
- * PPAPI_SIMPLE_DECLARE_PARAMS
- *
- * Macro for creating the param string array.  Used by the Factory macros
- * to enable wrapping of the param array with terminating NULL, NULL.
- */
-#define PPAPI_SIMPLE_DECLARE_PARAMS(params, ...)     \
-  static const char* params[] = { __VA_ARGS__ };
-
-
-/**
  * PPAPI_SIMPLE_USE_MAIN
  *
  * For use with C projects, this macro calls the provided factory with
- * configuration information and optional extra arguments which are passed to
- * the 'main' function.  See the appropriate ppapi_simple_main(XX).h header.
+ * configuration information.
  */
-#if defined(WIN32)
-
-/* In MSVC, ##__VA_ARGS does not remove the following comma, only the
- * previous one. As a result, passing no extra arguments to
- * PPAPI_SIMPLE_USE_MAIN yields:
- *
- * static const char* params[] = { , NULL, NULL };
- *
- * We work around this by always preceding it with a "NULL,". That way the
- * previous comma is removed and the following comma takes its place. We then
- * skip this initial bogus value when passing the array to the factory.
- */
-#define PPAPI_SIMPLE_USE_MAIN(factory, func, ...)                         \
-void* PSUserCreateInstance(PP_Instance inst) {                            \
-  PPAPI_SIMPLE_DECLARE_PARAMS(params, NULL, ##__VA_ARGS__, NULL, NULL)    \
-  return factory(inst, func, params + 1);                                 \
+#define PPAPI_SIMPLE_USE_MAIN(factory, func)   \
+void* PSUserCreateInstance(PP_Instance inst) { \
+  return factory(inst, func);                  \
 }
 
-#else
-
-#define PPAPI_SIMPLE_USE_MAIN(factory, func, ...)                   \
-void* PSUserCreateInstance(PP_Instance inst) {                      \
-  PPAPI_SIMPLE_DECLARE_PARAMS(params, ##__VA_ARGS__, NULL, NULL)    \
-  return factory(inst, func, params);                               \
-}
-
-#endif
-
-
-/**
- * PPAPI_SIMPLE_USE_CLASS
- *
- * For use with C++ projects, this macro instantiates the provided class
- * passing it back to the generic module initialization code.  Simply derive
- * a class from the appropriate ppapi_simple_instance(XX).h and pass the
- * class name here.
- */
-#define PPAPI_SIMPLE_USE_CLASS(classname, ...)                     \
-void* PSUserCreateInstance(PP_Instance inst) {                     \
-  PPAPI_SIMPLE_DECLARE_PARAMS(params, ##__VA_ARGS__, NULL, NULL)   \
-  return (void *) new classname(inst, params);                     \
-}
 
 EXTERN_C_END
 

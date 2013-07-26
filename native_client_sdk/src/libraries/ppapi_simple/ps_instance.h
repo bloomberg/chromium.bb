@@ -6,7 +6,6 @@
 #define PPAPI_SIMPLE_PS_INSTANCE_H_
 
 #include <stdarg.h>
-#include <map>
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
@@ -28,8 +27,6 @@
 #include "sdk_util/thread_safe_queue.h"
 
 
-typedef std::map<std::string, std::string> PropertyMap_t;
-
 // The basic instance class which also inherits the MouseLock and
 // Graphics3DClient interfaces.
 class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
@@ -47,16 +44,13 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   // Returns a pointer to the global instance
   static PSInstance* GetInstance();
 
-  PSInstance(PP_Instance inst, const char *argv[]);
+  PSInstance(PP_Instance inst);
   virtual ~PSInstance();
 
   // Set a function which will be called on a new thread once initialized.
   // NOTE:  This must be called by the Factory, once Init is called, this
   // function will have no effect.
   void SetMain(PSMainFunc_t func);
-
-  // Returns value based on KEY or default.
-  const char* GetProperty(const char* key, const char* def = NULL);
 
   // Started on Init, a thread which can be safely blocked.
   virtual int MainThread(int argc, char* argv[]);
@@ -123,7 +117,6 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
  protected:
   pp::MessageLoop* main_loop_;
 
-  PropertyMap_t properties_;
   sdk_util::ThreadSafeQueue<PSEvent> event_queue_;
   uint32_t events_enabled_;
   Verbosity verbosity_;

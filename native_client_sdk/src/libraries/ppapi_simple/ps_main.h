@@ -18,19 +18,17 @@ typedef int (*PSMainFunc_t)(int argc, char *argv[]);
  * Constructs an instance SimpleInstance and configures it to call into
  * the provided "main" function.
  */
-void* PSMainCreate(PP_Instance inst, PSMainFunc_t func, const char **argv);
+void* PSMainCreate(PP_Instance inst, PSMainFunc_t func);
 
 
 /**
  * PPAPI_SIMPLE_REGISTER_MAIN
  *
- * Constructs a PSInstance ojbect and configures it to use call the provided
- * 'main' function on it's own thread once initialization is complete.
+ * Constructs a PSInstance object and configures it to use call the provided
+ * 'main' function on its own thread once initialization is complete.
  */
-
-
-#define PPAPI_SIMPLE_REGISTER_MAIN(main, ...)             \
-  PPAPI_SIMPLE_USE_MAIN(PSMainCreate, main, ##__VA_ARGS__)
+#define PPAPI_SIMPLE_REGISTER_MAIN(main) \
+  PPAPI_SIMPLE_USE_MAIN(PSMainCreate, main)
 
 EXTERN_C_END
 

@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>  // This must be included before <sys/stat.h>.
 #include <sys/stat.h>
@@ -201,6 +202,19 @@ int remove(const char* path) {
 
 int _rmdir(const char* path) {
   return ki_rmdir(path);
+}
+
+int setenv(const char* name, const char* value, int overwrite) {
+  if (0 == overwrite && NULL != getenv(name)) {
+    return 0;
+  }
+  errno_t result = _putenv_s(name, value);
+  if (result != 0) {
+    errno = result;
+    return -1;
+  } else {
+    return 0;
+  }
 }
 
 int _stat32(const char* path, struct _stat32* buf) {

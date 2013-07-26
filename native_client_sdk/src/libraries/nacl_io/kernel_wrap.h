@@ -81,6 +81,7 @@ read_ssize_t NAME(read)(int fd, void* buf, size_t nbyte);
 int remove(const char* path) NOTHROW;
 int NAME(rmdir)(const char* path) NOTHROW;
 #if defined(WIN32)
+int setenv(const char* name, const char* value, int overwrite);
 int _stat32(const char* path, struct _stat32* buf);
 int _stat64(const char* path, struct _stat64* buf);
 int _stat32i64(const char* path, struct _stat32i64* buf);
