@@ -22,7 +22,6 @@
 #include "V8TestTypedefs.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "SerializedScriptValue.h"
 #include "V8SVGPoint.h"
 #include "V8SerializedScriptValue.h"
 #include "V8TestCallback.h"
