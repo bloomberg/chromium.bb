@@ -62,7 +62,7 @@ struct GradientAttributes {
     {
         m_stops = value;
         m_stopsSet = true;
-    } 
+    }
 
     bool hasSpreadMethod() const { return m_spreadMethodSet; }
     bool hasGradientUnits() const { return m_gradientUnitsSet; }

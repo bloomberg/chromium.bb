@@ -96,7 +96,7 @@ public:
     bool isCompositeSet() const { return m_compositeSet; }
     bool isBlendModeSet() const { return m_blendModeSet; }
     bool isSizeSet() const { return m_sizeType != SizeNone; }
-    
+
     void setImage(PassRefPtr<StyleImage> i) { m_image = i; m_imageSet = true; }
     void setXPosition(Length l) { m_xPosition = l; m_xPosSet = true; }
     void setYPosition(Length l) { m_yPosition = l; m_yPosSet = true; }
@@ -112,7 +112,7 @@ public:
     void setSizeType(EFillSizeType b) { m_sizeType = b; }
     void setSizeLength(LengthSize l) { m_sizeLength = l; }
     void setSize(FillSize f) { m_sizeType = f.type; m_sizeLength = f.size; }
-    
+
     void clearImage() { m_image.clear(); m_imageSet = false; }
     void clearXPosition()
     {
@@ -136,7 +136,7 @@ public:
 
     void setNext(FillLayer* n) { if (m_next != n) { delete m_next; m_next = n; } }
 
-    FillLayer& operator=(const FillLayer& o);    
+    FillLayer& operator=(const FillLayer& o);
     FillLayer(const FillLayer& o);
 
     bool operator==(const FillLayer& o) const;
@@ -209,7 +209,7 @@ private:
     unsigned m_composite : 4; // CompositeOperator
     unsigned m_sizeType : 2; // EFillSizeType
     unsigned m_blendMode : 5; // BlendMode
-    
+
     unsigned m_imageSet : 1;
     unsigned m_attachmentSet : 1;
     unsigned m_clipSet : 1;
@@ -223,7 +223,7 @@ private:
     unsigned m_backgroundYOrigin : 2; // BackgroundEdgeOrigin
     unsigned m_compositeSet : 1;
     unsigned m_blendModeSet : 1;
-    
+
     unsigned m_type : 1; // EFillLayerType
 
     mutable unsigned m_clipMax : 2; // EFillBox, maximum m_clip value from this to bottom layer

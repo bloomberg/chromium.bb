@@ -27,7 +27,7 @@
 #include "core/svg/SVGStopElement.h"
 
 namespace WebCore {
-    
+
 using namespace SVGNames;
 
 RenderSVGGradientStop::RenderSVGGradientStop(SVGStopElement* element)

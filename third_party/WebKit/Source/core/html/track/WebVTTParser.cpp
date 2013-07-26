@@ -311,7 +311,7 @@ WebVTTParser::ParseState WebVTTParser::collectCueText(const String& line, unsign
 
     if (position >= length)
         createNewCue();
-                
+
     return CueText;
 }
 
@@ -333,17 +333,17 @@ PassRefPtr<DocumentFragment>  WebVTTParser::createDocumentFragmentFromCueText(co
 
     ASSERT(m_scriptExecutionContext->isDocument());
     Document* document = toDocument(m_scriptExecutionContext);
-    
+
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
     m_currentNode = fragment;
     m_tokenizer->reset();
     m_token.clear();
-    
+
     m_languageStack.clear();
     SegmentedString content(text);
     while (m_tokenizer->nextToken(content, m_token))
         constructTreeFromToken(document);
-    
+
     return fragment.release();
 }
 
@@ -415,7 +415,7 @@ double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
         return malformedTime;
     String digits2 = collectDigits(line, position);
     int value2 = digits2.toInt();
-    if (digits2.length() != 2) 
+    if (digits2.length() != 2)
         return malformedTime;
 
     // 13 - Detect whether this timestamp includes hours.

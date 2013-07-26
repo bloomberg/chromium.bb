@@ -36,7 +36,7 @@
 
     void clear();
     void add(File? file);
-    [RaisesException] void add([Default=Undefined] optional DOMString data, 
+    [RaisesException] void add([Default=Undefined] optional DOMString data,
              [Default=Undefined] optional DOMString type);
 };
 

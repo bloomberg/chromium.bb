@@ -264,16 +264,16 @@ Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2, Docum
     bool fl1 = s1 && s1->hasPseudoStyle(FIRST_LETTER);
     EDisplay display2 = s2 ? s2->display() : NONE;
     bool fl2 = s2 && s2->hasPseudoStyle(FIRST_LETTER);
-    
+
     // We just detach if a renderer acquires or loses a column-span, since spanning elements
     // typically won't contain much content.
     bool colSpan1 = s1 && s1->columnSpan();
     bool colSpan2 = s2 && s2->columnSpan();
-    
+
     bool specifiesColumns1 = s1 && (!s1->hasAutoColumnCount() || !s1->hasAutoColumnWidth());
     bool specifiesColumns2 = s2 && (!s2->hasAutoColumnCount() || !s2->hasAutoColumnWidth());
 
-    if (display1 != display2 || fl1 != fl2 || colSpan1 != colSpan2 
+    if (display1 != display2 || fl1 != fl2 || colSpan1 != colSpan2
         || (specifiesColumns1 != specifiesColumns2 && doc->settings()->regionBasedColumnsEnabled())
         || (s1 && s2 && !s1->contentDataEquivalent(s2)))
         ch = Detach;
@@ -716,9 +716,9 @@ LayoutRect Node::boundingBox() const
         return renderer()->absoluteBoundingBoxRect();
     return LayoutRect();
 }
-    
+
 LayoutRect Node::renderRect(bool* isReplaced)
-{    
+{
     RenderObject* hitRenderer = this->renderer();
     ASSERT(hitRenderer);
     RenderObject* renderer = hitRenderer;
@@ -729,7 +729,7 @@ LayoutRect Node::renderRect(bool* isReplaced)
         }
         renderer = renderer->parent();
     }
-    return LayoutRect();    
+    return LayoutRect();
 }
 
 bool Node::hasNonEmptyBoundingBox() const
@@ -1265,7 +1265,7 @@ Element* Node::rootEditableElement(EditableType editableType) const
         if (AXObjectCache* cache = document()->existingAXObjectCache())
             return const_cast<Element*>(cache->rootAXEditableElement(this));
     }
-    
+
     return rootEditableElement();
 }
 
@@ -1366,47 +1366,47 @@ bool Node::isEqualNode(Node* other) const
 {
     if (!other)
         return false;
-    
+
     NodeType nodeType = this->nodeType();
     if (nodeType != other->nodeType())
         return false;
-    
+
     if (nodeName() != other->nodeName())
         return false;
-    
+
     if (localName() != other->localName())
         return false;
-    
+
     if (namespaceURI() != other->namespaceURI())
         return false;
-    
+
     if (prefix() != other->prefix())
         return false;
-    
+
     if (nodeValue() != other->nodeValue())
         return false;
-    
+
     if (isElementNode() && !toElement(this)->hasEquivalentAttributes(toElement(other)))
         return false;
-    
+
     Node* child = firstChild();
     Node* otherChild = other->firstChild();
-    
+
     while (child) {
         if (!child->isEqualNode(otherChild))
             return false;
-        
+
         child = child->nextSibling();
         otherChild = otherChild->nextSibling();
     }
-    
+
     if (otherChild)
         return false;
-    
+
     if (nodeType == DOCUMENT_TYPE_NODE) {
         const DocumentType* documentTypeThis = static_cast<const DocumentType*>(this);
         const DocumentType* documentTypeOther = static_cast<const DocumentType*>(other);
-        
+
         if (documentTypeThis->publicId() != documentTypeOther->publicId())
             return false;
 
@@ -1418,7 +1418,7 @@ bool Node::isEqualNode(Node* other) const
 
         // FIXME: We don't compare entities or notations because currently both are always empty.
     }
-    
+
     return true;
 }
 
@@ -1429,14 +1429,14 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
     switch (nodeType()) {
         case ELEMENT_NODE: {
             const Element* elem = toElement(this);
-            
+
             if (elem->prefix().isNull())
                 return elem->namespaceURI() == namespaceURI;
 
             if (elem->hasAttributes()) {
                 for (unsigned i = 0; i < elem->attributeCount(); i++) {
                     const Attribute* attr = elem->attributeItem(i);
-                    
+
                     if (attr->localName() == xmlnsAtom)
                         return attr->value() == namespaceURI;
                 }
@@ -1473,10 +1473,10 @@ String Node::lookupPrefix(const AtomicString &namespaceURI) const
 {
     // Implemented according to
     // http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#lookupNamespacePrefixAlgo
-    
+
     if (namespaceURI.isEmpty())
         return String();
-    
+
     switch (nodeType()) {
         case ELEMENT_NODE:
             return lookupNamespacePrefix(namespaceURI, toElement(this));
@@ -1506,30 +1506,30 @@ String Node::lookupNamespaceURI(const String &prefix) const
 {
     // Implemented according to
     // http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#lookupNamespaceURIAlgo
-    
+
     if (!prefix.isNull() && prefix.isEmpty())
         return String();
-    
+
     switch (nodeType()) {
         case ELEMENT_NODE: {
             const Element *elem = toElement(this);
-            
+
             if (!elem->namespaceURI().isNull() && elem->prefix() == prefix)
                 return elem->namespaceURI();
-            
+
             if (elem->hasAttributes()) {
                 for (unsigned i = 0; i < elem->attributeCount(); i++) {
                     const Attribute* attr = elem->attributeItem(i);
-                    
+
                     if (attr->prefix() == xmlnsAtom && attr->localName() == prefix) {
                         if (!attr->value().isEmpty())
                             return attr->value();
-                        
+
                         return String();
                     } else if (attr->localName() == xmlnsAtom && prefix.isNull()) {
                         if (!attr->value().isEmpty())
                             return attr->value();
-                        
+
                         return String();
                     }
                 }
@@ -1549,7 +1549,7 @@ String Node::lookupNamespaceURI(const String &prefix) const
             return String();
         case ATTRIBUTE_NODE: {
             const Attr *attr = static_cast<const Attr *>(this);
-            
+
             if (attr->ownerElement())
                 return attr->ownerElement()->lookupNamespaceURI(prefix);
             else
@@ -1566,22 +1566,22 @@ String Node::lookupNamespacePrefix(const AtomicString &_namespaceURI, const Elem
 {
     if (_namespaceURI.isNull())
         return String();
-            
+
     if (originalElement->lookupNamespaceURI(prefix()) == _namespaceURI)
         return prefix();
-    
+
     ASSERT(isElementNode());
     const Element* thisElement = toElement(this);
     if (thisElement->hasAttributes()) {
         for (unsigned i = 0; i < thisElement->attributeCount(); i++) {
             const Attribute* attr = thisElement->attributeItem(i);
-            
+
             if (attr->prefix() == xmlnsAtom && attr->value() == _namespaceURI
                     && originalElement->lookupNamespaceURI(attr->localName()) == _namespaceURI)
                 return attr->localName();
         }
     }
-    
+
     if (Element* ancestor = ancestorElement())
         return ancestor->lookupNamespacePrefix(_namespaceURI, originalElement);
     return String();
@@ -1601,7 +1601,7 @@ static void appendTextContent(const Node* node, bool convertBRsToNewlines, bool&
         isNullString = false;
         content.append(static_cast<const ProcessingInstruction*>(node)->data());
         break;
-    
+
     case Node::ELEMENT_NODE:
         if (node->hasTagName(brTag) && convertBRsToNewlines) {
             isNullString = false;
@@ -1637,7 +1637,7 @@ String Node::textContent(bool convertBRsToNewlines) const
 }
 
 void Node::setTextContent(const String& text, ExceptionCode& ec)
-{           
+{
     switch (nodeType()) {
         case TEXT_NODE:
         case CDATA_SECTION_NODE:
@@ -1694,13 +1694,13 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
 
     if (otherNode == this)
         return DOCUMENT_POSITION_EQUIVALENT;
-    
+
     const Attr* attr1 = nodeType() == ATTRIBUTE_NODE ? toAttr(this) : 0;
     const Attr* attr2 = otherNode->nodeType() == ATTRIBUTE_NODE ? toAttr(otherNode) : 0;
-    
+
     const Node* start1 = attr1 ? attr1->ownerElement() : this;
     const Node* start2 = attr2 ? attr2->ownerElement() : otherNode;
-    
+
     // If either of start1 or start2 is null, then we are disconnected, since one of the nodes is
     // an orphaned attribute node.
     if (!start1 || !start2) {
@@ -1714,17 +1714,17 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
         chain1.append(attr1);
     if (attr2)
         chain2.append(attr2);
-    
+
     if (attr1 && attr2 && start1 == start2 && start1) {
         // We are comparing two attributes on the same node. Crawl our attribute map and see which one we hit first.
         const Element* owner1 = attr1->ownerElement();
         owner1->synchronizeAllAttributes();
         unsigned length = owner1->attributeCount();
         for (unsigned i = 0; i < length; ++i) {
-            // If neither of the two determining nodes is a child node and nodeType is the same for both determining nodes, then an 
+            // If neither of the two determining nodes is a child node and nodeType is the same for both determining nodes, then an
             // implementation-dependent order between the determining nodes is returned. This order is stable as long as no nodes of
-            // the same nodeType are inserted into or removed from the direct container. This would be the case, for example, 
-            // when comparing two attributes of the same element, and inserting or removing additional attributes might change 
+            // the same nodeType are inserted into or removed from the direct container. This would be the case, for example,
+            // when comparing two attributes of the same element, and inserting or removing additional attributes might change
             // the order between existing attributes.
             const Attribute* attribute = owner1->attributeItem(i);
             if (attr1->qualifiedName() == attribute->name())
@@ -1732,7 +1732,7 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
             if (attr2->qualifiedName() == attribute->name())
                 return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_PRECEDING;
         }
-        
+
         ASSERT_NOT_REACHED();
         return DOCUMENT_POSITION_DISCONNECTED;
     }
@@ -1801,10 +1801,10 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
             return DOCUMENT_POSITION_PRECEDING | connection;
         }
     }
-    
+
     // There was no difference between the two parent chains, i.e., one was a subset of the other.  The shorter
     // chain is the ancestor.
-    return index1 < index2 ? 
+    return index1 < index2 ?
                DOCUMENT_POSITION_FOLLOWING | DOCUMENT_POSITION_CONTAINED_BY | connection :
                DOCUMENT_POSITION_PRECEDING | DOCUMENT_POSITION_CONTAINS | connection;
 }
@@ -1814,7 +1814,7 @@ FloatPoint Node::convertToPage(const FloatPoint& p) const
     // If there is a renderer, just ask it to do the conversion
     if (renderer())
         return renderer()->localToAbsolute(p, UseTransforms);
-    
+
     // Otherwise go up the tree looking for a renderer
     Element *parent = ancestorElement();
     if (parent)
@@ -2468,7 +2468,7 @@ void Node::defaultEventHandler(Event* event)
         Node* startNode = this;
         while (startNode && !startNode->renderer())
             startNode = startNode->parentOrShadowHostNode();
-        
+
         if (startNode && startNode->renderer())
             if (Frame* frame = document()->frame())
                 frame->eventHandler()->defaultWheelEventHandler(startNode, wheelEvent);

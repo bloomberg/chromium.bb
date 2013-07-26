@@ -175,7 +175,7 @@ void SVGFEDiffuseLightingElement::svgAttributeChanged(const QualifiedName& attrN
     }
 
     SVGElementInstance::InvalidationGuard invalidationGuard(this);
-    
+
     if (attrName == SVGNames::surfaceScaleAttr
         || attrName == SVGNames::diffuseConstantAttr
         || attrName == SVGNames::kernelUnitLengthAttr
@@ -215,7 +215,7 @@ PassRefPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilterBuilder* fi
     RenderObject* renderer = this->renderer();
     if (!renderer)
         return 0;
-    
+
     ASSERT(renderer->style());
     Color color = renderer->style()->svgStyle()->lightingColor();
 

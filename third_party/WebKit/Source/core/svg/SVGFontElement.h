@@ -41,7 +41,7 @@ struct SVGKerningPair {
     HashSet<String> unicodeName2;
     HashSet<String> glyphName1;
     HashSet<String> glyphName2;
-    
+
     SVGKerningPair()
         : kerning(0)
     {
@@ -50,7 +50,7 @@ struct SVGKerningPair {
 
 typedef Vector<SVGKerningPair> KerningPairVector;
 
-class SVGMissingGlyphElement;    
+class SVGMissingGlyphElement;
 
 class SVGFontElement FINAL : public SVGStyledElement
                            , public SVGExternalResourcesRequired {
@@ -73,7 +73,7 @@ public:
 private:
     SVGFontElement(const QualifiedName&, Document*);
 
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) { return false; }  
+    virtual bool rendererIsNeeded(const NodeRenderingContext&) { return false; }
 
     void ensureGlyphCache();
     void registerLigaturesInGlyphCache(Vector<String>&);

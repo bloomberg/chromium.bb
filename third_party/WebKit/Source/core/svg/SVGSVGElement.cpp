@@ -83,7 +83,7 @@ inline SVGSVGElement::SVGSVGElement(const QualifiedName& tagName, Document* doc)
     , m_x(LengthModeWidth)
     , m_y(LengthModeHeight)
     , m_width(LengthModeWidth, "100%")
-    , m_height(LengthModeHeight, "100%") 
+    , m_height(LengthModeHeight, "100%")
     , m_useCurrentView(false)
     , m_zoomAndPan(SVGZoomAndPanMagnify)
     , m_timeContainer(SMILTimeContainer::create(this))
@@ -239,7 +239,7 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
             document()->setWindowAttributeEventListener(eventNames().zoomEvent, createAttributeEventListener(document()->frame(), name, value));
         else
             setListener = false;
- 
+
         if (setListener)
             return;
     }
@@ -287,7 +287,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     if (SVGFitToViewBox::isKnownAttribute(attrName)) {
-        updateRelativeLengthsOrViewBox = true; 
+        updateRelativeLengthsOrViewBox = true;
         if (RenderObject* object = renderer())
             object->setNeedsTransformUpdate();
     }
@@ -332,7 +332,7 @@ PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const SVG
     Vector<RefPtr<Node> > nodes;
     Element* element = ElementTraversal::next(referenceElement ? referenceElement : this);
     while (element) {
-        if (element->isSVGElement()) { 
+        if (element->isSVGElement()) {
             SVGElement* svgElement = toSVGElement(element);
             if (collect == CollectIntersectionList) {
                 if (checkIntersection(svgElement, rect))
@@ -435,7 +435,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGLocatable::CTMSc
             FloatPoint location;
             float zoomFactor = 1;
 
-            // At the SVG/HTML boundary (aka RenderSVGRoot), we apply the localToBorderBoxTransform 
+            // At the SVG/HTML boundary (aka RenderSVGRoot), we apply the localToBorderBoxTransform
             // to map an element from SVG viewport coordinates to CSS box coordinates.
             // RenderSVGRoot's localToAbsolute method expects CSS box coordinates.
             // We also need to adjust for the zoom level factored into CSS coordinates (bug #96361).
@@ -563,7 +563,7 @@ SVGRect SVGSVGElement::currentViewBoxRect() const
         return SVGRect();
 
     // If no viewBox is specified but non-relative width/height values, then we
-    // should always synthesize a viewBox if we're embedded through a SVGImage.    
+    // should always synthesize a viewBox if we're embedded through a SVGImage.
     return SVGRect(FloatPoint(), FloatSize(floatValueForLength(intrinsicWidth, 0), floatValueForLength(intrinsicHeight, 0)));
 }
 

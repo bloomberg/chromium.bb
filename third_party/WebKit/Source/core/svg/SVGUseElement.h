@@ -88,7 +88,7 @@ private:
     void expandUseElementsInShadowTree(Node* element);
     void expandSymbolElementsInShadowTree(Node* element);
 
-    // "Tree connector" 
+    // "Tree connector"
     void associateInstancesWithShadowTreeElements(Node* target, SVGElementInstance* targetInstance);
     SVGElementInstance* instanceForShadowTreeElement(Node* element, SVGElementInstance* instance) const;
 

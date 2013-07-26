@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ChromiumDataObjectItem_h 
+#ifndef ChromiumDataObjectItem_h
 #define ChromiumDataObjectItem_h
 
 #include "core/fileapi/File.h"

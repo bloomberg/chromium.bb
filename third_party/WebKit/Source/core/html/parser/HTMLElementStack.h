@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef HTMLElementStack_h
@@ -53,7 +53,7 @@ public:
         WTF_MAKE_NONCOPYABLE(ElementRecord); WTF_MAKE_FAST_ALLOCATED;
     public:
         ~ElementRecord(); // Public for ~PassOwnPtr()
-    
+
         Element* element() const { return m_item->element(); }
         ContainerNode* node() const { return m_item->node(); }
         const AtomicString& namespaceURI() const { return m_item->namespaceURI(); }
@@ -156,7 +156,7 @@ public:
     Element* htmlElement() const;
     Element* headElement() const;
     Element* bodyElement() const;
-    
+
     ContainerNode* rootNode() const;
 
 #ifndef NDEBUG
@@ -181,7 +181,7 @@ private:
     Element* m_bodyElement;
     unsigned m_stackDepth;
 };
-    
+
 } // namespace WebCore
 
 #endif // HTMLElementStack_h

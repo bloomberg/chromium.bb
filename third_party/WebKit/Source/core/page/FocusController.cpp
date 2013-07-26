@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -212,7 +212,7 @@ void FocusController::setFocused(bool focused)
 {
     if (isFocused() == focused)
         return;
-    
+
     m_isFocused = focused;
 
     if (!m_isFocused)
@@ -248,8 +248,8 @@ Node* FocusController::findFocusableNodeDecendingDownIntoFrameDocument(FocusDire
 bool FocusController::setInitialFocus(FocusDirection direction, KeyboardEvent* event)
 {
     bool didAdvanceFocus = advanceFocus(direction, event, true);
-    
-    // If focus is being set initially, accessibility needs to be informed that system focus has moved 
+
+    // If focus is being set initially, accessibility needs to be informed that system focus has moved
     // into the web area again, even if focus did not change within WebCore. PostNotification is called instead
     // of handleFocusedUIElementChanged, because this will send the notification even if the element is the same.
     if (AXObjectCache* cache = focusedOrMainFrame()->document()->existingAXObjectCache())
@@ -331,7 +331,7 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, Keyb
         setFocusedFrame(owner->contentFrame());
         return true;
     }
-    
+
     // FIXME: It would be nice to just be able to call setFocusedElement(node)
     // here, but we can't do that because some elements (e.g. HTMLInputElement
     // and HTMLTextAreaElement) do extra work in their focus() methods.
@@ -544,10 +544,10 @@ static void clearSelectionIfNeeded(Frame* oldFocusedFrame, Frame* newFocusedFram
 {
     if (!oldFocusedFrame || !newFocusedFrame)
         return;
-        
+
     if (oldFocusedFrame->document() != newFocusedFrame->document())
         return;
-    
+
     FrameSelection* s = oldFocusedFrame->selection();
     if (s->isNone())
         return;
@@ -581,7 +581,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
 {
     RefPtr<Frame> oldFocusedFrame = focusedFrame();
     RefPtr<Document> oldDocument = oldFocusedFrame ? oldFocusedFrame->document() : 0;
-    
+
     Element* oldFocusedElement = oldDocument ? oldDocument->focusedElement() : 0;
     if (oldFocusedElement == element)
         return true;
@@ -604,7 +604,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
 
     if (newDocument && newDocument->focusedElement() == element)
         return true;
-    
+
     if (oldDocument && oldDocument != newDocument)
         oldDocument->setFocusedElement(0);
 
@@ -638,7 +638,7 @@ void FocusController::setActive(bool active)
     }
 
     focusedOrMainFrame()->selection()->pageActivationChanged();
-    
+
     if (m_focusedFrame && isFocused())
         dispatchEventsOnWindowAndFocusedNode(m_focusedFrame->document(), active);
 }
@@ -844,7 +844,7 @@ bool FocusController::advanceFocusDirectionally(FocusDirection direction, Keyboa
 
     if (container->isDocumentNode())
         toDocument(container)->updateLayoutIgnorePendingStylesheets();
-        
+
     // Figure out the starting rect.
     LayoutRect startingRect;
     if (focusedElement) {

@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef DragController_h
@@ -62,15 +62,15 @@ namespace WebCore {
         void dragExited(DragData*);
         DragSession dragUpdated(DragData*);
         bool performDrag(DragData*);
-        
+
         Node* draggableNode(const Frame*, Node*, const IntPoint&, DragState&) const;
         void dragEnded();
-        
+
         bool populateDragClipboard(Frame* src, const DragState&, const IntPoint& dragOrigin);
         bool startDrag(Frame* src, const DragState&, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin);
-        
+
         static const int DragIconRightInset;
-        static const int DragIconBottomInset;        
+        static const int DragIconBottomInset;
 
     private:
         DragController(Page*, DragClient*);

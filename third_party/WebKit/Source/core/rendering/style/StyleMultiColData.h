@@ -40,7 +40,7 @@ class StyleMultiColData : public RefCounted<StyleMultiColData> {
 public:
     static PassRefPtr<StyleMultiColData> create() { return adoptRef(new StyleMultiColData); }
     PassRefPtr<StyleMultiColData> copy() const { return adoptRef(new StyleMultiColData(*this)); }
-    
+
     bool operator==(const StyleMultiColData& o) const;
     bool operator!=(const StyleMultiColData &o) const
     {
@@ -50,7 +50,7 @@ public:
     unsigned short ruleWidth() const
     {
         if (m_rule.style() == BNONE || m_rule.style() == BHIDDEN)
-            return 0; 
+            return 0;
         return m_rule.width();
     }
 

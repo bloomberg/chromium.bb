@@ -76,7 +76,7 @@ void RenderTableRow::styleDidChange(StyleDifference diff, const RenderStyle* old
         RenderTable* table = this->table();
         if (table && !table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle && oldStyle->border() != style()->border())
             table->invalidateCollapsedBorders();
-        
+
         if (table && oldStyle && diff == StyleDifferenceLayout && needsLayout() && table->collapseBorders() && borderWidthChanged(oldStyle, style())) {
             // If the border width changes on a row, we need to make sure the cells in the row know to lay out again.
             // This only happens when borders are collapsed, since they end up affecting the border sides of the cell
@@ -135,10 +135,10 @@ void RenderTableRow::addChild(RenderObject* child, RenderObject* beforeChild)
         addChild(cell, beforeChild);
         cell->addChild(child);
         return;
-    } 
+    }
 
     if (beforeChild && beforeChild->parent() != this)
-        beforeChild = splitAnonymousBoxesAroundChild(beforeChild);    
+        beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
 
     RenderTableCell* cell = toRenderTableCell(child);
 
@@ -162,7 +162,7 @@ void RenderTableRow::layout()
     LayoutStateMaintainer statePusher(view(), this, LayoutSize(), style()->isFlippedBlocksWritingMode());
 
     bool paginated = view()->layoutState()->isPaginated();
-                
+
     for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isTableCell()) {
             RenderTableCell* cell = toRenderTableCell(child);

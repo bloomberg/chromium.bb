@@ -40,7 +40,7 @@ using namespace std;
 namespace WebCore {
 
 using namespace HTMLNames;
-    
+
 AccessibilityListBoxOption::AccessibilityListBoxOption()
     : m_optionElement(0)
 {
@@ -48,13 +48,13 @@ AccessibilityListBoxOption::AccessibilityListBoxOption()
 
 AccessibilityListBoxOption::~AccessibilityListBoxOption()
 {
-}    
-    
+}
+
 PassRefPtr<AccessibilityListBoxOption> AccessibilityListBoxOption::create()
 {
     return adoptRef(new AccessibilityListBoxOption());
 }
-    
+
 bool AccessibilityListBoxOption::isEnabled() const
 {
     if (!m_optionElement)
@@ -68,10 +68,10 @@ bool AccessibilityListBoxOption::isEnabled() const
 
     if (m_optionElement->hasAttribute(disabledAttr))
         return false;
-    
+
     return true;
 }
-    
+
 bool AccessibilityListBoxOption::isSelected() const
 {
     if (!m_optionElement)
@@ -79,7 +79,7 @@ bool AccessibilityListBoxOption::isSelected() const
 
     if (!m_optionElement->hasTagName(optionTag))
         return false;
-    
+
     return toHTMLOptionElement(m_optionElement)->selected();
 }
 
@@ -97,20 +97,20 @@ LayoutRect AccessibilityListBoxOption::elementRect() const
     LayoutRect rect;
     if (!m_optionElement)
         return rect;
-    
+
     HTMLSelectElement* listBoxParentNode = listBoxOptionParentNode();
     if (!listBoxParentNode)
         return rect;
-    
+
     RenderObject* listBoxRenderer = listBoxParentNode->renderer();
     if (!listBoxRenderer)
         return rect;
-    
+
     LayoutRect parentRect = listBoxRenderer->document()->axObjectCache()->getOrCreate(listBoxRenderer)->elementRect();
     int index = listBoxOptionIndex();
     if (index != -1)
         rect = toRenderListBox(listBoxRenderer)->itemBoundingBoxRect(parentRect.location(), index);
-    
+
     return rect;
 }
 
@@ -121,37 +121,37 @@ bool AccessibilityListBoxOption::computeAccessibilityIsIgnored() const
 
     if (accessibilityIsIgnoredByDefault())
         return true;
-    
+
     return parentObject()->accessibilityIsIgnored();
 }
-    
+
 bool AccessibilityListBoxOption::canSetSelectedAttribute() const
 {
     if (!m_optionElement)
         return false;
-    
+
     if (!m_optionElement->hasTagName(optionTag))
         return false;
-    
+
     if (m_optionElement->isDisabledFormControl())
         return false;
-    
+
     HTMLSelectElement* selectElement = listBoxOptionParentNode();
     if (selectElement && selectElement->isDisabledFormControl())
         return false;
-    
+
     return true;
 }
-    
+
 String AccessibilityListBoxOption::stringValue() const
 {
     if (!m_optionElement)
         return String();
-    
+
     const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
     if (!ariaLabel.isNull())
         return ariaLabel;
-    
+
     if (m_optionElement->hasTagName(optionTag))
         return toHTMLOptionElement(m_optionElement)->text();
 
@@ -171,7 +171,7 @@ AccessibilityObject* AccessibilityListBoxOption::parentObject() const
     HTMLSelectElement* parentNode = listBoxOptionParentNode();
     if (!parentNode)
         return 0;
-    
+
     return m_optionElement->document()->axObjectCache()->getOrCreate(parentNode);
 }
 
@@ -180,14 +180,14 @@ void AccessibilityListBoxOption::setSelected(bool selected)
     HTMLSelectElement* selectElement = listBoxOptionParentNode();
     if (!selectElement)
         return;
-    
+
     if (!canSetSelectedAttribute())
         return;
-    
+
     bool isOptionSelected = isSelected();
     if ((isOptionSelected && selected) || (!isOptionSelected && !selected))
         return;
-    
+
     // Convert from the entire list index to the option index.
     int optionIndex = selectElement->listToOptionIndex(listBoxOptionIndex());
     selectElement->accessKeySetSelectedIndex(optionIndex);
@@ -197,7 +197,7 @@ HTMLSelectElement* AccessibilityListBoxOption::listBoxOptionParentNode() const
 {
     if (!m_optionElement)
         return 0;
-    
+
     if (m_optionElement->hasTagName(optionTag))
         return toHTMLOptionElement(m_optionElement)->ownerSelectElement();
 
@@ -211,11 +211,11 @@ int AccessibilityListBoxOption::listBoxOptionIndex() const
 {
     if (!m_optionElement)
         return -1;
-    
+
     HTMLSelectElement* selectElement = listBoxOptionParentNode();
-    if (!selectElement) 
+    if (!selectElement)
         return -1;
-    
+
     const Vector<HTMLElement*>& listItems = selectElement->listItems();
     unsigned length = listItems.size();
     for (unsigned i = 0; i < length; i++)

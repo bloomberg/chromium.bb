@@ -82,7 +82,7 @@ public:
 
     // Returns the root object for the entire document.
     AccessibilityObject* rootObject();
-    
+
     // For AX objects with elements that back them.
     AccessibilityObject* getOrCreate(RenderObject*);
     AccessibilityObject* getOrCreate(Widget*);
@@ -90,12 +90,12 @@ public:
 
     // used for objects without backing elements
     AccessibilityObject* getOrCreate(AccessibilityRole);
-    
+
     // will only return the AccessibilityObject if it already exists
     AccessibilityObject* get(RenderObject*);
     AccessibilityObject* get(Widget*);
     AccessibilityObject* get(Node*);
-    
+
     void remove(RenderObject*);
     void remove(Node*);
     void remove(Widget*);
@@ -219,22 +219,22 @@ private:
     HashSet<Node*> m_textMarkerNodes;
     OwnPtr<AXComputedObjectAttributeCache> m_computedObjectAttributeCache;
     static bool gAccessibilityEnabled;
-    
+
     HashSet<AXID> m_idsInUse;
-    
+
     Timer<AXObjectCache> m_notificationPostTimer;
     Vector<pair<RefPtr<AccessibilityObject>, AXNotification> > m_notificationsToPost;
     void notificationPostTimerFired(Timer<AXObjectCache>*);
-    
+
     static AccessibilityObject* focusedImageMapUIElement(HTMLAreaElement*);
-    
+
     AXID getAXID(AccessibilityObject*);
 };
 
 bool nodeHasRole(Node*, const String& role);
 // This will let you know if aria-hidden was explicitly set to false.
 bool isNodeAriaVisible(Node*);
-    
+
 #if !HAVE(ACCESSIBILITY)
 inline AccessibilityObjectInclusion AXComputedObjectAttributeCache::getIgnored(AXID) const { return DefaultBehavior; }
 inline void AXComputedObjectAttributeCache::setIgnored(AXID, AccessibilityObjectInclusion) { }

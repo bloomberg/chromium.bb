@@ -36,14 +36,14 @@ template <class Iterator> struct MidpointState {
     {
         reset();
     }
-    
+
     void reset()
     {
         numMidpoints = 0;
         currentMidpoint = 0;
         betweenMidpoints = false;
     }
-    
+
     // The goal is to reuse the line state across multiple
     // lines so we just keep an array around for midpoints and never clear it across multiple
     // lines.  We track the number of items and position using the two other variables.
@@ -316,8 +316,8 @@ void BidiResolver<Iterator, Run>::checkDirectionInLowerRaiseEmbeddingLevel()
         && m_status.last != BoundaryNeutral
         && m_status.last != RightToLeftEmbedding
         && m_status.last != LeftToRightEmbedding
-        && m_status.last != RightToLeftOverride 
-        && m_status.last != LeftToRightOverride 
+        && m_status.last != RightToLeftOverride
+        && m_status.last != LeftToRightOverride
         && m_status.last != PopDirectionalFormat);
     if (m_direction == OtherNeutral)
         m_direction = m_status.lastStrong == LeftToRight ? LeftToRight : RightToLeft;
@@ -651,7 +651,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                     } else if (m_status.lastStrong != LeftToRight) {
                         //last stuff takes embedding dir
                         if (context()->dir() == RightToLeft) {
-                            m_eor = m_last; 
+                            m_eor = m_last;
                             m_direction = RightToLeft;
                         }
                         appendRun();
@@ -863,7 +863,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             }
             m_current = end;
             m_status = stateAtEnd.m_status;
-            m_sor = stateAtEnd.m_sor; 
+            m_sor = stateAtEnd.m_sor;
             m_eor = stateAtEnd.m_eor;
             m_last = stateAtEnd.m_last;
             m_reachedEndOfLine = stateAtEnd.m_reachedEndOfLine;
@@ -887,7 +887,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             if (committed && pastEnd) {
                 m_current = end;
                 m_status = stateAtEnd.m_status;
-                m_sor = stateAtEnd.m_sor; 
+                m_sor = stateAtEnd.m_sor;
                 m_eor = stateAtEnd.m_eor;
                 m_last = stateAtEnd.m_last;
                 m_reachedEndOfLine = stateAtEnd.m_reachedEndOfLine;

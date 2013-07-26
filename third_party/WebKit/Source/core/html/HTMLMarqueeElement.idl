@@ -20,7 +20,7 @@
 interface HTMLMarqueeElement : HTMLElement {
     void start();
     void stop();
-    
+
     [Reflect] attribute DOMString behavior;
     [Reflect] attribute DOMString bgColor;
     [Reflect] attribute DOMString direction;

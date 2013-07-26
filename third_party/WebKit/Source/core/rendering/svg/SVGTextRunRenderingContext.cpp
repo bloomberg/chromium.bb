@@ -81,7 +81,7 @@ float SVGTextRunRenderingContext::floatWidthUsingSVGFont(const Font& font, const
     glyphName = it.lastGlyphName();
     return it.runWidthSoFar();
 }
- 
+
 void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const TextRun& run, const SimpleFontData* fontData, const GlyphBuffer& glyphBuffer, int from, int numGlyphs, const FloatPoint& point) const
 {
     SVGFontElement* fontElement = 0;
@@ -104,7 +104,7 @@ void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const T
         solidPaintingResource->setColor(context->fillColor());
         activePaintingResource = solidPaintingResource;
     }
- 
+
     bool isVerticalText = false;
     if (parentRenderObject) {
         parentRenderObjectStyle = parentRenderObject->style();

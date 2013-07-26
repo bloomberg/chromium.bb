@@ -34,7 +34,7 @@
 using namespace std;
 
 namespace WebCore {
-    
+
 using namespace HTMLNames;
 
 AccessibilityList::AccessibilityList(RenderObject* renderer)
@@ -55,12 +55,12 @@ bool AccessibilityList::computeAccessibilityIsIgnored() const
 {
     return accessibilityIsIgnoredByDefault();
 }
-    
+
 bool AccessibilityList::isUnorderedList() const
 {
     if (!m_renderer)
         return false;
-    
+
     Node* node = m_renderer->node();
 
     // The ARIA spec says the "list" role is supposed to mimic a UL or OL tag.
@@ -68,7 +68,7 @@ bool AccessibilityList::isUnorderedList() const
     // On the Mac, there's no distinction to the client.
     if (ariaRoleAttribute() == ListRole)
         return true;
-    
+
     return node && node->hasTagName(ulTag);
 }
 
@@ -82,17 +82,17 @@ bool AccessibilityList::isOrderedList() const
         return true;
 
     Node* node = m_renderer->node();
-    return node && node->hasTagName(olTag);    
+    return node && node->hasTagName(olTag);
 }
 
 bool AccessibilityList::isDescriptionList() const
 {
     if (!m_renderer)
         return false;
-    
+
     Node* node = m_renderer->node();
-    return node && node->hasTagName(dlTag);    
+    return node && node->hasTagName(dlTag);
 }
-    
-    
+
+
 } // namespace WebCore

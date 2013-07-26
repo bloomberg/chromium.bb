@@ -35,7 +35,7 @@
 using namespace std;
 
 namespace WebCore {
-    
+
 using namespace HTMLNames;
 
 AccessibilityTableCell::AccessibilityTableCell(RenderObject* renderer)
@@ -59,13 +59,13 @@ bool AccessibilityTableCell::computeAccessibilityIsIgnored() const
         return false;
     if (decision == IgnoreObject)
         return true;
-    
+
     if (!isTableCell())
         return AccessibilityRenderObject::computeAccessibilityIsIgnored();
-    
+
     return false;
 }
-   
+
 AccessibilityObject* AccessibilityTableCell::parentTable() const
 {
     if (!m_renderer || !m_renderer->isTableCell())
@@ -74,48 +74,48 @@ AccessibilityObject* AccessibilityTableCell::parentTable() const
     // If the document no longer exists, we might not have an axObjectCache.
     if (!axObjectCache())
         return 0;
-    
-    // Do not use getOrCreate. parentTable() can be called while the render tree is being modified 
+
+    // Do not use getOrCreate. parentTable() can be called while the render tree is being modified
     // by javascript, and creating a table element may try to access the render tree while in a bad state.
     // By using only get() implies that the AXTable must be created before AXTableCells. This should
     // always be the case when AT clients access a table.
-    // https://bugs.webkit.org/show_bug.cgi?id=42652    
+    // https://bugs.webkit.org/show_bug.cgi?id=42652
     return axObjectCache()->get(toRenderTableCell(m_renderer)->table());
 }
-    
+
 bool AccessibilityTableCell::isTableCell() const
 {
     AccessibilityObject* parent = parentObjectUnignored();
     if (!parent || !parent->isTableRow())
         return false;
-    
+
     return true;
 }
-    
+
 AccessibilityRole AccessibilityTableCell::determineAccessibilityRole()
 {
     if (!isTableCell())
         return AccessibilityRenderObject::determineAccessibilityRole();
-    
+
     return CellRole;
 }
-    
+
 void AccessibilityTableCell::rowIndexRange(pair<unsigned, unsigned>& rowRange)
 {
     if (!m_renderer || !m_renderer->isTableCell())
         return;
-    
+
     RenderTableCell* renderCell = toRenderTableCell(m_renderer);
     rowRange.first = renderCell->rowIndex();
     rowRange.second = renderCell->rowSpan();
-    
+
     // since our table might have multiple sections, we have to offset our row appropriately
     RenderTableSection* section = renderCell->section();
     RenderTable* table = renderCell->table();
     if (!table || !section)
         return;
 
-    RenderTableSection* tableSection = table->topSection();    
+    RenderTableSection* tableSection = table->topSection();
     unsigned rowOffset = 0;
     while (tableSection) {
         if (tableSection == section)
@@ -126,17 +126,17 @@ void AccessibilityTableCell::rowIndexRange(pair<unsigned, unsigned>& rowRange)
 
     rowRange.first += rowOffset;
 }
-    
+
 void AccessibilityTableCell::columnIndexRange(pair<unsigned, unsigned>& columnRange)
 {
     if (!m_renderer || !m_renderer->isTableCell())
         return;
-    
+
     RenderTableCell* renderCell = toRenderTableCell(m_renderer);
     columnRange.first = renderCell->col();
-    columnRange.second = renderCell->colSpan();    
+    columnRange.second = renderCell->colSpan();
 }
-    
+
 AccessibilityObject* AccessibilityTableCell::titleUIElement() const
 {
     // Try to find if the first cell in this row is a <th>. If it is,
@@ -150,7 +150,7 @@ AccessibilityObject* AccessibilityTableCell::titleUIElement() const
     Node* node = m_renderer->node();
     if (node && node->hasTagName(thTag))
         return 0;
-    
+
     RenderTableCell* renderCell = toRenderTableCell(m_renderer);
 
     // If this cell is in the first column, there is no need to continue.
@@ -163,7 +163,7 @@ AccessibilityObject* AccessibilityTableCell::titleUIElement() const
     RenderTableSection* section = renderCell->section();
     if (!section)
         return 0;
-    
+
     RenderTableCell* headerCell = section->primaryCellAt(row, 0);
     if (!headerCell || headerCell == renderCell)
         return 0;
@@ -171,8 +171,8 @@ AccessibilityObject* AccessibilityTableCell::titleUIElement() const
     Node* cellElement = headerCell->node();
     if (!cellElement || !cellElement->hasTagName(thTag))
         return 0;
-    
+
     return axObjectCache()->getOrCreate(headerCell);
 }
-    
+
 } // namespace WebCore

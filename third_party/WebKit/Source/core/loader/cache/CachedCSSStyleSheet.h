@@ -43,7 +43,7 @@ namespace WebCore {
         const String sheetText(bool enforceMIMEType = true, bool* hasValidMIMEType = 0) const;
 
         virtual void didAddClient(CachedResourceClient*);
-        
+
         virtual void setEncoding(const String&);
         virtual String encoding() const;
         virtual void destroyDecodedData() OVERRIDE;

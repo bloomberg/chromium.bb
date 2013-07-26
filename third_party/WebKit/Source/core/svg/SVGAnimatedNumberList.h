@@ -41,7 +41,7 @@ class SVGAnimatedNumberListAnimator : public SVGAnimatedTypeAnimator {
 public:
     SVGAnimatedNumberListAnimator(SVGAnimationElement*, SVGElement*);
     virtual ~SVGAnimatedNumberListAnimator() { }
-    
+
     virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&);
     virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&);
     virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&);

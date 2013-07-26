@@ -244,7 +244,7 @@ void HTMLDocument::addNamedItem(const AtomicString& name)
 }
 
 void HTMLDocument::removeNamedItem(const AtomicString& name)
-{ 
+{
     removeItemFromMap(m_namedItemCounts, name);
 }
 
@@ -254,7 +254,7 @@ void HTMLDocument::addExtraNamedItem(const AtomicString& name)
 }
 
 void HTMLDocument::removeExtraNamedItem(const AtomicString& name)
-{ 
+{
     removeItemFromMap(m_extraNamedItemCounts, name);
 }
 

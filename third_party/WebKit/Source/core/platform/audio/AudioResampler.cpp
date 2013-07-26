@@ -33,7 +33,7 @@
 #include "wtf/MathExtras.h"
 
 using namespace std;
- 
+
 namespace WebCore {
 
 const double AudioResampler::MaxRate = 8.0;
@@ -76,7 +76,7 @@ void AudioResampler::process(AudioSourceProvider* provider, AudioBus* destinatio
     ASSERT(provider);
     if (!provider)
         return;
-        
+
     unsigned numberOfChannels = m_kernels.size();
 
     // Make sure our configuration matches the bus we're rendering to.
@@ -93,7 +93,7 @@ void AudioResampler::process(AudioSourceProvider* provider, AudioBus* destinatio
         ASSERT(fillPointer);
         if (!fillPointer)
             return;
-            
+
         m_sourceBus->setChannelMemory(i, fillPointer, framesNeeded);
     }
 
@@ -112,7 +112,7 @@ void AudioResampler::setRate(double rate)
 {
     if (std::isnan(rate) || std::isinf(rate) || rate <= 0.0)
         return;
-    
+
     m_rate = min(AudioResampler::MaxRate, rate);
 }
 

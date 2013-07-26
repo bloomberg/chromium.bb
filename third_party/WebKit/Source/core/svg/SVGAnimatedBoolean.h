@@ -40,7 +40,7 @@ class SVGAnimatedBooleanAnimator : public SVGAnimatedTypeAnimator {
 public:
     SVGAnimatedBooleanAnimator(SVGAnimationElement*, SVGElement*);
     virtual ~SVGAnimatedBooleanAnimator() { }
-    
+
     virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&);
     virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&);
     virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&);

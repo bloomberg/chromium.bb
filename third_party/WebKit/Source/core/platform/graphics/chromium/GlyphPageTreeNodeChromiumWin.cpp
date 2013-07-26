@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2008, 2009, 2012 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -73,9 +73,9 @@ static bool initSpaceGlyph(HFONT font, HDC dc, Glyph* spaceGlyph)
     return getGlyphIndices(font, dc, &space, 1, spaceGlyph, 0);
 }
 
-// Fills |length| glyphs starting at |offset| in a |page| in the Basic 
+// Fills |length| glyphs starting at |offset| in a |page| in the Basic
 // Multilingual Plane (<= U+FFFF). The input buffer size should be the
-// same as |length|. We can use the standard Windows GDI functions here. 
+// same as |length|. We can use the standard Windows GDI functions here.
 // Returns true if any glyphs were found.
 static bool fillBMPGlyphs(unsigned offset,
                           unsigned length,
@@ -240,13 +240,13 @@ bool GlyphPage::fill(unsigned offset, unsigned length, UChar* characterBuffer,
 {
     // We have to handle BMP and non-BMP characters differently.
     // FIXME: Add assertions to make sure that buffer is entirely in BMP
-    // or entirely in non-BMP. 
+    // or entirely in non-BMP.
     if (bufferLength == length)
         return fillBMPGlyphs(offset, length, characterBuffer, this, fontData);
 
     if (bufferLength == 2 * length) {
         // A non-BMP input buffer will be twice as long as output glyph buffer
-        // because each character in the non-BMP input buffer will be 
+        // because each character in the non-BMP input buffer will be
         // represented by a surrogate pair (two UChar's).
         return fillNonBMPGlyphs(offset, length, characterBuffer, this, fontData);
     }

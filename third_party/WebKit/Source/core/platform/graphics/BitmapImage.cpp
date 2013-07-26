@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -270,11 +270,11 @@ bool BitmapImage::dataChanged(bool allDataReceived)
             frameBytesCleared += (m_frames[i].clear(true) ? frameBytes : 0);
     }
     destroyMetadataAndNotify(frameBytesCleared);
-    
+
     // Feed all the data we've seen so far to the image decoder.
     m_allDataReceived = allDataReceived;
     m_source.setData(data(), allDataReceived);
-    
+
     m_haveFrameCount = false;
     m_hasUniformFrameSize = true;
     return isSizeAvailable();
@@ -566,7 +566,7 @@ void BitmapImage::resetAnimation()
     m_repetitionsComplete = 0;
     m_desiredFrameStartTime = 0;
     m_animationFinished = false;
-    
+
     // For extremely large animations, when the animation is reset, we just throw everything away.
     destroyDecodedDataIfNecessary();
 }
@@ -590,7 +590,7 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
 {
     // Stop the animation.
     stopAnimation();
-    
+
     // See if anyone is still paying attention to this animation.  If not, we don't
     // advance and will remain suspended at the current frame until the animation is resumed.
     if (!skippingFrames && imageObserver()->shouldPauseAnimation(this))

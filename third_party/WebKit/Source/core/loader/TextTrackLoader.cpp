@@ -39,7 +39,7 @@
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
-    
+
 TextTrackLoader::TextTrackLoader(TextTrackLoaderClient* client, ScriptExecutionContext* context)
     : m_client(client)
     , m_scriptExecutionContext(context)
@@ -62,7 +62,7 @@ void TextTrackLoader::cueLoadTimerFired(Timer<TextTrackLoader>* timer)
 
     if (m_newCuesAvailable) {
         m_newCuesAvailable = false;
-        m_client->newCuesAvailable(this); 
+        m_client->newCuesAvailable(this);
     }
 
     if (m_state >= Finished)
@@ -80,10 +80,10 @@ void TextTrackLoader::cancelLoad()
 void TextTrackLoader::processNewCueData(CachedResource* resource)
 {
     ASSERT(m_cachedCueData == resource);
-    
+
     if (m_state == Failed || !resource->resourceBuffer())
         return;
-    
+
     SharedBuffer* buffer = resource->resourceBuffer();
     if (m_parseOffset == buffer->size())
         return;
@@ -104,10 +104,10 @@ void TextTrackLoader::processNewCueData(CachedResource* resource)
 void TextTrackLoader::deprecatedDidReceiveCachedResource(CachedResource* resource)
 {
     ASSERT(m_cachedCueData == resource);
-    
+
     if (!resource->resourceBuffer())
         return;
-    
+
     processNewCueData(resource);
 }
 
@@ -139,7 +139,7 @@ void TextTrackLoader::notifyFinished(CachedResource* resource)
 
     if (!m_cueLoadTimer.isActive())
         m_cueLoadTimer.startOneShot(0);
-    
+
     cancelLoad();
 }
 
@@ -170,9 +170,9 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
     m_cachedCueData = fetcher->requestTextTrack(cueRequest);
     if (m_cachedCueData)
         m_cachedCueData->addClient(this);
-    
+
     m_client->cueLoadingStarted(this);
-    
+
     return true;
 }
 
@@ -188,7 +188,7 @@ void TextTrackLoader::newCuesParsed()
 #if ENABLE(WEBVTT_REGIONS)
 void TextTrackLoader::newRegionsParsed()
 {
-    m_client->newRegionsAvailable(this); 
+    m_client->newRegionsAvailable(this);
 }
 #endif
 

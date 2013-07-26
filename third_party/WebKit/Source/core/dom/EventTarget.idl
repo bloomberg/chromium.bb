@@ -22,10 +22,10 @@
     CustomToV8,
     DoNotGenerateWrap
 ] interface EventTarget {
-    void addEventListener(DOMString type, 
+    void addEventListener(DOMString type,
                           EventListener listener,
                           optional boolean useCapture);
-    void removeEventListener(DOMString type, 
+    void removeEventListener(DOMString type,
                              EventListener listener,
                              optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event event);

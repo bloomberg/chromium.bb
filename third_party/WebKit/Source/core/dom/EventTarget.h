@@ -25,7 +25,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
@@ -129,14 +129,14 @@ namespace WebCore {
 
     protected:
         virtual ~EventTarget();
-        
+
         virtual EventTargetData* eventTargetData() = 0;
         virtual EventTargetData* ensureEventTargetData() = 0;
 
     private:
         virtual void refEventTarget() = 0;
         virtual void derefEventTarget() = 0;
-        
+
         void fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
 
         bool clearAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld);

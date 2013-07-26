@@ -33,7 +33,7 @@ public:
     static PassRefPtr<HTMLButtonElement> create(const QualifiedName&, Document*, HTMLFormElement*);
 
     void setType(const AtomicString&);
-    
+
     String value() const;
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
@@ -56,7 +56,7 @@ private:
 
     virtual bool appendFormData(FormDataList&, bool);
 
-    virtual bool isEnumeratable() const { return true; } 
+    virtual bool isEnumeratable() const { return true; }
     virtual bool supportLabels() const OVERRIDE { return true; }
 
     virtual bool isSuccessfulSubmitButton() const;

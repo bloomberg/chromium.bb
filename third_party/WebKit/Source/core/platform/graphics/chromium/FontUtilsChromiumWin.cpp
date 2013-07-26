@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2006, 2007, 2008, 2009, 2010, 2012 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -113,7 +113,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
         const UChar** families;
     };
 
-    // Kartika on Vista or earlier lacks the support for Chillu 
+    // Kartika on Vista or earlier lacks the support for Chillu
     // letters added to Unicode 5.1.
     // Try AnjaliOldLipi (a very widely used Malaylalam font with the full
     // Unicode 5.x support) before falling back to Kartika.
@@ -121,7 +121,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
     // Try Khmer OS before Vista fonts because 'Khmer OS' goes along better
     // with Latin and looks better/larger for the same size.
     static const UChar* khmerFonts[] = {L"Khmer OS", L"MoolBoran", L"DaunPenh", L"Code2000", 0};
-    // For the following 6 scripts, two or fonts are listed. The fonts in 
+    // For the following 6 scripts, two or fonts are listed. The fonts in
     // the 1st slot are not available on Windows XP. To support these
     // scripts on XP, listed in the rest of slots are widely used
     // fonts.
@@ -134,7 +134,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
     // http://www.bethmardutho.org/support/meltho/download/index.php
     static const UChar* syriacFonts[] = {L"Estrangelo Edessa", L"Estrangelo Nisibin", L"Code2000", 0};
     // No Myanmar/Burmese font is shipped with Windows, yet. Try a few
-    // widely available/used ones that supports Unicode 5.1 or later. 
+    // widely available/used ones that supports Unicode 5.1 or later.
     static const UChar* myanmarFonts[] = {L"Padauk", L"Parabaik", L"Myanmar3", L"Code2000", 0};
 
     static const ScriptToFontFamilies scriptToFontFamilies[] = {
@@ -153,9 +153,9 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(fontMap); ++i)
         scriptFontMap[fontMap[i].script] = fontMap[i].family;
 
-    // FIXME: Instead of scanning the hard-coded list, we have to 
+    // FIXME: Instead of scanning the hard-coded list, we have to
     // use EnumFont* to 'inspect' fonts to pick up fonts covering scripts
-    // when it's possible (e.g. using OS/2 table). If we do that, this 
+    // when it's possible (e.g. using OS/2 table). If we do that, this
     // had better be pulled out of here.
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(scriptToFontFamilies); ++i) {
         UScriptCode script = scriptToFontFamilies[i].script;
@@ -251,7 +251,7 @@ int getAscent(HFONT hfont)
 
 const WORD kUnsupportedGlyph = 0xffff;
 
-WORD getSpaceGlyph(HFONT hfont) 
+WORD getSpaceGlyph(HFONT hfont)
 {
     HWndDC dc(0);
     HGDIOBJ oldFont = SelectObject(dc, hfont);

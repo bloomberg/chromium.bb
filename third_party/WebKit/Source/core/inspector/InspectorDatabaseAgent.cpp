@@ -119,7 +119,7 @@ public:
     virtual bool handleEvent(SQLTransaction*, SQLError* error)
     {
         reportTransactionFailed(m_requestCallback.get(), error);
-        return true;  
+        return true;
     }
 
 private:

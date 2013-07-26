@@ -136,7 +136,7 @@ void DocumentMarkerController::removeMarkers(Range* range, DocumentMarker::Marke
 // Markers are stored in order sorted by their start offset.
 // Markers of the same type do not overlap each other.
 
-void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMarker) 
+void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMarker)
 {
     ASSERT(newMarker.endOffset() >= newMarker.startOffset());
     if (newMarker.endOffset() == newMarker.startOffset())
@@ -436,7 +436,7 @@ void DocumentMarkerController::removeMarkers(Node* node, DocumentMarker::MarkerT
     if (!possiblyHasMarkers(markerTypes))
         return;
     ASSERT(!m_markers.isEmpty());
-    
+
     MarkerMap::iterator iterator = m_markers.find(node);
     if (iterator != m_markers.end())
         removeMarkersFromList(iterator, markerTypes);

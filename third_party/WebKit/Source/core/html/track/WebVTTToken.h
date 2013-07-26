@@ -106,7 +106,7 @@ public:
         m_type = Type::StartTag;
         m_data.clear();
     }
- 
+
     void beginStartTag(UChar character)
     {
         ASSERT(character);
@@ -129,7 +129,7 @@ public:
         m_type = Type::TimestampTag;
         m_data.append(character);
     }
-    
+
     void appendToTimestamp(UChar character)
     {
         ASSERT(character);
@@ -150,7 +150,7 @@ public:
         m_classes.append(m_currentBuffer);
         m_currentBuffer.clear();
     }
-    
+
     const DataVector& classes() const
     {
         return m_classes;
@@ -160,7 +160,7 @@ public:
     {
         appendToStartType(character);
     }
-        
+
     void addNewAnnotation()
     {
         ASSERT(m_type == Type::StartTag);
@@ -168,7 +168,7 @@ public:
         m_annotation.append(m_currentBuffer);
         m_currentBuffer.clear();
     }
-    
+
     const DataVector& annotation() const
     {
         return m_annotation;
@@ -179,7 +179,7 @@ public:
         ASSERT(m_type == Type::Uninitialized);
         m_type = Type::EndOfFile;
     }
-    
+
     void clear()
     {
         m_type = Type::Uninitialized;

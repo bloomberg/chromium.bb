@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -251,7 +251,7 @@ void TransparencyWin::setupLayerForOpaqueCompositeLayer()
 
     AffineTransform mapping;
     mapping.translate(-m_transformedSourceRect.x(), -m_transformedSourceRect.y());
-    if (m_transformMode == Untransform){ 
+    if (m_transformMode == Untransform){
         // Compute the inverse mapping from the canvas space to the
         // coordinate space of our bitmap.
         mapping *= m_orgTransform.inverse();
@@ -360,7 +360,7 @@ void TransparencyWin::setTextCompositeColor(Color color)
 void TransparencyWin::initializeNewContext()
 {
     int pixelSize = m_layerSize.width() * m_layerSize.height();
-    if (pixelSize <= 0) 
+    if (pixelSize <= 0)
         return;
 
     if (pixelSize > maxCachedBufferPixelSize) {
@@ -375,7 +375,7 @@ void TransparencyWin::initializeNewContext()
         m_drawContext = m_layerBuffer->context();
         if (needReferenceBitmap) {
             m_referenceBitmap = m_ownedBuffers->referenceBitmap();
-            if (!m_referenceBitmap || !m_referenceBitmap->getPixels()) 
+            if (!m_referenceBitmap || !m_referenceBitmap->getPixels())
                 return;
         }
         m_validLayer = true;
@@ -414,7 +414,7 @@ void TransparencyWin::compositeOpaqueComposite()
 
     SkBitmap* bitmap = const_cast<SkBitmap*>(
         &bitmapForContext(*m_layerBuffer->context()));
-    
+
     // This function will be called for WhiteLayer as well, which we don't want
     // to change.
     if (m_layerMode == OpaqueCompositeLayer) {

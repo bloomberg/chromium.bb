@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
@@ -72,7 +72,7 @@ namespace WebCore {
         friend ThreadGlobalData& threadGlobalData();
     };
 
-inline ThreadGlobalData& threadGlobalData() 
+inline ThreadGlobalData& threadGlobalData()
 {
     // FIXME: Workers are not necessarily the only feature that make per-thread global data necessary.
     // We need to check for e.g. database objects manipulating strings on secondary threads.

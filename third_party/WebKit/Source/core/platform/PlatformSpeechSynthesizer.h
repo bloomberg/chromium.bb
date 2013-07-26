@@ -56,19 +56,19 @@ public:
 protected:
     virtual ~PlatformSpeechSynthesizerClient() { }
 };
-    
+
 class PlatformSpeechSynthesizer {
 public:
     static PassOwnPtr<PlatformSpeechSynthesizer> create(PlatformSpeechSynthesizerClient*);
 
     virtual ~PlatformSpeechSynthesizer();
-    
+
     const Vector<RefPtr<PlatformSpeechSynthesisVoice> >& voiceList() const { return m_voiceList; }
     virtual void speak(PassRefPtr<PlatformSpeechSynthesisUtterance>);
     virtual void pause();
     virtual void resume();
     virtual void cancel();
-    
+
     PlatformSpeechSynthesizerClient* client() const { return m_speechSynthesizerClient; }
 
     void setVoiceList(Vector<RefPtr<PlatformSpeechSynthesisVoice> >&);
@@ -77,14 +77,14 @@ protected:
     virtual void initializeVoiceList();
     explicit PlatformSpeechSynthesizer(PlatformSpeechSynthesizerClient*);
     Vector<RefPtr<PlatformSpeechSynthesisVoice> > m_voiceList;
-    
+
 private:
     PlatformSpeechSynthesizerClient* m_speechSynthesizerClient;
 
     OwnPtr<WebKit::WebSpeechSynthesizer> m_webSpeechSynthesizer;
     OwnPtr<WebKit::WebSpeechSynthesizerClient> m_webSpeechSynthesizerClient;
 };
-    
+
 } // namespace WebCore
 
 #endif // PlatformSpeechSynthesizer_h

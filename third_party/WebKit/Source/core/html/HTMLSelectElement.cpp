@@ -129,7 +129,7 @@ void HTMLSelectElement::optionSelectedByUser(int optionIndex, bool fireOnChangeN
 bool HTMLSelectElement::hasPlaceholderLabelOption() const
 {
     // The select element has no placeholder label option if it has an attribute "multiple" specified or a display size of non-1.
-    // 
+    //
     // The condition "size() > 1" is not compliant with the HTML5 spec as of Dec 3, 2010. "size() != 1" is correct.
     // Using "size() > 1" here because size() may be 0 in WebKit.
     // See the discussion at https://bugs.webkit.org/show_bug.cgi?id=43887
@@ -721,7 +721,7 @@ void HTMLSelectElement::setRecalcListItems()
     }
     if (!inDocument())
         invalidateSelectedItems();
-    
+
     if (renderer()) {
         if (AXObjectCache* cache = renderer()->document()->existingAXObjectCache())
             cache->childrenChanged(this);
@@ -1028,7 +1028,7 @@ bool HTMLSelectElement::appendFormData(FormDataList& list, bool)
     // will be submitted (!successful). We won't send a unselected non-disabled
     // option as fallback. This behavior matches to other browsers.
     return successful;
-} 
+}
 
 void HTMLSelectElement::reset()
 {
@@ -1455,7 +1455,7 @@ void HTMLSelectElement::defaultEventHandler(Event* event)
 
     if (usesMenuList())
         menuListDefaultEventHandler(event);
-    else 
+    else
         listBoxDefaultEventHandler(event);
     if (event->defaultHandled())
         return;
@@ -1495,7 +1495,7 @@ int HTMLSelectElement::optionCount() const
 String HTMLSelectElement::optionAtIndex(int index) const
 {
     const Vector<HTMLElement*>& items = listItems();
-    
+
     HTMLElement* element = items[index];
     if (!element->hasTagName(optionTag) || toHTMLOptionElement(element)->isDisabledFormControl())
         return String();
@@ -1523,11 +1523,11 @@ Node::InsertionNotificationRequest HTMLSelectElement::insertedInto(ContainerNode
 }
 
 void HTMLSelectElement::accessKeySetSelectedIndex(int index)
-{    
+{
     // First bring into focus the list box.
     if (!focused())
         accessKeyAction(false);
-    
+
     // If this index is already selected, unselect. otherwise update the selected index.
     const Vector<HTMLElement*>& items = listItems();
     int listIndex = optionToListIndex(index);

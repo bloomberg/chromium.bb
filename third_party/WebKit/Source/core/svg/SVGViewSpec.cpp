@@ -282,7 +282,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
         if (ptr < end && *ptr == ';')
             ptr++;
     }
-    
+
     if (ptr >= end || *ptr != ')')
         return false;
 

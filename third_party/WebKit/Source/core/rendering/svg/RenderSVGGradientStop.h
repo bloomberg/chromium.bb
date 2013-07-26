@@ -24,7 +24,7 @@
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
-    
+
 class SVGGradientElement;
 class SVGStopElement;
 

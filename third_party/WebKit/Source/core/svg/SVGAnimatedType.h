@@ -269,7 +269,7 @@ public:
 
     String valueAsString();
     bool setValueAsString(const QualifiedName&, const String&);
-    
+
 private:
     SVGAnimatedType(AnimatedPropertyType);
 
@@ -300,7 +300,7 @@ private:
         SVGTransformList* transformList;
     } m_data;
 };
-    
+
 } // namespace WebCore
 
 #endif // SVGAnimatedType_h

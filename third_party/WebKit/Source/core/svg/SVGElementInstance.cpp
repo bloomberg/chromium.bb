@@ -267,5 +267,5 @@ SVGElementInstance::InstanceUpdateBlocker::~InstanceUpdateBlocker()
     if (m_targetElement)
         m_targetElement->setInstanceUpdatesBlocked(false);
 }
-   
+
 }

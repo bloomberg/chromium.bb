@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -170,7 +170,7 @@ bool GIFImageDecoder::haveDecodedRow(size_t frameIndex, const Vector<unsigned ch
         return false;
 
     ImageFrame::PixelData* currentAddress = buffer.getAddr(xBegin, yBegin);
-    // Write one row's worth of data into the frame.  
+    // Write one row's worth of data into the frame.
     for (int x = xBegin; x < xEnd; ++x) {
         const unsigned char sourceValue = rowBuffer[x - frameContext->xOffset];
         if ((!frameContext->isTransparent || (sourceValue != frameContext->tpixel)) && (sourceValue < colorMapSize)) {
@@ -342,7 +342,7 @@ bool GIFImageDecoder::initFrameBuffer(size_t frameIndex)
     // Initialize the frame rect in our buffer.
     const GIFFrameContext* frameContext = m_reader->frameContext(frameIndex);
     ImageFrame* const buffer = &m_frameBufferCache[frameIndex];
-    
+
     size_t requiredPreviousFrameIndex = buffer->requiredPreviousFrameIndex();
     if (requiredPreviousFrameIndex == notFound) {
         // This frame doesn't rely on any previous data.

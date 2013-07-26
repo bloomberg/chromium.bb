@@ -41,7 +41,7 @@ class SVGAnimatedPreserveAspectRatioAnimator : public SVGAnimatedTypeAnimator {
 public:
     SVGAnimatedPreserveAspectRatioAnimator(SVGAnimationElement*, SVGElement*);
     virtual ~SVGAnimatedPreserveAspectRatioAnimator() { }
-    
+
     virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&);
     virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&);
     virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&);

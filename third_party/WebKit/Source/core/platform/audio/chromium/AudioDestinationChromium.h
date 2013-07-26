@@ -36,7 +36,7 @@
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebVector.h"
 
-namespace WebCore { 
+namespace WebCore {
 
 class AudioFIFO;
 class AudioPullFIFO;

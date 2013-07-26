@@ -77,7 +77,7 @@ void LinkLoader::notifyFinished(CachedResource* resource)
 
     if (m_cachedLinkResource->errorOccurred())
         m_linkLoadingErrorTimer.startOneShot(0);
-    else 
+    else
         m_linkLoadTimer.startOneShot(0);
 
     m_cachedLinkResource->removeClient(this);

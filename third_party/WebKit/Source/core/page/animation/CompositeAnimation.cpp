@@ -6,13 +6,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -82,9 +82,9 @@ void CompositeAnimation::updateTransitions(RenderObject* renderer, RenderStyle* 
     CSSPropertyTransitionsMap::const_iterator end = m_transitions.end();
     for (CSSPropertyTransitionsMap::const_iterator it = m_transitions.begin(); it != end; ++it)
         it->value->setActive(false);
-        
+
     RefPtr<RenderStyle> modifiedCurrentStyle;
-    
+
     // Check to see if we need to update the active transitions
     if (targetStyle->transitions()) {
         for (size_t i = 0; i < targetStyle->transitions()->size(); ++i) {
@@ -128,7 +128,7 @@ void CompositeAnimation::updateTransitions(RenderObject* renderer, RenderStyle* 
                     // this animation to get removed at the end of this function.
                     if (!implAnim->postActive())
                         implAnim->setActive(true);
-                    
+
                     // This might be a transition that is just finishing. That would be the case
                     // if it were postActive. But we still need to check for equality because
                     // it could be just finishing AND changing to a new goal state.
@@ -164,7 +164,7 @@ void CompositeAnimation::updateTransitions(RenderObject* renderer, RenderStyle* 
                     // Add the new transition
                     m_transitions.set(prop, ImplicitAnimation::create(const_cast<CSSAnimationData*>(anim), prop, renderer, this, modifiedCurrentStyle ? modifiedCurrentStyle.get() : fromStyle));
                 }
-                
+
                 // We only need one pass for the single prop case
                 if (!all)
                     break;
@@ -197,9 +197,9 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
     m_keyframeAnimations.checkConsistency();
 
     AnimationNameMap::const_iterator kfend = m_keyframeAnimations.end();
-    
+
     if (currentStyle && currentStyle->hasAnimations() && targetStyle->hasAnimations() && *(currentStyle->animations()) == *(targetStyle->animations())) {
-        // The current and target animations are the same so we just need to toss any 
+        // The current and target animations are the same so we just need to toss any
         // animation which is finished (postActive).
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != kfend; ++it) {
             if (it->value->postActive())
@@ -209,7 +209,7 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
         // Mark all existing animations as no longer active.
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != kfend; ++it)
             it->value->setIndex(-1);
-            
+
         // Toss the animation order map.
         m_keyframeAnimationOrderList.clear();
 
@@ -222,7 +222,7 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
                 const CSSAnimationData* anim = targetStyle->animations()->animation(i);
                 if (!anim->isValidAnimation())
                     continue;
-                
+
                 // See if there is a current animation for this name.
                 AtomicString name(anim->name());
                 RefPtr<KeyframeAnimation> keyframeAnim = m_keyframeAnimations.get(name);
@@ -230,12 +230,12 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
                     // If this animation is postActive, skip it so it gets removed at the end of this function.
                     if (keyframeAnim->postActive())
                         continue;
-                    
+
                     // This one is still active.
 
                     // Animations match, but play states may differ. Update if needed.
                     keyframeAnim->updatePlayState(anim->playState());
-                                
+
                     // Set the saved animation to this new one, just in case the play state has changed.
                     keyframeAnim->setAnimation(anim);
                     keyframeAnim->setIndex(i);
@@ -243,7 +243,7 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
                     keyframeAnim = KeyframeAnimation::create(const_cast<CSSAnimationData*>(anim), renderer, i, this, targetStyle);
                     m_keyframeAnimations.set(name, keyframeAnim);
                 }
-                
+
                 // Add this to the animation order map.
                 if (keyframeAnim)
                     m_keyframeAnimationOrderList.append(name);
@@ -262,7 +262,7 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
             keyframeAnim->clear();
         }
     }
-    
+
     // Now remove the animations from the list, and keep stale keys out of the order list.
     if (animsToBeRemoved.size()) {
         for (size_t j = 0; j < animsToBeRemoved.size(); ++j) {
@@ -327,16 +327,16 @@ PassRefPtr<RenderStyle> CompositeAnimation::getAnimatedStyle() const
         ASSERT(keyframeAnimation);
         keyframeAnimation->getAnimatedStyle(resultStyle);
     }
-    
+
     return resultStyle;
 }
 
 double CompositeAnimation::timeToNextService() const
 {
-    // Returns the time at which next service is required. -1 means no service is required. 0 means 
+    // Returns the time at which next service is required. -1 means no service is required. 0 means
     // service is required now, and > 0 means service is required that many seconds in the future.
     double minT = -1;
-    
+
     if (!m_transitions.isEmpty()) {
         CSSPropertyTransitionsMap::const_iterator transitionsEnd = m_transitions.end();
         for (CSSPropertyTransitionsMap::const_iterator it = m_transitions.begin(); it != transitionsEnd; ++it) {
@@ -406,7 +406,7 @@ double CompositeAnimation::timeToNextEvent() const
 PassRefPtr<KeyframeAnimation> CompositeAnimation::getAnimationForProperty(CSSPropertyID property) const
 {
     RefPtr<KeyframeAnimation> retval;
-    
+
     // We want to send back the last animation with the property if there are multiples.
     // So we need to iterate through all animations
     if (!m_keyframeAnimations.isEmpty()) {
@@ -418,7 +418,7 @@ PassRefPtr<KeyframeAnimation> CompositeAnimation::getAnimationForProperty(CSSPro
                 retval = anim;
         }
     }
-    
+
     return retval;
 }
 
@@ -551,7 +551,7 @@ void CompositeAnimation::pauseAnimationsForTesting(double t)
 unsigned CompositeAnimation::numberOfActiveAnimations() const
 {
     unsigned count = 0;
-    
+
     if (!m_keyframeAnimations.isEmpty()) {
         m_keyframeAnimations.checkConsistency();
         AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
@@ -570,7 +570,7 @@ unsigned CompositeAnimation::numberOfActiveAnimations() const
                 ++count;
         }
     }
-    
+
     return count;
 }
 

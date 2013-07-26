@@ -61,7 +61,7 @@
     void               normalize();
 
     // Introduced in DOM Level 2:
-     boolean isSupported([Default=Undefined] optional DOMString feature, 
+     boolean isSupported([Default=Undefined] optional DOMString feature,
                                        [TreatNullAs=NullString,Default=Undefined] optional DOMString version);
 
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        namespaceURI;

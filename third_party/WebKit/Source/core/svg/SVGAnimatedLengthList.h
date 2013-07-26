@@ -41,7 +41,7 @@ class SVGAnimatedLengthListAnimator : public SVGAnimatedTypeAnimator {
 public:
     SVGAnimatedLengthListAnimator(SVGAnimationElement*, SVGElement*);
     virtual ~SVGAnimatedLengthListAnimator() { }
-    
+
     virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&);
     virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&);
     virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&);
@@ -52,7 +52,7 @@ public:
     virtual void addAnimatedTypes(SVGAnimatedType*, SVGAnimatedType*);
     virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*);
     virtual float calculateDistance(const String& fromString, const String& toString);
-    
+
 private:
     SVGLengthMode m_lengthMode;
 };

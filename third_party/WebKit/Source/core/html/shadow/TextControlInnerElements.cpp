@@ -56,7 +56,7 @@ PassRefPtr<TextControlInnerContainer> TextControlInnerContainer::create(Document
 {
     return adoptRef(new TextControlInnerContainer(document));
 }
-    
+
 RenderObject* TextControlInnerContainer::createRenderer(RenderStyle*)
 {
     return new (document()->renderArena()) RenderTextControlInnerContainer(this);

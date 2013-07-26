@@ -23,7 +23,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -128,7 +128,7 @@ void ShadowBlur::blurLayerImage(unsigned char* imageData, const IntSize& size, i
     // Two stages: horizontal and vertical
     for (int pass = 0; pass < 2; ++pass) {
         unsigned char* pixels = imageData;
-        
+
         if (!pass && !m_blurRadius.width())
             final = 0; // Do no work if horizonal blur is zero.
 
@@ -166,13 +166,13 @@ void ShadowBlur::blurLayerImage(unsigned char* imageData, const IntSize& size, i
                     *ptr = (sum * invCount) >> blurSumShift;
                     sum += ((ofs < dim) ? *next : alpha2) - alpha1;
                 }
-                
+
                 prev = pixels + channels[step];
                 for (; ofs < dim; ptr += stride, prev += stride, next += stride, ++i, ++ofs) {
                     *ptr = (sum * invCount) >> blurSumShift;
                     sum += (*next) - (*prev);
                 }
-                
+
                 for (; i < dim; ptr += stride, prev += stride, ++i) {
                     *ptr = (sum * invCount) >> blurSumShift;
                     sum += alpha2 - (*prev);

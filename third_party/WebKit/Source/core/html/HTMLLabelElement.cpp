@@ -108,7 +108,7 @@ void HTMLLabelElement::setHovered(bool over)
 {
     if (over == hovered())
         return;
-        
+
     // Update our status first.
     HTMLElement::setHovered(over);
 
@@ -139,10 +139,10 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
             element->focus();
 
         processingClick = false;
-        
+
         evt->setDefaultHandled();
     }
-    
+
     HTMLElement::defaultEventHandler(evt);
 }
 

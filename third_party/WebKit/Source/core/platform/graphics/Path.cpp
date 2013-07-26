@@ -23,7 +23,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -337,7 +337,7 @@ void Path::addRoundedRect(const FloatRect& rect, const FloatSize& roundingRadii)
     FloatSize halfSize(rect.width() / 2, rect.height() / 2);
 
     // Apply the SVG corner radius constraints, per the rect section of the SVG shapes spec: if
-    // one of rx,ry is negative, then the other corner radius value is used. If both values are 
+    // one of rx,ry is negative, then the other corner radius value is used. If both values are
     // negative then rx = ry = 0. If rx is greater than half of the width of the rectangle
     // then set rx to half of the width; ry is handled similarly.
 

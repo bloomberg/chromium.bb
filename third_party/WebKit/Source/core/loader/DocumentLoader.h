@@ -7,13 +7,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -140,7 +140,7 @@ namespace WebCore {
         const StringWithDirection& title() const { return m_pageTitle; }
 
         KURL urlForHistory() const;
-        
+
         void setDefersLoading(bool);
 
         void startLoadingMainResource();
@@ -219,36 +219,36 @@ namespace WebCore {
         void handleSubstituteDataLoadSoon();
         void handleSubstituteDataLoadNow(DocumentLoaderTimer*);
         void startDataLoadTimer();
-                
+
         Frame* m_frame;
         RefPtr<ResourceFetcher> m_fetcher;
 
         CachedResourceHandle<CachedRawResource> m_mainResource;
         ResourceLoaderSet m_resourceLoaders;
         ResourceLoaderSet m_multipartResourceLoaders;
-        
+
         RefPtr<DocumentWriter> m_writer;
 
         // A reference to actual request used to create the data source.
         // This should only be used by the resourceLoadDelegate's
         // identifierForInitialRequest:fromDatasource: method. It is
         // not guaranteed to remain unchanged, as requests are mutable.
-        ResourceRequest m_originalRequest;   
+        ResourceRequest m_originalRequest;
 
         SubstituteData m_substituteData;
 
         // A copy of the original request used to create the data source.
         // We have to copy the request because requests are mutable.
         ResourceRequest m_originalRequestCopy;
-        
+
         // The 'working' request. It may be mutated
         // several times from the original request to include additional
         // headers, cookie information, canonicalization and redirects.
         ResourceRequest m_request;
 
         ResourceResponse m_response;
-    
-        ResourceError m_mainDocumentError;    
+
+        ResourceError m_mainDocumentError;
 
         bool m_committed;
         bool m_isStopping;

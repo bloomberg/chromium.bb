@@ -69,14 +69,14 @@ private:
 
     // Interpolates by this factor to get the total number of elevations from every elevation loaded from resource.
     static const unsigned InterpolationFactor;
-    
+
     // Total number of elevations after interpolation.
     static const unsigned NumberOfTotalElevations;
 
     // Returns the index for the correct HRTFElevation given the elevation angle.
     static unsigned indexFromElevationAngle(double);
 
-    Vector<OwnPtr<HRTFElevation> > m_elevations;                                            
+    Vector<OwnPtr<HRTFElevation> > m_elevations;
     float m_sampleRate;
 };
 

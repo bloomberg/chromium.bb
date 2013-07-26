@@ -47,7 +47,7 @@ class WebAudioBusPrivate : public AudioBus {
 };
 
 void WebAudioBus::initialize(unsigned numberOfChannels, size_t length, double sampleRate)
-{        
+{
 #if ENABLE(WEB_AUDIO)
     RefPtr<AudioBus> audioBus = AudioBus::create(numberOfChannels, length);
     audioBus->setSampleRate(sampleRate);

@@ -93,7 +93,7 @@ public:
     void setCorrespondingElement(SVGElement*);
 
     void synchronizeAnimatedSVGAttribute(const QualifiedName&) const;
- 
+
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
 
     static void synchronizeRequiredFeatures(SVGElement* contextElement);
@@ -129,7 +129,7 @@ protected:
     virtual void finishParsingChildren();
     virtual void attributeChanged(const QualifiedName&, const AtomicString&, AttributeModificationReason = ModifiedDirectly) OVERRIDE;
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const OVERRIDE;
-    
+
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
     SVGElementRareData* svgRareData() const;

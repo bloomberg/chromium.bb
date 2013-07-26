@@ -36,7 +36,7 @@ public:
 
     bool disabled() const;
     void setDisabled(bool);
-                          
+
     virtual const AtomicString& type() const;
     void setType(const AtomicString&);
 

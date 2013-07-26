@@ -52,7 +52,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGradientElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGStyledElement)
 END_REGISTER_ANIMATED_PROPERTIES
- 
+
 SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document* document)
     : SVGStyledElement(tagName, document)
     , m_spreadMethod(SVGSpreadMethodPad)
@@ -120,11 +120,11 @@ void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     SVGElementInstance::InvalidationGuard invalidationGuard(this);
-    
+
     if (RenderObject* object = renderer())
         object->setNeedsLayout(true);
 }
-    
+
 void SVGGradientElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGStyledElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);

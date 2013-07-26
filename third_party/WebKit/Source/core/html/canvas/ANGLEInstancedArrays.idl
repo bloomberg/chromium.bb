@@ -36,5 +36,5 @@
 
     [StrictTypeChecking] void drawArraysInstancedANGLE(unsigned long mode, long first, long count, long primcount);
     [StrictTypeChecking] void drawElementsInstancedANGLE(unsigned long mode, long count, unsigned long type, long long offset, long primcount);
-    [StrictTypeChecking] void vertexAttribDivisorANGLE(unsigned long index, long divisor); 
+    [StrictTypeChecking] void vertexAttribDivisorANGLE(unsigned long index, long divisor);
 };

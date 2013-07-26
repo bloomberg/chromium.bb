@@ -104,7 +104,7 @@ public:
     void setActiveSelectionAnchorIndex(int);
     void setActiveSelectionEndIndex(int);
     void updateListBoxSelection(bool deselectOtherOptions);
-    
+
     // For use in the implementation of HTMLOptionElement.
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
     bool isParsingInProgress() const { return m_isParsingInProgress; }
@@ -116,12 +116,12 @@ protected:
 
 private:
     virtual const AtomicString& formControlType() const;
-    
+
     virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE;
 
     virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE;
     virtual void dispatchBlurEvent(Element* newFocusedElemnet) OVERRIDE;
-    
+
     virtual bool canStartSelection() const { return false; }
 
     virtual bool isEnumeratable() const { return true; }
@@ -140,7 +140,7 @@ private:
     virtual void defaultEventHandler(Event*);
 
     void dispatchChangeEventForMenuList();
-    
+
     void recalcListItems(bool updateSelectedStates = true) const;
 
     void deselectItems(HTMLOptionElement* excludeElement = 0);

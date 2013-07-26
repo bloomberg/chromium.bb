@@ -150,7 +150,7 @@ bool Font::operator==(const Font& other) const
     // FIXME: This does not work if the font was made with the FontPlatformData constructor.
     if (loadingCustomFonts() || other.loadingCustomFonts())
         return false;
-    
+
     FontSelector* first = m_fontFallbackList ? m_fontFallbackList->fontSelector() : 0;
     FontSelector* second = other.m_fontFallbackList ? other.m_fontFallbackList->fontSelector() : 0;
 
@@ -164,7 +164,7 @@ bool Font::operator==(const Font& other) const
 
 void Font::update(PassRefPtr<FontSelector> fontSelector) const
 {
-    // FIXME: It is pretty crazy that we are willing to just poke into a RefPtr, but it ends up 
+    // FIXME: It is pretty crazy that we are willing to just poke into a RefPtr, but it ends up
     // being reasonably safe (because inherited fonts in the render tree pick up the new
     // style anyway. Other copies are transient, e.g., the state in the GraphicsContext, and
     // won't stick around long enough to get you in trouble). Still, this is pretty disgusting,
@@ -182,7 +182,7 @@ void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, c
     // font).
     if (loadingCustomFonts() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
         return;
-    
+
     CodePath codePathToUse = codePath(runInfo.run);
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
     if (codePathToUse != Complex && typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
@@ -361,7 +361,7 @@ Font::CodePath Font::codePath(const TextRun& run) const
 
     if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0)
         return Complex;
-    
+
     if (run.length() > 1 && !WidthIterator::supportsTypesettingFeatures(*this))
         return Complex;
 

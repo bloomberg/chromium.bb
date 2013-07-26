@@ -311,7 +311,7 @@ int HTMLBodyElement::scrollHeight()
     Document* document = this->document();
     document->updateLayoutIgnorePendingStylesheets();
     FrameView* view = document->view();
-    return view ? adjustForZoom(view->contentsHeight(), document) : 0;    
+    return view ? adjustForZoom(view->contentsHeight(), document) : 0;
 }
 
 int HTMLBodyElement::scrollWidth()
@@ -320,7 +320,7 @@ int HTMLBodyElement::scrollWidth()
     Document* document = this->document();
     document->updateLayoutIgnorePendingStylesheets();
     FrameView* view = document->view();
-    return view ? adjustForZoom(view->contentsWidth(), document) : 0;    
+    return view ? adjustForZoom(view->contentsWidth(), document) : 0;
 }
 
 void HTMLBodyElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const

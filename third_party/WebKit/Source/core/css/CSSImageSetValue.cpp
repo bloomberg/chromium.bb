@@ -98,7 +98,7 @@ StyleCachedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, f
         fillImageSet();
 
     if (!m_accessedBestFitImage) {
-        // FIXME: In the future, we want to take much more than deviceScaleFactor into acount here. 
+        // FIXME: In the future, we want to take much more than deviceScaleFactor into acount here.
         // All forms of scale should be included: Page::pageScaleFactor(), Frame::pageZoomFactor(),
         // and any CSS transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
         ImageWithScale image = bestImageForScaleFactor();

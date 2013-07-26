@@ -74,7 +74,7 @@ public:
 
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
     ExtraData* extraData() { return m_extraData.get(); }
-    
+
     void didStartPrerender();
     void didStopPrerender();
     void didSendLoadForPrerender();

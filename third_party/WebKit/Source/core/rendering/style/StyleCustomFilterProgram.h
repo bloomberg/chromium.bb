@@ -47,35 +47,35 @@ class StyleCustomFilterProgramCache;
 class StyleCustomFilterProgram : public CustomFilterProgram, public CachedResourceClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<StyleCustomFilterProgram> create(KURL vertexShaderURL, PassRefPtr<StyleShader> vertexShader, 
+    static PassRefPtr<StyleCustomFilterProgram> create(KURL vertexShaderURL, PassRefPtr<StyleShader> vertexShader,
         KURL fragmentShaderURL, PassRefPtr<StyleShader> fragmentShader, CustomFilterProgramType programType,
         const CustomFilterProgramMixSettings& mixSettings, CustomFilterMeshType meshType)
     {
         return adoptRef(new StyleCustomFilterProgram(vertexShaderURL, vertexShader, fragmentShaderURL, fragmentShader, programType, mixSettings, meshType));
     }
-    
+
     void setVertexShader(PassRefPtr<StyleShader> shader)
     {
         // The shader is immutable while in the cache.
         ASSERT(!m_cache);
-        m_vertexShader = shader; 
+        m_vertexShader = shader;
     }
     StyleShader* vertexShader() const { return m_vertexShader.get(); }
-    
+
     void setFragmentShader(PassRefPtr<StyleShader> shader)
     {
         // The shader is immutable while in the cache.
         ASSERT(!m_cache);
-        m_fragmentShader = shader; 
+        m_fragmentShader = shader;
     }
     StyleShader* fragmentShader() const { return m_fragmentShader.get(); }
-    
+
     virtual String vertexShaderString() const
     {
         ASSERT(isLoaded());
         return m_cachedVertexShader.get() ? m_cachedVertexShader->shaderString() : String();
     }
-    
+
     virtual String fragmentShaderString() const
     {
         ASSERT(isLoaded());
@@ -104,7 +104,7 @@ public:
             m_cachedFragmentShader->addClient(this);
         }
     }
-    
+
     virtual void didRemoveLastClient()
     {
         if (m_cachedVertexShader.get()) {
@@ -118,7 +118,7 @@ public:
             m_isFragmentShaderLoaded = false;
         }
     }
-    
+
     virtual void notifyFinished(CachedResource* resource)
     {
         if (resource->errorOccurred())
@@ -134,19 +134,19 @@ public:
 
     bool hasPendingShaders() const
     {
-        return (m_vertexShader && m_vertexShader->isPendingShader()) 
+        return (m_vertexShader && m_vertexShader->isPendingShader())
             || (m_fragmentShader && m_fragmentShader->isPendingShader());
     }
 
     // StyleCustomFilterProgramCache is responsible with updating the reference to the cache.
     void setCache(StyleCustomFilterProgramCache* cache) { m_cache = cache; }
     bool inCache() const { return m_cache; }
-    
+
     KURL vertexShaderURL() const { return m_vertexShaderURL; }
     KURL fragmentShaderURL() const { return m_fragmentShaderURL; }
 
 private:
-    StyleCustomFilterProgram(KURL vertexShaderURL, PassRefPtr<StyleShader> vertexShader, KURL fragmentShaderURL, PassRefPtr<StyleShader> fragmentShader, 
+    StyleCustomFilterProgram(KURL vertexShaderURL, PassRefPtr<StyleShader> vertexShader, KURL fragmentShaderURL, PassRefPtr<StyleShader> fragmentShader,
         CustomFilterProgramType programType, const CustomFilterProgramMixSettings& mixSettings, CustomFilterMeshType meshType)
         : CustomFilterProgram(programType, mixSettings, meshType)
         , m_vertexShader(vertexShader)
@@ -160,7 +160,7 @@ private:
     }
 
     ~StyleCustomFilterProgram();
-    
+
     RefPtr<StyleShader> m_vertexShader;
     RefPtr<StyleShader> m_fragmentShader;
 
@@ -174,7 +174,7 @@ private:
 
     // The Cache is responsible of invalidating this reference.
     StyleCustomFilterProgramCache* m_cache;
-    
+
     bool m_isVertexShaderLoaded;
     bool m_isFragmentShaderLoaded;
 };

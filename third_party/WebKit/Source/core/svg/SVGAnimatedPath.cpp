@@ -137,7 +137,7 @@ void SVGAnimatedPathAnimator::calculateAnimatedValue(float percentage, unsigned 
     if (m_animationElement->isAccumulated() && repeatCount)
         addToSVGPathByteStream(animatedPath, toAtEndOfDurationPath, repeatCount);
 }
-   
+
 float SVGAnimatedPathAnimator::calculateDistance(const String&, const String&)
 {
     // FIXME: Support paced animations.

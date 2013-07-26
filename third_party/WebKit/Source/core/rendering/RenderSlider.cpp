@@ -85,7 +85,7 @@ void RenderSlider::computePreferredLogicalWidths()
     m_minPreferredLogicalWidth += toAdd;
     m_maxPreferredLogicalWidth += toAdd;
 
-    setPreferredLogicalWidthsDirty(false); 
+    setPreferredLogicalWidthsDirty(false);
 }
 
 void RenderSlider::layout()

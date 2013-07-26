@@ -40,7 +40,7 @@
 namespace WebCore {
 
 class AudioChannel;
-    
+
 // HRTF stands for Head-Related Transfer Function.
 // HRTFKernel is a frequency-domain representation of an impulse-response used as part of the spatialized panning system.
 // For a given azimuth / elevation angle there will be one HRTFKernel for the left ear transfer function, and one for the right ear.
@@ -63,9 +63,9 @@ public:
 
     // Given two HRTFKernels, and an interpolation factor x: 0 -> 1, returns an interpolated HRTFKernel.
     static PassRefPtr<HRTFKernel> createInterpolatedKernel(HRTFKernel* kernel1, HRTFKernel* kernel2, float x);
-  
+
     FFTFrame* fftFrame() { return m_fftFrame.get(); }
-    
+
     size_t fftSize() const { return m_fftFrame->fftSize(); }
     float frameDelay() const { return m_frameDelay; }
 
@@ -78,14 +78,14 @@ public:
 private:
     // Note: this is destructive on the passed in AudioChannel.
     HRTFKernel(AudioChannel*, size_t fftSize, float sampleRate);
-    
+
     HRTFKernel(PassOwnPtr<FFTFrame> fftFrame, float frameDelay, float sampleRate)
         : m_fftFrame(fftFrame)
         , m_frameDelay(frameDelay)
         , m_sampleRate(sampleRate)
     {
     }
-    
+
     OwnPtr<FFTFrame> m_fftFrame;
     float m_frameDelay;
     float m_sampleRate;

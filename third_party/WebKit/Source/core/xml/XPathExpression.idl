@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 interface XPathExpression {
-     [RaisesException] XPathResult evaluate([Default=Undefined] optional Node contextNode, 
-                                        [Default=Undefined] optional unsigned short type, 
+     [RaisesException] XPathResult evaluate([Default=Undefined] optional Node contextNode,
+                                        [Default=Undefined] optional unsigned short type,
                                         [Default=Undefined] optional XPathResult inResult);
 };
 

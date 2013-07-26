@@ -51,7 +51,7 @@ public:
         return adoptRef(new CSSFontSelector(document));
     }
     virtual ~CSSFontSelector();
-    
+
     virtual unsigned version() const OVERRIDE { return m_version; }
 
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&);
@@ -88,7 +88,7 @@ private:
 
     Vector<CachedResourceHandle<CachedFont> > m_fontsToBeginLoading;
     Timer<CSSFontSelector> m_beginLoadingTimer;
-    
+
     unsigned m_version;
 };
 

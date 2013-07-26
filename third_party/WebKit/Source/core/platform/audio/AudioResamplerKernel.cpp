@@ -34,7 +34,7 @@
 using namespace std;
 
 namespace WebCore {
-    
+
 const size_t AudioResamplerKernel::MaxFramesToProcess = 128;
 
 AudioResamplerKernel::AudioResamplerKernel(AudioResampler* resampler)
@@ -51,7 +51,7 @@ AudioResamplerKernel::AudioResamplerKernel(AudioResampler* resampler)
 float* AudioResamplerKernel::getSourcePointer(size_t framesToProcess, size_t* numberOfSourceFramesNeededP)
 {
     ASSERT(framesToProcess <= MaxFramesToProcess);
-    
+
     // Calculate the next "virtual" index.  After process() is called, m_virtualReadIndex will equal this value.
     double nextFractionalIndex = m_virtualReadIndex + framesToProcess * rate();
 
@@ -78,11 +78,11 @@ void AudioResamplerKernel::process(float* destination, size_t framesToProcess)
     ASSERT(framesToProcess <= MaxFramesToProcess);
 
     float* source = m_sourceBuffer.data();
-    
+
     double rate = this->rate();
     rate = max(0.0, rate);
     rate = min(AudioResampler::MaxRate, rate);
-    
+
     // Start out with the previous saved values (if any).
     if (m_fillIndex > 0) {
         source[0] = m_lastValues[0];
@@ -91,7 +91,7 @@ void AudioResamplerKernel::process(float* destination, size_t framesToProcess)
 
     // Make a local copy.
     double virtualReadIndex = m_virtualReadIndex;
-    
+
     // Sanity check source buffer access.
     ASSERT(framesToProcess > 0);
     ASSERT(virtualReadIndex >= 0 && 1 + static_cast<unsigned>(virtualReadIndex + (framesToProcess - 1) * rate) < m_sourceBuffer.size());
@@ -110,7 +110,7 @@ void AudioResamplerKernel::process(float* destination, size_t framesToProcess)
         *destination++ = static_cast<float>(sample);
 
         virtualReadIndex += rate;
-    }                        
+    }
 
     // Save the last two sample-frames which will later be used at the beginning of the source buffer the next time around.
     int readIndex = static_cast<int>(virtualReadIndex);

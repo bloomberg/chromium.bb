@@ -57,7 +57,7 @@ public:
 
 private:
     StyleVisualData();
-    StyleVisualData(const StyleVisualData&);    
+    StyleVisualData(const StyleVisualData&);
 };
 
 } // namespace WebCore

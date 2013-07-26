@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef XPathNodeSet_h
@@ -39,7 +39,7 @@ namespace WebCore {
             WTF_MAKE_FAST_ALLOCATED;
         public:
             NodeSet() : m_isSorted(true), m_subtreesAreDisjoint(false) { }
-            
+
             size_t size() const { return m_nodes.size(); }
             bool isEmpty() const { return !m_nodes.size(); }
             Node* operator[](unsigned i) const { return m_nodes.at(i).get(); }
@@ -69,7 +69,7 @@ namespace WebCore {
             bool subtreesAreDisjoint() const { return m_subtreesAreDisjoint || m_nodes.size() < 2; }
 
             void reverse();
-        
+
         private:
             void traversalSort() const;
 

@@ -83,12 +83,12 @@ struct CaseFoldingCStringTranslator {
     {
         return CaseFoldingHash::hash(cString, strlen(cString));
     }
-    
+
     static bool equal(const AtomicString& key, const char* cString)
     {
         return equalIgnoringCase(key, cString);
     }
-    
+
     static void translate(AtomicString& location, const char* cString, unsigned /*hash*/)
     {
         location = AtomicString(cString);

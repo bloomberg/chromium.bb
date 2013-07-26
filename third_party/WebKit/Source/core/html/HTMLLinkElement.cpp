@@ -344,10 +344,10 @@ void HTMLLinkElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
 
     if (!m_relAttribute.isStyleSheet())
         return;
-    
+
     // Append the URL of this link element.
     addSubresourceURL(urls, href());
-    
+
     // Walk the URLs linked by the linked-to stylesheet.
     if (CSSStyleSheet* styleSheet = const_cast<HTMLLinkElement*>(this)->sheet())
         styleSheet->contents()->addSubresourceStyleURLs(urls);

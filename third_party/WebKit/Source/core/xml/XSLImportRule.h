@@ -41,7 +41,7 @@ public:
     }
 
     virtual ~XSLImportRule();
-    
+
     const String& href() const { return m_strHref; }
     XSLStyleSheet* styleSheet() const { return m_styleSheet.get(); }
 
@@ -50,12 +50,12 @@ public:
 
     bool isLoading();
     void loadSheet();
-    
+
 private:
     XSLImportRule(XSLStyleSheet* parentSheet, const String& href);
 
     virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet);
-    
+
     XSLStyleSheet* m_parentStyleSheet;
     String m_strHref;
     RefPtr<XSLStyleSheet> m_styleSheet;

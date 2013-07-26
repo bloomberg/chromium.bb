@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
@@ -34,7 +34,7 @@
 #include "core/page/SuspendableTimer.h"
 
 namespace WebCore {
-    
+
 class DocumentEventQueueTimer : public SuspendableTimer {
     WTF_MAKE_NONCOPYABLE(DocumentEventQueueTimer);
 public:
@@ -71,7 +71,7 @@ bool DocumentEventQueue::enqueueEvent(PassRefPtr<Event> event)
     ASSERT(event->target());
     bool wasAdded = m_queuedEvents.add(event).isNewEntry;
     ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
-    
+
     if (!m_pendingEventTimer->isActive())
         m_pendingEventTimer->startOneShot(0);
 
@@ -86,7 +86,7 @@ void DocumentEventQueue::enqueueOrDispatchScrollEvent(PassRefPtr<Node> target, S
     // Per the W3C CSSOM View Module, scroll events fired at the document should bubble, others should not.
     bool canBubble = targetType == ScrollEventDocumentTarget;
     RefPtr<Event> scrollEvent = Event::create(eventNames().scrollEvent, canBubble, false /* non cancelleable */);
-     
+
     if (!m_nodesWithQueuedScrollEvents.add(target.get()).isNewEntry)
         return;
 

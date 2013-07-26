@@ -79,7 +79,7 @@ ArchiveResource* ArchiveResourceCollection::archiveResourceForURL(const KURL& ur
     ArchiveResource* resource = m_subresources.get(url);
     if (!resource)
         return 0;
-        
+
     return resource;
 }
 

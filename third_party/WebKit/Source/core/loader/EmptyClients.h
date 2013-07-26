@@ -160,11 +160,11 @@ public:
     virtual void scheduleCompositingLayerFlush() OVERRIDE { }
 
     virtual void needTouchEvents(bool) OVERRIDE { }
-    
+
     virtual void numWheelEventHandlersChanged(unsigned) OVERRIDE { }
-    
+
     virtual bool shouldRubberBandInDirection(WebCore::ScrollDirection) const OVERRIDE { return false; }
-    
+
     virtual bool isEmptyChromeClient() const OVERRIDE { return true; }
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) OVERRIDE { }
