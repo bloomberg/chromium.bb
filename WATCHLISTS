@@ -33,6 +33,9 @@
     'android_webview': {
       'filepath': 'android_webview/',
     },
+    'app_container': {
+      'filepath': '.*app_window.*'
+    },
     'app_list': {
       'filepath': 'chrome/browser/ui/app_list'\
                   '|chrome/browser/ui/ash/app_list'\
@@ -574,6 +577,7 @@
                       'craigdh+watch@chromium.org',
                       'frankf+watch@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
+    'app_container': ['scheib+watch@chromium.org'],
     'app_list': ['tfarina@chromium.org', 'chrome-apps-syd-reviews@chromium.org'],
     'app_shortcuts': ['chrome-apps-syd-reviews@chromium.org'],
     'appcache': ['michaeln@chromium.org'],
