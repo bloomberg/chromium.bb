@@ -366,10 +366,9 @@ std::string TestFileRef::TestQueryAndTouchFile() {
 
   // Touch.
   // last_access_time's granularity is 1 day
-  const PP_Time last_access_time = 123 * 24 * 3600.0;
   // last_modified_time's granularity is 2 seconds
-  // See note in test_file_io.cc for why we use this time.
-  const PP_Time last_modified_time = 100 * 24 * 3600.0;
+  const PP_Time last_access_time = 123 * 24 * 3600.0;
+  const PP_Time last_modified_time = 246.0;
   callback.WaitForResult(file_ref.Touch(last_access_time, last_modified_time,
                                         callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);

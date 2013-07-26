@@ -435,12 +435,6 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
           break;
         }
         case ppapi::proxy::SerializedHandle::FILE:
-          // IMPORTANT: The NaClDescIoDescFromHandleAllocCtor function creates
-          // a NaClDesc that checks file flags before reading and writing. This
-          // is essential since PPB_FileIO now sends a file descriptor to the
-          // plugin which may have write capabilities. We can't allow the plugin
-          // to write with it since it could bypass quota checks, which still
-          // happen in the host.
           nacl_desc.reset(new NaClDescWrapper(NaClDescIoDescFromHandleAllocCtor(
 #if defined(OS_WIN)
               iter->descriptor(),
