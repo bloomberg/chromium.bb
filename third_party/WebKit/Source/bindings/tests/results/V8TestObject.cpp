@@ -2326,7 +2326,7 @@ static void perWorldAttributeAttrGetterCallback(v8::Local<v8::String> name, cons
 static void perWorldAttributeAttrGetterForMainWorld(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, toV8FastForMainWorld(imp->perWorldAttribute(), info, imp));
+    v8SetReturnValue(info, toV8ForMainWorld(imp->perWorldAttribute(), info.Holder(), info.GetIsolate()));
     return;
 }
 

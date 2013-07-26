@@ -91,7 +91,7 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(TestNamedConstructor* impl, v8::Ha
 {
     ASSERT(worldType(isolate) == MainWorld);
     if (UNLIKELY(!impl))
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld<V8TestNamedConstructor>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
@@ -109,22 +109,9 @@ inline v8::Handle<v8::Value> toV8Fast(TestNamedConstructor* impl, const Callback
     return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(TestNamedConstructor* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
+inline v8::Handle<v8::Value> toV8ForMainWorld(PassRefPtr< TestNamedConstructor > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
-    if (UNLIKELY(!impl))
-        return v8::Null(callbackInfo.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<V8TestNamedConstructor>(impl);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-}
-
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(PassRefPtr< TestNamedConstructor > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    return toV8FastForMainWorld(impl.get(), callbackInfo, wrappable);
+    return toV8ForMainWorld(impl.get(), creationContext, isolate);
 }
 
 
