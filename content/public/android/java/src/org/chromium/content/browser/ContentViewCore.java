@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -2238,6 +2239,9 @@ import java.util.Map;
         if (mBrowserAccessibilityManager != null) {
             mBrowserAccessibilityManager.notifyFrameInfoInitialized();
         }
+
+        // Update geometry for external video surface.
+        getContentViewClient().onGeometryChanged(-1, null);
     }
 
     @SuppressWarnings("unused")
@@ -2941,18 +2945,8 @@ import java.util.Map;
     @CalledByNative
     private void notifyExternalSurface(
             int playerId, boolean isRequest, float x, float y, float width, float height) {
-        RenderCoordinates.NormalizedPoint topLeft = mRenderCoordinates.createNormalizedPoint();
-        RenderCoordinates.NormalizedPoint bottomRight = mRenderCoordinates.createNormalizedPoint();
-        topLeft.setLocalDip(x * getScale(), y * getScale());
-        bottomRight.setLocalDip((x + width) * getScale(), (y + height) * getScale());
-
         if (isRequest) getContentViewClient().onExternalVideoSurfaceRequested(playerId);
-        getContentViewClient().onGeometryChanged(
-                playerId,
-                topLeft.getXPix(),
-                topLeft.getYPix(),
-                bottomRight.getXPix() - topLeft.getXPix(),
-                bottomRight.getYPix() - topLeft.getYPix());
+        getContentViewClient().onGeometryChanged(playerId, new RectF(x, y, x + width, y + height));
     }
 
     /**

@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.RectF;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.KeyEvent;
@@ -167,7 +168,7 @@ public class ContentViewClient {
     public void onExternalVideoSurfaceRequested(int playerId) {
     }
 
-    public void onGeometryChanged(int playerId, float x, float y, float width, float height) {
+    public void onGeometryChanged(int playerId, RectF rect) {
     }
 
     public ContentVideoViewClient getContentVideoViewClient() {
