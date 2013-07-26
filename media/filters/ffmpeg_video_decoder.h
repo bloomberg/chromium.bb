@@ -33,7 +33,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   virtual void Initialize(const VideoDecoderConfig& config,
                           const PipelineStatusCB& status_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const ReadCB& read_cb) OVERRIDE;
+                      const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
 
@@ -73,7 +73,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
 
   DecoderState state_;
 
-  ReadCB read_cb_;
+  DecodeCB decode_cb_;
   base::Closure reset_cb_;
 
   // FFmpeg structures owned by this object.

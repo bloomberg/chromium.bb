@@ -78,7 +78,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   MOCK_METHOD2(OnInitialized, void(bool, bool));
 
   void OnStatistics(const PipelineStatistics& statistics) {
-     total_bytes_decoded_ += statistics.video_bytes_decoded;
+    total_bytes_decoded_ += statistics.video_bytes_decoded;
   }
 
   // Fake Decrypt() function used by DecryptingDemuxerStream. It does nothing
@@ -95,10 +95,13 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   }
 
   // Callback for VideoFrameStream::Read().
-  void FrameReady(VideoDecoder::Status status,
+  void FrameReady(VideoFrameStream::Status status,
                   const scoped_refptr<VideoFrame>& frame) {
     DCHECK(pending_read_);
-    ASSERT_EQ(VideoDecoder::kOk, status);
+    // TODO(xhwang): Add test cases where the fake decoder returns error or
+    // the fake demuxer aborts demuxer read.
+    ASSERT_TRUE(status == VideoFrameStream::OK ||
+                status == VideoFrameStream::ABORTED);
     frame_read_ = frame;
     if (frame.get() && !frame->IsEndOfStream())
       num_decoded_frames_++;

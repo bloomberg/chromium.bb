@@ -42,7 +42,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual void Initialize(const VideoDecoderConfig& config,
                           const PipelineStatusCB& status_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const ReadCB& read_cb) OVERRIDE;
+                      const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual bool HasAlpha() const OVERRIDE;
@@ -125,15 +125,12 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // Callbacks that are !is_null() only during their respective operation being
   // asynchronously executed.
-  ReadCB pending_read_cb_;
+  DecodeCB pending_decode_cb_;
   base::Closure pending_reset_cb_;
 
   State state_;
 
   VideoDecoderConfig config_;
-
-  // Is a demuxer read in flight?
-  bool demuxer_read_in_progress_;
 
   // Shared-memory buffer pool.  Since allocating SHM segments requires a
   // round-trip to the browser process, we keep allocation out of the
@@ -151,7 +148,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   std::map<int32, PictureBuffer> assigned_picture_buffers_;
   std::map<int32, PictureBuffer> dismissed_picture_buffers_;
   // PictureBuffers given to us by VDA via PictureReady, which we sent forward
-  // as VideoFrames to be rendered via read_cb_, and which will be returned
+  // as VideoFrames to be rendered via decode_cb_, and which will be returned
   // to us via ReusePictureBuffer.
   std::set<int32> picture_buffers_at_display_;
 
@@ -170,7 +167,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   std::list<BufferData> input_buffer_data_;
 
   // picture_buffer_id and the frame wrapping the corresponding Picture, for
-  // frames that have been decoded but haven't been requested by a Read() yet.
+  // frames that have been decoded but haven't been requested by a Decode() yet.
   std::list<scoped_refptr<VideoFrame> > ready_video_frames_;
   int32 next_picture_buffer_id_;
   int32 next_bitstream_buffer_id_;

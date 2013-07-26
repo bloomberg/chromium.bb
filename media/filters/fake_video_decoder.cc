@@ -30,7 +30,7 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   const PipelineStatusCB& status_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
-  DCHECK(read_cb_.IsNull()) << "No reinitialization during pending read.";
+  DCHECK(decode_cb_.IsNull()) << "No reinitialization during pending decode.";
   DCHECK(reset_cb_.IsNull()) << "No reinitialization during pending reset.";
 
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -48,18 +48,18 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
 }
 
 void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                              const ReadCB& read_cb) {
+                              const DecodeCB& decode_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(read_cb_.IsNull()) << "Overlapping decodes are not supported.";
+  DCHECK(decode_cb_.IsNull()) << "Overlapping decodes are not supported.";
   DCHECK(reset_cb_.IsNull());
   DCHECK_LE(decoded_frames_.size(), static_cast<size_t>(decoding_delay_));
 
   int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
-  read_cb_.SetCallback(BindToCurrentLoop(base::Bind(
-      &FakeVideoDecoder::OnFrameDecoded, weak_this_, buffer_size, read_cb)));
+  decode_cb_.SetCallback(BindToCurrentLoop(base::Bind(
+      &FakeVideoDecoder::OnFrameDecoded, weak_this_, buffer_size, decode_cb)));
 
   if (buffer->end_of_stream() && decoded_frames_.empty()) {
-    read_cb_.RunOrHold(kOk, VideoFrame::CreateEmptyFrame());
+    decode_cb_.RunOrHold(kOk, VideoFrame::CreateEmptyFrame());
     return;
   }
 
@@ -70,14 +70,14 @@ void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     decoded_frames_.push_back(video_frame);
 
     if (decoded_frames_.size() <= static_cast<size_t>(decoding_delay_)) {
-      read_cb_.RunOrHold(kNotEnoughData, scoped_refptr<VideoFrame>());
+      decode_cb_.RunOrHold(kNotEnoughData, scoped_refptr<VideoFrame>());
       return;
     }
   }
 
   scoped_refptr<VideoFrame> frame = decoded_frames_.front();
   decoded_frames_.pop_front();
-  read_cb_.RunOrHold(kOk, frame);
+  decode_cb_.RunOrHold(kOk, frame);
 }
 
 void FakeVideoDecoder::Reset(const base::Closure& closure) {
@@ -85,8 +85,8 @@ void FakeVideoDecoder::Reset(const base::Closure& closure) {
   DCHECK(reset_cb_.IsNull());
   reset_cb_.SetCallback(BindToCurrentLoop(closure));
 
-  // Defer the reset if a read is pending.
-  if (!read_cb_.IsNull())
+  // Defer the reset if a decode is pending.
+  if (!decode_cb_.IsNull())
     return;
 
   DoReset();
@@ -96,8 +96,8 @@ void FakeVideoDecoder::Stop(const base::Closure& closure) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   stop_cb_.SetCallback(BindToCurrentLoop(closure));
 
-  // Defer the stop if an init, a read or a reset is pending.
-  if (!init_cb_.IsNull() || !read_cb_.IsNull() || !reset_cb_.IsNull())
+  // Defer the stop if an init, a decode or a reset is pending.
+  if (!init_cb_.IsNull() || !decode_cb_.IsNull() || !reset_cb_.IsNull())
     return;
 
   DoStop();
@@ -110,7 +110,7 @@ void FakeVideoDecoder::HoldNextInit() {
 
 void FakeVideoDecoder::HoldNextRead() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  read_cb_.HoldCallback();
+  decode_cb_.HoldCallback();
 }
 
 void FakeVideoDecoder::HoldNextReset() {
@@ -125,7 +125,7 @@ void FakeVideoDecoder::HoldNextStop() {
 
 void FakeVideoDecoder::SatisfyInit() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(read_cb_.IsNull());
+  DCHECK(decode_cb_.IsNull());
   DCHECK(reset_cb_.IsNull());
 
   init_cb_.RunHeldCallback();
@@ -136,7 +136,7 @@ void FakeVideoDecoder::SatisfyInit() {
 
 void FakeVideoDecoder::SatisfyRead() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  read_cb_.RunHeldCallback();
+  decode_cb_.RunHeldCallback();
 
   if (!reset_cb_.IsNull())
     DoReset();
@@ -147,7 +147,7 @@ void FakeVideoDecoder::SatisfyRead() {
 
 void FakeVideoDecoder::SatisfyReset() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(read_cb_.IsNull());
+  DCHECK(decode_cb_.IsNull());
   reset_cb_.RunHeldCallback();
 
   if (!stop_cb_.IsNull())
@@ -156,14 +156,14 @@ void FakeVideoDecoder::SatisfyReset() {
 
 void FakeVideoDecoder::SatisfyStop() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(read_cb_.IsNull());
+  DCHECK(decode_cb_.IsNull());
   DCHECK(reset_cb_.IsNull());
   stop_cb_.RunHeldCallback();
 }
 
 void FakeVideoDecoder::DoReset() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(read_cb_.IsNull());
+  DCHECK(decode_cb_.IsNull());
   DCHECK(!reset_cb_.IsNull());
 
   decoded_frames_.clear();
@@ -172,7 +172,7 @@ void FakeVideoDecoder::DoReset() {
 
 void FakeVideoDecoder::DoStop() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(read_cb_.IsNull());
+  DCHECK(decode_cb_.IsNull());
   DCHECK(reset_cb_.IsNull());
   DCHECK(!stop_cb_.IsNull());
 
@@ -183,12 +183,12 @@ void FakeVideoDecoder::DoStop() {
 
 void FakeVideoDecoder::OnFrameDecoded(
     int buffer_size,
-    const ReadCB& read_cb,
+    const DecodeCB& decode_cb,
     Status status,
     const scoped_refptr<VideoFrame>& video_frame) {
   if (status == kOk || status == kNotEnoughData)
     total_bytes_decoded_ += buffer_size;
-  read_cb.Run(status, video_frame);
+  decode_cb.Run(status, video_frame);
 }
 
 }  // namespace media

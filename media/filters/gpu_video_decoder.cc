@@ -74,7 +74,7 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
         &GpuVideoDecoder::Reset, weak_this_, closure));
     // NOTE: if we're deferring Reset() until a Flush() completes, return
     // queued pictures to the VDA so they can be used to finish that Flush().
-    if (pending_read_cb_.is_null())
+    if (pending_decode_cb_.is_null())
       ready_video_frames_.clear();
     return;
   }
@@ -87,7 +87,7 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
     return;
   }
 
-  if (!pending_read_cb_.is_null())
+  if (!pending_decode_cb_.is_null())
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
 
   DCHECK(pending_reset_cb_.is_null());
@@ -100,7 +100,7 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   if (vda_)
     DestroyVDA();
-  if (!pending_read_cb_.is_null())
+  if (!pending_decode_cb_.is_null())
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
   if (!pending_reset_cb_.is_null())
     base::ResetAndReturn(&pending_reset_cb_).Run();
@@ -188,15 +188,15 @@ void GpuVideoDecoder::DestroyVDA() {
 }
 
 void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                             const ReadCB& read_cb) {
+                             const DecodeCB& decode_cb) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   DCHECK(pending_reset_cb_.is_null());
-  DCHECK(pending_read_cb_.is_null());
+  DCHECK(pending_decode_cb_.is_null());
 
-  pending_read_cb_ = BindToCurrentLoop(read_cb);
+  pending_decode_cb_ = BindToCurrentLoop(decode_cb);
 
   if (state_ == kError || !vda_) {
-    base::ResetAndReturn(&pending_read_cb_).Run(kDecodeError, NULL);
+    base::ResetAndReturn(&pending_decode_cb_).Run(kDecodeError, NULL);
     return;
   }
 
@@ -231,7 +231,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   size_t size = buffer->data_size();
   SHMBuffer* shm_buffer = GetSHM(size);
   if (!shm_buffer) {
-    base::ResetAndReturn(&pending_read_cb_).Run(kDecodeError, NULL);
+    base::ResetAndReturn(&pending_decode_cb_).Run(kDecodeError, NULL);
     return;
   }
 
@@ -253,7 +253,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   }
 
   if (CanMoreDecodeWorkBeDone())
-    base::ResetAndReturn(&pending_read_cb_).Run(kNotEnoughData, NULL);
+    base::ResetAndReturn(&pending_decode_cb_).Run(kNotEnoughData, NULL);
 }
 
 bool GpuVideoDecoder::CanMoreDecodeWorkBeDone() {
@@ -443,10 +443,11 @@ void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
   else
     DCHECK(!ready_video_frames_.empty());
 
-  if (pending_read_cb_.is_null())
+  if (pending_decode_cb_.is_null())
     return;
 
-  base::ResetAndReturn(&pending_read_cb_).Run(kOk, ready_video_frames_.front());
+  base::ResetAndReturn(&pending_decode_cb_)
+      .Run(kOk, ready_video_frames_.front());
   ready_video_frames_.pop_front();
 }
 
@@ -518,14 +519,14 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
   bitstream_buffers_in_decoder_.erase(it);
 
   if (pending_reset_cb_.is_null() && state_ != kDrainingDecoder &&
-      CanMoreDecodeWorkBeDone() && !pending_read_cb_.is_null()) {
-    base::ResetAndReturn(&pending_read_cb_).Run(kNotEnoughData, NULL);
+      CanMoreDecodeWorkBeDone() && !pending_decode_cb_.is_null()) {
+    base::ResetAndReturn(&pending_decode_cb_).Run(kNotEnoughData, NULL);
   }
 }
 
 GpuVideoDecoder::~GpuVideoDecoder() {
   DCHECK(!vda_.get());  // Stop should have been already called.
-  DCHECK(pending_read_cb_.is_null());
+  DCHECK(pending_decode_cb_.is_null());
   for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
     available_shm_segments_[i]->shm->Close();
     delete available_shm_segments_[i];
@@ -561,7 +562,7 @@ void GpuVideoDecoder::NotifyResetDone() {
   if (!pending_reset_cb_.is_null())
     base::ResetAndReturn(&pending_reset_cb_).Run();
 
-  if (!pending_read_cb_.is_null())
+  if (!pending_decode_cb_.is_null())
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
 }
 
@@ -575,8 +576,8 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
 
   state_ = kError;
 
-  if (!pending_read_cb_.is_null()) {
-    base::ResetAndReturn(&pending_read_cb_).Run(kDecodeError, NULL);
+  if (!pending_decode_cb_.is_null()) {
+    base::ResetAndReturn(&pending_decode_cb_).Run(kDecodeError, NULL);
     return;
   }
 }

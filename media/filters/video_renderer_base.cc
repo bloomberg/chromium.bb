@@ -331,7 +331,7 @@ void VideoRendererBase::DropNextReadyFrame_Locked() {
       &VideoRendererBase::AttemptRead, weak_this_));
 }
 
-void VideoRendererBase::FrameReady(VideoDecoder::Status status,
+void VideoRendererBase::FrameReady(VideoFrameStream::Status status,
                                    const scoped_refptr<VideoFrame>& frame) {
   base::AutoLock auto_lock(lock_);
   DCHECK_NE(state_, kUninitialized);
@@ -340,10 +340,11 @@ void VideoRendererBase::FrameReady(VideoDecoder::Status status,
   CHECK(pending_read_);
   pending_read_ = false;
 
-  if (status != VideoDecoder::kOk) {
+  if (status == VideoFrameStream::DECODE_ERROR ||
+      status == VideoFrameStream::DECRYPT_ERROR) {
     DCHECK(!frame.get());
     PipelineStatus error = PIPELINE_ERROR_DECODE;
-    if (status == VideoDecoder::kDecryptError)
+    if (status == VideoFrameStream::DECRYPT_ERROR)
       error = PIPELINE_ERROR_DECRYPT;
 
     if (!preroll_cb_.is_null()) {

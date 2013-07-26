@@ -78,7 +78,7 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
   DCHECK(!config.is_encrypted());
-  DCHECK(read_cb_.is_null());
+  DCHECK(decode_cb_.is_null());
   DCHECK(reset_cb_.is_null());
 
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -157,22 +157,22 @@ void VpxVideoDecoder::CloseDecoder() {
 }
 
 void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                             const ReadCB& read_cb) {
+                             const DecodeCB& decode_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(!read_cb.is_null());
+  DCHECK(!decode_cb.is_null());
   CHECK_NE(state_, kUninitialized);
-  CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
+  CHECK(decode_cb_.is_null()) << "Overlapping decodes are not supported.";
 
-  read_cb_ = BindToCurrentLoop(read_cb);
+  decode_cb_ = BindToCurrentLoop(decode_cb);
 
   if (state_ == kError) {
-    base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
+    base::ResetAndReturn(&decode_cb_).Run(kDecodeError, NULL);
     return;
   }
 
   // Return empty frames if decoding has finished.
   if (state_ == kDecodeFinished) {
-    base::ResetAndReturn(&read_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
+    base::ResetAndReturn(&decode_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
     return;
   }
 
@@ -184,8 +184,8 @@ void VpxVideoDecoder::Reset(const base::Closure& closure) {
   DCHECK(reset_cb_.is_null());
   reset_cb_ = BindToCurrentLoop(closure);
 
-  // Defer the reset if a read is pending.
-  if (!read_cb_.is_null())
+  // Defer the reset if a decode is pending.
+  if (!decode_cb_.is_null())
     return;
 
   DoReset();
@@ -198,9 +198,9 @@ void VpxVideoDecoder::Stop(const base::Closure& closure) {
   if (state_ == kUninitialized)
     return;
 
-  if (!read_cb_.is_null()) {
-    base::ResetAndReturn(&read_cb_).Run(kOk, NULL);
-    // Reset is pending only when read is pending.
+  if (!decode_cb_.is_null()) {
+    base::ResetAndReturn(&decode_cb_).Run(kOk, NULL);
+    // Reset is pending only when decode is pending.
     if (!reset_cb_.is_null())
       base::ResetAndReturn(&reset_cb_).Run();
   }
@@ -218,30 +218,30 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
   DCHECK_NE(state_, kDecodeFinished);
   DCHECK_NE(state_, kError);
   DCHECK(reset_cb_.is_null());
-  DCHECK(!read_cb_.is_null());
+  DCHECK(!decode_cb_.is_null());
   DCHECK(buffer);
 
   // Transition to kDecodeFinished on the first end of stream buffer.
   if (state_ == kNormal && buffer->end_of_stream()) {
     state_ = kDecodeFinished;
-    base::ResetAndReturn(&read_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
+    base::ResetAndReturn(&decode_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
     return;
   }
 
   scoped_refptr<VideoFrame> video_frame;
   if (!VpxDecode(buffer, &video_frame)) {
     state_ = kError;
-    base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
+    base::ResetAndReturn(&decode_cb_).Run(kDecodeError, NULL);
     return;
   }
 
   // If we didn't get a frame we need more data.
   if (!video_frame.get()) {
-    base::ResetAndReturn(&read_cb_).Run(kNotEnoughData, NULL);
+    base::ResetAndReturn(&decode_cb_).Run(kNotEnoughData, NULL);
     return;
   }
 
-  base::ResetAndReturn(&read_cb_).Run(kOk, video_frame);
+  base::ResetAndReturn(&decode_cb_).Run(kOk, video_frame);
 }
 
 bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
@@ -318,7 +318,7 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
 }
 
 void VpxVideoDecoder::DoReset() {
-  DCHECK(read_cb_.is_null());
+  DCHECK(decode_cb_.is_null());
 
   state_ = kNormal;
   reset_cb_.Run();

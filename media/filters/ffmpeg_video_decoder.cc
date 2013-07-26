@@ -132,7 +132,7 @@ static void ReleaseVideoBufferImpl(AVCodecContext* s, AVFrame* frame) {
 void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                     const PipelineStatusCB& status_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(read_cb_.is_null());
+  DCHECK(decode_cb_.is_null());
   DCHECK(reset_cb_.is_null());
   DCHECK(!config.is_encrypted());
 
@@ -153,21 +153,21 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
 }
 
 void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                                const ReadCB& read_cb) {
+                                const DecodeCB& decode_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(!read_cb.is_null());
+  DCHECK(!decode_cb.is_null());
   CHECK_NE(state_, kUninitialized);
-  CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
-  read_cb_ = BindToCurrentLoop(read_cb);
+  CHECK(decode_cb_.is_null()) << "Overlapping decodes are not supported.";
+  decode_cb_ = BindToCurrentLoop(decode_cb);
 
   if (state_ == kError) {
-    base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
+    base::ResetAndReturn(&decode_cb_).Run(kDecodeError, NULL);
     return;
   }
 
   // Return empty frames if decoding has finished.
   if (state_ == kDecodeFinished) {
-    base::ResetAndReturn(&read_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
+    base::ResetAndReturn(&decode_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
     return;
   }
 
@@ -179,15 +179,15 @@ void FFmpegVideoDecoder::Reset(const base::Closure& closure) {
   DCHECK(reset_cb_.is_null());
   reset_cb_ = BindToCurrentLoop(closure);
 
-  // Defer the reset if a read is pending.
-  if (!read_cb_.is_null())
+  // Defer the reset if a decode is pending.
+  if (!decode_cb_.is_null())
     return;
 
   DoReset();
 }
 
 void FFmpegVideoDecoder::DoReset() {
-  DCHECK(read_cb_.is_null());
+  DCHECK(decode_cb_.is_null());
 
   avcodec_flush_buffers(codec_context_);
   state_ = kNormal;
@@ -201,9 +201,9 @@ void FFmpegVideoDecoder::Stop(const base::Closure& closure) {
   if (state_ == kUninitialized)
     return;
 
-  if (!read_cb_.is_null()) {
-    base::ResetAndReturn(&read_cb_).Run(kOk, NULL);
-    // Reset is pending only when read is pending.
+  if (!decode_cb_.is_null()) {
+    base::ResetAndReturn(&decode_cb_).Run(kOk, NULL);
+    // Reset is pending only when decode is pending.
     if (!reset_cb_.is_null())
       base::ResetAndReturn(&reset_cb_).Run();
   }
@@ -225,11 +225,11 @@ void FFmpegVideoDecoder::DecodeBuffer(
   DCHECK_NE(state_, kDecodeFinished);
   DCHECK_NE(state_, kError);
   DCHECK(reset_cb_.is_null());
-  DCHECK(!read_cb_.is_null());
+  DCHECK(!decode_cb_.is_null());
   DCHECK(buffer);
 
   // During decode, because reads are issued asynchronously, it is possible to
-  // receive multiple end of stream buffers since each read is acked. When the
+  // receive multiple end of stream buffers since each decode is acked. When the
   // first end of stream buffer is read, FFmpeg may still have frames queued
   // up in the decoder so we need to go through the decode loop until it stops
   // giving sensible data.  After that, the decoder should output empty
@@ -264,7 +264,7 @@ void FFmpegVideoDecoder::DecodeBuffer(
   scoped_refptr<VideoFrame> video_frame;
   if (!FFmpegDecode(buffer, &video_frame)) {
     state_ = kError;
-    base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
+    base::ResetAndReturn(&decode_cb_).Run(kDecodeError, NULL);
     return;
   }
 
@@ -272,15 +272,16 @@ void FFmpegVideoDecoder::DecodeBuffer(
     if (state_ == kFlushCodec) {
       DCHECK(buffer->end_of_stream());
       state_ = kDecodeFinished;
-      base::ResetAndReturn(&read_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
+      base::ResetAndReturn(&decode_cb_)
+          .Run(kOk, VideoFrame::CreateEmptyFrame());
       return;
     }
 
-    base::ResetAndReturn(&read_cb_).Run(kNotEnoughData, NULL);
+    base::ResetAndReturn(&decode_cb_).Run(kNotEnoughData, NULL);
     return;
   }
 
-  base::ResetAndReturn(&read_cb_).Run(kOk, video_frame);
+  base::ResetAndReturn(&decode_cb_).Run(kOk, video_frame);
 }
 
 bool FFmpegVideoDecoder::FFmpegDecode(
