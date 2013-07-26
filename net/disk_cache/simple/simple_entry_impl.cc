@@ -69,6 +69,14 @@ void CallCompletionCallback(const net::CompletionCallback& callback,
     callback.Run(*result);
 }
 
+int g_open_entry_count = 0;
+
+void AdjustOpenEntryCountBy(int offset) {
+  g_open_entry_count += offset;
+  UMA_HISTOGRAM_COUNTS_10000("SimpleCache.GlobalOpenEntryCount",
+                             g_open_entry_count);
+}
+
 }  // namespace
 
 namespace disk_cache {
@@ -710,6 +718,7 @@ void SimpleEntryImpl::CreationOperationComplete(
   SetSynchronousData();
   UMA_HISTOGRAM_TIMES("SimpleCache.EntryCreationTime",
                       (base::TimeTicks::Now() - start_time));
+  AdjustOpenEntryCountBy(1);
 
   if (!completion_callback.is_null()) {
     MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
@@ -854,6 +863,7 @@ void SimpleEntryImpl::CloseOperationComplete() {
   DCHECK(STATE_IO_PENDING == state_ || STATE_FAILURE == state_ ||
          STATE_UNINITIALIZED == state_);
   net_log_.EndEvent(net::NetLog::TYPE_ENTRY_CLOSE);
+  AdjustOpenEntryCountBy(-1);
   MakeUninitialized();
   RunNextOperationIfNeeded();
 }

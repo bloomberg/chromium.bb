@@ -12848,6 +12848,15 @@ other types of suffix sets.
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
+<histogram name="SimpleCache.GlobalOpenEntryCount">
+  <summary>
+    The number of open entries across all caches backed by the Simple Cache. An
+    entry is opened whenever a caller asks to open it to read or write cache
+    data, and remains open until the last caller asks to close it. Logged
+    whenever an entry is opened or closed.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.IndexCorrupt" enum="BooleanCorrupt">
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
