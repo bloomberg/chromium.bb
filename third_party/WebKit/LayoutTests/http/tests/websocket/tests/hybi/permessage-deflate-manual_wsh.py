@@ -93,24 +93,10 @@ def receive(request):
         return (compress, possibly_compressed_body)
 
 
-# This is a dirty hack. pywebsocket update will break this class.
-class _Inflater(util._Inflater):
-
-    def __init__(self, window_bits):
-        # self._window_bits must be set before the call of util._Inflater's
-        # constructor because it uses self._window_bits indirectly.
-        self._window_bits = window_bits
-        util._Inflater.__init__(self)
-
-    def reset(self):
-        self._logger.debug('Reset')
-        self._decompress = zlib.decompressobj(-self._window_bits)
-
-
 def web_socket_transfer_data(request):
     processor = _get_permessage_deflate_extension_processor(request)
     processor.set_bfinal(_bfinal)
-    inflater = _Inflater(_c2s_max_window_bits)
+    inflater = util._Inflater(_c2s_max_window_bits)
     while True:
         compress, possibly_compressed_body = receive(request)
         body = None
