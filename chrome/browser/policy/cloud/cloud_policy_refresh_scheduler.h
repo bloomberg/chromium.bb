@@ -30,6 +30,7 @@ class CloudPolicyRefreshScheduler
   // Refresh constants.
   static const int64 kDefaultRefreshDelayMs;
   static const int64 kUnmanagedRefreshDelayMs;
+  static const int64 kWithInvalidationsRefreshDelayMs;
   static const int64 kInitialErrorRetryDelayMs;
 
   // Refresh delay bounds.
@@ -53,6 +54,13 @@ class CloudPolicyRefreshScheduler
   // Requests a policy refresh to be performed soon. This may apply throttling,
   // and the request may not be immediately sent.
   void RefreshSoon();
+
+  // The refresh scheduler starts by assuming that invalidations are not
+  // available. This call can be used to signal whether the invalidations
+  // service is available or not, and can be called multiple times.
+  // When the invalidations service is available then the refresh rate is much
+  // lower.
+  void SetInvalidationServiceAvailability(bool is_available);
 
   // CloudPolicyClient::Observer:
   virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
@@ -88,6 +96,16 @@ class CloudPolicyRefreshScheduler
   // relative to |last_refresh_|.
   void RefreshAfter(int delta_ms);
 
+  // Sets the |wait_for_invalidations_timeout_callback_| and schedules it.
+  void WaitForInvalidationService();
+
+  // Callback for |wait_for_invalidations_timeout_callback_|.
+  void OnWaitForInvalidationServiceTimeout();
+
+  // Returns true if the refresh scheduler is currently waiting for the
+  // availability of the invalidations service.
+  bool WaitingForInvalidationService() const;
+
   CloudPolicyClient* client_;
   CloudPolicyStore* store_;
 
@@ -108,6 +126,20 @@ class CloudPolicyRefreshScheduler
 
   // Used to limit the rate at which refreshes are scheduled.
   RateLimiter rate_limiter_;
+
+  // Whether the invalidations service is available and receiving notifications
+  // of policy updates.
+  bool invalidations_available_;
+
+  // The refresh scheduler waits some seconds for the invalidations service
+  // before starting to issue refresh requests. If the invalidations service
+  // doesn't become available during this time then the refresh scheduler will
+  // use the polling refresh rate.
+  base::CancelableClosure wait_for_invalidations_timeout_callback_;
+
+  // Used to measure how long it took for the invalidations service to report
+  // its initial status.
+  base::Time creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyRefreshScheduler);
 };

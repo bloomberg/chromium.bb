@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
@@ -23,11 +24,45 @@ namespace {
 // The maximum rate at which to refresh policies.
 const size_t kMaxRefreshesPerHour = 5;
 
+// The maximum time to wait for the invalidations service to become available
+// before starting to issue requests.
+// TODO(joaodasilva): set this to a non-zero value once the invalidations
+// service is wired to this class and we have a good estimate of how long
+// to wait.
+const int kWaitForInvalidationsTimeoutSeconds = 0;
+
 }  // namespace
+
+#if defined(OS_ANDROID)
+
+const int64 CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs =
+    24 * 60 * 60 * 1000;  // 1 day.
+const int64 CloudPolicyRefreshScheduler::kUnmanagedRefreshDelayMs =
+    24 * 60 * 60 * 1000;  // 1 day.
+// Delay for periodic refreshes when the invalidations service is available,
+// in milliseconds.
+// TODO(joaodasilva): increase this value once we're confident that the
+// invalidations channel works as expected.
+const int64 CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs =
+    24 * 60 * 60 * 1000;  // 1 day.
+const int64 CloudPolicyRefreshScheduler::kInitialErrorRetryDelayMs =
+    5 * 60 * 1000;  // 5 minutes.
+const int64 CloudPolicyRefreshScheduler::kRefreshDelayMinMs =
+    30 * 60 * 1000;  // 30 minutes.
+const int64 CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
+    7 * 24 * 60 * 60 * 1000;  // 1 week.
+
+#else
 
 const int64 CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs =
     3 * 60 * 60 * 1000;  // 3 hours.
 const int64 CloudPolicyRefreshScheduler::kUnmanagedRefreshDelayMs =
+    24 * 60 * 60 * 1000;  // 1 day.
+// Delay for periodic refreshes when the invalidations service is available,
+// in milliseconds.
+// TODO(joaodasilva): increase this value once we're confident that the
+// invalidations channel works as expected.
+const int64 CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs =
     24 * 60 * 60 * 1000;  // 1 day.
 const int64 CloudPolicyRefreshScheduler::kInitialErrorRetryDelayMs =
     5 * 60 * 1000;  // 5 minutes.
@@ -35,6 +70,8 @@ const int64 CloudPolicyRefreshScheduler::kRefreshDelayMinMs =
     30 * 60 * 1000;  // 30 minutes.
 const int64 CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
     24 * 60 * 60 * 1000;  // 1 day.
+
+#endif
 
 CloudPolicyRefreshScheduler::CloudPolicyRefreshScheduler(
     CloudPolicyClient* client,
@@ -50,13 +87,15 @@ CloudPolicyRefreshScheduler::CloudPolicyRefreshScheduler(
                     base::Bind(&CloudPolicyRefreshScheduler::RefreshNow,
                                base::Unretained(this)),
                     task_runner_,
-                    scoped_ptr<base::TickClock>(new base::DefaultTickClock())) {
+                    scoped_ptr<base::TickClock>(new base::DefaultTickClock())),
+      invalidations_available_(false),
+      creation_time_(base::Time::NowFromSystemTime()) {
   client_->AddObserver(this);
   store_->AddObserver(this);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
   UpdateLastRefreshFromPolicy();
-  ScheduleRefresh();
+  WaitForInvalidationService();
 }
 
 CloudPolicyRefreshScheduler::~CloudPolicyRefreshScheduler() {
@@ -72,7 +111,40 @@ void CloudPolicyRefreshScheduler::SetRefreshDelay(int64 refresh_delay) {
 }
 
 void CloudPolicyRefreshScheduler::RefreshSoon() {
+  // An external consumer needs a policy update now (e.g. a new extension, or
+  // the InvalidationService received a policy invalidation), so don't wait
+  // before fetching anymore.
+  wait_for_invalidations_timeout_callback_.Cancel();
   rate_limiter_.PostRequest();
+}
+
+void CloudPolicyRefreshScheduler::SetInvalidationServiceAvailability(
+    bool is_available) {
+  if (!creation_time_.is_null()) {
+    base::TimeDelta elapsed = base::Time::NowFromSystemTime() - creation_time_;
+    UMA_HISTOGRAM_MEDIUM_TIMES("Enterprise.PolicyInvalidationsStartupTime",
+                               elapsed);
+    creation_time_ = base::Time();
+  }
+
+  if (is_available == invalidations_available_) {
+    // No change in state. If we're currently WaitingForInvalidationService
+    // then the timeout task will eventually execute and trigger a reschedule;
+    // let the InvalidationService keep retrying until that happens.
+    return;
+  }
+
+  wait_for_invalidations_timeout_callback_.Cancel();
+  invalidations_available_ = is_available;
+
+  if (invalidations_available_) {
+    ScheduleRefresh();
+  } else {
+    // If the invalidation service was previously available but is now offline
+    // then this may be a temporary failure; give it some time to recover before
+    // falling back on the polling behavior.
+    WaitForInvalidationService();
+  }
 }
 
 void CloudPolicyRefreshScheduler::OnPolicyFetched(CloudPolicyClient* client) {
@@ -126,7 +198,7 @@ void CloudPolicyRefreshScheduler::OnStoreError(CloudPolicyStore* store) {
 
 void CloudPolicyRefreshScheduler::OnIPAddressChanged() {
   if (client_->status() == DM_STATUS_REQUEST_FAILED)
-    RefreshAfter(0);
+    RefreshSoon();
 }
 
 void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
@@ -141,14 +213,44 @@ void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
     return;
   }
 
-  // If there is a cached non-managed response, make sure to only re-query the
-  // server after kUnmanagedRefreshDelayMs. NB: For existing policy, an
-  // immediate refresh is intentional.
-  if (store_->has_policy() && !store_->is_managed()) {
+#if defined(OS_ANDROID)
+  // Refreshing on Android:
+  // - if no user is signed-in then the |client_| is never registered and
+  //   nothing happens here.
+  // - if the user is signed-in but isn't enterprise then the |client_| is
+  //   never registered and nothing happens here.
+  // - if the user is signed-in but isn't registered for policy yet then the
+  //   |client_| isn't registered either; the UserPolicySigninService will try
+  //   to register, and OnRegistrationStateChanged() will be invoked later.
+  // - if the client is signed-in and has policy then its timestamp is used to
+  //   determine when to perform the next fetch, which will be once the cached
+  //   version is considered "old enough".
+  //
+  // If there is an old policy cache then a fetch will be performed "soon"; if
+  // that fetch fails then a retry is attempted after a delay, with exponential
+  // backoff. If those fetches keep failing then the cached timestamp is *not*
+  // updated, and another fetch (and subsequent retries) will be attempted
+  // again on the next startup.
+  //
+  // But if the cached policy is considered fresh enough then we try to avoid
+  // fetching again on startup; the Android logic differs from the desktop in
+  // this aspect.
+  if (store_->has_policy() && store_->policy()->has_timestamp()) {
     last_refresh_ =
         base::Time::UnixEpoch() +
         base::TimeDelta::FromMilliseconds(store_->policy()->timestamp());
   }
+#else
+  // If there is a cached non-managed response, make sure to only re-query the
+  // server after kUnmanagedRefreshDelayMs. NB: For existing policy, an
+  // immediate refresh is intentional.
+  if (store_->has_policy() && store_->policy()->has_timestamp() &&
+      !store_->is_managed()) {
+    last_refresh_ =
+        base::Time::UnixEpoch() +
+        base::TimeDelta::FromMilliseconds(store_->policy()->timestamp());
+  }
+#endif
 }
 
 void CloudPolicyRefreshScheduler::RefreshNow() {
@@ -163,18 +265,29 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
     return;
   }
 
+  // Don't schedule anything yet if we're still waiting for the invalidations
+  // service.
+  if (WaitingForInvalidationService())
+    return;
+
+  // If policy invalidations are available then periodic updates are done at
+  // a much lower rate; otherwise use the |refresh_delay_ms_| value.
+  int64 refresh_delay_ms =
+      invalidations_available_ ? kWithInvalidationsRefreshDelayMs
+                               : refresh_delay_ms_;
+
   // If there is a registration, go by the client's status. That will tell us
   // what the appropriate refresh delay should be.
   switch (client_->status()) {
     case DM_STATUS_SUCCESS:
       if (store_->is_managed())
-        RefreshAfter(refresh_delay_ms_);
+        RefreshAfter(refresh_delay_ms);
       else
         RefreshAfter(kUnmanagedRefreshDelayMs);
       return;
     case DM_STATUS_SERVICE_ACTIVATION_PENDING:
     case DM_STATUS_SERVICE_POLICY_NOT_FOUND:
-      RefreshAfter(refresh_delay_ms_);
+      RefreshAfter(refresh_delay_ms);
       return;
     case DM_STATUS_REQUEST_FAILED:
     case DM_STATUS_TEMPORARY_UNAVAILABLE:
@@ -192,6 +305,7 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
     case DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
     case DM_STATUS_SERVICE_MISSING_LICENSES:
       // Need a re-registration, no use in retrying.
+      refresh_callback_.Cancel();
       return;
   }
 
@@ -227,6 +341,27 @@ void CloudPolicyRefreshScheduler::RefreshAfter(int delta_ms) {
       base::Bind(&CloudPolicyRefreshScheduler::PerformRefresh,
                  base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE, refresh_callback_.callback(), delay);
+}
+
+void CloudPolicyRefreshScheduler::WaitForInvalidationService() {
+  DCHECK(!WaitingForInvalidationService());
+  wait_for_invalidations_timeout_callback_.Reset(
+      base::Bind(
+          &CloudPolicyRefreshScheduler::OnWaitForInvalidationServiceTimeout,
+          base::Unretained(this)));
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      wait_for_invalidations_timeout_callback_.callback(),
+      base::TimeDelta::FromSeconds(kWaitForInvalidationsTimeoutSeconds));
+}
+
+void CloudPolicyRefreshScheduler::OnWaitForInvalidationServiceTimeout() {
+  wait_for_invalidations_timeout_callback_.Cancel();
+  ScheduleRefresh();
+}
+
+bool CloudPolicyRefreshScheduler::WaitingForInvalidationService() const {
+  return !wait_for_invalidations_timeout_callback_.IsCancelled();
 }
 
 }  // namespace policy

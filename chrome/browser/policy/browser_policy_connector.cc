@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
+#include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
@@ -85,9 +86,6 @@ namespace {
 // on startup. (So that displaying Chrome's GUI does not get delayed.)
 // Delay in milliseconds from startup.
 const int64 kServiceInitializationStartupDelay = 5000;
-
-// Default policy refresh rate.
-const int64 kDefaultPolicyRefreshRateMs = 3 * 60 * 60 * 1000;  // 3 hours.
 
 // The URL for the device management server.
 const char kDefaultDeviceManagementServerUrl[] =
@@ -427,11 +425,13 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
 
 // static
 void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kUserPolicyRefreshRate,
-                                kDefaultPolicyRefreshRateMs);
+  registry->RegisterIntegerPref(
+      prefs::kUserPolicyRefreshRate,
+      CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
 #if defined(OS_CHROMEOS)
-  registry->RegisterIntegerPref(prefs::kDevicePolicyRefreshRate,
-                                kDefaultPolicyRefreshRateMs);
+  registry->RegisterIntegerPref(
+      prefs::kDevicePolicyRefreshRate,
+      CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
 #endif
 }
 

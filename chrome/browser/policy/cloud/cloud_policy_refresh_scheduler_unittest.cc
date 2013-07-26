@@ -19,16 +19,16 @@
 
 namespace em = enterprise_management;
 
-using testing::DoAll;
 using testing::Mock;
-using testing::Return;
-using testing::SaveArg;
-using testing::_;
 
 namespace policy {
 
 namespace {
+
 const int64 kPolicyRefreshRate = 4 * 60 * 60 * 1000;
+
+const int64 kInitialCacheAgeMinutes = 1;
+
 }  // namespace
 
 class CloudPolicyRefreshSchedulerTest : public testing::Test {
@@ -44,18 +44,24 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
     // protobuf field only has millisecond precision, we convert the actual
     // value back to get a millisecond-clamped time stamp for the checks below.
     store_.policy_.reset(new em::PolicyData());
+    base::Time now = base::Time::NowFromSystemTime();
+    base::TimeDelta initial_age =
+        base::TimeDelta::FromMinutes(kInitialCacheAgeMinutes);
     store_.policy_->set_timestamp(
-        ((base::Time::NowFromSystemTime() - base::TimeDelta::FromMinutes(1)) -
-         base::Time::UnixEpoch()).InMilliseconds());
-    last_refresh_ =
+        ((now - initial_age) - base::Time::UnixEpoch()).InMilliseconds());
+    last_update_ =
         base::Time::UnixEpoch() +
         base::TimeDelta::FromMilliseconds(store_.policy_->timestamp());
   }
 
   CloudPolicyRefreshScheduler* CreateRefreshScheduler() {
+    EXPECT_EQ(0u, task_runner_->GetPendingTasks().size());
     CloudPolicyRefreshScheduler* scheduler =
         new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_);
     scheduler->SetRefreshDelay(kPolicyRefreshRate);
+    // Run the wait-for-invalidations timeout task.
+    EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+    task_runner_->RunPendingTasks();
     return scheduler;
   }
 
@@ -72,12 +78,66 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
   }
 
   void CheckTiming(int64 expected_delay_ms) const {
+    CheckTimingWithAge(base::TimeDelta::FromMilliseconds(expected_delay_ms),
+                       base::TimeDelta());
+  }
+
+  // Checks that the latest refresh scheduled used an offset of
+  // |offset_from_last_refresh| from the time of the previous refresh.
+  // |cache_age| is how old the cache was when the refresh was issued.
+  void CheckTimingWithAge(const base::TimeDelta& offset_from_last_refresh,
+                          const base::TimeDelta& cache_age) const {
     EXPECT_FALSE(task_runner_->GetPendingTasks().empty());
     base::Time now(base::Time::NowFromSystemTime());
-    base::TimeDelta expected_delay(
-        base::TimeDelta::FromMilliseconds(expected_delay_ms));
-    EXPECT_GE(GetLastDelay(), expected_delay - (now - last_refresh_));
-    EXPECT_LE(GetLastDelay(), expected_delay);
+    // |last_update_| was updated and then a refresh was scheduled at time S,
+    // so |last_update_| is a bit before that.
+    // Now is a bit later, N.
+    // GetLastDelay() + S is the time when the refresh will run, T.
+    // |cache_age| is the age of the cache at time S. It was thus created at
+    // S - cache_age.
+    //
+    // Schematically:
+    //
+    // . S . N . . . . . . . T . . . .
+    //   |   |               |
+    //   set "last_refresh_" and then scheduled the next refresh; the cache
+    //   was "cache_age" old at this point.
+    //       |               |
+    //       some time elapsed on the test execution since then;
+    //       this is the current time, "now"
+    //                       |
+    //                       the refresh will execute at this time
+    //
+    // So the exact delay is T - S - |cache_age|, but we don't have S here.
+    //
+    // |last_update_| was a bit before S, so if
+    // elapsed = now - |last_update_| then the delay is more than
+    // |offset_from_last_refresh| - elapsed.
+    //
+    // The delay is also less than offset_from_last_refresh, because some time
+    // already elapsed. Additionally, if the cache was already considered old
+    // when the schedule was performed then its age at that time has been
+    // discounted from the delay. So the delay is a bit less than
+    // |offset_from_last_refresh - cache_age|.
+    EXPECT_GE(GetLastDelay(), offset_from_last_refresh - (now - last_update_));
+    EXPECT_LE(GetLastDelay(), offset_from_last_refresh - cache_age);
+  }
+
+  void CheckInitialRefresh(bool with_invalidations) const {
+#if defined(OS_ANDROID)
+    // Android takes the cache age into account for the initial fetch.
+    // Usually the cache age is ignored for the initial refresh, but Android
+    // uses it to restrain from refreshing on every startup.
+    base::TimeDelta rate = base::TimeDelta::FromMilliseconds(
+        with_invalidations
+            ? CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs
+            : kPolicyRefreshRate);
+    CheckTimingWithAge(rate,
+                       base::TimeDelta::FromMinutes(kInitialCacheAgeMinutes));
+#else
+    // Other platforms refresh immediately.
+    EXPECT_EQ(base::TimeDelta(), GetLastDelay());
+#endif
   }
 
   base::MessageLoop loop_;
@@ -87,7 +147,7 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   // Base time for the refresh that the scheduler should be using.
-  base::Time last_refresh_;
+  base::Time last_update_;
 };
 
 TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshNoPolicy) {
@@ -110,13 +170,13 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshUnmanaged) {
 TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedNotYetFetched) {
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
   EXPECT_FALSE(task_runner_->GetPendingTasks().empty());
-  EXPECT_EQ(GetLastDelay(), base::TimeDelta());
+  CheckInitialRefresh(false);
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
   task_runner_->RunUntilIdle();
 }
 
 TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedAlreadyFetched) {
-  last_refresh_ = base::Time::NowFromSystemTime();
+  last_update_ = base::Time::NowFromSystemTime();
   client_.SetPolicy(PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType,
                                        std::string()),
       em::PolicyFetchResponse());
@@ -154,21 +214,142 @@ TEST_F(CloudPolicyRefreshSchedulerTest, RefreshSoonRateLimit) {
   Mock::VerifyAndClearExpectations(&client_);
 }
 
+TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsAvailable) {
+  scoped_ptr<CloudPolicyRefreshScheduler> scheduler(
+      new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));
+  scheduler->SetRefreshDelay(kPolicyRefreshRate);
+
+  // The scheduler is currently waiting for the invalidations service to
+  // initialize.
+  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+
+  // Signal that invalidations are available. The initial refresh is scheduled.
+  scheduler->SetInvalidationServiceAvailability(true);
+  EXPECT_EQ(2u, task_runner_->GetPendingTasks().size());
+  CheckInitialRefresh(true);
+
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
+  task_runner_->RunPendingTasks();
+  Mock::VerifyAndClearExpectations(&client_);
+
+  // Complete that fetch.
+  last_update_ = base::Time::NowFromSystemTime();
+  client_.NotifyPolicyFetched();
+
+  // The next refresh has been scheduled using a lower refresh rate.
+  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  CheckTiming(CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs);
+}
+
+TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsNotAvailable) {
+  scoped_ptr<CloudPolicyRefreshScheduler> scheduler(
+      new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));
+  scheduler->SetRefreshDelay(kPolicyRefreshRate);
+
+  // The scheduler is currently waiting for the invalidations service to
+  // initialize.
+  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+
+  // Signal that invalidations are not available. The scheduler will keep
+  // waiting for us.
+  for (int i = 0; i < 10; ++i) {
+    scheduler->SetInvalidationServiceAvailability(false);
+    EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  }
+
+  // Run the timeout task.
+  EXPECT_CALL(client_, FetchPolicy()).Times(0);
+  task_runner_->RunPendingTasks();
+  Mock::VerifyAndClearExpectations(&client_);
+
+  // This scheduled the initial refresh.
+  CheckInitialRefresh(false);
+
+  // Perform that fetch now.
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
+  task_runner_->RunPendingTasks();
+  Mock::VerifyAndClearExpectations(&client_);
+
+  // Complete that fetch.
+  last_update_ = base::Time::NowFromSystemTime();
+  client_.NotifyPolicyFetched();
+
+  // The next refresh has been scheduled at the normal rate.
+  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  CheckTiming(kPolicyRefreshRate);
+}
+
+TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsOffAndOn) {
+  scoped_ptr<CloudPolicyRefreshScheduler> scheduler(
+      new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));
+  scheduler->SetRefreshDelay(kPolicyRefreshRate);
+  scheduler->SetInvalidationServiceAvailability(true);
+  // Initial fetch.
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
+  task_runner_->RunPendingTasks();
+  Mock::VerifyAndClearExpectations(&client_);
+  last_update_ = base::Time::NowFromSystemTime();
+  client_.NotifyPolicyFetched();
+
+  // The next refresh has been scheduled using a lower refresh rate.
+  CheckTiming(CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs);
+
+  // If the service goes down and comes back up before the timeout then a
+  // refresh is rescheduled at the lower rate again; after executing all
+  // pending tasks only 1 fetch is performed.
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
+  scheduler->SetInvalidationServiceAvailability(false);
+  scheduler->SetInvalidationServiceAvailability(true);
+  // The next refresh has been scheduled using a lower refresh rate.
+  CheckTiming(CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs);
+  task_runner_->RunPendingTasks();
+  Mock::VerifyAndClearExpectations(&client_);
+}
+
+TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsDisconnected) {
+  scoped_ptr<CloudPolicyRefreshScheduler> scheduler(
+      new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));
+  scheduler->SetRefreshDelay(kPolicyRefreshRate);
+  scheduler->SetInvalidationServiceAvailability(true);
+  // Initial fetch.
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
+  task_runner_->RunPendingTasks();
+  Mock::VerifyAndClearExpectations(&client_);
+  last_update_ = base::Time::NowFromSystemTime();
+  client_.NotifyPolicyFetched();
+
+  // The next refresh has been scheduled using a lower refresh rate.
+  // Flush that task.
+  CheckTiming(CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs);
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
+  task_runner_->RunPendingTasks();
+  Mock::VerifyAndClearExpectations(&client_);
+
+  // If the service goes down then the refresh scheduler falls back on the
+  // default polling rate after a timeout.
+  EXPECT_CALL(client_, FetchPolicy()).Times(0);
+  scheduler->SetInvalidationServiceAvailability(false);
+  task_runner_->RunPendingTasks();
+  Mock::VerifyAndClearExpectations(&client_);
+  // The next refresh has been scheduled at the normal rate.
+  CheckTiming(kPolicyRefreshRate);
+}
+
 class CloudPolicyRefreshSchedulerSteadyStateTest
     : public CloudPolicyRefreshSchedulerTest {
  protected:
-  CloudPolicyRefreshSchedulerSteadyStateTest()
-      : refresh_scheduler_(&client_, &store_, task_runner_) {}
+  CloudPolicyRefreshSchedulerSteadyStateTest() {}
 
   virtual void SetUp() OVERRIDE {
-    refresh_scheduler_.SetRefreshDelay(kPolicyRefreshRate);
+    refresh_scheduler_.reset(CreateRefreshScheduler());
+    refresh_scheduler_->SetRefreshDelay(kPolicyRefreshRate);
     CloudPolicyRefreshSchedulerTest::SetUp();
-    last_refresh_ = base::Time::NowFromSystemTime();
+    last_update_ = base::Time::NowFromSystemTime();
     client_.NotifyPolicyFetched();
     CheckTiming(kPolicyRefreshRate);
   }
 
-  CloudPolicyRefreshScheduler refresh_scheduler_;
+  scoped_ptr<CloudPolicyRefreshScheduler> refresh_scheduler_;
 };
 
 TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnPolicyFetched) {
@@ -200,15 +381,15 @@ TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnStoreError) {
 
 TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, RefreshDelayChange) {
   const int delay_short_ms = 5 * 60 * 1000;
-  refresh_scheduler_.SetRefreshDelay(delay_short_ms);
+  refresh_scheduler_->SetRefreshDelay(delay_short_ms);
   CheckTiming(CloudPolicyRefreshScheduler::kRefreshDelayMinMs);
 
   const int delay_ms = 12 * 60 * 60 * 1000;
-  refresh_scheduler_.SetRefreshDelay(delay_ms);
+  refresh_scheduler_->SetRefreshDelay(delay_ms);
   CheckTiming(delay_ms);
 
-  const int delay_long_ms = 2 * 24 * 60 * 60 * 1000;
-  refresh_scheduler_.SetRefreshDelay(delay_long_ms);
+  const int delay_long_ms = 20 * 24 * 60 * 60 * 1000;
+  refresh_scheduler_->SetRefreshDelay(delay_long_ms);
   CheckTiming(CloudPolicyRefreshScheduler::kRefreshDelayMaxMs);
 }
 
@@ -275,7 +456,7 @@ TEST_P(CloudPolicyRefreshSchedulerClientErrorTest, OnClientError) {
     // the regular refresh rate (if applicable).
     do {
       expected_delay_ms *= GetParam().backoff_factor;
-      last_refresh_ = base::Time::NowFromSystemTime();
+      last_update_ = base::Time::NowFromSystemTime();
       client_.NotifyClientError();
       CheckTiming(std::max(std::min(expected_delay_ms, kPolicyRefreshRate),
                            GetParam().expected_delay_ms));
