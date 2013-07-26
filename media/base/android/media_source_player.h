@@ -40,7 +40,8 @@ class MediaDecoderJob {
  public:
   enum DecodeStatus {
     DECODE_SUCCEEDED,
-    DECODE_TRY_AGAIN_LATER,
+    DECODE_TRY_ENQUEUE_INPUT_AGAIN_LATER,
+    DECODE_TRY_DEQUEUE_OUTPUT_AGAIN_LATER,
     DECODE_FORMAT_CHANGED,
     DECODE_END_OF_STREAM,
     DECODE_FAILED,
@@ -85,6 +86,9 @@ class MediaDecoderJob {
       int outputBufferIndex, size_t size,
       const base::TimeDelta& presentation_timestamp,
       const MediaDecoderJob::DecoderCallback& callback, DecodeStatus status);
+
+  DecodeStatus QueueInputBuffer(
+      const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit);
 
   // Helper function to decoder data on |thread_|. |unit| contains all the data
   // to be decoded. |start_time_ticks| and |start_presentation_timestamp|

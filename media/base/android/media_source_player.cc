@@ -22,7 +22,7 @@ namespace {
 // Timeout value for media codec operations. Because the first
 // DequeInputBuffer() can take about 150 milliseconds, use 250 milliseconds
 // here. See b/9357571.
-const int kMediaCodecTimeoutInMicroseconds = 250000;
+const int kMediaCodecTimeoutInMilliseconds = 250;
 
 // Use 16bit PCM for audio output. Keep this value in sync with the output
 // format we passed to AudioTrack in MediaCodecBridge.
@@ -114,43 +114,55 @@ void MediaDecoderJob::Decode(
   needs_flush_ = false;
 }
 
+MediaDecoderJob::DecodeStatus MediaDecoderJob::QueueInputBuffer(
+    const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit) {
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
+      kMediaCodecTimeoutInMilliseconds);
+  int input_buf_index = media_codec_bridge_->DequeueInputBuffer(timeout);
+  if (input_buf_index == MediaCodecBridge::INFO_MEDIA_CODEC_ERROR)
+    return DECODE_FAILED;
+  if (input_buf_index == MediaCodecBridge::INFO_TRY_AGAIN_LATER)
+    return DECODE_TRY_ENQUEUE_INPUT_AGAIN_LATER;
+
+  // TODO(qinmin): skip frames if video is falling far behind.
+  DCHECK(input_buf_index >= 0);
+  if (unit.end_of_stream || unit.data.empty()) {
+    media_codec_bridge_->QueueEOS(input_buf_index);
+  } else if (unit.key_id.empty()) {
+    media_codec_bridge_->QueueInputBuffer(
+        input_buf_index, &unit.data[0], unit.data.size(), unit.timestamp);
+  } else {
+    if (unit.iv.empty() || unit.subsamples.empty()) {
+      LOG(ERROR) << "The access unit doesn't have iv or subsamples while it "
+                 << "has key IDs!";
+      return DECODE_FAILED;
+    }
+    media_codec_bridge_->QueueSecureInputBuffer(
+        input_buf_index, &unit.data[0], unit.data.size(),
+        reinterpret_cast<const uint8*>(&unit.key_id[0]), unit.key_id.size(),
+        reinterpret_cast<const uint8*>(&unit.iv[0]), unit.iv.size(),
+        &unit.subsamples[0], unit.subsamples.size(), unit.timestamp);
+  }
+
+  return DECODE_SUCCEEDED;
+}
+
 void MediaDecoderJob::DecodeInternal(
     const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit,
     const base::TimeTicks& start_time_ticks,
     const base::TimeDelta& start_presentation_timestamp,
     bool needs_flush,
     const MediaDecoderJob::DecoderCallback& callback) {
-  if (needs_flush)
+  if (needs_flush) {
+    DVLOG(1) << "DecodeInternal needs flush.";
     media_codec_bridge_->Reset();
-  base::TimeDelta timeout = base::TimeDelta::FromMicroseconds(
-      kMediaCodecTimeoutInMicroseconds);
-  int input_buf_index = media_codec_bridge_->DequeueInputBuffer(timeout);
-  if (input_buf_index == MediaCodecBridge::INFO_MEDIA_CODEC_ERROR) {
-    ui_loop_->PostTask(FROM_HERE, base::Bind(
-        callback, DECODE_FAILED, start_presentation_timestamp, 0));
-    return;
   }
-  // TODO(qinmin): skip frames if video is falling far behind.
-  if (input_buf_index >= 0) {
-    if (unit.end_of_stream || unit.data.empty()) {
-      media_codec_bridge_->QueueEOS(input_buf_index);
-    } else if (unit.key_id.empty()){
-      media_codec_bridge_->QueueInputBuffer(
-          input_buf_index, &unit.data[0], unit.data.size(), unit.timestamp);
-    } else {
-      if (unit.iv.empty() || unit.subsamples.empty()) {
-        LOG(ERROR) << "The access unit doesn't have iv or subsamples while it "
-                   << "has key IDs!";
-        ui_loop_->PostTask(FROM_HERE, base::Bind(
-            callback, DECODE_FAILED, start_presentation_timestamp, 0));
-        return;
-      }
-      media_codec_bridge_->QueueSecureInputBuffer(
-          input_buf_index, &unit.data[0], unit.data.size(),
-          reinterpret_cast<const uint8*>(&unit.key_id[0]), unit.key_id.size(),
-          reinterpret_cast<const uint8*>(&unit.iv[0]), unit.iv.size(),
-          &unit.subsamples[0], unit.subsamples.size(), unit.timestamp);
-    }
+
+  DecodeStatus decode_status = QueueInputBuffer(unit);
+  if (decode_status != DECODE_SUCCEEDED) {
+    ui_loop_->PostTask(FROM_HERE,
+        base::Bind(callback, decode_status, start_presentation_timestamp, 0));
+    return;
   }
 
   size_t offset = 0;
@@ -158,9 +170,11 @@ void MediaDecoderJob::DecodeInternal(
   base::TimeDelta presentation_timestamp;
   bool end_of_stream = false;
 
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
+      kMediaCodecTimeoutInMilliseconds);
   int outputBufferIndex = media_codec_bridge_->DequeueOutputBuffer(
       timeout, &offset, &size, &presentation_timestamp, &end_of_stream);
-  DecodeStatus decode_status = DECODE_SUCCEEDED;
+
   if (end_of_stream)
     decode_status = DECODE_END_OF_STREAM;
   switch (outputBufferIndex) {
@@ -172,7 +186,7 @@ void MediaDecoderJob::DecodeInternal(
       decode_status = DECODE_FORMAT_CHANGED;
       break;
     case MediaCodecBridge::INFO_TRY_AGAIN_LATER:
-      decode_status = DECODE_TRY_AGAIN_LATER;
+      decode_status = DECODE_TRY_DEQUEUE_OUTPUT_AGAIN_LATER;
       break;
     case MediaCodecBridge::INFO_MEDIA_CODEC_ERROR:
       decode_status = DECODE_FAILED;
@@ -546,6 +560,7 @@ void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
 }
 
 void MediaSourcePlayer::OnSeekRequestAck(unsigned seek_request_id) {
+  DVLOG(1) << "OnSeekRequestAck(" << seek_request_id << ")";
   // Do nothing until the most recent seek request is processed.
   if (seek_request_id_ != seek_request_id)
     return;
@@ -613,7 +628,9 @@ void MediaSourcePlayer::MediaDecoderCallback(
     Release();
     OnMediaError(MEDIA_ERROR_DECODE);
     return;
-  } else if (decode_status == MediaDecoderJob::DECODE_SUCCEEDED) {
+  }
+
+  if (decode_status != MediaDecoderJob::DECODE_TRY_ENQUEUE_INPUT_AGAIN_LATER) {
     if (is_audio)
       audio_access_unit_index_++;
     else
@@ -698,6 +715,7 @@ void MediaSourcePlayer::DecodeMoreAudio() {
 }
 
 void MediaSourcePlayer::DecodeMoreVideo() {
+  DVLOG(1) << "DecodeMoreVideo()";
   DCHECK(!video_decoder_job_->is_decoding());
   DCHECK(HasVideoData());
 
@@ -712,6 +730,9 @@ void MediaSourcePlayer::DecodeMoreVideo() {
     return;
   }
 
+  DVLOG(3) << "VideoDecoderJob::Decode(" << video_access_unit_index_ << ", "
+           << start_time_ticks_.ToInternalValue() << ", "
+           << start_presentation_timestamp_.InMilliseconds() << ")";
   video_decoder_job_->Decode(
       received_video_.access_units[video_access_unit_index_],
       start_time_ticks_, start_presentation_timestamp_,
@@ -734,6 +755,7 @@ void MediaSourcePlayer::PlaybackCompleted(bool is_audio) {
 }
 
 void MediaSourcePlayer::ClearDecodingData() {
+  DVLOG(1) << "ClearDecodingData()";
   if (audio_decoder_job_)
     audio_decoder_job_->Flush();
   if (video_decoder_job_)
@@ -866,6 +888,7 @@ void MediaSourcePlayer::SyncAndStartDecoderJobs() {
 }
 
 void MediaSourcePlayer::RequestAudioData() {
+  DVLOG(2) << "RequestAudioData()";
   DCHECK(HasAudio());
 
   if (waiting_for_audio_data_)
@@ -878,6 +901,7 @@ void MediaSourcePlayer::RequestAudioData() {
 }
 
 void MediaSourcePlayer::RequestVideoData() {
+  DVLOG(2) << "RequestVideoData()";
   DCHECK(HasVideo());
   if (waiting_for_video_data_)
     return;
