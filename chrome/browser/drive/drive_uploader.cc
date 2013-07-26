@@ -34,6 +34,15 @@ using google_apis::UploadRangeResponse;
 
 namespace drive {
 
+namespace {
+// Upload data is split to multiple HTTP request each conveying kUploadChunkSize
+// bytes (except the request for uploading the last chunk of data).
+// The value must be a multiple of 512KB according to the spec of GData WAPI and
+// Drive API v2. It is set to a smaller value than 2^31 for working around
+// server side error (crbug.com/264089).
+const int64 kUploadChunkSize = (1LL << 30);  // 1GB
+}  // namespace
+
 // Structure containing current upload information of file, passed between
 // DriveServiceInterface methods and callbacks.
 struct DriveUploader::UploadFileInfo {
@@ -316,11 +325,15 @@ void DriveUploader::UploadNextChunk(
     return;
   }
 
+  // Limit the size of data uploaded per each request by kUploadChunkSize.
+  const int64 end_position = std::min(upload_file_info->content_length,
+                                      start_position + kUploadChunkSize);
+
   UploadFileInfo* info_ptr = upload_file_info.get();
   info_ptr->cancel_callback = drive_service_->ResumeUpload(
       info_ptr->upload_location,
       start_position,
-      info_ptr->content_length,
+      end_position,
       info_ptr->content_length,
       info_ptr->content_type,
       info_ptr->file_path,
