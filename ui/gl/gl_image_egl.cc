@@ -75,8 +75,16 @@ void GLImageEGL::Destroy() {
 }
 
 void GLImageEGL::ReleaseTexImage() {
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-      NULL);
+  char zero[4] = { 0, };
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               GL_RGBA,
+               1,
+               1,
+               0,
+               GL_RGBA,
+               GL_UNSIGNED_BYTE,
+               &zero);
 }
 
 }  // namespace gfx
