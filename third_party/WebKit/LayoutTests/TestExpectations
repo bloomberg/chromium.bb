@@ -1092,7 +1092,6 @@ webkit.org/b/97499 http/tests/security/script-no-crossorigin-onerror-should-be-s
 
 webkit.org/b/100023 [ Mac ] fast/sub-pixel/file-upload-control-at-fractional-offset.html [ ImageOnlyFailure ]
 
-webkit.org/b/100806 [ Linux Win7 ] fast/css/font-face-unicode-range.html [ Failure ImageOnlyFailure ]
 webkit.org/b/100806 [ Win7 ] fast/css/font-face-download-error.html [ Failure Pass ]
 
 webkit.org/b/102131 fast/workers/worker-exception-during-navigation.html [ Crash Pass ]
@@ -1453,11 +1452,8 @@ crbug.com/231864 [ Linux ] css3/font-feature-settings-rendering.html [ ImageOnly
 crbug.com/231865 editing/pasteboard/copy-image-with-alt-text.html [ Failure ]
 crbug.com/231866 fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/231867 fast/css-grid-layout/grid-disabled-by-default.html [ Failure ]
-crbug.com/231868 [ Linux ] fast/css/font-face-multiple-faces.html [ ImageOnlyFailure ]
 crbug.com/231869 [ Linux ] fast/css/font-face-opentype.html [ ImageOnlyFailure ]
-crbug.com/231870 [ Linux ] fast/css/font-face-synthetic-bold-italic.html [ ImageOnlyFailure ]
 crbug.com/231873 [ Linux ] fast/css/font-face-weight-matching.html [ ImageOnlyFailure ]
-crbug.com/231874 [ Linux ] fast/css/font-face-woff.html [ ImageOnlyFailure ]
 crbug.com/231875 fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
 crbug.com/231878 fast/dom/HTMLLinkElement/prefetch.html [ Failure ]
 crbug.com/231878 fast/dom/HTMLLinkElement/subresource.html [ Failure ]
