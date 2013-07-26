@@ -79,7 +79,7 @@ public:
     // For conversions from other structures that have already parsed and
     // canonicalized the URL. The input must be exactly what KURL would have
     // done with the same input.
-    KURL(const CString& canonicalSpec, const url_parse::Parsed&, bool isValid);
+    KURL(const AtomicString& canonicalString, const url_parse::Parsed&, bool isValid);
 
     String strippedForUseAsReferrer() const;
 

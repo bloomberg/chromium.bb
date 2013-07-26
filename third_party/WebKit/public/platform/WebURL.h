@@ -32,6 +32,7 @@
 #define WebURL_h
 
 #include "WebCString.h"
+#include "WebString.h"
 #include <url/url_parse.h>
 
 #if WEBKIT_IMPLEMENTATION
@@ -48,42 +49,36 @@ public:
     {
     }
 
-    WebURL() : m_isValid(false)
+    WebURL()
+        : m_isValid(false)
     {
     }
 
-    WebURL(const WebCString& spec, const url_parse::Parsed& parsed, bool isValid)
-        : m_spec(spec)
-        , m_parsed(parsed)
-        , m_isValid(isValid)
+    WebURL(const WebURL& url)
+        : m_string(url.m_string)
+        , m_parsed(url.m_parsed)
+        , m_isValid(url.m_isValid)
     {
     }
 
-    WebURL(const WebURL& s)
-        : m_spec(s.m_spec)
-        , m_parsed(s.m_parsed)
-        , m_isValid(s.m_isValid)
+    WebURL& operator=(const WebURL& url)
     {
-    }
-
-    WebURL& operator=(const WebURL& s)
-    {
-        m_spec = s.m_spec;
-        m_parsed = s.m_parsed;
-        m_isValid = s.m_isValid;
+        m_string = url.m_string;
+        m_parsed = url.m_parsed;
+        m_isValid = url.m_isValid;
         return *this;
     }
 
-    void assign(const WebCString& spec, const url_parse::Parsed& parsed, bool isValid)
+    // FIXME: Remove this API.
+    WebCString spec() const
     {
-        m_spec = spec;
-        m_parsed = parsed;
-        m_isValid = isValid;
+        std::string spec = m_string.utf8();
+        return WebCString(spec.data(), spec.length());
     }
 
-    const WebCString& spec() const
+    const WebString& string() const
     {
-        return m_spec;
+        return m_string;
     }
 
     const url_parse::Parsed& parsed() const
@@ -98,12 +93,12 @@ public:
 
     bool isEmpty() const
     {
-        return m_spec.isEmpty();
+        return m_string.isEmpty();
     }
 
     bool isNull() const
     {
-        return m_spec.isEmpty();
+        return m_string.isEmpty();
     }
 
 #if WEBKIT_IMPLEMENTATION
@@ -111,36 +106,36 @@ public:
     WebURL& operator=(const WebCore::KURL&);
     operator WebCore::KURL() const;
 #else
-    WebURL(const GURL& g)
-        : m_spec(g.possibly_invalid_spec())
-        , m_parsed(g.parsed_for_possibly_invalid_spec())
-        , m_isValid(g.is_valid())
+    WebURL(const GURL& url)
+        : m_string(WebString::fromUTF8(url.possibly_invalid_spec()))
+        , m_parsed(url.parsed_for_possibly_invalid_spec())
+        , m_isValid(url.is_valid())
     {
     }
 
-    WebURL& operator=(const GURL& g)
+    WebURL& operator=(const GURL& url)
     {
-        m_spec = g.possibly_invalid_spec();
-        m_parsed = g.parsed_for_possibly_invalid_spec();
-        m_isValid = g.is_valid();
+        m_string = WebString::fromUTF8(url.possibly_invalid_spec());
+        m_parsed = url.parsed_for_possibly_invalid_spec();
+        m_isValid = url.is_valid();
         return *this;
     }
 
     operator GURL() const
     {
-        return isNull() ? GURL() : GURL(m_spec.data(), m_spec.length(), m_parsed, m_isValid);
+        return isNull() ? GURL() : GURL(m_string.utf8(), m_parsed, m_isValid);
     }
 #endif
 
 private:
-    WebCString m_spec;  // UTF-8 encoded
+    WebString m_string;
     url_parse::Parsed m_parsed;
     bool m_isValid;
 };
 
 inline bool operator==(const WebURL& a, const WebURL& b)
 {
-    return !a.spec().compare(b.spec());
+    return a.string().equals(b.string());
 }
 
 inline bool operator!=(const WebURL& a, const WebURL& b)

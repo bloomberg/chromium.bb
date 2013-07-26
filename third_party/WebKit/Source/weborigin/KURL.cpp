@@ -206,11 +206,11 @@ KURL::KURL(const KURL& base, const String& relative, const WTF::TextEncoding& en
     init(base, relative, &encoding.encodingForFormSubmission());
 }
 
-KURL::KURL(const CString& canonicalSpec, const url_parse::Parsed& parsed, bool isValid)
+KURL::KURL(const AtomicString& canonicalString, const url_parse::Parsed& parsed, bool isValid)
     : m_isValid(isValid)
     , m_protocolIsInHTTPFamily(false)
     , m_parsed(parsed)
-    , m_string(AtomicString::fromUTF8(canonicalSpec.data(), canonicalSpec.length()))
+    , m_string(canonicalString)
 {
     initProtocolIsInHTTPFamily();
     initInnerURL();
