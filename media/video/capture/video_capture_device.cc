@@ -6,6 +6,16 @@
 
 namespace media {
 
+const std::string VideoCaptureDevice::Name::GetNameAndModel() const {
+// On Linux, the device name already includes the model identifier.
+#if !defined(OS_LINUX)
+  std::string model_id = GetModel();
+  if (!model_id.empty())
+    return device_name_ + " (" + model_id + ")";
+#endif  // if !defined(OS_LINUX)
+  return device_name_;
+}
+
 VideoCaptureDevice::Name*
 VideoCaptureDevice::Names::FindById(const std::string& id) {
   for (iterator it = begin(); it != end(); ++it) {

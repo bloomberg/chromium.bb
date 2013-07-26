@@ -15,6 +15,9 @@ namespace {
 const int kMinFrameRate = 1;
 const int kMaxFrameRate = 30;
 
+// In QT device identifiers, the USB VID and PID are stored in 4 bytes each.
+const size_t kVidPidSize = 4;
+
 struct Resolution {
   int width;
   int height;
@@ -60,6 +63,21 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
               [key UTF8String]);
     device_names->push_back(name);
   }
+}
+
+const std::string VideoCaptureDevice::Name::GetModel() const {
+  // Both PID and VID are 4 characters.
+  if (unique_id_.size() < 2 * kVidPidSize) {
+    return "";
+  }
+
+  // The last characters of device id is a concatenation of VID and then PID.
+  const size_t vid_location = unique_id_.size() - 2 * kVidPidSize;
+  std::string id_vendor = unique_id_.substr(vid_location, kVidPidSize);
+  const size_t pid_location = unique_id_.size() - kVidPidSize;
+  std::string id_product = unique_id_.substr(pid_location, kVidPidSize);
+
+  return id_vendor + ":" + id_product;
 }
 
 VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {

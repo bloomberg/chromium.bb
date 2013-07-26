@@ -21,6 +21,12 @@ using base::win::ScopedComPtr;
 namespace media {
 namespace {
 
+// In Windows device identifiers, the USB VID and PID are preceded by the string
+// "vid_" or "pid_".  The identifiers are each 4 bytes long.
+const char kVidPrefix[] = "vid_";  // Also contains '\0'.
+const char kPidPrefix[] = "pid_";  // Also contains '\0'.
+const size_t kVidPidSize = 4;
+
 class MFInitializerSingleton {
  public:
   MFInitializerSingleton() { MFStartup(MF_VERSION, MFSTARTUP_LITE); }
@@ -283,6 +289,26 @@ void VideoCaptureDeviceMFWin::GetDeviceNames(Names* device_names) {
     }
     devices[i]->Release();
   }
+}
+
+const std::string VideoCaptureDevice::Name::GetModel() const {
+  const size_t vid_prefix_size = sizeof(kVidPrefix) - 1;
+  const size_t pid_prefix_size = sizeof(kPidPrefix) - 1;
+  const size_t vid_location = unique_id_.find(kVidPrefix);
+  if (vid_location == std::string::npos ||
+      vid_location + vid_prefix_size + kVidPidSize > unique_id_.size()) {
+    return "";
+  }
+  const size_t pid_location = unique_id_.find(kPidPrefix);
+  if (pid_location == std::string::npos ||
+      pid_location + pid_prefix_size + kVidPidSize > unique_id_.size()) {
+    return "";
+  }
+  std::string id_vendor =
+      unique_id_.substr(vid_location + vid_prefix_size, kVidPidSize);
+  std::string id_product =
+      unique_id_.substr(pid_location + pid_prefix_size, kVidPidSize);
+  return id_vendor + ":" + id_product;
 }
 
 VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(const Name& device_name)

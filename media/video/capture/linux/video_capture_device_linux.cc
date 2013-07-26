@@ -45,6 +45,11 @@ static const int32 kV4l2RawFmts[] = {
   V4L2_PIX_FMT_YUYV
 };
 
+// Linux USB camera devices have names like "UVC Camera (1234:fdcb)"
+static const char kUsbSuffixStart[] = " (";
+static const size_t kUsbModelSize = 9;
+static const char kUsbSuffixEnd[] = ")";
+
 static VideoCaptureCapability::Format V4l2ColorToVideoCaptureColorFormat(
     int32 v4l2_fourcc) {
   VideoCaptureCapability::Format result = VideoCaptureCapability::kColorUnknown;
@@ -129,6 +134,26 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
     }
     close(fd);
   }
+}
+
+const std::string VideoCaptureDevice::Name::GetModel() const {
+  const size_t usb_suffix_start_size = sizeof(kUsbSuffixStart) - 1;
+  const size_t usb_suffix_end_size = sizeof(kUsbSuffixEnd) - 1;
+  const size_t suffix_size =
+      usb_suffix_start_size + kUsbModelSize + usb_suffix_end_size;
+  if (device_name_.length() < suffix_size)
+    return "";
+  const std::string suffix = device_name_.substr(
+      device_name_.length() - suffix_size, suffix_size);
+
+  int start_compare =
+      suffix.compare(0, usb_suffix_start_size, kUsbSuffixStart);
+  int end_compare = suffix.compare(suffix_size - usb_suffix_end_size,
+      usb_suffix_end_size, kUsbSuffixEnd);
+  if (start_compare != 0 || end_compare != 0)
+    return "";
+
+  return suffix.substr(usb_suffix_start_size, kUsbModelSize);
 }
 
 VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {

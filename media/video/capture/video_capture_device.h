@@ -32,7 +32,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // The reason for this is that a device name might contain platform specific
   // settings that are relevant only to the platform specific implementation of
   // VideoCaptureDevice::Create.
-  class Name {
+  class MEDIA_EXPORT Name {
    public:
     Name() {}
     Name(const std::string& name, const std::string& id)
@@ -59,6 +59,14 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // Unique name of a device. Even if there are multiple devices with the same
     // friendly name connected to the computer this will be unique.
     const std::string& id() const { return unique_id_; }
+
+    // The unique hardware model identifier of the capture device.  Returns
+    // "[vid]:[pid]" when a USB device is detected, otherwise "".
+    // The implementation of this method is platform-dependent.
+    const std::string GetModel() const;
+
+    // Friendly name of a device, plus the model identifier in parentheses.
+    const std::string GetNameAndModel() const;
 
     // These operators are needed due to storing the name in an STL container.
     // In the shared build, all methods from the STL container will be exported

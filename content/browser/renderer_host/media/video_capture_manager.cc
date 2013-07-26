@@ -142,7 +142,7 @@ void VideoCaptureManager::OnEnumerateDevices(MediaStreamType stream_type) {
            device_names.begin(); it != device_names.end(); ++it) {
     bool opened = DeviceOpened(*it);
     devices->push_back(StreamDeviceInfo(
-        stream_type, it->name(), it->id(), opened));
+        stream_type, it->GetNameAndModel(), it->id(), opened));
   }
 
   PostOnDevicesEnumerated(stream_type, devices.Pass());
@@ -560,7 +560,7 @@ media::VideoCaptureDevice* VideoCaptureManager::GetDeviceInternal(
       return NULL;
     }
     StreamDeviceInfo device(MEDIA_DEVICE_VIDEO_CAPTURE,
-                            device_names.front().name(),
+                            device_names.front().GetNameAndModel(),
                             device_names.front().id(),
                             false);
 
