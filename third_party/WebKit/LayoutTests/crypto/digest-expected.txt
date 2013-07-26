@@ -32,6 +32,8 @@ finish() and then finish()
     = [da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09]
 SHA-256 rejects (dummy implementation)
     rejected with value of null
+Error during process() (dummy implementation rejects inputs over 6 bytes)
+    rejected with value of null
 PASS op.process(null) threw exception TypeError: Type error.
 PASS op.process() threw exception TypeError: Not enough arguments.
 PASS op.process(-1) threw exception TypeError: Type error.

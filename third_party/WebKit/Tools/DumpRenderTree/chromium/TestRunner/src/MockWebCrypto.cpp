@@ -48,8 +48,11 @@ public:
     virtual void process(const unsigned char* bytes, size_t size) OVERRIDE
     {
         // Don't buffer too much data.
-        if (m_data.size() + size > 6)
+        if (m_data.size() + size > 6) {
             m_result.completeWithError();
+            delete this;
+            return;
+        }
 
         if (size)
             m_data.append(reinterpret_cast<const char*>(bytes), size);
