@@ -333,6 +333,32 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded_NewDirectories) {
             metadata_->GetResourceEntryByPath(file_path, &entry));
 }
 
+TEST_F(ChangeListLoaderTest, LoadIfNeeded_MultipleCalls) {
+  TestChangeListLoaderObserver observer(change_list_loader_.get());
+
+  // Load grand root.
+  FileError error = FILE_ERROR_FAILED;
+  change_list_loader_->LoadIfNeeded(
+      DirectoryFetchInfo(util::kDriveGrandRootSpecialResourceId, 0),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+
+  // Load grand root again without waiting for the result.
+  FileError error2 = FILE_ERROR_FAILED;
+  change_list_loader_->LoadIfNeeded(
+      DirectoryFetchInfo(util::kDriveGrandRootSpecialResourceId, 0),
+      google_apis::test_util::CreateCopyResultCallback(&error2));
+  base::RunLoop().RunUntilIdle();
+
+  // Callback is called for each method call.
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error2);
+
+  // No duplicated resource list load and observer events.
+  EXPECT_EQ(1, drive_service_->resource_list_load_count());
+  EXPECT_EQ(1, observer.initial_load_complete_count());
+  EXPECT_EQ(1, observer.load_from_server_complete_count());
+}
+
 TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   // CheckForUpdates() results in no-op before load.
   FileError check_for_updates_error = FILE_ERROR_FAILED;
