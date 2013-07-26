@@ -506,7 +506,6 @@ crbug.com/14009 [ Win ] http/tests/misc/dns-prefetch-control.html [ Pass Timeout
 
 webkit.org/b/110296 [ Linux MountainLion ] fast/multicol/newmulticol/column-rules-fixed-height.html [ ImageOnlyFailure ]
 crbug.com/250935 [ Win ] fast/multicol/shrink-to-column-height-for-pagination.html [ ImageOnlyFailure Pass ]
-crbug.com/236326 fast/multicol/vertical-rl/rules-with-border-before.html [ NeedsRebaseline ]
 
 # There seems to be some endemic MountainLion reftest failure.
 # In theory, this shouldn't happen with reftests. Indicates a likely genuine
