@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "ui/base/models/table_model.h"
@@ -109,6 +110,12 @@ class TemplateURLTableModel : public ui::TableModel,
 
   // TemplateURLServiceObserver notification.
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
+
+  // Removes the entry at |index| from |entries_| and returns the removed item.
+  scoped_ptr<ModelEntry> RemoveEntry(int index);
+
+  // Adds |entry| to |entries_| at |index| and takes ownership.
+  void AddEntry(int index, scoped_ptr<ModelEntry> entry);
 
   ui::TableModelObserver* observer_;
 
