@@ -340,8 +340,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "themesSetClassic", IDS_THEMES_SET_CLASSIC },
 #else
     { "themes", IDS_THEMES_GROUP_NAME },
-    { "themesReset", IDS_THEMES_RESET_BUTTON },
 #endif
+    { "themesReset", IDS_THEMES_RESET_BUTTON },
 #if defined(OS_CHROMEOS)
     { "accessibilityExplanation",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_EXPLANATION },
@@ -1302,11 +1302,11 @@ void BrowserOptionsHandler::CancelProfileRegistration(bool user_initiated) {
 
 void BrowserOptionsHandler::ObserveThemeChanged() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  bool profile_is_managed = ManagedUserService::ProfileIsManaged(profile);
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
   bool is_native_theme = false;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  bool profile_is_managed = ManagedUserService::ProfileIsManaged(profile);
   is_native_theme = theme_service->UsingNativeTheme();
   base::FundamentalValue native_theme_enabled(!is_native_theme &&
                                               !profile_is_managed);
@@ -1316,15 +1316,13 @@ void BrowserOptionsHandler::ObserveThemeChanged() {
 
   bool is_classic_theme = !is_native_theme &&
                           theme_service->UsingDefaultTheme();
-  base::FundamentalValue enabled(!is_classic_theme && !profile_is_managed);
+  base::FundamentalValue enabled(!is_classic_theme);
   web_ui()->CallJavascriptFunction("BrowserOptions.setThemesResetButtonEnabled",
                                    enabled);
 }
 
 void BrowserOptionsHandler::ThemesReset(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (ManagedUserService::ProfileIsManaged(profile))
-    return;
   content::RecordAction(UserMetricsAction("Options_ThemesReset"));
   ThemeServiceFactory::GetForProfile(profile)->UseDefaultTheme();
 }

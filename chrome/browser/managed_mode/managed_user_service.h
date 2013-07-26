@@ -209,7 +209,7 @@ class ManagedUserService : public BrowserContextKeyedService,
   // Internal implementation for ExtensionManagementPolicy::Delegate methods.
   // If |error| is not NULL, it will be filled with an error message if the
   // requested extension action (install, modify status, etc.) is not permitted.
-  bool ExtensionManagementPolicyImpl(const std::string& extension_id,
+  bool ExtensionManagementPolicyImpl(const extensions::Extension* extension,
                                      string16* error) const;
 
   // Returns a list of all installed and enabled site lists in the current

@@ -142,10 +142,13 @@ cr.define('options', function() {
       };
 
       if (loadTimeData.getBoolean('profileIsManaged')) {
-        if ($('themes-GTK-button'))
-          $('themes-GTK-button').disabled = true;
-        $('themes-reset').disabled = true;
-        $('themes-gallery').disabled = true;
+        if ($('themes-native-button')) {
+          $('themes-native-button').disabled = true;
+          $('themes-native-button').hidden = true;
+        }
+        // Supervised users have just one default theme, even on Linux. So use
+        // the same button for Linux as for the other platforms.
+        $('themes-reset').textContent = loadTimeData.getString('themesReset');
       }
 
       // Device section (ChromeOS only).

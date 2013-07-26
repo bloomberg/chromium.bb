@@ -262,9 +262,7 @@ std::string ManagedUserService::GetDebugPolicyProviderName() const {
 bool ManagedUserService::UserMayLoad(const extensions::Extension* extension,
                                      string16* error) const {
   string16 tmp_error;
-  // |extension| can be NULL in unit tests.
-  if (ExtensionManagementPolicyImpl(extension ? extension->id() : std::string(),
-                                    &tmp_error))
+  if (ExtensionManagementPolicyImpl(extension, &tmp_error))
     return true;
 
   // If the extension is already loaded, we allow it, otherwise we'd unload
@@ -303,9 +301,7 @@ bool ManagedUserService::UserMayLoad(const extensions::Extension* extension,
 bool ManagedUserService::UserMayModifySettings(
     const extensions::Extension* extension,
     string16* error) const {
-  // |extension| can be NULL in unit tests.
-  return ExtensionManagementPolicyImpl(
-      extension ? extension->id() : std::string(), error);
+  return ExtensionManagementPolicyImpl(extension, error);
 }
 
 void ManagedUserService::OnStateChanged() {
@@ -366,9 +362,10 @@ void ManagedUserService::SetupSync() {
 }
 
 bool ManagedUserService::ExtensionManagementPolicyImpl(
-    const std::string& extension_id,
+    const extensions::Extension* extension,
     string16* error) const {
-  if (!ProfileIsManaged())
+  // |extension| can be NULL in unit_tests.
+  if (!ProfileIsManaged() || (extension && extension->is_theme()))
     return true;
 
   if (elevated_for_testing_)
