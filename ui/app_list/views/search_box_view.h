@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ui/app_list/search_box_model_observer.h"
-#include "ui/app_list/views/app_list_menu_views.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -21,6 +20,7 @@ class Textfield;
 
 namespace app_list {
 
+class AppListMenuViews;
 class AppListViewDelegate;
 class SearchBoxModel;
 class SearchBoxViewDelegate;
@@ -42,6 +42,7 @@ class SearchBoxView : public views::View,
 
   bool HasSearch() const;
   void ClearSearch();
+  void InvalidateMenu();
 
   views::Textfield* search_box() { return search_box_; }
 
@@ -78,9 +79,10 @@ class SearchBoxView : public views::View,
   virtual void TextChanged() OVERRIDE;
 
   SearchBoxViewDelegate* delegate_;  // Not owned.
+  AppListViewDelegate* view_delegate_;  // Not owned.
   SearchBoxModel* model_;  // Owned by AppListModel.
 
-  AppListMenuViews menu_;
+  scoped_ptr<AppListMenuViews> menu_;
 
   views::ImageView* icon_view_;  // Owned by views hierarchy.
   views::MenuButton* menu_button_;  // Owned by views hierarchy.

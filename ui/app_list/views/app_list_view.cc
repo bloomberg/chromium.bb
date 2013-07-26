@@ -179,6 +179,7 @@ void AppListView::OnSigninStatusChanged() {
 
   signin_view_->SetVisible(needs_signin);
   app_list_main_view_->SetVisible(!needs_signin);
+  app_list_main_view_->search_box_view()->InvalidateMenu();
 }
 
 views::View* AppListView::GetInitiallyFocusedView() {

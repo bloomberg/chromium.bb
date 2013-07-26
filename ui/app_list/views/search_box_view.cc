@@ -9,6 +9,7 @@
 #include "grit/ui_resources.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_box_view_delegate.h"
+#include "ui/app_list/views/app_list_menu_views.h"
 #include "ui/base/events/event.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -32,8 +33,8 @@ const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                              AppListViewDelegate* view_delegate)
     : delegate_(delegate),
+      view_delegate_(view_delegate),
       model_(NULL),
-      menu_(view_delegate),
       icon_view_(new views::ImageView),
       search_box_(new views::Textfield),
       contents_view_(NULL) {
@@ -88,6 +89,10 @@ void SearchBoxView::ClearSearch() {
   // does not generate ContentsChanged() notification.
   UpdateModel();
   NotifyQueryChanged();
+}
+
+void SearchBoxView::InvalidateMenu() {
+  menu_.reset();
 }
 
 gfx::Size SearchBoxView::GetPreferredSize() {
@@ -159,8 +164,11 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
 }
 
 void SearchBoxView::OnMenuButtonClicked(View* source, const gfx::Point& point) {
-  menu_.RunMenuAt(menu_button_,
-                  menu_button_->GetBoundsInScreen().bottom_right());
+  if (!menu_)
+    menu_.reset(new AppListMenuViews(view_delegate_));
+
+  menu_->RunMenuAt(menu_button_,
+                   menu_button_->GetBoundsInScreen().bottom_right());
 }
 
 void SearchBoxView::IconChanged() {
