@@ -362,6 +362,8 @@ _COPY_PATHS = (
        exe=True,
        optional=True,
        cond=C.GypNotSet(_DISABLE_NACL)),
+  Path('pnacl/',
+       cond=C.GypNotSet(_DISABLE_NACL)),
   Path('resources/'),
   Path('resources.pak'),
   Path('xdg-settings'),
