@@ -23,7 +23,7 @@ namespace {
 // A special text button border for the managed user avatar label.
 class AvatarLabelBorder: public views::TextButtonBorder {
  public:
-  explicit AvatarLabelBorder(ui::ThemeProvider* theme_provider);
+  explicit AvatarLabelBorder();
 
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
 
@@ -33,10 +33,10 @@ class AvatarLabelBorder: public views::TextButtonBorder {
   DISALLOW_COPY_AND_ASSIGN(AvatarLabelBorder);
 };
 
-AvatarLabelBorder::AvatarLabelBorder(ui::ThemeProvider* theme_provider) {
+AvatarLabelBorder::AvatarLabelBorder() {
   const int kHorizontalInsetRight = 10;
   const int kHorizontalInsetLeft = 43;
-  const int kVerticalInsetTop = 3;
+  const int kVerticalInsetTop = 2;
   const int kVerticalInsetBottom = 3;
   // We want to align with the top of the tab. This works if the BaseFont size
   // is 13. If it is smaller, we need to increase the TopInset accordingly.
@@ -54,21 +54,43 @@ AvatarLabelBorder::AvatarLabelBorder(ui::ThemeProvider* theme_provider) {
 }
 
 void AvatarLabelBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
+  // Paint the default background using the image assets provided by UI. This
+  // includes a border with almost transparent white color.
   painter_->Paint(canvas, view.size());
+
+  // Now repaint the inner part of the background in order to be able to change
+  // the colors according to the currently installed theme.
+  gfx::Rect rect(1, 1, view.size().width() - 2, view.size().height() - 2);
+  SkPaint paint;
+  int kRadius = 2;
+  SkColor background_color = view.GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_MANAGED_USER_LABEL_BACKGROUND);
+  paint.setStyle(SkPaint::kFill_Style);
+
+  // For the inner border, use a color which is slightly darker than the
+  // background color.
+  SkAlpha kAlphaForBlending = 230;
+  paint.setColor(color_utils::AlphaBlend(
+      background_color, SK_ColorBLACK, kAlphaForBlending));
+  canvas->DrawRoundRect(rect, kRadius, paint);
+
+  // Now paint the inner background using the color provided by the
+  // ThemeProvider.
+  paint.setColor(background_color);
+  rect = gfx::Rect(2, 2, view.size().width() - 4, view.size().height() - 4);
+  canvas->DrawRoundRect(rect, kRadius, paint);
 }
 
 }  // namespace
 
-AvatarLabel::AvatarLabel(BrowserView* browser_view,
-                         ui::ThemeProvider* theme_provider)
+AvatarLabel::AvatarLabel(BrowserView* browser_view)
     : TextButton(NULL,
                  l10n_util::GetStringUTF16(IDS_MANAGED_USER_AVATAR_LABEL)),
-      browser_view_(browser_view),
-      theme_provider_(theme_provider) {
+      browser_view_(browser_view) {
   SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::BaseFont));
   ClearMaxTextSize();
-  set_border(new AvatarLabelBorder(theme_provider));
+  set_border(new AvatarLabelBorder);
   UpdateLabelStyle();
 }
 
@@ -83,8 +105,8 @@ bool AvatarLabel::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void AvatarLabel::UpdateLabelStyle() {
-  SkColor color_label =
-      theme_provider_->GetColor(ThemeProperties::COLOR_MANAGED_USER_LABEL);
+  SkColor color_label = browser_view_->frame()->GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_MANAGED_USER_LABEL);
   SetEnabledColor(color_label);
   SetHighlightColor(color_label);
   SetHoverColor(color_label);

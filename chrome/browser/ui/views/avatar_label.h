@@ -21,7 +21,7 @@ class ThemeProvider;
 // to a managed user.
 class AvatarLabel : public views::TextButton {
  public:
-  AvatarLabel(BrowserView* browser_view, ui::ThemeProvider* theme_provider);
+  explicit AvatarLabel(BrowserView* browser_view);
   virtual ~AvatarLabel();
 
   // views::TextButton:
@@ -32,7 +32,6 @@ class AvatarLabel : public views::TextButton {
 
  private:
   BrowserView* browser_view_;
-  ui::ThemeProvider* theme_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarLabel);
 };

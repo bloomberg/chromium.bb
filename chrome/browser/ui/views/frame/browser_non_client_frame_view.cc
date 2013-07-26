@@ -61,8 +61,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
       ManagedUserService* service =
           ManagedUserServiceFactory::GetForProfile(profile);
       if (service->ProfileIsManaged() && !avatar_label_) {
-        avatar_label_ =
-            new AvatarLabel(browser_view_, frame_->GetThemeProvider());
+        avatar_label_ = new AvatarLabel(browser_view_);
         AddChildView(avatar_label_);
       }
 #endif
