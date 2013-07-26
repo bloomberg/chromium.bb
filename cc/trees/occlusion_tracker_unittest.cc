@@ -309,21 +309,12 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
   void CalcDrawEtc(TestContentLayerImpl* root) {
     DCHECK(root == root_.get());
-    int dummy_max_texture_size = 512;
-
     DCHECK(!root->render_surface());
 
-    LayerTreeHostCommon::CalculateDrawProperties(
-        root,
-        root->bounds(),
-        gfx::Transform(),
-        1.f,
-        1.f,
-        NULL,
-        dummy_max_texture_size,
-        false,  // can_use_lcd_text
-        true,  // can_adjust_raster_scales
-        &render_surface_layer_list_impl_);
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root, root->bounds(), &render_surface_layer_list_impl_);
+    inputs.can_adjust_raster_scales = true;
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     layer_iterator_ = layer_iterator_begin_ =
         Types::TestLayerIterator::Begin(&render_surface_layer_list_impl_);
@@ -331,22 +322,13 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
   void CalcDrawEtc(TestContentLayer* root) {
     DCHECK(root == root_.get());
-    int dummy_max_texture_size = 512;
-
     DCHECK(!root->render_surface());
 
     render_surface_layer_list_.reset(new RenderSurfaceLayerList);
-    LayerTreeHostCommon::CalculateDrawProperties(
-        root,
-        root->bounds(),
-        gfx::Transform(),
-        1.f,
-        1.f,
-        NULL,
-        dummy_max_texture_size,
-        false,  // can_use_lcd_text
-        true,  // can_adjust_raster_scales
-        render_surface_layer_list_.get());
+    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+        root, root->bounds(), render_surface_layer_list_.get());
+    inputs.can_adjust_raster_scales = true;
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     layer_iterator_ = layer_iterator_begin_ =
         Types::TestLayerIterator::Begin(render_surface_layer_list_.get());

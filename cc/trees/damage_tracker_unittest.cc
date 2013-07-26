@@ -20,27 +20,17 @@
 namespace cc {
 namespace {
 
-void ExecuteCalculateDrawProperties(
-    LayerImpl* root,
-    LayerImplList& render_surface_layer_list) {
-  int dummy_max_texture_size = 512;
-
+void ExecuteCalculateDrawProperties(LayerImpl* root,
+                                    LayerImplList& render_surface_layer_list) {
   // Sanity check: The test itself should create the root layer's render
   //               surface, so that the surface (and its damage tracker) can
   //               persist across multiple calls to this function.
   ASSERT_TRUE(root->render_surface());
   ASSERT_FALSE(render_surface_layer_list.size());
 
-  LayerTreeHostCommon::CalculateDrawProperties(root,
-                                               root->bounds(),
-                                               gfx::Transform(),
-                                               1.f,
-                                               1.f,
-                                               NULL,
-                                               dummy_max_texture_size,
-                                               false,
-                                               false,
-                                               &render_surface_layer_list);
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root, root->bounds(), &render_surface_layer_list);
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
 
 void ClearDamageForAllSurfaces(LayerImpl* layer) {

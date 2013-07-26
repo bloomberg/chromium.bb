@@ -284,7 +284,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
                  IsActiveTree(),
                  "SourceFrameNumber",
                  source_frame_number_);
-    LayerTreeHostCommon::CalculateDrawProperties(
+    LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         root_layer(),
         layer_tree_host_impl_->DeviceViewport().size(),
         layer_tree_host_impl_->DeviceTransform(),
@@ -295,6 +295,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
         settings().can_use_lcd_text,
         settings().layer_transforms_should_scale_layer_contents,
         &render_surface_layer_list_);
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 
   DCHECK(!needs_update_draw_properties_) <<

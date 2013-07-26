@@ -711,7 +711,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
     }
 
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
-    LayerTreeHostCommon::CalculateDrawProperties(
+    LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
         root_layer,
         device_viewport_size(),
         gfx::Transform(),
@@ -722,6 +722,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
         settings_.can_use_lcd_text,
         settings_.layer_transforms_should_scale_layer_contents,
         &update_list);
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     if (total_frames_used_for_lcd_text_metrics_ <=
         kTotalFramesToUseForLCDTextMetrics) {

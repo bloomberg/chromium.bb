@@ -36,19 +36,12 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
   gfx::RectF last_needs_display_rect_;
 };
 
-void CalcDrawProps(Layer* root, float device_scale) {
+void CalcDrawProps(Layer* root, float device_scale_factor) {
   RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalculateDrawProperties(
-      root,
-      gfx::Size(500, 500),
-      gfx::Transform(),
-      device_scale,
-      1.f,
-      NULL,
-      1024,
-      false,
-      false,
-      &render_surface_layer_list);
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      root, gfx::Size(500, 500), &render_surface_layer_list);
+  inputs.device_scale_factor = device_scale_factor;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
 
 TEST(ContentsScalingLayerTest, CheckContentsBounds) {
