@@ -213,6 +213,9 @@ void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
   // See http://crbug.com/262957 .
   prefs.deferred_image_decoding_enabled = false;
 
+  prefs.password_echo_enabled =
+      Java_AwSettings_getPasswordEchoEnabled(env, obj);
+
   render_view_host->UpdateWebkitPreferences(prefs);
 }
 

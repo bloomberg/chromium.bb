@@ -475,7 +475,7 @@ public class AwContents {
                         mContentViewCore.updateMultiTouchZoomSupport(supportsMultiTouchZoom);
                     }
                 };
-        mSettings = new AwSettings(hasInternetPermission, zoomListener,
+        mSettings = new AwSettings(mContainerView.getContext(), hasInternetPermission, zoomListener,
                 isAccessFromFileURLsGrantedByDefault, mDIPScale);
         mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
         mSettings.setDefaultVideoPosterURL(
