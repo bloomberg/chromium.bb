@@ -103,6 +103,15 @@
               '-Wno-unknown-pragmas',
             ],
           },
+          'conditions': [
+            ['use_x11==0', {
+              'direct_dependent_settings': {
+                'defines': [
+                  'MESA_EGL_NO_X11_HEADERS',
+                ],
+              },
+            }],
+          ],
         },
         {
           'target_name': 'mesa_libglslcommon',
