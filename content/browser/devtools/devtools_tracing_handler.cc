@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_http_handler_impl.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
@@ -45,10 +46,14 @@ void DevToolsTracingHandler::OnEndTracingComplete() {
 void DevToolsTracingHandler::OnTraceDataCollected(
     const scoped_refptr<base::RefCountedString>& trace_fragment) {
   if (is_running_) {
-    base::DictionaryValue* params = new base::DictionaryValue();
-    params->SetString(devtools::Tracing::dataCollected::kValue,
-                      trace_fragment->data());
-    SendNotification(devtools::Tracing::dataCollected::kName, params);
+    // Hand-craft protocol notification message so we can substitute JSON
+    // that we already got as string as a bare object, not a quoted string.
+    std::string message = base::StringPrintf(
+        "{ \"method\": \"%s\", \"params\": { \"%s\": [ %s ] } }",
+        devtools::Tracing::dataCollected::kName,
+        devtools::Tracing::dataCollected::kValue,
+        trace_fragment->data().c_str());
+    SendRawMessage(message);
   }
 }
 

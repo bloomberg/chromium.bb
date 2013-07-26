@@ -177,8 +177,12 @@ void DevToolsProtocol::Handler::SendNotification(
     const std::string& method,
     base::DictionaryValue* params) {
   DevToolsProtocol::Notification notification(method, params);
+  SendRawMessage(notification.Serialize());
+}
+
+void DevToolsProtocol::Handler::SendRawMessage(const std::string& message) {
   if (!notifier_.is_null())
-    notifier_.Run(notification.Serialize());
+    notifier_.Run(message);
 }
 
 static bool ParseMethod(base::DictionaryValue* command,

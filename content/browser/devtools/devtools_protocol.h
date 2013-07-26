@@ -133,6 +133,10 @@ class DevToolsProtocol {
     void SendNotification(const std::string& method,
                           base::DictionaryValue* params);
 
+    // Sends message to client, the caller is presumed to properly
+    // format the message.
+    void SendRawMessage(const std::string& message);
+
    private:
     typedef std::map<std::string, CommandHandler> CommandHandlers;
 
