@@ -107,7 +107,7 @@
             'ANDROID',
           ],
         }],
-        ['os_posix == 1', {
+        ['os_posix==1', {
           'defines': [
             'POSIX',
           ],
@@ -125,6 +125,11 @@
         ['OS=="freebsd"', {
           'defines': [
             'FREEBSD',
+          ],
+        }],
+        ['chromeos==1', {
+          'defines': [
+            'CHROMEOS',
           ],
         }],
       ],
