@@ -24,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "content/public/common/webplugininfo.h"
 #include "grit/webkit_chromium_resources.h"
@@ -820,29 +819,6 @@ size_t WebKitPlatformSupportImpl::memoryUsageMB() {
 size_t WebKitPlatformSupportImpl::actualMemoryUsageMB() {
   return getMemoryUsageMB(true);
 }
-
-#if defined(OS_ANDROID)
-size_t WebKitPlatformSupportImpl::lowMemoryUsageMB() {
-  // If memory usage is below this threshold, do not bother forcing GC.
-  // Allow us to use up to our memory class value before V8's GC kicks in.
-  // These values have been determined by experimentation.
-  return base::SysInfo::DalvikHeapSizeMB() / 2;
-}
-
-size_t WebKitPlatformSupportImpl::highMemoryUsageMB() {
-  // If memory usage is above this threshold, force GC more aggressively.
-  return base::SysInfo::DalvikHeapSizeMB() * 3 / 4;
-}
-
-size_t WebKitPlatformSupportImpl::highUsageDeltaMB() {
-  // If memory usage is above highMemoryUsageMB() and memory usage increased by
-  // more than highUsageDeltaMB() since the last GC, then force GC.
-  // Note that this limit should be greater than the amount of memory for V8
-  // internal data structures that are released on GC and reallocated during JS
-  // execution (about 8MB). Otherwise, it will cause too aggressive GCs.
-  return base::SysInfo::DalvikHeapSizeMB() / 8;
-}
-#endif
 
 void WebKitPlatformSupportImpl::startHeapProfiling(
   const WebKit::WebString& prefix) {
