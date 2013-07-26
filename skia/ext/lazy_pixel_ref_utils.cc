@@ -136,7 +136,6 @@ class GatherPixelRefDevice : public SkDevice {
   }
   virtual void drawBitmap(const SkDraw& draw,
                           const SkBitmap& bitmap,
-                          const SkIRect* src_rect_or_null,
                           const SkMatrix& matrix,
                           const SkPaint& paint) SK_OVERRIDE {
     SkMatrix total_matrix;
@@ -159,7 +158,7 @@ class GatherPixelRefDevice : public SkDevice {
     SkRect bitmap_rect = SkRect::MakeWH(bitmap.width(), bitmap.height());
     SkMatrix matrix;
     matrix.setRectToRect(bitmap_rect, dst, SkMatrix::kFill_ScaleToFit);
-    GatherPixelRefDevice::drawBitmap(draw, bitmap, NULL, matrix, paint);
+    GatherPixelRefDevice::drawBitmap(draw, bitmap, matrix, paint);
   }
   virtual void drawSprite(const SkDraw& draw,
                           const SkBitmap& bitmap,

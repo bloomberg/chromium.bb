@@ -91,7 +91,6 @@ class SK_API AnalysisDevice : public SkDevice {
                         bool path_is_mutable = false) OVERRIDE;
   virtual void drawBitmap(const SkDraw& draw,
                           const SkBitmap& bitmap,
-                          const SkIRect* src_rect_or_null,
                           const SkMatrix& matrix,
                           const SkPaint& paint) OVERRIDE;
   virtual void drawSprite(const SkDraw& draw,

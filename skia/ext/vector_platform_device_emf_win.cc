@@ -315,12 +315,11 @@ void VectorPlatformDeviceEmf::drawBitmapRect(const SkDraw& draw,
             matrix.preTranslate(dx, dy);
         }
     }
-    this->drawBitmap(draw, *bitmapPtr, NULL, matrix, paint);
+    this->drawBitmap(draw, *bitmapPtr, matrix, paint);
 }
 
 void VectorPlatformDeviceEmf::drawBitmap(const SkDraw& draw,
                                          const SkBitmap& bitmap,
-                                         const SkIRect* srcRectOrNull,
                                          const SkMatrix& matrix,
                                          const SkPaint& paint) {
   // Load the temporary matrix. This is what will translate, rotate and resize

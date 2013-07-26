@@ -48,7 +48,6 @@ class VectorPlatformDeviceEmf : public SkDevice, public PlatformDevice {
                               const SkRect* src, const SkRect& dst,
                               const SkPaint& paint) SK_OVERRIDE;
   virtual void drawBitmap(const SkDraw& draw, const SkBitmap& bitmap,
-                          const SkIRect* srcRectOrNull,
                           const SkMatrix& matrix,
                           const SkPaint& paint) OVERRIDE;
   virtual void drawSprite(const SkDraw& draw, const SkBitmap& bitmap,
