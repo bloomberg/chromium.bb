@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
@@ -83,7 +82,7 @@ class ScopedPriorityQueue {
 // SEARCH_METADATA_OFFLINE is requested, only hosted documents and cached files
 // match with the query. This option can not be used with other options.
 bool IsEligibleEntry(const ResourceEntry& entry,
-                     internal::FileCache* cache,
+                     ResourceMetadata::Iterator* it,
                      int options) {
   if ((options & SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS) &&
       entry.file_specific_info().is_hosted_document())
@@ -100,9 +99,7 @@ bool IsEligibleEntry(const ResourceEntry& entry,
     if (entry.file_specific_info().is_hosted_document())
       return true;
     FileCacheEntry cache_entry;
-    cache->GetCacheEntry(entry.resource_id(),
-                         std::string(),
-                         &cache_entry);
+    it->GetCacheEntry(&cache_entry);
     return cache_entry.is_present();
   }
 
@@ -121,14 +118,15 @@ bool IsEligibleEntry(const ResourceEntry& entry,
 // the query.
 void MaybeAddEntryToResult(
     ResourceMetadata* resource_metadata,
-    FileCache* cache,
+    ResourceMetadata::Iterator* it,
     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents* query,
     int options,
     size_t at_most_num_matches,
     ScopedPriorityQueue<MetadataSearchResult,
-                        MetadataSearchResultComparator>* result_candidates,
-    const ResourceEntry& entry) {
+                        MetadataSearchResultComparator>* result_candidates) {
   DCHECK_GE(at_most_num_matches, result_candidates->size());
+
+  const ResourceEntry& entry = it->Get();
 
   // If the candidate set is already full, and this |entry| is old, do nothing.
   // We perform this check first in order to avoid the costly find-and-highlight
@@ -141,7 +139,7 @@ void MaybeAddEntryToResult(
   // |options| and matches the query. The base name of the entry must
   // contain |query| to match the query.
   std::string highlighted;
-  if (!IsEligibleEntry(entry, cache, options) ||
+  if (!IsEligibleEntry(entry, it, options) ||
       (query && !FindAndHighlight(entry.base_name(), query, &highlighted)))
     return;
 
@@ -153,7 +151,6 @@ void MaybeAddEntryToResult(
 
 // Implements SearchMetadata().
 FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
-                                       FileCache* cache,
                                        const std::string& query_text,
                                        int options,
                                        int at_most_num_matches,
@@ -168,10 +165,10 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
   // Iterate over entries.
   scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
-    MaybeAddEntryToResult(resource_metadata, cache,
+    MaybeAddEntryToResult(resource_metadata, it.get(),
                           query_text.empty() ? NULL : &query,
                           options,
-                          at_most_num_matches, &result_candidates, it->Get());
+                          at_most_num_matches, &result_candidates);
   }
 
   // Prepare the result.
@@ -207,7 +204,6 @@ void RunSearchMetadataCallback(const SearchMetadataCallback& callback,
 void SearchMetadata(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     ResourceMetadata* resource_metadata,
-    FileCache* cache,
     const std::string& query,
     int options,
     int at_most_num_matches,
@@ -223,7 +219,6 @@ void SearchMetadata(
                                    FROM_HERE,
                                    base::Bind(&SearchMetadataOnBlockingPool,
                                               resource_metadata,
-                                              cache,
                                               query,
                                               options,
                                               at_most_num_matches,

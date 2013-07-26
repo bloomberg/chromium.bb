@@ -51,6 +51,9 @@ class ResourceMetadataStorage {
     // Returns the entry currently pointed by this object.
     const ResourceEntry& Get() const;
 
+    // Gets the cache entry which corresponds to |entry_| if available.
+    bool GetCacheEntry(FileCacheEntry* cache_entry);
+
     // Advances to the next entry.
     void Advance();
 

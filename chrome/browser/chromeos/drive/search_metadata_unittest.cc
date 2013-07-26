@@ -218,7 +218,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_ZeroMatches) {
 
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "NonExistent",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -236,7 +235,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
 
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "SubDirectory File 1.txt",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -259,7 +257,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
   // The query is all in lower case.
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "subdirectory file 1.txt",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -279,7 +276,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
 
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "SubDir",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -309,7 +305,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
   // returned.
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "SubDir",
                  SEARCH_METADATA_ALL,
                  1,  // at_most_num_matches
@@ -329,7 +324,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
 
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "Directory 1",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -348,7 +342,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
 
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "Document",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -369,7 +362,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeHostedDocument) {
 
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "Document",
                  SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS,
                  kDefaultAtMostNumMatches,
@@ -387,7 +379,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_SharedWithMe) {
 
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "",
                  SEARCH_METADATA_SHARED_WITH_ME,
                  kDefaultAtMostNumMatches,
@@ -407,7 +398,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_FileAndDirectory) {
 
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "excludeDir-test",
                  SEARCH_METADATA_ALL,
                  kDefaultAtMostNumMatches,
@@ -431,7 +421,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
 
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "excludeDir-test",
                  SEARCH_METADATA_EXCLUDE_DIRECTORIES,
                  kDefaultAtMostNumMatches,
@@ -457,7 +446,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeSpecialDirectories) {
     const std::string query = kQueries[i];
     SearchMetadata(base::MessageLoopProxy::current(),
                    resource_metadata_.get(),
-                   cache_.get(),
                    query,
                    SEARCH_METADATA_ALL,
                    kDefaultAtMostNumMatches,
@@ -485,7 +473,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_Offline) {
 
   SearchMetadata(base::MessageLoopProxy::current(),
                  resource_metadata_.get(),
-                 cache_.get(),
                  "",
                  SEARCH_METADATA_OFFLINE,
                  kDefaultAtMostNumMatches,

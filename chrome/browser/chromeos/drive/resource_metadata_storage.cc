@@ -121,6 +121,28 @@ const ResourceEntry& ResourceMetadataStorage::Iterator::Get() const {
   return entry_;
 }
 
+bool ResourceMetadataStorage::Iterator::GetCacheEntry(
+    FileCacheEntry* cache_entry) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsAtEnd());
+
+  // Try to seek to the cache entry.
+  std::string current_key = it_->key().ToString();
+  std::string cache_entry_key = GetCacheEntryKey(current_key);
+  it_->Seek(leveldb::Slice(cache_entry_key));
+
+  bool success = it_->Valid() &&
+      it_->key().compare(cache_entry_key) == 0 &&
+      cache_entry->ParseFromArray(it_->value().data(), it_->value().size());
+
+  // Seek back to the original position.
+  it_->Seek(leveldb::Slice(current_key));
+  DCHECK(!IsAtEnd());
+  DCHECK_EQ(current_key, it_->key().ToString());
+
+  return success;
+}
+
 void ResourceMetadataStorage::Iterator::Advance() {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsAtEnd());
