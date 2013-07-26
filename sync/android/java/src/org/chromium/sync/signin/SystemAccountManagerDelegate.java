@@ -38,8 +38,8 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     @Override
     public AccountManagerFuture<Bundle> getAuthToken(Account account, String authTokenType,
             boolean notifyAuthFailure, AccountManagerCallback<Bundle> callback, Handler handler) {
-        return mAccountManager.getAuthToken(account, authTokenType, notifyAuthFailure, callback,
-                handler);
+        return mAccountManager.getAuthToken(account, authTokenType, null, notifyAuthFailure,
+                callback, handler);
     }
 
     @Override
