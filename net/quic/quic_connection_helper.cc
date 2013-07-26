@@ -92,6 +92,7 @@ void QuicConnectionHelper::SetRetransmissionAlarm(QuicTime::Delta delay) {
 }
 
 void QuicConnectionHelper::SetAckAlarm(QuicTime::Delta delay) {
+  ack_alarm_time_ = clock_->Now().Add(delay);
   if (!ack_alarm_registered_) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
@@ -100,7 +101,6 @@ void QuicConnectionHelper::SetAckAlarm(QuicTime::Delta delay) {
         base::TimeDelta::FromMicroseconds(delay.ToMicroseconds()));
   }
   ack_alarm_registered_ = true;
-  ack_alarm_time_ = clock_->Now().Add(delay);
 }
 
 void QuicConnectionHelper::ClearAckAlarm() {
@@ -140,11 +140,15 @@ void QuicConnectionHelper::UnregisterSendAlarmIfRegistered() {
 
 void QuicConnectionHelper::OnRetransmissionAlarm() {
   QuicTime when = connection_->OnRetransmissionTimeout();
-  if (when.IsInitialized()) {
-    QuicTime now = clock_->Now();
-    DCHECK_LE(now.ToDebuggingValue(), when.ToDebuggingValue());
-    SetRetransmissionAlarm(when.Subtract(now));
+  if (!when.IsInitialized()) {
+    return;
   }
+  QuicTime now = clock_->Now();
+  QuicTime::Delta delta(when.Subtract(now));
+  if (delta < QuicTime::Delta::FromSeconds(0)) {
+    delta = QuicTime::Delta::FromSeconds(0);
+  }
+  SetRetransmissionAlarm(delta);
 }
 
 void QuicConnectionHelper::OnSendAlarm() {
@@ -167,8 +171,9 @@ void QuicConnectionHelper::OnAckAlarm() {
   }
 
   // Alarm may have been reset to a later time.
-  if (clock_->Now() < ack_alarm_time_) {
-    SetAckAlarm(ack_alarm_time_.Subtract(clock_->Now()));
+  QuicTime now = clock_->Now();
+  if (now < ack_alarm_time_) {
+    SetAckAlarm(ack_alarm_time_.Subtract(now));
     return;
   }
 
