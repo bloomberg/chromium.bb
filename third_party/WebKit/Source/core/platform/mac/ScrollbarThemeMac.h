@@ -61,7 +61,12 @@ public:
     static bool isCurrentlyDrawingIntoLayer();
     static void setIsCurrentlyDrawingIntoLayer(bool);
 
+    virtual bool paint(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect);
+    virtual void paintOverhangAreas(ScrollView*, GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);
+    virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+
 protected:
+
     virtual bool hasButtons(ScrollbarThemeClient*);
     virtual bool hasThumb(ScrollbarThemeClient*);
 
@@ -76,6 +81,10 @@ protected:
     virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&);
     virtual bool shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent&);
     int scrollbarPartToHIPressedState(ScrollbarPart);
+
+    void paintGivenTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, const Vector<IntRect>&);
+
+    RefPtr<Pattern> m_overhangPattern;
 };
 
 }

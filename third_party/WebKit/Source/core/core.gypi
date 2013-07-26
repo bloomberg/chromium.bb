@@ -2739,8 +2739,6 @@
             'platform/chromium/ScrollbarThemeChromiumAndroid.h',
             'platform/chromium/ScrollbarThemeChromiumDefault.cpp',
             'platform/chromium/ScrollbarThemeChromiumDefault.h',
-            'platform/chromium/ScrollbarThemeChromiumMac.h',
-            'platform/chromium/ScrollbarThemeChromiumMac.mm',
             'platform/chromium/ScrollbarThemeChromiumWin.cpp',
             'platform/chromium/ScrollbarThemeChromiumWin.h',
             'platform/chromium/SharedTimerChromium.cpp',
