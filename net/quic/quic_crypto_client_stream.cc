@@ -10,6 +10,7 @@
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/proof_verifier.h"
+#include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -17,30 +18,63 @@
 
 namespace net {
 
+QuicCryptoClientStream::ProofVerifierCallbackImpl::ProofVerifierCallbackImpl(
+    QuicCryptoClientStream* stream)
+    : stream_(stream) {}
+
+QuicCryptoClientStream::ProofVerifierCallbackImpl::
+    ~ProofVerifierCallbackImpl() {}
+
+void QuicCryptoClientStream::ProofVerifierCallbackImpl::Run(
+    bool ok,
+    const string& error_details,
+    scoped_ptr<ProofVerifyDetails>* details) {
+  if (stream_ == NULL) {
+    return;
+  }
+
+  stream_->verify_ok_ = ok;
+  stream_->verify_error_details_ = error_details;
+  stream_->verify_details_.reset(details->release());
+  stream_->proof_verify_callback_ = NULL;
+  stream_->DoHandshakeLoop(NULL);
+
+  // The ProofVerifier owns this object and will delete it when this method
+  // returns.
+}
+
+void QuicCryptoClientStream::ProofVerifierCallbackImpl::Cancel() {
+  stream_ = NULL;
+}
+
+
 QuicCryptoClientStream::QuicCryptoClientStream(
     const string& server_hostname,
     QuicSession* session,
     QuicCryptoClientConfig* crypto_config)
     : QuicCryptoStream(session),
-      weak_factory_(this),
       next_state_(STATE_IDLE),
       num_client_hellos_(0),
       crypto_config_(crypto_config),
       server_hostname_(server_hostname),
-      generation_counter_(0) {
+      generation_counter_(0),
+      proof_verify_callback_(NULL) {
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {
+  if (proof_verify_callback_) {
+    proof_verify_callback_->Cancel();
+  }
 }
 
 void QuicCryptoClientStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  DoHandshakeLoop(&message, OK);
+  DoHandshakeLoop(&message);
 }
 
 bool QuicCryptoClientStream::CryptoConnect() {
   next_state_ = STATE_SEND_CHLO;
-  DoHandshakeLoop(NULL, OK);
+  DoHandshakeLoop(NULL);
   return true;
 }
 
@@ -57,7 +91,8 @@ bool QuicCryptoClientStream::GetSSLInfo(SSLInfo* ssl_info) {
     return false;
   }
   const CertVerifyResult* cert_verify_result =
-      cached->cert_verify_result();
+      &(reinterpret_cast<const ProofVerifyDetailsChromium*>(
+            cached->proof_verify_details()))->cert_verify_result;
 
   ssl_info->cert_status = cert_verify_result->cert_status;
   ssl_info->cert = cert_verify_result->verified_cert;
@@ -95,8 +130,7 @@ bool QuicCryptoClientStream::GetSSLInfo(SSLInfo* ssl_info) {
 static const int kMaxClientHellos = 3;
 
 void QuicCryptoClientStream::DoHandshakeLoop(
-    const CryptoHandshakeMessage* in,
-    int result) {
+    const CryptoHandshakeMessage* in) {
   CryptoHandshakeMessage out;
   QuicErrorCode error;
   string error_details;
@@ -112,7 +146,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
     next_state_ = STATE_IDLE;
     switch (state) {
       case STATE_SEND_CHLO: {
-        DCHECK_EQ(OK, result);
         // Send the client hello in plaintext.
         session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_NONE);
         if (num_client_hellos_ > kMaxClientHellos) {
@@ -171,7 +204,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         return;
       }
       case STATE_RECV_REJ:
-        DCHECK_EQ(OK, result);
         // We sent a dummy CHLO because we didn't have enough information to
         // perform a handshake, or we sent a full hello that the server
         // rejected. Here we hope to have a REJ that contains the information
@@ -205,25 +237,40 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         DCHECK(verifier);
         next_state_ = STATE_VERIFY_PROOF_COMPLETE;
         generation_counter_ = cached->generation_counter();
-        result = verifier->VerifyProof(
+
+        ProofVerifierCallbackImpl* proof_verify_callback =
+            new ProofVerifierCallbackImpl(this);
+
+        verify_ok_ = false;
+
+        ProofVerifier::Status status = verifier->VerifyProof(
             server_hostname_,
             cached->server_config(),
             cached->certs(),
             cached->signature(),
-            &error_details_,
-            &cert_verify_result_,
-            base::Bind(&QuicCryptoClientStream::OnVerifyProofComplete,
-                       weak_factory_.GetWeakPtr()));
-        if (result == ERR_IO_PENDING) {
-          DVLOG(1) << "Doing VerifyProof";
-          return;
+            &error_details,
+            &verify_details_,
+            proof_verify_callback);
+
+        switch (status) {
+          case ProofVerifier::PENDING:
+            proof_verify_callback_ = proof_verify_callback;
+            DVLOG(1) << "Doing VerifyProof";
+            return;
+          case ProofVerifier::FAILURE:
+            CloseConnectionWithDetails(
+                QUIC_PROOF_INVALID, "Proof invalid: " + error_details);
+            return;
+          case ProofVerifier::SUCCESS:
+            verify_ok_ = true;
+            break;
         }
         break;
       }
       case STATE_VERIFY_PROOF_COMPLETE:
-        if (result != OK) {
+        if (!verify_ok_) {
             CloseConnectionWithDetails(
-                QUIC_PROOF_INVALID, "Proof invalid: " + error_details_);
+                QUIC_PROOF_INVALID, "Proof invalid: " + verify_error_details_);
             return;
         }
         // Check if generation_counter has changed between STATE_VERIFY_PROOF
@@ -232,7 +279,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           next_state_ = STATE_VERIFY_PROOF;
         } else {
           cached->SetProofValid();
-          cached->SetCertVerifyResult(cert_verify_result_);
+          cached->SetProofVerifyDetails(verify_details_.release());
           next_state_ = STATE_SEND_CHLO;
         }
         break;
@@ -303,12 +350,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         return;
     }
   }
-}
-
-void QuicCryptoClientStream::OnVerifyProofComplete(int result) {
-  DCHECK_EQ(STATE_VERIFY_PROOF_COMPLETE, next_state_);
-  DVLOG(1) << "VerifyProof completed: " << result;
-  DoHandshakeLoop(NULL, result);
 }
 
 }  // namespace net

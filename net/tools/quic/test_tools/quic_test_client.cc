@@ -24,16 +24,19 @@ namespace {
 class RecordingProofVerifier : public net::ProofVerifier {
  public:
   // ProofVerifier interface.
-  virtual int VerifyProof(const string& hostname,
-                          const string& server_config,
-                          const vector<string>& certs,
-                          const string& signature,
-                          string* error_details,
-                          net::CertVerifyResult* cert_verify_result,
-                          const net::CompletionCallback& callback) OVERRIDE {
+  virtual net::ProofVerifier::Status VerifyProof(
+      const string& hostname,
+      const string& server_config,
+      const vector<string>& certs,
+      const string& signature,
+      string* error_details,
+      scoped_ptr<net::ProofVerifyDetails>* details,
+      net::ProofVerifierCallback* callback) OVERRIDE {
+    delete callback;
+
     common_name_.clear();
     if (certs.empty()) {
-      return net::ERR_FAILED;
+      return FAILURE;
     }
 
     // Convert certs to X509Certificate.
@@ -44,11 +47,11 @@ class RecordingProofVerifier : public net::ProofVerifier {
     scoped_refptr<net::X509Certificate> cert =
         net::X509Certificate::CreateFromDERCertChain(cert_pieces);
     if (!cert.get()) {
-      return net::ERR_FAILED;
+      return FAILURE;
     }
 
     common_name_ = cert->subject().GetDisplayName();
-    return net::OK;
+    return SUCCESS;
   }
 
   const string& common_name() const { return common_name_; }
