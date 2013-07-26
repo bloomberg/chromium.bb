@@ -292,6 +292,7 @@ class TestExpectationParser(object):
         name = None
         expectations = []
         warnings = []
+        has_unrecognized_expectation = False
 
         tokens = remaining_string.split()
         state = 'start'
@@ -341,6 +342,7 @@ class TestExpectationParser(object):
                 if token in ('Rebaseline', 'Skip', 'Slow', 'WontFix'):
                     modifiers.append(token.upper())
                 elif token not in cls._expectation_tokens:
+                    has_unrecognized_expectation = True
                     warnings.append('Unrecognized expectation "%s"' % token)
                 else:
                     expectations.append(cls._expectation_tokens.get(token, token))
@@ -364,8 +366,8 @@ class TestExpectationParser(object):
             # FIXME: This is really a semantic warning and shouldn't be here. Remove when we drop the old syntax.
             warnings.append('A test marked Skip must not have other expectations.')
         elif not expectations:
-            if 'SKIP' not in modifiers and 'REBASELINE' not in modifiers and NEEDS_REBASELINE_KEYWORD not in modifiers and NEEDS_MANUAL_REBASELINE_KEYWORD not in modifiers and 'SLOW' not in modifiers:
-                modifiers.append('SKIP')
+            if not has_unrecognized_expectation and 'SKIP' not in modifiers and 'REBASELINE' not in modifiers and NEEDS_REBASELINE_KEYWORD not in modifiers and NEEDS_MANUAL_REBASELINE_KEYWORD not in modifiers and 'SLOW' not in modifiers:
+                warnings.append('Missing expectations.')
             expectations = ['PASS']
 
         # FIXME: expectation line should just store bugs and modifiers separately.
