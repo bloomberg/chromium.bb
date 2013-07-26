@@ -63,7 +63,7 @@ bool ExportsCoreFunctionsFromGetProcAddress(GLImplementation implementation) {
 
 }
 
-GLApi* g_current_gl_context;
+base::ThreadLocalPointer<GLApi>* g_current_gl_context_tls = NULL;
 OSMESAApi* g_current_osmesa_context;
 
 #if defined(OS_WIN)

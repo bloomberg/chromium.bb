@@ -143,6 +143,7 @@ void DriverGL::InitializeExtensions(GLContext* context) {
 }
 
 void InitializeGLBindingsGL() {
+  g_current_gl_context_tls = new base::ThreadLocalPointer<GLApi>;
   g_driver_gl.Initialize();
   if (!g_real_gl) {
     g_real_gl = new RealGLApi();
@@ -158,11 +159,11 @@ void InitializeGLBindingsGL() {
 }
 
 GLApi* GetCurrentGLApi() {
-  return g_current_gl_context;
+  return g_current_gl_context_tls->Get();
 }
 
 void SetGLApi(GLApi* api) {
-  g_current_gl_context = api;
+  g_current_gl_context_tls->Set(api);
 }
 
 void SetGLToRealGLApi() {
@@ -187,8 +188,11 @@ void ClearGLBindingsGL() {
     g_trace_gl = NULL;
   }
   g_gl = NULL;
-  g_current_gl_context = NULL;
   g_driver_gl.ClearBindings();
+  if (g_current_gl_context_tls) {
+    delete g_current_gl_context_tls;
+    g_current_gl_context_tls = NULL;
+  }
 }
 
 GLApi::GLApi() {
@@ -253,7 +257,7 @@ void VirtualGLApi::Initialize(DriverGL* driver, GLContext* real_context) {
 }
 
 bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
-  bool switched_contexts = g_current_gl_context != this;
+  bool switched_contexts = g_current_gl_context_tls->Get() != this;
   GLSurface* current_surface = GLSurface::GetCurrent();
   if (switched_contexts || surface != current_surface) {
     // MakeCurrent 'lite' path that avoids potentially expensive MakeCurrent()
