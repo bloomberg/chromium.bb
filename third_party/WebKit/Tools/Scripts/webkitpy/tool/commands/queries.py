@@ -70,7 +70,7 @@ class PrintExpectations(AbstractDeclarativeCommand):
             make_option('-i', '--include-keyword', action='append', default=[],
                         help='limit to tests with the given keyword (for example, "skip", "slow", or "crash". May specify multiple times'),
             make_option('--csv', action='store_true', default=False,
-                        help='Print a CSV-style report that includes the port name, modifiers, tests, and expectations'),
+                        help='Print a CSV-style report that includes the port name, bugs, modifiers, tests, and expectations'),
             make_option('-f', '--full', action='store_true', default=False,
                         help='Print a full TestExpectations-style line for every match'),
             make_option('--paths', action='store_true', default=False,

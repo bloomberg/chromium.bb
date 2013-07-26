@@ -205,7 +205,7 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
         if result.has_stderr:
             test_dict['has_stderr'] = True
 
-        bugs = expectations.model().get_expectation_line(test_name).parsed_bug_modifiers
+        bugs = expectations.model().get_expectation_line(test_name).bugs
         if bugs:
             test_dict['bugs'] = bugs
 

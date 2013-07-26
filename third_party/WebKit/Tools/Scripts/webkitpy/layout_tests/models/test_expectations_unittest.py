@@ -269,7 +269,7 @@ class MiscTests(Base):
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations(self.get_test(test_name)), set([IMAGE]))
-        self.assertEqual(expectations.get_modifiers(self.get_test(test_name)), ['Bug(x)'])
+        self.assertEqual(expectations.get_modifiers(self.get_test(test_name)), [])
 
         def bot_expectations():
             return {test_name: ['PASS', 'IMAGE']}
@@ -294,7 +294,7 @@ class MiscTests(Base):
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations(self.get_test(test_name1)), set([IMAGE]))
-        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name2))), set(['Bug(x)', 'SLOW']))
+        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name2))), set(['SLOW']))
 
         def bot_expectations():
             return {test_name1: ['PASS', 'TIMEOUT'], test_name2: ['CRASH']}
@@ -304,7 +304,7 @@ class MiscTests(Base):
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations(self.get_test(test_name1)), set([PASS, IMAGE, TIMEOUT]))
         self.assertEqual(expectations.get_expectations(self.get_test(test_name2)), set([PASS, CRASH]))
-        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name2))), set(['Bug(x)', 'SLOW']))
+        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name2))), set(['SLOW']))
 
 class SkippedTests(Base):
     def check(self, expectations, overrides, skips, lint=False):
@@ -812,7 +812,7 @@ class TestExpectationSerializationTests(unittest.TestCase):
 
     def test_parsed_to_string(self):
         expectation_line = TestExpectationLine()
-        expectation_line.parsed_bug_modifiers = ['Bug(x)']
+        expectation_line.bugs = ['Bug(x)']
         expectation_line.name = 'test/name/for/realz.html'
         expectation_line.parsed_expectations = set([IMAGE])
         self.assertEqual(expectation_line.to_string(self._converter), None)
@@ -835,23 +835,18 @@ class TestExpectationSerializationTests(unittest.TestCase):
 
     def test_serialize_parsed_modifier_string(self):
         expectation_line = TestExpectationLine()
-        expectation_line.parsed_bug_modifiers = ['garden-o-matic']
-        expectation_line.parsed_modifiers = ['for', 'the']
-        self.assertEqual(expectation_line._serialize_parsed_modifiers(self._converter, []), 'garden-o-matic for the')
-        self.assertEqual(expectation_line._serialize_parsed_modifiers(self._converter, ['win']), 'garden-o-matic for the win')
-        expectation_line.parsed_bug_modifiers = []
+        expectation_line.bugs = ['garden-o-matic']
+        expectation_line.parsed_modifiers = ['the', 'for']
+        self.assertEqual(expectation_line._serialize_parsed_modifiers(self._converter, []), 'for the')
+        self.assertEqual(expectation_line._serialize_parsed_modifiers(self._converter, ['win']), 'for the win')
+        expectation_line.bugs = []
         expectation_line.parsed_modifiers = []
         self.assertEqual(expectation_line._serialize_parsed_modifiers(self._converter, []), '')
         self.assertEqual(expectation_line._serialize_parsed_modifiers(self._converter, ['win']), 'win')
-        expectation_line.parsed_bug_modifiers = ['garden-o-matic', 'total', 'is']
-        self.assertEqual(expectation_line._serialize_parsed_modifiers(self._converter, ['win']), 'garden-o-matic is total win')
-        expectation_line.parsed_bug_modifiers = []
-        expectation_line.parsed_modifiers = ['garden-o-matic', 'total', 'is']
-        self.assertEqual(expectation_line._serialize_parsed_modifiers(self._converter, ['win']), 'garden-o-matic is total win')
 
     def test_format_line(self):
-        self.assertEqual(TestExpectationLine._format_line(['MODIFIERS'], 'name', ['EXPECTATIONS'], 'comment'), '[ MODIFIERS ] name [ EXPECTATIONS ] #comment')
-        self.assertEqual(TestExpectationLine._format_line(['MODIFIERS'], 'name', ['EXPECTATIONS'], None), '[ MODIFIERS ] name [ EXPECTATIONS ]')
+        self.assertEqual(TestExpectationLine._format_line([], ['MODIFIERS'], 'name', ['EXPECTATIONS'], 'comment'), '[ MODIFIERS ] name [ EXPECTATIONS ] #comment')
+        self.assertEqual(TestExpectationLine._format_line([], ['MODIFIERS'], 'name', ['EXPECTATIONS'], None), '[ MODIFIERS ] name [ EXPECTATIONS ]')
 
     def test_string_roundtrip(self):
         self.assert_round_trip('')
@@ -891,7 +886,7 @@ class TestExpectationSerializationTests(unittest.TestCase):
         def add_line(matching_configurations, reconstitute):
             expectation_line = TestExpectationLine()
             expectation_line.original_string = "Nay"
-            expectation_line.parsed_bug_modifiers = ['Bug(x)']
+            expectation_line.bugs = ['Bug(x)']
             expectation_line.name = 'Yay'
             expectation_line.parsed_expectations = set([IMAGE])
             expectation_line.matching_configurations = matching_configurations
