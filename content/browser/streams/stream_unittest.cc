@@ -93,7 +93,7 @@ TEST_F(StreamTest, SetReadObserver) {
 
   GURL url("blob://stream");
   scoped_refptr<Stream> stream(
-      new Stream(registry_.get(), &writer, GURL(), url));
+      new Stream(registry_.get(), &writer, url));
   EXPECT_TRUE(stream->SetReadObserver(&reader));
 }
 
@@ -104,7 +104,7 @@ TEST_F(StreamTest, SetReadObserver_SecondFails) {
 
   GURL url("blob://stream");
   scoped_refptr<Stream> stream(
-      new Stream(registry_.get(), &writer, GURL(), url));
+      new Stream(registry_.get(), &writer, url));
   EXPECT_TRUE(stream->SetReadObserver(&reader1));
   EXPECT_FALSE(stream->SetReadObserver(&reader2));
 }
@@ -116,7 +116,7 @@ TEST_F(StreamTest, SetReadObserver_TwoReaders) {
 
   GURL url("blob://stream");
   scoped_refptr<Stream> stream(
-      new Stream(registry_.get(), &writer, GURL(), url));
+      new Stream(registry_.get(), &writer, url));
   EXPECT_TRUE(stream->SetReadObserver(&reader1));
 
   // Once the first read observer is removed, a new one can be added.
@@ -130,7 +130,7 @@ TEST_F(StreamTest, Stream) {
 
   GURL url("blob://stream");
   scoped_refptr<Stream> stream(
-      new Stream(registry_.get(), &writer, GURL(), url));
+      new Stream(registry_.get(), &writer, url));
   EXPECT_TRUE(stream->SetReadObserver(&reader));
 
   const int kBufferSize = 1000000;
@@ -150,7 +150,7 @@ TEST_F(StreamTest, GetStream) {
 
   GURL url("blob://stream");
   scoped_refptr<Stream> stream1(
-      new Stream(registry_.get(), &writer, GURL(), url));
+      new Stream(registry_.get(), &writer, url));
 
   scoped_refptr<Stream> stream2 = registry_->GetStream(url);
   ASSERT_EQ(stream1, stream2);
@@ -161,7 +161,7 @@ TEST_F(StreamTest, GetStream_Missing) {
 
   GURL url1("blob://stream");
   scoped_refptr<Stream> stream1(
-      new Stream(registry_.get(), &writer, GURL(), url1));
+      new Stream(registry_.get(), &writer, url1));
 
   GURL url2("blob://stream2");
   scoped_refptr<Stream> stream2 = registry_->GetStream(url2);
@@ -173,7 +173,7 @@ TEST_F(StreamTest, CloneStream) {
 
   GURL url1("blob://stream");
   scoped_refptr<Stream> stream1(
-      new Stream(registry_.get(), &writer, GURL(), url1));
+      new Stream(registry_.get(), &writer, url1));
 
   GURL url2("blob://stream2");
   ASSERT_TRUE(registry_->CloneStream(url2, url1));
@@ -186,7 +186,7 @@ TEST_F(StreamTest, CloneStream_Missing) {
 
   GURL url1("blob://stream");
   scoped_refptr<Stream> stream1(
-      new Stream(registry_.get(), &writer, GURL(), url1));
+      new Stream(registry_.get(), &writer, url1));
 
   GURL url2("blob://stream2");
   GURL url3("blob://stream3");
@@ -200,7 +200,7 @@ TEST_F(StreamTest, UnregisterStream) {
 
   GURL url("blob://stream");
   scoped_refptr<Stream> stream1(
-      new Stream(registry_.get(), &writer, GURL(), url));
+      new Stream(registry_.get(), &writer, url));
 
   registry_->UnregisterStream(url);
   scoped_refptr<Stream> stream2 = registry_->GetStream(url);

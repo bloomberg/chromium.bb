@@ -99,7 +99,7 @@ class StreamURLRequestJobTest : public testing::Test {
 
 TEST_F(StreamURLRequestJobTest, TestGetSimpleDataRequest) {
   scoped_refptr<Stream> stream(
-      new Stream(registry_.get(), NULL, GURL(), kStreamURL));
+      new Stream(registry_.get(), NULL, kStreamURL));
 
   scoped_refptr<net::StringIOBuffer> buffer(
       new net::StringIOBuffer(kTestData1));
@@ -112,7 +112,7 @@ TEST_F(StreamURLRequestJobTest, TestGetSimpleDataRequest) {
 
 TEST_F(StreamURLRequestJobTest, TestGetLargeStreamRequest) {
   scoped_refptr<Stream> stream(
-      new Stream(registry_.get(), NULL, GURL(), kStreamURL));
+      new Stream(registry_.get(), NULL, kStreamURL));
 
   std::string large_data;
   large_data.reserve(kBufferSize * 5);
@@ -141,7 +141,7 @@ TEST_F(StreamURLRequestJobTest, TestGetNonExistentStreamRequest) {
 
 TEST_F(StreamURLRequestJobTest, TestRangeDataRequest) {
   scoped_refptr<Stream> stream(
-      new Stream(registry_.get(), NULL, GURL(), kStreamURL));
+      new Stream(registry_.get(), NULL, kStreamURL));
 
   scoped_refptr<net::StringIOBuffer> buffer(
       new net::StringIOBuffer(kTestData2));
@@ -157,7 +157,7 @@ TEST_F(StreamURLRequestJobTest, TestRangeDataRequest) {
 
 TEST_F(StreamURLRequestJobTest, TestInvalidRangeDataRequest) {
   scoped_refptr<Stream> stream(
-      new Stream(registry_.get(), NULL, GURL(), kStreamURL));
+      new Stream(registry_.get(), NULL, kStreamURL));
 
   scoped_refptr<net::StringIOBuffer> buffer(
       new net::StringIOBuffer(kTestData2));

@@ -77,7 +77,7 @@ class ChromeResourceDispatcherHostDelegate
       content::ResourceContext* resource_context,
       const GURL& url,
       const std::string& mime_type,
-      GURL* security_origin,
+      GURL* origin,
       std::string* target_id) OVERRIDE;
   virtual void OnStreamCreated(
       content::ResourceContext* resource_context,

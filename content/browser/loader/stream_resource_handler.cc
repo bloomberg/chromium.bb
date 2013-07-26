@@ -18,13 +18,14 @@ namespace content {
 StreamResourceHandler::StreamResourceHandler(
     net::URLRequest* request,
     StreamRegistry* registry,
-    const GURL& security_origin)
+    const GURL& origin)
     : request_(request),
       read_buffer_(NULL) {
-  // TODO(zork): Find a way to share this with the blob URL creation in WebKit.
+  // TODO(tyoshino): Find a way to share this with the blob URL creation in
+  // WebKit.
   GURL url(std::string(chrome::kBlobScheme) + ":" +
-           security_origin.spec() + base::GenerateGUID());
-  stream_ = new Stream(registry, this, security_origin, url);
+           origin.spec() + base::GenerateGUID());
+  stream_ = new Stream(registry, this, url);
 }
 
 StreamResourceHandler::~StreamResourceHandler() {
@@ -115,4 +116,3 @@ void StreamResourceHandler::OnClose(Stream* stream) {
 }
 
 }  // namespace content
-

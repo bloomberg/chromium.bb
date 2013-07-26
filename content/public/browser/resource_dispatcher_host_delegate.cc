@@ -75,7 +75,7 @@ bool ResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     content::ResourceContext* resource_context,
     const GURL& url,
     const std::string& mime_type,
-    GURL* security_origin,
+    GURL* origin,
     std::string* target_id) {
   return false;
 }

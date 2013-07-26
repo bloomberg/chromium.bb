@@ -22,11 +22,9 @@ namespace content {
 
 Stream::Stream(StreamRegistry* registry,
                StreamWriteObserver* write_observer,
-               const GURL& security_origin,
                const GURL& url)
     : data_bytes_read_(0),
       can_add_data_(true),
-      security_origin_(security_origin),
       url_(url),
       data_length_(0),
       registry_(registry),
@@ -147,4 +145,3 @@ void Stream::OnDataAvailable() {
 }
 
 }  // namespace content
-

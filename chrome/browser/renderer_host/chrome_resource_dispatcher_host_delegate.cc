@@ -499,7 +499,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     content::ResourceContext* resource_context,
     const GURL& url,
     const std::string& mime_type,
-    GURL* security_origin,
+    GURL* origin,
     std::string* target_id) {
 #if !defined(OS_ANDROID)
   ProfileIOData* io_data =
@@ -523,7 +523,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     }
 
     if (ExtensionCanHandleMimeType(extension, mime_type)) {
-      *security_origin = Extension::GetBaseURLFromExtensionId(extension_id);
+      *origin = Extension::GetBaseURLFromExtensionId(extension_id);
       *target_id = extension_id;
       return true;
     }

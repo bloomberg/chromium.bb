@@ -567,13 +567,13 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
   const std::string& mime_type = response->head.mime_type;
 
-  GURL security_origin;
+  GURL origin;
   std::string target_id;
   if (!delegate_ ||
       !delegate_->ShouldInterceptResourceAsStream(info->GetContext(),
                                                   request->url(),
                                                   mime_type,
-                                                  &security_origin,
+                                                  &origin,
                                                   &target_id)) {
     return scoped_ptr<ResourceHandler>();
   }
@@ -581,11 +581,10 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
   StreamContext* stream_context =
       GetStreamContextForResourceContext(info->GetContext());
 
-
   scoped_ptr<StreamResourceHandler> handler(
       new StreamResourceHandler(request,
                                 stream_context->registry(),
-                                security_origin));
+                                origin));
 
   info->set_is_stream(true);
   delegate_->OnStreamCreated(
@@ -595,7 +594,7 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
       target_id,
       handler->stream()->CreateHandle(request->url(), mime_type),
       request->GetExpectedContentSize());
-  return (scoped_ptr<ResourceHandler>(handler.release())).Pass();
+  return handler.PassAs<ResourceHandler>();
 }
 
 void ResourceDispatcherHostImpl::ClearSSLClientAuthHandlerForRequest(
