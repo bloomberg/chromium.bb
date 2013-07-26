@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/color_picker_border"
-            android:padding="1dp">
+            android:padding="2px">
 
             <org.chromium.ui.ColorPickerSimple
                 android:id="@+id/color_picker_simple"
@@ -38,14 +38,17 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/color_picker_simple_border"
             android:background="@drawable/color_picker_border"
-            android:padding="1dp">
+            android:paddingStart="1px"
+            android:paddingEnd="1px"
+            android:paddingBottom="1px">
 
-            <Button
+            <org.chromium.ui.ColorPickerMoreButton
                 android:id="@+id/more_colors_button"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="60dip"
+                android:minHeight="48dp"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="@string/color_picker_button_more" />
         </FrameLayout>
 
