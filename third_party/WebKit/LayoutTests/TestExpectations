@@ -473,7 +473,6 @@ webkit.org/b/73912 accessibility/aria-checkbox-text.html [ Skip ]
 webkit.org/b/99665 accessibility/loading-iframe-sends-notification.html [ Skip ]
 webkit.org/b/109056 accessibility/html-html-element-is-ignored.html [ Skip ]
 
-webkit.org/b/73912 accessibility/aria-checkbox-sends-notification.html [ Failure Pass ]
 webkit.org/b/111004 [ Linux Debug ] accessibility/svg-remote-element.html [ Failure Pass ]
 webkit.org/b/111004 [ Win7 Debug ] accessibility/svg-remote-element.html [ Failure ]
 
