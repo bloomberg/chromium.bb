@@ -1083,7 +1083,7 @@ FileCopyManager.prototype.copyEntry_ = function(sourceEntry,
         reportedProgress = progress.loaded;
       };
 
-      writer.onwriteend = function() {
+      writer.onwrite = function() {
         sourceEntry.getMetadata(function(metadata) {
           chrome.fileBrowserPrivate.setLastModified(targetEntry.toURL(),
               '' + Math.round(metadata.modificationTime.getTime() / 1000));
