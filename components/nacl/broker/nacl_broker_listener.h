@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_NACL_NACL_BROKER_LISTENER_H_
-#define CHROME_NACL_NACL_BROKER_LISTENER_H_
+#ifndef COMPONENTS_NACL_BROKER_NACL_BROKER_LISTENER_H_
+#define COMPONENTS_NACL_BROKER_NACL_BROKER_LISTENER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
@@ -47,4 +47,4 @@ class NaClBrokerListener : public content::SandboxedProcessLauncherDelegate,
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerListener);
 };
 
-#endif  // CHROME_NACL_NACL_BROKER_LISTENER_H_
+#endif  // COMPONENTS_NACL_BROKER_NACL_BROKER_LISTENER_H_

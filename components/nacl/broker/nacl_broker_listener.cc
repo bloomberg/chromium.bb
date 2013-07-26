@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/nacl/nacl_broker_listener.h"
+#include "components/nacl/broker/nacl_broker_listener.h"
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_debug_exception_handler_win.h"
 #include "components/nacl/common/nacl_messages.h"

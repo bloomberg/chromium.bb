@@ -114,8 +114,8 @@
                 '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',
               ],
               'sources': [
-                'nacl/nacl_broker_listener.cc',
-                'nacl/nacl_broker_listener.h',
+                '../components/nacl/broker/nacl_broker_listener.cc',
+                '../components/nacl/broker/nacl_broker_listener.h',
                 '../components/nacl/common/nacl_debug_exception_handler_win.cc',
               ],
               'include_dirs': [
