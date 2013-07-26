@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_MEDIA_GALLERIES_PICASA_TYPES_H_
 #define CHROME_COMMON_MEDIA_GALLERIES_PICASA_TYPES_H_
 
+#include <map>
+#include <set>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -12,6 +14,13 @@
 #include "ipc/ipc_platform_file.h"
 
 namespace picasa {
+
+struct AlbumInfo;
+
+typedef std::set<base::FilePath> AlbumImages;
+typedef std::set<std::string> AlbumUIDSet;
+typedef std::map<std::string, AlbumImages> AlbumImagesMap;
+typedef std::map<std::string, AlbumInfo> AlbumMap;
 
 const char kPicasaAlbumTableName[] = "albumdata";
 
@@ -54,6 +63,11 @@ struct AlbumTableFilesForTransit {
   IPC::PlatformFileForTransit name_file;
   IPC::PlatformFileForTransit token_file;
   IPC::PlatformFileForTransit uid_file;
+};
+
+struct FolderINIContents {
+  base::FilePath folder_path;
+  std::string ini_contents;
 };
 
 void CloseAlbumTableFiles(AlbumTableFiles* table_files);

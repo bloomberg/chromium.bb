@@ -43,7 +43,7 @@ class PicasaINIParser : public base::INIParser {
          it != containing_albums.end(); ++it) {
       AlbumImagesMap::iterator album_map_it = albums_images_->find(*it);
 
-      // Ignore entry if the album UUID is not listed among in |album_uuids|
+      // Ignore entry if the album uid is not listed among in |album_uids|
       // in the constructor. Happens if the PMP and INI files are inconsistent.
       if (album_map_it == albums_images_->end())
         continue;
@@ -59,11 +59,10 @@ class PicasaINIParser : public base::INIParser {
 
 }  // namespace
 
-PicasaAlbumsIndexer::PicasaAlbumsIndexer(
-    const AlbumUUIDSet& album_uuids) {
-  // Create an entry in the map for the valid album uuids.
-  for (AlbumUUIDSet::const_iterator it = album_uuids.begin();
-       it != album_uuids.end(); ++it) {
+PicasaAlbumsIndexer::PicasaAlbumsIndexer(const AlbumUIDSet& album_uids) {
+  // Create an entry in the map for the valid album uids.
+  for (AlbumUIDSet::const_iterator it = album_uids.begin();
+       it != album_uids.end(); ++it) {
     albums_images_[*it] = AlbumImages();
   }
 }

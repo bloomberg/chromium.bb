@@ -10,16 +10,12 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "chrome/common/media_galleries/picasa_types.h"
 
 namespace picasa {
 
-// Defined outside of class because used by IPC messages.
-typedef std::set<base::FilePath> AlbumImages;
-typedef std::set<std::string> AlbumUUIDSet;
-typedef std::map<std::string, AlbumImages> AlbumImagesMap;
-
 // Parses a series of INI files and builds up the set of files contained within
-// the albums passed in through |album_uuids|.
+// the albums passed in through |album_uids|.
 //
 // Each INI file only describes the images contained within a single directory.
 // To build the contents of all the albums, we read in all the INI files
@@ -28,7 +24,7 @@ typedef std::map<std::string, AlbumImages> AlbumImagesMap;
 // The INI albums also contain ".album*" sections describing the albums that
 // have pictures in the same directory as the INI. However, we use the PMP
 // database as the authoritative source on Album metadata, so we ignore those
-// sections. The PMP derived |album_uuids| are passed in by the constructor.
+// sections. The PMP derived |album_uids| are passed in by the constructor.
 //
 // Example INI File:
 //
@@ -48,7 +44,7 @@ typedef std::map<std::string, AlbumImages> AlbumImagesMap;
 // albums=18cb2df48aaa98e1c276b45cfcd81c95
 class PicasaAlbumsIndexer {
  public:
-  explicit PicasaAlbumsIndexer(const AlbumUUIDSet& album_uuids);
+  explicit PicasaAlbumsIndexer(const AlbumUIDSet& album_uids);
   ~PicasaAlbumsIndexer();
 
   // This method should be called once for each Folder in the PMP database.

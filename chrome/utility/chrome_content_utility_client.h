@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/platform_file.h"
+#include "chrome/common/media_galleries/picasa_types.h"
 #include "content/public/utility/content_utility_client.h"
 #include "ipc/ipc_platform_file.h"
 #include "printing/pdf_render_settings.h"
@@ -19,10 +20,6 @@ struct FileDescriptor;
 
 namespace gfx {
 class Rect;
-}
-
-namespace picasa {
-struct AlbumTableFilesForTransit;
 }
 
 namespace printing {
@@ -91,11 +88,15 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
+  void OnParseITunesLibraryXmlFile(
+      IPC::PlatformFileForTransit itunes_library_file);
+
   void OnParsePicasaPMPDatabase(
       const picasa::AlbumTableFilesForTransit& album_table_files);
 
-  void OnParseITunesLibraryXmlFile(
-      IPC::PlatformFileForTransit itunes_library_file);
+  void OnIndexPicasaAlbumsContents(
+      const picasa::AlbumUIDSet& album_uids,
+      const std::vector<picasa::FolderINIContents>& folders_inis);
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   typedef ScopedVector<UtilityMessageHandler> Handlers;

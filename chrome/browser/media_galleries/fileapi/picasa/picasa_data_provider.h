@@ -19,10 +19,7 @@
 
 namespace picasa {
 
-struct AlbumInfo;
 class SafePicasaAlbumTableReader;
-
-typedef std::map<std::string, AlbumInfo> AlbumMap;
 
 // Created and owned by ImportedMediaGalleryRegistryTaskRunnerValues
 class PicasaDataProvider {

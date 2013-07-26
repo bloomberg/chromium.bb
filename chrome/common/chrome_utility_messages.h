@@ -88,6 +88,11 @@ IPC_STRUCT_TRAITS_BEGIN(picasa::AlbumTableFilesForTransit)
   IPC_STRUCT_TRAITS_MEMBER(uid_file)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(picasa::FolderINIContents)
+  IPC_STRUCT_TRAITS_MEMBER(folder_path)
+  IPC_STRUCT_TRAITS_MEMBER(ini_contents)
+IPC_STRUCT_TRAITS_END()
+
 //------------------------------------------------------------------------------
 // Utility process messages:
 // These are messages from the browser to the utility process.
@@ -176,6 +181,12 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseITunesLibraryXmlFile,
 // listing of the user's Picasa albums and folders, along with metadata.
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParsePicasaPMPDatabase,
                      picasa::AlbumTableFilesForTransit /* album_table_files */)
+
+// Tells the utility process to index the Picasa user-created Album contents
+// by parsing all the INI files in Picasa Folders.
+IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_IndexPicasaAlbumsContents,
+                     picasa::AlbumUIDSet /* album_uids */,
+                     std::vector<picasa::FolderINIContents> /* folders_inis */)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 //------------------------------------------------------------------------------
@@ -295,4 +306,9 @@ IPC_MESSAGE_CONTROL3(ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished,
                      bool /* parse_success */,
                      std::vector<picasa::AlbumInfo> /* albums */,
                      std::vector<picasa::AlbumInfo> /* folders */)
+
+// Reply after indexing the Picasa user-created Album contents by parsing all
+// the INI files in Picasa Folders.
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_IndexPicasaAlbumsContents_Finished,
+                     picasa::AlbumImagesMap /* albums_images */)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
