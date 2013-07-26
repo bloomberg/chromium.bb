@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHORTCUT_MANAGER_H_
-#define APPS_SHORTCUT_MANAGER_H_
+#ifndef CHROME_BROWSER_APPS_SHORTCUT_MANAGER_H_
+#define CHROME_BROWSER_APPS_SHORTCUT_MANAGER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -15,16 +15,14 @@
 class PrefService;
 class Profile;
 
-namespace apps {
-
 // This class manages the installation of shortcuts for platform apps.
-class ShortcutManager : public BrowserContextKeyedService,
-                        public content::NotificationObserver,
-                        public ProfileInfoCacheObserver {
+class AppShortcutManager : public BrowserContextKeyedService,
+                           public content::NotificationObserver,
+                           public ProfileInfoCacheObserver {
  public:
-  explicit ShortcutManager(Profile* profile);
+  explicit AppShortcutManager(Profile* profile);
 
-  virtual ~ShortcutManager();
+  virtual ~AppShortcutManager();
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -48,11 +46,9 @@ class ShortcutManager : public BrowserContextKeyedService,
   PrefService* prefs_;
 
   // Fields used when installing application shortcuts.
-  base::WeakPtrFactory<ShortcutManager> weak_factory_;
+  base::WeakPtrFactory<AppShortcutManager> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShortcutManager);
+  DISALLOW_COPY_AND_ASSIGN(AppShortcutManager);
 };
 
-}  // namespace apps
-
-#endif  // APPS_SHORTCUT_MANAGER_H_
+#endif  // CHROME_BROWSER_APPS_SHORTCUT_MANAGER_H_

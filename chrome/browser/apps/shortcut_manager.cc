@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shortcut_manager.h"
+#include "chrome/browser/apps/shortcut_manager.h"
 
 #include "apps/pref_names.h"
 #include "base/bind.h"
@@ -52,9 +52,7 @@ bool ShouldCreateShortcutFor(const extensions::Extension* extension) {
 
 }  // namespace
 
-namespace apps {
-
-ShortcutManager::ShortcutManager(Profile* profile)
+AppShortcutManager::AppShortcutManager(Profile* profile)
     : profile_(profile),
       is_profile_info_cache_observer_(false),
       prefs_(profile->GetPrefs()),
@@ -78,7 +76,7 @@ ShortcutManager::ShortcutManager(Profile* profile)
   }
 }
 
-ShortcutManager::~ShortcutManager() {
+AppShortcutManager::~AppShortcutManager() {
   if (g_browser_process && is_profile_info_cache_observer_) {
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     // profile_manager might be NULL in testing environments or during shutdown.
@@ -87,7 +85,7 @@ ShortcutManager::~ShortcutManager() {
   }
 }
 
-void ShortcutManager::Observe(int type,
+void AppShortcutManager::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   switch (type) {
@@ -136,7 +134,7 @@ void ShortcutManager::Observe(int type,
   }
 }
 
-void ShortcutManager::OnProfileWillBeRemoved(
+void AppShortcutManager::OnProfileWillBeRemoved(
     const base::FilePath& profile_path) {
   if (profile_path != profile_->GetPath())
     return;
@@ -146,7 +144,7 @@ void ShortcutManager::OnProfileWillBeRemoved(
                  profile_path));
 }
 
-void ShortcutManager::OnceOffCreateShortcuts() {
+void AppShortcutManager::OnceOffCreateShortcuts() {
   bool was_enabled = prefs_->GetBoolean(apps::prefs::kShortcutsHaveBeenCreated);
 
   // Creation of shortcuts on Mac currently sits behind --enable-app-shims.
@@ -183,11 +181,9 @@ void ShortcutManager::OnceOffCreateShortcuts() {
   }
 }
 
-void ShortcutManager::DeleteApplicationShortcuts(
+void AppShortcutManager::DeleteApplicationShortcuts(
     const Extension* extension) {
   ShellIntegration::ShortcutInfo delete_info =
       web_app::ShortcutInfoForExtensionAndProfile(extension, profile_);
   web_app::DeleteAllShortcuts(delete_info);
 }
-
-}  // namespace apps
