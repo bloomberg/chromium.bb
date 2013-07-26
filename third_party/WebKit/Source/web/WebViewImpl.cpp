@@ -3935,14 +3935,13 @@ WebCore::GraphicsLayer* WebViewImpl::rootGraphicsLayer()
 
 void WebViewImpl::scheduleAnimation()
 {
-    if (isAcceleratedCompositingActive()) {
-        if (Platform::current()->isThreadedCompositingEnabled()) {
-            ASSERT(m_layerTreeView);
-            m_layerTreeView->setNeedsAnimate();
-        } else
-            m_client->scheduleAnimation();
-    } else
-            m_client->scheduleAnimation();
+    if (isAcceleratedCompositingActive() && Platform::current()->isThreadedCompositingEnabled()) {
+        ASSERT(m_layerTreeView);
+        m_layerTreeView->setNeedsAnimate();
+        return;
+    }
+    if (m_client)
+        m_client->scheduleAnimation();
 }
 
 void WebViewImpl::setIsAcceleratedCompositingActive(bool active)

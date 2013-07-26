@@ -647,7 +647,7 @@ private:
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
 
-    WebViewClient* m_client;
+    WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebAutofillClient* m_autofillClient;
     WebPermissionClient* m_permissionClient;
     WebSpellCheckClient* m_spellCheckClient;
