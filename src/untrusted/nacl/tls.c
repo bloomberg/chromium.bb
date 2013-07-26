@@ -149,19 +149,20 @@ DEFINE_READ_PHDR(read_phdr64, &__ehdr_start.ehdr64, Elf64_Phdr, ELFCLASS64)
 
 static const struct tls_info *get_tls_info(void) {
   if (cached_tls_info.tls_alignment == 0) {
-#if defined(__pnacl__)
+    int did_read_phdr;
+#if defined(__pnacl__) || defined(__x86_64__)
     /*
      * This is only needed in non-ABI-stable pexes for which the
      * ExpandTls pass has not been run.  On ABI-stable pexes,
      * link-time optimization will optimize away these calls because
      * &__ehdr_start == NULL.
      */
-    read_phdr32() || read_phdr64();
+    did_read_phdr = read_phdr32() || read_phdr64();
 #else
-    read_phdr32();
+    did_read_phdr = read_phdr32();
 #endif
 
-    if (cached_tls_info.tls_alignment == 0) {
+    if (!did_read_phdr) {
       /*
        * We didn't find anything that way, so we have to assume that
        * we were built with the hacked-up linker that provides symbols
