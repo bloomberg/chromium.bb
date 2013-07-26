@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
@@ -27,7 +28,6 @@ class Message;
 }
 
 namespace content {
-class PluginDelegate;
 
 // Resource hosts that support device enumeration can use this class to filter
 // and process PpapiHostMsg_DeviceEnumeration_* messages.
@@ -40,9 +40,19 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
    public:
     virtual ~Delegate() {}
 
-    // TODO(yzshen): Move the relevant functionality out of PluginDelegate and
-    // get rid of this method.
-    virtual PluginDelegate* GetPluginDelegate() = 0;
+    typedef base::Callback<
+        void (int /* request_id */,
+              bool /* succeeded */,
+              const std::vector< ::ppapi::DeviceRefData>& /* devices */)>
+        EnumerateDevicesCallback;
+
+    // Enumerates devices of the specified type. The request ID passed into the
+    // callback will be the same as the return value.
+    virtual int EnumerateDevices(PP_DeviceType_Dev type,
+                                 const EnumerateDevicesCallback& callback) = 0;
+    // Stop enumerating devices of the specified |request_id|. The |request_id|
+    // is the return value of EnumerateDevicesCallback.
+    virtual void StopEnumerateDevices(int request_id) = 0;
   };
 
   // |resource_host| and |delegate| must outlive this object.

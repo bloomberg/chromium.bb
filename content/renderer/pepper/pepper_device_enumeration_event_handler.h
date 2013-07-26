@@ -9,25 +9,50 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
-#include "content/renderer/pepper/plugin_delegate.h"
+#include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
+#include "content/public/renderer/render_view_observer.h"
 
 namespace content {
+class RenderViewImpl;
 
 class PepperDeviceEnumerationEventHandler
     : public MediaStreamDispatcherEventHandler,
+      public PepperDeviceEnumerationHostHelper::Delegate,
+      public RenderViewObserver,
+      public RenderViewObserverTracker<PepperDeviceEnumerationEventHandler>,
       public base::SupportsWeakPtr<PepperDeviceEnumerationEventHandler> {
  public:
-  PepperDeviceEnumerationEventHandler();
+  static PepperDeviceEnumerationEventHandler* GetForRenderView(
+      RenderView* render_view);
   virtual ~PepperDeviceEnumerationEventHandler();
 
-  int RegisterEnumerateDevicesCallback(
-      const PluginDelegate::EnumerateDevicesCallback& callback);
-  void UnregisterEnumerateDevicesCallback(int request_id);
+  // PepperDeviceEnumerationHostHelper::Delegate implementation:
+  virtual int EnumerateDevices(
+      PP_DeviceType_Dev type,
+      const EnumerateDevicesCallback& callback) OVERRIDE;
+  virtual void StopEnumerateDevices(int request_id) OVERRIDE;
 
-  int RegisterOpenDeviceCallback(
-      const PepperPluginDelegateImpl::OpenDeviceCallback& callback);
-  void UnregisterOpenDeviceCallback(int request_id);
+  typedef base::Callback<void (int /* request_id */,
+                               bool /* succeeded */,
+                               const std::string& /* label */)>
+      OpenDeviceCallback;
+
+  // Opens the specified device. The request ID passed into the callback will be
+  // the same as the return value. If successful, the label passed into the
+  // callback identifies a audio/video steam, which can be used to call
+  // CloseDevice() and GetSesssionID().
+  int OpenDevice(PP_DeviceType_Dev type,
+                 const std::string& device_id,
+                 const GURL& document_url,
+                 const OpenDeviceCallback& callback);
+  // Cancels an request to open device, using the request ID returned by
+  // OpenDevice(). It is guaranteed that the callback passed into OpenDevice()
+  // won't be called afterwards.
+  void CancelOpenDevice(int request_id);
+  void CloseDevice(const std::string& label);
+  // Gets audio/video session ID given a label.
+  int GetSessionID(PP_DeviceType_Dev type, const std::string& label);
 
   // MediaStreamDispatcherEventHandler implementation.
   virtual void OnStreamGenerated(
@@ -51,6 +76,8 @@ class PepperDeviceEnumerationEventHandler
   static PP_DeviceType_Dev FromMediaStreamType(MediaStreamType type);
 
  private:
+  PepperDeviceEnumerationEventHandler(RenderView* render_view);
+
   void NotifyDevicesEnumerated(
       int request_id,
       bool succeeded,
@@ -60,14 +87,14 @@ class PepperDeviceEnumerationEventHandler
                           bool succeeded,
                           const std::string& label);
 
+  RenderViewImpl* GetRenderViewImpl();
+
   int next_id_;
 
-  typedef std::map<int, PluginDelegate::EnumerateDevicesCallback>
-      EnumerateCallbackMap;
+  typedef std::map<int, EnumerateDevicesCallback> EnumerateCallbackMap;
   EnumerateCallbackMap enumerate_callbacks_;
 
-  typedef std::map<int, PepperPluginDelegateImpl::OpenDeviceCallback>
-      OpenCallbackMap;
+  typedef std::map<int, OpenDeviceCallback> OpenCallbackMap;
   OpenCallbackMap open_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperDeviceEnumerationEventHandler);

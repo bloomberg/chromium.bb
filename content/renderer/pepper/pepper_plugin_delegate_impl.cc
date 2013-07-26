@@ -43,17 +43,14 @@
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "content/renderer/pepper/pepper_broker_impl.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
-#include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
-#include "content/renderer/pepper/pepper_platform_audio_input_impl.h"
 #include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 #include "content/renderer/pepper/pepper_platform_image_2d_impl.h"
-#include "content/renderer/pepper/pepper_platform_video_capture_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
@@ -314,9 +311,7 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
       render_view_(render_view),
       pepper_browser_connection_(this),
       focused_plugin_(NULL),
-      last_mouse_event_target_(NULL),
-      device_enumeration_event_handler_(
-          new PepperDeviceEnumerationEventHandler()) {
+      last_mouse_event_target_(NULL) {
 }
 
 PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
@@ -785,15 +780,6 @@ PluginDelegate::PlatformContext3D*
   return new PlatformContext3DImpl;
 }
 
-PluginDelegate::PlatformVideoCapture*
-    PepperPluginDelegateImpl::CreateVideoCapture(
-        const std::string& device_id,
-        const GURL& document_url,
-        PlatformVideoCaptureEventHandler* handler) {
-  return new PepperPlatformVideoCaptureImpl(AsWeakPtr(), device_id,
-                                            document_url, handler);
-}
-
 PluginDelegate::PlatformVideoDecoder*
     PepperPluginDelegateImpl::CreateVideoDecoder(
         media::VideoDecodeAccelerator::Client* client,
@@ -831,17 +817,6 @@ PluginDelegate::PlatformAudioOutput*
   return PepperPlatformAudioOutputImpl::Create(
       static_cast<int>(sample_rate), static_cast<int>(sample_count),
       GetRoutingID(), client);
-}
-
-PluginDelegate::PlatformAudioInput* PepperPluginDelegateImpl::CreateAudioInput(
-    const std::string& device_id,
-    const GURL& document_url,
-    uint32_t sample_rate,
-    uint32_t sample_count,
-    PluginDelegate::PlatformAudioInputClient* client) {
-  return PepperPlatformAudioInputImpl::Create(
-      AsWeakPtr(), device_id, document_url, static_cast<int>(sample_rate),
-      static_cast<int>(sample_count), client);
 }
 
 // If a broker has not already been created for this plugin, creates one.
@@ -1372,46 +1347,6 @@ bool PepperPluginDelegateImpl::IsPageVisible() const {
   return !render_view_->is_hidden();
 }
 
-int PepperPluginDelegateImpl::EnumerateDevices(
-    PP_DeviceType_Dev type,
-    const EnumerateDevicesCallback& callback) {
-  int request_id =
-      device_enumeration_event_handler_->RegisterEnumerateDevicesCallback(
-          callback);
-
-#if defined(ENABLE_WEBRTC)
-  render_view_->media_stream_dispatcher()->EnumerateDevices(
-      request_id, device_enumeration_event_handler_->AsWeakPtr(),
-      PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type),
-      GURL());
-#else
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &PepperDeviceEnumerationEventHandler::OnDevicesEnumerationFailed,
-          device_enumeration_event_handler_->AsWeakPtr(),
-          request_id));
-#endif
-
-  return request_id;
-}
-
-void PepperPluginDelegateImpl::StopEnumerateDevices(int request_id) {
-  device_enumeration_event_handler_->UnregisterEnumerateDevicesCallback(
-      request_id);
-
-#if defined(ENABLE_WEBRTC)
-  // Need to post task since this function might be called inside the callback
-  // of EnumerateDevices.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MediaStreamDispatcher::StopEnumerateDevices,
-                 render_view_->media_stream_dispatcher()->AsWeakPtr(),
-                 request_id,
-                 device_enumeration_event_handler_->AsWeakPtr()));
-#endif
-}
-
 bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
   if (pepper_browser_connection_.OnMessageReceived(message))
     return true;
@@ -1532,65 +1467,6 @@ void PepperPluginDelegateImpl::OnTCPServerSocketAcceptACK(
 
 int PepperPluginDelegateImpl::GetRoutingID() const {
   return render_view_->routing_id();
-}
-
-int PepperPluginDelegateImpl::OpenDevice(PP_DeviceType_Dev type,
-                                         const std::string& device_id,
-                                         const GURL& document_url,
-                                         const OpenDeviceCallback& callback) {
-  int request_id =
-      device_enumeration_event_handler_->RegisterOpenDeviceCallback(callback);
-
-#if defined(ENABLE_WEBRTC)
-  render_view_->media_stream_dispatcher()->OpenDevice(
-      request_id,
-      device_enumeration_event_handler_->AsWeakPtr(),
-      device_id,
-      PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type),
-      document_url.GetOrigin());
-#else
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PepperDeviceEnumerationEventHandler::OnDeviceOpenFailed,
-                 device_enumeration_event_handler_->AsWeakPtr(),
-                 request_id));
-#endif
-
-  return request_id;
-}
-
-void PepperPluginDelegateImpl::CancelOpenDevice(int request_id) {
-  device_enumeration_event_handler_->UnregisterOpenDeviceCallback(request_id);
-
-#if defined(ENABLE_WEBRTC)
-  render_view_->media_stream_dispatcher()->CancelOpenDevice(
-      request_id, device_enumeration_event_handler_->AsWeakPtr());
-#endif
-}
-
-void PepperPluginDelegateImpl::CloseDevice(const std::string& label) {
-#if defined(ENABLE_WEBRTC)
-  render_view_->media_stream_dispatcher()->CloseDevice(label);
-#endif
-}
-
-int PepperPluginDelegateImpl::GetSessionID(PP_DeviceType_Dev type,
-                                           const std::string& label) {
-#if defined(ENABLE_WEBRTC)
-  switch (type) {
-    case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
-      return render_view_->media_stream_dispatcher()->audio_session_id(label,
-                                                                       0);
-    case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
-      return render_view_->media_stream_dispatcher()->video_session_id(label,
-                                                                       0);
-    default:
-      NOTREACHED();
-      return 0;
-  }
-#else
-  return 0;
-#endif
 }
 
 MouseLockDispatcher::LockTarget*

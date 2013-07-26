@@ -5,8 +5,11 @@
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 
 #include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
+#include "content/renderer/pepper/pepper_platform_video_capture.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
+#include "content/renderer/render_view_impl.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/host_dispatcher.h"
@@ -39,7 +42,11 @@ PepperVideoCaptureHost::PepperVideoCaptureHost(RendererPpapiHostImpl* host,
       renderer_ppapi_host_(host),
       buffer_count_hint_(0),
       status_(PP_VIDEO_CAPTURE_STATUS_STOPPED),
-      enumeration_helper_(this, this, PP_DEVICETYPE_DEV_VIDEOCAPTURE) {
+      enumeration_helper_(
+          this,
+          PepperDeviceEnumerationEventHandler::GetForRenderView(
+              host->GetRenderViewForInstance(pp_instance())),
+          PP_DEVICETYPE_DEV_VIDEOCAPTURE) {
 }
 
 PepperVideoCaptureHost::~PepperVideoCaptureHost() {
@@ -47,7 +54,7 @@ PepperVideoCaptureHost::~PepperVideoCaptureHost() {
 }
 
 bool PepperVideoCaptureHost::Init() {
-  return !!GetPluginDelegate();
+  return !!renderer_ppapi_host_->GetPluginInstance(pp_instance());
 }
 
 int32_t PepperVideoCaptureHost::OnResourceMessageReceived(
@@ -239,24 +246,12 @@ void PepperVideoCaptureHost::OnDeviceInfoReceived(
           info, buffer_host_resources, size)));
 }
 
-PluginDelegate* PepperVideoCaptureHost::GetPluginDelegate() {
-  PepperPluginInstanceImpl* instance =
-      renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
-  if (instance)
-    return instance->delegate();
-  return NULL;
-}
-
 int32_t PepperVideoCaptureHost::OnOpen(
     ppapi::host::HostMessageContext* context,
     const std::string& device_id,
     const PP_VideoCaptureDeviceInfo_Dev& requested_info,
     uint32_t buffer_count) {
   if (platform_video_capture_.get())
-    return PP_ERROR_FAILED;
-
-  PluginDelegate* plugin_delegate = GetPluginDelegate();
-  if (!plugin_delegate)
     return PP_ERROR_FAILED;
 
   SetRequestedInfo(requested_info, buffer_count);
@@ -266,9 +261,12 @@ int32_t PepperVideoCaptureHost::OnOpen(
   if (!instance)
     return PP_ERROR_FAILED;
 
-  platform_video_capture_ =
-      plugin_delegate->CreateVideoCapture(device_id,
-          instance->GetContainer()->element().document().url(), this);
+  RenderViewImpl* render_view = static_cast<RenderViewImpl*>(
+      renderer_ppapi_host_->GetRenderViewForInstance(pp_instance()));
+
+  platform_video_capture_ = new PepperPlatformVideoCapture(
+      render_view->AsWeakPtr(), device_id,
+      instance->GetContainer()->element().document().url(), this);
 
   open_reply_context_ = context->MakeReplyMessageContext();
 
@@ -284,7 +282,7 @@ int32_t PepperVideoCaptureHost::OnStartCapture(
   DCHECK(buffers_.empty());
 
   // It's safe to call this regardless it's capturing or not, because
-  // PepperPlatformVideoCaptureImpl maintains the state.
+  // PepperPlatformVideoCapture maintains the state.
   platform_video_capture_->StartCapture(this, capability_);
   return PP_OK;
 }
@@ -316,7 +314,7 @@ int32_t PepperVideoCaptureHost::StopCapture() {
 
   ReleaseBuffers();
   // It's safe to call this regardless it's capturing or not, because
-  // PepperPlatformVideoCaptureImpl maintains the state.
+  // PepperPlatformVideoCapture maintains the state.
   platform_video_capture_->StopCapture(this);
   return PP_OK;
 }

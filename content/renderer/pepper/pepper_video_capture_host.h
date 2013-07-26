@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "media/video/capture/video_capture.h"
 #include "media/video/capture/video_capture_types.h"
@@ -18,12 +17,12 @@
 #include "ppapi/host/resource_host.h"
 
 namespace content {
+class PepperPlatformVideoCapture;
 class RendererPpapiHostImpl;
 
 class PepperVideoCaptureHost
   : public ppapi::host::ResourceHost,
-    public PluginDelegate::PlatformVideoCaptureEventHandler,
-    public PepperDeviceEnumerationHostHelper::Delegate {
+    public media::VideoCapture::EventHandler {
  public:
   PepperVideoCaptureHost(RendererPpapiHostImpl* host,
                          PP_Instance instance,
@@ -37,9 +36,9 @@ class PepperVideoCaptureHost
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
-  // PluginDelegate::PlatformVideoCaptureEventHandler
-  virtual void OnInitialized(media::VideoCapture* capture,
-                             bool succeeded) OVERRIDE;
+  void OnInitialized(media::VideoCapture* capture, bool succeeded);
+
+  // media::VideoCapture::EventHandler
   virtual void OnStarted(media::VideoCapture* capture) OVERRIDE;
   virtual void OnStopped(media::VideoCapture* capture) OVERRIDE;
   virtual void OnPaused(media::VideoCapture* capture) OVERRIDE;
@@ -51,9 +50,6 @@ class PepperVideoCaptureHost
   virtual void OnDeviceInfoReceived(
       media::VideoCapture* capture,
       const media::VideoCaptureParams& device_info) OVERRIDE;
-
-  // PepperDeviceEnumerationHostHelper::Delegate implementation.
-  virtual PluginDelegate* GetPluginDelegate() OVERRIDE;
 
  private:
   int32_t OnOpen(ppapi::host::HostMessageContext* context,
@@ -78,7 +74,7 @@ class PepperVideoCaptureHost
 
   bool SetStatus(PP_VideoCaptureStatus_Dev status, bool forced);
 
-  scoped_refptr<PluginDelegate::PlatformVideoCapture> platform_video_capture_;
+  scoped_refptr<PepperPlatformVideoCapture> platform_video_capture_;
 
   // Buffers of video frame.
   struct BufferInfo {

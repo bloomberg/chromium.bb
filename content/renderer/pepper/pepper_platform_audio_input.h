@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_AUDIO_INPUT_IMPL_H_
-#define CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_AUDIO_INPUT_IMPL_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_AUDIO_INPUT_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_AUDIO_INPUT_H_
 
 #include <string>
 
@@ -12,11 +12,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_parameters.h"
 
 class GURL;
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace media {
 class AudioParameters;
@@ -24,35 +27,36 @@ class AudioParameters;
 
 namespace content {
 
-class PepperPluginDelegateImpl;
+class PepperAudioInputHost;
+class PepperDeviceEnumerationEventHandler;
+class RenderViewImpl;
 
-// PepperPlatformAudioInputImpl is operated on two threads: the main thread (the
+// PepperPlatformAudioInput is operated on two threads: the main thread (the
 // thread on which objects are created) and the I/O thread. All public methods,
 // except the destructor, must be called on the main thread. The notifications
-// to the users of this class (via the PlatformAudioInputClient interface) are
-// also sent on the main thread. Internally, this class sends audio input IPC
-// messages and receives media::AudioInputIPCDelegate notifications on the
-// I/O thread.
+// to the users of this class (i.e. PepperAudioInputHost) are also sent on the
+// main thread. Internally, this class sends audio input IPC messages and
+// receives media::AudioInputIPCDelegate notifications on the I/O thread.
 
-class PepperPlatformAudioInputImpl
-    : public PluginDelegate::PlatformAudioInput,
-      public media::AudioInputIPCDelegate,
-      public base::RefCountedThreadSafe<PepperPlatformAudioInputImpl> {
+class PepperPlatformAudioInput
+    : public media::AudioInputIPCDelegate,
+      public base::RefCountedThreadSafe<PepperPlatformAudioInput> {
  public:
   // Factory function, returns NULL on failure. StreamCreated() will be called
   // when the stream is created.
-  static PepperPlatformAudioInputImpl* Create(
-      const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
+  static PepperPlatformAudioInput* Create(
+      const base::WeakPtr<RenderViewImpl>& render_view,
       const std::string& device_id,
       const GURL& document_url,
       int sample_rate,
       int frames_per_buffer,
-      PluginDelegate::PlatformAudioInputClient* client);
+      PepperAudioInputHost* client);
 
-  // PlatformAudioInput implementation (called on main thread).
-  virtual void StartCapture() OVERRIDE;
-  virtual void StopCapture() OVERRIDE;
-  virtual void ShutDown() OVERRIDE;
+  // Called on main thread.
+  void StartCapture();
+  void StopCapture();
+  // Closes the stream. Make sure to call this before the object is destructed.
+  void ShutDown();
 
   // media::AudioInputIPCDelegate.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
@@ -65,20 +69,20 @@ class PepperPlatformAudioInputImpl
   virtual void OnIPCClosed() OVERRIDE;
 
  protected:
-  virtual ~PepperPlatformAudioInputImpl();
+  virtual ~PepperPlatformAudioInput();
 
  private:
-  friend class base::RefCountedThreadSafe<PepperPlatformAudioInputImpl>;
+  friend class base::RefCountedThreadSafe<PepperPlatformAudioInput>;
 
-  PepperPlatformAudioInputImpl();
+  PepperPlatformAudioInput();
 
   bool Initialize(
-      const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
+      const base::WeakPtr<RenderViewImpl>& render_view,
       const std::string& device_id,
       const GURL& document_url,
       int sample_rate,
       int frames_per_buffer,
-      PluginDelegate::PlatformAudioInputClient* client);
+      PepperAudioInputHost* client);
 
   // I/O thread backends to above functions.
   void InitializeOnIOThread(int session_id);
@@ -92,9 +96,11 @@ class PepperPlatformAudioInputImpl
   void CloseDevice();
   void NotifyStreamCreationFailed();
 
+  PepperDeviceEnumerationEventHandler* GetHandler();
+
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.
-  PluginDelegate::PlatformAudioInputClient* client_;
+  PepperAudioInputHost* client_;
 
   // Used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
   // I/O THREAD.
@@ -104,7 +110,7 @@ class PepperPlatformAudioInputImpl
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   // THIS MUST ONLY BE ACCESSED ON THE MAIN THREAD.
-  base::WeakPtr<PepperPluginDelegateImpl> plugin_delegate_;
+  base::WeakPtr<RenderViewImpl> render_view_;
 
   // The unique ID to identify the opened device. THIS MUST ONLY BE ACCESSED ON
   // THE MAIN THREAD.
@@ -124,9 +130,9 @@ class PepperPlatformAudioInputImpl
   // THIS MUST ONLY BE ACCESSED ON THE MAIN THREAD.
   int pending_open_device_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioInputImpl);
+  DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioInput);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_AUDIO_INPUT_IMPL_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_AUDIO_INPUT_H_

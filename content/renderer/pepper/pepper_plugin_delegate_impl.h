@@ -44,7 +44,6 @@ namespace content {
 class ContextProviderCommandBuffer;
 class GamepadSharedMemoryReader;
 class PepperBrokerImpl;
-class PepperDeviceEnumerationEventHandler;
 class PluginModule;
 class RenderViewImpl;
 struct WebPluginInfo;
@@ -68,27 +67,6 @@ class PepperPluginDelegateImpl
   bool StopWaitingForBrokerConnection(PepperBrokerImpl* broker);
 
   CONTENT_EXPORT int GetRoutingID() const;
-
-  typedef base::Callback<void (int /* request_id */,
-                               bool /* succeeded */,
-                               const std::string& /* label */)>
-      OpenDeviceCallback;
-
-  // Opens the specified device. The request ID passed into the callback will be
-  // the same as the return value. If successful, the label passed into the
-  // callback identifies a audio/video steam, which can be used to call
-  // CloseDevice() and GetSesssionID().
-  int OpenDevice(PP_DeviceType_Dev type,
-                 const std::string& device_id,
-                 const GURL& document_url,
-                 const OpenDeviceCallback& callback);
-  // Cancels an request to open device, using the request ID returned by
-  // OpenDevice(). It is guaranteed that the callback passed into OpenDevice()
-  // won't be called afterwards.
-  void CancelOpenDevice(int request_id);
-  void CloseDevice(const std::string& label);
-  // Gets audio/video session ID given a label.
-  int GetSessionID(PP_DeviceType_Dev type, const std::string& label);
 
  private:
   // RenderViewPepperHelper implementation.
@@ -161,21 +139,11 @@ class PepperPluginDelegateImpl
       uint32_t sample_rate,
       uint32_t sample_count,
       PlatformAudioOutputClient* client) OVERRIDE;
-  virtual PlatformAudioInput* CreateAudioInput(
-      const std::string& device_id,
-      const GURL& document_url,
-      uint32_t sample_rate,
-      uint32_t sample_count,
-      PlatformAudioInputClient* client) OVERRIDE;
   virtual PlatformImage2D* CreateImage2D(int width, int height) OVERRIDE;
   virtual PlatformGraphics2D* GetGraphics2D(
       PepperPluginInstanceImpl* instance,
       PP_Resource resource) OVERRIDE;
   virtual PlatformContext3D* CreateContext3D() OVERRIDE;
-  virtual PlatformVideoCapture* CreateVideoCapture(
-      const std::string& device_id,
-      const GURL& document_url,
-      PlatformVideoCaptureEventHandler* handler) OVERRIDE;
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id) OVERRIDE;
@@ -294,10 +262,6 @@ class PepperPluginDelegateImpl
   virtual bool IsInFullscreenMode() OVERRIDE;
   virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
   virtual bool IsPageVisible() const OVERRIDE;
-  virtual int EnumerateDevices(
-      PP_DeviceType_Dev type,
-      const EnumerateDevicesCallback& callback) OVERRIDE;
-  virtual void StopEnumerateDevices(int request_id) OVERRIDE;
   virtual void HandleDocumentLoad(
       PepperPluginInstanceImpl* instance,
       const WebKit::WebURLResponse& response) OVERRIDE;
@@ -424,9 +388,6 @@ class PepperPluginDelegateImpl
   PepperPluginInstanceImpl* last_mouse_event_target_;
 
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
-
-  scoped_ptr<PepperDeviceEnumerationEventHandler>
-      device_enumeration_event_handler_;
 
   scoped_refptr<ContextProviderCommandBuffer> offscreen_context3d_;
 

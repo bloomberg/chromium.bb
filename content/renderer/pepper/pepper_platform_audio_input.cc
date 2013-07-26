@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_platform_audio_input_impl.h"
+#include "content/renderer/pepper/pepper_platform_audio_input.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -10,8 +10,10 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/audio_input_message_filter.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_audio_input_host.h"
+#include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_manager_base.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "url/gurl.h"
@@ -19,42 +21,42 @@
 namespace content {
 
 // static
-PepperPlatformAudioInputImpl* PepperPlatformAudioInputImpl::Create(
-    const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
+PepperPlatformAudioInput* PepperPlatformAudioInput::Create(
+    const base::WeakPtr<RenderViewImpl>& render_view,
     const std::string& device_id,
     const GURL& document_url,
     int sample_rate,
     int frames_per_buffer,
-    PluginDelegate::PlatformAudioInputClient* client) {
-  scoped_refptr<PepperPlatformAudioInputImpl> audio_input(
-      new PepperPlatformAudioInputImpl());
-  if (audio_input->Initialize(plugin_delegate, device_id, document_url,
+    PepperAudioInputHost* client) {
+  scoped_refptr<PepperPlatformAudioInput> audio_input(
+      new PepperPlatformAudioInput());
+  if (audio_input->Initialize(render_view, device_id, document_url,
                               sample_rate, frames_per_buffer, client)) {
     // Balanced by Release invoked in
-    // PepperPlatformAudioInputImpl::ShutDownOnIOThread().
+    // PepperPlatformAudioInput::ShutDownOnIOThread().
     audio_input->AddRef();
     return audio_input.get();
   }
   return NULL;
 }
 
-void PepperPlatformAudioInputImpl::StartCapture() {
+void PepperPlatformAudioInput::StartCapture() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioInputImpl::StartCaptureOnIOThread, this));
+      base::Bind(&PepperPlatformAudioInput::StartCaptureOnIOThread, this));
 }
 
-void PepperPlatformAudioInputImpl::StopCapture() {
+void PepperPlatformAudioInput::StopCapture() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioInputImpl::StopCaptureOnIOThread, this));
+      base::Bind(&PepperPlatformAudioInput::StopCaptureOnIOThread, this));
 }
 
-void PepperPlatformAudioInputImpl::ShutDown() {
+void PepperPlatformAudioInput::ShutDown() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
   // Make sure we don't call shutdown more than once.
@@ -66,10 +68,10 @@ void PepperPlatformAudioInputImpl::ShutDown() {
   client_ = NULL;
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioInputImpl::ShutDownOnIOThread, this));
+      base::Bind(&PepperPlatformAudioInput::ShutDownOnIOThread, this));
 }
 
-void PepperPlatformAudioInputImpl::OnStreamCreated(
+void PepperPlatformAudioInput::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     int length,
@@ -91,7 +93,7 @@ void PepperPlatformAudioInputImpl::OnStreamCreated(
     // cleaned up on the main thread.
     main_message_loop_proxy_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioInputImpl::OnStreamCreated, this,
+        base::Bind(&PepperPlatformAudioInput::OnStreamCreated, this,
                    handle, socket_handle, length, total_segments));
   } else {
     // Must dereference the client only on the main thread. Shutdown may have
@@ -106,17 +108,17 @@ void PepperPlatformAudioInputImpl::OnStreamCreated(
   }
 }
 
-void PepperPlatformAudioInputImpl::OnVolume(double volume) {}
+void PepperPlatformAudioInput::OnVolume(double volume) {}
 
-void PepperPlatformAudioInputImpl::OnStateChanged(
+void PepperPlatformAudioInput::OnStateChanged(
     media::AudioInputIPCDelegate::State state) {
 }
 
-void PepperPlatformAudioInputImpl::OnIPCClosed() {
+void PepperPlatformAudioInput::OnIPCClosed() {
   ipc_.reset();
 }
 
-PepperPlatformAudioInputImpl::~PepperPlatformAudioInputImpl() {
+PepperPlatformAudioInput::~PepperPlatformAudioInput() {
   // Make sure we have been shut down. Warning: this may happen on the I/O
   // thread!
   // Although these members should be accessed on a specific thread (either the
@@ -128,7 +130,7 @@ PepperPlatformAudioInputImpl::~PepperPlatformAudioInputImpl() {
   DCHECK(!pending_open_device_);
 }
 
-PepperPlatformAudioInputImpl::PepperPlatformAudioInputImpl()
+PepperPlatformAudioInput::PepperPlatformAudioInput()
     : client_(NULL),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
       io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()),
@@ -137,22 +139,22 @@ PepperPlatformAudioInputImpl::PepperPlatformAudioInputImpl()
       pending_open_device_id_(-1) {
 }
 
-bool PepperPlatformAudioInputImpl::Initialize(
-    const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
+bool PepperPlatformAudioInput::Initialize(
+    const base::WeakPtr<RenderViewImpl>& render_view,
     const std::string& device_id,
     const GURL& document_url,
     int sample_rate,
     int frames_per_buffer,
-    PluginDelegate::PlatformAudioInputClient* client) {
+    PepperAudioInputHost* client) {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (!plugin_delegate.get() || !client)
+  if (!render_view.get() || !client)
     return false;
 
   ipc_ = RenderThreadImpl::current()->audio_input_message_filter()->
-      CreateAudioInputIPC(plugin_delegate->GetRoutingID());
+      CreateAudioInputIPC(render_view->GetRoutingID());
 
-  plugin_delegate_ = plugin_delegate;
+  render_view_ = render_view;
   client_ = client;
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR,
@@ -162,17 +164,17 @@ bool PepperPlatformAudioInputImpl::Initialize(
 
   // We need to open the device and obtain the label and session ID before
   // initializing.
-  pending_open_device_id_ = plugin_delegate_->OpenDevice(
+  pending_open_device_id_ = GetHandler()->OpenDevice(
       PP_DEVICETYPE_DEV_AUDIOCAPTURE,
       device_id.empty() ? media::AudioManagerBase::kDefaultDeviceId : device_id,
       document_url,
-      base::Bind(&PepperPlatformAudioInputImpl::OnDeviceOpened, this));
+      base::Bind(&PepperPlatformAudioInput::OnDeviceOpened, this));
   pending_open_device_ = true;
 
   return true;
 }
 
-void PepperPlatformAudioInputImpl::InitializeOnIOThread(int session_id) {
+void PepperPlatformAudioInput::InitializeOnIOThread(int session_id) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (!ipc_)
@@ -183,14 +185,14 @@ void PepperPlatformAudioInputImpl::InitializeOnIOThread(int session_id) {
   ipc_->CreateStream(this, session_id, params_, false, 1);
 }
 
-void PepperPlatformAudioInputImpl::StartCaptureOnIOThread() {
+void PepperPlatformAudioInput::StartCaptureOnIOThread() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (ipc_)
     ipc_->RecordStream();
 }
 
-void PepperPlatformAudioInputImpl::StopCaptureOnIOThread() {
+void PepperPlatformAudioInput::StopCaptureOnIOThread() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   // TODO(yzshen): We cannot re-start capturing if the stream is closed.
@@ -200,37 +202,37 @@ void PepperPlatformAudioInputImpl::StopCaptureOnIOThread() {
   ipc_.reset();
 }
 
-void PepperPlatformAudioInputImpl::ShutDownOnIOThread() {
+void PepperPlatformAudioInput::ShutDownOnIOThread() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   StopCaptureOnIOThread();
 
   main_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioInputImpl::CloseDevice, this));
+      base::Bind(&PepperPlatformAudioInput::CloseDevice, this));
 
   Release();  // Release for the delegate, balances out the reference taken in
-              // PepperPluginDelegateImpl::CreateAudioInput.
+              // PepperPlatformAudioInput::Create.
 }
 
-void PepperPlatformAudioInputImpl::OnDeviceOpened(int request_id,
-                                                  bool succeeded,
-                                                  const std::string& label) {
+void PepperPlatformAudioInput::OnDeviceOpened(int request_id,
+                                              bool succeeded,
+                                              const std::string& label) {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
   pending_open_device_ = false;
   pending_open_device_id_ = -1;
 
-  if (succeeded && plugin_delegate_.get()) {
+  if (succeeded && render_view_.get()) {
     DCHECK(!label.empty());
     label_ = label;
 
     if (client_) {
-      int session_id = plugin_delegate_->GetSessionID(
+      int session_id = GetHandler()->GetSessionID(
           PP_DEVICETYPE_DEV_AUDIOCAPTURE, label);
       io_message_loop_proxy_->PostTask(
           FROM_HERE,
-          base::Bind(&PepperPlatformAudioInputImpl::InitializeOnIOThread,
+          base::Bind(&PepperPlatformAudioInput::InitializeOnIOThread,
                      this, session_id));
     } else {
       // Shutdown has occurred.
@@ -241,27 +243,32 @@ void PepperPlatformAudioInputImpl::OnDeviceOpened(int request_id,
   }
 }
 
-void PepperPlatformAudioInputImpl::CloseDevice() {
+void PepperPlatformAudioInput::CloseDevice() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (plugin_delegate_.get()) {
+  if (render_view_.get()) {
     if (!label_.empty()) {
-      plugin_delegate_->CloseDevice(label_);
+      GetHandler()->CloseDevice(label_);
       label_.clear();
     }
     if (pending_open_device_) {
-      plugin_delegate_->CancelOpenDevice(pending_open_device_id_);
+      GetHandler()->CancelOpenDevice(pending_open_device_id_);
       pending_open_device_ = false;
       pending_open_device_id_ = -1;
     }
   }
 }
 
-void PepperPlatformAudioInputImpl::NotifyStreamCreationFailed() {
+void PepperPlatformAudioInput::NotifyStreamCreationFailed() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
   if (client_)
     client_->StreamCreationFailed();
+}
+
+PepperDeviceEnumerationEventHandler* PepperPlatformAudioInput::GetHandler() {
+  return PepperDeviceEnumerationEventHandler::GetForRenderView(
+      render_view_.get());
 }
 
 }  // namespace content

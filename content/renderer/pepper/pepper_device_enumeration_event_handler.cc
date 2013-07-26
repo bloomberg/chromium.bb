@@ -5,6 +5,8 @@
 #include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
 
 #include "base/logging.h"
+#include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/render_view_impl.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 
 namespace content {
@@ -22,8 +24,22 @@ ppapi::DeviceRefData FromStreamDeviceInfo(const StreamDeviceInfo& info) {
 
 }  // namespace
 
-PepperDeviceEnumerationEventHandler::PepperDeviceEnumerationEventHandler()
-    : next_id_(1) {
+PepperDeviceEnumerationEventHandler*
+    PepperDeviceEnumerationEventHandler::GetForRenderView(
+        RenderView* render_view) {
+  PepperDeviceEnumerationEventHandler* handler =
+      PepperDeviceEnumerationEventHandler::Get(render_view);
+  if (!handler)
+    handler = new PepperDeviceEnumerationEventHandler(render_view);
+  return handler;
+}
+
+PepperDeviceEnumerationEventHandler::PepperDeviceEnumerationEventHandler(
+    RenderView* render_view)
+    : RenderViewObserver(render_view),
+      RenderViewObserverTracker<PepperDeviceEnumerationEventHandler>(
+          render_view),
+      next_id_(1) {
 }
 
 PepperDeviceEnumerationEventHandler::~PepperDeviceEnumerationEventHandler() {
@@ -31,26 +47,105 @@ PepperDeviceEnumerationEventHandler::~PepperDeviceEnumerationEventHandler() {
   DCHECK(open_callbacks_.empty());
 }
 
-int PepperDeviceEnumerationEventHandler::RegisterEnumerateDevicesCallback(
-    const PluginDelegate::EnumerateDevicesCallback& callback) {
+int PepperDeviceEnumerationEventHandler::EnumerateDevices(
+    PP_DeviceType_Dev type,
+    const EnumerateDevicesCallback& callback) {
   enumerate_callbacks_[next_id_] = callback;
-  return next_id_++;
+  int request_id = next_id_++;
+
+#if defined(ENABLE_WEBRTC)
+  GetRenderViewImpl()->media_stream_dispatcher()->EnumerateDevices(
+      request_id, AsWeakPtr(),
+      PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type),
+      GURL());
+#else
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &PepperDeviceEnumerationEventHandler::OnDevicesEnumerationFailed,
+          AsWeakPtr(),
+          request_id));
+#endif
+
+  return request_id;
 }
 
-void PepperDeviceEnumerationEventHandler::UnregisterEnumerateDevicesCallback(
-    int request_id) {
+void PepperDeviceEnumerationEventHandler::StopEnumerateDevices(int request_id) {
   enumerate_callbacks_.erase(request_id);
+
+#if defined(ENABLE_WEBRTC)
+  // Need to post task since this function might be called inside the callback
+  // of EnumerateDevices.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MediaStreamDispatcher::StopEnumerateDevices,
+                 GetRenderViewImpl()->media_stream_dispatcher()->AsWeakPtr(),
+                 request_id,
+                 AsWeakPtr()));
+#endif
 }
 
-int PepperDeviceEnumerationEventHandler::RegisterOpenDeviceCallback(
-    const PepperPluginDelegateImpl::OpenDeviceCallback& callback) {
+int PepperDeviceEnumerationEventHandler::OpenDevice(
+    PP_DeviceType_Dev type,
+    const std::string& device_id,
+    const GURL& document_url,
+    const OpenDeviceCallback& callback) {
   open_callbacks_[next_id_] = callback;
-  return next_id_++;
+  int request_id = next_id_++;
+
+#if defined(ENABLE_WEBRTC)
+  GetRenderViewImpl()->media_stream_dispatcher()->
+      OpenDevice(
+          request_id,
+          AsWeakPtr(),
+          device_id,
+          PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type),
+          document_url.GetOrigin());
+#else
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&PepperDeviceEnumerationEventHandler::OnDeviceOpenFailed,
+                 AsWeakPtr(),
+                 request_id));
+#endif
+
+  return request_id;
 }
 
-void PepperDeviceEnumerationEventHandler::UnregisterOpenDeviceCallback(
-    int request_id) {
+void PepperDeviceEnumerationEventHandler::CancelOpenDevice(int request_id) {
   open_callbacks_.erase(request_id);
+
+#if defined(ENABLE_WEBRTC)
+  GetRenderViewImpl()->media_stream_dispatcher()->CancelOpenDevice(
+      request_id, AsWeakPtr());
+#endif
+}
+
+void PepperDeviceEnumerationEventHandler::CloseDevice(
+    const std::string& label) {
+#if defined(ENABLE_WEBRTC)
+  GetRenderViewImpl()->media_stream_dispatcher()->CloseDevice(label);
+#endif
+}
+
+int PepperDeviceEnumerationEventHandler::GetSessionID(
+    PP_DeviceType_Dev type,
+    const std::string& label) {
+#if defined(ENABLE_WEBRTC)
+  switch (type) {
+    case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
+      return GetRenderViewImpl()->media_stream_dispatcher()->audio_session_id(
+          label, 0);
+    case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
+      return GetRenderViewImpl()->media_stream_dispatcher()->video_session_id(
+          label, 0);
+    default:
+      NOTREACHED();
+      return 0;
+  }
+#else
+  return 0;
+#endif
 }
 
 void PepperDeviceEnumerationEventHandler::OnStreamGenerated(
@@ -129,7 +224,7 @@ void PepperDeviceEnumerationEventHandler::NotifyDevicesEnumerated(
     return;
   }
 
-  PluginDelegate::EnumerateDevicesCallback callback = iter->second;
+  EnumerateDevicesCallback callback = iter->second;
 
   std::vector<ppapi::DeviceRefData> devices;
   if (succeeded) {
@@ -152,10 +247,14 @@ void PepperDeviceEnumerationEventHandler::NotifyDeviceOpened(
     return;
   }
 
-  PepperPluginDelegateImpl::OpenDeviceCallback callback = iter->second;
+  OpenDeviceCallback callback = iter->second;
   open_callbacks_.erase(iter);
 
   callback.Run(request_id, succeeded, label);
+}
+
+RenderViewImpl* PepperDeviceEnumerationEventHandler::GetRenderViewImpl() {
+  return static_cast<RenderViewImpl*>(render_view());
 }
 
 }  // namespace content

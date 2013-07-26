@@ -18,10 +18,8 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/video/capture/video_capture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/dev/pp_video_dev.h"
-#include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_file_info.h"
@@ -239,22 +237,14 @@ class PluginDelegate {
     virtual bool Echo(const base::Callback<void()>& callback) = 0;
   };
 
-  // The base class of clients used by |PlatformAudioOutput| and
-  // |PlatformAudioInput|.
-  class PlatformAudioClientBase {
-   protected:
-    virtual ~PlatformAudioClientBase() {}
-
+  class PlatformAudioOutputClient {
    public:
+    virtual ~PlatformAudioOutputClient() {}
+
     // Called when the stream is created.
     virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
                                size_t shared_memory_size,
                                base::SyncSocket::Handle socket) = 0;
-  };
-
-  class PlatformAudioOutputClient : public PlatformAudioClientBase {
-   protected:
-    virtual ~PlatformAudioOutputClient() {}
   };
 
   class PlatformAudioOutput {
@@ -275,54 +265,11 @@ class PluginDelegate {
     virtual ~PlatformAudioOutput() {}
   };
 
-  class PlatformAudioInputClient : public PlatformAudioClientBase {
-   public:
-    virtual void StreamCreationFailed() = 0;
-
-   protected:
-    virtual ~PlatformAudioInputClient() {}
-  };
-
-  class PlatformAudioInput {
-   public:
-    virtual void StartCapture() = 0;
-    virtual void StopCapture() = 0;
-
-    // Closes the stream. Make sure to call this before the object is
-    // destructed.
-    virtual void ShutDown() = 0;
-
-   protected:
-    virtual ~PlatformAudioInput() {}
-  };
-
   // Interface for PlatformVideoDecoder is directly inherited from general media
   // VideoDecodeAccelerator interface.
   class PlatformVideoDecoder : public media::VideoDecodeAccelerator {
    public:
     virtual ~PlatformVideoDecoder() {}
-  };
-
-  class PlatformVideoCaptureEventHandler
-      : public media::VideoCapture::EventHandler {
-   public:
-    virtual ~PlatformVideoCaptureEventHandler() {}
-
-    virtual void OnInitialized(media::VideoCapture* capture,
-                               bool succeeded) = 0;
-  };
-
-  class PlatformVideoCapture : public media::VideoCapture,
-                               public base::RefCounted<PlatformVideoCapture> {
-   public:
-    // Detaches the event handler and stops sending notifications to it.
-    virtual void DetachEventHandler() = 0;
-
-   protected:
-    virtual ~PlatformVideoCapture() {}
-
-   private:
-    friend class base::RefCounted<PlatformVideoCapture>;
   };
 
   // Provides access to the ppapi broker.
@@ -396,16 +343,6 @@ class PluginDelegate {
   // The caller will own the pointer returned from this.
   virtual PlatformContext3D* CreateContext3D() = 0;
 
-  // If |device_id| is empty, the default video capture device will be used. The
-  // user can start using the returned object to capture video right away.
-  // Otherwise, the specified device will be used. The user needs to wait till
-  // |handler| gets an OnInitialized() notification to start using the returned
-  // object.
-  virtual PlatformVideoCapture* CreateVideoCapture(
-      const std::string& device_id,
-      const GURL& document_url,
-      PlatformVideoCaptureEventHandler* handler) = 0;
-
   // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
@@ -423,16 +360,6 @@ class PluginDelegate {
       uint32_t sample_rate,
       uint32_t sample_count,
       PlatformAudioOutputClient* client) = 0;
-
-  // If |device_id| is empty, the default audio input device will be used.
-  // The caller is responsible for calling Shutdown() on the returned pointer
-  // to clean up the corresponding resources allocated during this call.
-  virtual PlatformAudioInput* CreateAudioInput(
-      const std::string& device_id,
-      const GURL& document_url,
-      uint32_t sample_rate,
-      uint32_t sample_count,
-      PlatformAudioInputClient* client) = 0;
 
   // A pointer is returned immediately, but it is not ready to be used until
   // BrokerConnected has been called.
@@ -632,20 +559,6 @@ class PluginDelegate {
 
   // Returns true if the containing page is visible.
   virtual bool IsPageVisible() const = 0;
-
-  typedef base::Callback<
-      void (int /* request_id */,
-            bool /* succeeded */,
-            const std::vector< ::ppapi::DeviceRefData>& /* devices */)>
-      EnumerateDevicesCallback;
-
-  // Enumerates devices of the specified type. The request ID passed into the
-  // callback will be the same as the return value.
-  virtual int EnumerateDevices(PP_DeviceType_Dev type,
-                               const EnumerateDevicesCallback& callback) = 0;
-  // Stop enumerating devices of the specified |request_id|. The |request_id|
-  // is the return value of EnumerateDevicesCallback.
-  virtual void StopEnumerateDevices(int request_id) = 0;
 
   // Share a given handle with the target process.
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(

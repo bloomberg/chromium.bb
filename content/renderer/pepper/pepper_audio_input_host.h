@@ -13,20 +13,16 @@
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 
 namespace content {
-
+class PepperPlatformAudioInput;
 class RendererPpapiHostImpl;
 
-class PepperAudioInputHost
-    : public ppapi::host::ResourceHost,
-      public PluginDelegate::PlatformAudioInputClient,
-      public PepperDeviceEnumerationHostHelper::Delegate {
+class PepperAudioInputHost : public ppapi::host::ResourceHost {
  public:
   PepperAudioInputHost(RendererPpapiHostImpl* host,
                        PP_Instance instance,
@@ -37,14 +33,11 @@ class PepperAudioInputHost
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
-  // PluginDelegate::PlatformAudioInputClient implementation.
-  virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
-                             size_t shared_memory_size,
-                             base::SyncSocket::Handle socket) OVERRIDE;
-  virtual void StreamCreationFailed() OVERRIDE;
-
-  // PepperDeviceEnumerationHostHelper::Delegate implementation.
-  virtual PluginDelegate* GetPluginDelegate() OVERRIDE;
+  // Called when the stream is created.
+  void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
+                     size_t shared_memory_size,
+                     base::SyncSocket::Handle socket);
+  void StreamCreationFailed();
 
  private:
   int32_t OnOpen(ppapi::host::HostMessageContext* context,
@@ -73,9 +66,9 @@ class PepperAudioInputHost
 
   scoped_ptr<ppapi::host::ReplyMessageContext> open_context_;
 
-  // PluginDelegate audio input object that we delegate audio IPC through.
+  // Audio input object that we delegate audio IPC through.
   // We don't own this pointer but are responsible for calling Shutdown on it.
-  PluginDelegate::PlatformAudioInput* audio_input_;
+  PepperPlatformAudioInput* audio_input_;
 
   PepperDeviceEnumerationHostHelper enumeration_helper_;
 

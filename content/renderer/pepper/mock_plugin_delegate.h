@@ -49,22 +49,12 @@ class MockPluginDelegate : public PluginDelegate {
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id) OVERRIDE;
-  virtual PlatformVideoCapture* CreateVideoCapture(
-      const std::string& device_id,
-      const GURL& document_url,
-      PlatformVideoCaptureEventHandler* handler) OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputSampleRate() OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputBufferSize() OVERRIDE;
   virtual PlatformAudioOutput* CreateAudioOutput(
       uint32_t sample_rate,
       uint32_t sample_count,
       PlatformAudioOutputClient* client) OVERRIDE;
-  virtual PlatformAudioInput* CreateAudioInput(
-      const std::string& device_id,
-      const GURL& document_url,
-      uint32_t sample_rate,
-      uint32_t sample_count,
-      PlatformAudioInputClient* client) OVERRIDE;
   virtual Broker* ConnectToBroker(PPB_Broker_Impl* client) OVERRIDE;
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
@@ -173,10 +163,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
   virtual bool IsInFullscreenMode() OVERRIDE;
   virtual bool IsPageVisible() const OVERRIDE;
-  virtual int EnumerateDevices(
-      PP_DeviceType_Dev type,
-      const EnumerateDevicesCallback& callback) OVERRIDE;
-  virtual void StopEnumerateDevices(int request_id) OVERRIDE;
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       base::ProcessId target_process_id,

@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "content/renderer/pepper/mock_plugin_delegate.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/host_message_context.h"
@@ -24,12 +23,12 @@ namespace content {
 
 namespace {
 
-class TestPluginDelegate : public MockPluginDelegate {
+class TestDelegate : public PepperDeviceEnumerationHostHelper::Delegate {
  public:
-  TestPluginDelegate() : last_used_id_(0) {
+  TestDelegate() : last_used_id_(0) {
   }
 
-  virtual ~TestPluginDelegate() {
+  virtual ~TestDelegate() {
     CHECK(callbacks_.empty());
   }
 
@@ -70,38 +69,15 @@ class TestPluginDelegate : public MockPluginDelegate {
   std::map<int, EnumerateDevicesCallback> callbacks_;
   int last_used_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestPluginDelegate);
-};
-
-class TestResourceHost : public ppapi::host::ResourceHost,
-                         public PepperDeviceEnumerationHostHelper::Delegate {
- public:
-  TestResourceHost(ppapi::host::PpapiHost* host,
-                   PP_Instance instance,
-                   PP_Resource resource,
-                   PluginDelegate* delegate)
-      : ResourceHost(host, instance, resource),
-        delegate_(delegate) {
-  }
-
-  virtual ~TestResourceHost() {}
-
-  virtual PluginDelegate* GetPluginDelegate() OVERRIDE {
-    return delegate_;
-  }
-
- private:
-  PluginDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestResourceHost);
+  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
 class PepperDeviceEnumerationHostHelperTest : public testing::Test {
  protected:
   PepperDeviceEnumerationHostHelperTest()
       : ppapi_host_(&sink_, ppapi::PpapiPermissions()),
-        resource_host_(&ppapi_host_, 12345, 67890, &delegate_),
-        device_enumeration_(&resource_host_, &resource_host_,
+        resource_host_(&ppapi_host_, 12345, 67890),
+        device_enumeration_(&resource_host_, &delegate_,
                             PP_DEVICETYPE_DEV_AUDIOCAPTURE) {
   }
 
@@ -139,10 +115,10 @@ class PepperDeviceEnumerationHostHelperTest : public testing::Test {
     EXPECT_EQ(expected, reply_data);
   }
 
-  TestPluginDelegate delegate_;
+  TestDelegate delegate_;
   ppapi::proxy::ResourceMessageTestSink sink_;
   ppapi::host::PpapiHost ppapi_host_;
-  TestResourceHost resource_host_;
+  ppapi::host::ResourceHost resource_host_;
   PepperDeviceEnumerationHostHelper device_enumeration_;
 
  private:

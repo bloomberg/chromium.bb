@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -27,27 +26,25 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
     : public base::SupportsWeakPtr<ScopedRequest> {
  public:
   // |owner| must outlive this object.
-  ScopedRequest(PepperDeviceEnumerationHostHelper* owner,
-                const PluginDelegate::EnumerateDevicesCallback& callback)
+  ScopedRequest(
+      PepperDeviceEnumerationHostHelper* owner,
+      const Delegate::EnumerateDevicesCallback& callback)
       : owner_(owner),
         callback_(callback),
         requested_(false),
         request_id_(0),
         sync_call_(false) {
-    PluginDelegate* plugin_delegate = owner_->delegate_->GetPluginDelegate();
-    if (!plugin_delegate)
-      return;
-
     requested_ = true;
 
-    // Note that the callback passed into PluginDelegate::EnumerateDevices() may
-    // be called synchronously. In that case, |request_id_| hasn't been updated
+    // Note that the callback passed into
+    // PepperDeviceEnumerationHostHelper::Delegate::EnumerateDevices() may be
+    // called synchronously. In that case, |request_id_| hasn't been updated
     // when the callback is called. Moreover, |callback| may destroy this
     // object. So we don't pass in |callback| directly. Instead, we use
     // EnumerateDevicesCallbackBody() to ensure that we always call |callback|
     // asynchronously.
     sync_call_ = true;
-    request_id_ = plugin_delegate->EnumerateDevices(
+    request_id_ = owner_->delegate_->EnumerateDevices(
         owner_->device_type_,
         base::Bind(&ScopedRequest::EnumerateDevicesCallbackBody, AsWeakPtr()));
     sync_call_ = false;
@@ -55,9 +52,7 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
 
   ~ScopedRequest() {
     if (requested_) {
-      PluginDelegate* plugin_delegate = owner_->delegate_->GetPluginDelegate();
-      if (plugin_delegate)
-        plugin_delegate->StopEnumerateDevices(request_id_);
+      owner_->delegate_->StopEnumerateDevices(request_id_);
     }
   }
 
@@ -84,7 +79,8 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
   }
 
   PepperDeviceEnumerationHostHelper* owner_;
-  PluginDelegate::EnumerateDevicesCallback callback_;
+  PepperDeviceEnumerationHostHelper::Delegate::EnumerateDevicesCallback
+      callback_;
   bool requested_;
   int request_id_;
   bool sync_call_;

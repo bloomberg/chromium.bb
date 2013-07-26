@@ -101,14 +101,6 @@ MockPluginDelegate::CreateVideoDecoder(
   return NULL;
 }
 
-MockPluginDelegate::PlatformVideoCapture*
-MockPluginDelegate::CreateVideoCapture(
-    const std::string& device_id,
-    const GURL& document_url,
-    PlatformVideoCaptureEventHandler* handler){
-  return NULL;
-}
-
 uint32_t MockPluginDelegate::GetAudioHardwareOutputSampleRate() {
   return 0;
 }
@@ -121,15 +113,6 @@ MockPluginDelegate::PlatformAudioOutput* MockPluginDelegate::CreateAudioOutput(
     uint32_t sample_rate,
     uint32_t sample_count,
     PlatformAudioOutputClient* client) {
-  return NULL;
-}
-
-MockPluginDelegate::PlatformAudioInput* MockPluginDelegate::CreateAudioInput(
-    const std::string& device_id,
-    const GURL& document_url,
-    uint32_t sample_rate,
-    uint32_t sample_count,
-    PlatformAudioInputClient* client) {
   return NULL;
 }
 
@@ -365,15 +348,6 @@ bool MockPluginDelegate::IsInFullscreenMode() {
 
 bool MockPluginDelegate::IsPageVisible() const {
   return true;
-}
-
-int MockPluginDelegate::EnumerateDevices(
-    PP_DeviceType_Dev type,
-    const EnumerateDevicesCallback& callback) {
-  return -1;
-}
-
-void MockPluginDelegate::StopEnumerateDevices(int request_id) {
 }
 
 IPC::PlatformFileForTransit MockPluginDelegate::ShareHandleWithRemote(

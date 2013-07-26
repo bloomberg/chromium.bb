@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_IMPL_H_
-#define CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_IMPL_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_H_
 
 #include <string>
 
@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "media/video/capture/video_capture.h"
 #include "media/video/capture/video_capture_types.h"
 
@@ -22,20 +21,26 @@ class VideoCaptureHandlerProxy;
 }
 
 namespace content {
-
+class PepperDeviceEnumerationEventHandler;
 class PepperPluginDelegateImpl;
+class PepperVideoCaptureHost;
+class RenderViewImpl;
 
-class PepperPlatformVideoCaptureImpl
-    : public PluginDelegate::PlatformVideoCapture,
+class PepperPlatformVideoCapture
+    : public media::VideoCapture,
+      public base::RefCounted<PepperPlatformVideoCapture>,
       public media::VideoCapture::EventHandler {
  public:
-  PepperPlatformVideoCaptureImpl(
-      const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
+  PepperPlatformVideoCapture(
+      const base::WeakPtr<RenderViewImpl>& render_view,
       const std::string& device_id,
       const GURL& document_url,
-      PluginDelegate::PlatformVideoCaptureEventHandler* handler);
+      PepperVideoCaptureHost* handler);
 
-  // PluginDelegate::PlatformVideoCapture implementation.
+  // Detaches the event handler and stops sending notifications to it.
+  void DetachEventHandler();
+
+  // media::VideoCapture implementation.
   virtual void StartCapture(
       media::VideoCapture::EventHandler* handler,
       const media::VideoCaptureCapability& capability) OVERRIDE;
@@ -45,7 +50,6 @@ class PepperPlatformVideoCaptureImpl
   virtual int CaptureWidth() OVERRIDE;
   virtual int CaptureHeight() OVERRIDE;
   virtual int CaptureFrameRate() OVERRIDE;
-  virtual void DetachEventHandler() OVERRIDE;
 
   // media::VideoCapture::EventHandler implementation
   virtual void OnStarted(VideoCapture* capture) OVERRIDE;
@@ -60,7 +64,8 @@ class PepperPlatformVideoCaptureImpl
       const media::VideoCaptureParams& device_info) OVERRIDE;
 
  protected:
-  virtual ~PepperPlatformVideoCaptureImpl();
+  friend class base::RefCounted<PepperPlatformVideoCapture>;
+  virtual ~PepperPlatformVideoCapture();
 
  private:
   void Initialize();
@@ -69,7 +74,9 @@ class PepperPlatformVideoCaptureImpl
                       bool succeeded,
                       const std::string& label);
 
-  base::WeakPtr<PepperPluginDelegateImpl> plugin_delegate_;
+  PepperDeviceEnumerationEventHandler* GetDeviceEnumerationEventHandler();
+
+  base::WeakPtr<RenderViewImpl> render_view_;
 
   std::string device_id_;
   std::string label_;
@@ -77,7 +84,7 @@ class PepperPlatformVideoCaptureImpl
 
   scoped_ptr<media::VideoCaptureHandlerProxy> handler_proxy_;
 
-  PluginDelegate::PlatformVideoCaptureEventHandler* handler_;
+  PepperVideoCaptureHost* handler_;
 
   media::VideoCapture* video_capture_;
 
@@ -90,9 +97,9 @@ class PepperPlatformVideoCaptureImpl
   bool pending_open_device_;
   int pending_open_device_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperPlatformVideoCaptureImpl);
+  DISALLOW_COPY_AND_ASSIGN(PepperPlatformVideoCapture);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_IMPL_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_H_

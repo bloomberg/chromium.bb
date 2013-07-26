@@ -2,25 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_platform_video_capture_impl.h"
+#include "content/renderer/pepper/pepper_platform_video_capture.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/render_view_impl.h"
 #include "media/video/capture/video_capture_proxy.h"
 #include "url/gurl.h"
 
 namespace content {
 
-PepperPlatformVideoCaptureImpl::PepperPlatformVideoCaptureImpl(
-    const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
+PepperPlatformVideoCapture::PepperPlatformVideoCapture(
+    const base::WeakPtr<RenderViewImpl>& render_view,
     const std::string& device_id,
     const GURL& document_url,
-    PluginDelegate::PlatformVideoCaptureEventHandler* handler)
-    : plugin_delegate_(plugin_delegate),
+    PepperVideoCaptureHost* handler)
+    : render_view_(render_view),
       device_id_(device_id),
       session_id_(0),
       handler_proxy_(new media::VideoCaptureHandlerProxy(
@@ -32,17 +35,17 @@ PepperPlatformVideoCaptureImpl::PepperPlatformVideoCaptureImpl(
       pending_open_device_id_(-1) {
   // We need to open the device and obtain the label and session ID before
   // initializing.
-  if (plugin_delegate_.get()) {
-    pending_open_device_id_ = plugin_delegate_->OpenDevice(
+  if (render_view_.get()) {
+    pending_open_device_id_ = GetDeviceEnumerationEventHandler()->OpenDevice(
         PP_DEVICETYPE_DEV_VIDEOCAPTURE,
         device_id,
         document_url,
-        base::Bind(&PepperPlatformVideoCaptureImpl::OnDeviceOpened, this));
+        base::Bind(&PepperPlatformVideoCapture::OnDeviceOpened, this));
     pending_open_device_ = true;
   }
 }
 
-void PepperPlatformVideoCaptureImpl::StartCapture(
+void PepperPlatformVideoCapture::StartCapture(
     media::VideoCapture::EventHandler* handler,
     const media::VideoCaptureCapability& capability) {
   DCHECK(handler == handler_);
@@ -57,7 +60,7 @@ void PepperPlatformVideoCaptureImpl::StartCapture(
   }
 }
 
-void PepperPlatformVideoCaptureImpl::StopCapture(
+void PepperPlatformVideoCapture::StopCapture(
     media::VideoCapture::EventHandler* handler) {
   DCHECK(handler == handler_);
   if (!unbalanced_start_)
@@ -69,29 +72,29 @@ void PepperPlatformVideoCaptureImpl::StopCapture(
   }
 }
 
-void PepperPlatformVideoCaptureImpl::FeedBuffer(
+void PepperPlatformVideoCapture::FeedBuffer(
     scoped_refptr<VideoFrameBuffer> buffer) {
   if (video_capture_)
     video_capture_->FeedBuffer(buffer);
 }
 
-bool PepperPlatformVideoCaptureImpl::CaptureStarted() {
+bool PepperPlatformVideoCapture::CaptureStarted() {
   return handler_proxy_->state().started;
 }
 
-int PepperPlatformVideoCaptureImpl::CaptureWidth() {
+int PepperPlatformVideoCapture::CaptureWidth() {
   return handler_proxy_->state().width;
 }
 
-int PepperPlatformVideoCaptureImpl::CaptureHeight() {
+int PepperPlatformVideoCapture::CaptureHeight() {
   return handler_proxy_->state().height;
 }
 
-int PepperPlatformVideoCaptureImpl::CaptureFrameRate() {
+int PepperPlatformVideoCapture::CaptureFrameRate() {
   return handler_proxy_->state().frame_rate;
 }
 
-void PepperPlatformVideoCaptureImpl::DetachEventHandler() {
+void PepperPlatformVideoCapture::DetachEventHandler() {
   handler_ = NULL;
   StopCapture(NULL);
 
@@ -102,49 +105,49 @@ void PepperPlatformVideoCaptureImpl::DetachEventHandler() {
     video_capture_ = NULL;
   }
 
-  if (plugin_delegate_.get()) {
+  if (render_view_.get()) {
     if (!label_.empty()) {
-      plugin_delegate_->CloseDevice(label_);
+      GetDeviceEnumerationEventHandler()->CloseDevice(label_);
       label_.clear();
     }
     if (pending_open_device_) {
-      plugin_delegate_->CancelOpenDevice(pending_open_device_id_);
+      GetDeviceEnumerationEventHandler()->CancelOpenDevice(
+          pending_open_device_id_);
       pending_open_device_ = false;
       pending_open_device_id_ = -1;
     }
   }
 }
 
-void PepperPlatformVideoCaptureImpl::OnStarted(VideoCapture* capture) {
+void PepperPlatformVideoCapture::OnStarted(VideoCapture* capture) {
   if (handler_)
     handler_->OnStarted(capture);
 }
 
-void PepperPlatformVideoCaptureImpl::OnStopped(VideoCapture* capture) {
+void PepperPlatformVideoCapture::OnStopped(VideoCapture* capture) {
   if (handler_)
     handler_->OnStopped(capture);
 }
 
-void PepperPlatformVideoCaptureImpl::OnPaused(VideoCapture* capture) {
+void PepperPlatformVideoCapture::OnPaused(VideoCapture* capture) {
   if (handler_)
     handler_->OnPaused(capture);
 }
 
-void PepperPlatformVideoCaptureImpl::OnError(
-    VideoCapture* capture,
-    int error_code) {
+void PepperPlatformVideoCapture::OnError(VideoCapture* capture,
+                                         int error_code) {
   if (handler_)
     handler_->OnError(capture, error_code);
 }
 
-void PepperPlatformVideoCaptureImpl::OnRemoved(VideoCapture* capture) {
+void PepperPlatformVideoCapture::OnRemoved(VideoCapture* capture) {
   if (handler_)
     handler_->OnRemoved(capture);
 
   Release();  // Balance the AddRef() in StartCapture().
 }
 
-void PepperPlatformVideoCaptureImpl::OnBufferReady(
+void PepperPlatformVideoCapture::OnBufferReady(
     VideoCapture* capture,
     scoped_refptr<VideoFrameBuffer> buffer) {
   if (handler_) {
@@ -156,41 +159,47 @@ void PepperPlatformVideoCaptureImpl::OnBufferReady(
   }
 }
 
-void PepperPlatformVideoCaptureImpl::OnDeviceInfoReceived(
+void PepperPlatformVideoCapture::OnDeviceInfoReceived(
     VideoCapture* capture,
     const media::VideoCaptureParams& device_info) {
   if (handler_)
     handler_->OnDeviceInfoReceived(capture, device_info);
 }
 
-PepperPlatformVideoCaptureImpl::~PepperPlatformVideoCaptureImpl() {
+PepperPlatformVideoCapture::~PepperPlatformVideoCapture() {
   DCHECK(!video_capture_);
   DCHECK(label_.empty());
   DCHECK(!pending_open_device_);
 }
 
-void PepperPlatformVideoCaptureImpl::Initialize() {
+void PepperPlatformVideoCapture::Initialize() {
   VideoCaptureImplManager* manager =
       RenderThreadImpl::current()->video_capture_impl_manager();
   video_capture_ = manager->AddDevice(session_id_, handler_proxy_.get());
 }
 
-void PepperPlatformVideoCaptureImpl::OnDeviceOpened(int request_id,
-                                                    bool succeeded,
-                                                    const std::string& label) {
+void PepperPlatformVideoCapture::OnDeviceOpened(int request_id,
+                                                bool succeeded,
+                                                const std::string& label) {
   pending_open_device_ = false;
   pending_open_device_id_ = -1;
 
-  succeeded = succeeded && plugin_delegate_.get();
+  succeeded = succeeded && render_view_.get();
   if (succeeded) {
     label_ = label;
-    session_id_ = plugin_delegate_->GetSessionID(PP_DEVICETYPE_DEV_VIDEOCAPTURE,
-                                                 label);
+    session_id_ = GetDeviceEnumerationEventHandler()->GetSessionID(
+        PP_DEVICETYPE_DEV_VIDEOCAPTURE, label);
     Initialize();
   }
 
   if (handler_)
     handler_->OnInitialized(this, succeeded);
+}
+
+PepperDeviceEnumerationEventHandler*
+    PepperPlatformVideoCapture::GetDeviceEnumerationEventHandler() {
+  return PepperDeviceEnumerationEventHandler::GetForRenderView(
+      render_view_.get());
 }
 
 }  // namespace content
