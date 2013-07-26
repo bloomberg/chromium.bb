@@ -54,6 +54,18 @@ public:
     virtual GrGLInterface* onCreateGrGLInterface() OVERRIDE { return 0; }
 };
 
+class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
+public:
+    static PassOwnPtr<FakeCanvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode)
+    {
+        return adoptPtr(new FakeCanvas2DLayerBridge(context, canvas, opacityMode));
+    }
+protected:
+    FakeCanvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode) :
+        Canvas2DLayerBridge(context, canvas, opacityMode)
+    { }
+};
+
 } // namespace
 
 class Canvas2DLayerBridgeTest : public Test {
@@ -69,7 +81,7 @@ protected:
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-        OwnPtr<Canvas2DLayerBridge> bridge = Canvas2DLayerBridge::create(mainContext.release(), &canvas, Canvas2DLayerBridge::NonOpaque);
+        OwnPtr<Canvas2DLayerBridge> bridge = FakeCanvas2DLayerBridge::create(mainContext.release(), &canvas, Canvas2DLayerBridge::NonOpaque);
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 

@@ -108,7 +108,7 @@ public:
         // GL_EXT_texture_format_BGRA8888 enums
         BGRA_EXT = 0x80E1,
 
-        // GL_ARB_robustness enums
+        // GL_ARB_robustness/GL_CHROMIUM_lose_context enums
         GUILTY_CONTEXT_RESET_ARB = 0x8253,
         INNOCENT_CONTEXT_RESET_ARB = 0x8254,
         UNKNOWN_CONTEXT_RESET_ARB = 0x8255,
@@ -314,6 +314,9 @@ public:
     void drawArraysInstancedANGLE(GC3Denum mode, GC3Dint first, GC3Dsizei count, GC3Dsizei primcount);
     void drawElementsInstancedANGLE(GC3Denum mode, GC3Dsizei count, GC3Denum type, GC3Dintptr offset, GC3Dsizei primcount);
     void vertexAttribDivisorANGLE(GC3Duint index, GC3Duint divisor);
+
+    // GL_CHROMIUM_lose_context
+    void loseContextCHROMIUM(GC3Denum, GC3Denum);
 
 private:
     // Instances of this class are strictly owned by the GraphicsContext3D implementation and do not

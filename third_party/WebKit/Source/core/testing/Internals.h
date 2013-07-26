@@ -292,6 +292,8 @@ public:
     PassRefPtr<ClientRect> selectionBounds(ExceptionCode&);
     String baseURL(Document*, ExceptionCode&);
 
+    bool loseSharedGraphicsContext3D();
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

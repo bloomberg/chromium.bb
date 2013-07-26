@@ -100,6 +100,7 @@
 #include "core/platform/Cursor.h"
 #include "core/platform/Language.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTreeAsText.h"
@@ -2052,6 +2053,19 @@ bool Internals::isSelectPopupVisible(Node* node)
 
     RenderMenuList* menuList = toRenderMenuList(renderer);
     return menuList->popupIsVisible();
+}
+
+bool Internals::loseSharedGraphicsContext3D()
+{
+    RefPtr<GraphicsContext3D> sharedContext = SharedGraphicsContext3D::get();
+    if (!sharedContext)
+        return false;
+    sharedContext->getExtensions()->loseContextCHROMIUM(Extensions3D::GUILTY_CONTEXT_RESET_ARB, Extensions3D::INNOCENT_CONTEXT_RESET_ARB);
+    // To prevent tests that call loseSharedGraphicsContext3D from being
+    // flaky, we call finish so that the context is guaranteed to be lost
+    // synchronously (i.e. before returning).
+    sharedContext->finish();
+    return true;
 }
 
 }
