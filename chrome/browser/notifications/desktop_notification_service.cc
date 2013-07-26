@@ -617,11 +617,6 @@ void DesktopNotificationService::SetNotifierEnabled(
   }
 }
 
-bool DesktopNotificationService::IsExtensionEnabled(
-    const std::string& extension_id) {
-  return IsNotifierEnabled(NotifierId(NotifierId::APPLICATION, extension_id));
-}
-
 void DesktopNotificationService::OnStringListPrefChanged(
     const char* pref_name, std::set<std::string>* ids_field) {
   ids_field->clear();

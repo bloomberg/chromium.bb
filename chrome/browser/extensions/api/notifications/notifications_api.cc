@@ -27,6 +27,7 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_util.h"
+#include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -328,7 +329,8 @@ bool NotificationsApiFunction::CreateNotification(
 bool NotificationsApiFunction::IsNotificationsApiEnabled() {
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile());
-  return service->IsExtensionEnabled(extension_->id());
+  return service->IsNotifierEnabled(message_center::NotifierId(
+      message_center::NotifierId::APPLICATION, extension_->id()));
 }
 
 bool NotificationsApiFunction::RunImpl() {

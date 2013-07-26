@@ -237,6 +237,7 @@ using content::WebContents;
 using extensions::APIPermission;
 using extensions::Extension;
 using extensions::Manifest;
+using message_center::NotifierId;
 
 namespace {
 
@@ -1800,7 +1801,8 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
         extensions::APIPermission::kNotification, &extensions);
     for (ExtensionSet::const_iterator iter = extensions.begin();
          iter != extensions.end(); ++iter) {
-      if (notification_service->IsExtensionEnabled((*iter)->id())) {
+      if (notification_service->IsNotifierEnabled(NotifierId(
+              NotifierId::APPLICATION, (*iter)->id()))) {
         extension = iter->get();
         break;
       }
@@ -1846,7 +1848,8 @@ WebKit::WebNotificationPresenter::Permission
         extensions::APIPermission::kNotification, &extensions);
     for (ExtensionSet::const_iterator iter = extensions.begin();
          iter != extensions.end(); ++iter) {
-      if (notification_service->IsExtensionEnabled((*iter)->id()))
+      NotifierId notifier_id(NotifierId::APPLICATION, (*iter)->id());
+      if (notification_service->IsNotifierEnabled(notifier_id))
         return WebKit::WebNotificationPresenter::PermissionAllowed;
     }
 

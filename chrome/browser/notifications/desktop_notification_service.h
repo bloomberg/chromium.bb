@@ -162,10 +162,6 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled);
 
-  // IsExtensionEnabled is obsoleted, do not use this.
-  // TODO(mukai): remove this.
-  bool IsExtensionEnabled(const std::string& extension_id);
-
  private:
   // Takes a notification object and shows it in the UI.
   void ShowNotification(const Notification& notification);
