@@ -412,14 +412,12 @@ class FileSystemInterface {
       const base::FilePath& cache_file_path,
       const FileOperationCallback& callback) = 0;
 
-  // Gets the cache entry for file corresponding to |resource_id| and |md5|
-  // and runs |callback| with true and the found entry if the entry exists
-  // in the cache map. Otherwise, runs |callback| with false.
-  // |md5| can be empty if only matching |resource_id| is desired.
+  // Gets the cache entry for file corresponding to |resource_id| and runs
+  // |callback| with true and the found entry if the entry exists in the cache
+  // map. Otherwise, runs |callback| with false.
   // |callback| must not be null.
   virtual void GetCacheEntryByResourceId(
       const std::string& resource_id,
-      const std::string& md5,
       const GetCacheEntryCallback& callback) = 0;
 
   // Reloads the resource metadata from the server.

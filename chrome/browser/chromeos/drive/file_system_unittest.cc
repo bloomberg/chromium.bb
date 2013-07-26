@@ -666,8 +666,7 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(
-      entry->resource_id(), std::string(), &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(entry->resource_id(), &cache_entry));
   EXPECT_TRUE(cache_entry.is_pinned());
   EXPECT_TRUE(cache_entry.is_present());
 
@@ -678,8 +677,7 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  EXPECT_TRUE(cache_->GetCacheEntry(
-      entry->resource_id(), std::string(), &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(entry->resource_id(), &cache_entry));
   EXPECT_FALSE(cache_entry.is_pinned());
 
   // Pinned file gets synced and it results in entry state changes.
@@ -714,8 +712,7 @@ TEST_F(FileSystemTest, PinAndUnpin_NotSynced) {
 
   // No cache file available because the sync was cancelled by Unpin().
   FileCacheEntry cache_entry;
-  EXPECT_FALSE(cache_->GetCacheEntry(
-      entry->resource_id(), std::string(), &cache_entry));
+  EXPECT_FALSE(cache_->GetCacheEntry(entry->resource_id(), &cache_entry));
 }
 
 TEST_F(FileSystemTest, GetAvailableSpace) {
@@ -736,7 +733,6 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<ResourceEntry> entry(GetResourceEntryByPathSync(kFileInRoot));
   const std::string& file_resource_id = entry->resource_id();
-  const std::string& md5 = entry->file_specific_info().md5();
 
   // Open kFileInRoot ("drive/root/File 1.txt").
   FileError error = FILE_ERROR_FAILED;
@@ -767,7 +763,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(kExpectedContent, cache_file_data);
 
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(file_resource_id, md5, &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(file_resource_id, &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.is_dirty());
 

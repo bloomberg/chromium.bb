@@ -150,7 +150,6 @@ class FileSystem : public FileSystemInterface,
       const FileOperationCallback& callback) OVERRIDE;
   virtual void GetCacheEntryByResourceId(
       const std::string& resource_id,
-      const std::string& md5,
       const GetCacheEntryCallback& callback) OVERRIDE;
   virtual void Reload() OVERRIDE;
 

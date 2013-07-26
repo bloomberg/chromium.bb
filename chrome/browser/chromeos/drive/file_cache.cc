@@ -29,28 +29,6 @@ namespace {
 
 typedef std::map<std::string, FileCacheEntry> CacheMap;
 
-// Returns true if |md5| matches the one in |cache_entry| with some
-// exceptions. See the function definition for details.
-bool CheckIfMd5Matches(const std::string& md5,
-                       const FileCacheEntry& cache_entry) {
-  if (cache_entry.is_dirty()) {
-    // If the entry is dirty, its MD5 may have been replaced by "local"
-    // during cache initialization, so we don't compare MD5.
-    return true;
-  } else if (cache_entry.is_pinned() && cache_entry.md5().empty()) {
-    // If the entry is pinned, it's ok for the entry to have an empty
-    // MD5. This can happen if the pinned file is not fetched.
-    return true;
-  } else if (md5.empty()) {
-    // If the MD5 matching is not requested, don't check MD5.
-    return true;
-  } else if (md5 == cache_entry.md5()) {
-    // Otherwise, compare the MD5.
-    return true;
-  }
-  return false;
-}
-
 // Returns resource ID extracted from the path.
 std::string GetResourceIdFromPath(const base::FilePath& path) {
   return util::UnescapeCacheFileName(path.BaseName().AsUTF8Unsafe());
@@ -152,7 +130,6 @@ bool FileCache::IsUnderFileCacheDirectory(const base::FilePath& path) const {
 }
 
 void FileCache::GetCacheEntryOnUIThread(const std::string& resource_id,
-                                        const std::string& md5,
                                         const GetCacheEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -164,19 +141,16 @@ void FileCache::GetCacheEntryOnUIThread(const std::string& resource_id,
       base::Bind(&FileCache::GetCacheEntry,
                  base::Unretained(this),
                  resource_id,
-                 md5,
                  cache_entry),
       base::Bind(
           &RunGetCacheEntryCallback, callback, base::Owned(cache_entry)));
 }
 
 bool FileCache::GetCacheEntry(const std::string& resource_id,
-                              const std::string& md5,
                               FileCacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
-  return storage_->GetCacheEntry(resource_id, entry) &&
-      CheckIfMd5Matches(md5, *entry);
+  return storage_->GetCacheEntry(resource_id, entry);
 }
 
 void FileCache::IterateOnUIThread(

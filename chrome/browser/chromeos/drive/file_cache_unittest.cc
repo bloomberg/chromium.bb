@@ -139,7 +139,14 @@ class FileCacheTestOnUIThread : public testing::Test {
         FileCache::FILE_OPERATION_COPY,
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, resource_id, md5);
+
+    if (error == FILE_ERROR_OK) {
+      FileCacheEntry cache_entry;
+      EXPECT_TRUE(GetCacheEntryFromOriginThread(resource_id, &cache_entry));
+      EXPECT_EQ(md5, cache_entry.md5());
+    }
+
+    VerifyCacheFileState(error, resource_id);
   }
 
   void TestRemoveFromCache(const std::string& resource_id,
@@ -151,16 +158,14 @@ class FileCacheTestOnUIThread : public testing::Test {
         resource_id,
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
-    VerifyRemoveFromCache(error, resource_id, "");
+    VerifyRemoveFromCache(error, resource_id);
   }
 
-  void VerifyRemoveFromCache(FileError error,
-                             const std::string& resource_id,
-                             const std::string& md5) {
+  void VerifyRemoveFromCache(FileError error, const std::string& resource_id) {
     EXPECT_EQ(expected_error_, error);
 
     FileCacheEntry cache_entry;
-    if (!GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry)) {
+    if (!GetCacheEntryFromOriginThread(resource_id, &cache_entry)) {
       EXPECT_EQ(FILE_ERROR_OK, error);
 
       const base::FilePath path = cache_->GetCacheFilePath(resource_id);
@@ -179,7 +184,7 @@ class FileCacheTestOnUIThread : public testing::Test {
         resource_id,
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, resource_id, std::string());
+    VerifyCacheFileState(error, resource_id);
   }
 
   void TestUnpin(const std::string& resource_id,
@@ -193,7 +198,7 @@ class FileCacheTestOnUIThread : public testing::Test {
         resource_id,
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, resource_id, std::string());
+    VerifyCacheFileState(error, resource_id);
   }
 
   void TestMarkDirty(const std::string& resource_id,
@@ -208,7 +213,7 @@ class FileCacheTestOnUIThread : public testing::Test {
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
 
-    VerifyCacheFileState(error, resource_id, std::string());
+    VerifyCacheFileState(error, resource_id);
 
     // Verify filename.
     if (error == FILE_ERROR_OK) {
@@ -242,7 +247,14 @@ class FileCacheTestOnUIThread : public testing::Test {
                    md5),
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, resource_id, md5);
+
+    if (error == FILE_ERROR_OK) {
+      FileCacheEntry cache_entry;
+      EXPECT_TRUE(GetCacheEntryFromOriginThread(resource_id, &cache_entry));
+      EXPECT_EQ(md5, cache_entry.md5());
+    }
+
+    VerifyCacheFileState(error, resource_id);
   }
 
   void TestMarkAsMounted(const std::string& resource_id,
@@ -252,8 +264,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     expected_cache_state_ = expected_cache_state;
 
     FileCacheEntry entry;
-    EXPECT_TRUE(GetCacheEntryFromOriginThread(resource_id, std::string(),
-                                              &entry));
+    EXPECT_TRUE(GetCacheEntryFromOriginThread(resource_id, &entry));
 
     FileError error = FILE_ERROR_OK;
     base::FilePath cache_file_path;
@@ -292,15 +303,13 @@ class FileCacheTestOnUIThread : public testing::Test {
     EXPECT_EQ(cache_file_path, cache_->GetCacheFilePath(resource_id));
   }
 
-  void VerifyCacheFileState(FileError error,
-                            const std::string& resource_id,
-                            const std::string& md5) {
+  void VerifyCacheFileState(FileError error, const std::string& resource_id) {
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
     FileCacheEntry cache_entry;
     const bool cache_entry_found =
-        GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
+        GetCacheEntryFromOriginThread(resource_id, &cache_entry);
     if ((expected_cache_state_ & TEST_CACHE_STATE_PRESENT) ||
         (expected_cache_state_ & TEST_CACHE_STATE_PINNED)) {
       ASSERT_TRUE(cache_entry_found);
@@ -322,21 +331,19 @@ class FileCacheTestOnUIThread : public testing::Test {
 
   // Helper function to call GetCacheEntry from origin thread.
   bool GetCacheEntryFromOriginThread(const std::string& resource_id,
-                                     const std::string& md5,
                                      FileCacheEntry* cache_entry) {
     bool result = false;
     cache_->GetCacheEntryOnUIThread(
-        resource_id, md5,
+        resource_id,
         google_apis::test_util::CreateCopyResultCallback(&result, cache_entry));
     test_util::RunBlockingPoolTask();
     return result;
   }
 
-  // Returns true if the cache entry exists for the given resource ID and MD5.
-  bool CacheEntryExists(const std::string& resource_id,
-                        const std::string& md5) {
+  // Returns true if the cache entry exists for the given resource ID.
+  bool CacheEntryExists(const std::string& resource_id) {
     FileCacheEntry cache_entry;
-    return GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
+    return GetCacheEntryFromOriginThread(resource_id, &cache_entry);
   }
 
   // Returns the number of the cache files with name <resource_id>, and Confirm
@@ -687,7 +694,7 @@ TEST_F(FileCacheTestOnUIThread, MountUnmount) {
 
   // Mark the file mounted.
   TestMarkAsMounted(resource_id, FILE_ERROR_OK, TEST_CACHE_STATE_PRESENT);
-  EXPECT_TRUE(CacheEntryExists(resource_id, md5));
+  EXPECT_TRUE(CacheEntryExists(resource_id));
 
   // Try to remove the file.
   TestRemoveFromCache(resource_id, FILE_ERROR_IN_USE);
@@ -703,7 +710,7 @@ TEST_F(FileCacheTestOnUIThread, MountUnmount) {
 
   TestMarkAsUnmounted(resource_id, file_path, FILE_ERROR_OK,
                       TEST_CACHE_STATE_PRESENT);
-  EXPECT_TRUE(CacheEntryExists(resource_id, md5));
+  EXPECT_TRUE(CacheEntryExists(resource_id));
 
   // Try to remove the file.
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
@@ -757,7 +764,7 @@ TEST_F(FileCacheTestOnUIThread, ClearAll) {
 
   // Verify that all the cache is removed.
   expected_error_ = FILE_ERROR_OK;
-  VerifyRemoveFromCache(FILE_ERROR_OK, resource_id, md5);
+  VerifyRemoveFromCache(FILE_ERROR_OK, resource_id);
   EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));
 }
 
@@ -866,7 +873,7 @@ TEST_F(FileCacheTest, ScanCacheFile) {
 
   // Check contents of the cache.
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry("id_foo", std::string(), &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry("id_foo", &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_EQ(base::MD5String("foo"), cache_entry.md5());
 }
@@ -900,10 +907,10 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
 
   // Only 'temporary' file gets removed.
   FileCacheEntry entry;
-  EXPECT_FALSE(cache_->GetCacheEntry(resource_id_tmp, md5_tmp, &entry));
+  EXPECT_FALSE(cache_->GetCacheEntry(resource_id_tmp, &entry));
   EXPECT_FALSE(base::PathExists(tmp_path));
 
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_id_pinned, md5_pinned, &entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(resource_id_pinned, &entry));
   EXPECT_TRUE(base::PathExists(pinned_path));
 
   // Returns false when disk space cannot be freed.
@@ -941,9 +948,9 @@ TEST_F(FileCacheTest, ImportOldDB) {
 
   // Data is imported correctly.
   FileCacheEntry entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(key1, std::string(), &entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(key1, &entry));
   EXPECT_EQ(md5_1, entry.md5());
-  EXPECT_TRUE(cache_->GetCacheEntry(key2, std::string(), &entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(key2, &entry));
   EXPECT_EQ(md5_2, entry.md5());
 }
 

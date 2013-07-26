@@ -70,7 +70,7 @@ TEST_F(RemoveStaleCacheFilesTest, RemoveStaleCacheFiles) {
 
   // Verify that the cache entry exists.
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_id, md5, &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(resource_id, &cache_entry));
 
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
@@ -80,7 +80,7 @@ TEST_F(RemoveStaleCacheFilesTest, RemoveStaleCacheFiles) {
   RemoveStaleCacheFiles(cache_.get(), resource_metadata_.get());
 
   // Verify that the cache entry is deleted.
-  EXPECT_FALSE(cache_->GetCacheEntry(resource_id, md5, &cache_entry));
+  EXPECT_FALSE(cache_->GetCacheEntry(resource_id, &cache_entry));
 }
 
 TEST_F(RemoveStaleCacheFilesTest, DirtyCacheFiles) {
@@ -117,8 +117,8 @@ TEST_F(RemoveStaleCacheFilesTest, DirtyCacheFiles) {
   // Dirty cache should be removed if and only if the entry does not exist in
   // resource_metadata.
   FileCacheEntry cache_entry;
-  EXPECT_FALSE(cache_->GetCacheEntry(resource_id_1, md5_1, &cache_entry));
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_id_2, md5_2_cache, &cache_entry));
+  EXPECT_FALSE(cache_->GetCacheEntry(resource_id_1, &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(resource_id_2, &cache_entry));
 }
 
 }  // namespace internal

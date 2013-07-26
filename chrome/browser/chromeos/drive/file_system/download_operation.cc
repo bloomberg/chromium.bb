@@ -68,9 +68,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
 
   // Leave |cache_file_path| empty when no cache entry is found.
   FileCacheEntry cache_entry;
-  if (!cache->GetCacheEntry(entry->resource_id(),
-                            entry->file_specific_info().md5(),
-                            &cache_entry))
+  if (!cache->GetCacheEntry(entry->resource_id(), &cache_entry))
     return FILE_ERROR_OK;
 
   // Leave |cache_file_path| empty when the stored file is obsolete and has no

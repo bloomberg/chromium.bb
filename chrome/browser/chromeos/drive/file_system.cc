@@ -854,13 +854,12 @@ void FileSystem::MarkCacheFileAsUnmounted(
 
 void FileSystem::GetCacheEntryByResourceId(
     const std::string& resource_id,
-    const std::string& md5,
     const GetCacheEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!resource_id.empty());
   DCHECK(!callback.is_null());
 
-  cache_->GetCacheEntryOnUIThread(resource_id, md5, callback);
+  cache_->GetCacheEntryOnUIThread(resource_id, callback);
 }
 
 void FileSystem::OnDisableDriveHostedFilesChanged() {
@@ -921,15 +920,12 @@ void FileSystem::CheckLocalModificationAndRun(
 
   // Checks if the file is cached and modified locally.
   const std::string resource_id = entry->resource_id();
-  const std::string md5 = entry->file_specific_info().md5();
   cache_->GetCacheEntryOnUIThread(
       resource_id,
-      md5,
-      base::Bind(
-          &FileSystem::CheckLocalModificationAndRunAfterGetCacheEntry,
-          weak_ptr_factory_.GetWeakPtr(),
-          base::Passed(&entry),
-          callback));
+      base::Bind(&FileSystem::CheckLocalModificationAndRunAfterGetCacheEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&entry),
+                 callback));
 }
 
 void FileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(

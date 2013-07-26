@@ -148,7 +148,7 @@ TEST_F(DownloadOperationTest,
   FileCacheEntry cache_entry;
   bool result = true;
   cache()->GetCacheEntryOnUIThread(
-      "<resource_id>", "<md5>",
+      "<resource_id>",
       google_apis::test_util::CreateCopyResultCallback(&result,
                                                        &cache_entry));
   test_util::RunBlockingPoolTask();

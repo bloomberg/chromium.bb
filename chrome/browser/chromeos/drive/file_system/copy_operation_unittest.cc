@@ -60,7 +60,7 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
   FileCacheEntry cache_entry;
   bool found = false;
   cache()->GetCacheEntryOnUIThread(
-      entry.resource_id(), std::string(),
+      entry.resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&found, &cache_entry));
   test_util::RunBlockingPoolTask();
   EXPECT_TRUE(found);

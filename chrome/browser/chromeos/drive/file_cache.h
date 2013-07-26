@@ -98,20 +98,17 @@ class FileCache {
   // Can be called on any thread.
   bool IsUnderFileCacheDirectory(const base::FilePath& path) const;
 
-  // Gets the cache entry for file corresponding to |resource_id| and |md5|
-  // and runs |callback| with true and the entry found if entry exists in cache
-  // map.  Otherwise, runs |callback| with false.
-  // |md5| can be empty if only matching |resource_id| is desired.
+  // Gets the cache entry for file corresponding to |resource_id| and runs
+  // |callback| with true and the entry found if entry exists in cache map.
+  // Otherwise, runs |callback| with false.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void GetCacheEntryOnUIThread(const std::string& resource_id,
-                               const std::string& md5,
                                const GetCacheEntryCallback& callback);
 
-  // Gets the cache entry by the given resource ID and MD5.
+  // Gets the cache entry by the given resource ID.
   // See also GetCacheEntryOnUIThread().
   bool GetCacheEntry(const std::string& resource_id,
-                     const std::string& md5,
                      FileCacheEntry* entry);
 
   // Runs Iterate() with |iteration_callback| on |blocking_task_runner_| and

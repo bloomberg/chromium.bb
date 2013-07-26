@@ -224,7 +224,6 @@ void FakeFileSystem::MarkCacheFileAsUnmounted(
 
 void FakeFileSystem::GetCacheEntryByResourceId(
     const std::string& resource_id,
-    const std::string& md5,
     const GetCacheEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

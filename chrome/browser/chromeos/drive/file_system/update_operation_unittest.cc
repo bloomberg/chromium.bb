@@ -94,7 +94,6 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_PersistentFile) {
   FileCacheEntry cache_entry;
   cache()->GetCacheEntryOnUIThread(
       server_entry->resource_id(),
-      server_entry->file_md5(),
       google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
   test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
@@ -169,7 +168,6 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
   FileCacheEntry cache_entry;
   cache()->GetCacheEntryOnUIThread(
       server_entry->resource_id(),
-      server_entry->file_md5(),
       google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
   test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
@@ -201,7 +199,6 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
   success = false;
   cache()->GetCacheEntryOnUIThread(
       server_entry->resource_id(),
-      server_entry->file_md5(),
       google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
   test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
