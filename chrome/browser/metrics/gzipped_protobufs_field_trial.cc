@@ -37,7 +37,7 @@ void CreateGzippedProtobufsFieldTrial() {
           kTrialDivisor,
           kControlGroupName,
           2013,
-          9,
+          10,
           1,
           NULL);
   gzipped_protobufs_trial->UseOneTimeRandomization();
