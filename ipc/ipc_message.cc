@@ -27,7 +27,7 @@ inline uint32 GetRefNumUpper24() {
   // Process ID. With the current trace event buffer cap, the 14-bit count did
   // not appear to wrap during a trace. Note that it is not a big deal if
   // collisions occur, as this is only used for debugging and trace analysis.
-  return ((pid << 14) | (count & 0x3fff)) << 8;
+  return ((pid << 22) | (count & 0x3fff)) << 8;
 }
 
 }  // namespace
