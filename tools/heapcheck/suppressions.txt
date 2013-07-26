@@ -475,14 +475,6 @@
   fun:*TestBody
 }
 {
-   bug_145701
-   Heapcheck:Leak
-   fun:ShareGroup
-   fun:GLES2Implementation
-   fun:gpu::gles2::GLES2ImplementationTest::Initialize
-   fun:gpu::gles2::GLES2Implementation*::SetUp
-}
-{
    bug_145703
    Heapcheck:Leak
    ...
@@ -1000,30 +992,6 @@
    fun:jingle_glue::ProxyResolvingClientSocket::ProcessProxyResolveDone
 }
 {
-   bug_259357a
-   Heapcheck:Leak
-   ...
-   fun:*Proto::*
-   ...
-   fun:gpu::gles2::MemoryProgramCache*
-   fun:gpu::gles2::MemoryProgramCacheTest_*
-}
-{
-   bug_259357b
-   Heapcheck:Leak
-   ...
-   fun:std::set::insert
-   fun:gpu::IdAllocator::*
-}
-{
-   bug_259357c
-   Heapcheck:Leak
-   ...
-   fun:gpu::MappedMemoryManager::Alloc
-   ...
-   fun:gpu::*_Test::TestBody
-}
-{
    bug_222687a
    Heapcheck:Leak
    ...
@@ -1102,4 +1070,11 @@
    Heapcheck:Leak
    ...
    fun:EncodeDecodeTest_Elf_Small_Test::TestBody
+}
+{
+   bug_264225
+   Heapcheck:Leak
+   ...
+   fun:TestingProfile::CreateRequestContext
+   fun:UbertokenFetcherTest::SetUp
 }
