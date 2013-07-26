@@ -40,7 +40,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual bool OnDraw(jobject java_canvas,
                       bool is_hardware_canvas,
                       const gfx::Vector2d& scroll_,
-                      const gfx::Rect& clip) OVERRIDE;
+                      const gfx::Rect& clip,
+                      const gfx::Rect& visible_rect) OVERRIDE;
   virtual void DrawGL(AwDrawGLInfo* draw_info) OVERRIDE;
   virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture() OVERRIDE;
   virtual void EnableOnNewPicture(bool enabled) OVERRIDE;
@@ -114,6 +115,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // Used only for detecting Android View System context changes.
   // Not to be used between draw calls.
   EGLContext last_egl_context_;
+
+  gfx::Rect global_visible_rect_at_start_of_frame_;
 
   // Last View scroll when View.onDraw() was called.
   gfx::Vector2d scroll_at_start_of_frame_;

@@ -196,8 +196,10 @@ void InProcessViewRenderer::WebContentsGone() {
 bool InProcessViewRenderer::OnDraw(jobject java_canvas,
                                    bool is_hardware_canvas,
                                    const gfx::Vector2d& scroll,
-                                   const gfx::Rect& clip) {
+                                   const gfx::Rect& clip,
+                                   const gfx::Rect& visible_rect) {
   scroll_at_start_of_frame_  = scroll;
+  global_visible_rect_at_start_of_frame_ = visible_rect;
   if (is_hardware_canvas && attached_to_window_ && HardwareEnabled()) {
     // We should be performing a hardware draw here. If we don't have the
     // comositor yet or if RequestDrawGL fails, it means we failed this draw and
@@ -589,10 +591,10 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
     AwDrawGLInfo* draw_info) {
   if (continuous_invalidate_ && !block_invalidates_) {
     if (draw_info) {
-      draw_info->dirty_left = draw_info->clip_left;
-      draw_info->dirty_top = draw_info->clip_top;
-      draw_info->dirty_right = draw_info->clip_right;
-      draw_info->dirty_bottom = draw_info->clip_bottom;
+      draw_info->dirty_left = global_visible_rect_at_start_of_frame_.x();
+      draw_info->dirty_top = global_visible_rect_at_start_of_frame_.y();
+      draw_info->dirty_right = global_visible_rect_at_start_of_frame_.right();
+      draw_info->dirty_bottom = global_visible_rect_at_start_of_frame_.bottom();
       draw_info->status_mask |= AwDrawGLInfo::kStatusMaskDraw;
     } else {
       client_->PostInvalidate();

@@ -169,6 +169,7 @@ public class AwContents {
     // picture listener API has not yet been enabled, or if it is using invalidation-only mode.
     private Callable<Picture> mPictureListenerContentProvider;
 
+    private final Rect mLastGlobalVisibleBounds = new Rect();
     private int mLastGlobalVisibleWidth;
     private int mLastGlobalVisibleHeight;
 
@@ -401,7 +402,7 @@ public class AwContents {
             // more of the containing view  becomes visible (i.e. a containing view
             // with a width/height of "wrap_content" and dimensions greater than
             // that of the screen).
-            AwContents.this.updatePhysicalBackingSizeIfNeeded();
+            AwContents.this.updateGlobalVisibleBounds();
          }
     };
 
@@ -620,23 +621,8 @@ public class AwContents {
         return nativeGetAwDrawGLViewContext(mNativeAwContents);
     }
 
-    // Only valid within updatePhysicalBackingSizeIfNeeded().
-    private final Rect mGlobalVisibleBoundsTemporary = new Rect();
-
-    private void updatePhysicalBackingSizeIfNeeded() {
-        // We musn't let the physical backing size get too big, otherwise we
-        // will try to allocate a SurfaceTexture beyond what the GL driver can
-        // cope with. In most cases, limiting the SurfaceTexture size to that
-        // of the visible bounds of the WebView will be good enough i.e. the maximum
-        // SurfaceTexture dimensions will match the screen dimensions).
-        mContainerView.getGlobalVisibleRect(mGlobalVisibleBoundsTemporary);
-        int width = mGlobalVisibleBoundsTemporary.width();
-        int height = mGlobalVisibleBoundsTemporary.height();
-        if (width != mLastGlobalVisibleWidth || height != mLastGlobalVisibleHeight) {
-            mLastGlobalVisibleWidth = width;
-            mLastGlobalVisibleHeight = height;
-            mContentViewCore.onPhysicalBackingSizeChanged(width, height);
-        }
+    private void updateGlobalVisibleBounds() {
+        mContainerView.getGlobalVisibleRect(mLastGlobalVisibleBounds);
     }
 
     //--------------------------------------------------------------------------------------------
@@ -658,7 +644,9 @@ public class AwContents {
         if (!nativeOnDraw(mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
                     mContainerView.getScrollX(), mContainerView.getScrollY(),
                     mClipBoundsTemporary.left, mClipBoundsTemporary.top,
-                    mClipBoundsTemporary.right, mClipBoundsTemporary.bottom )) {
+                    mClipBoundsTemporary.right, mClipBoundsTemporary.bottom,
+                    mLastGlobalVisibleBounds.left, mLastGlobalVisibleBounds.top,
+                    mLastGlobalVisibleBounds.right, mLastGlobalVisibleBounds.bottom)) {
             Log.w(TAG, "nativeOnDraw failed; clearing to background color.");
             canvas.drawColor(getEffectiveBackgroundColor());
         }
@@ -1370,7 +1358,7 @@ public class AwContents {
     public void onSizeChanged(int w, int h, int ow, int oh) {
         if (mNativeAwContents == 0) return;
         mScrollOffsetManager.setContainerViewSize(w, h);
-        updatePhysicalBackingSizeIfNeeded();
+        mContentViewCore.onPhysicalBackingSizeChanged(w, h);
         mContentViewCore.onSizeChanged(w, h, ow, oh);
         nativeOnSizeChanged(mNativeAwContents, w, h, ow, oh);
     }
@@ -1751,7 +1739,8 @@ public class AwContents {
     private native void nativeAddVisitedLinks(int nativeAwContents, String[] visitedLinks);
     private native boolean nativeOnDraw(int nativeAwContents, Canvas canvas,
             boolean isHardwareAccelerated, int scrollX, int ScrollY,
-            int clipLeft, int clipTop, int clipRight, int clipBottom);
+            int clipLeft, int clipTop, int clipRight, int clipBottom,
+            int visibleLeft, int visibleTop, int visibleRight, int visibleBottom);
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);
     private native void nativeFindNext(int nativeAwContents, boolean forward);
     private native void nativeClearMatches(int nativeAwContents);

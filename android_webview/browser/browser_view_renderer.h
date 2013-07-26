@@ -90,11 +90,13 @@ class BrowserViewRenderer {
   // return value indicates nothing was or will be drawn.
   // |java_canvas| is the target of the draw. |is_hardware_canvas| indicates
   // a GL Draw maybe possible on this canvas. |scroll| if the view's current
-  // scroll offset. |clip| is the canvas's clip bounds.
+  // scroll offset. |clip| is the canvas's clip bounds. |visible_rect| is the
+  // intersection of the view size and the window in window coordinates.
   virtual bool OnDraw(jobject java_canvas,
                       bool is_hardware_canvas,
                       const gfx::Vector2d& scroll,
-                      const gfx::Rect& clip) = 0;
+                      const gfx::Rect& clip,
+                      const gfx::Rect& visible_rect) = 0;
   // Called in response to a prior Client::RequestDrawGL() call. See
   // AwDrawGLInfo documentation for more details of the contract.
   virtual void DrawGL(AwDrawGLInfo* draw_info) = 0;

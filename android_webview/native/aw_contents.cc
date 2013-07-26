@@ -650,14 +650,21 @@ bool AwContents::OnDraw(JNIEnv* env,
                         jint clip_left,
                         jint clip_top,
                         jint clip_right,
-                        jint clip_bottom) {
-  return browser_view_renderer_->OnDraw(canvas,
-                                        is_hardware_accelerated,
-                                        gfx::Vector2d(scroll_x, scroll_y),
-                                        gfx::Rect(clip_left,
-                                                  clip_top,
-                                                  clip_right - clip_left,
-                                                  clip_bottom - clip_top));
+                        jint clip_bottom,
+                        jint visible_left,
+                        jint visible_top,
+                        jint visible_right,
+                        jint visible_bottom) {
+  return browser_view_renderer_->OnDraw(
+      canvas,
+      is_hardware_accelerated,
+      gfx::Vector2d(scroll_x, scroll_y),
+      gfx::Rect(
+          clip_left, clip_top, clip_right - clip_left, clip_bottom - clip_top),
+      gfx::Rect(visible_left,
+                visible_top,
+                visible_right - visible_left,
+                visible_bottom - visible_top));
 }
 
 void AwContents::SetPendingWebContentsForPopup(
