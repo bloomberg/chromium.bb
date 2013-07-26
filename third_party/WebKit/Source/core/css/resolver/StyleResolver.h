@@ -288,7 +288,7 @@ private:
 
     bool fastRejectSelector(const RuleData&) const;
 
-    void applyMatchedProperties(StyleResolverState&, const MatchResult&, const Element*);
+    void applyMatchedProperties(StyleResolverState&, const MatchResult&);
 
     enum StyleApplicationPass {
         VariableDefinitions,

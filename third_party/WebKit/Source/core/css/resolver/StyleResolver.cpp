@@ -605,7 +605,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         else
             matchAllRules(state, collector, m_matchAuthorAndUserStyles, matchingBehavior != MatchAllRulesExcludingSMIL);
 
-        applyMatchedProperties(state, collector.matchedResult(), element);
+        applyMatchedProperties(state, collector.matchedResult());
     }
     {
         StyleAdjuster adjuster(state.cachedUAStyle(), m_document->inQuirksMode());
@@ -800,7 +800,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
         state.style()->setStyleType(pseudoStyleRequest.pseudoId);
 
-        applyMatchedProperties(state, collector.matchedResult(), e);
+        applyMatchedProperties(state, collector.matchedResult());
     }
     {
         StyleAdjuster adjuster(state.cachedUAStyle(), m_document->inQuirksMode());
@@ -1188,8 +1188,9 @@ void StyleResolver::invalidateMatchedPropertiesCache()
     m_matchedPropertiesCache.clear();
 }
 
-void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult, const Element* element)
+void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult)
 {
+    const Element* element = state.element();
     ASSERT(element);
     STYLE_STATS_ADD_MATCHED_PROPERTIES_SEARCH();
 
@@ -1197,7 +1198,8 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     bool applyInheritedOnly = false;
     const CachedMatchedProperties* cachedMatchedProperties = 0;
 
-    if (cacheHash && (cachedMatchedProperties = m_matchedPropertiesCache.find(cacheHash, state, matchResult))) {
+    if (cacheHash && (cachedMatchedProperties = m_matchedPropertiesCache.find(cacheHash, state, matchResult))
+        && MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle())) {
         STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT();
         // We can build up the style by copying non-inherited properties from an earlier style object built using the same exact
         // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the
@@ -1286,7 +1288,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     if (cachedMatchedProperties || !cacheHash)
         return;
-    if (!MatchedPropertiesCache::isCacheable(state.element(), state.style(), state.parentStyle()))
+    if (!MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle()))
         return;
     STYLE_STATS_ADD_MATCHED_PROPERTIES_ENTERED_INTO_CACHE();
     m_matchedPropertiesCache.add(state.style(), state.parentStyle(), cacheHash, matchResult);
