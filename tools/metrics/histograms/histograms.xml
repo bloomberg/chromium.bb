@@ -3342,6 +3342,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.NonWebStoreNewTabPageOverrides">
+  <summary>
+    Number of non-WebStore extensions on startup that override the new tab page.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_AutoDisable" enum="ExtensionPermission">
   <summary>
     The permissions present in an extension when it is automatically disabled

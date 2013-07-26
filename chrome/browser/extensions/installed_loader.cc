@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -247,6 +248,7 @@ void InstalledLoader::LoadAllExtensions() {
   int browser_action_count = 0;
   int disabled_for_permissions_count = 0;
   int item_user_count = 0;
+  int non_webstore_ntp_override_count = 0;
   const ExtensionSet* extensions = extension_service_->extensions();
   ExtensionSet::const_iterator ex;
   for (ex = extensions->begin(); ex != extensions->end(); ++ex) {
@@ -264,6 +266,15 @@ void InstalledLoader::LoadAllExtensions() {
     // implementation detail.
     if (location == Manifest::COMPONENT)
       continue;
+    // Histogram for non-webstore extensions overriding new tab page should
+    // include unpacked extensions.
+    if (!(*ex)->from_webstore()) {
+      const extensions::URLOverrides::URLOverrideMap& override_map =
+          extensions::URLOverrides::GetChromeURLOverrides(ex->get());
+      if (override_map.find("newtab") != override_map.end()) {
+        ++non_webstore_ntp_override_count;
+      }
+    }
 
     // Don't count unpacked extensions, since they're a developer-specific
     // feature.
@@ -372,6 +383,8 @@ void InstalledLoader::LoadAllExtensions() {
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadContentPack", content_pack_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.DisabledForPermissions",
                            disabled_for_permissions_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.NonWebStoreNewTabPageOverrides",
+                           non_webstore_ntp_override_count);
 }
 
 int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
