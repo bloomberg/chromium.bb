@@ -1,8 +1,6 @@
 @hex:
   # Test valid TLS access commands.
-  # mov %gs:0, %eax
   65 a1 00 00 00 00
-  # mov %gs:4, %eax
   65 a1 04 00 00 00
 @dis:
      0:	65 a1 00 00 00 00                            	mov    %gs:0x0,%eax
@@ -14,7 +12,6 @@
 ----------------------------------------------------------------------
 @hex:
   # Access with something besides 'mov'
-  # add %gs:0, %eax
   65 03 05 00 00 00 00
 @dis:
      0:	65 03 05 00 00 00 00                         	add    %gs:0x0,%eax
@@ -25,53 +22,81 @@
   0: ('segments in memory references are not allowed', Instruction(0x0: 65 03 05 00 00 00 00  add %gs:0x0,%eax))
 ----------------------------------------------------------------------
 @hex:
-  # Forbidden forms
-  # mov %gs:0, %ax
+  # Forbidden form (16-bit register)
   65 66 a1 00 00 00 00
-  # mov %ax, %gs:0
-  65 66 a3 00 00 00 00
-  # lock add %gs:0x0,%eax
-  65 F0 03 05 00 00 00 00
 @dis:
      0:	65 66 a1 00 00 00 00                         	mov    %gs:0x0,%ax
-     7:	65 66 a3 00 00 00 00                         	mov    %ax,%gs:0x0
-     e:	65 f0 03 05 00 00 00 00                      	lock add %gs:0x0,%eax
 @rdfa_output:
   0: [0] unrecognized instruction
-  7: [1] unrecognized instruction
-  e: [2] unrecognized instruction
   return code: 1
 @spec:
   0: ('segments in memory references are not allowed', Instruction(0x0: 65 66 a1 00 00 00 00  mov %gs:0x0,%ax))
-  7: ('segments in memory references are not allowed', Instruction(0x7: 65 66 a3 00 00 00 00  mov %ax,%gs:0x0))
-  e: ('segments in memory references are not allowed', Instruction(0xe: 65 f0 03 05 00 00 00 00  lock add %gs:0x0,%eax))
+----------------------------------------------------------------------
+@hex:
+  # Forbidden form (16-bit register)
+  65 66 a3 00 00 00 00
+@dis:
+     0:	65 66 a3 00 00 00 00                         	mov    %ax,%gs:0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 65 66 a3 00 00 00 00  mov %ax,%gs:0x0))
+----------------------------------------------------------------------
+@hex:
+  # Forbidden form (lock)
+  65 F0 03 05 00 00 00 00
+@dis:
+     0:	65 f0 03 05 00 00 00 00                      	lock add %gs:0x0,%eax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 65 f0 03 05 00 00 00 00  lock add %gs:0x0,%eax))
 ----------------------------------------------------------------------
 @hex:
   # Access through fs.
-  # mov %fs:0, %eax
   64 a1 00 00 00 00
-  # mov %eax, %fs:0
-  64 a3 00 00 00 00
-  # mov %fs:0, %ax
-  64 66 a1 00 00 00 00
-  # mov %ax, %fs:0
-  64 66 a3 00 00 00 00
 @dis:
      0:	64 a1 00 00 00 00                            	mov    %fs:0x0,%eax
-     6:	64 a3 00 00 00 00                            	mov    %eax,%fs:0x0
-     c:	64 66 a1 00 00 00 00                         	mov    %fs:0x0,%ax
-    13:	64 66 a3 00 00 00 00                         	mov    %ax,%fs:0x0
 @rdfa_output:
   0: [0] unrecognized instruction
-  6: [1] unrecognized instruction
-  c: [2] unrecognized instruction
-  13: [3] unrecognized instruction
   return code: 1
 @spec:
   0: ('segments in memory references are not allowed', Instruction(0x0: 64 a1 00 00 00 00  mov %fs:0x0,%eax))
-  6: ('segments in memory references are not allowed', Instruction(0x6: 64 a3 00 00 00 00  mov %eax,%fs:0x0))
-  c: ('segments in memory references are not allowed', Instruction(0xc: 64 66 a1 00 00 00 00  mov %fs:0x0,%ax))
-  13: ('segments in memory references are not allowed', Instruction(0x13: 64 66 a3 00 00 00 00  mov %ax,%fs:0x0))
+----------------------------------------------------------------------
+@hex:
+  # Access through fs.
+  64 a3 00 00 00 00
+@dis:
+     0:	64 a3 00 00 00 00                            	mov    %eax,%fs:0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 64 a3 00 00 00 00  mov %eax,%fs:0x0))
+----------------------------------------------------------------------
+@hex:
+  # Access through fs.
+  64 66 a1 00 00 00 00
+@dis:
+     0:	64 66 a1 00 00 00 00                         	mov    %fs:0x0,%ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 64 66 a1 00 00 00 00  mov %fs:0x0,%ax))
+----------------------------------------------------------------------
+@hex:
+  # Access through fs.
+  64 66 a3 00 00 00 00
+@dis:
+     0:	64 66 a3 00 00 00 00                         	mov    %ax,%fs:0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 64 66 a3 00 00 00 00  mov %ax,%fs:0x0))
 ----------------------------------------------------------------------
 @hex:
   # Can we write to gs segment?
@@ -87,24 +112,32 @@
 ----------------------------------------------------------------------
 @hex:
   # Fixed offsets besides 0 and 4
-  # mov %gs:3, %eax
   65 a1 03 00 00 00
-  # mov %gs:8, %eax
-  65 a1 08 00 00 00
-  
-  # Can we read from arbitrary offset?
-  # mov %gs:%eax, %eax
-  65 8B 00
 @dis:
      0:	65 a1 03 00 00 00                            	mov    %gs:0x3,%eax
-     6:	65 a1 08 00 00 00                            	mov    %gs:0x8,%eax
-     c:	65 8b 00                                     	mov    %gs:(%eax),%eax
 @rdfa_output:
   0: [0] unrecognized instruction
-  6: [1] unrecognized instruction
-  c: [2] unrecognized instruction
   return code: 1
 @spec:
   0: ('segments in memory references are not allowed', Instruction(0x0: 65 a1 03 00 00 00  mov %gs:0x3,%eax))
-  6: ('segments in memory references are not allowed', Instruction(0x6: 65 a1 08 00 00 00  mov %gs:0x8,%eax))
-  c: ('segments in memory references are not allowed', Instruction(0xc: 65 8b 00  mov %gs:(%eax),%eax))
+----------------------------------------------------------------------
+@hex:
+  65 a1 08 00 00 00
+@dis:
+     0:	65 a1 08 00 00 00                            	mov    %gs:0x8,%eax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 65 a1 08 00 00 00  mov %gs:0x8,%eax))
+----------------------------------------------------------------------
+@hex:
+  # Can we read from arbitrary offset?
+  65 8B 00
+@dis:
+     0:	65 8b 00                                     	mov    %gs:(%eax),%eax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 65 8b 00  mov %gs:(%eax),%eax))
