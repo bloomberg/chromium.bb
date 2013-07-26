@@ -83,6 +83,11 @@ evdev_process_key(struct evdev_device *device, struct input_event *e, int time)
 					 WL_POINTER_BUTTON_STATE_RELEASED);
 		break;
 
+	case BTN_TOUCH:
+		if (e->value == 0 && !device->is_mt)
+			notify_touch(device->seat, time, device->mt.slot, 0, 0,
+				     WL_TOUCH_UP);
+		break;
 	default:
 		notify_key(device->seat,
 			   time, e->code,
@@ -295,7 +300,16 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 		weston_output_transform_coordinate(device->output,
 						   device->abs.x,
 						   device->abs.y, &x, &y);
-		notify_motion_absolute(master, time, x, y);
+
+		if (device->caps & EVDEV_TOUCH) {
+			if (master->num_tp == 0)
+				notify_touch(master, time, 0,
+					     x, y, WL_TOUCH_DOWN);
+			else
+				notify_touch(master, time, 0,
+					     x, y, WL_TOUCH_MOTION);
+		} else
+			notify_motion_absolute(master, time, x, y);
 		device->pending_events &= ~EVDEV_ABSOLUTE_MOTION;
 	}
 }
@@ -482,6 +496,10 @@ evdev_handle_device(struct evdev_device *device)
 				break;
 			}
 		}
+		if (TEST_BIT(key_bits, BTN_TOUCH)) {
+			device->caps |= EVDEV_TOUCH;
+		}
+
 	}
 	if (TEST_BIT(ev_bits, EV_LED)) {
 		device->caps |= EVDEV_KEYBOARD;
