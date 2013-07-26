@@ -818,7 +818,6 @@ DriveProvider.prototype.convert_ = function(data, url) {
     dirty: data.isDirty,
     availableOffline: DriveProvider.isAvailableOffline(data, url),
     availableWhenMetered: DriveProvider.isAvailableWhenMetered(data),
-    shareUrl: data.shareUrl || '',
     driveApps: data.driveApps || [],
     contentMimeType: data.contentMimeType || '',
     sharedWithMe: data.sharedWithMe

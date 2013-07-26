@@ -46,8 +46,7 @@ message FileSpecificInfo {
   // drive.google.com such as documents, spreadsheets, and presentations).
   optional bool is_hosted_document = 6;
 
-  // This URL points to a page containing Share UI for this document.
-  optional string share_url = 7;
+  // The argument with ID 7 had been used, but got deleted. Next ID to use: 8.
 }
 
 // Directory specific info, which is a part of ResourceEntry.

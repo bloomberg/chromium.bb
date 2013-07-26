@@ -81,8 +81,6 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
             entry.file_specific_info().thumbnail_url());
   EXPECT_EQ("https://file_link_alternate/",
             entry.file_specific_info().alternate_url());
-  EXPECT_EQ("https://file_link_share/",
-            entry.file_specific_info().share_url());
 
   // Regular file specific fields.
   EXPECT_EQ(892721,  entry.file_info().size());
@@ -317,8 +315,6 @@ TEST(ResourceEntryConversionTest,
             entry.file_specific_info().thumbnail_url());
   EXPECT_EQ("https://alternate/document%3Adeleted_in_root_id/edit",
             entry.file_specific_info().alternate_url());
-  EXPECT_EQ("",
-            entry.file_specific_info().share_url());
 
   // The size should be 0 for a hosted document.
   EXPECT_EQ(0,  entry.file_info().size());

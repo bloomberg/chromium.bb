@@ -107,11 +107,6 @@ ResourceEntry ConvertToResourceEntry(
         input.GetLinkByType(google_apis::Link::LINK_ALTERNATE);
     if (alternate_link)
       file_specific_info->set_alternate_url(alternate_link->href().spec());
-
-    const google_apis::Link* share_link =
-        input.GetLinkByType(google_apis::Link::LINK_SHARE);
-    if (share_link)
-      file_specific_info->set_share_url(share_link->href().spec());
   } else if (input.is_folder()) {
     file_info->set_is_directory(true);
   } else {

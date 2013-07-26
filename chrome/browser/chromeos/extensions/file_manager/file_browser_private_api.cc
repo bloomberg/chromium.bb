@@ -348,7 +348,6 @@ void FillDriveEntryPropertiesValue(
       entry_proto.file_specific_info();
 
   property_dict->SetString("thumbnailUrl", file_specific_info.thumbnail_url());
-  property_dict->SetString("shareUrl", file_specific_info.share_url());
   property_dict->SetBoolean("isHosted",
                             file_specific_info.is_hosted_document());
   property_dict->SetString("contentMimeType",

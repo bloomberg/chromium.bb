@@ -99,11 +99,6 @@
             "optional": true,
             "description": "URL to the Drive thumbnail image for this file."
           },
-          "shareUrl": {
-            "type": "string",
-            "optional": true,
-            "description": "Drive share URL for this file."
-          },
           "isPinned": {
             "type": "boolean",
             "optional": true,
