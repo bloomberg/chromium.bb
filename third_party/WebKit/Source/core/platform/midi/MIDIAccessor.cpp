@@ -58,8 +58,7 @@ MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client)
 
 void MIDIAccessor::startSession()
 {
-    // FIXME: Use new API once embedder side implement the new API.
-    m_accessor->requestAccess(false);
+    m_accessor->startSession();
 }
 
 void MIDIAccessor::sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
@@ -78,16 +77,6 @@ void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufa
 }
 
 void MIDIAccessor::didStartSession()
-{
-    m_client->didStartSession();
-}
-
-void MIDIAccessor::didAllowAccess()
-{
-    m_client->didStartSession();
-}
-
-void MIDIAccessor::didBlockAccess()
 {
     m_client->didStartSession();
 }

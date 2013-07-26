@@ -53,8 +53,6 @@ public:
     virtual void didAddInputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
     virtual void didAddOutputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
     virtual void didStartSession() OVERRIDE;
-    virtual void didAllowAccess() OVERRIDE;
-    virtual void didBlockAccess() OVERRIDE;
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
 
 private:

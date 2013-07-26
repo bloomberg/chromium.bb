@@ -45,17 +45,12 @@ MockWebMIDIAccessor::~MockWebMIDIAccessor()
 {
 }
 
-void MockWebMIDIAccessor::requestAccess(bool requestSysex)
+void MockWebMIDIAccessor::startSession()
 {
-    // Allows us to test both the success and error case.
-    if (requestSysex) {
-        m_client->didBlockAccess();
-    } else {
-        // Add a mock input and output port.
-        m_client->didAddInputPort("MockInputID", "MockInputManufacturer", "MockInputName", "MockInputVersion");
-        m_client->didAddOutputPort("MockOutputID", "MockOutputManufacturer", "MockOutputName", "MockOutputVersion");
-        m_client->didAllowAccess();
-    }
+    // Add a mock input and output port.
+    m_client->didAddInputPort("MockInputID", "MockInputManufacturer", "MockInputName", "MockInputVersion");
+    m_client->didAddOutputPort("MockOutputID", "MockOutputManufacturer", "MockOutputName", "MockOutputVersion");
+    m_client->didStartSession();
 }
 
 } // namespace WebTestRunner

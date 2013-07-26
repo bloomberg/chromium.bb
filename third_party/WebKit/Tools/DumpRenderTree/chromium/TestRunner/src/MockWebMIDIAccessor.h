@@ -46,7 +46,7 @@ public:
     virtual ~MockWebMIDIAccessor();
 
     // WebKit::WebMIDIAccessor implementation.
-    virtual void requestAccess(bool requestSysex) OVERRIDE;
+    virtual void startSession() OVERRIDE;
     virtual void sendMIDIData(
         unsigned portIndex,
         const unsigned char* data,

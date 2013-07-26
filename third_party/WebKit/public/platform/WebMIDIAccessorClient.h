@@ -42,10 +42,6 @@ public:
 
     virtual void didStartSession() = 0;
 
-    // FIXME: Remove these obsoleted APIs.
-    virtual void didAllowAccess() = 0;
-    virtual void didBlockAccess() = 0;
-
     // |timeStamp| is in milliseconds according to the Web MIDI API.
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) = 0;
 
