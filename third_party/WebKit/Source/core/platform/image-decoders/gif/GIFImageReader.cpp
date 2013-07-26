@@ -206,7 +206,7 @@ bool GIFLZWContext::doLZW(const unsigned char* block, size_t bytesInBlock)
     int incode;
     const unsigned char *ch;
 
-    if (rowPosition == rowBuffer.size())
+    if (rowIter == rowBuffer.end())
         return true;
 
 #define OUTPUT_ROW \
@@ -214,7 +214,7 @@ bool GIFLZWContext::doLZW(const unsigned char* block, size_t bytesInBlock)
         if (!outputRow()) \
             return false; \
         rowsRemaining--; \
-        rowPosition = 0; \
+        rowIter = rowBuffer.begin(); \
         if (!rowsRemaining) \
             return true; \
     } while (0)
@@ -249,8 +249,8 @@ bool GIFLZWContext::doLZW(const unsigned char* block, size_t bytesInBlock)
             }
 
             if (oldcode == -1) {
-                rowBuffer[rowPosition++] = suffix[code];
-                if (rowPosition == rowBuffer.size())
+                *rowIter++ = suffix[code];
+                if (rowIter == rowBuffer.end())
                     OUTPUT_ROW;
 
                 firstchar = oldcode = code;
@@ -301,8 +301,8 @@ bool GIFLZWContext::doLZW(const unsigned char* block, size_t bytesInBlock)
 
             // Copy the decoded data out to the scanline buffer.
             do {
-                rowBuffer[rowPosition++] = stack[--stackp];
-                if (rowPosition == rowBuffer.size())
+                *rowIter++ = stack[--stackp];
+                if (rowIter == rowBuffer.end())
                     OUTPUT_ROW;
             } while (stackp > 0);
         }
@@ -788,18 +788,16 @@ bool GIFLZWContext::prepareToDecode()
     ipass = m_frameContext->interlaced ? 1 : 0;
     irow = 0;
 
-    // Initialize the tables lazily, this allows frame count query to use less memory.
-    suffix.resize(MAX_BYTES);
-    stack.resize(MAX_BYTES);
-    prefix.resize(MAX_BYTES);
-
     // Initialize output row buffer.
     rowBuffer.resize(m_frameContext->width);
-    rowPosition = 0;
+    rowIter = rowBuffer.begin();
     rowsRemaining = m_frameContext->height;
 
     // Clearing the whole suffix table lets us be more tolerant of bad data.
-    suffix.fill(0);
+    memset(suffix, 0, sizeof(suffix));
+
+    // Clearing the whole prefix table to prevent uninitialized access.
+    memset(prefix, 0, sizeof(prefix));
     for (int i = 0; i < clearCode; i++)
         suffix[i] = i;
     stackp = 0;

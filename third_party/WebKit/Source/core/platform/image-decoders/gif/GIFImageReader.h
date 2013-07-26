@@ -84,8 +84,7 @@ class GIFLZWContext {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     GIFLZWContext(WebCore::GIFImageDecoder* client, const GIFFrameContext* frameContext)
-        : stackp(0)
-        , codesize(0)
+        : codesize(0)
         , codemask(0)
         , clearCode(0)
         , avail(0)
@@ -95,8 +94,9 @@ public:
         , datum(0)
         , ipass(0)
         , irow(0)
-        , rowPosition(0)
         , rowsRemaining(0)
+        , stackp(0)
+        , rowIter(0)
         , m_client(client)
         , m_frameContext(frameContext)
     { }
@@ -108,7 +108,6 @@ public:
 
 private:
     // LZW decoding states and output states.
-    size_t stackp; // Current stack pointer.
     int codesize;
     int codemask;
     int clearCode; // Codeword used to trigger dictionary reset.
@@ -119,13 +118,15 @@ private:
     int datum; // 32-bit input buffer.
     int ipass; // Interlace pass; Ranges 1-4 if interlaced.
     size_t irow; // Current output row, starting at zero.
-    size_t rowPosition;
     size_t rowsRemaining; // Rows remaining to be output.
 
-    Vector<unsigned short> prefix;
-    Vector<unsigned char> suffix;
-    Vector<unsigned char> stack;
+    unsigned short prefix[MAX_BYTES];
+    unsigned char suffix[MAX_BYTES];
+    unsigned char stack[MAX_BYTES];
     Vector<unsigned char> rowBuffer; // Single scanline temporary buffer.
+
+    size_t stackp; // Current stack pointer.
+    Vector<unsigned char>::iterator rowIter;
 
     // Initialized during construction and read-only.
     WebCore::GIFImageDecoder* m_client;
