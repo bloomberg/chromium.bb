@@ -4,6 +4,11 @@
 
 #include "ui/gfx/platform_font_pango.h"
 
+#include <cairo/cairo.h>
+#include <fontconfig/fontconfig.h>
+#include <pango/pangocairo.h>
+#include <pango/pangofc-fontmap.h>
+
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -28,6 +33,12 @@ TEST(PlatformFontPangoTest, FamilyList) {
       new gfx::PlatformFontPango(desc2.get()));
   EXPECT_EQ("Times New Roman", font2->GetFontName());
   EXPECT_EQ(15, font2->GetFontSize());
+
+  // Free memory allocated by FontConfig (http://crbug.com/114750).
+  pango_fc_font_map_cache_clear(
+      PANGO_FC_FONT_MAP(pango_cairo_font_map_get_default()));
+  cairo_debug_reset_static_data();
+  FcFini();
 }
 
 }  // namespace gfx
