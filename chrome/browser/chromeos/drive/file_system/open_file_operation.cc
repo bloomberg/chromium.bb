@@ -26,13 +26,12 @@ namespace {
 
 FileError UpdateFileLocalState(internal::FileCache* cache,
                                const std::string& resource_id,
-                               const std::string& md5,
                                base::FilePath* local_file_path) {
   FileError error = cache->MarkDirty(resource_id);
   if (error != FILE_ERROR_OK)
     return error;
 
-  return cache->GetFile(resource_id, md5, local_file_path);
+  return cache->GetFile(resource_id, local_file_path);
 }
 
 }  // namespace
@@ -140,7 +139,6 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
       base::Bind(&UpdateFileLocalState,
                  cache_,
                  entry->resource_id(),
-                 entry->file_specific_info().md5(),
                  new_local_file_path),
       base::Bind(&OpenFileOperation::OpenFileAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),

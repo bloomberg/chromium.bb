@@ -948,10 +948,8 @@ void FileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
 
   // Gets the cache file path.
   const std::string& resource_id = entry->resource_id();
-  const std::string& md5 = entry->file_specific_info().md5();
   cache_->GetFileOnUIThread(
       resource_id,
-      md5,
       base::Bind(
           &FileSystem::CheckLocalModificationAndRunAfterGetCacheFile,
           weak_ptr_factory_.GetWeakPtr(),

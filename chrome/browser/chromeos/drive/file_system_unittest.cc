@@ -772,8 +772,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   EXPECT_TRUE(cache_entry.is_dirty());
 
   base::FilePath cache_file_path;
-  EXPECT_EQ(FILE_ERROR_OK,
-            cache_->GetFile(file_resource_id, md5, &cache_file_path));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(file_resource_id, &cache_file_path));
   EXPECT_EQ(cache_file_path, opened_file_path);
 
   // Write a new content.

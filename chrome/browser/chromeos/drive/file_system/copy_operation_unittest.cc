@@ -125,7 +125,6 @@ TEST_F(CopyOperationTest, TransferFileFromRemoteToLocal_RegularFile) {
   // The content is "x"s of the file size.
   base::FilePath cache_path;
   cache()->GetFileOnUIThread(entry.resource_id(),
-                             entry.file_specific_info().md5(),
                              google_apis::test_util::CreateCopyResultCallback(
                                  &error, &cache_path));
   test_util::RunBlockingPoolTask();

@@ -40,8 +40,7 @@ FileError GetFileLocalState(internal::ResourceMetadata* metadata,
   if (drive_file_path->empty())
     return FILE_ERROR_NOT_FOUND;
 
-  error = cache->GetFile(
-      resource_id, entry->file_specific_info().md5(), cache_file_path);
+  error = cache->GetFile(resource_id, cache_file_path);
   if (error != FILE_ERROR_OK)
     return error;
 

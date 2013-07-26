@@ -106,14 +106,11 @@ class FileCacheTestOnUIThread : public testing::Test {
     ASSERT_TRUE(success);
   }
 
-  void TestGetFileFromCacheByResourceIdAndMd5(
-      const std::string& resource_id,
-      const std::string& md5,
-      FileError expected_error,
-      const std::string& expected_file_extension) {
+  void TestGetFile(const std::string& resource_id,
+                   FileError expected_error) {
     FileError error = FILE_ERROR_OK;
     base::FilePath cache_file_path;
-    cache_->GetFileOnUIThread(resource_id, md5,
+    cache_->GetFileOnUIThread(resource_id,
                               google_apis::test_util::CreateCopyResultCallback(
                                   &error, &cache_file_path));
     test_util::RunBlockingPoolTask();
@@ -217,7 +214,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     if (error == FILE_ERROR_OK) {
       base::FilePath cache_file_path;
       cache_->GetFileOnUIThread(
-          resource_id, std::string(),
+          resource_id,
           google_apis::test_util::CreateCopyResultCallback(
               &error, &cache_file_path));
       test_util::RunBlockingPoolTask();
@@ -271,7 +268,6 @@ class FileCacheTestOnUIThread : public testing::Test {
   }
 
   void TestMarkAsUnmounted(const std::string& resource_id,
-                           const std::string& md5,
                            const base::FilePath& file_path,
                            FileError expected_error,
                            int expected_cache_state) {
@@ -286,7 +282,7 @@ class FileCacheTestOnUIThread : public testing::Test {
 
     base::FilePath cache_file_path;
     cache_->GetFileOnUIThread(
-        resource_id, md5,
+        resource_id,
         google_apis::test_util::CreateCopyResultCallback(
             &error, &cache_file_path));
     test_util::RunBlockingPoolTask();
@@ -411,19 +407,11 @@ TEST_F(FileCacheTestOnUIThread, GetFromCacheSimple) {
                    FILE_ERROR_OK, TEST_CACHE_STATE_PRESENT);
 
   // Then try to get the existing file from cache.
-  TestGetFileFromCacheByResourceIdAndMd5(
-      resource_id, md5, FILE_ERROR_OK, md5);
+  TestGetFile(resource_id, FILE_ERROR_OK);
 
-  // Get file from cache with same resource id as existing file but different
-  // md5.
-  TestGetFileFromCacheByResourceIdAndMd5(
-      resource_id, "9999", FILE_ERROR_NOT_FOUND, md5);
-
-  // Get file from cache with different resource id from existing file but same
-  // md5.
+  // Get file from cache with different resource id.
   resource_id = "document:1a2b";
-  TestGetFileFromCacheByResourceIdAndMd5(
-      resource_id, md5, FILE_ERROR_NOT_FOUND, md5);
+  TestGetFile(resource_id, FILE_ERROR_NOT_FOUND);
 }
 
 TEST_F(FileCacheTestOnUIThread, RemoveFromCacheSimple) {
@@ -506,16 +494,14 @@ TEST_F(FileCacheTestOnUIThread, GetFromCachePinned) {
   TestPin(resource_id, FILE_ERROR_OK, TEST_CACHE_STATE_PINNED);
 
   // Get the non-existent pinned file from cache.
-  TestGetFileFromCacheByResourceIdAndMd5(
-      resource_id, md5, FILE_ERROR_NOT_FOUND, md5);
+  TestGetFile(resource_id, FILE_ERROR_NOT_FOUND);
 
   // Store an existing file to the previously pinned non-existent file.
   TestStoreToCache(resource_id, md5, dummy_file_path_, FILE_ERROR_OK,
                    TEST_CACHE_STATE_PRESENT | TEST_CACHE_STATE_PINNED);
 
   // Get the previously pinned and stored file from cache.
-  TestGetFileFromCacheByResourceIdAndMd5(
-      resource_id, md5, FILE_ERROR_OK, md5);
+  TestGetFile(resource_id, FILE_ERROR_OK);
 }
 
 TEST_F(FileCacheTestOnUIThread, RemoveFromCachePinned) {
@@ -595,7 +581,7 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpinDirtyCache) {
   base::FilePath dirty_path;
   FileError error = FILE_ERROR_FAILED;
   cache_->GetFileOnUIThread(
-      resource_id, md5,
+      resource_id,
       google_apis::test_util::CreateCopyResultCallback(&error, &dirty_path));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -710,12 +696,12 @@ TEST_F(FileCacheTestOnUIThread, MountUnmount) {
   base::FilePath file_path;
   FileError error = FILE_ERROR_FAILED;
   cache_->GetFileOnUIThread(
-      resource_id, md5,
+      resource_id,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  TestMarkAsUnmounted(resource_id, md5, file_path, FILE_ERROR_OK,
+  TestMarkAsUnmounted(resource_id, file_path, FILE_ERROR_OK,
                       TEST_CACHE_STATE_PRESENT);
   EXPECT_TRUE(CacheEntryExists(resource_id, md5));
 
@@ -895,8 +881,7 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
             cache_->Store(resource_id_tmp, md5_tmp, src_file,
                           FileCache::FILE_OPERATION_COPY));
   base::FilePath tmp_path;
-  ASSERT_EQ(FILE_ERROR_OK,
-            cache_->GetFile(resource_id_tmp, md5_tmp, &tmp_path));
+  ASSERT_EQ(FILE_ERROR_OK, cache_->GetFile(resource_id_tmp, &tmp_path));
 
   // Store a file as a pinned file and remember the path.
   const std::string resource_id_pinned = "id_pinned", md5_pinned = "md5_pinned";
@@ -905,8 +890,7 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
                           FileCache::FILE_OPERATION_COPY));
   ASSERT_EQ(FILE_ERROR_OK, cache_->Pin(resource_id_pinned));
   base::FilePath pinned_path;
-  ASSERT_EQ(FILE_ERROR_OK,
-            cache_->GetFile(resource_id_pinned, md5_pinned, &pinned_path));
+  ASSERT_EQ(FILE_ERROR_OK, cache_->GetFile(resource_id_pinned, &pinned_path));
 
   // Call FreeDiskSpaceIfNeededFor().
   fake_free_disk_space_getter_->set_default_value(test_util::kLotsOfSpace);

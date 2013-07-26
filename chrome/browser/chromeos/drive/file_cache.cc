@@ -238,7 +238,6 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
 }
 
 void FileCache::GetFileOnUIThread(const std::string& resource_id,
-                                  const std::string& md5,
                                   const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -249,7 +248,6 @@ void FileCache::GetFileOnUIThread(const std::string& resource_id,
                                    base::Bind(&FileCache::GetFile,
                                               base::Unretained(this),
                                               resource_id,
-                                              md5,
                                               cache_file_path),
                                    base::Bind(&RunGetFileFromCacheCallback,
                                               callback,
@@ -257,13 +255,12 @@ void FileCache::GetFileOnUIThread(const std::string& resource_id,
 }
 
 FileError FileCache::GetFile(const std::string& resource_id,
-                             const std::string& md5,
                              base::FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(cache_file_path);
 
   FileCacheEntry cache_entry;
-  if (!GetCacheEntry(resource_id, md5, &cache_entry) ||
+  if (!storage_->GetCacheEntry(resource_id, &cache_entry) ||
       !cache_entry.is_present())
     return FILE_ERROR_NOT_FOUND;
 

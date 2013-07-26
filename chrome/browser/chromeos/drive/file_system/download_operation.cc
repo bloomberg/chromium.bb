@@ -66,29 +66,36 @@ FileError CheckPreConditionForEnsureFileDownloaded(
     return FILE_ERROR_OK;
   }
 
-  // Get the cache file path if available.
-  cache->GetFile(entry->resource_id(),
-                 entry->file_specific_info().md5(),
-                 cache_file_path);
+  // Leave |cache_file_path| empty when no cache entry is found.
+  FileCacheEntry cache_entry;
+  if (!cache->GetCacheEntry(entry->resource_id(),
+                            entry->file_specific_info().md5(),
+                            &cache_entry))
+    return FILE_ERROR_OK;
 
-  // If the cache file is available and dirty, the modified file info needs to
-  // be stored in |entry|.
+  // Leave |cache_file_path| empty when the stored file is obsolete and has no
+  // local modification.
+  if (!cache_entry.is_dirty() &&
+      entry->file_specific_info().md5() != cache_entry.md5())
+    return FILE_ERROR_OK;
+
+  // Fill |cache_file_path| with the path to the cached file.
+  FileError error = cache->GetFile(entry->resource_id(), cache_file_path);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  // If the cache file is dirty, the modified file info needs to be stored in
+  // |entry|.
   // TODO(kinaba): crbug.com/246469. The logic below is a duplicate of that in
   // drive::FileSystem::CheckLocalModificationAndRun. We should merge them once
   // the drive::FS side is also converted to run fully on blocking pool.
-  if (!cache_file_path->empty()) {
-    FileCacheEntry cache_entry;
-    if (cache->GetCacheEntry(entry->resource_id(),
-                             entry->file_specific_info().md5(),
-                             &cache_entry) &&
-        cache_entry.is_dirty()) {
-      base::PlatformFileInfo file_info;
-      if (file_util::GetFileInfo(*cache_file_path, &file_info)) {
-        PlatformFileInfoProto entry_file_info;
-        util::ConvertPlatformFileInfoToResourceEntry(file_info,
-                                                     &entry_file_info);
-        *entry->mutable_file_info() = entry_file_info;
-      }
+  if (cache_entry.is_dirty()) {
+    base::PlatformFileInfo file_info;
+    if (file_util::GetFileInfo(*cache_file_path, &file_info)) {
+      PlatformFileInfoProto entry_file_info;
+      util::ConvertPlatformFileInfoToResourceEntry(file_info,
+                                                   &entry_file_info);
+      *entry->mutable_file_info() = entry_file_info;
     }
   }
 
@@ -194,7 +201,7 @@ FileError UpdateLocalStateForDownloadFile(
     return error;
   }
 
-  return cache->GetFile(resource_id, md5, cache_file_path);
+  return cache->GetFile(resource_id, cache_file_path);
 }
 
 }  // namespace

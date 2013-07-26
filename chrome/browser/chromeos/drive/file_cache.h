@@ -134,15 +134,12 @@ class FileCache {
   // |callback| must not be null.
   // Must be called on the UI thread.
   void GetFileOnUIThread(const std::string& resource_id,
-                         const std::string& md5,
                          const GetFileFromCacheCallback& callback);
 
-  // Checks if file corresponding to |resource_id| and |md5| exists in cache,
-  // and returns FILE_ERROR_OK with |cache_file_path| storing the path to
-  // the file.
+  // Checks if file corresponding to |resource_id| exists in cache, and returns
+  // FILE_ERROR_OK with |cache_file_path| storing the path to the file.
   // |cache_file_path| must not be null.
   FileError GetFile(const std::string& resource_id,
-                    const std::string& md5,
                     base::FilePath* cache_file_path);
 
   // Runs Store() on |blocking_task_runner_|, and calls |callback| with
