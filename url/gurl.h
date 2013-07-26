@@ -41,6 +41,14 @@ class URL_EXPORT GURL {
   // information associated with the URL, which must be correct and consistent.
   GURL(const char* canonical_spec, size_t canonical_spec_len,
        const url_parse::Parsed& parsed, bool is_valid);
+  // Notice that we take the canonical_spec by value so that we can convert
+  // from WebURL without copying the string. When we call this constructor
+  // we pass in a temporary std::string, which lets the compiler skip the
+  // copy and just move the std::string into the function argument. In the
+  // implementation, we use swap to move the data into the GURL itself,
+  // which means we end up with zero copies.
+  GURL(std::string canonical_spec,
+       const url_parse::Parsed& parsed, bool is_valid);
 
   ~GURL();
 
@@ -335,6 +343,8 @@ class URL_EXPORT GURL {
   }
 
  private:
+  void InitializeFromCanonicalSpec();
+
   // Returns the substring of the input identified by the given component.
   std::string ComponentString(const url_parse::Component& comp) const {
     if (comp.len <= 0)

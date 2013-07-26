@@ -116,6 +116,19 @@ GURL::GURL(const char* canonical_spec, size_t canonical_spec_len,
       is_valid_(is_valid),
       parsed_(parsed),
       inner_url_(NULL) {
+  InitializeFromCanonicalSpec();
+}
+
+GURL::GURL(std::string canonical_spec,
+           const url_parse::Parsed& parsed, bool is_valid)
+    : is_valid_(is_valid),
+      parsed_(parsed),
+      inner_url_(NULL) {
+  spec_.swap(canonical_spec);
+  InitializeFromCanonicalSpec();
+}
+
+void GURL::InitializeFromCanonicalSpec() {
   if (is_valid_ && SchemeIsFileSystem()) {
     inner_url_ =
         new GURL(spec_.data(), parsed_.Length(), *parsed_.inner_parsed(), true);
@@ -127,9 +140,9 @@ GURL::GURL(const char* canonical_spec, size_t canonical_spec_len,
   // and we can't always canonicalize then reproducabely.
   if (is_valid_) {
     url_parse::Component scheme;
-    if (!url_util::FindAndCompareScheme(canonical_spec, canonical_spec_len,
+    if (!url_util::FindAndCompareScheme(spec_.data(), spec_.length(),
                                         "filesystem", &scheme) ||
-        scheme.begin == parsed.scheme.begin) {
+        scheme.begin == parsed_.scheme.begin) {
       // We can't do this check on the inner_url of a filesystem URL, as
       // canonical_spec actually points to the start of the outer URL, so we'd
       // end up with infinite recursion in this constructor.
