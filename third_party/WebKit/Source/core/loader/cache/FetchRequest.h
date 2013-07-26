@@ -28,7 +28,7 @@
 
 #include "core/dom/Element.h"
 #include "core/loader/ResourceLoaderOptions.h"
-#include "core/loader/cache/CachedResourceInitiatorInfo.h"
+#include "core/loader/cache/FetchInitiatorInfo.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "wtf/text/AtomicString.h"
@@ -42,7 +42,7 @@ public:
 
     explicit FetchRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String(), ResourceLoadPriority = ResourceLoadPriorityUnresolved);
     FetchRequest(const ResourceRequest&, const AtomicString& initiator, const ResourceLoaderOptions&);
-    FetchRequest(const ResourceRequest&, const CachedResourceInitiatorInfo&);
+    FetchRequest(const ResourceRequest&, const FetchInitiatorInfo&);
     ~FetchRequest();
 
     ResourceRequest& mutableResourceRequest() { return m_resourceRequest; }

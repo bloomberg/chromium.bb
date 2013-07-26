@@ -92,7 +92,7 @@ if (length($fontNamesIn)) {
 }
 
 if (length($resourceTypesIn)) {
-    my $baseName = "CachedResourceInitiatorType";
+    my $baseName = "FetchInitiatorType";
     my $basePrefix = "Loader_Cache";
     createGenericNamesFile($resourceTypesIn, $baseName, $basePrefix);
 }

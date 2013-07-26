@@ -26,7 +26,7 @@
 #ifndef ScriptRunner_h
 #define ScriptRunner_h
 
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -47,7 +47,7 @@ public:
     ~ScriptRunner();
 
     enum ExecutionType { ASYNC_EXECUTION, IN_ORDER_EXECUTION };
-    void queueScriptForExecution(ScriptLoader*, CachedResourceHandle<CachedScript>, ExecutionType);
+    void queueScriptForExecution(ScriptLoader*, ResourcePtr<CachedScript>, ExecutionType);
     bool hasPendingScripts() const { return !m_scriptsToExecuteSoon.isEmpty() || !m_scriptsToExecuteInOrder.isEmpty() || !m_pendingAsyncScripts.isEmpty(); }
     void suspend();
     void resume();

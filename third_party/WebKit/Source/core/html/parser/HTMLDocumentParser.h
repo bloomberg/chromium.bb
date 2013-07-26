@@ -40,7 +40,7 @@
 #include "core/html/parser/HTMLTreeBuilderSimulator.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
-#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/ResourceClient.h"
 #include "core/platform/text/SegmentedString.h"
 #include "wtf/Deque.h"
 #include "wtf/OwnPtr.h"
@@ -63,7 +63,7 @@ class ScriptSourceCode;
 
 class PumpSession;
 
-class HTMLDocumentParser :  public ScriptableDocumentParser, HTMLScriptRunnerHost, CachedResourceClient {
+class HTMLDocumentParser :  public ScriptableDocumentParser, HTMLScriptRunnerHost, ResourceClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<HTMLDocumentParser> create(Document* document, bool reportErrors)
@@ -126,14 +126,14 @@ private:
     virtual void executeScriptsWaitingForResources() OVERRIDE;
 
     // HTMLScriptRunnerHost
-    virtual void watchForLoad(CachedResource*) OVERRIDE;
-    virtual void stopWatchingForLoad(CachedResource*) OVERRIDE;
+    virtual void watchForLoad(Resource*) OVERRIDE;
+    virtual void stopWatchingForLoad(Resource*) OVERRIDE;
     virtual HTMLInputStream& inputStream() { return m_input; }
     virtual bool hasPreloadScanner() const { return m_preloadScanner.get() && !shouldUseThreading(); }
     virtual void appendCurrentInputStreamToPreloadScannerAndScan() OVERRIDE;
 
-    // CachedResourceClient
-    virtual void notifyFinished(CachedResource*);
+    // ResourceClient
+    virtual void notifyFinished(Resource*);
 
     void startBackgroundParser();
     void stopBackgroundParser();

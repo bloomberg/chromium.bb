@@ -182,7 +182,7 @@ void SVGFEImageElement::removedFrom(ContainerNode* rootParent)
         clearResourceReferences();
 }
 
-void SVGFEImageElement::notifyFinished(CachedResource*)
+void SVGFEImageElement::notifyFinished(Resource*)
 {
     if (!inDocument())
         return;

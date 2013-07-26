@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-class CachedResource;
+class Resource;
 class DOMWrapperWorld;
 class Document;
 class DocumentLoader;
@@ -76,15 +76,15 @@ public:
 
     static PassOwnPtr<InspectorPageAgent> create(InstrumentingAgents*, Page*, InspectorCompositeState*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
 
-    static bool cachedResourceContent(CachedResource*, String* result, bool* base64Encoded);
+    static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
     static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& textEncodingName, bool withBase64Encode, String* result);
     static void resourceContent(ErrorString*, Frame*, const KURL&, String* result, bool* base64Encoded);
 
     static PassRefPtr<SharedBuffer> resourceData(Frame*, const KURL&, String* textEncodingName);
-    static CachedResource* cachedResource(Frame*, const KURL&);
+    static Resource* cachedResource(Frame*, const KURL&);
     static TypeBuilder::Page::ResourceType::Enum resourceTypeJson(ResourceType);
-    static ResourceType cachedResourceType(const CachedResource&);
-    static TypeBuilder::Page::ResourceType::Enum cachedResourceTypeJson(const CachedResource&);
+    static ResourceType cachedResourceType(const Resource&);
+    static TypeBuilder::Page::ResourceType::Enum cachedResourceTypeJson(const Resource&);
 
     // Page API for InspectorFrontend
     virtual void enable(ErrorString*);

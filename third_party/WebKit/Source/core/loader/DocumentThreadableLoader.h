@@ -34,7 +34,7 @@
 
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/cache/CachedRawResource.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
 #include "wtf/Forward.h"
@@ -78,12 +78,12 @@ namespace WebCore {
         void clearResource();
 
         // CachedRawResourceClient
-        virtual void dataSent(CachedResource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
-        virtual void responseReceived(CachedResource*, const ResourceResponse&);
-        virtual void dataReceived(CachedResource*, const char* data, int dataLength);
-        virtual void redirectReceived(CachedResource*, ResourceRequest&, const ResourceResponse&);
-        virtual void notifyFinished(CachedResource*);
-        virtual void dataDownloaded(CachedResource*, int);
+        virtual void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
+        virtual void responseReceived(Resource*, const ResourceResponse&);
+        virtual void dataReceived(Resource*, const char* data, int dataLength);
+        virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&);
+        virtual void notifyFinished(Resource*);
+        virtual void dataDownloaded(Resource*, int);
 
         void cancelWithError(const ResourceError&);
         void didReceiveResponse(unsigned long identifier, const ResourceResponse&);
@@ -103,7 +103,7 @@ namespace WebCore {
 
         SecurityOrigin* securityOrigin() const;
 
-        CachedResourceHandle<CachedRawResource> m_resource;
+        ResourcePtr<CachedRawResource> m_resource;
         ThreadableLoaderClient* m_client;
         Document* m_document;
         ThreadableLoaderOptions m_options;

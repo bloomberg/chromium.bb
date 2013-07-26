@@ -28,8 +28,8 @@
 #include "core/loader/cache/CachedFont.h"
 
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceClientWalker.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourceClientWalker.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCustomPlatformData.h"
 #include "core/platform/graphics/FontPlatformData.h"
@@ -44,7 +44,7 @@
 namespace WebCore {
 
 CachedFont::CachedFont(const ResourceRequest& resourceRequest)
-    : CachedResource(resourceRequest, FontResource)
+    : Resource(resourceRequest, FontResource)
     , m_fontData(0)
     , m_loadInitiated(false)
 {
@@ -62,7 +62,7 @@ void CachedFont::load(ResourceFetcher*, const ResourceLoaderOptions& options)
     m_options = options;
 }
 
-void CachedFont::didAddClient(CachedResourceClient* c)
+void CachedFont::didAddClient(ResourceClient* c)
 {
     ASSERT(c->resourceClientType() == CachedFontClient::expectedType());
     if (!isLoading())
@@ -73,7 +73,7 @@ void CachedFont::beginLoadIfNeeded(ResourceFetcher* dl)
 {
     if (!m_loadInitiated) {
         m_loadInitiated = true;
-        CachedResource::load(dl, m_options);
+        Resource::load(dl, m_options);
     }
 }
 
@@ -152,12 +152,12 @@ void CachedFont::allClientsRemoved()
         delete m_fontData;
         m_fontData = 0;
     }
-    CachedResource::allClientsRemoved();
+    Resource::allClientsRemoved();
 }
 
 void CachedFont::checkNotify()
 {
-    CachedResourceClientWalker<CachedFontClient> w(m_clients);
+    ResourceClientWalker<CachedFontClient> w(m_clients);
     while (CachedFontClient* c = w.next())
          c->fontLoaded(this);
 }

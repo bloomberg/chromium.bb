@@ -254,7 +254,7 @@ interface InspectorInstrumentation {
     void applyEmulatedMedia(Frame*, String* media);
 
     [Timeline, Resource]
-    void willSendRequest(Frame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const CachedResourceInitiatorInfo&);
+    void willSendRequest(Frame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
 
     void continueAfterPingLoader(Frame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse&);
 
@@ -361,7 +361,7 @@ interface InspectorInstrumentation {
     void didRunJavaScriptDialog(const InspectorInstrumentationCookie&);
 
     [Inline=Forward]
-    void willDestroyCachedResource(CachedResource* cachedResource);
+    void willDestroyResource(Resource* cachedResource);
 
     [Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willWriteHTML([Keep] Document*, unsigned startLine);

@@ -34,9 +34,9 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/cache/CachedImageClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/loader/cache/ResourceFetcher.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -67,7 +67,7 @@ public:
         m_imageChangedCount++;
     }
 
-    virtual void notifyFinished(CachedResource*)
+    virtual void notifyFinished(Resource*)
     {
         ASSERT_FALSE(m_notifyFinishedCalled);
         m_notifyFinishedCalled = true;
@@ -97,7 +97,7 @@ void runPendingTasks()
 
 TEST(CachedImageTest, MultipartImage)
 {
-    CachedResourceHandle<CachedImage> cachedImage = new CachedImage(ResourceRequest());
+    ResourcePtr<CachedImage> cachedImage = new CachedImage(ResourceRequest());
     cachedImage->setLoading(true);
 
     MockCachedImageClient client;
@@ -162,23 +162,23 @@ TEST(CachedImageTest, CancelOnDetach)
     documentLoader->setFrame(frame.get());
 
     // Emulate starting a real load.
-    CachedResourceHandle<CachedImage> cachedImage = new CachedImage(ResourceRequest(testURL));
+    ResourcePtr<CachedImage> cachedImage = new CachedImage(ResourceRequest(testURL));
     cachedImage->load(documentLoader->fetcher(), ResourceLoaderOptions());
     memoryCache()->add(cachedImage.get());
 
     MockCachedImageClient client;
     cachedImage->addClient(&client);
-    EXPECT_EQ(CachedResource::Pending, cachedImage->status());
+    EXPECT_EQ(Resource::Pending, cachedImage->status());
 
     // The load should still be alive, but a timer should be started to cancel the load inside removeClient().
     cachedImage->removeClient(&client);
-    EXPECT_EQ(CachedResource::Pending, cachedImage->status());
-    EXPECT_NE(reinterpret_cast<CachedResource*>(0), memoryCache()->resourceForURL(testURL));
+    EXPECT_EQ(Resource::Pending, cachedImage->status());
+    EXPECT_NE(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
     // Trigger the cancel timer, ensure the load was cancelled and the resource was evicted from the cache.
     runPendingTasks();
-    EXPECT_EQ(CachedResource::LoadError, cachedImage->status());
-    EXPECT_EQ(reinterpret_cast<CachedResource*>(0), memoryCache()->resourceForURL(testURL));
+    EXPECT_EQ(Resource::LoadError, cachedImage->status());
+    EXPECT_EQ(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
     WebKit::Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
 }

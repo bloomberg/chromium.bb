@@ -45,7 +45,7 @@
 #include "wtf/WeakPtr.h"
 
 namespace WebCore {
-struct CachedResourceInitiatorInfo;
+struct FetchInitiatorInfo;
 class DOMWindow;
 class Document;
 class DocumentLoader;
@@ -181,7 +181,7 @@ public:
     void stopConsoleTiming(Frame*, const String&, PassRefPtr<ScriptCallStack>);
 
     void didScheduleResourceRequest(Document*, const String& url);
-    void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&, const CachedResourceInitiatorInfo&);
+    void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&);
     bool willReceiveResourceResponse(Frame*, unsigned long, const ResourceResponse&);
     void didReceiveResourceResponse(unsigned long, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didFinishLoading(unsigned long, DocumentLoader*, double monotonicFinishTime);

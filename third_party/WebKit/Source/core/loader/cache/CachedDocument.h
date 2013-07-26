@@ -24,15 +24,15 @@
 #define CachedDocument_h
 
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedResource.h"
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/Resource.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 
 namespace WebCore {
 
 class Document;
 
-class CachedDocument : public CachedResource {
+class CachedDocument : public Resource {
 public:
     CachedDocument(const ResourceRequest&, Type);
     virtual ~CachedDocument();
@@ -50,11 +50,11 @@ private:
     RefPtr<TextResourceDecoder> m_decoder;
 };
 
-class CachedDocumentClient : public CachedResourceClient {
+class CachedDocumentClient : public ResourceClient {
 public:
     virtual ~CachedDocumentClient() { }
-    static CachedResourceClientType expectedType() { return DocumentType; }
-    virtual CachedResourceClientType resourceClientType() const { return expectedType(); }
+    static ResourceClientType expectedType() { return DocumentType; }
+    virtual ResourceClientType resourceClientType() const { return expectedType(); }
 };
 
 }

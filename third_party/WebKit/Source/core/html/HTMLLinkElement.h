@@ -32,8 +32,8 @@
 #include "core/html/LinkResource.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/LinkLoaderClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 
 namespace WebCore {
 
@@ -83,7 +83,7 @@ public:
     CSSStyleSheet* sheet() const { return m_sheet.get(); }
 
 private:
-    // From CachedResourceClient
+    // From ResourceClient
     virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet*);
 
     enum DisabledState {
@@ -108,7 +108,7 @@ private:
     void removePendingSheet(RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
     Document* document();
 
-    CachedResourceHandle<CachedCSSStyleSheet> m_cachedSheet;
+    ResourcePtr<CachedCSSStyleSheet> m_cachedSheet;
     RefPtr<CSSStyleSheet> m_sheet;
     DisabledState m_disabledState;
     PendingSheetType m_pendingSheetType;

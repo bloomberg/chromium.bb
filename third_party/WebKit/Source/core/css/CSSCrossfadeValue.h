@@ -30,7 +30,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedImageClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/graphics/Image.h"
 
 namespace WebCore {
@@ -96,8 +96,8 @@ private:
     RefPtr<CSSValue> m_toValue;
     RefPtr<CSSPrimitiveValue> m_percentageValue;
 
-    CachedResourceHandle<CachedImage> m_cachedFromImage;
-    CachedResourceHandle<CachedImage> m_cachedToImage;
+    ResourcePtr<CachedImage> m_cachedFromImage;
+    ResourcePtr<CachedImage> m_cachedToImage;
 
     RefPtr<Image> m_generatedImage;
 

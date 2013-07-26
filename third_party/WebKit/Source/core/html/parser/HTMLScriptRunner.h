@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class CachedResource;
+class Resource;
 class CachedScript;
 class Document;
 class Element;
@@ -55,7 +55,7 @@ public:
     // Processes the passed in script and any pending scripts if possible.
     void execute(PassRefPtr<Element> scriptToProcess, const TextPosition& scriptStartPosition);
 
-    void executeScriptsWaitingForLoad(CachedResource*);
+    void executeScriptsWaitingForLoad(Resource*);
     bool hasScriptsWaitingForResources() const { return m_hasScriptsWaitingForResources; }
     void executeScriptsWaitingForResources();
     bool executeScriptsWaitingForParsing();

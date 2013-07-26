@@ -59,7 +59,7 @@ String HTMLImageLoader::sourceURI(const AtomicString& attr) const
     return stripLeadingAndTrailingHTMLSpaces(attr);
 }
 
-void HTMLImageLoader::notifyFinished(CachedResource*)
+void HTMLImageLoader::notifyFinished(Resource*)
 {
     CachedImage* cachedImage = image();
 

@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/loader/LinkLoader.h"
 
-#include "CachedResourceInitiatorTypeNames.h"
+#include "FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/loader/Prerenderer.h"
@@ -71,7 +71,7 @@ void LinkLoader::linkLoadingErrorTimerFired(Timer<LinkLoader>* timer)
     m_client->linkLoadingErrored();
 }
 
-void LinkLoader::notifyFinished(CachedResource* resource)
+void LinkLoader::notifyFinished(Resource* resource)
 {
     ASSERT_UNUSED(resource, m_cachedLinkResource.get() == resource);
 
@@ -117,8 +117,8 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
     if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource()) && href.isValid() && document->frame()) {
         if (!m_client->shouldLoadLink())
             return false;
-        CachedResource::Type type = relAttribute.isLinkSubresource() ?  CachedResource::LinkSubresource : CachedResource::LinkPrefetch;
-        FetchRequest linkRequest(ResourceRequest(document->completeURL(href)), CachedResourceInitiatorTypeNames::link);
+        Resource::Type type = relAttribute.isLinkSubresource() ?  Resource::LinkSubresource : Resource::LinkPrefetch;
+        FetchRequest linkRequest(ResourceRequest(document->completeURL(href)), FetchInitiatorTypeNames::link);
         if (m_cachedLinkResource) {
             m_cachedLinkResource->removeClient(this);
             m_cachedLinkResource = 0;
@@ -144,7 +144,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
 
 void LinkLoader::released()
 {
-    // Only prerenders need treatment here; other links either use the CachedResource interface, or are notionally
+    // Only prerenders need treatment here; other links either use the Resource interface, or are notionally
     // atomic (dns prefetch).
     if (m_prerenderHandle) {
         m_prerenderHandle->cancel();

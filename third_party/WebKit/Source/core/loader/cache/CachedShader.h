@@ -30,13 +30,13 @@
 #ifndef CachedShader_h
 #define CachedShader_h
 
-#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/Resource.h"
 
 namespace WebCore {
 
 class TextResourceDecoder;
 
-class CachedShader : public CachedResource {
+class CachedShader : public Resource {
 public:
     CachedShader(const ResourceRequest&);
     virtual ~CachedShader();

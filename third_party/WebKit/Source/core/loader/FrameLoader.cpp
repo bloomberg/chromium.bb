@@ -2005,7 +2005,7 @@ void FrameLoader::requestFromDelegate(ResourceRequest& request, unsigned long& i
     request = newRequest;
 }
 
-void FrameLoader::loadedResourceFromMemoryCache(CachedResource* resource)
+void FrameLoader::loadedResourceFromMemoryCache(Resource* resource)
 {
     Page* page = m_frame->page();
     if (!page)
@@ -2015,7 +2015,7 @@ void FrameLoader::loadedResourceFromMemoryCache(CachedResource* resource)
         return;
 
     // Main resource delegate messages are synthesized in MainResourceLoader, so we must not send them here.
-    if (resource->type() == CachedResource::MainResource)
+    if (resource->type() == Resource::MainResource)
         return;
 
     ResourceRequest request(resource->url());

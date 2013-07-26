@@ -28,7 +28,7 @@
 
 #include "core/dom/Element.h"
 #include "core/loader/CrossOriginAccessControl.h"
-#include "core/loader/cache/CachedResourceInitiatorInfo.h"
+#include "core/loader/cache/FetchInitiatorInfo.h"
 #include "core/loader/cache/ResourceFetcher.h"
 
 namespace WebCore {
@@ -36,7 +36,7 @@ namespace WebCore {
 FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const String& charset, ResourceLoadPriority priority)
     : m_resourceRequest(resourceRequest)
     , m_charset(charset)
-    , m_options(ResourceFetcher::defaultCachedResourceOptions())
+    , m_options(ResourceFetcher::defaultResourceOptions())
     , m_priority(priority)
     , m_forPreload(false)
     , m_defer(NoDefer)
@@ -54,9 +54,9 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicS
     m_options.initiatorInfo.name = initiator;
 }
 
-FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const CachedResourceInitiatorInfo& initiator)
+FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const FetchInitiatorInfo& initiator)
     : m_resourceRequest(resourceRequest)
-    , m_options(ResourceFetcher::defaultCachedResourceOptions())
+    , m_options(ResourceFetcher::defaultResourceOptions())
     , m_priority(ResourceLoadPriorityUnresolved)
     , m_forPreload(false)
     , m_defer(NoDefer)

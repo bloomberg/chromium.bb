@@ -104,7 +104,7 @@ void RenderLayerFilterInfo::setRenderer(PassRefPtr<FilterEffectRenderer> rendere
     m_renderer = renderer;
 }
 
-void RenderLayerFilterInfo::notifyFinished(CachedResource*)
+void RenderLayerFilterInfo::notifyFinished(Resource*)
 {
     RenderObject* renderer = m_layer->renderer();
     toElement(renderer->node())->scheduleLayerUpdate();

@@ -32,7 +32,7 @@
 #define PasswordGeneratorButtonElement_h
 
 #include "core/html/HTMLDivElement.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 
 namespace WebCore {
 
@@ -67,8 +67,8 @@ private:
     HTMLInputElement* hostInput();
     void updateImage();
 
-    CachedResourceHandle<CachedImage> m_cachedImageForNormalState;
-    CachedResourceHandle<CachedImage> m_cachedImageForHoverState;
+    ResourcePtr<CachedImage> m_cachedImageForNormalState;
+    ResourcePtr<CachedImage> m_cachedImageForHoverState;
     bool m_isInHoverState;
 };
 

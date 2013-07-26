@@ -1,8 +1,7 @@
 /*
     Copyright (C) 1998 Lars Knoll (knoll@mpi-hd.mpg.de)
     Copyright (C) 2001 Dirk Mueller <mueller@kde.org>
-    Copyright (C) 2006 Samuel Weinig (sam.weinig@gmail.com)
-    Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -23,33 +22,36 @@
     pages from the web. It has a memory cache for these objects.
 */
 
-#ifndef CachedScript_h
-#define CachedScript_h
+#ifndef ResourceClient_h
+#define ResourceClient_h
 
-#include "core/loader/cache/Resource.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
+class Resource;
 
-class ResourceFetcher;
-    class TextResourceDecoder;
-
-    class CachedScript : public Resource {
-    public:
-        CachedScript(const ResourceRequest&, const String& charset);
-        virtual ~CachedScript();
-
-        const String& script();
-
-        virtual void setEncoding(const String&);
-        virtual String encoding() const;
-        String mimeType() const;
-
-        bool mimeTypeAllowedByNosniff() const;
-
-    private:
-        String m_script;
-        RefPtr<TextResourceDecoder> m_decoder;
+class ResourceClient {
+public:
+    enum ResourceClientType {
+        BaseResourceType,
+        ImageType,
+        FontType,
+        StyleSheetType,
+        DocumentType,
+        RawResourceType
     };
+
+    virtual ~ResourceClient() { }
+    virtual void notifyFinished(Resource*) { }
+    virtual void deprecatedDidReceiveResource(Resource*) { }
+
+    static ResourceClientType expectedType() { return BaseResourceType; }
+    virtual ResourceClientType resourceClientType() const { return expectedType(); }
+
+protected:
+    ResourceClient() { }
+};
 }
 
 #endif

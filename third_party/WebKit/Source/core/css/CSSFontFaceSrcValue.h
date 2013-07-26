@@ -27,7 +27,7 @@
 #define CSSFontFaceSrcValue_h
 
 #include "core/css/CSSValue.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -88,7 +88,7 @@ private:
     String m_format;
     bool m_isLocal;
 
-    CachedResourceHandle<CachedFont> m_cachedFont;
+    ResourcePtr<CachedFont> m_cachedFont;
 
 #if ENABLE(SVG_FONTS)
     SVGFontFaceElement* m_svgFontFaceElement;

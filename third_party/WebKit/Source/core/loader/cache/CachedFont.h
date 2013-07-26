@@ -26,8 +26,8 @@
 #ifndef CachedFont_h
 #define CachedFont_h
 
-#include "core/loader/cache/CachedResource.h"
-#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/Resource.h"
+#include "core/loader/cache/ResourceClient.h"
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/FontWidthVariant.h"
 
@@ -39,14 +39,14 @@ class SVGDocument;
 class SVGFontElement;
 struct FontCustomPlatformData;
 
-class CachedFont : public CachedResource {
+class CachedFont : public Resource {
 public:
     CachedFont(const ResourceRequest&);
     virtual ~CachedFont();
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 
-    virtual void didAddClient(CachedResourceClient*);
+    virtual void didAddClient(ResourceClient*);
 
     virtual void allClientsRemoved();
     void beginLoadIfNeeded(ResourceFetcher* dl);
@@ -72,11 +72,11 @@ private:
     friend class MemoryCache;
 };
 
-class CachedFontClient : public CachedResourceClient {
+class CachedFontClient : public ResourceClient {
 public:
     virtual ~CachedFontClient() { }
-    static CachedResourceClientType expectedType() { return FontType; }
-    virtual CachedResourceClientType resourceClientType() const { return expectedType(); }
+    static ResourceClientType expectedType() { return FontType; }
+    virtual ResourceClientType resourceClientType() const { return expectedType(); }
     virtual void fontLoaded(CachedFont*) { }
 };
 

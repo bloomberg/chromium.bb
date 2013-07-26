@@ -29,8 +29,8 @@
 
 #include "core/css/StyleSheetContents.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedResourceClientWalker.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
+#include "core/loader/cache/ResourceClientWalker.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "wtf/CurrentTime.h"
@@ -39,7 +39,7 @@
 namespace WebCore {
 
 CachedCSSStyleSheet::CachedCSSStyleSheet(const ResourceRequest& resourceRequest, const String& charset)
-    : CachedResource(resourceRequest, CSSStyleSheet)
+    : Resource(resourceRequest, CSSStyleSheet)
     , m_decoder(TextResourceDecoder::create("text/css", charset))
 {
     DEFINE_STATIC_LOCAL(const AtomicString, acceptCSS, ("text/css,*/*;q=0.1", AtomicString::ConstructFromLiteral));
@@ -55,13 +55,13 @@ CachedCSSStyleSheet::~CachedCSSStyleSheet()
         m_parsedStyleSheetCache->removedFromMemoryCache();
 }
 
-void CachedCSSStyleSheet::didAddClient(CachedResourceClient* c)
+void CachedCSSStyleSheet::didAddClient(ResourceClient* c)
 {
     ASSERT(c->resourceClientType() == CachedStyleSheetClient::expectedType());
-    // CachedResource::didAddClient() must be before setCSSStyleSheet(),
+    // Resource::didAddClient() must be before setCSSStyleSheet(),
     // because setCSSStyleSheet() may cause scripts to be executed, which could destroy 'c' if it is an instance of HTMLLinkElement.
     // see the comment of HTMLLinkElement::setCSSStyleSheet.
-    CachedResource::didAddClient(c);
+    Resource::didAddClient(c);
 
     if (!isLoading())
         static_cast<CachedStyleSheetClient*>(c)->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), m_decoder->encoding().name(), this);
@@ -101,7 +101,7 @@ void CachedCSSStyleSheet::checkNotify()
         m_decodedSheetText.append(m_decoder->flush());
     }
 
-    CachedResourceClientWalker<CachedStyleSheetClient> w(m_clients);
+    ResourceClientWalker<CachedStyleSheetClient> w(m_clients);
     while (CachedStyleSheetClient* c = w.next())
         c->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), m_decoder->encoding().name(), this);
     // Clear the decoded text as it is unlikely to be needed immediately again and is cheap to regenerate.

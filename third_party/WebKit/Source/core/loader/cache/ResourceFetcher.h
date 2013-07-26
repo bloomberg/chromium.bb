@@ -28,10 +28,10 @@
 
 #include "core/loader/ResourceLoaderHost.h"
 #include "core/loader/cache/CachePolicy.h"
-#include "core/loader/cache/CachedResource.h"
-#include "core/loader/cache/CachedResourceHandle.h"
-#include "core/loader/cache/CachedResourceInitiatorInfo.h"
+#include "core/loader/cache/FetchInitiatorInfo.h"
 #include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/Resource.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
@@ -78,28 +78,28 @@ public:
     using RefCounted<ResourceFetcher>::ref;
     using RefCounted<ResourceFetcher>::deref;
 
-    CachedResourceHandle<CachedImage> requestImage(FetchRequest&);
-    CachedResourceHandle<CachedCSSStyleSheet> requestCSSStyleSheet(FetchRequest&);
-    CachedResourceHandle<CachedCSSStyleSheet> requestUserCSSStyleSheet(FetchRequest&);
-    CachedResourceHandle<CachedScript> requestScript(FetchRequest&);
-    CachedResourceHandle<CachedFont> requestFont(FetchRequest&);
-    CachedResourceHandle<CachedRawResource> requestRawResource(FetchRequest&);
-    CachedResourceHandle<CachedRawResource> requestMainResource(FetchRequest&);
-    CachedResourceHandle<CachedDocument> requestSVGDocument(FetchRequest&);
-    CachedResourceHandle<CachedXSLStyleSheet> requestXSLStyleSheet(FetchRequest&);
-    CachedResourceHandle<CachedResource> requestLinkResource(CachedResource::Type, FetchRequest&);
-    CachedResourceHandle<CachedTextTrack> requestTextTrack(FetchRequest&);
-    CachedResourceHandle<CachedShader> requestShader(FetchRequest&);
-    CachedResourceHandle<CachedRawResource> requestImport(FetchRequest&);
+    ResourcePtr<CachedImage> requestImage(FetchRequest&);
+    ResourcePtr<CachedCSSStyleSheet> requestCSSStyleSheet(FetchRequest&);
+    ResourcePtr<CachedCSSStyleSheet> requestUserCSSStyleSheet(FetchRequest&);
+    ResourcePtr<CachedScript> requestScript(FetchRequest&);
+    ResourcePtr<CachedFont> requestFont(FetchRequest&);
+    ResourcePtr<CachedRawResource> requestRawResource(FetchRequest&);
+    ResourcePtr<CachedRawResource> requestMainResource(FetchRequest&);
+    ResourcePtr<CachedDocument> requestSVGDocument(FetchRequest&);
+    ResourcePtr<CachedXSLStyleSheet> requestXSLStyleSheet(FetchRequest&);
+    ResourcePtr<Resource> requestLinkResource(Resource::Type, FetchRequest&);
+    ResourcePtr<CachedTextTrack> requestTextTrack(FetchRequest&);
+    ResourcePtr<CachedShader> requestShader(FetchRequest&);
+    ResourcePtr<CachedRawResource> requestImport(FetchRequest&);
 
     // Logs an access denied message to the console for the specified URL.
     void printAccessDeniedMessage(const KURL&) const;
 
-    CachedResource* cachedResource(const String& url) const;
-    CachedResource* cachedResource(const KURL&) const;
+    Resource* cachedResource(const String& url) const;
+    Resource* cachedResource(const KURL&) const;
 
-    typedef HashMap<String, CachedResourceHandle<CachedResource> > DocumentResourceMap;
-    const DocumentResourceMap& allCachedResources() const { return m_documentResources; }
+    typedef HashMap<String, ResourcePtr<Resource> > DocumentResourceMap;
+    const DocumentResourceMap& allResources() const { return m_documentResources; }
 
     bool autoLoadImages() const { return m_autoLoadImages; }
     void setAutoLoadImages(bool);
@@ -108,7 +108,7 @@ public:
 
     bool shouldDeferImageLoad(const KURL&) const;
 
-    CachePolicy cachePolicy(CachedResource::Type) const;
+    CachePolicy cachePolicy(Resource::Type) const;
 
     Frame* frame() const; // Can be null
     Document* document() const { return m_document; } // Can be null
@@ -124,34 +124,34 @@ public:
     bool isPreloaded(const String& urlString) const;
     void clearPreloads();
     void clearPendingPreloads();
-    void preload(CachedResource::Type, FetchRequest&, const String& charset);
+    void preload(Resource::Type, FetchRequest&, const String& charset);
     void checkForPendingPreloads();
     void printPreloadStats();
-    bool canRequest(CachedResource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload = false);
-    bool canAccess(CachedResource*);
+    bool canRequest(Resource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload = false);
+    bool canAccess(Resource*);
 
     // ResourceLoaderHost
-    virtual void incrementRequestCount(const CachedResource*) OVERRIDE;
-    virtual void decrementRequestCount(const CachedResource*) OVERRIDE;
-    virtual void didLoadResource(CachedResource*) OVERRIDE;
-    virtual void redirectReceived(CachedResource*, const ResourceResponse&) OVERRIDE;
-    virtual void didFinishLoading(const CachedResource*, double finishTime, const ResourceLoaderOptions&) OVERRIDE;
-    virtual void didChangeLoadingPriority(const CachedResource*, ResourceLoadPriority) OVERRIDE;
-    virtual void didFailLoading(const CachedResource*, const ResourceError&, const ResourceLoaderOptions&) OVERRIDE;
-    virtual void willSendRequest(const CachedResource*, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) OVERRIDE;
-    virtual void didReceiveResponse(const CachedResource*, const ResourceResponse&, const ResourceLoaderOptions&) OVERRIDE;
-    virtual void didReceiveData(const CachedResource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void incrementRequestCount(const Resource*) OVERRIDE;
+    virtual void decrementRequestCount(const Resource*) OVERRIDE;
+    virtual void didLoadResource(Resource*) OVERRIDE;
+    virtual void redirectReceived(Resource*, const ResourceResponse&) OVERRIDE;
+    virtual void didFinishLoading(const Resource*, double finishTime, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority) OVERRIDE;
+    virtual void didFailLoading(const Resource*, const ResourceError&, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void willSendRequest(const Resource*, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void didReceiveResponse(const Resource*, const ResourceResponse&, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) OVERRIDE;
     virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) OVERRIDE;
     virtual void didInitializeResourceLoader(ResourceLoader*) OVERRIDE;
     virtual void willTerminateResourceLoader(ResourceLoader*) OVERRIDE;
     virtual void willStartLoadingResource(ResourceRequest&) OVERRIDE;
     virtual bool defersLoading() const OVERRIDE;
     virtual bool isLoadedBy(ResourceLoaderHost*) const OVERRIDE;
-    virtual bool shouldRequest(CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&) OVERRIDE;
+    virtual bool shouldRequest(Resource*, const ResourceRequest&, const ResourceLoaderOptions&) OVERRIDE;
     virtual void refResourceLoaderHost() OVERRIDE;
     virtual void derefResourceLoaderHost() OVERRIDE;
 
-    static const ResourceLoaderOptions& defaultCachedResourceOptions();
+    static const ResourceLoaderOptions& defaultResourceOptions();
 private:
 
     explicit ResourceFetcher(DocumentLoader*);
@@ -159,22 +159,22 @@ private:
     FrameLoader* frameLoader();
     bool shouldLoadNewResource() const;
 
-    CachedResourceHandle<CachedResource> requestResource(CachedResource::Type, FetchRequest&);
-    CachedResourceHandle<CachedResource> revalidateResource(const FetchRequest&, CachedResource*);
-    CachedResourceHandle<CachedResource> loadResource(CachedResource::Type, FetchRequest&, const String& charset);
+    ResourcePtr<Resource> requestResource(Resource::Type, FetchRequest&);
+    ResourcePtr<Resource> revalidateResource(const FetchRequest&, Resource*);
+    ResourcePtr<Resource> loadResource(Resource::Type, FetchRequest&, const String& charset);
     void preCacheDataURIImage(const FetchRequest&);
-    void storeResourceTimingInitiatorInformation(const CachedResourceHandle<CachedResource>&, const FetchRequest&);
-    void requestPreload(CachedResource::Type, FetchRequest&, const String& charset);
+    void storeResourceTimingInitiatorInformation(const ResourcePtr<Resource>&, const FetchRequest&);
+    void requestPreload(Resource::Type, FetchRequest&, const String& charset);
 
     enum RevalidationPolicy { Use, Revalidate, Reload, Load };
-    RevalidationPolicy determineRevalidationPolicy(CachedResource::Type, ResourceRequest&, bool forPreload, CachedResource* existingResource, FetchRequest::DeferOption) const;
+    RevalidationPolicy determineRevalidationPolicy(Resource::Type, ResourceRequest&, bool forPreload, Resource* existingResource, FetchRequest::DeferOption) const;
 
-    void determineTargetType(ResourceRequest&, CachedResource::Type);
-    ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, CachedResource::Type);
-    void addAdditionalRequestHeaders(ResourceRequest&, CachedResource::Type);
+    void determineTargetType(ResourceRequest&, Resource::Type);
+    ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type);
+    void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
 
-    void notifyLoadedFromMemoryCache(CachedResource*);
-    bool checkInsecureContent(CachedResource::Type, const KURL&) const;
+    void notifyLoadedFromMemoryCache(Resource*);
+    bool checkInsecureContent(Resource::Type, const KURL&) const;
 
     void garbageCollectDocumentResourcesTimerFired(Timer<ResourceFetcher>*);
     void performPostLoadActions();
@@ -189,9 +189,9 @@ private:
 
     int m_requestCount;
 
-    OwnPtr<ListHashSet<CachedResource*> > m_preloads;
+    OwnPtr<ListHashSet<Resource*> > m_preloads;
     struct PendingPreload {
-        CachedResource::Type m_type;
+        Resource::Type m_type;
         FetchRequest m_request;
         String m_charset;
     };
@@ -199,7 +199,7 @@ private:
 
     Timer<ResourceFetcher> m_garbageCollectDocumentResourcesTimer;
 
-    typedef HashMap<CachedResource*, RefPtr<ResourceTimingInfo> > ResourceTimingInfoMap;
+    typedef HashMap<Resource*, RefPtr<ResourceTimingInfo> > ResourceTimingInfoMap;
     ResourceTimingInfoMap m_resourceTimingInfoMap;
 
     // 29 bits left

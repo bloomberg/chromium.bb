@@ -26,7 +26,7 @@
 #ifndef CSSFontSelector_h
 #define CSSFontSelector_h
 
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "wtf/Forward.h"
@@ -86,7 +86,7 @@ private:
     HashMap<String, OwnPtr<HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_fonts;
     HashSet<FontSelectorClient*> m_clients;
 
-    Vector<CachedResourceHandle<CachedFont> > m_fontsToBeginLoading;
+    Vector<ResourcePtr<CachedFont> > m_fontsToBeginLoading;
     Timer<CSSFontSelector> m_beginLoadingTimer;
 
     unsigned m_version;

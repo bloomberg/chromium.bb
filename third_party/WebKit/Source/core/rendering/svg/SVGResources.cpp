@@ -180,7 +180,7 @@ static inline void registerPendingResource(SVGDocumentExtensions* extensions, co
     extensions->addPendingResource(id, toSVGStyledElement(element));
 }
 
-bool SVGResources::buildCachedResources(const RenderObject* object, const SVGRenderStyle* style)
+bool SVGResources::buildResources(const RenderObject* object, const SVGRenderStyle* style)
 {
     ASSERT(object);
     ASSERT(style);

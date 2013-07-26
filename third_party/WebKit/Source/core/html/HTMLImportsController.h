@@ -34,7 +34,7 @@
 #include "core/html/HTMLImport.h"
 #include "core/html/LinkResource.h"
 #include "core/loader/cache/CachedRawResource.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Supplementable.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/PassOwnPtr.h"
@@ -80,7 +80,7 @@ public:
         StateReady
     };
 
-    static PassRefPtr<HTMLImportLoader> create(HTMLImport* parent, const KURL&, const CachedResourceHandle<CachedScript>&);
+    static PassRefPtr<HTMLImportLoader> create(HTMLImport* parent, const KURL&, const ResourcePtr<CachedScript>&);
     virtual ~HTMLImportLoader();
 
     Document* importedDocument() const;
@@ -97,12 +97,12 @@ public:
     virtual void didFinishParsing() OVERRIDE;
 
 private:
-    HTMLImportLoader(HTMLImport*, const KURL&, const CachedResourceHandle<CachedScript>&);
+    HTMLImportLoader(HTMLImport*, const KURL&, const ResourcePtr<CachedScript>&);
 
     // CachedRawResourceClient
-    virtual void responseReceived(CachedResource*, const ResourceResponse&) OVERRIDE;
-    virtual void dataReceived(CachedResource*, const char* data, int length) OVERRIDE;
-    virtual void notifyFinished(CachedResource*) OVERRIDE;
+    virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
+    virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
+    virtual void notifyFinished(Resource*) OVERRIDE;
 
     State startWritingAndParsing(const ResourceResponse&);
     State finishWriting();
@@ -114,7 +114,7 @@ private:
     HTMLImport* m_parent;
     State m_state;
     KURL m_url;
-    CachedResourceHandle<CachedRawResource> m_resource;
+    ResourcePtr<CachedRawResource> m_resource;
     RefPtr<Document> m_importedDocument;
     RefPtr<DocumentWriter> m_writer;
 };

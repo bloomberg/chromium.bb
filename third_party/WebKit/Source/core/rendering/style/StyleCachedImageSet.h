@@ -27,7 +27,7 @@
 #define StyleCachedImageSet_h
 
 #include "core/loader/cache/CachedImageClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/style/StyleImage.h"
 
@@ -75,7 +75,7 @@ public:
 private:
     StyleCachedImageSet(CachedImage*, float imageScaleFactor, CSSImageSetValue*);
 
-    CachedResourceHandle<CachedImage> m_bestFitImage;
+    ResourcePtr<CachedImage> m_bestFitImage;
     float m_imageScaleFactor;
     CSSImageSetValue* m_imageSetValue; // Not retained; it owns us.
 };

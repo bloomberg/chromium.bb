@@ -23,18 +23,18 @@
 #ifndef CachedImageClient_h
 #define CachedImageClient_h
 
-#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/ResourceClient.h"
 
 namespace WebCore {
 
 class CachedImage;
 class IntRect;
 
-class CachedImageClient : public CachedResourceClient {
+class CachedImageClient : public ResourceClient {
 public:
     virtual ~CachedImageClient() { }
-    static CachedResourceClientType expectedType() { return ImageType; }
-    virtual CachedResourceClientType resourceClientType() const { return expectedType(); }
+    static ResourceClientType expectedType() { return ImageType; }
+    virtual ResourceClientType resourceClientType() const { return expectedType(); }
 
     // Called whenever a frame of an image changes, either because we got more data from the network or
     // because we are animating. If not null, the IntRect is the changed rect of the image.

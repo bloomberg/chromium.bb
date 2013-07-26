@@ -23,8 +23,8 @@
 #define ProcessingInstruction_h
 
 #include "core/dom/Node.h"
-#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 
 namespace WebCore {
 
@@ -81,7 +81,7 @@ private:
     String m_localHref;
     String m_title;
     String m_media;
-    CachedResourceHandle<CachedResource> m_cachedSheet;
+    ResourcePtr<Resource> m_cachedSheet;
     RefPtr<StyleSheet> m_sheet;
     bool m_loading;
     bool m_alternate;

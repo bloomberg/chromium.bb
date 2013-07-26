@@ -26,24 +26,23 @@
 #ifndef CachedCSSStyleSheet_h
 #define CachedCSSStyleSheet_h
 
-#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/Resource.h"
 
 namespace WebCore {
 
-    class CachedResourceClient;
+class ResourceClient;
     class StyleSheetContents;
     class TextResourceDecoder;
     struct CSSParserContext;
 
-    class CachedCSSStyleSheet : public CachedResource {
+    class CachedCSSStyleSheet : public Resource {
     public:
         CachedCSSStyleSheet(const ResourceRequest&, const String& charset);
         virtual ~CachedCSSStyleSheet();
 
         const String sheetText(bool enforceMIMEType = true, bool* hasValidMIMEType = 0) const;
 
-        virtual void didAddClient(CachedResourceClient*);
-
+        virtual void didAddClient(ResourceClient*);
         virtual void setEncoding(const String&);
         virtual String encoding() const;
         virtual void destroyDecodedData() OVERRIDE;

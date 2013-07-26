@@ -30,9 +30,9 @@
 #ifndef StyleCustomFilterProgram_h
 #define StyleCustomFilterProgram_h
 
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedShader.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include "core/rendering/style/StyleShader.h"
 #include "weborigin/KURL.h"
@@ -44,7 +44,7 @@ namespace WebCore {
 
 class StyleCustomFilterProgramCache;
 
-class StyleCustomFilterProgram : public CustomFilterProgram, public CachedResourceClient {
+class StyleCustomFilterProgram : public CustomFilterProgram, public ResourceClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<StyleCustomFilterProgram> create(KURL vertexShaderURL, PassRefPtr<StyleShader> vertexShader,
@@ -84,7 +84,7 @@ public:
 
     virtual bool isLoaded() const
     {
-        // Do not use the CachedResource:isLoaded method here, because it actually means !isLoading(),
+        // Do not use the Resource:isLoaded method here, because it actually means !isLoading(),
         // so missing and canceled resources will have isLoaded set to true, even if they are not loaded yet.
         ASSERT(!m_vertexShader || m_vertexShader->isCachedShader());
         ASSERT(!m_fragmentShader || m_fragmentShader->isCachedShader());
@@ -119,7 +119,7 @@ public:
         }
     }
 
-    virtual void notifyFinished(CachedResource* resource)
+    virtual void notifyFinished(Resource* resource)
     {
         if (resource->errorOccurred())
             return;
@@ -164,8 +164,8 @@ private:
     RefPtr<StyleShader> m_vertexShader;
     RefPtr<StyleShader> m_fragmentShader;
 
-    CachedResourceHandle<CachedShader> m_cachedVertexShader;
-    CachedResourceHandle<CachedShader> m_cachedFragmentShader;
+    ResourcePtr<CachedShader> m_cachedVertexShader;
+    ResourcePtr<CachedShader> m_cachedFragmentShader;
 
     // The URLs form the key of the StyleCustomFilterProgram in the cache and are used
     // to lookup the StyleCustomFilterProgram when it's removed from the cache.

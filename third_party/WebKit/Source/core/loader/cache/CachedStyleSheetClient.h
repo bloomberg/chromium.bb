@@ -26,17 +26,18 @@
 #ifndef CachedStyleSheetClient_h
 #define CachedStyleSheetClient_h
 
-#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
 class CachedCSSStyleSheet;
 
-class CachedStyleSheetClient : public CachedResourceClient {
+class CachedStyleSheetClient : public ResourceClient {
 public:
     virtual ~CachedStyleSheetClient() { }
-    static CachedResourceClientType expectedType() { return StyleSheetType; }
-    virtual CachedResourceClientType resourceClientType() const { return expectedType(); }
+    static ResourceClientType expectedType() { return StyleSheetType; }
+    virtual ResourceClientType resourceClientType() const { return expectedType(); }
     virtual void setCSSStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* charset */, const CachedCSSStyleSheet*) { }
     virtual void setXSLStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* sheet */) { }
 };

@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/loader/DocumentLoader.h"
 
-#include "CachedResourceInitiatorTypeNames.h"
+#include "FetchInitiatorTypeNames.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
@@ -297,7 +297,7 @@ bool DocumentLoader::isLoading() const
     return isLoadingMainResource() || !m_resourceLoaders.isEmpty();
 }
 
-void DocumentLoader::notifyFinished(CachedResource* resource)
+void DocumentLoader::notifyFinished(Resource* resource)
 {
     ASSERT_UNUSED(resource, m_mainResource == resource);
     ASSERT(m_mainResource);
@@ -435,7 +435,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
     return false;
 }
 
-void DocumentLoader::redirectReceived(CachedResource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
+void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     ASSERT_UNUSED(resource, resource == m_mainResource);
     willSendRequest(request, redirectResponse);
@@ -534,7 +534,7 @@ bool DocumentLoader::shouldContinueForResponse() const
     return true;
 }
 
-void DocumentLoader::responseReceived(CachedResource* resource, const ResourceResponse& response)
+void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse& response)
 {
     ASSERT_UNUSED(resource, m_mainResource == resource);
     RefPtr<DocumentLoader> protect(this);
@@ -643,7 +643,7 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
     m_writer->addData(bytes, length);
 }
 
-void DocumentLoader::dataReceived(CachedResource* resource, const char* data, int length)
+void DocumentLoader::dataReceived(Resource* resource, const char* data, int length)
 {
     ASSERT(data);
     ASSERT(length);
@@ -799,7 +799,7 @@ void DocumentLoader::clearArchiveResources()
     m_archiveResourceCollection.clear();
 }
 
-bool DocumentLoader::scheduleArchiveLoad(CachedResource* cachedResource, const ResourceRequest& request)
+bool DocumentLoader::scheduleArchiveLoad(Resource* cachedResource, const ResourceRequest& request)
 {
     if (!m_archive)
         return false;
@@ -807,7 +807,7 @@ bool DocumentLoader::scheduleArchiveLoad(CachedResource* cachedResource, const R
     ASSERT(m_archiveResourceCollection);
     ArchiveResource* archiveResource = m_archiveResourceCollection->archiveResourceForURL(request.url());
     if (!archiveResource) {
-        cachedResource->error(CachedResource::LoadError);
+        cachedResource->error(Resource::LoadError);
         return true;
     }
 
@@ -956,7 +956,7 @@ void DocumentLoader::startLoadingMainResource()
     ResourceRequest request(m_request);
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
         (SendCallbacks, SniffContent, DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, UseDefaultOriginRestrictionsForType, DocumentContext));
-    FetchRequest cachedResourceRequest(request, CachedResourceInitiatorTypeNames::document, mainResourceLoadOptions);
+    FetchRequest cachedResourceRequest(request, FetchInitiatorTypeNames::document, mainResourceLoadOptions);
     m_mainResource = m_fetcher->requestMainResource(cachedResourceRequest);
     if (!m_mainResource) {
         setRequest(ResourceRequest());

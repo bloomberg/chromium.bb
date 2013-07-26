@@ -22,7 +22,7 @@
 
 #if ENABLE(SVG_FONTS)
 #include "core/loader/cache/CachedFont.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/svg/SVGElement.h"
 
 namespace WebCore {
@@ -46,7 +46,7 @@ private:
 
     void loadFont();
 
-    CachedResourceHandle<CachedFont> m_cachedFont;
+    ResourcePtr<CachedFont> m_cachedFont;
 };
 
 } // namespace WebCore

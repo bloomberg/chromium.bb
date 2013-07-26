@@ -107,9 +107,9 @@ private:
     bool cachedDocumentIsStillLoading();
     Document* externalDocument() const;
     bool instanceTreeIsLoading(SVGElementInstance*);
-    virtual void notifyFinished(CachedResource*);
+    virtual void notifyFinished(Resource*);
     Document* referencedDocument() const;
-    void setCachedDocument(CachedResourceHandle<CachedDocument>);
+    void setCachedDocument(ResourcePtr<CachedDocument>);
 
     // SVGExternalResourcesRequired
     virtual void setHaveFiredLoadEvent(bool haveFiredLoadEvent) { m_haveFiredLoadEvent = haveFiredLoadEvent; }
@@ -121,7 +121,7 @@ private:
     bool m_haveFiredLoadEvent;
     bool m_needsShadowTreeRecreation;
     RefPtr<SVGElementInstance> m_targetElementInstance;
-    CachedResourceHandle<CachedDocument> m_cachedDocument;
+    ResourcePtr<CachedDocument> m_cachedDocument;
     Timer<SVGElement> m_svgLoadEventTimer;
 };
 

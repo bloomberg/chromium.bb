@@ -31,7 +31,7 @@
 #ifndef ResourceLoaderOptions_h
 #define ResourceLoaderOptions_h
 
-#include "core/loader/cache/CachedResourceInitiatorInfo.h"
+#include "core/loader/cache/FetchInitiatorInfo.h"
 
 namespace WebCore {
 
@@ -136,7 +136,7 @@ struct ResourceLoaderOptions {
     ClientCrossOriginCredentialPolicy crossOriginCredentialPolicy; // Whether we will ask the client for credentials (if we allow credentials at all).
     SecurityCheckPolicy securityCheck;
     ContentSecurityPolicyCheck contentSecurityPolicyOption;
-    CachedResourceInitiatorInfo initiatorInfo;
+    FetchInitiatorInfo initiatorInfo;
     RequestOriginPolicy requestOriginPolicy;
     RequestInitiatorContext requestInitiatorContext;
 };

@@ -32,7 +32,7 @@
 #include "core/loader/cache/MemoryCache.h"
 
 #include "core/loader/cache/CachedRawResource.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "wtf/OwnPtr.h"
 
@@ -86,8 +86,8 @@ TEST_F(MemoryCacheTest, DeadResourceEviction)
     const unsigned maxDeadCapacity = 0;
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
 
-    CachedResourceHandle<CachedResource> cachedResource =
-        new CachedResource(ResourceRequest(""), CachedResource::RawResource);
+    ResourcePtr<Resource> cachedResource =
+        new Resource(ResourceRequest(""), Resource::RawResource);
     const char data[5] = "abcd";
     cachedResource->appendData(data, 3);
     // The resource size has to be nonzero for this test to be meaningful, but

@@ -37,7 +37,7 @@
 namespace WebCore {
 
 CachedShader::CachedShader(const ResourceRequest& resourceRequest)
-    : CachedResource(resourceRequest, ShaderResource)
+    : Resource(resourceRequest, ShaderResource)
     , m_decoder(TextResourceDecoder::create("application/shader"))
 {
 }

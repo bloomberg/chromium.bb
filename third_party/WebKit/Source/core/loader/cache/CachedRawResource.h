@@ -23,14 +23,14 @@
 #ifndef CachedRawResource_h
 #define CachedRawResource_h
 
-#include "core/loader/cache/CachedResource.h"
-#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/Resource.h"
+#include "core/loader/cache/ResourceClient.h"
 
 namespace WebCore {
 class CachedRawResourceCallback;
 class CachedRawResourceClient;
 
-class CachedRawResource : public CachedResource {
+class CachedRawResource : public Resource {
 public:
     CachedRawResource(const ResourceRequest&, Type);
 
@@ -46,7 +46,7 @@ public:
     virtual bool canReuse(const ResourceRequest&) const;
 
 private:
-    virtual void didAddClient(CachedResourceClient*);
+    virtual void didAddClient(ResourceClient*);
     virtual void appendData(const char*, int) OVERRIDE;
 
     virtual bool shouldIgnoreHTTPStatusCodeErrors() const { return true; }
@@ -72,17 +72,17 @@ private:
 };
 
 
-class CachedRawResourceClient : public CachedResourceClient {
+class CachedRawResourceClient : public ResourceClient {
 public:
     virtual ~CachedRawResourceClient() { }
-    static CachedResourceClientType expectedType() { return RawResourceType; }
-    virtual CachedResourceClientType resourceClientType() const { return expectedType(); }
+    static ResourceClientType expectedType() { return RawResourceType; }
+    virtual ResourceClientType resourceClientType() const { return expectedType(); }
 
-    virtual void dataSent(CachedResource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
-    virtual void responseReceived(CachedResource*, const ResourceResponse&) { }
-    virtual void dataReceived(CachedResource*, const char* /* data */, int /* length */) { }
-    virtual void redirectReceived(CachedResource*, ResourceRequest&, const ResourceResponse&) { }
-    virtual void dataDownloaded(CachedResource*, int) { }
+    virtual void dataSent(Resource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
+    virtual void responseReceived(Resource*, const ResourceResponse&) { }
+    virtual void dataReceived(Resource*, const char* /* data */, int /* length */) { }
+    virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) { }
+    virtual void dataDownloaded(Resource*, int) { }
 };
 
 }

@@ -25,7 +25,7 @@
 #define StyleCachedImage_h
 
 #include "core/loader/cache/CachedImageClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/rendering/style/StyleImage.h"
 
 namespace WebCore {
@@ -60,7 +60,7 @@ public:
 private:
     explicit StyleCachedImage(CachedImage*);
 
-    CachedResourceHandle<CachedImage> m_image;
+    ResourcePtr<CachedImage> m_image;
 };
 
 }

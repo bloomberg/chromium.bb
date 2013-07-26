@@ -61,7 +61,7 @@ CachedScript* PendingScript::cachedScript() const
     return m_cachedScript.get();
 }
 
-void PendingScript::notifyFinished(CachedResource*)
+void PendingScript::notifyFinished(Resource*)
 {
 }
 

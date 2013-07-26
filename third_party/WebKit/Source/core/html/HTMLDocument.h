@@ -24,7 +24,7 @@
 #define HTMLDocument_h
 
 #include "core/dom/Document.h"
-#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/ResourceClient.h"
 #include "wtf/HashCountedSet.h"
 
 namespace WebCore {
@@ -33,7 +33,7 @@ class FrameView;
 class HTMLBodyElement;
 class HTMLElement;
 
-class HTMLDocument : public Document, public CachedResourceClient {
+class HTMLDocument : public Document, public ResourceClient {
 public:
     static PassRefPtr<HTMLDocument> create(const DocumentInit& initializer = DocumentInit())
     {

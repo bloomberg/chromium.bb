@@ -36,7 +36,7 @@
 #include "core/loader/ResourceLoaderOptions.h"
 #include "core/loader/SubstituteData.h"
 #include "core/loader/cache/CachedRawResource.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -125,7 +125,7 @@ namespace WebCore {
         void setTitle(const StringWithDirection&);
         const String& overrideEncoding() const { return m_overrideEncoding; }
 
-        bool scheduleArchiveLoad(CachedResource*, const ResourceRequest&);
+        bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
         void cancelPendingSubstituteLoad(ResourceLoader*);
 
         enum PolicyCheckLoadType {
@@ -202,10 +202,10 @@ namespace WebCore {
         void willSendRequest(ResourceRequest&, const ResourceResponse&);
         void finishedLoading(double finishTime);
         void mainReceivedError(const ResourceError&);
-        virtual void redirectReceived(CachedResource*, ResourceRequest&, const ResourceResponse&) OVERRIDE;
-        virtual void responseReceived(CachedResource*, const ResourceResponse&) OVERRIDE;
-        virtual void dataReceived(CachedResource*, const char* data, int length) OVERRIDE;
-        virtual void notifyFinished(CachedResource*) OVERRIDE;
+        virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) OVERRIDE;
+        virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
+        virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
+        virtual void notifyFinished(Resource*) OVERRIDE;
 
         bool maybeLoadEmpty();
 
@@ -223,7 +223,7 @@ namespace WebCore {
         Frame* m_frame;
         RefPtr<ResourceFetcher> m_fetcher;
 
-        CachedResourceHandle<CachedRawResource> m_mainResource;
+        ResourcePtr<CachedRawResource> m_mainResource;
         ResourceLoaderSet m_resourceLoaders;
         ResourceLoaderSet m_multipartResourceLoaders;
 

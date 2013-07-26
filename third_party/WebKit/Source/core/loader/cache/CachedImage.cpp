@@ -25,9 +25,9 @@
 #include "core/loader/cache/CachedImage.h"
 
 #include "core/loader/cache/CachedImageClient.h"
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceClientWalker.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourceClientWalker.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/FrameView.h"
 #include "core/platform/SharedBuffer.h"
@@ -43,7 +43,7 @@ using std::max;
 namespace WebCore {
 
 CachedImage::CachedImage(const ResourceRequest& resourceRequest)
-    : CachedResource(resourceRequest, ImageResource)
+    : Resource(resourceRequest, ImageResource)
     , m_image(0)
     , m_loadingMultipartContent(false)
 {
@@ -52,7 +52,7 @@ CachedImage::CachedImage(const ResourceRequest& resourceRequest)
 }
 
 CachedImage::CachedImage(Image* image)
-    : CachedResource(ResourceRequest(), ImageResource)
+    : Resource(ResourceRequest(), ImageResource)
     , m_image(image)
 {
     setStatus(Cached);
@@ -68,12 +68,12 @@ CachedImage::~CachedImage()
 void CachedImage::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
 {
     if (!fetcher || fetcher->autoLoadImages())
-        CachedResource::load(fetcher, options);
+        Resource::load(fetcher, options);
     else
         setLoading(false);
 }
 
-void CachedImage::didAddClient(CachedResourceClient* c)
+void CachedImage::didAddClient(ResourceClient* c)
 {
     if (m_data && !m_image && !errorOccurred()) {
         createImage();
@@ -84,10 +84,10 @@ void CachedImage::didAddClient(CachedResourceClient* c)
     if (m_image && !m_image->isNull())
         static_cast<CachedImageClient*>(c)->imageChanged(this);
 
-    CachedResource::didAddClient(c);
+    Resource::didAddClient(c);
 }
 
-void CachedImage::didRemoveClient(CachedResourceClient* c)
+void CachedImage::didRemoveClient(ResourceClient* c)
 {
     ASSERT(c);
     ASSERT(c->resourceClientType() == CachedImageClient::expectedType());
@@ -96,7 +96,7 @@ void CachedImage::didRemoveClient(CachedResourceClient* c)
     if (m_svgImageCache)
         m_svgImageCache->removeClientFromCache(static_cast<CachedImageClient*>(c));
 
-    CachedResource::didRemoveClient(c);
+    Resource::didRemoveClient(c);
 }
 
 void CachedImage::switchClientsToRevalidatedResource()
@@ -105,18 +105,18 @@ void CachedImage::switchClientsToRevalidatedResource()
     ASSERT(resourceToRevalidate()->isImage());
     // Pending container size requests need to be transferred to the revalidated resource.
     if (!m_pendingContainerSizeRequests.isEmpty()) {
-        // A copy of pending size requests is needed as they are deleted during CachedResource::switchClientsToRevalidateResouce().
+        // A copy of pending size requests is needed as they are deleted during Resource::switchClientsToRevalidateResouce().
         ContainerSizeRequests switchContainerSizeRequests;
         for (ContainerSizeRequests::iterator it = m_pendingContainerSizeRequests.begin(); it != m_pendingContainerSizeRequests.end(); ++it)
             switchContainerSizeRequests.set(it->key, it->value);
-        CachedResource::switchClientsToRevalidatedResource();
+        Resource::switchClientsToRevalidatedResource();
         CachedImage* revalidatedCachedImage = static_cast<CachedImage*>(resourceToRevalidate());
         for (ContainerSizeRequests::iterator it = switchContainerSizeRequests.begin(); it != switchContainerSizeRequests.end(); ++it)
             revalidatedCachedImage->setContainerSizeForRenderer(it->key, it->value.first, it->value.second);
         return;
     }
 
-    CachedResource::switchClientsToRevalidatedResource();
+    Resource::switchClientsToRevalidatedResource();
 }
 
 void CachedImage::allClientsRemoved()
@@ -124,7 +124,7 @@ void CachedImage::allClientsRemoved()
     m_pendingContainerSizeRequests.clear();
     if (m_image && !errorOccurred())
         m_image->resetAnimation();
-    CachedResource::allClientsRemoved();
+    Resource::allClientsRemoved();
 }
 
 pair<Image*, float> CachedImage::brokenImage(float deviceScaleFactor) const
@@ -262,7 +262,7 @@ void CachedImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& int
 
 void CachedImage::notifyObservers(const IntRect* changeRect)
 {
-    CachedResourceClientWalker<CachedImageClient> w(m_clients);
+    ResourceClientWalker<CachedImageClient> w(m_clients);
     while (CachedImageClient* c = w.next())
         c->imageChanged(this, changeRect);
 }
@@ -315,7 +315,7 @@ inline void CachedImage::clearImage()
 
 void CachedImage::appendData(const char* data, int length)
 {
-    CachedResource::appendData(data, length);
+    Resource::appendData(data, length);
     if (!m_loadingMultipartContent)
         updateImage(false);
 }
@@ -358,13 +358,13 @@ void CachedImage::finishOnePart()
     updateImage(true);
     if (m_loadingMultipartContent)
         m_data.clear();
-    CachedResource::finishOnePart();
+    Resource::finishOnePart();
 }
 
-void CachedImage::error(CachedResource::Status status)
+void CachedImage::error(Resource::Status status)
 {
     clear();
-    CachedResource::error(status);
+    Resource::error(status);
     notifyObservers();
 }
 
@@ -374,7 +374,7 @@ void CachedImage::responseReceived(const ResourceResponse& response)
         finishOnePart();
     else if (response.isMultipart())
         m_loadingMultipartContent = true;
-    CachedResource::responseReceived(response);
+    Resource::responseReceived(response);
 }
 
 void CachedImage::destroyDecodedData()
@@ -407,7 +407,7 @@ void CachedImage::didDraw(const Image* image)
     if (!timeStamp) // If didDraw is called outside of a Frame paint.
         timeStamp = currentTime();
 
-    CachedResource::didAccessDecodedData(timeStamp);
+    Resource::didAccessDecodedData(timeStamp);
 }
 
 bool CachedImage::shouldPauseAnimation(const Image* image)
@@ -415,7 +415,7 @@ bool CachedImage::shouldPauseAnimation(const Image* image)
     if (!image || image != m_image)
         return false;
 
-    CachedResourceClientWalker<CachedImageClient> w(m_clients);
+    ResourceClientWalker<CachedImageClient> w(m_clients);
     while (CachedImageClient* c = w.next()) {
         if (c->willRenderImage(this))
             return false;

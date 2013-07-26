@@ -256,7 +256,7 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
     }
 }
 
-void RenderImage::notifyFinished(CachedResource* newImage)
+void RenderImage::notifyFinished(Resource* newImage)
 {
     if (!m_imageResource)
         return;

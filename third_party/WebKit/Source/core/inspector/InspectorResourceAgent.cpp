@@ -50,9 +50,9 @@
 #include "core/loader/ResourceLoader.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/loader/cache/CachedResource.h"
-#include "core/loader/cache/CachedResourceInitiatorInfo.h"
+#include "core/loader/cache/FetchInitiatorInfo.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/Resource.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/JSONValues.h"
@@ -271,7 +271,7 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
     return responseObject;
 }
 
-static PassRefPtr<TypeBuilder::Network::CachedResource> buildObjectForCachedResource(const CachedResource& cachedResource, DocumentLoader* loader)
+static PassRefPtr<TypeBuilder::Network::CachedResource> buildObjectForResource(const Resource& cachedResource, DocumentLoader* loader)
 {
     RefPtr<TypeBuilder::Network::CachedResource> resourceObject = TypeBuilder::Network::CachedResource::create()
         .setUrl(urlWithoutFragment(cachedResource.url()).string())
@@ -292,7 +292,7 @@ InspectorResourceAgent::~InspectorResourceAgent()
     ASSERT(!m_instrumentingAgents->inspectorResourceAgent());
 }
 
-void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const CachedResourceInitiatorInfo& initiatorInfo)
+void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, m_pageAgent->loaderId(loader));
@@ -336,7 +336,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(unsigned long identifier
 
     bool isNotModified = response.httpStatusCode() == 304;
 
-    CachedResource* cachedResource = 0;
+    Resource* cachedResource = 0;
     if (resourceLoader && !isNotModified)
         cachedResource = resourceLoader->cachedResource();
     if (!cachedResource)
@@ -346,7 +346,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(unsigned long identifier
         // Use mime type from cached resource in case the one in response is empty.
         if (resourceResponse && response.mimeType().isEmpty())
             resourceResponse->setString(TypeBuilder::Network::Response::MimeType, cachedResource->response().mimeType());
-        m_resourcesData->addCachedResource(requestId, cachedResource);
+        m_resourcesData->addResource(requestId, cachedResource);
     }
 
     InspectorPageAgent::ResourceType type = cachedResource ? InspectorPageAgent::cachedResourceType(*cachedResource) : InspectorPageAgent::OtherResource;
@@ -445,8 +445,8 @@ void InspectorResourceAgent::didFailXHRLoading(ThreadableLoaderClient* client)
 
 void InspectorResourceAgent::didFinishXHRLoading(ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const String&, const String&, unsigned)
 {
-    // For Asynchronous XHRs, the inspector can grab the data directly off of the CachedResource. For sync XHRs, we need to
-    // provide the data here, since no CachedResource was involved.
+    // For Asynchronous XHRs, the inspector can grab the data directly off of the Resource. For sync XHRs, we need to
+    // provide the data here, since no Resource was involved.
     if (m_loadingXHRSynchronously)
         m_resourcesData->setResourceContent(IdentifiersFactory::requestId(identifier), sourceString.flattenToString());
     m_pendingXHRReplayData.remove(client);
@@ -467,9 +467,9 @@ void InspectorResourceAgent::didLoadXHRSynchronously()
     m_loadingXHRSynchronously = false;
 }
 
-void InspectorResourceAgent::willDestroyCachedResource(CachedResource* cachedResource)
+void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)
 {
-    Vector<String> requestIds = m_resourcesData->removeCachedResource(cachedResource);
+    Vector<String> requestIds = m_resourcesData->removeResource(cachedResource);
     if (!requestIds.size())
         return;
 
@@ -503,10 +503,10 @@ void InspectorResourceAgent::didRecalculateStyle()
 void InspectorResourceAgent::didScheduleStyleRecalculation(Document* document)
 {
     if (!m_styleRecalculationInitiator)
-        m_styleRecalculationInitiator = buildInitiatorObject(document, CachedResourceInitiatorInfo());
+        m_styleRecalculationInitiator = buildInitiatorObject(document, FetchInitiatorInfo());
 }
 
-PassRefPtr<TypeBuilder::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document, const CachedResourceInitiatorInfo& initiatorInfo)
+PassRefPtr<TypeBuilder::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document, const FetchInitiatorInfo& initiatorInfo)
 {
     RefPtr<ScriptCallStack> stackTrace = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
     if (stackTrace && stackTrace->size() > 0) {
@@ -664,7 +664,7 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
     if (!xhrReplayData)
         return;
 
-    CachedResource* cachedResource = memoryCache()->resourceForURL(xhrReplayData->url());
+    Resource* cachedResource = memoryCache()->resourceForURL(xhrReplayData->url());
     if (cachedResource)
         memoryCache()->remove(cachedResource);
 

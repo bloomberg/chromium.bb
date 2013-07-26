@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/xml/XSLImportRule.h"
 
-#include "CachedResourceInitiatorTypeNames.h"
+#include "FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"
 #include "core/loader/cache/FetchRequest.h"
@@ -98,7 +98,7 @@ void XSLImportRule::loadSheet()
             return;
     }
 
-    FetchRequest request(ResourceRequest(fetcher->document()->completeURL(absHref)), CachedResourceInitiatorTypeNames::xml);
+    FetchRequest request(ResourceRequest(fetcher->document()->completeURL(absHref)), FetchInitiatorTypeNames::xml);
     m_cachedSheet = fetcher->requestXSLStyleSheet(request);
 
     if (m_cachedSheet) {

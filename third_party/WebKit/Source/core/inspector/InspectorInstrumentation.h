@@ -52,7 +52,7 @@ namespace WebCore {
 
 struct CSSParserString;
 class CSSRule;
-class CachedResource;
+class Resource;
 class CharacterData;
 class DOMWindow;
 class DOMWrapperWorld;

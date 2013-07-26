@@ -33,8 +33,8 @@
 #define LinkLoader_h
 
 #include "core/loader/LinkLoaderClient.h"
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/PrerenderClient.h"
 #include "core/platform/Timer.h"
 #include "wtf/RefPtr.h"
@@ -45,14 +45,14 @@ class LinkRelAttribute;
 class PrerenderHandle;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
-class LinkLoader : public CachedResourceClient, public PrerenderClient {
+class LinkLoader : public ResourceClient, public PrerenderClient {
 
 public:
     explicit LinkLoader(LinkLoaderClient*);
     virtual ~LinkLoader();
 
-    // from CachedResourceClient
-    virtual void notifyFinished(CachedResource*);
+    // from ResourceClient
+    virtual void notifyFinished(Resource*);
 
     // from PrerenderClient
     virtual void didStartPrerender() OVERRIDE;
@@ -69,7 +69,7 @@ private:
 
     LinkLoaderClient* m_client;
 
-    CachedResourceHandle<CachedResource> m_cachedLinkResource;
+    ResourcePtr<Resource> m_cachedLinkResource;
     Timer<LinkLoader> m_linkLoadTimer;
     Timer<LinkLoader> m_linkLoadingErrorTimer;
 

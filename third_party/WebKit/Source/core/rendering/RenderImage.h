@@ -93,7 +93,7 @@ private:
 
     virtual LayoutUnit minimumReplacedHeight() const OVERRIDE;
 
-    virtual void notifyFinished(CachedResource*) OVERRIDE FINAL;
+    virtual void notifyFinished(Resource*) OVERRIDE FINAL;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
 
     virtual bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const OVERRIDE FINAL;

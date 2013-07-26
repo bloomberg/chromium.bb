@@ -27,7 +27,7 @@
 #define CachedSVGDocumentReference_h
 
 #include "core/loader/cache/CachedDocument.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 
 namespace WebCore {
 
@@ -37,7 +37,7 @@ public:
     virtual ~CachedSVGDocumentReference() { m_document->removeClient(this); }
     CachedDocument* document() { return m_document.get(); }
 private:
-    CachedResourceHandle<CachedDocument> m_document;
+    ResourcePtr<CachedDocument> m_document;
 };
 
 };

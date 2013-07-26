@@ -27,7 +27,7 @@
 #define RenderImageResource_h
 
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/style/StyleImage.h"
@@ -70,7 +70,7 @@ public:
 protected:
     RenderImageResource();
     RenderObject* m_renderer;
-    CachedResourceHandle<CachedImage> m_cachedImage;
+    ResourcePtr<CachedImage> m_cachedImage;
 
 private:
     static Image* nullImage();

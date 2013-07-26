@@ -476,16 +476,16 @@
           'msvs_cygwin_shell': 1,
         },
         {
-          'action_name': 'CachedResourceInitiatorTypeNames',
+          'action_name': 'FetchInitiatorTypeNames',
           'inputs': [
             'scripts/Hasher.pm',
             'scripts/StaticString.pm',
             'scripts/make_names.pl',
-            'loader/cache/CachedResourceInitiatorTypeNames.in',
+            'loader/cache/FetchInitiatorTypeNames.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CachedResourceInitiatorTypeNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CachedResourceInitiatorTypeNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/FetchInitiatorTypeNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/FetchInitiatorTypeNames.h',
           ],
           'action': [
             'python',

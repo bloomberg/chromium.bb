@@ -51,7 +51,7 @@ ScriptRunner::~ScriptRunner()
         m_document->decrementLoadEventDelayCount();
 }
 
-void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, CachedResourceHandle<CachedScript> cachedScript, ExecutionType executionType)
+void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ResourcePtr<CachedScript> cachedScript, ExecutionType executionType)
 {
     ASSERT(scriptLoader);
     ASSERT(cachedScript.get());

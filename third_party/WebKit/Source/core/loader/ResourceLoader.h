@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class CachedResource;
+class Resource;
 class KURL;
 class ResourceError;
 class ResourceResponse;
@@ -46,7 +46,7 @@ class ResourceLoaderHost;
 
 class ResourceLoader : public RefCounted<ResourceLoader>, protected WebKit::WebURLLoaderClient {
 public:
-    static PassRefPtr<ResourceLoader> create(ResourceLoaderHost*, CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&);
+    static PassRefPtr<ResourceLoader> create(ResourceLoaderHost*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();
 
     static void loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
@@ -55,7 +55,7 @@ public:
     void cancel(const ResourceError&);
     void cancelIfNotFinishing();
 
-    CachedResource* cachedResource() { return m_resource; }
+    Resource* cachedResource() { return m_resource; }
     const ResourceRequest& originalRequest() const { return m_originalRequest; }
 
     void setDefersLoading(bool);
@@ -84,7 +84,7 @@ public:
     const ResourceRequest& request() const { return m_request; }
 
 private:
-    ResourceLoader(ResourceLoaderHost*, CachedResource*, const ResourceLoaderOptions&);
+    ResourceLoader(ResourceLoaderHost*, Resource*, const ResourceLoaderOptions&);
 
     void init(const ResourceRequest&);
     void start();
@@ -121,14 +121,14 @@ private:
 
     class RequestCountTracker {
     public:
-        RequestCountTracker(ResourceLoaderHost*, CachedResource*);
+        RequestCountTracker(ResourceLoaderHost*, Resource*);
         ~RequestCountTracker();
     private:
         ResourceLoaderHost* m_host;
-        CachedResource* m_resource;
+        Resource* m_resource;
     };
 
-    CachedResource* m_resource;
+    Resource* m_resource;
     ResourceLoaderState m_state;
 
     // Used for sanity checking to make sure we don't experience illegal state

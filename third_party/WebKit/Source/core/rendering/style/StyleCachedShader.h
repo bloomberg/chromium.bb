@@ -30,7 +30,7 @@
 #ifndef StyleCachedShader_h
 #define StyleCachedShader_h
 
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/rendering/style/StyleShader.h"
 
 namespace WebCore {
@@ -49,7 +49,7 @@ public:
 private:
     StyleCachedShader(CachedShader*);
 
-    CachedResourceHandle<CachedShader> m_shader;
+    ResourcePtr<CachedShader> m_shader;
 };
 
 }

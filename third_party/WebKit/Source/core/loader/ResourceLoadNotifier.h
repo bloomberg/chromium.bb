@@ -30,7 +30,7 @@
 #ifndef ResourceLoadNotifier_h
 #define ResourceLoadNotifier_h
 
-#include "core/loader/cache/CachedResourceInitiatorInfo.h"
+#include "core/loader/cache/FetchInitiatorInfo.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
@@ -48,7 +48,7 @@ class ResourceLoadNotifier {
 public:
     ResourceLoadNotifier(Frame*);
 
-    void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const CachedResourceInitiatorInfo& = CachedResourceInitiatorInfo());
+    void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo());
     void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0);
     void dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
     void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier, double finishTime);

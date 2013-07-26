@@ -27,13 +27,13 @@
 
 #include "core/loader/cache/CachedTextTrack.h"
 
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceClientWalker.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourceClientWalker.h"
 
 namespace WebCore {
 
 CachedTextTrack::CachedTextTrack(const ResourceRequest& resourceRequest)
-    : CachedResource(resourceRequest, TextTrackResource)
+    : Resource(resourceRequest, TextTrackResource)
 {
 }
 
@@ -43,10 +43,10 @@ CachedTextTrack::~CachedTextTrack()
 
 void CachedTextTrack::appendData(const char* data, int length)
 {
-    CachedResource::appendData(data, length);
-    CachedResourceClientWalker<CachedResourceClient> walker(m_clients);
-    while (CachedResourceClient *client = walker.next())
-        client->deprecatedDidReceiveCachedResource(this);
+    Resource::appendData(data, length);
+    ResourceClientWalker<ResourceClient> walker(m_clients);
+    while (ResourceClient *client = walker.next())
+        client->deprecatedDidReceiveResource(this);
 }
 
 }

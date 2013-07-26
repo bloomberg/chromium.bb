@@ -42,7 +42,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/Resource.h"
 #include "core/platform/JSONValues.h"
 #include "core/platform/text/RegularExpression.h"
 #include "wtf/text/WTFString.h"

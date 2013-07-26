@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/css/StyleRuleImport.h"
 
-#include "CachedResourceInitiatorTypeNames.h"
+#include "FetchInitiatorTypeNames.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
@@ -114,7 +114,7 @@ void StyleRuleImport::requestStyleSheet()
         rootSheet = sheet;
     }
 
-    FetchRequest request(ResourceRequest(absURL), CachedResourceInitiatorTypeNames::css, m_parentStyleSheet->charset());
+    FetchRequest request(ResourceRequest(absURL), FetchInitiatorTypeNames::css, m_parentStyleSheet->charset());
     if (m_parentStyleSheet->isUserStyleSheet())
         m_cachedSheet = fetcher->requestUserCSSStyleSheet(request);
     else

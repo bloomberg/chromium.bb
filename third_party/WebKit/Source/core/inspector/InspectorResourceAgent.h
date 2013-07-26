@@ -44,8 +44,8 @@ class String;
 
 namespace WebCore {
 
-class CachedResource;
-struct CachedResourceInitiatorInfo;
+class Resource;
+struct FetchInitiatorInfo;
 class Document;
 class DocumentLoader;
 class FormData;
@@ -91,7 +91,7 @@ public:
 
     ~InspectorResourceAgent();
 
-    void willSendRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const CachedResourceInitiatorInfo&);
+    void willSendRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void markResourceAsCached(unsigned long identifier);
     void didReceiveResourceResponse(unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
@@ -109,7 +109,7 @@ public:
     void willLoadXHRSynchronously();
     void didLoadXHRSynchronously();
 
-    void willDestroyCachedResource(CachedResource*);
+    void willDestroyResource(Resource*);
 
     void applyUserAgentOverride(String* userAgent);
 
@@ -118,7 +118,7 @@ public:
     void didRecalculateStyle();
     void didScheduleStyleRecalculation(Document*);
 
-    PassRefPtr<TypeBuilder::Network::Initiator> buildInitiatorObject(Document*, const CachedResourceInitiatorInfo&);
+    PassRefPtr<TypeBuilder::Network::Initiator> buildInitiatorObject(Document*, const FetchInitiatorInfo&);
 
     void didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&);
     void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest&);

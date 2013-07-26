@@ -31,8 +31,8 @@
 #ifndef ScriptSourceCode_h
 #define ScriptSourceCode_h
 
-#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
@@ -77,7 +77,7 @@ public:
 
 private:
     String m_source;
-    CachedResourceHandle<CachedScript> m_cachedScript;
+    ResourcePtr<CachedScript> m_cachedScript;
     KURL m_url;
     TextPosition m_startPosition;
 };

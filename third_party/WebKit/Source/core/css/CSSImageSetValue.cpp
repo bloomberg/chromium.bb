@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/css/CSSImageSetValue.h"
 
-#include "CachedResourceInitiatorTypeNames.h"
+#include "FetchInitiatorTypeNames.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Document.h"
@@ -103,8 +103,8 @@ StyleCachedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, f
         // and any CSS transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
         ImageWithScale image = bestImageForScaleFactor();
         if (Document* document = loader->document()) {
-            FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), CachedResourceInitiatorTypeNames::css);
-            if (CachedResourceHandle<CachedImage> cachedImage = loader->requestImage(request)) {
+            FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), FetchInitiatorTypeNames::css);
+            if (ResourcePtr<CachedImage> cachedImage = loader->requestImage(request)) {
                 m_imageSet = StyleCachedImageSet::create(cachedImage.get(), image.scaleFactor, this);
                 m_accessedBestFitImage = true;
             }
@@ -163,7 +163,7 @@ bool CSSImageSetValue::hasFailedOrCanceledSubresources() const
 {
     if (!m_imageSet || !m_imageSet->isCachedImageSet())
         return false;
-    CachedResource* cachedResource = static_cast<StyleCachedImageSet*>(m_imageSet.get())->cachedImage();
+    Resource* cachedResource = static_cast<StyleCachedImageSet*>(m_imageSet.get())->cachedImage();
     if (!cachedResource)
         return true;
     return cachedResource->loadFailedOrCanceled();

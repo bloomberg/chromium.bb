@@ -31,8 +31,8 @@
 #include "core/loader/ResourceLoader.h"
 
 #include "core/loader/ResourceLoaderHost.h"
-#include "core/loader/cache/CachedResource.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/Resource.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Logging.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
@@ -46,7 +46,7 @@
 
 namespace WebCore {
 
-ResourceLoader::RequestCountTracker::RequestCountTracker(ResourceLoaderHost* host, CachedResource* resource)
+ResourceLoader::RequestCountTracker::RequestCountTracker(ResourceLoaderHost* host, Resource* resource)
     : m_host(host)
     , m_resource(resource)
 {
@@ -58,7 +58,7 @@ ResourceLoader::RequestCountTracker::~RequestCountTracker()
     m_host->decrementRequestCount(m_resource);
 }
 
-PassRefPtr<ResourceLoader> ResourceLoader::create(ResourceLoaderHost* host, CachedResource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
+PassRefPtr<ResourceLoader> ResourceLoader::create(ResourceLoaderHost* host, Resource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
 {
     RefPtr<ResourceLoader> loader(adoptRef(new ResourceLoader(host, resource, options)));
     loader->init(request);
@@ -66,7 +66,7 @@ PassRefPtr<ResourceLoader> ResourceLoader::create(ResourceLoaderHost* host, Cach
     return loader.release();
 }
 
-ResourceLoader::ResourceLoader(ResourceLoaderHost* host, CachedResource* resource, const ResourceLoaderOptions& options)
+ResourceLoader::ResourceLoader(ResourceLoaderHost* host, Resource* resource, const ResourceLoaderOptions& options)
     : m_host(host)
     , m_notifiedLoadComplete(false)
     , m_defersLoading(host->defersLoading())
@@ -231,7 +231,7 @@ void ResourceLoader::cancel(const ResourceError& error)
     m_host->didFailLoading(m_resource, nonNullError, m_options);
 
     if (m_state == Finishing)
-        m_resource->error(CachedResource::LoadError);
+        m_resource->error(Resource::LoadError);
     if (m_state != Terminated)
         releaseResources();
 }
@@ -310,7 +310,7 @@ void ResourceLoader::didReceiveResponse(WebKit::WebURLLoader*, const WebKit::Web
     if (m_resource->response().httpStatusCode() < 400 || m_resource->shouldIgnoreHTTPStatusCodeErrors())
         return;
     m_state = Finishing;
-    m_resource->error(CachedResource::LoadError);
+    m_resource->error(Resource::LoadError);
     cancel();
 }
 
@@ -346,7 +346,7 @@ void ResourceLoader::didFinishLoading(WebKit::WebURLLoader*, double finishTime)
     LOG(ResourceLoading, "Received '%s'.", m_resource->url().string().latin1().data());
 
     RefPtr<ResourceLoader> protect(this);
-    CachedResourceHandle<CachedResource> protectResource(m_resource);
+    ResourcePtr<Resource> protectResource(m_resource);
     m_state = Finishing;
     m_resource->finish(finishTime);
     didFinishLoadingOnePart(finishTime);
@@ -366,10 +366,10 @@ void ResourceLoader::didFail(WebKit::WebURLLoader*, const WebKit::WebURLError& e
 
     RefPtr<ResourceLoader> protect(this);
     RefPtr<ResourceLoaderHost> protectHost(m_host);
-    CachedResourceHandle<CachedResource> protectResource(m_resource);
+    ResourcePtr<Resource> protectResource(m_resource);
     m_state = Finishing;
     m_resource->setResourceError(error);
-    m_resource->error(CachedResource::LoadError);
+    m_resource->error(Resource::LoadError);
 
     if (m_state == Terminated)
         return;

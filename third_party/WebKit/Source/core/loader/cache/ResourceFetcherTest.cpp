@@ -33,10 +33,10 @@
 
 #include "core/html/HTMLDocument.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/cache/CachedResourceHandle.h"
-#include "core/loader/cache/CachedResourceInitiatorInfo.h"
+#include "core/loader/cache/FetchInitiatorInfo.h"
 #include "core/loader/cache/FetchRequest.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <gtest/gtest.h>
 
@@ -59,10 +59,10 @@ TEST(ResourceFetcherTest, StartLoadAfterFrameDetach)
 
     // Try to request a url. The request should fail, no resource should be returned,
     // and no resource should be present in the cache.
-    FetchRequest fetchRequest = FetchRequest(ResourceRequest(testURL), CachedResourceInitiatorInfo());
-    CachedResourceHandle<CachedImage> image = fetcher->requestImage(fetchRequest);
+    FetchRequest fetchRequest = FetchRequest(ResourceRequest(testURL), FetchInitiatorInfo());
+    ResourcePtr<CachedImage> image = fetcher->requestImage(fetchRequest);
     EXPECT_EQ(image.get(), static_cast<CachedImage*>(0));
-    EXPECT_EQ(memoryCache()->resourceForURL(testURL), static_cast<CachedResource*>(0));
+    EXPECT_EQ(memoryCache()->resourceForURL(testURL), static_cast<Resource*>(0));
 }
 
 } // namespace

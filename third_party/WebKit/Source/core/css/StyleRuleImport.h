@@ -23,8 +23,8 @@
 #define StyleRuleImport_h
 
 #include "core/css/StyleRule.h"
-#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 
 namespace WebCore {
 
@@ -77,7 +77,7 @@ private:
     String m_strHref;
     RefPtr<MediaQuerySet> m_mediaQueries;
     RefPtr<StyleSheetContents> m_styleSheet;
-    CachedResourceHandle<CachedCSSStyleSheet> m_cachedSheet;
+    ResourcePtr<CachedCSSStyleSheet> m_cachedSheet;
     bool m_loading;
 };
 

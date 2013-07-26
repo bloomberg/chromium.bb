@@ -934,7 +934,7 @@ bool SVGUseElement::selfHasRelativeLengths() const
     return toSVGStyledElement(element)->hasRelativeLengths();
 }
 
-void SVGUseElement::notifyFinished(CachedResource* resource)
+void SVGUseElement::notifyFinished(Resource* resource)
 {
     if (!inDocument())
         return;
@@ -976,7 +976,7 @@ void SVGUseElement::finishParsingChildren()
     }
 }
 
-void SVGUseElement::setCachedDocument(CachedResourceHandle<CachedDocument> cachedDocument)
+void SVGUseElement::setCachedDocument(ResourcePtr<CachedDocument> cachedDocument)
 {
     if (m_cachedDocument == cachedDocument)
         return;

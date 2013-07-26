@@ -25,7 +25,7 @@
 
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedImageClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
@@ -70,7 +70,7 @@ public:
     static void dispatchPendingErrorEvents();
 
 protected:
-    virtual void notifyFinished(CachedResource*);
+    virtual void notifyFinished(Resource*);
 
 private:
     virtual void dispatchLoadEvent() = 0;
@@ -91,7 +91,7 @@ private:
     void timerFired(Timer<ImageLoader>*);
 
     Element* m_element;
-    CachedResourceHandle<CachedImage> m_image;
+    ResourcePtr<CachedImage> m_image;
     Timer<ImageLoader> m_derefElementTimer;
     AtomicString m_failedLoadURL;
     bool m_hasPendingBeforeLoadEvent : 1;

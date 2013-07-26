@@ -27,7 +27,7 @@
 #define CSSFontFaceSource_h
 
 #include "core/loader/cache/CachedFont.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicString.h"
@@ -88,7 +88,7 @@ private:
     void startLoadingTimerFired(Timer<CSSFontFaceSource>*);
 
     AtomicString m_string; // URI for remote, built-in font name for local.
-    CachedResourceHandle<CachedFont> m_font; // For remote fonts, a pointer to our cached resource.
+    ResourcePtr<CachedFont> m_font; // For remote fonts, a pointer to our cached resource.
     CSSFontFace* m_face; // Our owning font face.
     HashMap<unsigned, RefPtr<SimpleFontData> > m_fontDataTable; // The hash key is composed of size synthetic styles.
     FontLoadHistograms m_histograms;

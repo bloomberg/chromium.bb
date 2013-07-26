@@ -21,8 +21,8 @@
 #ifndef ScriptLoader_h
 #define ScriptLoader_h
 
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
 
@@ -35,7 +35,7 @@ class ScriptLoaderClient;
 class ScriptSourceCode;
 
 
-class ScriptLoader : private CachedResourceClient {
+class ScriptLoader : private ResourceClient {
 public:
     static PassOwnPtr<ScriptLoader> create(Element*, bool createdByParser, bool isEvaluated);
     virtual ~ScriptLoader();
@@ -59,7 +59,7 @@ public:
     bool willBeParserExecuted() const { return m_willBeParserExecuted; }
     bool readyToBeParserExecuted() const { return m_readyToBeParserExecuted; }
     bool willExecuteWhenDocumentFinishedParsing() const { return m_willExecuteWhenDocumentFinishedParsing; }
-    CachedResourceHandle<CachedScript> cachedScript() { return m_cachedScript; }
+    ResourcePtr<CachedScript> cachedScript() { return m_cachedScript; }
 
     void setHaveFiredLoadEvent(bool haveFiredLoad) { m_haveFiredLoad = haveFiredLoad; }
     bool isParserInserted() const { return m_parserInserted; }
@@ -83,11 +83,11 @@ private:
 
     ScriptLoaderClient* client() const;
 
-    // CachedResourceClient
-    virtual void notifyFinished(CachedResource*) OVERRIDE;
+    // ResourceClient
+    virtual void notifyFinished(Resource*) OVERRIDE;
 
     Element* m_element;
-    CachedResourceHandle<CachedScript> m_cachedScript;
+    ResourcePtr<CachedScript> m_cachedScript;
     WTF::OrdinalNumber m_startLineNumber;
     bool m_parserInserted : 1;
     bool m_isExternalScript : 1;

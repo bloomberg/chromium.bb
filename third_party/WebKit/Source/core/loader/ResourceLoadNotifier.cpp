@@ -46,7 +46,7 @@ ResourceLoadNotifier::ResourceLoadNotifier(Frame* frame)
 {
 }
 
-void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const CachedResourceInitiatorInfo& initiatorInfo)
+void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
     m_frame->loader()->applyUserAgent(request);
     m_frame->loader()->client()->dispatchWillSendRequest(loader, identifier, request, redirectResponse);

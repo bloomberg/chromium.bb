@@ -23,7 +23,7 @@
 #ifndef CachedImage_h
 #define CachedImage_h
 
-#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/Resource.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/IntSizeHash.h"
@@ -40,7 +40,7 @@ class MemoryCache;
 class RenderObject;
 struct Length;
 
-class CachedImage : public CachedResource, public ImageObserver {
+class CachedImage : public Resource, public ImageObserver {
     friend class MemoryCache;
 
 public:
@@ -69,14 +69,14 @@ public:
     LayoutSize imageSizeForRenderer(const RenderObject*, float multiplier); // returns the size of the complete image.
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
 
-    virtual void didAddClient(CachedResourceClient*);
-    virtual void didRemoveClient(CachedResourceClient*);
+    virtual void didAddClient(ResourceClient*);
+    virtual void didRemoveClient(ResourceClient*);
 
     virtual void allClientsRemoved();
     virtual void destroyDecodedData();
 
     virtual void appendData(const char*, int) OVERRIDE;
-    virtual void error(CachedResource::Status);
+    virtual void error(Resource::Status);
     virtual void responseReceived(const ResourceResponse&);
     virtual void finishOnePart() OVERRIDE;
 

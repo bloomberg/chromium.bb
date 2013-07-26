@@ -31,7 +31,7 @@
 
 #include "core/dom/DOMImplementation.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/Resource.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceResponse.h"
 
@@ -248,12 +248,12 @@ void NetworkResourcesData::maybeDecodeDataToContent(const String& requestId)
         m_contentSize -= resourceData->evictContent();
 }
 
-void NetworkResourcesData::addCachedResource(const String& requestId, CachedResource* cachedResource)
+void NetworkResourcesData::addResource(const String& requestId, Resource* cachedResource)
 {
     ResourceData* resourceData = resourceDataForRequestId(requestId);
     if (!resourceData)
         return;
-    resourceData->setCachedResource(cachedResource);
+    resourceData->setResource(cachedResource);
 }
 
 void NetworkResourcesData::addResourceSharedBuffer(const String& requestId, PassRefPtr<SharedBuffer> buffer, const String& textEncodingName)
@@ -310,7 +310,7 @@ void NetworkResourcesData::reuseXHRReplayData(const String& requestId, const Str
     resourceData->setXHRReplayData(reusedResourceData->xhrReplayData());
 }
 
-Vector<String> NetworkResourcesData::removeCachedResource(CachedResource* cachedResource)
+Vector<String> NetworkResourcesData::removeResource(Resource* cachedResource)
 {
     Vector<String> result;
     ResourceDataMap::iterator it;
@@ -318,7 +318,7 @@ Vector<String> NetworkResourcesData::removeCachedResource(CachedResource* cached
     for (it = m_requestIdToResourceDataMap.begin(); it != end; ++it) {
         ResourceData* resourceData = it->value;
         if (resourceData->cachedResource() == cachedResource) {
-            resourceData->setCachedResource(0);
+            resourceData->setResource(0);
             result.append(it->key);
         }
     }

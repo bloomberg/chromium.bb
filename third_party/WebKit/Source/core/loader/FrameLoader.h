@@ -50,7 +50,7 @@
 
 namespace WebCore {
 
-class CachedResource;
+class Resource;
 class Chrome;
 class DOMWrapperWorld;
 class DocumentLoader;
@@ -167,7 +167,7 @@ public:
     void didLayout(LayoutMilestones);
     void didFirstLayout();
 
-    void loadedResourceFromMemoryCache(CachedResource*);
+    void loadedResourceFromMemoryCache(Resource*);
 
     void checkLoadComplete();
     void detachFromParent();

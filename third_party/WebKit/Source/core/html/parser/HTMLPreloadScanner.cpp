@@ -183,16 +183,16 @@ private:
         return m_charset;
     }
 
-    CachedResource::Type resourceType() const
+    Resource::Type resourceType() const
     {
         if (match(m_tagImpl, scriptTag))
-            return CachedResource::Script;
+            return Resource::Script;
         if (match(m_tagImpl, imgTag) || (match(m_tagImpl, inputTag) && m_inputIsImage))
-            return CachedResource::ImageResource;
+            return Resource::ImageResource;
         if (match(m_tagImpl, linkTag) && m_linkIsStyleSheet)
-            return CachedResource::CSSStyleSheet;
+            return Resource::CSSStyleSheet;
         ASSERT_NOT_REACHED();
-        return CachedResource::RawResource;
+        return Resource::RawResource;
     }
 
     bool shouldPreload()

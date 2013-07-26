@@ -27,9 +27,9 @@
 #define TextTrackLoader_h
 
 #include "core/html/track/WebVTTParser.h"
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedTextTrack.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "wtf/OwnPtr.h"
 
@@ -52,7 +52,7 @@ public:
 #endif
 };
 
-class TextTrackLoader : public CachedResourceClient, private WebVTTParserClient {
+class TextTrackLoader : public ResourceClient, private WebVTTParserClient {
     WTF_MAKE_NONCOPYABLE(TextTrackLoader);
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -74,9 +74,9 @@ public:
 #endif
 private:
 
-    // CachedResourceClient
-    virtual void notifyFinished(CachedResource*);
-    virtual void deprecatedDidReceiveCachedResource(CachedResource*);
+    // ResourceClient
+    virtual void notifyFinished(Resource*);
+    virtual void deprecatedDidReceiveResource(Resource*);
 
     // WebVTTParserClient
     virtual void newCuesParsed();
@@ -87,13 +87,13 @@ private:
 
     TextTrackLoader(TextTrackLoaderClient*, ScriptExecutionContext*);
 
-    void processNewCueData(CachedResource*);
+    void processNewCueData(Resource*);
     void cueLoadTimerFired(Timer<TextTrackLoader>*);
     void corsPolicyPreventedLoad();
 
     TextTrackLoaderClient* m_client;
     OwnPtr<WebVTTParser> m_cueParser;
-    CachedResourceHandle<CachedTextTrack> m_cachedCueData;
+    ResourcePtr<CachedTextTrack> m_cachedCueData;
     ScriptExecutionContext* m_scriptExecutionContext;
     Timer<TextTrackLoader> m_cueLoadTimer;
     String m_crossOriginMode;

@@ -358,13 +358,13 @@ void ScriptLoader::execute(CachedScript* cachedScript)
     cachedScript->removeClient(this);
 }
 
-void ScriptLoader::notifyFinished(CachedResource* resource)
+void ScriptLoader::notifyFinished(Resource* resource)
 {
     ASSERT(!m_willBeParserExecuted);
 
-    // CachedResource possibly invokes this notifyFinished() more than
+    // Resource possibly invokes this notifyFinished() more than
     // once because ScriptLoader doesn't unsubscribe itself from
-    // CachedResource here and does it in execute() instead.
+    // Resource here and does it in execute() instead.
     // We use m_cachedScript to check if this function is already called.
     ASSERT_UNUSED(resource, resource == m_cachedScript);
     if (!m_cachedScript)

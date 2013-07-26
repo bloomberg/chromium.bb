@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,64 +10,40 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef FetchInitiatorInfo_h
+#define FetchInitiatorInfo_h
 
-#include "core/css/CSSSVGDocumentValue.h"
-
-#include "FetchInitiatorTypeNames.h"
-#include "core/css/CSSParser.h"
-#include "core/dom/Document.h"
-#include "core/loader/cache/CachedDocument.h"
-#include "core/loader/cache/FetchRequest.h"
-#include "core/loader/cache/ResourceFetcher.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 
-CSSSVGDocumentValue::CSSSVGDocumentValue(const String& url)
-    : CSSValue(CSSSVGDocumentClass)
-    , m_url(url)
-    , m_loadRequested(false)
-{
-}
-
-CSSSVGDocumentValue::~CSSSVGDocumentValue()
-{
-}
-
-CachedDocument* CSSSVGDocumentValue::load(ResourceFetcher* loader)
-{
-    ASSERT(loader);
-
-    if (!m_loadRequested) {
-        m_loadRequested = true;
-
-        FetchRequest request(ResourceRequest(loader->document()->completeURL(m_url)), FetchInitiatorTypeNames::css);
-        m_document = loader->requestSVGDocument(request);
+struct FetchInitiatorInfo {
+    FetchInitiatorInfo()
+        : name()
+        , position(TextPosition::belowRangePosition())
+        , startTime(0.0)
+    {
     }
 
-    return m_document.get();
-}
-
-String CSSSVGDocumentValue::customCssText() const
-{
-    return quoteCSSStringIfNeeded(m_url);
-}
-
-bool CSSSVGDocumentValue::equals(const CSSSVGDocumentValue& other) const
-{
-    return m_url == other.m_url;
-}
+    AtomicString name;
+    TextPosition position;
+    double startTime;
+};
 
 } // namespace WebCore
+
+#endif

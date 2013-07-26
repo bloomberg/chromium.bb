@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/css/CSSImageValue.h"
 
-#include "CachedResourceInitiatorTypeNames.h"
+#include "FetchInitiatorTypeNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedImage.h"
@@ -66,8 +66,8 @@ StyleCachedImage* CSSImageValue::cachedImage(ResourceFetcher* loader, const Reso
     if (!m_accessedImage) {
         m_accessedImage = true;
 
-        FetchRequest request(ResourceRequest(loader->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? CachedResourceInitiatorTypeNames::css : m_initiatorName, options);
-        if (CachedResourceHandle<CachedImage> cachedImage = loader->requestImage(request))
+        FetchRequest request(ResourceRequest(loader->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
+        if (ResourcePtr<CachedImage> cachedImage = loader->requestImage(request))
             m_image = StyleCachedImage::create(cachedImage.get());
     }
 
@@ -78,7 +78,7 @@ bool CSSImageValue::hasFailedOrCanceledSubresources() const
 {
     if (!m_image || !m_image->isCachedImage())
         return false;
-    CachedResource* cachedResource = static_cast<StyleCachedImage*>(m_image.get())->cachedImage();
+    Resource* cachedResource = static_cast<StyleCachedImage*>(m_image.get())->cachedImage();
     if (!cachedResource)
         return true;
     return cachedResource->loadFailedOrCanceled();

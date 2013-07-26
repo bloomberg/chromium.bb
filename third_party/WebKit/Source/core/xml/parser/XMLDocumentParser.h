@@ -27,8 +27,8 @@
 
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/text/SegmentedString.h"
 #include "core/xml/XMLErrors.h"
 #include <libxml/tree.h>
@@ -63,7 +63,7 @@ class Text;
         xmlParserCtxtPtr m_context;
     };
 
-    class XMLDocumentParser : public ScriptableDocumentParser, public CachedResourceClient {
+    class XMLDocumentParser : public ScriptableDocumentParser, public ResourceClient {
         WTF_MAKE_FAST_ALLOCATED;
     public:
         static PassRefPtr<XMLDocumentParser> create(Document* document, FrameView* view)
@@ -114,8 +114,8 @@ class Text;
         virtual OrdinalNumber lineNumber() const;
         OrdinalNumber columnNumber() const;
 
-        // from CachedResourceClient
-        virtual void notifyFinished(CachedResource*);
+        // from ResourceClient
+        virtual void notifyFinished(Resource*);
 
         void end();
 
@@ -179,7 +179,7 @@ class Text;
 
         XMLErrors m_xmlErrors;
 
-        CachedResourceHandle<CachedScript> m_pendingScript;
+        ResourcePtr<CachedScript> m_pendingScript;
         RefPtr<Element> m_scriptElement;
         TextPosition m_scriptStartPosition;
 

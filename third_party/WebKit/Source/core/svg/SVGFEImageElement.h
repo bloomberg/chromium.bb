@@ -22,7 +22,7 @@
 #define SVGFEImageElement_h
 
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
@@ -48,7 +48,7 @@ private:
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&);
-    virtual void notifyFinished(CachedResource*);
+    virtual void notifyFinished(Resource*);
 
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*);
@@ -66,7 +66,7 @@ private:
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
-    CachedResourceHandle<CachedImage> m_cachedImage;
+    ResourcePtr<CachedImage> m_cachedImage;
 };
 
 } // namespace WebCore

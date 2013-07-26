@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/dom/ProcessingInstruction.h"
 
-#include "CachedResourceInitiatorTypeNames.h"
+#include "FetchInitiatorTypeNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
@@ -153,8 +153,7 @@ void ProcessingInstruction::checkStyleSheet()
 
             m_loading = true;
             document()->styleSheetCollection()->addPendingSheet();
-
-            FetchRequest request(ResourceRequest(document()->completeURL(href)), CachedResourceInitiatorTypeNames::processinginstruction);
+            FetchRequest request(ResourceRequest(document()->completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
             if (m_isXSL)
                 m_cachedSheet = document()->fetcher()->requestXSLStyleSheet(request);
             else

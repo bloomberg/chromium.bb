@@ -68,7 +68,7 @@ public:
     void removeCustomFilterClients();
 
     void updateReferenceFilterClients(const FilterOperations&);
-    virtual void notifyFinished(CachedResource*);
+    virtual void notifyFinished(Resource*);
     void removeReferenceFilterClients();
 
 private:
@@ -85,7 +85,7 @@ private:
 
     static RenderLayerFilterInfoMap* s_filterMap;
     Vector<RefPtr<Element> > m_internalSVGReferences;
-    Vector<CachedResourceHandle<CachedDocument> > m_externalSVGReferences;
+    Vector<ResourcePtr<CachedDocument> > m_externalSVGReferences;
 };
 
 } // namespace WebCore

@@ -174,16 +174,16 @@ void DocumentThreadableLoader::setDefersLoading(bool value)
 void DocumentThreadableLoader::clearResource()
 {
     // Script can cancel and restart a request reentrantly within removeClient(),
-    // which could lead to calling CachedResource::removeClient() multiple times for
+    // which could lead to calling Resource::removeClient() multiple times for
     // this DocumentThreadableLoader. Save off a copy of m_resource and clear it to
     // prevent the reentrancy.
-    if (CachedResourceHandle<CachedRawResource> resource = m_resource) {
+    if (ResourcePtr<CachedRawResource> resource = m_resource) {
         m_resource = 0;
         resource->removeClient(this);
     }
 }
 
-void DocumentThreadableLoader::redirectReceived(CachedResource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
+void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     ASSERT(m_client);
     ASSERT_UNUSED(resource, resource == m_resource);
@@ -249,14 +249,14 @@ void DocumentThreadableLoader::redirectReceived(CachedResource* resource, Resour
     request = ResourceRequest();
 }
 
-void DocumentThreadableLoader::dataSent(CachedResource* resource, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
+void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
     ASSERT(m_client);
     ASSERT_UNUSED(resource, resource == m_resource);
     m_client->didSendData(bytesSent, totalBytesToBeSent);
 }
 
-void DocumentThreadableLoader::dataDownloaded(CachedResource* resource, int dataLength)
+void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength)
 {
     ASSERT(m_client);
     ASSERT_UNUSED(resource, resource == m_resource);
@@ -265,7 +265,7 @@ void DocumentThreadableLoader::dataDownloaded(CachedResource* resource, int data
     m_client->didDownloadData(dataLength);
 }
 
-void DocumentThreadableLoader::responseReceived(CachedResource* resource, const ResourceResponse& response)
+void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response)
 {
     ASSERT_UNUSED(resource, resource == m_resource);
     didReceiveResponse(m_resource->identifier(), response);
@@ -307,7 +307,7 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
     }
 }
 
-void DocumentThreadableLoader::dataReceived(CachedResource* resource, const char* data, int dataLength)
+void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, int dataLength)
 {
     ASSERT_UNUSED(resource, resource == m_resource);
     didReceiveData(m_resource->identifier(), data, dataLength);
@@ -326,7 +326,7 @@ void DocumentThreadableLoader::didReceiveData(unsigned long identifier, const ch
     m_client->didReceiveData(data, dataLength);
 }
 
-void DocumentThreadableLoader::notifyFinished(CachedResource* resource)
+void DocumentThreadableLoader::notifyFinished(Resource* resource)
 {
     ASSERT(m_client);
     ASSERT_UNUSED(resource, resource == m_resource);

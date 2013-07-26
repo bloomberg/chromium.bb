@@ -23,8 +23,8 @@
 #ifndef XSLImportRule_h
 #define XSLImportRule_h
 
-#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/xml/XSLStyleSheet.h"
 #include <wtf/PassOwnPtr.h>
 
@@ -59,7 +59,7 @@ private:
     XSLStyleSheet* m_parentStyleSheet;
     String m_strHref;
     RefPtr<XSLStyleSheet> m_styleSheet;
-    CachedResourceHandle<CachedXSLStyleSheet> m_cachedSheet;
+    ResourcePtr<CachedXSLStyleSheet> m_cachedSheet;
     bool m_loading;
 };
 

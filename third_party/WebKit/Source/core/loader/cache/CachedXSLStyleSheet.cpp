@@ -28,15 +28,15 @@
 #include "core/loader/cache/CachedXSLStyleSheet.h"
 
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedResourceClientWalker.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
+#include "core/loader/cache/ResourceClientWalker.h"
 #include "core/platform/SharedBuffer.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
 CachedXSLStyleSheet::CachedXSLStyleSheet(const ResourceRequest& resourceRequest)
-    : CachedResource(resourceRequest, XSLStyleSheet)
+    : Resource(resourceRequest, XSLStyleSheet)
     , m_decoder(TextResourceDecoder::create("text/xsl"))
 {
     DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT, ("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml", AtomicString::ConstructFromLiteral));
@@ -46,7 +46,7 @@ CachedXSLStyleSheet::CachedXSLStyleSheet(const ResourceRequest& resourceRequest)
     setAccept(acceptXSLT);
 }
 
-void CachedXSLStyleSheet::didAddClient(CachedResourceClient* c)
+void CachedXSLStyleSheet::didAddClient(ResourceClient* c)
 {
     ASSERT(c->resourceClientType() == CachedStyleSheetClient::expectedType());
     if (!isLoading())
@@ -70,7 +70,7 @@ void CachedXSLStyleSheet::checkNotify()
         m_sheet.append(m_decoder->flush());
     }
 
-    CachedResourceClientWalker<CachedStyleSheetClient> w(m_clients);
+    ResourceClientWalker<CachedStyleSheetClient> w(m_clients);
     while (CachedStyleSheetClient* c = w.next())
         c->setXSLStyleSheet(m_resourceRequest.url(), m_response.url(), m_sheet);
 }

@@ -26,11 +26,11 @@
 #ifndef CachedTextTrack_h
 #define CachedTextTrack_h
 
-#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/Resource.h"
 
 namespace WebCore {
 
-class CachedTextTrack : public CachedResource {
+class CachedTextTrack : public Resource {
 public:
     CachedTextTrack(const ResourceRequest&);
     virtual ~CachedTextTrack();

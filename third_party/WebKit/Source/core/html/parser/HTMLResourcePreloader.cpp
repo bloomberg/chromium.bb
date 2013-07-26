@@ -27,7 +27,7 @@
 #include "core/html/parser/HTMLResourcePreloader.h"
 
 #include "core/dom/Document.h"
-#include "core/loader/cache/CachedResourceInitiatorInfo.h"
+#include "core/loader/cache/FetchInitiatorInfo.h"
 #include "core/loader/cache/ResourceFetcher.h"
 
 #include "core/css/MediaList.h"
@@ -53,13 +53,13 @@ KURL PreloadRequest::completeURL(Document* document)
 FetchRequest PreloadRequest::resourceRequest(Document* document)
 {
     ASSERT(isMainThread());
-    CachedResourceInitiatorInfo initiatorInfo;
+    FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = m_initiatorName;
     initiatorInfo.position = m_initiatorPosition;
     FetchRequest request(ResourceRequest(completeURL(document)), initiatorInfo);
 
     // FIXME: It's possible CORS should work for other request types?
-    if (m_resourceType == CachedResource::Script)
+    if (m_resourceType == Resource::Script)
         request.mutableResourceRequest().setAllowCookies(m_crossOriginModeAllowsCookies);
     return request;
 }

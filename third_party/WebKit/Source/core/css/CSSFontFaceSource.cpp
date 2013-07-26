@@ -211,7 +211,7 @@ bool CSSFontFaceSource::isSVGFontFaceSource() const
 bool CSSFontFaceSource::isDecodeError() const
 {
     if (m_font)
-        return m_font->status() == CachedResource::DecodeError;
+        return m_font->status() == Resource::DecodeError;
     return false;
 }
 

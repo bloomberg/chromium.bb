@@ -867,16 +867,16 @@ void HTMLDocumentParser::resumeParsingAfterScriptExecution()
     endIfDelayed();
 }
 
-void HTMLDocumentParser::watchForLoad(CachedResource* cachedScript)
+void HTMLDocumentParser::watchForLoad(Resource* cachedScript)
 {
     ASSERT(!cachedScript->isLoaded());
     // addClient would call notifyFinished if the load were complete.
     // Callers do not expect to be re-entered from this call, so they should
-    // not an already-loaded CachedResource.
+    // not an already-loaded Resource.
     cachedScript->addClient(this);
 }
 
-void HTMLDocumentParser::stopWatchingForLoad(CachedResource* cachedScript)
+void HTMLDocumentParser::stopWatchingForLoad(Resource* cachedScript)
 {
     cachedScript->removeClient(this);
 }
@@ -888,7 +888,7 @@ void HTMLDocumentParser::appendCurrentInputStreamToPreloadScannerAndScan()
     m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL());
 }
 
-void HTMLDocumentParser::notifyFinished(CachedResource* cachedResource)
+void HTMLDocumentParser::notifyFinished(Resource* cachedResource)
 {
     // pumpTokenizer can cause this parser to be detached from the Document,
     // but we need to ensure it isn't deleted yet.

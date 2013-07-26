@@ -36,14 +36,14 @@
 
 namespace WebCore {
 
-class CachedResource;
+class Resource;
 class ResourceFetcher;
 class Frame;
 class ResourceLoader;
 class ResourceRequest;
 class ResourceResponse;
 
-struct CachedResourceInitiatorInfo;
+struct FetchInitiatorInfo;
 struct ResourceLoaderOptions;
 
 class ResourceLoaderHost {
@@ -51,25 +51,25 @@ public:
     void ref() { refResourceLoaderHost(); }
     void deref() { derefResourceLoaderHost(); }
 
-    virtual void incrementRequestCount(const CachedResource*) = 0;
-    virtual void decrementRequestCount(const CachedResource*) = 0;
-    virtual void didLoadResource(CachedResource*) = 0;
-    virtual void redirectReceived(CachedResource*, const ResourceResponse&) = 0;
+    virtual void incrementRequestCount(const Resource*) = 0;
+    virtual void decrementRequestCount(const Resource*) = 0;
+    virtual void didLoadResource(Resource*) = 0;
+    virtual void redirectReceived(Resource*, const ResourceResponse&) = 0;
 
-    virtual void didFinishLoading(const CachedResource*, double finishTime, const ResourceLoaderOptions&) = 0;
-    virtual void didChangeLoadingPriority(const CachedResource*, ResourceLoadPriority) = 0;
-    virtual void didFailLoading(const CachedResource*, const ResourceError&, const ResourceLoaderOptions&) = 0;
+    virtual void didFinishLoading(const Resource*, double finishTime, const ResourceLoaderOptions&) = 0;
+    virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority) = 0;
+    virtual void didFailLoading(const Resource*, const ResourceError&, const ResourceLoaderOptions&) = 0;
 
-    virtual void willSendRequest(const CachedResource*, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) = 0;
-    virtual void didReceiveResponse(const CachedResource*, const ResourceResponse&, const ResourceLoaderOptions&) = 0;
-    virtual void didReceiveData(const CachedResource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) = 0;
+    virtual void willSendRequest(const Resource*, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) = 0;
+    virtual void didReceiveResponse(const Resource*, const ResourceResponse&, const ResourceLoaderOptions&) = 0;
+    virtual void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) = 0;
 
     virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) = 0;
     virtual void didInitializeResourceLoader(ResourceLoader*) = 0;
     virtual void willTerminateResourceLoader(ResourceLoader*) = 0;
     virtual void willStartLoadingResource(ResourceRequest&) = 0;
 
-    virtual bool shouldRequest(CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&) = 0;
+    virtual bool shouldRequest(Resource*, const ResourceRequest&, const ResourceLoaderOptions&) = 0;
     virtual bool defersLoading() const = 0;
     virtual bool isLoadedBy(ResourceLoaderHost*) const = 0;
 

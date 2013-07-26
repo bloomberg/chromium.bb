@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class CachedResource;
+class Resource;
 class Element;
 class HTMLInputStream;
 class ScriptSourceCode;
@@ -40,9 +40,9 @@ public:
     virtual ~HTMLScriptRunnerHost() { }
 
     // Implementors should call cachedResource->addClient() here or soon after.
-    virtual void watchForLoad(CachedResource*) = 0;
+    virtual void watchForLoad(Resource*) = 0;
     // Implementors must call cachedResource->removeClient() immediately.
-    virtual void stopWatchingForLoad(CachedResource*) = 0;
+    virtual void stopWatchingForLoad(Resource*) = 0;
 
     virtual HTMLInputStream& inputStream() = 0;
 

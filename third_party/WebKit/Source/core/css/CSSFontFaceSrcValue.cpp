@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 
-#include "CachedResourceInitiatorTypeNames.h"
+#include "FetchInitiatorTypeNames.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
@@ -97,7 +97,7 @@ bool CSSFontFaceSrcValue::hasFailedOrCanceledSubresources() const
 CachedFont* CSSFontFaceSrcValue::cachedFont(Document* document)
 {
     if (!m_cachedFont) {
-        FetchRequest request(ResourceRequest(document->completeURL(m_resource)), CachedResourceInitiatorTypeNames::css);
+        FetchRequest request(ResourceRequest(document->completeURL(m_resource)), FetchInitiatorTypeNames::css);
         m_cachedFont = document->fetcher()->requestFont(request);
     }
     return m_cachedFont.get();

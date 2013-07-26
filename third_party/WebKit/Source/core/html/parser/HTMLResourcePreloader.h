@@ -26,20 +26,20 @@
 #ifndef HTMLResourcePreloader_h
 #define HTMLResourcePreloader_h
 
-#include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/Resource.h"
 #include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 
 class PreloadRequest {
 public:
-    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, CachedResource::Type resourceType, const String& mediaAttribute)
+    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const String& mediaAttribute)
     {
         return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, mediaAttribute));
     }
 
-    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, CachedResource::Type resourceType)
+    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType)
     {
         return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, ""));
     }
@@ -52,10 +52,10 @@ public:
     const String& media() const { return m_mediaAttribute; }
     void setCharset(const String& charset) { m_charset = charset.isolatedCopy(); }
     void setCrossOriginModeAllowsCookies(bool allowsCookies) { m_crossOriginModeAllowsCookies = allowsCookies; }
-    CachedResource::Type resourceType() const { return m_resourceType; }
+    Resource::Type resourceType() const { return m_resourceType; }
 
 private:
-    PreloadRequest(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, CachedResource::Type resourceType, const String& mediaAttribute)
+    PreloadRequest(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const String& mediaAttribute)
         : m_initiatorName(initiatorName.isolatedCopy())
         , m_initiatorPosition(initiatorPosition)
         , m_resourceURL(resourceURL.isolatedCopy())
@@ -73,7 +73,7 @@ private:
     String m_resourceURL;
     KURL m_baseURL;
     String m_charset;
-    CachedResource::Type m_resourceType;
+    Resource::Type m_resourceType;
     String m_mediaAttribute;
     bool m_crossOriginModeAllowsCookies;
 };

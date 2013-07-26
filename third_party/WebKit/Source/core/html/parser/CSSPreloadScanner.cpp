@@ -216,7 +216,7 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source)
         if (!url.isEmpty()) {
             KURL baseElementURL; // FIXME: This should be passed in from the HTMLPreloadScaner via scan()!
             TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
-            OwnPtr<PreloadRequest> request = PreloadRequest::create("css", position, url, baseElementURL, CachedResource::CSSStyleSheet);
+            OwnPtr<PreloadRequest> request = PreloadRequest::create("css", position, url, baseElementURL, Resource::CSSStyleSheet);
             // FIXME: Should this be including the charset in the preload request?
             m_requests->append(request.release());
         }

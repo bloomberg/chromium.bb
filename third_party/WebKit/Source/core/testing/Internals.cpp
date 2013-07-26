@@ -271,8 +271,8 @@ bool Internals::isLoadingFromMemoryCache(const String& url)
 {
     if (!contextDocument())
         return false;
-    CachedResource* resource = memoryCache()->resourceForURL(contextDocument()->completeURL(url));
-    return resource && resource->status() == CachedResource::Cached;
+    Resource* resource = memoryCache()->resourceForURL(contextDocument()->completeURL(url));
+    return resource && resource->status() == Resource::Cached;
 }
 
 void Internals::crash()
@@ -1692,7 +1692,7 @@ void Internals::garbageCollectDocumentResources(Document* document, ExceptionCod
     fetcher->garbageCollectDocumentResources();
 }
 
-void Internals::evictAllCachedResources() const
+void Internals::evictAllResources() const
 {
     memoryCache()->evictResources();
 }

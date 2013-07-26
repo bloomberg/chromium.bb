@@ -92,7 +92,7 @@ void LinkImport::process()
 
     FetchRequest request = builder.build(true);
     request.setPotentiallyCrossOriginEnabled(controller->securityOrigin(), DoNotAllowStoredCredentials);
-    CachedResourceHandle<CachedRawResource> resource = m_owner->document()->fetcher()->requestImport(request);
+    ResourcePtr<CachedRawResource> resource = m_owner->document()->fetcher()->requestImport(request);
     if (!resource)
         return;
 
@@ -106,14 +106,14 @@ void LinkImport::ownerRemoved()
 }
 
 
-PassRefPtr<HTMLImportLoader> HTMLImportLoader::create(HTMLImport* parent, const KURL& url, const CachedResourceHandle<CachedScript>& resource)
+PassRefPtr<HTMLImportLoader> HTMLImportLoader::create(HTMLImport* parent, const KURL& url, const ResourcePtr<CachedScript>& resource)
 {
     RefPtr<HTMLImportLoader> loader = adoptRef(new HTMLImportLoader(parent, url, resource));
     loader->controller()->addImport(loader);
     return loader.release();
 }
 
-HTMLImportLoader::HTMLImportLoader(HTMLImport* parent, const KURL& url, const CachedResourceHandle<CachedScript>& resource)
+HTMLImportLoader::HTMLImportLoader(HTMLImport* parent, const KURL& url, const ResourcePtr<CachedScript>& resource)
     : m_parent(parent)
     , m_state(StateLoading)
     , m_resource(resource)
@@ -131,18 +131,18 @@ HTMLImportLoader::~HTMLImportLoader()
         m_resource->removeClient(this);
 }
 
-void HTMLImportLoader::responseReceived(CachedResource*, const ResourceResponse& response)
+void HTMLImportLoader::responseReceived(Resource*, const ResourceResponse& response)
 {
     setState(startWritingAndParsing(response));
 }
 
-void HTMLImportLoader::dataReceived(CachedResource*, const char* data, int length)
+void HTMLImportLoader::dataReceived(Resource*, const char* data, int length)
 {
     RefPtr<DocumentWriter> protectingWriter(m_writer);
     m_writer->addData(data, length);
 }
 
-void HTMLImportLoader::notifyFinished(CachedResource*)
+void HTMLImportLoader::notifyFinished(Resource*)
 {
     setState(finishWriting());
 }

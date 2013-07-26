@@ -226,7 +226,7 @@ public:
     PassRefPtr<ClientRectList> nonFastScrollableRects(Document*, ExceptionCode&) const;
 
     void garbageCollectDocumentResources(Document*, ExceptionCode&) const;
-    void evictAllCachedResources() const;
+    void evictAllResources() const;
 
     void allowRoundingHacks() const;
 

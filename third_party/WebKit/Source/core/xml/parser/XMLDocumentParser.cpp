@@ -433,7 +433,7 @@ void XMLDocumentParser::insertErrorMessageBlock()
     m_xmlErrors.insertErrorMessageBlock();
 }
 
-void XMLDocumentParser::notifyFinished(CachedResource* unusedResource)
+void XMLDocumentParser::notifyFinished(Resource* unusedResource)
 {
     ASSERT_UNUSED(unusedResource, unusedResource == m_pendingScript);
     ASSERT(m_pendingScript->accessCount() > 0);

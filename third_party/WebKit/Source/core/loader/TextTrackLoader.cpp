@@ -27,7 +27,7 @@
 
 #include "core/loader/TextTrackLoader.h"
 
-#include "CachedResourceInitiatorTypeNames.h"
+#include "FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/html/track/WebVTTParser.h"
 #include "core/loader/CrossOriginAccessControl.h"
@@ -77,7 +77,7 @@ void TextTrackLoader::cancelLoad()
     }
 }
 
-void TextTrackLoader::processNewCueData(CachedResource* resource)
+void TextTrackLoader::processNewCueData(Resource* resource)
 {
     ASSERT(m_cachedCueData == resource);
 
@@ -100,8 +100,8 @@ void TextTrackLoader::processNewCueData(CachedResource* resource)
     }
 }
 
-// FIXME: This is a very unusual pattern, no other CachedResourceClient does this. Refactor to use notifyFinished() instead.
-void TextTrackLoader::deprecatedDidReceiveCachedResource(CachedResource* resource)
+// FIXME: This is a very unusual pattern, no other ResourceClient does this. Refactor to use notifyFinished() instead.
+void TextTrackLoader::deprecatedDidReceiveResource(Resource* resource)
 {
     ASSERT(m_cachedCueData == resource);
 
@@ -119,7 +119,7 @@ void TextTrackLoader::corsPolicyPreventedLoad()
     m_state = Failed;
 }
 
-void TextTrackLoader::notifyFinished(CachedResource* resource)
+void TextTrackLoader::notifyFinished(Resource* resource)
 {
     ASSERT(m_cachedCueData == resource);
 
@@ -152,7 +152,7 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
 
     ASSERT(m_scriptExecutionContext->isDocument());
     Document* document = toDocument(m_scriptExecutionContext);
-    FetchRequest cueRequest(ResourceRequest(document->completeURL(url)), CachedResourceInitiatorTypeNames::texttrack);
+    FetchRequest cueRequest(ResourceRequest(document->completeURL(url)), FetchInitiatorTypeNames::texttrack);
 
     if (!crossOriginMode.isNull()) {
         m_crossOriginMode = crossOriginMode;

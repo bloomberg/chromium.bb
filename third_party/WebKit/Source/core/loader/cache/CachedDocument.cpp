@@ -24,8 +24,8 @@
 
 #include "core/loader/cache/CachedDocument.h"
 
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/svg/SVGDocument.h"
 #include "wtf/text/StringBuilder.h"
@@ -33,7 +33,7 @@
 namespace WebCore {
 
 CachedDocument::CachedDocument(const ResourceRequest& request, Type type)
-    : CachedResource(request, type)
+    : Resource(request, type)
     , m_decoder(TextResourceDecoder::create("application/xml"))
 {
     // FIXME: We'll support more types to support HTMLImports.
@@ -64,7 +64,7 @@ void CachedDocument::checkNotify()
         m_document = createDocument(response().url());
         m_document->setContent(decodedText.toString());
     }
-    CachedResource::checkNotify();
+    Resource::checkNotify();
 }
 
 PassRefPtr<Document> CachedDocument::createDocument(const KURL& url)

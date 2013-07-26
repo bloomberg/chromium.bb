@@ -191,7 +191,7 @@ void HTMLScriptRunner::executeParsingBlockingScripts()
         executeParsingBlockingScript();
 }
 
-void HTMLScriptRunner::executeScriptsWaitingForLoad(CachedResource* cachedScript)
+void HTMLScriptRunner::executeScriptsWaitingForLoad(Resource* cachedScript)
 {
     ASSERT(!isExecutingScript());
     ASSERT(hasParserBlockingScript());

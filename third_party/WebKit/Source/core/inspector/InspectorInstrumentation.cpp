@@ -41,7 +41,7 @@
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/WorkerInspectorController.h"
-#include "core/loader/cache/CachedResourceInitiatorInfo.h"
+#include "core/loader/cache/FetchInitiatorInfo.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {
@@ -96,7 +96,7 @@ bool isDebuggerPausedImpl(InstrumentingAgents* instrumentingAgents)
 
 void continueAfterPingLoaderImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& response)
 {
-    willSendRequestImpl(instrumentingAgents, identifier, loader, request, response, CachedResourceInitiatorInfo());
+    willSendRequestImpl(instrumentingAgents, identifier, loader, request, response, FetchInitiatorInfo());
 }
 
 void didReceiveResourceResponseButCanceledImpl(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
@@ -120,7 +120,7 @@ void continueWithPolicyIgnoreImpl(Frame* frame, DocumentLoader* loader, unsigned
     didReceiveResourceResponseButCanceledImpl(frame, loader, identifier, r);
 }
 
-void willDestroyCachedResourceImpl(CachedResource* cachedResource)
+void willDestroyResourceImpl(Resource* cachedResource)
 {
     if (!instrumentingAgentsSet)
         return;
@@ -128,7 +128,7 @@ void willDestroyCachedResourceImpl(CachedResource* cachedResource)
     for (HashSet<InstrumentingAgents*>::iterator it = instrumentingAgentsSet->begin(); it != end; ++it) {
         InstrumentingAgents* instrumentingAgents = *it;
         if (InspectorResourceAgent* inspectorResourceAgent = instrumentingAgents->inspectorResourceAgent())
-            inspectorResourceAgent->willDestroyCachedResource(cachedResource);
+            inspectorResourceAgent->willDestroyResource(cachedResource);
     }
 }
 

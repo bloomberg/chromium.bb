@@ -57,9 +57,9 @@
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/Resource.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
@@ -124,7 +124,7 @@ static bool decodeBuffer(const char* buffer, unsigned size, const String& textEn
     return false;
 }
 
-static bool prepareCachedResourceBuffer(CachedResource* cachedResource, bool* hasZeroSize)
+static bool prepareResourceBuffer(Resource* cachedResource, bool* hasZeroSize)
 {
     *hasZeroSize = false;
     if (!cachedResource)
@@ -150,7 +150,7 @@ static bool prepareCachedResourceBuffer(CachedResource* cachedResource, bool* ha
     return true;
 }
 
-static bool hasTextContent(CachedResource* cachedResource)
+static bool hasTextContent(Resource* cachedResource)
 {
     InspectorPageAgent::ResourceType type = InspectorPageAgent::cachedResourceType(*cachedResource);
     return type == InspectorPageAgent::DocumentResource || type == InspectorPageAgent::StylesheetResource || type == InspectorPageAgent::ScriptResource || type == InspectorPageAgent::XHRResource;
@@ -171,10 +171,10 @@ static PassRefPtr<TextResourceDecoder> createXHRTextDecoder(const String& mimeTy
     return decoder;
 }
 
-bool InspectorPageAgent::cachedResourceContent(CachedResource* cachedResource, String* result, bool* base64Encoded)
+bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String* result, bool* base64Encoded)
 {
     bool hasZeroSize;
-    bool prepared = prepareCachedResourceBuffer(cachedResource, &hasZeroSize);
+    bool prepared = prepareResourceBuffer(cachedResource, &hasZeroSize);
     if (!prepared)
         return false;
 
@@ -196,15 +196,15 @@ bool InspectorPageAgent::cachedResourceContent(CachedResource* cachedResource, S
 
     if (cachedResource) {
         switch (cachedResource->type()) {
-        case CachedResource::CSSStyleSheet:
+        case Resource::CSSStyleSheet:
             *result = static_cast<CachedCSSStyleSheet*>(cachedResource)->sheetText(false);
             return true;
-        case CachedResource::Script:
+        case Resource::Script:
             *result = static_cast<CachedScript*>(cachedResource)->script();
             return true;
-        case CachedResource::MainResource:
+        case Resource::MainResource:
             return false;
-        case CachedResource::RawResource: {
+        case Resource::RawResource: {
             SharedBuffer* buffer = cachedResource->resourceBuffer();
             if (!buffer)
                 return false;
@@ -255,9 +255,9 @@ void InspectorPageAgent::resourceContent(ErrorString* errorString, Frame* frame,
         *errorString = "No resource with given URL found";
 }
 
-CachedResource* InspectorPageAgent::cachedResource(Frame* frame, const KURL& url)
+Resource* InspectorPageAgent::cachedResource(Frame* frame, const KURL& url)
 {
-    CachedResource* cachedResource = frame->document()->fetcher()->cachedResource(url);
+    Resource* cachedResource = frame->document()->fetcher()->cachedResource(url);
     if (!cachedResource)
         cachedResource = memoryCache()->resourceForURL(url);
     return cachedResource;
@@ -286,22 +286,22 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::resourceTypeJson(Inspe
     return TypeBuilder::Page::ResourceType::Other;
 }
 
-InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const CachedResource& cachedResource)
+InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Resource& cachedResource)
 {
     switch (cachedResource.type()) {
-    case CachedResource::ImageResource:
+    case Resource::ImageResource:
         return InspectorPageAgent::ImageResource;
-    case CachedResource::FontResource:
+    case Resource::FontResource:
         return InspectorPageAgent::FontResource;
-    case CachedResource::CSSStyleSheet:
+    case Resource::CSSStyleSheet:
         // Fall through.
-    case CachedResource::XSLStyleSheet:
+    case Resource::XSLStyleSheet:
         return InspectorPageAgent::StylesheetResource;
-    case CachedResource::Script:
+    case Resource::Script:
         return InspectorPageAgent::ScriptResource;
-    case CachedResource::RawResource:
+    case Resource::RawResource:
         return InspectorPageAgent::XHRResource;
-    case CachedResource::MainResource:
+    case Resource::MainResource:
         return InspectorPageAgent::DocumentResource;
     default:
         break;
@@ -309,7 +309,7 @@ InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Ca
     return InspectorPageAgent::OtherResource;
 }
 
-TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson(const CachedResource& cachedResource)
+TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson(const Resource& cachedResource)
 {
     return resourceTypeJson(cachedResourceType(cachedResource));
 }
@@ -486,28 +486,28 @@ static PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> > buildArrayForC
     return cookies;
 }
 
-static Vector<CachedResource*> cachedResourcesForFrame(Frame* frame)
+static Vector<Resource*> cachedResourcesForFrame(Frame* frame)
 {
-    Vector<CachedResource*> result;
+    Vector<Resource*> result;
 
-    const ResourceFetcher::DocumentResourceMap& allResources = frame->document()->fetcher()->allCachedResources();
+    const ResourceFetcher::DocumentResourceMap& allResources = frame->document()->fetcher()->allResources();
     ResourceFetcher::DocumentResourceMap::const_iterator end = allResources.end();
     for (ResourceFetcher::DocumentResourceMap::const_iterator it = allResources.begin(); it != end; ++it) {
-        CachedResource* cachedResource = it->value.get();
+        Resource* cachedResource = it->value.get();
 
         switch (cachedResource->type()) {
-        case CachedResource::ImageResource:
+        case Resource::ImageResource:
             // Skip images that were not auto loaded (images disabled in the user agent).
             if (static_cast<CachedImage*>(cachedResource)->stillNeedsLoad())
                 continue;
             break;
-        case CachedResource::FontResource:
+        case Resource::FontResource:
             // Skip fonts that were referenced in CSS but never used/downloaded.
             if (static_cast<CachedFont*>(cachedResource)->stillNeedsLoad())
                 continue;
             break;
         default:
-            // All other CachedResource types download immediately.
+            // All other Resource types download immediately.
             break;
         }
 
@@ -523,8 +523,8 @@ static Vector<KURL> allResourcesURLsForFrame(Frame* frame)
 
     result.append(urlWithoutFragment(frame->loader()->documentLoader()->url()));
 
-    Vector<CachedResource*> allResources = cachedResourcesForFrame(frame);
-    for (Vector<CachedResource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it)
+    Vector<Resource*> allResources = cachedResourcesForFrame(frame);
+    for (Vector<Resource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it)
         result.append(urlWithoutFragment((*it)->url()));
 
     return result;
@@ -573,7 +573,7 @@ void InspectorPageAgent::getResourceContent(ErrorString* errorString, const Stri
     resourceContent(errorString, frame, KURL(ParsedURLString, url), content, base64Encoded);
 }
 
-static bool textContentForCachedResource(CachedResource* cachedResource, String* result)
+static bool textContentForResource(Resource* cachedResource, String* result)
 {
     if (hasTextContent(cachedResource)) {
         String content;
@@ -603,9 +603,9 @@ void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, c
 
     String content;
     bool success = false;
-    CachedResource* resource = cachedResource(frame, kurl);
+    Resource* resource = cachedResource(frame, kurl);
     if (resource)
-        success = textContentForCachedResource(resource, &content);
+        success = textContentForResource(resource, &content);
 
     if (!success)
         return;
@@ -632,10 +632,10 @@ void InspectorPageAgent::searchInResources(ErrorString*, const String& text, con
 
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree()->traverseNext(m_page->mainFrame())) {
         String content;
-        Vector<CachedResource*> allResources = cachedResourcesForFrame(frame);
-        for (Vector<CachedResource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it) {
-            CachedResource* cachedResource = *it;
-            if (textContentForCachedResource(cachedResource, &content)) {
+        Vector<Resource*> allResources = cachedResourcesForFrame(frame);
+        for (Vector<Resource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it) {
+            Resource* cachedResource = *it;
+            if (textContentForResource(cachedResource, &content)) {
                 int matchesCount = ContentSearchUtils::countRegularExpressionMatches(regex.get(), content);
                 if (matchesCount)
                     searchResults->addItem(buildObjectForSearchResult(frameId(frame), urlWithoutFragment(cachedResource->url()).string(), matchesCount));
@@ -909,7 +909,7 @@ String InspectorPageAgent::resourceSourceMapURL(const String& url)
     Frame* frame = mainFrame();
     if (!frame)
         return String();
-    CachedResource* resource = cachedResource(frame, KURL(ParsedURLString, url));
+    Resource* resource = cachedResource(frame, KURL(ParsedURLString, url));
     if (!resource)
         return String();
     String deprecatedHeaderSourceMapURL = resource->response().httpHeaderField(deprecatedSourceMapHttpHeader);
@@ -1085,9 +1085,9 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
          .setFrame(frameObject)
          .setResources(subresources);
 
-    Vector<CachedResource*> allResources = cachedResourcesForFrame(frame);
-    for (Vector<CachedResource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it) {
-        CachedResource* cachedResource = *it;
+    Vector<Resource*> allResources = cachedResourcesForFrame(frame);
+    for (Vector<Resource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it) {
+        Resource* cachedResource = *it;
 
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
             .setUrl(urlWithoutFragment(cachedResource->url()).string())
@@ -1095,7 +1095,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
             .setMimeType(cachedResource->response().mimeType());
         if (cachedResource->wasCanceled())
             resourceObject->setCanceled(true);
-        else if (cachedResource->status() == CachedResource::LoadError)
+        else if (cachedResource->status() == Resource::LoadError)
             resourceObject->setFailed(true);
         subresources->addItem(resourceObject);
     }

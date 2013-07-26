@@ -142,8 +142,8 @@ bool CSSCrossfadeValue::knownToBeOpaque(const RenderObject* renderer) const
 
 void CSSCrossfadeValue::loadSubimages(ResourceFetcher* fetcher)
 {
-    CachedResourceHandle<CachedImage> oldCachedFromImage = m_cachedFromImage;
-    CachedResourceHandle<CachedImage> oldCachedToImage = m_cachedToImage;
+    ResourcePtr<CachedImage> oldCachedFromImage = m_cachedFromImage;
+    ResourcePtr<CachedImage> oldCachedToImage = m_cachedToImage;
 
     m_cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), fetcher);
     m_cachedToImage = cachedImageForCSSValue(m_toValue.get(), fetcher);

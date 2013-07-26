@@ -154,7 +154,7 @@ void ImageLoader::updateFromElement()
 
     // Do not load any image if the 'src' attribute is missing or if it is
     // an empty string.
-    CachedResourceHandle<CachedImage> newImage = 0;
+    ResourcePtr<CachedImage> newImage = 0;
     if (!attr.isNull() && !stripLeadingAndTrailingHTMLSpaces(attr).isEmpty()) {
         FetchRequest request(ResourceRequest(document->completeURL(sourceURI(attr))), element()->localName());
 
@@ -248,7 +248,7 @@ void ImageLoader::updateFromElementIgnoringPreviousError()
     updateFromElement();
 }
 
-void ImageLoader::notifyFinished(CachedResource* resource)
+void ImageLoader::notifyFinished(Resource* resource)
 {
     ASSERT(m_failedLoadURL.isEmpty());
     ASSERT(resource == m_image.get());

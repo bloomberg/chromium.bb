@@ -27,7 +27,7 @@
 
 #include "core/css/CSSValue.h"
 #include "core/loader/cache/CachedDocument.h"
-#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/ResourcePtr.h"
 
 namespace WebCore {
 
@@ -50,7 +50,7 @@ private:
     CSSSVGDocumentValue(const String& url);
 
     String m_url;
-    CachedResourceHandle<CachedDocument> m_document;
+    ResourcePtr<CachedDocument> m_document;
     bool m_loadRequested;
 };
 

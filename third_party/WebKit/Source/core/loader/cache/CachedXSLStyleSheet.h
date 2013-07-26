@@ -26,21 +26,20 @@
 #ifndef CachedXSLStyleSheet_h
 #define CachedXSLStyleSheet_h
 
-#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/Resource.h"
 
 namespace WebCore {
 
 class ResourceFetcher;
     class TextResourceDecoder;
 
-    class CachedXSLStyleSheet : public CachedResource {
+    class CachedXSLStyleSheet : public Resource {
     public:
         CachedXSLStyleSheet(const ResourceRequest&);
 
         const String& sheet() const { return m_sheet; }
 
-        virtual void didAddClient(CachedResourceClient*);
-
+        virtual void didAddClient(ResourceClient*);
         virtual void setEncoding(const String&);
         virtual String encoding() const;
 

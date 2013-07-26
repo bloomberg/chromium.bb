@@ -34,7 +34,7 @@
 namespace WebCore  {
 
 class CachedCSSStyleSheet;
-class CachedResource;
+class Resource;
 class ResourceFetcher;
 class KURL;
 class ScriptExecutionContext;
@@ -63,11 +63,11 @@ public:
     MemoryCache();
     ~MemoryCache() { }
 
-    typedef HashMap<String, CachedResource*> CachedResourceMap;
+    typedef HashMap<String, Resource*> ResourceMap;
 
     struct LRUList {
-        CachedResource* m_head;
-        CachedResource* m_tail;
+        Resource* m_head;
+        Resource* m_tail;
         LRUList() : m_head(0), m_tail(0) { }
     };
 
@@ -93,7 +93,7 @@ public:
         {
         }
 
-        void addResource(CachedResource*);
+        void addResource(Resource*);
     };
 
     struct Statistics {
@@ -105,11 +105,11 @@ public:
         TypeStatistic other;
     };
 
-    CachedResource* resourceForURL(const KURL&);
+    Resource* resourceForURL(const KURL&);
 
-    void add(CachedResource*);
-    void replace(CachedResource* newResource, CachedResource* oldResource);
-    void remove(CachedResource* resource) { evict(resource); }
+    void add(Resource*);
+    void replace(Resource* newResource, Resource* oldResource);
+    void remove(Resource* resource) { evict(resource); }
 
     static KURL removeFragmentIdentifierIfNeeded(const KURL& originalURL);
 
@@ -125,18 +125,18 @@ public:
     void prune();
 
     // Calls to put the cached resource into and out of LRU lists.
-    void insertInLRUList(CachedResource*);
-    void removeFromLRUList(CachedResource*);
+    void insertInLRUList(Resource*);
+    void removeFromLRUList(Resource*);
 
     // Called to adjust the cache totals when a resource changes size.
     void adjustSize(bool live, int delta);
 
     // Track decoded resources that are in the cache and referenced by a Web page.
-    void insertInLiveDecodedResourcesList(CachedResource*);
-    void removeFromLiveDecodedResourcesList(CachedResource*);
+    void insertInLiveDecodedResourcesList(Resource*);
+    void removeFromLiveDecodedResourcesList(Resource*);
 
-    void addToLiveResourcesSize(CachedResource*);
-    void removeFromLiveResourcesSize(CachedResource*);
+    void addToLiveResourcesSize(Resource*);
+    void removeFromLiveResourcesSize(Resource*);
 
     static void removeURLFromCache(ScriptExecutionContext*, const KURL&);
 
@@ -149,7 +149,7 @@ public:
     unsigned deadSize() const { return m_deadSize; }
 
 private:
-    LRUList* lruListFor(CachedResource*);
+    LRUList* lruListFor(Resource*);
 
 #ifdef MEMORY_CACHE_STATS
     void dumpStats(Timer<MemoryCache>*);
@@ -164,7 +164,7 @@ private:
     void pruneDeadResources(); // Automatically decide how much to prune.
     void pruneLiveResources();
 
-    void evict(CachedResource*);
+    void evict(Resource*);
 
     static void removeURLFromCacheInternal(ScriptExecutionContext*, const KURL&);
 
@@ -187,7 +187,7 @@ private:
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).
-    HashMap<String, CachedResource*> m_resources;
+    HashMap<String, Resource*> m_resources;
 
 #ifdef MEMORY_CACHE_STATS
     Timer<MemoryCache> m_statsTimer;
