@@ -731,19 +731,17 @@ void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
 }
 
 void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
-  int process_id =
-      GetWebContents()->GetRenderProcessHost()->GetID();
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_GuestUnresponsive(instance_id(), process_id));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Hung"));
+  if (!delegate_)
+    return;
+  delegate_->RendererUnresponsive();
 }
 
 void BrowserPluginGuest::RendererResponsive(WebContents* source) {
-  int process_id =
-      GetWebContents()->GetRenderProcessHost()->GetID();
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_GuestResponsive(instance_id(), process_id));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Responsive"));
+  if (!delegate_)
+    return;
+  delegate_->RendererResponsive();
 }
 
 void BrowserPluginGuest::RunFileChooser(WebContents* web_contents,

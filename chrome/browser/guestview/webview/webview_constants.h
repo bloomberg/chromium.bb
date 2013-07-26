@@ -19,11 +19,13 @@ extern const char kEventLoadCommit[];
 extern const char kEventLoadRedirect[];
 extern const char kEventLoadStart[];
 extern const char kEventLoadStop[];
+extern const char kEventResponsive[];
+extern const char kEventUnresponsive[];
 
 // Parameters/properties on events.
-extern const char kMessage[];
 extern const char kLevel[];
 extern const char kLine[];
+extern const char kMessage[];
 extern const char kNewURL[];
 extern const char kOldURL[];
 extern const char kProcessId[];
@@ -34,8 +36,6 @@ extern const char kSourceId[];
 extern const char kInternalCurrentEntryIndex[];
 extern const char kInternalEntryCount[];
 extern const char kInternalProcessId[];
-
-// Parameters/properties on events.
 
 }  // namespace webview
 

@@ -15,9 +15,7 @@ var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
     'minwidth', 'maxheight', 'maxwidth'];
 
 var WEB_VIEW_EVENTS = {
-  'responsive' : ['processId'],
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
-  'unresponsive' : ['processId']
 };
 
 var createEvent = function(name) {
@@ -69,6 +67,14 @@ var WEB_VIEW_EXT_EVENTS = {
   'loadstop': {
     evt: createEvent('webview.onLoadStop'),
     fields: []
+  },
+  'responsive': {
+    evt: createEvent('webview.onResponsive'),
+    fields: ['processId']
+  },
+  'unresponsive': {
+    evt: createEvent('webview.onUnresponsive'),
+    fields: ['processId']
   }
 };
 

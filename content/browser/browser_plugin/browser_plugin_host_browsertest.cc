@@ -377,68 +377,6 @@ class BrowserPluginHostTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginHostTest);
 };
 
-// This test loads a guest that has a busy loop, and therefore it hangs the
-// guest.
-//
-// Disabled on Windows and Linux since it is flaky. crbug.com/164812
-// THIS TEST IS ALWAYS FLAKY. DO NOT ENABLE AGAIN WITHOUT REWRITING.
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_GuestUnresponsive DISABLED_GuestUnresponsive
-#else
-#define MAYBE_GuestUnresponsive GuestUnresponsive
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
-                       MAYBE_GuestUnresponsive) {
-  // Override the hang timeout for guest to be very small.
-  content::BrowserPluginGuest::set_factory_for_testing(
-      TestShortHangTimeoutGuestFactory::GetInstance());
-  const char kEmbedderURL[] =
-      "/browser_plugin_embedder_guest_unresponsive.html";
-  StartBrowserPluginTest(
-      kEmbedderURL, kHTMLForGuestBusyLoop, true, std::string());
-  // Wait until the busy loop starts.
-  {
-    const string16 expected_title = ASCIIToUTF16("start");
-    content::TitleWatcher title_watcher(test_guest()->web_contents(),
-                                        expected_title);
-    // Hang the guest for a length of time.
-    int spin_time = 10 * TestTimeouts::tiny_timeout().InMilliseconds();
-    ExecuteSyncJSFunction(
-        test_guest()->web_contents()->GetRenderViewHost(),
-        base::StringPrintf("StartPauseMs(%d);", spin_time).c_str());
-
-    string16 actual_title = title_watcher.WaitAndGetTitle();
-    EXPECT_EQ(expected_title, actual_title);
-  }
-  {
-    const string16 expected_title = ASCIIToUTF16("done");
-    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
-                                        expected_title);
-
-    // Send a mouse event to the guest.
-    SimulateMouseClick(test_embedder()->web_contents(), 0,
-        WebKit::WebMouseEvent::ButtonLeft);
-
-    string16 actual_title = title_watcher.WaitAndGetTitle();
-    EXPECT_EQ(expected_title, actual_title);
-  }
-
-  // Verify that the embedder has received the 'unresponsive' and 'responsive'
-  // events.
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-  scoped_ptr<base::Value> value =
-      content::ExecuteScriptAndGetValue(rvh, "unresponsiveCalled");
-  bool result = false;
-  ASSERT_TRUE(value->GetAsBoolean(&result));
-  EXPECT_TRUE(result);
-
-  value = content::ExecuteScriptAndGetValue(rvh, "responsiveCalled");
-  result = false;
-  ASSERT_TRUE(value->GetAsBoolean(&result));
-  EXPECT_TRUE(result);
-}
-
 // This test ensures that if guest isn't there and we resize the guest (from
 // js), it remembers the size correctly.
 //

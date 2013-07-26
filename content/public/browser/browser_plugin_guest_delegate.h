@@ -35,6 +35,12 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual void GuestProcessGone(base::TerminationStatus status) {}
 
   virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+
+  // Notification that the guest is no longer hung.
+  virtual void RendererResponsive() {}
+
+  // Notification that the guest is hung.
+  virtual void RendererUnresponsive() {}
 };
 
 }  // namespace content

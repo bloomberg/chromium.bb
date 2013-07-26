@@ -148,8 +148,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
                         OnGuestContentWindowReady)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestResponsive, OnGuestResponsive)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestUnresponsive, OnGuestUnresponsive)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_RequestPermission, OnRequestPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
@@ -483,18 +481,6 @@ void BrowserPlugin::OnGuestGone(int guest_instance_id) {
       FROM_HERE,
       base::Bind(&BrowserPlugin::ShowSadGraphic,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void BrowserPlugin::OnGuestResponsive(int guest_instance_id, int process_id) {
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kProcessId] = new base::FundamentalValue(process_id);
-  TriggerEvent(browser_plugin::kEventResponsive, &props);
-}
-
-void BrowserPlugin::OnGuestUnresponsive(int guest_instance_id, int process_id) {
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kProcessId] = new base::FundamentalValue(process_id);
-  TriggerEvent(browser_plugin::kEventUnresponsive, &props);
 }
 
 void BrowserPlugin::OnRequestPermission(
@@ -1168,8 +1154,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_CompositorFrameSwapped::ID:
     case BrowserPluginMsg_GuestContentWindowReady::ID:
     case BrowserPluginMsg_GuestGone::ID:
-    case BrowserPluginMsg_GuestResponsive::ID:
-    case BrowserPluginMsg_GuestUnresponsive::ID:
     case BrowserPluginMsg_RequestPermission::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_SetMouseLock::ID:

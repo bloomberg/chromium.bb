@@ -16,6 +16,8 @@ const char kEventLoadCommit[] = "webview.onLoadCommit";
 const char kEventLoadRedirect[] = "webview.onLoadRedirect";
 const char kEventLoadStart[] = "webview.onLoadStart";
 const char kEventLoadStop[] = "webview.onLoadStop";
+const char kEventResponsive[] = "webview.onResponsive";
+const char kEventUnresponsive[] = "webview.onUnresponsive";
 
 // Parameters/properties on events.
 const char kLevel[] = "level";

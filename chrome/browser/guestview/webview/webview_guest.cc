@@ -160,6 +160,22 @@ bool WebViewGuest::HandleKeyboardEvent(
   return false;
 }
 
+// TODO(fsamuel): Find a reliable way to test the 'responsive' and
+// 'unresponsive' events.
+void WebViewGuest::RendererResponsive() {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetInteger(webview::kProcessId,
+      guest_web_contents()->GetRenderProcessHost()->GetID());
+  DispatchEvent(new GuestView::Event(webview::kEventResponsive, args.Pass()));
+}
+
+void WebViewGuest::RendererUnresponsive() {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetInteger(webview::kProcessId,
+      guest_web_contents()->GetRenderProcessHost()->GetID());
+  DispatchEvent(new GuestView::Event(webview::kEventUnresponsive, args.Pass()));
+}
+
 void WebViewGuest::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {

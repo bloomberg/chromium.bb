@@ -48,6 +48,8 @@ class WebViewGuest : public GuestView,
   virtual void GuestProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void RendererResponsive() OVERRIDE;
+  virtual void RendererUnresponsive() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
