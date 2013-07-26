@@ -143,6 +143,12 @@ static inline bool LayerIsInUnsorted3dRenderingContext(const LayerImpl* layer) {
   return false;
 }
 
+template <typename LayerType>
+static inline bool LayerIsHidden(const LayerType* layer) {
+  return layer->hide_layer_and_subtree() ||
+         (layer->parent() && LayerIsHidden(layer->parent()));
+}
+
 template <typename LayerType, typename RenderSurfaceType>
 void OcclusionTrackerBase<LayerType, RenderSurfaceType>::EnterRenderTarget(
     const LayerType* new_target) {
@@ -220,6 +226,11 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::FinishedRenderTarget(
 
   RenderSurfaceType* surface = finished_target->render_surface();
 
+  // Readbacks always happen on render targets so we only need to check
+  // for readbacks here.
+  bool target_is_only_for_copy_request =
+      finished_target->HasCopyRequest() && LayerIsHidden(finished_target);
+
   // If the occlusion within the surface can not be applied to things outside of
   // the surface's subtree, then clear the occlusion here so it won't be used.
   // TODO(senorblanco):  Make this smarter for SkImageFilter case:  once
@@ -227,6 +238,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::FinishedRenderTarget(
   if (finished_target->mask_layer() ||
       !SurfaceOpacityKnown(surface) ||
       surface->draw_opacity() < 1 ||
+      target_is_only_for_copy_request ||
       finished_target->filters().HasFilterThatAffectsOpacity() ||
       finished_target->filter()) {
     stack_.back().occlusion_from_outside_target.Clear();

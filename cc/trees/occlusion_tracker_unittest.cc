@@ -9,6 +9,8 @@
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
 #include "cc/test/animation_test_common.h"
@@ -305,6 +307,25 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
         CreateDrawingLayer(parent, transform, position, bounds, opaque);
     layer->SetForceRenderSurface(true);
     return layer;
+  }
+
+
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
+
+  void AddCopyRequest(Layer* layer) {
+    layer->RequestCopyOfOutput(
+        CopyOutputRequest::CreateBitmapRequest(base::Bind(
+            &OcclusionTrackerTest<Types>::CopyOutputCallback,
+            base::Unretained(this))));
+  }
+
+  void AddCopyRequest(LayerImpl* layer) {
+    ScopedPtrVector<CopyOutputRequest> requests;
+    requests.push_back(
+        CopyOutputRequest::CreateBitmapRequest(base::Bind(
+            &OcclusionTrackerTest<Types>::CopyOutputCallback,
+            base::Unretained(this))));
+    layer->PassCopyRequests(&requests);
   }
 
   void CalcDrawEtc(TestContentLayerImpl* root) {
@@ -4802,6 +4823,102 @@ class OcclusionTrackerTestScaledLayerInSurfaceIsClipped
 };
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestScaledLayerInSurfaceIsClipped)
+
+template <class Types>
+class OcclusionTrackerTestCopyRequestDoesOcclude
+    : public OcclusionTrackerTest<Types> {
+ protected:
+  explicit OcclusionTrackerTestCopyRequestDoesOcclude(bool opaque_layers)
+      : OcclusionTrackerTest<Types>(opaque_layers) {}
+  void RunMyTest() {
+    typename Types::ContentLayerType* root = this->CreateRoot(
+        this->identity_matrix, gfx::Point(), gfx::Size(400, 400));
+    typename Types::ContentLayerType* parent = this->CreateDrawingLayer(
+        root, this->identity_matrix, gfx::Point(), gfx::Size(400, 400), true);
+    typename Types::LayerType* copy = this->CreateLayer(parent,
+                                                        this->identity_matrix,
+                                                        gfx::Point(100, 0),
+                                                        gfx::Size(200, 400));
+    this->AddCopyRequest(copy);
+    typename Types::LayerType* copy_child = this->CreateDrawingLayer(
+        copy,
+        this->identity_matrix,
+        gfx::PointF(),
+        gfx::Size(200, 400),
+        true);
+    this->CalcDrawEtc(root);
+
+    TestOcclusionTrackerWithClip<typename Types::LayerType,
+                                 typename Types::RenderSurfaceType> occlusion(
+        gfx::Rect(0, 0, 1000, 1000));
+
+    this->VisitLayer(copy_child, &occlusion);
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+    EXPECT_EQ(gfx::Rect(200, 400).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
+
+    // CopyRequests cause the layer to own a surface.
+    this->VisitContributingSurface(copy, &occlusion);
+
+    // The occlusion from the copy should be kept.
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+    EXPECT_EQ(gfx::Rect(100, 0, 200, 400).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
+  }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestCopyRequestDoesOcclude)
+
+template <class Types>
+class OcclusionTrackerTestHiddenCopyRequestDoesNotOcclude
+    : public OcclusionTrackerTest<Types> {
+ protected:
+  explicit OcclusionTrackerTestHiddenCopyRequestDoesNotOcclude(
+      bool opaque_layers)
+      : OcclusionTrackerTest<Types>(opaque_layers) {}
+  void RunMyTest() {
+    typename Types::ContentLayerType* root = this->CreateRoot(
+        this->identity_matrix, gfx::Point(), gfx::Size(400, 400));
+    typename Types::ContentLayerType* parent = this->CreateDrawingLayer(
+        root, this->identity_matrix, gfx::Point(), gfx::Size(400, 400), true);
+    typename Types::LayerType* hide = this->CreateLayer(
+        parent, this->identity_matrix, gfx::Point(), gfx::Size());
+    typename Types::LayerType* copy = this->CreateLayer(
+        hide, this->identity_matrix, gfx::Point(100, 0), gfx::Size(200, 400));
+    this->AddCopyRequest(copy);
+    typename Types::LayerType* copy_child = this->CreateDrawingLayer(
+        copy, this->identity_matrix, gfx::PointF(), gfx::Size(200, 400), true);
+
+    // The |copy| layer is hidden but since it is being copied, it will be
+    // drawn.
+    hide->SetHideLayerAndSubtree(true);
+
+    this->CalcDrawEtc(root);
+
+    TestOcclusionTrackerWithClip<typename Types::LayerType,
+                                 typename Types::RenderSurfaceType> occlusion(
+        gfx::Rect(0, 0, 1000, 1000));
+
+    this->VisitLayer(copy_child, &occlusion);
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+    EXPECT_EQ(gfx::Rect(200, 400).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
+
+    // CopyRequests cause the layer to own a surface.
+    this->VisitContributingSurface(copy, &occlusion);
+
+    // The occlusion from the copy should be dropped since it is hidden.
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
+  }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestHiddenCopyRequestDoesNotOcclude)
 
 }  // namespace
 }  // namespace cc
