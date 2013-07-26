@@ -83,15 +83,23 @@ bool StartsWithCommandLineGoogleBaseURL(const GURL& url);
 // |subdomain_permission| is ignored.
 bool IsGoogleHostname(const std::string& host,
                       SubdomainPermission subdomain_permission);
+
 // True if |url| is a valid URL with a host that returns true for
 // IsGoogleHostname(), and an HTTP or HTTPS scheme.  If |port_permission| is
 // DISALLOW_NON_STANDARD_PORTS, this also requires |url| to use the standard
 // port for its scheme (80 for HTTP, 443 for HTTPS).
+//
+// Note that this only checks for google.<TLD> domains, but not other Google
+// properties. There is code in variations_http_header_provider.cc that checks
+// for additional Google properties, which can be moved here if more callers
+// are interested in this in the future.
 bool IsGoogleDomainUrl(const GURL& url,
                        SubdomainPermission subdomain_permission,
                        PortPermission port_permission);
+
 // True if |url| represents a valid Google home page URL.
 bool IsGoogleHomePageUrl(const GURL& url);
+
 // True if |url| represents a valid Google search URL.
 bool IsGoogleSearchUrl(const GURL& url);
 

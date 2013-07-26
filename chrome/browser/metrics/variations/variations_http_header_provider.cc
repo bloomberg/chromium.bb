@@ -7,15 +7,13 @@
 #include "base/base64.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/metrics/proto/chrome_experiments.pb.h"
 #include "chrome/common/metrics/variations/variations_util.h"
-#include "content/public/browser/browser_thread.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_request_headers.h"
-
-using content::BrowserThread;
+#include "url/gurl.h"
 
 namespace chrome_variations {
 
@@ -29,19 +27,13 @@ void VariationsHttpHeaderProvider::AppendHeaders(
     bool uma_enabled,
     net::HttpRequestHeaders* headers) {
   // Note the criteria for attaching Chrome experiment headers:
-  // 1. We only transmit to *.google.<TLD> domains. NOTE that this use of
-  //    google_util helpers to check this does not guarantee that the URL is
-  //    Google-owned, only that it is of the form *.google.<TLD>. In the future
-  //    we may choose to reinforce this check.
+  // 1. We only transmit to *.google.<TLD> or *.youtube.<TLD> domains.
   // 2. Only transmit for non-Incognito profiles.
   // 3. For the X-Chrome-UMA-Enabled bit, only set it if UMA is in fact enabled
   //    for this install of Chrome.
   // 4. For the X-Chrome-Variations, only include non-empty variation IDs.
-  if (incognito ||
-      !google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
-                                      google_util::ALLOW_NON_STANDARD_PORTS)) {
+  if (incognito || !ShouldAppendHeaders(url))
     return;
-  }
 
   if (uma_enabled)
     headers->SetHeaderIfMissing("X-Chrome-UMA-Enabled", "1");
@@ -148,12 +140,36 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
     // If successful, swap the header value with the new one.
     // Note that the list of IDs and the header could be temporarily out of sync
     // if IDs are added as the header is recreated. The receiving servers are OK
-    // with such descrepancies.
+    // with such discrepancies.
     variation_ids_header_ = hashed;
   } else {
     NOTREACHED() << "Failed to base64 encode Variation IDs value: "
                  << serialized;
   }
+}
+
+// static
+bool VariationsHttpHeaderProvider::ShouldAppendHeaders(const GURL& url) {
+  if (google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
+                                     google_util::ALLOW_NON_STANDARD_PORTS)) {
+    return true;
+  }
+
+  // The below mirrors logic in IsGoogleDomainUrl(), but for youtube.<TLD>.
+  if (!url.is_valid() || !(url.SchemeIs("http") || url.SchemeIs("https")))
+    return false;
+
+  const std::string host = url.host();
+  const size_t tld_length = net::registry_controlled_domains::GetRegistryLength(
+      host,
+      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  if ((tld_length == 0) || (tld_length == std::string::npos))
+    return false;
+
+  const std::string host_minus_tld(host, 0, host.length() - tld_length);
+  return LowerCaseEqualsASCII(host_minus_tld, "youtube.") ||
+      EndsWith(host_minus_tld, ".youtube.", false);
 }
 
 }  // namespace chrome_variations

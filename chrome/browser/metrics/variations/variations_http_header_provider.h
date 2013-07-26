@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/synchronization/lock.h"
 #include "chrome/common/metrics/variations/variation_ids.h"
@@ -48,6 +49,9 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
  private:
   friend struct DefaultSingletonTraits<VariationsHttpHeaderProvider>;
 
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           ShouldAppendHeaders);
+
   VariationsHttpHeaderProvider();
   virtual ~VariationsHttpHeaderProvider();
 
@@ -67,6 +71,10 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
   // |variation_ids_header_| with it.  Assumes the the |lock_| is currently
   // held.
   void UpdateVariationIDsHeaderValue();
+
+  // Checks whether variation headers should be appended to requests to the
+  // specified |url|. Returns true for google.<TLD> and youtube.<TLD> URLs.
+  static bool ShouldAppendHeaders(const GURL& url);
 
   // Guards |variation_ids_cache_initialized_|, |variation_ids_set_| and
   // |variation_ids_header_|.
