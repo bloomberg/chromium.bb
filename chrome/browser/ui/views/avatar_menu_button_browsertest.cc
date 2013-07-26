@@ -96,6 +96,8 @@ void AvatarMenuButtonTest::StartAvatarMenu() {
   AvatarMenuButton* button = GetAvatarMenuButton();
   ASSERT_TRUE(button);
 
+  AvatarMenuBubbleView::set_close_on_deactiavte(false);
+  ProfileChooserView::set_close_on_deactiavte(false);
   static_cast<views::MenuButtonListener*>(button)->OnMenuButtonClicked(
       NULL, gfx::Point());
   base::MessageLoop::current()->RunUntilIdle();

@@ -79,6 +79,13 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   virtual void OnAvatarMenuModelChanged(
       AvatarMenuModel* avatar_menu_model) OVERRIDE;
 
+  // We normally close the bubble any time it becomes inactive but this can lead
+  // to flaky tests where unexpected UI events are triggering this behavior.
+  // Tests should call this with "false" for more consistent operation.
+  static void set_close_on_deactiavte(bool close) {
+    close_on_deactivate_ = close;
+  }
+
  private:
   AvatarMenuBubbleView(views::View* anchor_view,
                        views::BubbleBorder::Arrow arrow,
@@ -118,6 +125,7 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   views::Link* switch_profile_link_;
 
   static AvatarMenuBubbleView* avatar_bubble_;
+  static bool close_on_deactivate_;
 
   // Is set to true if the managed user has clicked on Switch Users.
   bool expanded_;

@@ -472,6 +472,7 @@ ActionButtonView::ActionButtonView(views::ButtonListener* listener,
 
 // static
 AvatarMenuBubbleView* AvatarMenuBubbleView::avatar_bubble_ = NULL;
+bool AvatarMenuBubbleView::close_on_deactivate_ = true;
 
 // static
 void AvatarMenuBubbleView::ShowBubble(
@@ -487,6 +488,7 @@ void AvatarMenuBubbleView::ShowBubble(
   avatar_bubble_ = new AvatarMenuBubbleView(
       anchor_view, arrow, anchor_rect, browser);
   views::BubbleDelegateView::CreateBubble(avatar_bubble_);
+  avatar_bubble_->set_close_on_deactivate(close_on_deactivate_);
   avatar_bubble_->SetBackgroundColors();
   avatar_bubble_->SetAlignment(border_alignment);
   avatar_bubble_->GetWidget()->Show();

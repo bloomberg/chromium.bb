@@ -43,6 +43,13 @@ class ProfileChooserView : public views::BubbleDelegateView,
   static bool IsShowing();
   static void Hide();
 
+  // We normally close the bubble any time it becomes inactive but this can lead
+  // to flaky tests where unexpected UI events are triggering this behavior.
+  // Tests should call this with "false" for more consistent operation.
+  static void set_close_on_deactiavte(bool close) {
+    close_on_deactivate_ = close;
+  }
+
  private:
   friend class AvatarMenuButtonTest;
   FRIEND_TEST_ALL_PREFIXES(AvatarMenuButtonTest, NewSignOut);
@@ -72,6 +79,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
       AvatarMenuModel* avatar_menu_model) OVERRIDE;
 
   static ProfileChooserView* profile_bubble_;
+  static bool close_on_deactivate_;
 
   views::View* CreateProfileImageView(const gfx::Image& icon, int side);
   views::View* CreateProfileCardView(size_t avatar_to_show);

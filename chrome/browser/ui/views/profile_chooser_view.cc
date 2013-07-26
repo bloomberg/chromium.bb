@@ -30,6 +30,7 @@
 
 // static
 ProfileChooserView* ProfileChooserView::profile_bubble_ = NULL;
+bool ProfileChooserView::close_on_deactivate_ = true;
 
 // static
 void ProfileChooserView::ShowBubble(
@@ -45,6 +46,7 @@ void ProfileChooserView::ShowBubble(
   profile_bubble_ = new ProfileChooserView(
       anchor_view, arrow, anchor_rect, browser);
   views::BubbleDelegateView::CreateBubble(profile_bubble_);
+  profile_bubble_->set_close_on_deactivate(close_on_deactivate_);
   profile_bubble_->SetAlignment(border_alignment);
   profile_bubble_->GetWidget()->Show();
 }
