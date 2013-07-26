@@ -9,6 +9,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/geometry_test_utils.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -319,6 +320,166 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
       }
     }
   }
+}
+
+class LayerImplScrollTest : public testing::Test {
+ public:
+  LayerImplScrollTest() : host_impl_(&proxy_), root_id_(7) {
+    host_impl_.active_tree()
+        ->SetRootLayer(LayerImpl::Create(host_impl_.active_tree(), root_id_));
+  }
+
+  LayerImpl* layer() { return host_impl_.active_tree()->root_layer(); }
+
+ private:
+  FakeImplProxy proxy_;
+  FakeLayerTreeHostImpl host_impl_;
+  int root_id_;
+};
+
+TEST_F(LayerImplScrollTest, ScrollByWithZeroOffset) {
+  // Test that LayerImpl::ScrollBy only affects ScrollDelta and total scroll
+  // offset is bounded by the range [0, max scroll offset].
+  gfx::Vector2d max_scroll_offset(50, 80);
+  layer()->SetMaxScrollOffset(max_scroll_offset);
+
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->ScrollDelta());
+
+  layer()->ScrollBy(gfx::Vector2dF(-100, 100));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 80), layer()->TotalScrollOffset());
+
+  EXPECT_VECTOR_EQ(layer()->ScrollDelta(), layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->scroll_offset());
+
+  layer()->ScrollBy(gfx::Vector2dF(100, -100));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), layer()->TotalScrollOffset());
+
+  EXPECT_VECTOR_EQ(layer()->ScrollDelta(), layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->scroll_offset());
+}
+
+TEST_F(LayerImplScrollTest, ScrollByWithNonZeroOffset) {
+  gfx::Vector2d max_scroll_offset(50, 80);
+  gfx::Vector2d scroll_offset(10, 5);
+  layer()->SetMaxScrollOffset(max_scroll_offset);
+  layer()->SetScrollOffset(scroll_offset);
+
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->ScrollDelta());
+
+  layer()->ScrollBy(gfx::Vector2dF(-100, 100));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 80), layer()->TotalScrollOffset());
+
+  EXPECT_VECTOR_EQ(layer()->ScrollDelta() + scroll_offset,
+                   layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+
+  layer()->ScrollBy(gfx::Vector2dF(100, -100));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), layer()->TotalScrollOffset());
+
+  EXPECT_VECTOR_EQ(layer()->ScrollDelta() + scroll_offset,
+                   layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+}
+
+class ScrollDelegateIgnore : public LayerScrollOffsetDelegate {
+ public:
+  virtual void SetTotalScrollOffset(gfx::Vector2dF new_value) OVERRIDE {}
+  virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE {
+    return fixed_offset_;
+  }
+
+  void set_fixed_offset(gfx::Vector2dF fixed_offset) {
+    fixed_offset_ = fixed_offset;
+  }
+
+ private:
+  gfx::Vector2dF fixed_offset_;
+};
+
+TEST_F(LayerImplScrollTest, ScrollByWithIgnoringDelegate) {
+  gfx::Vector2d max_scroll_offset(50, 80);
+  gfx::Vector2d scroll_offset(10, 5);
+  layer()->SetMaxScrollOffset(max_scroll_offset);
+  layer()->SetScrollOffset(scroll_offset);
+
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->ScrollDelta());
+
+  ScrollDelegateIgnore delegate;
+  gfx::Vector2dF fixed_offset(32, 12);
+  delegate.set_fixed_offset(fixed_offset);
+  layer()->SetScrollOffsetDelegate(&delegate);
+
+  EXPECT_VECTOR_EQ(fixed_offset, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+
+  layer()->ScrollBy(gfx::Vector2dF(-100, 100));
+
+  EXPECT_VECTOR_EQ(fixed_offset, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+
+  layer()->SetScrollOffsetDelegate(NULL);
+
+  EXPECT_VECTOR_EQ(fixed_offset, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+
+  gfx::Vector2dF scroll_delta(1, 1);
+  layer()->ScrollBy(scroll_delta);
+
+  EXPECT_VECTOR_EQ(fixed_offset + scroll_delta, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+}
+
+class ScrollDelegateAccept : public LayerScrollOffsetDelegate {
+ public:
+  virtual void SetTotalScrollOffset(gfx::Vector2dF new_value) OVERRIDE {
+    current_offset_ = new_value;
+  }
+  virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE {
+    return current_offset_;
+  }
+
+ private:
+  gfx::Vector2dF current_offset_;
+};
+
+TEST_F(LayerImplScrollTest, ScrollByWithAcceptingDelegate) {
+  gfx::Vector2d max_scroll_offset(50, 80);
+  gfx::Vector2d scroll_offset(10, 5);
+  layer()->SetMaxScrollOffset(max_scroll_offset);
+  layer()->SetScrollOffset(scroll_offset);
+
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->ScrollDelta());
+
+  ScrollDelegateAccept delegate;
+  layer()->SetScrollOffsetDelegate(&delegate);
+
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->ScrollDelta());
+
+  layer()->ScrollBy(gfx::Vector2dF(-100, 100));
+
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 80), layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+
+  layer()->SetScrollOffsetDelegate(NULL);
+
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 80), layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+
+  gfx::Vector2dF scroll_delta(1, 1);
+  layer()->ScrollBy(scroll_delta);
+
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(1, 80), layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
 }
 
 }  // namespace
