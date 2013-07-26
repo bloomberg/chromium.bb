@@ -101,7 +101,9 @@ void PolicyOAuth2TokenFetcher::OnGetTokenSuccess(
     const std::string& access_token,
     const base::Time& expiration_time) {
   LOG(INFO) << "OAuth2 access token (device management) fetching succeeded.";
-  ForwardPolicyToken(access_token);
+  oauth2_access_token_ = access_token;
+  ForwardPolicyToken(access_token,
+                     GoogleServiceAuthError(GoogleServiceAuthError::NONE));
 }
 
 void PolicyOAuth2TokenFetcher::OnGetTokenFailure(
@@ -131,11 +133,14 @@ void PolicyOAuth2TokenFetcher::RetryOnError(const GoogleServiceAuthError& error,
   // completed, and the owner may delete this object on the callback method.
   // So don't rely on |this| still being valid after ForwardPolicyToken()
   // returns i.e. don't write to |failed_| or other fields.
-  ForwardPolicyToken(EmptyString());
+  ForwardPolicyToken(std::string(), error);
 }
 
-void PolicyOAuth2TokenFetcher::ForwardPolicyToken(const std::string& token) {
-  callback_.Run(token);
+void PolicyOAuth2TokenFetcher::ForwardPolicyToken(
+    const std::string& token,
+    const GoogleServiceAuthError& error) {
+  if (!callback_.is_null())
+    callback_.Run(token, error);
 }
 
 }  // namespace policy

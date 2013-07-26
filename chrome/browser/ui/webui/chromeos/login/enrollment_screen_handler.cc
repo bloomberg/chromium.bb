@@ -6,17 +6,21 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
+#include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/policy/cloud/message_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/chromium_strings.h"
@@ -43,36 +47,25 @@ namespace chromeos {
 
 // A helper class that takes care of asynchronously revoking a given token.
 class EnrollmentScreenHandler::TokenRevoker
-    : public GaiaOAuthConsumer {
+    : public GaiaAuthConsumer {
  public:
-  TokenRevoker(const std::string& token,
-               const std::string& secret,
-               Profile* profile,
-               EnrollmentScreenHandler* owner)
-      : oauth_fetcher_(this, profile->GetRequestContext(),
-                       GaiaConstants::kDeviceManagementServiceOAuth),
-        owner_(owner) {
-    if (secret.empty())
-      oauth_fetcher_.StartOAuthRevokeWrapToken(token);
-    else
-      oauth_fetcher_.StartOAuthRevokeAccessToken(token, secret);
-  }
-
+  explicit TokenRevoker(EnrollmentScreenHandler* owner)
+      : gaia_fetcher_(this, GaiaConstants::kChromeOSSource,
+                      g_browser_process->system_request_context()),
+        owner_(owner) {}
   virtual ~TokenRevoker() {}
 
-  virtual void OnOAuthRevokeTokenSuccess() OVERRIDE {
-    LOG(INFO) << "Successfully revoked OAuth token.";
-    owner_->OnTokenRevokerDone(this);
+  void Start(const std::string& token) {
+    gaia_fetcher_.StartRevokeOAuth2Token(token);
   }
 
-  virtual void OnOAuthRevokeTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE {
-    LOG(ERROR) << "Failed to revoke OAuth token!";
+  // GaiaAuthConsumer:
+  virtual void OnOAuth2RevokeTokenCompleted() OVERRIDE {
     owner_->OnTokenRevokerDone(this);
   }
 
  private:
-  GaiaOAuthFetcher oauth_fetcher_;
+  GaiaAuthFetcher gaia_fetcher_;
   EnrollmentScreenHandler* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(TokenRevoker);
@@ -136,21 +129,33 @@ void EnrollmentScreenHandler::Hide() {
 void EnrollmentScreenHandler::FetchOAuthToken() {
   Profile* profile = Profile::FromWebUI(web_ui());
   oauth_fetcher_.reset(
-      new GaiaOAuthFetcher(this,
-                           profile->GetRequestContext(),
-                           GaiaConstants::kDeviceManagementServiceOAuth));
-  oauth_fetcher_->SetAutoFetchLimit(
-      GaiaOAuthFetcher::OAUTH2_SERVICE_ACCESS_TOKEN);
-  oauth_fetcher_->StartGetOAuthTokenRequest();
+      new policy::PolicyOAuth2TokenFetcher(
+          profile->GetRequestContext(),
+          g_browser_process->system_request_context(),
+          base::Bind(&EnrollmentScreenHandler::OnTokenFetched,
+                     base::Unretained(this))));
+  oauth_fetcher_->Start();
 }
 
 void EnrollmentScreenHandler::ResetAuth(
     const base::Closure& callback) {
-  oauth_fetcher_.reset();
+  auth_reset_callbacks_.push_back(callback);
+  if (browsing_data_remover_ || refresh_token_revoker_ || access_token_revoker_)
+    return;
 
   auth_reset_callbacks_.push_back(callback);
-  if (browsing_data_remover_)
-    return;
+
+  if (oauth_fetcher_) {
+    if (!oauth_fetcher_->oauth2_access_token().empty()) {
+      access_token_revoker_.reset(new TokenRevoker(this));
+      access_token_revoker_->Start(oauth_fetcher_->oauth2_access_token());
+    }
+
+    if (!oauth_fetcher_->oauth2_refresh_token().empty()) {
+      refresh_token_revoker_.reset(new TokenRevoker(this));
+      refresh_token_revoker_->Start(oauth_fetcher_->oauth2_refresh_token());
+    }
+  }
 
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
@@ -307,68 +312,11 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_GO_BACK);
 }
 
-void EnrollmentScreenHandler::OnGetOAuthTokenFailure(
-    const GoogleServiceAuthError& error) {
-  if (controller_)
-    controller_->OnAuthError(error);
-}
-
-void EnrollmentScreenHandler::OnOAuthGetAccessTokenSuccess(
-    const std::string& token,
-    const std::string& secret) {
-  access_token_ = token;
-  access_token_secret_ = secret;
-}
-
-void EnrollmentScreenHandler::OnOAuthGetAccessTokenFailure(
-    const GoogleServiceAuthError& error) {
-  if (controller_)
-    controller_->OnAuthError(error);
-}
-
-void EnrollmentScreenHandler::OnOAuthWrapBridgeSuccess(
-    const std::string& service_scope,
-    const std::string& token,
-    const std::string& expires_in) {
-  DCHECK_EQ(service_scope, GaiaConstants::kDeviceManagementServiceOAuth);
-
-  wrap_token_ = token;
-
-  if (!controller_) {
-    NOTREACHED();
-    return;
-  }
-
-  controller_->OnOAuthTokenAvailable(token);
-}
-
-void EnrollmentScreenHandler::OnOAuthWrapBridgeFailure(
-    const std::string& service_scope,
-    const GoogleServiceAuthError& error) {
-  if (controller_)
-    controller_->OnAuthError(error);
-}
-
-void EnrollmentScreenHandler::OnUserInfoSuccess(
-    const std::string& email) {
-  NOTREACHED();
-}
-
-void EnrollmentScreenHandler::OnUserInfoFailure(
-    const GoogleServiceAuthError& error) {
-  NOTREACHED();
-}
-
 void EnrollmentScreenHandler::OnBrowsingDataRemoverDone() {
   browsing_data_remover_->RemoveObserver(this);
   browsing_data_remover_ = NULL;
 
-  std::vector<base::Closure> callbacks_to_run;
-  callbacks_to_run.swap(auth_reset_callbacks_);
-  for (std::vector<base::Closure>::iterator callback(callbacks_to_run.begin());
-       callback != callbacks_to_run.end(); ++callback) {
-    callback->Run();
-  }
+  CheckAuthResetDone();
 }
 
 // EnrollmentScreenHandler, private -----------------------------
@@ -386,8 +334,6 @@ void EnrollmentScreenHandler::HandleClose(
     controller_->OnConfirmationClosed();
   else
     NOTREACHED();
-
-  RevokeTokens();
 }
 
 void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
@@ -418,7 +364,6 @@ void EnrollmentScreenHandler::ShowError(int message_id,
 void EnrollmentScreenHandler::ShowErrorMessage(
     const std::string& message,
     bool retry) {
-  RevokeTokens();
   CallJS("login.OAuthEnrollmentScreen.showError", message, retry);
 }
 
@@ -427,30 +372,40 @@ void EnrollmentScreenHandler::ShowWorking(int message_id) {
          l10n_util::GetStringUTF16(message_id));
 }
 
-void EnrollmentScreenHandler::RevokeTokens() {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui()->GetWebContents()->GetBrowserContext());
+void EnrollmentScreenHandler::OnTokenFetched(
+    const std::string& token,
+    const GoogleServiceAuthError& error) {
+  if (!controller_)
+    return;
 
-  if (!access_token_.empty()) {
-    token_revokers_.push_back(
-        new TokenRevoker(access_token_, access_token_secret_, profile, this));
-    access_token_.clear();
-  }
-
-  if (!wrap_token_.empty()) {
-    token_revokers_.push_back(new TokenRevoker(wrap_token_, "", profile, this));
-    wrap_token_.clear();
-  }
+  if (error.state() != GoogleServiceAuthError::NONE)
+    controller_->OnAuthError(error);
+  else
+    controller_->OnOAuthTokenAvailable(token);
 }
 
 void EnrollmentScreenHandler::OnTokenRevokerDone(
     TokenRevoker* revoker) {
-  ScopedVector<TokenRevoker>::iterator it =
-      std::find(token_revokers_.begin(), token_revokers_.end(), revoker);
-  if (it != token_revokers_.end())
-    token_revokers_.erase(it);
+  if (access_token_revoker_.get() == revoker)
+    access_token_revoker_.reset();
+  else if (refresh_token_revoker_.get() == revoker)
+    refresh_token_revoker_.reset();
   else
-    NOTREACHED();
+    NOTREACHED() << "Bad revoker callback: " << revoker;
+
+  CheckAuthResetDone();
+}
+
+void EnrollmentScreenHandler::CheckAuthResetDone() {
+  if (browsing_data_remover_ || refresh_token_revoker_ || access_token_revoker_)
+    return;
+
+  std::vector<base::Closure> callbacks_to_run;
+  callbacks_to_run.swap(auth_reset_callbacks_);
+  for (std::vector<base::Closure>::iterator callback(callbacks_to_run.begin());
+       callback != callbacks_to_run.end(); ++callback) {
+    callback->Run();
+  }
 }
 
 void EnrollmentScreenHandler::DoShow() {

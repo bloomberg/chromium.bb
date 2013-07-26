@@ -14,10 +14,11 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
-#include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
-class GaiaOAuthFetcher;
+namespace policy {
+class PolicyOAuth2TokenFetcher;
+}
 
 namespace chromeos {
 
@@ -26,7 +27,6 @@ namespace chromeos {
 class EnrollmentScreenHandler
     : public BaseScreenHandler,
       public EnrollmentScreenActor,
-      public GaiaOAuthConsumer,
       public BrowsingDataRemover::Observer {
  public:
   EnrollmentScreenHandler();
@@ -56,22 +56,6 @@ class EnrollmentScreenHandler
   virtual void Initialize() OVERRIDE;
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
 
-  // Implements GaiaOAuthConsumer:
-  virtual void OnGetOAuthTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
-                                            const std::string& secret) OVERRIDE;
-  virtual void OnOAuthGetAccessTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnOAuthWrapBridgeSuccess(const std::string& service_scope,
-                                        const std::string& token,
-                                        const std::string& expires_in) OVERRIDE;
-  virtual void OnOAuthWrapBridgeFailure(
-      const std::string& service_scope,
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnUserInfoSuccess(const std::string& email) OVERRIDE;
-  virtual void OnUserInfoFailure(const GoogleServiceAuthError& error) OVERRIDE;
-
   // Implements BrowsingDataRemover::Observer:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
@@ -95,11 +79,15 @@ class EnrollmentScreenHandler
   // Display the given i18n string as a progress message.
   void ShowWorking(int message_id);
 
-  // Starts asynchronous token revocation requests if there are tokens present.
-  void RevokeTokens();
+  // Handles completion of the OAuth2 token fetch attempt.
+  void OnTokenFetched(const std::string& token,
+                      const GoogleServiceAuthError& error);
 
   // Callback for TokenRevokers that have completed.
   void OnTokenRevokerDone(TokenRevoker* revoker);
+
+  // Checks whether a pending auth reset is complete. If so, invokes callbacks.
+  void CheckAuthResetDone();
 
   // Shows the screen.
   void DoShow();
@@ -123,21 +111,15 @@ class EnrollmentScreenHandler
 
   // This intentionally lives here and not in the controller, since it needs to
   // execute requests in the context of the profile that displays the webui.
-  scoped_ptr<GaiaOAuthFetcher> oauth_fetcher_;
-
-  // Tokens currently held.
-  std::string access_token_;
-  std::string access_token_secret_;
-  std::string wrap_token_;
+  scoped_ptr<policy::PolicyOAuth2TokenFetcher> oauth_fetcher_;
 
   // The browsing data remover instance currently active, if any.
   BrowsingDataRemover* browsing_data_remover_;
+  scoped_ptr<TokenRevoker> access_token_revoker_;
+  scoped_ptr<TokenRevoker> refresh_token_revoker_;
 
   // The callbacks to invoke after browsing data has been cleared.
   std::vector<base::Closure> auth_reset_callbacks_;
-
-  // Helpers that revoke the tokens used.
-  ScopedVector<TokenRevoker> token_revokers_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreenHandler);
 };

@@ -28,8 +28,8 @@ class URLRequestContextGetter;
 namespace policy {
 
 class DeviceManagementService;
-class ResourceCache;
 class PolicyOAuth2TokenFetcher;
+class ResourceCache;
 
 // UserCloudPolicyManagerChromeOS implements logic for initializing user policy
 // on Chrome OS.
@@ -95,7 +95,8 @@ class UserCloudPolicyManagerChromeOS
   // OnOAuth2PolicyTokenFetched is called back when the policy token is fetched.
   void FetchPolicyOAuthTokenUsingSigninProfile();
   void FetchPolicyOAuthTokenUsingRefreshToken();
-  void OnOAuth2PolicyTokenFetched(const std::string& policy_token);
+  void OnOAuth2PolicyTokenFetched(const std::string& policy_token,
+                                  const GoogleServiceAuthError& error);
 
   // Completion handler for the explicit policy fetch triggered on startup in
   // case |wait_for_policy_fetch_| is true. |success| is true if the fetch was

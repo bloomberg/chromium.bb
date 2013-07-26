@@ -198,7 +198,8 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingSigninProfile() {
     signin_context = signin_profile->GetRequestContext();
   if (!signin_context.get()) {
     LOG(ERROR) << "No signin Profile for policy oauth token fetch!";
-    OnOAuth2PolicyTokenFetched(std::string());
+    OnOAuth2PolicyTokenFetched(
+        std::string(), GoogleServiceAuthError(GoogleServiceAuthError::NONE));
     return;
   }
 
@@ -220,21 +221,22 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingRefreshToken() {
 }
 
 void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
-    const std::string& policy_token) {
+    const std::string& policy_token,
+    const GoogleServiceAuthError& error) {
   DCHECK(!client()->is_registered());
   // The TokenService will reuse the refresh token fetched by the
   // |token_fetcher_|, if it fetched one.
   if (token_fetcher_->has_oauth2_tokens())
     oauth2_login_tokens_ = token_fetcher_->oauth2_tokens();
 
-  if (policy_token.empty()) {
-    // Failed to get a token, stop waiting and use an empty policy.
-    CancelWaitForPolicyFetch();
-  } else {
+  if (error.state() == GoogleServiceAuthError::NONE) {
     // Start client registration. Either OnRegistrationStateChanged() or
     // OnClientError() will be called back.
     client()->Register(em::DeviceRegisterRequest::USER,
                        policy_token, std::string(), false, std::string());
+  } else {
+    // Failed to get a token, stop waiting and use an empty policy.
+    CancelWaitForPolicyFetch();
   }
 
   token_fetcher_.reset();

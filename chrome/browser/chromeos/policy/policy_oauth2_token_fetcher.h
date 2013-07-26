@@ -35,7 +35,8 @@ class PolicyOAuth2TokenFetcher
       public GaiaAuthConsumer,
       public OAuth2AccessTokenConsumer {
  public:
-  typedef base::Callback<void(const std::string&)> TokenCallback;
+  typedef base::Callback<void(const std::string&,
+                              const GoogleServiceAuthError&)> TokenCallback;
 
   // Fetches the device management service's OAuth2 token using
   // |oauth2_tokens.refresh_token|.
@@ -71,6 +72,13 @@ class PolicyOAuth2TokenFetcher
     return failed_;
   }
 
+  const std::string& oauth2_refresh_token() const {
+    return oauth2_refresh_token_;
+  }
+  const std::string& oauth2_access_token() const {
+    return oauth2_access_token_;
+  }
+
  private:
   // GaiaAuthConsumer overrides.
   virtual void OnClientOAuthSuccess(
@@ -96,8 +104,9 @@ class PolicyOAuth2TokenFetcher
   void RetryOnError(const GoogleServiceAuthError& error,
                     const base::Closure& task);
 
-  // Passes |token| to the |callback_|.
-  void ForwardPolicyToken(const std::string& token);
+  // Passes |token| and |error| to the |callback_|.
+  void ForwardPolicyToken(const std::string& token,
+                          const GoogleServiceAuthError& error);
 
   scoped_refptr<net::URLRequestContextGetter> auth_context_getter_;
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
@@ -108,6 +117,9 @@ class PolicyOAuth2TokenFetcher
   // OAuth2 refresh token. Could come either from the outside or through
   // refresh token fetching flow within this class.
   std::string oauth2_refresh_token_;
+
+  // OAuth2 access token.
+  std::string oauth2_access_token_;
 
   // The retry counter. Increment this only when failure happened.
   int retry_count_;
