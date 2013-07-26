@@ -447,10 +447,11 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
 
     def _tests_to_rebaseline(self, port):
         tests_to_rebaseline = {}
-        expectations = TestExpectations(port, include_overrides=True)
-        for test in expectations.get_rebaselining_failures():
-            suffixes = TestExpectations.suffixes_for_expectations(expectations.get_expectations(test))
-            tests_to_rebaseline[test] = suffixes or BASELINE_SUFFIX_LIST
+        for path, value in port.expectations_dict().items():
+            expectations = TestExpectations(port, include_overrides=False, expectations_dict={path: value})
+            for test in expectations.get_rebaselining_failures():
+                suffixes = TestExpectations.suffixes_for_expectations(expectations.get_expectations(test))
+                tests_to_rebaseline[test] = suffixes or BASELINE_SUFFIX_LIST
         return tests_to_rebaseline
 
     def _add_tests_to_rebaseline_for_port(self, port_name):

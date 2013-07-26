@@ -71,7 +71,8 @@ def lint(host, options, logging_stream):
 
                 try:
                     test_expectations.TestExpectations(port_to_lint,
-                        expectations_to_lint={expectations_file: expectations_dict[expectations_file]})
+                        expectations_dict={expectations_file: expectations_dict[expectations_file]},
+                        is_lint_mode=True)
                 except test_expectations.ParseError as e:
                     lint_failed = True
                     _log.error('')
