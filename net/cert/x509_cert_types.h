@@ -40,7 +40,7 @@ struct NET_EXPORT CertPrincipal {
   bool ParseDistinguishedName(const void* ber_name_data, size_t length);
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   // Compare this CertPrincipal with |against|, returning true if they're
   // equal enough to be a possible match. This should NOT be used for any
   // security relevant decisions.
@@ -130,9 +130,9 @@ enum CertDateFormat {
 // |format|, and writes the result into |*time|. If an invalid date is
 // specified, or if parsing fails, returns false, and |*time| will not be
 // updated.
-NET_EXPORT_PRIVATE bool ParseCertificateDate(const base::StringPiece& raw_date,
-                                             CertDateFormat format,
-                                             base::Time* time);
+bool ParseCertificateDate(const base::StringPiece& raw_date,
+                          CertDateFormat format,
+                          base::Time* time);
 }  // namespace net
 
 #endif  // NET_CERT_X509_CERT_TYPES_H_
