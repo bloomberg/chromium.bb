@@ -61,14 +61,32 @@ using syncer::SESSIONS;
 
 namespace {
 
+std::string SessionTagPrefix() {
+  return std::string("session_sync");
+}
+
 // Given a transaction, returns the GUID-based string that should be used for
 // |current_machine_tag_|.
 std::string GetMachineTagFromTransaction(
     syncer::WriteTransaction* trans) {
   syncer::syncable::Directory* dir = trans->GetWrappedWriteTrans()->directory();
-  std::string machine_tag = "session_sync";
+  std::string machine_tag = SessionTagPrefix();
   machine_tag.append(dir->cache_guid());
   return machine_tag;
+}
+
+// Given a session tag this function returns the client_id(cache_guid).
+std::string GetClientIdFromSessionTag(const std::string& session_tag) {
+  if (session_tag.find_first_of(SessionTagPrefix()) == std::string::npos) {
+    LOG(ERROR) << "Session tag is malformatted";
+    return std::string();
+  }
+
+  std::string client_id = session_tag.substr(
+      SessionTagPrefix().length(),
+      session_tag.length());
+
+  return client_id;
 }
 
 }  // namespace
@@ -667,6 +685,13 @@ bool SessionModelAssociator::GetSyncedFaviconForPageURL(
     const std::string& page_url,
     scoped_refptr<base::RefCountedMemory>* favicon_png) const {
   return favicon_cache_.GetSyncedFaviconForPageURL(GURL(page_url), favicon_png);
+}
+
+scoped_ptr<browser_sync::DeviceInfo>
+    SessionModelAssociator::GetDeviceInfoForSessionTag(
+        const std::string& session_tag) {
+  std::string client_id = GetClientIdFromSessionTag(session_tag);
+  return sync_service_->GetDeviceInfo(client_id);
 }
 
 bool SessionModelAssociator::UpdateAssociationsFromSyncModel(

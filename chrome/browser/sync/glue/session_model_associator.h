@@ -46,6 +46,7 @@ class TabNavigation;
 namespace browser_sync {
 
 class DataTypeErrorHandler;
+class DeviceInfo;
 class SyncedTabDelegate;
 class SyncedWindowDelegate;
 
@@ -202,6 +203,10 @@ class SessionModelAssociator
   void SetCurrentMachineTagForTesting(const std::string& machine_tag) {
     current_machine_tag_ = machine_tag;
   }
+
+  // Gets the device info for a given session tag.
+  scoped_ptr<browser_sync::DeviceInfo> GetDeviceInfoForSessionTag(
+      const std::string& session_tag);
 
   FaviconCache* GetFaviconCache();
 
