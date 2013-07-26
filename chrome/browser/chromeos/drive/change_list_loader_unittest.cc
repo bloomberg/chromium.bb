@@ -66,6 +66,35 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
   DISALLOW_COPY_AND_ASSIGN(TestChangeListLoaderObserver);
 };
 
+class TestDriveService : public FakeDriveService {
+ public:
+  TestDriveService() : never_return_all_resource_list_(false),
+                       blocked_call_count_(0) {}
+
+  void set_never_return_all_resource_list(bool value) {
+    never_return_all_resource_list_ = value;
+  }
+
+  int blocked_call_count() const { return blocked_call_count_; }
+
+  // FakeDriveService override.
+  virtual google_apis::CancelCallback GetAllResourceList(
+      const google_apis::GetResourceListCallback& callback) OVERRIDE {
+    if (never_return_all_resource_list_) {
+      ++blocked_call_count_;
+      return google_apis::CancelCallback();
+    }
+    return FakeDriveService::GetAllResourceList(callback);
+  }
+
+ private:
+  // GetAllResourceList never returns result when this is set to true.
+  // Used to emulate the real server's slowness.
+  bool never_return_all_resource_list_;
+
+  int blocked_call_count_;  // Number of blocked method calls.
+};
+
 class ChangeListLoaderTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
@@ -73,7 +102,7 @@ class ChangeListLoaderTest : public testing::Test {
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
-    drive_service_.reset(new FakeDriveService);
+    drive_service_.reset(new TestDriveService);
     ASSERT_TRUE(drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json"));
     ASSERT_TRUE(drive_service_->LoadAccountMetadataForWapi(
@@ -121,7 +150,7 @@ class ChangeListLoaderTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<FakeDriveService> drive_service_;
+  scoped_ptr<TestDriveService> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<ResourceMetadataStorage,
              test_util::DestroyHelperForTests> metadata_storage_;
@@ -219,6 +248,86 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded_LocalMetadataAvailable) {
 
   base::FilePath file_path =
       util::GetDriveMyDriveRootPath().AppendASCII(gdata_entry->title());
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(file_path, &entry));
+}
+
+TEST_F(ChangeListLoaderTest, LoadIfNeeded_MyDrive) {
+  // Emulate the slowness of GetAllResourceList().
+  drive_service_->set_never_return_all_resource_list(true);
+
+  // Load grand root.
+  FileError error = FILE_ERROR_FAILED;
+  change_list_loader_->LoadIfNeeded(
+      DirectoryFetchInfo(util::kDriveGrandRootSpecialResourceId, 0),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // GetAllResourceList() was called.
+  EXPECT_EQ(1, drive_service_->blocked_call_count());
+
+  // My Drive is present in the local metadata, but its child is not.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(util::GetDriveMyDriveRootPath(),
+                                              &entry));
+  const int64 mydrive_changestamp =
+      entry.directory_specific_info().changestamp();
+
+  base::FilePath file_path =
+      util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+            metadata_->GetResourceEntryByPath(file_path, &entry));
+
+  // Load My Drive.
+  change_list_loader_->LoadIfNeeded(
+      DirectoryFetchInfo(drive_service_->GetRootResourceId(),
+                         mydrive_changestamp),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Now the file is present.
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(file_path, &entry));
+}
+
+TEST_F(ChangeListLoaderTest, LoadIfNeeded_NewDirectories) {
+  // Make local metadata up to date.
+  FileError error = FILE_ERROR_FAILED;
+  change_list_loader_->LoadIfNeeded(
+      DirectoryFetchInfo(),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Add a new file.
+  scoped_ptr<google_apis::ResourceEntry> file = AddNewFile("New File");
+  ASSERT_TRUE(file);
+
+  // Emulate the slowness of GetAllResourceList().
+  drive_service_->set_never_return_all_resource_list(true);
+
+  // Enter refreshing state.
+  FileError check_for_updates_error = FILE_ERROR_FAILED;
+  change_list_loader_->CheckForUpdates(
+      google_apis::test_util::CreateCopyResultCallback(
+          &check_for_updates_error));
+  EXPECT_TRUE(change_list_loader_->IsRefreshing());
+
+  // Load My Drive.
+  change_list_loader_->LoadIfNeeded(
+      DirectoryFetchInfo(drive_service_->GetRootResourceId(),
+                         metadata_->GetLargestChangestamp()),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // The new file is present in the local metadata.
+  base::FilePath file_path =
+      util::GetDriveMyDriveRootPath().AppendASCII(file->title());
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK,
             metadata_->GetResourceEntryByPath(file_path, &entry));
