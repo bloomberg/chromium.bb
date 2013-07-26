@@ -46,7 +46,7 @@ PassRefPtr<AccessibilityTableHeaderContainer> AccessibilityTableHeaderContainer:
 {
     return adoptRef(new AccessibilityTableHeaderContainer());
 }
-
+    
 LayoutRect AccessibilityTableHeaderContainer::elementRect() const
 {
     // this will be filled in when addChildren is called
@@ -63,14 +63,14 @@ bool AccessibilityTableHeaderContainer::computeAccessibilityIsIgnored() const
 
 void AccessibilityTableHeaderContainer::addChildren()
 {
-    ASSERT(!m_haveChildren);
-
+    ASSERT(!m_haveChildren); 
+    
     m_haveChildren = true;
     if (!m_parent || !m_parent->isAccessibilityTable())
         return;
-
+    
     static_cast<AccessibilityTable*>(m_parent)->columnHeaders(m_children);
-
+    
     unsigned length = m_children.size();
     for (unsigned k = 0; k < length; ++k)
         m_headerRect.unite(m_children[k]->elementRect());

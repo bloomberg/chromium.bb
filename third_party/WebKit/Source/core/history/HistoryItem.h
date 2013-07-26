@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef HistoryItem_h
@@ -44,7 +44,7 @@ class ResourceRequest;
 typedef Vector<RefPtr<HistoryItem> > HistoryItemVector;
 
 class HistoryItem : public RefCounted<HistoryItem> {
-public:
+public: 
     static PassRefPtr<HistoryItem> create() { return adoptRef(new HistoryItem); }
     static PassRefPtr<HistoryItem> create(const String& urlString)
     {
@@ -61,31 +61,31 @@ public:
     const String& originalURLString() const;
     const String& urlString() const;
     const String& title() const;
-
+    
     double lastVisitedTime() const;
-
+    
     void setAlternateTitle(const String& alternateTitle);
     const String& alternateTitle() const;
-
+    
     const String& parent() const;
     KURL url() const;
     KURL originalURL() const;
     const String& referrer() const;
     const String& target() const;
     bool isTargetItem() const;
-
+    
     FormData* formData();
     String formContentType() const;
-
+    
     int visitCount() const;
 
     const IntPoint& scrollPoint() const;
     void setScrollPoint(const IntPoint&);
     void clearScrollPoint();
-
+    
     float pageScaleFactor() const;
     void setPageScaleFactor(float);
-
+    
     const Vector<String>& documentState() const;
     void setDocumentState(const Vector<String>&);
     void clearDocumentState();
@@ -98,7 +98,7 @@ public:
     void setParent(const String&);
     void setTitle(const String&);
     void setIsTargetItem(bool);
-
+    
     void setStateObject(PassRefPtr<SerializedScriptValue> object);
     SerializedScriptValue* stateObject() const { return m_stateObject.get(); }
 
@@ -121,7 +121,7 @@ public:
     const HistoryItemVector& children() const;
     void clearChildren();
     bool isAncestorOf(const HistoryItem*) const;
-
+    
     bool shouldDoSameDocumentNavigationTo(HistoryItem* otherItem) const;
     bool hasSameFrames(HistoryItem* otherItem) const;
 
@@ -141,7 +141,7 @@ private:
     explicit HistoryItem(const HistoryItem&);
 
     void recordVisitAtTime(double);
-
+    
     bool hasSameDocumentTree(HistoryItem* otherItem) const;
 
     String m_urlString;
@@ -151,15 +151,15 @@ private:
     String m_parent;
     String m_title;
     String m_displayTitle;
-
+    
     double m_lastVisitedTime;
 
     IntPoint m_scrollPoint;
     float m_pageScaleFactor;
     Vector<String> m_documentState;
-
+    
     HistoryItemVector m_children;
-
+    
     bool m_isTargetItem;
     int m_visitCount;
 
@@ -176,7 +176,7 @@ private:
 
     // Support for HTML5 History
     RefPtr<SerializedScriptValue> m_stateObject;
-
+    
     // info used to repost form data
     RefPtr<FormData> m_formData;
     String m_formContentType;

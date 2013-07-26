@@ -37,8 +37,8 @@
 
     [Custom] void evaluate(DOMString script);
     [Custom] any restart();
-
-    // Only declarative scope (local, with and catch) is accepted. Returns undefined.
+    
+    // Only declarative scope (local, with and catch) is accepted. Returns undefined. 
     [Custom] any setVariableValue(long scopeIndex, DOMString variableName, any newValue);
 
     readonly attribute JavaScriptCallFrame caller;

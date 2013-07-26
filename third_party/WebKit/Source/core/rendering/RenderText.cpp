@@ -214,7 +214,7 @@ void RenderText::styleDidChange(StyleDifference diff, const RenderStyle* oldStyl
 
     ETextTransform oldTransform = oldStyle ? oldStyle->textTransform() : TTNONE;
     ETextSecurity oldSecurity = oldStyle ? oldStyle->textSecurity() : TSNONE;
-    if (needsResetText || oldTransform != newStyle->textTransform() || oldSecurity != newStyle->textSecurity())
+    if (needsResetText || oldTransform != newStyle->textTransform() || oldSecurity != newStyle->textSecurity()) 
         transformText();
 }
 
@@ -344,15 +344,15 @@ static FloatRect localQuadForTextBox(InlineTextBox* box, unsigned start, unsigne
 void RenderText::absoluteRectsForRange(Vector<IntRect>& rects, unsigned start, unsigned end, bool useSelectionHeight, bool* wasFixed)
 {
     // Work around signed/unsigned issues. This function takes unsigneds, and is often passed UINT_MAX
-    // to mean "all the way to the end". InlineTextBox coordinates are unsigneds, so changing this
-    // function to take ints causes various internal mismatches. But selectionRect takes ints, and
-    // passing UINT_MAX to it causes trouble. Ideally we'd change selectionRect to take unsigneds, but
+    // to mean "all the way to the end". InlineTextBox coordinates are unsigneds, so changing this 
+    // function to take ints causes various internal mismatches. But selectionRect takes ints, and 
+    // passing UINT_MAX to it causes trouble. Ideally we'd change selectionRect to take unsigneds, but 
     // that would cause many ripple effects, so for now we'll just clamp our unsigned parameters to INT_MAX.
     ASSERT(end == UINT_MAX || end <= INT_MAX);
     ASSERT(start <= INT_MAX);
     start = min(start, static_cast<unsigned>(INT_MAX));
     end = min(end, static_cast<unsigned>(INT_MAX));
-
+    
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
         // Note: box->end() returns the index of the last character, not the index past it
         if (start <= box->start() && box->end() < end) {
@@ -381,26 +381,26 @@ static IntRect ellipsisRectForBox(InlineTextBox* box, unsigned startPos, unsigne
 {
     if (!box)
         return IntRect();
-
+    
     unsigned short truncation = box->truncation();
     if (truncation == cNoTruncation)
         return IntRect();
-
+    
     IntRect rect;
     if (EllipsisBox* ellipsis = box->root()->ellipsisBox()) {
         int ellipsisStartPosition = max<int>(startPos - box->start(), 0);
         int ellipsisEndPosition = min<int>(endPos - box->start(), box->len());
-
+        
         // The ellipsis should be considered to be selected if the end of
         // the selection is past the beginning of the truncation and the
         // beginning of the selection is before or at the beginning of the truncation.
         if (ellipsisEndPosition >= truncation && ellipsisStartPosition <= truncation)
             return ellipsis->selectionRect();
     }
-
+    
     return IntRect();
 }
-
+    
 void RenderText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed, ClippingOption option) const
 {
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
@@ -418,7 +418,7 @@ void RenderText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed, Clippin
         quads.append(localToAbsoluteQuad(boundaries, 0, wasFixed));
     }
 }
-
+    
 void RenderText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 {
     absoluteQuads(quads, wasFixed, NoClipping);
@@ -427,15 +427,15 @@ void RenderText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 void RenderText::absoluteQuadsForRange(Vector<FloatQuad>& quads, unsigned start, unsigned end, bool useSelectionHeight, bool* wasFixed)
 {
     // Work around signed/unsigned issues. This function takes unsigneds, and is often passed UINT_MAX
-    // to mean "all the way to the end". InlineTextBox coordinates are unsigneds, so changing this
-    // function to take ints causes various internal mismatches. But selectionRect takes ints, and
-    // passing UINT_MAX to it causes trouble. Ideally we'd change selectionRect to take unsigneds, but
+    // to mean "all the way to the end". InlineTextBox coordinates are unsigneds, so changing this 
+    // function to take ints causes various internal mismatches. But selectionRect takes ints, and 
+    // passing UINT_MAX to it causes trouble. Ideally we'd change selectionRect to take unsigneds, but 
     // that would cause many ripple effects, so for now we'll just clamp our unsigned parameters to INT_MAX.
     ASSERT(end == UINT_MAX || end <= INT_MAX);
     ASSERT(start <= INT_MAX);
     start = min(start, static_cast<unsigned>(INT_MAX));
     end = min(end, static_cast<unsigned>(INT_MAX));
-
+    
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
         // Note: box->end() returns the index of the last character, not the index past it
         if (start <= box->start() && box->end() < end) {
@@ -862,7 +862,7 @@ float RenderText::minLogicalWidth() const
 {
     if (preferredLogicalWidthsDirty())
         const_cast<RenderText*>(this)->computePreferredLogicalWidths(0);
-
+        
     return m_minWidth;
 }
 
@@ -870,7 +870,7 @@ float RenderText::maxLogicalWidth() const
 {
     if (preferredLogicalWidthsDirty())
         const_cast<RenderText*>(this)->computePreferredLogicalWidths(0);
-
+        
     return m_maxWidth;
 }
 
@@ -1199,7 +1199,7 @@ bool RenderText::isAllCollapsibleWhitespace() const
     }
     return true;
 }
-
+    
 bool RenderText::containsOnlyWhitespace(unsigned from, unsigned len) const
 {
     ASSERT(m_text);
@@ -1225,7 +1225,7 @@ float RenderText::firstRunY() const
 {
     return m_firstTextBox ? m_firstTextBox->y() : 0;
 }
-
+    
 void RenderText::setSelectionState(SelectionState state)
 {
     RenderObject::setSelectionState(state);
@@ -1465,7 +1465,7 @@ void RenderText::setText(PassRefPtr<StringImpl> text, bool force)
     setTextInternal(text);
     setNeedsLayoutAndPrefWidthsRecalc();
     m_knownToHaveNoOverflowAndNoFallbackFonts = false;
-
+    
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->textChanged(this);
 }
@@ -1585,7 +1585,7 @@ float RenderText::width(unsigned from, unsigned len, const Font& f, float xPos, 
 IntRect RenderText::linesBoundingBox() const
 {
     IntRect result;
-
+    
     ASSERT(!firstTextBox() == !lastTextBox());  // Either both are null or both exist.
     if (firstTextBox() && lastTextBox()) {
         // Return the width of the minimal left side and the maximal right side.
@@ -1597,9 +1597,9 @@ IntRect RenderText::linesBoundingBox() const
             if (curr == firstTextBox() || curr->logicalRight() > logicalRightSide)
                 logicalRightSide = curr->logicalRight();
         }
-
+        
         bool isHorizontal = style()->isHorizontalWritingMode();
-
+        
         float x = isHorizontal ? logicalLeftSide : firstTextBox()->x();
         float y = isHorizontal ? firstTextBox()->y() : logicalLeftSide;
         float width = isHorizontal ? logicalRightSide - logicalLeftSide : lastTextBox()->logicalBottom() - x;
@@ -1622,11 +1622,11 @@ LayoutRect RenderText::linesVisualOverflowBoundingBox() const
         logicalLeftSide = min(logicalLeftSide, curr->logicalLeftVisualOverflow());
         logicalRightSide = max(logicalRightSide, curr->logicalRightVisualOverflow());
     }
-
+    
     LayoutUnit logicalTop = firstTextBox()->logicalTopVisualOverflow();
     LayoutUnit logicalWidth = logicalRightSide - logicalLeftSide;
     LayoutUnit logicalHeight = lastTextBox()->logicalBottomVisualOverflow() - logicalTop;
-
+    
     LayoutRect rect(logicalLeftSide, logicalTop, logicalWidth, logicalHeight);
     if (!style()->isHorizontalWritingMode())
         rect = rect.transposedRect();

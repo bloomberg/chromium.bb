@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef Editor_h
@@ -64,9 +64,9 @@ class TextEvent;
 struct TextCheckingResult;
 
 struct CompositionUnderline {
-    CompositionUnderline()
+    CompositionUnderline() 
         : startOffset(0), endOffset(0), thick(false) { }
-    CompositionUnderline(unsigned s, unsigned e, const Color& c, bool t)
+    CompositionUnderline(unsigned s, unsigned e, const Color& c, bool t) 
         : startOffset(s), endOffset(e), color(c), thick(t) { }
     unsigned startOffset;
     unsigned endOffset;
@@ -131,7 +131,7 @@ public:
     bool selectionStartHasStyle(CSSPropertyID, const String& value) const;
     TriState selectionHasStyle(CSSPropertyID, const String& value) const;
     String selectionStartCSSPropertyValue(CSSPropertyID);
-
+    
     TriState selectionUnorderedListState() const;
     TriState selectionOrderedListState() const;
     PassRefPtr<Node> insertOrderedList();
@@ -142,7 +142,7 @@ public:
     PassRefPtr<Node> increaseSelectionListLevelOrdered();
     PassRefPtr<Node> increaseSelectionListLevelUnordered();
     void decreaseSelectionListLevel();
-
+   
     void removeFormattingAndStyle();
 
     void clearLastEditCommand();
@@ -150,7 +150,7 @@ public:
     bool deleteWithDirection(SelectionDirection, TextGranularity, bool killRing, bool isTypingAction);
     void deleteSelectionWithSmartDelete(bool smartDelete);
     bool dispatchCPPEvent(const AtomicString&, ClipboardAccessPolicy);
-
+    
     Node* removedAnchor() const { return m_removedAnchor.get(); }
     void setRemovedAnchor(PassRefPtr<Node> n) { m_removedAnchor = n; }
 
@@ -232,7 +232,7 @@ public:
 
     void setBaseWritingDirection(WritingDirection);
 
-    // smartInsertDeleteEnabled and selectTrailingWhitespaceEnabled are
+    // smartInsertDeleteEnabled and selectTrailingWhitespaceEnabled are 
     // mutually exclusive, meaning that enabling one will disable the other.
     bool smartInsertDeleteEnabled();
     bool isSelectTrailingWhitespaceEnabled();
@@ -275,7 +275,7 @@ public:
     EditingBehavior behavior() const;
 
     PassRefPtr<Range> selectedRange();
-
+    
     void addToKillRing(Range*, bool prepend);
 
     void pasteAsFragment(PassRefPtr<DocumentFragment>, bool smartReplace, bool matchStyle);
@@ -283,7 +283,7 @@ public:
 
     // This is only called on the mac where paste is implemented primarily at the WebKit level.
     void pasteAsPlainTextBypassingDHTML();
-
+ 
     void clearMisspellingsAndBadGrammar(const VisibleSelection&);
     void markMisspellingsAndBadGrammar(const VisibleSelection&);
 
@@ -322,7 +322,7 @@ public:
     void replaceSelectionWithText(const String&, bool selectReplacement, bool smartReplace);
     bool selectionStartHasMarkerFor(DocumentMarker::MarkerType, int from, int length) const;
     void updateMarkersForWordsAffectedByEditing(bool onlyHandleWordsContainingSelection);
-
+    
     void simplifyMarkup(Node* startNode, Node* endNode);
 
     void deviceScaleFactorChanged();

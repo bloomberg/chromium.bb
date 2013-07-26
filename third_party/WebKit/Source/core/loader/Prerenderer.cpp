@@ -71,7 +71,7 @@ PassRefPtr<PrerenderHandle> Prerenderer::render(PrerenderClient* prerenderClient
     // Prerenders are unlike requests in most ways (for instance, they pass down fragments, and they don't return data),
     // but they do have referrers.
     const ReferrerPolicy referrerPolicy = document()->referrerPolicy();
-
+    
     if (!document()->frame())
         return 0;
 

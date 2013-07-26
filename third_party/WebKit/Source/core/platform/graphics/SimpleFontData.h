@@ -118,7 +118,7 @@ public:
     FontMetrics& fontMetrics() { return m_fontMetrics; }
     const FontMetrics& fontMetrics() const { return m_fontMetrics; }
     float sizePerUnit() const { return platformData().size() / (fontMetrics().unitsPerEm() ? fontMetrics().unitsPerEm() : 1); }
-
+    
     float maxCharWidth() const { return m_maxCharWidth; }
     void setMaxCharWidth(float maxCharWidth) { m_maxCharWidth = maxCharWidth; }
 
@@ -199,7 +199,7 @@ private:
     void platformGlyphInit();
     void platformCharWidthInit();
     void platformDestroy();
-
+    
     void initCharWidths();
 
     PassRefPtr<SimpleFontData> createScaledFontData(const FontDescription&, float scaleFactor) const;
@@ -208,7 +208,7 @@ private:
     FontMetrics m_fontMetrics;
     float m_maxCharWidth;
     float m_avgCharWidth;
-
+    
     FontPlatformData m_platformData;
     OwnPtr<AdditionalFontData> m_fontData;
 
@@ -218,14 +218,14 @@ private:
     bool m_treatAsFixedPitch;
     bool m_isCustomFont;  // Whether or not we are custom font loaded via @font-face
     bool m_isLoading; // Whether or not this custom font is still in the act of loading.
-
+    
     bool m_isTextOrientationFallback;
     bool m_isBrokenIdeographFallback;
 #if ENABLE(OPENTYPE_VERTICAL)
     RefPtr<OpenTypeVerticalData> m_verticalData;
 #endif
     bool m_hasVerticalGlyphs;
-
+    
     Glyph m_spaceGlyph;
     float m_spaceWidth;
     Glyph m_zeroGlyph;
@@ -248,7 +248,7 @@ private:
 #if OS(DARWIN)
         mutable RetainPtr<CFMutableDictionaryRef> compositeFontReferences;
 #endif
-
+        
     private:
         DerivedFontData(bool custom)
             : forCustomFont(custom)

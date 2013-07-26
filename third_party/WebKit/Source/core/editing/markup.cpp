@@ -23,7 +23,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #include "config.h"
@@ -112,7 +112,7 @@ static void completeURLs(DocumentFragment* fragment, const String& baseURL)
     for (size_t i = 0; i < numChanges; ++i)
         changes[i].apply();
 }
-
+    
 class StyledMarkupAccumulator : public MarkupAccumulator {
 public:
     enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
@@ -213,7 +213,7 @@ String StyledMarkupAccumulator::takeResults()
 }
 
 void StyledMarkupAccumulator::appendText(StringBuilder& out, Text* text)
-{
+{    
     const bool parentIsTextarea = text->parentElement() && text->parentElement()->tagQName() == textareaTag;
     const bool wrappingSpan = shouldApplyWrappingStyle(text) && !parentIsTextarea;
     if (wrappingSpan) {
@@ -240,7 +240,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text* text)
     if (wrappingSpan)
         out.append(styleNodeCloseTag());
 }
-
+    
 String StyledMarkupAccumulator::renderedText(const Node* node, const Range* range)
 {
     if (!node->isTextNode())
@@ -352,7 +352,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
         ASSERT(n);
         if (!n)
             break;
-
+        
         next = NodeTraversal::next(n);
         bool openedTag = false;
 
@@ -500,7 +500,7 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
     ASSERT(commonAncestor);
     Node* specialCommonAncestor = 0;
     if (shouldAnnotate == AnnotateForInterchange) {
-        // Include ancestors that aren't completely inside the range but are required to retain
+        // Include ancestors that aren't completely inside the range but are required to retain 
         // the structure and appearance of the copied markup.
         specialCommonAncestor = ancestorToRetainStructureAndAppearance(commonAncestor);
 
@@ -526,7 +526,7 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
 
     // If a single tab is selected, commonAncestor will be a text node inside a tab span.
     // If two or more tabs are selected, commonAncestor will be the tab span.
-    // In either case, if there is a specialCommonAncestor already, it will necessarily be above
+    // In either case, if there is a specialCommonAncestor already, it will necessarily be above 
     // any tab span that needs to be included.
     if (!specialCommonAncestor && isTabSpanTextNode(commonAncestor))
         specialCommonAncestor = commonAncestor->parentNode();
@@ -539,7 +539,7 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
     return specialCommonAncestor;
 }
 
-// FIXME: Shouldn't we omit style info when annotate == DoNotAnnotateForInterchange?
+// FIXME: Shouldn't we omit style info when annotate == DoNotAnnotateForInterchange? 
 // FIXME: At least, annotation and style info should probably not be included in range.markupString()
 static String createMarkupInternal(Document* document, const Range* range, const Range* updatedRange, Vector<Node*>* nodes,
     EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
@@ -612,9 +612,9 @@ static String createMarkupInternal(Document* document, const Range* range, const
             }
             if (nodes)
                 nodes->append(ancestor);
-
+            
             lastClosed = ancestor;
-
+            
             if (ancestor == specialCommonAncestor)
                 break;
         }
@@ -790,10 +790,10 @@ bool isPlainTextMarkup(Node *node)
 {
     if (!node->isElementNode() || !node->hasTagName(divTag) || toElement(node)->hasAttributes())
         return false;
-
+    
     if (node->childNodeCount() == 1 && (node->firstChild()->isTextNode() || (node->firstChild()->firstChild())))
         return true;
-
+    
     return (node->childNodeCount() == 2 && isTabSpanTextNode(node->firstChild()->firstChild()) && node->firstChild()->nextSibling()->isTextNode());
 }
 
@@ -811,7 +811,7 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
 
     Document* document = styleNode->document();
     RefPtr<DocumentFragment> fragment = document->createDocumentFragment();
-
+    
     if (text.isEmpty())
         return fragment.release();
 
@@ -824,7 +824,7 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
         fragment->appendChild(document->createTextNode(string), ASSERT_NO_EXCEPTION);
         if (string.endsWith('\n')) {
             RefPtr<Element> element = createBreakElement(document);
-            element->setAttribute(classAttr, AppleInterchangeNewline);
+            element->setAttribute(classAttr, AppleInterchangeNewline);            
             fragment->appendChild(element.release(), ASSERT_NO_EXCEPTION);
         }
         return fragment.release();
@@ -893,16 +893,16 @@ String createFullMarkup(const Node* node)
 {
     if (!node)
         return String();
-
+        
     Document* document = node->document();
     if (!document)
         return String();
-
+        
     Frame* frame = document->frame();
     if (!frame)
         return String();
 
-    // FIXME: This is never "for interchange". Is that right?
+    // FIXME: This is never "for interchange". Is that right?    
     String markupString = createMarkup(node, IncludeNode, 0);
     Node::NodeType nodeType = node->nodeType();
     if (nodeType != Node::DOCUMENT_NODE && nodeType != Node::DOCUMENT_TYPE_NODE)
@@ -919,17 +919,17 @@ String createFullMarkup(const Range* range)
     Node* node = range->startContainer();
     if (!node)
         return String();
-
+        
     Document* document = node->document();
     if (!document)
         return String();
-
+        
     Frame* frame = document->frame();
     if (!frame)
         return String();
 
     // FIXME: This is always "for interchange". Is that right? See the previous method.
-    return frame->documentTypeString() + createMarkup(range, 0, AnnotateForInterchange);
+    return frame->documentTypeString() + createMarkup(range, 0, AnnotateForInterchange);        
 }
 
 String urlToMarkup(const KURL& url, const String& title)
@@ -964,7 +964,7 @@ PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& marku
 PassRefPtr<DocumentFragment> createFragmentForTransformToFragment(const String& sourceString, const String& sourceMIMEType, Document* outputDoc)
 {
     RefPtr<DocumentFragment> fragment = outputDoc->createDocumentFragment();
-
+    
     if (sourceMIMEType == "text/html") {
         // As far as I can tell, there isn't a spec for how transformToFragment is supposed to work.
         // Based on the documentation I can find, it looks like we want to start parsing the fragment in the InBody insertion mode.
@@ -979,9 +979,9 @@ PassRefPtr<DocumentFragment> createFragmentForTransformToFragment(const String& 
         if (!successfulParse)
             return 0;
     }
-
+    
     // FIXME: Do we need to mess with URLs here?
-
+    
     return fragment.release();
 }
 

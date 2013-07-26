@@ -62,7 +62,7 @@ Element* HTMLNameCollection::virtualItemAfter(unsigned& offsetInArray, Element* 
     for (; current; current = ElementTraversal::next(current, ownerNode())) {
         switch (type()) {
         case WindowNamedItems:
-            // find only images, forms, applets, embeds and objects by name,
+            // find only images, forms, applets, embeds and objects by name, 
             // but anything by id
             if (current->hasTagName(imgTag)
                 || current->hasTagName(formTag)
@@ -76,7 +76,7 @@ Element* HTMLNameCollection::virtualItemAfter(unsigned& offsetInArray, Element* 
                 return current;
             break;
         case DocumentNamedItems:
-            // find images, forms, applets, embeds, objects and iframes by name,
+            // find images, forms, applets, embeds, objects and iframes by name, 
             // applets and object by id, and images by id but only if they have
             // a name attribute (this very strange rule matches IE)
             if (current->hasTagName(formTag) || current->hasTagName(embedTag) || current->hasTagName(iframeTag)) {

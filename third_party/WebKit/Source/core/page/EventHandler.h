@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef EventHandler_h
@@ -198,7 +198,7 @@ public:
 private:
     static DragState& dragState();
     static const double TextDragDelay;
-
+    
     PassRefPtr<Clipboard> createDraggingClipboard() const;
 
     bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelection&, TextGranularity);
@@ -220,7 +220,7 @@ private:
     void hoverTimerFired(Timer<EventHandler>*);
 
     bool logicalScrollOverflow(ScrollLogicalDirection, ScrollGranularity, Node* startingNode = 0);
-
+    
     bool shouldTurnVerticalTicksIntoHorizontal(const HitTestResult&, const PlatformWheelEvent&) const;
     bool mouseDownMayStartSelect() const { return m_mouseDownMayStartSelect; }
 
@@ -240,10 +240,10 @@ private:
     void invalidateClick();
 
     Node* nodeUnderMouse() const;
-
+    
     void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&, bool fireMouseOverOut);
     void fireMouseOverOut(bool fireMouseOver = true, bool fireMouseOut = true, bool updateLastNodeUnderMouse = true);
-
+    
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);
 
     bool dispatchMouseEvent(const AtomicString& eventType, Node* target, bool cancelable, int clickCount, const PlatformMouseEvent&, bool setUnder);
@@ -283,7 +283,7 @@ private:
     void updateSelectionForMouseDrag(const HitTestResult&);
 
     void updateLastScrollbarUnderMouse(Scrollbar*, bool);
-
+    
     void setFrameWasScrolledByUser();
 
     bool capturesDragging() const { return m_capturesDragging; }
@@ -334,7 +334,7 @@ private:
 
     RefPtr<Node> m_capturingMouseEventsNode;
     bool m_eventHandlerWillResetCapturingMouseEventsNode;
-
+    
     RefPtr<Node> m_nodeUnderMouse;
     RefPtr<Node> m_lastNodeUnderMouse;
     RefPtr<Frame> m_lastMouseMoveEventSubframe;
@@ -346,11 +346,11 @@ private:
 
     RefPtr<Node> m_dragTarget;
     bool m_shouldOnlyFireDragOverEvent;
-
+    
     RefPtr<HTMLFrameSetElement> m_frameSetBeingResized;
 
     LayoutSize m_offsetFromResizeCorner; // In the coords of m_resizeLayer.
-
+    
     bool m_mousePositionIsUnknown;
     IntPoint m_lastKnownMousePosition;
     IntPoint m_lastKnownMouseGlobalPosition;

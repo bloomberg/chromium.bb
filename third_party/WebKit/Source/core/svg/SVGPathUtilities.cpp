@@ -178,7 +178,7 @@ bool buildSVGPathSegListFromByteStream(SVGPathByteStream* stream, SVGPathElement
 {
     ASSERT(stream);
     if (stream->isEmpty())
-        return false;
+        return false; 
 
     SVGPathSegListBuilder* builder = globalSVGPathSegListBuilder(element, parsingMode == NormalizedParsing ? PathSegNormalizedRole : PathSegUnalteredRole, result);
 
@@ -193,7 +193,7 @@ bool buildStringFromByteStream(SVGPathByteStream* stream, String& result, PathPa
 {
     ASSERT(stream);
     if (stream->isEmpty())
-        return false;
+        return false; 
 
     SVGPathStringBuilder* builder = globalSVGPathStringBuilder();
 
@@ -300,10 +300,10 @@ bool getTotalLengthOfSVGPathByteStream(SVGPathByteStream* stream, float& totalLe
     ASSERT(stream);
     if (stream->isEmpty())
         return false;
-
+    
     PathTraversalState traversalState(PathTraversalState::TraversalTotalLength);
     SVGPathTraversalStateBuilder* builder = globalSVGPathTraversalStateBuilder(traversalState, 0);
-
+    
     OwnPtr<SVGPathByteStreamSource> source = SVGPathByteStreamSource::create(stream);
     SVGPathParser* parser = globalSVGPathParser(source.get(), builder);
     bool ok = parser->parsePathDataFromSource(NormalizedParsing);
@@ -317,10 +317,10 @@ bool getPointAtLengthOfSVGPathByteStream(SVGPathByteStream* stream, float length
     ASSERT(stream);
     if (stream->isEmpty())
         return false;
-
+    
     PathTraversalState traversalState(PathTraversalState::TraversalPointAtLength);
     SVGPathTraversalStateBuilder* builder = globalSVGPathTraversalStateBuilder(traversalState, length);
-
+    
     OwnPtr<SVGPathByteStreamSource> source = SVGPathByteStreamSource::create(stream);
     SVGPathParser* parser = globalSVGPathParser(source.get(), builder);
     bool ok = parser->parsePathDataFromSource(NormalizedParsing);

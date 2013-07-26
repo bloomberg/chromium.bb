@@ -61,7 +61,7 @@ HRTFDatabase::HRTFDatabase(float sampleRate)
         ASSERT(hrtfElevation.get());
         if (!hrtfElevation.get())
             return;
-
+        
         m_elevations[elevationIndex] = hrtfElevation.release();
         elevationIndex += InterpolationFactor;
     }
@@ -88,16 +88,16 @@ void HRTFDatabase::getKernelsFromAzimuthElevation(double azimuthBlend, unsigned 
 {
     unsigned elevationIndex = indexFromElevationAngle(elevationAngle);
     ASSERT_WITH_SECURITY_IMPLICATION(elevationIndex < m_elevations.size() && m_elevations.size() > 0);
-
+    
     if (!m_elevations.size()) {
         kernelL = 0;
         kernelR = 0;
         return;
     }
-
+    
     if (elevationIndex > m_elevations.size() - 1)
-        elevationIndex = m_elevations.size() - 1;
-
+        elevationIndex = m_elevations.size() - 1;    
+    
     HRTFElevation* hrtfElevation = m_elevations[elevationIndex].get();
     ASSERT(hrtfElevation);
     if (!hrtfElevation) {
@@ -105,9 +105,9 @@ void HRTFDatabase::getKernelsFromAzimuthElevation(double azimuthBlend, unsigned 
         kernelR = 0;
         return;
     }
-
+    
     hrtfElevation->getKernelsFromAzimuth(azimuthBlend, azimuthIndex, kernelL, kernelR, frameDelayL, frameDelayR);
-}
+}                                                     
 
 unsigned HRTFDatabase::indexFromElevationAngle(double elevationAngle)
 {
@@ -115,7 +115,7 @@ unsigned HRTFDatabase::indexFromElevationAngle(double elevationAngle)
     elevationAngle = max(static_cast<double>(MinElevation), elevationAngle);
     elevationAngle = min(static_cast<double>(MaxElevation), elevationAngle);
 
-    unsigned elevationIndex = static_cast<int>(InterpolationFactor * (elevationAngle - MinElevation) / RawElevationAngleSpacing);
+    unsigned elevationIndex = static_cast<int>(InterpolationFactor * (elevationAngle - MinElevation) / RawElevationAngleSpacing);    
     return elevationIndex;
 }
 

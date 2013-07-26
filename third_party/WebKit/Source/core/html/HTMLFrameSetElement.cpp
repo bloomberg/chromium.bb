@@ -150,7 +150,7 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
 bool HTMLFrameSetElement::rendererIsNeeded(const NodeRenderingContext& context)
 {
     // For compatibility, frames render even when display: none is set.
-    // However, we delay creating a renderer until stylesheets have loaded.
+    // However, we delay creating a renderer until stylesheets have loaded. 
     return context.style()->isStyleAvailable();
 }
 
@@ -158,7 +158,7 @@ RenderObject* HTMLFrameSetElement::createRenderer(RenderStyle *style)
 {
     if (style->hasContent())
         return RenderObject::createObject(this, style);
-
+    
     return new (document()->renderArena()) RenderFrameSet(this);
 }
 

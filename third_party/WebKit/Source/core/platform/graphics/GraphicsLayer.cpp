@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #include "config.h"
@@ -95,7 +95,7 @@ void KeyframeValueList::insert(PassOwnPtr<const AnimationValue> value)
             return;
         }
     }
-
+    
     m_values.append(value);
 }
 
@@ -177,7 +177,7 @@ bool GraphicsLayer::hasAncestor(GraphicsLayer* ancestor) const
         if (curr == ancestor)
             return true;
     }
-
+    
     return false;
 }
 
@@ -201,7 +201,7 @@ bool GraphicsLayer::setChildren(const Vector<GraphicsLayer*>& newChildren)
 void GraphicsLayer::addChildInternal(GraphicsLayer* childLayer)
 {
     ASSERT(childLayer != this);
-
+    
     if (childLayer->parent())
         childLayer->removeFromParent();
 
@@ -387,18 +387,18 @@ float GraphicsLayer::accumulatedOpacity() const
 {
     if (!preserves3D())
         return 1;
-
+        
     return m_opacity * (parent() ? parent()->accumulatedOpacity() : 1);
 }
 
 void GraphicsLayer::distributeOpacity(float accumulatedOpacity)
 {
     // If this is a transform layer we need to distribute our opacity to all our children
-
+    
     // Incoming accumulatedOpacity is the contribution from our parent(s). We mutiply this by our own
     // opacity to get the total contribution
     accumulatedOpacity *= m_opacity;
-
+    
     if (preserves3D()) {
         size_t numChildren = children().size();
         for (size_t i = 0; i < numChildren; ++i)
@@ -429,23 +429,23 @@ int GraphicsLayer::validateFilterOperations(const KeyframeValueList& valueList)
         return -1;
 
     const FilterOperations* firstVal = filterOperationsAt(valueList, firstIndex);
-
+    
     for (size_t i = firstIndex + 1; i < valueList.size(); ++i) {
         const FilterOperations* val = filterOperationsAt(valueList, i);
-
+        
         // An emtpy filter list matches anything.
         if (val->operations().isEmpty())
             continue;
-
+        
         if (!firstVal->operationsMatch(*val))
             return -1;
     }
-
+    
     return firstIndex;
 }
 
 // An "invalid" list is one whose functions don't match, and therefore has to be animated as a Matrix
-// The hasBigRotation flag will always return false if isValid is false. Otherwise hasBigRotation is
+// The hasBigRotation flag will always return false if isValid is false. Otherwise hasBigRotation is 
 // true if the rotation between any two keyframes is >= 180 degrees.
 
 static inline const TransformOperations* operationsAt(const KeyframeValueList& valueList, size_t index)
@@ -458,51 +458,51 @@ int GraphicsLayer::validateTransformOperations(const KeyframeValueList& valueLis
     ASSERT(valueList.property() == AnimatedPropertyWebkitTransform);
 
     hasBigRotation = false;
-
+    
     if (valueList.size() < 2)
         return -1;
-
+    
     // Empty transforms match anything, so find the first non-empty entry as the reference.
     size_t firstIndex = 0;
     for ( ; firstIndex < valueList.size(); ++firstIndex) {
         if (operationsAt(valueList, firstIndex)->operations().size() > 0)
             break;
     }
-
+    
     if (firstIndex >= valueList.size())
         return -1;
-
+        
     const TransformOperations* firstVal = operationsAt(valueList, firstIndex);
-
+    
     // See if the keyframes are valid.
     for (size_t i = firstIndex + 1; i < valueList.size(); ++i) {
         const TransformOperations* val = operationsAt(valueList, i);
-
+        
         // An emtpy transform list matches anything.
         if (val->operations().isEmpty())
             continue;
-
+            
         if (!firstVal->operationsMatch(*val))
             return -1;
     }
 
-    // Keyframes are valid, check for big rotations.
+    // Keyframes are valid, check for big rotations.    
     double lastRotAngle = 0.0;
     double maxRotAngle = -1.0;
-
+        
     for (size_t j = 0; j < firstVal->operations().size(); ++j) {
         TransformOperation::OperationType type = firstVal->operations().at(j)->getOperationType();
-
+        
         // if this is a rotation entry, we need to see if any angle differences are >= 180 deg
         if (type == TransformOperation::ROTATE_X ||
             type == TransformOperation::ROTATE_Y ||
             type == TransformOperation::ROTATE_Z ||
             type == TransformOperation::ROTATE_3D) {
             lastRotAngle = static_cast<RotateTransformOperation*>(firstVal->operations().at(j).get())->angle();
-
+            
             if (maxRotAngle < 0)
                 maxRotAngle = fabs(lastRotAngle);
-
+            
             for (size_t i = firstIndex + 1; i < valueList.size(); ++i) {
                 const TransformOperations* val = operationsAt(valueList, i);
                 double rotAngle = val->operations().isEmpty() ? 0 : (static_cast<RotateTransformOperation*>(val->operations().at(j).get())->angle());
@@ -513,9 +513,9 @@ int GraphicsLayer::validateTransformOperations(const KeyframeValueList& valueLis
             }
         }
     }
-
+    
     hasBigRotation = maxRotAngle >= 180.0;
-
+    
     return firstIndex;
 }
 
@@ -672,7 +672,7 @@ double GraphicsLayer::backingStoreMemoryEstimate() const
 {
     if (!drawsContent())
         return 0;
-
+    
     // Effects of page and device scale are ignored; subclasses should override to take these into account.
     return static_cast<double>(4 * size().width()) * size().height();
 }
@@ -747,7 +747,7 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         writeIndent(ts, indent + 1);
         ts << "(opacity " << m_opacity << ")\n";
     }
-
+    
     if (m_contentsOpaque) {
         writeIndent(ts, indent + 1);
         ts << "(contentsOpaque " << m_contentsOpaque << ")\n";
@@ -871,11 +871,11 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
     }
 
     dumpAdditionalProperties(ts, indent, flags);
-
+    
     if (m_children.size()) {
         writeIndent(ts, indent + 1);
         ts << "(children " << m_children.size() << "\n";
-
+        
         unsigned i;
         for (i = 0; i < m_children.size(); i++)
             m_children[i]->dumpLayer(ts, indent + 2, flags);

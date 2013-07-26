@@ -778,7 +778,7 @@ public:
         , endOffset(0)
     {
     }
-
+    
     RenderText* renderer;
     float width;
     int startOffset;
@@ -791,7 +791,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
 {
     HashSet<const SimpleFontData*> fallbackFonts;
     GlyphOverflow glyphOverflow;
-
+    
     const Font& font = renderer->style(lineInfo.isFirstLine())->font();
     // Always compute glyph overflow if the block's line-box-contain value is "glyphs".
     if (lineBox->fitsToGlyphs()) {
@@ -804,9 +804,9 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
         int boxAscent = font.fontMetrics().ascent() - baselineShift;
         int boxDescent = font.fontMetrics().descent() + baselineShift;
         if (boxAscent > rootDescent ||  boxDescent > rootAscent)
-            glyphOverflow.computeBounds = true;
+            glyphOverflow.computeBounds = true; 
     }
-
+    
     LayoutUnit hyphenWidth = 0;
     if (toInlineTextBox(run->m_box)->hasHyphen()) {
         const Font& font = renderer->style(lineInfo.isFirstLine())->font();
@@ -823,10 +823,10 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
 #else
     bool canUseSimpleFontCodePath = renderer->canUseSimpleFontCodePath();
 #endif
-
+    
     // Since we don't cache glyph overflows, we need to re-measure the run if
     // the style is linebox-contain: glyph.
-
+    
     if (!lineBox->fitsToGlyphs() && canUseSimpleFontCodePath) {
         int lastEndOffset = run->m_start;
         for (size_t i = 0, size = wordMeasurements.size(); i < size && lastEndOffset < run->m_stop; ++i) {
@@ -888,12 +888,12 @@ static inline void computeExpansionForJustifiedText(BidiRun* firstRun, BidiRun* 
             break;
         if (!r->m_box || r == trailingSpaceRun)
             continue;
-
+        
         if (r->m_object->isText()) {
             unsigned opportunitiesInRun = expansionOpportunities[i++];
-
+            
             ASSERT(opportunitiesInRun <= expansionOpportunityCount);
-
+            
             // Only justify text if whitespace is collapsed.
             if (r->m_object->style()->collapseWhiteSpace()) {
                 InlineTextBox* textBox = toInlineTextBox(r->m_box);
@@ -1033,7 +1033,7 @@ void RenderBlock::computeInlineDirectionPositionsForLine(RootInlineBox* lineBox,
     lineBox->placeBoxesInInlineDirection(lineLogicalLeft, needsWordSpacing, textBoxDataMap);
 }
 
-BidiRun* RenderBlock::computeInlineDirectionPositionsForSegment(RootInlineBox* lineBox, const LineInfo& lineInfo, ETextAlign textAlign, float& logicalLeft,
+BidiRun* RenderBlock::computeInlineDirectionPositionsForSegment(RootInlineBox* lineBox, const LineInfo& lineInfo, ETextAlign textAlign, float& logicalLeft, 
     float& availableLogicalWidth, BidiRun* firstRun, BidiRun* trailingSpaceRun, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache& verticalPositionCache,
     WordMeasurements& wordMeasurements)
 {
@@ -1413,18 +1413,18 @@ public:
     bool usesRepaintBounds() const { return m_usesRepaintBounds; }
 
     void setRepaintRange(LayoutUnit logicalHeight)
-    {
+    { 
         m_usesRepaintBounds = true;
-        m_repaintLogicalTop = m_repaintLogicalBottom = logicalHeight;
+        m_repaintLogicalTop = m_repaintLogicalBottom = logicalHeight; 
     }
-
+    
     void updateRepaintRangeFromBox(RootInlineBox* box, LayoutUnit paginationDelta = 0)
     {
         m_usesRepaintBounds = true;
         m_repaintLogicalTop = min(m_repaintLogicalTop, box->logicalTopVisualOverflow() + min<LayoutUnit>(paginationDelta, 0));
         m_repaintLogicalBottom = max(m_repaintLogicalBottom, box->logicalBottomVisualOverflow() + max<LayoutUnit>(paginationDelta, 0));
     }
-
+    
     bool endLineMatched() const { return m_endLineMatched; }
     void setEndLineMatched(bool endLineMatched) { m_endLineMatched = endLineMatched; }
 
@@ -1444,10 +1444,10 @@ public:
     void setLastFloat(RenderBlock::FloatingObject* lastFloat) { m_lastFloat = lastFloat; }
 
     Vector<RenderBlock::FloatWithRect>& floats() { return m_floats; }
-
+    
     unsigned floatIndex() const { return m_floatIndex; }
     void setFloatIndex(unsigned floatIndex) { m_floatIndex = floatIndex; }
-
+    
     RenderFlowThread* flowThread() const { return m_flowThread; }
     void setFlowThread(RenderFlowThread* thread) { m_flowThread = thread; }
 
@@ -1460,7 +1460,7 @@ private:
     LayoutUnit m_endLineLogicalTop;
     bool m_endLineMatched;
     bool m_checkForFloatsFromLastLine;
-
+    
     bool m_isFullLayout;
 
     // FIXME: Should this be a range object instead of two ints?
@@ -1468,7 +1468,7 @@ private:
     LayoutUnit& m_repaintLogicalBottom;
 
     bool m_usesRepaintBounds;
-
+    
     RenderFlowThread* m_flowThread;
 };
 
@@ -1862,7 +1862,7 @@ void RenderBlock::linkToEndLineIfNeeded(LineLayoutState& layoutState)
             deleteLineRange(layoutState, renderArena(), layoutState.endLine());
         }
     }
-
+    
     if (floatingObjects() && (layoutState.checkForFloatsFromLastLine() || positionNewFloats()) && lastRootBox()) {
         // In case we have a float on the last line, it might not be positioned up to now.
         // This has to be done before adding in the bottom border/padding, or the float will
@@ -1919,7 +1919,7 @@ void RenderBlock::repaintDirtyFloats(Vector<FloatWithRect>& floats)
 void RenderBlock::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom)
 {
     setLogicalHeight(borderBefore() + paddingBefore());
-
+    
     // Lay out our hypothetical grid line as though it occurs at the top of the block.
     if (view()->layoutState() && view()->layoutState()->lineGrid() == this)
         layoutLineGridBox();
@@ -2232,11 +2232,11 @@ bool RenderBlock::checkPaginationAndFloatsAtEndLine(LineLayoutState& layoutState
                 return false;
         }
     }
-
+    
     FloatingObjects* floats = floatingObjects();
     if (!lineDelta || !floats)
         return true;
-
+    
     // See if any floats end in the range along which we want to shift the lines vertically.
     LayoutUnit logicalTop = min(logicalHeight(), layoutState.endLineLogicalTop());
 
@@ -2275,7 +2275,7 @@ bool RenderBlock::matchedEndLine(LineLayoutState& layoutState, const InlineBidiR
             // We have a match.
             if (line->lineBreakBidiStatus() != resolver.status())
                 return false; // ...but the bidi state doesn't match.
-
+            
             bool matched = false;
             RootInlineBox* result = line->nextRootBox();
             layoutState.setEndLine(result);
@@ -2307,7 +2307,7 @@ static inline bool shouldCollapseWhiteSpace(const RenderStyle* style, const Line
 static bool requiresLineBoxForContent(RenderInline* flow, const LineInfo& lineInfo)
 {
     RenderObject* parent = flow->parent();
-    if (flow->document()->inNoQuirksMode()
+    if (flow->document()->inNoQuirksMode() 
         && (flow->style(lineInfo.isFirstLine())->lineHeight() != parent->style(lineInfo.isFirstLine())->lineHeight()
         || flow->style()->verticalAlign() != parent->style()->verticalAlign()
         || !parent->style()->font().fontMetrics().hasIdenticalAscentDescentAndLineGap(flow->style()->font().fontMetrics())))
@@ -2730,7 +2730,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                 trailingObjects.clear();
                 lineInfo.setPreviousLineBrokeCleanly(true);
 
-                // A <br> with clearance always needs a linebox in case the lines below it get dirtied later and
+                // A <br> with clearance always needs a linebox in case the lines below it get dirtied later and 
                 // need to check for floats to clear - so if we're ignoring spaces, stop ignoring them and add a
                 // run for this object.
                 if (ignoringSpaces && currentStyle->clear() != CNONE)
@@ -2964,11 +2964,11 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
 
                     wordMeasurements.grow(wordMeasurements.size() + 1);
                     WordMeasurement& wordMeasurement = wordMeasurements.last();
-
+                    
                     wordMeasurement.renderer = t;
                     wordMeasurement.endOffset = current.m_pos;
                     wordMeasurement.startOffset = lastSpace;
-
+                    
                     float additionalTmpW;
                     if (wordTrailingSpaceWidth && c == ' ')
                         additionalTmpW = textWidth(t, lastSpace, current.m_pos + 1 - lastSpace, f, width.currentWidth(), isFixedPitch, collapseWhiteSpace, &wordMeasurement.fallbackFonts, textLayout) - wordTrailingSpaceWidth;
@@ -3420,7 +3420,7 @@ void RenderBlock::layoutLineGridBox()
         setLineGridBox(0);
         return;
     }
-
+    
     setLineGridBox(0);
 
     RootInlineBox* lineGridBox = new (renderArena()) RootInlineBox(this);
@@ -3429,9 +3429,9 @@ void RenderBlock::layoutLineGridBox()
     GlyphOverflowAndFallbackFontsMap textBoxDataMap;
     VerticalPositionCache verticalPositionCache;
     lineGridBox->alignBoxesInBlockDirection(logicalHeight(), textBoxDataMap, verticalPositionCache);
-
+    
     setLineGridBox(lineGridBox);
-
+    
     // FIXME: If any of the characteristics of the box change compared to the old one, then we need to do a deep dirtying
     // (similar to what happens when the page height changes). Ideally, though, we only do this if someone is actually snapping
     // to this grid.

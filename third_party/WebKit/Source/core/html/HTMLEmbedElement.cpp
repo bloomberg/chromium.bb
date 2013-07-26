@@ -52,7 +52,7 @@ PassRefPtr<HTMLEmbedElement> HTMLEmbedElement::create(const QualifiedName& tagNa
     return adoptRef(new HTMLEmbedElement(tagName, document, createdByParser));
 }
 
-static inline RenderWidget* findWidgetRenderer(const Node* n)
+static inline RenderWidget* findWidgetRenderer(const Node* n) 
 {
     if (!n->renderer())
         do

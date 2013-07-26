@@ -62,7 +62,7 @@ void SVGTextLayoutEngine::updateCharacerPositionIfNeeded(float& x, float& y)
 
     // Replace characters x/y position, with the current text position plus any
     // relative adjustments, if it doesn't specify an absolute position itself.
-    if (x == SVGTextLayoutAttributes::emptyValue())
+    if (x == SVGTextLayoutAttributes::emptyValue()) 
         x = m_x + m_dx;
 
     if (y == SVGTextLayoutAttributes::emptyValue())
@@ -428,7 +428,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Rend
         return;
 
     SVGElement* lengthContext = toSVGElement(text->parent()->node());
-
+    
     RenderObject* textParent = text->parent();
     bool definesTextLength = textParent ? parentDefinesTextLength(textParent) : false;
 

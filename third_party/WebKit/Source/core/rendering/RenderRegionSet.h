@@ -48,7 +48,7 @@ class RenderFlowThread;
 class RenderRegionSet : public RenderRegion {
 public:
     RenderRegionSet(Element*, RenderFlowThread*);
-
+    
 protected:
     virtual bool shouldHaveAutoLogicalHeight() const OVERRIDE { return false; }
 
@@ -58,7 +58,7 @@ private:
     virtual void expandToEncompassFlowThreadContentsIfNeeded() OVERRIDE FINAL;
 
     virtual const char* renderName() const = 0;
-
+    
     virtual bool isRenderRegionSet() const OVERRIDE FINAL { return true; }
 };
 

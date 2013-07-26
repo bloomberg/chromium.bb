@@ -79,7 +79,7 @@ void SVGFEComponentTransferElement::parseAttribute(const QualifiedName& name, co
 PassRefPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(in1CurrentValue());
-
+    
     if (!input1)
         return 0;
 
@@ -87,7 +87,7 @@ PassRefPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* 
     ComponentTransferFunction green;
     ComponentTransferFunction blue;
     ComponentTransferFunction alpha;
-
+    
     for (Node* node = firstChild(); node; node = node->nextSibling()) {
         if (node->hasTagName(SVGNames::feFuncRTag))
             red = static_cast<SVGFEFuncRElement*>(node)->transferFunction();
@@ -98,7 +98,7 @@ PassRefPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* 
         else if (node->hasTagName(SVGNames::feFuncATag))
             alpha = static_cast<SVGFEFuncAElement*>(node)->transferFunction();
     }
-
+    
     RefPtr<FilterEffect> effect = FEComponentTransfer::create(filter, red, green, blue, alpha);
     effect->inputEffects().append(input1);
     return effect.release();

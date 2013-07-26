@@ -181,7 +181,7 @@ protected:
     virtual bool paintMediaMuteButton(RenderObject*, const PaintInfo&, const IntRect&);
     virtual bool paintMediaSliderTrack(RenderObject*, const PaintInfo&, const IntRect&);
     virtual String extraFullScreenStyleSheet();
-
+  
     virtual bool paintMediaSliderThumb(RenderObject*, const PaintInfo&, const IntRect&);
     virtual bool paintMediaVolumeSliderContainer(RenderObject*, const PaintInfo&, const IntRect&);
     virtual bool paintMediaVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&);

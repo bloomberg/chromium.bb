@@ -71,22 +71,22 @@ RenderNamedFlowThread::~RenderNamedFlowThread()
 }
 
 const char* RenderNamedFlowThread::renderName() const
-{
+{    
     return "RenderNamedFlowThread";
 }
-
+    
 void RenderNamedFlowThread::clearContentNodes()
 {
     for (NamedFlowContentNodes::iterator it = m_contentNodes.begin(); it != m_contentNodes.end(); ++it) {
         Node* contentNode = *it;
-
+        
         ASSERT(contentNode && contentNode->isElementNode());
         ASSERT(contentNode->inNamedFlow());
         ASSERT(contentNode->document() == document());
-
+        
         contentNode->clearInNamedFlow();
     }
-
+    
     m_contentNodes.clear();
 }
 
@@ -129,7 +129,7 @@ RenderObject* RenderNamedFlowThread::previousRendererForNode(Node* node) const
 
 void RenderNamedFlowThread::addFlowChild(RenderObject* newChild)
 {
-    // The child list is used to sort the flow thread's children render objects
+    // The child list is used to sort the flow thread's children render objects 
     // based on their corresponding nodes DOM order. The list is needed to avoid searching the whole DOM.
 
     Node* childNode = newChild->node();

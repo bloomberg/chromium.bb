@@ -55,14 +55,14 @@ PassOwnPtr<ContentData> ContentData::create(QuoteType quote)
 PassOwnPtr<ContentData> ContentData::clone() const
 {
     OwnPtr<ContentData> result = cloneInternal();
-
+    
     ContentData* lastNewData = result.get();
     for (const ContentData* contentData = next(); contentData; contentData = contentData->next()) {
         OwnPtr<ContentData> newData = contentData->cloneInternal();
         lastNewData->setNext(newData.release());
         lastNewData = lastNewData->next();
     }
-
+        
     return result.release();
 }
 

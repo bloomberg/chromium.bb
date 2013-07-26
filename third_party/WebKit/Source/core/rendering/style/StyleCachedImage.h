@@ -41,7 +41,7 @@ public:
     virtual WrappedImagePtr data() const { return m_image.get(); }
 
     virtual PassRefPtr<CSSValue> cssValue() const;
-
+    
     virtual bool canRender(const RenderObject*, float multiplier) const;
     virtual bool isLoaded() const;
     virtual bool errorOccurred() const;
@@ -56,10 +56,10 @@ public:
     virtual PassRefPtr<Image> image(RenderObject*, const IntSize&) const;
     virtual bool knownToBeOpaque(const RenderObject*) const OVERRIDE;
     virtual CachedImage* cachedImage() const OVERRIDE { return m_image.get(); }
-
+    
 private:
     explicit StyleCachedImage(CachedImage*);
-
+    
     CachedResourceHandle<CachedImage> m_image;
 };
 

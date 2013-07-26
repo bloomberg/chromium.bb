@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef RenderLayerCompositor_h
@@ -54,7 +54,7 @@ enum CompositingUpdateType {
 // composited RenderLayers. It determines which RenderLayers
 // become compositing, and creates and maintains a hierarchy of
 // GraphicsLayers based on the RenderLayer painting order.
-//
+// 
 // There is one RenderLayerCompositor per RenderView.
 
 class RenderLayerCompositor : public GraphicsLayerClient {
@@ -94,14 +94,14 @@ public:
 
     // Rebuild the tree of compositing layers
     void updateCompositingLayers(CompositingUpdateType, RenderLayer* updateRoot = 0);
-
+    
     // Update the compositing state of the given layer. Returns true if that state changed.
     enum CompositingChangeRepaint { CompositingChangeRepaintNow, CompositingChangeWillRepaintLater };
     bool updateLayerCompositingState(RenderLayer*, CompositingChangeRepaint = CompositingChangeRepaintNow);
 
     // Update the geometry for compositing children of compositingAncestor.
     void updateCompositingDescendantGeometry(RenderLayer* compositingAncestor, RenderLayer*, bool compositedChildrenOnly);
-
+    
     // Whether layer's backing needs a graphics layer to do clipping by an ancestor (non-stacking-context parent with overflow).
     bool clippedByAncestor(RenderLayer*) const;
     // Whether layer's backing needs a graphics layer to clip z-order children of the given layer.
@@ -113,16 +113,16 @@ public:
     bool supportsFixedRootBackgroundCompositing() const;
     bool needsFixedRootBackgroundLayer(const RenderLayer*) const;
     GraphicsLayer* fixedRootBackgroundLayer() const;
-
+    
     // Return the bounding box required for compositing layer and its childern, relative to ancestorLayer.
     // If layerBoundingBox is not 0, on return it contains the bounding box of this layer only.
     IntRect calculateCompositedBounds(const RenderLayer*, const RenderLayer* ancestorLayer) const;
 
     // Repaint the appropriate layers when the given RenderLayer starts or stops being composited.
     void repaintOnCompositingChange(RenderLayer*);
-
+    
     void repaintInCompositedAncestor(RenderLayer*, const LayoutRect&);
-
+    
     // Notify us that a layer has been added or removed
     void layerWasAdded(RenderLayer* parent, RenderLayer* child);
     void layerWillBeRemoved(RenderLayer* parent, RenderLayer* child);
@@ -149,11 +149,11 @@ public:
     RootLayerAttachment rootLayerAttachment() const { return m_rootLayerAttachment; }
     void updateRootLayerAttachment();
     void updateRootLayerPosition();
-
+    
     void setIsInWindow(bool);
 
     void clearBackingForAllLayers();
-
+    
     void layerBecameComposited(const RenderLayer*) { ++m_compositedLayerCount; }
     void layerBecameNonComposited(const RenderLayer*);
 
@@ -163,7 +163,7 @@ public:
     // Walk the tree looking for layers with 3d transforms. Useful in case you need
     // to know if there is non-affine content, e.g. for drawing into an image.
     bool has3DContent() const;
-
+    
     static RenderLayerCompositor* frameContentsCompositor(RenderPart*);
     // Return true if the layers changed.
     static bool parentFrameContentLayers(RenderPart*);
@@ -204,7 +204,7 @@ public:
 
     // Returns all reasons (direct, indirectly due to subtree, and indirectly due to overlap) that a layer should be composited.
     CompositingReasons reasonsForCompositing(const RenderLayer*) const;
-
+    
 private:
     class OverlapMap;
 
@@ -213,7 +213,7 @@ private:
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) OVERRIDE;
 
     virtual bool isTrackingRepaints() const OVERRIDE;
-
+    
     // Whether the given RL needs a compositing layer.
     bool needsToBeComposited(const RenderLayer*) const;
     // Whether the layer could ever be composited.
@@ -238,13 +238,13 @@ private:
 
     // Returns true if any layer's compositing changed
     void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap*, struct CompositingState&, bool& layersChanged, bool& descendantHas3DTransform);
-
+    
     // Recurses down the tree, parenting descendant compositing layers and collecting an array of child layers for the current compositing layer.
     void rebuildCompositingLayerTree(RenderLayer*, Vector<GraphicsLayer*>& childGraphicsLayersOfEnclosingLayer, int depth);
 
     // Recurses down the tree, updating layer geometry only.
     void updateLayerTreeGeometry(RenderLayer*, int depth);
-
+    
     // Hook compositing layers together
     void setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer);
     void removeCompositedChildren(RenderLayer*);
@@ -261,13 +261,13 @@ private:
     void detachRootLayer();
 
     bool isMainFrame() const;
-
+    
     void updateOverflowControlsLayers();
 
     void notifyIFramesOfCompositingChange();
 
     Page* page() const;
-
+    
     GraphicsLayerFactory* graphicsLayerFactory() const;
     ScrollingCoordinator* scrollingCoordinator() const;
 
@@ -326,7 +326,7 @@ private:
     bool m_needsUpdateCompositingRequirementsState;
 
     bool m_isTrackingRepaints; // Used for testing.
-
+    
     RootLayerAttachment m_rootLayerAttachment;
 
     // Enclosing container layer, which clips for iframe content

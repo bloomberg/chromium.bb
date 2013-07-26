@@ -30,7 +30,7 @@
 
     [Custom] Node namedItem([Default=Undefined] optional DOMString name);
 
-    [Custom, RaisesException] void add([Default=Undefined] optional HTMLOptionElement option,
+    [Custom, RaisesException] void add([Default=Undefined] optional HTMLOptionElement option, 
                       optional unsigned long index);
     [Custom] void remove([Default=Undefined] optional unsigned long index);
 };

@@ -331,7 +331,7 @@ public:
 
     PassRefPtr<ClientRectList> getClientRects();
     PassRefPtr<ClientRect> getBoundingClientRect();
-
+    
     // Returns the absolute bounding box translated into screen coordinates:
     IntRect screenRect() const;
 
@@ -358,7 +358,7 @@ public:
     const QualifiedName& tagQName() const { return m_tagName; }
     String tagName() const { return nodeName(); }
     bool hasTagName(const QualifiedName& tagName) const { return m_tagName.matches(tagName); }
-
+    
     // A fast function for checking the local name against another atomic string.
     bool hasLocalName(const AtomicString& other) const { return m_tagName.localName() == other; }
     bool hasLocalName(const QualifiedName& other) const { return m_tagName.localName() == other.localName(); }
@@ -515,7 +515,7 @@ public:
 
     String innerText();
     String outerText();
-
+ 
     String textFromChildren();
 
     virtual String title() const { return String(); }
@@ -597,7 +597,7 @@ public:
         ALLOW_KEYBOARD_INPUT = 1 << 0,
         LEGACY_MOZILLA_REQUEST = 1 << 1,
     };
-
+    
     void webkitRequestFullScreen(unsigned short flags);
     bool containsFullScreenElement() const;
     void setContainsFullScreenElement(bool);
@@ -662,7 +662,7 @@ protected:
     virtual bool shouldRegisterAsNamedItem() const { return false; }
     virtual bool shouldRegisterAsExtraNamedItem() const { return false; }
 
-    void clearTabIndexExplicitlyIfNeeded();
+    void clearTabIndexExplicitlyIfNeeded();    
     void setTabIndexExplicitly(short);
     virtual bool supportsFocus() const OVERRIDE;
     virtual short tabIndex() const OVERRIDE;
@@ -732,7 +732,7 @@ private:
     void cancelFocusAppearanceUpdate();
 
     virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return computedStyle(pseudoElementSpecifier); }
-
+    
     // cloneNode is private so that non-virtual cloneElementWithChildren and cloneElementWithoutChildren
     // are used instead.
     virtual PassRefPtr<Node> cloneNode(bool deep) OVERRIDE;
@@ -774,7 +774,7 @@ private:
 
     RefPtr<ElementData> m_elementData;
 };
-
+    
 inline Element* toElement(Node* node)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isElementNode());
@@ -799,7 +799,7 @@ inline bool Node::hasTagName(const QualifiedName& name) const
 {
     return isElementNode() && toElement(this)->hasTagName(name);
 }
-
+    
 inline bool Node::hasLocalName(const AtomicString& name) const
 {
     return isElementNode() && toElement(this)->hasLocalName(name);

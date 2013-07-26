@@ -96,7 +96,7 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
 {
     if (style()->visibility() != VISIBLE)
         return;
-
+    
     // Push a clip.
     GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
     if (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseChildBlockBackgrounds) {
@@ -223,7 +223,7 @@ String RenderFileUploadControl::buttonValue()
 {
     if (HTMLInputElement* button = uploadButton())
         return button->value();
-
+    
     return String();
 }
 
@@ -233,5 +233,5 @@ String RenderFileUploadControl::fileTextValue() const
     ASSERT(input->files());
     return theme()->fileListNameForWidth(input->files(), style()->font(), maxFilenameWidth(), input->multiple());
 }
-
+    
 } // namespace WebCore

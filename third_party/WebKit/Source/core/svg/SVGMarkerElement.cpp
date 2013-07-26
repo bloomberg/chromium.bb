@@ -29,7 +29,7 @@
 #include "core/svg/SVGFitToViewBox.h"
 
 namespace WebCore {
-
+ 
 // Define custom animated property 'orientType'.
 const SVGPropertyInfo* SVGMarkerElement::orientTypePropertyInfo()
 {
@@ -75,7 +75,7 @@ inline SVGMarkerElement::SVGMarkerElement(const QualifiedName& tagName, Document
     , m_refX(LengthModeWidth)
     , m_refY(LengthModeHeight)
     , m_markerWidth(LengthModeWidth, "3")
-    , m_markerHeight(LengthModeHeight, "3")
+    , m_markerHeight(LengthModeHeight, "3") 
     , m_markerUnits(SVGMarkerUnitsStrokeWidth)
     , m_orientType(SVGMarkerOrientAngle)
 {
@@ -164,7 +164,7 @@ void SVGMarkerElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     SVGElementInstance::InvalidationGuard invalidationGuard(this);
-
+    
     if (attrName == SVGNames::refXAttr
         || attrName == SVGNames::refYAttr
         || attrName == SVGNames::markerWidthAttr
@@ -190,7 +190,7 @@ void SVGMarkerElement::setOrientToAuto()
 {
     setOrientTypeBaseValue(SVGMarkerOrientAuto);
     setOrientAngleBaseValue(SVGAngle());
-
+ 
     // Mark orientAttr dirty - the next XML DOM access of that attribute kicks in synchronization.
     m_orientAngle.shouldSynchronize = true;
     m_orientType.shouldSynchronize = true;
@@ -245,7 +245,7 @@ PassRefPtr<SVGAnimatedProperty> SVGMarkerElement::lookupOrCreateOrientTypeWrappe
     return SVGAnimatedProperty::lookupOrCreateWrapper<SVGMarkerElement, SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType>, SVGMarkerOrientType>
            (ownerType, orientTypePropertyInfo(), ownerType->m_orientType.value);
 }
-
+  
 PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > SVGMarkerElement::orientType()
 {
     m_orientType.shouldSynchronize = true;

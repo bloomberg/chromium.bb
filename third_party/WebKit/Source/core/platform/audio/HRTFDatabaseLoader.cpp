@@ -45,7 +45,7 @@ PassRefPtr<HRTFDatabaseLoader> HRTFDatabaseLoader::createAndLoadAsynchronouslyIf
     ASSERT(isMainThread());
 
     RefPtr<HRTFDatabaseLoader> loader;
-
+    
     if (!s_loaderMap)
         s_loaderMap = adoptPtr(new LoaderMap()).leakPtr();
 
@@ -104,7 +104,7 @@ void HRTFDatabaseLoader::loadAsynchronously()
     ASSERT(isMainThread());
 
     MutexLocker locker(m_threadLock);
-
+    
     if (!m_hrtfDatabase.get() && !m_databaseLoaderThread) {
         // Start the asynchronous database loading process.
         m_databaseLoaderThread = createThread(databaseLoaderEntry, this, "HRTF database loader");
@@ -119,7 +119,7 @@ bool HRTFDatabaseLoader::isLoaded() const
 void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
 {
     MutexLocker locker(m_threadLock);
-
+    
     // waitForThreadCompletion() should not be called twice for the same thread.
     if (m_databaseLoaderThread)
         waitForThreadCompletion(m_databaseLoaderThread);

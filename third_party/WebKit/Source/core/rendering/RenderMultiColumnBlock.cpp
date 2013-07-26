@@ -57,7 +57,7 @@ void RenderMultiColumnBlock::computeColumnCountAndWidth()
     // FIXME: Can overflow on fast/block/float/float-not-removed-from-next-sibling4.html, see https://bugs.webkit.org/show_bug.cgi?id=68744
     m_columnCount = 1;
     m_columnWidth = contentLogicalWidth();
-
+    
     ASSERT(!style()->hasAutoColumnCount() || !style()->hasAutoColumnWidth());
 
     LayoutUnit availWidth = m_columnWidth;
@@ -145,12 +145,12 @@ void RenderMultiColumnBlock::addChild(RenderObject* newChild, RenderObject* befo
     }
     m_flowThread->addChild(newChild, beforeChild);
 }
-
+    
 RenderObject* RenderMultiColumnBlock::layoutSpecialExcludedChild(bool relayoutChildren)
 {
     if (!m_flowThread)
         return 0;
-
+    
     // Update the dimensions of our regions before we lay out the flow thread.
     // FIXME: Eventually this is going to get way more complicated, and we will be destroying regions
     // instead of trying to keep them around.
@@ -165,17 +165,17 @@ RenderObject* RenderMultiColumnBlock::layoutSpecialExcludedChild(bool relayoutCh
             shouldInvalidateRegions = true;
         }
     }
-
+    
     if (shouldInvalidateRegions)
         m_flowThread->invalidateRegions();
 
     if (relayoutChildren)
         m_flowThread->setChildNeedsLayout(true, MarkOnlyThis);
-
+    
     setLogicalTopForChild(m_flowThread, borderBefore() + paddingBefore());
     m_flowThread->layoutIfNeeded();
     determineLogicalLeftPositionForChild(m_flowThread);
-
+    
     return m_flowThread;
 }
 

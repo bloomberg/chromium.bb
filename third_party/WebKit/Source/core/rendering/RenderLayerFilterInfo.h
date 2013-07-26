@@ -12,7 +12,7 @@
  *    copyright notice, this list of conditions and the following
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -47,7 +47,7 @@ class RenderLayer;
 class RenderLayerFilterInfo;
 
 typedef HashMap<const RenderLayer*, RenderLayerFilterInfo*> RenderLayerFilterInfoMap;
-
+    
 class RenderLayerFilterInfo : public CustomFilterProgramClient, public CachedDocumentClient {
 public:
     static RenderLayerFilterInfo* filterInfoForRenderLayer(const RenderLayer*);
@@ -57,7 +57,7 @@ public:
     const LayoutRect& dirtySourceRect() const { return m_dirtySourceRect; }
     void expandDirtySourceRect(const LayoutRect& rect) { m_dirtySourceRect.unite(rect); }
     void resetDirtySourceRect() { m_dirtySourceRect = LayoutRect(); }
-
+    
     FilterEffectRenderer* renderer() const { return m_renderer.get(); }
     void setRenderer(PassRefPtr<FilterEffectRenderer>);
 
@@ -74,15 +74,15 @@ public:
 private:
     RenderLayerFilterInfo(RenderLayer*);
     ~RenderLayerFilterInfo();
-
+    
     RenderLayer* m_layer;
-
+    
     RefPtr<FilterEffectRenderer> m_renderer;
     LayoutRect m_dirtySourceRect;
 
     typedef Vector<RefPtr<CustomFilterProgram> > CustomFilterProgramList;
     CustomFilterProgramList m_cachedCustomFilterPrograms;
-
+    
     static RenderLayerFilterInfoMap* s_filterMap;
     Vector<RefPtr<Element> > m_internalSVGReferences;
     Vector<CachedResourceHandle<CachedDocument> > m_externalSVGReferences;

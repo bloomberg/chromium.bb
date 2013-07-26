@@ -36,7 +36,7 @@ public:
 
 private:
     SVGFESpecularLightingElement(const QualifiedName&, Document*);
-
+    
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&);

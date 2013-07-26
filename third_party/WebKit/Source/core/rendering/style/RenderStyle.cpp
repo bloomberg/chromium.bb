@@ -254,7 +254,7 @@ RenderStyle* RenderStyle::getCachedPseudoStyle(PseudoId pid) const
     if (!m_cachedPseudoStyles || !m_cachedPseudoStyles->size())
         return 0;
 
-    if (styleType() != NOPSEUDO)
+    if (styleType() != NOPSEUDO) 
         return 0;
 
     for (size_t i = 0; i < m_cachedPseudoStyles->size(); ++i) {
@@ -330,7 +330,7 @@ static bool positionedObjectMoved(const LengthBox& a, const LengthBox& b, const 
         return false;
     if (!a.top().isIntrinsicOrAuto() && !a.bottom().isIntrinsicOrAuto())
         return false;
-    // If our width is auto and left or right is specified then this
+    // If our width is auto and left or right is specified then this 
     // is not just a movement - we need to resize to our container.
     if ((!a.left().isIntrinsicOrAuto() || !a.right().isIntrinsicOrAuto()) && width.isIntrinsicOrAuto())
         return false;
@@ -372,7 +372,7 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
         return StyleDifferenceLayout;
 
     if (rareNonInheritedData.get() != other->rareNonInheritedData.get()) {
-        if (rareNonInheritedData->m_appearance != other->rareNonInheritedData->m_appearance
+        if (rareNonInheritedData->m_appearance != other->rareNonInheritedData->m_appearance 
             || rareNonInheritedData->marginBeforeCollapse != other->rareNonInheritedData->marginBeforeCollapse
             || rareNonInheritedData->marginAfterCollapse != other->rareNonInheritedData->marginAfterCollapse
             || rareNonInheritedData->lineClamp != other->rareNonInheritedData->lineClamp
@@ -582,7 +582,7 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
                  || visual->clip != other->visual->clip || visual->hasClip != other->visual->hasClip)
             return StyleDifferenceRepaintLayer;
     }
-
+    
     if (RuntimeEnabledFeatures::cssCompositingEnabled())
         if (rareNonInheritedData->m_effectiveBlendMode != other->rareNonInheritedData->m_effectiveBlendMode)
             return StyleDifferenceRepaintLayer;
@@ -615,10 +615,10 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
         || rareNonInheritedData->m_borderFit != other->rareNonInheritedData->m_borderFit
         || rareInheritedData->m_imageRendering != other->rareInheritedData->m_imageRendering)
         return StyleDifferenceRepaint;
-
-        // FIXME: The current spec is being reworked to remove dependencies between exclusions and affected
-        // content. There's a proposal to use floats instead. In that case, wrap-shape should actually relayout
-        // the parent container. For sure, I will have to revisit this code, but for now I've added this in order
+        
+        // FIXME: The current spec is being reworked to remove dependencies between exclusions and affected 
+        // content. There's a proposal to use floats instead. In that case, wrap-shape should actually relayout 
+        // the parent container. For sure, I will have to revisit this code, but for now I've added this in order 
         // to avoid having diff() == StyleDifferenceEqual where wrap-shapes actually differ.
         // Tracking bug: https://bugs.webkit.org/show_bug.cgi?id=62991
         if (rareNonInheritedData->m_shapeOutside != other->rareNonInheritedData->m_shapeOutside)
@@ -712,7 +712,7 @@ void RenderStyle::setContent(PassRefPtr<StyleImage> image, bool add)
 {
     if (!image)
         return;
-
+        
     if (add) {
         appendContent(ContentData::create(image));
         return;
@@ -800,12 +800,12 @@ inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation> >& tr
         TransformOperation::OperationType type = transformOperations[i]->getOperationType();
         if (type != TransformOperation::TRANSLATE_X
             && type != TransformOperation::TRANSLATE_Y
-            && type != TransformOperation::TRANSLATE
+            && type != TransformOperation::TRANSLATE 
             && type != TransformOperation::TRANSLATE_Z
             && type != TransformOperation::TRANSLATE_3D)
             return true;
     }
-
+    
     return false;
 }
 
@@ -818,20 +818,20 @@ void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRec
 {
     const Vector<RefPtr<TransformOperation> >& transformOperations = rareNonInheritedData->m_transform->m_operations.operations();
     bool applyTransformOrigin = requireTransformOrigin(transformOperations, applyOrigin);
-
+    
     float offsetX = transformOriginX().type() == Percent ? boundingBox.x() : 0;
     float offsetY = transformOriginY().type() == Percent ? boundingBox.y() : 0;
-
+    
     if (applyTransformOrigin) {
         transform.translate3d(floatValueForLength(transformOriginX(), boundingBox.width()) + offsetX,
                               floatValueForLength(transformOriginY(), boundingBox.height()) + offsetY,
                               transformOriginZ());
     }
-
+    
     unsigned size = transformOperations.size();
     for (unsigned i = 0; i < size; ++i)
         transformOperations[i]->apply(transform, boundingBox.size());
-
+    
     if (applyTransformOrigin) {
         transform.translate3d(-floatValueForLength(transformOriginX(), boundingBox.width()) - offsetX,
                               -floatValueForLength(transformOriginY(), boundingBox.height()) - offsetY,
@@ -868,13 +868,13 @@ void RenderStyle::setBoxShadow(PassOwnPtr<ShadowData> shadowData, bool add)
 static RoundedRect::Radii calcRadiiFor(const BorderData& border, IntSize size, RenderView* renderView)
 {
     return RoundedRect::Radii(
-        IntSize(valueForLength(border.topLeft().width(), size.width(), renderView),
+        IntSize(valueForLength(border.topLeft().width(), size.width(), renderView), 
                 valueForLength(border.topLeft().height(), size.height(), renderView)),
         IntSize(valueForLength(border.topRight().width(), size.width(), renderView),
                 valueForLength(border.topRight().height(), size.height(), renderView)),
-        IntSize(valueForLength(border.bottomLeft().width(), size.width(), renderView),
+        IntSize(valueForLength(border.bottomLeft().width(), size.width(), renderView), 
                 valueForLength(border.bottomLeft().height(), size.height(), renderView)),
-        IntSize(valueForLength(border.bottomRight().width(), size.width(), renderView),
+        IntSize(valueForLength(border.bottomRight().width(), size.width(), renderView), 
                 valueForLength(border.bottomRight().height(), size.height(), renderView)));
 }
 
@@ -882,7 +882,7 @@ static float calcConstraintScaleFor(const IntRect& rect, const RoundedRect::Radi
 {
     // Constrain corner radii using CSS3 rules:
     // http://www.w3.org/TR/css3-background/#the-border-radius
-
+    
     float factor = 1;
     unsigned radiiSum;
 
@@ -895,17 +895,17 @@ static float calcConstraintScaleFor(const IntRect& rect, const RoundedRect::Radi
     radiiSum = static_cast<unsigned>(radii.bottomLeft().width()) + static_cast<unsigned>(radii.bottomRight().width());
     if (radiiSum > static_cast<unsigned>(rect.width()))
         factor = min(static_cast<float>(rect.width()) / radiiSum, factor);
-
+    
     // left
     radiiSum = static_cast<unsigned>(radii.topLeft().height()) + static_cast<unsigned>(radii.bottomLeft().height());
     if (radiiSum > static_cast<unsigned>(rect.height()))
         factor = min(static_cast<float>(rect.height()) / radiiSum, factor);
-
+    
     // right
     radiiSum = static_cast<unsigned>(radii.topRight().height()) + static_cast<unsigned>(radii.bottomRight().height());
     if (radiiSum > static_cast<unsigned>(rect.height()))
         factor = min(static_cast<float>(rect.height()) / radiiSum, factor);
-
+    
     ASSERT(factor <= 1);
     return factor;
 }
@@ -954,9 +954,9 @@ RoundedRect RenderStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect, 
 RoundedRect RenderStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect,
     int topWidth, int bottomWidth, int leftWidth, int rightWidth, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
-    LayoutRect innerRect(borderRect.x() + leftWidth,
-               borderRect.y() + topWidth,
-               borderRect.width() - leftWidth - rightWidth,
+    LayoutRect innerRect(borderRect.x() + leftWidth, 
+               borderRect.y() + topWidth, 
+               borderRect.width() - leftWidth - rightWidth, 
                borderRect.height() - topWidth - bottomWidth);
 
     RoundedRect roundedRect(pixelSnappedIntRect(innerRect));
@@ -972,7 +972,7 @@ RoundedRect RenderStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect,
 static bool allLayersAreFixed(const FillLayer* layer)
 {
     bool allFixed = true;
-
+    
     for (const FillLayer* currLayer = layer; currLayer; currLayer = currLayer->next())
         allFixed &= (currLayer->image() && currLayer->attachment() == FixedBackgroundAttachment);
 

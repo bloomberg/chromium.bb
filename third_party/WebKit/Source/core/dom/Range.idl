@@ -31,9 +31,9 @@
     [GetterRaisesException] readonly attribute boolean collapsed;
     [GetterRaisesException] readonly attribute Node commonAncestorContainer;
 
-     [RaisesException] void setStart([Default=Undefined] optional Node refNode,
+     [RaisesException] void setStart([Default=Undefined] optional Node refNode, 
                                  [Default=Undefined] optional long offset);
-     [RaisesException] void setEnd([Default=Undefined] optional Node refNode,
+     [RaisesException] void setEnd([Default=Undefined] optional Node refNode, 
                                [Default=Undefined] optional long offset);
     [RaisesException] void setStartBefore([Default=Undefined] optional Node refNode);
     [RaisesException] void setStartAfter([Default=Undefined] optional Node refNode);
@@ -83,10 +83,10 @@
     const unsigned short NODE_BEFORE_AND_AFTER = 2;
     const unsigned short NODE_INSIDE           = 3;
 
-    [RaisesException] short comparePoint([Default=Undefined] optional Node refNode,
+    [RaisesException] short comparePoint([Default=Undefined] optional Node refNode, 
                        [Default=Undefined] optional long offset);
 
-    [RaisesException] boolean isPointInRange([Default=Undefined] optional Node refNode,
+    [RaisesException] boolean isPointInRange([Default=Undefined] optional Node refNode, 
                            [Default=Undefined] optional long offset);
 
     [RaisesException] void expand([Default=Undefined] optional DOMString unit);

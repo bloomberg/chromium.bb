@@ -66,13 +66,13 @@ public:
     LayoutUnit forcedBreakOffset() const { return m_forcedBreakOffset; }
     LayoutUnit maximumDistanceBetweenForcedBreaks() const { return m_maximumDistanceBetweenForcedBreaks; }
     void clearForcedBreaks()
-    {
+    { 
         m_forcedBreaksCount = 0;
         m_maximumDistanceBetweenForcedBreaks = 0;
         m_forcedBreakOffset = 0;
     }
     void addForcedBreak(LayoutUnit offsetFromFirstPage)
-    {
+    { 
         ASSERT(!computedColumnHeight());
         LayoutUnit distanceFromLastBreak = offsetFromFirstPage - m_forcedBreakOffset;
         if (!distanceFromLastBreak)
@@ -108,20 +108,20 @@ private:
     virtual LayoutUnit pageLogicalHeight() const OVERRIDE { return m_computedColumnHeight; }
 
     virtual LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const OVERRIDE;
-
+    
     // FIXME: This will change once we have column sets constrained by enclosing pages, etc.
     virtual LayoutUnit logicalHeightOfAllFlowThreadContent() const OVERRIDE { return m_computedColumnHeight; }
 
     // FIXME: For now we return false, but it's likely we will leverage the auto height region code to do column
     // balancing. That's why we have an override of this function that is distinct from RenderRegionSet's override.
     virtual bool shouldHaveAutoLogicalHeight() const OVERRIDE { return false; }
-
+    
     virtual void repaintFlowThreadContent(const LayoutRect& repaintRect) const OVERRIDE;
 
     virtual void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) OVERRIDE;
 
     virtual const char* renderName() const;
-
+    
     void paintColumnRules(PaintInfo&, const LayoutPoint& paintOffset);
 
     LayoutUnit columnGap() const;
@@ -142,7 +142,7 @@ private:
     unsigned m_computedColumnCount;
     LayoutUnit m_computedColumnWidth;
     LayoutUnit m_computedColumnHeight;
-
+    
     // The following variables are used when balancing the column set.
     LayoutUnit m_maxColumnHeight; // Maximum column height allowed.
     LayoutUnit m_minSpaceShortage; // The smallest amout of space shortage that caused a column break.

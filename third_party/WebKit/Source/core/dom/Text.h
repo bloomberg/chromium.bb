@@ -45,7 +45,7 @@ public:
 
     String wholeText() const;
     PassRefPtr<Text> replaceWholeText(const String&);
-
+    
     bool recalcTextStyle(StyleChange);
     void createTextRendererIfNeeded();
     bool textRendererIsNeeded(const NodeRenderingContext&);
@@ -53,7 +53,7 @@ public:
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData);
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE FINAL;
-
+    
     virtual bool canContainRangeEndPoint() const OVERRIDE FINAL { return true; }
     virtual NodeType nodeType() const OVERRIDE;
 

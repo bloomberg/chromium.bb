@@ -53,7 +53,7 @@ bool SVGStyleElement::disabled() const
 {
     if (!m_sheet)
         return false;
-
+    
     return m_sheet->disabled();
 }
 

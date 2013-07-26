@@ -107,7 +107,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 
     m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), m_debugServer.get());
 }
-
+ 
 WorkerInspectorController::~WorkerInspectorController()
 {
     m_instrumentingAgents->reset();

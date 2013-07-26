@@ -146,14 +146,14 @@ void ProcessingInstruction::checkStyleSheet()
                 m_cachedSheet->removeClient(this);
                 m_cachedSheet = 0;
             }
-
+            
             String url = document()->completeURL(href).string();
             if (!dispatchBeforeLoadEvent(url))
                 return;
-
+            
             m_loading = true;
             document()->styleSheetCollection()->addPendingSheet();
-
+            
             FetchRequest request(ResourceRequest(document()->completeURL(href)), CachedResourceInitiatorTypeNames::processinginstruction);
             if (m_isXSL)
                 m_cachedSheet = document()->fetcher()->requestXSLStyleSheet(request);
@@ -260,7 +260,7 @@ bool ProcessingInstruction::offsetInCharacters() const
     return true;
 }
 
-int ProcessingInstruction::maxCharacterOffset() const
+int ProcessingInstruction::maxCharacterOffset() const 
 {
     return static_cast<int>(m_data.length());
 }
@@ -269,7 +269,7 @@ void ProcessingInstruction::addSubresourceAttributeURLs(ListHashSet<KURL>& urls)
 {
     if (!sheet())
         return;
-
+    
     addSubresourceURL(urls, sheet()->baseURL());
 }
 
@@ -288,7 +288,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
     Node::removedFrom(insertionPoint);
     if (!insertionPoint->inDocument())
         return;
-
+    
     document()->styleSheetCollection()->removeStyleSheetCandidateNode(this);
 
     RefPtr<StyleSheet> removedSheet = m_sheet;

@@ -41,14 +41,14 @@ class StyleCachedShader : public StyleShader {
 public:
     // FIXME: Keep a reference to the actual CachedShader in this class.
     static PassRefPtr<StyleCachedShader> create(CachedShader* shader) { return adoptRef(new StyleCachedShader(shader)); }
-
+    
     virtual PassRefPtr<CSSValue> cssValue() const;
-
+    
     virtual CachedShader* cachedShader() const { return m_shader.get(); }
-
+    
 private:
     StyleCachedShader(CachedShader*);
-
+    
     CachedResourceHandle<CachedShader> m_shader;
 };
 

@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #include "config.h"
@@ -287,7 +287,7 @@ void Settings::setMediaTypeOverride(const String& mediaTypeOverride)
 void Settings::setLoadsImagesAutomatically(bool loadsImagesAutomatically)
 {
     m_loadsImagesAutomatically = loadsImagesAutomatically;
-
+    
     // Changing this setting to true might immediately start new loads for images that had previously had loading disabled.
     // If this happens while a WebView is being dealloc'ed, and we don't know the WebView is being dealloc'ed, these new loads
     // can cause crashes downstream when the WebView memory has actually been free'd.

@@ -49,7 +49,7 @@ private:
     virtual const char* renderName() const;
     virtual bool isCounter() const;
     virtual PassRefPtr<StringImpl> originalText() const;
-
+    
     virtual void computePreferredLogicalWidths(float leadWidth) OVERRIDE;
 
     // Removes the reference to the CounterNode associated with this renderer.

@@ -47,7 +47,7 @@ public:
     CachedImage(const ResourceRequest&);
     CachedImage(Image*);
     virtual ~CachedImage();
-
+    
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 
     Image* image(); // Returns the nullImage() if the image is not available yet.
@@ -56,7 +56,7 @@ public:
     bool currentFrameKnownToBeOpaque(const RenderObject*); // Side effect: ensures decoded image is in cache, therefore should only be called when about to draw the image.
 
     std::pair<Image*, float> brokenImage(float deviceScaleFactor) const; // Returns an image and the image's resolution scale factor.
-    bool willPaintBrokenImage() const;
+    bool willPaintBrokenImage() const; 
 
     bool canRender(const RenderObject* renderer, float multiplier) { return !errorOccurred() && !imageSizeForRenderer(renderer, multiplier).isEmpty(); }
 
@@ -64,7 +64,7 @@ public:
     bool usesImageContainerSize() const;
     bool imageHasRelativeWidth() const;
     bool imageHasRelativeHeight() const;
-
+    
     // This method takes a zoom multiplier that can be used to increase the natural size of the image by the zoom.
     LayoutSize imageSizeForRenderer(const RenderObject*, float multiplier); // returns the size of the complete image.
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
@@ -79,7 +79,7 @@ public:
     virtual void error(CachedResource::Status);
     virtual void responseReceived(const ResourceResponse&);
     virtual void finishOnePart() OVERRIDE;
-
+    
     // For compatibility, images keep loading even if there are HTTP errors.
     virtual bool shouldIgnoreHTTPStatusCodeErrors() const { return true; }
 

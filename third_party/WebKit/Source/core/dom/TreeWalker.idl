@@ -23,7 +23,7 @@ interface TreeWalker {
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;
     readonly attribute NodeFilter filter;
-    readonly attribute boolean expandEntityReferences;
+    readonly attribute boolean expandEntityReferences;        
              [SetterRaisesException] attribute Node currentNode;
 
     [CallWith=ScriptState] Node parentNode();

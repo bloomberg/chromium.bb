@@ -764,7 +764,7 @@ void InspectorTimelineAgent::commitFrameRecord()
 {
     if (!m_pendingFrameRecord)
         return;
-
+    
     m_pendingFrameRecord->setObject("data", JSONObject::create());
     innerAddRecordToTimeline(m_pendingFrameRecord.release());
 }

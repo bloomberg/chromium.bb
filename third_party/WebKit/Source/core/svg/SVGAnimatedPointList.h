@@ -34,7 +34,7 @@ class SVGAnimatedPointListAnimator : public SVGAnimatedTypeAnimator {
 public:
     SVGAnimatedPointListAnimator(SVGAnimationElement*, SVGElement*);
     virtual ~SVGAnimatedPointListAnimator() { }
-
+    
     virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&);
     virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&);
     virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&);

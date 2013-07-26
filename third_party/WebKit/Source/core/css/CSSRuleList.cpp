@@ -34,9 +34,9 @@ CSSRuleList::~CSSRuleList()
 {
 }
 
-StaticCSSRuleList::StaticCSSRuleList()
+StaticCSSRuleList::StaticCSSRuleList() 
     : m_refCount(1)
-{
+{ 
 }
 
 StaticCSSRuleList::~StaticCSSRuleList()
@@ -44,7 +44,7 @@ StaticCSSRuleList::~StaticCSSRuleList()
 }
 
 void StaticCSSRuleList::deref()
-{
+{ 
     ASSERT(m_refCount);
     if (!--m_refCount)
         delete this;

@@ -19,7 +19,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef ImageDocument_h
@@ -59,15 +59,15 @@ private:
     bool imageFitsInWindow() const;
     bool shouldShrinkToFit() const;
     float scale() const;
-
+    
     RefPtr<HTMLImageElement> m_imageElement;
-
+    
     // Whether enough of the image has been loaded to determine its size
     bool m_imageSizeIsKnown;
-
+    
     // Whether the image is shrunk to fit or not
     bool m_didShrinkImage;
-
+    
     // Whether the image should be shrunk or not
     bool m_shouldShrinkImage;
 };

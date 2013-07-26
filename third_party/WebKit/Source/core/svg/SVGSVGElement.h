@@ -90,7 +90,7 @@ public:
     void updateCurrentTranslate();
 
     SMILTimeContainer* timeContainer() const { return m_timeContainer.get(); }
-
+    
     void pauseAnimations();
     void unpauseAnimations();
     bool animationsPaused() const;
@@ -137,7 +137,7 @@ private:
     virtual ~SVGSVGElement();
 
     virtual bool isSVGSVGElement() const OVERRIDE { return true; }
-
+    
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE;

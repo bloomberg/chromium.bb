@@ -22,7 +22,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef HTMLCanvasElement_h
@@ -77,10 +77,10 @@ public:
     bool accelerationDisabled() const { return m_accelerationDisabled; }
 
     void setSize(const IntSize& newSize)
-    {
+    { 
         if (newSize == size() && m_deviceScaleFactor == 1)
             return;
-        m_ignoreReset = true;
+        m_ignoreReset = true; 
         setWidth(newSize.width());
         setHeight(newSize.height());
         m_ignoreReset = false;

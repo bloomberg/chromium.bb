@@ -161,7 +161,7 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
         if (!(attributeValue = submitButton->getAttribute(formtargetAttr)).isNull())
             copiedAttributes.setTarget(attributeValue);
     }
-
+    
     Document* document = form->document();
     KURL actionURL = document->completeURL(copiedAttributes.action().isEmpty() ? document->url().string() : copiedAttributes.action());
     bool isMailtoForm = actionURL.protocolIs("mailto");
@@ -223,7 +223,7 @@ KURL FormSubmission::requestURL() const
         return m_action;
 
     KURL requestURL(m_action);
-    requestURL.setQuery(m_formData->flattenToString());
+    requestURL.setQuery(m_formData->flattenToString());    
     return requestURL;
 }
 

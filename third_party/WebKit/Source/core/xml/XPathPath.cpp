@@ -6,13 +6,13 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
+ * 
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -35,7 +35,7 @@
 
 namespace WebCore {
 namespace XPath {
-
+        
 Filter::Filter(Expression* expr, const Vector<Predicate*>& predicates)
     : m_expr(expr), m_predicates(predicates)
 {
@@ -53,7 +53,7 @@ Filter::~Filter()
 Value Filter::evaluate() const
 {
     Value v = m_expr->evaluate();
-
+    
     NodeSet& nodes = v.modifiableNodeSet();
     nodes.sort();
 
@@ -62,13 +62,13 @@ Value Filter::evaluate() const
         NodeSet newNodes;
         evaluationContext.size = nodes.size();
         evaluationContext.position = 0;
-
+        
         for (unsigned j = 0; j < nodes.size(); j++) {
             Node* node = nodes[j];
-
+            
             evaluationContext.node = node;
             ++evaluationContext.position;
-
+            
             if (m_predicates[i]->evaluate())
                 newNodes.append(node);
         }
@@ -112,7 +112,7 @@ Value LocationPath::evaluate() const
     NodeSet nodes;
     nodes.append(context);
     evaluate(nodes);
-
+    
     evaluationContext = backupContext;
     return Value(nodes, Value::adopt);
 }
@@ -149,7 +149,7 @@ void LocationPath::evaluate(NodeSet& nodes) const
                     newNodes.append(node);
             }
         }
-
+        
         nodes.swap(newNodes);
     }
 
@@ -207,7 +207,7 @@ Value Path::evaluate() const
 
     NodeSet& nodes = v.modifiableNodeSet();
     m_path->evaluate(nodes);
-
+    
     return v;
 }
 

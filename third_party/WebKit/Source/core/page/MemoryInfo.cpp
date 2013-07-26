@@ -111,7 +111,7 @@ size_t quantizeMemorySize(size_t size)
             sizeOfNextBucket *= scalingFactor;
             if (sizeOfNextBucket >= nextPowerOfTen) {
                 if (std::numeric_limits<size_t>::max() / 10 <= nextPowerOfTen)
-                    nextPowerOfTen = std::numeric_limits<size_t>::max();
+                    nextPowerOfTen = std::numeric_limits<size_t>::max();                       
                 else {
                     nextPowerOfTen *= 10;
                     granularity *= 10;

@@ -12,7 +12,7 @@
  *    copyright notice, this list of conditions and the following
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -49,7 +49,7 @@ typedef ListHashSet<RenderRegion*> RenderRegionList;
 
 // RenderFlowThread is used to collect all the render objects that participate in a
 // flow thread. It will also help in doing the layout. However, it will not render
-// directly to screen. Instead, RenderRegion objects will redirect their paint
+// directly to screen. Instead, RenderRegion objects will redirect their paint 
 // and nodeAtPoint methods to this object. Each RenderRegion will actually be a viewPort
 // of the RenderFlowThread.
 
@@ -57,17 +57,17 @@ class RenderFlowThread: public RenderBlock {
 public:
     RenderFlowThread();
     virtual ~RenderFlowThread() { };
-
+    
     virtual bool isRenderFlowThread() const OVERRIDE FINAL { return true; }
 
     virtual void layout() OVERRIDE FINAL;
 
-    // Always create a RenderLayer for the RenderFlowThread so that we
+    // Always create a RenderLayer for the RenderFlowThread so that we 
     // can easily avoid drawing the children directly.
     virtual bool requiresLayer() const OVERRIDE FINAL { return true; }
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
-
+    
     void removeFlowChildInfo(RenderObject*);
 #ifndef NDEBUG
     bool hasChildInfo(RenderObject* child) const { return child && child->isBox() && m_regionRangeMap.contains(toRenderBox(child)); }
@@ -125,7 +125,7 @@ public:
     LayoutUnit contentLogicalWidthOfFirstRegion() const;
     LayoutUnit contentLogicalHeightOfFirstRegion() const;
     LayoutUnit contentLogicalLeftOfFirstRegion() const;
-
+    
     RenderRegion* firstRegion() const;
     RenderRegion* lastRegion() const;
 
@@ -186,7 +186,7 @@ protected:
 
     void setDispatchRegionOversetChangeEvent(bool value) { m_dispatchRegionOversetChangeEvent = value; }
     bool shouldDispatchRegionOversetChangeEvent() const { return m_dispatchRegionOversetChangeEvent; }
-
+    
     // Override if the flow thread implementation supports dispatching events when the flow layout is updated (e.g. for named flows)
     virtual void dispatchRegionLayoutUpdateEvent() { m_dispatchRegionLayoutUpdateEvent = false; }
     virtual void dispatchRegionOversetChangeEvent() { m_dispatchRegionOversetChangeEvent = false; }
@@ -209,7 +209,7 @@ protected:
         {
             setRange(start, end);
         }
-
+        
         void setRange(RenderRegion* start, RenderRegion* end)
         {
             m_startRegion = start;

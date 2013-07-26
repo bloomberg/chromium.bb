@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #include "config.h"
@@ -244,7 +244,7 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
             float amount = narrowPrecisionToFloat(componentTransferOperation->amount());
             transferFunction.slope = amount;
             transferFunction.intercept = -0.5 * amount + 0.5;
-
+            
             ComponentTransferFunction nullFunction;
             effect = FEComponentTransfer::create(this, transferFunction, transferFunction, transferFunction, nullFunction);
             break;
@@ -384,7 +384,7 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     filter->setAbsoluteFilterRegion(AffineTransform().scale(zoom).mapRect(filterSourceRect));
     filter->setFilterRegion(absoluteTransform.inverse().mapRect(filterSourceRect));
     filter->lastEffect()->determineFilterPrimitiveSubregion();
-
+    
     bool hasUpdatedBackingStore = filter->updateBackingStoreRect(filterSourceRect);
     if (filter->hasFilterThatMovesPixels()) {
         if (hasUpdatedBackingStore)
@@ -396,11 +396,11 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     }
     return true;
 }
-
+   
 GraphicsContext* FilterEffectRendererHelper::beginFilterEffect(GraphicsContext* oldContext)
 {
     ASSERT(m_renderLayer);
-
+    
     FilterEffectRenderer* filter = m_renderLayer->filterRenderer();
     filter->allocateBackingStoreIfNeeded();
     // Paint into the context that represents the SourceGraphic of the filter.
@@ -410,9 +410,9 @@ GraphicsContext* FilterEffectRendererHelper::beginFilterEffect(GraphicsContext* 
         m_haveFilterEffect = false;
         return oldContext;
     }
-
+    
     m_savedGraphicsContext = oldContext;
-
+    
     // Translate the context so that the contents of the layer is captuterd in the offscreen memory buffer.
     sourceGraphicsContext->save();
     // FIXME: can we just use sourceImageRect for everything, and get rid of
@@ -421,7 +421,7 @@ GraphicsContext* FilterEffectRendererHelper::beginFilterEffect(GraphicsContext* 
     sourceGraphicsContext->translate(-offset.x(), -offset.y());
     sourceGraphicsContext->clearRect(m_repaintRect);
     sourceGraphicsContext->clip(m_repaintRect);
-
+    
     return sourceGraphicsContext;
 }
 

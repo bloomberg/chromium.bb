@@ -65,7 +65,7 @@ public:
     {
         if (!value->getString("styleSheetId", &m_styleSheetId))
             return;
-
+        
         RefPtr<JSONValue> ordinalValue = value->get("ordinal");
         if (!ordinalValue || !ordinalValue->asNumber(&m_ordinal))
             m_styleSheetId = "";

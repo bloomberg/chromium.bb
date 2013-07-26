@@ -38,12 +38,12 @@ class ResourceFetcher;
         CachedXSLStyleSheet(const ResourceRequest&);
 
         const String& sheet() const { return m_sheet; }
-
+        
         virtual void didAddClient(CachedResourceClient*);
-
+        
         virtual void setEncoding(const String&);
         virtual String encoding() const;
-
+        
     protected:
         virtual void checkNotify();
 

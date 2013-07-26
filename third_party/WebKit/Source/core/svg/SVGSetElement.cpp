@@ -23,7 +23,7 @@
 #include "core/svg/SVGSetElement.h"
 
 namespace WebCore {
-
+    
 inline SVGSetElement::SVGSetElement(const QualifiedName& tagName, Document* document)
     : SVGAnimateElement(tagName, document)
 {

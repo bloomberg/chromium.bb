@@ -37,10 +37,10 @@
 
 namespace WebCore {
 
-// This table depends on unicode range definitions.
+// This table depends on unicode range definitions. 
 // Each item's index must correspond to a unicode range value
 // eg. x-cyrillic = LangGroupTable[cRangeCyrillic]
-static const char* gUnicodeRangeToLangGroupTable[] =
+static const char* gUnicodeRangeToLangGroupTable[] = 
 {
   "x-cyrillic",
   "el",
@@ -68,8 +68,8 @@ static const char* gUnicodeRangeToLangGroupTable[] =
 
 /**********************************************************************
  * Unicode subranges as defined in unicode 3.0
- * x-western, x-central-euro, tr, x-baltic  -> latin
- *  0000 - 036f
+ * x-western, x-central-euro, tr, x-baltic  -> latin 
+ *  0000 - 036f 
  *  1e00 - 1eff
  *  2000 - 206f  (general punctuation)
  *  20a0 - 20cf  (currency symbols)
@@ -101,7 +101,7 @@ static const char* gUnicodeRangeToLangGroupTable[] =
  * CJK
  *  3100 - 312f (bopomofo)
  *  31a0 - 31bf (bopomofo extended)
- *  3000 - 303f (CJK Symbols and Punctuation)
+ *  3000 - 303f (CJK Symbols and Punctuation) 
  *  2e80 - 2eff (CJK radicals supplement)
  *  2f00 - 2fdf (Kangxi Radicals)
  *  2ff0 - 2fff (Ideographic Description Characters)
@@ -115,8 +115,8 @@ static const char* gUnicodeRangeToLangGroupTable[] =
  *  ff00 - ffef (halfwidth and fullwidth forms)
  *
  * Armenian
- *  0530 - 058f
- * Sriac
+ *  0530 - 058f 
+ * Sriac 
  *  0700 - 074f
  * Thaana
  *  0780 - 07bf
@@ -156,7 +156,7 @@ static const char* gUnicodeRangeToLangGroupTable[] =
  *  1400 - 167f
  * Ogham
  *  1680 - 169f
- * Runic
+ * Runic 
  *  16a0 - 16ff
  * Khmer
  *  1780 - 17ff
@@ -178,7 +178,7 @@ static const char* gUnicodeRangeToLangGroupTable[] =
  *  2440 - 2450
  * Misc - Enclose Alphanumerics
  *  2460 - 24ff
- * Misc - Box Drawing
+ * Misc - Box Drawing 
  *  2500 - 257f
  * Misc - Block Elements
  *  2580 - 259f
@@ -207,8 +207,8 @@ static const char* gUnicodeRangeToLangGroupTable[] =
 static const unsigned cNumSubTables = 9;
 static const unsigned cSubTableSize = 16;
 
-static const unsigned char gUnicodeSubrangeTable[cNumSubTables][cSubTableSize] =
-{
+static const unsigned char gUnicodeSubrangeTable[cNumSubTables][cSubTableSize] = 
+{ 
   { // table for X---
     cRangeTableBase+1,  //u0xxx
     cRangeTableBase+2,  //u1xxx
@@ -318,23 +318,23 @@ static const unsigned char gUnicodeSubrangeTable[cNumSubTables][cSubTableSize] =
     cRangeSurrogate,         //udfxx
   },
   { // table for fx--
-    cRangePrivate,           //uf0xx
-    cRangePrivate,           //uf1xx
-    cRangePrivate,           //uf2xx
-    cRangePrivate,           //uf3xx
-    cRangePrivate,           //uf4xx
-    cRangePrivate,           //uf5xx
-    cRangePrivate,           //uf6xx
-    cRangePrivate,           //uf7xx
-    cRangePrivate,           //uf8xx
-    cRangeSetCJK,            //uf9xx
-    cRangeSetCJK,            //ufaxx
+    cRangePrivate,           //uf0xx 
+    cRangePrivate,           //uf1xx 
+    cRangePrivate,           //uf2xx 
+    cRangePrivate,           //uf3xx 
+    cRangePrivate,           //uf4xx 
+    cRangePrivate,           //uf5xx 
+    cRangePrivate,           //uf6xx 
+    cRangePrivate,           //uf7xx 
+    cRangePrivate,           //uf8xx 
+    cRangeSetCJK,            //uf9xx 
+    cRangeSetCJK,            //ufaxx 
     cRangeArabic,            //ufbxx, includes alphabic presentation form
     cRangeArabic,            //ufcxx
     cRangeArabic,            //ufdxx
-    cRangeArabic,            //ufexx, includes Combining half marks,
-                             //                CJK compatibility forms,
-                             //                CJK compatibility forms,
+    cRangeArabic,            //ufexx, includes Combining half marks, 
+                             //                CJK compatibility forms, 
+                             //                CJK compatibility forms, 
                              //                small form variants
     cRangeTableBase+8,       //uffxx, halfwidth and fullwidth forms, includes Specials
   },
@@ -376,15 +376,15 @@ static const unsigned char gUnicodeSubrangeTable[cNumSubTables][cSubTableSize] =
   },
 };
 
-// Most scripts between U+0700 and U+16FF are assigned a chunk of 128 (0x80)
+// Most scripts between U+0700 and U+16FF are assigned a chunk of 128 (0x80) 
 // code points so that the number of entries in the tertiary range
 // table for that range is obtained by dividing (0x1700 - 0x0700) by 128.
-// Exceptions: Ethiopic, Tibetan, Hangul Jamo and Canadian aboriginal
+// Exceptions: Ethiopic, Tibetan, Hangul Jamo and Canadian aboriginal 
 // syllabaries take multiple chunks and Ogham and Runic share a single chunk.
 static const unsigned cTertiaryTableSize = ((0x1700 - 0x0700) / 0x80);
 
 static const unsigned char gUnicodeTertiaryRangeTable[cTertiaryTableSize] =
-{ //table for 0x0700 - 0x1600
+{ //table for 0x0700 - 0x1600 
     cRangeSyriac,            //u070x
     cRangeThaana,            //u078x
     cRangeUnassigned,        //u080x  place holder(resolved in the 2ndary tab.)
@@ -399,7 +399,7 @@ static const unsigned char gUnicodeTertiaryRangeTable[cTertiaryTableSize] =
     cRangeKannada,           //u0c8x
     cRangeMalayalam,         //u0d0x
     cRangeSinhala,           //u0d8x
-    cRangeThai,              //u0e0x
+    cRangeThai,              //u0e0x  
     cRangeLao,               //u0e8x
     cRangeTibetan,           //u0f0x  place holder(resolved in the 2ndary tab.)
     cRangeTibetan,           //u0f8x  place holder(resolved in the 2ndary tab.)
@@ -409,21 +409,21 @@ static const unsigned char gUnicodeTertiaryRangeTable[cTertiaryTableSize] =
     cRangeKorean,            //u118x  place holder(resolved in the 2ndary tab.)
     cRangeEthiopic,          //u120x  place holder(resolved in the 2ndary tab.)
     cRangeEthiopic,          //u128x  place holder(resolved in the 2ndary tab.)
-    cRangeEthiopic,          //u130x
+    cRangeEthiopic,          //u130x  
     cRangeCherokee,          //u138x
     cRangeCanadian,          //u140x  place holder(resolved in the 2ndary tab.)
     cRangeCanadian,          //u148x  place holder(resolved in the 2ndary tab.)
     cRangeCanadian,          //u150x  place holder(resolved in the 2ndary tab.)
     cRangeCanadian,          //u158x  place holder(resolved in the 2ndary tab.)
-    cRangeCanadian,          //u160x
+    cRangeCanadian,          //u160x  
     cRangeOghamRunic,        //u168x  this contains two scripts, Ogham & Runic
 };
 
-// A two level index is almost enough for locating a range, with the
+// A two level index is almost enough for locating a range, with the 
 // exception of u03xx and u05xx. Since we don't really care about range for
-// combining diacritical marks in our font application, they are
-// not discriminated further.  Future adoption of this method for other use
-// should be aware of this limitation. The implementation can be extended if
+// combining diacritical marks in our font application, they are 
+// not discriminated further.  Future adoption of this method for other use 
+// should be aware of this limitation. The implementation can be extended if 
 // there is such a need.
 // For Indic, Southeast Asian scripts and some other scripts between
 // U+0700 and U+16FF, it's extended to the third level.
@@ -436,9 +436,9 @@ unsigned int findCharUnicodeRange(UChar32 ch)
 
     //search the first table
     range = gUnicodeSubrangeTable[0][ch >> 12];
-
+  
     if (range < cRangeTableBase)
-        // we try to get a specific range
+        // we try to get a specific range 
         return range;
 
     // otherwise, we have one more table to look at
@@ -454,7 +454,7 @@ unsigned int findCharUnicodeRange(UChar32 ch)
 
 const char* langGroupFromUnicodeRange(unsigned char unicodeRange)
 {
-    if (cRangeSpecificItemNum > unicodeRange)
+    if (cRangeSpecificItemNum > unicodeRange)  
         return gUnicodeRangeToLangGroupTable[unicodeRange];
     return 0;
 }

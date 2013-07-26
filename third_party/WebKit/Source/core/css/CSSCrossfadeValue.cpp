@@ -39,12 +39,12 @@ static bool subimageIsPending(CSSValue* value)
 {
     if (value->isImageValue())
         return toCSSImageValue(value)->cachedOrPendingImage()->isPendingImage();
-
+    
     if (value->isImageGeneratorValue())
         return static_cast<CSSImageGeneratorValue*>(value)->isPending();
-
+    
     ASSERT_NOT_REACHED();
-
+    
     return false;
 }
 
@@ -73,15 +73,15 @@ static CachedImage* cachedImageForCSSValue(CSSValue* value, ResourceFetcher* fet
 
         return styleCachedImage->cachedImage();
     }
-
+    
     if (value->isImageGeneratorValue()) {
         static_cast<CSSImageGeneratorValue*>(value)->loadSubimages(fetcher);
         // FIXME: Handle CSSImageGeneratorValue (and thus cross-fades with gradients and canvas).
         return 0;
     }
-
+    
     ASSERT_NOT_REACHED();
-
+    
     return 0;
 }
 

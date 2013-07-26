@@ -91,7 +91,7 @@ bool HTMLPlugInImageElement::isImageType()
 }
 
 // We don't use m_url, as it may not be the final URL that the object loads,
-// depending on <param> values.
+// depending on <param> values. 
 bool HTMLPlugInImageElement::allowedToLoadFrameURL(const String& url)
 {
     KURL completeURL = document()->completeURL(url);
@@ -104,7 +104,7 @@ bool HTMLPlugInImageElement::allowedToLoadFrameURL(const String& url)
 }
 
 // We don't use m_url, or m_serviceType as they may not be the final values
-// that <object> uses depending on <param> values.
+// that <object> uses depending on <param> values. 
 bool HTMLPlugInImageElement::wouldLoadAsNetscapePlugin(const String& url, const String& serviceType)
 {
     ASSERT(document());
@@ -149,7 +149,7 @@ void HTMLPlugInImageElement::attach(const AttachContext& context)
     PostAttachCallbackDisabler disabler(this);
 
     bool isImage = isImageType();
-
+    
     if (!isImage)
         queuePostAttachCallback(&HTMLPlugInImageElement::updateWidgetCallback, this);
 
@@ -191,10 +191,10 @@ void HTMLPlugInImageElement::finishParsingChildren()
     HTMLPlugInElement::finishParsingChildren();
     if (useFallbackContent())
         return;
-
+    
     setNeedsWidgetUpdate(true);
     if (inDocument())
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc();    
 }
 
 void HTMLPlugInImageElement::didMoveToNewDocument(Document* oldDocument)

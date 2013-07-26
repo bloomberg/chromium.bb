@@ -168,7 +168,7 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
         // Whitespace
         if (m_theme->controlRequiresPreWhiteSpace(part))
             style->setWhiteSpace(PRE);
-
+            
         // Width / Height
         // The width and height here are affected by the zoom.
         // FIXME: Check is flawed, since it doesn't take min-width/max-width into account.
@@ -177,14 +177,14 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
             style->setWidth(controlSize.width());
         if (controlSize.height() != style->height())
             style->setHeight(controlSize.height());
-
+                
         // Min-Width / Min-Height
         LengthSize minControlSize = m_theme->minimumControlSize(part, style->font(), style->effectiveZoom());
         if (minControlSize.width() != style->minWidth())
             style->setMinWidth(minControlSize.width());
         if (minControlSize.height() != style->minHeight())
             style->setMinHeight(minControlSize.height());
-
+                
         // Font
         FontDescription controlFont = m_theme->controlFont(part, style->font(), style->effectiveZoom());
         if (controlFont != style->font().fontDescription()) {

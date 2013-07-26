@@ -392,7 +392,7 @@ void BaseMultipleFieldsDateAndTimeInputType::forwardEvent(Event* event)
         if (event->defaultHandled())
             return;
     }
-
+        
     if (DateTimeEditElement* edit = dateTimeEditElement())
         edit->defaultEventHandler(event);
 }

@@ -161,7 +161,7 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 
     if (newImage != m_imageResource->imagePtr() || !newImage)
         return;
-
+    
     if (!m_didIncrementVisuallyNonEmptyPixelCount) {
         // At a zoom level of 1 the image is guaranteed to have an integer size.
         view()->frameView()->incrementVisuallyNonEmptyPixelCount(flooredIntSize(m_imageResource->imageSize(1.0f)));
@@ -248,7 +248,7 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
             repaintRect.intersect(contentBoxRect());
         } else
             repaintRect = contentBoxRect();
-
+        
         repaintRectangle(repaintRect);
 
         // Tell any potential compositing layers that the image needs updating.
@@ -260,7 +260,7 @@ void RenderImage::notifyFinished(CachedResource* newImage)
 {
     if (!m_imageResource)
         return;
-
+    
     if (documentBeingDestroyed())
         return;
 
@@ -367,9 +367,9 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
         LayoutPoint contentLocation = paintOffset;
         contentLocation.move(leftBorder + leftPad, topBorder + topPad);
         paintIntoRect(context, LayoutRect(contentLocation, contentSize));
-
+        
         if (cachedImage() && page && paintInfo.phase == PaintPhaseForeground) {
-            // For now, count images as unpainted if they are still progressively loading. We may want
+            // For now, count images as unpainted if they are still progressively loading. We may want 
             // to refine this in the future to account for the portion of the image that has painted.
             if (cachedImage()->isLoading())
                 page->addRelevantUnpaintedObject(this, LayoutRect(contentLocation, contentSize));
@@ -386,14 +386,14 @@ void RenderImage::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     if (paintInfo.phase == PaintPhaseOutline)
         paintAreaElementFocusRing(paintInfo);
 }
-
+    
 void RenderImage::paintAreaElementFocusRing(PaintInfo& paintInfo)
 {
     Document* document = this->document();
-
+    
     if (document->printing() || !document->frame()->selection()->isFocusedAndActive())
         return;
-
+    
     if (paintInfo.context->paintingDisabled() && !paintInfo.context->updatingControlTints())
         return;
 

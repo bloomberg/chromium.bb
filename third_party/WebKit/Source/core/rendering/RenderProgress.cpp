@@ -108,6 +108,6 @@ HTMLProgressElement* RenderProgress::progressElement() const
 
     ASSERT(node()->shadowHost());
     return toHTMLProgressElement(node()->shadowHost());
-}
+}    
 
 } // namespace WebCore

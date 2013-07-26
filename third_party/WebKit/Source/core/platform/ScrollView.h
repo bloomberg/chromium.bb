@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef ScrollView_h
@@ -156,7 +156,7 @@ public:
     virtual IntPoint maximumScrollPosition() const OVERRIDE; // The maximum position we can be scrolled to.
     virtual IntPoint minimumScrollPosition() const OVERRIDE; // The minimum position we can be scrolled to.
     // Adjust the passed in scroll position to keep it between the minimum and maximum positions.
-    IntPoint adjustScrollPositionWithinRange(const IntPoint&) const;
+    IntPoint adjustScrollPositionWithinRange(const IntPoint&) const; 
     int scrollX() const { return scrollPosition().x(); }
     int scrollY() const { return scrollPosition().y(); }
 
@@ -199,7 +199,7 @@ public:
     // The purpose of this function is to answer whether or not the scroll view is currently visible. Animations and painting updates can be suspended if
     // we know that we are either not in a window right now or if that window is not visible.
     bool isOffscreen() const;
-
+    
     // These functions are used to enable scrollbars to avoid window resizer controls that overlap the scroll view. This happens on Mac
     // for example.
     virtual IntRect windowResizerRect() const { return IntRect(); }
@@ -211,7 +211,7 @@ public:
 
     // Called when our frame rect changes (or the rect/scroll position of an ancestor changes).
     virtual void frameRectsChanged();
-
+    
     // Widget override to update our scrollbars and notify our contents of the resize.
     virtual void setFrameRect(const IntRect&);
 
@@ -247,7 +247,7 @@ public:
     virtual void show();
     virtual void hide();
     virtual void setParentVisible(bool);
-
+    
     // Pan scrolling.
     static const int noPanScrollRadius = 15;
     void addPanScrollIcon(const IntPoint&);

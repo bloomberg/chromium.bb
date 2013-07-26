@@ -36,7 +36,7 @@ enum AddRuleFlags {
     RuleCanUseFastCheckSelector   = 1 << 1,
     RuleIsInRegionRule            = 1 << 2,
 };
-
+    
 enum PropertyWhitelistType {
     PropertyWhitelistNone   = 0,
     PropertyWhitelistRegion,
@@ -88,7 +88,7 @@ private:
     unsigned m_hasDocumentSecurityOrigin : 1;
     unsigned m_propertyWhitelistType : 2;
 };
-
+    
 struct SameSizeAsRuleData {
     void* a;
     unsigned b;

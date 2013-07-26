@@ -6,13 +6,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
+ *     notice, this list of conditions and the following disclaimer. 
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
+ *     documentation and/or other materials provided with the distribution. 
  * 3.  Neither the name of Adam Barth. ("Adam Barth") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
+ *     from this software without specific prior written permission. 
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -56,7 +56,7 @@ public:
     void replaceDocument(const String&, Document* ownerDocument);
 
     void addData(const char* bytes, size_t length);
-
+    
     const String& mimeType() const { return m_decoderBuilder.mimeType(); }
     const String& encoding() const { return m_decoderBuilder.encoding(); }
     bool encodingWasChosenByUser() const { return m_decoderBuilder.encodingWasChosenByUser(); }

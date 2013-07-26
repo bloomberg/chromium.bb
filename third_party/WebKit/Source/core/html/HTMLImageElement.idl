@@ -33,7 +33,7 @@
     [Reflect] attribute DOMString useMap;
     [Reflect] attribute long vspace;
     attribute long width;
-
+    
     // Extensions
     readonly attribute boolean complete;
     [Reflect,URL] attribute DOMString lowsrc;

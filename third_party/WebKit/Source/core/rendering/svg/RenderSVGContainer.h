@@ -86,7 +86,7 @@ private:
     FloatRect m_repaintBoundingBox;
     bool m_needsBoundariesUpdate : 1;
 };
-
+  
 inline RenderSVGContainer* toRenderSVGContainer(RenderObject* object)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGContainer());

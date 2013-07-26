@@ -26,7 +26,7 @@
 #include "core/rendering/RenderProgress.h"
 
 namespace WebCore {
-
+    
 using namespace HTMLNames;
 
 AccessibilityProgressIndicator::AccessibilityProgressIndicator(RenderProgress* renderer)
@@ -43,7 +43,7 @@ bool AccessibilityProgressIndicator::computeAccessibilityIsIgnored() const
 {
     return accessibilityIsIgnoredByDefault();
 }
-
+    
 float AccessibilityProgressIndicator::valueForRange() const
 {
     if (element()->position() >= 0)

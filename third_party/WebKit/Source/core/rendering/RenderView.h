@@ -105,7 +105,7 @@ public:
     void updateWidgetPositions();
     void addWidget(RenderWidget*);
     void removeWidget(RenderWidget*);
-
+    
     // layoutDelta is used transiently during layout to store how far an object has moved from its
     // last layout location, in order to repaint correctly.
     // If we're doing a full repaint m_layoutState will be 0, but in that case layoutDelta doesn't matter.
@@ -113,7 +113,7 @@ public:
     {
         return m_layoutState ? m_layoutState->m_layoutDelta : LayoutSize();
     }
-    void addLayoutDelta(const LayoutSize& delta)
+    void addLayoutDelta(const LayoutSize& delta) 
     {
         if (m_layoutState) {
             m_layoutState->m_layoutDelta += delta;
@@ -123,7 +123,7 @@ public:
 #endif
         }
     }
-
+    
 #if !ASSERT_DISABLED
     bool layoutDeltaMatches(const LayoutSize& delta)
     {
@@ -171,7 +171,7 @@ public:
 
     // Renderer that paints the root background has background-images which all have background-attachment: fixed.
     bool rootBackgroundIsEntirelyFixed() const;
-
+    
     bool hasRenderNamedFlowThreads() const;
     bool checkTwoPassLayoutForAutoHeightRegions() const;
     FlowThreadController* flowThreadController();
@@ -196,7 +196,7 @@ public:
     void addRenderCounter() { m_renderCounterCount++; }
     void removeRenderCounter() { ASSERT(m_renderCounterCount > 0); m_renderCounterCount--; }
     bool hasRenderCounters() { return m_renderCounterCount; }
-
+    
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE;
 
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const OVERRIDE FINAL;
@@ -207,7 +207,7 @@ protected:
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const;
     virtual bool requiresColumns(int desiredColumnCount) const OVERRIDE;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
-
+    
 private:
     bool initializeLayoutState(LayoutState&);
 
@@ -254,7 +254,7 @@ private:
 
     size_t getRetainedWidgets(Vector<RenderWidget*>&);
     void releaseWidgets(Vector<RenderWidget*>&);
-
+    
     friend class LayoutStateMaintainer;
     friend class LayoutStateDisabler;
 
@@ -322,7 +322,7 @@ public:
     {
         push(root, offset, pageHeight, pageHeightChanged, colInfo);
     }
-
+    
     // ctor to maybe push later
     LayoutStateMaintainer(RenderView* view)
         : m_view(view)
@@ -357,7 +357,7 @@ public:
                 if (m_disabled)
                     m_view->enableLayoutState();
             }
-
+            
             m_didEnd = true;
         }
     }

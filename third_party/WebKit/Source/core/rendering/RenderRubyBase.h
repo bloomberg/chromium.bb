@@ -40,7 +40,7 @@ class RenderRubyRun;
 class RenderRubyBase FINAL : public RenderBlock {
 public:
     virtual ~RenderRubyBase();
-
+    
     static RenderRubyBase* createAnonymous(Document*);
 
     virtual const char* renderName() const { return "RenderRubyBase (anonymous)"; }

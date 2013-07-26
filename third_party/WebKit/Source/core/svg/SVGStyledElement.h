@@ -58,7 +58,7 @@ public:
 
     virtual bool needsPendingResourceHandling() const { return true; }
 
-protected:
+protected: 
     SVGStyledElement(const QualifiedName&, Document*, ConstructionType = CreateSVGElement);
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
 

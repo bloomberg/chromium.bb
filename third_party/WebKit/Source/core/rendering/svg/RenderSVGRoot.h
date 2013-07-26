@@ -60,7 +60,7 @@ public:
     virtual bool hasRelativeIntrinsicLogicalWidth() const OVERRIDE;
     virtual bool hasRelativeLogicalHeight() const OVERRIDE;
 
-    // localToBorderBoxTransform maps local SVG viewport coordinates to local CSS box coordinates.
+    // localToBorderBoxTransform maps local SVG viewport coordinates to local CSS box coordinates.  
     const AffineTransform& localToBorderBoxTransform() const { return m_localToBorderBoxTransform; }
 
     // The flag is cleared at the beginning of each layout() pass. Elements then call this
@@ -128,13 +128,13 @@ private:
 };
 
 inline RenderSVGRoot* toRenderSVGRoot(RenderObject* object)
-{
+{ 
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGRoot());
     return static_cast<RenderSVGRoot*>(object);
 }
 
 inline const RenderSVGRoot* toRenderSVGRoot(const RenderObject* object)
-{
+{ 
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGRoot());
     return static_cast<const RenderSVGRoot*>(object);
 }

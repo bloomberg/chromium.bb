@@ -123,7 +123,7 @@ void RoundedRect::Radii::excludeLogicalEdges(bool isHorizontal, bool excludeLogi
             m_topRight = IntSize();
         m_topLeft = IntSize();
     }
-
+        
     if (excludeLogicalRightEdge) {
         if (isHorizontal)
             m_topRight = IntSize();

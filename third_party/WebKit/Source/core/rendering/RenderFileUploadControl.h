@@ -40,7 +40,7 @@ public:
 
     String buttonValue();
     String fileTextValue() const;
-
+    
 private:
     virtual const char* renderName() const { return "RenderFileUploadControl"; }
 
@@ -53,7 +53,7 @@ private:
     virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
 
     int maxFilenameWidth() const;
-
+    
     virtual VisiblePosition positionForPoint(const LayoutPoint&);
 
     HTMLInputElement* uploadButton() const;

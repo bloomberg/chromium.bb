@@ -271,7 +271,7 @@ public:
 #endif // CSS3_TEXT
 
     PassRefPtr<CSSValue> parseTextIndent();
-
+    
     bool parseLineBoxContain(bool important);
     bool parseCalculation(CSSParserValue*, CalculationPermittedValueRange);
 
@@ -528,7 +528,7 @@ private:
 
     inline bool inStrictMode() const { return m_context.mode == CSSStrictMode || m_context.mode == SVGAttributeMode; }
     inline bool inQuirksMode() const { return m_context.mode == CSSQuirksMode; }
-
+    
     KURL completeURL(const String& url) const;
 
     void recheckAtKeyword(const UChar* str, int len);

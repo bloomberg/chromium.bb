@@ -274,7 +274,7 @@ void InspectorCanvasAgent::findFramesWithUninstrumentedCanvases()
         {
             if (!node->hasTagName(HTMLNames::canvasTag) || !node->document() || !node->document()->frame())
                 return;
-
+            
             Frame* frame = node->document()->frame();
             if (frame->page() != m_page)
                 return;

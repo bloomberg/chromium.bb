@@ -78,14 +78,14 @@ static SVGAngle::SVGAngleType stringToAngleType(const CharType*& ptr, const Char
         return SVGAngle::SVG_ANGLETYPE_UNSPECIFIED;
 
     const CharType firstChar = *ptr;
-
+    
     // If the unit contains only one character, the angle type is unknown.
     ++ptr;
     if (ptr == end)
         return SVGAngle::SVG_ANGLETYPE_UNKNOWN;
 
     const CharType secondChar = *ptr;
-
+ 
     // If the unit contains only two characters, the angle type is unknown.
     ++ptr;
     if (ptr == end)

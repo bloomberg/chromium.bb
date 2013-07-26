@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef TextIterator_h
@@ -47,7 +47,7 @@ enum TextIteratorBehavior {
     TextIteratorStopsOnFormControls = 1 << 6,
     TextIteratorEmitsImageAltText = 1 << 7,
 };
-
+    
 // FIXME: Can't really answer this question correctly without knowing the white-space mode.
 // FIXME: Move this somewhere else in the editing directory. It doesn't belong here.
 inline bool isCollapsibleWhitespace(UChar c)
@@ -91,7 +91,7 @@ public:
 
     bool atEnd() const { return !m_positionNode || m_shouldStop; }
     void advance();
-
+    
     int length() const { return m_textLength; }
     UChar characterAt(unsigned index) const;
     String substring(unsigned position, unsigned length) const;
@@ -115,12 +115,12 @@ public:
 
     PassRefPtr<Range> range() const;
     Node* node() const;
-
+     
     static int rangeLength(const Range*, bool spacesForReplacedElements = false);
     static PassRefPtr<Range> rangeFromLocationAndLength(ContainerNode* scope, int rangeLocation, int rangeLength, bool spacesForReplacedElements = false);
     static bool getLocationAndLengthFromRange(Node* scope, const Range*, size_t& location, size_t& length);
     static PassRefPtr<Range> subrange(Range* entireRange, int characterOffset, int characterCount);
-
+    
 private:
     int startOffset() const { return m_positionStartOffset; }
     const String& string() const { return m_text; }
@@ -137,7 +137,7 @@ private:
     void emitCharacter(UChar, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset);
     void emitText(Node* textNode, RenderObject* renderObject, int textStartOffset, int textEndOffset);
     void emitText(Node* textNode, int textStartOffset, int textEndOffset);
-
+    
     // Current position, not necessarily of the text being returned, but position
     // as we walk through the DOM tree.
     Node* m_node;
@@ -145,14 +145,14 @@ private:
     bool m_handledNode;
     bool m_handledChildren;
     BitStack m_fullyClippedStack;
-
+    
     // The range.
     Node* m_startContainer;
     int m_startOffset;
     Node* m_endContainer;
     int m_endOffset;
     Node* m_pastEndNode;
-
+    
     // The current text and its position, in the form to be returned from the iterator.
     Node* m_positionNode;
     mutable Node* m_positionOffsetBaseNode;
@@ -170,26 +170,26 @@ private:
     InlineTextBox* m_remainingTextBox;
     // Used to point to RenderText object for :first-letter.
     RenderText *m_firstLetterText;
-
+    
     // Used to do the whitespace collapsing logic.
-    Node* m_lastTextNode;
+    Node* m_lastTextNode;    
     bool m_lastTextNodeEndedWithCollapsedSpace;
     UChar m_lastCharacter;
 
     // Used for whitespace characters that aren't in the DOM, so we can point at them.
     // If non-zero, overrides m_text.
     UChar m_singleCharacterBuffer;
-
+    
     // Used when text boxes are out of order (Hebrew/Arabic w/ embeded LTR text)
     Vector<InlineTextBox*> m_sortedTextBoxes;
     size_t m_sortedTextBoxesPosition;
-
+    
     // Used when deciding whether to emit a "positioning" (e.g. newline) before any other content
     bool m_hasEmitted;
-
+    
     // Used by selection preservation code.  There should be one character emitted between every VisiblePosition
     // in the Range used to create the TextIterator.
-    // FIXME <rdar://problem/6028818>: This functionality should eventually be phased out when we rewrite
+    // FIXME <rdar://problem/6028818>: This functionality should eventually be phased out when we rewrite 
     // moveParagraphs to not clone/destroy moved content.
     bool m_emitsCharactersBetweenAllVisiblePositions;
     bool m_entersTextControls;
@@ -271,9 +271,9 @@ private:
     int m_textLength;
 
     // Used to do the whitespace logic.
-    Node* m_lastTextNode;
+    Node* m_lastTextNode;    
     UChar m_lastCharacter;
-
+    
     // Used for whitespace characters that aren't in the DOM, so we can point at them.
     UChar m_singleCharacterBuffer;
 
@@ -298,12 +298,12 @@ private:
 class CharacterIterator {
 public:
     explicit CharacterIterator(const Range*, TextIteratorBehavior = TextIteratorDefaultBehavior);
-
+    
     void advance(int numCharacters);
-
+    
     bool atBreak() const { return m_atBreak; }
     bool atEnd() const { return m_textIterator.atEnd(); }
-
+    
     int length() const { return m_textIterator.length() - m_runOffset; }
     UChar characterAt(unsigned index) const { return m_textIterator.characterAt(m_runOffset + index); }
 
@@ -311,7 +311,7 @@ public:
     void appendTextTo(BufferType& output) { m_textIterator.appendTextTo(output, m_runOffset); }
 
     String string(int numChars);
-
+    
     int characterOffset() const { return m_offset; }
     PassRefPtr<Range> range() const;
 
@@ -319,10 +319,10 @@ private:
     int m_offset;
     int m_runOffset;
     bool m_atBreak;
-
+    
     TextIterator m_textIterator;
 };
-
+    
 class BackwardsCharacterIterator {
 public:
     explicit BackwardsCharacterIterator(const Range*, TextIteratorBehavior = TextIteratorDefaultBehavior);
@@ -350,7 +350,7 @@ public:
 
     bool atEnd() const { return !m_didLookAhead && m_textIterator.atEnd(); }
     void advance();
-
+    
     String substring(unsigned position, unsigned length) const;
     UChar characterAt(unsigned index) const;
     int length() const;

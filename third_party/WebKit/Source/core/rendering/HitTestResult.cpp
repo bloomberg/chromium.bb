@@ -145,7 +145,7 @@ void HitTestResult::setInnerNode(Node* n)
         n = n->parentOrShadowHostNode();
     m_innerNode = n;
 }
-
+    
 void HitTestResult::setInnerNonSharedNode(Node* n)
 {
     if (n && n->isPseudoElement())
@@ -153,9 +153,9 @@ void HitTestResult::setInnerNonSharedNode(Node* n)
     m_innerNonSharedNode = n;
 }
 
-void HitTestResult::setURLElement(Element* n)
-{
-    m_innerURLElement = n;
+void HitTestResult::setURLElement(Element* n) 
+{ 
+    m_innerURLElement = n; 
 }
 
 void HitTestResult::setScrollbar(Scrollbar* s)
@@ -203,7 +203,7 @@ String HitTestResult::spellingToolTip(TextDirection& dir) const
     // currently supply strings, but maybe someday markers associated with misspelled words will also.
     if (!m_innerNonSharedNode)
         return String();
-
+    
     DocumentMarker* marker = m_innerNonSharedNode->document()->markers()->markerContainingPoint(m_hitTestLocation.point(), DocumentMarker::Grammar);
     if (!marker)
         return String();
@@ -242,12 +242,12 @@ String HitTestResult::altDisplayString() const
 {
     if (!m_innerNonSharedNode)
         return String();
-
+    
     if (m_innerNonSharedNode->hasTagName(imgTag)) {
         HTMLImageElement* image = toHTMLImageElement(m_innerNonSharedNode.get());
         return displayString(image->getAttribute(altAttr), m_innerNonSharedNode.get());
     }
-
+    
     if (m_innerNonSharedNode->hasTagName(inputTag)) {
         HTMLInputElement* input = toHTMLInputElement(m_innerNonSharedNode.get());
         return displayString(input->alt(), m_innerNonSharedNode.get());
@@ -260,7 +260,7 @@ Image* HitTestResult::image() const
 {
     if (!m_innerNonSharedNode)
         return 0;
-
+    
     RenderObject* renderer = m_innerNonSharedNode->renderer();
     if (renderer && renderer->isImage()) {
         RenderImage* image = static_cast<WebCore::RenderImage*>(renderer);
@@ -290,7 +290,7 @@ KURL HitTestResult::absoluteImageURL() const
     if (m_innerNonSharedNode->hasTagName(embedTag)
         || m_innerNonSharedNode->hasTagName(imgTag)
         || m_innerNonSharedNode->hasTagName(inputTag)
-        || m_innerNonSharedNode->hasTagName(objectTag)
+        || m_innerNonSharedNode->hasTagName(objectTag)    
         || m_innerNonSharedNode->hasTagName(SVGNames::imageTag)
        ) {
         Element* element = toElement(m_innerNonSharedNode.get());
@@ -366,7 +366,7 @@ String HitTestResult::titleDisplayString() const
 {
     if (!m_innerURLElement)
         return String();
-
+    
     return displayString(m_innerURLElement->title(), m_innerURLElement.get());
 }
 
@@ -379,8 +379,8 @@ String HitTestResult::textContent() const
 
 // FIXME: This function needs a better name and may belong in a different class. It's not
 // really isContentEditable(); it's more like needsEditingContextMenu(). In many ways, this
-// function would make more sense in the ContextMenu class, except that WebElementDictionary
-// hooks into it. Anyway, we should architect this better.
+// function would make more sense in the ContextMenu class, except that WebElementDictionary 
+// hooks into it. Anyway, we should architect this better. 
 bool HitTestResult::isContentEditable() const
 {
     if (!m_innerNonSharedNode)

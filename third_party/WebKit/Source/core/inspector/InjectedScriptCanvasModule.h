@@ -44,7 +44,7 @@ class ScriptObject;
 class InjectedScriptCanvasModule : public InjectedScriptModule {
 public:
     InjectedScriptCanvasModule();
-
+    
     virtual String source() const;
 
     static InjectedScriptCanvasModule moduleForState(InjectedScriptManager*, ScriptState*);

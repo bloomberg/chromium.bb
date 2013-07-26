@@ -94,7 +94,7 @@ void InitArenaPool(ArenaPool* pool, const char*, unsigned size, unsigned align)
      pool->first.next = NULL;
      pool->first.base = pool->first.avail = pool->first.limit = (uword)ARENA_ALIGN(&pool->first + 1);
      pool->current = &pool->first;
-     pool->arenasize = size;
+     pool->arenasize = size;                                  
 }
 
 void* ArenaAllocate(ArenaPool* pool, unsigned int numBytes, unsigned int& bytesAllocated)
@@ -103,7 +103,7 @@ void* ArenaAllocate(ArenaPool* pool, unsigned int numBytes, unsigned int& bytesA
     char* returnPointer;
 
     ASSERT((numBytes & pool->mask) == 0);
-
+    
     numBytes = (uword)ARENA_ALIGN(numBytes);
 
     // attempt to allocate from arenas at pool->current
@@ -120,7 +120,7 @@ void* ArenaAllocate(ArenaPool* pool, unsigned int numBytes, unsigned int& bytesA
     }
 
     // attempt to allocate from the heap
-    {
+    {  
         unsigned int size = max(pool->arenasize, numBytes);
         size += sizeof *arena + pool->mask;  /* header and alignment slop */
 #ifdef DEBUG_ARENA_MALLOC
@@ -165,7 +165,7 @@ static void FreeArenaList(ArenaPool* pool, Arena* head)
     do {
         *arenaPointer = arena->next;
 
-#ifdef DEBUG
+#ifdef DEBUG        
         memset((void*)(arena), FREE_PATTERN, (arena)->limit - (uword)(arena));
 #endif
 

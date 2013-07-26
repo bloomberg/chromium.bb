@@ -43,11 +43,11 @@ LayoutRect RenderSVGBlock::visualOverflowRect() const
     return borderRect;
 }
 
-void RenderSVGBlock::setStyle(PassRefPtr<RenderStyle> style)
+void RenderSVGBlock::setStyle(PassRefPtr<RenderStyle> style) 
 {
     RefPtr<RenderStyle> useStyle = style;
 
-    // SVG text layout code expects us to be a block-level style element.
+    // SVG text layout code expects us to be a block-level style element.   
     if (useStyle->isDisplayInlineType()) {
         RefPtr<RenderStyle> newStyle = RenderStyle::create();
         newStyle->inheritFrom(useStyle.get());

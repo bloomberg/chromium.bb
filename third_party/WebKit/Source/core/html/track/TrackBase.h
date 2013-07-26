@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef TrackBase_h
@@ -42,22 +42,22 @@ public:
 
     virtual const AtomicString& interfaceName() const;
     virtual ScriptExecutionContext* scriptExecutionContext() const;
-
+    
     using RefCounted<TrackBase>::ref;
     using RefCounted<TrackBase>::deref;
 
 protected:
     TrackBase(ScriptExecutionContext*, Type);
-
+    
     virtual EventTargetData* eventTargetData();
     virtual EventTargetData* ensureEventTargetData();
 
 private:
     Type m_type;
-
+    
     virtual void refEventTarget() { ref(); }
     virtual void derefEventTarget() { deref(); }
-
+    
     ScriptExecutionContext* m_scriptExecutionContext;
     EventTargetData m_eventTargetData;
 };

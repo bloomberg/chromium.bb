@@ -31,7 +31,7 @@ public:
 
 private:
     SVGTSpanElement(const QualifiedName&, Document*);
-
+            
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
     virtual bool rendererIsNeeded(const NodeRenderingContext&);

@@ -72,7 +72,7 @@ struct PaintInfo {
 
         // If we're the painting root, kids draw normally, and see root of 0.
         if (paintingRoot == renderer) {
-            paintingRoot = 0;
+            paintingRoot = 0; 
             return;
         }
     }

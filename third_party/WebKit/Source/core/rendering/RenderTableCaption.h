@@ -31,7 +31,7 @@ public:
     explicit RenderTableCaption(Element*);
     virtual ~RenderTableCaption();
     virtual LayoutUnit containingBlockLogicalWidthForContent() const OVERRIDE;
-
+    
 private:
     virtual bool isTableCaption() const OVERRIDE { return true; }
 

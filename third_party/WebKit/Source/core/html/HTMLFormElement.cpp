@@ -478,7 +478,7 @@ unsigned HTMLFormElement::formElementIndexWithFormAttribute(Element* element, un
         else
             left = middle + 1;
     }
-
+    
     ASSERT(left < m_associatedElementsBeforeIndex || left >= m_associatedElementsAfterIndex);
     position = element->compareDocumentPosition(toHTMLElement(m_associatedElements[left]));
     if (position & DOCUMENT_POSITION_FOLLOWING)

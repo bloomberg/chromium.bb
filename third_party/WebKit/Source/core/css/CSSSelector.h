@@ -267,7 +267,7 @@ namespace WebCore {
             QualifiedName m_attribute; // used for attribute selector
             AtomicString m_argument; // Used for :contains, :lang and :nth-*
             OwnPtr<CSSSelectorList> m_selectorList; // Used for :-webkit-any and :not
-
+        
         private:
             RareData(PassRefPtr<StringImpl> value);
         };

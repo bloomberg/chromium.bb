@@ -97,7 +97,7 @@ void RenderWidget::willBeDestroyed()
 {
     if (RenderView* v = view())
         v->removeWidget(this);
-
+    
     if (AXObjectCache* cache = document()->existingAXObjectCache()) {
         cache->childrenChanged(this->parent());
         cache->remove(this);
@@ -154,7 +154,7 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
 
     if (clipChanged && !boundsChanged)
         m_widget->clipRectChanged();
-
+    
     if (hasLayer() && layer()->isComposited())
         layer()->backing()->updateAfterWidgetResize();
 
@@ -330,7 +330,7 @@ void RenderWidget::updateWidgetPosition()
         return;
 
     bool boundsChanged = updateWidgetGeometry();
-
+    
     // if the frame bounds got changed, or if view needs layout (possibly indicating
     // content size is wrong) we have to do a layout to set the right widget size
     if (m_widget && m_widget->isFrameView()) {

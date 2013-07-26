@@ -38,7 +38,7 @@ public:
     enum TimingFunctionType {
         LinearFunction, CubicBezierFunction, StepsFunction
     };
-
+    
     virtual ~TimingFunction() { }
 
     TimingFunctionType type() const { return m_type; }
@@ -46,7 +46,7 @@ public:
     bool isLinearTimingFunction() const { return m_type == LinearFunction; }
     bool isCubicBezierTimingFunction() const { return m_type == CubicBezierFunction; }
     bool isStepsTimingFunction() const { return m_type == StepsFunction; }
-
+    
     // Evaluates the timing function at the given fraction. The accuracy parameter provides a hint as to the required
     // accuracy and is not guaranteed.
     virtual double evaluate(double fraction, double accuracy) const = 0;
@@ -57,7 +57,7 @@ protected:
         : m_type(type)
     {
     }
-
+    
     TimingFunctionType m_type;
 };
 
@@ -67,9 +67,9 @@ public:
     {
         return adoptRef(new LinearTimingFunction);
     }
-
+    
     ~LinearTimingFunction() { }
-
+    
     virtual double evaluate(double fraction, double) const
     {
         return fraction;
@@ -79,14 +79,14 @@ public:
     {
         return other.isLinearTimingFunction();
     }
-
+    
 private:
     LinearTimingFunction()
         : TimingFunction(LinearFunction)
     {
     }
 };
-
+    
 class CubicBezierTimingFunction : public TimingFunction {
 public:
     enum TimingFunctionPreset {
@@ -96,7 +96,7 @@ public:
         EaseInOut,
         Custom
     };
-
+    
     static PassRefPtr<CubicBezierTimingFunction> create(double x1, double y1, double x2, double y2)
     {
         return adoptRef(new CubicBezierTimingFunction(Custom, x1, y1, x2, y2));
@@ -144,7 +144,7 @@ public:
             const CubicBezierTimingFunction* ctf = static_cast<const CubicBezierTimingFunction*>(&other);
             if (m_timingFunctionPreset != Custom)
                 return m_timingFunctionPreset == ctf->m_timingFunctionPreset;
-
+            
             return m_x1 == ctf->m_x1 && m_y1 == ctf->m_y1 && m_x2 == ctf->m_x2 && m_y2 == ctf->m_y2;
         }
         return false;
@@ -181,7 +181,7 @@ public:
     {
         return adoptRef(new StepsTimingFunction(steps, stepAtStart));
     }
-
+    
     ~StepsTimingFunction() { }
 
     virtual double evaluate(double fraction, double) const
@@ -197,10 +197,10 @@ public:
         }
         return false;
     }
-
+    
     int numberOfSteps() const { return m_steps; }
     bool stepAtStart() const { return m_stepAtStart; }
-
+    
 private:
     StepsTimingFunction(int steps, bool stepAtStart)
         : TimingFunction(StepsFunction)
@@ -208,11 +208,11 @@ private:
         , m_stepAtStart(stepAtStart)
     {
     }
-
+    
     int m_steps;
     bool m_stepAtStart;
 };
-
+    
 } // namespace WebCore
 
 #endif // TimingFunction_h

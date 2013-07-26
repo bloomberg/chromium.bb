@@ -87,7 +87,7 @@ private:
 
     int m_border;
     bool m_borderSet;
-
+    
     bool m_borderColorSet;
 
     bool m_frameborder;

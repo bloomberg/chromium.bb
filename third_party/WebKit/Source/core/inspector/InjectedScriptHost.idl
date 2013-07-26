@@ -52,6 +52,6 @@
     [Custom] void monitorFunction(any fn);
     [Custom] void unmonitorFunction(any fn);
 
-    // Only declarative scope (local, with and catch) is accepted. Returns undefined.
+    // Only declarative scope (local, with and catch) is accepted. Returns undefined. 
     [Custom] any setFunctionVariableValue(any functionObject, int scopeIndex, DOMString variableName, any newValue);
 };

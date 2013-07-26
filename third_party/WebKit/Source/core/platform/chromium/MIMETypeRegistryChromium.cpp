@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2008, 2009, Google Inc. All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- *
+ * 
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -87,14 +87,14 @@ String MIMETypeRegistry::getMIMETypeForPath(const String& path)
 }
 
 bool MIMETypeRegistry::isSupportedImageMIMEType(const String& mimeType)
-{
+{ 
     return WebKit::Platform::current()->mimeRegistry()->supportsImageMIMEType(mimeType)
         != WebKit::WebMimeRegistry::IsNotSupported;
 }
 
 bool MIMETypeRegistry::isSupportedImageResourceMIMEType(const String& mimeType)
-{
-    return isSupportedImageMIMEType(mimeType);
+{ 
+    return isSupportedImageMIMEType(mimeType); 
 }
 
 bool MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(const String& mimeType)
@@ -111,7 +111,7 @@ bool MIMETypeRegistry::isSupportedJavaScriptMIMEType(const String& mimeType)
     return WebKit::Platform::current()->mimeRegistry()->supportsJavaScriptMIMEType(mimeType)
         != WebKit::WebMimeRegistry::IsNotSupported;
 }
-
+    
 bool MIMETypeRegistry::isSupportedNonImageMIMEType(const String& mimeType)
 {
     return WebKit::Platform::current()->mimeRegistry()->supportsNonImageMIMEType(mimeType)
@@ -130,8 +130,8 @@ bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType)
     // of using a hash set.
     // Any of the MIME types below may be followed by any number of specific versions of the JVM,
     // which is why we use startsWith()
-    return mimeType.startsWith("application/x-java-applet", false)
-        || mimeType.startsWith("application/x-java-bean", false)
+    return mimeType.startsWith("application/x-java-applet", false) 
+        || mimeType.startsWith("application/x-java-bean", false) 
         || mimeType.startsWith("application/x-java-vm", false);
 }
 

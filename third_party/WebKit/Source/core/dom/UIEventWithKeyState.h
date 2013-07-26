@@ -27,7 +27,7 @@
 #include "core/dom/UIEvent.h"
 
 namespace WebCore {
-
+    
     class UIEventWithKeyState : public UIEvent {
     public:
         bool ctrlKey() const { return m_ctrlKey; }
@@ -43,7 +43,7 @@ namespace WebCore {
             , m_metaKey(false)
         {
         }
-
+        
         UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view,
                             int detail, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
             : UIEvent(type, canBubble, cancelable, view, detail)

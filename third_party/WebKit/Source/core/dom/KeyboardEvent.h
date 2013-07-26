@@ -52,7 +52,7 @@ public:
         DOMKeyLocationRight         = 0x02,
         DOMKeyLocationNumpad        = 0x03
     };
-
+        
     static PassRefPtr<KeyboardEvent> create()
     {
         return adoptRef(new KeyboardEvent);
@@ -77,18 +77,18 @@ public:
     }
 
     virtual ~KeyboardEvent();
-
+    
     void initKeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
         const String& keyIdentifier, unsigned keyLocation,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey = false);
-
+    
     const String& keyIdentifier() const { return m_keyIdentifier; }
     unsigned keyLocation() const { return m_keyLocation; }
 
     bool getModifierState(const String& keyIdentifier) const;
 
     bool altGraphKey() const { return m_altGraphKey; }
-
+    
     const PlatformKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
 
     int keyCode() const; // key code for keydown and keyup, character for keypress

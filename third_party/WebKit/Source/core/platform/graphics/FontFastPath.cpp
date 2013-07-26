@@ -57,7 +57,7 @@ static bool shouldIgnoreRotation(UChar32 character)
 
     if (isInRange(character, 0x002E5, 0x002EB))
         return true;
-
+    
     if (isInRange(character, 0x01100, 0x011FF) || isInRange(character, 0x01401, 0x0167F) || isInRange(character, 0x01800, 0x018FF))
         return true;
 
@@ -119,13 +119,13 @@ static bool shouldIgnoreRotation(UChar32 character)
         || isInRange(character, 0x1D000, 0x1D1FF) || isInRange(character, 0x1D300, 0x1D37F)
         || isInRange(character, 0x1F000, 0x1F64F) || isInRange(character, 0x1F680, 0x1F77F))
         return true;
-
+    
     if (isInRange(character, 0x20000, 0x2FFFD) || isInRange(character, 0x30000, 0x3FFFD))
         return true;
 
     return false;
 }
-
+    
 static inline std::pair<GlyphData, GlyphPage*> glyphDataAndPageForNonCJKCharacterWithGlyphOrientation(UChar32 character, NonCJKGlyphOrientation orientation, GlyphData& data, GlyphPage* page, unsigned pageNumber)
 {
     if (orientation == NonCJKGlyphOrientationUpright || shouldIgnoreRotation(character)) {
@@ -351,7 +351,7 @@ bool Font::getEmphasisMarkGlyphData(const AtomicString& mark, GlyphData& glyphDa
 int Font::emphasisMarkAscent(const AtomicString& mark) const
 {
     FontCachePurgePreventer purgePreventer;
-
+    
     GlyphData markGlyphData;
     if (!getEmphasisMarkGlyphData(mark, markGlyphData))
         return 0;
@@ -367,7 +367,7 @@ int Font::emphasisMarkAscent(const AtomicString& mark) const
 int Font::emphasisMarkDescent(const AtomicString& mark) const
 {
     FontCachePurgePreventer purgePreventer;
-
+    
     GlyphData markGlyphData;
     if (!getEmphasisMarkGlyphData(mark, markGlyphData))
         return 0;
@@ -452,7 +452,7 @@ void Font::drawEmphasisMarksForSimpleText(GraphicsContext* context, const TextRu
 }
 
 void Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const FloatPoint& point) const
-{
+{   
     // Draw each contiguous run of glyphs that use the same font data.
     const SimpleFontData* fontData = glyphBuffer.fontDataAt(0);
     FloatSize offset = glyphBuffer.offsetAt(0);
@@ -510,7 +510,7 @@ inline static float offsetToMiddleOfGlyphAtIndex(const GlyphBuffer& glyphBuffer,
 void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const AtomicString& mark, const FloatPoint& point) const
 {
     FontCachePurgePreventer purgePreventer;
-
+    
     GlyphData markGlyphData;
     if (!getEmphasisMarkGlyphData(mark, markGlyphData))
         return;

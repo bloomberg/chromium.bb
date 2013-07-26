@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006, 2007, 2010 Apple Inc. All rights reserved.
- *           (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ *           (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/) 
  * Copyright (C) 2010 Google Inc. All rights reserved.
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
  *
@@ -347,7 +347,7 @@ void RenderTextControlSingleLine::updateFromElement()
 
 PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerTextStyle(const RenderStyle* startStyle) const
 {
-    RefPtr<RenderStyle> textBlockStyle = RenderStyle::create();
+    RefPtr<RenderStyle> textBlockStyle = RenderStyle::create();   
     textBlockStyle->inheritFrom(startStyle);
     adjustInnerTextStyle(textBlockStyle.get());
 

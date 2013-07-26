@@ -162,7 +162,7 @@ public:
     }
 
     LayoutUnit fraction() const
-    {
+    {   
         // Add the fraction to the size (as opposed to the full location) to avoid overflows.
         // Compute fraction using the mod operator to preserve the sign of the value as it may affect rounding.
         LayoutUnit fraction;
@@ -204,7 +204,7 @@ public:
         m.m_value = std::numeric_limits<int>::min() + kFixedPointDenominator / 2;
         return m;
     }
-
+    
     static LayoutUnit clamp(double value)
     {
         return clampTo<LayoutUnit>(value, LayoutUnit::min(), LayoutUnit::max());
@@ -223,7 +223,7 @@ private:
     {
         return ::fabs(value) <= std::numeric_limits<int>::max() / kFixedPointDenominator;
     }
-
+    
     inline void setValue(int value)
     {
         if (value > intMaxForLayoutUnit)
@@ -501,7 +501,7 @@ inline LayoutUnit operator/(const LayoutUnit& a, const LayoutUnit& b)
     long long rawVal = static_cast<long long>(kFixedPointDenominator) * a.rawValue() / b.rawValue();
     returnVal.setRawValue(clampTo<int>(rawVal));
     return returnVal;
-}
+}    
 
 inline float operator/(const LayoutUnit& a, float b)
 {
@@ -763,7 +763,7 @@ inline float& operator/=(float& a, const LayoutUnit& b)
     return a;
 }
 
-inline int snapSizeToPixel(LayoutUnit size, LayoutUnit location)
+inline int snapSizeToPixel(LayoutUnit size, LayoutUnit location) 
 {
     LayoutUnit fraction = location.fraction();
     return (fraction + size).round() - fraction.round();

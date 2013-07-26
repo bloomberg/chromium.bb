@@ -6,13 +6,13 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
+ * 
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -347,7 +347,7 @@ Token Parser::nextTokenInternal()
         // Any chance it's an axis name?
         if (peekCurHelper() == ':') {
             m_nextPos++;
-
+            
             //It might be an axis name.
             Step::Axis axis;
             if (isAxisName(name, axis))
@@ -362,19 +362,19 @@ Token Parser::nextTokenInternal()
             m_nextPos++;
             return Token(NAMETEST, name + ":*");
         }
-
+        
         // Make a full qname.
         String n2;
         if (!lexNCName(n2))
             return Token(XPATH_ERROR);
-
+        
         name = name + ":" + n2;
     }
 
     skipWS();
     if (peekCurHelper() == '(') {
         //note: we don't swallow the (here!
-
+        
         //either node type of function name
         if (isNodeTypeName(name)) {
             if (name == "processing-instruction")
@@ -411,7 +411,7 @@ void Parser::reset(const String& data)
     m_nextPos = 0;
     m_data = data;
     m_lastTokenType = 0;
-
+    
     m_topExpr = 0;
     m_gotNamespaceError = false;
 }
@@ -459,7 +459,7 @@ bool Parser::expandQName(const String& qName, String& localName, String& namespa
         localName = qName.substring(colon + 1);
     } else
         localName = qName;
-
+    
     return true;
 }
 
@@ -468,7 +468,7 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSRe
     reset(statement);
 
     m_resolver = resolver;
-
+    
     Parser* oldParser = currentParser;
     currentParser = this;
     int parseError = xpathyyparse(this);
@@ -525,9 +525,9 @@ void Parser::registerParseNode(ParseNode* node)
 {
     if (node == 0)
         return;
-
+    
     ASSERT(!m_parseNodes.contains(node));
-
+    
     m_parseNodes.add(node);
 }
 
@@ -535,7 +535,7 @@ void Parser::unregisterParseNode(ParseNode* node)
 {
     if (node == 0)
         return;
-
+    
     ASSERT(m_parseNodes.contains(node));
 
     m_parseNodes.remove(node);
@@ -547,7 +547,7 @@ void Parser::registerPredicateVector(Vector<Predicate*>* vector)
         return;
 
     ASSERT(!m_predicateVectors.contains(vector));
-
+    
     m_predicateVectors.add(vector);
 }
 
@@ -557,7 +557,7 @@ void Parser::deletePredicateVector(Vector<Predicate*>* vector)
         return;
 
     ASSERT(m_predicateVectors.contains(vector));
-
+    
     m_predicateVectors.remove(vector);
     delete vector;
 }
@@ -569,8 +569,8 @@ void Parser::registerExpressionVector(Vector<Expression*>* vector)
         return;
 
     ASSERT(!m_expressionVectors.contains(vector));
-
-    m_expressionVectors.add(vector);
+    
+    m_expressionVectors.add(vector);    
 }
 
 void Parser::deleteExpressionVector(Vector<Expression*>* vector)
@@ -579,7 +579,7 @@ void Parser::deleteExpressionVector(Vector<Expression*>* vector)
         return;
 
     ASSERT(m_expressionVectors.contains(vector));
-
+    
     m_expressionVectors.remove(vector);
     delete vector;
 }
@@ -588,19 +588,19 @@ void Parser::registerString(String* s)
 {
     if (s == 0)
         return;
-
+    
     ASSERT(!m_strings.contains(s));
-
-    m_strings.add(s);
+    
+    m_strings.add(s);        
 }
 
 void Parser::deleteString(String* s)
 {
     if (s == 0)
         return;
-
+    
     ASSERT(m_strings.contains(s));
-
+    
     m_strings.remove(s);
     delete s;
 }
@@ -609,19 +609,19 @@ void Parser::registerNodeTest(Step::NodeTest* t)
 {
     if (t == 0)
         return;
-
+    
     ASSERT(!m_nodeTests.contains(t));
-
-    m_nodeTests.add(t);
+    
+    m_nodeTests.add(t);        
 }
 
 void Parser::deleteNodeTest(Step::NodeTest* t)
 {
     if (t == 0)
         return;
-
+    
     ASSERT(m_nodeTests.contains(t));
-
+    
     m_nodeTests.remove(t);
     delete t;
 }

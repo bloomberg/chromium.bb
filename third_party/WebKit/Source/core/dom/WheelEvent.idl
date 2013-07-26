@@ -35,8 +35,8 @@
     readonly attribute boolean webkitDirectionInvertedFromDevice;
 
     void initWebKitWheelEvent([Default=Undefined] optional long wheelDeltaX,
-                              [Default=Undefined] optional long wheelDeltaY,
-                              [Default=Undefined] optional Window view,
+                              [Default=Undefined] optional long wheelDeltaY, 
+                              [Default=Undefined] optional Window view, 
                               [Default=Undefined] optional long screenX,
                               [Default=Undefined] optional long screenY,
                               [Default=Undefined] optional long clientX,

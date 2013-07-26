@@ -22,7 +22,7 @@
 #include "core/dom/UIEventWithKeyState.h"
 
 namespace WebCore {
-
+    
 UIEventWithKeyState* findEventWithKeyState(Event* event)
 {
     for (Event* e = event; e; e = e->underlyingEvent())

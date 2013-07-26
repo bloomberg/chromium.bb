@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2006, 2007 Apple Computer, Inc.
  * Copyright (c) 2006, 2007, 2008, 2009, Google Inc. All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- *
+ * 
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -15,7 +15,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -138,7 +138,7 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
             advances[i] = lroundf(horizontalOffset) - lastHorizontalOffsetRounded;
             lastHorizontalOffsetRounded += advances[i];
             currentWidth += glyphBuffer.advanceAt(from + glyphIndex);
-
+            
             // Bug 26088 - very large positive or negative runs can fail to
             // render so we clamp the size here. In the specs, negative
             // letter-spacing is implementation-defined, so this should be
@@ -147,7 +147,7 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
             // -32830, so we give ourselves a little breathing room.
             const int maxNegativeRun = -32768;
             const int maxPositiveRun =  32768;
-            if ((currentWidth + advances[i] < maxNegativeRun) || (currentWidth + advances[i] > maxPositiveRun))
+            if ((currentWidth + advances[i] < maxNegativeRun) || (currentWidth + advances[i] > maxPositiveRun)) 
                 advances[i] = 0;
         }
 

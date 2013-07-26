@@ -91,7 +91,7 @@ String SVGStyledElement::title() const
         ASSERT(!shadowHostElement || shadowHostElement->hasTagName(SVGNames::useTag));
         if (shadowHostElement && shadowHostElement->hasTagName(SVGNames::useTag)) {
             SVGUseElement* useElement = toSVGUseElement(shadowHostElement);
-
+ 
             // If the <use> title is not empty we found the title to use.
             String useTitle(useElement->title());
             if (!useTitle.isEmpty())
@@ -110,7 +110,7 @@ String SVGStyledElement::title() const
     // If a title child was found, return the text contents.
     if (titleElement)
         return titleElement->innerText();
-
+    
     // Otherwise return a null/empty string.
     return String();
 }
@@ -121,7 +121,7 @@ bool SVGStyledElement::rendererIsNeeded(const NodeRenderingContext& context)
     // Prevent anything other than SVG renderers from appearing in our render tree
     // Spec: SVG allows inclusion of elements from foreign namespaces anywhere
     // with the SVG content. In general, the SVG user agent will include the unknown
-    // elements in the DOM but will otherwise ignore unknown elements.
+    // elements in the DOM but will otherwise ignore unknown elements. 
     if (!parentOrShadowHostElement() || parentOrShadowHostElement()->isSVGElement())
         return Element::rendererIsNeeded(context);
 
@@ -132,7 +132,7 @@ CSSPropertyID SVGStyledElement::cssPropertyIdForSVGAttributeName(const Qualified
 {
     if (!attrName.namespaceURI().isNull())
         return CSSPropertyInvalid;
-
+    
     static HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap = 0;
     if (!propertyNameToIdMap) {
         propertyNameToIdMap = new HashMap<StringImpl*, CSSPropertyID>;
@@ -147,7 +147,7 @@ CSSPropertyID SVGStyledElement::cssPropertyIdForSVGAttributeName(const Qualified
         mapAttributeToCSSProperty(propertyNameToIdMap, color_interpolationAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, color_interpolation_filtersAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, color_profileAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, color_renderingAttr);
+        mapAttributeToCSSProperty(propertyNameToIdMap, color_renderingAttr); 
         mapAttributeToCSSProperty(propertyNameToIdMap, cursorAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, SVGNames::directionAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, displayAttr);
@@ -200,7 +200,7 @@ CSSPropertyID SVGStyledElement::cssPropertyIdForSVGAttributeName(const Qualified
         mapAttributeToCSSProperty(propertyNameToIdMap, word_spacingAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, writing_modeAttr);
     }
-
+    
     return propertyNameToIdMap->get(attrName.localName().impl());
 }
 
@@ -223,7 +223,7 @@ static inline AttributeToPropertyTypeMap& cssPropertyToTypeMap()
     s_cssPropertyMap.set(color_interpolationAttr, AnimatedString);
     s_cssPropertyMap.set(color_interpolation_filtersAttr, AnimatedString);
     s_cssPropertyMap.set(color_profileAttr, AnimatedString);
-    s_cssPropertyMap.set(color_renderingAttr, AnimatedString);
+    s_cssPropertyMap.set(color_renderingAttr, AnimatedString); 
     s_cssPropertyMap.set(cursorAttr, AnimatedString);
     s_cssPropertyMap.set(displayAttr, AnimatedString);
     s_cssPropertyMap.set(dominant_baselineAttr, AnimatedString);

@@ -40,7 +40,7 @@ public:
     {
         return adoptRef(new TextTrackCueGeneric(context, start, end, content));
     }
-
+    
     virtual ~TextTrackCueGeneric() { }
 
     virtual PassRefPtr<TextTrackCueBox> createDisplayTree() OVERRIDE;
@@ -49,7 +49,7 @@ public:
     virtual void setPosition(int, ExceptionCode&) OVERRIDE;
 
     bool useDefaultPosition() const { return m_defaultPosition; }
-
+    
     double baseFontSizeRelativeToVideoHeight() const { return m_baseFontSizeRelativeToVideoHeight; }
     void setBaseFontSizeRelativeToVideoHeight(double size) { m_baseFontSizeRelativeToVideoHeight = size; }
 
@@ -61,7 +61,7 @@ public:
 
     Color foregroundColor() const { return m_foregroundColor; }
     void setForegroundColor(Color color) { m_foregroundColor = color; }
-
+    
     Color backgroundColor() const { return m_backgroundColor; }
     void setBackgroundColor(Color color) { m_backgroundColor = color; }
 
@@ -77,7 +77,7 @@ public:
 
 private:
     TextTrackCueGeneric(ScriptExecutionContext*, double start, double end, const String&);
-
+    
     Color m_foregroundColor;
     Color m_backgroundColor;
     double m_baseFontSizeRelativeToVideoHeight;

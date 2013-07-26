@@ -86,7 +86,7 @@ bool HTMLAreaElement::mapMouseEvent(LayoutPoint location, const LayoutSize& size
 
     if (!m_region->contains(location))
         return false;
-
+    
     result.setInnerNode(this);
     result.setURLElement(this);
     return true;
@@ -96,7 +96,7 @@ Path HTMLAreaElement::computePath(RenderObject* obj) const
 {
     if (!obj)
         return Path();
-
+    
     // FIXME: This doesn't work correctly with transforms.
     FloatPoint absPos = obj->localToAbsolute();
 
@@ -104,7 +104,7 @@ Path HTMLAreaElement::computePath(RenderObject* obj) const
     LayoutSize size = m_lastSize;
     if (m_shape == Default)
         size = obj->absoluteOutlineBounds().size();
-
+    
     Path p = getRegion(size);
     float zoomFactor = obj->style()->effectiveZoom();
     if (zoomFactor != 1.0f) {
@@ -116,7 +116,7 @@ Path HTMLAreaElement::computePath(RenderObject* obj) const
     p.translate(toFloatSize(absPos));
     return p;
 }
-
+    
 LayoutRect HTMLAreaElement::computeRect(RenderObject* obj) const
 {
     return enclosingLayoutRect(computePath(obj).boundingRect());
@@ -187,7 +187,7 @@ HTMLImageElement* HTMLAreaElement::imageElement() const
 
     if (!mapElement)
         return 0;
-
+    
     return toHTMLMapElement(mapElement)->imageElement();
 }
 
@@ -195,7 +195,7 @@ bool HTMLAreaElement::isKeyboardFocusable(KeyboardEvent*) const
 {
     return isFocusable();
 }
-
+    
 bool HTMLAreaElement::isMouseFocusable() const
 {
     return isFocusable();
@@ -209,7 +209,7 @@ bool HTMLAreaElement::rendererIsFocusable() const
 
     return supportsFocus() && Element::tabIndex() >= 0;
 }
-
+    
 void HTMLAreaElement::setFocus(bool shouldBeFocused)
 {
     if (focused() == shouldBeFocused)
@@ -227,7 +227,7 @@ void HTMLAreaElement::setFocus(bool shouldBeFocused)
 
     toRenderImage(renderer)->areaElementFocusChanged(this);
 }
-
+    
 void HTMLAreaElement::updateFocusAppearance(bool restorePreviousSelection)
 {
     if (!isFocusable())
@@ -239,7 +239,7 @@ void HTMLAreaElement::updateFocusAppearance(bool restorePreviousSelection)
 
     imageElement->updateFocusAppearance(restorePreviousSelection);
 }
-
+    
 bool HTMLAreaElement::supportsFocus() const
 {
     // If the AREA element was a link, it should support focus.

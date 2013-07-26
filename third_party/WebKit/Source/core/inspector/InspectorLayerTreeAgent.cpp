@@ -211,7 +211,7 @@ PassRefPtr<TypeBuilder::LayerTree::Layer> InspectorLayerTreeAgent::buildObjectFo
 int InspectorLayerTreeAgent::idForNode(ErrorString* errorString, Node* node)
 {
     InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent();
-
+    
     int nodeId = domAgent->boundNodeId(node);
     if (!nodeId)
         nodeId = domAgent->pushNodeToFrontend(errorString, domAgent->boundNodeId(node->document()), node);
@@ -254,7 +254,7 @@ void InspectorLayerTreeAgent::reasonsForCompositingLayer(ErrorString* errorStrin
 
     if (reasonsBitmask & CompositingReasonIFrame)
         compositingReasons->setIFrame(true);
-
+    
     if (reasonsBitmask & CompositingReasonBackfaceVisibilityHidden)
         compositingReasons->setBackfaceVisibilityHidden(true);
 
@@ -299,7 +299,7 @@ void InspectorLayerTreeAgent::reasonsForCompositingLayer(ErrorString* errorStrin
 
     if (reasonsBitmask & CompositingReasonFilterWithCompositedDescendants)
         compositingReasons->setFilterWithCompositedDescendants(true);
-
+            
     if (reasonsBitmask & CompositingReasonBlendingWithCompositedDescendants)
         compositingReasons->setBlendingWithCompositedDescendants(true);
 

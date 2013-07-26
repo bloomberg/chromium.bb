@@ -27,7 +27,7 @@ namespace WebCore {
 unsigned numGraphemeClusters(const String& string)
 {
     unsigned stringLength = string.length();
-
+    
     if (!stringLength)
         return 0;
 

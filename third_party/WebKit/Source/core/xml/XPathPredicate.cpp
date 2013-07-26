@@ -6,13 +6,13 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
+ * 
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -36,7 +36,7 @@
 
 namespace WebCore {
 namespace XPath {
-
+        
 Number::Number(double value)
     : m_value(value)
 {
@@ -74,7 +74,7 @@ Value NumericOp::evaluate() const
 {
     Value lhs(subExpr(0)->evaluate());
     Value rhs(subExpr(1)->evaluate());
-
+    
     double leftVal = lhs.toNumber();
     double rightVal = rhs.toNumber();
 
@@ -160,7 +160,7 @@ bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
             return compare(lhs, rhs.toBoolean());
         ASSERT(0);
     }
-
+    
     // Neither side is a NodeSet.
     switch (m_opcode) {
         case OP_EQ:
@@ -229,14 +229,14 @@ Value Union::evaluate() const
 {
     Value lhsResult = subExpr(0)->evaluate();
     Value rhs = subExpr(1)->evaluate();
-
+    
     NodeSet& resultSet = lhsResult.modifiableNodeSet();
     const NodeSet& rhsNodes = rhs.toNodeSet();
-
+    
     HashSet<Node*> nodes;
     for (size_t i = 0; i < resultSet.size(); ++i)
         nodes.add(resultSet[i]);
-
+    
     for (size_t i = 0; i < rhsNodes.size(); ++i) {
         Node* node = rhsNodes[i];
         if (nodes.add(node).isNewEntry)

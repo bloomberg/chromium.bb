@@ -162,7 +162,7 @@ SkImageFilter* FEOffset::createImageFilter(SkiaImageFilterBuilder* builder)
 TextStream& FEOffset::externalRepresentation(TextStream& ts, int indent) const
 {
     writeIndent(ts, indent);
-    ts << "[feOffset";
+    ts << "[feOffset"; 
     FilterEffect::externalRepresentation(ts);
     ts << " dx=\"" << dx() << "\" dy=\"" << dy() << "\"]\n";
     inputEffect(0)->externalRepresentation(ts, indent + 1);

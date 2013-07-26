@@ -153,14 +153,14 @@ protected:
     virtual UChar previousCharacter() const;
 
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const OVERRIDE;
-
+    
     virtual InlineTextBox* createTextBox(); // Subclassed by SVG.
 
 private:
     void computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow&);
 
     bool computeCanUseSimpleFontCodePath() const;
-
+    
     // Make length() private so that callers that have a RenderText*
     // will use the more efficient textLength() instead, while
     // callers with a RenderObject* can continue to use length().
@@ -194,7 +194,7 @@ private:
     bool m_canUseSimpleFontCodePath : 1;
     mutable bool m_knownToHaveNoOverflowAndNoFallbackFonts : 1;
     bool m_needsTranscoding : 1;
-
+    
     float m_minWidth;
     float m_maxWidth;
     float m_firstLineMinWidth;
@@ -221,13 +221,13 @@ inline UChar RenderText::characterAt(unsigned i) const
 }
 
 inline RenderText* toRenderText(RenderObject* object)
-{
+{ 
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isText());
     return static_cast<RenderText*>(object);
 }
 
 inline const RenderText* toRenderText(const RenderObject* object)
-{
+{ 
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isText());
     return static_cast<const RenderText*>(object);
 }

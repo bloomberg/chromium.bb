@@ -311,7 +311,7 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
         }
 
         familyFontFaces->append(fontFace);
-
+        
         ++m_version;
     }
 }

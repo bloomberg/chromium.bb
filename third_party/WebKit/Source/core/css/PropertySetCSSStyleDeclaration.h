@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef PropertySetCSSStyleDeclaration_h
@@ -42,11 +42,11 @@ class Element;
 class PropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
 public:
     PropertySetCSSStyleDeclaration(MutableStylePropertySet* propertySet) : m_propertySet(propertySet) { }
-
+    
     virtual Element* parentElement() const { return 0; }
     virtual void clearParentElement() { ASSERT_NOT_REACHED(); }
     StyleSheetContents* contextStyleSheet() const;
-
+    
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
 
@@ -77,7 +77,7 @@ private:
     virtual PassRefPtr<MutableStylePropertySet> copyProperties() const OVERRIDE;
 
     CSSValue* cloneAndCacheForCSSOM(CSSValue*);
-
+    
 protected:
     enum MutationType { NoChanges, PropertyChanged };
     virtual void willMutate() { }
@@ -96,7 +96,7 @@ public:
     }
 
     void clearParentRule() { m_parentRule = 0; }
-
+    
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
 
@@ -122,7 +122,7 @@ class InlineCSSStyleDeclaration : public PropertySetCSSStyleDeclaration
 public:
     InlineCSSStyleDeclaration(MutableStylePropertySet* propertySet, Element* parentElement)
         : PropertySetCSSStyleDeclaration(propertySet)
-        , m_parentElement(parentElement)
+        , m_parentElement(parentElement) 
     {
     }
 

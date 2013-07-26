@@ -70,13 +70,13 @@ private:
 };
 
 inline RenderTextFragment* toRenderTextFragment(RenderObject* object)
-{
+{ 
     ASSERT_WITH_SECURITY_IMPLICATION(!object || toRenderText(object)->isTextFragment());
     return static_cast<RenderTextFragment*>(object);
 }
 
 inline const RenderTextFragment* toRenderTextFragment(const RenderObject* object)
-{
+{ 
     ASSERT_WITH_SECURITY_IMPLICATION(!object || toRenderText(object)->isTextFragment());
     return static_cast<const RenderTextFragment*>(object);
 }

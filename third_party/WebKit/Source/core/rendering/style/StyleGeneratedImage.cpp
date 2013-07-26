@@ -29,9 +29,9 @@
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
-
+    
 StyleGeneratedImage::StyleGeneratedImage(PassRefPtr<CSSImageGeneratorValue> value)
-    : m_imageGeneratorValue(value)
+    : m_imageGeneratorValue(value)  
     , m_fixedSize(m_imageGeneratorValue->isFixedSize())
 {
     m_isGeneratedImage = true;
@@ -61,7 +61,7 @@ LayoutSize StyleGeneratedImage::imageSize(const RenderObject* renderer, float mu
 
         return LayoutSize(width, height);
     }
-
+    
     return m_containerSize;
 }
 

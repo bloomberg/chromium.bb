@@ -254,7 +254,7 @@ bool RenderRegion::shouldHaveAutoLogicalHeight() const
     bool hasAnchoredEndpointsForHeight = isOutOfFlowPositioned() && hasSpecifiedEndpointsForHeight;
     return style()->logicalHeight().isAuto() && !hasAnchoredEndpointsForHeight;
 }
-
+    
 void RenderRegion::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderBlock::styleDidChange(diff, oldStyle);
@@ -329,7 +329,7 @@ void RenderRegion::repaintFlowThreadContentRectangle(const LayoutRect& repaintRe
 
     // Now switch to the region's writing mode coordinate space and let it repaint itself.
     flipForWritingMode(clippedRect);
-
+    
     // Issue the repaint.
     repaintRectangle(clippedRect);
 }
@@ -361,7 +361,7 @@ void RenderRegion::attachRegion()
 {
     if (documentBeingDestroyed())
         return;
-
+    
     // A region starts off invalid.
     setIsValid(false);
 
@@ -369,7 +369,7 @@ void RenderRegion::attachRegion()
     // The flow thread lifetime is influenced by the number of regions attached to it,
     // and we are attaching the region to the flow thread.
     installFlowThread();
-
+    
     if (!m_flowThread)
         return;
 

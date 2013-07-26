@@ -28,10 +28,10 @@ PassRefPtr<TransformOperation> TranslateTransformOperation::blend(const Transfor
 {
     if (from && !from->isSameType(*this))
         return this;
-
+    
     if (blendToIdentity)
-        return TranslateTransformOperation::create(Length(m_x.type()).blend(m_x, progress),
-                                                   Length(m_y.type()).blend(m_y, progress),
+        return TranslateTransformOperation::create(Length(m_x.type()).blend(m_x, progress), 
+                                                   Length(m_y.type()).blend(m_y, progress), 
                                                    Length(m_z.type()).blend(m_z, progress), m_type);
 
     const TranslateTransformOperation* fromOp = static_cast<const TranslateTransformOperation*>(from);

@@ -85,12 +85,12 @@ public:
     ClipRect()
     : m_hasRadius(false)
     { }
-
+    
     ClipRect(const LayoutRect& rect)
     : m_rect(rect)
     , m_hasRadius(false)
     { }
-
+    
     const LayoutRect& rect() const { return m_rect; }
     void setRect(const LayoutRect& rect) { m_rect = rect; }
 
@@ -154,7 +154,7 @@ public:
         m_posClipRect = r;
         m_fixed = false;
     }
-
+    
     const ClipRect& overflowClipRect() const { return m_overflowClipRect; }
     void setOverflowClipRect(const ClipRect& r) { m_overflowClipRect = r; }
 
@@ -277,7 +277,7 @@ public:
         foregroundRect = foreground;
         outlineRect = outline;
     }
-
+    
     void moveBy(const LayoutPoint& offset)
     {
         layerBounds.moveBy(offset);
@@ -286,23 +286,23 @@ public:
         outlineRect.moveBy(offset);
         paginationClip.moveBy(offset);
     }
-
+    
     void intersect(const LayoutRect& rect)
     {
         backgroundRect.intersect(rect);
         foregroundRect.intersect(rect);
         outlineRect.intersect(rect);
     }
-
+    
     bool shouldPaintContent;
     LayoutRect layerBounds;
     ClipRect backgroundRect;
     ClipRect foregroundRect;
     ClipRect outlineRect;
-
+    
     // Unique to paginated fragments. The physical translation to apply to shift the layer when painting/hit-testing.
     LayoutPoint paginationOffset;
-
+    
     // Also unique to paginated fragments. An additional clip that applies to the layer. It is in layer-local
     // (physical) coordinates.
     LayoutRect paginationClip;
@@ -368,7 +368,7 @@ public:
             curr = curr->parent();
         return curr;
     }
-
+    
     const LayoutPoint& location() const { return m_topLeft; }
     void setLocation(const LayoutPoint& p) { m_topLeft = p; }
 
@@ -442,7 +442,7 @@ public:
     bool isRootLayer() const { return m_isRootLayer; }
 
     RenderLayerCompositor* compositor() const;
-
+    
     // Notification from the renderer that its content changed (e.g. current frame of image changed).
     // Allows updates of layer content without repainting.
     void contentChanged(ContentChangeType);
@@ -601,7 +601,7 @@ public:
         PaintLayerPaintingSkipRootBackground = 1 << 11,
         PaintLayerPaintingCompositingAllPhases = (PaintLayerPaintingCompositingBackgroundPhase | PaintLayerPaintingCompositingForegroundPhase | PaintLayerPaintingCompositingMaskPhase)
     };
-
+    
     typedef unsigned PaintLayerFlags;
 
     // The two main functions that use the layer system.  The paint method
@@ -683,7 +683,7 @@ public:
 
     // Can pass offsetFromRoot if known.
     IntRect calculateLayerBounds(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot = 0, CalculateLayerBoundsFlags = DefaultCalculateLayerBoundsFlags) const;
-
+    
     // WARNING: This method returns the offset for the parent as this is what updateLayerPositions expects.
     LayoutPoint computeOffsetFromRoot(bool& hasLayerOffset) const;
 
@@ -695,7 +695,7 @@ public:
 
     LayoutUnit staticInlinePosition() const { return m_staticInlinePosition; }
     LayoutUnit staticBlockPosition() const { return m_staticBlockPosition; }
-
+   
     void setStaticInlinePosition(LayoutUnit position) { m_staticInlinePosition = position; }
     void setStaticBlockPosition(LayoutUnit position) { m_staticBlockPosition = position; }
 
@@ -707,7 +707,7 @@ public:
     // returns the identity matrix.
     TransformationMatrix currentTransform(RenderStyle::ApplyTransformOrigin = RenderStyle::IncludeTransformOrigin) const;
     TransformationMatrix renderableTransform(PaintBehavior) const;
-
+    
     // Get the perspective transform, which is applied to transformed sublayers.
     // Returns true if the layer has a -webkit-perspective.
     // Note that this transform has the perspective-origin baked in.
@@ -757,20 +757,20 @@ public:
     FilterOperations computeFilterOperations(const RenderStyle*);
     bool paintsWithFilters() const;
     bool requiresFullLayerImageForFilters() const;
-    FilterEffectRenderer* filterRenderer() const
+    FilterEffectRenderer* filterRenderer() const 
     {
         RenderLayerFilterInfo* filterInfo = this->filterInfo();
         return filterInfo ? filterInfo->renderer() : 0;
     }
-
+    
     RenderLayerFilterInfo* filterInfo() const { return hasFilterInfo() ? RenderLayerFilterInfo::filterInfoForRenderLayer(this) : 0; }
     RenderLayerFilterInfo* ensureFilterInfo() { return RenderLayerFilterInfo::createFilterInfoForRenderLayerIfNeeded(this); }
-    void removeFilterInfoIfNeeded()
+    void removeFilterInfoIfNeeded() 
     {
         if (hasFilterInfo())
-            RenderLayerFilterInfo::removeFilterInfoForRenderLayer(this);
+            RenderLayerFilterInfo::removeFilterInfoForRenderLayer(this); 
     }
-
+    
     bool hasFilterInfo() const { return m_hasFilterInfo; }
     void setHasFilterInfo(bool hasFilterInfo) { m_hasFilterInfo = hasFilterInfo; }
 
@@ -937,7 +937,7 @@ private:
         PaintBehavior paintBehavior;
         bool clipToDirtyRect;
     };
-
+        
     void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
     void paintLayerContentsAndReflection(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
     void paintLayerByApplyingTransform(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& translationOffset = LayoutPoint());
@@ -983,7 +983,7 @@ private:
                             const LayoutRect& hitTestRect, const HitTestLocation&,
                             const HitTestingTransformState* containerTransformState,
                             const LayoutPoint& translationOffset = LayoutPoint()) const;
-
+    
     bool hitTestContents(const HitTestRequest&, HitTestResult&, const LayoutRect& layerBounds, const HitTestLocation&, HitTestFilter) const;
     bool hitTestContentsForFragments(const LayerFragments&, const HitTestRequest&, HitTestResult&, const HitTestLocation&, HitTestFilter, bool& insideClipRect) const;
     bool hitTestResizerInFragments(const LayerFragments&, const HitTestLocation&) const;
@@ -1070,7 +1070,7 @@ private:
     // This flag is computed by RenderLayerCompositor, which knows more about 3d hierarchies than we do.
     void setHas3DTransformedDescendant(bool b) { m_has3DTransformedDescendant = b; }
     bool has3DTransformedDescendant() const { return m_has3DTransformedDescendant; }
-
+    
     void dirty3DTransformedDescendantStatus();
     // Both updates the status, and returns true if descendants of this have 3d.
     bool update3DTransformedDescendantStatus();
@@ -1102,10 +1102,10 @@ private:
     void drawPlatformResizerImage(GraphicsContext*, IntRect resizerCornerRect);
 
     void updatePagination();
-
+    
     // FIXME: Temporary. Remove when new columns come online.
     bool useRegionBasedColumns() const;
-
+    
     bool hasCompositingDescendant() const { return m_compositingProperties.hasCompositingDescendant; }
     void setHasCompositingDescendant(bool b)  { m_compositingProperties.hasCompositingDescendant = b; }
 
@@ -1245,7 +1245,7 @@ protected:
     OwnPtr<Vector<RenderLayer*> > m_normalFlowList;
 
     OwnPtr<ClipRectsCache> m_clipRectsCache;
-
+    
     IntPoint m_cachedOverlayScrollbarOffset;
 
     // Cached normal flow values for absolute positioned elements with static left/top values.
@@ -1253,10 +1253,10 @@ protected:
     LayoutUnit m_staticBlockPosition;
 
     OwnPtr<TransformationMatrix> m_transform;
-
+    
     // May ultimately be extended to many replicas (with their own paint order).
     RenderReplica* m_reflection;
-
+        
     // Renderers to hold our custom scroll corner and resizer.
     RenderScrollbarPart* m_scrollCorner;
     RenderScrollbarPart* m_resizer;
@@ -1325,7 +1325,7 @@ public:
     {
         m_layer->setLayerListMutationAllowed(false);
     }
-
+    
     ~LayerListMutationDetector()
     {
         m_layer->setLayerListMutationAllowed(m_previousMutationAllowedState);

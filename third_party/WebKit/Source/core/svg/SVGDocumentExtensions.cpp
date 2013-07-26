@@ -92,7 +92,7 @@ void SVGDocumentExtensions::startAnimations()
     for (Vector<RefPtr<SVGSVGElement> >::iterator itr = timeContainers.begin(); itr != end; ++itr)
         (*itr)->timeContainer()->begin();
 }
-
+    
 void SVGDocumentExtensions::pauseAnimations()
 {
     HashSet<SVGSVGElement*>::iterator end = m_timeContainers.end();

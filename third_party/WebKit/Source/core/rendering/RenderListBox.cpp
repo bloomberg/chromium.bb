@@ -7,13 +7,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
+ *     notice, this list of conditions and the following disclaimer. 
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
+ *     documentation and/or other materials provided with the distribution. 
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
+ *     from this software without specific prior written permission. 
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -63,7 +63,7 @@ using namespace std;
 namespace WebCore {
 
 using namespace HTMLNames;
-
+ 
 const int rowSpacing = 1;
 
 const int optionsSpacingHorizontal = 2;
@@ -115,7 +115,7 @@ void RenderListBox::updateFromElement()
     if (m_optionsChanged) {
         const Vector<HTMLElement*>& listItems = selectElement()->listItems();
         int size = numItems();
-
+        
         float width = 0;
         for (int i = 0; i < size; ++i) {
             HTMLElement* element = listItems[i];
@@ -142,7 +142,7 @@ void RenderListBox::updateFromElement()
         }
         m_optionsWidth = static_cast<int>(ceilf(width));
         m_optionsChanged = false;
-
+        
         setHasVerticalScrollbar(true);
 
         setNeedsLayoutAndPrefWidthsRecalc();
@@ -163,7 +163,7 @@ void RenderListBox::selectionChanged()
         else
             scrollToRevealSelection();
     }
-
+    
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->selectedChildrenChanged(this);
 }
@@ -191,7 +191,7 @@ void RenderListBox::layout()
 }
 
 void RenderListBox::scrollToRevealSelection()
-{
+{    
     HTMLSelectElement* select = selectElement();
 
     m_scrollToRevealSelectionAfterLayout = false;
@@ -235,7 +235,7 @@ void RenderListBox::computePreferredLogicalWidths()
     LayoutUnit toAdd = borderAndPaddingWidth();
     m_minPreferredLogicalWidth += toAdd;
     m_maxPreferredLogicalWidth += toAdd;
-
+                                
     setPreferredLogicalWidthsDirty(false);
 }
 
@@ -281,12 +281,12 @@ LayoutRect RenderListBox::itemBoundingBoxRect(const LayoutPoint& additionalOffse
                    additionalOffset.y() + borderTop() + paddingTop() + itemHeight() * (index - m_indexOffset),
                    contentWidth(), itemHeight());
 }
-
+    
 void RenderListBox::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (style()->visibility() != VISIBLE)
         return;
-
+    
     int listItemsSize = numItems();
 
     if (paintInfo.phase == PaintPhaseForeground) {
@@ -513,7 +513,7 @@ void RenderListBox::panScroll(const IntPoint& panStartMousePosition)
 
     // If the point is too far from the center we limit the speed
     yDelta = max<int>(min<int>(yDelta, maxSpeed), -maxSpeed);
-
+    
     if (abs(yDelta) < iconRadius) // at the center we let the space for the icon
         return;
 
@@ -529,7 +529,7 @@ void RenderListBox::panScroll(const IntPoint& panStartMousePosition)
     IntPoint scrollPoint(0, 0);
     scrollPoint.setY(absOffset.y() + yDelta);
     int newOffset = scrollToward(scrollPoint);
-    if (newOffset < 0)
+    if (newOffset < 0) 
         return;
 
     m_inAutoscroll = true;
@@ -546,13 +546,13 @@ int RenderListBox::scrollToward(const IntPoint& destination)
 
     int rows = numVisibleItems();
     int offset = m_indexOffset;
-
+    
     if (positionOffset.height() < borderTop() + paddingTop() && scrollToRevealElementAtListIndex(offset - 1))
         return offset - 1;
-
+    
     if (positionOffset.height() > height() - paddingBottom() - borderBottom() && scrollToRevealElementAtListIndex(offset + rows))
         return offset + rows - 1;
-
+    
     return listIndexAtOffset(positionOffset);
 }
 
@@ -602,7 +602,7 @@ bool RenderListBox::scrollToRevealElementAtListIndex(int index)
 }
 
 bool RenderListBox::listIndexIsVisible(int index)
-{
+{    
     return index >= m_indexOffset && index < m_indexOffset + numVisibleItems();
 }
 
@@ -687,11 +687,11 @@ int RenderListBox::scrollTop() const
 
 void RenderListBox::setScrollTop(int newTop)
 {
-    // Determine an index and scroll to it.
+    // Determine an index and scroll to it.    
     int index = newTop / itemHeight();
     if (index < 0 || index >= numItems() || index == m_indexOffset)
         return;
-
+    
     scrollToOffsetWithoutAnimation(VerticalScrollbar, index);
 }
 
@@ -861,7 +861,7 @@ PassRefPtr<Scrollbar> RenderListBox::createScrollbar()
         widget = Scrollbar::createNativeScrollbar(this, VerticalScrollbar, theme()->scrollbarControlSizeForPart(ListboxPart));
         didAddVerticalScrollbar(widget.get());
     }
-    document()->view()->addChild(widget.get());
+    document()->view()->addChild(widget.get());        
     return widget.release();
 }
 

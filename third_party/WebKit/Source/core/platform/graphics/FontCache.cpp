@@ -7,13 +7,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
+ *     notice, this list of conditions and the following disclaimer. 
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
+ *     documentation and/or other materials provided with the distribution. 
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
+ *     from this software without specific prior written permission. 
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -112,7 +112,7 @@ struct FontPlatformDataCacheKeyHash {
     {
         return computeHash(font);
     }
-
+         
     static bool equal(const FontPlatformDataCacheKey& a, const FontPlatformDataCacheKey& b)
     {
         return a == b;
@@ -149,7 +149,7 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
         return timesNewRoman;
     if (equalIgnoringCase(familyName, timesNewRoman))
         return times;
-
+    
     // Alias Arial and Helvetica
     DEFINE_STATIC_LOCAL(AtomicString, arial, ("Arial", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, helvetica, ("Helvetica", AtomicString::ConstructFromLiteral));
@@ -159,14 +159,14 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
         return arial;
 
 #if OS(WINDOWS)
-    // On Windows, bitmap fonts are blocked altogether so that we have to
+    // On Windows, bitmap fonts are blocked altogether so that we have to 
     // alias MS Sans Serif (bitmap font) -> Microsoft Sans Serif (truetype font)
     DEFINE_STATIC_LOCAL(AtomicString, msSans, ("MS Sans Serif", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, microsoftSans, ("Microsoft Sans Serif", AtomicString::ConstructFromLiteral));
     if (equalIgnoringCase(familyName, msSans))
         return microsoftSans;
 
-    // Alias MS Serif (bitmap) -> Times New Roman (truetype font). There's no
+    // Alias MS Serif (bitmap) -> Times New Roman (truetype font). There's no 
     // 'Microsoft Sans Serif-equivalent' for Serif.
     DEFINE_STATIC_LOCAL(AtomicString, msSerif, ("MS Serif", AtomicString::ConstructFromLiteral));
     if (equalIgnoringCase(familyName, msSerif))
@@ -210,7 +210,7 @@ FontPlatformData* FontCache::getCachedFontPlatformData(const FontDescription& fo
     }
 
     if (!foundResult && !checkingAlternateName) {
-        // We were unable to find a font.  We have a small set of fonts that we alias to other names,
+        // We were unable to find a font.  We have a small set of fonts that we alias to other names, 
         // e.g., Arial/Helvetica, Courier/Courier New, etc.  Try looking up the font under the aliased name.
         const AtomicString& alternateName = alternateFamilyName(familyName);
         if (!alternateName.isEmpty())
@@ -251,7 +251,7 @@ struct FontDataCacheKeyHash {
     {
         return platformData.hash();
     }
-
+         
     static bool equal(const FontPlatformData& a, const FontPlatformData& b)
     {
         return a == b;
@@ -332,7 +332,7 @@ PassRefPtr<SimpleFontData> FontCache::getCachedFontData(const FontPlatformData* 
     if (shouldRetain == Retain)
         result.get()->value.second++;
     else if (!result.get()->value.second) {
-        // If shouldRetain is DoNotRetain and count is 0, we want to remove the fontData from
+        // If shouldRetain is DoNotRetain and count is 0, we want to remove the fontData from 
         // gInactiveFontData (above) and re-add here to update LRU position.
         gInactiveFontData->add(result.get()->value.first);
     }
@@ -405,7 +405,7 @@ void FontCache::purgeInactiveFontData(int count)
             if (platformData->value && !gFontDataCache->contains(*platformData->value))
                 keysToRemove.append(platformData->key);
         }
-
+        
         size_t keysToRemoveCount = keysToRemove.size();
         for (size_t i = 0; i < keysToRemoveCount; ++i)
             delete gFontPlatformDataCache->take(keysToRemove[i]);

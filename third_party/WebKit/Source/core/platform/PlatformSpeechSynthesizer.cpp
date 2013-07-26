@@ -27,7 +27,7 @@
 #include "core/platform/PlatformSpeechSynthesizer.h"
 
 namespace WebCore {
-
+    
 PassOwnPtr<PlatformSpeechSynthesizer> PlatformSpeechSynthesizer::create(PlatformSpeechSynthesizerClient* client)
 {
     OwnPtr<PlatformSpeechSynthesizer> synthesizer = adoptPtr(new PlatformSpeechSynthesizer(client));

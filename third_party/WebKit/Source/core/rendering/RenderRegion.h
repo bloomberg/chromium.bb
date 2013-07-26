@@ -86,7 +86,7 @@ public:
     void setRegionOversetState(RegionOversetState);
 
     Element* element() const;
-
+    
     // These methods represent the width and height of a "page" and for a RenderRegion they are just the
     // content width and content height of a region. For RenderRegionSets, however, they will be the width and
     // height of a single column or page in the set.
@@ -114,12 +114,12 @@ public:
     // flow thread portion we contain. For sets, we have to figure out the top of the nearest column or
     // page.
     virtual LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const;
-
+    
     virtual void expandToEncompassFlowThreadContentsIfNeeded() { };
 
     // Whether or not this region is a set.
     virtual bool isRenderRegionSet() const { return false; }
-
+    
     virtual void repaintFlowThreadContent(const LayoutRect& repaintRect) const;
 
     virtual void collectLayerFragments(LayerFragments&, const LayoutRect&, const LayoutRect&) { }

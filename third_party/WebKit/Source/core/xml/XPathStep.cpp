@@ -6,13 +6,13 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
+ * 
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -277,9 +277,9 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
         }
         case FollowingSiblingAxis:
             if (context->nodeType() == Node::ATTRIBUTE_NODE ||
-                 context->nodeType() == Node::XPATH_NAMESPACE_NODE)
+                 context->nodeType() == Node::XPATH_NAMESPACE_NODE) 
                 return;
-
+            
             for (Node* n = context->nextSibling(); n; n = n->nextSibling())
                 if (nodeMatches(n, FollowingSiblingAxis, m_nodeTest))
                     nodes.append(n);
@@ -288,7 +288,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             if (context->nodeType() == Node::ATTRIBUTE_NODE ||
                  context->nodeType() == Node::XPATH_NAMESPACE_NODE)
                 return;
-
+            
             for (Node* n = context->previousSibling(); n; n = n->previousSibling())
                 if (nodeMatches(n, PrecedingSiblingAxis, m_nodeTest))
                     nodes.append(n);
@@ -343,7 +343,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
                 }
                 return;
             }
-
+            
             if (!contextElement->hasAttributes())
                 return;
 

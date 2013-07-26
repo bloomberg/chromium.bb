@@ -40,7 +40,7 @@ interface SVGLength {
     [StrictTypeChecking] attribute float valueInSpecifiedUnits;
     [TreatNullAs=NullString, StrictTypeChecking, SetterRaisesException] attribute DOMString valueAsString;
 
-    [StrictTypeChecking, RaisesException] void newValueSpecifiedUnits(unsigned short unitType,
+    [StrictTypeChecking, RaisesException] void newValueSpecifiedUnits(unsigned short unitType, 
                                                      float valueInSpecifiedUnits);
 
     [Custom, StrictTypeChecking, RaisesException] void convertToSpecifiedUnits(unsigned short unitType);

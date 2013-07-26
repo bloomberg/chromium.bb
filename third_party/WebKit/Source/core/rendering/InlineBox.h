@@ -119,7 +119,7 @@ public:
 
     bool isText() const { return m_bitfields.isText(); }
     void setIsText(bool isText) { m_bitfields.setIsText(isText); }
-
+ 
     virtual bool isInlineFlowBox() const { return false; }
     virtual bool isInlineTextBox() const { return false; }
     virtual bool isRootInlineBox() const { return false; }
@@ -149,7 +149,7 @@ public:
     virtual void setConstructed() { m_bitfields.setConstructed(true); }
 
     void setExtracted(bool extracted = true) { m_bitfields.setExtracted(extracted); }
-
+    
     void setFirstLineStyleBit(bool firstLine) { m_bitfields.setFirstLine(firstLine); }
     bool isFirstLineStyle() const { return m_bitfields.firstLine(); }
 
@@ -170,7 +170,7 @@ public:
     bool nextOnLineExists() const;
 
     virtual bool isLeaf() const { return true; }
-
+    
     InlineBox* nextLeafChild() const;
     InlineBox* prevLeafChild() const;
 
@@ -264,7 +264,7 @@ public:
     virtual void markDirty(bool dirty = true) { m_bitfields.setDirty(dirty); }
 
     virtual void dirtyLineBoxes();
-
+    
     virtual RenderObject::SelectionState selectionState();
 
     virtual bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const;
@@ -278,12 +278,12 @@ public:
     int expansion() const { return m_bitfields.expansion(); }
 
     bool visibleToHitTestRequest(const HitTestRequest& request) const { return renderer()->visibleToHitTestRequest(request); }
-
+    
     EVerticalAlign verticalAlign() const { return renderer()->style(m_bitfields.firstLine())->verticalAlign(); }
 
     // Use with caution! The type is not checked!
     RenderBoxModelObject* boxModelObject() const
-    {
+    { 
         if (!m_renderer->isText())
             return toRenderBoxModelObject(m_renderer);
         return 0;
@@ -332,7 +332,7 @@ public:
             , m_isHorizontal(isHorizontal)
             , m_endsWithBreak(false)
             , m_hasSelectedChildrenOrCanHaveLeadingExpansion(false)
-            , m_knownToHaveNoOverflow(true)
+            , m_knownToHaveNoOverflow(true)  
             , m_hasEllipsisBoxOrHyphen(false)
             , m_dirOverride(false)
             , m_isText(false)
@@ -377,14 +377,14 @@ public:
 
     private:
         mutable unsigned m_nextOnLineExists : 1;
-
+        
     public:
         bool nextOnLineExists() const { return m_nextOnLineExists; }
         void setNextOnLineExists(bool nextOnLineExists) const { m_nextOnLineExists = nextOnLineExists; }
 
     private:
         signed m_expansion : 12; // for justified text
-
+        
     public:
         signed expansion() const { return m_expansion; }
         void setExpansion(signed expansion) { m_expansion = expansion; }
@@ -405,12 +405,12 @@ protected:
 
     // For InlineTextBox
     bool hasHyphen() const { return m_bitfields.hasEllipsisBoxOrHyphen(); }
-    void setHasHyphen(bool hasHyphen) { m_bitfields.setHasEllipsisBoxOrHyphen(hasHyphen); }
+    void setHasHyphen(bool hasHyphen) { m_bitfields.setHasEllipsisBoxOrHyphen(hasHyphen); }    
     bool canHaveLeadingExpansion() const { return m_bitfields.hasSelectedChildrenOrCanHaveLeadingExpansion(); }
     void setCanHaveLeadingExpansion(bool canHaveLeadingExpansion) { m_bitfields.setHasSelectedChildrenOrCanHaveLeadingExpansion(canHaveLeadingExpansion); }
     signed expansion() { return m_bitfields.expansion(); }
     void setExpansion(signed expansion) { m_bitfields.setExpansion(expansion); }
-
+    
     // For InlineFlowBox and InlineTextBox
     bool extracted() const { return m_bitfields.extracted(); }
 

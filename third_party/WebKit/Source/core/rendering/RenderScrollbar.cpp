@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #include "config.h"
@@ -48,7 +48,7 @@ RenderScrollbar::RenderScrollbar(ScrollableArea* scrollableArea, ScrollbarOrient
     ASSERT(ownerNode || owningFrame);
 
     // FIXME: We need to do this because RenderScrollbar::styleChanged is called as soon as the scrollbar is created.
-
+    
     // Update the scrollbar size.
     int width = 0;
     int height = 0;
@@ -68,10 +68,10 @@ RenderScrollbar::RenderScrollbar(ScrollableArea* scrollableArea, ScrollbarOrient
 RenderScrollbar::~RenderScrollbar()
 {
     if (!m_parts.isEmpty()) {
-        // When a scrollbar is detached from its parent (causing all parts removal) and
+        // When a scrollbar is detached from its parent (causing all parts removal) and 
         // ready to be destroyed, its destruction can be delayed because of RefPtr
         // maintained in other classes such as EventHandler (m_lastScrollbarUnderMouse).
-        // Meanwhile, we can have a call to updateScrollbarPart which recreates the
+        // Meanwhile, we can have a call to updateScrollbarPart which recreates the 
         // scrollbar part. So, we need to destroy these parts since we don't want them
         // to call on a destroyed scrollbar. See webkit bug 68009.
         updateScrollbarParts(true);
@@ -137,10 +137,10 @@ void RenderScrollbar::setPressedPart(ScrollbarPart part)
 {
     ScrollbarPart oldPart = m_pressedPart;
     Scrollbar::setPressedPart(part);
-
+    
     updateScrollbarPart(oldPart);
     updateScrollbarPart(part);
-
+    
     updateScrollbarPart(ScrollbarBGPart);
     updateScrollbarPart(TrackBGPart);
 }
@@ -151,7 +151,7 @@ PassRefPtr<RenderStyle> RenderScrollbar::getScrollbarPseudoStyle(ScrollbarPart p
         return 0;
 
     RefPtr<RenderStyle> result = owningRenderer()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId, this, partType), owningRenderer()->style());
-    // Scrollbars for root frames should always have background color
+    // Scrollbars for root frames should always have background color 
     // unless explicitly specified as transparent. So we force it.
     // This is because WebKit assumes scrollbar to be always painted and missing background
     // causes visual artifact like non-repainted dirty region.
@@ -172,12 +172,12 @@ void RenderScrollbar::updateScrollbarParts(bool destroy)
     updateScrollbarPart(BackButtonEndPart, destroy);
     updateScrollbarPart(ForwardButtonEndPart, destroy);
     updateScrollbarPart(TrackBGPart, destroy);
-
+    
     if (destroy)
         return;
 
     // See if the scrollbar's thickness changed.  If so, we need to mark our owning object as needing a layout.
-    bool isHorizontal = orientation() == HorizontalScrollbar;
+    bool isHorizontal = orientation() == HorizontalScrollbar;    
     int oldThickness = isHorizontal ? height() : width();
     int newThickness = 0;
     RenderScrollbarPart* part = m_parts.get(ScrollbarBGPart);
@@ -185,7 +185,7 @@ void RenderScrollbar::updateScrollbarParts(bool destroy)
         part->layout();
         newThickness = isHorizontal ? part->height() : part->width();
     }
-
+    
     if (newThickness != oldThickness) {
         setFrameRect(IntRect(location(), IntSize(isHorizontal ? width() : newThickness, isHorizontal ? newThickness : height())));
         if (RenderBox* box = owningRenderer())
@@ -224,9 +224,9 @@ void RenderScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
         return;
 
     RefPtr<RenderStyle> partStyle = !destroy ? getScrollbarPseudoStyle(partType,  pseudoForScrollbarPart(partType)) : PassRefPtr<RenderStyle>(0);
-
+    
     bool needRenderer = !destroy && partStyle && partStyle->display() != NONE && partStyle->visibility() == VISIBLE;
-
+    
     if (needRenderer && partStyle->display() != BLOCK) {
         // See if we are a button that should not be visible according to OS settings.
         ScrollbarButtonsPlacement buttonsPlacement = theme()->buttonsPlacement();
@@ -249,7 +249,7 @@ void RenderScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
                 break;
         }
     }
-
+    
     RenderScrollbarPart* partRenderer = m_parts.get(partType);
     if (!partRenderer && needRenderer) {
         partRenderer = RenderScrollbarPart::createAnonymous(owningRenderer()->document(), this, partType);
@@ -259,7 +259,7 @@ void RenderScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
         partRenderer->destroy();
         partRenderer = 0;
     }
-
+    
     if (partRenderer)
         partRenderer->setStyle(partStyle.release());
 }
@@ -277,9 +277,9 @@ IntRect RenderScrollbar::buttonRect(ScrollbarPart partType)
     RenderScrollbarPart* partRenderer = m_parts.get(partType);
     if (!partRenderer)
         return IntRect();
-
+        
     partRenderer->layout();
-
+    
     bool isHorizontal = orientation() == HorizontalScrollbar;
     if (partType == BackButtonStartPart)
         return IntRect(location(), IntSize(isHorizontal ? partRenderer->pixelSnappedWidth() : width(), isHorizontal ? height() : partRenderer->pixelSnappedHeight()));
@@ -288,7 +288,7 @@ IntRect RenderScrollbar::buttonRect(ScrollbarPart partType)
                        isHorizontal ? y() : y() + height() - partRenderer->pixelSnappedHeight(),
                        isHorizontal ? partRenderer->pixelSnappedWidth() : width(),
                        isHorizontal ? height() : partRenderer->pixelSnappedHeight());
-
+    
     if (partType == ForwardButtonStartPart) {
         IntRect previousButton = buttonRect(BackButtonStartPart);
         return IntRect(isHorizontal ? x() + previousButton.width() : x(),
@@ -296,7 +296,7 @@ IntRect RenderScrollbar::buttonRect(ScrollbarPart partType)
                        isHorizontal ? partRenderer->pixelSnappedWidth() : width(),
                        isHorizontal ? height() : partRenderer->pixelSnappedHeight());
     }
-
+    
     IntRect followingButton = buttonRect(ForwardButtonEndPart);
     return IntRect(isHorizontal ? x() + width() - followingButton.width() - partRenderer->pixelSnappedWidth() : x(),
                    isHorizontal ? y() : y() + height() - followingButton.height() - partRenderer->pixelSnappedHeight(),
@@ -318,7 +318,7 @@ IntRect RenderScrollbar::trackRect(int startLength, int endLength)
         int totalLength = startLength + endLength;
         return IntRect(x() + startLength, y(), width() - totalLength, height());
     }
-
+    
     int marginTop = part ? static_cast<int>(part->marginTop()) : 0;
     int marginBottom = part ? static_cast<int>(part->marginBottom()) : 0;
     startLength += marginTop;
@@ -333,9 +333,9 @@ IntRect RenderScrollbar::trackPieceRectWithMargins(ScrollbarPart partType, const
     RenderScrollbarPart* partRenderer = m_parts.get(partType);
     if (!partRenderer)
         return oldRect;
-
+    
     partRenderer->layout();
-
+    
     IntRect rect = oldRect;
     if (orientation() == HorizontalScrollbar) {
         rect.setX(rect.x() + partRenderer->marginLeft());
@@ -351,7 +351,7 @@ int RenderScrollbar::minimumThumbLength()
 {
     RenderScrollbarPart* partRenderer = m_parts.get(ThumbPart);
     if (!partRenderer)
-        return 0;
+        return 0;    
     partRenderer->layout();
     return orientation() == HorizontalScrollbar ? partRenderer->width() : partRenderer->height();
 }

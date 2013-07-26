@@ -76,20 +76,20 @@ private:
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void didNotifySubtreeInsertions(ContainerNode*) OVERRIDE;
-
+    
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-
+    
     virtual bool supportsFocus() const;
 
     virtual int scrollLeft();
     virtual void setScrollLeft(int scrollLeft);
-
+    
     virtual int scrollTop();
     virtual void setScrollTop(int scrollTop);
-
+    
     virtual int scrollHeight();
     virtual int scrollWidth();
-
+    
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 };
 

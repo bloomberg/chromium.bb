@@ -76,7 +76,7 @@ public:
 
     // Plug-in URL might not be the same as url() with overriding parameters.
     void subframeLoaderWillCreatePlugIn(const KURL& plugInURL);
-
+    
 protected:
     HTMLPlugInImageElement(const QualifiedName& tagName, Document*, bool createdByParser, PreferPlugInsForImagesOption);
 
@@ -86,7 +86,7 @@ protected:
     String m_serviceType;
     String m_url;
     KURL m_loadedUrl;
-
+    
     static void updateWidgetCallback(Node*);
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;

@@ -57,17 +57,17 @@ public:
     virtual String title() const OVERRIDE { return m_title; }
     virtual bool disabled() const OVERRIDE { return m_isDisabled; }
     virtual void setDisabled(bool) OVERRIDE;
-
+    
     PassRefPtr<CSSRuleList> cssRules();
     unsigned insertRule(const String& rule, unsigned index, ExceptionCode&);
     void deleteRule(unsigned index, ExceptionCode&);
-
+    
     // IE Extensions
     PassRefPtr<CSSRuleList> rules();
     int addRule(const String& selector, const String& style, int index, ExceptionCode&);
     int addRule(const String& selector, const String& style, ExceptionCode&);
     void removeRule(unsigned index, ExceptionCode& ec) { deleteRule(index, ec); }
-
+    
     // For CSSRuleList.
     unsigned length() const;
     CSSRule* item(unsigned index);
@@ -76,7 +76,7 @@ public:
     virtual CSSRule* ownerRule() const OVERRIDE { return m_ownerRule; }
     virtual KURL baseURL() const OVERRIDE;
     virtual bool isLoading() const OVERRIDE;
-
+    
     void clearOwnerRule() { m_ownerRule = 0; }
     Document* ownerDocument() const;
     MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
@@ -97,7 +97,7 @@ public:
     void willMutateRules();
     void didMutateRules();
     void didMutate();
-
+    
     void clearChildRuleCSSOMWrappers();
     void reattachChildRuleCSSOMWrappers();
 
@@ -114,7 +114,7 @@ private:
     virtual String type() const { return "text/css"; }
 
     bool canAccessRules() const;
-
+    
     RefPtr<StyleSheetContents> m_contents;
     bool m_isInlineStylesheet;
     bool m_isDisabled;

@@ -366,9 +366,9 @@ public:
 
     bool hasBackgroundImage() const { return m_background->background().hasImage(); }
     bool hasFixedBackgroundImage() const { return m_background->background().hasFixedImage(); }
-
+    
     bool hasEntirelyFixedBackground() const;
-
+    
     bool hasAppearance() const { return appearance() != NoControlPart; }
 
     bool hasBackground() const
@@ -378,7 +378,7 @@ public:
             return true;
         return hasBackgroundImage();
     }
-
+    
     LayoutBoxExtent imageOutsets(const NinePieceImage&) const;
     bool hasBorderImageOutsets() const
     {
@@ -442,7 +442,7 @@ public:
     Length maxWidth() const { return m_box->maxWidth(); }
     Length minHeight() const { return m_box->minHeight(); }
     Length maxHeight() const { return m_box->maxHeight(); }
-
+    
     Length logicalWidth() const { return isHorizontalWritingMode() ? width() : height(); }
     Length logicalHeight() const { return isHorizontalWritingMode() ? height() : width(); }
     Length logicalMinWidth() const { return isHorizontalWritingMode() ? minWidth() : minHeight(); }
@@ -485,7 +485,7 @@ public:
     unsigned borderBottomWidth() const { return surround->border.borderBottomWidth(); }
     EBorderStyle borderBottomStyle() const { return surround->border.bottom().style(); }
     bool borderBottomIsTransparent() const { return surround->border.bottom().isTransparent(); }
-
+    
     unsigned short borderBeforeWidth() const;
     unsigned short borderAfterWidth() const;
     unsigned short borderStartWidth() const;
@@ -501,7 +501,7 @@ public:
     bool hasOutline() const { return outlineWidth() > 0 && outlineStyle() > BHIDDEN; }
     EBorderStyle outlineStyle() const { return m_background->outline().style(); }
     OutlineIsAuto outlineStyleIsAuto() const { return static_cast<OutlineIsAuto>(m_background->outline().isAuto()); }
-
+    
     EOverflow overflowX() const { return static_cast<EOverflow>(noninherited_flags._overflowX); }
     EOverflow overflowY() const { return static_cast<EOverflow>(noninherited_flags._overflowY); }
 
@@ -639,7 +639,7 @@ public:
     const FillLayer* maskLayers() const { return &(rareNonInheritedData->m_mask); }
     const NinePieceImage& maskBoxImage() const { return rareNonInheritedData->m_maskBoxImage; }
     StyleImage* maskBoxImageSource() const { return rareNonInheritedData->m_maskBoxImage.image(); }
-
+ 
     EBorderCollapse borderCollapse() const { return static_cast<EBorderCollapse>(inherited_flags._border_collapse); }
     short horizontalBorderSpacing() const;
     short verticalBorderSpacing() const;
@@ -818,8 +818,8 @@ public:
     RubyPosition rubyPosition() const { return static_cast<RubyPosition>(rareInheritedData->m_rubyPosition); }
 
     TextOrientation textOrientation() const { return static_cast<TextOrientation>(rareInheritedData->m_textOrientation); }
-
-    // Return true if any transform related property (currently transform, transformStyle3D or perspective)
+    
+    // Return true if any transform related property (currently transform, transformStyle3D or perspective) 
     // indicates that we are transforming
     bool hasTransformRelatedProperty() const { return hasTransform() || preserves3D() || hasPerspective(); }
 
@@ -870,7 +870,7 @@ public:
     Length perspectiveOriginY() const { return rareNonInheritedData->m_perspectiveOriginY; }
     LengthSize pageSize() const { return rareNonInheritedData->m_pageSize; }
     PageSizeType pageSizeType() const { return static_cast<PageSizeType>(rareNonInheritedData->m_pageSizeType); }
-
+    
     // When set, this ensures that styles compare as different. Used during accelerated animations.
     bool isRunningAcceleratedAnimation() const { return rareNonInheritedData->m_runningAcceleratedAnimation; }
 
@@ -959,7 +959,7 @@ public:
     void setBackgroundYPosition(Length length) { SET_VAR(m_background, m_background.m_yPosition, length); }
     void setBackgroundSize(EFillSizeType b) { SET_VAR(m_background, m_background.m_sizeType, b); }
     void setBackgroundSizeLength(LengthSize s) { SET_VAR(m_background, m_background.m_sizeLength, s); }
-
+    
     void setBorderImage(const NinePieceImage& b) { SET_VAR(surround, border.m_image, b); }
     void setBorderImageSource(PassRefPtr<StyleImage>);
     void setBorderImageSlices(LengthBox);
@@ -982,7 +982,7 @@ public:
     {
         setBorderRadius(LengthSize(Length(s.width(), Fixed), Length(s.height(), Fixed)));
     }
-
+    
     RoundedRect getRoundedBorderFor(const LayoutRect& borderRect, RenderView* = 0, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
     RoundedRect getRoundedInnerBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
 
@@ -1707,7 +1707,7 @@ inline int adjustForAbsoluteZoom(int value, const RenderStyle* style)
     if (zoomFactor > 1) {
         if (value < 0)
             value--;
-        else
+        else 
             value++;
     }
 

@@ -24,7 +24,7 @@ interface SVGFEDropShadowElement : SVGStyledElement {
     readonly attribute SVGAnimatedNumber stdDeviationX;
     readonly attribute SVGAnimatedNumber stdDeviationY;
 
-    void setStdDeviation([Default=Undefined] optional float stdDeviationX,
+    void setStdDeviation([Default=Undefined] optional float stdDeviationX, 
                          [Default=Undefined] optional float stdDeviationY);
 };
 

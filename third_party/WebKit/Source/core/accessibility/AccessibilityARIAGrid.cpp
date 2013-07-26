@@ -56,17 +56,17 @@ bool AccessibilityARIAGrid::addTableCellChild(AccessibilityObject* child, HashSe
 {
     if (!child || !child->isTableRow() || child->ariaRoleAttribute() != RowRole)
         return false;
-
+        
     AccessibilityTableRow* row = static_cast<AccessibilityTableRow*>(child);
     if (appendedRows.contains(row))
         return false;
-
+        
     // store the maximum number of columns
     unsigned rowCellCount = row->children().size();
     if (rowCellCount > columnCount)
         columnCount = rowCellCount;
-
-    row->setRowIndex((int)m_rows.size());
+    
+    row->setRowIndex((int)m_rows.size());        
     m_rows.append(row);
 
     // Try adding the row if it's not ignoring accessibility,
@@ -79,34 +79,34 @@ bool AccessibilityARIAGrid::addTableCellChild(AccessibilityObject* child, HashSe
     appendedRows.add(row);
     return true;
 }
-
+    
 void AccessibilityARIAGrid::addChildren()
 {
-    ASSERT(!m_haveChildren);
-
+    ASSERT(!m_haveChildren); 
+    
     if (!isAccessibilityTable()) {
         AccessibilityRenderObject::addChildren();
         return;
     }
-
+    
     m_haveChildren = true;
     if (!m_renderer)
         return;
-
+    
     AXObjectCache* axCache = m_renderer->document()->axObjectCache();
-
+    
     // add only rows that are labeled as aria rows
     HashSet<AccessibilityObject*> appendedRows;
     unsigned columnCount = 0;
     for (RefPtr<AccessibilityObject> child = firstChild(); child; child = child->nextSibling()) {
 
         if (!addTableCellChild(child.get(), appendedRows, columnCount)) {
-
+            
             // in case the render tree doesn't match the expected ARIA hierarchy, look at the children
             if (!child->hasChildren())
                 child->addChildren();
 
-            // The children of this non-row will contain all non-ignored elements (recursing to find them).
+            // The children of this non-row will contain all non-ignored elements (recursing to find them). 
             // This allows the table to dive arbitrarily deep to find the rows.
             AccessibilityChildrenVector children = child->children();
             size_t length = children.size();
@@ -114,7 +114,7 @@ void AccessibilityARIAGrid::addChildren()
                 addTableCellChild(children[i].get(), appendedRows, columnCount);
         }
     }
-
+    
     // make the columns based on the number of columns in the first body
     for (unsigned i = 0; i < columnCount; ++i) {
         AccessibilityTableColumn* column = static_cast<AccessibilityTableColumn*>(axCache->getOrCreate(ColumnRole));
@@ -124,10 +124,10 @@ void AccessibilityARIAGrid::addChildren()
         if (!column->accessibilityIsIgnored())
             m_children.append(column);
     }
-
+    
     AccessibilityObject* headerContainerObject = headerContainer();
     if (headerContainerObject && !headerContainerObject->accessibilityIsIgnored())
         m_children.append(headerContainerObject);
 }
-
+    
 } // namespace WebCore

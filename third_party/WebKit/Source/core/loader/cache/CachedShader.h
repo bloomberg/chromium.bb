@@ -40,9 +40,9 @@ class CachedShader : public CachedResource {
 public:
     CachedShader(const ResourceRequest&);
     virtual ~CachedShader();
-
+    
     const String& shaderString();
-
+    
 private:
     RefPtr<TextResourceDecoder> m_decoder;
     String m_shaderString;

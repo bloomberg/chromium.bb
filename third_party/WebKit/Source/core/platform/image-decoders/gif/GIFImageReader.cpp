@@ -578,7 +578,7 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
 
         case GIFApplicationExtension: {
             // Check for netscape application extension.
-            if (m_bytesToConsume == 11
+            if (m_bytesToConsume == 11 
                 && (!strncmp((char*)currentComponent, "NETSCAPE2.0", 11) || !strncmp((char*)currentComponent, "ANIMEXTS1.0", 11)))
                 GETN(1, GIFNetscapeExtensionBlock);
             else

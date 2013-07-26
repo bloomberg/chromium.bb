@@ -93,7 +93,7 @@ void SVGCursorElement::parseAttribute(const QualifiedName& name, const AtomicStr
              || SVGURIReference::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
-
+    
     reportAttributeParsingError(parseError, name, value);
 }
 

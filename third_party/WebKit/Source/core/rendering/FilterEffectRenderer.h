@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef FilterEffectRenderer_h
@@ -57,7 +57,7 @@ public:
         , m_haveFilterEffect(haveFilterEffect)
     {
     }
-
+    
     bool haveFilterEffect() const { return m_haveFilterEffect; }
     bool hasStartedFilterEffect() const { return m_savedGraphicsContext; }
 
@@ -84,7 +84,7 @@ public:
     }
 
     void setSourceImageRect(const FloatRect& sourceImageRect)
-    {
+    { 
         m_sourceDrawingRegion = sourceImageRect;
         m_graphicsBufferAttached = false;
     }
@@ -98,7 +98,7 @@ public:
     void allocateBackingStoreIfNeeded();
     void clearIntermediateResults();
     void apply();
-
+    
     IntRect outputRect() const { return lastEffect()->hasResult() ? lastEffect()->absolutePaintRect() : IntRect(); }
 
     bool hasFilterThatMovesPixels() const { return m_hasFilterThatMovesPixels; }
@@ -113,12 +113,12 @@ private:
 
     FilterEffectRenderer();
     virtual ~FilterEffectRenderer();
-
+    
     FloatRect m_sourceDrawingRegion;
-
+    
     RefPtr<SourceGraphic> m_sourceGraphic;
     RefPtr<FilterEffect> m_lastEffect;
-
+    
     IntRectExtent m_outsets;
 
     bool m_graphicsBufferAttached;

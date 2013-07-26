@@ -221,11 +221,11 @@ bool SVGAElement::isKeyboardFocusable(KeyboardEvent*) const
 {
     if (!isFocusable())
         return false;
-
+    
     Page* page = document()->page();
     if (!page)
         return false;
-
+    
     return page->chrome().client()->tabsToLinks();
 }
 

@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2006, 2007, 2008, 2009, 2012 Google Inc. All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- *
+ * 
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -218,11 +218,11 @@ void UniscribeHelper::justify(int additionalSpace)
     // The documentation for Scriptjustify is wrong, the parameter is the space
     // to add and not the width of the column you want.
     int minKashida;
-    // Disable kashida justification based on
+    // Disable kashida justification based on 
     // http://blogs.msdn.com/b/michkap/archive/2010/08/31/10056140.aspx.
     for (int i = 0; i < totalGlyphs; ++i) {
         if (visualAttributes[i].uJustification == SCRIPT_JUSTIFY_ARABIC_KASHIDA)
-            visualAttributes[i].uJustification = SCRIPT_JUSTIFY_NONE;
+            visualAttributes[i].uJustification = SCRIPT_JUSTIFY_NONE;   
     }
     minKashida = 0;
     ScriptJustify(&visualAttributes[0], &advances[0], totalGlyphs,
@@ -707,7 +707,7 @@ bool UniscribeHelper::shape(const UChar* input,
             bool fontOk = getDerivedFontData(family, m_style, &m_logfont,
                                              &ascent, &hfont, &scriptCache,
                                              &spaceGlyph);
-
+                                              
 
             if (!fontOk) {
                 // If this GetDerivedFontData is called from the renderer it
@@ -901,7 +901,7 @@ void UniscribeHelper::adjustSpaceAdvances()
 
             // For characters treated as zero-width space in complex
             // scripts, set the advance width to zero, adjust
-            // |abcB| of the current run accordingly and set
+            // |abcB| of the current run accordingly and set 
             // the glyph to m_spaceGlyph (invisible).
             shaping.m_advance[glyphIndex] = 0;
             shaping.m_abc.abcB -= currentAdvance;

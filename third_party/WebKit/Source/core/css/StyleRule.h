@@ -91,7 +91,7 @@ protected:
 
 private:
     void destroy();
-
+    
     PassRefPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const;
 
     unsigned m_type : 5;
@@ -102,13 +102,13 @@ class StyleRule : public StyleRuleBase {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<StyleRule> create(int sourceLine) { return adoptRef(new StyleRule(sourceLine)); }
-
+    
     ~StyleRule();
 
     const CSSSelectorList& selectorList() const { return m_selectorList; }
     const StylePropertySet* properties() const { return m_properties.get(); }
     MutableStylePropertySet* mutableProperties();
-
+    
     void parserAdoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& selectors) { m_selectorList.adoptSelectorVector(selectors); }
     void wrapperAdoptSelectorList(CSSSelectorList& selectors) { m_selectorList.adopt(selectors); }
     void setProperties(PassRefPtr<StylePropertySet>);
@@ -134,7 +134,7 @@ inline const StyleRule* toStyleRule(const StyleRuleBase* rule)
 class StyleRuleFontFace : public StyleRuleBase {
 public:
     static PassRefPtr<StyleRuleFontFace> create() { return adoptRef(new StyleRuleFontFace); }
-
+    
     ~StyleRuleFontFace();
 
     const StylePropertySet* properties() const { return m_properties.get(); }
@@ -157,7 +157,7 @@ public:
 
     ~StyleRulePage();
 
-    const CSSSelector* selector() const { return m_selectorList.first(); }
+    const CSSSelector* selector() const { return m_selectorList.first(); }    
     const StylePropertySet* properties() const { return m_properties.get(); }
     MutableStylePropertySet* mutableProperties();
 
@@ -170,7 +170,7 @@ public:
 private:
     StyleRulePage();
     StyleRulePage(const StyleRulePage&);
-
+    
     RefPtr<StylePropertySet> m_properties;
     CSSSelectorList m_selectorList;
 };
@@ -178,14 +178,14 @@ private:
 class StyleRuleGroup : public StyleRuleBase {
 public:
     const Vector<RefPtr<StyleRuleBase> >& childRules() const { return m_childRules; }
-
+    
     void wrapperInsertRule(unsigned, PassRefPtr<StyleRuleBase>);
     void wrapperRemoveRule(unsigned);
 
 protected:
     StyleRuleGroup(Type, Vector<RefPtr<StyleRuleBase> >& adoptRule);
     StyleRuleGroup(const StyleRuleGroup&);
-
+    
 private:
     Vector<RefPtr<StyleRuleBase> > m_childRules;
 };
@@ -241,7 +241,7 @@ public:
 private:
     StyleRuleRegion(Vector<OwnPtr<CSSParserSelector> >*, Vector<RefPtr<StyleRuleBase> >& adoptRules);
     StyleRuleRegion(const StyleRuleRegion&);
-
+    
     CSSSelectorList m_selectorList;
 };
 

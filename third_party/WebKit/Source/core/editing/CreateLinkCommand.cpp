@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #include "config.h"
@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-CreateLinkCommand::CreateLinkCommand(Document* document, const String& url)
+CreateLinkCommand::CreateLinkCommand(Document* document, const String& url) 
     : CompositeEditCommand(document)
 {
     m_url = url;
@@ -41,10 +41,10 @@ void CreateLinkCommand::doApply()
 {
     if (endingSelection().isNone())
         return;
-
+        
     RefPtr<HTMLAnchorElement> anchorElement = HTMLAnchorElement::create(document());
     anchorElement->setHref(m_url);
-
+    
     if (endingSelection().isRange())
         applyStyledElement(anchorElement.get());
     else {

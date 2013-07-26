@@ -31,26 +31,26 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
-
+    
 class PlatformSpeechSynthesizerMock : public PlatformSpeechSynthesizer {
 public:
     static PassOwnPtr<PlatformSpeechSynthesizerMock> create(PlatformSpeechSynthesizerClient*);
-
+    
     virtual ~PlatformSpeechSynthesizerMock();
     virtual void speak(PassRefPtr<PlatformSpeechSynthesisUtterance>);
     virtual void pause();
     virtual void resume();
     virtual void cancel();
-
+    
 private:
     explicit PlatformSpeechSynthesizerMock(PlatformSpeechSynthesizerClient*);
     virtual void initializeVoiceList();
     void speakingFinished(Timer<PlatformSpeechSynthesizerMock>*);
-
+    
     Timer<PlatformSpeechSynthesizerMock> m_speakingFinishedTimer;
     RefPtr<PlatformSpeechSynthesisUtterance> m_utterance;
 };
-
+    
 } // namespace WebCore
 
 #endif // PlatformSpeechSynthesizer_h

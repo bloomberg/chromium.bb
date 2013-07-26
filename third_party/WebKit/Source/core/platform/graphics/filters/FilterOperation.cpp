@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #include "config.h"
@@ -35,10 +35,10 @@ PassRefPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(const FilterO
 {
     if (from && !from->isSameType(*this))
         return this;
-
+    
     if (blendToPassthrough)
         return BasicColorMatrixFilterOperation::create(WebCore::blend(m_amount, passthroughAmount(), progress), m_type);
-
+        
     const BasicColorMatrixFilterOperation* fromOp = static_cast<const BasicColorMatrixFilterOperation*>(from);
     double fromAmount = fromOp ? fromOp->amount() : passthroughAmount();
     return BasicColorMatrixFilterOperation::create(WebCore::blend(fromAmount, m_amount, progress), m_type);
@@ -63,10 +63,10 @@ PassRefPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const F
 {
     if (from && !from->isSameType(*this))
         return this;
-
+    
     if (blendToPassthrough)
         return BasicComponentTransferFilterOperation::create(WebCore::blend(m_amount, passthroughAmount(), progress), m_type);
-
+        
     const BasicComponentTransferFilterOperation* fromOp = static_cast<const BasicComponentTransferFilterOperation*>(from);
     double fromAmount = fromOp ? fromOp->amount() : passthroughAmount();
     return BasicComponentTransferFilterOperation::create(WebCore::blend(fromAmount, m_amount, progress), m_type);
@@ -93,13 +93,13 @@ PassRefPtr<FilterOperation> GammaFilterOperation::blend(const FilterOperation* f
 {
     if (from && !from->isSameType(*this))
         return this;
-
+    
     if (blendToPassthrough)
         return GammaFilterOperation::create(
             WebCore::blend(m_amplitude, 1.0, progress),
             WebCore::blend(m_exponent, 1.0, progress),
             WebCore::blend(m_offset, 0.0, progress), m_type);
-
+        
     const GammaFilterOperation* fromOp = static_cast<const GammaFilterOperation*>(from);
     double fromAmplitude = fromOp ? fromOp->amplitude() : 1;
     double fromExponent = fromOp ? fromOp->exponent() : 1;
@@ -141,7 +141,7 @@ PassRefPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperati
     IntPoint fromLocation = fromOp ? fromOp->location() : IntPoint();
     int fromStdDeviation = fromOp ? fromOp->stdDeviation() : 0;
     Color fromColor = fromOp ? fromOp->color() : Color(Color::transparent);
-
+    
     return DropShadowFilterOperation::create(
         WebCore::blend(fromLocation, m_location, progress),
         WebCore::blend(fromStdDeviation, m_stdDeviation, progress),

@@ -58,7 +58,7 @@ class ContentData;
 struct LengthSize;
 
 // Page size type.
-// StyleRareNonInheritedData::m_pageSize is meaningful only when
+// StyleRareNonInheritedData::m_pageSize is meaningful only when 
 // StyleRareNonInheritedData::m_pageSizeType is PAGE_SIZE_RESOLVED.
 enum PageSizeType {
     PAGE_SIZE_AUTO, // size: auto
@@ -75,7 +75,7 @@ public:
     static PassRefPtr<StyleRareNonInheritedData> create() { return adoptRef(new StyleRareNonInheritedData); }
     PassRefPtr<StyleRareNonInheritedData> copy() const { return adoptRef(new StyleRareNonInheritedData(*this)); }
     ~StyleRareNonInheritedData();
-
+    
     bool operator==(const StyleRareNonInheritedData&) const;
     bool operator!=(const StyleRareNonInheritedData& o) const { return !(*this == o); }
 
@@ -113,7 +113,7 @@ public:
     OwnPtr<CounterDirectiveMap> m_counterDirectives;
 
     OwnPtr<ShadowData> m_boxShadow;  // For box-shadow decorations.
-
+    
     RefPtr<StyleReflection> m_boxReflect;
 
     OwnPtr<CSSAnimationDataList> m_animations;

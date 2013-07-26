@@ -52,10 +52,10 @@ public:
     virtual void removeClient(RenderObject*);
     virtual PassRefPtr<Image> image(RenderObject*, const IntSize&) const;
     virtual bool knownToBeOpaque(const RenderObject*) const OVERRIDE;
-
+    
 private:
     StyleGeneratedImage(PassRefPtr<CSSImageGeneratorValue>);
-
+    
     RefPtr<CSSImageGeneratorValue> m_imageGeneratorValue;
     IntSize m_containerSize;
     bool m_fixedSize;

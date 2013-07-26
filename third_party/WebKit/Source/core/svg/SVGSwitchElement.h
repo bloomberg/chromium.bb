@@ -34,7 +34,7 @@ public:
 
 private:
     SVGSwitchElement(const QualifiedName&, Document*);
-
+    
     virtual bool isValid() const { return SVGTests::isValid(); }
     virtual bool supportsFocus() const { return true; }
 

@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef RemoveCSSPropertyCommand_h
@@ -46,11 +46,11 @@ private:
 
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
-
+    
 #ifndef NDEBUG
     virtual void getNodesInCommand(HashSet<Node*>&) OVERRIDE;
 #endif
-
+    
     RefPtr<Element> m_element;
     CSSPropertyID m_property;
     String m_oldValue;

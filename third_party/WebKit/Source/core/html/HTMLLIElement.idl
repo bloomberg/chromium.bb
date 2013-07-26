@@ -19,6 +19,6 @@
 
 interface HTMLLIElement : HTMLElement {
     [Reflect] attribute DOMString type;
-    [Reflect] attribute long value;
+    [Reflect] attribute long value;    
 };
 

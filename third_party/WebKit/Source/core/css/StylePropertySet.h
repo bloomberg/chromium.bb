@@ -107,7 +107,7 @@ public:
     PassRefPtr<ImmutableStylePropertySet> immutableCopyIfNeeded() const;
 
     PassRefPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
-
+    
     String asText() const;
 
     bool isMutable() const { return m_isMutable; }

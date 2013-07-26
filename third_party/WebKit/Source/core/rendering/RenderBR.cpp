@@ -50,10 +50,10 @@ int RenderBR::lineHeight(bool firstLine) const
         if (s != style())
             return s->computedLineHeight(view());
     }
-
+    
     if (m_lineHeight == -1)
         m_lineHeight = style()->computedLineHeight(view());
-
+    
     return m_lineHeight;
 }
 
@@ -63,13 +63,13 @@ void RenderBR::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
     m_lineHeight = -1;
 }
 
-int RenderBR::caretMinOffset() const
-{
+int RenderBR::caretMinOffset() const 
+{ 
     return 0;
 }
 
-int RenderBR::caretMaxOffset() const
-{
+int RenderBR::caretMaxOffset() const 
+{ 
     return 1;
 }
 

@@ -69,7 +69,7 @@ void LoadableTextTrack::scheduleLoad(const KURL& url)
     // 2. Let URL be the track URL of the track element.
     m_url = url;
 
-    // 3. Asynchronously run the remaining steps, while continuing with whatever task
+    // 3. Asynchronously run the remaining steps, while continuing with whatever task 
     // was responsible for creating the text track or changing the text track mode.
     if (!m_loadTimer.isActive())
         m_loadTimer.startOneShot(0);
@@ -101,7 +101,7 @@ void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
     m_loader->getNewCues(newCues);
 
     if (!m_cues)
-        m_cues = TextTrackCueList::create();
+        m_cues = TextTrackCueList::create();    
 
     for (size_t i = 0; i < newCues.size(); ++i) {
         newCues[i]->setTrack(this);

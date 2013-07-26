@@ -32,8 +32,8 @@ namespace WebCore {
     class EventListener : public RefCounted<EventListener> {
     public:
         enum Type {
-            JSEventListenerType,
-            ImageEventListenerType,
+            JSEventListenerType, 
+            ImageEventListenerType, 
             ObjCEventListenerType,
             CPPEventListenerType,
             ConditionEventListenerType,
@@ -59,7 +59,7 @@ namespace WebCore {
 
     private:
         virtual bool virtualisAttribute() const { return false; }
-
+        
         Type m_type;
     };
 

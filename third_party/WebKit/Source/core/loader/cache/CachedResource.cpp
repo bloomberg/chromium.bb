@@ -262,7 +262,7 @@ bool CachedResource::isExpired() const
 
     return currentAge() > freshnessLifetime();
 }
-
+    
 double CachedResource::currentAge() const
 {
     // RFC2616 13.2.3
@@ -274,7 +274,7 @@ double CachedResource::currentAge() const
     double residentTime = currentTime() - m_responseTimestamp;
     return correctedReceivedAge + residentTime;
 }
-
+    
 double CachedResource::freshnessLifetime() const
 {
     // Cache non-http resources liberally
@@ -470,13 +470,13 @@ void CachedResource::setDecodedSize(unsigned size)
     // queue.
     if (inCache())
         memoryCache()->removeFromLRUList(this);
-
+    
     m_decodedSize = size;
-
-    if (inCache()) {
+   
+    if (inCache()) { 
         // Now insert into the new LRU list.
         memoryCache()->insertInLRUList(this);
-
+        
         // Insert into or remove from the live decoded list if necessary.
         // When inserting into the LiveDecodedResourcesList it is possible
         // that the m_lastDecodedAccessTime is still zero or smaller than
@@ -509,10 +509,10 @@ void CachedResource::setEncodedSize(unsigned size)
 
     m_encodedSize = size;
 
-    if (inCache()) {
+    if (inCache()) { 
         // Now insert into the new LRU list.
         memoryCache()->insertInLRUList(this);
-
+        
         // Update the cache's size totals.
         memoryCache()->adjustSize(hasClients(), delta);
     }
@@ -521,7 +521,7 @@ void CachedResource::setEncodedSize(unsigned size)
 void CachedResource::didAccessDecodedData(double timeStamp)
 {
     m_lastDecodedAccessTime = timeStamp;
-
+    
     if (inCache()) {
         if (m_inLiveDecodedResourcesList) {
             memoryCache()->removeFromLiveDecodedResourcesList(this);
@@ -530,9 +530,9 @@ void CachedResource::didAccessDecodedData(double timeStamp)
         memoryCache()->prune();
     }
 }
-
-void CachedResource::setResourceToRevalidate(CachedResource* resource)
-{
+    
+void CachedResource::setResourceToRevalidate(CachedResource* resource) 
+{ 
     ASSERT(resource);
     ASSERT(!m_resourceToRevalidate);
     ASSERT(resource != this);
@@ -550,8 +550,8 @@ void CachedResource::setResourceToRevalidate(CachedResource* resource)
     m_resourceToRevalidate = resource;
 }
 
-void CachedResource::clearResourceToRevalidate()
-{
+void CachedResource::clearResourceToRevalidate() 
+{ 
     ASSERT(m_resourceToRevalidate);
     if (m_switchingClientsToRevalidatedResource)
         return;
@@ -565,7 +565,7 @@ void CachedResource::clearResourceToRevalidate()
     m_resourceToRevalidate = 0;
     deleteIfPossible();
 }
-
+    
 void CachedResource::switchClientsToRevalidatedResource()
 {
     ASSERT(m_resourceToRevalidate);
@@ -711,7 +711,7 @@ bool CachedResource::canUseCacheValidator() const
 }
 
 bool CachedResource::mustRevalidateDueToCacheHeaders(CachePolicy cachePolicy) const
-{
+{    
     ASSERT(cachePolicy == CachePolicyRevalidate || cachePolicy == CachePolicyCache || cachePolicy == CachePolicyVerify);
 
     if (cachePolicy == CachePolicyRevalidate)
@@ -740,12 +740,12 @@ bool CachedResource::mustRevalidateDueToCacheHeaders(CachePolicy cachePolicy) co
 }
 
 bool CachedResource::isSafeToMakePurgeable() const
-{
+{ 
     return !hasClients() && !m_proxyResource && !m_resourceToRevalidate;
 }
 
-bool CachedResource::makePurgeable(bool purgeable)
-{
+bool CachedResource::makePurgeable(bool purgeable) 
+{ 
     if (purgeable) {
         ASSERT(isSafeToMakePurgeable());
 
@@ -755,7 +755,7 @@ bool CachedResource::makePurgeable(bool purgeable)
         }
         if (!m_data)
             return false;
-
+        
         // Should not make buffer purgeable if it has refs other than this since we don't want two copies.
         if (!m_data->hasOneRef())
             return false;
@@ -777,7 +777,7 @@ bool CachedResource::makePurgeable(bool purgeable)
     ASSERT(!hasClients());
 
     if (!m_purgeableData->lock())
-        return false;
+        return false; 
 
     m_data = SharedBuffer::adoptPurgeableBuffer(m_purgeableData.release());
     return true;

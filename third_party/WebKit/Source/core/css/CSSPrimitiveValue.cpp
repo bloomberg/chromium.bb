@@ -176,14 +176,14 @@ static CSSTextCache& cssTextCache()
     return cache;
 }
 
-unsigned short CSSPrimitiveValue::primitiveType() const
+unsigned short CSSPrimitiveValue::primitiveType() const 
 {
     if (m_primitiveUnitType == CSS_PROPERTY_ID || m_primitiveUnitType == CSS_VALUE_ID)
         return CSS_IDENT;
 
     if (m_primitiveUnitType != CSS_CALC)
-        return m_primitiveUnitType;
-
+        return m_primitiveUnitType; 
+    
     switch (m_value.calc->category()) {
     case CalcNumber:
         return CSS_NUMBER;
@@ -528,7 +528,7 @@ double CSSPrimitiveValue::computeLengthDouble(const RenderStyle* style, const Re
     if (m_primitiveUnitType == CSS_CALC)
         // The multiplier and factor is applied to each value in the calc expression individually
         return m_value.calc->computeLengthPx(style, rootStyle, multiplier, computingFontSize);
-
+        
     double factor;
 
     switch (primitiveType()) {
@@ -672,7 +672,7 @@ double CSSPrimitiveValue::getDoubleValue(unsigned short unitType) const
 }
 
 double CSSPrimitiveValue::getDoubleValue() const
-{
+{ 
     return m_primitiveUnitType != CSS_CALC ? m_value.num : m_value.calc->doubleValue();
 }
 

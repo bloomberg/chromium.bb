@@ -46,7 +46,7 @@ public:
 private:
     bool m_previousProcessingUserTypingGesture;
     RefPtr<Element> m_previousFocusedElement;
-};
+};    
 
 } // namespace WebCore
 

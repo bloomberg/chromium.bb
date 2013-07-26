@@ -184,7 +184,7 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createLayoutData(unsigned dirtyObj
     data->setBoolean("partialLayout", partialLayout);
     return data.release();
 }
-
+    
 PassRefPtr<JSONObject> TimelineRecordFactory::createDecodeImageData(const String& imageType)
 {
     RefPtr<JSONObject> data = JSONObject::create();

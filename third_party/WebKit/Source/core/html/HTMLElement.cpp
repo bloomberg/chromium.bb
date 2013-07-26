@@ -196,7 +196,7 @@ AtomicString HTMLElement::eventNameForAttributeName(const QualifiedName& attrNam
 {
     if (!attrName.namespaceURI().isNull())
         return AtomicString();
-
+    
     typedef HashMap<AtomicString, AtomicString> StringToStringMap;
     DEFINE_STATIC_LOCAL(StringToStringMap, attributeNameToEventNameMap, ());
     if (!attributeNameToEventNameMap.size()) {
@@ -326,7 +326,7 @@ static void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionCode& ec)
     Node* next = node->nextSibling();
     if (!next || !next->isTextNode())
         return;
-
+    
     RefPtr<Text> textNode = toText(node.get());
     RefPtr<Text> textNext = toText(next);
     textNode->appendData(textNext->data());
@@ -348,7 +348,7 @@ void HTMLElement::setOuterHTML(const String& html, ExceptionCode& ec)
     RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, ec);
     if (ec)
         return;
-
+      
     parent->replaceChild(fragment.release(), this, ec);
     RefPtr<Node> node = next ? next->previousSibling() : 0;
     if (!ec && node && node->isTextNode())
@@ -398,7 +398,7 @@ void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
         return;
     }
     if (hasLocalName(colTag) || hasLocalName(colgroupTag) || hasLocalName(framesetTag) ||
-        hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) ||
+        hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) || 
         hasLocalName(tbodyTag) || hasLocalName(tfootTag) || hasLocalName(theadTag) ||
         hasLocalName(trTag)) {
         ec = NoModificationAllowedError;
@@ -446,7 +446,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionCode& ec)
         return;
     }
     if (hasLocalName(colTag) || hasLocalName(colgroupTag) || hasLocalName(framesetTag) ||
-        hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) ||
+        hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) || 
         hasLocalName(tbodyTag) || hasLocalName(tfootTag) || hasLocalName(theadTag) ||
         hasLocalName(trTag)) {
         ec = NoModificationAllowedError;
@@ -463,7 +463,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionCode& ec)
     RefPtr<Node> next = nextSibling();
     RefPtr<Node> newChild;
     ec = 0;
-
+    
     // Convert text to fragment with <br> tags instead of linebreaks if needed.
     if (text.contains('\r') || text.contains('\n'))
         newChild = textToFragment(text, ec);
@@ -520,7 +520,7 @@ Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, Exception
         }
         return 0;
     }
-
+    
     // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
     ec = NotSupportedError;
     return 0;
@@ -535,7 +535,7 @@ Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChi
     }
 
     Node* returnValue = insertAdjacent(where, newChild, ec);
-    return toElement(returnValue);
+    return toElement(returnValue); 
 }
 
 // Step 3 of http://www.whatwg.org/specs/web-apps/current-work/multipage/apis-in-html-documents.html#insertadjacenthtml()
@@ -853,7 +853,7 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
     Node* node = firstChild();
     while (node) {
         // Skip bdi, script, style and text form controls.
-        if (equalIgnoringCase(node->nodeName(), "bdi") || node->hasTagName(scriptTag) || node->hasTagName(styleTag)
+        if (equalIgnoringCase(node->nodeName(), "bdi") || node->hasTagName(scriptTag) || node->hasTagName(styleTag) 
             || (node->isElementNode() && toElement(node)->isTextFormControl())) {
             node = NodeTraversal::nextSkippingChildren(node, this);
             continue;

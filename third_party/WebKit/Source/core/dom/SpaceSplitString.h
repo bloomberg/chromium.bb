@@ -49,7 +49,7 @@ namespace WebCore {
         void add(const AtomicString&);
         void remove(unsigned index);
 
-        bool isUnique() const { return m_keyString.isNull(); }
+        bool isUnique() const { return m_keyString.isNull(); } 
         size_t size() const { return m_vector.size(); }
         const AtomicString& operator[](size_t i) { ASSERT_WITH_SECURITY_IMPLICATION(i < size()); return m_vector[i]; }
 

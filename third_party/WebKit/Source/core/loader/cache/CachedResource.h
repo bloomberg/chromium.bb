@@ -55,7 +55,7 @@ class CachedResource {
     WTF_MAKE_NONCOPYABLE(CachedResource); WTF_MAKE_FAST_ALLOCATED;
     friend class MemoryCache;
     friend class InspectorResource;
-
+    
 public:
     enum Type {
         MainResource,
@@ -132,7 +132,7 @@ public:
     unsigned encodedSize() const { return m_encodedSize; }
     unsigned decodedSize() const { return m_decodedSize; }
     unsigned overheadSize() const;
-
+    
     bool isLoaded() const { return !m_loading; } // FIXME. Method name is inaccurate. Loading might not have started yet.
 
     bool isLoading() const { return m_loading; }
@@ -153,7 +153,7 @@ public:
     void updateForAccess();
     unsigned accessCount() const { return m_accessCount; }
 
-    // Computes the status of an object after loading.
+    // Computes the status of an object after loading.  
     // Updates the expire date on the cache entry file
     void finish(double finishTime = 0.0);
 
@@ -167,9 +167,9 @@ public:
     // The resource can be brought back to cache after successful revalidation.
     void setInCache(bool inCache) { m_inCache = inCache; }
     bool inCache() const { return m_inCache; }
-
+    
     bool inLiveDecodedResourcesList() { return m_inLiveDecodedResourcesList; }
-
+    
     void clearLoader();
 
     SharedBuffer* resourceBuffer() const { ASSERT(!m_purgeableData); return m_data.get(); }
@@ -206,30 +206,30 @@ public:
 
     bool shouldSendResourceLoadCallbacks() const { return m_options.sendLoadCallbacks == SendCallbacks; }
     DataBufferingPolicy dataBufferingPolicy() const { return m_options.dataBufferingPolicy; }
-
+    
     virtual void destroyDecodedData() { }
-
+    
     bool isPreloaded() const { return m_preloadCount; }
     void increasePreloadCount() { ++m_preloadCount; }
     void decreasePreloadCount() { ASSERT(m_preloadCount); --m_preloadCount; }
-
+    
     void registerHandle(CachedResourceHandleBase* h);
     void unregisterHandle(CachedResourceHandleBase* h);
-
+    
     bool canUseCacheValidator() const;
     bool mustRevalidateDueToCacheHeaders(CachePolicy) const;
     bool isCacheValidator() const { return m_resourceToRevalidate; }
     CachedResource* resourceToRevalidate() const { return m_resourceToRevalidate; }
     void setResourceToRevalidate(CachedResource*);
-
+    
     bool isPurgeable() const;
     bool wasPurged() const;
-
+    
     // This is used by the archive machinery to get at a purged resource without
     // triggering a load. We should make it protected again if we can find a
     // better way to handle the archive case.
     bool makePurgeable(bool purgeable);
-
+    
     virtual void didSendData(unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void didDownloadData(int) { }
 
@@ -250,7 +250,7 @@ protected:
     virtual void switchClientsToRevalidatedResource();
     void clearResourceToRevalidate();
     void updateResponseAfterRevalidation(const ResourceResponse& validatingResponse);
-
+    
     HashCountedSet<CachedResourceClient*> m_clients;
 
     class CachedResourceCallback {
@@ -330,10 +330,10 @@ private:
 
     CachedResource* m_nextInAllResourcesList;
     CachedResource* m_prevInAllResourcesList;
-
+    
     CachedResource* m_nextInLiveResourcesList;
     CachedResource* m_prevInLiveResourcesList;
-
+    
     // If this field is non-null we are using the resource as a proxy for checking whether an existing resource is still up to date
     // using HTTP If-Modified-Since/If-None-Match headers. If the response is 304 all clients of this resource are moved
     // to to be clients of m_resourceToRevalidate and the resource is deleted. If not, the field is zeroed and this

@@ -483,7 +483,7 @@
 #define TRACE_EVENT_API_GET_CATEGORY_ENABLED \
     WebCore::EventTracer::getTraceCategoryEnabledFlag
 
-// Add a trace event to the platform tracing system.
+// Add a trace event to the platform tracing system. 
 // void TRACE_EVENT_API_ADD_TRACE_EVENT(
 //                    char phase,
 //                    const unsigned char* category_enabled,

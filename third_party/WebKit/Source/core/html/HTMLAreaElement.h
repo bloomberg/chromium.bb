@@ -45,7 +45,7 @@ public:
 
     // The parent map's image.
     HTMLImageElement* imageElement() const;
-
+    
 private:
     HTMLAreaElement(const QualifiedName&, Document*);
 

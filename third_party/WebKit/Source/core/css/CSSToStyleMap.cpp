@@ -45,7 +45,7 @@ const RenderStyle* CSSToStyleMap::style() const
 {
     return m_state.style();
 }
-
+    
 const RenderStyle* CSSToStyleMap::rootElementStyle() const
 {
     return m_state.rootElementStyle();
@@ -55,7 +55,7 @@ bool CSSToStyleMap::useSVGZoomRules() const
 {
     return m_state.useSVGZoomRules();
 }
-
+    
 PassRefPtr<StyleImage> CSSToStyleMap::styleImage(CSSPropertyID propertyId, CSSValue* value)
 {
     return m_elementStyleResources.styleImage(m_state.document()->textLinkColors(), propertyId, value);

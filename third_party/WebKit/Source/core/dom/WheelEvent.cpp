@@ -73,18 +73,18 @@ void WheelEvent::initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtr<Abstrac
 {
     if (dispatched())
         return;
-
+    
     initUIEvent(eventNames().mousewheelEvent, true, true, view, 0);
-
+    
     m_screenLocation = IntPoint(screenX, screenY);
     m_ctrlKey = ctrlKey;
     m_altKey = altKey;
     m_shiftKey = shiftKey;
     m_metaKey = metaKey;
-
+    
     // Normalize to the Windows 120 multiple
     m_wheelDelta = IntPoint(rawDeltaX * TickMultiplier, rawDeltaY * TickMultiplier);
-
+    
     m_rawDelta = IntPoint(rawDeltaX, rawDeltaY);
     m_deltaMode = DOM_DELTA_PIXEL;
     m_directionInvertedFromDevice = false;

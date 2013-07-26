@@ -5,13 +5,13 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
+ * 
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -33,27 +33,27 @@
 namespace WebCore {
 
     namespace XPath {
-
+    
         class ValueData : public RefCounted<ValueData> {
-        public:
+        public:            
             static PassRefPtr<ValueData> create() { return adoptRef(new ValueData); }
             static PassRefPtr<ValueData> create(const NodeSet& nodeSet) { return adoptRef(new ValueData(nodeSet)); }
             static PassRefPtr<ValueData> create(const String& string) { return adoptRef(new ValueData(string)); }
 
             NodeSet m_nodeSet;
             String m_string;
-
+            
         private:
             ValueData() { }
             explicit ValueData(const NodeSet& nodeSet) : m_nodeSet(nodeSet) { }
-            explicit ValueData(const String& string) : m_string(string) { }
+            explicit ValueData(const String& string) : m_string(string) { }            
         };
 
         // Copying Value objects makes their data partially shared, so care has to be taken when dealing with copies.
         class Value {
         public:
             enum Type { NodeSetValue, BooleanValue, NumberValue, StringValue };
-
+            
             Value(unsigned value) : m_type(NumberValue), m_bool(false), m_number(value) {}
             Value(unsigned long value) : m_type(NumberValue), m_bool(false), m_number(value) {}
             Value(double value) : m_type(NumberValue), m_bool(false), m_number(value) {}

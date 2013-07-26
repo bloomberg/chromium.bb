@@ -76,7 +76,7 @@ public:
     {
         return adoptPtr(new WebVTTParser(client, context));
     }
-
+    
     static inline bool isRecognizedTag(const AtomicString& tagName)
     {
         return tagName == iTag
@@ -93,7 +93,7 @@ public:
     }
     static inline bool isValidSettingDelimiter(char c)
     {
-        // ... a WebVTT cue consists of zero or more of the following components, in any order, separated from each other by one or more
+        // ... a WebVTT cue consists of zero or more of the following components, in any order, separated from each other by one or more 
         // U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
         return c == ' ' || c == '\t';
     }
@@ -154,7 +154,7 @@ private:
     double m_currentEndTime;
     StringBuilder m_currentContent;
     String m_currentSettings;
-
+    
     WebVTTToken m_token;
     OwnPtr<WebVTTTokenizer> m_tokenizer;
 

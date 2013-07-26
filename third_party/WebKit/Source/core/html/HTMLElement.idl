@@ -21,7 +21,7 @@
 [
     CustomToV8
 ] interface HTMLElement : Element {
-             // iht.com relies on id returning the empty string when no id is present.
+             // iht.com relies on id returning the empty string when no id is present. 
              // Other browsers do this as well. So we don't convert null to JS null.
              [Reflect] attribute DOMString id;
              [Reflect] attribute DOMString title;

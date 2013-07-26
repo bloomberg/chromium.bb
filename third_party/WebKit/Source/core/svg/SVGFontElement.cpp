@@ -43,7 +43,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFontElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFontElement::SVGFontElement(const QualifiedName& tagName, Document* document)
-    : SVGStyledElement(tagName, document)
+    : SVGStyledElement(tagName, document) 
     , m_missingGlyph(0)
     , m_isGlyphCacheValid(false)
 {
@@ -106,7 +106,7 @@ void SVGFontElement::registerLigaturesInGlyphCache(Vector<String>& ligatures)
                 glyphs.clear();
                 continue;
             }
-
+                
             // This glyph is never meant to be used for rendering, only as identifier as a part of a ligature.
             SVGGlyph newGlyphPart;
             newGlyphPart.isPartOfLigature = true;
@@ -176,7 +176,7 @@ static bool stringMatchesUnicodeRange(const String& unicodeString, const Unicode
 
     if (!unicodeValues.isEmpty())
         return unicodeValues.contains(unicodeString);
-
+    
     return false;
 }
 
@@ -187,7 +187,7 @@ static bool stringMatchesGlyphName(const String& glyphName, const HashSet<String
 
     if (!glyphValues.isEmpty())
         return glyphValues.contains(glyphName);
-
+    
     return false;
 }
 
@@ -215,7 +215,7 @@ static float kerningForPairOfStringsAndGlyphs(const KerningPairVector& kerningPa
 
     return 0;
 }
-
+    
 float SVGFontElement::horizontalKerningForPairOfStringsAndGlyphs(const String& u1, const String& g1, const String& u2, const String& g2) const
 {
     if (m_horizontalKerningPairs.isEmpty())
@@ -250,7 +250,7 @@ SVGGlyph SVGFontElement::svgGlyphForGlyph(Glyph glyph)
     ensureGlyphCache();
     return m_glyphMap.svgGlyphForGlyph(glyph);
 }
-
+    
 Glyph SVGFontElement::missingGlyph()
 {
     ensureGlyphCache();

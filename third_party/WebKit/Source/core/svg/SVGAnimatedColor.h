@@ -23,14 +23,14 @@
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 
 namespace WebCore {
-
+    
 class SVGAnimationElement;
 
 class SVGAnimatedColorAnimator : public SVGAnimatedTypeAnimator {
 public:
     SVGAnimatedColorAnimator(SVGAnimationElement*, SVGElement*);
     virtual ~SVGAnimatedColorAnimator() { }
-
+    
     virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&);
     virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&) { return PassOwnPtr<SVGAnimatedType>(); }
     virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&) { }

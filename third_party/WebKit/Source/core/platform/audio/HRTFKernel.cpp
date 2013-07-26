@@ -48,14 +48,14 @@ namespace WebCore {
 static float extractAverageGroupDelay(AudioChannel* channel, size_t analysisFFTSize)
 {
     ASSERT(channel);
-
+        
     float* impulseP = channel->mutableData();
-
+    
     bool isSizeGood = channel->length() >= analysisFFTSize;
     ASSERT(isSizeGood);
     if (!isSizeGood)
         return 0;
-
+    
     // Check for power-of-2.
     ASSERT(1UL << static_cast<unsigned>(log2(analysisFFTSize)) == analysisFFTSize);
 
@@ -115,18 +115,18 @@ PassRefPtr<HRTFKernel> HRTFKernel::createInterpolatedKernel(HRTFKernel* kernel1,
     ASSERT(kernel1 && kernel2);
     if (!kernel1 || !kernel2)
         return 0;
-
+ 
     ASSERT(x >= 0.0 && x < 1.0);
     x = min(1.0f, max(0.0f, x));
-
+    
     float sampleRate1 = kernel1->sampleRate();
     float sampleRate2 = kernel2->sampleRate();
     ASSERT(sampleRate1 == sampleRate2);
     if (sampleRate1 != sampleRate2)
         return 0;
-
+    
     float frameDelay = (1 - x) * kernel1->frameDelay() + x * kernel2->frameDelay();
-
+    
     OwnPtr<FFTFrame> interpolatedFrame = FFTFrame::createInterpolatedFrame(*kernel1->fftFrame(), *kernel2->fftFrame(), x);
     return HRTFKernel::create(interpolatedFrame.release(), frameDelay, sampleRate1);
 }

@@ -845,7 +845,7 @@ static PassRefPtr<CSSValue> valueForCustomFilterParameter(const RenderObject* re
     case CustomFilterParameter::TRANSFORM:
         return valueForCustomFilterTransformParameter(renderer, style, static_cast<const CustomFilterTransformParameter*>(parameter));
     }
-
+    
     ASSERT_NOT_REACHED();
     return 0;
 }
@@ -938,12 +938,12 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
         case FilterOperation::CUSTOM: {
             CustomFilterOperation* customOperation = static_cast<CustomFilterOperation*>(filterOperation);
             filterValue = CSSFilterValue::create(CSSFilterValue::CustomFilterOperation);
-
+            
             // The output should be verbose, even if the values are the default ones.
-
+            
             ASSERT(customOperation->program());
             StyleCustomFilterProgram* program = static_cast<StyleCustomFilterProgram*>(customOperation->program());
-
+            
             RefPtr<CSSValueList> shadersList = CSSValueList::createSpaceSeparated();
             if (program->vertexShader())
                 shadersList->append(program->vertexShader()->cssValue());
@@ -965,18 +965,18 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
                 shadersList->append(cssValuePool().createIdentifierValue(CSSValueNone));
 
             filterValue->append(shadersList.release());
-
+            
             RefPtr<CSSValueList> meshParameters = CSSValueList::createSpaceSeparated();
             meshParameters->append(cssValuePool().createValue(customOperation->meshColumns(), CSSPrimitiveValue::CSS_NUMBER));
             meshParameters->append(cssValuePool().createValue(customOperation->meshRows(), CSSPrimitiveValue::CSS_NUMBER));
-
+            
             // FIXME: The specification doesn't have any "attached" identifier. Should we add one?
             // https://bugs.webkit.org/show_bug.cgi?id=72700
             if (customOperation->meshType() == MeshTypeDetached)
                 meshParameters->append(cssValuePool().createIdentifierValue(CSSValueDetached));
-
+            
             filterValue->append(meshParameters.release());
-
+            
             const CustomFilterParameterList& parameters = customOperation->parameters();
             size_t parametersSize = parameters.size();
             if (!parametersSize)
@@ -989,7 +989,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
                 parameterCSSNameAndValue->append(valueForCustomFilterParameter(renderer, style, parameter));
                 parametersCSSValue->append(parameterCSSNameAndValue.release());
             }
-
+            
             filterValue->append(parametersCSSValue.release());
             break;
         }
@@ -2651,7 +2651,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return valueForFilter(renderer, style.get());
         case CSSPropertyMixBlendMode:
             return cssValuePool().createValue(style->blendMode());
-
+            
         case CSSPropertyBackgroundBlendMode: {
             const FillLayer* layers = style->backgroundLayers();
             if (!layers->next())
@@ -3004,7 +3004,7 @@ String CSSComputedStyleDeclaration::removeProperty(const String&, ExceptionCode&
     ec = NoModificationAllowedError;
     return String();
 }
-
+    
 PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
 {
     return getPropertyCSSValue(propertyID);
@@ -3074,9 +3074,9 @@ void CSSComputedStyleDeclaration::clearVariables(ExceptionCode& ec)
 PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getBackgroundShorthandValue() const
 {
     static const CSSPropertyID propertiesBeforeSlashSeperator[5] = { CSSPropertyBackgroundColor, CSSPropertyBackgroundImage,
-                                                                     CSSPropertyBackgroundRepeat, CSSPropertyBackgroundAttachment,
+                                                                     CSSPropertyBackgroundRepeat, CSSPropertyBackgroundAttachment,  
                                                                      CSSPropertyBackgroundPosition };
-    static const CSSPropertyID propertiesAfterSlashSeperator[3] = { CSSPropertyBackgroundSize, CSSPropertyBackgroundOrigin,
+    static const CSSPropertyID propertiesAfterSlashSeperator[3] = { CSSPropertyBackgroundSize, CSSPropertyBackgroundOrigin, 
                                                                     CSSPropertyBackgroundClip };
 
     RefPtr<CSSValueList> list = CSSValueList::createSlashSeparated();

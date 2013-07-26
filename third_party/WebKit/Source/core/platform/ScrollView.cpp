@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #include "config.h"
@@ -60,7 +60,7 @@ ScrollView::~ScrollView()
 {
 }
 
-void ScrollView::addChild(PassRefPtr<Widget> prpChild)
+void ScrollView::addChild(PassRefPtr<Widget> prpChild) 
 {
     Widget* child = prpChild.get();
     ASSERT(child != this && !child->parent());
@@ -87,7 +87,7 @@ void ScrollView::setHasHorizontalScrollbar(bool hasBar)
         removeChild(m_horizontalScrollbar.get());
         m_horizontalScrollbar = 0;
     }
-
+    
     if (AXObjectCache* cache = axObjectCache())
         cache->handleScrollbarUpdate(this);
 }
@@ -104,7 +104,7 @@ void ScrollView::setHasVerticalScrollbar(bool hasBar)
         removeChild(m_verticalScrollbar.get());
         m_verticalScrollbar = 0;
     }
-
+    
     if (AXObjectCache* cache = axObjectCache())
         cache->handleScrollbarUpdate(this);
 }
@@ -151,19 +151,19 @@ void ScrollView::setCanHaveScrollbars(bool canScroll)
 {
     ScrollbarMode newHorizontalMode;
     ScrollbarMode newVerticalMode;
-
+    
     scrollbarModes(newHorizontalMode, newVerticalMode);
-
+    
     if (canScroll && newVerticalMode == ScrollbarAlwaysOff)
         newVerticalMode = ScrollbarAuto;
     else if (!canScroll)
         newVerticalMode = ScrollbarAlwaysOff;
-
+    
     if (canScroll && newHorizontalMode == ScrollbarAlwaysOff)
         newHorizontalMode = ScrollbarAuto;
     else if (!canScroll)
         newHorizontalMode = ScrollbarAlwaysOff;
-
+    
     setScrollbarModes(newHorizontalMode, newVerticalMode);
 }
 
@@ -388,10 +388,10 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
 
     bool hasHorizontalScrollbar = m_horizontalScrollbar;
     bool hasVerticalScrollbar = m_verticalScrollbar;
-
+    
     bool newHasHorizontalScrollbar = hasHorizontalScrollbar;
     bool newHasVerticalScrollbar = hasVerticalScrollbar;
-
+   
     ScrollbarMode hScroll = m_horizontalScrollbarMode;
     ScrollbarMode vScroll = m_verticalScrollbarMode;
 
@@ -472,7 +472,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
             }
         }
     }
-
+    
     // Set up the range (and page step/line step), but only do this if we're not in a nested call (to avoid
     // doing it multiple times).
     if (m_updateScrollbarsPass)
@@ -498,14 +498,14 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
         m_horizontalScrollbar->setSteps(Scrollbar::pixelsPerLineStep(), pageStep);
         m_horizontalScrollbar->setProportion(clientWidth, contentsWidth());
         if (m_scrollbarsSuppressed)
-            m_horizontalScrollbar->setSuppressInvalidation(false);
-    }
+            m_horizontalScrollbar->setSuppressInvalidation(false); 
+    } 
 
     if (m_verticalScrollbar) {
         int clientHeight = visibleHeight();
         int pageStep = max(max<int>(clientHeight * Scrollbar::minFractionToStepWhenPaging(), clientHeight - Scrollbar::maxOverlapBetweenPages()), 1);
         IntRect oldRect(m_verticalScrollbar->frameRect());
-        IntRect vBarRect(width() - m_verticalScrollbar->width(),
+        IntRect vBarRect(width() - m_verticalScrollbar->width(), 
                          0,
                          m_verticalScrollbar->width(),
                          height() - (m_horizontalScrollbar ? m_horizontalScrollbar->height() : 0));
@@ -557,7 +557,7 @@ IntRect ScrollView::rectToCopyOnScroll() const
     if (hasOverlayScrollbars()) {
         int verticalScrollbarWidth = (verticalScrollbar() && !hasLayerForVerticalScrollbar()) ? verticalScrollbar()->width() : 0;
         int horizontalScrollbarHeight = (horizontalScrollbar() && !hasLayerForHorizontalScrollbar()) ? horizontalScrollbar()->height() : 0;
-
+        
         scrollViewRect.setWidth(scrollViewRect.width() - verticalScrollbarWidth);
         scrollViewRect.setHeight(scrollViewRect.height() - horizontalScrollbarHeight);
     }
@@ -572,7 +572,7 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
     // Since scrolling is double buffered, we will be blitting the scroll view's intersection
     // with the clip rect every time to keep it smooth.
     IntRect clipRect = windowClipRect();
-    IntRect scrollViewRect = rectToCopyOnScroll();
+    IntRect scrollViewRect = rectToCopyOnScroll();    
     IntRect updateRect = clipRect;
     updateRect.intersect(scrollViewRect);
 
@@ -590,7 +590,7 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
         // FIXME: Find a way to scroll subframes with this faster path
         if (!scrollContentsFastPath(-scrollDelta, scrollViewRect, clipRect))
             scrollContentsSlowPath(updateRect);
-    } else {
+    } else { 
        // We need to go ahead and repaint the entire backing store.  Do it now before moving the
        // windowed plugins.
        scrollContentsSlowPath(updateRect);
@@ -623,7 +623,7 @@ IntPoint ScrollView::rootViewToContents(const IntPoint& rootViewPoint) const
 IntPoint ScrollView::contentsToRootView(const IntPoint& contentsPoint) const
 {
     IntPoint viewPoint = contentsPoint - scrollOffset();
-    return convertToRootView(viewPoint);
+    return convertToRootView(viewPoint);  
 }
 
 IntRect ScrollView::rootViewToContents(const IntRect& rootViewRect) const
@@ -649,7 +649,7 @@ IntPoint ScrollView::windowToContents(const IntPoint& windowPoint) const
 IntPoint ScrollView::contentsToWindow(const IntPoint& contentsPoint) const
 {
     IntPoint viewPoint = contentsPoint - scrollOffset();
-    return convertToContainingWindow(viewPoint);
+    return convertToContainingWindow(viewPoint);  
 }
 
 IntRect ScrollView::windowToContents(const IntRect& windowRect) const
@@ -746,7 +746,7 @@ Scrollbar* ScrollView::scrollbarAtPoint(const IntPoint& windowPoint)
 void ScrollView::setFrameRect(const IntRect& newRect)
 {
     IntRect oldRect = frameRect();
-
+    
     if (newRect == oldRect)
         return;
 
@@ -846,7 +846,7 @@ IntRect ScrollView::scrollCornerRect() const
                                  m_verticalScrollbar->width(),
                                  height() - m_verticalScrollbar->height()));
     }
-
+    
     return cornerRect;
 }
 
@@ -1054,7 +1054,7 @@ bool ScrollView::isPointInScrollbarCorner(const IntPoint& windowPoint)
     int verticalScrollbarXMin = m_verticalScrollbar->frameRect().x();
     int verticalScrollbarXMax = m_verticalScrollbar->frameRect().x() + m_verticalScrollbar->frameRect().width();
     int verticalScrollbarYMin = m_verticalScrollbar->frameRect().y() + m_verticalScrollbar->frameRect().height();
-
+    
     return viewPoint.x() > verticalScrollbarXMin && viewPoint.x() < verticalScrollbarXMax && viewPoint.y() > verticalScrollbarYMin;
 }
 
@@ -1101,12 +1101,12 @@ void ScrollView::setParentVisible(bool visible)
 {
     if (isParentVisible() == visible)
         return;
-
+    
     Widget::setParentVisible(visible);
 
     if (!isSelfVisible())
         return;
-
+        
     HashSet<RefPtr<Widget> >::iterator end = m_children.end();
     for (HashSet<RefPtr<Widget> >::iterator it = m_children.begin(); it != end; ++it)
         (*it)->setParentVisible(visible);
@@ -1150,7 +1150,7 @@ void ScrollView::addPanScrollIcon(const IntPoint& iconPosition)
 {
     if (!hostWindow())
         return;
-    m_drawPanScrollIcon = true;
+    m_drawPanScrollIcon = true;    
     m_panScrollIconPoint = IntPoint(iconPosition.x() - panIconSizeLength / 2 , iconPosition.y() - panIconSizeLength / 2) ;
     hostWindow()->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
@@ -1159,7 +1159,7 @@ void ScrollView::removePanScrollIcon()
 {
     if (!hostWindow())
         return;
-    m_drawPanScrollIcon = false;
+    m_drawPanScrollIcon = false; 
     hostWindow()->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
 

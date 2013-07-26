@@ -31,7 +31,7 @@
 namespace WebCore {
 
 enum CompositeOperationType {
-    FECOMPOSITE_OPERATOR_UNKNOWN    = 0,
+    FECOMPOSITE_OPERATOR_UNKNOWN    = 0, 
     FECOMPOSITE_OPERATOR_OVER       = 1,
     FECOMPOSITE_OPERATOR_IN         = 2,
     FECOMPOSITE_OPERATOR_OUT        = 3,

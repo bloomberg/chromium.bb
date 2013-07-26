@@ -62,10 +62,10 @@ public:
         LOADING = 3,
         DONE = 4
     };
-
+    
     enum ResponseTypeCode {
         ResponseTypeDefault,
-        ResponseTypeText,
+        ResponseTypeText, 
         ResponseTypeDocument,
         ResponseTypeBlob,
         ResponseTypeArrayBuffer
@@ -119,7 +119,7 @@ public:
     void setResponseType(const String&, ExceptionCode&);
     String responseType();
     ResponseTypeCode responseTypeCode() const { return m_responseTypeCode; }
-
+    
     // response attribute has custom getter.
     ArrayBuffer* responseArrayBuffer(ExceptionCode&);
 
@@ -205,7 +205,7 @@ private:
     ScriptString m_responseText;
     mutable bool m_createdDocument;
     mutable RefPtr<Document> m_responseDocument;
-
+    
     RefPtr<SharedBuffer> m_binaryResponseBuilder;
     mutable RefPtr<ArrayBuffer> m_responseArrayBuffer;
 

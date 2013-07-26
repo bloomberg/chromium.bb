@@ -45,7 +45,7 @@ public:
     typedef HashSet<Element*> SVGPendingElements;
     SVGDocumentExtensions(Document*);
     ~SVGDocumentExtensions();
-
+    
     void addTimeContainer(SVGSVGElement*);
     void removeTimeContainer(SVGSVGElement*);
 

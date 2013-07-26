@@ -43,11 +43,11 @@ public:
 
     ALWAYS_INLINE bool isCachedShader() const { return m_isCachedShader; }
     ALWAYS_INLINE bool isPendingShader() const { return m_isPendingShader; }
-
+    
     virtual PassRefPtr<CSSValue> cssValue() const = 0;
-
+    
     virtual CachedShader* cachedShader() const { return 0; }
-
+    
 protected:
     StyleShader()
         : m_isCachedShader(false)

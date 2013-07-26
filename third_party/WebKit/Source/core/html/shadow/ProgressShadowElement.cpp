@@ -81,7 +81,7 @@ bool ProgressInnerElement::rendererIsNeeded(const NodeRenderingContext& context)
         return HTMLDivElement::rendererIsNeeded(context);
 
     RenderObject* progressRenderer = progressElement()->renderer();
-    return progressRenderer && !progressRenderer->style()->hasAppearance() && HTMLDivElement::rendererIsNeeded(context);
+    return progressRenderer && !progressRenderer->style()->hasAppearance() && HTMLDivElement::rendererIsNeeded(context);    
 }
 
 void ProgressValueElement::setWidthPercentage(double width)

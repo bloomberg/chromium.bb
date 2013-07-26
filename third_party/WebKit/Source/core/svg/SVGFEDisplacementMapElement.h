@@ -26,7 +26,7 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
 namespace WebCore {
-
+ 
 template<>
 struct SVGPropertyTraits<ChannelSelectorType> {
     static unsigned highestEnumValue() { return CHANNEL_A; }
@@ -69,10 +69,10 @@ public:
     static PassRefPtr<SVGFEDisplacementMapElement> create(const QualifiedName&, Document*);
 
     static ChannelSelectorType stringToChannel(const String&);
-
+    
 private:
     SVGFEDisplacementMapElement(const QualifiedName& tagName, Document*);
-
+    
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName);

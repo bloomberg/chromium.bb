@@ -38,7 +38,7 @@ enum IncludeBorderColorOrNot { DoNotIncludeBorderColor, IncludeBorderColor };
 class RenderTableCell FINAL : public RenderBlock {
 public:
     explicit RenderTableCell(Element*);
-
+    
     unsigned colSpan() const
     {
         if (!m_hasColSpan)
@@ -125,10 +125,10 @@ public:
     void paintBackgroundsBehindCell(PaintInfo&, const LayoutPoint&, RenderObject* backgroundObject);
 
     LayoutUnit cellBaselinePosition() const;
-    bool isBaselineAligned() const
-    {
+    bool isBaselineAligned() const 
+    { 
         EVerticalAlign va = style()->verticalAlign();
-        return va == BASELINE || va == TEXT_BOTTOM || va == TEXT_TOP || va == SUPER || va == SUB || va == LENGTH;
+        return va == BASELINE || va == TEXT_BOTTOM || va == TEXT_TOP || va == SUPER || va == SUB || va == LENGTH; 
     }
 
     void computeIntrinsicPadding(int rowHeight);
@@ -141,7 +141,7 @@ public:
     virtual LayoutUnit paddingBottom() const OVERRIDE;
     virtual LayoutUnit paddingLeft() const OVERRIDE;
     virtual LayoutUnit paddingRight() const OVERRIDE;
-
+    
     // FIXME: For now we just assume the cell has the same block flow direction as the table. It's likely we'll
     // create an extra anonymous RenderBlock to handle mixing directionality anyway, in which case we can lock
     // the block flow directionality of the cells to the table's directionality.

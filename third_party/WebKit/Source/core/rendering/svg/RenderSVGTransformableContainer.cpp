@@ -29,7 +29,7 @@
 #include "core/svg/SVGUseElement.h"
 
 namespace WebCore {
-
+    
 RenderSVGTransformableContainer::RenderSVGTransformableContainer(SVGGraphicsElement* node)
     : RenderSVGContainer(node)
     , m_needsTransformUpdate(true)

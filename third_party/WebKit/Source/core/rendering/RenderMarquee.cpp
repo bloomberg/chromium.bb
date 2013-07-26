@@ -102,13 +102,13 @@ EMarqueeDirection RenderMarquee::direction() const
         result = (dir == LTR) ? MRIGHT : MLEFT;
     if (result == MBACKWARD)
         result = (dir == LTR) ? MLEFT : MRIGHT;
-
+    
     // Now we have the real direction.  Next we check to see if the increment is negative.
     // If so, then we reverse the direction.
     Length increment = style()->marqueeIncrement();
     if (increment.isNegative())
         result = static_cast<EMarqueeDirection>(-result);
-
+    
     return result;
 }
 
@@ -154,10 +154,10 @@ int RenderMarquee::computePosition(EMarqueeDirection dir, bool stopAtContentEdge
         else {
             if (stopAtContentEdge)
                 return max(contentHeight - clientHeight, 0);
-            else
+            else 
                 return contentHeight;
         }
-    }
+    }    
 }
 
 void RenderMarquee::start()
@@ -165,7 +165,7 @@ void RenderMarquee::start()
     if (m_timer.isActive() || style()->marqueeIncrement().isZero())
         return;
 
-    // We may end up propagating a scroll event. It is important that we suspend events until
+    // We may end up propagating a scroll event. It is important that we suspend events until 
     // the end of the function since they could delete the layer, including the marquee.
     FrameView* frameView = document()->view();
     if (frameView)
@@ -233,13 +233,13 @@ void RenderMarquee::styleDidChange(StyleDifference difference, const RenderStyle
     RenderBlock::styleDidChange(difference, oldStyle);
 
     RenderStyle* s = style();
-
+    
     if (m_direction != s->marqueeDirection() || (m_totalLoops != s->marqueeLoopCount() && m_currentLoop >= m_totalLoops))
         m_currentLoop = 0; // When direction changes or our loopCount is a smaller number than our current loop, reset our loop.
-
+    
     m_totalLoops = s->marqueeLoopCount();
     m_direction = s->marqueeDirection();
-
+    
     // Hack for WinIE. In WinIE, a value of 0 or lower for the loop count for SLIDE means to only do
     // one loop.
     if (m_totalLoops <= 0 && s->marqueeBehavior() == MSLIDE)
@@ -258,14 +258,14 @@ void RenderMarquee::styleDidChange(StyleDifference difference, const RenderStyle
 
     // Legacy hack - multiple browsers default vertical marquees to 200px tall.
     if (!isHorizontal() && s->height().isAuto())
-        s->setHeight(Length(200, Fixed));
-
+        s->setHeight(Length(200, Fixed)); 
+   
     if (speed() != marqueeSpeed()) {
         m_speed = marqueeSpeed();
         if (m_timer.isActive())
             m_timer.startRepeating(speed() * 0.001);
     }
-
+    
     // Check the loop count to see if we should now stop.
     bool activate = (m_totalLoops <= 0 || m_currentLoop < m_totalLoops);
     if (activate && !m_timer.isActive())
@@ -286,7 +286,7 @@ void RenderMarquee::timerFired(Timer<RenderMarquee>*)
     // FIXME: Why do we need to check the view and not just the RenderMarquee itself?
     if (view()->needsLayout())
         return;
-
+    
     if (m_reset) {
         m_reset = false;
         if (isHorizontal())
@@ -295,15 +295,15 @@ void RenderMarquee::timerFired(Timer<RenderMarquee>*)
             layer()->scrollToYOffset(m_start);
         return;
     }
-
+    
     RenderStyle* s = style();
-
+    
     int endPoint = m_end;
     int range = m_end - m_start;
     int newPos;
     if (range == 0)
         newPos = m_end;
-    else {
+    else {  
         bool addIncrement = direction() == MUP || direction() == MLEFT;
         bool isReversed = s->marqueeBehavior() == MALTERNATE && m_currentLoop % 2;
         if (isReversed) {
@@ -330,7 +330,7 @@ void RenderMarquee::timerFired(Timer<RenderMarquee>*)
         else if (s->marqueeBehavior() != MALTERNATE)
             m_reset = true;
     }
-
+    
     if (isHorizontal())
         layer()->scrollToXOffset(newPos);
     else

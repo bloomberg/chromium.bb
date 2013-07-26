@@ -36,7 +36,7 @@ public:
     HTMLMeterElement* meterElement() const;
     virtual void updateFromElement();
 
-private:
+private:    
     virtual void updateLogicalWidth() OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
 

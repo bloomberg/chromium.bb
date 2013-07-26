@@ -23,7 +23,7 @@
 #include "core/rendering/svg/RenderSVGContainer.h"
 
 namespace WebCore {
-
+    
 class SVGStyledElement;
 
 // This class is for containers which are never drawn, but do need to support style
@@ -41,7 +41,7 @@ private:
     virtual bool isSVGHiddenContainer() const OVERRIDE FINAL { return true; }
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
-
+    
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject*) const OVERRIDE FINAL { return LayoutRect(); }
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE FINAL;
 

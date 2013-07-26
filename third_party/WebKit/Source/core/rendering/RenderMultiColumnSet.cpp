@@ -139,7 +139,7 @@ void RenderMultiColumnSet::updateLogicalWidth()
 {
     RenderMultiColumnBlock* parentBlock = toRenderMultiColumnBlock(parent());
     setComputedColumnWidthAndCount(parentBlock->columnWidth(), parentBlock->columnCount()); // FIXME: This will eventually vary if we are contained inside regions.
-
+    
     // FIXME: When we add regions support, we'll start it off at the width of the multi-column
     // block in that particular region.
     setLogicalWidth(parentBox()->contentLogicalWidth());
@@ -384,7 +384,7 @@ void RenderMultiColumnSet::paintColumnRules(PaintInfo& paintInfo, const LayoutPo
             IntRect pixelSnappedRuleRect = pixelSnappedIntRectFromEdges(ruleLeft, ruleTop, ruleRight, ruleBottom);
             drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, antialias);
         }
-
+        
         ruleLogicalLeft = currLogicalLeftOffset;
     }
 }
@@ -395,30 +395,30 @@ void RenderMultiColumnSet::repaintFlowThreadContent(const LayoutRect& repaintRec
     // entire column set. Put the repaint rect into flow thread coordinates by flipping it first.
     LayoutRect flowThreadRepaintRect(repaintRect);
     flowThread()->flipForWritingMode(flowThreadRepaintRect);
-
+    
     // Now we can compare this rect with the flow thread portions owned by each column. First let's
     // just see if the repaint rect intersects our flow thread portion at all.
     LayoutRect clippedRect(flowThreadRepaintRect);
     clippedRect.intersect(RenderRegion::flowThreadPortionOverflowRect());
     if (clippedRect.isEmpty())
         return;
-
+    
     // Now we know we intersect at least one column. Let's figure out the logical top and logical
     // bottom of the area we're repainting.
     LayoutUnit repaintLogicalTop = isHorizontalWritingMode() ? flowThreadRepaintRect.y() : flowThreadRepaintRect.x();
     LayoutUnit repaintLogicalBottom = (isHorizontalWritingMode() ? flowThreadRepaintRect.maxY() : flowThreadRepaintRect.maxX()) - 1;
-
+    
     unsigned startColumn = columnIndexAtOffset(repaintLogicalTop);
     unsigned endColumn = columnIndexAtOffset(repaintLogicalBottom);
-
+    
     LayoutUnit colGap = columnGap();
     unsigned colCount = columnCount();
     for (unsigned i = startColumn; i <= endColumn; i++) {
         LayoutRect colRect = columnRectAt(i);
-
+        
         // Get the portion of the flow thread that corresponds to this column.
         LayoutRect flowThreadPortion = flowThreadPortionRectAt(i);
-
+        
         // Now get the overflow rect that corresponds to the column.
         LayoutRect flowThreadOverflowPortion = flowThreadPortionOverflowRect(flowThreadPortion, i, colCount, colGap);
 
@@ -443,25 +443,25 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
     clippedRect.intersect(RenderRegion::flowThreadPortionOverflowRect());
     if (clippedRect.isEmpty())
         return;
-
+    
     // Now we know we intersect at least one column. Let's figure out the logical top and logical
     // bottom of the area we're checking.
     LayoutUnit layerLogicalTop = isHorizontalWritingMode() ? layerBoundsInFlowThread.y() : layerBoundsInFlowThread.x();
     LayoutUnit layerLogicalBottom = (isHorizontalWritingMode() ? layerBoundsInFlowThread.maxY() : layerBoundsInFlowThread.maxX()) - 1;
-
+    
     // Figure out the start and end columns and only check within that range so that we don't walk the
     // entire column set.
     unsigned startColumn = columnIndexAtOffset(layerLogicalTop);
     unsigned endColumn = columnIndexAtOffset(layerLogicalBottom);
-
+    
     LayoutUnit colLogicalWidth = computedColumnWidth();
     LayoutUnit colGap = columnGap();
     unsigned colCount = columnCount();
-
+    
     for (unsigned i = startColumn; i <= endColumn; i++) {
         // Get the portion of the flow thread that corresponds to this column.
         LayoutRect flowThreadPortion = flowThreadPortionRectAt(i);
-
+        
         // Now get the overflow rect that corresponds to the column.
         LayoutRect flowThreadOverflowPortion = flowThreadPortionOverflowRect(flowThreadPortion, i, colCount, colGap);
 
@@ -470,7 +470,7 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
         clippedRect.intersect(flowThreadOverflowPortion);
         if (clippedRect.isEmpty())
             continue;
-
+        
         // We also need to intersect the dirty rect. We have to apply a translation and shift based off
         // our column index.
         LayoutPoint translationOffset;
@@ -490,18 +490,18 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
         // Shift the dirty rect to be in flow thread coordinates with this translation applied.
         LayoutRect translatedDirtyRect(dirtyRectInFlowThread);
         translatedDirtyRect.moveBy(-translationOffset);
-
+        
         // See if we intersect the dirty rect.
         clippedRect = layerBoundsInFlowThread;
         clippedRect.intersect(translatedDirtyRect);
         if (clippedRect.isEmpty())
             continue;
-
+        
         // Something does need to paint in this column. Make a fragment now and supply the physical translation
         // offset and the clip rect for the column with that offset applied.
         LayerFragment fragment;
         fragment.paginationOffset = translationOffset;
-
+        
         LayoutRect flippedFlowThreadOverflowPortion(flowThreadOverflowPortion);
         flipForWritingMode(flippedFlowThreadOverflowPortion);
         fragment.paginationClip = flippedFlowThreadOverflowPortion;
@@ -510,7 +510,7 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
 }
 
 const char* RenderMultiColumnSet::renderName() const
-{
+{    
     return "RenderMultiColumnSet";
 }
 
