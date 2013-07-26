@@ -88,7 +88,8 @@ ExtensionSystemImpl::Shared::~Shared() {
 void ExtensionSystemImpl::Shared::InitPrefs() {
   lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
   event_router_.reset(new EventRouter(profile_, ExtensionPrefs::Get(profile_)));
-
+// TODO(yoz): Remove once crbug.com/159265 is fixed.
+#if defined(ENABLE_EXTENSIONS)
   // Two state stores. The latter, which contains declarative rules, must be
   // loaded immediately so that the rules are ready before we issue network
   // requests.
@@ -96,6 +97,7 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
       profile_,
       profile_->GetPath().AppendASCII(ExtensionService::kStateStoreName),
       true));
+
   rules_store_.reset(new StateStore(
       profile_,
       profile_->GetPath().AppendASCII(ExtensionService::kRulesStoreName),
@@ -105,12 +107,16 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
 
   standard_management_policy_provider_.reset(
       new StandardManagementPolicyProvider(ExtensionPrefs::Get(profile_)));
+#endif
 }
 
 void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
+// TODO(yoz): Remove once crbug.com/159265 is fixed.
+#if defined(ENABLE_EXTENSIONS)
   DCHECK(standard_management_policy_provider_.get());
   management_policy_->RegisterProvider(
       standard_management_policy_provider_.get());
+#endif
 }
 
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
