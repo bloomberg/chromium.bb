@@ -376,6 +376,9 @@
       <if expr="pp_ifdef('use_aura')">
         <structure type="chrome_scaled_image" name="IDR_OAK" file="oak.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_OOBE_ACTION_BOX_BUTTON_HOVER" file="cros/action_box_button_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OOBE_ACTION_BOX_BUTTON_NORMAL" file="cros/action_box_button_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_OOBE_ACTION_BOX_BUTTON_PRESSED" file="cros/action_box_button_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_TOP_LEFT_CORNER" file="panel_top_left_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_TOP_RIGHT_CORNER" file="panel_top_right_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_LEFT_CORNER" file="panel_bottom_left_corner.png" />
@@ -391,7 +394,7 @@
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux/linux-progress-border-left.png" />
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_RIGHT" file="linux/linux-progress-border-right.png" />
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_VALUE" file="linux/linux-progress-value.png" />
- 
+
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER_H" file="cros/aura_scrollbar_base_horizontal_hover_center.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT_H" file="cros/aura_scrollbar_base_horizontal_hover_left.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H" file="cros/aura_scrollbar_base_horizontal_hover_right.png" />
