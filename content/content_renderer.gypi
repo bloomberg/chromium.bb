@@ -317,8 +317,6 @@
     'renderer/pepper/pepper_platform_audio_output_impl.h',
     'renderer/pepper/pepper_platform_context_3d_impl.cc',
     'renderer/pepper/pepper_platform_context_3d_impl.h',
-    'renderer/pepper/pepper_platform_image_2d_impl.cc',
-    'renderer/pepper/pepper_platform_image_2d_impl.h',
     'renderer/pepper/pepper_platform_video_capture.cc',
     'renderer/pepper/pepper_platform_video_capture.h',
     'renderer/pepper/pepper_plugin_delegate_impl.cc',

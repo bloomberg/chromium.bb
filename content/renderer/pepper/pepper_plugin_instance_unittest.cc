@@ -82,6 +82,9 @@ class PpapiPluginInstanceTest : public PpapiUnittest {
   }
 };
 
+// This matches the if condition in ImageDataPlatformBackend::Init as we can't
+// use RenderThread in the test.
+#if !(defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID))
 
 // Test that GetBitmapForOptimizedPluginPaint doesn't return a bitmap rect
 // that's bigger than the actual backing store bitmap.
@@ -121,5 +124,7 @@ TEST_F(PpapiPluginInstanceTest, GetBitmap2xScale) {
   EXPECT_EQ(size.height, clip.height());
   EXPECT_EQ(scale, bitmap_scale);
 }
+
+#endif
 
 }  // namespace content

@@ -50,7 +50,6 @@
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
-#include "content/renderer/pepper/pepper_platform_image_2d_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
@@ -626,11 +625,6 @@ WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePluginReplacement(
     const base::FilePath& file_path) {
   return GetContentClient()->renderer()->CreatePluginReplacement(
       render_view_, file_path);
-}
-
-PluginDelegate::PlatformImage2D*
-PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
-  return PepperPlatformImage2DImpl::Create(width, height);
 }
 
 PluginDelegate::PlatformGraphics2D*

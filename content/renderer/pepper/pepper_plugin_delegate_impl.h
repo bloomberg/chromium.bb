@@ -139,7 +139,6 @@ class PepperPluginDelegateImpl
       uint32_t sample_rate,
       uint32_t sample_count,
       PlatformAudioOutputClient* client) OVERRIDE;
-  virtual PlatformImage2D* CreateImage2D(int width, int height) OVERRIDE;
   virtual PlatformGraphics2D* GetGraphics2D(
       PepperPluginInstanceImpl* instance,
       PP_Resource resource) OVERRIDE;

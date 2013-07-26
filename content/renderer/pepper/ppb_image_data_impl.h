@@ -17,6 +17,7 @@
 
 class SkBitmap;
 class SkCanvas;
+class TransportDIB;
 
 namespace content {
 
@@ -35,7 +36,7 @@ class CONTENT_EXPORT PPB_ImageData_Impl
     virtual bool Init(PPB_ImageData_Impl* impl, PP_ImageDataFormat format,
                       int width, int height, bool init_to_zero) = 0;
     virtual bool IsMapped() const = 0;
-    virtual PluginDelegate::PlatformImage2D* PlatformImage() const = 0;
+    virtual TransportDIB* GetTransportDIB() const = 0;
     virtual void* Map() = 0;
     virtual void Unmap() = 0;
     virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) = 0;
@@ -69,7 +70,7 @@ class CONTENT_EXPORT PPB_ImageData_Impl
   // Returns true if this image is mapped. False means that the image is either
   // invalid or not mapped. See ImageDataAutoMapper below.
   bool IsMapped() const;
-  PluginDelegate::PlatformImage2D* PlatformImage() const;
+  TransportDIB* GetTransportDIB() const;
 
   // Resource override.
   virtual ::ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() OVERRIDE;
@@ -105,7 +106,7 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
   virtual bool Init(PPB_ImageData_Impl* impl, PP_ImageDataFormat format,
                     int width, int height, bool init_to_zero) OVERRIDE;
   virtual bool IsMapped() const OVERRIDE;
-  virtual PluginDelegate::PlatformImage2D* PlatformImage() const OVERRIDE;
+  virtual TransportDIB* GetTransportDIB() const OVERRIDE;
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
@@ -116,7 +117,9 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
  private:
   // This will be NULL before initialization, and if this PPB_ImageData_Impl is
   // swapped with another.
-  scoped_ptr<PluginDelegate::PlatformImage2D> platform_image_;
+  int width_;
+  int height_;
+  scoped_ptr<TransportDIB> dib_;
 
   // When the device is mapped, this is the image. Null when umapped.
   scoped_ptr<SkCanvas> mapped_canvas_;
@@ -133,7 +136,7 @@ class ImageDataSimpleBackend : public PPB_ImageData_Impl::Backend {
   virtual bool Init(PPB_ImageData_Impl* impl, PP_ImageDataFormat format,
             int width, int height, bool init_to_zero) OVERRIDE;
   virtual bool IsMapped() const OVERRIDE;
-  virtual PluginDelegate::PlatformImage2D* PlatformImage() const OVERRIDE;
+  virtual TransportDIB* GetTransportDIB() const OVERRIDE;
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;

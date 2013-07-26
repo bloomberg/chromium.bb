@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "content/renderer/pepper/mock_platform_image_2d.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/plugin_module.h"
@@ -76,12 +75,6 @@ SkBitmap* MockPluginDelegate::GetSadPluginBitmap() {
 WebKit::WebPlugin* MockPluginDelegate::CreatePluginReplacement(
     const base::FilePath& file_path) {
   return NULL;
-}
-
-MockPluginDelegate::PlatformImage2D* MockPluginDelegate::CreateImage2D(
-    int width,
-    int height) {
-  return new MockPlatformImage2D(width, height);
 }
 
 PluginDelegate::PlatformGraphics2D* MockPluginDelegate::GetGraphics2D(

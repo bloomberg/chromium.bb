@@ -9,14 +9,17 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/resource_helper.h"
+#include "content/renderer/render_thread_impl.h"
 #include "skia/ext/platform_canvas.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/thunk/thunk.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "ui/surface/transport_dib.h"
 
 using ::ppapi::thunk::PPB_ImageData_API;
 
@@ -82,8 +85,8 @@ bool PPB_ImageData_Impl::IsMapped() const {
   return backend_->IsMapped();
 }
 
-PluginDelegate::PlatformImage2D* PPB_ImageData_Impl::PlatformImage() const {
-  return backend_->PlatformImage();
+TransportDIB* PPB_ImageData_Impl::GetTransportDIB() const {
+  return backend_->GetTransportDIB();
 }
 
 PP_Bool PPB_ImageData_Impl::Describe(PP_ImageDataDesc* desc) {
@@ -124,37 +127,70 @@ const SkBitmap* PPB_ImageData_Impl::GetMappedBitmap() const {
 
 // ImageDataPlatformBackend ----------------------------------------------------
 
-ImageDataPlatformBackend::ImageDataPlatformBackend() {
+ImageDataPlatformBackend::ImageDataPlatformBackend()
+    : width_(0),
+      height_(0) {
 }
 
+// On POSIX, we have to tell the browser to free the transport DIB.
 ImageDataPlatformBackend::~ImageDataPlatformBackend() {
+#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+  if (dib_) {
+    RenderThreadImpl::current()->Send(
+        new ViewHostMsg_FreeTransportDIB(dib_->id()));
+  }
+#endif
 }
 
 bool ImageDataPlatformBackend::Init(PPB_ImageData_Impl* impl,
-                                     PP_ImageDataFormat format,
-                                     int width, int height,
-                                     bool init_to_zero) {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(impl);
-  if (!plugin_delegate)
+                                    PP_ImageDataFormat format,
+                                    int width, int height,
+                                    bool init_to_zero) {
+  // TODO(brettw) use init_to_zero when we implement caching.
+  width_ = width;
+  height_ = height;
+  uint32 buffer_size = width_ * height_ * 4;
+
+  // Allocate the transport DIB and the PlatformCanvas pointing to it.
+#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+  // On the Mac, shared memory has to be created in the browser in order to
+  // work in the sandbox.  Do this by sending a message to the browser
+  // requesting a TransportDIB (see also
+  // chrome/renderer/webplugin_delegate_proxy.cc, method
+  // WebPluginDelegateProxy::CreateBitmap() for similar code). The TransportDIB
+  // is cached in the browser, and is freed (in typical cases) by the
+  // TransportDIB's destructor.
+  TransportDIB::Handle dib_handle;
+  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(buffer_size,
+                                                        true,
+                                                        &dib_handle);
+  if (!RenderThreadImpl::current()->Send(msg))
+    return false;
+  if (!TransportDIB::is_valid_handle(dib_handle))
     return false;
 
-  // TODO(brettw) use init_to_zero when we implement caching.
-  platform_image_.reset(plugin_delegate->CreateImage2D(width, height));
-  return !!platform_image_.get();
+  TransportDIB* dib = TransportDIB::CreateWithHandle(dib_handle);
+#else
+  static int next_dib_id = 0;
+  TransportDIB* dib = TransportDIB::Create(buffer_size, next_dib_id++);
+  if (!dib)
+    return false;
+#endif
+  dib_.reset(dib);
+  return true;
 }
 
 bool ImageDataPlatformBackend::IsMapped() const {
   return !!mapped_canvas_.get();
 }
 
-PluginDelegate::PlatformImage2D*
-ImageDataPlatformBackend::PlatformImage() const {
-  return platform_image_.get();
+TransportDIB* ImageDataPlatformBackend::GetTransportDIB() const {
+  return dib_.get();
 }
 
 void* ImageDataPlatformBackend::Map() {
   if (!mapped_canvas_) {
-    mapped_canvas_.reset(platform_image_->Map());
+    mapped_canvas_.reset(dib_->GetPlatformCanvas(width_, height_));
     if (!mapped_canvas_)
       return NULL;
   }
@@ -176,8 +212,16 @@ void ImageDataPlatformBackend::Unmap() {
 }
 
 int32_t ImageDataPlatformBackend::GetSharedMemory(int* handle,
-                                                   uint32_t* byte_count) {
-  *handle = platform_image_->GetSharedMemoryHandle(byte_count);
+                                                  uint32_t* byte_count) {
+  *byte_count = dib_->size();
+#if defined(OS_WIN)
+  *handle = reinterpret_cast<intptr_t>(dib_->handle());
+#elif defined(TOOLKIT_GTK)
+  *handle = static_cast<intptr_t>(dib_->handle());
+#else
+  *handle = static_cast<intptr_t>(dib_->handle().fd);
+#endif
+
   return PP_OK;
 }
 
@@ -222,7 +266,7 @@ bool ImageDataSimpleBackend::IsMapped() const {
   return map_count_ > 0;
 }
 
-PluginDelegate::PlatformImage2D* ImageDataSimpleBackend::PlatformImage() const {
+TransportDIB* ImageDataSimpleBackend::GetTransportDIB() const {
   return NULL;
 }
 

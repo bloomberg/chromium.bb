@@ -1049,9 +1049,9 @@ bool PepperPluginInstanceImpl::GetBitmapForOptimizedPluginPaint(
   // store when seeing if we cover the given paint bounds, since the backing
   // store could be smaller than the declared plugin area.
   PPB_ImageData_Impl* image_data = GetBoundGraphics2D()->ImageData();
-  // ImageDatas created by NaCl don't have a PlatformImage, so can't be
+  // ImageDatas created by NaCl don't have a TransportDIB, so can't be
   // optimized this way.
-  if (!image_data->PlatformImage())
+  if (!image_data->GetTransportDIB())
     return false;
 
   gfx::Point plugin_origin = PP_ToGfxPoint(view_data_.rect.point);
@@ -1080,7 +1080,7 @@ bool PepperPluginInstanceImpl::GetBitmapForOptimizedPluginPaint(
       return false;
   }
 
-  *dib = image_data->PlatformImage()->GetTransportDIB();
+  *dib = image_data->GetTransportDIB();
   plugin_backing_store_rect.Offset(plugin_offset);
   *location = plugin_backing_store_rect;
   clip_page.Offset(plugin_offset);

@@ -118,24 +118,6 @@ class PPB_TCPSocket_Private_Impl;
 // PPAPI plugins.
 class PluginDelegate {
  public:
-  // Represents an image. This is to allow the browser layer to supply a correct
-  // image representation. In Chrome, this will be a TransportDIB.
-  class PlatformImage2D {
-   public:
-    virtual ~PlatformImage2D() {}
-
-    // Caller will own the returned pointer, returns NULL on failure.
-    virtual SkCanvas* Map() = 0;
-
-    // Returns the platform-specific shared memory handle of the data backing
-    // this image. This is used by PPAPI proxying to send the image to the
-    // out-of-process plugin. On success, the size in bytes will be placed into
-    // |*bytes_count|. Returns 0 on failure.
-    virtual intptr_t GetSharedMemoryHandle(uint32* byte_count) const = 0;
-
-    virtual TransportDIB* GetTransportDIB() const = 0;
-  };
-
   class CONTENT_EXPORT PlatformGraphics2D {
    public:
     virtual ~PlatformGraphics2D() {}
@@ -299,9 +281,6 @@ class PluginDelegate {
   // couldn't be loaded.
   virtual WebKit::WebPlugin* CreatePluginReplacement(
       const base::FilePath& file_path) = 0;
-
-  // The caller will own the pointer returned from this.
-  virtual PlatformImage2D* CreateImage2D(int width, int height) = 0;
 
   // Returns the internal PlatformGraphics2D implementation.
   virtual PlatformGraphics2D* GetGraphics2D(PepperPluginInstanceImpl* instance,
