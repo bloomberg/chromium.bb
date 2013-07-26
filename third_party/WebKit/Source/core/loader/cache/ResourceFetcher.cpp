@@ -631,7 +631,7 @@ ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const Res
             return ReturnCacheDataDontLoad;
         if (!m_documentLoader->overrideEncoding().isEmpty() || frameLoadType == FrameLoadTypeBackForward)
             return ReturnCacheDataElseLoad;
-        if (isReload || frameLoadType == FrameLoadTypeSame || request.isConditional())
+        if (isReload || frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
             return ReloadIgnoringCacheData;
         return UseProtocolCachePolicy;
     }
