@@ -265,19 +265,6 @@ bool CSSParser::parseSVGValue(CSSPropertyID propId, bool important)
                 m_valueList->next();
         }
         break;
-    case CSSPropertyWebkitSvgShadow:
-        if (id == CSSValueNone)
-            valid_primitive = true;
-        else {
-            RefPtr<CSSValueList> shadowValueList = parseShadow(m_valueList.get(), propId);
-            if (shadowValueList) {
-                addProperty(propId, shadowValueList.release(), important);
-                m_valueList->next();
-                return true;
-            }
-            return false;
-        }
-
     case CSSPropertyMaskType: // luminance | alpha | inherit
         if (id == CSSValueLuminance || id == CSSValueAlpha)
             valid_primitive = true;

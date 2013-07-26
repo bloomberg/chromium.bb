@@ -86,7 +86,6 @@ public:
     static float initialFloodOpacity() { return 1; }
     static Color initialFloodColor() { return Color(0, 0, 0); }
     static Color initialLightingColor() { return Color(255, 255, 255); }
-    static ShadowData* initialShadow() { return 0; }
     static String initialClipperResource() { return String(); }
     static String initialFilterResource() { return String(); }
     static String initialMaskerResource() { return String(); }
@@ -261,8 +260,6 @@ public:
             misc.access()->baselineShiftValue = obj;
     }
 
-    void setShadow(PassOwnPtr<ShadowData> obj) { shadowSVG.access()->shadow = obj; }
-
     // Setters for non-inherited resources
     void setClipperResource(const String& obj)
     {
@@ -338,7 +335,6 @@ public:
     const Color& floodColor() const { return misc->floodColor; }
     const Color& lightingColor() const { return misc->lightingColor; }
     SVGLength baselineShiftValue() const { return misc->baselineShiftValue; }
-    ShadowData* shadow() const { return shadowSVG->shadow.get(); }
     String clipperResource() const { return resources->clipper; }
     String filterResource() const { return resources->filter; }
     String maskerResource() const { return resources->masker; }
@@ -431,7 +427,6 @@ protected:
     // non-inherited attributes
     DataRef<StyleStopData> stops;
     DataRef<StyleMiscData> misc;
-    DataRef<StyleShadowSVGData> shadowSVG;
     DataRef<StyleResourceData> resources;
 
 private:

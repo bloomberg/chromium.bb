@@ -83,7 +83,6 @@ private:
     bool strokeContains(const FloatPoint&, bool requiresStroke = true);
 
     virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE FINAL { return m_repaintBoundingBox; }
-    virtual FloatRect repaintRectInLocalCoordinatesExcludingSVGShadow() const OVERRIDE FINAL { return m_repaintBoundingBoxExcludingShadow; }
     virtual const AffineTransform& localToParentTransform() const OVERRIDE FINAL { return m_localTransform; }
     virtual AffineTransform localTransform() const OVERRIDE FINAL { return m_localTransform; }
 

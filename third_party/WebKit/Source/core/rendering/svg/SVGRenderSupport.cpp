@@ -42,17 +42,6 @@
 
 namespace WebCore {
 
-FloatRect SVGRenderSupport::repaintRectForRendererInLocalCoordinatesExcludingSVGShadow(const RenderObject* object)
-{
-    // FIXME: Add support for RenderSVGBlock.
-
-    // FIXME: This should use a safer cast such as toRenderSVGModelObject().
-    if (object->isSVGShape() || object->isSVGImage() || object->isSVGContainer())
-        return static_cast<const RenderSVGModelObject*>(object)->repaintRectInLocalCoordinatesExcludingSVGShadow();
-
-    return object->repaintRectInLocalCoordinates();
-}
-
 LayoutRect SVGRenderSupport::clippedOverflowRectForRepaint(const RenderObject* object, const RenderLayerModelObject* repaintContainer)
 {
     // Return early for any cases where we don't actually paint
@@ -61,19 +50,13 @@ LayoutRect SVGRenderSupport::clippedOverflowRectForRepaint(const RenderObject* o
 
     // Pass our local paint rect to computeRectForRepaint() which will
     // map to parent coords and recurse up the parent chain.
-    FloatRect repaintRect = repaintRectForRendererInLocalCoordinatesExcludingSVGShadow(object);
-    const SVGRenderStyle* svgStyle = object->style()->svgStyle();
-    if (const ShadowData* shadow = svgStyle->shadow())
-        shadow->adjustRectForShadow(repaintRect);
+    FloatRect repaintRect = object->repaintRectInLocalCoordinates();
     object->computeFloatRectForRepaint(repaintContainer, repaintRect);
     return enclosingLayoutRect(repaintRect);
 }
 
 void SVGRenderSupport::computeFloatRectForRepaint(const RenderObject* object, const RenderLayerModelObject* repaintContainer, FloatRect& repaintRect, bool fixed)
 {
-    const SVGRenderStyle* svgStyle = object->style()->svgStyle();
-    if (const ShadowData* shadow = svgStyle->shadow())
-        shadow->adjustRectForShadow(repaintRect);
     repaintRect.inflate(object->style()->outlineWidth());
 
     // Translate to coords in our parent renderer, and then call computeFloatRectForRepaint() on our parent.
@@ -226,20 +209,11 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
 {
     bool layoutSizeChanged = layoutSizeOfNearestViewportChanged(start);
     bool transformChanged = transformToRootChanged(start);
-    bool hasSVGShadow = rendererHasSVGShadow(start);
-    bool needsBoundariesUpdate = start->needsBoundariesUpdate();
     HashSet<RenderObject*> notlayoutedObjects;
 
     for (RenderObject* child = start->firstChild(); child; child = child->nextSibling()) {
         bool needsLayout = selfNeedsLayout;
         bool childEverHadLayout = child->everHadLayout();
-
-        if (needsBoundariesUpdate && hasSVGShadow) {
-            // If we have a shadow, our shadow is baked into our children's cached boundaries,
-            // so they need to update.
-            child->setNeedsBoundariesUpdate();
-            needsLayout = true;
-        }
 
         if (transformChanged) {
             // If the transform changed we need to update the text metrics (note: this also happens for layoutSizeChanged=true).
@@ -305,67 +279,6 @@ bool SVGRenderSupport::isOverflowHidden(const RenderObject* object)
     ASSERT(!object->isRoot());
 
     return object->style()->overflowX() == OHIDDEN;
-}
-
-bool SVGRenderSupport::rendererHasSVGShadow(const RenderObject* object)
-{
-    // FIXME: Add support for RenderSVGBlock.
-
-    // FIXME: This should use a safer cast such as toRenderSVGModelObject().
-    if (object->isSVGShape() || object->isSVGImage() || object->isSVGContainer())
-        return static_cast<const RenderSVGModelObject*>(object)->hasSVGShadow();
-
-    if (object->isSVGRoot())
-        return toRenderSVGRoot(object)->hasSVGShadow();
-
-    return false;
-}
-
-void SVGRenderSupport::setRendererHasSVGShadow(RenderObject* object, bool hasShadow)
-{
-    // FIXME: Add support for RenderSVGBlock.
-
-    // FIXME: This should use a safer cast such as toRenderSVGModelObject().
-    if (object->isSVGShape() || object->isSVGImage() || object->isSVGContainer())
-        return static_cast<RenderSVGModelObject*>(object)->setHasSVGShadow(hasShadow);
-
-    if (object->isSVGRoot())
-        return static_cast<RenderSVGRoot*>(object)->setHasSVGShadow(hasShadow);
-}
-
-void SVGRenderSupport::intersectRepaintRectWithShadows(const RenderObject* object, FloatRect& repaintRect)
-{
-    // Since -webkit-svg-shadow enables shadow drawing for its children, but its children
-    // don't inherit the shadow in their SVGRenderStyle, we need to search our parents for
-    // shadows in order to correctly compute our repaint rect.
-
-    ASSERT(object);
-
-    const RenderObject* currentObject = object;
-
-    AffineTransform localToRootTransform;
-
-    while (currentObject && rendererHasSVGShadow(currentObject)) {
-        RenderStyle* style = currentObject->style();
-        if (style) {
-            const SVGRenderStyle* svgStyle = style->svgStyle();
-            if (svgStyle) {
-                if (const ShadowData* shadow = svgStyle->shadow())
-                    shadow->adjustRectForShadow(repaintRect);
-            }
-        }
-
-        repaintRect = currentObject->localToParentTransform().mapRect(repaintRect);
-        localToRootTransform *= currentObject->localToParentTransform();
-
-        currentObject = currentObject->parent();
-    };
-
-    if (localToRootTransform.isIdentity())
-        return;
-
-    AffineTransform rootToLocalTransform = localToRootTransform.inverse();
-    repaintRect = rootToLocalTransform.mapRect(repaintRect);
 }
 
 void SVGRenderSupport::intersectRepaintRectWithResources(const RenderObject* object, FloatRect& repaintRect)
@@ -473,17 +386,6 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
         dashArray.append((*it).value(lengthContext));
 
     strokeData->setLineDash(dashArray, svgStyle->strokeDashOffset().value(lengthContext));
-}
-
-void SVGRenderSupport::childAdded(RenderObject* parent, RenderObject* child)
-{
-    SVGRenderSupport::setRendererHasSVGShadow(child, SVGRenderSupport::rendererHasSVGShadow(parent) || SVGRenderSupport::rendererHasSVGShadow(child));
-}
-
-void SVGRenderSupport::styleChanged(RenderObject* object)
-{
-    RenderObject* parent = object->parent();
-    SVGRenderSupport::setRendererHasSVGShadow(object, (parent && SVGRenderSupport::rendererHasSVGShadow(parent)) || (object->style()->svgStyle() && object->style()->svgStyle()->shadow()));
 }
 
 }

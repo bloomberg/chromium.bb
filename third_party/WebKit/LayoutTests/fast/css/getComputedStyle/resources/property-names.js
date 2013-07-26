@@ -84,7 +84,6 @@ var propertiesToTest = {
     "-webkit-perspective-origin": true,
     "-webkit-print-color-adjust": true,
     "-webkit-rtl-ordering": true,
-    "-webkit-svg-shadow": true,
     "-webkit-text-combine": true,
     "-webkit-text-decorations-in-effect": true,
     "-webkit-text-emphasis-color": true,

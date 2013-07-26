@@ -173,25 +173,6 @@ bool StyleMiscData::operator==(const StyleMiscData& other) const
         && baselineShiftValue == other.baselineShiftValue;
 }
 
-StyleShadowSVGData::StyleShadowSVGData()
-{
-}
-
-StyleShadowSVGData::StyleShadowSVGData(const StyleShadowSVGData& other)
-    : RefCounted<StyleShadowSVGData>()
-    , shadow(cloneShadow(other.shadow.get()))
-{
-}
-
-bool StyleShadowSVGData::operator==(const StyleShadowSVGData& other) const
-{
-    if ((!shadow && other.shadow) || (shadow && !other.shadow))
-        return false;
-    if (shadow && other.shadow && (*shadow != *other.shadow))
-        return false;
-    return true;
-}
-
 StyleResourceData::StyleResourceData()
     : clipper(SVGRenderStyle::initialClipperResource())
     , filter(SVGRenderStyle::initialFilterResource())

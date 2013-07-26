@@ -374,7 +374,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWritingMode,
     CSSPropertyGlyphOrientationHorizontal,
     CSSPropertyGlyphOrientationVertical,
-    CSSPropertyWebkitSvgShadow,
     CSSPropertyVectorEffect
 };
 
@@ -2837,7 +2836,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyTextAnchor:
         case CSSPropertyVectorEffect:
         case CSSPropertyWritingMode:
-        case CSSPropertyWebkitSvgShadow:
             return getSVGPropertyCSSValue(propertyID, DoNotUpdateLayout);
     }
 

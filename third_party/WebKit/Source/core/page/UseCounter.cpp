@@ -452,7 +452,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyTextAnchor: return 392;
     case CSSPropertyVectorEffect: return 393;
     case CSSPropertyWritingMode: return 394;
-    case CSSPropertyWebkitSvgShadow: return 395;
+    // CSSPropertyWebkitSvgShadow has been removed, was return 395;
 #if defined(ENABLE_CURSOR_VISIBILITY) && ENABLE_CURSOR_VISIBILITY
     case CSSPropertyWebkitCursorVisibility: return 396;
 #endif

@@ -6194,9 +6194,6 @@ PassRefPtr<CSSValueList> CSSParser::parseShadow(CSSParserValueList* valueList, C
                 // Other operators aren't legal or we aren't done with the current shadow
                 // value.  Treat as invalid.
                 return 0;
-            // -webkit-svg-shadow does not support multiple values.
-            if (propId == CSSPropertyWebkitSvgShadow)
-                return 0;
             // The value is good.  Commit it.
             context.commitValue();
         } else if (validUnit(val, FLength, CSSStrictMode)) {

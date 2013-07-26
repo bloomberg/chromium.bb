@@ -2170,39 +2170,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
         // Silently ignoring this property for now
         // http://bugs.webkit.org/show_bug.cgi?id=6022
         break;
-    case CSSPropertyWebkitSvgShadow: {
-        if (isInherit)
-            return state.style()->accessSVGStyle()->setShadow(cloneShadow(state.parentStyle()->svgStyle()->shadow()));
-        if (isInitial || primitiveValue) // initial | none
-            return state.style()->accessSVGStyle()->setShadow(nullptr);
-
-        if (!value->isValueList())
-            return;
-
-        CSSValueList* list = toCSSValueList(value);
-        if (!list->length())
-            return;
-
-        CSSValue* firstValue = list->itemWithoutBoundsCheck(0);
-        if (!firstValue->isShadowValue())
-            return;
-        ShadowValue* item = static_cast<ShadowValue*>(firstValue);
-        IntPoint location(item->x->computeLength<int>(state.style(), state.rootElementStyle()),
-            item->y->computeLength<int>(state.style(), state.rootElementStyle()));
-        int blur = item->blur ? item->blur->computeLength<int>(state.style(), state.rootElementStyle()) : 0;
-        StyleColor color;
-        if (item->color)
-            color = state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get());
-
-        // -webkit-svg-shadow does should not have a spread or style
-        ASSERT(!item->spread);
-        ASSERT(!item->style);
-
-        if (!color.isValid())
-            color = Color::transparent;
-        state.style()->accessSVGStyle()->setShadow(ShadowData::create(location, blur, 0, Normal, color));
-        return;
-    }
     case CSSPropertyVectorEffect: {
         HANDLE_SVG_INHERIT_AND_INITIAL(vectorEffect, VectorEffect)
         if (primitiveValue)

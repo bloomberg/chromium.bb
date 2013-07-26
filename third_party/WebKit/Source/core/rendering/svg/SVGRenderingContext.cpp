@@ -66,9 +66,6 @@ SVGRenderingContext::~SVGRenderingContext()
     if (m_renderingFlags & EndOpacityLayer)
         m_paintInfo->context->endTransparencyLayer();
 
-    if (m_renderingFlags & EndShadowLayer)
-        m_paintInfo->context->endTransparencyLayer();
-
     if (m_renderingFlags & RestoreGraphicsContext)
         m_paintInfo->context->restore();
 }
@@ -103,8 +100,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     bool isRenderingMask = isRenderingMaskImage(m_object);
     float opacity = isRenderingMask ? 1 : style->opacity();
     BlendMode blendMode = isRenderingMask ? BlendModeNormal : style->blendMode();
-    const ShadowData* shadow = svgStyle->shadow();
-    if (opacity < 1 || shadow || blendMode != BlendModeNormal) {
+    if (opacity < 1 || blendMode != BlendModeNormal) {
         FloatRect repaintRect = m_object->repaintRectInLocalCoordinates();
 
         if (opacity < 1 || blendMode != BlendModeNormal) {
@@ -118,15 +114,6 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
             }
             m_paintInfo->context->beginTransparencyLayer(opacity);
             m_renderingFlags |= EndOpacityLayer;
-        }
-
-        if (shadow) {
-            m_paintInfo->context->clip(repaintRect);
-            m_paintInfo->context->setShadow(IntSize(roundToInt(shadow->x()),
-                roundToInt(shadow->y())), shadow->blur(),
-                m_object->resolveColor(shadow->color(), Color::stdShadowColor));
-            m_paintInfo->context->beginTransparencyLayer(1);
-            m_renderingFlags |= EndShadowLayer;
         }
     }
 

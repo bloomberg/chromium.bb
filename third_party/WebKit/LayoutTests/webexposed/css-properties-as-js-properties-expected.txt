@@ -367,7 +367,6 @@ webkitShapeInside
 webkitShapeMargin
 webkitShapeOutside
 webkitShapePadding
-webkitSvgShadow
 webkitTapHighlightColor
 webkitTextCombine
 webkitTextDecorationsInEffect

@@ -28,7 +28,6 @@
 #ifndef SVGRenderStyleDefs_h
 #define SVGRenderStyleDefs_h
 
-#include "core/rendering/style/ShadowData.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGPaint.h"
 #include "wtf/OwnPtr.h"
@@ -211,24 +210,6 @@ namespace WebCore {
     private:
         StyleMiscData();
         StyleMiscData(const StyleMiscData&);
-    };
-
-    class StyleShadowSVGData : public RefCounted<StyleShadowSVGData> {
-    public:
-        static PassRefPtr<StyleShadowSVGData> create() { return adoptRef(new StyleShadowSVGData); }
-        PassRefPtr<StyleShadowSVGData> copy() const { return adoptRef(new StyleShadowSVGData(*this)); }
-
-        bool operator==(const StyleShadowSVGData&) const;
-        bool operator!=(const StyleShadowSVGData& other) const
-        {
-            return !(*this == other);
-        }
-
-        OwnPtr<ShadowData> shadow;
-
-    private:
-        StyleShadowSVGData();
-        StyleShadowSVGData(const StyleShadowSVGData&);
     };
 
     // Non-inherited resources

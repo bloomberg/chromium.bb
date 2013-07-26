@@ -97,13 +97,12 @@ private:
         RenderingPrepared = 1,
         RestoreGraphicsContext = 1 << 1,
         EndOpacityLayer = 1 << 2,
-        EndShadowLayer = 1 << 3,
-        EndFilterLayer = 1 << 4,
-        PrepareToRenderSVGContentWasCalled = 1 << 5
+        EndFilterLayer = 1 << 3,
+        PrepareToRenderSVGContentWasCalled = 1 << 4
     };
 
     // List of those flags which require actions during the destructor.
-    const static int ActionsNeeded = RestoreGraphicsContext | EndOpacityLayer | EndShadowLayer | EndFilterLayer;
+    const static int ActionsNeeded = RestoreGraphicsContext | EndOpacityLayer | EndFilterLayer;
 
     int m_renderingFlags;
     RenderObject* m_object;

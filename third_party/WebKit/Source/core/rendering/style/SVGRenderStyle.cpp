@@ -44,7 +44,6 @@ SVGRenderStyle::SVGRenderStyle()
     text = defaultStyle->text;
     stops = defaultStyle->stops;
     misc = defaultStyle->misc;
-    shadowSVG = defaultStyle->shadowSVG;
     inheritedResources = defaultStyle->inheritedResources;
     resources = defaultStyle->resources;
 
@@ -60,7 +59,6 @@ SVGRenderStyle::SVGRenderStyle(CreateDefaultType)
     text.init();
     stops.init();
     misc.init();
-    shadowSVG.init();
     inheritedResources.init();
     resources.init();
 }
@@ -73,7 +71,6 @@ SVGRenderStyle::SVGRenderStyle(const SVGRenderStyle& other)
     text = other.text;
     stops = other.stops;
     misc = other.misc;
-    shadowSVG = other.shadowSVG;
     inheritedResources = other.inheritedResources;
     resources = other.resources;
 
@@ -92,7 +89,6 @@ bool SVGRenderStyle::operator==(const SVGRenderStyle& other) const
         && text == other.text
         && stops == other.stops
         && misc == other.misc
-        && shadowSVG == other.shadowSVG
         && inheritedResources == other.inheritedResources
         && resources == other.resources
         && svg_inherited_flags == other.svg_inherited_flags
@@ -126,7 +122,6 @@ void SVGRenderStyle::copyNonInheritedFrom(const SVGRenderStyle* other)
     svg_noninherited_flags = other->svg_noninherited_flags;
     stops = other->stops;
     misc = other->misc;
-    shadowSVG = other->shadowSVG;
     resources = other->resources;
 }
 
@@ -164,10 +159,6 @@ StyleDifference SVGRenderStyle::diff(const SVGRenderStyle* other) const
     // These properties affect the cached stroke bounding box rects.
     if (svg_inherited_flags._capStyle != other->svg_inherited_flags._capStyle
         || svg_inherited_flags._joinStyle != other->svg_inherited_flags._joinStyle)
-        return StyleDifferenceLayout;
-
-    // Shadow changes require relayouts, as they affect the repaint rects.
-    if (shadowSVG != other->shadowSVG)
         return StyleDifferenceLayout;
 
     // Some stroke properties, requires relayouts, as the cached stroke boundaries need to be recalculated.
