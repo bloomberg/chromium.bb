@@ -7,6 +7,8 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 // static
@@ -24,7 +26,10 @@ InstantServiceFactory::InstantServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "InstantService",
         BrowserContextDependencyManager::GetInstance()) {
-  // No dependencies.
+  DependsOn(TemplateURLServiceFactory::GetInstance());
+#if defined(ENABLE_THEMES)
+  DependsOn(ThemeServiceFactory::GetInstance());
+#endif
 }
 
 InstantServiceFactory::~InstantServiceFactory() {

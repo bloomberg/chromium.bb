@@ -77,6 +77,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -257,6 +258,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   GoogleURLTrackerFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
   invalidation::InvalidationServiceFactory::GetInstance();
+  InstantServiceFactory::GetInstance();
 #if defined(ENABLE_MANAGED_USERS)
   ManagedUserServiceFactory::GetInstance();
 #endif
