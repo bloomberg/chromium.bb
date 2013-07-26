@@ -2260,6 +2260,8 @@ drm_destroy(struct weston_compositor *ec)
 		weston_log("failed to drop master: %m\n");
 	tty_destroy(d->tty);
 
+	close(d->drm.fd);
+
 	free(d);
 }
 
