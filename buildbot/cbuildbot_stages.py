@@ -2076,6 +2076,11 @@ class HWTestStage(ArchivingStage):
   # pylint: disable=W0212
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
+
+    # Deal with timeout errors specially.
+    if isinstance(exception, cros_build_lib.TimeoutError):
+      return self._HandleStageTimeoutException(exception)
+
     # 2 for warnings returned by run_suite.py, or CLIENT_HTTP_CODE error
     # returned by autotest_rpc_client.py. It is the former that we care about.
     # 11, 12, 13 for cases when rpc is down, see autotest_rpc_errors.py.
@@ -2092,7 +2097,7 @@ class HWTestStage(ArchivingStage):
     else:
       return super(HWTestStage, self)._HandleStageException(exception)
 
-  def DealWithTimeout(self, exception):
+  def _HandleStageTimeoutException(self, exception):
     if not self.suite_config.critical and not self.suite_config.fatal_timeouts:
       return self._HandleExceptionAsWarning(exception)
 
@@ -2108,23 +2113,19 @@ class HWTestStage(ArchivingStage):
       debug = self._options.debug_forced
     else:
       debug = self._options.debug
-    try:
-      lab_status.CheckLabStatus(self._current_board)
-      with cros_build_lib.SubCommandTimeout(self.suite_config.timeout):
-        commands.RunHWTestSuite(build,
-                                self.suite_config.suite,
-                                self._current_board,
-                                self.suite_config.pool,
-                                self.suite_config.num,
-                                self.suite_config.file_bugs,
-                                self.wait_for_results,
-                                debug)
+    lab_status.CheckLabStatus(self._current_board)
+    with cros_build_lib.SubCommandTimeout(self.suite_config.timeout):
+      commands.RunHWTestSuite(build,
+                              self.suite_config.suite,
+                              self._current_board,
+                              self.suite_config.pool,
+                              self.suite_config.num,
+                              self.suite_config.file_bugs,
+                              self.wait_for_results,
+                              debug)
 
-        if self.suite_config.copy_perf_results:
-          self._SendPerfResults()
-
-    except cros_build_lib.TimeoutError as exception:
-      return self.DealWithTimeout(exception)
+      if self.suite_config.copy_perf_results:
+        self._SendPerfResults()
 
 
 class AUTestStage(HWTestStage):

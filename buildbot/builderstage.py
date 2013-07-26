@@ -259,6 +259,8 @@ class BuilderStage(object):
     sys.stderr.flush()
     self._Begin()
     try:
+      # TODO(davidjames): Verify that PerformStage always returns None. See
+      # crbug.com/264781
       self.PerformStage()
     except SystemExit as e:
       if e.code != 0:

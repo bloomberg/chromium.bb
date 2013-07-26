@@ -636,13 +636,15 @@ class HWTestStageTest(AbstractStageTest):
                               self._current_board, self.archive_stage,
                               self.suite_config)
 
-  def _RunHWTestSuite(self, debug=False, returncode=0, fails=False):
+  def _RunHWTestSuite(self, debug=False, returncode=0, fails=False,
+                      timeout=False):
     """Pretend to run the HWTest suite to assist with tests.
 
     Args:
       debug: Whether the HWTest suite should be run in debug mode.
       returncode: The return value of the HWTest command.
       fails: Whether the command as a whole should fail.
+      timeout: Whether the the hw tests should time out.
     """
     lab_status.CheckLabStatus(mox.IgnoreArg())
     m = commands.RunHWTestSuite(mox.IgnoreArg(),
@@ -651,7 +653,11 @@ class HWTestStageTest(AbstractStageTest):
                                 mox.IgnoreArg(), mox.IgnoreArg(), True, debug)
 
     # Raise an exception if the user wanted the command to fail.
-    if returncode != 0:
+    if timeout:
+      m.AndRaise(cros_build_lib.TimeoutError('Timed out'))
+      cros_build_lib.PrintBuildbotStepFailure()
+      cros_build_lib.Error(mox.IgnoreArg())
+    elif returncode != 0:
       result = cros_build_lib.CommandResult(cmd='run_hw_tests',
                                             returncode=returncode)
       m.AndRaise(cros_build_lib.RunCommandError('HWTests failed', result))
@@ -667,7 +673,7 @@ class HWTestStageTest(AbstractStageTest):
         cros_build_lib.Warning(mox.IgnoreArg())
 
     self.mox.ReplayAll()
-    if fails:
+    if fails or timeout:
       self.assertRaises(results_lib.StepFailure, self.RunStage)
     else:
       self.RunStage()
@@ -698,6 +704,13 @@ class HWTestStageTest(AbstractStageTest):
   def testWithSuite(self):
     """Test if run correctly with a test suite."""
     self._RunHWTestSuite()
+
+  def testWithTimeout(self):
+    """Test if run correctly with a critical timeout."""
+    self.bot_id = 'alex-paladin'
+    self.build_config = config.config['alex-paladin'].copy()
+    self.suite_config = self.build_config['hw_tests'][0]
+    self._RunHWTestSuite(timeout=True)
 
   def testWithSuiteWithInfrastructureFailure(self):
     """Tests that we warn correctly if we get a returncode of 2."""
