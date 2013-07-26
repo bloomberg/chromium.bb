@@ -158,6 +158,10 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
       MediaGalleriesPermission::kReadPermission);
   bool has_read_permission = PermissionsData::CheckAPIPermissionWithParam(
       GetExtension(), APIPermission::kMediaGalleries, &read_param);
+  MediaGalleriesPermission::CheckParam copy_to_param(
+      MediaGalleriesPermission::kCopyToPermission);
+  bool has_copy_to_permission = PermissionsData::CheckAPIPermissionWithParam(
+      GetExtension(), APIPermission::kMediaGalleries, &copy_to_param);
 
   const int child_id = rvh->GetProcess()->GetID();
   base::ListValue* list = new base::ListValue();
@@ -189,10 +193,13 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     if (filesystems[i].path.empty())
       continue;
 
-    if (has_read_permission) {
+    if (has_read_permission || has_copy_to_permission) {
       content::ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
-      policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
+      if (has_read_permission)
+        policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
+      if (has_copy_to_permission)
+        policy->GrantCopyIntoFileSystem(child_id, filesystems[i].fsid);
     }
   }
 

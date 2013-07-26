@@ -594,6 +594,12 @@ TEST(PermissionsTest, HasLessPrivilegesThan) {
     { "notifications", false },  // none -> notifications
     { "platformapp1", false },  // host permissions for platform apps
     { "platformapp2", true },  // API permissions for platform apps
+    { "media_galleries1", true },  // read|all -> copyTo|all
+    { "media_galleries2", true },  // read|all -> read|copyTo|all
+    { "media_galleries3", true },  // all -> copyTo|all
+    { "media_galleries4", false },  // read|all -> all
+    { "media_galleries5", false },  // read|copyTo|all -> read|all
+    { "media_galleries6", false },  // read|all -> read|all
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {

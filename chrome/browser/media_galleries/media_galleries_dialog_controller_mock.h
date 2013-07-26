@@ -13,7 +13,8 @@ namespace chrome {
 class MediaGalleriesDialogControllerMock
     : public MediaGalleriesDialogController {
  public:
-  MediaGalleriesDialogControllerMock();
+  explicit MediaGalleriesDialogControllerMock(
+      const extensions::Extension& extension);
   virtual ~MediaGalleriesDialogControllerMock();
 
   MOCK_CONST_METHOD0(GetHeader, string16());

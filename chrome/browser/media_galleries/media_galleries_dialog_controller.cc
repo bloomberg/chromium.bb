@@ -15,12 +15,15 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/permissions/media_galleries_permission.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
+using extensions::APIPermission;
 using extensions::Extension;
 
 namespace chrome {
@@ -71,9 +74,10 @@ void MediaGalleriesDialogController::OnStorageMonitorInitialized() {
   preferences_->AddGalleryChangeObserver(this);
 }
 
-MediaGalleriesDialogController::MediaGalleriesDialogController()
+MediaGalleriesDialogController::MediaGalleriesDialogController(
+    const extensions::Extension& extension)
     : web_contents_(NULL),
-      extension_(NULL),
+      extension_(&extension),
       preferences_(NULL) {}
 
 MediaGalleriesDialogController::~MediaGalleriesDialogController() {
@@ -89,10 +93,26 @@ string16 MediaGalleriesDialogController::GetHeader() const {
 }
 
 string16 MediaGalleriesDialogController::GetSubtext() const {
-  std::string extension_name(extension_ ? extension_->name() : std::string());
-  return l10n_util::GetStringFUTF16(
-      IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_ONLY,
-      UTF8ToUTF16(extension_name));
+  extensions::MediaGalleriesPermission::CheckParam read_param(
+      extensions::MediaGalleriesPermission::kReadPermission);
+  extensions::MediaGalleriesPermission::CheckParam copy_to_param(
+      extensions::MediaGalleriesPermission::kCopyToPermission);
+  bool has_read_permission =
+      extensions::PermissionsData::CheckAPIPermissionWithParam(
+          extension_, APIPermission::kMediaGalleries, &read_param);
+  bool has_copy_to_permission =
+      extensions::PermissionsData::CheckAPIPermissionWithParam(
+          extension_, APIPermission::kMediaGalleries, &copy_to_param);
+
+  int id;
+  if (has_read_permission && has_copy_to_permission)
+    id = IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_WRITE;
+  else if (has_copy_to_permission)
+    id = IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_WRITE_ONLY;
+  else
+    id = IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_ONLY;
+
+  return l10n_util::GetStringFUTF16(id, UTF8ToUTF16(extension_->name()));
 }
 
 string16 MediaGalleriesDialogController::GetUnattachedLocationsHeader() const {

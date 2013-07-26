@@ -5205,8 +5205,14 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE" desc="Permission string for write access to the file system.">
         Write to files that you have opened in the application
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_ALL_GALLERIES" desc="Permission string for read access to all of the user's media galleries.">
-        Access photos, music, and other media from your computer (Read)
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE" desc="Permission string for access to read and write to all of the user's media galleries.">
+        Access and change photos, music, and other media from your computer.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ" desc="Permission string for access to read all of the user's media galleries.">
+        Access photos, music, and other media from your computer.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_WRITE" desc="Permission string for access to write to all of the user's media galleries.">
+        Change photos, music, and other media from your computer.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
         Use serial devices attached to your computer
@@ -15471,6 +15477,9 @@ Do you accept?
     </message>
     <message name="IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_ONLY" desc="Explanatory text for the media gallery access permission. Indicates than the specified (by name) extension has read-only access to the listed folders.">
       <ph name="EXTENSION">$1<ex>PhotoEditor</ex></ph> can access media in these locations.
+    </message>
+    <message name="IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_WRITE_ONLY" desc="Explanatory text for the media gallery access permission. Indicates than the specified (by name) extension has write-only access to the listed folders.">
+      <ph name="EXTENSION">$1<ex>PhotoEditor</ex></ph> can change media in these locations.
     </message>
     <message name="IDS_MEDIA_GALLERIES_UNATTACHED_LOCATIONS" desc="Header for media gallery permissions to locations not currently attached, i.e. removable devices which aren't plugged in">
       Unattached locations

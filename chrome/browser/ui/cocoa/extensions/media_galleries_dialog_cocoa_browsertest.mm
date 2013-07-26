@@ -8,6 +8,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/test/test_utils.h"
@@ -26,7 +28,9 @@ class MediaGalleriesDialogBrowserTest : public InProcessBrowserTest {
 // Verify that programatically closing the constrained window correctly closes
 // the sheet.
 IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
-  NiceMock<MediaGalleriesDialogControllerMock> controller;
+  scoped_refptr<extensions::Extension> dummy_extension =
+      extension_test_util::CreateExtensionWithID("dummy");
+  NiceMock<MediaGalleriesDialogControllerMock> controller(*dummy_extension);
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

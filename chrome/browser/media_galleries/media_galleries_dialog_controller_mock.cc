@@ -8,7 +8,9 @@ using ::testing::Return;
 
 namespace chrome {
 
-MediaGalleriesDialogControllerMock::MediaGalleriesDialogControllerMock() {
+MediaGalleriesDialogControllerMock::MediaGalleriesDialogControllerMock(
+    const extensions::Extension& extension)
+    : MediaGalleriesDialogController(extension) {
   EXPECT_CALL(*this, GetHeader()).
       WillRepeatedly(Return(string16()));
   EXPECT_CALL(*this, GetSubtext()).
@@ -18,4 +20,4 @@ MediaGalleriesDialogControllerMock::MediaGalleriesDialogControllerMock() {
 MediaGalleriesDialogControllerMock::~MediaGalleriesDialogControllerMock() {
 }
 
-}  // namespace
+}  // namespace chrome

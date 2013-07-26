@@ -105,7 +105,8 @@ class MediaGalleriesDialogController
 
  protected:
   // For use with tests.
-  MediaGalleriesDialogController();
+  explicit MediaGalleriesDialogController(
+      const extensions::Extension& extension);
 
   virtual ~MediaGalleriesDialogController();
 
@@ -160,7 +161,7 @@ class MediaGalleriesDialogController
   content::WebContents* web_contents_;
 
   // This is just a reference, but it's assumed that it won't become invalid
-  // while the dialog is showing. Will be NULL only during tests.
+  // while the dialog is showing.
   const extensions::Extension* extension_;
 
   // This map excludes those galleries which have been blacklisted; it only

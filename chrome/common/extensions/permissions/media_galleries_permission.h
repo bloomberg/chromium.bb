@@ -15,7 +15,7 @@ namespace extensions {
 // Media Galleries permissions are as follows:
 //   <media-galleries-permission-pattern>
 //             := <access> | <access> 'allAutoDetected' | 'allAutoDetected'
-//   <access>  := 'read'
+//   <access>  := 'read' <access> | 'copyTo' <access>
 class MediaGalleriesPermission
   : public SetDisjunctionPermission<MediaGalleriesPermissionData,
                                     MediaGalleriesPermission> {
@@ -31,7 +31,7 @@ class MediaGalleriesPermission
 
   // SetDisjunctionPermission overrides.
   // MediaGalleriesPermission does additional checks to make sure the
-  // permissions do not have multiple access values.
+  // permissions do not contain unknown values.
   virtual bool FromValue(const base::Value* value) OVERRIDE;
 
   // APIPermission overrides.
@@ -40,6 +40,7 @@ class MediaGalleriesPermission
   // Permission strings.
   static const char kAllAutoDetectedPermission[];
   static const char kReadPermission[];
+  static const char kCopyToPermission[];
 };
 
 }  // namespace extensions

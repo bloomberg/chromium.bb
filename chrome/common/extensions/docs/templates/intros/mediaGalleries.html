@@ -9,8 +9,7 @@ locations, only media files will be present in the file system objects.
 
 <h2 id="manifest">Manifest</h2>
 <p>The media galleries API has two axes of permission parameters; the locations
-that can be accessed, and the type of access (read-only, read-write,
-add-files).</p>
+that can be accessed, and the types of access (read-only, copy-to, etc).</p>
 
 <p>On the location axis, specifying no location-type permission parameters
 means that
@@ -37,11 +36,13 @@ runtime by using the media gallery management dialog. For example:</p>
   ...
 }</pre>
 
-<p>This permission will trigger an install time permission prompt
+<p>The above permission will trigger an install time permission prompt
 and let the app read from all auto-detected media galleries on the
 user's computer. The user may add or remove galleries using the
 media gallery management dialog, after which the app will be able
 to read all the media files from galleries that the user has selected.</p>
 
-<p>Currently "read" is the only access type supported by
-this API. Read-write and add-file access with be implemented soon.</p>
+<p>Another possible access type is "copyTo". Specifying only "copyTo" on the
+access type axis will permit using accessible media galleries as a destination
+for copyTo() operations. "copyTo" and "read" can both be specified to obtain
+both types of permissions to accessible media galleries.</p>

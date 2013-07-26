@@ -95,6 +95,13 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, NoGalleriesRead) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
+                       NoGalleriesCopyTo) {
+  chrome::EnsureMediaDirectoriesExists media_directories;
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/media_galleries/no_galleries_copy_to")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesRead) {
   chrome::EnsureMediaDirectoriesExists media_directories;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/read_access"))

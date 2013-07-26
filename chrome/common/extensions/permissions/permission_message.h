@@ -55,7 +55,7 @@ class PermissionMessage {
     kUsb,
     kSystemIndicator,
     kUsbDevice,
-    kMediaGalleriesAllGalleriesWrite,
+    kMediaGalleriesAllGalleriesCopyTo,
     kSystemInfoDisplay,
     kNativeMessaging,
     kSyncFileSystem,
@@ -96,6 +96,10 @@ class PermissionMessage {
   // Comparator to work with std::set.
   bool operator<(const PermissionMessage& that) const {
     return id_ < that.id_;
+  }
+  // Comparator to work with base::STLSetDifference.
+  bool operator>(const PermissionMessage& that) const {
+    return id_ > that.id_;
   }
 
  private:

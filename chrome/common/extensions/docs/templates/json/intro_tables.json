@@ -244,11 +244,11 @@
     "Permissions": [
       {
         "class": "code",
-        "text": "{\"mediaGalleries\": [\"read\"]}"
+        "text": "{\"mediaGalleries\": [\"accessType1\", \"accessType2\", ...]}"
       },
       {
         "class": "code",
-        "text": "{\"mediaGalleries\": [\"read\", \"allAutoDetected\"]}"
+        "text": "{\"mediaGalleries\": [\"accessType1\", \"accessType2\", ..., \"allAutoDetected\"]}"
       },
       {
         "partial": "intro_tables/see_manifest.html"

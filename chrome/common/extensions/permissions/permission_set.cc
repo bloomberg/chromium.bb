@@ -8,7 +8,9 @@
 #include <iterator>
 #include <string>
 
+#include "base/stl_util.h"
 #include "chrome/common/extensions/permissions/chrome_scheme_hosts.h"
+#include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/url_pattern.h"
@@ -281,22 +283,47 @@ std::vector<string16> PermissionSet::GetWarningMessages(
 
   bool audio_capture = false;
   bool video_capture = false;
+  bool media_galleries_read = false;
+  bool media_galleries_copy_to = false;
   for (PermissionMessages::const_iterator i = permissions.begin();
        i != permissions.end(); ++i) {
-    if (i->id() == PermissionMessage::kAudioCapture)
-      audio_capture = true;
-    if (i->id() == PermissionMessage::kVideoCapture)
-      video_capture = true;
+    switch (i->id()) {
+      case PermissionMessage::kAudioCapture:
+        audio_capture = true;
+        break;
+      case PermissionMessage::kVideoCapture:
+        video_capture = true;
+        break;
+      case PermissionMessage::kMediaGalleriesAllGalleriesRead:
+        media_galleries_read = true;
+        break;
+      case PermissionMessage::kMediaGalleriesAllGalleriesCopyTo:
+        media_galleries_copy_to = true;
+        break;
+      default:
+        break;
+    }
   }
 
   for (PermissionMessages::const_iterator i = permissions.begin();
        i != permissions.end(); ++i) {
+    int id = i->id();
     if (audio_capture && video_capture) {
-      if (i->id() == PermissionMessage::kAudioCapture) {
+      if (id == PermissionMessage::kAudioCapture) {
         messages.push_back(l10n_util::GetStringUTF16(
             IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE));
         continue;
-      } else if (i->id() == PermissionMessage::kVideoCapture) {
+      } else if (id == PermissionMessage::kVideoCapture) {
+        // The combined message will be pushed above.
+        continue;
+      }
+    }
+    if (media_galleries_read && media_galleries_copy_to) {
+      if (id == PermissionMessage::kMediaGalleriesAllGalleriesRead) {
+        messages.push_back(l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE));
+        continue;
+      } else if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo) {
         // The combined message will be pushed above.
         continue;
       }
@@ -581,14 +608,11 @@ bool PermissionSet::HasLessAPIPrivilegesThan(
   if (permissions == NULL)
     return false;
 
-  std::set<PermissionMessage> current_warnings =
-      GetAPIPermissionMessages();
-  std::set<PermissionMessage> new_warnings =
-      permissions->GetAPIPermissionMessages();
-  std::set<PermissionMessage> delta_warnings;
-  std::set_difference(new_warnings.begin(), new_warnings.end(),
-                      current_warnings.begin(), current_warnings.end(),
-                      std::inserter(delta_warnings, delta_warnings.begin()));
+  typedef std::set<PermissionMessage> PermissionMsgSet;
+  PermissionMsgSet current_warnings = GetAPIPermissionMessages();
+  PermissionMsgSet new_warnings = permissions->GetAPIPermissionMessages();
+  PermissionMsgSet delta_warnings =
+      base::STLSetDifference<PermissionMsgSet>(new_warnings, current_warnings);
 
   // We have less privileges if there are additional warnings present.
   return !delta_warnings.empty();

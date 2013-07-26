@@ -7,6 +7,8 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/ui/gtk/extensions/media_galleries_dialog_gtk.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -22,9 +24,8 @@ namespace {
 MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId id) {
   MediaGalleryPrefInfo gallery;
   gallery.pref_id = id;
-  gallery.device_id =
-      StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
-                                base::Int64ToString(id));
+  gallery.device_id = StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
+                                                base::Int64ToString(id));
   gallery.display_name = ASCIIToUTF16("Display Name");
   return gallery;
 }
@@ -32,13 +33,31 @@ MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId id) {
 }  // namespace
 
 class MediaGalleriesDialogTest : public testing::Test {
+ public:
+  MediaGalleriesDialogTest() {}
+  virtual ~MediaGalleriesDialogTest() {}
+  virtual void SetUp() OVERRIDE {
+    dummy_extension_ = extension_test_util::CreateExtensionWithID("dummy");
+  }
+  virtual void TearDown() OVERRIDE {
+    dummy_extension_ = NULL;
+  }
+
+  const extensions::Extension& dummy_extension() const {
+    return *dummy_extension_;
+  }
+
+ private:
+  scoped_refptr<extensions::Extension> dummy_extension_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogTest);
 };
 
 // Tests that checkboxes are initialized according to the contents of
 // permissions in the registry.
 TEST_F(MediaGalleriesDialogTest, InitializeCheckboxes) {
   // TODO(gbillock): Get rid of this mock; make something specialized.
-  NiceMock<MediaGalleriesDialogControllerMock> controller;
+  NiceMock<MediaGalleriesDialogControllerMock> controller(dummy_extension());
 
   MediaGalleriesDialogController::GalleryPermissionsVector attached_permissions;
   attached_permissions.push_back(
@@ -69,7 +88,7 @@ TEST_F(MediaGalleriesDialogTest, InitializeCheckboxes) {
 
 // Tests that toggling checkboxes updates the controller.
 TEST_F(MediaGalleriesDialogTest, ToggleCheckboxes) {
-  NiceMock<MediaGalleriesDialogControllerMock> controller;
+  NiceMock<MediaGalleriesDialogControllerMock> controller(dummy_extension());
 
   MediaGalleriesDialogController::GalleryPermissionsVector attached_permissions;
   attached_permissions.push_back(
@@ -100,7 +119,7 @@ TEST_F(MediaGalleriesDialogTest, ToggleCheckboxes) {
 // Tests that UpdateGallery will add a new checkbox, but only if it refers to
 // a gallery that the dialog hasn't seen before.
 TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
-  NiceMock<MediaGalleriesDialogControllerMock> controller;
+  NiceMock<MediaGalleriesDialogControllerMock> controller(dummy_extension());
 
   MediaGalleriesDialogController::GalleryPermissionsVector attached_permissions;
   EXPECT_CALL(controller, AttachedPermissions()).
@@ -134,7 +153,7 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
 }
 
 TEST_F(MediaGalleriesDialogTest, ForgetDeletes) {
-  NiceMock<MediaGalleriesDialogControllerMock> controller;
+  NiceMock<MediaGalleriesDialogControllerMock> controller(dummy_extension());
 
   MediaGalleriesDialogController::GalleryPermissionsVector attached_permissions;
   EXPECT_CALL(controller, AttachedPermissions()).
