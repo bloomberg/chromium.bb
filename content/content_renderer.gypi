@@ -5,6 +5,7 @@
 {
   'dependencies': [
     '../jingle/jingle.gyp:jingle_glue',
+    '../media/media.gyp:media',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../third_party/WebKit/public/blink.gyp:blink',
