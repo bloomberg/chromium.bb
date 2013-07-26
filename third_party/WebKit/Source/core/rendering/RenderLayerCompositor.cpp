@@ -1197,7 +1197,7 @@ void RenderLayerCompositor::rootFixedBackgroundsChanged()
 bool RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
 {
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        return scrollingCoordinator->scrollableAreaScrollLayerDidChange(layer->scrollableArea());
+        return scrollingCoordinator->scrollableAreaScrollLayerDidChange(layer);
     return false;
 }
 
@@ -1989,7 +1989,7 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
 
     RenderLayer* ancestor = layer->parent();
     while (ancestor && !hasScrollableAncestor) {
-        if (frameView->containsScrollableArea(ancestor->scrollableArea()))
+        if (frameView->containsScrollableArea(ancestor))
             hasScrollableAncestor = true;
         if (ancestor->renderer() == m_renderView)
             break;
