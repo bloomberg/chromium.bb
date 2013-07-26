@@ -391,8 +391,7 @@ function setCustomThemeStyle(opt_themeInfo) {
 
 
 /**
- * Renders the attribution if the image is present and loadable.  Otherwise
- * hides it.
+ * Renders the attribution if the URL is present, otherwise hides it.
  * @param {string} url The URL of the attribution image, if any.
  * @private
  */
@@ -401,18 +400,14 @@ function updateThemeAttribution(url) {
     setAttributionVisibility_(false);
     return;
   }
-  var attributionImage = new Image();
-  attributionImage.onload = function() {
-    var oldAttributionImage = attribution.querySelector('img');
-    if (oldAttributionImage)
-      removeNode(oldAttributionImage);
+
+  var attributionImage = attribution.querySelector('img');
+  if (!attributionImage) {
+    attributionImage = new Image();
     attribution.appendChild(attributionImage);
-    setAttributionVisibility_(true);
-  };
-  attributionImage.onerror = function() {
-    setAttributionVisibility_(false);
-  };
-  attributionImage.src = url;
+  }
+  attributionImage.style.content = url;
+  setAttributionVisibility_(true);
 }
 
 

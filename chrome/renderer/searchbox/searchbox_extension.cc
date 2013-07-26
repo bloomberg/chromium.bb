@@ -30,7 +30,8 @@
 namespace {
 
 const char kCSSBackgroundImageFormat[] = "-webkit-image-set("
-    "url(chrome-search://theme/IDR_THEME_NTP_BACKGROUND?%s) 1x)";
+    "url(chrome-search://theme/IDR_THEME_NTP_BACKGROUND?%s) 1x, "
+    "url(chrome-search://theme/IDR_THEME_NTP_BACKGROUND@2x?%s) 2x)";
 
 const char kCSSBackgroundColorFormat[] = "rgba(%d,%d,%d,%s)";
 
@@ -45,8 +46,9 @@ const char kCSSBackgroundRepeatX[] = "repeat-x";
 const char kCSSBackgroundRepeatY[] = "repeat-y";
 const char kCSSBackgroundRepeat[] = "repeat";
 
-const char kThemeAttributionFormat[] =
-    "chrome-search://theme/IDR_THEME_NTP_ATTRIBUTION?%s";
+const char kThemeAttributionFormat[] = "-webkit-image-set("
+    "url(chrome-search://theme/IDR_THEME_NTP_ATTRIBUTION?%s) 1x, "
+    "url(chrome-search://theme/IDR_THEME_NTP_ATTRIBUTION@2x?%s) 2x)";
 
 const char kLTRHtmlTextDirection[] = "ltr";
 const char kRTLHtmlTextDirection[] = "rtl";
@@ -683,14 +685,15 @@ void SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
   info->Set(v8::String::New("alternateLogo"),
             v8::Boolean::New(theme_info.logo_alternate));
 
-  // The theme background image url is of format
-  // "-webkit-image-set(url(chrome://theme/IDR_THEME_BACKGROUND?<theme_id>) 1x)"
-  // where <theme_id> is the id that identifies the theme.
+  // The theme background image url is of format kCSSBackgroundImageFormat
+  // where both instances of "%s" are replaced with the id that identifies the
+  // theme.
   // This is the CSS "background-image" format.
   // Value is only valid if there's a custom theme background image.
   if (extensions::Extension::IdIsValid(theme_info.theme_id)) {
     info->Set(v8::String::New("imageUrl"), UTF8ToV8String(
         base::StringPrintf(kCSSBackgroundImageFormat,
+                           theme_info.theme_id.c_str(),
                            theme_info.theme_id.c_str())));
 
     // The theme background image horizontal alignment is one of "left",
@@ -752,6 +755,7 @@ void SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
     if (theme_info.has_attribution) {
       info->Set(v8::String::New("attributionUrl"), UTF8ToV8String(
           base::StringPrintf(kThemeAttributionFormat,
+                             theme_info.theme_id.c_str(),
                              theme_info.theme_id.c_str())));
     }
   }
