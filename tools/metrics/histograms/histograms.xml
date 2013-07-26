@@ -12466,6 +12466,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.DownloadRequestNetError" enum="NetErrorCodes">
+  <summary>
+    The net error code for all CheckClientDownloadRequest URLFetchers.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.DownloadRequestResponseCode">
+  <summary>
+    For CheckClientDownloadRequest URLFetchers with successful status, the HTTP
+    response code that was received.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.SignedBinaryDownload"
     enum="SBClientDownloadIsSignedBinary">
   <summary>

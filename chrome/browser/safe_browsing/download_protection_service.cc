@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -388,6 +389,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
             << item_->GetUrlChain().back() << ": success="
             << source->GetStatus().is_success() << " response_code="
             << source->GetResponseCode();
+    if (source->GetStatus().is_success()) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "SBClientDownload.DownloadRequestResponseCode",
+          source->GetResponseCode());
+    }
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "SBClientDownload.DownloadRequestNetError",
+        -source->GetStatus().error());
     DownloadCheckResultReason reason = REASON_SERVER_PING_FAILED;
     DownloadCheckResult result = SAFE;
     if (source->GetStatus().is_success() &&
