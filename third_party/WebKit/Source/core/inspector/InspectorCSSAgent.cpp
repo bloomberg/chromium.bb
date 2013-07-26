@@ -141,7 +141,7 @@ public:
 
     void run(CSSStyleSheet* styleSheet)
     {
-        RefPtr<InspectorStyleSheet> inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(static_cast<CSSStyleSheet*>(styleSheet));
+        RefPtr<InspectorStyleSheet> inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(styleSheet);
         // Avoid creating m_childRuleCSSOMWrappers in the stylesheet if it is in the process of re-parsing.
         // Otherwise m_childRuleCSSOMWrappers size will be initialized only for a part of rules, resulting in an ASSERT failure in CSSStyleSheet::item().
         // Instead, wait for the RuleMutationScope destruction and handle the complete CSSStyleSheet.
@@ -912,7 +912,6 @@ void InspectorCSSAgent::enable(ErrorString*)
 
     if (!m_frontend)
         return;
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSStyleSheetHeader> > styleInfos = TypeBuilder::Array<TypeBuilder::CSS::CSSStyleSheetHeader>::create();
     Vector<InspectorStyleSheet*> styleSheets;
     collectAllStyleSheets(styleSheets);
     for (size_t i = 0; i < styleSheets.size(); ++i)
@@ -1033,7 +1032,6 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const Style
             addedSheets.add(newCSSSheet);
     }
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::StyleSheetId> > removedIds = TypeBuilder::Array<TypeBuilder::CSS::StyleSheetId>::create();
     for (HashSet<CSSStyleSheet*>::iterator it = removedSheets.begin(); it != removedSheets.end(); ++it) {
         RefPtr<InspectorStyleSheet> inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(*it);
         ASSERT(inspectorStyleSheet);
@@ -1043,7 +1041,7 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const Style
                 m_frontend->styleSheetRemoved(id);
         }
     }
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSStyleSheetHeader> > addedHeaders = TypeBuilder::Array<TypeBuilder::CSS::CSSStyleSheetHeader>::create();
+
     for (HashSet<CSSStyleSheet*>::iterator it = addedSheets.begin(); it != addedSheets.end(); ++it) {
         if (!m_cssStyleSheetToInspectorStyleSheet.contains(*it)) {
             InspectorStyleSheet* newStyleSheet = bindStyleSheet(static_cast<CSSStyleSheet*>(*it));
@@ -1401,7 +1399,7 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
         CSSRule* parentRule = media->parentRule();
         if (!parentRule)
             return mediaObject.release();
-        InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(const_cast<CSSStyleSheet*>(parentRule->parentStyleSheet()));
+        InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(parentRule->parentStyleSheet());
         RefPtr<TypeBuilder::CSS::SourceRange> mediaRange = inspectorStyleSheet->ruleHeaderSourceRange(parentRule);
         if (mediaRange)
             mediaObject->setRange(mediaRange);
@@ -1524,19 +1522,18 @@ void InspectorCSSAgent::didProcessRule()
 InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(Element* element)
 {
     NodeToInspectorStyleSheet::iterator it = m_nodeToInspectorStyleSheet.find(element);
-    if (it == m_nodeToInspectorStyleSheet.end()) {
-        CSSStyleDeclaration* style = element->isStyledElement() ? element->style() : 0;
-        if (!style)
-            return 0;
+    if (it != m_nodeToInspectorStyleSheet.end())
+        return it->value.get();
 
-        String newStyleSheetId = String::number(m_lastStyleSheetId++);
-        RefPtr<InspectorStyleSheetForInlineStyle> inspectorStyleSheet = InspectorStyleSheetForInlineStyle::create(m_pageAgent, newStyleSheetId, element, TypeBuilder::CSS::StyleSheetOrigin::Regular, this);
-        m_idToInspectorStyleSheet.set(newStyleSheetId, inspectorStyleSheet);
-        m_nodeToInspectorStyleSheet.set(element, inspectorStyleSheet);
-        return inspectorStyleSheet.get();
-    }
+    CSSStyleDeclaration* style = element->isStyledElement() ? element->style() : 0;
+    if (!style)
+        return 0;
 
-    return it->value.get();
+    String newStyleSheetId = String::number(m_lastStyleSheetId++);
+    RefPtr<InspectorStyleSheetForInlineStyle> inspectorStyleSheet = InspectorStyleSheetForInlineStyle::create(m_pageAgent, newStyleSheetId, element, TypeBuilder::CSS::StyleSheetOrigin::Regular, this);
+    m_idToInspectorStyleSheet.set(newStyleSheetId, inspectorStyleSheet);
+    m_nodeToInspectorStyleSheet.set(element, inspectorStyleSheet);
+    return inspectorStyleSheet.get();
 }
 
 Element* InspectorCSSAgent::elementForId(ErrorString* errorString, int nodeId)
@@ -1546,7 +1543,7 @@ Element* InspectorCSSAgent::elementForId(ErrorString* errorString, int nodeId)
         *errorString = "No node with given id found";
         return 0;
     }
-    if (node->nodeType() != Node::ELEMENT_NODE) {
+    if (!node->isElementNode()) {
         *errorString = "Not an element node";
         return 0;
     }

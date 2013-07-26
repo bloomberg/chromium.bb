@@ -67,7 +67,6 @@ class ParsedStyleSheet {
 public:
     ParsedStyleSheet();
 
-    WebCore::CSSStyleSheet* cssStyleSheet() const { return m_parserOutput; }
     const String& text() const { ASSERT(m_hasText); return m_text; }
     void setText(const String& text);
     bool hasText() const { return m_hasText; }
@@ -78,16 +77,13 @@ public:
 private:
     void flattenSourceData(RuleSourceDataList*);
 
-    // StyleSheet constructed while parsing m_text.
-    WebCore::CSSStyleSheet* m_parserOutput;
     String m_text;
     bool m_hasText;
     OwnPtr<RuleSourceDataList> m_sourceData;
 };
 
 ParsedStyleSheet::ParsedStyleSheet()
-    : m_parserOutput(0)
-    , m_hasText(false)
+    : m_hasText(false)
 {
 }
 
@@ -560,9 +556,6 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
         return false;
     }
 
-    Vector<InspectorStyleProperty> allProperties;
-    populateAllProperties(allProperties);
-
     if (!propertyText.stripWhiteSpace().isEmpty()) {
         RefPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
         String declarationText = propertyText + " " + bogusPropertyName + ": none";
@@ -597,6 +590,9 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
         ec = NotFoundError;
         return false;
     }
+
+    Vector<InspectorStyleProperty> allProperties;
+    populateAllProperties(allProperties);
 
     InspectorStyleTextEditor editor(&allProperties, text, newLineAndWhitespaceDelimiters());
     if (overwrite) {
@@ -671,11 +667,9 @@ bool InspectorStyle::styleText(String* result) const
 
 void InspectorStyle::populateAllProperties(Vector<InspectorStyleProperty>& result) const
 {
-    HashSet<String> foundShorthands;
     HashSet<String> sourcePropertyNames;
 
     RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
-    OwnPtr<CSSParser> cssParser;
     if (sourceData) {
         String styleDeclaration;
         bool isStyleTextKnown = styleText(&styleDeclaration);
@@ -700,9 +694,6 @@ void InspectorStyle::populateAllProperties(Vector<InspectorStyleProperty>& resul
 
 PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() const
 {
-    Vector<InspectorStyleProperty> properties;
-    populateAllProperties(properties);
-
     RefPtr<Array<TypeBuilder::CSS::CSSProperty> > propertiesObject = Array<TypeBuilder::CSS::CSSProperty>::create();
     RefPtr<Array<TypeBuilder::CSS::ShorthandEntry> > shorthandEntries = Array<TypeBuilder::CSS::ShorthandEntry>::create();
     HashMap<String, RefPtr<TypeBuilder::CSS::CSSProperty> > propertyNameToPreviousActiveProperty;
@@ -712,6 +703,9 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
     OwnPtr<Vector<unsigned> > lineEndings(m_parentStyleSheet ? m_parentStyleSheet->lineEndings() : PassOwnPtr<Vector<unsigned> >());
     RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
     unsigned ruleBodyRangeStart = sourceData ? sourceData->ruleBodyRange.start : 0;
+
+    Vector<InspectorStyleProperty> properties;
+    populateAllProperties(properties);
 
     for (Vector<InspectorStyleProperty>::iterator it = properties.begin(), itEnd = properties.end(); it != itEnd; ++it) {
         const CSSPropertySourceData& propertyEntry = it->sourceData;
