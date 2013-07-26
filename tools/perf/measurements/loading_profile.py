@@ -5,6 +5,7 @@
 import os
 import tempfile
 
+from perf_tools import loading_metrics
 from telemetry.core import util
 from telemetry.core.platform.profiler import perf_profiler
 from telemetry.page import page_measurement
@@ -41,16 +42,7 @@ class LoadingProfile(page_measurement.PageMeasurement):
 
     profile_files = tab.browser.StopProfiling()
 
-    load_timings = tab.EvaluateJavaScript('window.performance.timing')
-    load_time_ms = (
-      float(load_timings['loadEventStart']) -
-      load_timings['navigationStart'])
-    dom_content_loaded_time_ms = (
-      float(load_timings['domContentLoadedEventStart']) -
-      load_timings['navigationStart'])
-    results.Add('load_time', 'ms', load_time_ms)
-    results.Add('dom_content_loaded_time', 'ms',
-                dom_content_loaded_time_ms)
+    loading_metrics.AddResultsForTab(tab, results)
 
     profile_file = None
     for profile_file in profile_files:

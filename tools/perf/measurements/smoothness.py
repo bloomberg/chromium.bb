@@ -1,6 +1,7 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from perf_tools import loading_metrics
 from perf_tools import smoothness_metrics
 from telemetry.core import util
 from telemetry.page import page_measurement
@@ -205,16 +206,7 @@ class Smoothness(page_measurement.PageMeasurement):
     if not (rendering_stats_deltas['numFramesSentToScreen'] > 0):
       raise DidNotScrollException()
 
-    load_timings = tab.EvaluateJavaScript("window.performance.timing")
-    load_time_seconds = (
-      float(load_timings['loadEventStart']) -
-      load_timings['navigationStart']) / 1000
-    dom_content_loaded_time_seconds = (
-      float(load_timings['domContentLoadedEventStart']) -
-      load_timings['navigationStart']) / 1000
-    results.Add('load_time', 'seconds', load_time_seconds)
-    results.Add('dom_content_loaded_time', 'seconds',
-                dom_content_loaded_time_seconds)
+    loading_metrics.AddResultsForTab(tab, results)
 
     CalcFirstPaintTimeResults(results, tab)
     CalcScrollResults(rendering_stats_deltas, results)
