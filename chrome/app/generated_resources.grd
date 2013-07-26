@@ -6865,22 +6865,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ASYNC_DNS_DESCRIPTION" desc="Description for the flag to enable asynchronous DNS client.">
         Enable experimental asynchronous DNS client.
       </message>
-      <if expr="is_android and not pp_ifdef('google_tv')">
-        <message name="IDS_FLAGS_ENABLE_WEBKIT_MEDIA_SOURCE_NAME" desc="Title for the flag to enable the prefixed Media Source API.">
-          Enable prefixed Media Source API.
-        </message>
-        <message name="IDS_FLAGS_ENABLE_WEBKIT_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to enable the prefixed Media Source API.">
-          Enable the experimental WebKitMediaSource object. This object allows JavaScript to send media data directly to a video element.
-        </message>
-      </if>
-      <if expr="not is_android or pp_ifdef('google_tv')">
-        <message name="IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_NAME" desc="Title for the flag to disable the prefixed Media Source API.">
-          Disable prefixed Media Source API.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to disable the prefixed Media Source API.">
-          Disable the experimental WebKitMediaSource object. This object allows JavaScript to send media data directly to a video element.
-        </message>
-      </if>
+      <message name="IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_NAME" desc="Title for the flag to disable the prefixed Media Source API.">
+        Disable prefixed Media Source API.
+      </message>
+      <message name="IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to disable the prefixed Media Source API.">
+        Disable the experimental WebKitMediaSource object. This object allows JavaScript to send media data directly to a video element.
+      </message>
       <message name="IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to enable the (unprefixed) Encrypted Media Extensions APIs (e.g. MediaKeys).">
         Enable Encrypted Media Extensions.
       </message>

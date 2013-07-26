@@ -733,15 +733,6 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAsyncDns,
                               switches::kDisableAsyncDns)
   },
-#if defined(ANDROID) && !defined(GOOGLE_TV)
-  {
-    "enable-media-source",
-    IDS_FLAGS_ENABLE_WEBKIT_MEDIA_SOURCE_NAME,
-    IDS_FLAGS_ENABLE_WEBKIT_MEDIA_SOURCE_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableWebKitMediaSource)
-  },
-#else
   {
     "disable-media-source",
     IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_NAME,
@@ -749,19 +740,18 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableWebKitMediaSource)
   },
-#endif
   {
     "enable-encrypted-media",
     IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_NAME,
     IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_DESCRIPTION,
-    kOsDesktop,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableEncryptedMedia)
   },
   {
     "disable-encrypted-media",
     IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_NAME,
     IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION,
-    kOsDesktop,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableLegacyEncryptedMedia)
   },
   {

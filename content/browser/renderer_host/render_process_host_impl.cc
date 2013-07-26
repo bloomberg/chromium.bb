@@ -935,11 +935,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebRtcTcpServerSocket,
     switches::kEnableWebRtcHWDecoding,
 #endif
-#if defined(ANDROID) && !defined(GOOGLE_TV)
-    switches::kEnableWebKitMediaSource,
-#else
     switches::kDisableWebKitMediaSource,
-#endif
     switches::kEnableOverscrollNotifications,
     switches::kEnableStrictSiteIsolation,
     switches::kDisableFullScreen,

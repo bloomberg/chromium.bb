@@ -26,8 +26,6 @@ class MediaSourceTest : public content::MediaBrowserTest {
 
 #if defined(OS_ANDROID)
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // TODO(scherkus): Remove after enabled by default http://crbug.com/233420
-    command_line->AppendSwitch(switches::kEnableWebKitMediaSource);
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
   }

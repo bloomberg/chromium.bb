@@ -17,12 +17,6 @@ using WebKit::WebRuntimeFeatures;
 namespace content {
 
 static void SetRuntimeFeatureDefaultsForPlatform() {
-#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
-  WebRuntimeFeatures::enableWebKitMediaSource(false);
-  WebRuntimeFeatures::enableLegacyEncryptedMedia(false);
-  WebRuntimeFeatures::enableEncryptedMedia(false);
-#endif
-
 #if defined(OS_ANDROID)
   bool enable_webaudio = false;
 #if defined(ARCH_CPU_ARMEL)
@@ -66,13 +60,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableGeolocation))
     WebRuntimeFeatures::enableGeolocation(false);
 
-#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
-  if (command_line.HasSwitch(switches::kEnableWebKitMediaSource))
-    WebRuntimeFeatures::enableWebKitMediaSource(true);
-#else
   if (command_line.HasSwitch(switches::kDisableWebKitMediaSource))
     WebRuntimeFeatures::enableWebKitMediaSource(false);
-#endif
 
 #if defined(OS_ANDROID)
   if (command_line.HasSwitch(switches::kDisableWebRTC)) {

@@ -386,13 +386,8 @@ const char kEnableSkiaBenchmarking[]         = "enable-skia-benchmarking";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
-// Enable for Android (see http://crbug.com/233420) or disable for desktop the
-// prefixed Media Source API (i.e., the WebKitMediaSource object).
-#if defined(ANDROID) && !defined(GOOGLE_TV)
-const char kEnableWebKitMediaSource[]       = "enable-webkit-media-source";
-#else
+// Disables prefixed Media Source API (i.e., the WebKitMediaSource object).
 const char kDisableWebKitMediaSource[]      = "disable-webkit-media-source";
-#endif
 
 // Enables support for Encrypted Media Extensions (e.g. MediaKeys).
 const char kEnableEncryptedMedia[] = "enable-encrypted-media";

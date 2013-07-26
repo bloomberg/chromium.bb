@@ -129,11 +129,7 @@ CONTENT_EXPORT extern const char kEnableInbandTextTracks[];
 extern const char kEnableMemoryBenchmarking[];
 extern const char kEnableSkiaBenchmarking[];
 CONTENT_EXPORT extern const char kEnableLogging[];
-#if defined(ANDROID) && !defined(GOOGLE_TV)
-CONTENT_EXPORT extern const char kEnableWebKitMediaSource[];
-#else
 extern const char kDisableWebKitMediaSource[];
-#endif
 extern const char kEnableEncryptedMedia[];
 extern const char kDisableLegacyEncryptedMedia[];
 CONTENT_EXPORT extern const char kUseFakeDeviceForMediaStream[];
