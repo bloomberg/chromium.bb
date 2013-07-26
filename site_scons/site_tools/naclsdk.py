@@ -293,7 +293,6 @@ def _SetEnvForPnacl(env, root):
   pnacl_disass = binprefix + 'dis' + binext
   pnacl_finalize = binprefix + 'finalize' + binext
   pnacl_strip = binprefix + 'strip' + binext
-  pnacl_nmf = binprefix + 'nmf' + binext
   pnacl_link_and_translate = os.path.join(subroot,
                                           'bin',
                                           'wrapper-link-and-translate') + binext
@@ -351,7 +350,6 @@ def _SetEnvForPnacl(env, root):
               DISASS=pnacl_disass,
               OBJDUMP=pnacl_disass,
               STRIP=pnacl_strip,
-              GENNMF=pnacl_nmf,
               TRANSLATE=pnacl_translate + arch_flag + pnacl_translate_flags,
               PNACLFINALIZE=pnacl_finalize,
               )
