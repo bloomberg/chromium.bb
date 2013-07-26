@@ -46,12 +46,6 @@ UserPolicySigninService::UserPolicySigninService(
   // the background after PKS initialization - so this service should always be
   // created before the oauth token is available.
   DCHECK(!TokenServiceFactory::GetForProfile(profile)->HasOAuthLoginToken());
-
-  // Register a listener for the import finished notification in a first run
-  // scenario, which indicates the profile is ready to be further initialized.
-  registrar()->Add(this,
-                   chrome::NOTIFICATION_IMPORT_FINISHED,
-                   content::Source<Profile>(profile));
 }
 
 UserPolicySigninService::~UserPolicySigninService() {}
@@ -107,14 +101,6 @@ void UserPolicySigninService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // If an import process is running, wait for NOTIFICATION_IMPORT_FINISHED
-  // before potentially creating the SigninManager. Its dependencies can access
-  // databases that the import process is also accessing, causing conflicts.
-  // Note that the profile manager is NULL in unit tests.
-  if (g_browser_process->profile_manager() &&
-      g_browser_process->profile_manager()->will_import()) {
-    return;
-  }
 
 #if defined(ENABLE_MANAGED_USERS)
   if (ManagedUserService::ProfileIsManaged(profile())) {
@@ -131,9 +117,6 @@ void UserPolicySigninService::Observe(
   }
 
   switch (type) {
-    case chrome::NOTIFICATION_IMPORT_FINISHED:
-      InitializeOnProfileReady();
-      break;
     case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
       const TokenService::TokenAvailableDetails& token_details =
           *(content::Details<const TokenService::TokenAvailableDetails>(

@@ -1107,9 +1107,6 @@ enum NotificationType {
   // |content::PasswordForm|s that were affected.
   NOTIFICATION_LOGINS_CHANGED,
 
-  // Sent when an import process has ended.
-  NOTIFICATION_IMPORT_FINISHED,
-
   // Sent when the applications in the NTP app launcher have been reordered.
   // The details, if not NoDetails, is the std::string ID of the extension that
   // was moved.

@@ -141,13 +141,6 @@ class ProfileManager : public base::NonThreadSafe,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Indicate that an import process will run for the next created Profile.
-  void SetWillImport();
-  bool will_import() { return will_import_; }
-
-  // Indicate that the import process for |profile| has completed.
-  void OnImportFinished(Profile* profile);
-
   // If a profile with the given path is currently managed by this object,
   // return a pointer to the corresponding Profile object;
   // otherwise return NULL.
@@ -322,9 +315,6 @@ class ProfileManager : public base::NonThreadSafe,
   // in the --login-profile command line argument should be used as the
   // default.
   bool logged_in_;
-
-  // True if an import process will be run.
-  bool will_import_;
 
   // Maps profile path to ProfileInfo (if profile has been created). Use
   // RegisterProfile() to add into this map. This map owns all loaded profile

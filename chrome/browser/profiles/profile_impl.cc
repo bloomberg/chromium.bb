@@ -572,12 +572,8 @@ void ProfileImpl::DoFinalInit() {
 #if !defined(OS_CHROMEOS)
   // Listen for bookmark model load, to bootstrap the sync service.
   // On CrOS sync service will be initialized after sign in.
-  if (!g_browser_process->profile_manager()->will_import()) {
-    // If |will_import()| is true we add the observer in
-    // ProfileManager::OnImportFinished().
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(this);
-    model->AddObserver(new BookmarkModelLoadedObserver(this));
-  }
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(this);
+  model->AddObserver(new BookmarkModelLoadedObserver(this));
 #endif
 }
 
@@ -1171,4 +1167,3 @@ PrefProxyConfigTracker* ProfileImpl::CreateProxyConfigTracker() {
   return ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
       GetPrefs(), g_browser_process->local_state());
 }
-

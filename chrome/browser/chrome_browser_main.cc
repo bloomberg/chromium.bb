@@ -1302,12 +1302,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Profile creation ----------------------------------------------------------
 
-  if (do_first_run_tasks_) {
-    // Warn the ProfileManager that an import process will run, possibly
-    // locking the WebDataService directory of the next Profile created.
-    browser_process_->profile_manager()->SetWillImport();
-  }
-
   // Called before CreateProfile because creating the profile can trigger
   // calls to GetDefaultProfile().
   ProfileManager::AllowGetDefaultProfile();
@@ -1378,8 +1372,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
     // Note: this can pop the first run consent dialog on linux.
     first_run::DoPostImportTasks(profile_, master_prefs_->make_chrome_default);
-
-    browser_process_->profile_manager()->OnImportFinished(profile_);
 
     if (!master_prefs_->suppress_first_run_default_browser_prompt) {
       browser_creator_->set_show_main_browser_window(

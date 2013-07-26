@@ -271,7 +271,6 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles() {
 ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
     : user_data_dir_(user_data_dir),
       logged_in_(false),
-      will_import_(false),
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
       browser_list_observer_(this),
@@ -679,27 +678,6 @@ void ProfileManager::Observe(
       }
     }
   }
-}
-
-void ProfileManager::SetWillImport() {
-  will_import_ = true;
-}
-
-void ProfileManager::OnImportFinished(Profile* profile) {
-  will_import_ = false;
-  DCHECK(profile);
-
-#if !defined(OS_CHROMEOS)
-  // If the import process was not run, it means this branch was not called,
-  // and it was handled by ProfileImpl::DoFinalInit().
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
-  model->AddObserver(new BookmarkModelLoadedObserver(profile));
-#endif
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_IMPORT_FINISHED,
-      content::Source<Profile>(profile),
-      content::NotificationService::NoDetails());
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
