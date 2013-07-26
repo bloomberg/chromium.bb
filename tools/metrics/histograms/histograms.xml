@@ -9242,6 +9242,62 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Platform.DiskUsage.Cache_Avg" units="KB">
+  <summary>
+    Average size of user's Cache directory. Logged once a day, if disk usage is
+    high.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DiskUsage.Cache_Max" units="KB">
+  <summary>
+    Maximum size of user's Cache directory. Logged once a day, if disk usage is
+    high.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DiskUsage.Downloads_Avg" units="KB">
+  <summary>
+    Average size of user's Cache directory. Logged once a day, if disk usage is
+    high.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DiskUsage.Downloads_Max" units="KB">
+  <summary>
+    Maximum size of user's Cache directory. Logged once a day, if disk usage is
+    high.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DiskUsage.GCache_Avg" units="KB">
+  <summary>
+    Average size of user's GCache directory. Logged once a day, if disk usage is
+    high.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DiskUsage.GCache_Max" units="KB">
+  <summary>
+    Maximum size of user's GCache directory. Logged once a day, if disk usage is
+    high.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DiskUsage.OldestUserOnDevice">
+  <summary>
+    Days since last login of the least recently user on device. Logged once a
+    day, if disk usage is high.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DiskUsage.UsersOnDevice">
+  <summary>
+    Number of user home dirs on device. Logged once a day, if disk usage is
+    high.
+  </summary>
+</histogram>
+
 <histogram name="Platform.DiskUsageCache" units="KB">
   <summary>KB in use in the /cache filesystem tree. Logged once a day.</summary>
 </histogram>
@@ -21828,6 +21884,22 @@ other types of suffix sets.
   <group name="Control"/>
   <group name="Alternate"/>
   <affected-histogram name="Cros.ClickOnShelf"/>
+</fieldtrial>
+
+<fieldtrial name="DiskUsagePerUserCount" separator=".">
+  <group name="1User" label="Only 1 user exists on device."/>
+  <group name="2Users" label="2 users exist on device."/>
+  <group name="3Users" label="3 users exist on device."/>
+  <group name="4Users" label="4 users exist on device."/>
+  <group name="5Users" label="5 users exist on device."/>
+  <group name="6Users" label="6 users exist on device."/>
+  <group name="7OrMoreUsers" label="7 or more users exist on device."/>
+  <affected-histogram name="Platform.DiskUsage.Cache_Avg"/>
+  <affected-histogram name="Platform.DiskUsage.Cache_Max"/>
+  <affected-histogram name="Platform.DiskUsage.Downloads_Avg"/>
+  <affected-histogram name="Platform.DiskUsage.Downloads_Max"/>
+  <affected-histogram name="Platform.DiskUsage.GCache_Avg"/>
+  <affected-histogram name="Platform.DiskUsage.GCache_Max"/>
 </fieldtrial>
 
 <fieldtrial name="DnsImpact2">
