@@ -10,6 +10,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwScrollOffsetManager;
+import org.chromium.base.test.util.Feature;
 
 public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     private static class TestScrollOffsetManagerDelegate implements AwScrollOffsetManager.Delegate {
@@ -51,7 +52,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
 
         @Override
         public void overScrollContainerViewBy(int deltaX, int deltaY, int scrollX, int scrollY,
-                int scrollRangeX, int scrollRangeY) {
+                int scrollRangeX, int scrollRangeY, boolean isTouchEvent) {
             mOverScrollDeltaX = deltaX;
             mOverScrollDeltaY = deltaY;
             mOverScrollCallCount += 1;
@@ -93,6 +94,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         offsetManager.onContainerViewOverScrolled(scrollX, scrollY, false, false);
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testWhenContentSizeMatchesView() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
         AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
@@ -143,6 +146,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     private static final int CONTENT_WIDTH = VIEW_WIDTH + MAX_HORIZONTAL_OFFSET;
     private static final int CONTENT_HEIGHT = VIEW_HEIGHT + MAX_VERTICAL_OFFSET;
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testScrollRangeAndMaxOffset() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
         AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
@@ -185,6 +190,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         assertEquals(0, delegate.getNativeScrollY());
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testDelegateCanOverrideScroll() {
         final int overrideScrollX = 10;
         final int overrideScrollY = 10;
@@ -210,6 +217,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         assertEquals(overrideScrollY, delegate.getNativeScrollY());
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testDelegateOverridenScrollsDontExceedBounds() {
         final int overrideScrollX = 222;
         final int overrideScrollY = 333;
@@ -234,6 +243,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         assertEquals(MAX_VERTICAL_OFFSET, delegate.getNativeScrollY());
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testScrollContainerViewTo() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
         AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
@@ -254,6 +265,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         assertEquals(scrollY, delegate.getOverScrollDeltaY());
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testOnContainerViewOverScrolled() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
         AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
@@ -270,6 +283,32 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         assertEquals(0, delegate.getNativeScrollY());
 
         offsetManager.onContainerViewOverScrolled(scrollX, scrollY, false, false);
+        assertEquals(scrollX, delegate.getScrollX());
+        assertEquals(scrollY, delegate.getScrollY());
+        assertEquals(scrollX, delegate.getNativeScrollX());
+        assertEquals(scrollY, delegate.getNativeScrollY());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testDefersScrollUntilTouchEnd() {
+        TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
+
+        final int scrollX = 31;
+        final int scrollY = 41;
+
+        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
+
+        offsetManager.setProcessingTouchEvent(true);
+        offsetManager.onContainerViewOverScrolled(scrollX, scrollY, false, false);
+        assertEquals(scrollX, delegate.getScrollX());
+        assertEquals(scrollY, delegate.getScrollY());
+        assertEquals(0, delegate.getNativeScrollX());
+        assertEquals(0, delegate.getNativeScrollY());
+
+        offsetManager.setProcessingTouchEvent(false);
         assertEquals(scrollX, delegate.getScrollX());
         assertEquals(scrollY, delegate.getScrollY());
         assertEquals(scrollX, delegate.getNativeScrollX());

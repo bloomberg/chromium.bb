@@ -23,6 +23,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -379,7 +380,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         AwTestTouchUtils.dragCompleteView(testContainerView,
                 0, -targetScrollXPix, // these need to be negative as we're scrolling down.
                 0, -targetScrollYPix,
-                dragSteps);
+                dragSteps,
+                null /* completionLatch */);
 
         for (int i = 1; i <= dragSteps; ++i) {
             onScrollToCallbackHelper.waitForCallback(scrollToCallCount, i);
@@ -390,6 +392,38 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         assertScrollOnMainSync(testContainerView, maxScrollXPix, maxScrollYPix);
         assertScrollInJs(testContainerView.getAwContents(), contentsClient,
                 maxScrollXCss, maxScrollYCss);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNoSpuriousOverScrolls() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final ScrollTestContainerView testContainerView =
+            (ScrollTestContainerView) createAwTestContainerViewOnMainSync(contentsClient);
+        enableJavaScriptOnUiThread(testContainerView.getAwContents());
+
+        final int dragSteps = 1;
+        final int targetScrollYPix = 24;
+
+        setMaxScrollOnMainSync(testContainerView, 0, 0);
+
+        loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null, "");
+
+        final CallbackHelper onScrollToCallbackHelper =
+            testContainerView.getOnScrollToCallbackHelper();
+        final int scrollToCallCount = onScrollToCallbackHelper.getCallCount();
+        CountDownLatch scrollingCompleteLatch = new CountDownLatch(1);
+        AwTestTouchUtils.dragCompleteView(testContainerView,
+                0, 0, // these need to be negative as we're scrolling down.
+                0, -targetScrollYPix,
+                dragSteps,
+                scrollingCompleteLatch);
+        try {
+            scrollingCompleteLatch.await();
+        } catch (InterruptedException ex) {
+            // ignore
+        }
+        assertEquals(scrollToCallCount + 1, onScrollToCallbackHelper.getCallCount());
     }
 
     @SmallTest
@@ -413,7 +447,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         AwTestTouchUtils.dragCompleteView(testContainerView,
                 0, overScrollDeltaX,
                 0, 0,
-                oneStep);
+                oneStep,
+                null /* completionLatch */);
         overScrollByCallbackHelper.waitForCallback(overScrollCallCount);
         // Unfortunately the gesture detector seems to 'eat' some number of pixels. For now
         // checking that the value is < 0 (overscroll is reported as negative values) will have to
@@ -443,7 +478,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         AwTestTouchUtils.dragCompleteView(testContainerView,
                 0, 0,
                 0, overScrollDeltaY,
-                oneStep);
+                oneStep,
+                null /* completionLatch */);
         overScrollByCallbackHelper.waitForCallback(overScrollCallCount);
         assertEquals(0, overScrollByCallbackHelper.getDeltaX());
         assertTrue(0 > overScrollByCallbackHelper.getDeltaY());

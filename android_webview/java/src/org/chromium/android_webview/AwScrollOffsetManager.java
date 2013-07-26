@@ -17,7 +17,7 @@ public class AwScrollOffsetManager {
     public interface Delegate {
         // Call View#overScrollBy on the containerView.
         void overScrollContainerViewBy(int deltaX, int deltaY, int scrollX, int scrollY,
-                int scrollRangeX, int scrollRangeY);
+                int scrollRangeX, int scrollRangeY, boolean isTouchEvent);
         // Call View#scrollTo on the containerView.
         void scrollContainerViewTo(int x, int y);
         // Store the scroll offset in the native side. This should really be a simple store
@@ -41,6 +41,12 @@ public class AwScrollOffsetManager {
     // Size of the container view.
     private int mContainerViewWidth;
     private int mContainerViewHeight;
+
+    private boolean mProcessingTouchEvent;
+
+    private boolean mApplyDeferredNativeScroll;
+    private int mDeferredNativeScrollX;
+    private int mDeferredNativeScrollY;
 
     public AwScrollOffsetManager(Delegate delegate) {
         mDelegate = delegate;
@@ -98,6 +104,16 @@ public class AwScrollOffsetManager {
                 mDelegate.getContainerViewScrollY());
     }
 
+    public void setProcessingTouchEvent(boolean processingTouchEvent) {
+        assert mProcessingTouchEvent != processingTouchEvent;
+        mProcessingTouchEvent = processingTouchEvent;
+
+        if (!mProcessingTouchEvent && mApplyDeferredNativeScroll) {
+            mApplyDeferredNativeScroll = false;
+            scrollNativeTo(mDeferredNativeScrollX, mDeferredNativeScrollY);
+        }
+    }
+
     // Called by the native side to attempt to scroll the container view.
     public void scrollContainerViewTo(int x, int y) {
         mNativeScrollX = x;
@@ -113,7 +129,7 @@ public class AwScrollOffsetManager {
         // We use overScrollContainerViewBy to be compatible with WebViewClassic which used this
         // method for handling both over-scroll as well as in-bounds scroll.
         mDelegate.overScrollContainerViewBy(deltaX, deltaY, scrollX, scrollY,
-                scrollRangeX, scrollRangeY);
+                scrollRangeX, scrollRangeY, mProcessingTouchEvent);
     }
 
     // Called by the native side to over-scroll the container view.
@@ -124,7 +140,7 @@ public class AwScrollOffsetManager {
         final int scrollRangeY = computeMaximumVerticalScrollOffset();
 
         mDelegate.overScrollContainerViewBy(deltaX, deltaY, scrollX, scrollY,
-                scrollRangeX, scrollRangeY);
+                scrollRangeX, scrollRangeY, mProcessingTouchEvent);
     }
 
     private int clampHorizontalScroll(int scrollX) {
@@ -147,7 +163,8 @@ public class AwScrollOffsetManager {
         scrollY = clampVerticalScroll(scrollY);
 
         mDelegate.scrollContainerViewTo(scrollX, scrollY);
-        // This will only do anything if the containerView scroll offset ends up being different
+
+        // This is only necessary if the containerView scroll offset ends up being different
         // than the one set from native in which case we want the value stored on the native side
         // to reflect the value stored in the containerView (and not the other way around).
         scrollNativeTo(mDelegate.getContainerViewScrollX(), mDelegate.getContainerViewScrollY());
@@ -164,6 +181,15 @@ public class AwScrollOffsetManager {
     private void scrollNativeTo(int x, int y) {
         x = clampHorizontalScroll(x);
         y = clampVerticalScroll(y);
+
+        // We shouldn't do the store to native while processing a touch event since that confuses
+        // the gesture processing logic.
+        if (mProcessingTouchEvent) {
+            mDeferredNativeScrollX = x;
+            mDeferredNativeScrollY = y;
+            mApplyDeferredNativeScroll = true;
+            return;
+        }
 
         if (x == mNativeScrollX && y == mNativeScrollY)
             return;
