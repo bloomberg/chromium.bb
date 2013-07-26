@@ -52,7 +52,7 @@ class ChromotingJniInstance
   // Provides the user's PIN and resumes the host authentication attempt. Call
   // on the UI thread once the user has finished entering this PIN into the UI,
   // but only after the UI has been asked to provide a PIN (via FetchSecret()).
-  void ProvideSecret(const char* pin);
+  void ProvideSecret(const std::string& pin);
 
   // Schedules a redraw on the display thread. May be called from any thread.
   void RedrawDesktop();
