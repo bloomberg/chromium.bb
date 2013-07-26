@@ -248,6 +248,9 @@
               ],
             }],
             ['OS=="android"', {
+              'dependencies!': [
+                '../third_party/libusb/libusb.gyp:libusb',
+              ],
               'sources!': [
                 'browser/devtools/browser_list_tabcontents_provider.cc',
                 'browser/devtools/devtools_window.cc',
