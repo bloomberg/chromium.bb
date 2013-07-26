@@ -3742,6 +3742,7 @@
             'animation/PlayerTest.cpp',
             'animation/TimedItemCalculationsTest.cpp',
             'animation/TimedItemTest.cpp',
+            'css/CSSParserValuesTest.cpp',
             'html/TimeRangesTest.cpp',
             'loader/cache/CachedImageTest.cpp',
             'loader/cache/MemoryCacheTest.cpp',

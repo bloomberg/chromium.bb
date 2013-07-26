@@ -56,7 +56,12 @@ struct CSSParserString {
     void init(const String& string, unsigned startOffset, unsigned length)
     {
         m_length = length;
-        if (!m_length || string.is8Bit()) {
+        if (!m_length) {
+            m_data.characters8 = 0;
+            m_is8Bit = true;
+            return;
+        }
+        if (string.is8Bit()) {
             m_data.characters8 = const_cast<LChar*>(string.characters8()) + startOffset;
             m_is8Bit = true;
         } else {
