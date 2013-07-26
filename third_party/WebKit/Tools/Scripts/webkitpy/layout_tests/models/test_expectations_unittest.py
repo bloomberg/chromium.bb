@@ -390,25 +390,15 @@ class ExpectationSyntaxTests(Base):
             self.assertEqual(expectation_line.modifiers, modifiers)
             self.assertEqual(expectation_line.expectations, expectations)
 
-    def test_bare_name(self):
-        self.assert_tokenize_exp('foo.html', modifiers=['SKIP'], expectations=['PASS'])
-
-    def test_bare_name_and_bugs(self):
-        self.assert_tokenize_exp('webkit.org/b/12345 foo.html', modifiers=['webkit.org/b/12345', 'SKIP'], expectations=['PASS'])
-        self.assert_tokenize_exp('crbug.com/12345 foo.html', modifiers=['crbug.com/12345', 'SKIP'], expectations=['PASS'])
-        self.assert_tokenize_exp('Bug(dpranke) foo.html', modifiers=['Bug(dpranke)', 'SKIP'], expectations=['PASS'])
-        self.assert_tokenize_exp('crbug.com/12345 crbug.com/34567 foo.html', modifiers=['crbug.com/12345', 'crbug.com/34567', 'SKIP'], expectations=['PASS'])
-
     def test_comments(self):
         self.assert_tokenize_exp("# comment", name=None, comment="# comment")
-        self.assert_tokenize_exp("foo.html # comment", comment="# comment", expectations=['PASS'], modifiers=['SKIP'])
+        self.assert_tokenize_exp("foo.html [ Pass ] # comment", comment="# comment", expectations=['PASS'], modifiers=[])
 
     def test_config_modifiers(self):
-        self.assert_tokenize_exp('[ Mac ] foo.html', modifiers=['MAC', 'SKIP'], expectations=['PASS'])
         self.assert_tokenize_exp('[ Mac ] foo.html [ Failure ] ', modifiers=['MAC'], expectations=['FAIL'])
 
     def test_unknown_config(self):
-        self.assert_tokenize_exp('[ Foo ] foo.html ', modifiers=['Foo', 'SKIP'], expectations=['PASS'])
+        self.assert_tokenize_exp('[ Foo ] foo.html [ Pass ]', modifiers=['Foo'], expectations=['PASS'])
 
     def test_unknown_expectation(self):
         self.assert_tokenize_exp('foo.html [ Audio ]', warnings=['Unrecognized expectation "Audio"'])
@@ -428,11 +418,12 @@ class ExpectationSyntaxTests(Base):
         self.assert_tokenize_exp('', name=None)
 
     def test_warnings(self):
-        self.assert_tokenize_exp('[ Mac ]', warnings=['Did not find a test name.'], name=None)
-        self.assert_tokenize_exp('[ [', warnings=['unexpected "["'], name=None)
-        self.assert_tokenize_exp('crbug.com/12345 ]', warnings=['unexpected "]"'], name=None)
+        self.assert_tokenize_exp('[ Mac ]', warnings=['Did not find a test name.', 'Missing expectations.'], name=None)
+        self.assert_tokenize_exp('[ [', warnings=['unexpected "["', 'Missing expectations.'], name=None)
+        self.assert_tokenize_exp('crbug.com/12345 ]', warnings=['unexpected "]"', 'Missing expectations.'], name=None)
 
-        self.assert_tokenize_exp('foo.html crbug.com/12345 ]', warnings=['"crbug.com/12345" is not at the start of the line.'])
+        self.assert_tokenize_exp('foo.html crbug.com/12345 ]', warnings=['"crbug.com/12345" is not at the start of the line.', 'Missing expectations.'])
+        self.assert_tokenize_exp('foo.html', warnings=['Missing expectations.'])
 
 
 class SemanticTests(Base):
@@ -444,7 +435,7 @@ class SemanticTests(Base):
             self.parse_exp('crbug/1234 failures/expected/text.html [ Failure ]', is_lint_mode=True)
             self.fail('should have raised an error about a bad bug identifier')
         except ParseError, exp:
-            self.assertEqual(len(exp.warnings), 2)
+            self.assertEqual(len(exp.warnings), 3)
 
     def test_missing_bugid(self):
         self.parse_exp('failures/expected/text.html [ Failure ]')
