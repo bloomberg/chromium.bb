@@ -121,6 +121,28 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
     EXPECT_FALSE([[item_array objectAtIndex:i] isHidden]);
 }
 
+IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
+                       ActivationFocusesBrowserWindow) {
+  base::scoped_nsobject<AppController> app_controller(
+      [[AppController alloc] init]);
+
+  ExtensionTestMessageListener listener("Launched", false);
+  const extensions::Extension* app =
+      InstallAndLaunchPlatformApp("minimal");
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  NSWindow* app_window = extensions::ShellWindowRegistry::Get(profile())->
+      GetShellWindowsForApp(app->id()).front()->GetNativeWindow();
+  NSWindow* browser_window = browser()->window()->GetNativeWindow();
+
+  EXPECT_LE([[NSApp orderedWindows] indexOfObject:app_window],
+            [[NSApp orderedWindows] indexOfObject:browser_window]);
+  [app_controller applicationShouldHandleReopen:NSApp
+                              hasVisibleWindows:YES];
+  EXPECT_LE([[NSApp orderedWindows] indexOfObject:browser_window],
+            [[NSApp orderedWindows] indexOfObject:app_window]);
+}
+
 class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerWebAppBrowserTest()

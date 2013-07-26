@@ -86,6 +86,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/cocoa/focus_window_set.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -1041,9 +1042,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   }
 }
 
-// NSApplication delegate method called when someone clicks on the
-// dock icon and there are no open windows.  To match standard mac
-// behavior, we should open a new window.
+// NSApplication delegate method called when someone clicks on the dock icon.
+// To match standard mac behavior, we should open a new window if there are no
+// browser windows.
 - (BOOL)applicationShouldHandleReopen:(NSApplication*)theApplication
                     hasVisibleWindows:(BOOL)hasVisibleWindows {
   // If the browser is currently trying to quit, don't do anything and return NO
@@ -1052,16 +1053,23 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   if (browser_shutdown::IsTryingToQuit())
     return NO;
 
-  // Don't do anything if there are visible tabbed or popup windows.  This will
-  // cause AppKit to unminimize the most recently minimized window. If the
-  // visible windows are panels or notifications, we still need to open a new
-  // window.
+  // Bring all browser windows to the front. Specifically, this brings them in
+  // front of any app windows. FocusWindowSet will also unminimize the most
+  // recently minimized window if no windows in the set are visible.
+  // If there are tabbed or popup windows, return here. Otherwise, the windows
+  // are panels or notifications so we still need to open a new window.
   if (hasVisibleWindows) {
+    BOOL foundBrowser = NO;
+    std::set<NSWindow*> browserWindows;
     for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
       Browser* browser = *iter;
+      browserWindows.insert(browser->window()->GetNativeWindow());
       if (browser->is_type_tabbed() || browser->is_type_popup())
-        return YES;
+        foundBrowser = YES;
     }
+    ui::FocusWindowSet(browserWindows);
+    if (foundBrowser)
+      return YES;
   }
 
   // If launched as a hidden login item (due to installation of a persistent app
