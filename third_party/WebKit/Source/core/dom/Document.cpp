@@ -2314,7 +2314,7 @@ bool Document::shouldScheduleLayout()
         || (documentElement() && !isHTMLHtmlElement(documentElement()));
 }
 
-bool Document::isLayoutTimerActive()
+bool Document::shouldParserYieldAgressivelyBeforeScriptExecution()
 {
     return view() && view()->layoutPending() && !minimumLayoutDelay();
 }

@@ -300,7 +300,7 @@ public:
     DocumentType* doctype() const { return m_docType.get(); }
 
     DOMImplementation* implementation();
-    
+
     Element* documentElement() const
     {
         return m_documentElement.get();
@@ -424,7 +424,7 @@ public:
     bool sawElementsInKnownNamespaces() const { return m_sawElementsInKnownNamespaces; }
 
     StyleResolver* styleResolver()
-    { 
+    {
         if (!m_styleResolver)
             createStyleResolver();
         return m_styleResolver.get();
@@ -530,7 +530,7 @@ public:
     // to get visually ordered hebrew and arabic pages right
     void setVisuallyOrdered();
     bool visuallyOrdered() const { return m_visuallyOrdered; }
-    
+
     DocumentLoader* loader() const;
 
     void open(Document* ownerDocument = 0);
@@ -576,17 +576,17 @@ public:
     Frame* findUnsafeParentScrollPropagationBoundary();
 
     CSSStyleSheet* elementSheet();
-    
+
     virtual PassRefPtr<DocumentParser> createParser();
     DocumentParser* parser() const { return m_parser.get(); }
     ScriptableDocumentParser* scriptableDocumentParser() const;
-    
+
     bool printing() const { return m_printing; }
     void setPrinting(bool p) { m_printing = p; }
 
     bool paginatedForScreen() const { return m_paginatedForScreen; }
     void setPaginatedForScreen(bool p) { m_paginatedForScreen = p; }
-    
+
     bool paginated() const { return printing() || paginatedForScreen(); }
 
     enum CompatibilityMode { QuirksMode, LimitedQuirksMode, NoQuirksMode };
@@ -612,7 +612,7 @@ public:
     int minimumLayoutDelay();
 
     bool shouldScheduleLayout();
-    bool isLayoutTimerActive();
+    bool shouldParserYieldAgressivelyBeforeScriptExecution();
     int elapsedTime() const;
 
     TextLinkColors& textLinkColors() { return m_textLinkColors; }
@@ -634,7 +634,7 @@ public:
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
     void didRunCheckFocusedElementTask() { m_didPostCheckFocusedElementTask = false; }
 
-    // The m_ignoreAutofocus flag specifies whether or not the document has been changed by the user enough 
+    // The m_ignoreAutofocus flag specifies whether or not the document has been changed by the user enough
     // for WebCore to ignore the autofocus attribute on any form controls
     bool ignoreAutofocus() const { return m_ignoreAutofocus; };
     void setIgnoreAutofocus(bool shouldIgnore = true) { m_ignoreAutofocus = shouldIgnore; };
@@ -688,7 +688,7 @@ public:
     void setDOMWindow(DOMWindow* domWindow) { m_domWindow = domWindow; }
     DOMWindow* domWindow() const { return m_domWindow; }
     // In DOM Level 2, the Document's DOMWindow is called the defaultView.
-    DOMWindow* defaultView() const { return domWindow(); } 
+    DOMWindow* defaultView() const { return domWindow(); }
 
     // Helper functions for forwarding DOMWindow event related tasks to the DOMWindow if it exists.
     void setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, DOMWrapperWorld* isolatedWorld = 0);
@@ -781,7 +781,7 @@ public:
     void setCookieURL(const KURL& url) { m_cookieURL = url; }
 
     const KURL& firstPartyForCookies() const;
-    
+
     // The following implements the rule from HTML 4 for what valid names are.
     // To get this right for all the XML cases, we probably have to improve this or move it
     // and make it sensitive to the type of document.
@@ -818,7 +818,7 @@ public:
     KURL openSearchDescriptionURL();
 
     // designMode support
-    enum InheritedBool { off = false, on = true, inherit };    
+    enum InheritedBool { off = false, on = true, inherit };
     void setDesignMode(InheritedBool value);
     InheritedBool getDesignMode() const;
     bool inDesignMode() const;
@@ -859,7 +859,7 @@ public:
 
     void updateFocusAppearanceSoon(bool restorePreviousSelection);
     void cancelFocusAppearanceUpdate();
-        
+
     // Extension for manipulating canvas drawing contexts for use in CSS
     CanvasRenderingContext* getCSSCanvasContext(const String& type, const String& name, int width, int height);
     HTMLCanvasElement* getCSSCanvasElement(const String& name);
@@ -1177,7 +1177,7 @@ private:
 
     uint64_t m_domTreeVersion;
     static uint64_t s_globalTreeVersion;
-    
+
     HashSet<NodeIterator*> m_nodeIterators;
     HashSet<Range*> m_ranges;
 
@@ -1220,7 +1220,7 @@ private:
 
     OwnPtr<AXObjectCache> m_axObjectCache;
     OwnPtr<DocumentMarkerController> m_markers;
-    
+
     Timer<Document> m_updateFocusAppearanceTimer;
 
     Element* m_cssTarget;
@@ -1235,7 +1235,7 @@ private:
     RefPtr<SerializedScriptValue> m_pendingStateObject;
     double m_startTime;
     bool m_overMinimumLayoutThreshold;
-    
+
     OwnPtr<ScriptRunner> m_scriptRunner;
 
     Vector<RefPtr<HTMLScriptElement> > m_currentScriptStack;
@@ -1302,7 +1302,7 @@ private:
     RefPtr<MediaQueryMatcher> m_mediaQueryMatcher;
     bool m_writeRecursionIsTooDeep;
     unsigned m_writeRecursionDepth;
-    
+
     unsigned m_wheelEventHandlerCount;
     OwnPtr<TouchEventTargetSet> m_touchEventTargets;
 
@@ -1320,7 +1320,7 @@ private:
     RefPtr<CustomElementRegistrationContext> m_registrationContext;
 
     bool m_scheduledTasksAreSuspended;
-    
+
     RefPtr<NamedFlowCollection> m_namedFlows;
 
     RefPtr<DOMSecurityPolicy> m_domSecurityPolicy;

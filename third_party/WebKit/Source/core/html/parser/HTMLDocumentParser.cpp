@@ -227,6 +227,7 @@ bool HTMLDocumentParser::isScheduledForResume() const
 // Used by HTMLParserScheduler
 void HTMLDocumentParser::resumeParsingAfterYield()
 {
+    ASSERT(!m_isPinnedToMainThread);
     // pumpTokenizer can cause this parser to be detached from the Document,
     // but we need to ensure it isn't deleted yet.
     RefPtr<HTMLDocumentParser> protect(this);
@@ -391,7 +392,7 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
 
     for (XSSInfoStream::const_iterator it = chunk->xssInfos.begin(); it != chunk->xssInfos.end(); ++it) {
         m_textPosition = (*it)->m_textPosition;
-        m_xssAuditorDelegate.didBlockScript(**it); 
+        m_xssAuditorDelegate.didBlockScript(**it);
         if (isStopped())
             break;
     }
@@ -708,7 +709,15 @@ void HTMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
         return;
     }
 
-    pumpTokenizerIfPossible(AllowYield);
+    // A couple pinToMainThread() callers require synchronous parsing, but can't
+    // easily use the insert() method, so we hack append() for them to be synchronous.
+    // javascript: url handling is one such caller.
+    // FIXME: This is gross, and we should separate the concept of synchronous parsing
+    // from insert() so that only document.write() uses insert.
+    if (m_isPinnedToMainThread)
+        pumpTokenizerIfPossible(ForceSynchronous);
+    else
+        pumpTokenizerIfPossible(AllowYield);
 
     endIfDelayed();
 }
@@ -871,7 +880,7 @@ void HTMLDocumentParser::stopWatchingForLoad(CachedResource* cachedScript)
 {
     cachedScript->removeClient(this);
 }
-    
+
 void HTMLDocumentParser::appendCurrentInputStreamToPreloadScannerAndScan()
 {
     ASSERT(m_preloadScanner);
@@ -924,7 +933,7 @@ void HTMLDocumentParser::parseDocumentFragment(const String& source, DocumentFra
     ASSERT(!parser->processingData()); // Make sure we're done. <rdar://problem/3963151>
     parser->detach(); // Allows ~DocumentParser to assert it was detached before destruction.
 }
-    
+
 void HTMLDocumentParser::suspendScheduledTasks()
 {
     if (m_parserScheduler)

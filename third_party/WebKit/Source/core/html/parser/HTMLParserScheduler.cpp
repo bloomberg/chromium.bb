@@ -90,7 +90,9 @@ void HTMLParserScheduler::continueNextChunkTimerFired(Timer<HTMLParserScheduler>
     ASSERT_UNUSED(timer, timer == &m_continueNextChunkTimer);
     // FIXME: The timer class should handle timer priorities instead of this code.
     // If a layout is scheduled, wait again to let the layout timer run first.
-    if (m_parser->document()->isLayoutTimerActive()) {
+    // FIXME: We should fix this by reducing the max-parse-time instead of
+    // artificially forcing the parser to yield agressively before first layout.
+    if (m_parser->document()->shouldParserYieldAgressivelyBeforeScriptExecution()) {
         m_continueNextChunkTimer.startOneShot(0);
         return;
     }
@@ -103,7 +105,7 @@ void HTMLParserScheduler::checkForYieldBeforeScript(PumpSession& session)
     // scripts to give the page a chance to paint earlier.
     Document* document = m_parser->document();
     bool needsFirstPaint = document->view() && !document->view()->hasEverPainted();
-    if (needsFirstPaint && document->isLayoutTimerActive())
+    if (needsFirstPaint && document->shouldParserYieldAgressivelyBeforeScriptExecution())
         session.needsYield = true;
     session.didSeeScript = true;
 }

@@ -7,13 +7,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -193,7 +193,7 @@ void DocumentLoader::setRequest(const ResourceRequest& req)
         m_committed = false;
 
     // We should never be getting a redirect callback after the data
-    // source is committed, except in the unreachable URL case. It 
+    // source is committed, except in the unreachable URL case. It
     // would be a WebFoundation bug if it sent a redirect callback after commit.
     ASSERT(!m_committed);
 
@@ -221,8 +221,8 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
 }
 
 // Cancels the data source's pending loads.  Conceptually, a data source only loads
-// one document at a time, but one document may have many related resources. 
-// stopLoading will stop all loads initiated by the data source, 
+// one document at a time, but one document may have many related resources.
+// stopLoading will stop all loads initiated by the data source,
 // but not loads initiated by child frames' data sources -- that's the WebFrame's job.
 void DocumentLoader::stopLoading()
 {
@@ -233,41 +233,41 @@ void DocumentLoader::stopLoading()
     // (This can happen when there's a single XMLHttpRequest currently loading and stopLoading causes it
     // to stop loading. Because of this, we need to save it so we don't return early.
     bool loading = isLoading();
-    
+
     if (m_committed) {
         // Attempt to stop the frame if the document loader is loading, or if it is done loading but
         // still  parsing. Failure to do so can cause a world leak.
         Document* doc = m_frame->document();
-        
+
         if (loading || doc->parsing())
             m_frame->loader()->stopLoading(UnloadEventPolicyNone);
     }
 
     // Always cancel multipart loaders
     cancelAll(m_multipartResourceLoaders);
-    
+
     clearArchiveResources();
 
     if (!loading) {
-        // If something above restarted loading we might run into mysterious crashes like 
+        // If something above restarted loading we might run into mysterious crashes like
         // https://bugs.webkit.org/show_bug.cgi?id=62764 and <rdar://problem/9328684>
         ASSERT(!isLoading());
         return;
     }
 
-    // We might run in to infinite recursion if we're stopping loading as the result of 
+    // We might run in to infinite recursion if we're stopping loading as the result of
     // detaching from the frame, so break out of that recursion here.
     // See <rdar://problem/9673866> for more details.
     if (m_isStopping)
         return;
 
     m_isStopping = true;
-    
+
     if (isLoadingMainResource()) {
         // Stop the main resource loader and let it send the cancelled message.
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
     } else if (!m_resourceLoaders.isEmpty()) {
-        // The main resource loader already finished loading. Set the cancelled error on the 
+        // The main resource loader already finished loading. Set the cancelled error on the
         // document and let the resourceLoaders send individual cancelled messages below.
         setMainDocumentError(ResourceError::cancelledError(m_request.url()));
     } else {
@@ -275,9 +275,9 @@ void DocumentLoader::stopLoading()
         // (A back/forward navigation has no resource loaders because its resources are cached.)
         mainReceivedError(ResourceError::cancelledError(m_request.url()));
     }
-    
+
     stopLoadingSubresources();
-    
+
     m_isStopping = false;
 }
 
@@ -445,7 +445,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 {
     // Note that there are no asserts here as there are for the other callbacks. This is due to the
     // fact that this "callback" is sent when starting every load, and the state of callback
-    // deferrals plays less of a part in this function in preventing the bad behavior deferring 
+    // deferrals plays less of a part in this function in preventing the bad behavior deferring
     // callbacks is meant to prevent.
     ASSERT(!newRequest.isNull());
 
@@ -756,7 +756,7 @@ void DocumentLoader::createArchive()
 {
     m_archive = MHTMLArchive::create(m_response.url(), mainResourceData().get());
     ASSERT(m_archive);
-    
+
     addAllArchiveResources(m_archive.get());
     ArchiveResource* mainResource = m_archive->mainResource();
 
@@ -832,7 +832,7 @@ void DocumentLoader::setTitle(const StringWithDirection& title)
 KURL DocumentLoader::urlForHistory() const
 {
     // Return the URL to be used for history and B/F list.
-    // Returns nil for WebDataProtocol URLs that aren't alternates 
+    // Returns nil for WebDataProtocol URLs that aren't alternates
     // for unreachable URLs, because these can't be stored in history.
     if (m_substituteData.isValid())
         return unreachableURL();
@@ -997,7 +997,7 @@ void DocumentLoader::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loa
     m_resourceLoaders.remove(loader);
     checkLoadComplete();
     if (Frame* frame = m_frame)
-        frame->loader()->checkLoadComplete();    
+        frame->loader()->checkLoadComplete();
 }
 
 void DocumentLoader::handledOnloadEvents()

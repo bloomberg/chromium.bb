@@ -3385,6 +3385,9 @@ WebDragOperation WebViewImpl::dragTargetDragEnterOrOver(const WebPoint& clientPo
 
 void WebViewImpl::sendResizeEventAndRepaint()
 {
+    // FIXME: This is wrong. The FrameView is responsible sending a resizeEvent
+    // as part of layout. Layout is also responsible for sending invalidations
+    // to the embedder. This method and all callers may be wrong. -- eseidel.
     if (mainFrameImpl()->frameView()) {
         // Enqueues the resize event.
         mainFrameImpl()->frame()->eventHandler()->sendResizeEvent();
