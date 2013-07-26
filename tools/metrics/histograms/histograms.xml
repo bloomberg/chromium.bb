@@ -16946,7 +16946,7 @@ other types of suffix sets.
   <int value="51" label="StepAttribute"/>
   <int value="52" label="PageVisits"/>
   <int value="53" label="HTMLMarqueeElement"/>
-  <int value="54" label="CSSOverflowMarquee"/>
+  <int value="54" label="Unused: CSSOverflowMarquee"/>
   <int value="55" label="Reflection"/>
   <int value="56" label="CursorVisibility"/>
   <int value="57" label="StorageInfo"/>
@@ -16972,6 +16972,17 @@ other types of suffix sets.
   <int value="77" label="XMLDocument"/>
   <int value="78" label="XSLProcessingInstruction"/>
   <int value="79" label="XSLTProcessor"/>
+  <int value="80" label="SVGSwitchElement"/>
+  <int value="81" label="PrefixedDocumentRegister"/>
+  <int value="82" label="HTMLShadowElementOlderShadowRoot"/>
+  <int value="83" label="Document.all()"/>
+  <int value="84" label="FormElement"/>
+  <int value="85" label="DemotedFormElement"/>
+  <int value="86" label="CaptureAttributeAsEnum"/>
+  <int value="87" label="ShadowDOMPrefixedPseudo"/>
+  <int value="88" label="ShadowDOMPrefixedCreateShadowRoot"/>
+  <int value="89" label="ShadowDOMPrefixedShadowRoot"/>
+  <int value="90" label="SVGAnimationElement"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
