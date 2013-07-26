@@ -81,7 +81,7 @@ public:
         UnprefixedTransitionEndEvent,
         PrefixedAndUnprefixedTransitionEndEvent,
         AutoFocusAttribute,
-        SVGAnimationElement, // Prior to 4/2013, we used this slot for AutoSaveAttribute.
+        UnusedSlot01, // Prior to 4/2013, we used this slot for AutoSaveAttribute.
         DataListElement,
         FormAttribute,
         IncrementalAttribute,
@@ -149,7 +149,9 @@ public:
         ShadowDOMPrefixedPseudo,
         ShadowDOMPrefixedCreateShadowRoot,
         ShadowDOMPrefixedShadowRoot,
-        // Add new features immediately above this line. Don't change assigned numbers of each items.
+        SVGAnimationElement,
+        // Add new features immediately above this line. Don't change assigned
+        // numbers of each items, and don't reuse unused slots.
         NumberOfFeatures, // This enum value must be last.
     };
 
