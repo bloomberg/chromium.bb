@@ -12,12 +12,12 @@
 #include "secerr.h"
 #include "secport.h"
 
-typedef struct SECItemArrayStr SECItemArray;
-
 #define NSSUTIL_VERSION_NUM \
     (NSSUTIL_VMAJOR * 10000 + NSSUTIL_VMINOR * 100 + NSSUTIL_VPATCH)
 #if NSSUTIL_VERSION_NUM < 31500
 // Added in NSS 3.15.
+typedef struct SECItemArrayStr SECItemArray;
+
 struct SECItemArrayStr {
     SECItem *items;
     unsigned int len;
