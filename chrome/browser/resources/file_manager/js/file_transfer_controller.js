@@ -76,13 +76,14 @@ FileTransferController.prototype = {
    *     items could be drop targets. Otherwise any other place of the list
    *     accetps files (putting it into the current directory).
    */
-  attachDropTarget: function(list, opt_onlyIntoDirectories) {
+  attachFileListDropTarget: function(list, opt_onlyIntoDirectories) {
     list.addEventListener('dragover', this.onDragOver_.bind(this,
-                          !!opt_onlyIntoDirectories, list));
-    list.addEventListener('dragenter', this.onDragEnterList_.bind(this, list));
+        !!opt_onlyIntoDirectories, list));
+    list.addEventListener('dragenter',
+        this.onDragEnterFileList_.bind(this, list));
     list.addEventListener('dragleave', this.onDragLeave_.bind(this, list));
-    list.addEventListener('drop', this.onDrop_.bind(this,
-                          !!opt_onlyIntoDirectories));
+    list.addEventListener('drop',
+        this.onDrop_.bind(this, !!opt_onlyIntoDirectories));
   },
 
   /**
@@ -94,6 +95,20 @@ FileTransferController.prototype = {
     tree.addEventListener('dragenter', this.onDragEnterTree_.bind(this, tree));
     tree.addEventListener('dragleave', this.onDragLeave_.bind(this, tree));
     tree.addEventListener('drop', this.onDrop_.bind(this, true));
+  },
+
+  /**
+   * @this {FileTransferController}
+   * @param {VolumeList} tree Its sub items will could be drop target.
+   */
+  attachVolumesDropTarget: function(list) {
+    list.addEventListener('dragover',
+        this.onDragOver_.bind(this, true /* onlyIntoDirectories */, list));
+    list.addEventListener('dragenter',
+        this.onDragEnterVolumesList_.bind(this, list));
+    list.addEventListener('dragleave', this.onDragLeave_.bind(this, list));
+    list.addEventListener('drop',
+        this.onDrop_.bind(this, true /* onlyIntoDirectories */));
   },
 
   /**
@@ -355,7 +370,7 @@ FileTransferController.prototype = {
    * @param {cr.ui.List} list Drop target list.
    * @param {Event} event A dragenter event of DOM.
    */
-  onDragEnterList_: function(list, event) {
+  onDragEnterFileList_: function(list, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
     this.lastEnteredTarget_ = event.target;
     var item = list.getListItemAncestor(event.target);
@@ -395,6 +410,26 @@ FileTransferController.prototype = {
     } else {
       this.clearDropTarget_();
     }
+  },
+
+  /**
+   * @this {FileTransferController}
+   * @param {VolumeList} list Drop target list.
+   * @param {Event} event A dragenter event of DOM.
+   */
+  onDragEnterVolumesList_: function(list, event) {
+    event.preventDefault();  // Required to prevent the cursor flicker.
+    this.lastEnteredTarget_ = event.target;
+    var item = list.getListItemAncestor(event.target);
+    item = item && list.isItem(item) ? item : null;
+    if (item == this.dropTarget_)
+      return;
+
+    var path = item && list.dataModel.item(item.listIndex);
+    if (path)
+      this.setDropTarget_(item, true /* directory */, event.dataTransfer, path);
+    else
+      this.clearDropTarget_();
   },
 
   /**

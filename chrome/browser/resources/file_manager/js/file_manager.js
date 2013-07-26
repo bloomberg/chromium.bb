@@ -529,11 +529,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                                    this.metadataCache_,
                                    this.directoryModel_);
     controller.attachDragSource(this.table_.list);
-    controller.attachDropTarget(this.table_.list);
+    controller.attachFileListDropTarget(this.table_.list);
     controller.attachDragSource(this.grid_);
-    controller.attachDropTarget(this.grid_);
+    controller.attachFileListDropTarget(this.grid_);
     controller.attachTreeDropTarget(this.directoryTree_);
-    controller.attachDropTarget(this.volumeList_, true);
+    controller.attachVolumesDropTarget(this.volumeList_, true);
     controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
         this.blinkSelection.bind(this));
