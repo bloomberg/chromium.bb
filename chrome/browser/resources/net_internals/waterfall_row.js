@@ -41,15 +41,23 @@ var WaterfallRow = (function() {
         addTextNode(this.urlCell_, this.description_);
       }
 
-      this.barCell_.innerHTML = '';
+      this.rowCell_.innerHTML = '';
+
       var matchingEventPairs = this.findLogEntryPairs_(this.eventTypes_);
 
       // Creates the spacing in the beginning to show start time.
       var startTime = this.parentView_.getStartTime();
       var sourceEntryStartTime = this.sourceEntry_.getStartTime();
       var delay = sourceEntryStartTime - startTime;
-      var scaledMinTime = delay * scale;
-      this.createNode_(this.barCell_, scaledMinTime, 'padding');
+      var frontNode = addNode(this.rowCell_, 'div');
+      setNodeWidth(frontNode, delay * scale);
+
+      var barCell = addNode(this.rowCell_, 'div');
+      barCell.classList.add('waterfall-view-bar');
+
+      if (this.sourceEntry_.isError()) {
+        barCell.classList.add('error');
+      }
 
       var currentEnd = sourceEntryStartTime;
       for (var i = 0; i < matchingEventPairs.length; ++i) {
@@ -64,20 +72,22 @@ var WaterfallRow = (function() {
         // Handles the spaces between events.
         if (currentEnd < event.startTime) {
           var eventDuration = event.startTime - currentEnd;
-          var eventWidth = eventDuration * scale;
-          this.createNode_(this.barCell_, eventWidth, this.type_);
+          var padNode = this.createNode_(
+              barCell, eventDuration, this.type_, 'source');
         }
 
         // Creates event bars.
         var eventType = eventTypeToCssClass_(EventTypeNames[event.eventType]);
-        var eventWidth = event.eventDuration * scale;
-        this.createNode_(this.barCell_, eventWidth, eventType);
+        var eventNode = this.createNode_(
+            barCell, event.eventDuration, eventType, event);
         currentEnd = event.startTime + event.eventDuration;
       }
+
       // Creates a bar for the part after the last event.
       if (this.getEndTime() > currentEnd) {
-        var endWidth = (this.getEndTime() - currentEnd) * scale;
-        this.createNode_(this.barCell_, endWidth, this.type_);
+        var endDuration = (this.getEndTime() - currentEnd);
+        var endNode = this.createNode_(
+            barCell, endDuration, this.type_, 'source');
       }
     },
 
@@ -89,11 +99,84 @@ var WaterfallRow = (function() {
       return this.sourceEntry_.getEndTime();
     },
 
+    clearPopup_: function(parentNode) {
+      parentNode.innerHTML = '';
+    },
+
+    // TODO(viona): Create popup at mouse location.
+    createPopup_: function(parentNode, event, eventType, duration, mouse) {
+      var tableStart = this.parentView_.getStartTime();
+
+      var newPopup = addNode(parentNode, 'div');
+      newPopup.classList.add('waterfall-view-popup');
+
+      var popupList = addNode(newPopup, 'ul');
+      popupList.classList.add('waterfall-view-popup-list');
+
+      this.createPopupItem_(
+          popupList, 'Event Type', eventType);
+      this.createPopupItem_(
+          popupList, 'Event Duration', duration.toFixed(0) + 'ms');
+
+      if (event != 'source') {
+        this.createPopupItem_(
+            popupList, 'Event Start Time', event.startTime - tableStart + 'ms');
+        this.createPopupItem_(
+            popupList, 'Event End Time', event.endTime - tableStart + 'ms');
+      }
+
+      this.createPopupItem_(
+          popupList, 'Source Start Time',
+          this.getStartTime() - tableStart + 'ms');
+      this.createPopupItem_(
+          popupList, 'Source End Time', this.getEndTime() - tableStart + 'ms');
+      this.createPopupItem_(
+          popupList, 'Source ID', this.sourceEntry_.getSourceId());
+      var urlListItem = this.createPopupItem_(
+          popupList, 'Source Description: ', this.description_);
+
+      var viewWidth = $(WaterfallView.MAIN_BOX_ID).offsetWidth;
+      // Controls the overflow of extremely long URLs by cropping to window.
+      if (urlListItem.offsetWidth > viewWidth) {
+        urlListItem.style.width = viewWidth + 'px';
+      }
+      urlListItem.classList.add('waterfall-view-popup-list-url-item');
+
+      this.createPopupItem_(
+          popupList, 'Has Error', this.sourceEntry_.isError());
+
+      // Fixes cases where the popup appears 'off-screen'.
+      var popupLeft = mouse.pageX + $(WaterfallView.MAIN_BOX_ID).scrollLeft;
+      var popupRight = popupLeft + newPopup.offsetWidth;
+      var viewRight = viewWidth + $(WaterfallView.MAIN_BOX_ID).scrollLeft;
+
+      if (viewRight - popupRight < 0) {
+        popupLeft = viewRight - newPopup.offsetWidth;
+      }
+      newPopup.style.left = popupLeft + 'px';
+
+      var popupTop = mouse.pageY + $(WaterfallView.MAIN_BOX_ID).scrollTop;
+      var popupBottom = popupTop + newPopup.offsetHeight;
+      var viewBottom = $(WaterfallView.MAIN_BOX_ID).offsetHeight +
+          $(WaterfallView.MAIN_BOX_ID).scrollTop;
+
+      if (viewBottom - popupBottom < 0) {
+        popupTop = viewBottom - newPopup.offsetHeight;
+      }
+      newPopup.style.top = popupTop + 'px';
+    },
+
+    createPopupItem_: function(parentPopup, key, popupInformation) {
+      var popupItem = addNode(parentPopup, 'li');
+      addTextNode(popupItem, key + ': ' + popupInformation);
+      return popupItem;
+    },
+
     createRow_: function() {
       // Create a row.
       var tr = addNode($(WaterfallView.TBODY_ID), 'tr');
       tr._id = this.sourceEntry_.getSourceId();
-      this.row_ = tr;
+      this.tableRow = tr;
 
       var idCell = addNode(tr, 'td');
       addTextNode(idCell, this.sourceEntry_.getSourceId());
@@ -103,22 +186,30 @@ var WaterfallRow = (function() {
       addTextNode(urlCell, this.description_);
       this.urlCell_ = urlCell;
 
-      // Creates the offset for where the color bar appears.
-      var barCell = addNode(tr, 'td');
-      barCell.classList.add('waterfall-view-row');
-      this.barCell_ = barCell;
+      // Creates the color bar.
 
-      this.updateRow();
+      var rowCell = addNode(tr, 'td');
+      rowCell.classList.add('waterfall-view-row');
+      this.rowCell_ = rowCell;
 
       var sourceTypeString = this.sourceEntry_.getSourceTypeString();
       this.type_ = eventTypeToCssClass_(sourceTypeString);
+
+      this.updateRow();
     },
 
     // Generates nodes.
-    createNode_: function(parentNode, durationScaled, eventType) {
+    createNode_: function(parentNode, duration, eventType, event) {
+      var scale = this.parentView_.getScaleFactor();
       var newNode = addNode(parentNode, 'div');
-      setNodeWidth(newNode, durationScaled);
-      newNode.classList.add('waterfall-view-row-' + eventType);
+      setNodeWidth(newNode, duration * scale);
+      newNode.classList.add(eventType);
+      newNode.addEventListener(
+          'mouseover',
+          this.createPopup_.bind(this, newNode, event, eventType, duration),
+          true);
+      newNode.addEventListener(
+          'mouseout', this.clearPopup_.bind(this, newNode), true);
       return newNode;
     },
 
@@ -135,24 +226,24 @@ var WaterfallRow = (function() {
       var startEntries = {};
       var entries = this.sourceEntry_.getLogEntries();
       for (var i = 0; i < entries.length; ++i) {
-        var type = entries[i].type;
+        var currentEntry = entries[i];
+        var type = currentEntry.type;
         if (typeList.indexOf(type) < 0) {
           continue;
         }
-        if (entries[i].phase == EventPhase.PHASE_BEGIN) {
-          startEntries[type] = entries[i];
+        if (currentEntry.phase == EventPhase.PHASE_BEGIN) {
+          startEntries[type] = currentEntry;
         }
-        if (startEntries[type] && entries[i].phase == EventPhase.PHASE_END) {
+        if (startEntries[type] && currentEntry.phase == EventPhase.PHASE_END) {
           var event = {
             startEntry: startEntries[type],
-            endEntry: entries[i],
+            endEntry: currentEntry,
           };
           matchingEventPairs.push(event);
         }
       }
       return matchingEventPairs;
     },
-
   };
 
   function eventTypeToCssClass_(rawEventType) {

@@ -3,6 +3,16 @@
  * found in the LICENSE file.
  */
 
+#waterfall-view-controls {
+  background-color: #FFF;
+  border-color: #000;
+  border-style: solid;
+  border-width: 1px;
+  padding-left: 5px;
+  position: fixed;
+  top: 40px;
+}
+
 .waterfall-view-url-cell {
   display: inline-block;
   overflow: hidden;
@@ -17,44 +27,101 @@
 
 .waterfall-view-row * {
   display: inline-block;
-  height: 15px;
-  opacity: 0.5;
   padding-top: 0;
 }
 
-.waterfall-view-row [class*='http-stream-request'] {
-  background-color: #000;
+.waterfall-view-bar > * {
+  height: 15px;
 }
 
-.waterfall-view-row [class*='http-transaction-read-headers'] {
-  background-color: rgb(255, 0, 0);
+.waterfall-view-popup-list {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-color: #000;
+  border-style: solid;
+  border-width: 2px;
+  color: #000;
+  padding-right: 1em;
+  z-index: -1;
 }
 
-.waterfall-view-row [class*='url-request'] {
-  background-color: rgb(0, 0, 255);
+.waterfall-view-popup-list > li {
+  display: list-item;
+}
+.waterfall-view-popup-list-url-item {
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.waterfall-view-row [class*='http-stream-job'] {
-  background-color: rgb(0, 255, 0);
+.waterfall-view-bar.error {
+  border-color: rgba(255, 0, 0, 0.8);
+  border-style: solid;
+  border-width: 1px;
+  height: 18px;
 }
 
-.waterfall-view-row [class*='proxy-service'] {
-  background-color: rgb(122, 122, 0);
+.waterfall-view-row .http-stream-request {
+  background: -webkit-linear-gradient(top, #EEE, rgba(0, 0, 0, 0.5));
 }
 
-.waterfall-view-row [class*='socket-pool-connect-job'] {
-  background-color: rgb(0, 122, 122);
+.waterfall-view-row .http-stream-request-bound-to-job {
+  background: -webkit-linear-gradient(top, #EEE, rgba(200, 200, 200, 0.5));
 }
 
-.waterfall-view-row [class*='host-resolver-impl'] {
-  background-color: rgb(122, 0, 122);
+.waterfall-view-row .http-transaction-read-headers {
+  background: -webkit-linear-gradient(top, #EEE, rgba(255, 0, 0, 0.5));
 }
 
-.waterfall-view-row [class*='socket'] {
-  background-color: rgb(122, 178, 0);
+.waterfall-view-row .url-request {
+  background: -webkit-linear-gradient(top, #EEE, rgba(0, 0, 255, 0.5));
 }
 
-.waterfall-popup {
-  display: block;
-  font-size: 15px;
+.waterfall-view-row .http-stream-job {
+  background: -webkit-linear-gradient(top, #EEE, rgba(0, 255, 0, 0.5));
+}
+
+.waterfall-view-row .proxy-service {
+  background: -webkit-linear-gradient(top, #EEE, rgba(122, 122, 0, 0.5));
+}
+
+.waterfall-view-row .socket-pool-connect-job {
+  background: -webkit-linear-gradient(top, #EEE, rgba(0, 122, 122, 0.5));
+}
+
+.waterfall-view-row .host-resolver-impl {
+  background: -webkit-linear-gradient(top, #EEE, rgba(122, 0, 122, 0.5));
+}
+
+.waterfall-view-row .socket {
+  background: -webkit-linear-gradient(top, #EEE, rgba(122, 178, 0, 0.5));
+}
+
+.waterfall-view-row .tcp-connect {
+  background: -webkit-linear-gradient(top, #EEE, rgba(0, 178, 122, 0.5));
+}
+
+.waterfall-view-row .ssl-connect {
+  background: -webkit-linear-gradient(top, #EEE, rgba(55, 122, 178, 0.5));
+}
+
+.waterfall-view-popup {
+  display: inline-block;
+  position: absolute;
+}
+
+.waterfall-view-time-scale-row {
+  white-space: nowrap;
+}
+
+.waterfall-view-time-scale {
+  border-color: #000;
+  border-left-style: solid;
+  border-width: 1px;
+  box-sizing: border-box;
+  display: inline-block;
+  height: 15px;
+}
+
+/* Colors every fifth bar red. */
+.waterfall-view-time-scale-special {
+  border-color: rgb(255, 0, 0);
 }

@@ -1,16 +1,18 @@
 <!-- =============== Events Waterfall View ================= -->
 <div id=waterfall-view-tab-content class=content-box>
   <div>
-    Information:
-    <p>Currently only captures URL Request events. Blue represents URL
-    Requests. Red represents Header Reads. Grey represents Stream Requests.
-    <input id=waterfall-view-time-scale type="button"
-        value="Scale To Fit Window">
+    <div id=waterfall-view-controls>
+      Start Time: <input id=waterfall-view-start-input type=number min=0 value=0>
+      End Time: <input id=waterfall-view-end-input type=number min=0>
+      <input id=waterfall-view-adjust-to-window type=button value="Fit Range in Window">
+    </div>
+    <p>
     <table id=waterfall-view-source-list-table>
       <thead>
       <tr>
         <td id=waterfall-view-source-id>ID</td>
         <td id=waterfall-view-source-header>Source</td>
+        <td id=waterfall-view-time-scale-labels></td>
       </tr>
       </thead>
       <!-- Events Waterfall table body: This is where request rows go into -->
