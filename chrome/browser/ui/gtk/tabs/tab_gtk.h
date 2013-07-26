@@ -159,12 +159,6 @@ class TabGtk : public TabRendererGtk, public base::MessageLoopForUI::Observer {
   // the tab.
   void UpdateTooltipState();
 
-  // Creates the drag widget used to track a drag operation.
-  void CreateDragWidget();
-
-  // Destroys the drag widget.
-  void DestroyDragWidget();
-
   // Starts the dragging operation.  |drag_offset| is the offset inside the tab
   // bounds where the grab occurred.
   void StartDragging(gfx::Point drag_offset);
@@ -197,20 +191,12 @@ class TabGtk : public TabRendererGtk, public base::MessageLoopForUI::Observer {
   // A copy of the last button press event, used to initiate a drag.
   GdkEvent* last_mouse_down_;
 
-  // A GtkInivisible used to track the drag event.  GtkInvisibles are of the
-  // type GInitiallyUnowned, but the widget initialization code sinks the
-  // reference, so we can't used an OwnedWidgetGtk here.
-  GtkWidget* drag_widget_;
-
   // The cached width of the title in pixels, updated whenever the title
   // changes.
   int title_width_;
 
   // Keep track of whether or not we have an observer.
   scoped_ptr<TabGtkObserverHelper> observer_;
-
-  // Used to destroy the drag widget after a return to the message loop.
-  base::WeakPtrFactory<TabGtk> destroy_factory_;
 
   // Due to a bug in GTK+, we need to force the end of a drag when we get a
   // mouse release event on the the dragged widget, otherwise, we don't know
