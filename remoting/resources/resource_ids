@@ -19,7 +19,4 @@
   "remoting/resources/remoting_strings.grd": {
     "messages": [1000],
   },
-  "remoting/resources/common_resources.grd": {
-    "structures": [10000],
-  },
 }

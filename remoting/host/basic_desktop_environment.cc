@@ -66,12 +66,10 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
 BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const UiStrings& ui_strings)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
-      ui_task_runner_(ui_task_runner),
-      ui_strings_(ui_strings) {
+      ui_task_runner_(ui_task_runner) {
 }
 
 BasicDesktopEnvironmentFactory::~BasicDesktopEnvironmentFactory() {
