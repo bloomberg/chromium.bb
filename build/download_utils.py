@@ -36,9 +36,10 @@ PLATFORM_COLLAPSE = {
 }
 
 ARCH_COLLAPSE = {
-    'i386'  : 'x86',
-    'i686'  : 'x86',
+    'i386': 'x86',
+    'i686': 'x86',
     'x86_64': 'x86',
+    'amd64': 'x86',
     'armv7l': 'arm',
 }
 
@@ -57,7 +58,8 @@ class HashError(Exception):
 def PlatformName(name=None):
   if name is None:
     name = sys.platform
-  return PLATFORM_COLLAPSE[name]
+  # Default to linux, so that downloading works on *BSD.
+  return PLATFORM_COLLAPSE.get(name, 'linux')
 
 def ArchName(name=None):
   if name is None:
