@@ -294,7 +294,7 @@ PP_Bool IsOffTheRecord() {
 
 PP_Bool IsPnaclEnabled() {
   return PP_FromBool(
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePnacl));
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisablePnacl));
 }
 
 PP_ExternalPluginResult ReportNaClError(PP_Instance instance,

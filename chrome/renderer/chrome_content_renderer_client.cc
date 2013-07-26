@@ -570,12 +570,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed: {
         const char* kPnaclMimeType = "application/x-pnacl";
         if (actual_mime_type == kPnaclMimeType) {
-          if (!CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kEnablePnacl)) {
+          if (CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kDisablePnacl)) {
             frame->addMessageToConsole(
                 WebConsoleMessage(
                     WebConsoleMessage::LevelError,
-                    "Portable Native Client must be enabled in about:flags."));
+                    "Portable Native Client must not be disabled in"
+                    " about:flags."));
             placeholder = PluginPlaceholder::CreateBlockedPlugin(
                 render_view, frame, params, plugin, identifier, group_name,
                 IDR_BLOCKED_PLUGIN_HTML,

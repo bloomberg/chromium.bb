@@ -102,9 +102,6 @@ def GetBrowserTesterCommand(desc, toolchain, config):
       ppapi_plugin += '.so'
     args.extend(['--ppapi_plugin', ppapi_plugin])
 
-  if toolchain == 'pnacl':
-    args.extend(['--browser_flag', '--enable-pnacl'])
-
   url = 'index.html'
   url += '?tc=%s&config=%s&test=true' % (toolchain, config)
   args.extend(['--url', url])

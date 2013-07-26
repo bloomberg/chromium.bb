@@ -431,7 +431,7 @@ RUN_PY := python $(NACL_SDK_ROOT)/tools/run.py
 CHROME_ENV ?=
 
 # Additional arguments to pass to Chrome.
-CHROME_ARGS += --enable-nacl --enable-pnacl --no-first-run
+CHROME_ARGS += --enable-nacl --no-first-run
 CHROME_ARGS += --user-data-dir=$(CURDIR)/user-data-dir
 
 

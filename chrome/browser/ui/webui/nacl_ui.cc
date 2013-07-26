@@ -338,7 +338,7 @@ void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
             pnacl_path.DirName().DirName().BaseName().LossyDisplayName());
   }
 
-  ListFlagStatus(list.get(), "Flag '--enable-pnacl'", switches::kEnablePnacl);
+  ListFlagStatus(list.get(), "Flag '--disable-pnacl'", switches::kDisablePnacl);
   // naclInfo will take ownership of list, and clean it up on destruction.
   naclInfo->Set("naclInfo", list.release());
 }

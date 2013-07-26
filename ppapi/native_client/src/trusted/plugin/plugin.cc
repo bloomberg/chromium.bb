@@ -1215,8 +1215,8 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
         return;
       } else {
         error_info.SetReport(ERROR_PNACL_NOT_ENABLED,
-                             "PNaCl has not been enabled (e.g., by setting "
-                             "the --enable-pnacl flag).");
+                             "PNaCl has been disabled (e.g., by setting "
+                             "the --disable-pnacl flag).");
       }
     } else {
       // Try the fast path first. This will only block if the file is installed.
