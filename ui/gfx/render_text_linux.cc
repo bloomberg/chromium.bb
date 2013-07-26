@@ -273,7 +273,11 @@ bool RenderTextLinux::IsCursorablePosition(size_t position) {
 
   EnsureLayout();
   ptrdiff_t offset = ui::UTF16IndexToOffset(text(), 0, position);
-  return (offset < num_log_attrs_ && log_attrs_[offset].is_cursor_position);
+  // Check that the index corresponds with a valid text code point, that it is
+  // marked as a legitimate cursor position by Pango, and that it is not
+  // truncated from layout text (its glyph is shown on screen).
+  return (offset < num_log_attrs_ && log_attrs_[offset].is_cursor_position &&
+          offset < g_utf8_strlen(layout_text_, -1));
 }
 
 void RenderTextLinux::ResetLayout() {

@@ -416,9 +416,13 @@ bool RenderTextWin::IsCursorablePosition(size_t position) {
     return true;
   EnsureLayout();
 
-  // Check if the index is at a valid code point (not mid-surrgate-pair) with
-  // distinct glyph bounds (not mid-multi-character-grapheme, eg. \x0915\x093f).
+  // Check that the index is at a valid code point (not mid-surrgate-pair),
+  // that it is not truncated from layout text (its glyph is shown on screen),
+  // and that its glyph has distinct bounds (not mid-multi-character-grapheme).
+  // An example of a multi-character-grapheme that is not a surrogate-pair is:
+  // \x0915\x093f - (ki) - one of many Devanagari biconsonantal conjuncts.
   return ui::IsValidCodePointIndex(text(), position) &&
+         position < LayoutIndexToTextIndex(GetLayoutText().length()) &&
          GetGlyphBounds(position) != GetGlyphBounds(position - 1);
 }
 

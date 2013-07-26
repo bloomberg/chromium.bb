@@ -459,9 +459,8 @@ TEST_F(RenderTextTest, TruncatedCursorMovementLTR) {
   std::vector<SelectionModel> expected;
   expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(1, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(2, CURSOR_BACKWARD));
-  // The cursor hops over the elided text to the line end.
-  expected.push_back(SelectionModel(4, CURSOR_FORWARD));
+  // The cursor hops over the ellipsis and elided text to the line end.
+  expected.push_back(SelectionModel(4, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(4, CURSOR_FORWARD));
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_RIGHT);
 
@@ -488,9 +487,8 @@ TEST_F(RenderTextTest, TruncatedCursorMovementRTL) {
   std::vector<SelectionModel> expected;
   expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(1, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(2, CURSOR_BACKWARD));
-  // The cursor hops over the elided text to the line end.
-  expected.push_back(SelectionModel(4, CURSOR_FORWARD));
+  // The cursor hops over the ellipsis and elided text to the line end.
+  expected.push_back(SelectionModel(4, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(4, CURSOR_FORWARD));
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_LEFT);
 
