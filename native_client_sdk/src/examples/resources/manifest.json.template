@@ -19,10 +19,5 @@
     "client_id": "903965034255.apps.googleusercontent.com",
     "scopes": ["https://www.googleapis.com/auth/drive"]
   },
-  "permissions": [
-[[if permissions:]]
-[[  for i, perm in enumerate(permissions):]]
-    "{{perm}}"{{(i != len(permissions) - 1) and ',' or ''}}
-[[]]
-  ]
+  "permissions": {{permissions}}
 }

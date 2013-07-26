@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os
 import sys
 
@@ -138,11 +139,18 @@ def GenerateManifest(srcroot, dstroot, desc):
   outdir = os.path.join(dstroot, desc['DEST'], desc['NAME'])
   srcpath = os.path.join(SDK_EXAMPLE_DIR, 'resources', 'manifest.json.template')
   dstpath = os.path.join(outdir, 'manifest.json')
+  permissions = desc.get('PERMISSIONS', [])
+  socket_permissions = desc.get('SOCKET_PERMISSIONS', [])
+  combined_permissions = list(permissions)
+  if socket_permissions:
+    combined_permissions.append({'socket': socket_permissions})
+  pretty_permissions = json.dumps(combined_permissions,
+                                  sort_keys=True, indent=4)
   replace = {
       'name': desc['TITLE'],
       'description': '%s Example' % desc['TITLE'],
       'key': True,
-      'permissions': desc.get('PERMISSIONS', []),
+      'permissions': pretty_permissions,
       'version': build_version.ChromeVersionNoTrunk()
   }
   RunTemplateFileIfChanged(srcpath, dstpath, replace)

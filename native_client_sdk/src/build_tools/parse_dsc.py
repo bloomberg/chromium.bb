@@ -53,6 +53,7 @@ DSC_FORMAT = {
     'GROUP': (str, '', False),
     'EXPERIMENTAL': (bool, [True, False], False),
     'PERMISSIONS': (list, '', False),
+    'SOCKET_PERMISSIONS': (list, '', False)
 }
 
 

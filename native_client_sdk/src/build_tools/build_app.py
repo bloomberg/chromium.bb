@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import optparse
 import os
 import re
@@ -99,22 +100,32 @@ def main(args):
   filters['DEST'] = ['examples/api', 'examples/getting_started',
                      'examples/demo', 'examples/tutorial']
   tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, include=filters)
-  build_projects.UpdateHelpers(app_dir, platform, clobber=True)
-  build_projects.UpdateProjects(app_dir, platform, tree, clobber=False,
+  build_projects.UpdateHelpers(app_dir, clobber=True)
+  build_projects.UpdateProjects(app_dir, tree, clobber=False,
                                 toolchains=toolchains, configs=[config],
                                 first_toolchain=True)
 
   # Collect permissions from each example, and aggregate them.
+  def MergeLists(list1, list2):
+    return list1 + [x for x in list2 if x not in list1]
   all_permissions = []
+  all_socket_permissions = []
   for _, project in parse_dsc.GenerateProjects(tree):
-    all_permissions.extend(project.get('PERMISSIONS', []))
+    permissions = project.get('PERMISSIONS', [])
+    all_permissions = MergeLists(all_permissions, permissions)
+    socket_permissions = project.get('SOCKET_PERMISSIONS', [])
+    all_socket_permissions = MergeLists(all_socket_permissions,
+                                        socket_permissions)
+  if all_socket_permissions:
+    all_permissions.append({'socket': all_socket_permissions})
+  pretty_permissions = json.dumps(all_permissions, sort_keys=True, indent=4)
 
   template_dict = {
     'name': 'Native Client SDK',
     'description':
         'Native Client SDK examples, showing API use and key concepts.',
     'key': False,  # manifests with "key" are rejected when uploading to CWS.
-    'permissions': all_permissions,
+    'permissions': pretty_permissions,
     'version': build_version.ChromeVersionNoTrunk()
   }
   easy_template.RunTemplateFile(
@@ -127,7 +138,7 @@ def main(args):
 
   os.environ['NACL_SDK_ROOT'] = pepperdir
 
-  build_projects.BuildProjects(app_dir, platform, tree, deps=True, clean=False,
+  build_projects.BuildProjects(app_dir, tree, deps=True, clean=False,
                                config=config)
 
   RemoveBuildCruft(app_dir)
