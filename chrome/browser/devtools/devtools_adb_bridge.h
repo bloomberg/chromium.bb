@@ -160,15 +160,6 @@ class DevToolsAdbBridge
   typedef std::vector<scoped_refptr<AndroidDevice> > AndroidDevices;
   typedef base::Callback<void(const AndroidDevices&)> AndroidDevicesCallback;
 
-  explicit DevToolsAdbBridge(Profile* profile);
-
-  void EnumerateDevices(const AndroidDevicesCallback& callback);
-
-  void Attach(const std::string& serial,
-              const std::string& socket,
-              const std::string& debug_url,
-              const std::string& frontend_url);
-
   class Listener {
    public:
     virtual void RemotePagesChanged(RemotePages* pages) = 0;
@@ -176,8 +167,20 @@ class DevToolsAdbBridge
     virtual ~Listener() {}
   };
 
+  explicit DevToolsAdbBridge(Profile* profile);
+
+  void EnumerateUsbDevices(const AndroidDevicesCallback& callback);
+  void EnumerateAdbDevices(const AndroidDevicesCallback& callback);
+
+  void Attach(const std::string& serial,
+              const std::string& socket,
+              const std::string& debug_url,
+              const std::string& frontend_url);
+
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
+
+  base::MessageLoop* GetAdbMessageLoop();
 
  private:
   friend class base::RefCountedThreadSafe<DevToolsAdbBridge>;
@@ -204,7 +207,6 @@ class DevToolsAdbBridge
   void ReceivedUsbDevices(const AndroidDevicesCallback& callback,
                           const AndroidUsbDevices& usb_devices);
   void ReceivedAdbDevices(const AndroidDevicesCallback& callback,
-                          AndroidDevices devices,
                           int result,
                           const std::string& response);
 

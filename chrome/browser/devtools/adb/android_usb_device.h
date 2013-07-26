@@ -24,7 +24,6 @@ class StreamSocket;
 }
 
 class AndroidUsbSocket;
-class Profile;
 
 class AdbMessage : public base::RefCounted<AdbMessage> {
  public:
@@ -67,8 +66,7 @@ typedef base::Callback<void(const AndroidUsbDevices&)>
 
 class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
  public:
-  static void Enumerate(Profile* profile,
-                        crypto::RSAPrivateKey* rsa_key,
+  static void Enumerate(crypto::RSAPrivateKey* rsa_key,
                         const AndroidUsbDevicesCallback& callback);
 
   AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
@@ -84,6 +82,8 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
             uint32 arg0,
             uint32 arg1,
             const std::string& body);
+
+  scoped_refptr<UsbDeviceHandle> usb_device() { return usb_device_; }
 
   std::string serial() { return serial_; }
 
