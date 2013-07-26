@@ -1,12 +1,12 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/networking_private_event_router.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_event_router.h"
 
 #include "base/json/json_writer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/extensions/networking_private_api.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -139,3 +139,4 @@ void NetworkingPrivateEventRouter::NetworkPropertiesUpdated(
 }
 
 }  // namespace chromeos
+

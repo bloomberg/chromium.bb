@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,8 @@
 #include "chrome/browser/policy/policy_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+
+#if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -25,7 +27,7 @@
 #include "chromeos/network/onc/onc_utils.h"
 #include "policy/policy_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-
+#endif  // OS_CHROMEOS
 using testing::AnyNumber;
 using testing::Return;
 using testing::_;
@@ -37,19 +39,35 @@ namespace {
 const char kUser1ProfilePath[] = "/profile/user1/shill";
 const char kUserIdStubHashSuffix[] = "-hash";
 
-void AssignString(std::string* out,
-                  DBusMethodCallStatus call_status,
-                  const std::string& result) {
-  CHECK_EQ(call_status, DBUS_METHOD_CALL_SUCCESS);
-  *out = result;
-}
-
 }  // namespace
 
 class ExtensionNetworkingPrivateApiTest :
     public ExtensionApiTest,
     public testing::WithParamInterface<bool> {
  public:
+  bool RunNetworkingSubtest(const std::string& subtest) {
+    return RunExtensionSubtest(
+        "networking", "main.html?" + subtest,
+        kFlagEnableFileAccess | kFlagLoadAsComponent);
+  }
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(provider_, RegisterPolicyDomain(_)).Times(AnyNumber());
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  }
+
+#if defined(OS_CHROMEOS)
+  static void AssignString(std::string* out,
+                    DBusMethodCallStatus call_status,
+                    const std::string& result) {
+    CHECK_EQ(call_status, DBUS_METHOD_CALL_SUCCESS);
+    *out = result;
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
@@ -66,21 +84,6 @@ class ExtensionNetworkingPrivateApiTest :
     command_line->AppendSwitchASCII(switches::kLoginProfile, sanitized_user);
     if (GetParam())
       command_line->AppendSwitch(::switches::kMultiProfiles);
-  }
-
-  bool RunNetworkingSubtest(const std::string& subtest) {
-    return RunExtensionSubtest(
-        "networking", "main.html?" + subtest,
-        kFlagEnableFileAccess | kFlagLoadAsComponent);
-  }
-
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    EXPECT_CALL(provider_, IsInitializationComplete(_))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(provider_, RegisterPolicyDomain(_)).Times(AnyNumber());
-    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
   void InitializeSanitizedUsername() {
@@ -189,6 +192,19 @@ class ExtensionNetworkingPrivateApiTest :
 
     content::RunAllPendingInMessageLoop();
   }
+#else  // !defined(OS_CHROMEOS)
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    // Whitelist the extension ID of the test extension.
+    command_line->AppendSwitchASCII(::switches::kWhitelistedExtensionID,
+                                    "epcifkihnkjgphfkloaaleeakhpmgdmn");
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
+    content::RunAllPendingInMessageLoop();
+  }
+#endif  // OS_CHROMEOS
 
  protected:
   policy::MockConfigurationPolicyProvider provider_;
@@ -250,6 +266,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, SetProperties) {
   EXPECT_TRUE(RunNetworkingSubtest("setProperties")) << message_;
 }
 
+#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        GetManagedProperties) {
   ShillServiceClient::TestInterface* service_test =
@@ -302,6 +319,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
 
   EXPECT_TRUE(RunNetworkingSubtest("getManagedProperties")) << message_;
 }
+#endif  // OS_CHROMEOS
 
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        OnNetworksChangedEventConnect) {
@@ -340,3 +358,4 @@ INSTANTIATE_TEST_CASE_P(ExtensionNetworkingPrivateApiTestInstantiation,
                         testing::Bool());
 
 }  // namespace chromeos
+

@@ -1,10 +1,10 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/networking_private_event_router_factory.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_event_router_factory.h"
 
-#include "chrome/browser/chromeos/extensions/networking_private_event_router.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_event_router.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,7 +38,11 @@ NetworkingPrivateEventRouterFactory::~NetworkingPrivateEventRouterFactory() {
 BrowserContextKeyedService*
 NetworkingPrivateEventRouterFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
+#if defined(OS_CHROMEOS)
   return new NetworkingPrivateEventRouter(static_cast<Profile*>(profile));
+#else  // OS_CHROMEOS
+  return NULL;
+#endif  // OS_CHROMEOS
 }
 
 content::BrowserContext*
