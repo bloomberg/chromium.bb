@@ -27,6 +27,10 @@ const int kDefaultSendQuotaLowWaterMark = 1 << 16;
 const int kDefaultSendQuotaHighWaterMark = 1 << 17;
 const size_t kWebSocketCloseCodeLength = 2;
 
+// This uses type uint64 to match the definition of
+// WebSocketFrameHeader::payload_length in websocket_frame.h.
+const uint64 kMaxControlFramePayload = 125;
+
 // Concatenate the data from two IOBufferWithSize objects into a single one.
 IOBufferWithSize* ConcatenateIOBuffers(
     const scoped_refptr<IOBufferWithSize>& part1,
@@ -52,7 +56,7 @@ class WebSocketChannel::SendBuffer {
   void AddFrame(scoped_ptr<WebSocketFrameChunk> chunk);
 
   // Return a pointer to the frames_ for write purposes.
-  ScopedVector<WebSocketFrameChunk>* GetFrames() { return &frames_; }
+  ScopedVector<WebSocketFrameChunk>* frames() { return &frames_; }
 
  private:
   // The frames_ that will be sent in the next call to WriteFrames().
@@ -124,6 +128,14 @@ void WebSocketChannel::SendAddChannelRequest(
       base::Bind(&WebSocketStream::CreateAndConnectStream));
 }
 
+bool WebSocketChannel::InClosingState() const {
+  // We intentionally do not support state RECV_CLOSED here, because it is only
+  // used in one code path and should not leak into the code in general.
+  DCHECK_NE(RECV_CLOSED, state_)
+      << "InClosingState called with state_ == RECV_CLOSED";
+  return state_ == SEND_CLOSED || state_ == CLOSE_WAIT || state_ == CLOSED;
+}
+
 void WebSocketChannel::SendFrame(bool fin,
                                  WebSocketFrameHeader::OpCode op_code,
                                  const std::vector<char>& data) {
@@ -137,7 +149,7 @@ void WebSocketChannel::SendFrame(bool fin,
                 << " data.size()=" << data.size();
     return;
   }
-  if (state_ == SEND_CLOSED || state_ == CLOSED) {
+  if (InClosingState()) {
     VLOG(1) << "SendFrame called in state " << state_
             << ". This may be a bug, or a harmless race.";
     return;
@@ -177,7 +189,7 @@ void WebSocketChannel::SendFlowControl(int64 quota) {
 
 void WebSocketChannel::StartClosingHandshake(uint16 code,
                                              const std::string& reason) {
-  if (state_ == SEND_CLOSED || state_ == CLOSED) {
+  if (InClosingState()) {
     VLOG(1) << "StartClosingHandshake called in state " << state_
             << ". This may be a bug, or a harmless race.";
     return;
@@ -247,7 +259,7 @@ void WebSocketChannel::WriteFrames() {
     // This use of base::Unretained is safe because we own the WebSocketStream
     // and destroying it cancels all callbacks.
     result = stream_->WriteFrames(
-        data_being_sent_->GetFrames(),
+        data_being_sent_->frames(),
         base::Bind(
             &WebSocketChannel::OnWriteDone, base::Unretained(this), false));
     if (result != ERR_IO_PENDING) {
@@ -293,9 +305,11 @@ void WebSocketChannel::OnWriteDone(bool synchronous, int result) {
       DCHECK_LT(result, 0)
           << "WriteFrames() should only return OK or ERR_ codes";
       stream_->Close();
-      state_ = CLOSED;
-      event_interface_->OnDropChannel(kWebSocketErrorAbnormalClosure,
-                                      "Abnormal Closure");
+      if (state_ != CLOSED) {
+        state_ = CLOSED;
+        event_interface_->OnDropChannel(kWebSocketErrorAbnormalClosure,
+                                        "Abnormal Closure");
+      }
       return;
   }
 }
@@ -312,7 +326,7 @@ void WebSocketChannel::ReadFrames() {
     if (result != ERR_IO_PENDING) {
       OnReadDone(true, result);
     }
-  } while (result == OK);
+  } while (result == OK && state_ != CLOSED);
 }
 
 void WebSocketChannel::OnReadDone(bool synchronous, int result) {
@@ -332,25 +346,26 @@ void WebSocketChannel::OnReadDone(bool synchronous, int result) {
       }
       read_frame_chunks_.clear();
       // We need to always keep a call to ReadFrames pending.
-      if (!synchronous) {
+      if (!synchronous && state_ != CLOSED) {
         ReadFrames();
       }
       return;
 
-    default: {
+    default:
       DCHECK_LT(result, 0)
           << "ReadFrames() should only return OK or ERR_ codes";
       stream_->Close();
-      state_ = CLOSED;
-      uint16 code = kWebSocketErrorAbnormalClosure;
-      std::string reason = "Abnormal Closure";
-      if (closing_code_ != 0) {
-        code = closing_code_;
-        reason = closing_reason_;
+      if (state_ != CLOSED) {
+        state_ = CLOSED;
+        uint16 code = kWebSocketErrorAbnormalClosure;
+        std::string reason = "Abnormal Closure";
+        if (closing_code_ != 0) {
+          code = closing_code_;
+          reason = closing_reason_;
+        }
+        event_interface_->OnDropChannel(code, reason);
       }
-      event_interface_->OnDropChannel(code, reason);
       return;
-    }
   }
 }
 
@@ -389,9 +404,19 @@ void WebSocketChannel::ProcessFrameChunk(
   chunk.reset();
   WebSocketFrameHeader::OpCode opcode = current_frame_header_->opcode;
   if (WebSocketFrameHeader::IsKnownControlOpCode(opcode)) {
+    if (!current_frame_header_->final) {
+      FailChannel(SEND_REAL_ERROR,
+                  kWebSocketErrorProtocolError,
+                  "Control message with FIN bit unset received");
+      return;
+    }
+    if (current_frame_header_->payload_length > kMaxControlFramePayload) {
+      FailChannel(SEND_REAL_ERROR,
+                  kWebSocketErrorProtocolError,
+                  "Control message has payload over 125 bytes");
+      return;
+    }
     if (!is_final_chunk) {
-      // TODO(ricea): Enforce a maximum size of 125 bytes on the control frames
-      // we accept.
       VLOG(2) << "Encountered a split control frame, opcode " << opcode;
       if (incomplete_control_frame_body_) {
         // The really horrid case. We need to create a new IOBufferWithSize
@@ -443,7 +468,10 @@ void WebSocketChannel::HandleFrame(
   DCHECK_NE(RECV_CLOSED, state_)
       << "HandleFrame() does not support being called re-entrantly from within "
          "SendClose()";
-  if (state_ == CLOSED) {
+  if (state_ == CLOSED || state_ == CLOSE_WAIT) {
+    DVLOG_IF(1, state_ == CLOSED) << "A frame was received while in the CLOSED "
+                                     "state. This is possible after a channel "
+                                     "failed, but should be very rare.";
     std::string frame_name;
     switch (opcode) {
       case WebSocketFrameHeader::kOpCodeText:    // fall-thru
@@ -481,6 +509,8 @@ void WebSocketChannel::HandleFrame(
     case WebSocketFrameHeader::kOpCodeContinuation:
       if (state_ == CONNECTED) {
         const bool final = is_final_chunk && current_frame_header_->final;
+        // TODO(ricea): Need to fail the connection if UTF-8 is invalid
+        // post-reassembly. Requires a streaming UTF-8 validator.
         // TODO(ricea): Can this copy be eliminated?
         const char* const data_begin = data_buffer->data();
         const char* const data_end = data_begin + data_buffer->size();
@@ -525,14 +555,14 @@ void WebSocketChannel::HandleFrame(
       switch (state_) {
         case CONNECTED:
           state_ = RECV_CLOSED;
-          SendClose(code, reason);  // Sets state_ to CLOSED
+          SendClose(code, reason);  // Sets state_ to CLOSE_WAIT
           event_interface_->OnClosingHandshake();
           closing_code_ = code;
           closing_reason_ = reason;
           break;
 
         case SEND_CLOSED:
-          state_ = CLOSED;
+          state_ = CLOSE_WAIT;
           // From RFC6455 section 7.1.5: "Each endpoint
           // will see the status code sent by the other end as _The WebSocket
           // Connection Close Code_."
@@ -615,16 +645,22 @@ void WebSocketChannel::FailChannel(ExposeError expose,
 void WebSocketChannel::SendClose(uint16 code, const std::string& reason) {
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   // TODO(ricea): Ensure reason.length() <= 123
-  size_t payload_length = kWebSocketCloseCodeLength + reason.length();
-  scoped_refptr<IOBufferWithSize> body =
-      new IOBufferWithSize(base::checked_numeric_cast<int>(payload_length));
-  WriteBigEndian(body->data(), code);
-  COMPILE_ASSERT(sizeof(code) == kWebSocketCloseCodeLength,
-                 they_should_both_be_two);
-  std::copy(
-      reason.begin(), reason.end(), body->data() + kWebSocketCloseCodeLength);
+  scoped_refptr<IOBufferWithSize> body;
+  if (code == kWebSocketErrorNoStatusReceived) {
+    // Special case: translate kWebSocketErrorNoStatusReceived into a Close
+    // frame with no payload.
+    body = new IOBufferWithSize(0);
+  } else {
+    const size_t payload_length = kWebSocketCloseCodeLength + reason.length();
+    body = new IOBufferWithSize(payload_length);
+    WriteBigEndian(body->data(), code);
+    COMPILE_ASSERT(sizeof(code) == kWebSocketCloseCodeLength,
+                   they_should_both_be_two);
+    std::copy(
+        reason.begin(), reason.end(), body->data() + kWebSocketCloseCodeLength);
+  }
   SendIOBufferWithSize(true, WebSocketFrameHeader::kOpCodeClose, body);
-  state_ = (state_ == CONNECTED) ? SEND_CLOSED : CLOSED;
+  state_ = (state_ == CONNECTED) ? SEND_CLOSED : CLOSE_WAIT;
 }
 
 void WebSocketChannel::ParseClose(const scoped_refptr<IOBufferWithSize>& buffer,

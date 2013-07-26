@@ -103,7 +103,10 @@ class NET_EXPORT WebSocketChannel {
     RECV_CLOSED,  // Used briefly between receiving a Close frame and sending
                   // the response. Once we have responded, the state changes
                   // to CLOSED.
-    CLOSED,  // The Closing Handshake has completed or the connection is failed.
+    CLOSE_WAIT,   // The Closing Handshake has completed, but the remote server
+                  // has not yet closed the connection.
+    CLOSED,       // The Closing Handshake has completed and the connection
+                  // has been closed; or the connection is failed.
   };
 
   // When failing a channel, we may or may not want to send the real reason for
@@ -135,6 +138,9 @@ class NET_EXPORT WebSocketChannel {
   // Failure callback from WebSocketStream::CreateAndConnectStream(). Reports
   // failure to the event interface.
   void OnConnectFailure(uint16 websocket_error);
+
+  // Returns true if state_ is SEND_CLOSED, CLOSE_WAIT or CLOSED.
+  bool InClosingState() const;
 
   // Calls WebSocketStream::WriteFrames() with the appropriate arguments
   void WriteFrames();
@@ -185,7 +191,9 @@ class NET_EXPORT WebSocketChannel {
   void FailChannel(ExposeError expose, uint16 code, const std::string& reason);
 
   // Sends a Close frame to Start the WebSocket Closing Handshake, or to respond
-  // to a Close frame from the server.
+  // to a Close frame from the server. As a special case, setting |code| to
+  // kWebSocketErrorNoStatusReceived will create a Close frame with no payload;
+  // this is symmetric with the behaviour of ParseClose.
   void SendClose(uint16 code, const std::string& reason);
 
   // Parses a Close frame. If no status code is supplied, then |code| is set to
