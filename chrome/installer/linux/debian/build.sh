@@ -270,7 +270,9 @@ if [ -n "$SAVE_LDLP" ]; then
 fi
 
 # Format it nicely and save it for comparison.
-echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' > actual
+# The grep -v is for a duplicate libc6 dep caused by Lucid glibc silliness.
+echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' | \
+  grep -v '^libc6 (>= 2.3.6-6~)$' > actual
 
 # Compare the expected dependency list to the generate list.
 BAD_DIFF=0
