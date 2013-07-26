@@ -41,7 +41,11 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
                        LPARAM lparam,
                        BOOL* handled);
   // For both WM_CHAR and WM_SYSCHAR
-  LRESULT OnChar(UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
+  LRESULT OnChar(HWND window_handle,
+                 UINT message,
+                 WPARAM wparam,
+                 LPARAM lparam,
+                 BOOL* handled);
   // For both WM_DEADCHAR and WM_SYSDEADCHAR
   LRESULT OnDeadChar(UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
 

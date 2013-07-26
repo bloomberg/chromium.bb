@@ -64,7 +64,7 @@ bool InputMethodIMM32::OnUntranslatedIMEMessage(
     case WM_CHAR:
     case WM_SYSCHAR:
       original_result = OnChar(
-          event.message, event.wParam, event.lParam, &handled);
+          event.hwnd, event.message, event.wParam, event.lParam, &handled);
       break;
     case WM_DEADCHAR:
     case WM_SYSDEADCHAR:

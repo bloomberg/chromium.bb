@@ -41,8 +41,8 @@ bool InputMethodWin::DispatchKeyEvent(
     const base::NativeEvent& native_key_event) {
   if (native_key_event.message == WM_CHAR) {
     BOOL handled;
-    OnChar(native_key_event.message, native_key_event.wParam,
-           native_key_event.lParam, &handled);
+    OnChar(native_key_event.hwnd, native_key_event.message,
+           native_key_event.wParam, native_key_event.lParam, &handled);
     return !!handled;  // Don't send WM_CHAR for post event processing.
   }
   // Handles ctrl-shift key to change text direction and layout alignment.
@@ -136,7 +136,8 @@ LRESULT InputMethodWin::OnImeRequest(UINT message,
   }
 }
 
-LRESULT InputMethodWin::OnChar(UINT message,
+LRESULT InputMethodWin::OnChar(HWND window_handle,
+                               UINT message,
                                WPARAM wparam,
                                LPARAM lparam,
                                BOOL* handled) {
@@ -149,13 +150,11 @@ LRESULT InputMethodWin::OnChar(UINT message,
                                      ui::GetModifiersFromKeyState());
   }
 
-  HWND attached_window = GetAttachedWindowHandle(GetTextInputClient());
-
   // Explicitly show the system menu at a good location on [Alt]+[Space].
   // Note: Setting |handled| to FALSE for DefWindowProc triggering of the system
   //       menu causes undesirable titlebar artifacts in the classic theme.
-  if (message == WM_SYSCHAR && wparam == VK_SPACE && IsWindow(attached_window))
-    ui::ShowSystemMenu(attached_window);
+  if (message == WM_SYSCHAR && wparam == VK_SPACE)
+    ui::ShowSystemMenu(window_handle);
 
   return 0;
 }

@@ -53,7 +53,7 @@ bool InputMethodTSF::OnUntranslatedIMEMessage(
       //   WM_CHAR by TranslateMessage API. (e.g, TIP is turned off)
       // - Another application sends WM_CHAR through SendMessage API.
       original_result = OnChar(
-          event.message, event.wParam, event.lParam, &handled);
+          event.hwnd, event.message, event.wParam, event.lParam, &handled);
       break;
     case WM_DEADCHAR:
     case WM_SYSDEADCHAR:
