@@ -161,7 +161,7 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 		tty->fd = try_open_vt(tty);
 	}
 
-	if (tty->fd <= 0) {
+	if (tty->fd < 0) {
 		weston_log("failed to open tty: %m\n");
 		free(tty);
 		return NULL;
