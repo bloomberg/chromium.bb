@@ -9,6 +9,7 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_types.h"
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/gfx/rect.h"
@@ -108,6 +109,8 @@ protected:
 
   ShelfLayoutManager* shelf_layout_manager_;
   LauncherView* launcher_view_;
+
+  base::WeakPtrFactory<LauncherTooltipManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherTooltipManager);
 };

@@ -142,7 +142,8 @@ LauncherTooltipManager::LauncherTooltipManager(
       widget_(NULL),
       anchor_(NULL),
       shelf_layout_manager_(shelf_layout_manager),
-      launcher_view_(launcher_view) {
+      launcher_view_(launcher_view),
+      weak_factory_(this) {
   if (shelf_layout_manager)
     shelf_layout_manager->AddObserver(this);
   if (Shell::HasInstance())
@@ -324,7 +325,7 @@ void LauncherTooltipManager::CancelHidingAnimation() {
 void LauncherTooltipManager::CloseSoon() {
   base::MessageLoopForUI::current()->PostTask(
       FROM_HERE,
-      base::Bind(&LauncherTooltipManager::Close, base::Unretained(this)));
+      base::Bind(&LauncherTooltipManager::Close, weak_factory_.GetWeakPtr()));
 }
 
 void LauncherTooltipManager::ShowInternal() {

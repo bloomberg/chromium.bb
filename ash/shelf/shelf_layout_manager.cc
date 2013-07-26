@@ -211,8 +211,6 @@ void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
   auto_hide_behavior_ = behavior;
   UpdateVisibilityState();
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-                    OnAutoHideStateChanged(state_.auto_hide_state));
-  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     OnAutoHideBehaviorChanged(root_window_,
                                               auto_hide_behavior_));
 }
@@ -333,17 +331,12 @@ void ShelfLayoutManager::UpdateAutoHideState() {
     if (auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
       // Hides happen immediately.
       SetState(state_.visibility_state);
-      FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-                        OnAutoHideStateChanged(auto_hide_state));
     } else {
       auto_hide_timer_.Stop();
       auto_hide_timer_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kAutoHideDelayMS),
           this, &ShelfLayoutManager::UpdateAutoHideStateNow);
-      FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-          OnAutoHideStateChanged(
-              CalculateAutoHideState(state_.visibility_state)));
     }
   } else {
     auto_hide_timer_.Stop();
@@ -658,6 +651,16 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   UpdateHitTestBounds();
   if (!delay_shelf_update)
     UpdateShelfBackground(change_type);
+
+  // OnAutoHideStateChanged Should be emitted when:
+  //  - firstly state changed to auto-hide from other state
+  //  - or, auto_hide_state has changed
+  if ((old_state.visibility_state != state_.visibility_state &&
+       state_.visibility_state == SHELF_AUTO_HIDE) ||
+      old_state.auto_hide_state != state_.auto_hide_state) {
+    FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
+                      OnAutoHideStateChanged(state_.auto_hide_state));
+  }
 }
 
 void ShelfLayoutManager::StopAnimating() {
