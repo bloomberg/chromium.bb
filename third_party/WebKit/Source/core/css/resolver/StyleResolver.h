@@ -157,24 +157,6 @@ struct StyleSharingStats {
 #define STYLE_STATS_ADD_MATCHED_PROPERTIES_ENTERED_INTO_CACHE() (void(0));
 #endif
 
-// FIXME: Move to separate file.
-class MatchRequest {
-public:
-    MatchRequest(RuleSet* ruleSet, bool includeEmptyRules = false, const ContainerNode* scope = 0)
-        : ruleSet(ruleSet)
-        , includeEmptyRules(includeEmptyRules)
-        , scope(scope)
-    {
-        // Now that we're about to read from the RuleSet, we're done adding more
-        // rules to the set and we should make sure it's compacted.
-        ruleSet->compactRulesIfNeeded();
-    }
-
-    const RuleSet* ruleSet;
-    const bool includeEmptyRules;
-    const ContainerNode* scope;
-};
-
 struct CSSPropertyValue {
     CSSPropertyValue(CSSPropertyID property, CSSValue* value)
         : property(property), value(value) { }

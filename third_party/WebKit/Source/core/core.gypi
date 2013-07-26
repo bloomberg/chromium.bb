@@ -761,6 +761,7 @@
             'css/resolver/MatchedPropertiesCache.h',
             'css/resolver/MatchResult.cpp',
             'css/resolver/MatchResult.h',
+            'css/resolver/MatchRequest.h',
             'css/resolver/MediaQueryResult.h',
             'css/resolver/ScopedStyleResolver.cpp',
             'css/resolver/ScopedStyleResolver.h',

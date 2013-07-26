@@ -32,6 +32,7 @@
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/resolver/MatchRequest.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 
