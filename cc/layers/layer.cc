@@ -232,14 +232,6 @@ void Layer::SetParent(Layer* layer) {
     replica_layer_->mask_layer_->reset_raster_scale_to_unknown();
 }
 
-bool Layer::HasAncestor(const Layer* ancestor) const {
-  for (const Layer* layer = parent(); layer; layer = layer->parent()) {
-    if (layer == ancestor)
-      return true;
-  }
-  return false;
-}
-
 void Layer::AddChild(scoped_refptr<Layer> child) {
   InsertChild(child, children_.size());
 }
@@ -351,6 +343,14 @@ void Layer::SetChildren(const LayerList& children) {
   RemoveAllChildren();
   for (size_t i = 0; i < children.size(); ++i)
     AddChild(children[i]);
+}
+
+bool Layer::HasAncestor(const Layer* ancestor) const {
+  for (const Layer* layer = parent(); layer; layer = layer->parent()) {
+    if (layer == ancestor)
+      return true;
+  }
+  return false;
 }
 
 void Layer::RequestCopyOfOutput(

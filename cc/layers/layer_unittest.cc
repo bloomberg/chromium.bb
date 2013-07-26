@@ -388,6 +388,27 @@ TEST_F(LayerTest, SetChildren) {
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
 }
 
+TEST_F(LayerTest, HasAncestor) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  EXPECT_FALSE(parent->HasAncestor(parent));
+
+  scoped_refptr<Layer> child = Layer::Create();
+  parent->AddChild(child);
+
+  EXPECT_FALSE(child->HasAncestor(child));
+  EXPECT_TRUE(child->HasAncestor(parent));
+  EXPECT_FALSE(parent->HasAncestor(child));
+
+  scoped_refptr<Layer> child_child = Layer::Create();
+  child->AddChild(child_child);
+
+  EXPECT_FALSE(child_child->HasAncestor(child_child));
+  EXPECT_TRUE(child_child->HasAncestor(parent));
+  EXPECT_TRUE(child_child->HasAncestor(child));
+  EXPECT_FALSE(parent->HasAncestor(child));
+  EXPECT_FALSE(parent->HasAncestor(child_child));
+}
+
 TEST_F(LayerTest, GetRootLayerAfterTreeManipulations) {
   CreateSimpleTestTree();
 
