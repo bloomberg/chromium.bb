@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/scoped_platform_file_closer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,25 +25,15 @@ namespace {
 // Arbitrary limit to sanity check the file size.
 const int kMaxImageFileSize = 50*1014*1024;
 
-struct PlatformFileCloser {
-  void operator()(base::PlatformFile* file) const {
-    if (file && *file != base::kInvalidPlatformFileValue)
-      base::ClosePlatformFile(*file);
-  }
-};
-
-typedef scoped_ptr<base::PlatformFile, PlatformFileCloser>
-    ScopedPlatformFile;
-
 scoped_ptr<std::string> ReadOnFileThread(const base::FilePath& path) {
   base::ThreadRestrictions::AssertIOAllowed();
   scoped_ptr<std::string> result;
 
   base::PlatformFile file = base::CreatePlatformFile(
       path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL, NULL);
-  ScopedPlatformFile file_closer(&file);
   if (file == base::kInvalidPlatformFileValue)
     return result.Pass();
+  base::ScopedPlatformFileCloser file_closer(&file);
 
   base::PlatformFileInfo file_info;
   if (!base::GetPlatformFileInfo(file, &file_info) ||

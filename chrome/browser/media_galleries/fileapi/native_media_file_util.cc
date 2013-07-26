@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/scoped_platform_file_closer.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
@@ -26,17 +27,6 @@
 namespace chrome {
 
 namespace {
-
-// Modelled after ScopedFILEClose.
-struct ScopedPlatformFileClose {
-  void operator()(base::PlatformFile* file) {
-    if (file && *file != base::kInvalidPlatformFileValue)
-      base::ClosePlatformFile(*file);
-  }
-};
-
-typedef scoped_ptr<base::PlatformFile, ScopedPlatformFileClose>
-    ScopedPlatformFile;
 
 // Used to skip the hidden folders and files. Returns true if the file specified
 // by |path| should be skipped.
@@ -111,7 +101,7 @@ base::PlatformFileError NativeMediaFileUtil::IsMediaFile(
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
-  ScopedPlatformFile scoped_platform_file(&file_handle);
+  base::ScopedPlatformFileCloser scoped_platform_file(&file_handle);
   char buffer[net::kMaxBytesToSniff];
 
   // Read as much as net::SniffMimeTypeFromLocalData() will bother looking at.

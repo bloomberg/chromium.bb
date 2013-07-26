@@ -12,10 +12,12 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_platform_file_closer.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -58,12 +60,6 @@ const base::FilePath::CharType kFileCacheVersionDir[] =
 
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
-
-struct PlatformFileCloser {
-  void operator()(base::PlatformFile* file) const {
-    base::ClosePlatformFile(*file);
-  }
-};
 
 const base::FilePath& GetDriveMyDriveMountPointPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mydrive_mount_path,
@@ -447,7 +443,7 @@ std::string GetMd5Digest(const base::FilePath& file_path) {
       NULL, NULL);
   if (file == base::kInvalidPlatformFileValue)
     return std::string();
-  scoped_ptr<base::PlatformFile, PlatformFileCloser> file_closer(&file);
+  base::ScopedPlatformFileCloser file_closer(&file);
 
   base::MD5Context context;
   base::MD5Init(&context);

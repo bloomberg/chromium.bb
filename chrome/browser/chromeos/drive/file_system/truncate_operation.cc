@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_platform_file_closer.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
@@ -23,26 +24,6 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 namespace {
-
-// Automatically closes |platform_file| given via the constructor when
-// the instance is destroyed.
-class ScopedPlatformFileCloser {
- public:
-  // |platform_file| must not be NULL.
-  explicit ScopedPlatformFileCloser(base::PlatformFile* platform_file)
-      : platform_file_(platform_file) {
-    DCHECK(platform_file_);
-  }
-
-  ~ScopedPlatformFileCloser() {
-    base::ClosePlatformFile(*platform_file_);
-  }
-
- private:
-  base::PlatformFile* platform_file_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedPlatformFileCloser);
-};
 
 // Truncates the local file at |local_cache_path| to the |length| bytes,
 // then marks the resource is dirty on |cache|.
@@ -66,7 +47,7 @@ FileError TruncateOnBlockingPool(internal::FileCache* cache,
     return FILE_ERROR_FAILED;
 
   DCHECK_NE(base::kInvalidPlatformFileValue, file);
-  ScopedPlatformFileCloser file_closer(&file);
+  base::ScopedPlatformFileCloser file_closer(&file);
 
   if (!base::TruncatePlatformFile(file, length))
     return FILE_ERROR_FAILED;
