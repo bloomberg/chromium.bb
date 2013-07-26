@@ -468,7 +468,7 @@ util.removeFileOrDirectory = function(entry, onSuccess, onError) {
  * @param {string} relativePath The path to be deduplicated.
  * @param {function(string)} onSuccess Called with the deduplicated path on
  *     success.
- * @param {function(string,Entry|FileError)} onError Called on error.
+ * @param {function(FileError)} onError Called on error.
  */
 util.deduplicatePath = function(dirEntry, relativePath, onSuccess, onError) {
   // The trial is up to 10.
@@ -491,7 +491,7 @@ util.deduplicatePath = function(dirEntry, relativePath, onSuccess, onError) {
     // to create it during the copy.  However, if the resolve fails with
     // anything other than NOT_FOUND, that's trouble.
     if (err.code != FileError.NOT_FOUND_ERR) {
-      onError('FILESYSTEM_ERROR', err);
+      onError(err);
       return;
     }
 
@@ -499,17 +499,17 @@ util.deduplicatePath = function(dirEntry, relativePath, onSuccess, onError) {
     onSuccess(trialPath);
   }
 
-  // Remember the first existing entry for error.
-  var firstExistingEntry = null;
   var numRetry = MAX_RETRY;
-
   var onResolved = function(entry) {
-    if (!firstExistingEntry)
-      firstExistingEntry = entry;
-
     if (--numRetry == 0) {
       // Hit the limit of the number of retrial.
-      onError('TARGET_EXISTS', firstExistingEntry);
+      // Note that we cannot create FileError object directly, so here we use
+      // Object.create instead.
+      onError(Object.create(FileError.prototype, {
+        code: {
+          get: function() { return FileError.PATH_EXISTS_ERR; }
+        }
+      }));
       return;
     }
 
@@ -1138,4 +1138,14 @@ util.toggleFullScreen = function(appWindow, enabled) {
 
   console.error(
       'App window not passed. Unable to toggle the full screen mode.');
+};
+
+/**
+ * The type of a file operation error.
+ * @enum {number}
+ */
+util.FileOperationErrorType = {
+  UNEXPECTED_SOURCE_FILE: 0,
+  TARGET_EXISTS: 1,
+  FILESYSTEM_ERROR: 2,
 };

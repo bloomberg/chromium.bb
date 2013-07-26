@@ -15,10 +15,6 @@ function FileCopyManager() {
   this.cancelCallback_ = null;
   this.unloadTimeout_ = null;
   this.listeners_ = [];
-
-  window.addEventListener('error', function(e) {
-    this.log_('Unhandled error: ', e.message, e.filename + ':' + e.lineno);
-  }.bind(this));
 }
 
 /**
@@ -76,6 +72,42 @@ FileCopyManager.Task = function(targetDirEntry,
   // For example, if 'dir' was copied as 'dir (1)', then 'dir\file.txt' should
   // become 'dir (1)\file.txt'.
   this.renamedDirectories_ = [];
+};
+
+/**
+ * Simple wrapper for util.deduplicatePath. On error, this method translates
+ * the FileError to FileCopyManager.Error object.
+ *
+ * @param {DirectoryEntry} dirEntry The target directory entry.
+ * @param {string} relativePath The path to be deduplicated.
+ * @param {function(string)} successCallback Callback run with the deduplicated
+ *     path on success.
+ * @param {function(FileCopyManager.Error)} errorCallback Callback run on error.
+ */
+FileCopyManager.Task.deduplicatePath = function(
+    dirEntry, relativePath, successCallback, errorCallback) {
+  util.deduplicatePath(
+      dirEntry, relativePath, successCallback,
+      function(err) {
+        var onFileSystemError = function(error) {
+          errorCallback(new FileCopyManager.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR, error));
+        };
+
+        if (err.code == FileError.PATH_EXISTS_ERR) {
+          // Failed to uniquify the file path. There should be an existing
+          // entry, so return the error with it.
+          util.resolvePath(
+              dirEntry, relativePath,
+              function(entry) {
+                errorCallback(new FileCopyManager.Error(
+                    util.FileOperationErrorType.TARGET_EXISTS, entry));
+              },
+              onFileSystemError);
+          return;
+        }
+        onFileSystemError(err);
+      });
 };
 
 /**
@@ -217,26 +249,18 @@ FileCopyManager.Task.prototype.getDeepestEntry_ = function() {
 
 /**
  * Error class used to report problems with a copy operation.
+ * If the code is UNEXPECTED_SOURCE_FILE, data should be a path of the file.
+ * If the code is TARGET_EXISTS, data should be the existing Entry.
+ * If the code is FILESYSTEM_ERROR, data should be the FileError.
  *
- * @param {string} reason Error type.
- * @param {Object} data Additional data.
+ * @param {util.FileOperationErrorType} code Error type.
+ * @param {string|Entry|FileError} data Additional data.
  * @constructor
  */
-FileCopyManager.Error = function(reason, data) {
-  this.reason = reason;
-  this.code = FileCopyManager.Error[reason];
+FileCopyManager.Error = function(code, data) {
+  this.code = code;
   this.data = data;
 };
-
-/** @const */
-FileCopyManager.Error.CANCELLED = 0;
-/** @const */
-FileCopyManager.Error.UNEXPECTED_SOURCE_FILE = 1;
-/** @const */
-FileCopyManager.Error.TARGET_EXISTS = 2;
-/** @const */
-FileCopyManager.Error.FILESYSTEM_ERROR = 3;
-
 
 // FileCopyManager methods.
 
@@ -391,17 +415,6 @@ FileCopyManager.prototype.maybeScheduleCloseBackgroundPage_ = function() {
   } else if (this.unloadTimeout_) {
     clearTimeout(this.unloadTimeout_);
     this.unloadTimeout_ = null;
-  }
-};
-
-/**
- * Reports an error on all of the active Files.app's windows.
- * @private
- */
-FileCopyManager.prototype.log_ = function() {
-  var windows = getContentWindows();
-  for (var i = 0; i < windows.length; i++) {
-    windows[i].console.error.apply(windows[i].console, arguments);
   }
 };
 
@@ -563,8 +576,10 @@ FileCopyManager.prototype.paste = function(files, directories, isCut, isOnDrive,
     },
 
     onPathError: function(err) {
-      var myError = new FileCopyManager.Error('FILESYSTEM_ERROR', err);
-      self.sendProgressEvent_('ERROR', myError);
+      self.sendProgressEvent_(
+          'ERROR',
+          new FileCopyManager.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR, err));
     }
   };
 
@@ -713,10 +728,6 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
     task, successCallback, errorCallback) {
   var self = this;
 
-  var onFilesystemError = function(err) {
-    errorCallback(new FileCopyManager.Error('FILESYSTEM_ERROR', err));
-  };
-
   var deleteOriginals = function() {
     var count = task.originalEntries.length;
 
@@ -725,6 +736,11 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
       count--;
       if (!count)
         successCallback();
+    };
+
+    var onFilesystemError = function(err) {
+      errorCallback(new FileCopyManager.Error(
+          util.FileOperationErrorType.FILESYSTEM_ERROR, err));
     };
 
     for (var i = 0; i < task.originalEntries.length; i++) {
@@ -776,17 +792,14 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
     return;
   }
 
-  var onError = function(reason, data) {
-    self.log_('serviceNextCopyTaskEntry error: ' + reason + ':', data);
-    errorCallback(new FileCopyManager.Error(reason, data));
-  };
-
   // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
   var sourcePath = sourceEntry.originalSourcePath;
   if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
     // We found an entry in the list that is not relative to the base source
     // path, something is wrong.
-    onError('UNEXPECTED_SOURCE_FILE', sourceEntry.fullPath);
+    errorCallback(new FileCopyManager.Error(
+        util.FileOperationErrorType.UNEXPECTED_SOURCE_FILE,
+        sourceEntry.fullPath));
     return;
   }
 
@@ -819,7 +832,8 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
   };
 
   var onFilesystemError = function(err) {
-    onError('FILESYSTEM_ERROR', err);
+    errorCallback(new FileCopyManager.Error(
+        util.FileOperationErrorType.FILESYSTEM_ERROR, err));
   };
 
   var onDeduplicated = function(targetRelativePath) {
@@ -842,8 +856,8 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
       var onFailTransfer = function(err) {
         chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
             onFileTransfersUpdated);
-
-        self.log_('Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
+        console.error(
+            'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
         onFilesystemError(err);
       };
 
@@ -958,15 +972,15 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
           {create: true, exclusive: true},
           function(targetEntry) {
             self.copyEntry_(sourceEntry, targetEntry,
-                            onCopyProgress, onCopyComplete, onError);
+                            onCopyProgress, onCopyComplete, onFilesystemError);
           },
           util.flog('Error getting file: ' + targetRelativePath,
                     onFilesystemError));
     }
   };
 
-  util.deduplicatePath(targetDirEntry, originalPath,
-                       onDeduplicated, onError);
+  FileCopyManager.Task.deduplicatePath(
+      targetDirEntry, originalPath, onDeduplicated, errorCallback);
 };
 
 /**
@@ -1029,26 +1043,25 @@ FileCopyManager.prototype.serviceNextMoveTaskEntry_ = function(
     return;
   }
 
-  var onError = function(reason, data) {
-    self.log_('serviceNextMoveTaskEntry error: ' + reason + ':', data);
-    errorCallback(new FileCopyManager.Error(reason, data));
-  };
-
   // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
   var sourcePath = sourceEntry.originalSourcePath;
   if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
     // We found an entry in the list that is not relative to the base source
     // path, something is wrong.
-    onError('UNEXPECTED_SOURCE_FILE', sourceEntry.fullPath);
+    errorCallback(new FileCopyManager.Error(
+        util.FileOperationErrorType.UNEXPECTED_SOURCE_FILE,
+        sourceEntry.fullPath));
     return;
   }
 
-  util.deduplicatePath(
+  FileCopyManager.Task.deduplicatePath(
       task.targetDirEntry,
       task.applyRenames(sourceEntry.fullPath.substr(sourcePath.length + 1)),
       function(targetRelativePath) {
         var onFilesystemError = function(err) {
-          onError('FILESYSTEM_ERROR', err);
+          errorCallback(new FileCopyManager.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR,
+              err));
         };
 
         task.targetDirEntry.getDirectory(
@@ -1066,7 +1079,7 @@ FileCopyManager.prototype.serviceNextMoveTaskEntry_ = function(
             },
             onFilesystemError);
       },
-      onError);
+      errorCallback);
 };
 
 /**
@@ -1096,20 +1109,20 @@ FileCopyManager.prototype.serviceZipTask_ = function(
     destName = ((i < 0) ? basename : basename.substr(0, i));
   }
 
-  var onError = function(reason, data) {
-    self.log_('serviceZipTask error: ' + reason + ':', data);
-    errorCallback(new FileCopyManager.Error(reason, data));
-  };
-
   var onDeduplicated = function(destPath) {
     var onZipSelectionComplete = function(success) {
       if (success) {
         self.sendProgressEvent_('SUCCESS');
+        successCallback();
       } else {
-        self.sendProgressEvent_('ERROR',
-            new FileCopyManager.Error('FILESYSTEM_ERROR', ''));
+        errorCallback(new FileCopyManager.Error(
+            util.FileOperationErrorType.FILESYSTEM_ERROR,
+            Object.create(FileError.prototype, {
+              code: {
+                get: function() { return FileError.INVALID_MODIFICATION_ERR; }
+              }
+            })));
       }
-      successCallback();
     };
 
     self.sendProgressEvent_('PROGRESS');
@@ -1117,8 +1130,8 @@ FileCopyManager.prototype.serviceZipTask_ = function(
         onZipSelectionComplete);
   };
 
-  util.deduplicatePath(
-      task.targetDirEntry, destName + '.zip', onDeduplicated, onError);
+  FileCopyManager.Task.deduplicatePath(
+      task.targetDirEntry, destName + '.zip', onDeduplicated, errorCallback);
 };
 
 /**
@@ -1133,7 +1146,7 @@ FileCopyManager.prototype.serviceZipTask_ = function(
  * @param {function(Entry, number)} successCallback function that will be called
  *     the copy operation finishes. It takes |targetEntry| and size of the last
  *     (not previously reported) copied chunk as parameters.
- * @param {function(string, object)} errorCallback function that will be called
+ * @param {function(FileError)} errorCallback function that will be called
  *     if an error is encountered. Takes error type and additional error data
  *     as parameters.
  */
@@ -1151,7 +1164,7 @@ FileCopyManager.prototype.copyEntry_ = function(sourceEntry,
     var onWriterCreated = function(writer) {
       var reportedProgress = 0;
       writer.onerror = function(progress) {
-        errorCallback('FILESYSTEM_ERROR', writer.error);
+        errorCallback(writer.error);
       };
 
       writer.onprogress = function(progress) {

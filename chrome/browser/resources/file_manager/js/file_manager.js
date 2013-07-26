@@ -1430,8 +1430,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onCopyProgress_ = function(event) {
-    if (event.reason === 'ERROR' &&
-        event.error.reason === 'FILESYSTEM_ERROR' &&
+    if (event.reason == 'ERROR' &&
+        event.error.code == util.FileOperationErrorType.FILESYSTEM_ERROR &&
         event.error.data.toDrive &&
         event.error.data.code == FileError.QUOTA_EXCEEDED_ERR) {
       this.alert.showHtml(

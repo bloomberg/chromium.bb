@@ -300,29 +300,30 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
 
     case 'ERROR':
       this.progress_ = event.status;
-      if (event.error.reason === 'TARGET_EXISTS') {
-        var name = event.error.data.name;
-        if (event.error.data.isDirectory)
+      var error = event.error;
+      if (error.code === util.FileOperationErrorType.TARGET_EXISTS) {
+        var name = error.data.name;
+        if (error.data.isDirectory)
           name += '/';
-        this.showError_(strf(this.transferType_() +
-                             '_TARGET_EXISTS_ERROR', name));
-      } else if (event.error.reason === 'FILESYSTEM_ERROR') {
-        if (event.error.data.toDrive &&
-            event.error.data.code === FileError.QUOTA_EXCEEDED_ERR) {
+        this.showError_(
+            strf(this.transferType_() + '_TARGET_EXISTS_ERROR', name));
+      } else if (error.code === util.FileOperationErrorType.FILESYSTEM_ERROR) {
+        if (error.data.toDrive &&
+            error.data.code === FileError.QUOTA_EXCEEDED_ERR) {
           // The alert will be shown in FileManager.onCopyProgress_.
           this.hide_();
         } else {
           this.showError_(strf(this.transferType_() + '_FILESYSTEM_ERROR',
-                               util.getFileErrorString(event.error.data.code)));
+                               util.getFileErrorString(error.data.code)));
           }
       } else {
-        this.showError_(strf(this.transferType_() + '_UNEXPECTED_ERROR',
-                             event.error));
+        this.showError_(
+            strf(this.transferType_() + '_UNEXPECTED_ERROR', error));
       }
       break;
 
     default:
-      console.warn('Unknown "copy-progress" event reason: ' + event.reason);
+      console.warn('Unknown "copy-progress" event reason: ' + event.code);
   }
 };
 
