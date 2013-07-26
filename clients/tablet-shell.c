@@ -396,7 +396,6 @@ tablet_shell_add_launcher(struct tablet *tablet,
 	struct homescreen *homescreen = tablet->homescreen;
 
 	launcher = malloc(sizeof *launcher);
-	launcher->path = strdup(path);
 	launcher->icon = load_cairo_surface(icon);
 	if ( !launcher->icon ||
 	     cairo_surface_status (launcher->icon) != CAIRO_STATUS_SUCCESS) {
@@ -404,6 +403,7 @@ tablet_shell_add_launcher(struct tablet *tablet,
 		free(launcher);
 		return;
 	}
+	launcher->path = strdup(path);
 
 	launcher->homescreen = homescreen;
 	launcher->widget = widget_add_widget(homescreen->widget, launcher);
