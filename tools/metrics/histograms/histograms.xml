@@ -16766,6 +16766,12 @@ other types of suffix sets.
   <int value="507" label="SYSTEM_DISPLAY_GETINFO"/>
   <int value="508" label="SYSTEM_DISPLAY_SETDISPLAYPROPERTIES"/>
   <int value="509" label="SYSTEM_MEMORY_GETINFO"/>
+  <int value="510" label="SYSTEM_STORAGE_GETINFO"/>
+  <int value="511" label="SYSTEM_STORAGE_EJECTDEVICE"/>
+  <int value="512" label="SYSTEM_STORAGE_ADDAVAILABLECAPACITYWATCH"/>
+  <int value="513" label="SYSTEM_STORAGE_REMOVEAVAILABLECAPACITYWATCH"/>
+  <int value="514" label="SYSTEM_STORAGE_GETALLAVAILABLECAPACITYWATCHES"/>
+  <int value="515" label="SYSTEM_STORAGE_REMOVEALLAVAILABLECAPACITYWATCHES"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

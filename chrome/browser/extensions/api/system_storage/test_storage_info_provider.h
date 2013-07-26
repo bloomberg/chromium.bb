@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_STORAGE_TEST_STORAGE_INFO_PROVIDER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_STORAGE_TEST_STORAGE_INFO_PROVIDER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_TEST_STORAGE_INFO_PROVIDER_H_
+#define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_TEST_STORAGE_INFO_PROVIDER_H_
 
 #include <vector>
 
-#include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 
 namespace extensions {
@@ -57,5 +57,5 @@ class TestStorageInfoProvider : public extensions::StorageInfoProvider {
 };
 
 }  // namespace extensions
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_STORAGE_TEST_STORAGE_INFO_PROVIDER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_TEST_STORAGE_INFO_PROVIDER_H_
 

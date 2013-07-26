@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,9 +15,9 @@ namespace extensions {
 
 using content::BrowserThread;
 using chrome::StorageMonitor;
-using api::experimental_system_info_storage::StorageUnitInfo;
-using api::experimental_system_info_storage::STORAGE_UNIT_TYPE_FIXED;
-using api::experimental_system_info_storage::STORAGE_UNIT_TYPE_REMOVABLE;
+using api::system_storage::StorageUnitInfo;
+using api::system_storage::STORAGE_UNIT_TYPE_FIXED;
+using api::system_storage::STORAGE_UNIT_TYPE_REMOVABLE;
 
 namespace systeminfo {
 

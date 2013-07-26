@@ -4,8 +4,6 @@
 
 var attachedDeviceId;
 
-systemInfo = chrome.experimental.systemInfo;
-
 function testAttach(details) {
   attachedDeviceId = details.id;
   chrome.test.sendMessage('attach_test_ok,' + details.name);
@@ -24,19 +22,19 @@ function ejectCallback(result) {
 };
 
 function ejectTest() {
-  systemInfo.storage.ejectDevice(attachedDeviceId, ejectCallback);
+  chrome.system.storage.ejectDevice(attachedDeviceId, ejectCallback);
 };
 
 function addAttachListener() {
-  systemInfo.storage.onAttached.addListener(testAttach);
+  chrome.system.storage.onAttached.addListener(testAttach);
   chrome.test.sendMessage('add_attach_ok');
 };
 
 function removeAttachListener() {
-  systemInfo.storage.onAttached.removeListener(testAttach);
+  chrome.system.storage.onAttached.removeListener(testAttach);
   chrome.test.sendMessage('remove_attach_ok');
 };
 
 function ejectFailTest() {
-  systemInfo.storage.ejectDevice('-1', ejectCallback);
+  chrome.system.storage.ejectDevice('-1', ejectCallback);
 };

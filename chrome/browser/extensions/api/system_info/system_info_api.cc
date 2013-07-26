@@ -14,13 +14,13 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/storage_monitor/removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
-#include "chrome/common/extensions/api/experimental_system_info_storage.h"
+#include "chrome/common/extensions/api/system_storage.h"
 #include "ui/gfx/display_observer.h"
 
 #if defined(USE_ASH)
@@ -30,9 +30,9 @@
 
 namespace extensions {
 
-using api::experimental_system_info_storage::StorageFreeSpaceChangeInfo;
-using api::experimental_system_info_storage::StorageUnitInfo;
-using api::experimental_system_info_storage::StorageUnitType;
+using api::system_storage::StorageFreeSpaceChangeInfo;
+using api::system_storage::StorageUnitInfo;
+using api::system_storage::StorageUnitType;
 using content::BrowserThread;
 
 namespace {

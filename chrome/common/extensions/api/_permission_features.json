@@ -547,6 +547,12 @@
     ],
     "whitelist": [""]
   },
+  "system.storage": {
+    "channel": "stable",
+    "extension_types": [
+      "extension", "packaged_app", "platform_app"
+    ]
+  },
   "system.display": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]

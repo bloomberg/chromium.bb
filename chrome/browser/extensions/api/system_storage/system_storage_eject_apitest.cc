@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// SystemInfoStorage eject API browser tests.
+// SystemStorage eject API browser tests.
 
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
-#include "chrome/browser/extensions/api/system_info_storage/test_storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_storage/test_storage_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -33,10 +33,10 @@ struct TestStorageUnitInfo kRemovableStorageData[] = {
 
 }  // namespace
 
-class SystemInfoStorageEjectApiTest : public ExtensionApiTest {
+class SystemStorageEjectApiTest : public ExtensionApiTest {
  public:
-  SystemInfoStorageEjectApiTest() : monitor_(NULL) {}
-  virtual ~SystemInfoStorageEjectApiTest() {}
+  SystemStorageEjectApiTest() : monitor_(NULL) {}
+  virtual ~SystemStorageEjectApiTest() {}
 
  protected:
   // ExtensionApiTest overrides.
@@ -52,7 +52,7 @@ class SystemInfoStorageEjectApiTest : public ExtensionApiTest {
 
   content::RenderViewHost* GetHost() {
     const extensions::Extension* extension =
-        LoadExtension(test_data_dir_.AppendASCII("systeminfo/storage_eject"));
+        LoadExtension(test_data_dir_.AppendASCII("system/storage_eject"));
     return extensions::ExtensionSystem::Get(browser()->profile())->
         process_manager()->GetBackgroundHostForExtension(extension->id())->
             render_view_host();
@@ -84,11 +84,11 @@ class SystemInfoStorageEjectApiTest : public ExtensionApiTest {
   chrome::test::TestStorageMonitor* monitor_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SystemInfoStorageEjectApiTest);
+  DISALLOW_COPY_AND_ASSIGN(SystemStorageEjectApiTest);
 };
 
 
-IN_PROC_BROWSER_TEST_F(SystemInfoStorageEjectApiTest, EjectTest) {
+IN_PROC_BROWSER_TEST_F(SystemStorageEjectApiTest, EjectTest) {
   TestStorageInfoProvider* provider =
       new TestStorageInfoProvider(kRemovableStorageData,
                                   arraysize(kRemovableStorageData));
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(SystemInfoStorageEjectApiTest, EjectTest) {
   Detach();
 }
 
-IN_PROC_BROWSER_TEST_F(SystemInfoStorageEjectApiTest, EjectBadDeviceTest) {
+IN_PROC_BROWSER_TEST_F(SystemStorageEjectApiTest, EjectBadDeviceTest) {
   TestStorageInfoProvider* provider =
       new TestStorageInfoProvider(kRemovableStorageData,
                                   arraysize(kRemovableStorageData));

@@ -21,8 +21,8 @@ class ChromeBrowserMainPartsMac;
 class MediaGalleriesPlatformAppBrowserTest;
 class MediaGalleriesPrivateApiTest;
 class MediaGalleriesPrivateEjectApiTest;
-class SystemInfoStorageApiTest;
-class SystemInfoStorageEjectApiTest;
+class SystemStorageApiTest;
+class SystemStorageEjectApiTest;
 
 namespace device {
 class MediaTransferProtocolManager;
@@ -138,8 +138,8 @@ class StorageMonitor {
   friend class ::MediaGalleriesPrivateApiTest;
   friend class ::MediaGalleriesPrivateEjectApiTest;
   friend class MediaFileSystemRegistryTest;
-  friend class ::SystemInfoStorageApiTest;
-  friend class ::SystemInfoStorageEjectApiTest;
+  friend class ::SystemStorageApiTest;
+  friend class ::SystemStorageEjectApiTest;
 
   StorageMonitor();
 

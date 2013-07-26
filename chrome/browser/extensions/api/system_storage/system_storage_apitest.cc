@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
-#include "chrome/browser/extensions/api/system_info_storage/test_storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_storage/test_storage_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
@@ -17,8 +17,8 @@
 namespace {
 
 using chrome::StorageMonitor;
-using extensions::api::experimental_system_info_storage::ParseStorageUnitType;
-using extensions::api::experimental_system_info_storage::StorageUnitInfo;
+using extensions::api::system_storage::ParseStorageUnitType;
+using extensions::api::system_storage::StorageUnitInfo;
 using extensions::StorageInfoProvider;
 using extensions::StorageUnitInfoList;
 using extensions::systeminfo::kStorageTypeFixed;
@@ -43,10 +43,10 @@ const struct TestStorageUnitInfo kRemovableStorageData[] = {
 
 }  // namespace
 
-class SystemInfoStorageApiTest : public ExtensionApiTest {
+class SystemStorageApiTest : public ExtensionApiTest {
  public:
-  SystemInfoStorageApiTest() {}
-  virtual ~SystemInfoStorageApiTest() {}
+  SystemStorageApiTest() {}
+  virtual ~SystemStorageApiTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -76,14 +76,14 @@ class SystemInfoStorageApiTest : public ExtensionApiTest {
   scoped_ptr<base::MessageLoop> message_loop_;
 };
 
-IN_PROC_BROWSER_TEST_F(SystemInfoStorageApiTest, Storage) {
+IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, Storage) {
   TestStorageInfoProvider* provider =
       new TestStorageInfoProvider(kTestingData, arraysize(kTestingData));
   StorageInfoProvider::InitializeForTesting(provider);
-  ASSERT_TRUE(RunPlatformAppTest("systeminfo/storage")) << message_;
+  ASSERT_TRUE(RunPlatformAppTest("system/storage")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SystemInfoStorageApiTest, StorageAttachment) {
+IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, StorageAttachment) {
   TestStorageInfoProvider* provider =
       new TestStorageInfoProvider(kRemovableStorageData,
                                   arraysize(kRemovableStorageData));
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(SystemInfoStorageApiTest, StorageAttachment) {
   ExtensionTestMessageListener detach_listener("detach", false);
 
   EXPECT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("systeminfo/storage_attachment")));
+      test_data_dir_.AppendASCII("system/storage_attachment")));
 
   // Simulate triggering onAttached event.
   ASSERT_TRUE(attach_listener.WaitUntilSatisfied());

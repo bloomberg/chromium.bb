@@ -1,10 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Use the <code>chrome.experimental.systemInfo.storage</code> API to query
-// storage device information and be notified when it changes.
-namespace experimental.systemInfo.storage {
+// Use the <code>chrome.system.storage</code> API to query storage device
+// information and be notified when a removable storage device is attached and
+// detached or the available capacity changes.
+namespace system.storage {
 
   enum StorageUnitType {
     // The storage has fixed media, e.g. hard disk or SSD.
@@ -23,8 +24,21 @@ namespace experimental.systemInfo.storage {
     // The media type of the storage unit.
     StorageUnitType type;
     // The total amount of the storage space, in bytes.
-    // Default value is 0 if query operation fails.
     double capacity;
+  };
+
+  dictionary StorageFreeSpaceChangeInfo {
+    // The transient id of the storage unit already changed.
+    DOMString id;
+    // The new value of the available capacity.
+    double availableCapacity;
+  };
+
+  // A dictionary that describes the add particular storage device watch
+  // request results.
+  dictionary AddAvailableCapacityWatchResult {
+    DOMString id;
+    boolean success;
   };
 
   [inline_doc] enum EjectDeviceResultCode {
@@ -41,32 +55,20 @@ namespace experimental.systemInfo.storage {
     failure
   };
 
-  dictionary StorageFreeSpaceChangeInfo {
-    // The transient id of the storage unit already changed.
-    DOMString id;
-    // The new value of the available capacity.
-    double availableCapacity;
-  };
+  callback AddAvailableCapacityWatchCallback = void (
+      AddAvailableCapacityWatchResult info);
 
-  // A dictionary that describes the add particular storage device watch
-  // request results.
-  dictionary AddWatchResult {
-    DOMString id;
-    boolean success;
-  };
-
-  callback StorageInfoCallback = void (StorageUnitInfo[] info);
+  callback GetAllAvailableCapacityWatchesCallback = void (
+      DOMString[] storageIds);
 
   callback EjectDeviceCallback = void (EjectDeviceResultCode result);
 
-  callback AddWatchCallback = void (AddWatchResult info);
-
-  callback GetAllWatchCallback = void (DOMString[] storageIds);
+  callback StorageInfoCallback = void (StorageUnitInfo[] info);
 
   interface Functions {
     // Get the storage information from the system. The argument passed to the
     // callback is an array of StorageUnitInfo objects.
-    static void get(StorageInfoCallback callback);
+    static void getInfo(StorageInfoCallback callback);
 
     // Ejects a removable storage device.
     // Note: We plan to move this function into a namespace that indicates it
@@ -75,28 +77,31 @@ namespace experimental.systemInfo.storage {
     static void ejectDevice(DOMString id, EjectDeviceCallback callback);
 
     // Monitor a particular storage device available change capacity.
-    static void addWatch(DOMString id, AddWatchCallback callback);
+    static void addAvailableCapacityWatch(
+        DOMString id,
+        AddAvailableCapacityWatchCallback callback);
 
     // Remove the monitor of a particular device.
-    static void removeWatch(DOMString id);
+    static void removeAvailableCapacityWatch(DOMString id);
 
     // Get all the watched storage devices.
-    static void getAllWatch(GetAllWatchCallback callback);
+    static void getAllAvailableCapacityWatches(
+        GetAllAvailableCapacityWatchesCallback callback);
 
     // Remove all the storage devices monitors.
-    static void removeAllWatch();
+    static void removeAllAvailableCapacityWatches();
   };
 
   interface Events {
-    // Fired when the storage device available capacity is changed.
-    // |info|: The changed information for the specified storage unit.
-    static void onAvailableCapacityChanged(StorageFreeSpaceChangeInfo info);
-
     // Fired when a new removable storage is attached to the system.
     static void onAttached(StorageUnitInfo info);
 
     // Fired when a removable storage is detached from the system.
     static void onDetached(DOMString id);
+
+    // Fired when the storage device available capacity is changed.
+    // |info|: The changed information for the specified storage unit.
+    static void onAvailableCapacityChanged(StorageFreeSpaceChangeInfo info);
   };
 
 };

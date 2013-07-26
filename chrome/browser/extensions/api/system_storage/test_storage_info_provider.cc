@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_info_storage/test_storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_storage/test_storage_info_provider.h"
 
 #include "base/strings/utf_string_conversions.h"
 
 namespace extensions {
 
-using api::experimental_system_info_storage::ParseStorageUnitType;
-using api::experimental_system_info_storage::StorageUnitInfo;
+using api::system_storage::ParseStorageUnitType;
+using api::system_storage::StorageUnitInfo;
 using systeminfo::kStorageTypeFixed;
 using systeminfo::kStorageTypeRemovable;
 using systeminfo::kStorageTypeUnknown;

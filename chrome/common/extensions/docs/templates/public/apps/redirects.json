@@ -1,7 +1,8 @@
 {
   "": "about_apps.html",
-  "index.html": "about_apps.html",
   "app_csp.html": "contentSecurityPolicy.html",
+  "experimental_systemInfo_storage.html": "system_storage.html",
+  "index.html": "about_apps.html",
   "systemInfo_cpu.html": "system_cpu.html",
   "systemInfo_display.html": "system_display.html",
   "systemInfo_memory.html": "system_memory.html"

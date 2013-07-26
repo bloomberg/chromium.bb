@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// systemInfo.storage api test
-// browser_tests --gtest_filter=SystemInfoStorageApiTest.StorageAttachment
-chrome.systemInfo = chrome.experimental.systemInfo;
+// system.storage api test
+// browser_tests --gtest_filter=SystemStorageApiTest.Storage
 
 // Testing data should be the same as |kRemovableStorageData| in
-// system_info_storage_apitest.cc.
+// system_storage_apitest.cc.
 var testData = {
   id: "transient:0004",
   name: "/media/usb1",
@@ -18,7 +17,7 @@ var testData = {
 chrome.test.runTests([
   function testAttachedEvent() {
     chrome.test.listenOnce(
-      chrome.systemInfo.storage.onAttached,
+      chrome.system.storage.onAttached,
       function listener(info) {
         chrome.test.assertEq(testData.id, info.id);
         chrome.test.assertEq(testData.name, info.name);
@@ -33,7 +32,7 @@ chrome.test.runTests([
 
   function testDetachedEvent() {
     chrome.test.listenOnce(
-      chrome.systemInfo.storage.onDetached,
+      chrome.system.storage.onDetached,
       function listener(id) {
         chrome.test.assertEq(testData.id, id);
       }

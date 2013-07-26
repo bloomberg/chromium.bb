@@ -1,5 +1,6 @@
 {
   "": "index.html",
+  "experimental_systemInfo_storage.html": "system_storage.html",
   "systemInfo_cpu.html": "system_cpu.html",
   "systemInfo_memory.html": "system_memory.html"
 }

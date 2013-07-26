@@ -293,6 +293,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kSystemCpu, "system.cpu" },
     { APIPermission::kSystemMemory, "system.memory" },
     { APIPermission::kSystemDisplay, "system.display" },
+    { APIPermission::kSystemStorage, "system.storage" },
     { APIPermission::kPointerLock, "pointerLock" },
     { APIPermission::kFullscreen, "fullscreen" },
     { APIPermission::kAudio, "audio" },

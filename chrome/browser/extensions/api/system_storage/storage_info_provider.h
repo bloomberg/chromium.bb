@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_STORAGE_STORAGE_INFO_PROVIDER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_STORAGE_STORAGE_INFO_PROVIDER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_
+#define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_
 
 #include <set>
 
@@ -10,10 +10,10 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
-#include "chrome/browser/extensions/api/system_info_storage/storage_free_space_observer.h"
+#include "chrome/browser/extensions/api/system_storage/storage_free_space_observer.h"
 #include "chrome/browser/storage_monitor/removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
-#include "chrome/common/extensions/api/experimental_system_info_storage.h"
+#include "chrome/common/extensions/api/system_storage.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -28,12 +28,12 @@ extern const char kStorageTypeRemovable[];
 // Build StorageUnitInfo struct from chrome::StorageInfo instance. The |unit|
 // parameter is the output value.
 void BuildStorageUnitInfo(const chrome::StorageInfo& info,
-    api::experimental_system_info_storage::StorageUnitInfo* unit);
+    api::system_storage::StorageUnitInfo* unit);
 
 }  // namespace systeminfo
 
 typedef std::vector<linked_ptr<
-    api::experimental_system_info_storage::StorageUnitInfo> >
+    api::system_storage::StorageUnitInfo> >
         StorageUnitInfoList;
 
 class StorageInfoProvider : public SystemInfoProvider<StorageUnitInfoList> {
@@ -90,6 +90,7 @@ class StorageInfoProvider : public SystemInfoProvider<StorageUnitInfoList> {
   // Override to query the available capacity of all known storage devices on
   // the blocking pool, including fixed and removable devices.
   virtual bool QueryInfo() OVERRIDE;
+
   // Query the new attached removable storage info on the blocking pool.
   void QueryAttachedStorageInfoOnBlockingPool(const std::string& transient_id);
 
@@ -129,4 +130,4 @@ class StorageInfoProvider : public SystemInfoProvider<StorageUnitInfoList> {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_STORAGE_STORAGE_INFO_PROVIDER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_

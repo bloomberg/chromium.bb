@@ -197,7 +197,16 @@ const char* const kNames[] = {
     "system.display.getInfo",
     "system.display.onDisplayChanged",
     "system.display.setDisplayProperties",
-    "system.memory.getInfo"
+    "system.memory.getInfo",
+    "system.storage.getInfo",
+    "system.storage.onAttached",
+    "system.storage.onDetached",
+    "system.storage.ejectDevice",
+    "system.storage.addAvailableCapacityWatch",
+    "system.storage.removeAvailableCapacityWatch",
+    "system.storage.getAllAvailableCapacityWatches",
+    "system.storage.removeAllAvailableCapacityWatches",
+    "system.storage.onAvailableCapacityChanged"
 };
 
 }  // namespace activity_log_api_name_constants

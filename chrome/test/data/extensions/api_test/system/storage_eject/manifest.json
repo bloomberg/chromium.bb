@@ -2,11 +2,11 @@
   "name": "systemInfo_storage_api_eject",
   "version": "1.0",
   "manifest_version": 2,
-  "description": "Test for systemInfo.storage.eject function",
+  "description": "Test for system.storage.eject function",
   "app": {
     "background": {
       "scripts": ["test.js"]
     }
   },
-  "permissions": [ "experimental" ]
+  "permissions": [ "system.storage" ]
 }

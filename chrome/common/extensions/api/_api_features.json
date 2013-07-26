@@ -209,10 +209,6 @@
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
   },
-  "experimental.systemInfo.storage": {
-    "dependencies": ["permission:experimental"],
-    "contexts": ["blessed_extension"]
-  },
   "extension": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],
@@ -469,6 +465,25 @@
   "system.memory": {
     "dependencies": ["permission:system.memory"],
     "contexts": ["blessed_extension"]
+  },
+  "system.storage": {
+    "dependencies": ["permission:system.storage"],
+    "contexts": ["blessed_extension"]
+  },
+  "system.storage.addAvailableCapacityWatch": {
+    "channel": "dev"
+  },
+  "system.storage.removeAvailableCapacityWatch": {
+    "channel": "dev"
+  },
+  "system.storage.getAllAvailableCapacityWatches": {
+    "channel": "dev"
+  },
+  "system.storage.removeAllAvailableCapacityWatches": {
+    "channel": "dev"
+  },
+  "system.storage.onAvailableCapacityChanged": {
+    "channel": "dev"
   },
   "systemPrivate": {
     "dependencies": ["permission:systemPrivate"],

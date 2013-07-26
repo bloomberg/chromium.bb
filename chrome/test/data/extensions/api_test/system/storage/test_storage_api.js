@@ -1,13 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// systemInfo.storage api test
-// browser_tests --gtest_filter=SystemInfoStorageApiTest.Storage
-chrome.systemInfo = chrome.experimental.systemInfo;
+// system.storage api test
+// browser_tests --gtest_filter=SystemStorageApiTest.Storage
 
 // Testing data should be the same as |kTestingData| in
-// system_info_storage_apitest.cc.
+// system_storage_apitest.cc.
 var testData = [
   { id:"transient:0004", name: "0xbeaf", type: "unknown", capacity: 4098,
     availableCapacity: 1000, step: 0 },
@@ -19,7 +18,7 @@ var testData = [
 
 chrome.test.runTests([
   function testGet() {
-    chrome.systemInfo.storage.get(chrome.test.callbackPass(function(units) {
+    chrome.system.storage.getInfo(chrome.test.callbackPass(function(units) {
       chrome.test.assertTrue(units.length == 3);
       for (var i = 0; i < units.length; ++i) {
         chrome.test.assertEq(testData[i].id, units[i].id);
@@ -33,13 +32,14 @@ chrome.test.runTests([
   function testChangedEvent() {
     var numOfChangedEvent = 0;
     var callbackCompleted = chrome.test.callbackAdded();
-    chrome.systemInfo.storage.onAvailableCapacityChanged.addListener(
+    chrome.system.storage.onAvailableCapacityChanged.addListener(
       function listener(changeInfo) {
         for (var i = 0; i < testData.length; ++i) {
           if (changeInfo.id == testData[i].id) {
             chrome.test.assertEq(testData[i].availableCapacity,
                                  changeInfo.availableCapacity);
-            // Increase its availableCapacity with a fixed |change_step|.
+            // Increase its availableCapacity since it will be queried
+            // before triggering onChanged event.
             testData[i].availableCapacity += testData[i].step;
             break;
           }
@@ -49,10 +49,10 @@ chrome.test.runTests([
           chrome.test.fail("No matched storage id is found!");
 
         if (++numOfChangedEvent > 10) {
-          chrome.systemInfo.storage.onAvailableCapacityChanged.removeListener(
-            listener);
+          chrome.system.storage.onAvailableCapacityChanged.removeListener(
+              listener);
           setTimeout(callbackCompleted, 0);
         }
-     });
-   }
+      });
+  }
 ]);

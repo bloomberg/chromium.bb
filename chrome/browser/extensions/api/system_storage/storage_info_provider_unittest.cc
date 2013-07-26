@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
-#include "chrome/browser/extensions/api/system_info_storage/test_storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_storage/test_storage_info_provider.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -16,9 +16,9 @@
 
 namespace extensions {
 
-using api::experimental_system_info_storage::ParseStorageUnitType;
-using api::experimental_system_info_storage::StorageUnitInfo;
-using api::experimental_system_info_storage::StorageUnitType;
+using api::system_storage::ParseStorageUnitType;
+using api::system_storage::StorageUnitInfo;
+using api::system_storage::StorageUnitType;
 using base::MessageLoop;
 using chrome::test::TestStorageMonitor;
 using content::BrowserThread;

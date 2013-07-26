@@ -73,9 +73,9 @@ const char kOnPushMessage[] = "pushMessaging.onMessage";
 
 const char kOnDisplayChanged[] = "system.display.onDisplayChanged";
 const char kOnStorageAvailableCapacityChanged[] =
-    "experimental.systemInfo.storage.onAvailableCapacityChanged";
-const char kOnStorageAttached[] = "experimental.systemInfo.storage.onAttached";
-const char kOnStorageDetached[] = "experimental.systemInfo.storage.onDetached";
+    "system.storage.onAvailableCapacityChanged";
+const char kOnStorageAttached[] = "system.storage.onAttached";
+const char kOnStorageDetached[] = "system.storage.onDetached";
 
 const char kOnSystemIndicatorClicked[] = "systemIndicator.onClicked";
 

@@ -117,6 +117,7 @@ class APIPermission {
     kSystemPrivate,
     kSystemIndicator,
     kSystemDisplay,
+    kSystemStorage,
     kTab,
     kTabCapture,
     kTerminalPrivate,
