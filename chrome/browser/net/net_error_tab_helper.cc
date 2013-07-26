@@ -143,7 +143,7 @@ NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
       dns_error_active_(false),
       dns_error_page_committed_(false),
       dns_probe_status_(chrome_common_net::DNS_PROBE_POSSIBLE),
-      enabled_by_trial_(chrome_common_net::DnsProbesEnabledByFieldTrial()) {
+      probes_enabled_(chrome_common_net::DnsProbesEnabled()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If this helper is under test, it won't have a WebContents.
@@ -208,7 +208,7 @@ bool NetErrorTabHelper::ProbesAllowed() const {
     return testing_state_ == TESTING_FORCE_ENABLED;
 
   // TODO(ttuttle): Disable on mobile?
-  return enabled_by_trial_ && *resolve_errors_with_web_service_;
+  return probes_enabled_ && *resolve_errors_with_web_service_;
 }
 
 void NetErrorTabHelper::SendInfo() {

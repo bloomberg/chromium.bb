@@ -108,8 +108,8 @@ class NetErrorTabHelper
   // navigations), it re-sends the status whenever an error page commits.
   chrome_common_net::DnsProbeStatus dns_probe_status_;
 
-  // Whether we are enabled to run by the DnsProbe-Enable field trial.
-  const bool enabled_by_trial_;
+  // Whether probes are enabled (by the command-line option or the field trial).
+  const bool probes_enabled_;
 
   // Optional callback for browser test to snoop on outgoing NetErrorInfo IPCs.
   DnsProbeStatusSnoopCallback dns_probe_status_snoop_callback_;

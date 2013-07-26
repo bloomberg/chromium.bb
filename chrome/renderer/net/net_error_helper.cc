@@ -30,7 +30,6 @@ using base::JSONWriter;
 using chrome_common_net::DnsProbeStatus;
 using chrome_common_net::DnsProbeStatusIsFinished;
 using chrome_common_net::DnsProbeStatusToString;
-using chrome_common_net::DnsProbesEnabledByFieldTrial;
 using content::RenderThread;
 using content::RenderView;
 using content::RenderViewObserver;
@@ -166,6 +165,7 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+// static
 bool NetErrorHelper::GetErrorStringsForDnsProbe(
     WebKit::WebFrame* frame,
     const WebKit::WebURLError& error,

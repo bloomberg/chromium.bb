@@ -62,9 +62,10 @@ const char* DnsProbeStatusToString(int status);
 // Returns true if |status| is one of the DNS_PROBE_FINISHED_* statuses.
 bool DnsProbeStatusIsFinished(DnsProbeStatus status);
 
-// Returns true if DNS probes are enabled (by the DnsProbe-Enable field trial),
-// or false if they are disabled or the field trial wasn't found.
-bool DnsProbesEnabledByFieldTrial();
+// Checks the --force-dns-probes command line option and the DnsProbe-Enable
+// field trial.  If the command-line option is found, return what it says,
+// otherwise return true if and only if the field trial has group "enabled".
+bool DnsProbesEnabled();
 
 // The error domain used to pass DNS probe statuses to the localized error
 // code.

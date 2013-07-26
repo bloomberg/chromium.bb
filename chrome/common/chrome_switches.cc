@@ -302,6 +302,9 @@ const char kDisableDefaultApps[]            = "disable-default-apps";
 // Disables retrieval of PAC URLs from DHCP as per the WPAD standard.
 const char kDisableDhcpWpad[]               = "disable-dhcp-wpad";
 
+// Force-disables DNS probes on main frame DNS errors.
+const char kDisableDnsProbes[]              = "disable-dns-probes";
+
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 
@@ -531,6 +534,10 @@ const char kEnableDeviceDiscovery[]        = "enable-device-discovery";
 
 // If true devtools experimental settings are enabled.
 const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
+
+// Force-enables DNS probes on main frame DNS errors.  (The user must still
+// opt in to "Use web service to resolve navigation errors".)
+const char kEnableDnsProbes[]               = "enable-dns-probes";
 
 // Enables extensions to be easily installed from sites other than the web
 // store. Without this flag, they can still be installed, but must be manually
