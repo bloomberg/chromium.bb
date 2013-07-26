@@ -11,7 +11,7 @@
 
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
-#include "third_party/WebKit/public/web/WebTextFieldDecoratorClient.h"
+#include "third_party/WebKit/public/web/WebPasswordGeneratorClient.h"
 #include "url/gurl.h"
 
 namespace WebKit {
@@ -29,7 +29,7 @@ namespace autofill {
 // generation between the browser (which shows the popup and generates
 // passwords) and WebKit (shows the generation icon in the password field).
 class PasswordGenerationManager : public content::RenderViewObserver,
-                                  public WebKit::WebTextFieldDecoratorClient {
+                                  public WebKit::WebPasswordGeneratorClient {
  public:
   explicit PasswordGenerationManager(content::RenderView* render_view);
   virtual ~PasswordGenerationManager();
@@ -47,16 +47,8 @@ class PasswordGenerationManager : public content::RenderViewObserver,
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
 
-  // WebTextFieldDecoratorClient:
-  virtual bool shouldAddDecorationTo(
-      const WebKit::WebInputElement& element) OVERRIDE;
-  virtual bool visibleByDefault() OVERRIDE;
-  virtual WebKit::WebCString imageNameForNormalState() OVERRIDE;
-  virtual WebKit::WebCString imageNameForDisabledState() OVERRIDE;
-  virtual WebKit::WebCString imageNameForReadOnlyState() OVERRIDE;
-  virtual WebKit::WebCString imageNameForHoverState() OVERRIDE;
-  virtual void handleClick(WebKit::WebInputElement& element) OVERRIDE;
-  virtual void willDetach(const WebKit::WebInputElement& element) OVERRIDE;
+  // WebPasswordGeneratorClient:
+  virtual void openPasswordGenerator(WebKit::WebInputElement& element) OVERRIDE;
 
   // Message handlers.
   void OnFormNotBlacklisted(const content::PasswordForm& form);

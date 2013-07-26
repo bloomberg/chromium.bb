@@ -71,7 +71,7 @@ PasswordGenerationManager::PasswordGenerationManager(
     : content::RenderViewObserver(render_view),
       render_view_(render_view),
       enabled_(false) {
-  render_view_->GetWebView()->addTextFieldDecoratorClient(this);
+  render_view_->GetWebView()->setPasswordGeneratorClient(this);
 }
 PasswordGenerationManager::~PasswordGenerationManager() {}
 
@@ -150,33 +150,10 @@ bool PasswordGenerationManager::ShouldAnalyzeDocument(
   return true;
 }
 
-bool PasswordGenerationManager::shouldAddDecorationTo(
-    const WebKit::WebInputElement& element) {
-  return element.isPasswordField();
-}
-
-bool PasswordGenerationManager::visibleByDefault() {
-  return false;
-}
-
-WebKit::WebCString PasswordGenerationManager::imageNameForNormalState() {
-  return WebKit::WebCString("generatePassword");
-}
-
-WebKit::WebCString PasswordGenerationManager::imageNameForDisabledState() {
-  return imageNameForNormalState();
-}
-
-WebKit::WebCString PasswordGenerationManager::imageNameForReadOnlyState() {
-  return imageNameForNormalState();
-}
-
-WebKit::WebCString PasswordGenerationManager::imageNameForHoverState() {
-  return WebKit::WebCString("generatePasswordHover");
-}
-
-void PasswordGenerationManager::handleClick(WebKit::WebInputElement& element) {
-  gfx::Rect rect(element.decorationElementFor(this).boundsInViewportSpace());
+void PasswordGenerationManager::openPasswordGenerator(
+    WebKit::WebInputElement& element) {
+  WebKit::WebElement button(element.passwordGeneratorButtonElement());
+  gfx::Rect rect(button.boundsInViewportSpace());
   scoped_ptr<content::PasswordForm> password_form(
       content::CreatePasswordForm(element.form()));
   // We should not have shown the icon we can't create a valid PasswordForm.
@@ -188,11 +165,6 @@ void PasswordGenerationManager::handleClick(WebKit::WebInputElement& element) {
                                                        *password_form));
   password_generation::LogPasswordGenerationEvent(
       password_generation::BUBBLE_SHOWN);
-}
-
-void PasswordGenerationManager::willDetach(
-    const WebKit::WebInputElement& element) {
-  // No implementation
 }
 
 bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
@@ -245,7 +217,7 @@ void PasswordGenerationManager::MaybeShowIcon() {
            not_blacklisted_password_form_origins_.begin();
        it != not_blacklisted_password_form_origins_.end(); ++it) {
     if (*it == account_creation_form_origin_) {
-      passwords_[0].decorationElementFor(this).setAttribute("style",
+      passwords_[0].passwordGeneratorButtonElement().setAttribute("style",
                                                             "display:block");
       password_generation::LogPasswordGenerationEvent(
           password_generation::ICON_SHOWN);
