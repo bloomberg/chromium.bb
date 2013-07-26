@@ -4970,6 +4970,13 @@ display_create(int *argc, char *argv[])
 		return NULL;
 	}
 
+	d->xkb_context = xkb_context_new(0);
+	if (d->xkb_context == NULL) {
+		fprintf(stderr, "Failed to create XKB context\n");
+		free(d);
+		return NULL;
+	}
+
 	d->epoll_fd = os_epoll_create_cloexec();
 	d->display_fd = wl_display_get_fd(d->display);
 	d->display_task.run = handle_display_data;
@@ -4980,12 +4987,6 @@ display_create(int *argc, char *argv[])
 	wl_list_init(&d->input_list);
 	wl_list_init(&d->output_list);
 	wl_list_init(&d->global_list);
-
-	d->xkb_context = xkb_context_new(0);
-	if (d->xkb_context == NULL) {
-		fprintf(stderr, "Failed to create XKB context\n");
-		return NULL;
-	}
 
 	d->workspace = 0;
 	d->workspace_count = 1;
