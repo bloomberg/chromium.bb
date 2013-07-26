@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/blacklist.h"
+#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
@@ -32,7 +33,8 @@ namespace extensions {
 TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
       value_store_(NULL),
-      info_map_(new ExtensionInfoMap()) {
+      info_map_(new ExtensionInfoMap()),
+      error_console_(new ErrorConsole(profile)) {
 }
 
 TestExtensionSystem::~TestExtensionSystem() {
@@ -147,6 +149,10 @@ Blacklist* TestExtensionSystem::blacklist() {
 
 const OneShotEvent& TestExtensionSystem::ready() const {
   return ready_;
+}
+
+ErrorConsole* TestExtensionSystem::error_console() {
+  return error_console_.get();
 }
 
 // static

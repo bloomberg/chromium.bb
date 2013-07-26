@@ -65,6 +65,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ExtensionWarningService* warning_service() OVERRIDE;
   virtual Blacklist* blacklist() OVERRIDE;
   virtual const OneShotEvent& ready() const OVERRIDE;
+  virtual ErrorConsole* error_console() OVERRIDE;
 
   void SetReady() {
     LOG(INFO) << "SetReady()";
@@ -88,6 +89,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;
+  scoped_ptr<ErrorConsole> error_console_;
   OneShotEvent ready_;
 };
 

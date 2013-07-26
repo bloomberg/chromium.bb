@@ -813,6 +813,7 @@
         'browser/extensions/convert_user_script_unittest.cc',
         'browser/extensions/convert_web_app_unittest.cc',
         'browser/extensions/default_apps_unittest.cc',
+        'browser/extensions/error_console/error_console_unittest.cc',
         'browser/extensions/event_listener_map_unittest.cc',
         'browser/extensions/event_router_forwarder_unittest.cc',
         'browser/extensions/extension_action_icon_factory_unittest.cc',

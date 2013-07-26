@@ -13,6 +13,7 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -214,6 +215,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       new ExtensionWarningBadgeService(profile_));
   extension_warning_service_->AddObserver(
       extension_warning_badge_service_.get());
+  error_console_.reset(new ErrorConsole(profile_));
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {
@@ -266,6 +268,10 @@ ExtensionWarningService* ExtensionSystemImpl::Shared::warning_service() {
 
 Blacklist* ExtensionSystemImpl::Shared::blacklist() {
   return blacklist_.get();
+}
+
+ErrorConsole* ExtensionSystemImpl::Shared::error_console() {
+  return error_console_.get();
 }
 
 //
@@ -350,6 +356,10 @@ Blacklist* ExtensionSystemImpl::blacklist() {
 
 const OneShotEvent& ExtensionSystemImpl::ready() const {
   return shared_->ready();
+}
+
+ErrorConsole* ExtensionSystemImpl::error_console() {
+  return shared_->error_console();
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
