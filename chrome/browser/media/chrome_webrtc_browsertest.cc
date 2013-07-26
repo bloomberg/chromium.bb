@@ -16,6 +16,7 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -47,7 +48,7 @@ static const char kTestLoggingSessionId[] = "0123456789abcdef";
 // Top-level integration test for WebRTC. Requires a real webcam and microphone
 // on the running system. This test is not meant to run in the main browser
 // test suite since normal tester machines do not have webcams.
-class WebrtcBrowserTest : public InProcessBrowserTest {
+class WebrtcBrowserTest : public WebRtcTestBase {
  public:
   // See comment in test where this class is used for purpose.
   class BrowserMessageFilter : public content::BrowserMessageFilter {
@@ -107,28 +108,6 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
         tab_contents, javascript, &result));
     return result;
-  }
-
-  void GetUserMedia(content::WebContents* tab_contents) {
-    content::WindowedNotificationObserver infobar_added(
-        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-        content::NotificationService::AllSources());
-
-    // Request user media: this will launch the media stream info bar.
-    EXPECT_EQ("ok-requested", ExecuteJavascript(
-        "getUserMedia('{video: true, audio: true}');", tab_contents));
-
-    // Wait for the bar to pop up, then accept.
-    infobar_added.Wait();
-    content::Details<InfoBarAddedDetails> details(infobar_added.details());
-    MediaStreamInfoBarDelegate* media_infobar =
-        details->AsMediaStreamInfoBarDelegate();
-    media_infobar->Accept();
-
-    // Wait for WebRTC to call the success callback.
-    EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult();",
-                                 "ok-got-stream",
-                                 tab_contents));
   }
 
   // Ensures we didn't get any errors asynchronously (e.g. while no javascript
@@ -242,14 +221,14 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
       browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   content::WebContents* left_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GetUserMedia(left_tab);
+  GetUserMediaAndAccept(left_tab);
 
   chrome::AddBlankTabAt(browser(), -1, true);
   content::WebContents* right_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(
         browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  GetUserMedia(right_tab);
+  GetUserMediaAndAccept(right_tab);
 
   ConnectToPeerConnectionServer("peer 1", left_tab);
   ConnectToPeerConnectionServer("peer 2", right_tab);
@@ -281,14 +260,14 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
       browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   content::WebContents* left_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GetUserMedia(left_tab);
+  GetUserMediaAndAccept(left_tab);
 
   chrome::AddBlankTabAt(browser(), -1, true);
   content::WebContents* right_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(
         browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  GetUserMedia(right_tab);
+  GetUserMediaAndAccept(right_tab);
 
   ConnectToPeerConnectionServer("peer 1", left_tab);
   ConnectToPeerConnectionServer("peer 2", right_tab);
@@ -369,14 +348,14 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
       browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   content::WebContents* left_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GetUserMedia(left_tab);
+  GetUserMediaAndAccept(left_tab);
 
   chrome::AddBlankTabAt(browser(), -1, true);
   content::WebContents* right_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  GetUserMedia(right_tab);
+  GetUserMediaAndAccept(right_tab);
 
   ConnectToPeerConnectionServer("peer 1", left_tab);
   ConnectToPeerConnectionServer("peer 2", right_tab);

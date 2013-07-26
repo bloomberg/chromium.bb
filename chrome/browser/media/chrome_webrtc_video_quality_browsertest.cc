@@ -14,6 +14,7 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -98,7 +99,7 @@ static const char kPyWebSocketPortNumber[] = "12221";
 // frame_analyzer. Both tools can be found under third_party/webrtc/tools. The
 // test also runs a stand alone Python implementation of a WebSocket server
 // (pywebsocket) and a barcode_decoder script.
-class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
+class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
  public:
   WebrtcVideoQualityBrowserTest()
       : peerconnection_server_(0),
@@ -178,28 +179,6 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
         tab_contents, javascript, &result));
     return result;
-  }
-
-  void GetUserMedia(content::WebContents* tab_contents) {
-    content::WindowedNotificationObserver infobar_added(
-        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-        content::NotificationService::AllSources());
-
-    // Request user media: this will launch the media stream info bar.
-    EXPECT_EQ("ok-requested",
-              ExecuteJavascript("getUserMedia('{video: true, audio: true}');",
-                                tab_contents));
-
-    // Wait for the bar to pop up, then accept.
-    infobar_added.Wait();
-    content::Details<InfoBarAddedDetails> details(infobar_added.details());
-    MediaStreamInfoBarDelegate* media_infobar =
-        details->AsMediaStreamInfoBarDelegate();
-    media_infobar->Accept();
-
-    // Wait for WebRTC to call the success callback.
-    EXPECT_TRUE(PollingWaitUntil(
-        "obtainGetUserMediaResult();", "ok-got-stream", tab_contents));
   }
 
   // Ensures we didn't get any errors asynchronously (e.g. while no javascript
@@ -447,7 +426,7 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
 #define MAYBE_MANUAL_TestVGAVideoQuality DISABLED_MANUAL_TestVGAVideoQuality
 
 IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
-                       MAYBE_MANUAL_TestVGAVideoQuality) {
+                       MANUAL_TestVGAVideoQuality) {
   // TODO(phoglund): de-dupe from chrome_webrtc_browsertest.cc.
   StartPyWebSocketServer();
 
@@ -457,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
                                test_server()->GetURL(kMainWebrtcTestHtmlPage));
   content::WebContents* left_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GetUserMedia(left_tab);
+  GetUserMediaAndAccept(left_tab);
 
   chrome::AddBlankTabAt(browser(), -1, true);
   content::WebContents* right_tab =
@@ -465,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
   // TODO(phoglund): (de-dupe later) different from original flow.
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(kCapturingWebrtcHtmlPage));
-  GetUserMedia(right_tab);
+  GetUserMediaAndAccept(right_tab);
 
   ConnectToPeerConnectionServer("peer 1", left_tab);
   ConnectToPeerConnectionServer("peer 2", right_tab);

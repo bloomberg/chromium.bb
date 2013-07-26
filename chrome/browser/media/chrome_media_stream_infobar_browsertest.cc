@@ -5,13 +5,11 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/test_timeouts.h"
-#include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -32,16 +30,9 @@
 
 static const char kMainWebrtcTestHtmlPage[] =
     "files/webrtc/webrtc_jsep01_test.html";
-static const char kFailedWithErrorPermissionDenied[] =
-    "failed-with-error-PERMISSION_DENIED";
-
-static const char kAudioVideoCallConstraints[] = "'{audio: true, video: true}'";
-static const char kAudioOnlyCallConstraints[] = "'{audio: true}'";
-static const char kVideoOnlyCallConstraints[] = "'{video: true}'";
-static const char kOkGotStream[] = "ok-got-stream";
 
 // Media stream infobar test for WebRTC.
-class MediaStreamInfobarTest : public InProcessBrowserTest {
+class MediaStreamInfobarTest : public WebRtcTestBase {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // This test expects to run with fake devices but real UI.
@@ -57,125 +48,21 @@ class MediaStreamInfobarTest : public InProcessBrowserTest {
         browser(), test_server()->GetURL(kMainWebrtcTestHtmlPage));
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
-
-  // TODO(phoglund): upstream and reuse in other browser tests.
-  MediaStreamInfoBarDelegate* GetUserMediaAndWaitForInfobar(
-      content::WebContents* tab_contents,
-      const std::string& constraints) {
-    content::WindowedNotificationObserver infobar_added(
-        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-        content::NotificationService::AllSources());
-
-    // Request user media: this will launch the media stream info bar.
-    GetUserMedia(constraints, tab_contents);
-
-    // Wait for the bar to pop up, then return it
-    infobar_added.Wait();
-    content::Details<InfoBarAddedDetails> details(infobar_added.details());
-    MediaStreamInfoBarDelegate* media_infobar =
-        details.ptr()->AsMediaStreamInfoBarDelegate();
-    return media_infobar;
-  }
-
-  void CloseInfobarInTab(content::WebContents* tab_contents,
-                         MediaStreamInfoBarDelegate* infobar) {
-    content::WindowedNotificationObserver infobar_removed(
-        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-        content::NotificationService::AllSources());
-
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(tab_contents);
-    infobar_service->RemoveInfoBar(infobar);
-
-    infobar_removed.Wait();
-  }
-
-  // Convenience method which executes the provided javascript in the context
-  // of the provided web contents and returns what it evaluated to.
-  std::string ExecuteJavascript(const std::string& javascript,
-                                content::WebContents* tab_contents) {
-    std::string result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        tab_contents, javascript, &result));
-    return result;
-  }
-
-  void TestAcceptOnInfobar(content::WebContents* tab_contents) {
-    TestAcceptOnInfobarWithSpecificConstraints(tab_contents,
-                                               kAudioVideoCallConstraints);
-  }
-
-  void TestAcceptOnInfobarWithSpecificConstraints(
-      content::WebContents* tab_contents, const std::string& constraints) {
-    MediaStreamInfoBarDelegate* media_infobar =
-        GetUserMediaAndWaitForInfobar(tab_contents, constraints);
-
-    media_infobar->Accept();
-
-    CloseInfobarInTab(tab_contents, media_infobar);
-
-    // Wait for WebRTC to call the success callback.
-    EXPECT_TRUE(PollingWaitUntil(
-        "obtainGetUserMediaResult()", kOkGotStream, tab_contents));
-  }
-
-  void TestDenyOnInfobar(content::WebContents* tab_contents) {
-    return TestDenyWithSpecificConstraints(tab_contents,
-                                           kAudioVideoCallConstraints);
-  }
-
-  void TestDenyWithSpecificConstraints(content::WebContents* tab_contents,
-                                       const std::string& constraints) {
-    MediaStreamInfoBarDelegate* media_infobar =
-        GetUserMediaAndWaitForInfobar(tab_contents, constraints);
-
-    media_infobar->Cancel();
-
-    CloseInfobarInTab(tab_contents, media_infobar);
-
-    // Wait for WebRTC to call the fail callback.
-    EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
-                                 kFailedWithErrorPermissionDenied,
-                                 tab_contents));
-  }
-
-  void TestDismissOnInfobar(content::WebContents* tab_contents) {
-    MediaStreamInfoBarDelegate* media_infobar =
-        GetUserMediaAndWaitForInfobar(tab_contents, kAudioVideoCallConstraints);
-
-    media_infobar->InfoBarDismissed();
-
-    CloseInfobarInTab(tab_contents, media_infobar);
-
-    // A dismiss should be treated like a deny.
-    EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
-                                 kFailedWithErrorPermissionDenied,
-                                 tab_contents));
-  }
-
-  void GetUserMedia(const std::string& constraints,
-                    content::WebContents* tab_contents) {
-    // Request user media: this will launch the media stream info bar.
-    EXPECT_EQ("ok-requested",
-              ExecuteJavascript(
-                  base::StringPrintf("getUserMedia(%s);", constraints.c_str()),
-                  tab_contents));
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestAllowingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
-  TestAcceptOnInfobar(tab_contents);
+  GetUserMediaAndAccept(tab_contents);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestDenyingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
-  TestDenyOnInfobar(tab_contents);
+  GetUserMediaAndDeny(tab_contents);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestDismissingInfobar) {
   content::WebContents* tab_contents = LoadTestPageInTab();
-  TestDismissOnInfobar(tab_contents);
+  GetUserMediaAndDismiss(tab_contents);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
@@ -188,11 +75,11 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
 
   content::WebContents* tab_contents = LoadTestPageInTab();
 
-  TestAcceptOnInfobar(tab_contents);
-  TestDenyOnInfobar(tab_contents);
+  GetUserMediaAndAccept(tab_contents);
+  GetUserMediaAndDeny(tab_contents);
 
   // Should fail with permission denied right away with no infobar popping up.
-  GetUserMedia(kAudioVideoCallConstraints, tab_contents);
+  GetUserMedia(tab_contents, kAudioVideoCallConstraints);
   EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
                                kFailedWithErrorPermissionDenied,
                                tab_contents));
@@ -206,8 +93,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestAcceptIsNotSticky) {
 
   // If accept were sticky the second call would hang because it hangs if an
   // infobar does not pop up.
-  TestAcceptOnInfobar(tab_contents);
-  TestAcceptOnInfobar(tab_contents);
+  GetUserMediaAndAccept(tab_contents);
+  GetUserMediaAndAccept(tab_contents);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestDismissIsNotSticky) {
@@ -215,15 +102,15 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestDismissIsNotSticky) {
 
   // If dismiss were sticky the second call would hang because it hangs if an
   // infobar does not pop up.
-  TestDismissOnInfobar(tab_contents);
-  TestDismissOnInfobar(tab_contents);
+  GetUserMediaAndDismiss(tab_contents);
+  GetUserMediaAndDismiss(tab_contents);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
                        TestDenyingThenClearingStickyException) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
-  TestDenyOnInfobar(tab_contents);
+  GetUserMediaAndDeny(tab_contents);
 
   HostContentSettingsMap* settings_map =
       browser()->profile()->GetHostContentSettingsMap();
@@ -234,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 
   // If an infobar is not launched now, this will hang.
-  TestDenyOnInfobar(tab_contents);
+  GetUserMediaAndDeny(tab_contents);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
@@ -242,9 +129,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If mic blocking also blocked cameras, the second call here would hang.
-  TestDenyWithSpecificConstraints(tab_contents, kAudioOnlyCallConstraints);
-  TestAcceptOnInfobarWithSpecificConstraints(tab_contents,
-                                             kVideoOnlyCallConstraints);
+  GetUserMediaWithSpecificConstraintsAndDeny(tab_contents,
+                                             kAudioOnlyCallConstraints);
+  GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
+                                               kVideoOnlyCallConstraints);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
@@ -252,9 +140,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If camera blocking also blocked mics, the second call here would hang.
-  TestDenyWithSpecificConstraints(tab_contents, kVideoOnlyCallConstraints);
-  TestAcceptOnInfobarWithSpecificConstraints(tab_contents,
-                                             kAudioOnlyCallConstraints);
+  GetUserMediaWithSpecificConstraintsAndDeny(tab_contents,
+                                             kVideoOnlyCallConstraints);
+  GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
+                                               kAudioOnlyCallConstraints);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
@@ -263,9 +152,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
 
   // If microphone blocking also blocked a AV call, the second call here
   // would hang. The requester should only be granted access to the cam though.
-  TestDenyWithSpecificConstraints(tab_contents, kAudioOnlyCallConstraints);
-  TestAcceptOnInfobarWithSpecificConstraints(tab_contents,
-                                             kAudioVideoCallConstraints);
+  GetUserMediaWithSpecificConstraintsAndDeny(tab_contents,
+                                             kAudioOnlyCallConstraints);
+  GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
+                                               kAudioVideoCallConstraints);
 
   // TODO(phoglund): verify the requester actually only gets video tracks.
 }
