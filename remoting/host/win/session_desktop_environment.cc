@@ -44,10 +44,12 @@ SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const UiStrings& ui_strings,
     const base::Closure& inject_sas)
     : Me2MeDesktopEnvironmentFactory(caller_task_runner,
                                      input_task_runner,
-                                     ui_task_runner),
+                                     ui_task_runner,
+                                     ui_strings),
       inject_sas_(inject_sas) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
@@ -65,6 +67,7 @@ scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
                                     ui_task_runner(),
                                     inject_sas_));
   if (!desktop_environment->InitializeSecurity(client_session_control,
+                                               ui_strings(),
                                                curtain_enabled())) {
     return scoped_ptr<DesktopEnvironment>();
   }

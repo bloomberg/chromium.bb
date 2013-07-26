@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <winresrc.h>
-
 #ifdef IDC_STATIC
 #undef IDC_STATIC
 #endif
@@ -58,7 +57,7 @@ BEGIN
       VALUE "FileDescription", "{% trans %}REMOTING_HOST_PLUGIN_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remoting_host_plugin.dll"
       VALUE "OriginalFilename", "remoting_host_plugin.dll"
-      VALUE "MIMEType", HOST_PLUGIN_MIME_TYPE
+      VALUE "MIMEType", "application/vnd.chromium.remoting-host"
 #else
 #error BINARY must be set to one of BINARY_XXX values.
 #endif

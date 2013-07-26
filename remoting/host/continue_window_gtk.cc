@@ -7,16 +7,14 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "remoting/base/string_resources.h"
 #include "remoting/host/continue_window.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace remoting {
 
 class ContinueWindowGtk : public ContinueWindow {
  public:
-  ContinueWindowGtk();
+  explicit ContinueWindowGtk(const UiStrings& ui_strings);
   virtual ~ContinueWindowGtk();
 
  protected:
@@ -34,8 +32,9 @@ class ContinueWindowGtk : public ContinueWindow {
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowGtk);
 };
 
-ContinueWindowGtk::ContinueWindowGtk()
-    : continue_window_(NULL) {
+ContinueWindowGtk::ContinueWindowGtk(const UiStrings& ui_strings)
+    : ContinueWindow(ui_strings),
+      continue_window_(NULL) {
 }
 
 ContinueWindowGtk::~ContinueWindowGtk() {
@@ -68,12 +67,12 @@ void ContinueWindowGtk::CreateWindow() {
   DCHECK(!continue_window_);
 
   continue_window_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDR_PRODUCT_NAME).c_str(),
+      UTF16ToUTF8(ui_strings().product_name).c_str(),
       NULL,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
-      l10n_util::GetStringUTF8(IDR_STOP_SHARING_BUTTON).c_str(),
+      UTF16ToUTF8(ui_strings().stop_sharing_button_text).c_str(),
       GTK_RESPONSE_CANCEL,
-      l10n_util::GetStringUTF8(IDR_CONTINUE_BUTTON).c_str(),
+      UTF16ToUTF8(ui_strings().continue_button_text).c_str(),
       GTK_RESPONSE_OK,
       NULL);
 
@@ -92,7 +91,7 @@ void ContinueWindowGtk::CreateWindow() {
       gtk_dialog_get_content_area(GTK_DIALOG(continue_window_));
 
   GtkWidget* text_label =
-      gtk_label_new(l10n_util::GetStringUTF8(IDR_CONTINUE_PROMPT).c_str());
+      gtk_label_new(UTF16ToUTF8(ui_strings().continue_prompt).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(text_label), TRUE);
   // TODO(lambroslambrou): Fix magic numbers, as in disconnect_window_gtk.cc.
   gtk_misc_set_padding(GTK_MISC(text_label), 12, 12);
@@ -114,8 +113,9 @@ void ContinueWindowGtk::OnResponse(GtkWidget* dialog, int response_id) {
 }
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return scoped_ptr<HostWindow>(new ContinueWindowGtk());
+scoped_ptr<HostWindow> HostWindow::CreateContinueWindow(
+    const UiStrings& ui_strings) {
+  return scoped_ptr<HostWindow>(new ContinueWindowGtk(ui_strings));
 }
 
 }  // namespace remoting

@@ -14,6 +14,7 @@
 #include "base/win/scoped_select_object.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_window.h"
+#include "remoting/host/ui_strings.h"
 #include "remoting/host/win/core_resource.h"
 
 namespace remoting {
@@ -34,7 +35,7 @@ const int kWindowTextMargin = 8;
 
 class DisconnectWindowWin : public HostWindow {
  public:
-  DisconnectWindowWin();
+  explicit DisconnectWindowWin(const UiStrings& ui_strings);
   virtual ~DisconnectWindowWin();
 
   // HostWindow overrides.
@@ -66,6 +67,9 @@ class DisconnectWindowWin : public HostWindow {
 
   // Used to disconnect the client session.
   base::WeakPtr<ClientSessionControl> client_session_control_;
+
+  // Localized UI strings.
+  UiStrings ui_strings_;
 
   // Specifies the remote user name.
   std::string username_;
@@ -103,8 +107,9 @@ bool GetControlTextWidth(HWND control, const string16& text, LONG* width) {
   return true;
 }
 
-DisconnectWindowWin::DisconnectWindowWin()
-    : hwnd_(NULL),
+DisconnectWindowWin::DisconnectWindowWin(const UiStrings& ui_strings)
+    : ui_strings_(ui_strings),
+      hwnd_(NULL),
       has_hotkey_(false),
       border_pen_(CreatePen(PS_SOLID, 5,
                             RGB(0.13 * 255, 0.69 * 255, 0.11 * 255))) {
@@ -226,9 +231,38 @@ bool DisconnectWindowWin::BeginDialog() {
   DCHECK(CalledOnValidThread());
   DCHECK(!hwnd_);
 
+  // Load the dialog resource so that we can modify the RTL flags if necessary.
   HMODULE module = base::GetModuleFromAddress(&DialogProc);
-  hwnd_ = CreateDialogParam(module, MAKEINTRESOURCE(IDD_DISCONNECT), NULL,
-                            DialogProc, reinterpret_cast<LPARAM>(this));
+  HRSRC dialog_resource =
+      FindResource(module, MAKEINTRESOURCE(IDD_DISCONNECT), RT_DIALOG);
+  if (!dialog_resource)
+    return false;
+
+  HGLOBAL dialog_template = LoadResource(module, dialog_resource);
+  if (!dialog_template)
+    return false;
+
+  DLGTEMPLATE* dialog_pointer =
+      reinterpret_cast<DLGTEMPLATE*>(LockResource(dialog_template));
+  if (!dialog_pointer)
+    return false;
+
+  // The actual resource type is DLGTEMPLATEEX, but this is not defined in any
+  // standard headers, so we treat it as a generic pointer and manipulate the
+  // correct offsets explicitly.
+  scoped_ptr<unsigned char[]> rtl_dialog_template;
+  if (ui_strings_.direction == UiStrings::RTL) {
+    unsigned long dialog_template_size =
+        SizeofResource(module, dialog_resource);
+    rtl_dialog_template.reset(new unsigned char[dialog_template_size]);
+    memcpy(rtl_dialog_template.get(), dialog_pointer, dialog_template_size);
+    DWORD* rtl_dwords = reinterpret_cast<DWORD*>(rtl_dialog_template.get());
+    rtl_dwords[2] |= (WS_EX_LAYOUTRTL | WS_EX_RTLREADING);
+    dialog_pointer = reinterpret_cast<DLGTEMPLATE*>(rtl_dwords);
+  }
+
+  hwnd_ = CreateDialogIndirectParam(module, dialog_pointer, NULL,
+                                    DialogProc, reinterpret_cast<LPARAM>(this));
   if (!hwnd_)
     return false;
 
@@ -390,8 +424,9 @@ bool DisconnectWindowWin::SetStrings() {
 } // namespace
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return scoped_ptr<HostWindow>(new DisconnectWindowWin());
+scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow(
+    const UiStrings& ui_strings) {
+  return scoped_ptr<HostWindow>(new DisconnectWindowWin(ui_strings));
 }
 
 }  // namespace remoting

@@ -62,7 +62,7 @@ def ExtractTagFromLine(file_type, line):
     # Javascript style
     m = re.search('/\*i18n-content\*/[\'"]([^\`"]*)[\'"]', line)
     if m: return m.group(1)
-  elif file_type == 'cc' or file_type == 'mm':
+  elif file_type == 'cc':
     # C++ style
     m = re.search('IDR_([A-Z0-9_]*)', line)
     if m: return m.group(1)
@@ -89,7 +89,7 @@ def VerifyFile(filename, messages, used_tags):
 
   base_name, extension = os.path.splitext(filename)
   extension = extension[1:]
-  if extension not in ['js', 'cc', 'html', 'json', 'jinja2', 'mm']:
+  if extension not in ['js', 'cc', 'html', 'json', 'jinja2']:
     raise Exception("Unknown file type: %s" % extension)
 
   result = True

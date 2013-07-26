@@ -12,6 +12,8 @@
 	<string>BUNDLE_ID</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>BUNDLE_NAME</string>
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleShortVersionString</key>
@@ -20,10 +22,14 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>VERSION_FULL</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>COPYRIGHT_INFO</string>
 	<key>NSMainNibFile</key>
 	<string>me2me_preference_pane</string>
 	<key>NSPrefPaneIconFile</key>
 	<string>chromoting128.png</string>
+	<key>NSPrefPaneIconLabel</key>
+	<string>PREF_PANE_ICON_LABEL</string>
 	<key>NSPrincipalClass</key>
 	<string>Me2MePreferencePane</string>
 </dict>

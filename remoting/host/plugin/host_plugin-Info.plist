@@ -13,17 +13,21 @@
 	<key>CFBundlePackageType</key>
 	<string>BRPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>VERSION_SHORT</string>
+	<string>1.0.0.0</string>
 	<key>CFBundleVersion</key>
-	<string>VERSION_FULL</string>
+	<string>1.0.0.0</string>
 	<key>CFBundleSignature</key>
 	<string>${CHROMIUM_CREATOR}</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
+	<key>WebPluginName</key>
+	<string>HOST_PLUGIN_NAME</string>
 	<key>WebPluginMIMETypes</key>
 	<dict>
 		<key>HOST_PLUGIN_MIME_TYPE</key>
 		<dict/>
 	</dict>
+	<key>WebPluginDescription</key>
+	<string>HOST_PLUGIN_DESCRIPTION</string>
 </dict>
 </plist>

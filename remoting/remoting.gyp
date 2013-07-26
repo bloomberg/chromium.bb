@@ -43,10 +43,15 @@
       '<!(python <(version_py_path) -f <(chrome_version_path) -f <(remoting_version_path) -t "@PATCH@")',
 
     'branding_path': '../remoting/branding_<(branding)',
+    'copyright_info': '<!(python <(version_py_path) -f <(branding_path) -t "@COPYRIGHT@")',
 
     'webapp_locale_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/webapp/_locales',
 
+    # Use consistent strings across all platforms.
+    # These values must match host/plugin/constants.h
     'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
+    'host_plugin_description': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_DESCRIPTION@")',
+    'host_plugin_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
 
     'conditions': [
       # Remoting host is supported only on Windows, OSX and Linux (with X11).
@@ -95,7 +100,6 @@
         'rdp_desktop_session_clsid': '<!(python tools/uuidgen.py 2)',
       }],
     ],
-
     'remoting_locales': [
       'ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'en-GB', 'es',
       'es-419', 'et', 'fi', 'fil', 'fr', 'he', 'hi', 'hr', 'hu', 'id',
@@ -103,15 +107,10 @@
       'ro', 'ru', 'sk', 'sl', 'sr', 'sv', 'th', 'tr', 'uk', 'vi',
       'zh-CN', 'zh-TW',
     ],
-    'remoting_locale_files': [
-      # Build the list of .pak files generated from remoting_strings.grd.
-      '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x '
-          '<(PRODUCT_DIR) <(remoting_locales))',
-    ],
     'remoting_webapp_locale_files': [
       # Build the list of .json files generated from remoting_strings.grd.
       '<!@pymod_do_main(remoting_localize --locale_output '
-          '"<(webapp_locale_dir)/@{json_suffix}/messages.json" '
+          '"<(webapp_locale_dir)/${json_suffix}/messages.json" '
           '--print_only <(remoting_locales))',
     ],
     'remoting_webapp_files': [
@@ -270,7 +269,6 @@
             'remoting_base',
             'remoting_jingle_glue',
             'remoting_protocol',
-            'remoting_resources',
             '../crypto/crypto.gyp:crypto',
             '../google_apis/google_apis.gyp:google_apis',
             '../ipc/ipc.gyp:ipc',
@@ -433,6 +431,8 @@
             'host/signaling_connector.h',
             'host/token_validator_factory_impl.cc',
             'host/token_validator_factory_impl.h',
+            'host/ui_strings.cc',
+            'host/ui_strings.h',
             'host/usage_stats_consent.h',
             'host/usage_stats_consent_mac.cc',
             'host/usage_stats_consent_win.cc',
@@ -639,23 +639,19 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'product_extension': '<(host_plugin_extension)',
           'product_prefix': '<(host_plugin_prefix)',
-          'defines': [
-            'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)"',
-          ],
           'dependencies': [
-            '../base/base.gyp:base_i18n',
             '../net/net.gyp:net',
             '../third_party/npapi/npapi.gyp:npapi',
             'remoting_base',
             'remoting_host',
             'remoting_host_event_logger',
             'remoting_host_logging',
-            'remoting_infoplist_strings',
             'remoting_host_setup_base',
             'remoting_jingle_glue',
-            'remoting_resources',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/core.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
             'base/dispatch_win.h',
             'host/plugin/host_log_handler.cc',
             'host/plugin/host_log_handler.h',
@@ -676,7 +672,7 @@
                 # TODO(maruel): Use INFOPLIST_PREFIX_HEADER to remove the need to
                 # duplicate string once
                 # http://code.google.com/p/gyp/issues/detail?id=243 is fixed.
-                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)" VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)"',
+                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)" HOST_PLUGIN_NAME="<(host_plugin_name)" HOST_PLUGIN_DESCRIPTION="<(host_plugin_description)"',
               },
               # TODO(mark): Come up with a fancier way to do this.  It should
               # only be necessary to list host_plugin-Info.plist once, not the
@@ -687,12 +683,6 @@
                 'resources/chromoting16.png',
                 'resources/chromoting48.png',
                 'resources/chromoting128.png',
-                '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x <(PRODUCT_DIR) <(remoting_locales))',
-
-                # Localized strings for 'Info.plist'
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
               ],
               'mac_bundle_resources!': [
                 'host/plugin/host_plugin-Info.plist',
@@ -720,8 +710,6 @@
                 '<(INTERMEDIATE_DIR)',
               ],
               'sources': [
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/core.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
                 'host/plugin/host_plugin.def',
               ],
               'msvs_settings': {
@@ -741,103 +729,6 @@
             }],
           ],
         },  # end of target 'remoting_host_plugin'
-        {
-          'target_name': 'remoting_infoplist_strings',
-          'type': 'none',
-          'dependencies': [
-            'remoting_resources',
-          ],
-          'actions': [
-            {
-              'action_name': 'generate_host_plugin_strings',
-              'inputs': [
-                '<(remoting_localize_path)',
-                'host/plugin/host_plugin-InfoPlist.strings.jinja2',
-              ],
-              'outputs': [
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
-              ],
-              'action': [
-                'python',
-                '<(remoting_localize_path)',
-                '--locale_dir', '<(webapp_locale_dir)',
-                '--template', 'host/plugin/host_plugin-InfoPlist.strings.jinja2',
-                '--locale_output',
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '--encoding', 'utf-8',
-                '<@(remoting_locales)',
-              ],
-            },
-            {
-              'action_name': 'generate_host_strings',
-              'inputs': [
-                '<(remoting_localize_path)',
-                'host/remoting_me2me_host-InfoPlist.strings.jinja2',
-              ],
-              'outputs': [
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/host_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
-              ],
-              'action': [
-                'python',
-                '<(remoting_localize_path)',
-                '--locale_dir', '<(webapp_locale_dir)',
-                '--template', 'host/remoting_me2me_host-InfoPlist.strings.jinja2',
-                '--locale_output',
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/host_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '--encoding', 'utf-8',
-                '<@(remoting_locales)',
-              ],
-            },
-            {
-              'action_name': 'generate_preference_pane_strings',
-              'inputs': [
-                '<(remoting_localize_path)',
-                'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
-              ],
-              'outputs': [
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/preference_pane_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
-              ],
-              'action': [
-                'python',
-                '<(remoting_localize_path)',
-                '--locale_dir', '<(webapp_locale_dir)',
-                '--template', 'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
-                '--locale_output',
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/preference_pane_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '--encoding', 'utf-8',
-                '<@(remoting_locales)',
-              ],
-            },
-            {
-              'action_name': 'generate_uninstaller_strings',
-              'inputs': [
-                '<(remoting_localize_path)',
-                'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
-              ],
-              'outputs': [
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/uninstaller_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
-              ],
-              'action': [
-                'python',
-                '<(remoting_localize_path)',
-                '--locale_dir', '<(webapp_locale_dir)',
-                '--template', 'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
-                '--locale_output',
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/uninstaller_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '--encoding', 'utf-8',
-                '<@(remoting_locales)',
-              ],
-            },
-          ],
-        },  # end of target 'remoting_infoplist_strings'
 
         {
           'target_name': 'remoting_native_messaging_host',
@@ -955,7 +846,6 @@
             'remoting_host',
             'remoting_host_event_logger',
             'remoting_host_logging',
-            'remoting_infoplist_strings',
             'remoting_jingle_glue',
             'remoting_me2me_host_static',
           ],
@@ -976,18 +866,12 @@
               'xcode_settings': {
                 'INFOPLIST_FILE': 'host/remoting_me2me_host-Info.plist',
                 'INFOPLIST_PREPROCESS': 'YES',
-                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)"',
+                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)" COPYRIGHT_INFO="<(copyright_info)"',
               },
               'mac_bundle_resources': [
                 'host/disconnect_window.xib',
                 'host/remoting_me2me_host.icns',
                 'host/remoting_me2me_host-Info.plist',
-                '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x <(PRODUCT_DIR) <(remoting_locales))',
-
-                # Localized strings for 'Info.plist'
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/host_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
               ],
               'mac_bundle_resources!': [
                 'host/remoting_me2me_host-Info.plist',
@@ -1104,10 +988,10 @@
           'mac_bundle': 1,
           'variables': {
             'bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_BUNDLE_ID@")',
+            'bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_BUNDLE_NAME@")',
           },
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',
-            'remoting_infoplist_strings',
           ],
           'sources': [
             'host/constants_mac.cc',
@@ -1120,17 +1004,12 @@
           'xcode_settings': {
             'INFOPLIST_FILE': 'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
-            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(bundle_id)"',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_INFO="<(copyright_info)"',
           },
           'mac_bundle_resources': [
             'host/installer/mac/uninstaller/remoting_uninstaller.icns',
             'host/installer/mac/uninstaller/remoting_uninstaller.xib',
             'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
-
-            # Localized strings for 'Info.plist'
-            '<!@pymod_do_main(remoting_localize --locale_output '
-                '"<(SHARED_INTERMEDIATE_DIR)/remoting/uninstaller_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                '--print_only <(remoting_locales))',
           ],
           'mac_bundle_resources!': [
             'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
@@ -1182,6 +1061,7 @@
                 'VERSION_SHORT=<(version_short)',
                 'VERSION_MAJOR=<(version_major)',
                 'VERSION_MINOR=<(version_minor)',
+                'COPYRIGHT_INFO=<(copyright_info)',
                 'HOST_NAME=<(host_name)',
                 'HOST_SERVICE_NAME=<(host_service_name)',
                 'HOST_UNINSTALLER_NAME=<(host_uninstaller_name)',
@@ -1229,9 +1109,6 @@
           'defines': [
             'JSON_USE_EXCEPTION=0',
           ],
-          'dependencies': [
-            'remoting_infoplist_strings',
-          ],
           'include_dirs': [
             '../third_party/jsoncpp/overrides/include/',
             '../third_party/jsoncpp/source/include/',
@@ -1269,13 +1146,20 @@
           },
           'variables': {
             'bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_BUNDLE_ID@")',
+            'bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_BUNDLE_NAME@")',
+            # The XML new-line entity splits the label into two lines, which
+            # is the maximum number of lines allowed by the System Preferences
+            # applet.
+            # TODO(lambroslambrou): When these strings are localized, use "\n"
+            # instead of "&#x0a;" for linebreaks.
+            'pref_pane_icon_label': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_ICON_LABEL@")',
           },
           'xcode_settings': {
             'ARCHS': ['i386', 'x86_64'],
             'GCC_ENABLE_OBJC_GC': 'supported',
             'INFOPLIST_FILE': 'host/mac/me2me_preference_pane-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
-            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(bundle_id)"',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_INFO="<(copyright_info)" PREF_PANE_ICON_LABEL="<(pref_pane_icon_label)"',
           },
           'mac_bundle_resources': [
             'host/mac/me2me_preference_pane.xib',
@@ -1283,11 +1167,6 @@
             'host/mac/me2me_preference_pane_disable.xib',
             'host/mac/me2me_preference_pane-Info.plist',
             'resources/chromoting128.png',
-
-            # Localized strings for 'Info.plist'
-            '<!@pymod_do_main(remoting_localize --locale_output '
-                '"<(SHARED_INTERMEDIATE_DIR)/remoting/preference_pane_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                '--print_only <(remoting_locales))',
           ],
           'mac_bundle_resources!': [
             'host/mac/me2me_preference_pane-Info.plist',
@@ -2148,14 +2027,18 @@
         'remoting_resources',
         'remoting_host_plugin',
       ],
-      'locale_files': [
+      'sources': [
+        'webapp/build-webapp.py',
+        '<(remoting_version_path)',
+        '<(chrome_version_path)',
+        '<@(remoting_webapp_apps_v2_js_files)',
+        '<@(remoting_webapp_files)',
+        '<@(remoting_webapp_js_files)',
         '<@(remoting_webapp_locale_files)',
+        '<@(remoting_webapp_patch_files)',
       ],
       'conditions': [
         ['enable_remoting_host==1', {
-          'locale_files': [
-            '<@(remoting_locale_files)',
-          ],
           'variables': {
               'plugin_path': '<(PRODUCT_DIR)/<(host_plugin_prefix)remoting_host_plugin.<(host_plugin_extension)',
           },
@@ -2179,7 +2062,7 @@
             '<(remoting_version_path)',
             '<@(remoting_webapp_files)',
             '<@(remoting_webapp_js_files)',
-            '<@(_locale_files)',
+            '<@(remoting_webapp_locale_files)',
           ],
           'conditions': [
             ['enable_remoting_host==1', {
@@ -2203,7 +2086,7 @@
             '<@(remoting_webapp_files)',
             '<@(remoting_webapp_js_files)',
             '--locales',
-            '<@(_locale_files)',
+            '<@(remoting_webapp_locale_files)',
           ],
           'msvs_cygwin_shell': 1,
         },
@@ -2274,11 +2157,7 @@
         'grit_resource_ids': 'resources/resource_ids',
         'sources': [
           'base/resources_unittest.cc',
-          'host/continue_window_mac.mm',
-          'host/disconnect_window_mac.mm',
-          'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
-          'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
-          'host/plugin/host_plugin-InfoPlist.strings.jinja2',
+          'host/plugin/host_script_object.cc',
           'host/win/core.rc.jinja2',
           'host/win/host_messages.mc.jinja2',
           'host/win/version.rc.jinja2',
@@ -2286,8 +2165,8 @@
           'webapp/client_screen.js',
           'webapp/error.js',
           'webapp/host_list.js',
-          'webapp/host_setup_dialog.js',
           'webapp/host_table_entry.js',
+          'webapp/host_setup_dialog.js',
           'webapp/main.html',
           'webapp/manifest.json',
           'webapp/paired_client_manager.js',
@@ -2299,6 +2178,7 @@
           'action_name': 'verify_resources',
           'inputs': [
             'resources/remoting_strings.grd',
+            'resources/common_resources.grd',
             'tools/verify_resources.py',
             '<@(sources)'
           ],
@@ -2310,6 +2190,7 @@
             'tools/verify_resources.py',
             '-t', '<(PRODUCT_DIR)/remoting_resources_verified.stamp',
             '-r', 'resources/remoting_strings.grd',
+            '-r', 'resources/common_resources.grd',
             '<@(sources)',
          ],
         },
@@ -2321,26 +2202,30 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'copy_locales',
+          'action_name': 'common_resources',
           'variables': {
-            'copy_output_dir%': '<(PRODUCT_DIR)',
+            'grit_grd_file': 'resources/common_resources.grd',
           },
-          'inputs': [
-            'tools/build/remoting_copy_locales.py',
-            '<!@pymod_do_main(remoting_copy_locales -i -p <(OS) -g <(grit_out_dir) <(remoting_locales))'
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'copies': [
+        # Copy results to the product directory.
+        {
+          'destination': '<(PRODUCT_DIR)/remoting_locales',
+          'files': [
+            # Build the list of .pak files generated from remoting_strings.grd.
+            '<!@pymod_do_main(remoting_localize --locale_output '
+                '"<(grit_out_dir)/remoting/resources/${pak_suffix}.pak" '
+                '--print_only <(remoting_locales))',
           ],
-          'outputs': [
-            '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x <(copy_output_dir) <(remoting_locales))'
-          ],
-          'action': [
-            'python',
-            'tools/build/remoting_copy_locales.py',
-            '-p', '<(OS)',
-            '-g', '<(grit_out_dir)',
-            '-x', '<(copy_output_dir)/.',
-            '<@(remoting_locales)',
-          ],
-        }
+        },
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '<(grit_out_dir)/remoting/resources/chrome_remote_desktop.pak',
+          ]
+        },
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },  # end of target 'remoting_resources'
@@ -2394,10 +2279,8 @@
         'base/plugin_thread_task_runner.h',
         'base/rate_counter.cc',
         'base/rate_counter.h',
+        'base/resources.cc',
         'base/resources.h',
-        'base/resources_linux.cc',
-        'base/resources_mac.mm',
-        'base/resources_win.cc',
         'base/rsa_key_pair.cc',
         'base/rsa_key_pair.h',
         'base/running_average.cc',
@@ -2807,20 +2690,6 @@
             ],
           },
         }],
-        ['OS=="mac"', {
-          'mac_bundle': 1,
-          'xcode_settings': {
-            'INFOPLIST_FILE': 'unittests-Info.plist',
-            'INFOPLIST_PREPROCESS': 'YES',
-          },
-          'mac_bundle_resources': [
-            'unittests-Info.plist',
-            '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x <(PRODUCT_DIR) <(remoting_locales))',
-          ],
-          'mac_bundle_resources!': [
-            'unittests-Info.plist',
-          ],
-        }],  # OS=="mac"
         ['OS=="mac" or (OS=="linux" and chromeos==0)', {
           # Javascript unittests are disabled on CrOS because they cause
           # valgrind and test errors.
