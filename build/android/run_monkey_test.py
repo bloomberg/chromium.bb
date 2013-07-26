@@ -156,6 +156,9 @@ def main():
   if options.category:
     options.category = options.category.split(',')
 
+  # TODO(gkanwar): This should go away when the host-driven tests are refactored
+  options.num_retries = 1
+
   DispatchPythonTests(options)
 
 
