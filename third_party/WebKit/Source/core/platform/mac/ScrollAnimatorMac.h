@@ -94,7 +94,7 @@ private:
 
     virtual void cancelAnimations();
     virtual void setIsActive();
-    
+
     virtual void notifyPositionChanged(const FloatSize& delta);
     virtual void contentAreaWillPaint() const;
     virtual void mouseEnteredContentArea() const;

@@ -29,7 +29,7 @@
 #include "core/rendering/svg/SVGResourcesCache.h"
 
 namespace WebCore {
-    
+
 RenderSVGInline::RenderSVGInline(Element* element)
     : RenderInline(element)
 {

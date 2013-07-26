@@ -45,11 +45,11 @@ public:
 
     void addResource(PassRefPtr<ArchiveResource>);
     void addAllResources(MHTMLArchive*);
-    
+
     ArchiveResource* archiveResourceForURL(const KURL&);
     PassRefPtr<MHTMLArchive> popSubframeArchive(const String& frameName, const KURL&);
-    
-private:    
+
+private:
     HashMap<String, RefPtr<ArchiveResource> > m_subresources;
     HashMap<String, RefPtr<MHTMLArchive> > m_subframes;
 };

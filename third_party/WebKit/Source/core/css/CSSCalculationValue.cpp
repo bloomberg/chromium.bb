@@ -145,7 +145,7 @@ static String buildCssText(const String& expression)
     result.append(expression);
     if (expressionHasSingleTerm)
         result.append(')');
-    return result.toString(); 
+    return result.toString();
 }
 
 String CSSCalcValue::customCssText() const
@@ -171,10 +171,10 @@ bool CSSCalcValue::hasVariableReference() const
 double CSSCalcValue::clampToPermittedRange(double value) const
 {
     return m_nonNegative && value < 0 ? 0 : value;
-}    
-    
-double CSSCalcValue::doubleValue() const 
-{ 
+}
+
+double CSSCalcValue::doubleValue() const
+{
     return clampToPermittedRange(m_expression->doubleValue());
 }
 
@@ -182,11 +182,11 @@ double CSSCalcValue::computeLengthPx(const RenderStyle* currentStyle, const Rend
 {
     return clampToPermittedRange(m_expression->computeLengthPx(currentStyle, rootStyle, multiplier, computingFontSize));
 }
-    
-CSSCalcExpressionNode::~CSSCalcExpressionNode() 
+
+CSSCalcExpressionNode::~CSSCalcExpressionNode()
 {
 }
-    
+
 class CSSCalcPrimitiveValue : public CSSCalcExpressionNode {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -217,7 +217,7 @@ public:
     {
         return m_value->customSerializeResolvingVariables(variables);
     }
-    
+
     virtual bool hasVariableReference() const
     {
         return m_value->isVariableName();
@@ -254,7 +254,7 @@ public:
         ASSERT_NOT_REACHED();
         return 0;
     }
-    
+
     virtual double computeLengthPx(const RenderStyle* currentStyle, const RenderStyle* rootStyle, double multiplier, bool computingFontSize) const
     {
         switch (m_category) {
@@ -320,10 +320,10 @@ static CalculationCategory determineCategory(const CSSCalcExpressionNode& leftSi
 
     switch (op) {
     case CalcAdd:
-    case CalcSubtract:             
+    case CalcSubtract:
         return addSubtractResult[leftCategory][rightCategory];
     case CalcMultiply:
-        if (leftCategory != CalcNumber && rightCategory != CalcNumber) 
+        if (leftCategory != CalcNumber && rightCategory != CalcNumber)
             return CalcOther;
         return leftCategory == CalcNumber ? rightCategory : leftCategory;
     case CalcDivide:
@@ -331,7 +331,7 @@ static CalculationCategory determineCategory(const CSSCalcExpressionNode& leftSi
             return CalcOther;
         return leftCategory;
     }
-    
+
     ASSERT_NOT_REACHED();
     return CalcOther;
 }
@@ -431,11 +431,11 @@ public:
         return adoptPtr(new CalcExpressionBinaryOperation(left.release(), right.release(), m_operator));
     }
 
-    virtual double doubleValue() const 
+    virtual double doubleValue() const
     {
         return evaluate(m_leftSide->doubleValue(), m_rightSide->doubleValue());
     }
-    
+
     virtual double computeLengthPx(const RenderStyle* currentStyle, const RenderStyle* rootStyle, double multiplier, bool computingFontSize) const
     {
         const double leftValue = m_leftSide->computeLengthPx(currentStyle, rootStyle, multiplier, computingFontSize);
@@ -453,8 +453,8 @@ public:
         result.append(' ');
         result.append(rightExpression);
         result.append(')');
-    
-        return result.toString();  
+
+        return result.toString();
     }
 
     virtual String customCssText() const
@@ -620,8 +620,8 @@ private:
     bool parseValueTerm(CSSParserValueList* tokens, int depth, unsigned* index, Value* result)
     {
         if (checkDepthAndIndex(&depth, *index, tokens) != OK)
-            return false;    
-        
+            return false;
+
         if (operatorValue(tokens, *index) == '(') {
             unsigned currentIndex = *index + 1;
             if (!parseValueExpression(tokens, depth, &currentIndex, result))
@@ -666,7 +666,7 @@ private:
     bool parseAdditiveValueExpression(CSSParserValueList* tokens, int depth, unsigned* index, Value* result)
     {
         if (checkDepthAndIndex(&depth, *index, tokens) != OK)
-            return false;    
+            return false;
 
         if (!parseValueMultiplicativeExpression(tokens, depth, index, result))
             return false;
@@ -707,12 +707,12 @@ PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(PassRefPtr<
 }
 
 PassRefPtr<CSSCalcValue> CSSCalcValue::create(CSSParserString name, CSSParserValueList* parserValueList, CalculationPermittedValueRange range)
-{    
-    CSSCalcExpressionNodeParser parser;    
+{
+    CSSCalcExpressionNodeParser parser;
     RefPtr<CSSCalcExpressionNode> expression;
-    
+
     if (equalIgnoringCase(name, "calc(") || equalIgnoringCase(name, "-webkit-calc("))
-        expression = parser.parseCalc(parserValueList);    
+        expression = parser.parseCalc(parserValueList);
     // FIXME calc (http://webkit.org/b/16662) Add parsing for min and max here
 
     return expression ? adoptRef(new CSSCalcValue(expression, range)) : 0;

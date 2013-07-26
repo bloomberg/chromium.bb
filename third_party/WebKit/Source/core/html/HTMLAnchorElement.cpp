@@ -167,7 +167,7 @@ bool HTMLAnchorElement::isKeyboardFocusable(KeyboardEvent* event) const
 
     if (!isFocusable())
         return false;
-    
+
     Page* page = document()->page();
     if (!page)
         return false;
@@ -251,7 +251,7 @@ void HTMLAnchorElement::setActive(bool down, bool pause)
         EditableLinkBehavior editableLinkBehavior = EditableLinkDefaultBehavior;
         if (Settings* settings = document()->settings())
             editableLinkBehavior = settings->editableLinkBehavior();
-            
+
         switch (editableLinkBehavior) {
             default:
             case EditableLinkDefaultBehavior:
@@ -267,13 +267,13 @@ void HTMLAnchorElement::setActive(bool down, bool pause)
                 if (down && document()->frame() && document()->frame()->selection()->rootEditableElement() == rootEditableElement())
                     return;
                 break;
-            
+
             case EditableLinkOnlyLiveWithShiftKey:
                 return;
         }
 
     }
-    
+
     ContainerNode::setActive(down, pause);
 }
 

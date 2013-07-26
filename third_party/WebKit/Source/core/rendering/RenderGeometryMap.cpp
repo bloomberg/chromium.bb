@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -54,7 +54,7 @@ void RenderGeometryMap::mapToContainer(TransformState& transformState, const Ren
         transformState.flatten();
         return;
     }
-    
+
     bool inFixed = false;
 #if !ASSERT_DISABLED
     bool foundContainer = !container || (m_mapping.size() && m_mapping[0].m_renderer == container);
@@ -97,13 +97,13 @@ void RenderGeometryMap::mapToContainer(TransformState& transformState, const Ren
     }
 
     ASSERT(foundContainer);
-    transformState.flatten();    
+    transformState.flatten();
 }
 
 FloatPoint RenderGeometryMap::mapToContainer(const FloatPoint& p, const RenderLayerModelObject* container) const
 {
     FloatPoint result;
-    
+
     if (!hasFixedPositionStep() && !hasTransformStep() && !hasNonUniformStep() && (!container || (m_mapping.size() && container == m_mapping[0].m_renderer)))
         result = p + roundedIntSize(m_accumulatedOffset);
     else {
@@ -125,7 +125,7 @@ FloatPoint RenderGeometryMap::mapToContainer(const FloatPoint& p, const RenderLa
 FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const RenderLayerModelObject* container) const
 {
     FloatRect result;
-    
+
     if (!hasFixedPositionStep() && !hasTransformStep() && !hasNonUniformStep() && (!container || (m_mapping.size() && container == m_mapping[0].m_renderer))) {
         result = rect;
         result.move(m_accumulatedOffset);
@@ -164,7 +164,7 @@ static bool canMapBetweenRenderers(const RenderObject* renderer, const RenderObj
         const RenderStyle* style = current->style();
         if (style->position() == FixedPosition || style->isFlippedBlocksWritingMode())
             return false;
-        
+
         if (current->hasColumns() || current->hasTransform() || current->isRenderFlowThread() || current->isSVGRoot())
             return false;
 
@@ -188,7 +188,7 @@ void RenderGeometryMap::pushMappingsToAncestor(const RenderLayer* layer, const R
     if (canConvertInLayerTree) {
         LayoutPoint layerOffset;
         layer->convertToLayerCoords(ancestorLayer, layerOffset);
-        
+
         // The RenderView must be pushed first.
         if (!m_mapping.size()) {
             ASSERT(ancestorLayer->renderer()->isRenderView());
@@ -222,7 +222,7 @@ void RenderGeometryMap::push(const RenderObject* renderer, const TransformationM
     ASSERT(m_insertionPosition != notFound);
 
     m_mapping.insert(m_insertionPosition, RenderGeometryMapStep(renderer, accumulatingTransform, isNonUniform, isFixedPosition, hasTransform));
-    
+
     RenderGeometryMapStep& step = m_mapping[m_insertionPosition];
     if (!t.isIntegerTranslation())
         step.m_transform = adoptPtr(new TransformationMatrix(t));
@@ -238,12 +238,12 @@ void RenderGeometryMap::pushView(const RenderView* view, const LayoutSize& scrol
     ASSERT(!m_insertionPosition); // The view should always be the first step.
 
     m_mapping.insert(m_insertionPosition, RenderGeometryMapStep(view, false, false, false, t));
-    
+
     RenderGeometryMapStep& step = m_mapping[m_insertionPosition];
     step.m_offset = scrollOffset;
     if (t)
         step.m_transform = adoptPtr(new TransformationMatrix(*t));
-    
+
     stepInserted(step);
 }
 
@@ -274,7 +274,7 @@ void RenderGeometryMap::stepInserted(const RenderGeometryMapStep& step)
 
     if (step.m_transform)
         ++m_transformedStepsCount;
-    
+
     if (step.m_isFixedPosition)
         ++m_fixedStepsCount;
 }

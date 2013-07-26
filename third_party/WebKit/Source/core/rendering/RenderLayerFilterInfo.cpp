@@ -12,7 +12,7 @@
  *    copyright notice, this list of conditions and the following
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -58,13 +58,13 @@ RenderLayerFilterInfo* RenderLayerFilterInfo::createFilterInfoForRenderLayerIfNe
 {
     if (!s_filterMap)
         s_filterMap = new RenderLayerFilterInfoMap();
-    
+
     RenderLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
     if (iter != s_filterMap->end()) {
         ASSERT(layer->hasFilterInfo());
         return iter->value;
     }
-    
+
     RenderLayerFilterInfo* filter = new RenderLayerFilterInfo(layer);
     s_filterMap->set(layer, filter);
     layer->setHasFilterInfo(true);
@@ -100,8 +100,8 @@ RenderLayerFilterInfo::~RenderLayerFilterInfo()
 }
 
 void RenderLayerFilterInfo::setRenderer(PassRefPtr<FilterEffectRenderer> renderer)
-{ 
-    m_renderer = renderer; 
+{
+    m_renderer = renderer;
 }
 
 void RenderLayerFilterInfo::notifyFinished(CachedResource*)

@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class FormDataList; 
+class FormDataList;
 
 // The class represents types of which UI contain text fields.
 // It supports not only the types for BaseTextInputType but also type=number.

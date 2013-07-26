@@ -34,7 +34,7 @@
 namespace WebCore {
 
 typedef int ExceptionCode;
-    
+
 class CSSSelector;
 class Document;
 class Element;

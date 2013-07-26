@@ -41,14 +41,14 @@ namespace WebCore {
 class StyleSheetCSSRuleList : public CSSRuleList {
 public:
     StyleSheetCSSRuleList(CSSStyleSheet* sheet) : m_styleSheet(sheet) { }
-    
+
 private:
     virtual void ref() { m_styleSheet->ref(); }
     virtual void deref() { m_styleSheet->deref(); }
-    
+
     virtual unsigned length() const { return m_styleSheet->length(); }
     virtual CSSRule* item(unsigned index) const { return m_styleSheet->item(index); }
-    
+
     virtual CSSStyleSheet* styleSheet() const { return m_styleSheet; }
 
     CSSStyleSheet* m_styleSheet;
@@ -68,12 +68,12 @@ static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
 #endif
 
 PassRefPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtr<StyleSheetContents> sheet, CSSImportRule* ownerRule)
-{ 
+{
     return adoptRef(new CSSStyleSheet(sheet, ownerRule));
 }
 
 PassRefPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtr<StyleSheetContents> sheet, Node* ownerNode)
-{ 
+{
     return adoptRef(new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition()));
 }
 
@@ -169,7 +169,7 @@ void CSSStyleSheet::reattachChildRuleCSSOMWrappers()
 }
 
 void CSSStyleSheet::setDisabled(bool disabled)
-{ 
+{
     if (disabled == m_isDisabled)
         return;
     m_isDisabled = disabled;
@@ -266,7 +266,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
     if (!success) {
         ec = HierarchyRequestError;
         return 0;
-    }        
+    }
     if (!m_childRuleCSSOMWrappers.isEmpty())
         m_childRuleCSSOMWrappers.insert(index, RefPtr<CSSRule>());
 
@@ -303,7 +303,7 @@ int CSSStyleSheet::addRule(const String& selector, const String& style, int inde
         text.append(' ');
     text.append('}');
     insertRule(text.toString(), index, ec);
-    
+
     // As per Microsoft documentation, always return -1.
     return -1;
 }
@@ -338,8 +338,8 @@ bool CSSStyleSheet::isLoading() const
     return m_contents->isLoading();
 }
 
-MediaList* CSSStyleSheet::media() const 
-{ 
+MediaList* CSSStyleSheet::media() const
+{
     if (!m_mediaQueries)
         return 0;
 
@@ -348,9 +348,9 @@ MediaList* CSSStyleSheet::media() const
     return m_mediaCSSOMWrapper.get();
 }
 
-CSSStyleSheet* CSSStyleSheet::parentStyleSheet() const 
-{ 
-    return m_ownerRule ? m_ownerRule->parentStyleSheet() : 0; 
+CSSStyleSheet* CSSStyleSheet::parentStyleSheet() const
+{
+    return m_ownerRule ? m_ownerRule->parentStyleSheet() : 0;
 }
 
 Document* CSSStyleSheet::ownerDocument() const

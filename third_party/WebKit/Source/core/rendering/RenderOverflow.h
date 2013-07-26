@@ -32,20 +32,20 @@ namespace WebCore
 // visual overflow (which is not expected to be reachable via scrolling mechanisms).
 //
 // Layout overflow examples include other boxes that spill out of our box,  For example, in the inline case a tall image
-// could spill out of a line box. 
-    
+// could spill out of a line box.
+
 // Examples of visual overflow are shadows, text stroke (and eventually outline and border-image).
 
 // This object is allocated only when some of these fields have non-default values in the owning box.
 class RenderOverflow {
     WTF_MAKE_NONCOPYABLE(RenderOverflow); WTF_MAKE_FAST_ALLOCATED;
 public:
-    RenderOverflow(const LayoutRect& layoutRect, const LayoutRect& visualRect) 
+    RenderOverflow(const LayoutRect& layoutRect, const LayoutRect& visualRect)
         : m_layoutOverflow(layoutRect)
         , m_visualOverflow(visualRect)
     {
     }
-   
+
     const LayoutRect layoutOverflowRect() const { return m_layoutOverflow; }
     const LayoutRect visualOverflowRect() const { return m_visualOverflow; }
 
@@ -53,14 +53,14 @@ public:
     void setMaxYLayoutOverflow(LayoutUnit overflow) { m_layoutOverflow.setHeight(overflow - m_layoutOverflow.y()); }
     void setMinXLayoutOverflow(LayoutUnit overflow) { m_layoutOverflow.setX(overflow); }
     void setMaxXLayoutOverflow(LayoutUnit overflow) { m_layoutOverflow.setWidth(overflow - m_layoutOverflow.x()); }
-    
+
     void setMinYVisualOverflow(LayoutUnit overflow) { m_visualOverflow.setY(overflow); }
     void setMaxYVisualOverflow(LayoutUnit overflow) { m_visualOverflow.setHeight(overflow - m_layoutOverflow.y()); }
     void setMinXVisualOverflow(LayoutUnit overflow) { m_visualOverflow.setX(overflow); }
     void setMaxXVisualOverflow(LayoutUnit overflow) { m_visualOverflow.setWidth(overflow - m_layoutOverflow.x()); }
-    
+
     void move(LayoutUnit dx, LayoutUnit dy);
-    
+
     void addLayoutOverflow(const LayoutRect&);
     void addVisualOverflow(const LayoutRect&);
 

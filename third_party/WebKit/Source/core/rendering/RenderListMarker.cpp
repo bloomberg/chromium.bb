@@ -165,7 +165,7 @@ static inline String toNumeric(int number, const CharacterType(&alphabet)[size])
 
 template <typename CharacterType, size_t size>
 static inline String toSymbolic(int number, const CharacterType(&alphabet)[size])
-{    
+{
     return toSymbolic(number, alphabet, size);
 }
 
@@ -1080,7 +1080,7 @@ void RenderListMarker::styleWillChange(StyleDifference diff, const RenderStyle* 
 {
     if (style() && (newStyle->listStylePosition() != style()->listStylePosition() || newStyle->listStyleType() != style()->listStyleType()))
         setNeedsLayoutAndPrefWidthsRecalc();
-    
+
     RenderBox::styleWillChange(diff, newStyle);
 }
 
@@ -1323,7 +1323,7 @@ void RenderListMarker::layout()
 {
     StackStats::LayoutCheckPoint layoutCheckPoint;
     ASSERT(needsLayout());
- 
+
     if (isImage()) {
         updateMarginsAndContent();
         setWidth(m_image->imageSize(this, style()->effectiveZoom()).width());
@@ -1653,7 +1653,7 @@ void RenderListMarker::updateMargins()
             }
             marginStart = -marginEnd - minPreferredLogicalWidth();
         }
-        
+
     }
 
     style()->setMarginStart(Length(marginStart, Fixed));
@@ -1705,7 +1705,7 @@ IntRect RenderListMarker::getRelativeMarkerRect()
 {
     if (isImage())
         return IntRect(0, 0, m_image->imageSize(this, style()->effectiveZoom()).width(), m_image->imageSize(this, style()->effectiveZoom()).height());
-    
+
     IntRect relativeRect;
     EListStyleType type = style()->listStyleType();
     switch (type) {
@@ -1838,12 +1838,12 @@ LayoutRect RenderListMarker::selectionRectForRepaint(const RenderLayerModelObjec
 
     RootInlineBox* root = inlineBoxWrapper()->root();
     LayoutRect rect(0, root->selectionTop() - y(), width(), root->selectionHeight());
-            
+
     if (clipToVisibleContent)
         computeRectForRepaint(repaintContainer, rect);
     else
         rect = localToContainerQuad(FloatRect(rect), repaintContainer).enclosingBoundingBox();
-    
+
     return rect;
 }
 

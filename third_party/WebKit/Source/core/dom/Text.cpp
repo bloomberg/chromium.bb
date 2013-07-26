@@ -213,14 +213,14 @@ bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
     RenderObject* parent = context.parentRenderer();
     if (!parent->canHaveWhitespaceChildren())
         return false;
-    
+
     if (context.style()->preserveNewline()) // pre/pre-wrap/pre-line always make renderers.
         return true;
 
     RenderObject* prev = context.previousRenderer();
     if (prev && prev->isBR()) // <span><br/> <br/></span>
         return false;
-        
+
     if (parent->isRenderInline()) {
         // <span><div/> <div/></span>
         if (prev && !prev->isInline())

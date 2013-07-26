@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2006 Apple Computer, Inc.
  * Copyright (C) 2009 Google, Inc.
- * Copyright (C) Research In Motion Limited 2010. All rights reserved. 
+ * Copyright (C) Research In Motion Limited 2010. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-RenderSVGForeignObject::RenderSVGForeignObject(SVGForeignObjectElement* node) 
+RenderSVGForeignObject::RenderSVGForeignObject(SVGForeignObjectElement* node)
     : RenderSVGBlock(node)
     , m_needsTransformUpdate(true)
 {

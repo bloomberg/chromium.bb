@@ -453,7 +453,7 @@ int RenderTableSection::calcRowLogicalHeight()
     ASSERT(!needsLayout());
 
     RenderTableCell* cell;
-    
+
     RenderView* viewRenderer = view();
     LayoutStateMaintainer statePusher(viewRenderer);
 
@@ -1114,7 +1114,7 @@ void RenderTableSection::paint(PaintInfo& paintInfo, const LayoutPoint& paintOff
     // avoid crashing on bugs that cause us to paint with dirty layout
     if (needsLayout())
         return;
-    
+
     unsigned totalRows = m_grid.size();
     unsigned totalCols = table()->columns().size();
 
@@ -1199,7 +1199,7 @@ LayoutRect RenderTableSection::logicalRectForWritingModeAndDirection(const Layou
 
 CellSpan RenderTableSection::dirtiedRows(const LayoutRect& damageRect) const
 {
-    if (m_forceSlowPaintPathWithOverflowingCell) 
+    if (m_forceSlowPaintPathWithOverflowingCell)
         return fullTableRowSpan();
 
     CellSpan coveredRows = spannedRows(damageRect);
@@ -1216,7 +1216,7 @@ CellSpan RenderTableSection::dirtiedRows(const LayoutRect& damageRect) const
 
 CellSpan RenderTableSection::dirtiedColumns(const LayoutRect& damageRect) const
 {
-    if (m_forceSlowPaintPathWithOverflowingCell) 
+    if (m_forceSlowPaintPathWithOverflowingCell)
         return fullTableColumnSpan();
 
     CellSpan coveredColumns = spannedColumns(damageRect);
@@ -1455,7 +1455,7 @@ void RenderTableSection::setNeedsCellRecalc()
 unsigned RenderTableSection::numColumns() const
 {
     unsigned result = 0;
-    
+
     for (unsigned r = 0; r < m_grid.size(); ++r) {
         for (unsigned c = result; c < table()->numEffCols(); ++c) {
             const CellStruct& cell = cellAt(r, c);
@@ -1463,7 +1463,7 @@ unsigned RenderTableSection::numColumns() const
                 result = c;
         }
     }
-    
+
     return result + 1;
 }
 
@@ -1596,7 +1596,7 @@ void RenderTableSection::removeCachedCollapsedBorders(const RenderTableCell* cel
 {
     if (!table()->collapseBorders())
         return;
-    
+
     for (int side = CBSBefore; side <= CBSEnd; ++side)
         m_cellsCollapsedBorders.remove(make_pair(cell, side));
 }

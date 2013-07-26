@@ -45,7 +45,7 @@ public:
         PanningModelHRTF = 1,
         PanningModelSoundField = 2
     };
-    
+
     typedef unsigned PanningModel;
 
     static PassOwnPtr<Panner> create(PanningModel, float sampleRate, HRTFDatabaseLoader*);

@@ -43,7 +43,7 @@ private:
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
     virtual RenderObject* createRenderer(RenderStyle*);
-    
+
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
     virtual bool allowFullScreen() const { return false; }

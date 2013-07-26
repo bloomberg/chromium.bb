@@ -6,13 +6,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -220,7 +220,7 @@ void AnimationControllerPrivate::addEventToDispatch(PassRefPtr<Element> element,
     event.eventType = eventType;
     event.name = name;
     event.elapsedTime = elapsedTime;
-    
+
     startUpdateStyleIfNeededDispatcher();
 }
 
@@ -274,7 +274,7 @@ bool AnimationControllerPrivate::isRunningAcceleratedAnimationOnRenderer(RenderO
 void AnimationControllerPrivate::suspendAnimations()
 {
     suspendAnimationsForDocument(m_frame->document());
-    
+
     // Traverse subframes
     for (Frame* child = m_frame->tree()->firstChild(); child; child = child->tree()->nextSibling())
         child->animation()->suspendAnimations();
@@ -283,7 +283,7 @@ void AnimationControllerPrivate::suspendAnimations()
 void AnimationControllerPrivate::resumeAnimations()
 {
     resumeAnimationsForDocument(m_frame->document());
-    
+
     // Traverse subframes
     for (Frame* child = m_frame->tree()->firstChild(); child; child = child->tree()->nextSibling())
         child->animation()->resumeAnimations();
@@ -292,7 +292,7 @@ void AnimationControllerPrivate::resumeAnimations()
 void AnimationControllerPrivate::suspendAnimationsForDocument(Document* document)
 {
     setBeginAnimationUpdateTime(cBeginAnimationUpdateTimeNotSet);
-    
+
     RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
     for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
         RenderObject* renderer = it->key;
@@ -301,14 +301,14 @@ void AnimationControllerPrivate::suspendAnimationsForDocument(Document* document
             compAnim->suspendAnimations();
         }
     }
-    
+
     scheduleService();
 }
 
 void AnimationControllerPrivate::resumeAnimationsForDocument(Document* document)
 {
     setBeginAnimationUpdateTime(cBeginAnimationUpdateTimeNotSet);
-    
+
     RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
     for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
         RenderObject* renderer = it->key;
@@ -317,7 +317,7 @@ void AnimationControllerPrivate::resumeAnimationsForDocument(Document* document)
             compAnim->resumeAnimations();
         }
     }
-    
+
     scheduleService();
 }
 
@@ -358,18 +358,18 @@ PassRefPtr<RenderStyle> AnimationControllerPrivate::getAnimatedStyleForRenderer(
     RefPtr<CompositeAnimation> rendererAnimations = m_compositeAnimations.get(renderer);
     if (!rendererAnimations)
         return renderer->style();
-    
+
     RefPtr<RenderStyle> animatingStyle = rendererAnimations->getAnimatedStyle();
     if (!animatingStyle)
         animatingStyle = renderer->style();
-    
+
     return animatingStyle.release();
 }
 
 unsigned AnimationControllerPrivate::numberOfActiveAnimations(Document* document) const
 {
     unsigned count = 0;
-    
+
     RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
     for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
         RenderObject* renderer = it->key;
@@ -377,7 +377,7 @@ unsigned AnimationControllerPrivate::numberOfActiveAnimations(Document* document
         if (renderer->document() == document)
             count += compAnim->numberOfActiveAnimations();
     }
-    
+
     return count;
 }
 
@@ -409,9 +409,9 @@ void AnimationControllerPrivate::addToAnimationsWaitingForStartTimeResponse(Anim
 {
     // If willGetResponse is true, it means this animation is actually waiting for a response
     // (which will come in as a call to notifyAnimationStarted()).
-    // In that case we don't need to add it to this list. We just set a waitingForAResponse flag 
-    // which says we are waiting for the response. If willGetResponse is false, this animation 
-    // is not waiting for a response for itself, but rather for a notifyXXXStarted() call for 
+    // In that case we don't need to add it to this list. We just set a waitingForAResponse flag
+    // which says we are waiting for the response. If willGetResponse is false, this animation
+    // is not waiting for a response for itself, but rather for a notifyXXXStarted() call for
     // another animation to which it will sync.
     //
     // When endAnimationUpdate() is called we check to see if the waitingForAResponse flag is
@@ -421,20 +421,20 @@ void AnimationControllerPrivate::addToAnimationsWaitingForStartTimeResponse(Anim
     // on each animation. In the first case we send in the time we got from notifyXXXStarted().
     // In the second case, we just pass in the beginAnimationUpdateTime().
     //
-    // This will synchronize all software and accelerated animations started in the same 
+    // This will synchronize all software and accelerated animations started in the same
     // updateStyleIfNeeded cycle.
     //
-    
+
     if (willGetResponse)
         m_waitingForAsyncStartNotification = true;
-    
+
     m_animationsWaitingForStartTimeResponse.add(animation);
 }
 
 void AnimationControllerPrivate::removeFromAnimationsWaitingForStartTimeResponse(AnimationBase* animationToRemove)
 {
     m_animationsWaitingForStartTimeResponse.remove(animationToRemove);
-    
+
     if (m_animationsWaitingForStartTimeResponse.isEmpty())
         m_waitingForAsyncStartNotification = false;
 }
@@ -447,7 +447,7 @@ void AnimationControllerPrivate::startTimeResponse(double time)
     WaitingAnimationsSet::const_iterator end = m_animationsWaitingForStartTimeResponse.end();
     for (; it != end; ++it)
         (*it)->onAnimationStartResponse(time);
-    
+
     m_animationsWaitingForStartTimeResponse.clear();
     m_waitingForAsyncStartNotification = false;
 }

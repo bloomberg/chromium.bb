@@ -44,7 +44,7 @@ public:
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-    
+
 private:
     virtual ~FEImage() { }
     FEImage(Filter*, PassRefPtr<Image>, const SVGPreserveAspectRatio&);

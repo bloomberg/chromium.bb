@@ -38,7 +38,7 @@
 namespace WebCore {
 
 struct PatternAttributes;
- 
+
 class SVGPatternElement FINAL : public SVGStyledElement,
                                 public SVGURIReference,
                                 public SVGTests,
@@ -53,7 +53,7 @@ public:
 
 private:
     SVGPatternElement(const QualifiedName&, Document*);
-    
+
     virtual bool isValid() const { return SVGTests::isValid(); }
     virtual bool needsPendingResourceHandling() const { return false; }
 
@@ -77,7 +77,7 @@ private:
         DECLARE_ANIMATED_STRING(Href, href)
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
         DECLARE_ANIMATED_RECT(ViewBox, viewBox)
-        DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio) 
+        DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES
 
     // SVGTests

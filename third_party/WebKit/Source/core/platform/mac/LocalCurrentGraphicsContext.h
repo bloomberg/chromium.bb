@@ -45,7 +45,7 @@ class ContextContainer {
     WTF_MAKE_NONCOPYABLE(ContextContainer);
 public:
     ContextContainer(GraphicsContext*);
-    
+
     // This synchronizes the CGContext to reflect the current SkCanvas state.
     // The implementation may not return the same CGContext each time.
     CGContextRef context() { return m_skiaBitLocker.cgContext(); }

@@ -78,9 +78,9 @@ void RenderReplaced::layout()
 {
     StackStats::LayoutCheckPoint layoutCheckPoint;
     ASSERT(needsLayout());
-    
+
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
-    
+
     setHeight(minimumReplacedHeight());
 
     updateLogicalWidth();
@@ -109,12 +109,12 @@ void RenderReplaced::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 
     if (!shouldPaint(paintInfo, paintOffset))
         return;
-    
+
     LayoutPoint adjustedPaintOffset = paintOffset + location();
-    
-    if (hasBoxDecorations() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection)) 
+
+    if (hasBoxDecorations() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
         paintBoxDecorations(paintInfo, adjustedPaintOffset);
-    
+
     if (paintInfo.phase == PaintPhaseMask) {
         paintMask(paintInfo, adjustedPaintOffset);
         return;
@@ -123,13 +123,13 @@ void RenderReplaced::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     LayoutRect paintRect = LayoutRect(adjustedPaintOffset, size());
     if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && style()->outlineWidth())
         paintOutline(paintInfo, paintRect);
-    
+
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && !canHaveChildren())
         return;
-    
+
     if (!paintInfo.shouldPaintWithinRoot(this))
         return;
-    
+
     bool drawSelectionTint = selectionState() != SelectionNone && !document()->printing();
     if (paintInfo.phase == PaintPhaseSelection) {
         if (selectionState() == SelectionNone)
@@ -170,7 +170,7 @@ void RenderReplaced::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 
 bool RenderReplaced::shouldPaint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline 
+    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline
             && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseMask)
         return false;
 
@@ -276,7 +276,7 @@ void RenderReplaced::computeAspectRatioInformationForRenderBox(RenderBox* conten
 
         if (rendererHasAspectRatio(this) && isPercentageIntrinsicSize)
             intrinsicRatio = 1;
-            
+
         // Update our intrinsic size to match what the content renderer has computed, so that when we
         // constrain the size below, the correct intrinsic size will be obtained for comparison against
         // min and max widths.
@@ -452,7 +452,7 @@ void RenderReplaced::computePreferredLogicalWidths()
         m_maxPreferredLogicalWidth = max(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMinWidth().value()));
         m_minPreferredLogicalWidth = max(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMinWidth().value()));
     }
-    
+
     if (styleToUse->logicalMaxWidth().isFixed()) {
         m_maxPreferredLogicalWidth = min(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMaxWidth().value()));
         m_minPreferredLogicalWidth = min(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMaxWidth().value()));
@@ -470,19 +470,19 @@ VisiblePosition RenderReplaced::positionForPoint(const LayoutPoint& point)
     // FIXME: This code is buggy if the replaced element is relative positioned.
     InlineBox* box = inlineBoxWrapper();
     RootInlineBox* rootBox = box ? box->root() : 0;
-    
+
     LayoutUnit top = rootBox ? rootBox->selectionTop() : logicalTop();
     LayoutUnit bottom = rootBox ? rootBox->selectionBottom() : logicalBottom();
-    
+
     LayoutUnit blockDirectionPosition = isHorizontalWritingMode() ? point.y() + y() : point.x() + x();
     LayoutUnit lineDirectionPosition = isHorizontalWritingMode() ? point.x() + x() : point.y() + y();
-    
+
     if (blockDirectionPosition < top)
         return createVisiblePosition(caretMinOffset(), DOWNSTREAM); // coordinates are above
-    
+
     if (blockDirectionPosition >= bottom)
         return createVisiblePosition(caretMaxOffset(), DOWNSTREAM); // coordinates are below
-    
+
     if (node()) {
         if (lineDirectionPosition <= logicalLeft() + (logicalWidth() / 2))
             return createVisiblePosition(0, DOWNSTREAM);
@@ -498,13 +498,13 @@ LayoutRect RenderReplaced::selectionRectForRepaint(const RenderLayerModelObject*
 
     if (!isSelected())
         return LayoutRect();
-    
+
     LayoutRect rect = localSelectionRect();
     if (clipToVisibleContent)
         computeRectForRepaint(repaintContainer, rect);
     else
         rect = localToContainerQuad(FloatRect(rect), repaintContainer).enclosingBoundingBox();
-    
+
     return rect;
 }
 
@@ -516,7 +516,7 @@ LayoutRect RenderReplaced::localSelectionRect(bool checkWhetherSelected) const
     if (!m_inlineBoxWrapper)
         // We're a block-level replaced element.  Just return our own dimensions.
         return LayoutRect(LayoutPoint(), size());
-    
+
     RootInlineBox* root = m_inlineBoxWrapper->root();
     LayoutUnit newLogicalTop = root->block()->style()->isFlippedBlocksWritingMode() ? m_inlineBoxWrapper->logicalBottom() - root->selectionBottom() : root->selectionTop() - m_inlineBoxWrapper->logicalTop();
     if (root->block()->style()->isHorizontalWritingMode())
@@ -546,13 +546,13 @@ bool RenderReplaced::isSelected() const
     selectionStartEnd(selectionStart, selectionEnd);
     if (s == SelectionStart)
         return selectionStart == 0;
-        
+
     int end = node()->hasChildNodes() ? node()->childNodeCount() : 1;
     if (s == SelectionEnd)
         return selectionEnd == end;
     if (s == SelectionBoth)
         return selectionStart == 0 && selectionEnd == end;
-        
+
     ASSERT(0);
     return false;
 }

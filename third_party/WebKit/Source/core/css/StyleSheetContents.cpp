@@ -37,7 +37,7 @@ namespace WebCore {
 // Rough size estimate for the memory cache.
 unsigned StyleSheetContents::estimatedSizeInBytes() const
 {
-    // Note that this does not take into account size of the strings hanging from various objects. 
+    // Note that this does not take into account size of the strings hanging from various objects.
     // The assumption is that nearly all of of them are atomic and would exist anyway.
     unsigned size = sizeof(*this);
 
@@ -185,7 +185,7 @@ void StyleSheetContents::parserSetEncodingFromCharsetRule(const String& encoding
 {
     // Parser enforces that there is ever only one @charset.
     ASSERT(m_encodingFromCharsetRule.isNull());
-    m_encodingFromCharsetRule = encoding; 
+    m_encodingFromCharsetRule = encoding;
 }
 
 bool StyleSheetContents::wrapperInsertRule(PassRefPtr<StyleRuleBase> rule, unsigned index)
@@ -194,7 +194,7 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtr<StyleRuleBase> rule, unsig
     ASSERT_WITH_SECURITY_IMPLICATION(index <= ruleCount());
     // Parser::parseRule doesn't currently allow @charset so we don't need to deal with it.
     ASSERT(!rule->isCharsetRule());
-    
+
     unsigned childVectorIndex = index;
     // m_childRules does not contain @charset which is always in index 0 if it exists.
     if (hasCharsetRule()) {
@@ -204,7 +204,7 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtr<StyleRuleBase> rule, unsig
         }
         --childVectorIndex;
     }
-    
+
     if (childVectorIndex < m_importRules.size() || (childVectorIndex == m_importRules.size() && rule->isImportRule())) {
         // Inserting non-import rule before @import is not allowed.
         if (!rule->isImportRule())
@@ -219,7 +219,7 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtr<StyleRuleBase> rule, unsig
     if (rule->isImportRule())
         return false;
     childVectorIndex -= m_importRules.size();
- 
+
     m_childRules.insert(childVectorIndex, rule);
     return true;
 }
@@ -403,7 +403,7 @@ void StyleSheetContents::addSubresourceStyleURLs(ListHashSet<KURL>& urls)
 
     while (!styleSheetQueue.isEmpty()) {
         StyleSheetContents* styleSheet = styleSheetQueue.takeFirst();
-        
+
         for (unsigned i = 0; i < styleSheet->m_importRules.size(); ++i) {
             StyleRuleImport* importRule = styleSheet->m_importRules[i].get();
             if (importRule->styleSheet()) {

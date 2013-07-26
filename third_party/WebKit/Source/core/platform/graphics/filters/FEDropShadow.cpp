@@ -34,7 +34,7 @@
 using namespace std;
 
 namespace WebCore {
-    
+
 FEDropShadow::FEDropShadow(Filter* filter, float stdX, float stdY, float dx, float dy, const Color& shadowColor, float shadowOpacity)
     : FilterEffect(filter)
     , m_stdX(stdX)
@@ -139,5 +139,5 @@ TextStream& FEDropShadow::externalRepresentation(TextStream& ts, int indent) con
     inputEffect(0)->externalRepresentation(ts, indent + 1);
     return ts;
 }
-    
+
 } // namespace WebCore

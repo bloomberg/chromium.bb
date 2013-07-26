@@ -48,18 +48,18 @@ AccessibilityListBox::AccessibilityListBox(RenderObject* renderer)
 AccessibilityListBox::~AccessibilityListBox()
 {
 }
-    
+
 PassRefPtr<AccessibilityListBox> AccessibilityListBox::create(RenderObject* renderer)
 {
     return adoptRef(new AccessibilityListBox(renderer));
 }
-    
+
 bool AccessibilityListBox::canSetSelectedChildrenAttribute() const
 {
     Node* selectNode = m_renderer->node();
     if (!selectNode)
         return false;
-    
+
     return !toHTMLSelectElement(selectNode)->isDisabledFormControl();
 }
 
@@ -68,9 +68,9 @@ void AccessibilityListBox::addChildren()
     Node* selectNode = m_renderer->node();
     if (!selectNode)
         return;
-    
+
     m_haveChildren = true;
-    
+
     const Vector<HTMLElement*>& listItems = toHTMLSelectElement(selectNode)->listItems();
     unsigned length = listItems.size();
     for (unsigned i = 0; i < length; i++) {
@@ -86,11 +86,11 @@ void AccessibilityListBox::setSelectedChildren(AccessibilityChildrenVector& chil
 {
     if (!canSetSelectedChildrenAttribute())
         return;
-    
+
     Node* selectNode = m_renderer->node();
     if (!selectNode)
         return;
-    
+
     // disable any selected options
     unsigned length = m_children.size();
     for (unsigned i = 0; i < length; i++) {
@@ -98,29 +98,29 @@ void AccessibilityListBox::setSelectedChildren(AccessibilityChildrenVector& chil
         if (listBoxOption->isSelected())
             listBoxOption->setSelected(false);
     }
-    
+
     length = children.size();
     for (unsigned i = 0; i < length; i++) {
         AccessibilityObject* obj = children[i].get();
         if (obj->roleValue() != ListBoxOptionRole)
             continue;
-                
+
         static_cast<AccessibilityListBoxOption*>(obj)->setSelected(true);
     }
 }
-    
+
 void AccessibilityListBox::selectedChildren(AccessibilityChildrenVector& result)
 {
     ASSERT(result.isEmpty());
 
     if (!hasChildren())
         addChildren();
-        
+
     unsigned length = m_children.size();
     for (unsigned i = 0; i < length; i++) {
         if (static_cast<AccessibilityListBoxOption*>(m_children[i].get())->isSelected())
             result.append(m_children[i]);
-    }    
+    }
 }
 
 AccessibilityObject* AccessibilityListBox::listBoxOptionAccessibilityObject(HTMLElement* element) const
@@ -128,26 +128,26 @@ AccessibilityObject* AccessibilityListBox::listBoxOptionAccessibilityObject(HTML
     // skip hr elements
     if (!element || element->hasTagName(hrTag))
         return 0;
-    
+
     AccessibilityObject* listBoxObject = m_renderer->document()->axObjectCache()->getOrCreate(ListBoxOptionRole);
     static_cast<AccessibilityListBoxOption*>(listBoxObject)->setHTMLElement(element);
-    
+
     return listBoxObject;
 }
-    
+
 AccessibilityObject* AccessibilityListBox::elementAccessibilityHitTest(const IntPoint& point) const
 {
     // the internal HTMLSelectElement methods for returning a listbox option at a point
     // ignore optgroup elements.
     if (!m_renderer)
         return 0;
-    
+
     Node* node = m_renderer->node();
     if (!node)
         return 0;
-    
+
     LayoutRect parentRect = elementRect();
-    
+
     AccessibilityObject* listBoxOption = 0;
     unsigned length = m_children.size();
     for (unsigned i = 0; i < length; i++) {
@@ -159,10 +159,10 @@ AccessibilityObject* AccessibilityListBox::elementAccessibilityHitTest(const Int
             break;
         }
     }
-    
+
     if (listBoxOption && !listBoxOption->accessibilityIsIgnored())
         return listBoxOption;
-    
+
     return axObjectCache()->getOrCreate(m_renderer);
 }
 

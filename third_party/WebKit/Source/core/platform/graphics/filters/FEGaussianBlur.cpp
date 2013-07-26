@@ -241,7 +241,7 @@ void FEGaussianBlur::calculateUnscaledKernelSize(unsigned& kernelSizeX, unsigned
     kernelSizeY = 0;
     if (stdY)
         kernelSizeY = max<unsigned>(2, static_cast<unsigned>(floorf(stdY * gaussianKernelFactor() + 0.5f)));
-    
+
     // Limit the kernel size to 1000. A bigger radius won't make a big difference for the result image but
     // inflates the absolute paint rect to much. This is compatible with Firefox' behavior.
     if (kernelSizeX > gMaxKernelSize)

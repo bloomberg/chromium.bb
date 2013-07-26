@@ -52,7 +52,7 @@ public:
 
     String cssText() const
     {
-    
+
         return generateCSSString(first()->cssText(), second()->cssText());
     }
 
@@ -63,7 +63,7 @@ public:
         return generateCSSString(first()->customSerializeResolvingVariables(variables),
                                  second()->customSerializeResolvingVariables(variables));
     }
-    
+
     bool hasVariableReference() const { return first()->hasVariableReference() || second()->hasVariableReference(); }
 
 private:

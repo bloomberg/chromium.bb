@@ -99,5 +99,5 @@ float SVGAnimatedIntegerAnimator::calculateDistance(const String& fromString, co
     int to = toString.toIntStrict();
     return abs(to - from);
 }
-    
+
 }

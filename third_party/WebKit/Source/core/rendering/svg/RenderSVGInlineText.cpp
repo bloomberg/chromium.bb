@@ -221,7 +221,7 @@ void RenderSVGInlineText::computeNewScaledFontForStyle(RenderObject* renderer, c
 
     Document* document = renderer->document();
     ASSERT(document);
-    
+
     StyleResolver* styleResolver = document->styleResolver();
     ASSERT(styleResolver);
 

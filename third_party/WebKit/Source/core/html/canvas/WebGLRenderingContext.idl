@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 typedef unsigned long  GLenum;
@@ -490,7 +490,7 @@ typedef /*unrestricted*/ float GLclampf;
                                                            GLsizei width, GLsizei height, GLint border, ArrayBufferView data);
     [StrictTypeChecking] void         compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
                                                               GLsizei width, GLsizei height, GLenum format, ArrayBufferView data);
-    
+
     [StrictTypeChecking] void         copyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
     [StrictTypeChecking] void         copyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
 
@@ -527,7 +527,7 @@ typedef /*unrestricted*/ float GLclampf;
     [StrictTypeChecking, RaisesException] void         framebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, WebGLTexture texture, GLint level);
     [StrictTypeChecking] void         frontFace(GLenum mode);
     [StrictTypeChecking] void         generateMipmap(GLenum target);
-    
+
     [StrictTypeChecking, RaisesException] WebGLActiveInfo getActiveAttrib(WebGLProgram program, GLuint index);
     [StrictTypeChecking, RaisesException] WebGLActiveInfo getActiveUniform(WebGLProgram program, GLuint index);
 
@@ -584,7 +584,7 @@ typedef /*unrestricted*/ float GLclampf;
     [StrictTypeChecking] void         polygonOffset(GLfloat factor, GLfloat units);
 
     [StrictTypeChecking, RaisesException] void         readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, ArrayBufferView pixels);
-    
+
     [StrictTypeChecking] void         renderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
     [StrictTypeChecking] void         sampleCoverage(GLclampf value, GLboolean invert);
     [StrictTypeChecking] void         scissor(GLint x, GLint y, GLsizei width, GLsizei height);
@@ -600,7 +600,7 @@ typedef /*unrestricted*/ float GLclampf;
     [StrictTypeChecking] void         texParameteri(GLenum target, GLenum pname, GLint param);
 
     // Supported forms:
-    [StrictTypeChecking, RaisesException] void         texImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, 
+    [StrictTypeChecking, RaisesException] void         texImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height,
                                                  GLint border, GLenum format, GLenum type, ArrayBufferView? pixels);
     [StrictTypeChecking, RaisesException] void         texImage2D(GLenum target, GLint level, GLenum internalformat,
                                                  GLenum format, GLenum type, ImageData? pixels);
@@ -611,8 +611,8 @@ typedef /*unrestricted*/ float GLclampf;
     [StrictTypeChecking, RaisesException] void         texImage2D(GLenum target, GLint level, GLenum internalformat,
                                                  GLenum format, GLenum type, HTMLVideoElement? video);
 
-    [StrictTypeChecking, RaisesException] void         texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, 
-                                                    GLsizei width, GLsizei height, 
+    [StrictTypeChecking, RaisesException] void         texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+                                                    GLsizei width, GLsizei height,
                                                     GLenum format, GLenum type, ArrayBufferView? pixels);
     [StrictTypeChecking, RaisesException] void         texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
                                                     GLenum format, GLenum type, ImageData? pixels);
@@ -655,7 +655,7 @@ typedef /*unrestricted*/ float GLclampf;
     [StrictTypeChecking, Custom] void vertexAttrib3fv(GLuint indx, Float32Array values);
     [StrictTypeChecking] void         vertexAttrib4f(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
     [StrictTypeChecking, Custom] void vertexAttrib4fv(GLuint indx, Float32Array values);
-    [StrictTypeChecking, RaisesException] void         vertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized, 
+    [StrictTypeChecking, RaisesException] void         vertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized,
                                                           GLsizei stride, GLintptr offset);
 
     [StrictTypeChecking] void         viewport(GLint x, GLint y, GLsizei width, GLsizei height);

@@ -9,13 +9,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -240,7 +240,7 @@ public:
         frameRequest.setFormState(m_submission->state());
         frame->loader()->load(frameRequest);
     }
-    
+
     virtual void didStartTimer(Frame* frame, Timer<NavigationScheduler>* timer)
     {
         if (m_haveToldClient)
@@ -312,10 +312,10 @@ void NavigationScheduler::scheduleRedirect(double delay, const String& url)
 bool NavigationScheduler::mustLockBackForwardList(Frame* targetFrame)
 {
     // Non-user navigation before the page has finished firing onload should not create a new back/forward item.
-    // See https://webkit.org/b/42861 for the original motivation for this.    
+    // See https://webkit.org/b/42861 for the original motivation for this.
     if (!ScriptController::processingUserGesture() && targetFrame->loader()->documentLoader() && !targetFrame->loader()->documentLoader()->wasOnloadHandled())
         return true;
-    
+
     // Navigation of a subframe during loading of an ancestor frame does not create a new back/forward item.
     // The definition of "during load" is any time before all handlers for the load event have been run.
     // See https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation for this.
@@ -432,12 +432,12 @@ void NavigationScheduler::schedule(PassOwnPtr<ScheduledNavigation> redirect)
     RefPtr<Frame> protect(m_frame);
 
     // If a redirect was scheduled during a load, then stop the current load.
-    // Otherwise when the current load transitions from a provisional to a 
-    // committed state, pending redirects may be cancelled. 
+    // Otherwise when the current load transitions from a provisional to a
+    // committed state, pending redirects may be cancelled.
     if (redirect->wasDuringLoad()) {
         if (DocumentLoader* provisionalDocumentLoader = m_frame->loader()->provisionalDocumentLoader())
             provisionalDocumentLoader->stopLoading();
-        m_frame->loader()->stopLoading(UnloadEventPolicyUnloadAndPageHide);   
+        m_frame->loader()->stopLoading(UnloadEventPolicyUnloadAndPageHide);
     }
 
     cancel();

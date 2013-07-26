@@ -43,7 +43,7 @@ private:
 
     RenderObject* m_renderer;
     SVGResources* m_resources;
-    HashSet<RenderSVGResourceContainer*> m_allResources; 
+    HashSet<RenderSVGResourceContainer*> m_allResources;
 };
 
 }

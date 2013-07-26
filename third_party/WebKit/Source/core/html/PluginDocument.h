@@ -19,7 +19,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef PluginDocument_h
@@ -54,7 +54,7 @@ private:
     PluginDocument(const DocumentInit&);
 
     virtual PassRefPtr<DocumentParser> createParser() OVERRIDE;
-        
+
     void setShouldLoadPluginManually(bool loadManually) { m_shouldLoadPluginManually = loadManually; }
 
     bool m_shouldLoadPluginManually;
@@ -75,7 +75,7 @@ inline const PluginDocument* toPluginDocument(const Document* document)
 
 // This will catch anyone doing an unnecessary cast.
 void toPluginDocument(const PluginDocument*);
-    
+
 }
 
 #endif // PluginDocument_h

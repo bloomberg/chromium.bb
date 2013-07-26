@@ -91,8 +91,8 @@ _LIBCPP_END_NAMESPACE_STD
 #endif
 
 #ifdef __cplusplus
-#define new ("if you use new/delete make sure to include config.h at the top of the file"()) 
-#define delete ("if you use new/delete make sure to include config.h at the top of the file"()) 
+#define new ("if you use new/delete make sure to include config.h at the top of the file"())
+#define delete ("if you use new/delete make sure to include config.h at the top of the file"())
 #endif
 
 /* When C++ exceptions are disabled, the C++ library defines |try| and |catch|

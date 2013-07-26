@@ -6,13 +6,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -58,7 +58,7 @@ public:
 
     void pauseAnimationsForTesting(double t);
     unsigned numberOfActiveAnimations(Document*) const; // To be used only for testing
-    
+
     bool isRunningAnimationOnRenderer(RenderObject*, CSSPropertyID, bool isRunningNow = true) const;
     bool isRunningAcceleratedAnimationOnRenderer(RenderObject*, CSSPropertyID, bool isRunningNow = true) const;
 
@@ -71,7 +71,7 @@ public:
 
     void beginAnimationUpdate();
     void endAnimationUpdate();
-    
+
     static bool supportsAcceleratedAnimationOfProperty(CSSPropertyID);
 
 private:
@@ -87,13 +87,13 @@ public:
         if (m_animationController)
             m_animationController->beginAnimationUpdate();
     }
-    
+
     ~AnimationUpdateBlock()
     {
         if (m_animationController)
             m_animationController->endAnimationUpdate();
     }
-    
+
     AnimationController* m_animationController;
 };
 

@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef SharedBuffer_h
@@ -35,7 +35,7 @@
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-    
+
 class PurgeableBuffer;
 
 class SharedBuffer : public RefCounted<SharedBuffer> {
@@ -46,11 +46,11 @@ public:
     static PassRefPtr<SharedBuffer> create(const unsigned char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
 
     static PassRefPtr<SharedBuffer> adoptVector(Vector<char>& vector);
-    
-    // The buffer must be in non-purgeable state before adopted to a SharedBuffer. 
+
+    // The buffer must be in non-purgeable state before adopted to a SharedBuffer.
     // It will stay that way until released.
     static PassRefPtr<SharedBuffer> adoptPurgeableBuffer(PassOwnPtr<PurgeableBuffer>);
-    
+
     ~SharedBuffer();
 
     // Calling this function will force internal segmented buffers
@@ -69,7 +69,7 @@ public:
     void clear();
 
     PassRefPtr<SharedBuffer> copy() const;
-    
+
     bool hasPurgeableBuffer() const { return m_purgeableBuffer.get(); }
 
     // Ensure this buffer has no other clients before calling this.
@@ -100,7 +100,7 @@ private:
     explicit SharedBuffer(size_t);
     SharedBuffer(const char*, int);
     SharedBuffer(const unsigned char*, int);
-    
+
     // Calling this function will force internal segmented buffers
     // to be merged into a flat buffer. Use getSomeData() whenever possible
     // for better performance.

@@ -60,7 +60,7 @@ private:
     bool m_isLinkPrerender : 1;
     bool m_isImport : 1;
 };
-    
+
 }
 
 #endif

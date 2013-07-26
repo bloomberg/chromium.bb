@@ -92,7 +92,7 @@ void FrameActionScheduler::dispatch()
 {
     Vector< OwnPtr<FrameAction> > snapshot;
     m_scheduledActions.swap(snapshot);
-    
+
     for (Vector< OwnPtr<FrameAction> >::iterator i = snapshot.begin(); i != snapshot.end(); ++i)
         (*i)->fire();
 }

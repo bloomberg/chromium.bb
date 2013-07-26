@@ -56,7 +56,7 @@ enum CalculationCategory {
     CalcVariable,
     CalcOther
 };
-    
+
 class CSSCalcExpressionNode : public RefCounted<CSSCalcExpressionNode> {
 public:
     enum Type {
@@ -85,7 +85,7 @@ protected:
         , m_isInteger(isInteger)
     {
     }
-    
+
     CalculationCategory m_category;
     bool m_isInteger;
 };
@@ -103,7 +103,7 @@ public:
         return CalculationValue::create(m_expression->toCalcValue(style, rootStyle, zoom), m_nonNegative ? CalculationRangeNonNegative : CalculationRangeAll);
     }
     CalculationCategory category() const { return m_expression->category(); }
-    bool isInt() const { return m_expression->isInteger(); }    
+    bool isInt() const { return m_expression->isInteger(); }
     double doubleValue() const;
     bool isNegative() const { return m_expression->doubleValue() < 0; }
     double computeLengthPx(const RenderStyle* currentStyle, const RenderStyle* rootStyle, double multiplier = 1.0, bool computingFontSize = false) const;
@@ -114,14 +114,14 @@ public:
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
     bool hasVariableReference() const;
 
-private:    
+private:
     CSSCalcValue(PassRefPtr<CSSCalcExpressionNode> expression, CalculationPermittedValueRange range)
         : CSSValue(CalculationClass)
         , m_expression(expression)
         , m_nonNegative(range == CalculationRangeNonNegative)
     {
     }
-    
+
     double clampToPermittedRange(double) const;
 
     const RefPtr<CSSCalcExpressionNode> m_expression;

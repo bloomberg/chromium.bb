@@ -69,7 +69,7 @@ public:
 
     ~FontFallbackList() { releaseFontData(); }
     void invalidate(PassRefPtr<FontSelector>);
-    
+
     bool isFixedPitch(const Font* f) const { if (m_pitch == UnknownPitch) determinePitch(f); return m_pitch == FixedPitch; };
     void determinePitch(const Font*) const;
 
@@ -86,7 +86,7 @@ private:
     FontFallbackList();
 
     const SimpleFontData* primarySimpleFontData(const Font* f)
-    { 
+    {
         ASSERT(isMainThread());
         if (!m_cachedPrimarySimpleFontData)
             m_cachedPrimarySimpleFontData = primaryFontData(f)->fontDataForCharacter(' ');
@@ -99,7 +99,7 @@ private:
     void setPlatformFont(const FontPlatformData&);
 
     void releaseFontData();
-    
+
     mutable Vector<RefPtr<FontData>, 1> m_fontList;
     mutable GlyphPages m_pages;
     mutable GlyphPageTreeNode* m_pageZero;

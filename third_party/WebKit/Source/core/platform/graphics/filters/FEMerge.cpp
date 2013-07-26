@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-FEMerge::FEMerge(Filter* filter) 
+FEMerge::FEMerge(Filter* filter)
     : FilterEffect(filter)
 {
 }

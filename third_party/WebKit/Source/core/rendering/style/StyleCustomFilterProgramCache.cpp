@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-static CustomFilterProgramInfo programCacheKey(StyleCustomFilterProgram* program) 
+static CustomFilterProgramInfo programCacheKey(StyleCustomFilterProgram* program)
 {
     ASSERT(program->vertexShaderURL().isValid() || program->fragmentShaderURL().isValid());
     return CustomFilterProgramInfo(program->vertexShaderURL().string(), program->fragmentShaderURL().string(),

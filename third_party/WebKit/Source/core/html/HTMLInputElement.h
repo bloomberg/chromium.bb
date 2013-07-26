@@ -371,7 +371,7 @@ private:
     virtual void requiredAttributeChanged() OVERRIDE;
 
     void updateType();
-    
+
     virtual void subtreeHasChanged();
 
     void resetListAttributeTargetObserver();

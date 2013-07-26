@@ -24,7 +24,7 @@
 #include "core/svg/SVGAnimateElement.h"
 
 namespace WebCore {
-    
+
 SVGAnimatedPreserveAspectRatioAnimator::SVGAnimatedPreserveAspectRatioAnimator(SVGAnimationElement* animationElement, SVGElement* contextElement)
     : SVGAnimatedTypeAnimator(AnimatedPreserveAspectRatio, animationElement, contextElement)
 {

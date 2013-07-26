@@ -64,7 +64,7 @@ public:
     void setInt16(unsigned byteOffset, int16_t value, bool littleEndian, ExceptionCode&);
     void setUint16(unsigned byteOffset, uint16_t value, ExceptionCode& ec) { setUint16(byteOffset, value, false, ec); }
     void setUint16(unsigned byteOffset, uint16_t value, bool littleEndian, ExceptionCode&);
-    void setInt32(unsigned byteOffset, int32_t value, ExceptionCode& ec) { setInt32(byteOffset, value, false, ec); } 
+    void setInt32(unsigned byteOffset, int32_t value, ExceptionCode& ec) { setInt32(byteOffset, value, false, ec); }
     void setInt32(unsigned byteOffset, int32_t value, bool littleEndian, ExceptionCode&);
     void setUint32(unsigned byteOffset, uint32_t value, ExceptionCode& ec) { setUint32(byteOffset, value, false, ec); }
     void setUint32(unsigned byteOffset, uint32_t value, bool littleEndian, ExceptionCode&);

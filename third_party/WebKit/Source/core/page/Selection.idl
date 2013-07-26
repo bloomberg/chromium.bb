@@ -40,17 +40,17 @@
     readonly attribute boolean isCollapsed;
     readonly attribute long rangeCount;
 
-    [RaisesException] void collapse([Default=Undefined] optional Node node, 
+    [RaisesException] void collapse([Default=Undefined] optional Node node,
                   [Default=Undefined] optional long index);
     [RaisesException] void collapseToEnd();
     [RaisesException] void collapseToStart();
 
     void deleteFromDocument();
-    boolean containsNode([Default=Undefined] optional Node node, 
+    boolean containsNode([Default=Undefined] optional Node node,
                          [Default=Undefined] optional boolean allowPartial);
     [RaisesException] void selectAllChildren([Default=Undefined] optional Node node);
 
-    [RaisesException] void extend([Default=Undefined] optional Node node, 
+    [RaisesException] void extend([Default=Undefined] optional Node node,
                 [Default=Undefined] optional long offset);
 
     [RaisesException] Range getRangeAt([Default=Undefined] optional long index);
@@ -69,14 +69,14 @@
     // IE's type accessor returns "none", "text" and "control"
     readonly attribute DOMString type;
 
-    void modify([Default=Undefined] optional DOMString alter, 
-                [Default=Undefined] optional DOMString direction, 
+    void modify([Default=Undefined] optional DOMString alter,
+                [Default=Undefined] optional DOMString direction,
                 [Default=Undefined] optional DOMString granularity);
-    [RaisesException] void setBaseAndExtent([Default=Undefined] optional Node baseNode, 
-                          [Default=Undefined] optional long baseOffset, 
-                          [Default=Undefined] optional Node extentNode, 
+    [RaisesException] void setBaseAndExtent([Default=Undefined] optional Node baseNode,
+                          [Default=Undefined] optional long baseOffset,
+                          [Default=Undefined] optional Node extentNode,
                           [Default=Undefined] optional long extentOffset);
-    [RaisesException] void setPosition([Default=Undefined] optional Node node, 
+    [RaisesException] void setPosition([Default=Undefined] optional Node node,
                      [Default=Undefined] optional long offset);
 
     // IE extentions

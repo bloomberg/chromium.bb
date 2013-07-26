@@ -61,7 +61,7 @@ public:
     typedef WebVTTTokenizerState State;
 
     void reset();
-    
+
     bool nextToken(SegmentedString&, WebVTTToken&);
 
     inline bool haveBufferedCharacterToken()

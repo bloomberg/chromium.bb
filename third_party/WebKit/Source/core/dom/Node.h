@@ -165,7 +165,7 @@ public:
     static bool isSupported(const String& feature, const String& version);
     static void dumpStatistics();
 
-    enum StyleChange { NoChange, NoInherit, Inherit, Detach, Force };    
+    enum StyleChange { NoChange, NoInherit, Inherit, Detach, Force };
     static StyleChange diff(const RenderStyle*, const RenderStyle*, Document*);
 
     virtual ~Node();
@@ -223,10 +223,10 @@ public:
     String lookupPrefix(const AtomicString& namespaceURI) const;
     String lookupNamespaceURI(const String& prefix) const;
     String lookupNamespacePrefix(const AtomicString& namespaceURI, const Element* originalElement) const;
-    
+
     String textContent(bool convertBRsToNewlines = false) const;
     void setTextContent(const String&, ExceptionCode&);
-    
+
     Node* lastDescendant() const;
     Node* firstDescendant() const;
 
@@ -324,7 +324,7 @@ public:
     // FIXME: These two functions belong in editing -- "atomic node" is an editing concept.
     Node* previousNodeConsideringAtomicNodes() const;
     Node* nextNodeConsideringAtomicNodes() const;
-    
+
     // Returns the next leaf node or 0 if there are no more.
     // Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.
     // Uses an editing-specific concept of what a leaf node is, and should probably be moved
@@ -479,11 +479,11 @@ public:
 
     unsigned nodeIndex() const;
 
-    // Returns the DOM ownerDocument attribute. This method never returns NULL, except in the case 
-    // of (1) a Document node or (2) a DocumentType node that is not used with any Document yet. 
+    // Returns the DOM ownerDocument attribute. This method never returns NULL, except in the case
+    // of (1) a Document node or (2) a DocumentType node that is not used with any Document yet.
     Document* ownerDocument() const;
 
-    // Returns the document associated with this node. This method never returns NULL, except in the case 
+    // Returns the document associated with this node. This method never returns NULL, except in the case
     // of a DocumentType node that is not used with any Document yet. A Document node returns itself.
     Document* document() const
     {
@@ -498,8 +498,8 @@ public:
 
     // Returns true if this node is associated with a document and is in its associated document's
     // node tree, false otherwise.
-    bool inDocument() const 
-    { 
+    bool inDocument() const
+    {
         ASSERT(documentInternal() || !getFlag(InDocumentFlag));
         return getFlag(InDocumentFlag);
     }
@@ -756,16 +756,16 @@ private:
     // 3 bits remaining
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
-    void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); } 
-    void setFlag(NodeFlags mask) const { m_nodeFlags |= mask; } 
-    void clearFlag(NodeFlags mask) const { m_nodeFlags &= ~mask; } 
+    void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }
+    void setFlag(NodeFlags mask) const { m_nodeFlags |= mask; }
+    void clearFlag(NodeFlags mask) const { m_nodeFlags &= ~mask; }
 
 protected:
-    enum ConstructionType { 
+    enum ConstructionType {
         CreateOther = DefaultNodeFlags,
         CreateText = DefaultNodeFlags | IsTextFlag,
-        CreateContainer = DefaultNodeFlags | IsContainerFlag, 
-        CreateElement = CreateContainer | IsElementFlag, 
+        CreateContainer = DefaultNodeFlags | IsContainerFlag,
+        CreateElement = CreateContainer | IsElementFlag,
         CreatePseudoElement =  CreateElement | InDocumentFlag,
         CreateShadowRoot = CreateContainer | IsDocumentFragmentFlag | IsInShadowTreeFlag,
         CreateDocumentFragment = CreateContainer | IsDocumentFragmentFlag,
@@ -795,7 +795,7 @@ protected:
     }
 
     virtual void didMoveToNewDocument(Document* oldDocument);
-    
+
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const { }
 
     bool hasRareData() const { return getFlag(HasRareDataFlag); }

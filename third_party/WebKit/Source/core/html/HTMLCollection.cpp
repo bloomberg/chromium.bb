@@ -374,7 +374,7 @@ bool ALWAYS_INLINE LiveNodeListBase::isLastItemCloserThanLastOrCachedItem(unsign
 
     return cachedItemOffset() < offset && distanceFromLastItem < offset - cachedItemOffset();
 }
-    
+
 bool ALWAYS_INLINE LiveNodeListBase::isFirstItemCloserThanCachedItem(unsigned offset) const
 {
     ASSERT(isItemCacheValid());
@@ -402,7 +402,7 @@ unsigned LiveNodeListBase::length() const
 
     item(UINT_MAX);
     ASSERT(isLengthCacheValid());
-    
+
     return cachedLength();
 }
 
@@ -511,7 +511,7 @@ bool HTMLCollection::checkForNameMatch(Element* element, bool checkName, const A
 {
     if (!element->isHTMLElement())
         return false;
-    
+
     HTMLElement* e = toHTMLElement(element);
     if (!checkName)
         return e->getIdAttribute() == name;

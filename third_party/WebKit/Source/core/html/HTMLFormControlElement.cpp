@@ -200,9 +200,9 @@ static bool shouldAutofocus(HTMLFormControlElement* element)
 }
 
 static void focusPostAttach(Node* element)
-{ 
-    toElement(element)->focus(); 
-    element->deref(); 
+{
+    toElement(element)->focus();
+    element->deref();
 }
 
 void HTMLFormControlElement::attach(const AttachContext& context)

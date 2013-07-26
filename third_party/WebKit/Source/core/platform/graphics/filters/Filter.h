@@ -60,7 +60,7 @@ public:
             1.0f : absoluteFilterRegion().height() / filterRegion().height();
         return value * m_filterResolution.height() * filterRegionScale;
     }
-    
+
     virtual FloatRect sourceImageRect() const = 0;
 
     FloatRect absoluteFilterRegion() const { return m_absoluteFilterRegion; }

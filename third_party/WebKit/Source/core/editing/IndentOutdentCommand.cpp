@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -64,7 +64,7 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     // FIXME: we need to deal with the case where there is no li (malformed HTML)
     if (!selectedListItem->hasTagName(liTag))
         return false;
-    
+
     // FIXME: previousElementSibling does not ignore non-rendered content like <span></span>.  Should we?
     Element* previousList = selectedListItem->previousElementSibling();
     Element* nextList = selectedListItem->nextElementSibling();
@@ -126,13 +126,13 @@ void IndentOutdentCommand::outdentParagraph()
     // Use InsertListCommand to remove the selection from the list
     if (enclosingNode->hasTagName(olTag)) {
         applyCommandToComposite(InsertListCommand::create(document(), InsertListCommand::OrderedList));
-        return;        
+        return;
     }
     if (enclosingNode->hasTagName(ulTag)) {
         applyCommandToComposite(InsertListCommand::create(document(), InsertListCommand::UnorderedList));
         return;
     }
-    
+
     // The selection is inside a blockquote i.e. enclosingNode is a blockquote
     VisiblePosition positionInEnclosingBlock = VisiblePosition(firstPositionInNode(enclosingNode));
     // If the blockquote is inline, the start of the enclosing block coincides with
@@ -189,7 +189,7 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
         outdentParagraph();
         return;
     }
-    
+
     Position originalSelectionEnd = endingSelection().end();
     VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
     VisiblePosition endAfterSelection = endOfParagraph(endOfParagraph(endOfSelection).next());
@@ -200,15 +200,15 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
             setEndingSelection(VisibleSelection(originalSelectionEnd, DOWNSTREAM));
         else
             setEndingSelection(endOfCurrentParagraph);
-        
+
         outdentParagraph();
-        
+
         // outdentParagraph could move more than one paragraph if the paragraph
         // is in a list item. As a result, endAfterSelection and endOfNextParagraph
         // could refer to positions no longer in the document.
         if (endAfterSelection.isNotNull() && !endAfterSelection.deepEquivalent().anchorNode()->inDocument())
             break;
-            
+
         if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.deepEquivalent().anchorNode()->inDocument()) {
             endOfCurrentParagraph = endingSelection().end();
             endOfNextParagraph = endOfParagraph(endOfCurrentParagraph.next());

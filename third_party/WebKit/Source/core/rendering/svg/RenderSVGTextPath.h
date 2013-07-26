@@ -43,7 +43,7 @@ private:
 };
 
 inline RenderSVGTextPath* toRenderSVGTextPath(RenderObject* object)
-{ 
+{
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGTextPath());
     return static_cast<RenderSVGTextPath*>(object);
 }

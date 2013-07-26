@@ -200,7 +200,7 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
 {
     int sPos = max(startPos - m_start, 0);
     int ePos = min(endPos - m_start, (int)m_len);
-    
+
     if (sPos > ePos)
         return LayoutRect();
 
@@ -256,7 +256,7 @@ void InlineTextBox::attachLine()
 {
     if (!extracted())
         return;
-    
+
     toRenderText(renderer())->attachTextBox(this);
 }
 
@@ -269,7 +269,7 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
 
     // For LTR this is the left edge of the box, for RTL, the right edge in parent coordinates.
     float ellipsisX = flowIsLTR ? visibleRightEdge - ellipsisWidth : visibleLeftEdge + ellipsisWidth;
-    
+
     // Criteria for full truncation:
     // LTR: the left edge of the ellipsis is to the left of our text run.
     // RTL: the right edge of the ellipsis is to the right of our text run.
@@ -328,24 +328,24 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
     return -1;
 }
 
-Color correctedTextColor(Color textColor, Color backgroundColor) 
+Color correctedTextColor(Color textColor, Color backgroundColor)
 {
     // Adjust the text color if it is too close to the background color,
     // by darkening or lightening it to move it further away.
-    
+
     int d = differenceSquared(textColor, backgroundColor);
-    // semi-arbitrarily chose 65025 (255^2) value here after a few tests; 
+    // semi-arbitrarily chose 65025 (255^2) value here after a few tests;
     if (d > 65025) {
         return textColor;
     }
-    
+
     int distanceFromWhite = differenceSquared(textColor, Color::white);
     int distanceFromBlack = differenceSquared(textColor, Color::black);
 
     if (distanceFromWhite < distanceFromBlack) {
         return textColor.dark();
     }
-    
+
     return textColor.light();
 }
 
@@ -492,17 +492,17 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     LayoutUnit logicalRightSide = logicalRightVisualOverflow();
     LayoutUnit logicalStart = logicalLeftSide + (isHorizontal() ? paintOffset.x() : paintOffset.y());
     LayoutUnit logicalExtent = logicalRightSide - logicalLeftSide;
-    
+
     LayoutUnit paintEnd = isHorizontal() ? paintInfo.rect.maxX() : paintInfo.rect.maxY();
     LayoutUnit paintStart = isHorizontal() ? paintInfo.rect.x() : paintInfo.rect.y();
-    
+
     LayoutPoint adjustedPaintOffset = roundedIntPoint(paintOffset);
-    
+
     if (logicalStart >= paintEnd || logicalStart + logicalExtent <= paintStart)
         return;
 
     bool isPrinting = textRenderer()->document()->printing();
-    
+
     // Determine whether or not we're selected.
     bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && selectionState() != RenderObject::SelectionNone;
     if (!haveSelection && paintInfo.phase == PaintPhaseSelection)
@@ -531,7 +531,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
 
     RenderObject* rendererToUse = renderer();
     RenderStyle* styleToUse = rendererToUse->style(isFirstLineStyle());
-    
+
     adjustedPaintOffset.move(0, styleToUse->isHorizontalWritingMode() ? 0 : -logicalHeight());
 
     FloatPoint boxOrigin = locationIncludingFlipping();
@@ -563,7 +563,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         emphasisMarkColor = Color::black;
     } else {
         textFillColor = rendererToUse->resolveColor(styleToUse, CSSPropertyWebkitTextFillColor);
-        
+
         bool forceBackgroundToWhite = false;
         if (isPrinting) {
             if (styleToUse->printColorAdjust() == PrintColorAdjustEconomy)
@@ -577,13 +577,13 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
             textFillColor = correctedTextColor(textFillColor, Color::white);
 
         textStrokeColor = rendererToUse->resolveColor(styleToUse, CSSPropertyWebkitTextStrokeColor);
-        
+
         // Make the text stroke color legible against a white background
         if (forceBackgroundToWhite)
             textStrokeColor = correctedTextColor(textStrokeColor, Color::white);
 
         emphasisMarkColor = rendererToUse->resolveColor(styleToUse, CSSPropertyWebkitTextEmphasisColor);
-        
+
         // Make the text stroke color legible against a white background
         if (forceBackgroundToWhite)
             emphasisMarkColor = correctedTextColor(emphasisMarkColor, Color::white);
@@ -788,10 +788,10 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
 
                 if (underline.endOffset <= start())
                     // underline is completely before this run.  This might be an underline that sits
-                    // before the first run we draw, or underlines that were within runs we skipped 
+                    // before the first run we draw, or underlines that were within runs we skipped
                     // due to truncation.
                     continue;
-                
+
                 if (underline.startOffset <= end()) {
                     // underline intersects this run.  Paint it.
                     paintCompositionUnderline(context, boxOrigin, underline);
@@ -804,7 +804,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
             }
         }
     }
-    
+
     if (shouldRotate)
         context->concatCTM(rotation(boxRect, Counterclockwise));
 }
@@ -1098,13 +1098,13 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
         if (!isLeftToRightDirection())
             localOrigin.move(m_logicalWidth - width, 0);
     }
-    
+
     // Get the text decoration colors.
     Color underline, overline, linethrough;
     renderer()->getTextDecorationColors(deco, underline, overline, linethrough, true);
     if (isFirstLineStyle())
         renderer()->getTextDecorationColors(deco, underline, overline, linethrough, true, true);
-    
+
     // Use a special function for underlines to get the positioning exactly right.
     bool isPrinting = textRenderer()->document()->printing();
     context->setStrokeThickness(textDecorationThickness);
@@ -1241,7 +1241,7 @@ void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPoint& b
     if (!markerSpansWholeBox || grammar) {
         int startPosition = max<int>(marker->startOffset() - m_start, 0);
         int endPosition = min<int>(marker->endOffset() - m_start, m_len);
-        
+
         if (m_truncation != cNoTruncation)
             endPosition = min<int>(endPosition, m_truncation);
 
@@ -1255,7 +1255,7 @@ void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPoint& b
         IntRect markerRect = enclosingIntRect(font.selectionRectForText(run, startPoint, selHeight, startPosition, endPosition));
         start = markerRect.x() - startPoint.x();
         width = markerRect.width();
-        
+
         // Store rendered rects for bad grammar markers, so we can hit-test against it elsewhere in order to
         // display a toolTip. We don't do this for misspelling markers.
         if (grammar) {
@@ -1264,7 +1264,7 @@ void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPoint& b
             toRenderedDocumentMarker(marker)->setRenderedRect(markerRect);
         }
     }
-    
+
     // IMPORTANT: The misspelling underline is not considered when calculating the text bounds, so we have to
     // make sure to fit within those bounds.  This means the top pixel(s) of the underline will overlap the
     // bottom pixel(s) of the glyphs in smaller font sizes.  The alternatives are to increase the line spacing (bad!!)
@@ -1325,7 +1325,7 @@ void InlineTextBox::paintDocumentMarkers(GraphicsContext* pt, const FloatPoint& 
     // Note end() points at the last char, not one past it like endOffset and ranges do.
     for ( ; markerIt != markers.end(); markerIt++) {
         DocumentMarker* marker = *markerIt;
-        
+
         // Paint either the background markers or the foreground markers, but not both
         switch (marker->type()) {
             case DocumentMarker::Grammar:
@@ -1345,11 +1345,11 @@ void InlineTextBox::paintDocumentMarkers(GraphicsContext* pt, const FloatPoint& 
             // marker is completely before this run.  This might be a marker that sits before the
             // first run we draw, or markers that were within runs we skipped due to truncation.
             continue;
-        
+
         if (marker->startOffset() > end())
             // marker is completely after this run, bail.  A later run will paint it.
             break;
-        
+
         // marker intersects this run.  Paint it.
         switch (marker->type()) {
             case DocumentMarker::Spelling:
@@ -1372,7 +1372,7 @@ void InlineTextBox::paintCompositionUnderline(GraphicsContext* ctx, const FloatP
 {
     if (m_truncation == cFullTruncation)
         return;
-    
+
     float start = 0; // start of line to draw, relative to tx
     float width = m_logicalWidth; // how much line to draw
     bool useWholeWidth = true;

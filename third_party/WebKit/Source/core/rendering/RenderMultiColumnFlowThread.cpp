@@ -48,7 +48,7 @@ RenderMultiColumnFlowThread* RenderMultiColumnFlowThread::createAnonymous(Docume
 }
 
 const char* RenderMultiColumnFlowThread::renderName() const
-{    
+{
     return "RenderMultiColumnFlowThread";
 }
 
@@ -88,7 +88,7 @@ void RenderMultiColumnFlowThread::autoGenerateRegionsToBlockOffset(LayoutUnit /*
     RenderMultiColumnSet* firstSet = toRenderMultiColumnSet(firstRegion());
     if (firstSet)
         return;
-    
+
     invalidateRegions();
 
     RenderMultiColumnBlock* parentBlock = toRenderMultiColumnBlock(parent());

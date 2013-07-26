@@ -27,7 +27,7 @@
 #include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
-    
+
 class FETile : public FilterEffect {
 public:
     static PassRefPtr<FETile> create(Filter* filter);

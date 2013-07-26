@@ -89,7 +89,7 @@ static inline void processRenderSVGInlineText(RenderSVGInlineText* text, unsigne
         return;
     }
 
-    unsigned textLength = text->textLength();    
+    unsigned textLength = text->textLength();
     for (unsigned textPosition = 0; textPosition < textLength; ++textPosition) {
         UChar currentCharacter = text->characterAt(textPosition);
         if (currentCharacter == ' ' && lastCharacter == ' ')
@@ -104,7 +104,7 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(RenderObject
 {
     ASSERT(!start->isSVGText() || m_textPositions.isEmpty());
 
-    for (RenderObject* child = start->firstChild(); child; child = child->nextSibling()) { 
+    for (RenderObject* child = start->firstChild(); child; child = child->nextSibling()) {
         if (child->isSVGInlineText()) {
             processRenderSVGInlineText(toRenderSVGInlineText(child), m_textLength, lastCharacter);
             continue;
@@ -154,7 +154,7 @@ void SVGTextLayoutAttributesBuilder::buildCharacterDataMap(RenderSVGText* textRo
             data.y = 0;
     }
 
-    // Fill character data map using child text positioning elements in top-down order. 
+    // Fill character data map using child text positioning elements in top-down order.
     unsigned size = m_textPositions.size();
     for (unsigned i = 0; i < size; ++i)
         fillCharacterDataMap(m_textPositions[i]);

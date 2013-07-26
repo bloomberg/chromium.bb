@@ -96,7 +96,7 @@ private:
     SVGAnimatorFactory() { }
 
 };
-    
+
 } // namespace WebCore
 
 #endif // SVGAnimatorFactory_h

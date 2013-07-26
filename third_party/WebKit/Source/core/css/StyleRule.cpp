@@ -51,7 +51,7 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
 }
 
 PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSRule* parentRule) const
-{ 
+{
     return createCSSOMWrapper(0, parentRule);
 }
 
@@ -215,7 +215,7 @@ MutableStylePropertySet* StyleRule::mutableProperties()
 }
 
 void StyleRule::setProperties(PassRefPtr<StylePropertySet> properties)
-{ 
+{
     m_properties = properties;
 }
 
@@ -243,7 +243,7 @@ MutableStylePropertySet* StyleRulePage::mutableProperties()
 }
 
 void StyleRulePage::setProperties(PassRefPtr<StylePropertySet> properties)
-{ 
+{
     m_properties = properties;
 }
 
@@ -270,7 +270,7 @@ MutableStylePropertySet* StyleRuleFontFace::mutableProperties()
 }
 
 void StyleRuleFontFace::setProperties(PassRefPtr<StylePropertySet> properties)
-{ 
+{
     m_properties = properties;
 }
 
@@ -292,7 +292,7 @@ void StyleRuleGroup::wrapperInsertRule(unsigned index, PassRefPtr<StyleRuleBase>
 {
     m_childRules.insert(index, rule);
 }
-    
+
 void StyleRuleGroup::wrapperRemoveRule(unsigned index)
 {
     m_childRules.remove(index);

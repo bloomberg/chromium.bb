@@ -51,13 +51,13 @@
     const unsigned short CSS_VH         = 27;
     const unsigned short CSS_VMIN       = 28;
     const unsigned short CSS_VMAX       = 29;
-    
+
     readonly attribute unsigned short primitiveType;
 
      [RaisesException] void setFloatValue([Default=Undefined] optional unsigned short unitType,
                                       [Default=Undefined] optional float floatValue);
     [RaisesException] float getFloatValue([Default=Undefined] optional unsigned short unitType);
-     [RaisesException] void setStringValue([Default=Undefined] optional unsigned short stringType, 
+     [RaisesException] void setStringValue([Default=Undefined] optional unsigned short stringType,
                                        [Default=Undefined] optional DOMString stringValue);
     [RaisesException] DOMString getStringValue();
     [RaisesException] Counter getCounterValue();

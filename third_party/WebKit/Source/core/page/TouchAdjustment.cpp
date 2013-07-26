@@ -344,7 +344,7 @@ float hybridDistanceFunction(const IntPoint& touchHotspot, const IntRect& touchR
 
     // Convert from frame coordinates to window coordinates.
     rect = subtarget.node()->document()->view()->contentsToWindow(rect);
-   
+
     float radiusSquared = 0.25f * (touchRect.size().diagonalLengthSquared());
     float distanceToAdjustScore = rect.distanceSquaredToPoint(touchHotspot) / radiusSquared;
 

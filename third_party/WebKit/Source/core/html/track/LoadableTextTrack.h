@@ -38,7 +38,7 @@ class LoadableTextTrack;
 class LoadableTextTrackClient : public TextTrackClient {
 public:
     virtual ~LoadableTextTrackClient() { }
-    
+
     virtual bool canLoadUrl(LoadableTextTrack*, const KURL&) { return false; }
     virtual void loadingCompleted(LoadableTextTrack*, bool /* loadingFailed */) { }
 };

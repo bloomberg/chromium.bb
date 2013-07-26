@@ -78,7 +78,7 @@ private:
 
     RefPtr<FilterEffect> m_lastEffect;
 };
-    
+
 } // namespace WebCore
 
 #endif // SVGFilterBuilder_h

@@ -81,7 +81,7 @@ public:
     ~FormController();
 
     CheckedRadioButtons& checkedRadioButtons() { return m_checkedRadioButtons; }
-    
+
     void registerFormElementWithState(HTMLFormControlElementWithState*);
     void unregisterFormElementWithState(HTMLFormControlElementWithState*);
     // This should be callled only by Document::formElementsState().

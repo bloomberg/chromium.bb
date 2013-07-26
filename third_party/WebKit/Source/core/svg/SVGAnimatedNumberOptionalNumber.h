@@ -30,7 +30,7 @@ class SVGAnimatedNumberOptionalNumberAnimator : public SVGAnimatedTypeAnimator {
 public:
     SVGAnimatedNumberOptionalNumberAnimator(SVGAnimationElement*, SVGElement*);
     virtual ~SVGAnimatedNumberOptionalNumberAnimator() { }
-    
+
     virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&);
     virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&);
     virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&);

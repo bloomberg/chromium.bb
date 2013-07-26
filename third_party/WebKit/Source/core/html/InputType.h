@@ -65,7 +65,7 @@ typedef int ExceptionCode;
 
 struct ClickHandlingState {
     WTF_MAKE_FAST_ALLOCATED;
-  
+
 public:
     bool checked;
     bool indeterminate;

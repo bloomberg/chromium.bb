@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/) 
+ * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  * Copyright (C) 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -49,7 +49,7 @@ private:
 };
 
 inline RenderTextControlMultiLine* toRenderTextControlMultiLine(RenderObject* object)
-{ 
+{
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTextArea());
     return static_cast<RenderTextControlMultiLine*>(object);
 }

@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef FrameSelection_h
@@ -139,7 +139,7 @@ public:
     bool rendererIsEditable() const { return m_selection.rendererIsEditable(); }
     bool isContentEditable() const { return m_selection.isContentEditable(); }
     bool isContentRichlyEditable() const { return m_selection.isContentRichlyEditable(); }
-     
+
     void moveTo(const Range*, EAffinity, EUserTriggered = NotUserTriggered);
     void moveTo(const VisiblePosition&, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded);
     void moveTo(const VisiblePosition&, const VisiblePosition&, EUserTriggered = NotUserTriggered);
@@ -171,7 +171,7 @@ public:
 
     void setStart(const VisiblePosition &, EUserTriggered = NotUserTriggered);
     void setEnd(const VisiblePosition &, EUserTriggered = NotUserTriggered);
-    
+
     void setBase(const VisiblePosition&, EUserTriggered = NotUserTriggered);
     void setBase(const Position&, EAffinity, EUserTriggered = NotUserTriggered);
     void setExtent(const VisiblePosition&, EUserTriggered = NotUserTriggered);
@@ -201,7 +201,7 @@ public:
     bool isCaretOrRange() const { return m_selection.isCaretOrRange(); }
     bool isInPasswordField() const;
     bool isAll(EditingBoundaryCrossingRule rule = CannotCrossEditingBoundary) const { return m_selection.isAll(rule); }
-    
+
     PassRefPtr<Range> toNormalizedRange() const { return m_selection.toNormalizedRange(); }
 
     void debugRenderer(RenderObject*, bool selected) const;
@@ -282,7 +282,7 @@ private:
     VisiblePosition modifyMovingBackward(TextGranularity);
 
     LayoutUnit lineDirectionPointForBlockDirectionNavigation(EPositionType);
-    
+
     void notifyAccessibilityForSelectionChange();
 
     void focusedOrActiveStateChanged();
@@ -295,7 +295,7 @@ private:
     bool shouldBlinkCaret() const;
 
     bool dispatchSelectStart();
-  
+
     bool visualWordMovementEnabled() const;
 
     Frame* m_frame;

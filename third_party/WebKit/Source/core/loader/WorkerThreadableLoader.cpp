@@ -94,7 +94,7 @@ WorkerThreadableLoader::MainThreadBridge::MainThreadBridge(PassRefPtr<Threadable
 {
     ASSERT(m_workerClientWrapper.get());
     m_loaderProxy.postTaskToLoader(
-        createCallbackTask(&MainThreadBridge::mainThreadCreateLoader, 
+        createCallbackTask(&MainThreadBridge::mainThreadCreateLoader,
                            AllowCrossThreadAccess(this), request, options, outgoingReferrer));
 }
 

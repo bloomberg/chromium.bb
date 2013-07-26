@@ -37,7 +37,7 @@
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {
-    
+
 using namespace SVGNames;
 
 inline SVGAnimateMotionElement::SVGAnimateMotionElement(const QualifiedName& tagName, Document* document)
@@ -117,7 +117,7 @@ void SVGAnimateMotionElement::parseAttribute(const QualifiedName& name, const At
 
     ASSERT_NOT_REACHED();
 }
-    
+
 SVGAnimateMotionElement::RotateMode SVGAnimateMotionElement::rotateMode() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, autoVal, ("auto", AtomicString::ConstructFromLiteral));
@@ -158,20 +158,20 @@ static bool parsePointInternal(const String& string, FloatPoint& point)
 {
     const CharType* ptr = string.getCharacters<CharType>();
     const CharType* end = ptr + string.length();
-    
+
     if (!skipOptionalSVGSpaces(ptr, end))
         return false;
-    
+
     float x = 0;
     if (!parseNumber(ptr, end, x))
         return false;
-    
+
     float y = 0;
     if (!parseNumber(ptr, end, y))
         return false;
-    
+
     point = FloatPoint(x, y);
-    
+
     // disallow anything except spaces at the end
     return !skipOptionalSVGSpaces(ptr, end);
 }
@@ -218,7 +218,7 @@ bool SVGAnimateMotionElement::calculateFromAndToValues(const String& fromString,
     parsePoint(toString, m_toPoint);
     return true;
 }
-    
+
 bool SVGAnimateMotionElement::calculateFromAndByValues(const String& fromString, const String& byString)
 {
     m_hasToPointAtEndOfDuration = false;

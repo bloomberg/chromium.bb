@@ -274,7 +274,7 @@ void HTMLStyleElement::notifyLoadedSheetAndAllCriticalSubresources(bool errorOcc
 }
 
 void HTMLStyleElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{    
+{
     HTMLElement::addSubresourceAttributeURLs(urls);
 
     if (CSSStyleSheet* styleSheet = const_cast<HTMLStyleElement*>(this)->sheet())

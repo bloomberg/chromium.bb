@@ -5,13 +5,13 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -51,7 +51,7 @@ const NodeSet& Value::toNodeSet() const
     }
 
     return m_data->m_nodeSet;
-}    
+}
 
 NodeSet& Value::modifiableNodeSet()
 {
@@ -60,7 +60,7 @@ NodeSet& Value::modifiableNodeSet()
 
     if (!m_data)
         m_data = ValueData::create();
-    
+
     m_type = NodeSetValue;
     return m_data->m_nodeSet;
 }
@@ -116,7 +116,7 @@ String Value::toString() const
 {
     switch (m_type) {
         case NodeSetValue:
-            if (m_data->m_nodeSet.isEmpty()) 
+            if (m_data->m_nodeSet.isEmpty())
                 return "";
             return stringValue(m_data->m_nodeSet.firstNode());
         case StringValue:

@@ -11,7 +11,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -23,7 +23,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef ColorMac_h
@@ -34,14 +34,14 @@
 OBJC_CLASS NSColor;
 
 namespace WebCore {
-    
+
     // These functions assume NSColors are in DeviceRGB colorspace
     Color colorFromNSColor(NSColor *);
     NSColor *nsColor(const Color&);
 
     bool usesTestModeFocusRingColor();
     void setUsesTestModeFocusRingColor(bool);
-    
+
     // Focus ring color used for testing purposes.
     RGBA32 oldAquaFocusRingColor();
 

@@ -40,9 +40,9 @@ public:
     {
         return adoptRef(new TextTrackCueGenericBoxElement(document, cue));
     }
-    
+
     virtual void applyCSSProperties(const IntSize&) OVERRIDE;
-    
+
 private:
     TextTrackCueGenericBoxElement(Document*, TextTrackCue*);
 };
@@ -56,7 +56,7 @@ void TextTrackCueGenericBoxElement::applyCSSProperties(const IntSize& videoSize)
 {
     setInlineStyleProperty(CSSPropertyPosition, CSSValueAbsolute);
     setInlineStyleProperty(CSSPropertyUnicodeBidi, CSSValueWebkitPlaintext);
-    
+
     TextTrackCueGeneric* cue = static_cast<TextTrackCueGeneric*>(getCue());
 
     float size = static_cast<float>(cue->getCSSSize());
@@ -75,7 +75,7 @@ void TextTrackCueGenericBoxElement::applyCSSProperties(const IntSize& videoSize)
 
     if (cue->foregroundColor().alpha())
         setInlineStyleProperty(CSSPropertyColor, cue->foregroundColor().serialized());
-    
+
     if (cue->backgroundColor().alpha())
         cue->element()->setInlineStyleProperty(CSSPropertyBackgroundColor, cue->backgroundColor().serialized());
 
@@ -162,6 +162,6 @@ bool TextTrackCueGeneric::operator==(const TextTrackCue& cue) const
 
     return TextTrackCue::operator==(cue);
 }
-    
+
 } // namespace WebCore
 

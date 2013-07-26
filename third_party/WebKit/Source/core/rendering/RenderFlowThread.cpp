@@ -12,7 +12,7 @@
  *    copyright notice, this list of conditions and the following
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -75,7 +75,7 @@ PassRefPtr<RenderStyle> RenderFlowThread::createFlowThreadStyle(RenderStyle* par
     newStyle->setWidth(Length(100, Percent));
     newStyle->setHeight(Length(100, Percent));
     newStyle->font().update(0);
-    
+
     return newStyle.release();
 }
 
@@ -154,7 +154,7 @@ void RenderFlowThread::validateRegions()
             LayoutUnit previousRegionLogicalWidth = 0;
             LayoutUnit previousRegionLogicalHeight = 0;
             bool firstRegionVisited = false;
-            
+
             for (RenderRegionList::iterator iter = m_regionList.begin(); iter != m_regionList.end(); ++iter) {
                 RenderRegion* region = *iter;
                 ASSERT(!region->needsLayout() || region->isRenderRegionSet());
@@ -304,7 +304,7 @@ void RenderFlowThread::paintFlowThreadPortionInRegion(PaintInfo& paintInfo, Rend
 
         context->translate(adjustedPaintOffset.x(), adjustedPaintOffset.y());
         info.rect.moveBy(-adjustedPaintOffset);
-        
+
         layer()->paint(context, info.rect, 0, 0, region, RenderLayer::PaintLayerTemporaryClipRects);
 
         context->restore();
@@ -364,7 +364,7 @@ void RenderFlowThread::repaintRectangleInRegions(const LayoutRect& repaintRect) 
     // We can't use currentFlowThread as it is possible to have interleaved flow threads and the wrong one could be used.
     // Let each region figure out the proper enclosing flow thread.
     CurrentRenderFlowThreadDisabler disabler(view());
-    
+
     for (RenderRegionList::const_iterator iter = m_regionList.begin(); iter != m_regionList.end(); ++iter) {
         RenderRegion* region = *iter;
 
@@ -787,7 +787,7 @@ bool RenderFlowThread::objectInFlowRegion(const RenderObject* object, const Rend
     if (!objectABBRect.width())
         objectABBRect.setWidth(1);
     if (!objectABBRect.height())
-        objectABBRect.setHeight(1); 
+        objectABBRect.setHeight(1);
     if (objectABBRect.intersects(region->absoluteBoundingBoxRect(true)))
         return true;
 
@@ -980,7 +980,7 @@ void RenderFlowThread::decrementAutoLogicalHeightRegions()
 void RenderFlowThread::collectLayerFragments(LayerFragments& layerFragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
 {
     ASSERT(!m_regionsInvalidated);
-    
+
     for (RenderRegionList::const_iterator iter = m_regionList.begin(); iter != m_regionList.end(); ++iter) {
         RenderRegion* region = *iter;
         region->collectLayerFragments(layerFragments, layerBoundingBox, dirtyRect);
@@ -990,7 +990,7 @@ void RenderFlowThread::collectLayerFragments(LayerFragments& layerFragments, con
 LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundingBox)
 {
     ASSERT(!m_regionsInvalidated);
-    
+
     LayoutRect result;
     for (RenderRegionList::const_iterator iter = m_regionList.begin(); iter != m_regionList.end(); ++iter) {
         RenderRegion* region = *iter;
@@ -1004,7 +1004,7 @@ LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
             result.unite(fragmentRect);
         }
     }
-    
+
     return result;
 }
 

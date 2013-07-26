@@ -60,7 +60,7 @@ private:
 
 class ProgressBarElement FINAL : public ProgressShadowElement {
 public:
-    ProgressBarElement(Document* document) 
+    ProgressBarElement(Document* document)
         : ProgressShadowElement(document)
     {
         DEFINE_STATIC_LOCAL(AtomicString, pseudoId, ("-webkit-progress-bar", AtomicString::ConstructFromLiteral));
@@ -77,7 +77,7 @@ inline PassRefPtr<ProgressBarElement> ProgressBarElement::create(Document* docum
 
 class ProgressValueElement FINAL : public ProgressShadowElement {
 public:
-    ProgressValueElement(Document* document) 
+    ProgressValueElement(Document* document)
         : ProgressShadowElement(document)
     {
         DEFINE_STATIC_LOCAL(AtomicString, pseudoId, ("-webkit-progress-value", AtomicString::ConstructFromLiteral));

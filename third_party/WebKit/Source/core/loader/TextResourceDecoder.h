@@ -58,7 +58,7 @@ public:
 
     void setHintEncoding(const TextResourceDecoder* hintDecoder)
     {
-        // hintEncoding is for use with autodetection, which should be 
+        // hintEncoding is for use with autodetection, which should be
         // only invoked when hintEncoding comes from auto-detection.
         if (hintDecoder && hintDecoder->wasDetectedHueristically())
             m_hintEncoding = hintDecoder->encoding().name();

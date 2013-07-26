@@ -147,7 +147,7 @@ static bool isSVG11Feature(const String &feature, const String &version)
         addString(svgFeatures, "ExternalResourcesRequired");
         addString(svgFeatures, "View");
         addString(svgFeatures, "Script");
-        addString(svgFeatures, "Animation"); 
+        addString(svgFeatures, "Animation");
 #if ENABLE(SVG_FONTS)
         addString(svgFeatures, "Font");
         addString(svgFeatures, "BasicFont");
@@ -412,7 +412,7 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& type, Frame
     // Everything else except text/plain can be overridden by plugins. In particular, Adobe SVG Viewer should be used for SVG, if installed.
     // Disallowing plug-ins to use text/plain prevents plug-ins from hijacking a fundamental type that the browser is expected to handle,
     // and also serves as an optimization to prevent loading the plug-in database in the common case.
-    if (type != "text/plain" && pluginData && pluginData->supportsMimeType(type)) 
+    if (type != "text/plain" && pluginData && pluginData->supportsMimeType(type))
         return PluginDocument::create(DocumentInit(url, frame));
     if (isTextMIMEType(type))
         return TextDocument::create(DocumentInit(url, frame));

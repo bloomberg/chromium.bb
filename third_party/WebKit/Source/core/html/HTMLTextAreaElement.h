@@ -52,7 +52,7 @@ public:
     virtual bool valueMissing() const OVERRIDE;
     virtual bool tooLong() const OVERRIDE;
     bool isValidValue(const String&) const;
-    
+
     virtual HTMLElement* innerTextElement() const;
 
     void rendererWillBeDestroyed();
@@ -82,7 +82,7 @@ private:
     virtual bool isRequiredFormControl() const { return isRequired(); }
 
     virtual void defaultEventHandler(Event*);
-    
+
     virtual void subtreeHasChanged();
 
     virtual bool isEnumeratable() const { return true; }

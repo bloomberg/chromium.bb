@@ -186,7 +186,7 @@ void InbandTextTrack::addWebVTTCue(InbandTextTrackPrivate* trackPrivate, double 
     RefPtr<TextTrackCue> cue = TextTrackCue::create(scriptExecutionContext(), start, end, content);
     cue->setId(id);
     cue->setCueSettings(settings);
-    
+
     if (hasCue(cue.get()))
         return;
 

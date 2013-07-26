@@ -26,7 +26,7 @@
 #include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
-    
+
 class FEDropShadow : public FilterEffect {
 public:
     static PassRefPtr<FEDropShadow> create(Filter*, float, float, float, float, const Color&, float);
@@ -43,7 +43,7 @@ public:
     float dy() const { return m_dy; }
     void setDy(float dy) { m_dy = dy; }
 
-    Color shadowColor() const { return m_shadowColor; } 
+    Color shadowColor() const { return m_shadowColor; }
     void setShadowColor(const Color& shadowColor) { m_shadowColor = shadowColor; }
 
     float shadowOpacity() const { return m_shadowOpacity; }
@@ -58,7 +58,7 @@ public:
 
 private:
     FEDropShadow(Filter*, float, float, float, float, const Color&, float);
-    
+
     virtual void applySoftware() OVERRIDE;
 
     float m_stdX;
@@ -68,7 +68,7 @@ private:
     Color m_shadowColor;
     float m_shadowOpacity;
 };
-    
+
 } // namespace WebCore
 
 #endif // FEDropShadow_h

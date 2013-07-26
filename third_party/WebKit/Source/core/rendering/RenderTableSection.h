@@ -86,7 +86,7 @@ public:
     typedef Vector<RenderTableCell*, 2> SpanningRenderTableCells;
 
     struct CellStruct {
-        Vector<RenderTableCell*, 1> cells; 
+        Vector<RenderTableCell*, 1> cells;
         bool inColSpan; // true for columns after the first in a colspan
 
         CellStruct()
@@ -212,7 +212,7 @@ public:
     {
         return createAnonymousWithParentRenderer(parent);
     }
-    
+
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
 protected:

@@ -27,7 +27,7 @@
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {
-    
+
 class SVGAnimatedProperty;
 class SVGAnimatedType;
 class SVGAnimatedTypeAnimator;
@@ -38,7 +38,7 @@ public:
     virtual ~SVGAnimateElement();
 
     AnimatedPropertyType determineAnimatedPropertyType(SVGElement*) const;
-    
+
 protected:
     SVGAnimateElement(const QualifiedName&, Document*);
 

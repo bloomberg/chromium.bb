@@ -201,7 +201,7 @@ inline Node* traverseNextTemplate(NodeType* current)
 }
 inline Node* next(const Node* current) { return traverseNextTemplate(current); }
 inline Node* next(const ContainerNode* current) { return traverseNextTemplate(current); }
-    
+
 template <class NodeType>
 inline Node* traverseNextTemplate(NodeType* current, const Node* stayWithin)
 {

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
- *           (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/) 
+ *           (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -73,7 +73,7 @@ private:
     virtual bool avoidsFloats() const { return true; }
     virtual bool canHaveGeneratedChildren() const OVERRIDE { return false; }
     virtual bool canBeReplacedWithInlineRunIn() const OVERRIDE;
-    
+
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
 
     virtual bool canBeProgramaticallyScrolled() const { return true; }
@@ -82,13 +82,13 @@ private:
 };
 
 inline RenderTextControl* toRenderTextControl(RenderObject* object)
-{ 
+{
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTextControl());
     return static_cast<RenderTextControl*>(object);
 }
 
 inline const RenderTextControl* toRenderTextControl(const RenderObject* object)
-{ 
+{
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTextControl());
     return static_cast<const RenderTextControl*>(object);
 }

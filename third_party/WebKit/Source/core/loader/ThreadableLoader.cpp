@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-PassRefPtr<ThreadableLoader> ThreadableLoader::create(ScriptExecutionContext* context, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options) 
+PassRefPtr<ThreadableLoader> ThreadableLoader::create(ScriptExecutionContext* context, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options)
 {
     ASSERT(client);
     ASSERT(context);

@@ -39,7 +39,7 @@ private:
     SVGAElement(const QualifiedName&, Document*);
 
     virtual bool isValid() const { return SVGTests::isValid(); }
-    
+
     virtual String title() const;
     virtual String target() const { return svgTargetCurrentValue(); }
 
@@ -50,7 +50,7 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*);
 
     virtual void defaultEventHandler(Event*);
-    
+
     virtual bool supportsFocus() const OVERRIDE;
     virtual bool isMouseFocusable() const;
     virtual bool isKeyboardFocusable(KeyboardEvent*) const;

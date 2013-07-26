@@ -529,7 +529,7 @@ OppositeIfSigned(T x)
    CheckedInt<int8_t> x(-1);
    // 1000 is of type int16_t, is found not to be in range for int8_t,
    // x is invalid
-   CheckedInt<int8_t> x(int16_t(1000)); 
+   CheckedInt<int8_t> x(int16_t(1000));
    // 3123456789 is of type uint32_t, is found not to be in range for int32_t,
    // x is invalid
    CheckedInt<int32_t> x(uint32_t(3123456789));

@@ -226,7 +226,7 @@ private:
         String type;
         size_t usedHeapSizeAtStart;
     };
-        
+
     InspectorTimelineAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorMemoryAgent*, InspectorDOMAgent*, InspectorCompositeState*, InspectorType, InspectorClient*);
 
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);

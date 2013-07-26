@@ -33,12 +33,12 @@ template<typename CharType>
 static int parseTransformParamList(const CharType*& ptr, const CharType* end, float* values, int required, int optional)
 {
     int optionalParams = 0, requiredParams = 0;
-    
+
     if (!skipOptionalSVGSpaces(ptr, end) || *ptr != '(')
         return -1;
-    
+
     ptr++;
-   
+
     skipOptionalSVGSpaces(ptr, end);
 
     while (requiredParams < required) {
@@ -50,12 +50,12 @@ static int parseTransformParamList(const CharType*& ptr, const CharType* end, fl
     }
     if (!skipOptionalSVGSpaces(ptr, end))
         return -1;
-    
+
     bool delimParsed = skipOptionalSVGSpacesOrDelimiter(ptr, end);
 
     if (ptr >= end)
         return -1;
-    
+
     if (*ptr == ')') { // skip optionals
         ptr++;
         if (delimParsed)
@@ -68,12 +68,12 @@ static int parseTransformParamList(const CharType*& ptr, const CharType* end, fl
             if (optionalParams < optional)
                 skipOptionalSVGSpacesOrDelimiter(ptr, end);
         }
-        
+
         if (!skipOptionalSVGSpaces(ptr, end))
             return -1;
-        
+
         delimParsed = skipOptionalSVGSpacesOrDelimiter(ptr, end);
-        
+
         if (ptr >= end || *ptr != ')' || delimParsed)
             return -1;
         ptr++;

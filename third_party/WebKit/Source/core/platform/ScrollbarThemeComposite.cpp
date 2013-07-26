@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -87,10 +87,10 @@ bool ScrollbarThemeComposite::paint(ScrollbarThemeClient* scrollbar, GraphicsCon
         paintButton(graphicsContext, scrollbar, forwardButtonStartPaintRect, ForwardButtonStartPart);
     if (scrollMask & ForwardButtonEndPart)
         paintButton(graphicsContext, scrollbar, forwardButtonEndPaintRect, ForwardButtonEndPart);
-    
+
     if (scrollMask & TrackBGPart)
         paintTrackBackground(graphicsContext, scrollbar, trackPaintRect);
-    
+
     if ((scrollMask & ForwardTrackPart) || (scrollMask & BackTrackPart)) {
         // Paint the track pieces above and below the thumb.
         if (scrollMask & BackTrackPart)
@@ -116,7 +116,7 @@ ScrollbarPart ScrollbarThemeComposite::hitTest(ScrollbarThemeClient* scrollbar, 
 
     IntPoint testPosition = scrollbar->convertFromContainingWindow(position);
     testPosition.move(scrollbar->x(), scrollbar->y());
-    
+
     if (!scrollbar->frameRect().contains(testPosition))
         return NoPart;
 
@@ -152,7 +152,7 @@ void ScrollbarThemeComposite::invalidatePart(ScrollbarThemeClient* scrollbar, Sc
     if (part == NoPart)
         return;
 
-    IntRect result;    
+    IntRect result;
     switch (part) {
         case BackButtonStartPart:
             result = backButtonRect(scrollbar, BackButtonStartPart, true);
@@ -195,12 +195,12 @@ void ScrollbarThemeComposite::splitTrack(ScrollbarThemeClient* scrollbar, const 
     int thickness = scrollbar->orientation() == HorizontalScrollbar ? scrollbar->height() : scrollbar->width();
     int thumbPos = thumbPosition(scrollbar);
     if (scrollbar->orientation() == HorizontalScrollbar) {
-        thumbRect = IntRect(trackRect.x() + thumbPos, trackRect.y() + (trackRect.height() - thickness) / 2, thumbLength(scrollbar), thickness); 
-        beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), thumbPos + thumbRect.width() / 2, trackRect.height()); 
+        thumbRect = IntRect(trackRect.x() + thumbPos, trackRect.y() + (trackRect.height() - thickness) / 2, thumbLength(scrollbar), thickness);
+        beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), thumbPos + thumbRect.width() / 2, trackRect.height());
         afterThumbRect = IntRect(trackRect.x() + beforeThumbRect.width(), trackRect.y(), trackRect.maxX() - beforeThumbRect.maxX(), trackRect.height());
     } else {
         thumbRect = IntRect(trackRect.x() + (trackRect.width() - thickness) / 2, trackRect.y() + thumbPos, thickness, thumbLength(scrollbar));
-        beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), trackRect.width(), thumbPos + thumbRect.height() / 2); 
+        beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), trackRect.width(), thumbPos + thumbRect.height() / 2);
         afterThumbRect = IntRect(trackRect.x(), trackRect.y() + beforeThumbRect.height(), trackRect.width(), trackRect.maxY() - beforeThumbRect.maxY());
     }
 }

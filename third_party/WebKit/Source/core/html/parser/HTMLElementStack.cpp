@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -301,7 +301,7 @@ void HTMLElementStack::popUntilForeignContentScopeMarker()
     while (!isForeignContentScopeMarker(topStackItem()))
         pop();
 }
-    
+
 void HTMLElementStack::pushRootNode(PassRefPtr<HTMLStackItem> rootItem)
 {
     ASSERT(rootItem->isDocumentFragmentNode());
@@ -313,7 +313,7 @@ void HTMLElementStack::pushHTMLHtmlElement(PassRefPtr<HTMLStackItem> item)
     ASSERT(isHTMLHtmlElement(item->node()));
     pushRootNodeCommon(item);
 }
-    
+
 void HTMLElementStack::pushRootNodeCommon(PassRefPtr<HTMLStackItem> rootItem)
 {
     ASSERT(!m_top);
@@ -550,7 +550,7 @@ Element* HTMLElementStack::bodyElement() const
     ASSERT(m_bodyElement);
     return m_bodyElement;
 }
-    
+
 ContainerNode* HTMLElementStack::rootNode() const
 {
     ASSERT(m_rootNode);

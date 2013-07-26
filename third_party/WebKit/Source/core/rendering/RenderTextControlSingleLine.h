@@ -74,7 +74,7 @@ private:
     virtual float getAvgCharWidth(AtomicString family);
     virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const;
     virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const OVERRIDE;
-    
+
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
     virtual RenderStyle* textBaseStyle() const;

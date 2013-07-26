@@ -33,7 +33,7 @@
 #include "core/accessibility/AccessibilityRenderObject.h"
 
 namespace WebCore {
-    
+
 using namespace HTMLNames;
 
 AccessibilityImageMapLink::AccessibilityImageMapLink()
@@ -44,7 +44,7 @@ AccessibilityImageMapLink::AccessibilityImageMapLink()
 
 AccessibilityImageMapLink::~AccessibilityImageMapLink()
 {
-}    
+}
 
 PassRefPtr<AccessibilityImageMapLink> AccessibilityImageMapLink::create()
 {
@@ -55,30 +55,30 @@ AccessibilityObject* AccessibilityImageMapLink::parentObject() const
 {
     if (m_parent)
         return m_parent;
-    
+
     if (!m_mapElement.get() || !m_mapElement->renderer())
         return 0;
-    
+
     return m_mapElement->document()->axObjectCache()->getOrCreate(m_mapElement->renderer());
 }
-    
+
 AccessibilityRole AccessibilityImageMapLink::roleValue() const
 {
     if (!m_areaElement)
         return WebCoreLinkRole;
-    
+
     const AtomicString& ariaRole = getAttribute(roleAttr);
     if (!ariaRole.isEmpty())
         return AccessibilityObject::ariaRoleToWebCoreRole(ariaRole);
 
     return WebCoreLinkRole;
 }
-    
+
 Element* AccessibilityImageMapLink::actionElement() const
 {
     return anchorElement();
 }
-    
+
 Element* AccessibilityImageMapLink::anchorElement() const
 {
     return m_areaElement.get();
@@ -88,7 +88,7 @@ KURL AccessibilityImageMapLink::url() const
 {
     if (!m_areaElement.get())
         return KURL();
-    
+
     return m_areaElement->href();
 }
 
@@ -106,7 +106,7 @@ void AccessibilityImageMapLink::accessibilityText(Vector<AccessibilityText>& tex
     if (!summary.isEmpty())
         textOrder.append(AccessibilityText(summary, SummaryText));
 }
-    
+
 String AccessibilityImageMapLink::accessibilityDescription() const
 {
     const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
@@ -118,7 +118,7 @@ String AccessibilityImageMapLink::accessibilityDescription() const
 
     return String();
 }
-    
+
 String AccessibilityImageMapLink::title() const
 {
     const AtomicString& title = getAttribute(titleAttr);
@@ -141,11 +141,11 @@ LayoutRect AccessibilityImageMapLink::elementRect() const
         renderer = static_cast<AccessibilityRenderObject*>(m_parent)->renderer();
     else
         renderer = m_mapElement->renderer();
-    
+
     if (!renderer)
         return LayoutRect();
-    
+
     return m_areaElement->computeRect(renderer);
 }
-    
+
 } // namespace WebCore

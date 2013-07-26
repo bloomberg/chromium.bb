@@ -40,7 +40,7 @@ public:
     virtual void didGC(double startTime, double endTime, size_t collectedBytes) = 0;
     virtual ~ScriptGCEventListener(){}
 };
-    
+
 } // namespace WebCore
 
 #endif // !defined(ScriptGCEventListener_h)

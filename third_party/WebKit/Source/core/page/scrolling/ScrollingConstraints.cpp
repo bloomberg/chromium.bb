@@ -48,7 +48,7 @@ FloatPoint FixedPositionViewportConstraints::layerPositionForViewportRect(const 
 FloatSize StickyPositionViewportConstraints::computeStickyOffset(const FloatRect& viewportRect) const
 {
     FloatRect boxRect = m_absoluteStickyBoxRect;
-    
+
     if (hasAnchorEdge(AnchorEdgeRight)) {
         float rightLimit = viewportRect.maxX() - m_rightOffset;
         float rightDelta = std::min<float>(0, rightLimit - m_absoluteStickyBoxRect.maxX());
@@ -68,7 +68,7 @@ FloatSize StickyPositionViewportConstraints::computeStickyOffset(const FloatRect
 
         boxRect.move(leftDelta, 0);
     }
-    
+
     if (hasAnchorEdge(AnchorEdgeBottom)) {
         float bottomLimit = viewportRect.maxY() - m_bottomOffset;
         float bottomDelta = std::min<float>(0, bottomLimit - m_absoluteStickyBoxRect.maxY());

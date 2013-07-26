@@ -6,13 +6,13 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -99,28 +99,28 @@ class FunLocalName : public Function {
     virtual Value evaluate() const;
     virtual Value::Type resultType() const { return Value::StringValue; }
 public:
-    FunLocalName() { setIsContextNodeSensitive(true); } // local-name() with no arguments uses context node. 
+    FunLocalName() { setIsContextNodeSensitive(true); } // local-name() with no arguments uses context node.
 };
 
 class FunNamespaceURI : public Function {
     virtual Value evaluate() const;
     virtual Value::Type resultType() const { return Value::StringValue; }
 public:
-    FunNamespaceURI() { setIsContextNodeSensitive(true); } // namespace-uri() with no arguments uses context node. 
+    FunNamespaceURI() { setIsContextNodeSensitive(true); } // namespace-uri() with no arguments uses context node.
 };
 
 class FunName : public Function {
     virtual Value evaluate() const;
     virtual Value::Type resultType() const { return Value::StringValue; }
 public:
-    FunName() { setIsContextNodeSensitive(true); } // name() with no arguments uses context node. 
+    FunName() { setIsContextNodeSensitive(true); } // name() with no arguments uses context node.
 };
 
 class FunString : public Function {
     virtual Value evaluate() const;
     virtual Value::Type resultType() const { return Value::StringValue; }
 public:
-    FunString() { setIsContextNodeSensitive(true); } // string() with no arguments uses context node. 
+    FunString() { setIsContextNodeSensitive(true); } // string() with no arguments uses context node.
 };
 
 class FunConcat : public Function {
@@ -157,14 +157,14 @@ class FunStringLength : public Function {
     virtual Value evaluate() const;
     virtual Value::Type resultType() const { return Value::NumberValue; }
 public:
-    FunStringLength() { setIsContextNodeSensitive(true); } // string-length() with no arguments uses context node. 
+    FunStringLength() { setIsContextNodeSensitive(true); } // string-length() with no arguments uses context node.
 };
 
 class FunNormalizeSpace : public Function {
     virtual Value evaluate() const;
     virtual Value::Type resultType() const { return Value::StringValue; }
 public:
-    FunNormalizeSpace() { setIsContextNodeSensitive(true); } // normalize-space() with no arguments uses context node. 
+    FunNormalizeSpace() { setIsContextNodeSensitive(true); } // normalize-space() with no arguments uses context node.
 };
 
 class FunTranslate : public Function {
@@ -196,14 +196,14 @@ class FunLang : public Function {
     virtual Value evaluate() const;
     virtual Value::Type resultType() const { return Value::BooleanValue; }
 public:
-    FunLang() { setIsContextNodeSensitive(true); } // lang() always works on context node. 
+    FunLang() { setIsContextNodeSensitive(true); } // lang() always works on context node.
 };
 
 class FunNumber : public Function {
     virtual Value evaluate() const;
     virtual Value::Type resultType() const { return Value::NumberValue; }
 public:
-    FunNumber() { setIsContextNodeSensitive(true); } // number() with no arguments uses context node. 
+    FunNumber() { setIsContextNodeSensitive(true); } // number() with no arguments uses context node.
 };
 
 class FunSum : public Function {
@@ -329,7 +329,7 @@ Value FunId::evaluate() const
         String str = a.toString();
         idList.append(str);
     }
-    
+
     TreeScope* contextScope = evaluationContext().node->treeScope();
     NodeSet result;
     HashSet<Node*> resultSet;
@@ -339,7 +339,7 @@ Value FunId::evaluate() const
     while (true) {
         while (startPos < length && isWhitespace(idList[startPos]))
             ++startPos;
-        
+
         if (startPos == length)
             break;
 
@@ -352,12 +352,12 @@ Value FunId::evaluate() const
         Node* node = contextScope->getElementById(idList.substring(startPos, endPos - startPos));
         if (node && resultSet.add(node).isNewEntry)
             result.append(node);
-        
+
         startPos = endPos;
     }
-    
+
     result.markSorted(false);
-    
+
     return Value(result, Value::adopt);
 }
 
@@ -421,7 +421,7 @@ Value FunName::evaluate() const
 Value FunCount::evaluate() const
 {
     Value a = arg(0)->evaluate();
-    
+
     return double(a.toNodeSet().size());
 }
 
@@ -462,7 +462,7 @@ Value FunContains::evaluate() const
     String s1 = arg(0)->evaluate().toString();
     String s2 = arg(1)->evaluate().toString();
 
-    if (s2.isEmpty()) 
+    if (s2.isEmpty())
         return true;
 
     return s1.contains(s2) != 0;
@@ -512,7 +512,7 @@ Value FunSubstring::evaluate() const
         len = static_cast<long>(FunRound::round(doubleLen));
     }
 
-    if (pos > long(s.length())) 
+    if (pos > long(s.length()))
         return "";
 
     if (pos < 1) {
@@ -555,7 +555,7 @@ Value FunTranslate::evaluate() const
     for (unsigned i1 = 0; i1 < s1.length(); ++i1) {
         UChar ch = s1[i1];
         size_t i2 = s2.find(ch);
-        
+
         if (i2 == notFound)
             result.append(ch);
         else if (i2 < s3.length())
@@ -640,7 +640,7 @@ Value FunSum::evaluate() const
 
     for (unsigned i = 0; i < nodes.size(); i++)
         sum += Value(stringValue(nodes[i])).toNumber();
-    
+
     return sum;
 }
 

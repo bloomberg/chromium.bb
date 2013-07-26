@@ -68,7 +68,7 @@ enum FontSmallCaps {
 
 class FontDescription {
 public:
-    enum GenericFamilyType { NoFamily, StandardFamily, SerifFamily, SansSerifFamily, 
+    enum GenericFamilyType { NoFamily, StandardFamily, SerifFamily, SansSerifFamily,
                              MonospaceFamily, CursiveFamily, FantasyFamily, PictographFamily };
 
     enum Kerning { AutoKerning, NormalKerning, NoneKerning };
@@ -101,7 +101,7 @@ public:
 
     bool operator==(const FontDescription&) const;
     bool operator!=(const FontDescription& other) const { return !(*this == other); }
-    
+
     const FontFamily& family() const { return m_familyList; }
     FontFamily& firstFamily() { return m_familyList; }
     float specifiedSize() const { return m_specifiedSize; }
@@ -169,7 +169,7 @@ private:
 
     float m_specifiedSize;   // Specified CSS value. Independent of rendering issues such as integer
                              // rounding, minimum font sizes, and zooming.
-    float m_computedSize;    // Computed size adjusted for the minimum font size and the zoom factor.  
+    float m_computedSize;    // Computed size adjusted for the minimum font size and the zoom factor.
 
     unsigned m_orientation : 1; // FontOrientation - Whether the font is rendering on a horizontal line or a vertical line.
     unsigned m_nonCJKGlyphOrientation : 1; // NonCJKGlyphOrientation - Only used by vertical text. Determines the default orientation for non-ideograph glyphs.

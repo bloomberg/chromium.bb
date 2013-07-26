@@ -43,7 +43,7 @@ public:
     static PassOwnPtr<ContentData> create(const String&);
     static PassOwnPtr<ContentData> create(PassOwnPtr<CounterContent>);
     static PassOwnPtr<ContentData> create(QuoteType);
-    
+
     virtual ~ContentData() { }
 
     virtual bool isCounter() const { return false; }

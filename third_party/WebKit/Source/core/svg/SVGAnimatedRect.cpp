@@ -98,5 +98,5 @@ float SVGAnimatedRectAnimator::calculateDistance(const String&, const String&)
     // FIXME: Distance calculation is not possible for SVGRect right now. We need the distance of for every single value.
     return -1;
 }
-    
+
 }

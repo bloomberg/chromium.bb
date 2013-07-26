@@ -170,7 +170,7 @@ void RenderSVGResourceMarker::calcViewport()
 
     SVGMarkerElement* marker = toSVGMarkerElement(node());
     ASSERT(marker);
-    
+
     SVGLengthContext lengthContext(marker);
     float w = marker->markerWidthCurrentValue().value(lengthContext);
     float h = marker->markerHeightCurrentValue().value(lengthContext);

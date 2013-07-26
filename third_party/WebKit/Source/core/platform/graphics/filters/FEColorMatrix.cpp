@@ -166,7 +166,7 @@ void FEColorMatrix::applySoftware()
     case FECOLORMATRIX_TYPE_MATRIX:
         effectType<FECOLORMATRIX_TYPE_MATRIX>(pixelArray.get(), m_values);
         break;
-    case FECOLORMATRIX_TYPE_SATURATE: 
+    case FECOLORMATRIX_TYPE_SATURATE:
         effectType<FECOLORMATRIX_TYPE_SATURATE>(pixelArray.get(), m_values);
         break;
     case FECOLORMATRIX_TYPE_HUEROTATE:
@@ -323,7 +323,7 @@ TextStream& FEColorMatrix::externalRepresentation(TextStream& ts, int indent) co
         while (ptr < end) {
             ts << *ptr;
             ++ptr;
-            if (ptr < end) 
+            if (ptr < end)
                 ts << " ";
         }
         ts << "\"";
