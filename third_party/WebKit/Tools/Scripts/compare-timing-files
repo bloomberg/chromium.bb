@@ -68,7 +68,7 @@ print "\n";
 sub parseResults
 {
     my ($file) = @_;
-    
+
     open(FILE, $file) or die "Couldn't open file: $file";
     my @results = <FILE>;
     close(FILE);
@@ -77,7 +77,7 @@ sub parseResults
     my $total = 0;
     for (my $i = 0; $i < $count; $i++) {
         $results[$i] =~ s/\D*//; # cut out non-digits
-        $total += $results[$i]; 
+        $total += $results[$i];
     }
     my $average = $total / $count;
     my $range = $results[$count - 1] - $results[0];

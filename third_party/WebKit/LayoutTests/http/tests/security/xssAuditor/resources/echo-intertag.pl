@@ -6,7 +6,7 @@ my $cgi = new CGI;
 
 # Passing semicolons through the url to this script is problematic. The raw
 # form truncates the input and the %-encoded form isn't being decoded. Hence
-# this set of hard-coded headers. 
+# this set of hard-coded headers.
 if ($cgi->param('disable-protection')) {
     print "X-XSS-Protection: 0\n";
 }

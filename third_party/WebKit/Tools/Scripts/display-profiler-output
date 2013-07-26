@@ -42,7 +42,7 @@ end
 
 class Bytecode
     attr_accessor :bytecodes, :bytecodeIndex, :opcode, :description, :topCounts, :bottomCounts, :machineInlinees, :osrExits
-    
+
     def initialize(bytecodes, bytecodeIndex, opcode, description)
         @bytecodes = bytecodes
         @bytecodeIndex = bytecodeIndex
@@ -53,25 +53,25 @@ class Bytecode
         @machineInlinees = {} # maps my compilation to a set of inlinees
         @osrExits = []
     end
-    
+
     def shouldHaveCounts?
         @opcode != "op_call_put_result"
     end
-    
+
     def addTopCount(count)
         @topCounts << count
     end
-    
+
     def addBottomCountForCompilation(count, compilation)
         @bottomCounts[compilation] = [] unless @bottomCounts[compilation]
         @bottomCounts[compilation] << count
     end
-    
+
     def addMachineInlinee(compilation, inlinee)
         @machineInlinees[compilation] = {} unless @machineInlinees[compilation]
         @machineInlinees[compilation][inlinee] = true
     end
-    
+
     def totalTopExecutionCount
         sum = 0
         @topCounts.each {
@@ -80,7 +80,7 @@ class Bytecode
         }
         sum
     end
-    
+
     def topExecutionCount(engine)
         sum = 0
         @topCounts.each {
@@ -91,7 +91,7 @@ class Bytecode
         }
         sum
     end
-    
+
     def totalBottomExecutionCount
         sum = 0
         @bottomCounts.each_value {
@@ -105,7 +105,7 @@ class Bytecode
         }
         sum
     end
-    
+
     def bottomExecutionCount(engine)
         sum = 0
         @bottomCounts.each_pair {
@@ -121,7 +121,7 @@ class Bytecode
         }
         sum
     end
-    
+
     def totalExitCount
         sum = 0
         @osrExits.each {
@@ -134,7 +134,7 @@ end
 
 class Bytecodes
     attr_accessor :codeHash, :inferredName, :source, :instructionCount, :machineInlineSites, :compilations
-    
+
     def initialize(json)
         @codeHash = json["hash"].to_s
         @inferredName = json["inferredName"].to_s
@@ -149,7 +149,7 @@ class Bytecodes
         @machineInlineSites = {} # maps compilation to a set of origins
         @compilations = []
     end
-    
+
     def name(limit)
         if to_s.size > limit
             "\##{@codeHash}"
@@ -157,11 +157,11 @@ class Bytecodes
             to_s
         end
     end
-    
+
     def to_s
         "#{@inferredName}\##{@codeHash}"
     end
-    
+
     def matches(pattern)
         if pattern =~ /^#/
             $~.post_match == @codeHash
@@ -171,23 +171,23 @@ class Bytecodes
             pattern == @inferredName or pattern == @codeHash
         end
     end
-    
+
     def each
         @bytecode.values.sort{|a, b| a.bytecodeIndex <=> b.bytecodeIndex}.each {
             | value |
             yield value
         }
     end
-    
+
     def bytecode(bytecodeIndex)
         @bytecode[bytecodeIndex]
     end
-    
+
     def addMachineInlineSite(compilation, origin)
         @machineInlineSites[compilation] = {} unless @machineInlineSites[compilation]
         @machineInlineSites[compilation][origin] = true
     end
-    
+
     def totalMachineInlineSites
         sum = 0
         @machineInlineSites.each_value {
@@ -196,7 +196,7 @@ class Bytecodes
         }
         sum
     end
-    
+
     def sourceMachineInlineSites
         set = {}
         @machineInlineSites.each_value {
@@ -205,7 +205,7 @@ class Bytecodes
         }
         set.size
     end
-    
+
     def totalMaxTopExecutionCount
         max = 0
         @bytecode.each_value {
@@ -214,7 +214,7 @@ class Bytecodes
         }
         max
     end
-    
+
     def maxTopExecutionCount(engine)
         max = 0
         @bytecode.each_value {
@@ -223,7 +223,7 @@ class Bytecodes
         }
         max
     end
-    
+
     def totalMaxBottomExecutionCount
         max = 0
         @bytecode.each_value {
@@ -232,7 +232,7 @@ class Bytecodes
         }
         max
     end
-    
+
     def maxBottomExecutionCount(engine)
         max = 0
         @bytecode.each_value {
@@ -241,7 +241,7 @@ class Bytecodes
         }
         max
     end
-    
+
     def totalExitCount
         sum = 0
         each {
@@ -254,7 +254,7 @@ end
 
 class ProfiledBytecode
     attr_reader :bytecodeIndex, :description
-    
+
     def initialize(json)
         @bytecodeIndex = json["bytecodeIndex"].to_i
         @description = json["description"].to_s
@@ -263,7 +263,7 @@ end
 
 class ProfiledBytecodes
     attr_reader :header, :bytecodes
-    
+
     def initialize(json)
         @header = json["header"]
         @bytecodes = $bytecodes[json["bytecodesID"].to_i]
@@ -272,7 +272,7 @@ class ProfiledBytecodes
             ProfiledBytecode.new(subJson)
         }
     end
-    
+
     def each
         @sequence.each {
             | description |
@@ -290,7 +290,7 @@ end
 
 class CompiledBytecode
     attr_accessor :origin, :description
-    
+
     def initialize(json)
         @origin = originStackFromJSON(json["origin"])
         @description = json["description"].to_s
@@ -299,7 +299,7 @@ end
 
 class ExecutionCounter
     attr_accessor :origin, :engine, :count
-    
+
     def initialize(origin, engine, count)
         @origin = origin
         @engine = engine
@@ -309,7 +309,7 @@ end
 
 class OSRExit
     attr_reader :compilation, :origin, :codeAddresses, :exitKind, :isWatchpoint, :count
-    
+
     def initialize(compilation, origin, codeAddresses, exitKind, isWatchpoint, count)
         @compilation = compilation
         @origin = origin
@@ -318,7 +318,7 @@ class OSRExit
         @isWatchpoint = isWatchpoint
         @count = count
     end
-    
+
     def dumpForDisplay(prefix)
         puts(prefix + "EXIT: due to #{@exitKind}, #{@count} times")
     end
@@ -328,7 +328,7 @@ class Compilation
     attr_accessor :bytecode, :engine, :descriptions, :counters, :compilationIndex
     attr_accessor :osrExits, :profiledBytecodes, :numInlinedGetByIds, :numInlinedPutByIds
     attr_accessor :numInlinedCalls
-    
+
     def initialize(json)
         @bytecode = $bytecodes[json["bytecodesID"].to_i]
         @bytecode.compilations << self
@@ -381,11 +381,11 @@ class Compilation
         @numInlinedPutByIds = json["numInlinedPutByIds"]
         @numInlinedCalls = json["numInlinedCalls"]
     end
-    
+
     def counter(origin)
         @counters[origin]
     end
-    
+
     def to_s
         "#{bytecode}-#{compilationIndex}-#{engine}"
     end
@@ -393,14 +393,14 @@ end
 
 class DescriptionLine
     attr_reader :actualCountsString, :sourceCountsString, :disassembly, :shouldShow
-    
+
     def initialize(actualCountsString, sourceCountsString, disassembly, shouldShow)
         @actualCountsString = actualCountsString
         @sourceCountsString = sourceCountsString
         @disassembly = disassembly
         @shouldShow = shouldShow
     end
-    
+
     def codeAddress
         if @disassembly =~ /^\s*(0x[0-9a-fA-F]+):/
             $1.hex
@@ -409,7 +409,7 @@ class DescriptionLine
         end
     end
 end
-            
+
 if ARGV.length != 1
     $stderr.puts "Usage: display-profiler-output <path to profiler output file>"
     $stderr.puts
@@ -474,7 +474,7 @@ end
 
 def summary(mode)
     remaining = screenWidth
-    
+
     # Figure out how many columns we need for the code block names, and for counts
     maxCount = 0
     maxName = 0
@@ -490,39 +490,39 @@ def summary(mode)
         maxName = [bytecodes.to_s.size, maxName].max
     }
     maxCountDigits = maxCount.to_s.size
-    
+
     hashCols = [[maxName, 30].min, "CodeBlock".size].max
     remaining -= hashCols + 1
-    
+
     countCols = [maxCountDigits * $engines.size, "Source Counts".size].max
     remaining -= countCols + 1
-    
+
     if mode == :full
         instructionCountCols = 6
         remaining -= instructionCountCols + 1
-        
+
         machineCountCols = [maxCountDigits * $engines.size, "Machine Counts".size].max
         remaining -= machineCountCols + 1
-        
+
         compilationsCols = 7
         remaining -= compilationsCols + 1
-        
+
         inlinesCols = 9
         remaining -= inlinesCols + 1
-        
+
         exitCountCols = 7
         remaining -= exitCountCols + 1
-        
+
         recentOptsCols = 12
         remaining -= recentOptsCols + 1
     end
-    
+
     if remaining > 0
         sourceCols = remaining
     else
         sourceCols = nil
     end
-    
+
     print(center("CodeBlock", hashCols))
     if mode == :full
         print(" " + center("#Instr", instructionCountCols))
@@ -539,7 +539,7 @@ def summary(mode)
         print(" " + center("Source", sourceCols))
     end
     puts
-    
+
     print(center("", hashCols))
     if mode == :full
         print(" " + (" " * instructionCountCols))
@@ -628,16 +628,16 @@ def executeCommand(*commandArray)
             puts "Usage: source <code block hash>"
             return
         end
-        
+
         hash = args[0]
-        
+
         countCols = 10 * $engines.size
         machineCols = 10 * $engines.size
         pad = 1
         while (countCols + 1 + machineCols + pad) % 8 != 0
             pad += 1
         end
-        
+
         $bytecodes.each {
             | bytecodes |
             next unless bytecodes.matches(hash)
@@ -672,13 +672,13 @@ def executeCommand(*commandArray)
             puts "Usage: profiling <code block hash>"
             return
         end
-        
+
         hash = args[0]
-        
+
         first = true
         $compilations.each {
             | compilation |
-            
+
             compilation.profiledBytecodes.each {
                 | profiledBytecodes |
                 if profiledBytecodes.bytecodes.matches(hash)
@@ -687,7 +687,7 @@ def executeCommand(*commandArray)
                     else
                         puts
                     end
-                    
+
                     puts "Compilation #{compilation}:"
                     profiledBytecodes.header.each {
                         | header |
@@ -711,15 +711,15 @@ def executeCommand(*commandArray)
             puts "Usage: inlines <code block hash>"
             return
         end
-        
+
         hash = args[0]
-        
+
         $bytecodes.each {
             | bytecodes |
             next unless bytecodes.matches(hash)
-            
+
             # FIXME: print something useful to say more about which code block this is.
-            
+
             $compilations.each {
                 | compilation |
                 myOrigins = []
@@ -743,19 +743,19 @@ def executeCommand(*commandArray)
                     }
                     result
                 }
-                
+
                 next if myOrigins.empty?
 
                 printArray = []
                 lastPrintStack = []
-                
+
                 def originToPrintStack(origin)
                     (0...(origin.size - 1)).map {
                         | index |
                         "bc\##{origin[index].bytecodeIndex} --> #{origin[index + 1].bytecodes}"
                     }
                 end
-                
+
                 def printStack(printArray, stack, lastStack)
                     stillCommon = true
                     stack.each_with_index {
@@ -765,7 +765,7 @@ def executeCommand(*commandArray)
                         stillCommon = false
                     }
                 end
-                
+
                 myOrigins.each {
                     | origin |
                     currentPrintStack = originToPrintStack(origin)
@@ -774,7 +774,7 @@ def executeCommand(*commandArray)
                 }
 
                 next if printArray.empty?
-                
+
                 puts "Compilation #{compilation}:"
                 printArray.each {
                     | entry |
@@ -784,7 +784,7 @@ def executeCommand(*commandArray)
         }
     when "display", "d"
         compilationIndex = nil
-        
+
         case args.length
         when 1
             if args[0] == "*"
@@ -805,13 +805,13 @@ def executeCommand(*commandArray)
             puts "Usage: summary <code block hash> <engine>"
             return
         end
-        
+
         if hash and hash =~ /-([0-9]+)-/
             hash = $~.pre_match
             engine = $~.post_match
             compilationIndex = $1.to_i
         end
-        
+
         if engine and not $engines.index(engine)
             pattern = Regexp.new(Regexp.escape(engine), "i")
             trueEngine = nil
@@ -828,23 +828,23 @@ def executeCommand(*commandArray)
             end
             engine = trueEngine
         end
-        
+
         actualCountCols = 13
         sourceCountCols = 10 * $engines.size
-        
+
         first = true
         $compilations.each {
             | compilation |
             next if hash and not compilation.bytecode.matches(hash)
             next if engine and compilation.engine != engine
             next if compilationIndex and compilation.compilationIndex != compilationIndex
-            
+
             if first
                 first = false
             else
                 puts
             end
-            
+
             puts("Compilation #{compilation}:")
             puts("    Num inlined: GetByIds: #{compilation.numInlinedGetByIds}  PutByIds: #{compilation.numInlinedPutByIds}  Calls: #{compilation.numInlinedCalls}")
             puts(center("Actual Counts", actualCountCols) + " " + center("Source Counts", sourceCountCols) + " " + center("Disassembly in #{compilation.engine}", screenWidth - 1 - sourceCountCols - 1 - actualCountCols))
@@ -876,9 +876,9 @@ def executeCommand(*commandArray)
                     lines << DescriptionLine.new(actualCountsString, sourceCountsString, line.chomp, shouldShow)
                 }
             }
-            
+
             exitPrefix = center("!!!!!", actualCountCols) + " " + center("!!!!!", sourceCountCols) + (" " * 25)
-            
+
             lines.each_with_index {
                 | line, index |
                 codeAddress = line.codeAddress
@@ -908,7 +908,7 @@ def executeCommand(*commandArray)
                         end
                         endIndex += 1
                     end
-                    
+
                     if endAddress
                         list = compilation.osrExits[endAddress]
                         if list

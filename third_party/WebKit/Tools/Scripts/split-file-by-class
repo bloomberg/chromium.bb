@@ -7,13 +7,13 @@
 # are met:
 #
 # 1.  Redistributions of source code must retain the above copyright
-#     notice, this list of conditions and the following disclaimer. 
+#     notice, this list of conditions and the following disclaimer.
 # 2.  Redistributions in binary form must reproduce the above copyright
 #     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution. 
+#     documentation and/or other materials provided with the distribution.
 # 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
 #     its contributors may be used to endorse or promote products derived
-#     from this software without specific prior written permission. 
+#     from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -43,7 +43,7 @@ for my $filename (@ARGV) {
 
     open(OLDFILE, "<", $filename) or die "File does not exist: $filename\n";
     print "Splitting class $filename.{h,cpp}:\n";
-    
+
     my $currentClassName = "";
     my $classIndent = "";
     my $fileContent = "";
@@ -66,7 +66,7 @@ for my $filename (@ARGV) {
         }
     }
     close(OLDFILE);
-    
+
     if (scalar(keys(%classDefs)) == 1) { # degenerate case
         my ($classname) = keys(%classDefs);
         if (!($classname eq $basename)) {
@@ -82,14 +82,14 @@ for my $filename (@ARGV) {
                 print "Skipping $filename, already correctly named.\n";
             } else {
                 print "Using SVN to copy $basename.{h,cpp} to $classname.{h,cpp}\n";
-                
+
                 system("svn rm --force $classname.h") if (-r "$classname.h");
                 system "svn cp $basename.h $classname.h";
-                
+
                 system("svn rm --force $classname.cpp") if (-r "$classname.cpp");
                 system "svn cp $basename.cpp $classname.cpp";
             }
-            
+
             print "Fixing $classname.h as much as possible.\n";
             open(NEWHEADER, ">", "$classname.h") or die "File does not exist: $filename\n";
             my @lines = split("\n", $fileContent);
@@ -103,7 +103,7 @@ for my $filename (@ARGV) {
                 }
             }
             close(NEWHEADER);
-            
+
             print "Fixing $classname.cpp as much as possible.\n";
             copy("$classname.cpp", "$classname.cpp.original");
             open(OLDCPP, "<", "$classname.cpp.original") or die "Failed to copy file for reading: $filename\n";
@@ -132,7 +132,7 @@ for my $filename (@ARGV) {
                     $line =~ s/khtml:://;
                     $line =~ s/namespace DOM/namespace WebCore/;
                     $line =~ s/namespace khtml/namespace WebCore/;
-                    
+
                     if ($line =~ /^(.*?\s+)?(\*|&)?(\w+)::(~)?\w+\s*\(/) {
                         $insideMemberFunction = 1;
                         $shouldPrintMemberFunction = ($classname eq $3);
@@ -153,7 +153,7 @@ for my $filename (@ARGV) {
             unlink("$classname.cpp.original");
         }
     }
-    
+
     print "Opening new files...\n";
     system("open " . join(".* ", keys(%classDefs)) . ".*");
 }

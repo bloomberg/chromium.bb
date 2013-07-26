@@ -171,7 +171,7 @@ def main():
         inputFile = open(args[0], "r")
 
     line = inputFile.readline()
- 
+
     rootNodes = {}
 
     while line:
@@ -202,7 +202,7 @@ def main():
     try:
         for node in sortedRootNodes:
             node.printNode()
-            print 
+            print
     except:
         pass
 

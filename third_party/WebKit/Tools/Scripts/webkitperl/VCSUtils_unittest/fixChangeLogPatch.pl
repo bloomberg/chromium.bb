@@ -6,7 +6,7 @@
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
-# 
+#
 #     * Redistributions of source code must retain the above copyright
 # notice, this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above
@@ -16,7 +16,7 @@
 #     * Neither the name of Google Inc. nor the names of its
 # contributors may be used to endorse or promote products derived from
 # this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -38,22 +38,22 @@ use Test::More;
 use VCSUtils;
 
 # The source ChangeLog for these tests is the following:
-# 
+#
 # 2009-12-22  Alice  <alice@email.address>
-# 
+#
 #         Reviewed by Ray.
-# 
+#
 #         Changed some code on 2009-12-22.
-# 
+#
 #         * File:
 #         * File2:
-# 
+#
 # 2009-12-21  Alice  <alice@email.address>
-# 
+#
 #         Reviewed by Ray.
-# 
+#
 #         Changed some code on 2009-12-21.
-# 
+#
 #         * File:
 #         * File2:
 
@@ -65,10 +65,10 @@ my @testCaseHashRefs = (
 +++ ChangeLog
 @@ -1,5 +1,5 @@
  2010-12-22  Bob  <bob@email.address>
- 
+
 -        Reviewed by Sue.
 +        Reviewed by Ray.
- 
+
          Changed some code on 2010-12-22.
 END
     expectedReturn => {
@@ -77,10 +77,10 @@ END
 +++ ChangeLog
 @@ -1,5 +1,5 @@
  2010-12-22  Bob  <bob@email.address>
- 
+
 -        Reviewed by Sue.
 +        Reviewed by Ray.
- 
+
          Changed some code on 2010-12-22.
 END
     }
@@ -100,7 +100,7 @@ END
 -        * File:
 -
  2010-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     expectedReturn => {
@@ -117,7 +117,7 @@ END
 -        * File:
 -
  2010-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     }
@@ -128,15 +128,15 @@ END
 --- ChangeLog
 +++ ChangeLog
 @@@ -7,10 +7,6 @@
- 
+
          * File:
- 
+
 -2010-12-22  Bob  <bob@email.address>
 -
 -        Changed some code on 2010-12-22.
 -
  2010-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     expectedReturn => {
@@ -144,15 +144,15 @@ END
 --- ChangeLog
 +++ ChangeLog
 @@@ -7,10 +7,6 @@
- 
+
          * File:
- 
+
 -2010-12-22  Bob  <bob@email.address>
 -
 -        Changed some code on 2010-12-22.
 -
  2010-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     }
@@ -163,21 +163,21 @@ END
 --- ChangeLog
 +++ ChangeLog
 @@ -7,7 +7,7 @@
- 
+
          * File:
- 
+
 -2010-12-22  Bob  <bob@email.address>
 +2010-12-22  Bobby <bob@email.address>
- 
+
          Changed some code on 2010-12-22.
- 
+
 @@ -21,7 +21,7 @@
- 
+
          * File2:
- 
+
 -2010-12-21  Bob  <bob@email.address>
 +2010-12-21  Bobby <bob@email.address>
- 
+
          Changed some code on 2010-12-21.
 END
     expectedReturn => {
@@ -185,21 +185,21 @@ END
 --- ChangeLog
 +++ ChangeLog
 @@ -7,7 +7,7 @@
- 
+
          * File:
- 
+
 -2010-12-22  Bob  <bob@email.address>
 +2010-12-22  Bobby <bob@email.address>
- 
+
          Changed some code on 2010-12-22.
- 
+
 @@ -21,7 +21,7 @@
- 
+
          * File2:
- 
+
 -2010-12-21  Bob  <bob@email.address>
 +2010-12-21  Bobby <bob@email.address>
- 
+
          Changed some code on 2010-12-21.
 END
     }
@@ -219,7 +219,7 @@ END
 +        * File:
 +
  2009-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     expectedReturn => {
@@ -236,7 +236,7 @@ END
 +        * File:
 +
  2009-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     }
@@ -247,26 +247,26 @@ END
 --- ChangeLog
 +++ ChangeLog
 @@ -6,6 +6,7 @@
- 
+
          * File:
          * File2:
 +        * File3:
- 
+
  2009-12-21  Alice  <alice@email.address>
- 
+
 END
     expectedReturn => {
     patch => <<'END',
 --- ChangeLog
 +++ ChangeLog
 @@ -6,6 +6,7 @@
- 
+
          * File:
          * File2:
 +        * File3:
- 
+
  2009-12-21  Alice  <alice@email.address>
- 
+
 END
     }
 },
@@ -276,9 +276,9 @@ END
 --- ChangeLog
 +++ ChangeLog
 @@ -11,6 +11,14 @@
- 
+
          Reviewed by Ray.
- 
+
 +        Changed some more code on 2009-12-21.
 +
 +        * File:
@@ -288,7 +288,7 @@ END
 +        Reviewed by Ray.
 +
          Changed some code on 2009-12-21.
- 
+
          * File:
 END
     expectedReturn => {
@@ -305,7 +305,7 @@ END
 +        * File:
 +
  2009-12-21  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     }
@@ -316,9 +316,9 @@ END
 --- ChangeLog
 +++ ChangeLog
 @@ -70,6 +70,14 @@
- 
+
  2009-12-22  Alice  <alice@email.address>
- 
+
 +        Reviewed by Sue.
 +
 +        Changed some more code on 2009-12-22.
@@ -328,7 +328,7 @@ END
 +2009-12-22  Alice  <alice@email.address>
 +
          Reviewed by Ray.
- 
+
          Changed some code on 2009-12-22.
 END
     expectedReturn => {
@@ -345,7 +345,7 @@ END
 +        * File:
 +
  2009-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     }
@@ -357,7 +357,7 @@ END
 +++ ChangeLog
 @@ -1,5 +1,13 @@
  2009-12-22  Alice  <alice@email.address>
- 
+
 +        Reviewed by Sue.
 +
 +        Changed some more code on 2009-12-22.
@@ -367,7 +367,7 @@ END
 +2009-12-22  Alice  <alice@email.address>
 +
          Reviewed by Ray.
- 
+
          Changed some code on 2009-12-22.
 END
     expectedReturn => {
@@ -384,7 +384,7 @@ END
 +        * File:
 +
  2009-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     }
@@ -393,9 +393,9 @@ END
     diffName => "fixChangeLogPatch: Leading context does not include first line.",
     inputText => <<'END',
 @@ -2,6 +2,14 @@
- 
+
          Reviewed by Ray.
- 
+
 +        Changed some more code on 2009-12-22.
 +
 +        * File:
@@ -405,7 +405,7 @@ END
 +        Reviewed by Ray.
 +
          Changed some code on 2009-12-22.
- 
+
          * File:
 END
     expectedReturn => {
@@ -420,7 +420,7 @@ END
 +        * File:
 +
  2009-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     }
@@ -438,13 +438,13 @@ END
  2009-12-22  Alice  <alice@email.address>
 + <pretend-whitespace>
 +        Reviewed by Ray.
- 
+
 +        Changed some more code on 2009-12-22.
 +
 +2009-12-22  Alice  <alice@email.address>
 +
          Reviewed by Ray.
- 
+
          Changed some code on 2009-12-22.
 END
     expectedReturn => {
@@ -457,7 +457,7 @@ END
 +        Changed some more code on 2009-12-22.
 +
  2009-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
     }
@@ -466,9 +466,9 @@ END
     diffName => "fixChangeLogPatch: Additional edits after new entry.",
     inputText => <<'END',
 @@ -2,10 +2,17 @@
- 
+
          Reviewed by Ray.
- 
+
 +        Changed some more code on 2009-12-22.
 +
 +        * File:
@@ -478,12 +478,12 @@ END
 +        Reviewed by Ray.
 +
          Changed some code on 2009-12-22.
- 
+
          * File:
 -        * File2:
- 
+
  2009-12-21  Alice  <alice@email.address>
- 
+
 END
     expectedReturn => {
     patch => <<'END',
@@ -497,16 +497,16 @@ END
 +        * File:
 +
  2009-12-22  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
- 
+
          Changed some code on 2009-12-22.
- 
+
          * File:
 -        * File2:
- 
+
  2009-12-21  Alice  <alice@email.address>
- 
+
 END
     }
 },
@@ -520,6 +520,6 @@ foreach my $testCase (@testCaseHashRefs) {
 
     my $got = VCSUtils::fixChangeLogPatch($testCase->{inputText});
     my $expectedReturn = $testCase->{expectedReturn};
- 
+
     is_deeply($got, $expectedReturn, "$testNameStart return value.");
 }

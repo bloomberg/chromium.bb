@@ -77,7 +77,7 @@ attributes:
     "mdat"<timedate>=0x32303039303930393137323635315A00  "20090909172651Z\000"
     "nega"<sint32>=<NULL>
     "path"<blob>=<NULL>
-    "port"<uint32>=0x00000000 
+    "port"<uint32>=0x00000000
     "prot"<blob>=<NULL>
     "ptcl"<uint32>="htps"
     "scrp"<sint32>=<NULL>

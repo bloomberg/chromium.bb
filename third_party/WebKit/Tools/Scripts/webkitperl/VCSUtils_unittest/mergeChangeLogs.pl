@@ -10,7 +10,7 @@
 # 2.  Redistributions in binary form must reproduce the above copyright
 #     notice, this list of conditions and the following disclaimer in the
 #     documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -90,17 +90,17 @@ EOF
 ***************
 *** 1,3 ****
   2010-01-29  Simon Hausmann  <simon.hausmann@nokia.com>
-  
+
           Rubber-stamped by Maciej Stachowiak.
 --- 1,9 ----
 + 2010-01-29  Oliver Hunt  <oliver@apple.com>
-+ 
++
 +         Reviewed by Darin Adler.
-+ 
++
 +         JSC is failing to propagate anonymous slot count on some transitions
-+ 
++
   2010-01-29  Simon Hausmann  <simon.hausmann@nokia.com>
-  
+
           Rubber-stamped by Maciej Stachowiak.
 EOF
     my $fileMine = writeTempFile("file", ".rej", $fileMineContent);
@@ -159,17 +159,17 @@ EOF
 ***************
 *** 1,9 ****
 - 2010-01-29  Oliver Hunt  <oliver@apple.com>
-- 
+-
 -         Reviewed by Darin Adler.
-- 
+-
 -         JSC is failing to propagate anonymous slot count on some transitions
-- 
+-
   2010-01-29  Simon Hausmann  <simon.hausmann@nokia.com>
-  
+
           Rubber-stamped by Maciej Stachowiak.
 --- 1,3 ----
   2010-01-29  Simon Hausmann  <simon.hausmann@nokia.com>
-  
+
           Rubber-stamped by Maciej Stachowiak.
 EOF
     my $fileMine = writeTempFile("file", ".rej", $fileMineContent);

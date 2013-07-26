@@ -10,7 +10,7 @@ my $unicode16BitEscapeSequenceRegEx = qr#%u([0-9A-Za-z]{1,4})#;
 
 sub isUTF16Surrogate($)
 {
-    my ($number) = @_; 
+    my ($number) = @_;
     return $number >= 0xD800 && $number <= 0xDFFF;
 }
 

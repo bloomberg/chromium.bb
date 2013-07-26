@@ -40,9 +40,9 @@ my @testCaseHashRefs = (
 --- ChangeLog
 +++ ChangeLog
 @@ -70,6 +70,14 @@
- 
+
  2010-05-08  Alice  <alice@email.address>
- 
+
 +        Reviewed by NOBODY (OOPS!).
 +
 +        Changed some more code on 2010-05-08.
@@ -52,7 +52,7 @@ my @testCaseHashRefs = (
 +2010-05-08  Alice  <alice@email.address>
 +
          Reviewed by Ray.
- 
+
          Changed some code on 2010-05-08.
 END
     expectedReturn => <<'END',
@@ -68,7 +68,7 @@ END
 +        * File:
 +
  2010-05-08  Alice  <alice@email.address>
- 
+
          Reviewed by Ray.
 END
 },

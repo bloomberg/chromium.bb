@@ -9,7 +9,7 @@ $type = "";
 foreach $pair (@keypairs)
 {
     ($name, $value) = split(/=/, $pair);
-    
+
     if ($name eq "type") {
         $type = $value;
     }
@@ -29,10 +29,10 @@ $subframe_content = "Fail";
 foreach $pair (@cookies)
 {
     ($name, $value) = split(/=/, $pair);
-    
+
     $name =~ s/^\s+//;
     $name =~ s/\s+$//;
-    
+
     if ($name eq "reload-subframe-$type") {
         $subframe_content = "Pass";
     }

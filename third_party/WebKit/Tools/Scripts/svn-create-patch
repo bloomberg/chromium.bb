@@ -7,13 +7,13 @@
 # are met:
 #
 # 1.  Redistributions of source code must retain the above copyright
-#     notice, this list of conditions and the following disclaimer. 
+#     notice, this list of conditions and the following disclaimer.
 # 2.  Redistributions in binary form must reproduce the above copyright
 #     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution. 
+#     documentation and/or other materials provided with the distribution.
 # 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
 #     its contributors may be used to endorse or promote products derived
-#     from this software without specific prior written permission. 
+#     from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -219,11 +219,11 @@ sub generateDiff($$)
 {
     my ($fileData, $prefix) = @_;
     my $file = File::Spec->catdir($prefix, $fileData->{path});
-    
+
     if ($ignoreChangelogs && basename($file) eq "ChangeLog") {
         return 0;
     }
-    
+
     my $patch = "";
     if ($fileData->{modificationType} eq "additionWithHistory") {
         manufacturePatchForAdditionWithHistory($fileData);
@@ -238,7 +238,7 @@ sub generateDiff($$)
     close DIFF;
     if (basename($file) eq "ChangeLog") {
         my $changeLogHash = fixChangeLogPatch($patch);
-        $patch = $changeLogHash->{patch};   
+        $patch = $changeLogHash->{patch};
     }
     print $patch;
     if ($fileData->{isBinary}) {
@@ -336,14 +336,14 @@ sub numericcmp($$)
     while (@a && @b) {
         my $a = shift @a;
         my $b = shift @b;
-        
+
         # Use numeric comparison if chunks are non-equal numbers.
         return $a <=> $b if $a =~ /^\d/ && $b =~ /^\d/ && $a != $b;
 
         # Use string comparison if chunks are any other kind of non-equal string.
         return $a cmp $b if $a ne $b;
     }
-    
+
     # One of the two is now empty; compare lengths for result in this case.
     return @a <=> @b;
 }

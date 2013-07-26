@@ -7,13 +7,13 @@
 # are met:
 #
 # 1.  Redistributions of source code must retain the above copyright
-#     notice, this list of conditions and the following disclaimer. 
+#     notice, this list of conditions and the following disclaimer.
 # 2.  Redistributions in binary form must reproduce the above copyright
 #     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution. 
+#     documentation and/or other materials provided with the distribution.
 # 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
 #     its contributors may be used to endorse or promote products derived
-#     from this software without specific prior written permission. 
+#     from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -125,7 +125,7 @@ sub determineSourceDir
     $sourceDir = $FindBin::Bin;
     $sourceDir =~ s|/+$||; # Remove trailing '/' as we would die later
 
-    # walks up path checking each directory to see if it is the main WebKit project dir, 
+    # walks up path checking each directory to see if it is the main WebKit project dir,
     # defined by containing Sources, core, and WebKit
     until ((-d "$sourceDir/Source" && -d "$sourceDir/Source/core" && -d "$sourceDir/Source/WebKit") || (-d "$sourceDir/Internal" && -d "$sourceDir/OpenSource"))
     {
@@ -1667,7 +1667,7 @@ sub setupAppleWinEnv()
         my $restartNeeded = 0;
         my %variablesToSet = ();
 
-        # FIXME: We should remove this explicit version check for cygwin once we stop supporting Cygwin 1.7.9 or older versions. 
+        # FIXME: We should remove this explicit version check for cygwin once we stop supporting Cygwin 1.7.9 or older versions.
         # https://bugs.webkit.org/show_bug.cgi?id=85791
         my $uname_version = (POSIX::uname())[2];
         $uname_version =~ s/\(.*\)//;  # Remove the trailing cygwin version, if any.
@@ -1676,7 +1676,7 @@ sub setupAppleWinEnv()
             # for UNIX-like ttys in the Windows console
             $variablesToSet{CYGWIN} = "tty" unless $ENV{CYGWIN};
         }
-        
+
         # Those environment variables must be set to be able to build inside Visual Studio.
         $variablesToSet{WEBKITLIBRARIESDIR} = windowsLibrariesDir() unless $ENV{WEBKITLIBRARIESDIR};
         $variablesToSet{WEBKIT_LIBRARIES} = windowsLibrariesDir() unless $ENV{WEBKIT_LIBRARIES};
@@ -1703,7 +1703,7 @@ sub setupAppleWinEnv()
         }
         if (!$ENV{'WEBKIT_LIBRARIES'}) {
             # VS2010 (and newer) version. This will replace the VS2005 version as part of
-            # https://bugs.webkit.org/show_bug.cgi?id=109472. 
+            # https://bugs.webkit.org/show_bug.cgi?id=109472.
             print "Warning: You must set the 'WebKit_Libraries' environment variable\n";
             print "         to be able build WebKit from within Visual Studio 2010 and newer.\n";
             print "         Make sure that 'WebKit_Libraries' points to the\n";
@@ -1716,7 +1716,7 @@ sub setupAppleWinEnv()
         }
         if (!$ENV{'WEBKIT_OUTPUTDIR'}) {
             # VS2010 (and newer) version. This will replace the VS2005 version as part of
-            # https://bugs.webkit.org/show_bug.cgi?id=109472. 
+            # https://bugs.webkit.org/show_bug.cgi?id=109472.
             print "Warning: You must set the 'WebKit_OutputDir' environment variable\n";
             print "         to be able build WebKit from within Visual Studio 2010 and newer.\n\n";
         }
@@ -1769,7 +1769,7 @@ sub setupCygwinEnv()
         print "*************************************************************\n";
         die;
     }
-    
+
     unless ($ENV{WEBKITLIBRARIESDIR}) {
         $ENV{'WEBKITLIBRARIESDIR'} = File::Spec->catdir($sourceDir, "WebKitLibraries", "win");
         chomp($ENV{WEBKITLIBRARIESDIR} = `cygpath -wa '$ENV{WEBKITLIBRARIESDIR}'`) if isCygwin();
@@ -1877,7 +1877,7 @@ sub buildVisualStudioProject
     dieIfWindowsPlatformSDKNotInstalled() if $willUseVCExpressWhenBuilding;
 
     chomp($project = `cygpath -w "$project"`) if isCygwin();
-    
+
     my $action = "/build";
     if ($clean) {
         $action = "/clean";
@@ -1903,7 +1903,7 @@ sub downloadWafIfNeeded
 sub buildWafProject
 {
     my ($project, $shouldClean, @options) = @_;
-    
+
     # set the PYTHONPATH for waf
     my $pythonPath = $ENV{'PYTHONPATH'};
     if (!defined($pythonPath)) {
@@ -1915,7 +1915,7 @@ sub buildWafProject
         $newPythonPath = `cygpath --mixed --path $newPythonPath`;
     }
     $ENV{'PYTHONPATH'} = $newPythonPath;
-    
+
     print "Building $project\n";
 
     my $wafCommand = "$sourceDir/Tools/waf/waf";
@@ -1929,7 +1929,7 @@ sub buildWafProject
     if ($shouldClean) {
         return system $wafCommand, "uninstall", "clean", "distclean";
     }
-    
+
     return system $wafCommand, 'configure', 'build', 'install', @options;
 }
 
@@ -2759,7 +2759,7 @@ sub execMacWebKitAppForDebugging($)
         if (shouldUseXPCServiceForWebProcess()) {
             die "Targetting the Web Process is not compatible with using an XPC Service for the Web Process at this time.";
         }
-        
+
         my $webProcessShimPath = File::Spec->catfile($productDir, "SecItemShim.dylib");
         my $webProcessPath = File::Spec->catdir($productDir, "WebProcess.app");
         my $webKit2ExecutablePath = File::Spec->catfile($productDir, "WebKit2.framework", "WebKit2");
@@ -2821,7 +2821,7 @@ sub debugMiniBrowser
     if (isAppleMacWebKit()) {
         execMacWebKitAppForDebugging(File::Spec->catfile(productDir(), "MiniBrowser.app", "Contents", "MacOS", "MiniBrowser"));
     }
-    
+
     return 1;
 }
 

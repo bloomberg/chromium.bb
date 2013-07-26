@@ -10,7 +10,7 @@
 # 2.  Redistributions in binary form must reproduce the above copyright
 #     notice, this list of conditions and the following disclaimer in the
 #     documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -43,7 +43,7 @@ Index: Makefile
 @@ -1,3 +1,4 @@
 +
  MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKitTools
- 
+
  all:
 END
     expectedReturn => [
@@ -56,7 +56,7 @@ Index: Makefile
 @@ -1,3 +1,4 @@
 +
  MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKitTools
- 
+
  all:
 END
     indexPath => "Makefile",
@@ -155,7 +155,7 @@ Index: Makefile
 @@ -1,3 +1,4 @@
 +
  MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKitTools
- 
+
  all:
 END
     expectedReturn => [
@@ -171,7 +171,7 @@ Index: Makefile
 @@ -1,3 +1,4 @@
 +
  MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKitTools
- 
+
  all:
 END
     indexPath => "Makefile",
@@ -286,7 +286,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -304,7 +304,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -328,7 +328,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -346,7 +346,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -423,7 +423,7 @@ Index: NMakefile
 --- NMakefile	(revision 60021)	(from Makefile:60021)
 +++ NMakefile	(working copy)
 @@ -0,0 +1,1 @@
-+MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
++MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
 Property changes on: NMakefile
 ___________________________________________________________________
@@ -681,7 +681,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 END
@@ -728,7 +728,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 END
@@ -767,7 +767,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -791,7 +791,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -817,7 +817,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -842,7 +842,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -869,7 +869,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -896,7 +896,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -921,7 +921,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 
@@ -949,7 +949,7 @@ Index: Makefile
 +++ Makefile	(working copy)
 @@ -1,3 +1,4 @@
 +
- MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools 
+ MODULES = JavaScriptCore JavaScriptGlue WebCore WebKit WebKit2 WebKitTools
 
  all:
 

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Simple script to generate a 302 HTTP redirect to a page that triggers a 
+# Simple script to generate a 302 HTTP redirect to a page that triggers a
 # navigation back (only if POST is used).
 
 use CGI;

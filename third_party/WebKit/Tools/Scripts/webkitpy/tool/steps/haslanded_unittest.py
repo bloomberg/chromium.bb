@@ -193,7 +193,7 @@ index 219ba72..0390b73 100644
 +        Reviewed by NOBODY (OOPS!).
 +
  2013-01-20  Tim 'mithro' Ansell  <mithro@mithis.com>
- 
+
          Extend diff_parser to support the --full-index output.
 diff --git a/Tools/Scripts/webkitpy/common/net/bugzilla/bug.py b/Tools/Scripts/webkitpy/common/net/bugzilla/bug.py
 index 4bf8ec6..3a128cb 100644
@@ -203,7 +203,7 @@ index 4bf8ec6..3a128cb 100644
 +import re
 +
  from .attachment import Attachment
- 
+
 """)
         testafter1 = HasLanded.convert_to_svn("""\
 diff --git a/Tools/Scripts/webkitpy/common/net/bugzilla/bug.py b/Tools/Scripts/webkitpy/common/net/bugzilla/bug.py
@@ -214,7 +214,7 @@ index 4bf8ec6..3a128cb 100644
 +import re
 +
  from .attachment import Attachment
- 
+
 diff --git a/Tools/ChangeLog b/Tools/ChangeLog
 index 219ba72..0390b73 100644
 --- a/Tools/ChangeLog
@@ -226,7 +226,7 @@ index 219ba72..0390b73 100644
 +        Reviewed by NOBODY (OOPS!).
 +
  2013-01-20  Tim 'mithro' Ansell  <mithro@mithis.com>
- 
+
          Extend diff_parser to support the --full-index output.
 """)
         testexpected1 = """\
@@ -238,7 +238,7 @@ Index: Tools/Scripts/webkitpy/common/net/bugzilla/bug.py
 +import re
 +
  from .attachment import Attachment
- 
+
 """
         testmiddle1 = HasLanded.convert_to_svn("""\
 diff --git a/Tools/Scripts/webkitpy/common/net/bugzilla/bug.py b/Tools/Scripts/webkitpy/common/net/bugzilla/bug.py
@@ -249,7 +249,7 @@ index 4bf8ec6..3a128cb 100644
 +import re
 +
  from .attachment import Attachment
- 
+
 diff --git a/ChangeLog b/ChangeLog
 index 219ba72..0390b73 100644
 --- a/ChangeLog
@@ -261,7 +261,7 @@ index 219ba72..0390b73 100644
 +        Reviewed by NOBODY (OOPS!).
 +
  2013-01-20  Tim 'mithro' Ansell  <mithro@mithis.com>
- 
+
          Extend diff_parser to support the --full-index output.
 diff --git a/Tools/Scripts/webkitpy/common/other.py b/Tools/Scripts/webkitpy/common/other.py
 index 4bf8ec6..3a128cb 100644
@@ -271,7 +271,7 @@ index 4bf8ec6..3a128cb 100644
 +import re
 +
  from .attachment import Attachment
- 
+
 """)
         testexpected2 = """\
 Index: Tools/Scripts/webkitpy/common/net/bugzilla/bug.py
@@ -282,7 +282,7 @@ Index: Tools/Scripts/webkitpy/common/net/bugzilla/bug.py
 +import re
 +
  from .attachment import Attachment
- 
+
 Index: Tools/Scripts/webkitpy/common/other.py
 ===================================================================
 --- Tools/Scripts/webkitpy/common/other.py
@@ -291,7 +291,7 @@ Index: Tools/Scripts/webkitpy/common/other.py
 +import re
 +
  from .attachment import Attachment
- 
+
 """
 
         self.assertMultiLineEqual(testexpected1, HasLanded.strip_change_log(testbefore1))

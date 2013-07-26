@@ -106,4 +106,3 @@ class RunTests(AbstractStep):
             args.append("--quiet")
 
         self._tool.executive.run_and_throw_if_fail(args, cwd=self._tool.scm().checkout_root)
-        

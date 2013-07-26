@@ -125,7 +125,7 @@
                     ],
                 }],
             ],
-        }                
+        }
     ], # targets
     'conditions': [
         ['gcc_version>=46', {

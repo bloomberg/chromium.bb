@@ -63,146 +63,146 @@ KRAKEN_PATH = CONFIGURATION["krakenPath"]
 TEMP_PATH = CONFIGURATION["tempPath"]
 BENCH_DATA_PATH = TEMP_PATH + "/benchdata"
 
-IBR_LOOKUP=[0.00615583, 0.0975, 0.22852, 0.341628, 0.430741, 0.500526, 0.555933, 
-            0.600706, 0.637513, 0.668244, 0.694254, 0.716537, 0.735827, 0.752684, 
-            0.767535, 0.780716, 0.792492, 0.803074, 0.812634, 0.821313, 0.829227, 
-            0.836472, 0.843129, 0.849267, 0.854943, 0.860209, 0.865107, 0.869674, 
-            0.873942, 0.877941, 0.881693, 0.885223, 0.888548, 0.891686, 0.894652, 
-            0.897461, 0.900124, 0.902652, 0.905056, 0.907343, 0.909524, 0.911604, 
-            0.91359, 0.91549, 0.917308, 0.919049, 0.920718, 0.92232, 0.923859, 0.925338, 
-            0.926761, 0.92813, 0.929449, 0.930721, 0.931948, 0.933132, 0.934275, 0.93538, 
-            0.936449, 0.937483, 0.938483, 0.939452, 0.940392, 0.941302, 0.942185, 
-            0.943042, 0.943874, 0.944682, 0.945467, 0.94623, 0.946972, 0.947694, 
-            0.948396, 0.94908, 0.949746, 0.950395, 0.951027, 0.951643, 0.952244, 
-            0.952831, 0.953403, 0.953961, 0.954506, 0.955039, 0.955559, 0.956067, 
-            0.956563, 0.957049, 0.957524, 0.957988, 0.958443, 0.958887, 0.959323, 
-            0.959749, 0.960166, 0.960575, 0.960975, 0.961368, 0.961752, 0.962129, 
-            0.962499, 0.962861, 0.963217, 0.963566, 0.963908, 0.964244, 0.964574, 
-            0.964897, 0.965215, 0.965527, 0.965834, 0.966135, 0.966431, 0.966722, 
-            0.967007, 0.967288, 0.967564, 0.967836, 0.968103, 0.968366, 0.968624, 
-            0.968878, 0.969128, 0.969374, 0.969617, 0.969855, 0.97009, 0.970321, 
-            0.970548, 0.970772, 0.970993, 0.97121, 0.971425, 0.971636, 0.971843, 
-            0.972048, 0.97225, 0.972449, 0.972645, 0.972839, 0.973029, 0.973217, 
-            0.973403, 0.973586, 0.973766, 0.973944, 0.97412, 0.974293, 0.974464, 
-            0.974632, 0.974799, 0.974963, 0.975125, 0.975285, 0.975443, 0.975599, 
-            0.975753, 0.975905, 0.976055, 0.976204, 0.97635, 0.976495, 0.976638, 
-            0.976779, 0.976918, 0.977056, 0.977193, 0.977327, 0.97746, 0.977592, 
-            0.977722, 0.97785, 0.977977, 0.978103, 0.978227, 0.978349, 0.978471, 
-            0.978591, 0.978709, 0.978827, 0.978943, 0.979058, 0.979171, 0.979283, 
-            0.979395, 0.979504, 0.979613, 0.979721, 0.979827, 0.979933, 0.980037, 
-            0.98014, 0.980242, 0.980343, 0.980443, 0.980543, 0.980641, 0.980738, 
-            0.980834, 0.980929, 0.981023, 0.981116, 0.981209, 0.9813, 0.981391, 0.981481, 
-            0.981569, 0.981657, 0.981745, 0.981831, 0.981916, 0.982001, 0.982085, 
-            0.982168, 0.982251, 0.982332, 0.982413, 0.982493, 0.982573, 0.982651, 
-            0.982729, 0.982807, 0.982883, 0.982959, 0.983034, 0.983109, 0.983183, 
-            0.983256, 0.983329, 0.983401, 0.983472, 0.983543, 0.983613, 0.983683, 
-            0.983752, 0.98382, 0.983888, 0.983956, 0.984022, 0.984089, 0.984154, 
-            0.984219, 0.984284, 0.984348, 0.984411, 0.984474, 0.984537, 0.984599, 
-            0.98466, 0.984721, 0.984782, 0.984842, 0.984902, 0.984961, 0.985019, 
-            0.985077, 0.985135, 0.985193, 0.985249, 0.985306, 0.985362, 0.985417, 
-            0.985472, 0.985527, 0.985582, 0.985635, 0.985689, 0.985742, 0.985795, 
-            0.985847, 0.985899, 0.985951, 0.986002, 0.986053, 0.986103, 0.986153, 
-            0.986203, 0.986252, 0.986301, 0.98635, 0.986398, 0.986446, 0.986494, 
-            0.986541, 0.986588, 0.986635, 0.986681, 0.986727, 0.986773, 0.986818, 
-            0.986863, 0.986908, 0.986953, 0.986997, 0.987041, 0.987084, 0.987128, 
-            0.987171, 0.987213, 0.987256, 0.987298, 0.98734, 0.987381, 0.987423, 
-            0.987464, 0.987504, 0.987545, 0.987585, 0.987625, 0.987665, 0.987704, 
-            0.987744, 0.987783, 0.987821, 0.98786, 0.987898, 0.987936, 0.987974, 
-            0.988011, 0.988049, 0.988086, 0.988123, 0.988159, 0.988196, 0.988232, 
-            0.988268, 0.988303, 0.988339, 0.988374, 0.988409, 0.988444, 0.988479, 
-            0.988513, 0.988547, 0.988582, 0.988615, 0.988649, 0.988682, 0.988716, 
-            0.988749, 0.988782, 0.988814, 0.988847, 0.988879, 0.988911, 0.988943, 
-            0.988975, 0.989006, 0.989038, 0.989069, 0.9891, 0.989131, 0.989161, 0.989192, 
-            0.989222, 0.989252, 0.989282, 0.989312, 0.989342, 0.989371, 0.989401, 
-            0.98943, 0.989459, 0.989488, 0.989516, 0.989545, 0.989573, 0.989602, 0.98963, 
-            0.989658, 0.989685, 0.989713, 0.98974, 0.989768, 0.989795, 0.989822, 
-            0.989849, 0.989876, 0.989902, 0.989929, 0.989955, 0.989981, 0.990007, 
-            0.990033, 0.990059, 0.990085, 0.99011, 0.990136, 0.990161, 0.990186, 
-            0.990211, 0.990236, 0.990261, 0.990285, 0.99031, 0.990334, 0.990358, 
-            0.990383, 0.990407, 0.99043, 0.990454, 0.990478, 0.990501, 0.990525, 
-            0.990548, 0.990571, 0.990594, 0.990617, 0.99064, 0.990663, 0.990686, 
-            0.990708, 0.990731, 0.990753, 0.990775, 0.990797, 0.990819, 0.990841, 
-            0.990863, 0.990885, 0.990906, 0.990928, 0.990949, 0.99097, 0.990991, 
-            0.991013, 0.991034, 0.991054, 0.991075, 0.991096, 0.991116, 0.991137, 
-            0.991157, 0.991178, 0.991198, 0.991218, 0.991238, 0.991258, 0.991278, 
-            0.991298, 0.991317, 0.991337, 0.991356, 0.991376, 0.991395, 0.991414, 
-            0.991433, 0.991452, 0.991471, 0.99149, 0.991509, 0.991528, 0.991547, 
-            0.991565, 0.991584, 0.991602, 0.99162, 0.991639, 0.991657, 0.991675, 
-            0.991693, 0.991711, 0.991729, 0.991746, 0.991764, 0.991782, 0.991799, 
-            0.991817, 0.991834, 0.991851, 0.991869, 0.991886, 0.991903, 0.99192, 
-            0.991937, 0.991954, 0.991971, 0.991987, 0.992004, 0.992021, 0.992037, 
-            0.992054, 0.99207, 0.992086, 0.992103, 0.992119, 0.992135, 0.992151, 
-            0.992167, 0.992183, 0.992199, 0.992215, 0.99223, 0.992246, 0.992262, 
-            0.992277, 0.992293, 0.992308, 0.992324, 0.992339, 0.992354, 0.992369, 
-            0.992384, 0.9924, 0.992415, 0.992429, 0.992444, 0.992459, 0.992474, 0.992489, 
-            0.992503, 0.992518, 0.992533, 0.992547, 0.992561, 0.992576, 0.99259, 
-            0.992604, 0.992619, 0.992633, 0.992647, 0.992661, 0.992675, 0.992689, 
-            0.992703, 0.992717, 0.99273, 0.992744, 0.992758, 0.992771, 0.992785, 
-            0.992798, 0.992812, 0.992825, 0.992839, 0.992852, 0.992865, 0.992879, 
-            0.992892, 0.992905, 0.992918, 0.992931, 0.992944, 0.992957, 0.99297, 
-            0.992983, 0.992995, 0.993008, 0.993021, 0.993034, 0.993046, 0.993059, 
-            0.993071, 0.993084, 0.993096, 0.993109, 0.993121, 0.993133, 0.993145, 
-            0.993158, 0.99317, 0.993182, 0.993194, 0.993206, 0.993218, 0.99323, 0.993242, 
-            0.993254, 0.993266, 0.993277, 0.993289, 0.993301, 0.993312, 0.993324, 
-            0.993336, 0.993347, 0.993359, 0.99337, 0.993382, 0.993393, 0.993404, 
-            0.993416, 0.993427, 0.993438, 0.993449, 0.99346, 0.993472, 0.993483, 
-            0.993494, 0.993505, 0.993516, 0.993527, 0.993538, 0.993548, 0.993559, 
-            0.99357, 0.993581, 0.993591, 0.993602, 0.993613, 0.993623, 0.993634, 
-            0.993644, 0.993655, 0.993665, 0.993676, 0.993686, 0.993697, 0.993707, 
-            0.993717, 0.993727, 0.993738, 0.993748, 0.993758, 0.993768, 0.993778, 
-            0.993788, 0.993798, 0.993808, 0.993818, 0.993828, 0.993838, 0.993848, 
-            0.993858, 0.993868, 0.993877, 0.993887, 0.993897, 0.993907, 0.993916, 
-            0.993926, 0.993935, 0.993945, 0.993954, 0.993964, 0.993973, 0.993983, 
-            0.993992, 0.994002, 0.994011, 0.99402, 0.99403, 0.994039, 0.994048, 0.994057, 
-            0.994067, 0.994076, 0.994085, 0.994094, 0.994103, 0.994112, 0.994121, 
-            0.99413, 0.994139, 0.994148, 0.994157, 0.994166, 0.994175, 0.994183, 
-            0.994192, 0.994201, 0.99421, 0.994218, 0.994227, 0.994236, 0.994244, 
-            0.994253, 0.994262, 0.99427, 0.994279, 0.994287, 0.994296, 0.994304, 
-            0.994313, 0.994321, 0.994329, 0.994338, 0.994346, 0.994354, 0.994363, 
-            0.994371, 0.994379, 0.994387, 0.994395, 0.994404, 0.994412, 0.99442, 
-            0.994428, 0.994436, 0.994444, 0.994452, 0.99446, 0.994468, 0.994476, 
-            0.994484, 0.994492, 0.9945, 0.994508, 0.994516, 0.994523, 0.994531, 0.994539, 
-            0.994547, 0.994554, 0.994562, 0.99457, 0.994577, 0.994585, 0.994593, 0.9946, 
-            0.994608, 0.994615, 0.994623, 0.994631, 0.994638, 0.994645, 0.994653, 
-            0.99466, 0.994668, 0.994675, 0.994683, 0.99469, 0.994697, 0.994705, 0.994712, 
-            0.994719, 0.994726, 0.994734, 0.994741, 0.994748, 0.994755, 0.994762, 
-            0.994769, 0.994777, 0.994784, 0.994791, 0.994798, 0.994805, 0.994812, 
-            0.994819, 0.994826, 0.994833, 0.99484, 0.994847, 0.994854, 0.99486, 0.994867, 
-            0.994874, 0.994881, 0.994888, 0.994895, 0.994901, 0.994908, 0.994915, 
-            0.994922, 0.994928, 0.994935, 0.994942, 0.994948, 0.994955, 0.994962, 
-            0.994968, 0.994975, 0.994981, 0.994988, 0.994994, 0.995001, 0.995007, 
-            0.995014, 0.99502, 0.995027, 0.995033, 0.99504, 0.995046, 0.995052, 0.995059, 
-            0.995065, 0.995071, 0.995078, 0.995084, 0.99509, 0.995097, 0.995103, 
-            0.995109, 0.995115, 0.995121, 0.995128, 0.995134, 0.99514, 0.995146, 
-            0.995152, 0.995158, 0.995164, 0.995171, 0.995177, 0.995183, 0.995189, 
-            0.995195, 0.995201, 0.995207, 0.995213, 0.995219, 0.995225, 0.995231, 
-            0.995236, 0.995242, 0.995248, 0.995254, 0.99526, 0.995266, 0.995272, 
-            0.995277, 0.995283, 0.995289, 0.995295, 0.995301, 0.995306, 0.995312, 
-            0.995318, 0.995323, 0.995329, 0.995335, 0.99534, 0.995346, 0.995352, 
-            0.995357, 0.995363, 0.995369, 0.995374, 0.99538, 0.995385, 0.995391, 
-            0.995396, 0.995402, 0.995407, 0.995413, 0.995418, 0.995424, 0.995429, 
-            0.995435, 0.99544, 0.995445, 0.995451, 0.995456, 0.995462, 0.995467, 
-            0.995472, 0.995478, 0.995483, 0.995488, 0.995493, 0.995499, 0.995504, 
-            0.995509, 0.995515, 0.99552, 0.995525, 0.99553, 0.995535, 0.995541, 0.995546, 
-            0.995551, 0.995556, 0.995561, 0.995566, 0.995571, 0.995577, 0.995582, 
-            0.995587, 0.995592, 0.995597, 0.995602, 0.995607, 0.995612, 0.995617, 
-            0.995622, 0.995627, 0.995632, 0.995637, 0.995642, 0.995647, 0.995652, 
-            0.995657, 0.995661, 0.995666, 0.995671, 0.995676, 0.995681, 0.995686, 
-            0.995691, 0.995695, 0.9957, 0.995705, 0.99571, 0.995715, 0.995719, 0.995724, 
-            0.995729, 0.995734, 0.995738, 0.995743, 0.995748, 0.995753, 0.995757, 
-            0.995762, 0.995767, 0.995771, 0.995776, 0.995781, 0.995785, 0.99579, 
-            0.995794, 0.995799, 0.995804, 0.995808, 0.995813, 0.995817, 0.995822, 
-            0.995826, 0.995831, 0.995835, 0.99584, 0.995844, 0.995849, 0.995853, 
-            0.995858, 0.995862, 0.995867, 0.995871, 0.995876, 0.99588, 0.995885, 
-            0.995889, 0.995893, 0.995898, 0.995902, 0.995906, 0.995911, 0.995915, 
-            0.99592, 0.995924, 0.995928, 0.995932, 0.995937, 0.995941, 0.995945, 0.99595, 
-            0.995954, 0.995958, 0.995962, 0.995967, 0.995971, 0.995975, 0.995979, 
-            0.995984, 0.995988, 0.995992, 0.995996, 0.996, 0.996004, 0.996009, 0.996013, 
-            0.996017, 0.996021, 0.996025, 0.996029, 0.996033, 0.996037, 0.996041, 
-            0.996046, 0.99605, 0.996054, 0.996058, 0.996062, 0.996066, 0.99607, 0.996074, 
-            0.996078, 0.996082, 0.996086, 0.99609, 0.996094, 0.996098, 0.996102, 
-            0.996106, 0.99611, 0.996114, 0.996117, 0.996121, 0.996125, 0.996129, 
-            0.996133, 0.996137, 0.996141, 0.996145, 0.996149, 0.996152, 0.996156, 
+IBR_LOOKUP=[0.00615583, 0.0975, 0.22852, 0.341628, 0.430741, 0.500526, 0.555933,
+            0.600706, 0.637513, 0.668244, 0.694254, 0.716537, 0.735827, 0.752684,
+            0.767535, 0.780716, 0.792492, 0.803074, 0.812634, 0.821313, 0.829227,
+            0.836472, 0.843129, 0.849267, 0.854943, 0.860209, 0.865107, 0.869674,
+            0.873942, 0.877941, 0.881693, 0.885223, 0.888548, 0.891686, 0.894652,
+            0.897461, 0.900124, 0.902652, 0.905056, 0.907343, 0.909524, 0.911604,
+            0.91359, 0.91549, 0.917308, 0.919049, 0.920718, 0.92232, 0.923859, 0.925338,
+            0.926761, 0.92813, 0.929449, 0.930721, 0.931948, 0.933132, 0.934275, 0.93538,
+            0.936449, 0.937483, 0.938483, 0.939452, 0.940392, 0.941302, 0.942185,
+            0.943042, 0.943874, 0.944682, 0.945467, 0.94623, 0.946972, 0.947694,
+            0.948396, 0.94908, 0.949746, 0.950395, 0.951027, 0.951643, 0.952244,
+            0.952831, 0.953403, 0.953961, 0.954506, 0.955039, 0.955559, 0.956067,
+            0.956563, 0.957049, 0.957524, 0.957988, 0.958443, 0.958887, 0.959323,
+            0.959749, 0.960166, 0.960575, 0.960975, 0.961368, 0.961752, 0.962129,
+            0.962499, 0.962861, 0.963217, 0.963566, 0.963908, 0.964244, 0.964574,
+            0.964897, 0.965215, 0.965527, 0.965834, 0.966135, 0.966431, 0.966722,
+            0.967007, 0.967288, 0.967564, 0.967836, 0.968103, 0.968366, 0.968624,
+            0.968878, 0.969128, 0.969374, 0.969617, 0.969855, 0.97009, 0.970321,
+            0.970548, 0.970772, 0.970993, 0.97121, 0.971425, 0.971636, 0.971843,
+            0.972048, 0.97225, 0.972449, 0.972645, 0.972839, 0.973029, 0.973217,
+            0.973403, 0.973586, 0.973766, 0.973944, 0.97412, 0.974293, 0.974464,
+            0.974632, 0.974799, 0.974963, 0.975125, 0.975285, 0.975443, 0.975599,
+            0.975753, 0.975905, 0.976055, 0.976204, 0.97635, 0.976495, 0.976638,
+            0.976779, 0.976918, 0.977056, 0.977193, 0.977327, 0.97746, 0.977592,
+            0.977722, 0.97785, 0.977977, 0.978103, 0.978227, 0.978349, 0.978471,
+            0.978591, 0.978709, 0.978827, 0.978943, 0.979058, 0.979171, 0.979283,
+            0.979395, 0.979504, 0.979613, 0.979721, 0.979827, 0.979933, 0.980037,
+            0.98014, 0.980242, 0.980343, 0.980443, 0.980543, 0.980641, 0.980738,
+            0.980834, 0.980929, 0.981023, 0.981116, 0.981209, 0.9813, 0.981391, 0.981481,
+            0.981569, 0.981657, 0.981745, 0.981831, 0.981916, 0.982001, 0.982085,
+            0.982168, 0.982251, 0.982332, 0.982413, 0.982493, 0.982573, 0.982651,
+            0.982729, 0.982807, 0.982883, 0.982959, 0.983034, 0.983109, 0.983183,
+            0.983256, 0.983329, 0.983401, 0.983472, 0.983543, 0.983613, 0.983683,
+            0.983752, 0.98382, 0.983888, 0.983956, 0.984022, 0.984089, 0.984154,
+            0.984219, 0.984284, 0.984348, 0.984411, 0.984474, 0.984537, 0.984599,
+            0.98466, 0.984721, 0.984782, 0.984842, 0.984902, 0.984961, 0.985019,
+            0.985077, 0.985135, 0.985193, 0.985249, 0.985306, 0.985362, 0.985417,
+            0.985472, 0.985527, 0.985582, 0.985635, 0.985689, 0.985742, 0.985795,
+            0.985847, 0.985899, 0.985951, 0.986002, 0.986053, 0.986103, 0.986153,
+            0.986203, 0.986252, 0.986301, 0.98635, 0.986398, 0.986446, 0.986494,
+            0.986541, 0.986588, 0.986635, 0.986681, 0.986727, 0.986773, 0.986818,
+            0.986863, 0.986908, 0.986953, 0.986997, 0.987041, 0.987084, 0.987128,
+            0.987171, 0.987213, 0.987256, 0.987298, 0.98734, 0.987381, 0.987423,
+            0.987464, 0.987504, 0.987545, 0.987585, 0.987625, 0.987665, 0.987704,
+            0.987744, 0.987783, 0.987821, 0.98786, 0.987898, 0.987936, 0.987974,
+            0.988011, 0.988049, 0.988086, 0.988123, 0.988159, 0.988196, 0.988232,
+            0.988268, 0.988303, 0.988339, 0.988374, 0.988409, 0.988444, 0.988479,
+            0.988513, 0.988547, 0.988582, 0.988615, 0.988649, 0.988682, 0.988716,
+            0.988749, 0.988782, 0.988814, 0.988847, 0.988879, 0.988911, 0.988943,
+            0.988975, 0.989006, 0.989038, 0.989069, 0.9891, 0.989131, 0.989161, 0.989192,
+            0.989222, 0.989252, 0.989282, 0.989312, 0.989342, 0.989371, 0.989401,
+            0.98943, 0.989459, 0.989488, 0.989516, 0.989545, 0.989573, 0.989602, 0.98963,
+            0.989658, 0.989685, 0.989713, 0.98974, 0.989768, 0.989795, 0.989822,
+            0.989849, 0.989876, 0.989902, 0.989929, 0.989955, 0.989981, 0.990007,
+            0.990033, 0.990059, 0.990085, 0.99011, 0.990136, 0.990161, 0.990186,
+            0.990211, 0.990236, 0.990261, 0.990285, 0.99031, 0.990334, 0.990358,
+            0.990383, 0.990407, 0.99043, 0.990454, 0.990478, 0.990501, 0.990525,
+            0.990548, 0.990571, 0.990594, 0.990617, 0.99064, 0.990663, 0.990686,
+            0.990708, 0.990731, 0.990753, 0.990775, 0.990797, 0.990819, 0.990841,
+            0.990863, 0.990885, 0.990906, 0.990928, 0.990949, 0.99097, 0.990991,
+            0.991013, 0.991034, 0.991054, 0.991075, 0.991096, 0.991116, 0.991137,
+            0.991157, 0.991178, 0.991198, 0.991218, 0.991238, 0.991258, 0.991278,
+            0.991298, 0.991317, 0.991337, 0.991356, 0.991376, 0.991395, 0.991414,
+            0.991433, 0.991452, 0.991471, 0.99149, 0.991509, 0.991528, 0.991547,
+            0.991565, 0.991584, 0.991602, 0.99162, 0.991639, 0.991657, 0.991675,
+            0.991693, 0.991711, 0.991729, 0.991746, 0.991764, 0.991782, 0.991799,
+            0.991817, 0.991834, 0.991851, 0.991869, 0.991886, 0.991903, 0.99192,
+            0.991937, 0.991954, 0.991971, 0.991987, 0.992004, 0.992021, 0.992037,
+            0.992054, 0.99207, 0.992086, 0.992103, 0.992119, 0.992135, 0.992151,
+            0.992167, 0.992183, 0.992199, 0.992215, 0.99223, 0.992246, 0.992262,
+            0.992277, 0.992293, 0.992308, 0.992324, 0.992339, 0.992354, 0.992369,
+            0.992384, 0.9924, 0.992415, 0.992429, 0.992444, 0.992459, 0.992474, 0.992489,
+            0.992503, 0.992518, 0.992533, 0.992547, 0.992561, 0.992576, 0.99259,
+            0.992604, 0.992619, 0.992633, 0.992647, 0.992661, 0.992675, 0.992689,
+            0.992703, 0.992717, 0.99273, 0.992744, 0.992758, 0.992771, 0.992785,
+            0.992798, 0.992812, 0.992825, 0.992839, 0.992852, 0.992865, 0.992879,
+            0.992892, 0.992905, 0.992918, 0.992931, 0.992944, 0.992957, 0.99297,
+            0.992983, 0.992995, 0.993008, 0.993021, 0.993034, 0.993046, 0.993059,
+            0.993071, 0.993084, 0.993096, 0.993109, 0.993121, 0.993133, 0.993145,
+            0.993158, 0.99317, 0.993182, 0.993194, 0.993206, 0.993218, 0.99323, 0.993242,
+            0.993254, 0.993266, 0.993277, 0.993289, 0.993301, 0.993312, 0.993324,
+            0.993336, 0.993347, 0.993359, 0.99337, 0.993382, 0.993393, 0.993404,
+            0.993416, 0.993427, 0.993438, 0.993449, 0.99346, 0.993472, 0.993483,
+            0.993494, 0.993505, 0.993516, 0.993527, 0.993538, 0.993548, 0.993559,
+            0.99357, 0.993581, 0.993591, 0.993602, 0.993613, 0.993623, 0.993634,
+            0.993644, 0.993655, 0.993665, 0.993676, 0.993686, 0.993697, 0.993707,
+            0.993717, 0.993727, 0.993738, 0.993748, 0.993758, 0.993768, 0.993778,
+            0.993788, 0.993798, 0.993808, 0.993818, 0.993828, 0.993838, 0.993848,
+            0.993858, 0.993868, 0.993877, 0.993887, 0.993897, 0.993907, 0.993916,
+            0.993926, 0.993935, 0.993945, 0.993954, 0.993964, 0.993973, 0.993983,
+            0.993992, 0.994002, 0.994011, 0.99402, 0.99403, 0.994039, 0.994048, 0.994057,
+            0.994067, 0.994076, 0.994085, 0.994094, 0.994103, 0.994112, 0.994121,
+            0.99413, 0.994139, 0.994148, 0.994157, 0.994166, 0.994175, 0.994183,
+            0.994192, 0.994201, 0.99421, 0.994218, 0.994227, 0.994236, 0.994244,
+            0.994253, 0.994262, 0.99427, 0.994279, 0.994287, 0.994296, 0.994304,
+            0.994313, 0.994321, 0.994329, 0.994338, 0.994346, 0.994354, 0.994363,
+            0.994371, 0.994379, 0.994387, 0.994395, 0.994404, 0.994412, 0.99442,
+            0.994428, 0.994436, 0.994444, 0.994452, 0.99446, 0.994468, 0.994476,
+            0.994484, 0.994492, 0.9945, 0.994508, 0.994516, 0.994523, 0.994531, 0.994539,
+            0.994547, 0.994554, 0.994562, 0.99457, 0.994577, 0.994585, 0.994593, 0.9946,
+            0.994608, 0.994615, 0.994623, 0.994631, 0.994638, 0.994645, 0.994653,
+            0.99466, 0.994668, 0.994675, 0.994683, 0.99469, 0.994697, 0.994705, 0.994712,
+            0.994719, 0.994726, 0.994734, 0.994741, 0.994748, 0.994755, 0.994762,
+            0.994769, 0.994777, 0.994784, 0.994791, 0.994798, 0.994805, 0.994812,
+            0.994819, 0.994826, 0.994833, 0.99484, 0.994847, 0.994854, 0.99486, 0.994867,
+            0.994874, 0.994881, 0.994888, 0.994895, 0.994901, 0.994908, 0.994915,
+            0.994922, 0.994928, 0.994935, 0.994942, 0.994948, 0.994955, 0.994962,
+            0.994968, 0.994975, 0.994981, 0.994988, 0.994994, 0.995001, 0.995007,
+            0.995014, 0.99502, 0.995027, 0.995033, 0.99504, 0.995046, 0.995052, 0.995059,
+            0.995065, 0.995071, 0.995078, 0.995084, 0.99509, 0.995097, 0.995103,
+            0.995109, 0.995115, 0.995121, 0.995128, 0.995134, 0.99514, 0.995146,
+            0.995152, 0.995158, 0.995164, 0.995171, 0.995177, 0.995183, 0.995189,
+            0.995195, 0.995201, 0.995207, 0.995213, 0.995219, 0.995225, 0.995231,
+            0.995236, 0.995242, 0.995248, 0.995254, 0.99526, 0.995266, 0.995272,
+            0.995277, 0.995283, 0.995289, 0.995295, 0.995301, 0.995306, 0.995312,
+            0.995318, 0.995323, 0.995329, 0.995335, 0.99534, 0.995346, 0.995352,
+            0.995357, 0.995363, 0.995369, 0.995374, 0.99538, 0.995385, 0.995391,
+            0.995396, 0.995402, 0.995407, 0.995413, 0.995418, 0.995424, 0.995429,
+            0.995435, 0.99544, 0.995445, 0.995451, 0.995456, 0.995462, 0.995467,
+            0.995472, 0.995478, 0.995483, 0.995488, 0.995493, 0.995499, 0.995504,
+            0.995509, 0.995515, 0.99552, 0.995525, 0.99553, 0.995535, 0.995541, 0.995546,
+            0.995551, 0.995556, 0.995561, 0.995566, 0.995571, 0.995577, 0.995582,
+            0.995587, 0.995592, 0.995597, 0.995602, 0.995607, 0.995612, 0.995617,
+            0.995622, 0.995627, 0.995632, 0.995637, 0.995642, 0.995647, 0.995652,
+            0.995657, 0.995661, 0.995666, 0.995671, 0.995676, 0.995681, 0.995686,
+            0.995691, 0.995695, 0.9957, 0.995705, 0.99571, 0.995715, 0.995719, 0.995724,
+            0.995729, 0.995734, 0.995738, 0.995743, 0.995748, 0.995753, 0.995757,
+            0.995762, 0.995767, 0.995771, 0.995776, 0.995781, 0.995785, 0.99579,
+            0.995794, 0.995799, 0.995804, 0.995808, 0.995813, 0.995817, 0.995822,
+            0.995826, 0.995831, 0.995835, 0.99584, 0.995844, 0.995849, 0.995853,
+            0.995858, 0.995862, 0.995867, 0.995871, 0.995876, 0.99588, 0.995885,
+            0.995889, 0.995893, 0.995898, 0.995902, 0.995906, 0.995911, 0.995915,
+            0.99592, 0.995924, 0.995928, 0.995932, 0.995937, 0.995941, 0.995945, 0.99595,
+            0.995954, 0.995958, 0.995962, 0.995967, 0.995971, 0.995975, 0.995979,
+            0.995984, 0.995988, 0.995992, 0.995996, 0.996, 0.996004, 0.996009, 0.996013,
+            0.996017, 0.996021, 0.996025, 0.996029, 0.996033, 0.996037, 0.996041,
+            0.996046, 0.99605, 0.996054, 0.996058, 0.996062, 0.996066, 0.99607, 0.996074,
+            0.996078, 0.996082, 0.996086, 0.99609, 0.996094, 0.996098, 0.996102,
+            0.996106, 0.99611, 0.996114, 0.996117, 0.996121, 0.996125, 0.996129,
+            0.996133, 0.996137, 0.996141, 0.996145, 0.996149, 0.996152, 0.996156,
             0.99616, 0.996164]
 
 # Run-time configuration parameters (can be set with command-line options)
@@ -249,7 +249,7 @@ def usage
   puts "one benchmark polluting the running time of another.  The fine-grained"
   puts "interleaving of VM invocations further minimizes systematics due to changes in"
   puts "the performance or behavior of your machine."
-  puts 
+  puts
   puts "Bencher is highly configurable.  You can compare as many VMs as you like.  You"
   puts "can change the amount of warm-up iterations, number of iterations executed per"
   puts "VM invocation, and the number of VM invocations per benchmark.  By default,"
@@ -407,22 +407,22 @@ end
 def numToStr(num)
   "%.4f"%(num.to_f)
 end
-  
+
 class NoChange
   attr_reader :amountFaster
-  
+
   def initialize(amountFaster)
     @amountFaster = amountFaster
   end
-  
+
   def shortForm
     " "
   end
-  
+
   def longForm
     "  might be #{numToStr(@amountFaster)}x faster"
   end
-  
+
   def to_s
     if @amountFaster < 1.01
       ""
@@ -434,19 +434,19 @@ end
 
 class Faster
   attr_reader :amountFaster
-  
+
   def initialize(amountFaster)
     @amountFaster = amountFaster
   end
-  
+
   def shortForm
     "^"
   end
-  
+
   def longForm
     "^ definitely #{numToStr(@amountFaster)}x faster"
   end
-  
+
   def to_s
     longForm
   end
@@ -454,19 +454,19 @@ end
 
 class Slower
   attr_reader :amountSlower
-  
+
   def initialize(amountSlower)
     @amountSlower = amountSlower
   end
-  
+
   def shortForm
     "!"
   end
-  
+
   def longForm
     "! definitely #{numToStr(@amountSlower)}x slower"
   end
-  
+
   def to_s
     longForm
   end
@@ -474,19 +474,19 @@ end
 
 class MayBeSlower
   attr_reader :amountSlower
-  
+
   def initialize(amountSlower)
     @amountSlower = amountSlower
   end
-  
+
   def shortForm
     "?"
   end
-  
+
   def longForm
     "? might be #{numToStr(@amountSlower)}x slower"
   end
-  
+
   def to_s
     if @amountSlower < 1.01
       "?"
@@ -500,7 +500,7 @@ class Stats
   def initialize
     @array = []
   end
-  
+
   def add(value)
     if value.is_a? Stats
       add(value.array)
@@ -513,11 +513,11 @@ class Stats
       @array << value.to_f
     end
   end
-    
+
   def array
     @array
   end
-  
+
   def sum
     result=0
     @array.each {
@@ -526,27 +526,27 @@ class Stats
     }
     result
   end
-  
+
   def min
     @array.min
   end
-  
+
   def max
     @array.max
   end
-  
+
   def size
     @array.length
   end
-  
+
   def mean
     computeMean(array)
   end
-  
+
   def arithmeticMean
     mean
   end
-  
+
   def stdDev
     computeStdDev(array)
   end
@@ -554,7 +554,7 @@ class Stats
   def stdErr
     stdDev/Math.sqrt(size)
   end
-  
+
   # Computes a 95% Student's t distribution confidence interval
   def confInt
     if size < 2
@@ -564,23 +564,23 @@ class Stats
       Math.sqrt(size-1.0)*stdErr*Math.sqrt(-1.0+1.0/inverseBetaRegularized(size-1))
     end
   end
-  
+
   def lower
     mean-confInt
   end
-  
+
   def upper
     mean+confInt
   end
-  
+
   def geometricMean
     computeGeometricMean(array)
   end
-  
+
   def harmonicMean
     computeHarmonicMean(array)
   end
-  
+
   def compareTo(other)
     if upper < other.lower
       Faster.new(other.mean/mean)
@@ -592,7 +592,7 @@ class Stats
       NoChange.new(other.mean/mean)
     end
   end
-  
+
   def to_s
     "size = #{size}, mean = #{mean}, stdDev = #{stdDev}, stdErr = #{stdErr}, confInt = #{confInt}"
   end
@@ -605,14 +605,14 @@ end
 
 class Benchfile < File
   @@counter = 0
-  
+
   attr_reader :filename, :basename
-  
+
   def initialize(name)
     @basename, @filename = Benchfile.uniqueFilename(name)
     super(@filename, "w")
   end
-  
+
   def self.uniqueFilename(name)
     if name.is_a? Array
       basename = name[0] + @@counter.to_s + name[1]
@@ -624,7 +624,7 @@ class Benchfile < File
     raise "Benchfile #{filename} already exists" if FileTest.exist?(filename)
     [basename, filename]
   end
-  
+
   def self.create(name)
     file = Benchfile.new(name)
     yield file
@@ -643,7 +643,7 @@ def ensureFile(key, filename)
   end
   $dataFiles[key]
 end
-  
+
 def emitBenchRunCodeFile(name, plan, benchDataPath, benchPath)
   case plan.vm.vmType
   when :jsc
@@ -661,7 +661,7 @@ def emitBenchRunCodeFile(name, plan, benchDataPath, benchPath)
       else
         raise
       end
-      
+
       if benchDataPath
         doublePuts($stderr,file,"load(#{benchDataPath.inspect});")
         doublePuts($stderr,file,"gc();")
@@ -709,12 +709,12 @@ def emitBenchRunCodeFile(name, plan, benchDataPath, benchPath)
       doublePuts($stderr,file,"}")
       doublePuts($stderr,file,"__bencher_runImpl(__bencher_doNext);")
     }
-    
+
     cssCode = Benchfile.create("bencher-css") {
       | file |
       doublePuts($stderr,file,".pass {\n    font-weight: bold;\n    color: green;\n}\n.fail {\n    font-weight: bold;\n    color: red;\n}\n\#console {\n    white-space: pre-wrap;\n    font-family: monospace;\n}")
     }
-    
+
     preCode = Benchfile.create("bencher-pre") {
       | file |
       doublePuts($stderr,file,"if (window.testRunner) {")
@@ -781,33 +781,33 @@ end
 
 class ParsedResult
   attr_reader :plan, :innerIndex, :time
-  
+
   def initialize(plan, innerIndex, time)
     @plan = plan
     @innerIndex = innerIndex
     @time = time
-    
+
     raise unless @plan.is_a? BenchPlan
     raise unless @innerIndex.is_a? Integer
     raise unless @time.is_a? Numeric
   end
-  
+
   def benchmark
     plan.benchmark
   end
-  
+
   def suite
     plan.suite
   end
-  
+
   def vm
     plan.vm
   end
-  
+
   def outerIndex
     plan.iteration
   end
-  
+
   def self.parse(plans, string)
     if string =~ /([a-zA-Z0-9\/-]+): ([a-zA-Z0-9_# ]+): ([0-9]+): ([0-9]+): Time: /
       benchFullname = $1
@@ -828,7 +828,7 @@ class VM
     @path = origPath.to_s
     @name = name
     @nameKind = nameKind
-    
+
     if $forceVMKind
       @vmType = $forceVMKind
     else
@@ -838,13 +838,13 @@ class VM
         @vmType = :jsc
       end
     end
-    
+
     @svnRevision = svnRevision
-    
+
     # Try to detect information about the VM.
     if path =~ /\/WebKitBuild\/Release\/([a-zA-Z]+)$/
       @checkoutPath = $~.pre_match
-      # FIXME: Use some variant of this: 
+      # FIXME: Use some variant of this:
       # <bdash>   def retrieve_revision
       # <bdash>     `perl -I#{@path}/Tools/Scripts -MVCSUtils -e 'print svnRevisionForDirectory("#{@path}");'`.to_i
       # <bdash>   end
@@ -873,7 +873,7 @@ class VM
     else
       $stderr.puts "Warning: could not identify checkout location for #{name}"
     end
-    
+
     if @path =~ /\/Release\/([a-zA-Z]+)$/
       @libPath, @relativeBinPath = $~.pre_match+"/Release", "./#{$1}"
     elsif @path =~ /\/Contents\/Resources\/([a-zA-Z]+)$/
@@ -882,7 +882,7 @@ class VM
       @libPath, @relativeBinPath = $~.pre_match, $&[1..-1]
     end
   end
-  
+
   def canCopyIntoBenchPath
     if @libPath and @relativeBinPath
       true
@@ -890,7 +890,7 @@ class VM
       false
     end
   end
-  
+
   def copyIntoBenchPath
     raise unless canCopyIntoBenchPath
     basename, filename = Benchfile.uniqueFilename("vm")
@@ -901,43 +901,43 @@ class VM
     @path = "#{basename}/#{@relativeBinPath}"
     @libPath = basename
   end
-  
+
   def to_s
     @name
   end
-  
+
   def name
     @name
   end
-  
+
   def shouldMeasureGC
     $measureGC == true or ($measureGC == name)
   end
-  
+
   def origPath
     @origPath
   end
-  
+
   def path
     @path
   end
-  
+
   def nameKind
     @nameKind
   end
-  
+
   def vmType
     @vmType
   end
-  
+
   def checkoutPath
     @checkoutPath
   end
-  
+
   def svnRevision
     @svnRevision
   end
-  
+
   def printFunction
     case @vmType
     when :jsc
@@ -948,7 +948,7 @@ class VM
       raise @vmType
     end
   end
-  
+
   def emitRunCode(fileToRun)
     myLibPath = @libPath
     myLibPath = "" unless myLibPath
@@ -965,11 +965,11 @@ class StatsAccumulator
       @stats << Stats.new
     }
   end
-  
+
   def statsForIteration(outerIteration, innerIteration)
     @stats[outerIteration*$inner + innerIteration]
   end
-  
+
   def stats
     result = Stats.new
     @stats.each {
@@ -978,14 +978,14 @@ class StatsAccumulator
     }
     result
   end
-  
+
   def geometricMeanStats
     stats {
       | stat |
       stat.geometricMean
     }
   end
-  
+
   def arithmeticMeanStats
     stats {
       | stat |
@@ -997,11 +997,11 @@ end
 module Benchmark
   attr_accessor :benchmarkSuite
   attr_reader :name
-  
+
   def fullname
     benchmarkSuite.name + "/" + name
   end
-  
+
   def to_s
     fullname
   end
@@ -1009,11 +1009,11 @@ end
 
 class SunSpiderBenchmark
   include Benchmark
-  
+
   def initialize(name)
     @name = name
   end
-  
+
   def emitRunCode(plan)
     emitBenchRunCode(fullname, plan, nil, ensureFile("SunSpider-#{@name}", "#{SUNSPIDER_PATH}/#{@name}.js"))
   end
@@ -1021,11 +1021,11 @@ end
 
 class V8Benchmark
   include Benchmark
-  
+
   def initialize(name)
     @name = name
   end
-  
+
   def emitRunCode(plan)
     emitBenchRunCode(fullname, plan, nil, ensureFile("V8-#{@name}", "#{V8_PATH}/v8-#{@name}.js"))
   end
@@ -1033,11 +1033,11 @@ end
 
 class KrakenBenchmark
   include Benchmark
-  
+
   def initialize(name)
     @name = name
   end
-  
+
   def emitRunCode(plan)
     emitBenchRunCode(fullname, plan, ensureFile("KrakenData-#{@name}", "#{KRAKEN_PATH}/#{@name}-data.js"), ensureFile("Kraken-#{@name}", "#{KRAKEN_PATH}/#{@name}.js"))
   end
@@ -1050,51 +1050,51 @@ class BenchmarkSuite
     @preferredMean = preferredMean
     @benchmarks = []
   end
-  
+
   def name
     @name
   end
-  
+
   def to_s
     @name
   end
-  
+
   def path
     @path
   end
-  
+
   def add(benchmark)
     if not $benchmarkPattern or "#{@name}/#{benchmark.name}" =~ $benchmarkPattern
       benchmark.benchmarkSuite = self
       @benchmarks << benchmark
     end
   end
-  
+
   def benchmarks
     @benchmarks
   end
-  
+
   def benchmarkForName(name)
     result = @benchmarks.select{|v| v.name == name}
     raise unless result.length == 1
     result[0]
   end
-  
+
   def empty?
     @benchmarks.empty?
   end
-  
+
   def retain_if
     @benchmarks.delete_if {
       | benchmark |
       not yield benchmark
     }
   end
-  
+
   def preferredMean
     @preferredMean
   end
-  
+
   def computeMean(stat)
     stat.send @preferredMean
   end
@@ -1106,23 +1106,23 @@ class BenchRunPlan
     @vm = vm
     @iteration = iteration
   end
-  
+
   def benchmark
     @benchmark
   end
-  
+
   def suite
     @benchmark.benchmarkSuite
   end
-  
+
   def vm
     @vm
   end
-  
+
   def iteration
     @iteration
   end
-  
+
   def emitRunCode
     @benchmark.emitRunCode(self)
   end
@@ -1134,35 +1134,35 @@ class BenchmarkOnVM
     @suiteOnVM = suiteOnVM
     @stats = Stats.new
   end
-  
+
   def to_s
     "#{@benchmark} on #{@suiteOnVM.vm}"
   end
-  
+
   def benchmark
     @benchmark
   end
-  
+
   def vm
     @suiteOnVM.vm
   end
-  
+
   def vmStats
     @suiteOnVM.vmStats
   end
-  
+
   def suite
     @benchmark.benchmarkSuite
   end
-  
+
   def suiteOnVM
     @suiteOnVM
   end
-  
+
   def stats
     @stats
   end
-  
+
   def parseResult(result)
     raise "VM mismatch; I've got #{vm} and they've got #{result.vm}" unless result.vm == vm
     raise unless result.benchmark == @benchmark
@@ -1176,24 +1176,24 @@ class SuiteOnVM < StatsAccumulator
     @vm = vm
     @vmStats = vmStats
     @suite = suite
-    
+
     raise unless @vm.is_a? VM
     raise unless @vmStats.is_a? StatsAccumulator
     raise unless @suite.is_a? BenchmarkSuite
   end
-  
+
   def to_s
     "#{@suite} on #{@vm}"
   end
-  
+
   def suite
     @suite
   end
-  
+
   def vm
     @vm
   end
-  
+
   def vmStats
     raise unless @vmStats
     @vmStats
@@ -1205,31 +1205,31 @@ class BenchPlan
     @benchmarkOnVM = benchmarkOnVM
     @iteration = iteration
   end
-  
+
   def to_s
     "#{@benchmarkOnVM} \##{@iteration+1}"
   end
-  
+
   def benchmarkOnVM
     @benchmarkOnVM
   end
-  
+
   def benchmark
     @benchmarkOnVM.benchmark
   end
-  
+
   def suite
     @benchmarkOnVM.suite
   end
-  
+
   def vm
     @benchmarkOnVM.vm
   end
-  
+
   def iteration
     @iteration
   end
-  
+
   def parseResult(result)
     raise unless result.plan == self
     @benchmarkOnVM.parseResult(result)
@@ -1298,7 +1298,7 @@ def wrap(str, columns)
   }
   result + curLine + "\n"
 end
-  
+
 def runAndGetResults
   results = nil
   Dir.chdir(BENCH_DATA_PATH) {
@@ -1317,7 +1317,7 @@ def parseAndDisplayResults(results)
   $vms.each {
     vmStatses << StatsAccumulator.new
   }
-  
+
   suitesOnVMs = []
   suitesOnVMsForSuite = {}
   $suites.each {
@@ -1329,14 +1329,14 @@ def parseAndDisplayResults(results)
     | vm |
     suitesOnVMsForVM[vm] = []
   }
-  
+
   benchmarksOnVMs = []
   benchmarksOnVMsForBenchmark = {}
   $benchmarks.each {
     | benchmark |
     benchmarksOnVMsForBenchmark[benchmark] = []
   }
-  
+
   $vms.each_with_index {
     | vm, vmIndex |
     vmStats = vmStatses[vmIndex]
@@ -1354,7 +1354,7 @@ def parseAndDisplayResults(results)
       }
     }
   }
-  
+
   plans = []
   benchmarksOnVMs.each {
     | benchmarkOnVM |
@@ -1380,7 +1380,7 @@ def parseAndDisplayResults(results)
       end
     end
   }
-  
+
   # Compute the geomean of the preferred means of results on a SuiteOnVM
   overallResults = []
   $vms.each {
@@ -1400,7 +1400,7 @@ def parseAndDisplayResults(results)
           # splay.
           curResult.add(suiteOnVM.suite.computeMean(suiteOnVM.statsForIteration(outerIndex, innerIndex)))
         }
-        
+
         # curResult now holds 1 sample for each of the means computed in the above
         # loop. Compute the geomean over this, and store it.
         result.add(curResult.geometricMean)
@@ -1413,13 +1413,13 @@ def parseAndDisplayResults(results)
     # useful and probably sound.
     overallResults << result
   }
-  
+
   if $verbosity >= 2
     benchmarksOnVMs.each {
       | benchmarkOnVM |
       $stderr.puts "#{benchmarkOnVM}: #{benchmarkOnVM.stats}"
     }
-    
+
     $vms.each_with_index {
       | vm, vmIndex |
       vmStats = vmStatses[vmIndex]
@@ -1460,7 +1460,7 @@ def parseAndDisplayResults(results)
   unless $brief
     puts "Generating benchmark report at #{reportName}"
   end
-  
+
   outp = $stdout
   begin
     outp = File.open(reportName,"w")
@@ -1468,7 +1468,7 @@ def parseAndDisplayResults(results)
     $stderr.puts "Error: could not save report to #{reportName}: #{e}"
     $stderr.puts
   end
-  
+
   def createVMsString
     result = ""
     result += "   " if $suites.size > 1
@@ -1489,9 +1489,9 @@ def parseAndDisplayResults(results)
     end
     result
   end
-  
+
   columns = [createVMsString.size, 78].max
-  
+
   outp.print "Benchmark report for "
   if $suites.size == 1
     outp.print $suites[0].to_s
@@ -1508,17 +1508,17 @@ def parseAndDisplayResults(results)
   end
   outp.puts "."
   outp.puts
-  
+
   # This looks stupid; revisit later.
   if false
     $suites.each {
       | suite |
       outp.puts "#{suite} at #{suite.path}"
     }
-    
+
     outp.puts
   end
-  
+
   outp.puts "VMs tested:"
   $vms.each {
     | vm |
@@ -1528,9 +1528,9 @@ def parseAndDisplayResults(results)
     end
     outp.puts
   }
-  
+
   outp.puts
-  
+
   outp.puts wrap("Collected #{$outer*$inner} sample#{plural($outer*$inner)} per benchmark/VM, "+
                  "with #{$outer} VM invocation#{plural($outer)} per benchmark."+
                  (if $rerun > 1 then (" Ran #{$rerun} benchmark iterations, and measured the "+
@@ -1554,13 +1554,13 @@ def parseAndDisplayResults(results)
                  " Reporting benchmark execution times with 95% confidence "+
                  "intervals in milliseconds.",
                  columns)
-  
+
   outp.puts
-  
+
   def printVMs(outp)
     outp.puts createVMsString
   end
-  
+
   def summaryStats(outp, accumulators, name, &proc)
     outp.print "   " if $suites.size > 1
     outp.print rpad(name, $benchpad)
@@ -1577,7 +1577,7 @@ def parseAndDisplayResults(results)
     end
     outp.puts
   end
-  
+
   def meanName(currentMean, preferredMean)
     result = "<#{currentMean}>"
     if "#{currentMean}Mean" == preferredMean.to_s
@@ -1585,24 +1585,24 @@ def parseAndDisplayResults(results)
     end
     result
   end
-  
+
   def allSummaryStats(outp, accumulators, preferredMean)
     summaryStats(outp, accumulators, meanName("arithmetic", preferredMean)) {
       | stat |
       stat.arithmeticMean
     }
-    
+
     summaryStats(outp, accumulators, meanName("geometric", preferredMean)) {
       | stat |
       stat.geometricMean
     }
-    
+
     summaryStats(outp, accumulators, meanName("harmonic", preferredMean)) {
       | stat |
       stat.harmonicMean
     }
   end
-  
+
   $suites.each {
     | suite |
     printVMs(outp)
@@ -1633,12 +1633,12 @@ def parseAndDisplayResults(results)
     allSummaryStats(outp, suitesOnVMsForSuite[suite], suite.preferredMean)
     outp.puts if $suites.size > 1
   }
-  
+
   if $suites.size > 1
     printVMs(outp)
     outp.puts "All benchmarks:"
     allSummaryStats(outp, vmStatses, nil)
-    
+
     outp.puts
     printVMs(outp)
     outp.puts "Geomean of preferred means:"
@@ -1658,11 +1658,11 @@ def parseAndDisplayResults(results)
     outp.puts
   end
   outp.puts
-  
+
   if outp != $stdout
     outp.close
   end
-  
+
   if outp != $stdout and not $brief
     puts
     File.open(reportName) {
@@ -1670,18 +1670,18 @@ def parseAndDisplayResults(results)
       puts inp.read
     }
   end
-  
+
   if $brief
     puts(overallResults.collect{|stats| stats.mean}.join("\t"))
     puts(overallResults.collect{|stats| stats.confInt}.join("\t"))
   end
-  
-  
+
+
 end
 
 begin
   $sawBenchOptions = false
-  
+
   def resetBenchOptionsIfNecessary
     unless $sawBenchOptions
       $includeSunSpider = false
@@ -1690,7 +1690,7 @@ begin
       $sawBenchOptions = true
     end
   end
-  
+
   GetoptLong.new(['--rerun', GetoptLong::REQUIRED_ARGUMENT],
                  ['--inner', GetoptLong::REQUIRED_ARGUMENT],
                  ['--outer', GetoptLong::REQUIRED_ARGUMENT],
@@ -1814,12 +1814,12 @@ begin
       raise "bad option: #{opt}"
     end
   }
-  
+
   # If the --dont-copy-vms option was passed, it overrides the --force-vm-copy option.
   if $dontCopyVMs
     $needToCopyVMs = false
   end
-  
+
   SUNSPIDER = BenchmarkSuite.new("SunSpider", SUNSPIDER_PATH, :arithmeticMean)
   ["3d-cube", "3d-morph", "3d-raytrace", "access-binary-trees",
    "access-fannkuch", "access-nbody", "access-nsieve",
@@ -1864,12 +1864,12 @@ begin
     $stderr.puts "#{name}: #{vm}" if $verbosity >= 1
     $vms << VM.new(Pathname.new(vm).realpath, name, nameKind, nil)
   }
-  
+
   if $vms.empty?
     quickFail("Please specify at least on configuraiton on the command line.",
               "Insufficient arguments")
   end
-  
+
   $vms.each {
     | vm |
     if vm.vmType != :jsc and $timeMode != :date
@@ -1877,22 +1877,22 @@ begin
       $stderr.puts "Warning: using Date.now() instead of preciseTime() because #{vm} doesn't support the latter."
     end
   }
-  
+
   if FileTest.exist? BENCH_DATA_PATH
     cmd = "rm -rf #{BENCH_DATA_PATH}"
     $stderr.puts ">> #{cmd}" if $verbosity >= 2
     raise unless system cmd
   end
-  
+
   Dir.mkdir BENCH_DATA_PATH
-  
+
   if $needToCopyVMs
     canCopyIntoBenchPath = true
     $vms.each {
       | vm |
       canCopyIntoBenchPath = false unless vm.canCopyIntoBenchPath
     }
-    
+
     if canCopyIntoBenchPath
       $vms.each {
         | vm |
@@ -1904,7 +1904,7 @@ begin
       $stderr.puts "Warning: don't know how to copy some VMs into #{BENCH_DATA_PATH}, so I won't do it."
     end
   end
-  
+
   if $measureGC and $measureGC != true
     found = false
     $vms.each {
@@ -1917,33 +1917,33 @@ begin
       $stderr.puts "Warning: --measure-gc option ignored because no VM is named #{$measureGC}"
     end
   end
-  
+
   if $outer*$inner == 1
     $stderr.puts "Warning: will only collect one sample per benchmark/VM.  Confidence interval calculation will fail."
   end
-  
+
   $stderr.puts "Using timeMode = #{$timeMode}." if $verbosity >= 1
-  
+
   $suites = []
-  
+
   if $includeSunSpider and not SUNSPIDER.empty?
     $suites << SUNSPIDER
   end
-  
+
   if $includeV8 and not V8.empty?
     $suites << V8
   end
-  
+
   if $includeKraken and not KRAKEN.empty?
     $suites << KRAKEN
   end
-  
+
   $benchmarks = []
   $suites.each {
     | suite |
     $benchmarks += suite.benchmarks
   }
-  
+
   $runPlans = []
   $vms.each {
     | vm |
@@ -1955,14 +1955,14 @@ begin
       }
     }
   }
-  
+
   $runPlans.shuffle!
-  
+
   $suitepad = $suites.collect {
     | suite |
     suite.to_s.size
   }.max + 1
-  
+
   $benchpad = ($benchmarks +
                ["<arithmetic> *", "<geometric> *", "<harmonic> *"]).collect {
     | benchmark |
@@ -1977,7 +1977,7 @@ begin
     | vm |
     vm.to_s.size
   }.max + 1
-  
+
   if $prepare
     File.open("#{BENCH_DATA_PATH}/runscript", "w") {
       | file |
@@ -2005,7 +2005,7 @@ begin
       end
     }
   end
-  
+
   if $run
     unless $remoteHosts.empty?
       $stderr.puts "Packaging benchmarking directory for remote hosts..." if $verbosity==0
@@ -2014,7 +2014,7 @@ begin
         $stderr.puts ">> #{cmd}" if $verbosity>=2
         raise unless system(cmd)
       }
-      
+
       def grokHost(host)
         if host =~ /:([0-9]+)$/
           "-p " + $1 + " " + $~.pre_match.inspect
@@ -2022,7 +2022,7 @@ begin
           host.inspect
         end
       end
-      
+
       def sshRead(host, command)
         cmd = "ssh #{$sshOptions.collect{|x| x.inspect}.join(' ')} #{grokHost(host)} #{command.inspect}"
         $stderr.puts ">> #{cmd}" if $verbosity>=2
@@ -2038,7 +2038,7 @@ begin
         raise "#{$?}" unless $?.success?
         result
       end
-      
+
       def sshWrite(host, command, data)
         cmd = "ssh #{$sshOptions.collect{|x| x.inspect}.join(' ')} #{grokHost(host)} #{command.inspect}"
         $stderr.puts ">> #{cmd}" if $verbosity>=2
@@ -2048,31 +2048,31 @@ begin
         }
         raise "#{$?}" unless $?.success?
       end
-      
+
       $remoteHosts.each {
         | host |
         $stderr.puts "Sending benchmark payload to #{host}..." if $verbosity==0
-        
+
         remoteTempPath = JSON::parse(sshRead(host, "cat ~/.bencher"))["tempPath"]
         raise unless remoteTempPath
-        
+
         sshWrite(host, "cd #{remoteTempPath.inspect} && rm -rf benchdata && tar -xz", IO::read("#{TEMP_PATH}/payload.tar.gz"))
-        
+
         $stderr.puts "Running on #{host}..." if $verbosity==0
-        
+
         parseAndDisplayResults(sshRead(host, "cd #{(remoteTempPath+'/benchdata').inspect} && sh runscript"))
       }
     end
-    
+
     if not $remoteHosts.empty? and $alsoLocal
       $stderr.puts "Running locally..."
     end
-    
+
     if $remoteHosts.empty? or $alsoLocal
       parseAndDisplayResults(runAndGetResults)
     end
   end
-  
+
   $analyze.each_with_index {
     | filename, index |
     if index >= 1
@@ -2080,7 +2080,7 @@ begin
     end
     parseAndDisplayResults(IO::read(filename))
   }
-  
+
   if $prepare and not $run and $analyze.empty?
     puts wrap("Benchmarking script and data are in #{BENCH_DATA_PATH}. You can run "+
               "the benchmarks and get the results by doing:", 78)
@@ -2094,5 +2094,5 @@ begin
 rescue => e
   fail(e)
 end
-  
-  
+
+

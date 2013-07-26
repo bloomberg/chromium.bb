@@ -10,13 +10,13 @@
 # are met:
 #
 # 1.  Redistributions of source code must retain the above copyright
-#     notice, this list of conditions and the following disclaimer. 
+#     notice, this list of conditions and the following disclaimer.
 # 2.  Redistributions in binary form must reproduce the above copyright
 #     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution. 
+#     documentation and/or other materials provided with the distribution.
 # 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
 #     its contributors may be used to endorse or promote products derived
-#     from this software without specific prior written permission. 
+#     from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -42,7 +42,7 @@ use InFilesParser;
 sub readTags($$);
 sub readAttrs($$);
 
-my $printFactory = 0; 
+my $printFactory = 0;
 my $fontNamesIn = "";
 my $resourceTypesIn = "";
 my $tagsFile = "";
@@ -73,7 +73,7 @@ if ($ENV{CC}) {
 my $preprocessor = $gccLocation . " -E -x c++";
 
 GetOptions(
-    'tags=s' => \$tagsFile, 
+    'tags=s' => \$tagsFile,
     'attrs=s' => \$attrsFile,
     'factory' => \$printFactory,
     'outputDir=s' => \$outputDir,
@@ -347,7 +347,7 @@ sub printConstructorSignature
     print F ")\n{\n";
 }
 
-# Helper method to dump the constructor interior and call the 
+# Helper method to dump the constructor interior and call the
 # Element constructor with the right arguments.
 # The variable names should be kept in sync with the previous method.
 sub printConstructorInterior
@@ -360,7 +360,7 @@ sub printConstructorInterior
     Settings* settings = document->settings();
     if (!RuntimeEnabledFeatures::mediaEnabled() || (settings && !settings->mediaEnabled()))
         return 0;
-    
+
 END
 ;
     }
@@ -472,13 +472,13 @@ sub svgCapitalizationHacks
 sub upperCaseName
 {
     my $name = shift;
-    
+
     $name = svgCapitalizationHacks($name) if ($parameters{namespace} eq "SVG");
 
     while ($name =~ /^(.*?)_(.*)/) {
         $name = $1 . ucfirst $2;
     }
-    
+
     return ucfirst $name;
 }
 
@@ -611,10 +611,10 @@ sub printNamesCppFile
     my $cppPath = shift;
     my $F;
     open F, ">$cppPath";
-    
+
     printLicenseHeader($F);
     printCppHead($F, "DOM", $parameters{namespace}, "WebCore");
-    
+
     my $lowerNamespace = lc($parameters{namespacePrefix});
 
     print F "DEFINE_GLOBAL(AtomicString, ${lowerNamespace}NamespaceURI)\n\n";
@@ -626,7 +626,7 @@ sub printNamesCppFile
         for my $name (sort keys %allTags) {
             print F "DEFINE_GLOBAL(QualifiedName, ", $name, "Tag)\n";
         }
-        
+
         print F "\n\nWebCore::QualifiedName** get$parameters{namespace}Tags()\n";
         print F "{\n    static WebCore::QualifiedName* $parameters{namespace}Tags[] = {\n";
         for my $name (sort keys %allTags) {
@@ -757,7 +757,7 @@ sub printDefinitions
     my $shortType = substr($singularType, 0, 4);
     my $shortCamelType = ucfirst($shortType);
     my $shortUpperType = uc($shortType);
-    
+
     print F "    // " . ucfirst($type) . "\n";
 
     for my $name (sort keys %$namesRef) {
@@ -842,7 +842,7 @@ static void createFunctionMap()
 
     // Create the table.
     gFunctionMap = new FunctionMap;
-    
+
     // Populate it with constructor functions.
 END
 ;

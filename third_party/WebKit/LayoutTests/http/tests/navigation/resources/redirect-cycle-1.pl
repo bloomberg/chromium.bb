@@ -6,10 +6,10 @@ $count = 1;
 foreach $pair (@cookies)
 {
     ($name, $value) = split(/=/, $pair);
-    
+
     $name =~ s/^\s+//;
     $name =~ s/\s+$//;
-    
+
     if ($name eq "redirect-cycle-count") {
         $count = $value;
     }

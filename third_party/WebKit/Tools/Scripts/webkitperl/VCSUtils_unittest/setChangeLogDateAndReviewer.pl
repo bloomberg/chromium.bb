@@ -49,7 +49,7 @@ diff --git a/WebCore/ChangeLog b/WebCore/ChangeLog
 +        Reviewed by NOBODY (OOPS!).
 +
  2010-05-08  Chris Jerdonek  <cjerdonek@webkit.org>
- 
+
          Reviewed by Jane Doe.
 END
     expectedReturn => <<'END',
@@ -66,7 +66,7 @@ diff --git a/WebCore/ChangeLog b/WebCore/ChangeLog
 +        Reviewed by John Doe.
 +
  2010-05-08  Chris Jerdonek  <cjerdonek@webkit.org>
- 
+
          Reviewed by Jane Doe.
 END
 },
@@ -88,7 +88,7 @@ diff --git a/WebCore/ChangeLog b/WebCore/ChangeLog
 +        Reviewed by NOBODY (OOPS!).
 +
  2010-05-08  Chris Jerdonek  <cjerdonek@webkit.org>
- 
+
          Reviewed by Jane Doe.
 END
     expectedReturn => <<'END',
@@ -105,7 +105,7 @@ diff --git a/WebCore/ChangeLog b/WebCore/ChangeLog
 +        Reviewed by NOBODY (OOPS!).
 +
  2010-05-08  Chris Jerdonek  <cjerdonek@webkit.org>
- 
+
          Reviewed by Jane Doe.
 END
 },

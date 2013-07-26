@@ -36,17 +36,17 @@
 namespace WTF {
 
 namespace double_conversion {
-    
+
     // Represents a 128bit type. This class should be replaced by a native type on
     // platforms that support 128bit integers.
     class UInt128 {
     public:
         UInt128() : high_bits_(0), low_bits_(0) { }
         UInt128(uint64_t high, uint64_t low) : high_bits_(high), low_bits_(low) { }
-        
+
         void Multiply(uint32_t multiplicand) {
             uint64_t accumulator;
-            
+
             accumulator = (low_bits_ & kMask32) * multiplicand;
             uint32_t part = static_cast<uint32_t>(accumulator & kMask32);
             accumulator >>= 32;
@@ -60,7 +60,7 @@ namespace double_conversion {
             high_bits_ = (accumulator << 32) + part;
             ASSERT((accumulator >> 32) == 0);
         }
-        
+
         void Shift(int shift_amount) {
             ASSERT(-64 <= shift_amount && shift_amount <= 64);
             if (shift_amount == 0) {
@@ -81,7 +81,7 @@ namespace double_conversion {
                 high_bits_ >>= shift_amount;
             }
         }
-        
+
         // Modifies *this to *this MOD (2^power).
         // Returns *this DIV (2^power).
         int DivModPowerOf2(int power) {
@@ -98,11 +98,11 @@ namespace double_conversion {
                 return result;
             }
         }
-        
+
         bool IsZero() const {
             return high_bits_ == 0 && low_bits_ == 0;
         }
-        
+
         int BitAt(int position) {
             if (position >= 64) {
                 return static_cast<int>(high_bits_ >> (position - 64)) & 1;
@@ -110,18 +110,18 @@ namespace double_conversion {
                 return static_cast<int>(low_bits_ >> position) & 1;
             }
         }
-        
+
     private:
         static const uint64_t kMask32 = 0xFFFFFFFF;
         // Value == (high_bits_ << 64) + low_bits_
         uint64_t high_bits_;
         uint64_t low_bits_;
     };
-    
-    
+
+
     static const int kDoubleSignificandSize = 53;  // Includes the hidden bit.
-    
-    
+
+
     static void FillDigits32FixedLength(uint32_t number, int requested_length,
                                         Vector<char> buffer, int* length) {
         for (int i = requested_length - 1; i >= 0; --i) {
@@ -130,8 +130,8 @@ namespace double_conversion {
         }
         *length += requested_length;
     }
-    
-    
+
+
     static void FillDigits32(uint32_t number, Vector<char> buffer, int* length) {
         int number_length = 0;
         // We fill the digits in reverse order and exchange them afterwards.
@@ -153,8 +153,8 @@ namespace double_conversion {
         }
         *length += number_length;
     }
-    
-    
+
+
     static void FillDigits64FixedLength(uint64_t number, int requested_length,
                                         Vector<char> buffer, int* length) {
         UNUSED_PARAM(requested_length);
@@ -164,13 +164,13 @@ namespace double_conversion {
         number /= kTen7;
         uint32_t part1 = static_cast<uint32_t>(number % kTen7);
         uint32_t part0 = static_cast<uint32_t>(number / kTen7);
-        
+
         FillDigits32FixedLength(part0, 3, buffer, length);
         FillDigits32FixedLength(part1, 7, buffer, length);
         FillDigits32FixedLength(part2, 7, buffer, length);
     }
-    
-    
+
+
     static void FillDigits64(uint64_t number, Vector<char> buffer, int* length) {
         const uint32_t kTen7 = 10000000;
         // For efficiency cut the number into 3 uint32_t parts, and print those.
@@ -178,7 +178,7 @@ namespace double_conversion {
         number /= kTen7;
         uint32_t part1 = static_cast<uint32_t>(number % kTen7);
         uint32_t part0 = static_cast<uint32_t>(number / kTen7);
-        
+
         if (part0 != 0) {
             FillDigits32(part0, buffer, length);
             FillDigits32FixedLength(part1, 7, buffer, length);
@@ -190,8 +190,8 @@ namespace double_conversion {
             FillDigits32(part2, buffer, length);
         }
     }
-    
-    
+
+
     static void RoundUp(Vector<char> buffer, int* length, int* decimal_point) {
         // An empty buffer represents 0.
         if (*length == 0) {
@@ -220,8 +220,8 @@ namespace double_conversion {
             (*decimal_point)++;
         }
     }
-    
-    
+
+
     // The given fractionals number represents a fixed-point number with binary
     // point at bit (-exponent).
     // Preconditions:
@@ -288,8 +288,8 @@ namespace double_conversion {
             }
         }
     }
-    
-    
+
+
     // Removes leading and trailing zeros.
     // If leading zeros are removed then the decimal point position is adjusted.
     static void TrimZeros(Vector<char> buffer, int* length, int* decimal_point) {
@@ -308,8 +308,8 @@ namespace double_conversion {
             *decimal_point -= first_non_zero;
         }
     }
-    
-    
+
+
     bool FastFixedDtoa(double v,
                        int fractional_count,
                        Vector<char> buffer,
@@ -404,7 +404,7 @@ namespace double_conversion {
         }
         return true;
     }
-    
+
 }  // namespace double_conversion
 
 } // namespace WTF

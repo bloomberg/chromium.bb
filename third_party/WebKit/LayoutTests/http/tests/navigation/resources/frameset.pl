@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Simple script to generate a frameset, where the main frame is 
+# Simple script to generate a frameset, where the main frame is
 # determined by a URL query parameter.
 #
 # Note we depend on the "main" frame being on top, so mouse coords
