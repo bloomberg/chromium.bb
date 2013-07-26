@@ -22683,19 +22683,11 @@ other types of suffix sets.
 <fieldtrial name="NetConnectivity4a" separator=".">
   <group name="NATBind.Sent2"
       label="Two packets were sent spreading over a random period, to test if
-             the NAT dropped the binding. This histogram recorded the
-             duration (in seconds) of the interval between the sendings of
-             the two packets. Results are only shown in this histogram if at
-             least ten packets were received in the StartPacket test, both
-             packets were received in NATBindRef test, and the first packet
-             of this test arrived at the client."/>
-  <group name="NATBindRef.Sent2"
-      label="Two packets were sent as rapidly as possible right after the
-             NATBind test. This histogram recorded the duration (in seconds)
-             of the interval between the sendings of the two packets in the
-             preceding NetConnectivity4.NATBind test. Results are only shown
-             in this histogram if at least ten packets were received in the
-             StartPacket test."/>
+             the NAT dropped the binding. Afterwords, an extra (short) packet
+             was sent with renewed NAT binding to test whether the network
+             that was used to deliver the first packet is still connected.
+             Results are only shown in this histogram if at least ten packets
+             were received in the StartPacket test."/>
   <group name="NonPacedPacket"
       label="21 Packets were sent as rapidly as possible. Results are only
              shown in this histogram if at least two packets were received in
@@ -22713,23 +22705,31 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4NATBindPacketReceives" separator=".">
-  <group name="Failure"
-      label="Only when the second packet never arrived (we wait for 30 extra
-             seconds) did we record the duration in this histogram."/>
-  <group name="Success"
-      label="Only when the second packet arrived did we record the duration
-             in this histogram."/>
+  <group name="Bind.Failure"
+      label="Only when the second packet never arrived (we wait for 10 extra
+             seconds) and the first and the extra (short) packets arrived did
+             we record the duration in seconds between the sendings of the
+             first two packets in this histogram."/>
+  <group name="Bind.Success"
+      label="Only when all three packets including the extra (short) packet
+             arrived did we record the duration in seconds between the
+             sendings of the first two packets in this histogram."/>
+  <group name="Connectivity.Failure"
+      label="Only when the extra (short) packet (with renewed NAT binding)
+             never arrived (we wait for 10 extra seconds) did we record the
+             duration in seconds between the sendings of the first two
+             packets in this histogram."/>
+  <group name="Connectivity.Success"
+      label="Only when the extra (short) packet arrived did we record the
+             duration in seconds between the sendings of the first two
+             packets in this histogram."/>
+  <group name="SendToLastRecvDelay"
+      label="This histogram records the time duration (in milliseconds)
+             between the client sending the request and the receiving of the
+             second packet sent from the server, excluding the idle time
+             between sendings of the first two packets. Results are only
+             shown if the first two packets are both received."/>
   <affected-histogram name="NetConnectivity4.NATBind.Sent2"/>
-</fieldtrial>
-
-<fieldtrial name="NetConnectivity4NATBindRefPacketReceives" separator=".">
-  <group name="Failure"
-      label="Only when both packets did not arrive (we wait for 30 extra
-             seconds) did we record the duration in this histogram."/>
-  <group name="Success"
-      label="Only when both packets arrived did we record the duration in
-             this histogram."/>
-  <affected-histogram name="NetConnectivity4.NATBindRef.Sent2"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4PacketFirst6" separator=".">
@@ -22790,6 +22790,12 @@ other types of suffix sets.
       label="Each packet was numbered when it was sent by Google. This
              histogram records, for each packet number, how often we received
              that packet."/>
+  <group name="Sent21.SendToLastRecvDelay"
+      label="This histogram records the time duration between the client
+             sending the request and the receiving of the last packet sent
+             from the server, excluding the total pacing time requested by
+             the client. Results are only shown if at least two packets are
+             received."/>
   <group name="Sent21.Success.RTT" label="The histogram shows the RTT for the"/>
   <affected-histogram name="NetConnectivity4.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity4.PacedPacket"/>
@@ -22815,10 +22821,14 @@ other types of suffix sets.
   <group name="80.100B" label="100 bytes of data is sent on port 80."/>
   <group name="80.1200B" label="1200 bytes of data is sent on port 80."/>
   <group name="80.500B" label="500 bytes of data is sent on port 80."/>
-  <affected-histogram name="NetConnectivity4.NATBind.Sent2.Failure"/>
-  <affected-histogram name="NetConnectivity4.NATBind.Sent2.Success"/>
-  <affected-histogram name="NetConnectivity4.NATBindRef.Sent2.Failure"/>
-  <affected-histogram name="NetConnectivity4.NATBindRef.Sent2.Success"/>
+  <affected-histogram name="NetConnectivity4.NATBind.Sent2.Bind.Failure"/>
+  <affected-histogram name="NetConnectivity4.NATBind.Sent2.Bind.Success"/>
+  <affected-histogram
+      name="NetConnectivity4.NATBind.Sent2.Connectivity.Failure"/>
+  <affected-histogram
+      name="NetConnectivity4.NATBind.Sent2.Connectivity.Success"/>
+  <affected-histogram
+      name="NetConnectivity4.NATBind.Sent2.SendToLastRecvDelay"/>
   <affected-histogram name="NetConnectivity4.NonPacedPacket.Sent21.GotAPacket"/>
   <affected-histogram
       name="NetConnectivity4.NonPacedPacket.Sent21.NumRecvFromFirst01Packets"/>
@@ -22868,6 +22878,8 @@ other types of suffix sets.
       name="NetConnectivity4.NonPacedPacket.Sent21.PacketsRecv"/>
   <affected-histogram
       name="NetConnectivity4.NonPacedPacket.Sent21.RecvNthPacket"/>
+  <affected-histogram
+      name="NetConnectivity4.NonPacedPacket.Sent21.SendToLastRecvDelay"/>
   <affected-histogram
       name="NetConnectivity4.NonPacedPacket.Sent21.Success.RTT.Packet01"/>
   <affected-histogram
@@ -22925,6 +22937,8 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity4.PacedPacket.Sent21.PacketsRecv"/>
   <affected-histogram name="NetConnectivity4.PacedPacket.Sent21.RecvNthPacket"/>
   <affected-histogram
+      name="NetConnectivity4.PacedPacket.Sent21.SendToLastRecvDelay"/>
+  <affected-histogram
       name="NetConnectivity4.PacedPacket.Sent21.Success.RTT.Packet01"/>
   <affected-histogram
       name="NetConnectivity4.PacedPacket.Sent21.Success.RTT.Packet02"/>
@@ -22980,6 +22994,8 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity4.StartPacket.Sent21.PacketDelay"/>
   <affected-histogram name="NetConnectivity4.StartPacket.Sent21.PacketsRecv"/>
   <affected-histogram name="NetConnectivity4.StartPacket.Sent21.RecvNthPacket"/>
+  <affected-histogram
+      name="NetConnectivity4.StartPacket.Sent21.SendToLastRecvDelay"/>
   <affected-histogram
       name="NetConnectivity4.StartPacket.Sent21.Success.RTT.Packet01"/>
   <affected-histogram
