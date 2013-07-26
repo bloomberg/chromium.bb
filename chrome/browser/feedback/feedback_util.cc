@@ -38,17 +38,15 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/icu/source/common/unicode/locid.h"
+#include "third_party/zlib/google/zip.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
-
-#if defined(OS_CHROMEOS)
-#include "third_party/zlib/google/zip.h"
-#endif
 
 using content::WebContents;
 
 namespace {
-const char kLogsFilename[] = "system_logs.txt";
+const base::FilePath::CharType kLogsFilename[] =
+    FILE_PATH_LITERAL("system_logs.txt");
 }
 
 namespace chrome {
@@ -434,7 +432,6 @@ void FeedbackUtil::SetScreenshotSize(const gfx::Rect& rect) {
   screen_size = rect;
 }
 
-#if defined(OS_CHROMEOS)
 // static
 bool FeedbackUtil::ZipString(const std::string& logs,
                              std::string* compressed_logs) {
@@ -443,10 +440,10 @@ bool FeedbackUtil::ZipString(const std::string& logs,
 
   // Create a temporary directory, put the logs into a file in it. Create
   // another temporary file to receive the zip file in.
-  if (!file_util::CreateNewTempDirectory("", &temp_path))
+  if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &temp_path))
     return false;
-  if (file_util::WriteFile(
-      temp_path.Append(kLogsFilename), logs.c_str(), logs.size()) == -1)
+  if (file_util::WriteFile(temp_path.Append(kLogsFilename),
+                           logs.c_str(), logs.size()) == -1)
     return false;
   if (!file_util::CreateTemporaryFile(&zip_file))
     return false;
@@ -459,5 +456,3 @@ bool FeedbackUtil::ZipString(const std::string& logs,
 
   return true;
 }
-#endif // OS_CHROMEOS
-

@@ -76,9 +76,7 @@ class FeedbackUtil {
   static void ClearScreenshotPng();
   static void SetScreenshotSize(const gfx::Rect& rect);
   static gfx::Rect& GetScreenshotSize();
-#if defined(OS_CHROMEOS)
   static bool ZipString(const std::string& logs, std::string* compressed_logs);
-#endif
 
   class PostCleanup;
 
