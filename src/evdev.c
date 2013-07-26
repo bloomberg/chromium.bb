@@ -135,15 +135,13 @@ evdev_process_absolute_motion(struct evdev_device *device,
 	case ABS_X:
 		device->abs.x =
 			(e->value - device->abs.min_x) * screen_width /
-			(device->abs.max_x - device->abs.min_x) +
-			device->output->x;
+			(device->abs.max_x - device->abs.min_x);
 		device->pending_events |= EVDEV_ABSOLUTE_MOTION;
 		break;
 	case ABS_Y:
 		device->abs.y =
 			(e->value - device->abs.min_y) * screen_height /
-			(device->abs.max_y - device->abs.min_y) +
-			device->output->y;
+			(device->abs.max_y - device->abs.min_y);
 		device->pending_events |= EVDEV_ABSOLUTE_MOTION;
 		break;
 	}
