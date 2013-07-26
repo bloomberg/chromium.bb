@@ -114,6 +114,9 @@ const int kOverlayTextPadding = 20;
 // Spacing between lines of text in the overlay view.
 const int kOverlayTextInterlineSpacing = 10;
 
+// Spacing below image and above text messages in overlay view.
+const int kOverlayImageBottomMargin = 50;
+
 // A dimmer text color used in various parts of the dialog. TODO(estade): should
 // this be part of NativeTheme? Currently the value is duplicated in several
 // places.
@@ -555,6 +558,19 @@ AutofillDialogViews::OverlayView::OverlayView(views::ButtonListener* listener)
 
 AutofillDialogViews::OverlayView::~OverlayView() {}
 
+int AutofillDialogViews::OverlayView::GetHeightForContentsForWidth(int w) {
+  // In this case, 0 means "no preference".
+  if (!message_stack_->visible())
+    return 0;
+
+  return kOverlayImageBottomMargin +
+      views::kButtonVEdgeMarginNew +
+      message_stack_->GetHeightForWidth(w) +
+      image_view_->GetHeightForWidth(w) +
+      (button_->visible() ? button_->GetHeightForWidth(w) +
+          views::kButtonVEdgeMarginNew : 0);
+}
+
 void AutofillDialogViews::OverlayView::SetState(
     const DialogOverlayState& state,
     views::ButtonListener* listener) {
@@ -646,8 +662,7 @@ void AutofillDialogViews::OverlayView::Layout() {
   message_stack_->SetBounds(bounds.x(), y, bounds.width(), message_height);
 
   gfx::Size image_size = image_view_->GetPreferredSize();
-  const int kImageBottomMargin = 50;
-  y -= image_size.height() + kImageBottomMargin;
+  y -= image_size.height() + kOverlayImageBottomMargin;
   image_view_->SetBounds(bounds.x(), y, bounds.width(), image_size.height());
 }
 
@@ -1400,25 +1415,37 @@ gfx::Size AutofillDialogViews::GetPreferredSize() {
   if (steps_height > 0)
     base_height += steps_height + views::kRelatedControlVerticalSpacing;
 
+  gfx::Size preferred_size;
   // When the scroll area isn't visible, it still sets the width but doesn't
   // factor into height.
-  if (!scrollable_area_->visible())
-    return gfx::Size(width, base_height);
+  if (!scrollable_area_->visible()) {
+    preferred_size.SetSize(width, base_height);
+  } else {
+    // Show as much of the scroll view as is possible without going past the
+    // bottom of the browser window.
+    views::Widget* widget =
+        views::Widget::GetTopLevelWidgetForNativeView(
+            controller_->web_contents()->GetView()->GetNativeView());
+    int browser_window_height =
+        widget ? widget->GetContentsView()->bounds().height() : INT_MAX;
+    const int kWindowDecorationHeight = 200;
+    int height = base_height + std::min(
+        scroll_size.height(),
+        std::max(kMinimumContentsHeight,
+                 browser_window_height - base_height -
+                     kWindowDecorationHeight));
+    preferred_size.SetSize(width, height);
+  }
 
-  // Show as much of the scroll view as is possible without going past the
-  // bottom of the browser window.
-  views::Widget* widget =
-      views::Widget::GetTopLevelWidgetForNativeView(
-          controller_->web_contents()->GetView()->GetNativeView());
-  int browser_window_height =
-      widget ? widget->GetContentsView()->bounds().height() : INT_MAX;
-  const int kWindowDecorationHeight = 200;
-  int height = base_height + std::min(
-      scroll_size.height(),
-      std::max(kMinimumContentsHeight,
-               browser_window_height - base_height - kWindowDecorationHeight));
+  if (!overlay_view_->visible())
+    return preferred_size;
 
-  return gfx::Size(width, height);
+  int height_of_overlay =
+      overlay_view_->GetHeightForContentsForWidth(preferred_size.width());
+  if (height_of_overlay > 0)
+    preferred_size.set_height(height_of_overlay);
+
+  return preferred_size;
 }
 
 void AutofillDialogViews::Layout() {

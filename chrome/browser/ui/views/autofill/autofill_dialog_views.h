@@ -282,6 +282,11 @@ class AutofillDialogViews : public AutofillDialogView,
     explicit OverlayView(views::ButtonListener* listener);
     virtual ~OverlayView();
 
+    // Returns a height which should be used when the contents view has width
+    // |w|. Note that the value returned should be used as the height of the
+    // dialog's contents.
+    int GetHeightForContentsForWidth(int w);
+
     // Sets properties that should be displayed.
     void SetState(const DialogOverlayState& state,
                   views::ButtonListener* listener);
