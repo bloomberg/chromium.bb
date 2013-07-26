@@ -88,11 +88,10 @@ def DispatchPythonTests(options):
     test_pkg = test_package.TestPackage(options.test_apk_path,
                                         options.test_apk_jar_path)
     test_files_copier = test_runner.TestRunner(
-        options.build_type, options.test_data, options.install_apk,
-        options.save_perf_json, options.screenshot_failures, options.tool,
-        options.wait_for_debugger, options.disable_assertions,
-        options.push_deps, options.cleanup_test_files, device_id, 0, test_pkg,
-        [])
+        options.build_type, options.test_data, options.save_perf_json,
+        options.screenshot_failures, options.tool, options.wait_for_debugger,
+        options.disable_assertions, options.push_deps,
+        options.cleanup_test_files, device_id, 0, test_pkg, [])
     test_files_copier.InstallTestPackage()
     if options.push_deps:
       logging.info('Pushing data deps to device.')

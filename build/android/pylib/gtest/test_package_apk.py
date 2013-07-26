@@ -88,15 +88,6 @@ class TestPackageApk(TestPackage):
         action='android.intent.action.MAIN',
         force_stop=True)
 
-  def _NeedsInstall(self):
-    installed_apk_path = self.adb.GetApplicationPath(
-        self._test_apk_package_name)
-    if installed_apk_path:
-      return not self.adb.CheckMd5Sum(
-          self.suite_path_full, installed_apk_path, ignore_paths=True)
-    else:
-      return True
-
   def _GetTestSuiteBaseName(self):
     """Returns the  base name of the test suite."""
     # APK test suite names end with '-debug.apk'
@@ -143,8 +134,6 @@ class TestPackageApk(TestPackage):
   #override
   def Install(self):
     self.tool.CopyFiles()
-    if self._NeedsInstall():
-      # Always uninstall the previous one (by activity name); we don't
-      # know what was embedded in it.
-      self.adb.ManagedInstall(self.suite_path_full, False,
-                              package_name=self._test_apk_package_name)
+    self.adb.ManagedInstall(self.suite_path_full, False,
+                            package_name=self._test_apk_package_name)
+

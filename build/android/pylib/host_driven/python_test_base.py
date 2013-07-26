@@ -80,7 +80,6 @@ class PythonTestBase(object):
         self.options.test_apk_path, self.options.test_apk_jar_path)
     java_test_runner = test_runner.TestRunner(self.options.build_type,
                                               self.options.test_data,
-                                              self.options.install_apk,
                                               self.options.save_perf_json,
                                               self.options.screenshot_failures,
                                               self.options.tool,

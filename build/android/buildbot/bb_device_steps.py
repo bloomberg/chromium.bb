@@ -170,7 +170,7 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
 
   InstallApk(options, test)
   args = ['--test-apk', test.test_apk, '--test_data', test.test_data,
-          '--verbose', '-I']
+          '--verbose']
   if options.target == 'Release':
     args.append('--release')
   if options.asan:

@@ -401,16 +401,24 @@ class AndroidCommands(object):
                      reboots_on_failure=2):
     """Installs specified package and reboots device on timeouts.
 
+    If package_name is supplied, checks if the package is already installed and
+    doesn't reinstall if the apk md5sums match.
+
     Args:
       apk_path: Path to .apk file to install.
       keep_data: Reinstalls instead of uninstalling first, preserving the
         application data.
       package_name: Package name (only needed if keep_data=False).
       reboots_on_failure: number of time to reboot if package manager is frozen.
-
-    Returns:
-      A status string returned by adb install
     """
+    # Check if package is already installed and up to date.
+    if package_name:
+      installed_apk_path = self.GetApplicationPath(package_name)
+      if installed_apk_path and self.CheckMd5Sum(apk_path, installed_apk_path):
+        logging.info('Skipped install: identical %s APK already installed' %
+            package_name)
+        return
+    # Install.
     reboots_left = reboots_on_failure
     while True:
       try:
@@ -419,7 +427,7 @@ class AndroidCommands(object):
           self.Uninstall(package_name)
         install_status = self.Install(apk_path, reinstall=keep_data)
         if 'Success' in install_status:
-          return install_status
+          return
       except errors.WaitForResponseTimedOutError:
         print '@@@STEP_WARNINGS@@@'
         logging.info('Timeout on installing %s on device %s', apk_path,
@@ -726,14 +734,12 @@ class AndroidCommands(object):
     """
     self.RunShellCommand('input keyevent %d' % keycode)
 
-  def CheckMd5Sum(self, local_path, device_path, ignore_paths=False):
+  def CheckMd5Sum(self, local_path, device_path):
     """Compares the md5sum of a local path against a device path.
 
     Args:
       local_path: Path (file or directory) on the host.
       device_path: Path on the device.
-      ignore_paths: If False, both the md5sum and the relative paths/names of
-          files must match. If True, only the md5sum must match.
 
     Returns:
       True if the md5sums match.

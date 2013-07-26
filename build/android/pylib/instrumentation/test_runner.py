@@ -52,16 +52,15 @@ class TestRunner(base_test_runner.BaseTestRunner):
                                        '/chrome-profile*')
   _DEVICE_HAS_TEST_FILES = {}
 
-  def __init__(self, build_type, test_data, install_apk, save_perf_json,
-               screenshot_failures, tool, wait_for_debugger, disable_assertions,
-               push_deps, cleanup_test_files, device, shard_index, test_pkg,
+  def __init__(self, build_type, test_data, save_perf_json, screenshot_failures,
+               tool, wait_for_debugger, disable_assertions, push_deps,
+               cleanup_test_files, device, shard_index, test_pkg,
                ports_to_forward):
     """Create a new TestRunner.
 
     Args:
       build_type: 'Release' or 'Debug'.
       test_data: Location of the test data.
-      install_apk: Re-installs the apk if opted.
       save_perf_json: Whether or not to save the JSON file from UI perf tests.
       screenshot_failures: Take a screenshot for a test failure
       tool: Name of the Valgrind tool.
@@ -87,12 +86,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.disable_assertions = disable_assertions
     self.test_pkg = test_pkg
     self.ports_to_forward = ports_to_forward
-    self.install_apk = install_apk
 
   #override
   def InstallTestPackage(self):
-    if self.install_apk:
-      self.test_pkg.Install(self.adb)
+    self.test_pkg.Install(self.adb)
 
   #override
   def PushDataDeps(self):

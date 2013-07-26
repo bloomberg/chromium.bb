@@ -256,7 +256,7 @@ def AddInstrumentationTestOptions(option_parser):
 
   option_parser.usage = '%prog instrumentation [options]'
   option_parser.command_list = []
-  option_parser.example = ('%prog instrumentation -I '
+  option_parser.example = ('%prog instrumentation '
                            '--test-apk=ChromiumTestShellTest')
 
   AddJavaTestOptions(option_parser)
@@ -265,8 +265,9 @@ def AddInstrumentationTestOptions(option_parser):
   option_parser.add_option('-w', '--wait_debugger', dest='wait_for_debugger',
                            action='store_true',
                            help='Wait for debugger.')
+  #TODO(craigdh): Remove option once -I is no longer passed downstream.
   option_parser.add_option('-I', dest='install_apk', action='store_true',
-                           help='Install test APK.')
+                           help='(DEPRECATED) Install the test apk.')
   option_parser.add_option(
       '--test-apk', dest='test_apk',
       help=('The name of the apk containing the tests '
@@ -418,10 +419,9 @@ def _RunInstrumentationTests(options, error_func):
     runner_factory, tests = instrumentation_setup.Setup(
         options.test_apk_path, options.test_apk_jar_path, options.annotations,
         options.exclude_annotations, options.test_filter, options.build_type,
-        options.test_data, options.install_apk, options.save_perf_json,
-        options.screenshot_failures, options.tool, options.wait_for_debugger,
-        options.disable_assertions, options.push_deps,
-        options.cleanup_test_files)
+        options.test_data, options.save_perf_json, options.screenshot_failures,
+        options.tool, options.wait_for_debugger, options.disable_assertions,
+        options.push_deps, options.cleanup_test_files)
 
     test_results, exit_code = test_dispatcher.RunTests(
         tests, runner_factory, options.wait_for_debugger,

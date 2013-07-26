@@ -17,7 +17,7 @@ import test_runner
 
 
 def Setup(test_apk_path, test_apk_jar_path, annotations, exclude_annotations,
-          test_filter, build_type, test_data, install_apk, save_perf_json,
+          test_filter, build_type, test_data, save_perf_json,
           screenshot_failures, tool, wait_for_debugger, disable_assertions,
           push_deps, cleanup_test_files):
   """Create and return the test runner factory and tests.
@@ -30,7 +30,6 @@ def Setup(test_apk_path, test_apk_jar_path, annotations, exclude_annotations,
     test_filter: Filter string for tests.
     build_type: 'Release' or 'Debug'.
     test_data: Location of the test data.
-    install_apk: Re-installs the apk if opted.
     save_perf_json: Whether or not to save the JSON file from UI perf tests.
     screenshot_failures: Take a screenshot for a test failure
     tool: Name of the Valgrind tool.
@@ -50,7 +49,7 @@ def Setup(test_apk_path, test_apk_jar_path, annotations, exclude_annotations,
 
   def TestRunnerFactory(device, shard_index):
     return test_runner.TestRunner(
-        build_type, test_data, install_apk, save_perf_json, screenshot_failures,
+        build_type, test_data, save_perf_json, screenshot_failures,
         tool, wait_for_debugger, disable_assertions, push_deps,
         cleanup_test_files, device, shard_index, test_pkg, [])
 
