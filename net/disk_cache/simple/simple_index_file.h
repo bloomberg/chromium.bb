@@ -28,6 +28,16 @@ namespace disk_cache {
 
 const uint64 kSimpleIndexMagicNumber = GG_UINT64_C(0x656e74657220796f);
 
+struct NET_EXPORT_PRIVATE SimpleIndexLoadResult {
+  SimpleIndexLoadResult();
+  ~SimpleIndexLoadResult();
+  void Reset();
+
+  bool did_load;
+  SimpleIndex::EntrySet entries;
+  bool flush_required;
+};
+
 // Simple Index File format is a pickle serialized data of IndexMetadata and
 // EntryMetadata objects.  The file format is as follows: one instance of
 // serialized |IndexMetadata| followed serialized |EntryMetadata| entries
@@ -63,20 +73,15 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     uint64 cache_size_;  // Total cache storage size in bytes.
   };
 
-  typedef base::Callback<void(
-      scoped_ptr<SimpleIndex::EntrySet>, bool force_index_flush)>
-      IndexCompletionCallback;
-
   SimpleIndexFile(base::SingleThreadTaskRunner* cache_thread,
                   base::TaskRunner* worker_pool,
                   const base::FilePath& cache_directory);
   virtual ~SimpleIndexFile();
 
   // Get index entries based on current disk context.
-  virtual void LoadIndexEntries(
-      base::Time cache_last_modified,
-      scoped_refptr<base::SingleThreadTaskRunner> response_thread,
-      const SimpleIndexFile::IndexCompletionCallback& completion_callback);
+  virtual void LoadIndexEntries(base::Time cache_last_modified,
+                                const base::Closure& callback,
+                                SimpleIndexLoadResult* out_result);
 
   // Write the specified set of entries to disk.
   virtual void WriteToDisk(const SimpleIndex::EntrySet& entry_set,
@@ -93,17 +98,15 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   friend class WrappedSimpleIndexFile;
 
   // Synchronous (IO performing) implementation of LoadIndexEntries.
-  static void SyncLoadIndexEntries(
-      base::Time cache_last_modified,
-      const base::FilePath& cache_directory,
-      const base::FilePath& index_file_path,
-      scoped_refptr<base::SingleThreadTaskRunner> response_thread,
-      const SimpleIndexFile::IndexCompletionCallback& completion_callback);
+  static void SyncLoadIndexEntries(base::Time cache_last_modified,
+                                   const base::FilePath& cache_directory,
+                                   const base::FilePath& index_file_path,
+                                   SimpleIndexLoadResult* out_result);
 
   // Load the index file from disk returning an EntrySet. Upon failure, returns
   // NULL.
-  static scoped_ptr<SimpleIndex::EntrySet> SyncLoadFromDisk(
-      const base::FilePath& index_filename);
+  static void SyncLoadFromDisk(const base::FilePath& index_filename,
+                               SimpleIndexLoadResult* out_result);
 
   // Returns a scoped_ptr for a newly allocated Pickle containing the serialized
   // data to be written to a file.
@@ -113,14 +116,14 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
 
   // Given the contents of an index file |data| of length |data_len|, returns
   // the corresponding EntrySet. Returns NULL on error.
-  static scoped_ptr<SimpleIndex::EntrySet> Deserialize(const char* data,
-                                                       int data_len);
+  static void Deserialize(const char* data, int data_len,
+                          SimpleIndexLoadResult* out_result);
 
   // Scan the index directory for entries, returning an EntrySet of all entries
   // found.
-  static scoped_ptr<SimpleIndex::EntrySet> SyncRestoreFromDisk(
-      const base::FilePath& cache_directory,
-      const base::FilePath& index_file_path);
+  static void SyncRestoreFromDisk(const base::FilePath& cache_directory,
+                                  const base::FilePath& index_file_path,
+                                  SimpleIndexLoadResult* out_result);
 
   // Determines if an index file is stale relative to the time of last
   // modification of the cache directory.

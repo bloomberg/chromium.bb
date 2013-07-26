@@ -48,19 +48,18 @@ class MockSimpleIndexFile : public SimpleIndexFile,
  public:
   MockSimpleIndexFile()
       : SimpleIndexFile(NULL, NULL, base::FilePath()),
-        get_index_entries_calls_(0),
+        load_result_(NULL),
+        load_index_entries_calls_(0),
         doom_entry_set_calls_(0),
-        last_response_thread_(NULL),
         disk_writes_(0) {}
 
   virtual void LoadIndexEntries(
       base::Time cache_last_modified,
-      scoped_refptr<base::SingleThreadTaskRunner> response_thread,
-      const SimpleIndexFile::IndexCompletionCallback&
-          completion_callback) OVERRIDE {
-    last_response_thread_ = response_thread.get();
-    completion_callback_ = completion_callback;
-    ++get_index_entries_calls_;
+      const base::Closure& callback,
+      SimpleIndexLoadResult* out_load_result) OVERRIDE {
+    load_callback_ = callback;
+    load_result_ = out_load_result;
+    ++load_index_entries_calls_;
   }
 
   virtual void WriteToDisk(const SimpleIndex::EntrySet& entry_set,
@@ -83,10 +82,9 @@ class MockSimpleIndexFile : public SimpleIndexFile,
     entry_set->swap(disk_write_entry_set_);
   }
 
-  const SimpleIndexFile::IndexCompletionCallback& completion_callback() const {
-    return completion_callback_;
-  }
-  int get_index_entries_calls() const { return get_index_entries_calls_; }
+  const base::Closure& load_callback() const { return load_callback_; }
+  SimpleIndexLoadResult* load_result() const { return load_result_; }
+  int load_index_entries_calls() const { return load_index_entries_calls_; }
   int disk_writes() const { return disk_writes_; }
   const std::vector<uint64>& last_doom_entry_hashes() const {
     return last_doom_entry_hashes_;
@@ -94,11 +92,11 @@ class MockSimpleIndexFile : public SimpleIndexFile,
   int doom_entry_set_calls() const { return doom_entry_set_calls_; }
 
  private:
-  SimpleIndexFile::IndexCompletionCallback completion_callback_;
-  int get_index_entries_calls_;
+  base::Closure load_callback_;
+  SimpleIndexLoadResult* load_result_;
+  int load_index_entries_calls_;
   std::vector<uint64> last_doom_entry_hashes_;
   int doom_entry_set_calls_;
-  base::SingleThreadTaskRunner* last_response_thread_;
   base::Callback<void(int)> last_doom_reply_callback_;
   int disk_writes_;
   SimpleIndex::EntrySet disk_write_entry_set_;
@@ -137,14 +135,13 @@ class SimpleIndexTest  : public testing::Test {
                                  base::Time last_used_time,
                                  uint64 entry_size) {
     uint64 hash_key(simple_util::GetEntryHashKey(key));
-    index_file_return_map_.insert(std::make_pair(
+    index_file_->load_result()->entries.insert(std::make_pair(
         hash_key, EntryMetadata(last_used_time, entry_size)));
   }
 
   void ReturnIndexFile() {
-    scoped_ptr<SimpleIndex::EntrySet> map(new SimpleIndex::EntrySet);
-    map->swap(index_file_return_map_);
-    index_file_->completion_callback().Run(map.Pass(), false);
+    index_file_->load_result()->did_load = true;
+    index_file_->load_callback().Run();
   }
 
   // Non-const for timer manipulation.
@@ -152,7 +149,6 @@ class SimpleIndexTest  : public testing::Test {
   const MockSimpleIndexFile* index_file() const { return index_file_.get(); }
 
  protected:
-  SimpleIndex::EntrySet index_file_return_map_;
   scoped_ptr<SimpleIndex> index_;
   base::WeakPtr<MockSimpleIndexFile> index_file_;
 };
@@ -193,16 +189,18 @@ TEST_F(SimpleIndexTest, IndexSizeCorrectOnMerge) {
   index()->UpdateEntrySize("seven", 7);
   EXPECT_EQ(14U, index()->cache_size_);
   {
-    scoped_ptr<EntrySet> entries(new EntrySet());
-    index()->MergeInitializingSet(entries.Pass(), false);
+    scoped_ptr<SimpleIndexLoadResult> result(new SimpleIndexLoadResult());
+    result->did_load = true;
+    index()->MergeInitializingSet(result.Pass());
   }
   EXPECT_EQ(14U, index()->cache_size_);
   {
-    scoped_ptr<EntrySet> entries(new EntrySet());
+    scoped_ptr<SimpleIndexLoadResult> result(new SimpleIndexLoadResult());
+    result->did_load = true;
     const uint64 hash_key = simple_util::GetEntryHashKey("eleven");
-    entries->insert(
+    result->entries.insert(
         std::make_pair(hash_key, EntryMetadata(base::Time::Now(), 11)));
-    index()->MergeInitializingSet(entries.Pass(), false);
+    index()->MergeInitializingSet(result.Pass());
   }
   EXPECT_EQ(25U, index()->cache_size_);
 }
@@ -233,7 +231,7 @@ TEST_F(SimpleIndexTest, BasicInsertRemove) {
 TEST_F(SimpleIndexTest, Has) {
   // Confirm the base index has dispatched the request for index entries.
   EXPECT_TRUE(index_file_.get());
-  EXPECT_EQ(1, index_file_->get_index_entries_calls());
+  EXPECT_EQ(1, index_file_->load_index_entries_calls());
 
   // Confirm "Has()" always returns true before the callback is called.
   EXPECT_TRUE(index()->Has(kKey1Hash));
@@ -255,7 +253,7 @@ TEST_F(SimpleIndexTest, Has) {
 TEST_F(SimpleIndexTest, UseIfExists) {
   // Confirm the base index has dispatched the request for index entries.
   EXPECT_TRUE(index_file_.get());
-  EXPECT_EQ(1, index_file_->get_index_entries_calls());
+  EXPECT_EQ(1, index_file_->load_index_entries_calls());
 
   // Confirm "UseIfExists()" always returns true before the callback is called
   // and updates mod time if the entry was really there.

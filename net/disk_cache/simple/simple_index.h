@@ -34,6 +34,7 @@ class PickleIterator;
 namespace disk_cache {
 
 class SimpleIndexFile;
+struct SimpleIndexLoadResult;
 
 class NET_EXPORT_PRIVATE EntryMetadata {
  public:
@@ -136,8 +137,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   void UpdateEntryIteratorSize(EntrySet::iterator* it, uint64 entry_size);
 
   // Must run on IO Thread.
-  void MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
-                            bool force_index_flush);
+  void MergeInitializingSet(scoped_ptr<SimpleIndexLoadResult> load_result);
 
 #if defined(OS_ANDROID)
   void OnActivityStateChange(base::android::ActivityState state);

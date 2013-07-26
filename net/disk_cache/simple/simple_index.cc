@@ -152,10 +152,13 @@ void SimpleIndex::Initialize(base::Time cache_mtime) {
       base::Bind(&SimpleIndex::OnActivityStateChange, AsWeakPtr())));
 #endif
 
-  index_file_->LoadIndexEntries(cache_mtime,
-                                io_thread_,
-                                base::Bind(&SimpleIndex::MergeInitializingSet,
-                                           AsWeakPtr()));
+  SimpleIndexLoadResult* load_result = new SimpleIndexLoadResult();
+  scoped_ptr<SimpleIndexLoadResult> load_result_scoped(load_result);
+  base::Closure reply = base::Bind(
+      &SimpleIndex::MergeInitializingSet,
+      AsWeakPtr(),
+      base::Passed(&load_result_scoped));
+  index_file_->LoadIndexEntries(cache_mtime, reply, load_result);
 }
 
 bool SimpleIndex::SetMaxSize(int max_bytes) {
@@ -342,10 +345,12 @@ void SimpleIndex::UpdateEntryIteratorSize(EntrySet::iterator* it,
   (*it)->second.SetEntrySize(entry_size);
 }
 
-void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
-                                       bool force_index_flush) {
+void SimpleIndex::MergeInitializingSet(
+    scoped_ptr<SimpleIndexLoadResult> load_result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(index_file_entries);
+  DCHECK(load_result->did_load);
+
+  SimpleIndex::EntrySet* index_file_entries = &load_result->entries;
   // First, remove the entries that are in the |removed_entries_| from both
   // sets.
   for (base::hash_set<uint64>::const_iterator it =
@@ -369,9 +374,9 @@ void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
   initialized_ = true;
   removed_entries_.clear();
 
-  // The actual IO is asynchronous, so calling WriteToDisk() shouldn't slow down
-  // much the merge.
-  if (force_index_flush)
+  // The actual IO is asynchronous, so calling WriteToDisk() shouldn't slow the
+  // merge down much.
+  if (load_result->flush_required)
     WriteToDisk();
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("SimpleCache.IndexInitializationWaiters",

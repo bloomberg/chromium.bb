@@ -69,6 +69,19 @@ void WriteToDiskInternal(const base::FilePath& index_filename,
 
 namespace disk_cache {
 
+SimpleIndexLoadResult::SimpleIndexLoadResult() : did_load(false),
+                                                 flush_required(false) {
+}
+
+SimpleIndexLoadResult::~SimpleIndexLoadResult() {
+}
+
+void SimpleIndexLoadResult::Reset() {
+  did_load = false;
+  flush_required = false;
+  entries.clear();
+}
+
 // static
 const char SimpleIndexFile::kIndexFileName[] = "the-real-index";
 // static
@@ -122,18 +135,13 @@ SimpleIndexFile::SimpleIndexFile(
 
 SimpleIndexFile::~SimpleIndexFile() {}
 
-void SimpleIndexFile::LoadIndexEntries(
-    base::Time cache_last_modified,
-    scoped_refptr<base::SingleThreadTaskRunner> response_thread,
-    const IndexCompletionCallback& completion_callback) {
-  worker_pool_->PostTask(
-      FROM_HERE,
-      base::Bind(&SimpleIndexFile::SyncLoadIndexEntries,
-                 cache_last_modified,
-                 cache_directory_,
-                 index_file_,
-                 response_thread,
-                 completion_callback));
+void SimpleIndexFile::LoadIndexEntries(base::Time cache_last_modified,
+                                       const base::Closure& callback,
+                                       SimpleIndexLoadResult* out_result) {
+  base::Closure task = base::Bind(&SimpleIndexFile::SyncLoadIndexEntries,
+                                  cache_last_modified, cache_directory_,
+                                  index_file_, out_result);
+  worker_pool_->PostTaskAndReply(FROM_HERE, task, callback);
 }
 
 void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
@@ -171,9 +179,10 @@ void SimpleIndexFile::SyncLoadIndexEntries(
     base::Time cache_last_modified,
     const base::FilePath& cache_directory,
     const base::FilePath& index_file_path,
-    scoped_refptr<base::SingleThreadTaskRunner> response_thread,
-    const IndexCompletionCallback& completion_callback) {
-  scoped_ptr<SimpleIndex::EntrySet> index_file_entries;
+    SimpleIndexLoadResult* out_result) {
+  // TODO(felipeg): probably could load a stale index and use it for something.
+  const SimpleIndex::EntrySet& entries = out_result->entries;
+
   const bool index_file_exists = base::PathExists(index_file_path);
 
   // Used in histograms. Please only add new values at the end.
@@ -199,30 +208,25 @@ void SimpleIndexFile::SyncLoadIndexEntries(
     }
 
     const base::TimeTicks start = base::TimeTicks::Now();
-    index_file_entries = SyncLoadFromDisk(index_file_path);
+    SyncLoadFromDisk(index_file_path, out_result);
     UMA_HISTOGRAM_TIMES("SimpleCache.IndexLoadTime",
                         base::TimeTicks::Now() - start);
     UMA_HISTOGRAM_COUNTS("SimpleCache.IndexEntriesLoaded",
-                         index_file_entries ? index_file_entries->size() : 0);
-    if (!index_file_entries)
+                         out_result->did_load ? entries.size() : 0);
+    if (!out_result->did_load)
       index_file_state = INDEX_STATE_CORRUPT;
   }
   UMA_HISTOGRAM_ENUMERATION("SimpleCache.IndexFileStateOnLoad",
                             index_file_state,
                             INDEX_STATE_MAX);
 
-  bool force_index_flush = false;
-  if (!index_file_entries) {
+  if (!out_result->did_load) {
     const base::TimeTicks start = base::TimeTicks::Now();
-    index_file_entries = SyncRestoreFromDisk(cache_directory, index_file_path);
+    SyncRestoreFromDisk(cache_directory, index_file_path, out_result);
     UMA_HISTOGRAM_MEDIUM_TIMES("SimpleCache.IndexRestoreTime",
                         base::TimeTicks::Now() - start);
     UMA_HISTOGRAM_COUNTS("SimpleCache.IndexEntriesRestored",
-                         index_file_entries->size());
-
-    // When we restore from disk we write the merged index file to disk right
-    // away, this might save us from having to restore again next time.
-    force_index_flush = true;
+                         entries.size());
   }
 
   // Used in histograms. Please only add new values at the end.
@@ -234,42 +238,36 @@ void SimpleIndexFile::SyncLoadIndexEntries(
   };
   int initialize_method;
   if (index_file_exists) {
-    if (force_index_flush)
+    if (out_result->flush_required)
       initialize_method = INITIALIZE_METHOD_RECOVERED;
     else
       initialize_method = INITIALIZE_METHOD_LOADED;
   } else {
     UMA_HISTOGRAM_COUNTS("SimpleCache.IndexCreatedEntryCount",
-                         index_file_entries->size());
+                         entries.size());
     initialize_method = INITIALIZE_METHOD_NEWCACHE;
   }
 
   UMA_HISTOGRAM_ENUMERATION("SimpleCache.IndexInitializeMethod",
                             initialize_method, INITIALIZE_METHOD_MAX);
-  response_thread->PostTask(FROM_HERE,
-                            base::Bind(completion_callback,
-                                       base::Passed(&index_file_entries),
-                                       force_index_flush));
 }
 
 // static
-scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::SyncLoadFromDisk(
-    const base::FilePath& index_filename) {
+void SimpleIndexFile::SyncLoadFromDisk(const base::FilePath& index_filename,
+                                       SimpleIndexLoadResult* out_result) {
+  out_result->Reset();
+
   std::string contents;
   if (!file_util::ReadFileToString(index_filename, &contents)) {
     LOG(WARNING) << "Could not read Simple Index file.";
     base::DeleteFile(index_filename, false);
-    return scoped_ptr<SimpleIndex::EntrySet>();
+    return;
   }
 
-  scoped_ptr<SimpleIndex::EntrySet> entries =
-      SimpleIndexFile::Deserialize(contents.data(), contents.size());
-  if (!entries) {
+  SimpleIndexFile::Deserialize(contents.data(), contents.size(), out_result);
+
+  if (!out_result->did_load)
     base::DeleteFile(index_filename, false);
-    return scoped_ptr<SimpleIndex::EntrySet>();
-  }
-
-  return entries.Pass();
 }
 
 // static
@@ -291,13 +289,17 @@ scoped_ptr<Pickle> SimpleIndexFile::Serialize(
 }
 
 // static
-scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::Deserialize(const char* data,
-                                                               int data_len) {
+void SimpleIndexFile::Deserialize(const char* data, int data_len,
+                                  SimpleIndexLoadResult* out_result) {
   DCHECK(data);
+
+  out_result->Reset();
+  SimpleIndex::EntrySet* entries = &out_result->entries;
+
   Pickle pickle(data, data_len);
   if (!pickle.data()) {
     LOG(WARNING) << "Corrupt Simple Index File.";
-    return scoped_ptr<SimpleIndex::EntrySet>();
+    return;
   }
 
   PickleIterator pickle_it(pickle);
@@ -309,46 +311,45 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::Deserialize(const char* data,
 
   if (crc_read != crc_calculated) {
     LOG(WARNING) << "Invalid CRC in Simple Index file.";
-    return scoped_ptr<SimpleIndex::EntrySet>();
+    return;
   }
 
   SimpleIndexFile::IndexMetadata index_metadata;
   if (!index_metadata.Deserialize(&pickle_it)) {
     LOG(ERROR) << "Invalid index_metadata on Simple Cache Index.";
-    return scoped_ptr<SimpleIndex::EntrySet>();
+    return;
   }
 
   if (!index_metadata.CheckIndexMetadata()) {
     LOG(ERROR) << "Invalid index_metadata on Simple Cache Index.";
-    return scoped_ptr<SimpleIndex::EntrySet>();
+    return;
   }
 
-  scoped_ptr<SimpleIndex::EntrySet> index_file_entries(
-      new SimpleIndex::EntrySet());
-  while (index_file_entries->size() < index_metadata.GetNumberOfEntries()) {
+  while (entries->size() < index_metadata.GetNumberOfEntries()) {
     uint64 hash_key;
     EntryMetadata entry_metadata;
     if (!pickle_it.ReadUInt64(&hash_key) ||
         !entry_metadata.Deserialize(&pickle_it)) {
       LOG(WARNING) << "Invalid EntryMetadata in Simple Index file.";
-      return scoped_ptr<SimpleIndex::EntrySet>();
+      entries->clear();
+      return;
     }
-    SimpleIndex::InsertInEntrySet(
-        hash_key, entry_metadata, index_file_entries.get());
+    SimpleIndex::InsertInEntrySet(hash_key, entry_metadata, entries);
   }
 
-  return index_file_entries.Pass();
+  out_result->did_load = true;
 }
 
 // static
-scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::SyncRestoreFromDisk(
+void SimpleIndexFile::SyncRestoreFromDisk(
     const base::FilePath& cache_directory,
-    const base::FilePath& index_file_path) {
+    const base::FilePath& index_file_path,
+    SimpleIndexLoadResult* out_result) {
   LOG(INFO) << "Simple Cache Index is being restored from disk.";
 
   base::DeleteFile(index_file_path, /* recursive = */ false);
-  scoped_ptr<SimpleIndex::EntrySet> index_file_entries(
-      new SimpleIndex::EntrySet());
+  out_result->Reset();
+  SimpleIndex::EntrySet* entries = &out_result->entries;
 
   // TODO(felipeg,gavinp): Fix this once we have a one-file per entry format.
   COMPILE_ASSERT(kSimpleEntryFileCount == 3,
@@ -387,18 +388,23 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::SyncRestoreFromDisk(
       last_used_time = info.GetLastModifiedTime();
 
     int64 file_size = info.GetSize();
-    SimpleIndex::EntrySet::iterator it = index_file_entries->find(hash_key);
-    if (it == index_file_entries->end()) {
+    SimpleIndex::EntrySet::iterator it = entries->find(hash_key);
+    if (it == entries->end()) {
       SimpleIndex::InsertInEntrySet(
           hash_key,
           EntryMetadata(last_used_time, file_size),
-          index_file_entries.get());
+          entries);
     } else {
       // Summing up the total size of the entry through all the *_[0-2] files
       it->second.SetEntrySize(it->second.GetEntrySize() + file_size);
     }
   }
-  return index_file_entries.Pass();
+
+  out_result->did_load = true;
+
+  // When we restore from disk we write the merged index file to disk right
+  // away, this might save us from having to restore again next time.
+  out_result->flush_required = true;
 }
 
 // static

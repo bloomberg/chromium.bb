@@ -80,38 +80,22 @@ class SimpleIndexFileTest : public testing::Test {
   }
 
  protected:
-  struct IndexCompletionCallbackResult {
-    IndexCompletionCallbackResult(
-        scoped_ptr<SimpleIndex::EntrySet> index_file_entries,
-        bool force_index_flush)
-        : index_file_entries(index_file_entries.Pass()),
-          force_index_flush(force_index_flush) {
-    }
+  SimpleIndexFileTest() : callback_called_(false) {}
 
-    const scoped_ptr<SimpleIndex::EntrySet> index_file_entries;
-    const bool force_index_flush;
-  };
-
-  SimpleIndexFile::IndexCompletionCallback GetCallback() {
-    return base::Bind(&SimpleIndexFileTest::IndexCompletionCallback,
+  base::Closure GetCallback() {
+    return base::Bind(&SimpleIndexFileTest::LoadIndexEntriesCallback,
                       base::Unretained(this));
   }
 
-  IndexCompletionCallbackResult* callback_result() {
-    return callback_result_.get();
-  }
+  bool callback_called() { return callback_called_; }
 
  private:
-  void IndexCompletionCallback(
-      scoped_ptr<SimpleIndex::EntrySet> index_file_entries,
-      bool force_index_flush) {
-    EXPECT_FALSE(callback_result_);
-    callback_result_.reset(
-        new IndexCompletionCallbackResult(index_file_entries.Pass(),
-                                          force_index_flush));
+  void LoadIndexEntriesCallback() {
+    EXPECT_FALSE(callback_called_);
+    callback_called_ = true;
   }
 
-  scoped_ptr<IndexCompletionCallbackResult> callback_result_;
+  bool callback_called_;
 };
 
 TEST_F(SimpleIndexFileTest, Serialize) {
@@ -133,15 +117,17 @@ TEST_F(SimpleIndexFileTest, Serialize) {
       index_metadata, entries);
   EXPECT_TRUE(pickle.get() != NULL);
 
-  scoped_ptr<SimpleIndex::EntrySet> new_entries =
-      WrappedSimpleIndexFile::Deserialize(
-          static_cast<const char*>(pickle->data()), pickle->size());
-  EXPECT_TRUE(new_entries.get() != NULL);
-  EXPECT_EQ(entries.size(), new_entries->size());
+  SimpleIndexLoadResult deserialize_result;
+  WrappedSimpleIndexFile::Deserialize(static_cast<const char*>(pickle->data()),
+                                     pickle->size(),
+                                     &deserialize_result);
+  EXPECT_TRUE(deserialize_result.did_load);
+  const SimpleIndex::EntrySet& new_entries = deserialize_result.entries;
+  EXPECT_EQ(entries.size(), new_entries.size());
 
   for (size_t i = 0; i < kNumHashes; ++i) {
-    SimpleIndex::EntrySet::iterator it = new_entries->find(kHashes[i]);
-    EXPECT_TRUE(new_entries->end() != it);
+    SimpleIndex::EntrySet::const_iterator it = new_entries.find(kHashes[i]);
+    EXPECT_TRUE(new_entries.end() != it);
     EXPECT_TRUE(CompareTwoEntryMetadata(it->second, metadata_entries[i]));
   }
 }
@@ -205,25 +191,24 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
     EXPECT_TRUE(base::PathExists(simple_index_file.GetIndexFilePath()));
   }
 
-  WrappedSimpleIndexFile simple_index_file2(cache_dir.path());
+  WrappedSimpleIndexFile simple_index_file(cache_dir.path());
   base::Time fake_cache_mtime;
-  ASSERT_TRUE(simple_util::GetMTime(simple_index_file2.GetIndexFilePath(),
+  ASSERT_TRUE(simple_util::GetMTime(simple_index_file.GetIndexFilePath(),
                                     &fake_cache_mtime));
-  simple_index_file2.LoadIndexEntries(fake_cache_mtime,
-                                      base::MessageLoopProxy::current(),
-                                      GetCallback());
+  SimpleIndexLoadResult load_index_result;
+  simple_index_file.LoadIndexEntries(fake_cache_mtime,
+                                     GetCallback(),
+                                     &load_index_result);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(base::PathExists(simple_index_file2.GetIndexFilePath()));
-  ASSERT_TRUE(callback_result());
-  EXPECT_FALSE(callback_result()->force_index_flush);
-  const SimpleIndex::EntrySet* read_entries =
-      callback_result()->index_file_entries.get();
-  ASSERT_TRUE(read_entries);
+  EXPECT_TRUE(base::PathExists(simple_index_file.GetIndexFilePath()));
+  ASSERT_TRUE(callback_called());
+  EXPECT_TRUE(load_index_result.did_load);
+  EXPECT_FALSE(load_index_result.flush_required);
 
-  EXPECT_EQ(kNumHashes, read_entries->size());
+  EXPECT_EQ(kNumHashes, load_index_result.entries.size());
   for (size_t i = 0; i < kNumHashes; ++i)
-    EXPECT_EQ(1U, read_entries->count(kHashes[i]));
+    EXPECT_EQ(1U, load_index_result.entries.count(kHashes[i]));
 }
 
 TEST_F(SimpleIndexFileTest, LoadCorruptIndex) {
@@ -243,15 +228,16 @@ TEST_F(SimpleIndexFileTest, LoadCorruptIndex) {
   EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(fake_cache_mtime,
                                                         index_path));
 
+  SimpleIndexLoadResult load_index_result;
   simple_index_file.LoadIndexEntries(fake_cache_mtime,
-                                     base::MessageLoopProxy::current().get(),
-                                     GetCallback());
+                                     GetCallback(),
+                                     &load_index_result);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(base::PathExists(index_path));
-  ASSERT_TRUE(callback_result());
-  EXPECT_TRUE(callback_result()->force_index_flush);
-  EXPECT_TRUE(callback_result()->index_file_entries);
+  ASSERT_TRUE(callback_called());
+  EXPECT_TRUE(load_index_result.did_load);
+  EXPECT_TRUE(load_index_result.flush_required);
 }
 
 }  // namespace disk_cache
