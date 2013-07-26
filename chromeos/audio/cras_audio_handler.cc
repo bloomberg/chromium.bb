@@ -171,7 +171,7 @@ void CrasAudioHandler::GetAudioDevices(AudioDeviceList* device_list) const {
 
 bool CrasAudioHandler::GetActiveOutputDevice(AudioDevice* device) const {
   const AudioDevice* active_device = GetDeviceFromId(active_output_node_id_);
-  if (!device)
+  if (!active_device || !device)
     return false;
   *device = *active_device;
   return true;
