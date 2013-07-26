@@ -10,10 +10,26 @@ function test()
         WebInspector.View.call(this);
 
         this._viewName = viewName;
+        this._processWillShowCount = 0;
+        this._processWasHiddenCount = 0;
         InspectorTest.addResult(this._viewName + "()");
     }
 
     TestView.prototype = {
+        _processWillShow: function()
+        {
+            InspectorTest.assertEquals(this._processWillShowCount, this._processWasHiddenCount);
+            WebInspector.View.prototype._processWillShow.call(this);
+            ++this._processWillShowCount;
+        },
+
+        _processWasHidden: function()
+        {
+            WebInspector.View.prototype._processWasHidden.call(this);
+            ++this._processWasHiddenCount;
+            InspectorTest.assertEquals(this._processWillShowCount, this._processWasHiddenCount);
+        },
+
         show: function(parentElement)
         {
             InspectorTest.addResult(this._viewName + ".show()");
@@ -36,7 +52,7 @@ function test()
         {
             InspectorTest.addResult("  " + this._viewName + ".wasShown()");
             if (this.showOnWasShown)
-                this.showOnWasShown.show(this.element);
+                this.showOnWasShown.show(this.showRoot || this.element);
             if (this.detachOnWasShown)
                 this.detachOnWasShown.detach();
         },
@@ -253,6 +269,19 @@ function test()
             parentView.showOnWasShown = new TestView("Child");
             parentView.show(WebInspector.inspectorView.element);
             parentView.detach();
+            next();
+        },
+
+        function testShowNestedOnWasShown(next)
+        {
+            var topView = new TestView("Top");
+            var middleView = new TestView("Middle");
+            var bottomView = new TestView("Bottom");
+            middleView.show(topView.element);
+            topView.showOnWasShown = bottomView;
+            topView.showRoot = middleView.element;
+            topView.show(WebInspector.inspectorView.element);
+            topView.detach();
             next();
         },
 
