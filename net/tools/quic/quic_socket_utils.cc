@@ -141,20 +141,24 @@ int QuicSocketUtils::WritePacket(int fd, const char* buffer, size_t buf_len,
 
   msghdr hdr;
   hdr.msg_name = &raw_address;
-  hdr.msg_namelen = sizeof(raw_address);
+  hdr.msg_namelen = address_len;
   hdr.msg_iov = &iov;
   hdr.msg_iovlen = 1;
   hdr.msg_flags  = 0;
 
-  const int kSpaceForIp = CMSG_SPACE(sizeof(in6_pktinfo));
+  const int kSpaceForIpv4 = CMSG_SPACE(sizeof(in_pktinfo));
+  const int kSpaceForIpv6 = CMSG_SPACE(sizeof(in6_pktinfo));
+  // kSpaceForIp should be big enough to hold both IPv4 and IPv6 packet info.
+  const int kSpaceForIp =
+      (kSpaceForIpv4 < kSpaceForIpv6) ? kSpaceForIpv6 : kSpaceForIpv4;
   char cbuf[kSpaceForIp];
   if (self_address.empty()) {
     hdr.msg_control = 0;
     hdr.msg_controllen = 0;
   } else if (GetAddressFamily(self_address) == ADDRESS_FAMILY_IPV4) {
-    cmsghdr *cmsg = reinterpret_cast<cmsghdr*>(cbuf);
-    hdr.msg_control = cmsg;
-    hdr.msg_controllen = CMSG_SPACE(sizeof(in_pktinfo));
+    hdr.msg_control = cbuf;
+    hdr.msg_controllen = kSpaceForIp;
+    cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr);
 
     cmsg->cmsg_len = CMSG_LEN(sizeof(in_pktinfo));
     cmsg->cmsg_level = IPPROTO_IP;
@@ -163,10 +167,11 @@ int QuicSocketUtils::WritePacket(int fd, const char* buffer, size_t buf_len,
     memset(pktinfo, 0, sizeof(in_pktinfo));
     pktinfo->ipi_ifindex = 0;
     memcpy(&pktinfo->ipi_spec_dst, &self_address[0], self_address.size());
+    hdr.msg_controllen = cmsg->cmsg_len;
   } else {
-    cmsghdr *cmsg = reinterpret_cast<cmsghdr*>(cbuf);
-    hdr.msg_control = cmsg;
-    hdr.msg_controllen = CMSG_SPACE(sizeof(in6_pktinfo));
+    hdr.msg_control = cbuf;
+    hdr.msg_controllen = kSpaceForIp;
+    cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr);
 
     cmsg->cmsg_len = CMSG_LEN(sizeof(in6_pktinfo));
     cmsg->cmsg_level = IPPROTO_IPV6;
@@ -174,6 +179,7 @@ int QuicSocketUtils::WritePacket(int fd, const char* buffer, size_t buf_len,
     in6_pktinfo* pktinfo = reinterpret_cast<in6_pktinfo*>(CMSG_DATA(cmsg));
     memset(pktinfo, 0, sizeof(in6_pktinfo));
     memcpy(&pktinfo->ipi6_addr, &self_address[0], self_address.size());
+    hdr.msg_controllen = cmsg->cmsg_len;
   }
 
   int rc = sendmsg(fd, &hdr, 0);

@@ -7303,13 +7303,6 @@
    fun:_ZN15webkit_database12_GLOBAL__N_120GetOriginsOnDBThreadEPNS_15DatabaseTrackerEPSt3setI4GURLSt4lessIS4_ESaIS4_EE
 }
 {
-   bug_263753
-   Memcheck:Param
-   sendmsg(msg.msg_name)
-   obj:*libpthread-*.so
-   fun:_ZN3net5tools15QuicSocketUtils11WritePacketEiPKcmRKSt6vectorIhSaIhEERKNS_10IPEndPointEPi
-}
-{
   bug_264225
   Memcheck:Leak
   fun:_Znw*
