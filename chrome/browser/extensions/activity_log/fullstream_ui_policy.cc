@@ -8,9 +8,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
-#include "chrome/browser/extensions/activity_log/api_actions.h"
-#include "chrome/browser/extensions/activity_log/blocked_actions.h"
-#include "chrome/browser/extensions/activity_log/dom_actions.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -45,11 +42,11 @@ namespace extensions {
 const char* FullStreamUIPolicy::kTableName = "activitylog_full";
 const char* FullStreamUIPolicy::kTableContentFields[] = {
   "extension_id", "time", "action_type", "api_name", "args", "page_url",
-  "arg_url", "other"
+  "page_title", "arg_url", "other"
 };
 const char* FullStreamUIPolicy::kTableFieldTypes[] = {
   "LONGVARCHAR NOT NULL", "INTEGER", "INTEGER", "LONGVARCHAR", "LONGVARCHAR",
-  "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR"
+  "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR"
 };
 const int FullStreamUIPolicy::kTableFieldCount = arraysize(kTableContentFields);
 
@@ -123,14 +120,8 @@ std::string FullStreamUIPolicy::GetKey(ActivityLogPolicy::KeyType key_ty) const
   }
 }
 
-scoped_ptr<base::ListValue> FullStreamUIPolicy::ProcessArguments(
-    ActionType action_type,
-    const std::string& name,
-    const base::ListValue* args) const {
-  if (args)
-    return make_scoped_ptr(args->DeepCopy());
-  else
-    return scoped_ptr<base::ListValue>();
+void FullStreamUIPolicy::ProcessArguments(scoped_refptr<Action> action) const {
+  return;
 }
 
 std::string FullStreamUIPolicy::JoinArguments(
@@ -163,105 +154,12 @@ void FullStreamUIPolicy::ProcessWebRequestModifications(
   serializer.Serialize(details);
 }
 
-void FullStreamUIPolicy::ProcessAction(
-    ActionType action_type,
-    const std::string& extension_id,
-    const std::string& name,
-    const GURL& url_param,
-    const base::ListValue* args_in,
-    const DictionaryValue* details) {
-  scoped_ptr<base::ListValue> args =
-      ProcessArguments(action_type, name, args_in);
-  std::string concatenated_args = JoinArguments(action_type, name, args.get());
-  const Time now = Time::Now();
-  scoped_refptr<Action> action;
-  std::string extra;
-  if (details) {
-    details->GetString(GetKey(PARAM_KEY_EXTRA), &extra);
-  }
-
-  switch (action_type) {
-    case ACTION_API: {
-      action = new APIAction(
-          extension_id,
-          now,
-          APIAction::CALL,
-          name,
-          concatenated_args,
-          *args,
-          extra);
-      break;
-    }
-    case ACTION_EVENT: {
-      action = new APIAction(
-          extension_id,
-          now,
-          APIAction::EVENT_CALLBACK,
-          name,
-          concatenated_args,
-          *args,
-          extra);
-      break;
-    }
-    case ACTION_BLOCKED: {
-      int reason = 0;
-      if (details) {
-        details->GetInteger(GetKey(PARAM_KEY_REASON), &reason);
-      }
-
-      action = new BlockedAction(
-          extension_id,
-          now,
-          name,
-          concatenated_args,
-          static_cast<BlockedAction::Reason>(reason),
-          extra);
-      break;
-    }
-    case ACTION_DOM: {
-      string16 value;
-      DomActionType::Type action_type = DomActionType::MODIFIED;
-
-      if (details) {
-        int action_id = 0;
-        details->GetInteger(GetKey(PARAM_KEY_DOM_ACTION), &action_id);
-        action_type = static_cast<DomActionType::Type>(action_id);
-        details->GetString(GetKey(PARAM_KEY_URL_TITLE), &value);
-      }
-
-      action = new DOMAction(
-          extension_id,
-          now,
-          action_type,
-          url_param,
-          value,
-          name,
-          concatenated_args,
-          extra);
-      break;
-    }
-    case ACTION_WEB_REQUEST: {
-      std::string details_string;
-      if (details) {
-        scoped_ptr<DictionaryValue> copy_of_details(details->DeepCopy());
-        ProcessWebRequestModifications(*copy_of_details.get(), details_string);
-      }
-
-      action = new DOMAction(
-          extension_id,
-          now,
-          DomActionType::WEBREQUEST,
-          url_param,
-          string16(),
-          name,
-          details_string,
-          extra);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-
+void FullStreamUIPolicy::ProcessAction(scoped_refptr<Action> action) {
+  // TODO(mvrable): Right now this argument stripping updates the Action object
+  // in place, which isn't good if there are other users of the object.  When
+  // database writing is moved to policy class, the modifications should be
+  // made locally.
+  ProcessArguments(action);
   ScheduleAndForget(db_, &ActivityDatabase::RecordAction, action);
 }
 

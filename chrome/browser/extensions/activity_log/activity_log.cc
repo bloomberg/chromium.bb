@@ -8,10 +8,10 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
-#include "chrome/browser/extensions/activity_log/api_actions.h"
-#include "chrome/browser/extensions/activity_log/blocked_actions.h"
 #include "chrome/browser/extensions/activity_log/stream_noargs_ui_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -28,6 +28,8 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
+
+namespace constants = activity_log_constants;
 
 namespace {
 
@@ -253,6 +255,17 @@ void ActivityLog::RemoveObserver(ActivityLog::Observer* observer) {
   observers_->RemoveObserver(observer);
 }
 
+void ActivityLog::LogAction(scoped_refptr<Action> action) {
+  if (IsLogEnabled() &&
+      !ActivityLogAPI::IsExtensionWhitelisted(action->extension_id())) {
+    if (policy_)
+      policy_->ProcessAction(action);
+    observers_->Notify(&Observer::OnExtensionActivity, action);
+    if (testing_mode_)
+      LOG(INFO) << action->PrintForDebug();
+  }
+}
+
 void ActivityLog::LogAPIActionInternal(const std::string& extension_id,
                                        const std::string& api_call,
                                        base::ListValue* args,
@@ -265,35 +278,20 @@ void ActivityLog::LogAPIActionInternal(const std::string& extension_id,
       APIAction::LookupTabId(api_call, args, profile_);
     }
 
-    if (policy_) {
-      scoped_ptr<base::DictionaryValue> details(new DictionaryValue());
-      std::string key = policy_->GetKey(ActivityLogPolicy::PARAM_KEY_EXTRA);
-      details->SetString(key, extra);
-      DCHECK((type == APIAction::CALL || type == APIAction::EVENT_CALLBACK) &&
-          "Unexpected APIAction call type.");
-      policy_->ProcessAction(
-          type == APIAction::CALL ? ActivityLogPolicy::ACTION_API :
-              ActivityLogPolicy::ACTION_EVENT,
-          extension_id,
-          api_call,
-          GURL(),
-          args,
-          details.get());
-    }
+    DCHECK((type == APIAction::CALL || type == APIAction::EVENT_CALLBACK) &&
+           "Unexpected APIAction call type.");
 
-    // TODO(felt) Logging should be done more efficiently, so that it
-    // doesn't require construction of the action object.
-    scoped_refptr<APIAction> action = new APIAction(
-        extension_id,
-        base::Time::Now(),
-        type,
-        api_call,
-        MakeArgList(args),
-        *args,
-        extra);
+    scoped_refptr<Action> action;
+    action = new Action(extension_id,
+                        base::Time::Now(),
+                        type == APIAction::CALL ? Action::ACTION_API_CALL
+                                                : Action::ACTION_API_EVENT,
+                        api_call);
+    action->set_args(make_scoped_ptr(args->DeepCopy()));
+    if (!extra.empty())
+      action->mutable_other()->SetString(constants::kActionExtra, extra);
 
-    observers_->Notify(&Observer::OnExtensionActivity, action);
-    if (testing_mode_) LOG(INFO) << action->PrintForDebug();
+    LogAction(action);
   } else {
     LOG(ERROR) << "Unknown API call! " << api_call;
   }
@@ -338,29 +336,18 @@ void ActivityLog::LogBlockedAction(const std::string& extension_id,
   if (!IsLogEnabled() ||
       ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
 
-  if (policy_) {
-    scoped_ptr<base::DictionaryValue> details(new DictionaryValue());
-    std::string key = policy_->GetKey(ActivityLogPolicy::PARAM_KEY_REASON);
-    details->SetInteger(key, static_cast<int>(reason));
-    key = policy_->GetKey(ActivityLogPolicy::PARAM_KEY_EXTRA);
-    details->SetString(key, extra);
-    policy_->ProcessAction(
-        ActivityLogPolicy::ACTION_BLOCKED,
-        extension_id,
-        blocked_call,
-        GURL(),
-        args,
-        details.get());
-  }
+  scoped_refptr<Action> action;
+  action = new Action(extension_id,
+                      base::Time::Now(),
+                      Action::ACTION_API_BLOCKED,
+                      blocked_call);
+  action->set_args(make_scoped_ptr(args->DeepCopy()));
+  action->mutable_other()
+      ->SetInteger(constants::kActionBlockedReason, static_cast<int>(reason));
+  if (!extra.empty())
+    action->mutable_other()->SetString(constants::kActionExtra, extra);
 
-  scoped_refptr<BlockedAction> action = new BlockedAction(extension_id,
-                                                          base::Time::Now(),
-                                                          blocked_call,
-                                                          MakeArgList(args),
-                                                          reason,
-                                                          extra);
-  observers_->Notify(&Observer::OnExtensionActivity, action);
-  if (testing_mode_) LOG(INFO) << action->PrintForDebug();
+  LogAction(action);
 }
 
 void ActivityLog::LogDOMAction(const std::string& extension_id,
@@ -372,40 +359,28 @@ void ActivityLog::LogDOMAction(const std::string& extension_id,
                                const std::string& extra) {
   if (!IsLogEnabled() ||
       ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
-  if (call_type == DomActionType::METHOD && api_call == "XMLHttpRequest.open")
-    call_type = DomActionType::XHR;
 
-  if (policy_) {
-    scoped_ptr<base::DictionaryValue> details(new DictionaryValue());
-    std::string key = policy_->GetKey(ActivityLogPolicy::PARAM_KEY_DOM_ACTION);
-    details->SetInteger(key, static_cast<int>(call_type));
-    key = policy_->GetKey(ActivityLogPolicy::PARAM_KEY_URL_TITLE);
-    details->SetString(key, url_title);
-    key = policy_->GetKey(ActivityLogPolicy::PARAM_KEY_EXTRA);
-    details->SetString(key, extra);
-    policy_->ProcessAction(
-        ActivityLogPolicy::ACTION_DOM,
-        extension_id,
-        api_call,
-        url,
-        args,
-        details.get());
+  Action::ActionType action_type = Action::ACTION_DOM_ACCESS;
+  if (call_type == DomActionType::INSERTED) {
+    action_type = Action::ACTION_CONTENT_SCRIPT;
+  } else if (call_type == DomActionType::METHOD &&
+             api_call == "XMLHttpRequest.open") {
+    call_type = DomActionType::XHR;
+    action_type = Action::ACTION_DOM_XHR;
   }
 
+  scoped_refptr<Action> action;
+  action = new Action(extension_id, base::Time::Now(), action_type, api_call);
+  if (args)
+    action->set_args(make_scoped_ptr(args->DeepCopy()));
+  action->set_page_url(url);
+  action->set_page_title(base::UTF16ToUTF8(url_title));
+  action->mutable_other()
+      ->SetInteger(constants::kActionDomVerb, static_cast<int>(call_type));
+  if (!extra.empty())
+    action->mutable_other()->SetString(constants::kActionExtra, extra);
 
-  // TODO(felt) Logging should be done more efficiently, so that it
-  // doesn't require construction of the action object.
-  scoped_refptr<DOMAction> action = new DOMAction(
-      extension_id,
-      base::Time::Now(),
-      call_type,
-      url,
-      url_title,
-      api_call,
-      MakeArgList(args),
-      extra);
-  observers_->Notify(&Observer::OnExtensionActivity, action);
-  if (testing_mode_) LOG(INFO) << action->PrintForDebug();
+  LogAction(action);
 }
 
 void ActivityLog::LogWebRequestAction(const std::string& extension_id,
@@ -413,43 +388,18 @@ void ActivityLog::LogWebRequestAction(const std::string& extension_id,
                                       const std::string& api_call,
                                       scoped_ptr<DictionaryValue> details,
                                       const std::string& extra) {
-  string16 null_title;
   if (!IsLogEnabled() ||
       ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
 
-  std::string details_string;
-  if (policy_) {
-    scoped_ptr<base::DictionaryValue> details(new DictionaryValue());
-    std::string key = policy_->GetKey(
-        ActivityLogPolicy::PARAM_KEY_DETAILS_STRING);
-    details->SetString(key, details_string);
-    key = policy_->GetKey(ActivityLogPolicy::PARAM_KEY_EXTRA);
-    details->SetString(key, extra);
-    policy_->ProcessAction(
-        ActivityLogPolicy::ACTION_WEB_REQUEST,
-        extension_id,
-        api_call,
-        url,
-        NULL,
-        details.get());
-  }
+  scoped_refptr<Action> action;
+  action = new Action(
+      extension_id, base::Time::Now(), Action::ACTION_WEB_REQUEST, api_call);
+  action->set_page_url(url);
+  action->mutable_other()->Set(constants::kActionWebRequest, details.release());
+  if (!extra.empty())
+    action->mutable_other()->SetString(constants::kActionExtra, extra);
 
-  JSONStringValueSerializer serializer(&details_string);
-  serializer.SerializeAndOmitBinaryValues(*details);
-
-  // TODO(felt) Logging should be done more efficiently, so that it
-  // doesn't require construction of the action object.
-  scoped_refptr<DOMAction> action = new DOMAction(
-      extension_id,
-      base::Time::Now(),
-      DomActionType::WEBREQUEST,
-      url,
-      null_title,
-      api_call,
-      details_string,
-      extra);
-  observers_->Notify(&Observer::OnExtensionActivity, action);
-  if (testing_mode_) LOG(INFO) << action->PrintForDebug();
+  LogAction(action);
 }
 
 void ActivityLog::GetActions(

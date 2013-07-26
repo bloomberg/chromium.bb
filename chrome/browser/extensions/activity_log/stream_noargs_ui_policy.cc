@@ -16,15 +16,16 @@ StreamWithoutArgsUIPolicy::StreamWithoutArgsUIPolicy(Profile* profile)
 
 StreamWithoutArgsUIPolicy::~StreamWithoutArgsUIPolicy() {}
 
-scoped_ptr<base::ListValue> StreamWithoutArgsUIPolicy::ProcessArguments(
-    ActionType action_type,
-    const std::string& name,
-    const base::ListValue* args) const {
-  if (action_type == ACTION_DOM ||
-      arg_whitelist_api_.find(name) != arg_whitelist_api_.end()) {
-    return FullStreamUIPolicy::ProcessArguments(action_type, name, args).Pass();
+void StreamWithoutArgsUIPolicy::ProcessArguments(
+    scoped_refptr<Action> action) const {
+  if (action->action_type() == Action::ACTION_DOM_ACCESS ||
+      action->action_type() == Action::ACTION_DOM_EVENT ||
+      action->action_type() == Action::ACTION_DOM_XHR ||
+      action->action_type() == Action::ACTION_WEB_REQUEST ||
+      arg_whitelist_api_.find(action->api_name()) != arg_whitelist_api_.end()) {
+    // No stripping of arguments
   } else {
-    return make_scoped_ptr(new ListValue());
+    action->set_args(scoped_ptr<ListValue>());
   }
 }
 

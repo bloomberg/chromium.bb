@@ -22,11 +22,7 @@ class FullStreamUIPolicy : public ActivityLogPolicy,
   // For more info about these member functions, see the super class.
   explicit FullStreamUIPolicy(Profile* profile);
 
-  virtual void ProcessAction(ActionType action_type,
-                             const std::string& extension_id,
-                             const std::string& name, const GURL& gurl,
-                             const base::ListValue* args,
-                             const base::DictionaryValue* details) OVERRIDE;
+  virtual void ProcessAction(scoped_refptr<Action> action) OVERRIDE;
 
   // TODO(felt,dbabic) This is overly specific to FullStreamUIPolicy.
   // It assumes that the callback can return a sorted vector of actions.  Some
@@ -62,10 +58,7 @@ class FullStreamUIPolicy : public ActivityLogPolicy,
   virtual void OnDatabaseClose() OVERRIDE;
 
   // Strips arguments if needed by policy.
-  virtual scoped_ptr<base::ListValue> ProcessArguments(
-      ActionType action_type,
-      const std::string& name,
-      const base::ListValue* args) const;
+  virtual void ProcessArguments(scoped_refptr<Action> action) const;
 
   // Concatenates arguments.
   virtual std::string JoinArguments(ActionType action_type,

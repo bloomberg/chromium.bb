@@ -80,13 +80,7 @@ class ActivityLogPolicy {
   // Updates the internal state of the model summarizing actions and possibly
   // writes to the database.  Implements the default policy storing internal
   // state to memory every 5 min.
-  virtual void ProcessAction(
-      ActionType action_type,
-      const std::string& extension_id,
-      const std::string& name,                    // action name
-      const GURL& gurl,                           // target URL
-      const base::ListValue* args,                // arguments
-      const base::DictionaryValue* details) = 0;  // details
+  virtual void ProcessAction(scoped_refptr<Action> action) = 0;
 
   // Pass the parameters as a set of key-value pairs and return data back via
   // a callback passing results as a set of key-value pairs.  The keys are

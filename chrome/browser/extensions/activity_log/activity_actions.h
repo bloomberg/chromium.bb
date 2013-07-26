@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/activity_log_private.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -34,26 +35,66 @@ class Action : public base::RefCountedThreadSafe<Action> {
     ACTION_WEB_REQUEST = 7,
   };
 
-  // Record the action in the database.
-  virtual bool Record(sql::Connection* db) = 0;
-
-  // Flatten the activity's type-specific fields into an ExtensionActivity.
-  virtual scoped_ptr<api::activity_log_private::ExtensionActivity>
-      ConvertToExtensionActivity() = 0;
-
-  // Print an action as a regular string for debugging purposes.
-  virtual std::string PrintForDebug() = 0;
-
-  const std::string& extension_id() const { return extension_id_; }
-  const base::Time& time() const { return time_; }
-  api::activity_log_private::ExtensionActivity::ActivityType activity_type()
-      const { return activity_type_; }
-
- protected:
+  // Creates a new activity log Action object.  The extension_id, time, and
+  // type are immutable.  All other fields can be filled in with the
+  // accessors/mutators below.
   Action(const std::string& extension_id,
          const base::Time& time,
-         api::activity_log_private::ExtensionActivity::ActivityType type);
-  virtual ~Action() {}
+         const ActionType action_type,
+         const std::string& api_name);
+
+  // The extension which caused this record to be generated.
+  const std::string& extension_id() const { return extension_id_; }
+
+  // The time the record was generated (or some approximation).
+  const base::Time& time() const { return time_; }
+
+  // The ActionType distinguishes different classes of actions that can be
+  // logged, and determines which other fields are expected to be filled in.
+  ActionType action_type() const { return action_type_; }
+
+  // The specific API call used or accessed, for example "chrome.tabs.get".
+  const std::string& api_name() const { return api_name_; }
+  void set_api_name(const std::string api_name) { api_name_ = api_name; }
+
+  // Any applicable arguments.  This might be null to indicate no data
+  // available (a distinct condition from an empty argument list).
+  // mutable_args() returns a pointer to the list stored in the Action which
+  // can be modified in place; if the list was null an empty list is created
+  // first.
+  const ListValue* args() const { return args_.get(); }
+  void set_args(scoped_ptr<ListValue> args);
+  ListValue* mutable_args();
+
+  // The URL of the page which was modified or accessed.
+  const GURL& page_url() const { return page_url_; }
+  void set_page_url(const GURL& page_url);
+
+  // The title of the above page if available.
+  const std::string& page_title() const { return page_title_; }
+  void set_page_title(const std::string& title) { page_title_ = title; }
+
+  // A URL which appears in the arguments of the API call, if present.
+  const GURL& arg_url() const { return arg_url_; }
+  void set_arg_url(const GURL& arg_url);
+
+  // A dictionary where any additional data can be stored.
+  const DictionaryValue* other() const { return other_.get(); }
+  void set_other(scoped_ptr<DictionaryValue> other);
+  DictionaryValue* mutable_other();
+
+  // Record the action in the database.
+  bool Record(sql::Connection* db);
+
+  // Flatten the activity's type-specific fields into an ExtensionActivity.
+  scoped_ptr<api::activity_log_private::ExtensionActivity>
+      ConvertToExtensionActivity();
+
+  // Print an action as a regular string for debugging purposes.
+  std::string PrintForDebug();
+
+ protected:
+  virtual ~Action();
 
  private:
   friend class base::RefCountedThreadSafe<Action>;
@@ -61,43 +102,61 @@ class Action : public base::RefCountedThreadSafe<Action> {
   std::string extension_id_;
   base::Time time_;
   api::activity_log_private::ExtensionActivity::ActivityType activity_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(Action);
-};
-
-// TODO(mvrable): This is a temporary class used to represent Actions which
-// have been loaded from the SQLite database.  Soon the entire Action hierarchy
-// will be flattened out as the type-specific classes are eliminated, at which
-// time some of the logic here will be moved.
-class WatchdogAction : public Action {
- public:
-  WatchdogAction(const std::string& extension_id,
-                 const base::Time& time,
-                 const ActionType action_type,
-                 const std::string& api_name,  // full method name
-                 scoped_ptr<ListValue> args,  // the argument list
-                 const GURL& page_url,  // page the action occurred on
-                 const GURL& arg_url,  // URL extracted from the argument list
-                 scoped_ptr<DictionaryValue> other);  // any extra logging info
-
-  virtual bool Record(sql::Connection* db) OVERRIDE;
-  virtual scoped_ptr<api::activity_log_private::ExtensionActivity>
-      ConvertToExtensionActivity() OVERRIDE;
-  virtual std::string PrintForDebug() OVERRIDE;
-
- protected:
-  virtual ~WatchdogAction();
-
- private:
   ActionType action_type_;
   std::string api_name_;
   scoped_ptr<ListValue> args_;
   GURL page_url_;
+  std::string page_title_;
   GURL arg_url_;
   scoped_ptr<DictionaryValue> other_;
+
+  DISALLOW_COPY_AND_ASSIGN(Action);
+};
+
+// Constants defined for various action types.
+// TODO(mvrable): These are here for compatibility but should be moved
+// elsewhere as cleanup progresses.
+class APIAction {
+ public:
+  // These values should not be changed. Append any additional values to the
+  // end with sequential numbers.
+  enum Type {
+    CALL = 0,
+    EVENT_CALLBACK = 1,
+    UNKNOWN_TYPE = 2,
+  };
+
+  static const char* kAlwaysLog[];
+  static const int kSizeAlwaysLog;
+
+  static const char* kIncognitoUrl;
+
+  // Used to associate tab IDs with URLs. It will swap out the int in args with
+  // a URL as a string. If the tab is in incognito mode, we leave it alone as
+  // the original int. There is a small chance that the URL translation could
+  // be wrong, if the tab has already been navigated by the time of invocation.
+  static void LookupTabId(const std::string& api_call,
+                          base::ListValue* args,
+                          Profile* profile);
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(APIAction);
+};
+
+class BlockedAction {
+ public:
+  // These values should not be changed. Append any additional values to the
+  // end with sequential numbers.
+  enum Reason {
+      UNKNOWN = 0,
+      ACCESS_DENIED = 1,
+      QUOTA_EXCEEDED = 2,
+  };
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(BlockedAction);
 };
 
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_ACTIONS_H_
-

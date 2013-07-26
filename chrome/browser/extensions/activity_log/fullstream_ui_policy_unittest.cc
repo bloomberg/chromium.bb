@@ -68,7 +68,7 @@ class FullStreamUIPolicyTest : public testing::Test {
     scoped_refptr<Action> last = i->front();
     std::string args =
         "ID=odlameecjipmbmbejkplpemijjgpljce CATEGORY=api_call "
-        "API=extension.connect ARGS=[\"hello\",\"world\"] OTHER={}";
+        "API=extension.connect ARGS=[\"hello\",\"world\"]";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 
@@ -100,8 +100,12 @@ TEST_F(FullStreamUIPolicyTest, Construct) {
           .Build();
   extension_service_->AddExtension(extension.get());
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  policy->ProcessAction(ActivityLogPolicy::ACTION_API, extension->id(),
-      std::string("tabs.testMethod"), GURL(), args.get(), NULL);
+  scoped_refptr<Action> action = new Action(extension->id(),
+                                            base::Time::Now(),
+                                            Action::ACTION_API_CALL,
+                                            "tabs.testMethod");
+  action->set_args(args.Pass());
+  policy->ProcessAction(action);
   policy->Close();
 }
 
@@ -115,15 +119,24 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchActions) {
                        .Set("manifest_version", 2))
           .Build();
   extension_service_->AddExtension(extension.get());
-  scoped_ptr<base::ListValue> args(new base::ListValue());
   GURL gurl("http://www.google.com");
 
   // Write some API calls
-  policy->ProcessAction(ActivityLogPolicy::ACTION_API, extension->id(),
-      std::string("tabs.testMethod"), GURL(), args.get(), NULL);
-  policy->ProcessAction(ActivityLogPolicy::ACTION_DOM,
-                        extension->id(), std::string("document.write"),
-                        gurl, args.get(), NULL);
+  scoped_refptr<Action> action_api = new Action(extension->id(),
+                                                base::Time::Now(),
+                                                Action::ACTION_API_CALL,
+                                                "tabs.testMethod");
+  action_api->set_args(make_scoped_ptr(new base::ListValue()));
+  policy->ProcessAction(action_api);
+
+  scoped_refptr<Action> action_dom = new Action(extension->id(),
+                                                base::Time::Now(),
+                                                Action::ACTION_DOM_ACCESS,
+                                                "document.write");
+  action_dom->set_args(make_scoped_ptr(new base::ListValue()));
+  action_dom->set_page_url(gurl);
+  policy->ProcessAction(action_dom);
+
   policy->ReadData(extension->id(), 0,
       base::Bind(FullStreamUIPolicyTest::RetrieveActions_LogAndFetchActions));
 
@@ -140,11 +153,17 @@ TEST_F(FullStreamUIPolicyTest, LogWithArguments) {
                        .Set("manifest_version", 2))
           .Build();
   extension_service_->AddExtension(extension.get());
+
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));
-  policy->ProcessAction(ActivityLogPolicy::ACTION_API, extension->id(),
-      std::string("extension.connect"), GURL(), args.get(), NULL);
+  scoped_refptr<Action> action = new Action(extension->id(),
+                                            base::Time::Now(),
+                                            Action::ACTION_API_CALL,
+                                            "extension.connect");
+  action->set_args(args.Pass());
+
+  policy->ProcessAction(action);
   policy->ReadData(extension->id(), 0,
       base::Bind(FullStreamUIPolicyTest::Arguments_Present));
   policy->Close();

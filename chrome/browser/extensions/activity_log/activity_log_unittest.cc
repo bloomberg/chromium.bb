@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
-#include "chrome/browser/extensions/activity_log/dom_actions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -85,14 +84,14 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableExtensionActivityLogTesting))
       args =
-          "ID=abc CATEGORY=content_script API=document.write ARGS=[\"\"] "
+          "ID=abc CATEGORY=content_script API=document.write ARGS=[] "
           "PAGE_URL=http://www.google.com/foo?bar "
-          "OTHER={\"dom_verb\":3,\"extra\":\"extra\",\"page_title\":\"\"}";
+          "OTHER={\"dom_verb\":3,\"extra\":\"extra\"}";
     else
       args =
-          "ID=abc CATEGORY=content_script API=document.write ARGS=[\"\"] "
+          "ID=abc CATEGORY=content_script API=document.write ARGS=[] "
           "PAGE_URL=http://www.google.com/foo "
-          "OTHER={\"dom_verb\":3,\"extra\":\"extra\",\"page_title\":\"\"}";
+          "OTHER={\"dom_verb\":3,\"extra\":\"extra\"}";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 
@@ -101,7 +100,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     scoped_refptr<Action> last = i->front();
     std::string id(kExtensionId);
     std::string noargs =
-        "ID=" + id + " CATEGORY=api_call API=tabs.testMethod ARGS=[] OTHER={}";
+        "ID=" + id + " CATEGORY=api_call API=tabs.testMethod";
     ASSERT_EQ(noargs, last->PrintForDebug());
   }
 
@@ -111,7 +110,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     std::string id(kExtensionId);
     std::string args = "ID=" + id +
                        " CATEGORY=api_call API=extension.connect "
-                       "ARGS=[\"hello\",\"world\"] OTHER={}";
+                       "ARGS=[\"hello\",\"world\"]";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 
@@ -129,8 +128,8 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     scoped_refptr<Action> last = i->front();
     std::string args =
         "ID=odlameecjipmbmbejkplpemijjgpljce CATEGORY=content_script API= "
-        "ARGS=[\"\\\"script \\\"\"] PAGE_URL=http://www.google.com/ "
-        "OTHER={\"dom_verb\":3,\"extra\":\"(prerender)\",\"page_title\":\"\"}";
+        "ARGS=[\"script \"] PAGE_URL=http://www.google.com/ "
+        "OTHER={\"dom_verb\":3,\"extra\":\"(prerender)\"}";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 

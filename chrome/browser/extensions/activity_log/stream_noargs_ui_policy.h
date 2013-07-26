@@ -7,7 +7,6 @@
 
 #include <string>
 #include "base/containers/hash_tables.h"
-#include "chrome/browser/extensions/activity_log/api_actions.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 
 namespace extensions {
@@ -19,10 +18,8 @@ class StreamWithoutArgsUIPolicy : public FullStreamUIPolicy {
   virtual ~StreamWithoutArgsUIPolicy();
 
  protected:
-  virtual scoped_ptr<base::ListValue> ProcessArguments(
-      ActionType action_type,
-      const std::string& name,
-      const base::ListValue* args) const OVERRIDE;
+  virtual void ProcessArguments(scoped_refptr<Action> action) const
+      OVERRIDE;
 
   virtual void ProcessWebRequestModifications(
       base::DictionaryValue& details,

@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
-#include "chrome/browser/extensions/activity_log/api_actions.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -65,6 +64,21 @@ class ActivityLog : public BrowserContextKeyedService,
   // ActivityLog extension is registered for an event.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Logs an extension action: passes it to any installed policy to be logged
+  // to the database, to any observers, and logs to the console if in testing
+  // mode.
+  //
+  // The convenience Log*Action methods below can be used as well if the caller
+  // does not wish to construct the Action object itself, however those methods
+  // are somewhat deprecated.
+  void LogAction(scoped_refptr<Action> action);
+
+  // TODO(mvrable): The calls below take args as a raw pointer, but the callee
+  // does not own the object so these should more properly be a const pointer.
+  // The callee is forced to make a copy of the object which in some cases is
+  // wasteful, and it could be better to take a scoped_ptr as input.  Switching
+  // to using LogAction is another way to clean this up.
 
   // Log a successful API call made by an extension.
   // This will create an APIAction for storage in the database.

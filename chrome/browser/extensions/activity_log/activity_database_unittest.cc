@@ -10,10 +10,8 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
-#include "chrome/browser/extensions/activity_log/api_actions.h"
-#include "chrome/browser/extensions/activity_log/blocked_actions.h"
-#include "chrome/browser/extensions/activity_log/dom_actions.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -37,6 +35,8 @@
 #endif
 
 using content::BrowserThread;
+
+namespace constants = activity_log_constants;
 
 namespace extensions {
 
@@ -119,8 +119,8 @@ TEST_F(ActivityDatabaseTest, Init) {
   db.Close();
 }
 
-// Check that API actions are recorded in the db.
-TEST_F(ActivityDatabaseTest, RecordAPIAction) {
+// Check that actions are recorded in the db.
+TEST_F(ActivityDatabaseTest, RecordAction) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -129,16 +129,11 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
 
   ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->SetBatchModeForTesting(false);
-  base::ListValue args_list;
-  args_list.AppendString("woof");
-  scoped_refptr<APIAction> action = new APIAction(
-      "punky",
-      base::Time::Now(),
-      APIAction::CALL,
-      "brewster",
-      "woof",
-      args_list,
-      "extra");
+  scoped_refptr<Action> action(new Action(
+      "punky", base::Time::Now(), Action::ACTION_API_CALL, "brewster"));
+  action->mutable_args()->AppendString("woof");
+  action->set_page_url(GURL("http://www.google.com/"));
+  action->mutable_other()->SetString(constants::kActionExtra, "extra");
   activity_db->RecordAction(action);
   activity_db->Close();
 
@@ -154,88 +149,8 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
   ASSERT_EQ(static_cast<int>(Action::ACTION_API_CALL), statement.ColumnInt(2));
   ASSERT_EQ("brewster", statement.ColumnString(3));
   ASSERT_EQ("[\"woof\"]", statement.ColumnString(4));
-}
-
-// Check that DOM actions are recorded in the db.
-TEST_F(ActivityDatabaseTest, RecordDOMAction) {
-  base::ScopedTempDir temp_dir;
-  base::FilePath db_file;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
-  base::DeleteFile(db_file, false);
-
-  ActivityDatabase* activity_db = OpenDatabase(db_file);
-  activity_db->SetBatchModeForTesting(false);
-  scoped_refptr<DOMAction> action = new DOMAction(
-      "punky",
-      base::Time::Now(),
-      DomActionType::MODIFIED,
-      GURL("http://www.google.com/foo?bar"),
-      string16(),
-      "lets",
-      "vamoose",
-      "extra");
-  activity_db->RecordAction(action);
-  activity_db->Close();
-
-  sql::Connection db;
-  ASSERT_TRUE(db.Open(db_file));
-
-  ASSERT_TRUE(db.DoesTableExist(FullStreamUIPolicy::kTableName));
-  std::string sql_str = "SELECT * FROM " +
-      std::string(FullStreamUIPolicy::kTableName);
-  sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
-  ASSERT_TRUE(statement.Step());
-  ASSERT_EQ("punky", statement.ColumnString(0));
-  ASSERT_EQ(static_cast<int>(Action::ACTION_DOM_ACCESS),
-            statement.ColumnInt(2));
-  // TODO(mvrable): This test doesn't work properly, due to crbug.com/260784
-  // This will be fixed when URL sanitization is moved into the activity log
-  // policies in some upcoming code refactoring.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExtensionActivityLogTesting))
-    ASSERT_EQ("http://www.google.com/foo?bar", statement.ColumnString(5));
-  else
-    ASSERT_EQ("http://www.google.com/foo", statement.ColumnString(5));
-  ASSERT_EQ("lets", statement.ColumnString(3));
-  ASSERT_EQ("[\"vamoose\"]", statement.ColumnString(4));
-  ASSERT_EQ("{\"dom_verb\":6,\"extra\":\"extra\",\"page_title\":\"\"}",
-            statement.ColumnString(7));
-}
-
-// Check that blocked actions are recorded in the db.
-TEST_F(ActivityDatabaseTest, RecordBlockedAction) {
-  base::ScopedTempDir temp_dir;
-  base::FilePath db_file;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
-  base::DeleteFile(db_file, false);
-
-  ActivityDatabase* activity_db = OpenDatabase(db_file);
-  scoped_refptr<BlockedAction> action = new BlockedAction(
-      "punky",
-      base::Time::Now(),
-      "do.evilThings",
-      "1, 2",
-      BlockedAction::ACCESS_DENIED,
-      "extra");
-  activity_db->RecordAction(action);
-  activity_db->Close();
-
-  sql::Connection db;
-  ASSERT_TRUE(db.Open(db_file));
-
-  ASSERT_TRUE(db.DoesTableExist(FullStreamUIPolicy::kTableName));
-  std::string sql_str = "SELECT * FROM " +
-      std::string(FullStreamUIPolicy::kTableName);
-  sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
-  ASSERT_TRUE(statement.Step());
-  ASSERT_EQ("punky", statement.ColumnString(0));
-  ASSERT_EQ(static_cast<int>(Action::ACTION_API_BLOCKED),
-            statement.ColumnInt(2));
-  ASSERT_EQ("do.evilThings", statement.ColumnString(3));
-  ASSERT_EQ("1, 2", statement.ColumnString(4));
-  ASSERT_EQ("{\"reason\":1}", statement.ColumnString(7));
+  ASSERT_EQ("http://www.google.com/", statement.ColumnString(5));
+  ASSERT_EQ("{\"extra\":\"extra\"}", statement.ColumnString(8));
 }
 
 // Check that we can read back recent actions in the db.
@@ -254,45 +169,33 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
 
   // Record some actions
   ActivityDatabase* activity_db = OpenDatabase(db_file);
-  base::ListValue args_list;
-  args_list.AppendString("woof");
-  scoped_refptr<APIAction> api_action = new APIAction(
-      "punky",
-      mock_clock.Now() - base::TimeDelta::FromMinutes(40),
-      APIAction::CALL,
-      "brewster",
-      "woof",
-      args_list,
-      "extra");
-  scoped_refptr<DOMAction> dom_action = new DOMAction(
-      "punky",
-      mock_clock.Now(),
-      DomActionType::MODIFIED,
-      GURL("http://www.google.com"),
-      string16(),
-      "lets",
-      "vamoose",
-      "extra");
-  scoped_refptr<DOMAction> extra_dom_action = new DOMAction(
-      "scoobydoo",
-      mock_clock.Now(),
-      DomActionType::MODIFIED,
-      GURL("http://www.google.com"),
-      string16(),
-      "lets",
-      "vamoose",
-      "extra");
-  activity_db->RecordAction(api_action);
-  activity_db->RecordAction(dom_action);
-  activity_db->RecordAction(extra_dom_action);
+
+  scoped_refptr<Action> action;
+  action = new Action("punky",
+                      mock_clock.Now() - base::TimeDelta::FromMinutes(40),
+                      Action::ACTION_API_CALL,
+                      "brewster");
+  action->mutable_args()->AppendString("woof");
+  activity_db->RecordAction(action);
+
+  action =
+      new Action("punky", mock_clock.Now(), Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google.com"));
+  activity_db->RecordAction(action);
+
+  action = new Action(
+      "scoobydoo", mock_clock.Now(), Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google.com"));
+  activity_db->RecordAction(action);
 
   // Read them back
   std::string api_print =
-      "ID=punky CATEGORY=api_call API=brewster ARGS=[\"woof\"] OTHER={}";
+      "ID=punky CATEGORY=api_call API=brewster ARGS=[\"woof\"]";
   std::string dom_print =
       "ID=punky CATEGORY=dom_access API=lets ARGS=[\"vamoose\"] "
-      "PAGE_URL=http://www.google.com/ "
-      "OTHER={\"dom_verb\":6,\"extra\":\"extra\",\"page_title\":\"\"}";
+      "PAGE_URL=http://www.google.com/";
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 0);
   ASSERT_EQ(2, static_cast<int>(actions->size()));
@@ -302,7 +205,7 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
   activity_db->Close();
 }
 
-// Check that we can read back recent actions in the db.
+// Check that we can read back less recent actions in the db.
 TEST_F(ActivityDatabaseTest, GetOlderActions) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
@@ -318,56 +221,43 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
 
   // Record some actions
   ActivityDatabase* activity_db = OpenDatabase(db_file);
-  base::ListValue args_list;
-  args_list.AppendString("woof");
-  scoped_refptr<APIAction> api_action = new APIAction(
-      "punky",
-      mock_clock.Now() - base::TimeDelta::FromDays(3)
-          - base::TimeDelta::FromMinutes(40),
-      APIAction::CALL,
-      "brewster",
-      "woof",
-      args_list,
-      "extra");
-  scoped_refptr<DOMAction> dom_action = new DOMAction(
-      "punky",
-      mock_clock.Now() - base::TimeDelta::FromDays(3),
-      DomActionType::MODIFIED,
-      GURL("http://www.google.com"),
-      string16(),
-      "lets",
-      "vamoose",
-      "extra");
-  scoped_refptr<DOMAction> toonew_dom_action = new DOMAction(
-      "punky",
-      mock_clock.Now(),
-      DomActionType::MODIFIED,
-      GURL("http://www.google.com"),
-      string16(),
-      "too new",
-      "vamoose",
-      "extra");
-  scoped_refptr<DOMAction> tooold_dom_action = new DOMAction(
-      "punky",
-      mock_clock.Now() - base::TimeDelta::FromDays(7),
-      DomActionType::MODIFIED,
-      GURL("http://www.google.com"),
-      string16(),
-      "too old",
-      "vamoose",
-      "extra");
-  activity_db->RecordAction(api_action);
-  activity_db->RecordAction(dom_action);
-  activity_db->RecordAction(toonew_dom_action);
-  activity_db->RecordAction(tooold_dom_action);
+  scoped_refptr<Action> action =
+      new Action("punky",
+                 mock_clock.Now() - base::TimeDelta::FromDays(3) -
+                     base::TimeDelta::FromMinutes(40),
+                 Action::ACTION_API_CALL,
+                 "brewster");
+  action->mutable_args()->AppendString("woof");
+  activity_db->RecordAction(action);
+
+  action = new Action("punky",
+                      mock_clock.Now() - base::TimeDelta::FromDays(3),
+                      Action::ACTION_DOM_ACCESS,
+                      "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google.com"));
+  activity_db->RecordAction(action);
+
+  action =
+      new Action("punky", mock_clock.Now(), Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("too new");
+  action->set_page_url(GURL("http://www.google.com"));
+  activity_db->RecordAction(action);
+
+  action = new Action("punky",
+                      mock_clock.Now() - base::TimeDelta::FromDays(7),
+                      Action::ACTION_DOM_ACCESS,
+                      "lets");
+  action->mutable_args()->AppendString("too old");
+  action->set_page_url(GURL("http://www.google.com"));
+  activity_db->RecordAction(action);
 
   // Read them back
   std::string api_print =
-      "ID=punky CATEGORY=api_call API=brewster ARGS=[\"woof\"] OTHER={}";
+      "ID=punky CATEGORY=api_call API=brewster ARGS=[\"woof\"]";
   std::string dom_print =
       "ID=punky CATEGORY=dom_access API=lets ARGS=[\"vamoose\"] "
-      "PAGE_URL=http://www.google.com/ "
-      "OTHER={\"dom_verb\":6,\"extra\":\"extra\",\"page_title\":\"\"}";
+      "PAGE_URL=http://www.google.com/";
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 3);
   ASSERT_EQ(2, static_cast<int>(actions->size()));
@@ -394,17 +284,13 @@ TEST_F(ActivityDatabaseTest, BatchModeOff) {
   ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->SetBatchModeForTesting(false);
   activity_db->SetClockForTesting(&mock_clock);
-  base::ListValue args_list;
-  args_list.AppendString("woof");
-  scoped_refptr<APIAction> api_action = new APIAction(
-      "punky",
-      mock_clock.Now() - base::TimeDelta::FromMinutes(40),
-      APIAction::CALL,
-      "brewster",
-      "woof",
-      args_list,
-      "extra");
-  activity_db->RecordAction(api_action);
+  scoped_refptr<Action> action =
+      new Action("punky",
+                 mock_clock.Now() - base::TimeDelta::FromMinutes(40),
+                 Action::ACTION_API_CALL,
+                 "brewster");
+  action->mutable_args()->AppendString("woof");
+  activity_db->RecordAction(action);
 
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 0);
@@ -429,17 +315,13 @@ TEST_F(ActivityDatabaseTest, BatchModeOn) {
   ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->SetBatchModeForTesting(true);
   activity_db->SetClockForTesting(&mock_clock);
-  base::ListValue args_list;
-  args_list.AppendString("woof");
-  scoped_refptr<APIAction> api_action = new APIAction(
-      "punky",
-      mock_clock.Now() - base::TimeDelta::FromMinutes(40),
-      APIAction::CALL,
-      "brewster",
-      "woof",
-      args_list,
-      "extra");
-  activity_db->RecordAction(api_action);
+  scoped_refptr<Action> action =
+      new Action("punky",
+                 mock_clock.Now() - base::TimeDelta::FromMinutes(40),
+                 Action::ACTION_API_CALL,
+                 "brewster");
+  action->mutable_args()->AppendString("woof");
+  activity_db->RecordAction(action);
 
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions_before =
       activity_db->GetActions("punky", 0);
@@ -466,16 +348,9 @@ TEST_F(ActivityDatabaseTest, InitFailure) {
 
   ActivityDatabase* activity_db =
       new ActivityDatabase(new ActivityDatabaseTestPolicy());
-  base::ListValue args_list;
-  args_list.AppendString("woof");
-  scoped_refptr<APIAction> action = new APIAction(
-      "punky",
-      base::Time::Now(),
-      APIAction::CALL,
-      "brewster",
-      "woooof",
-      args_list,
-      "extra");
+  scoped_refptr<Action> action = new Action(
+      "punky", base::Time::Now(), Action::ACTION_API_CALL, "brewster");
+  action->mutable_args()->AppendString("woof");
   activity_db->RecordAction(action);
   activity_db->Close();
 }

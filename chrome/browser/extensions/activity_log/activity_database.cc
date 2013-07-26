@@ -25,15 +25,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-bool SortActionsByTime(const scoped_refptr<extensions::Action> a,
-                       const scoped_refptr<extensions::Action> b) {
-  return a->time() > b->time();
-}
-
-}  // namespace
-
 namespace extensions {
 
 ActivityDatabase::ActivityDatabase(ActivityDatabase::Delegate* delegate)
@@ -163,8 +154,10 @@ scoped_ptr<ActivityDatabase::ActionVector> ActivityDatabase::GetActions(
       late_bound = late_time.ToInternalValue();
   }
   std::string query_str = base::StringPrintf(
-      "SELECT time, action_type, api_name, args, page_url, arg_url, other "
-      "FROM %s WHERE extension_id=? AND time>? AND time<=?",
+      "SELECT time, action_type, api_name, args, page_url, page_title, "
+      "arg_url, other "
+      "FROM %s WHERE extension_id=? AND time>? AND time<=? "
+      "ORDER BY time DESC",
       FullStreamUIPolicy::kTableName);
   sql::Statement query(db_.GetCachedStatement(SQL_FROM_HERE,
                                               query_str.c_str()));
@@ -172,38 +165,46 @@ scoped_ptr<ActivityDatabase::ActionVector> ActivityDatabase::GetActions(
   query.BindInt64(1, early_bound);
   query.BindInt64(2, late_bound);
   while (query.is_valid() && query.Step()) {
-    scoped_ptr<Value> raw_value(base::JSONReader::Read(query.ColumnString(3)));
-    scoped_ptr<ListValue> args;
-    if (raw_value && raw_value->IsType(Value::TYPE_LIST)) {
-      args.reset(static_cast<ListValue*>(raw_value.release()));
-    } else {
-      args.reset(new ListValue());
+    scoped_refptr<Action> action =
+        new Action(extension_id,
+                   base::Time::FromInternalValue(query.ColumnInt64(0)),
+                   static_cast<Action::ActionType>(query.ColumnInt(1)),
+                   query.ColumnString(2));
+
+    if (query.ColumnType(3) != sql::COLUMN_TYPE_NULL) {
+      scoped_ptr<Value> parsed_value(
+          base::JSONReader::Read(query.ColumnString(3)));
+      if (parsed_value && parsed_value->IsType(Value::TYPE_LIST)) {
+        action->set_args(
+            make_scoped_ptr(static_cast<ListValue*>(parsed_value.release())));
+      } else {
+        LOG(WARNING) << "Unable to parse args: '" << query.ColumnString(3)
+                     << "'";
+      }
     }
 
     GURL page_url(query.ColumnString(4));
-    GURL arg_url(query.ColumnString(5));
+    action->set_page_url(page_url);
 
-    raw_value.reset(base::JSONReader::Read(query.ColumnString(6)));
-    scoped_ptr<DictionaryValue> other;
-    if (raw_value && raw_value->IsType(Value::TYPE_DICTIONARY)) {
-      other.reset(static_cast<DictionaryValue*>(raw_value.release()));
-    } else {
-      other.reset(new DictionaryValue());
+    action->set_page_title(query.ColumnString(5));
+
+    GURL arg_url(query.ColumnString(6));
+    action->set_arg_url(arg_url);
+
+    if (query.ColumnType(7) != sql::COLUMN_TYPE_NULL) {
+      scoped_ptr<Value> parsed_value(
+          base::JSONReader::Read(query.ColumnString(7)));
+      if (parsed_value && parsed_value->IsType(Value::TYPE_DICTIONARY)) {
+        action->set_other(make_scoped_ptr(
+            static_cast<DictionaryValue*>(parsed_value.release())));
+      } else {
+        LOG(WARNING) << "Unable to parse other: '" << query.ColumnString(7)
+                     << "'";
+      }
     }
 
-    scoped_refptr<WatchdogAction> action =
-        new WatchdogAction(extension_id,
-                           base::Time::FromInternalValue(query.ColumnInt64(0)),
-                           static_cast<Action::ActionType>(query.ColumnInt(1)),
-                           query.ColumnString(2),
-                           args.Pass(),
-                           page_url,
-                           arg_url,
-                           other.Pass());
     actions->push_back(action);
   }
-  // Sort by time (from newest to oldest).
-  std::sort(actions->begin(), actions->end(), SortActionsByTime);
   return actions.Pass();
 }
 
