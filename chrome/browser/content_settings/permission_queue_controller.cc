@@ -98,13 +98,18 @@ void PermissionQueueController::PendingInfoBarRequest::CreateInfoBar(
 }
 
 
-PermissionQueueController::PermissionQueueController(
-    Profile* profile, ContentSettingsType type)
+PermissionQueueController::PermissionQueueController(Profile* profile,
+                                                     ContentSettingsType type)
     : profile_(profile),
-      type_(type) {
+      type_(type),
+      in_shutdown_(false) {
 }
 
 PermissionQueueController::~PermissionQueueController() {
+  // Cancel all outstanding requests.
+  in_shutdown_ = true;
+  while (!pending_infobar_requests_.empty())
+    CancelInfoBarRequest(pending_infobar_requests_.front().id());
 }
 
 void PermissionQueueController::CreateInfoBarRequest(
@@ -234,14 +239,17 @@ void PermissionQueueController::ShowQueuedInfoBarForTab(
     const PermissionRequestID& id) {
   DCHECK(!AlreadyShowingInfoBarForTab(id));
 
+  // We can get here for example during tab shutdown, when the InfoBarService is
+  // removing all existing infobars, thus calling back to Observe().  In this
+  // case the service still exists, and is supplied as the source of the
+  // notification we observed, but is no longer accessible from its WebContents.
+  // In this case we should just go ahead and cancel further infobars for this
+  // tab instead of trying to access the service.
+  //
+  // Similarly, if we're being destroyed, we should also avoid showing further
+  // infobars.
   InfoBarService* infobar_service = GetInfoBarService(id);
-  if (!infobar_service) {
-    // We can get here for example during tab shutdown, when the
-    // InfoBarService is removing all existing infobars, thus calling back to
-    // Observe().  In this case the service still exists, and is supplied as the
-    // source of the notification we observed, but is no longer accessible from
-    // its WebContents.  In this case we should just go ahead and cancel further
-    // infobars for this tab instead of trying to access the service.
+  if (!infobar_service || in_shutdown_) {
     ClearPendingInfoBarRequestsForTab(id);
     return;
   }

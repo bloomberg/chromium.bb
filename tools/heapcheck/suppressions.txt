@@ -510,34 +510,15 @@
    fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
    fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
 }
-{
-   bug_155530_a
-   Heapcheck:Leak
-   ...
-   fun:GeolocationInfoBarQueueControllerTests_OneObservationPerInfoBarCancelled_Test::TestBody
-}
-{
-   bug_155530_b
-   Heapcheck:Leak
-   ...
-   fun:*CreateLocaleDefaultValue
-   ...
-   fun:PermissionQueueControllerTests::SetUp
-}
-{
-   bug_155530_c
-   Heapcheck:Leak
-   ...
-   fun:PermissionQueueControllerTests_OneObservationPerInfoBarCancelled_Test::TestBody
-}
-{
-   bug_155530_d
-   Heapcheck:Leak
-   ...
-   fun:*CreateLocaleDefaultValue
-   ...
-   fun:GeolocationInfoBarQueueControllerTests::SetUp
-}
+# Intentionally comment this out temporarily to get a stack trace from the bot.
+#{
+#   bug_155530
+#   Heapcheck:Leak
+#   ...
+#   fun:*CreateLocaleDefaultValue
+#   ...
+#   fun:PermissionQueueControllerTests::SetUp
+#}
 {
    bug_157885
    Heapcheck:Leak

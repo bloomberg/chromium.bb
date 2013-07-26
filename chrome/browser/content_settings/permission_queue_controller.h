@@ -23,7 +23,7 @@ class Profile;
 // things listening for such notifications.
 // For the time being this class is self-contained and it doesn't seem pulling
 // the notification infrastructure would simplify.
-class PermissionQueueController : content::NotificationObserver {
+class PermissionQueueController : public content::NotificationObserver {
  public:
   typedef base::Callback<void(bool /* allowed */)> PermissionDecidedCallback;
 
@@ -85,6 +85,7 @@ class PermissionQueueController : content::NotificationObserver {
   Profile* const profile_;
   ContentSettingsType type_;
   PendingInfoBarRequests pending_infobar_requests_;
+  bool in_shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionQueueController);
 };
