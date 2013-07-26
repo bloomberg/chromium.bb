@@ -29,6 +29,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/screen.h"
@@ -762,6 +763,21 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   return pack;
 }
 
+// static
+void BrowserThemePack::GetThemeableImageIDRs(std::set<int>* result) {
+  if (!result)
+    return;
+
+  result->clear();
+  for (size_t i = 0; i < kPersistingImagesLength; ++i)
+    result->insert(kPersistingImages[i].idr_id);
+
+#if defined(OS_WIN) && defined(USE_AURA)
+  for (size_t i = 0; i < kPersistingImagesWinDesktopAuraLength; ++i)
+    result->insert(kPersistingImagesWinDesktopAura[i].idr_id);
+#endif
+}
+
 bool BrowserThemePack::WriteToDisk(const base::FilePath& path) const {
   // Add resources for each of the property arrays.
   RawDataForWriting resources;
@@ -890,21 +906,6 @@ base::RefCountedMemory* BrowserThemePack::GetRawData(
   return memory;
 }
 
-// static
-void BrowserThemePack::GetThemeableImageIDRs(std::set<int>* result) {
-  if (!result)
-    return;
-
-  result->clear();
-  for (size_t i = 0; i < kPersistingImagesLength; ++i)
-    result->insert(kPersistingImages[i].idr_id);
-
-#if defined(OS_WIN) && defined(USE_AURA)
-  for (size_t i = 0; i < kPersistingImagesWinDesktopAuraLength; ++i)
-    result->insert(kPersistingImagesWinDesktopAura[i].idr_id);
-#endif
-}
-
 bool BrowserThemePack::HasCustomImage(int idr_id) const {
   int prs_id = GetPersistentIDByIDR(idr_id);
   if (prs_id == -1)
@@ -922,7 +923,8 @@ bool BrowserThemePack::HasCustomImage(int idr_id) const {
 // private:
 
 BrowserThemePack::BrowserThemePack()
-    : header_(NULL),
+    : CustomThemeSupplier(EXTENSION),
+      header_(NULL),
       tints_(NULL),
       colors_(NULL),
       display_properties_(NULL),

@@ -6,13 +6,15 @@
 
 #include "base/json/json_reader.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+namespace theme_service_internal {
 
 class ThemeServiceTest : public ExtensionServiceTestBase {
  public:
@@ -38,6 +40,10 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
   virtual void SetUp() {
     ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
+  }
+
+  const CustomThemeSupplier* get_theme_supplier(ThemeService* theme_service) {
+    return theme_service->get_theme_supplier();
   }
 };
 
@@ -85,4 +91,32 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
 }
 
-}; // namespace
+// Checks that managed users have their own default theme.
+TEST_F(ThemeServiceTest, ManagedUserThemeReplacesDefaultTheme) {
+  profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+  theme_service->UseDefaultTheme();
+  EXPECT_TRUE(theme_service->UsingDefaultTheme());
+  EXPECT_TRUE(get_theme_supplier(theme_service));
+  EXPECT_EQ(get_theme_supplier(theme_service)->get_theme_type(),
+            CustomThemeSupplier::MANAGED_USER_THEME);
+}
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Checks that managed users don't use the system theme even if it is the
+// default. The system theme is only available on Linux.
+TEST_F(ThemeServiceTest, ManagedUserThemeReplacesNativeTheme) {
+  profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+  profile_->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, true);
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+  theme_service->UseDefaultTheme();
+  EXPECT_TRUE(theme_service->UsingDefaultTheme());
+  EXPECT_TRUE(get_theme_supplier(theme_service));
+  EXPECT_EQ(get_theme_supplier(theme_service)->get_theme_type(),
+            CustomThemeSupplier::MANAGED_USER_THEME);
+}
+#endif
+
+}; // namespace theme_service_internal

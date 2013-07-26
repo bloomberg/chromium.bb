@@ -298,7 +298,6 @@ void GtkThemeService::Init(Profile* profile) {
   registrar_.Add(prefs::kUsesSystemTheme,
                  base::Bind(&GtkThemeService::OnUsesSystemThemeChanged,
                             base::Unretained(this)));
-  use_gtk_ = profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
   ThemeService::Init(profile);
 }
 
@@ -309,14 +308,6 @@ gfx::ImageSkia* GtkThemeService::GetImageSkiaNamed(int id) const {
 }
 
 gfx::Image GtkThemeService::GetImageNamed(int id) const {
-  // TODO(akuegel): Remove this once we have the default managed user theme.
-  if (ManagedUserService::ProfileIsManaged(profile())) {
-    if (id == IDR_THEME_FRAME)
-      id = IDR_MANAGED_USER_THEME_FRAME;
-    else if (id == IDR_THEME_FRAME_INACTIVE)
-      id = IDR_MANAGED_USER_THEME_FRAME_INACTIVE;
-  }
-
   // Try to get our cached version:
   ImageCache::const_iterator it = gtk_images_.find(id);
   if (it != gtk_images_.end())
@@ -333,14 +324,6 @@ gfx::Image GtkThemeService::GetImageNamed(int id) const {
 }
 
 SkColor GtkThemeService::GetColor(int id) const {
-  // TODO(akuegel): Remove this once we have the default managed user theme.
-  if (ManagedUserService::ProfileIsManaged(profile())) {
-    if (id == ThemeProperties::COLOR_FRAME)
-      id = ThemeProperties::COLOR_FRAME_MANAGED_USER;
-    else if (id == ThemeProperties::COLOR_FRAME_INACTIVE)
-      id = ThemeProperties::COLOR_FRAME_MANAGED_USER_INACTIVE;
-  }
-
   if (use_gtk_) {
     ColorMap::const_iterator it = colors_.find(id);
     if (it != colors_.end())
@@ -371,12 +354,14 @@ void GtkThemeService::SetTheme(const extensions::Extension* extension) {
 
 void GtkThemeService::UseDefaultTheme() {
   profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, false);
+  use_gtk_ = false;
   LoadDefaultValues();
   ThemeService::UseDefaultTheme();
 }
 
 void GtkThemeService::SetNativeTheme() {
   profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, true);
+  use_gtk_ = true;
   ClearAllThemeData();
   LoadGtkValues();
   NotifyThemeChanged();
@@ -384,6 +369,10 @@ void GtkThemeService::SetNativeTheme() {
 
 bool GtkThemeService::UsingDefaultTheme() const {
   return !use_gtk_ && ThemeService::UsingDefaultTheme();
+}
+
+bool GtkThemeService::ShouldInitWithNativeTheme() const {
+  return profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
 }
 
 bool GtkThemeService::UsingNativeTheme() const {
@@ -650,13 +639,8 @@ void GtkThemeService::ClearAllThemeData() {
 }
 
 void GtkThemeService::LoadThemePrefs() {
-  if (use_gtk_) {
-    LoadGtkValues();
-    set_ready();
-  } else {
-    LoadDefaultValues();
-    ThemeService::LoadThemePrefs();
-  }
+  // This takes care of calling SetNativeTheme() if necessary.
+  ThemeService::LoadThemePrefs();
 
   SetXDGIconTheme();
   RebuildMenuIconSets();

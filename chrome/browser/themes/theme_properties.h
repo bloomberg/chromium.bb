@@ -80,8 +80,6 @@ class ThemeProperties {
   enum NotOverwritableByUserThemeProperty {
     COLOR_CONTROL_BACKGROUND = 1000,
     COLOR_TOOLBAR_SEPARATOR,
-    COLOR_FRAME_MANAGED_USER,
-    COLOR_FRAME_MANAGED_USER_INACTIVE,
 
     // These colors don't have constant default values. They are derived from
     // the runtime value of other colors.

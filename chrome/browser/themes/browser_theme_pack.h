@@ -10,15 +10,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/image/image.h"
 
 namespace base {
 class DictionaryValue;
@@ -28,6 +26,10 @@ class RefCountedMemory;
 
 namespace extensions {
 class Extensions;
+}
+
+namespace gfx {
+class Image;
 }
 
 namespace ui {
@@ -51,8 +53,7 @@ class DataPack;
 // BrowserThemePacks are always deleted on the file thread because in the
 // common case, they are backed by mmapped data and the unmmapping operation
 // will trip our IO on the UI thread detector.
-class BrowserThemePack : public base::RefCountedThreadSafe<
-    BrowserThemePack, content::BrowserThread::DeleteOnFileThread> {
+class BrowserThemePack : public CustomThemeSupplier {
  public:
   // Builds the theme pack from all data from |extension|. This is often done
   // on a separate thread as it takes so long. This can fail and return NULL in
@@ -66,6 +67,10 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   static scoped_refptr<BrowserThemePack> BuildFromDataPack(
       const base::FilePath& path, const std::string& expected_id);
 
+  // Returns the set of image IDRs which can be overwritten by a user provided
+  // theme.
+  static void GetThemeableImageIDRs(std::set<int>* result);
+
   // Builds a data pack on disk at |path| for future quick loading by
   // BuildFromDataPack(). Often (but not always) called from the file thread;
   // implementation should be threadsafe because neither thread will write to
@@ -73,34 +78,16 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // destruction.
   bool WriteToDisk(const base::FilePath& path) const;
 
-  // If this theme specifies data for the corresponding |id|, return true and
-  // write the corresponding value to the output parameter. These functions
-  // don't return the default data. These methods should only be called from
-  // the UI thread. (But this isn't enforced because of unit tests).
-  bool GetTint(int id, color_utils::HSL* hsl) const;
-  bool GetColor(int id, SkColor* color) const;
-  bool GetDisplayProperty(int id, int* result) const;
-
-  // Returns the theme pack image for |id|. Returns an empty image if an image
-  // is not found.
-  gfx::Image GetImageNamed(int id);
-
-  // Returns the raw PNG encoded data for IDR_THEME_NTP_*. This method is only
-  // supposed to work for the NTP attribution and background resources.
-  base::RefCountedMemory* GetRawData(int id,
-                                     ui::ScaleFactor scale_factor) const;
-
-  // Returns the set of image idrs which can be overwritten by a user provided
-  // theme.
-  static void GetThemeableImageIDRs(std::set<int>* result);
-
-  // Whether this theme provides an image for |id|.
-  bool HasCustomImage(int id) const;
+  // Overridden from CustomThemeSupplier:
+  virtual bool GetTint(int id, color_utils::HSL* hsl) const OVERRIDE;
+  virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
+  virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE;
+  virtual gfx::Image GetImageNamed(int id) OVERRIDE;
+  virtual base::RefCountedMemory* GetRawData(
+      int id, ui::ScaleFactor scale_factor) const OVERRIDE;
+  virtual bool HasCustomImage(int id) const OVERRIDE;
 
  private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::FILE>;
-  friend class base::DeleteHelper<BrowserThemePack>;
   friend class BrowserThemePackTest;
 
   // Cached images.

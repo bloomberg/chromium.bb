@@ -30,9 +30,6 @@ const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 const SkColor kDefaultColorFrameIncognito = SkColorSetRGB(83, 106, 139);
 const SkColor kDefaultColorFrameIncognitoInactive =
     SkColorSetRGB(126, 139, 156);
-const SkColor kDefaultColorFrameManagedUser = SkColorSetRGB(165, 197, 225);
-const SkColor kDefaultColorFrameManagedUserInactive =
-    SkColorSetRGB(180, 225, 247);
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
 #else
@@ -252,10 +249,6 @@ SkColor ThemeProperties::GetDefaultColor(int id) {
       return kDefaultColorFrameIncognito;
     case COLOR_FRAME_INCOGNITO_INACTIVE:
       return kDefaultColorFrameIncognitoInactive;
-    case COLOR_FRAME_MANAGED_USER:
-      return kDefaultColorFrameManagedUser;
-    case COLOR_FRAME_MANAGED_USER_INACTIVE:
-      return kDefaultColorFrameManagedUserInactive;
     case COLOR_TOOLBAR:
       return kDefaultColorToolbar;
     case COLOR_TAB_TEXT:

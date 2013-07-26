@@ -19,8 +19,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/theme_provider.h"
 
+class CustomThemeSupplier;
 class BrowserThemePack;
-class ThemeServiceTest;
 class ThemeSyncableService;
 class Profile;
 
@@ -38,6 +38,10 @@ class Extension;
 
 namespace gfx {
 class Image;
+}
+
+namespace theme_service_internal {
+class ThemeServiceTest;
 }
 
 namespace ui {
@@ -142,6 +146,13 @@ class ThemeService : public base::NonThreadSafe,
   typedef std::map<base::FilePath, int> ImagesDiskCache;
 
  protected:
+  // Set a custom default theme instead of the normal default theme.
+  virtual void SetCustomDefaultTheme(
+      scoped_refptr<CustomThemeSupplier> theme_supplier);
+
+  // Returns true if the ThemeService should use the native theme on startup.
+  virtual bool ShouldInitWithNativeTheme() const;
+
   // Get the specified tint - |id| is one of the TINT_* enum values.
   color_utils::HSL GetTint(int id) const;
 
@@ -167,8 +178,16 @@ class ThemeService : public base::NonThreadSafe,
 
   void set_ready() { ready_ = true; }
 
+  const CustomThemeSupplier* get_theme_supplier() const {
+    return theme_supplier_.get();
+  }
+
  private:
-  friend class ThemeServiceTest;
+  friend class theme_service_internal::ThemeServiceTest;
+
+  // Replaces the current theme supplier with a new one and calls
+  // StopUsingTheme() or StartUsingTheme() as appropriate.
+  void SwapThemeSupplier(scoped_refptr<CustomThemeSupplier> theme_supplier);
 
   // Migrate the theme to the new theme pack schema by recreating the data pack
   // from the extension.
@@ -186,6 +205,10 @@ class ThemeService : public base::NonThreadSafe,
 
   // Returns true if the profile belongs to a managed user.
   bool IsManagedUser() const;
+
+  // Sets the current theme to the managed user theme. Should only be used for
+  // managed user profiles.
+  void SetManagedUserTheme();
 
 #if defined(TOOLKIT_GTK)
   // Loads an image and flips it horizontally if |rtl_enabled| is true.
@@ -215,7 +238,7 @@ class ThemeService : public base::NonThreadSafe,
   // ThemeSource no longer uses the ThemeService when it is not ready.
   bool ready_;
 
-  scoped_refptr<BrowserThemePack> theme_pack_;
+  scoped_refptr<CustomThemeSupplier> theme_supplier_;
 
   // The number of infobars currently displayed.
   int number_of_infobars_;

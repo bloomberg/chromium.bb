@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
+#include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
 #include "chrome/common/chrome_constants.h"
@@ -34,6 +35,7 @@
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_theme.h"
 #endif
 
 using content::BrowserThread;
@@ -104,20 +106,9 @@ void ThemeService::Init(Profile* profile) {
 gfx::Image ThemeService::GetImageNamed(int id) const {
   DCHECK(CalledOnValidThread());
 
-  // For a managed user, use the special frame instead of the default one.
-  // TODO(akuegel): Remove this once we have the default managed user theme.
-  if (IsManagedUser()) {
-    if (id == IDR_THEME_FRAME)
-      id = IDR_MANAGED_USER_THEME_FRAME;
-    else if (id == IDR_THEME_FRAME_INACTIVE)
-      id = IDR_MANAGED_USER_THEME_FRAME_INACTIVE;
-    else if (id == IDR_THEME_TAB_BACKGROUND || id == IDR_THEME_TAB_BACKGROUND_V)
-      id = IDR_MANAGED_USER_THEME_TAB_BACKGROUND;
-  }
-
   gfx::Image image;
-  if (theme_pack_.get())
-    image = theme_pack_->GetImageNamed(id);
+  if (theme_supplier_.get())
+    image = theme_supplier_->GetImageNamed(id);
 
   if (image.IsEmpty())
     image = rb_.GetNativeImageNamed(id);
@@ -136,17 +127,8 @@ gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
 
 SkColor ThemeService::GetColor(int id) const {
   DCHECK(CalledOnValidThread());
-
-  // TODO(akuegel): Remove this once we have the default managed user theme.
-  if (IsManagedUser()) {
-    if (id == Properties::COLOR_FRAME)
-      id = Properties::COLOR_FRAME_MANAGED_USER;
-    else if (id == Properties::COLOR_FRAME_INACTIVE)
-      id = Properties::COLOR_FRAME_MANAGED_USER_INACTIVE;
-  }
-
   SkColor color;
-  if (theme_pack_.get() && theme_pack_->GetColor(id, &color))
+  if (theme_supplier_.get() && theme_supplier_->GetColor(id, &color))
     return color;
 
   // For backward compat with older themes, some newer colors are generated from
@@ -163,22 +145,20 @@ SkColor ThemeService::GetColor(int id) const {
     case Properties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
     case Properties::COLOR_MANAGED_USER_LABEL:
-      // TODO(akuegel): Use GetReadableColor() once we want to support other
-      // themes as well.
-      return SkColorSetRGB(231, 245, 255);
+      return color_utils::GetReadableColor(
+          SK_ColorWHITE,
+          GetColor(Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND));
     case Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND:
-      // TODO(akuegel): Replace this constant by a color calculated from the
-      // frame color once the default managed user theme is finished and we
-      // allow managed users to install other themes.
-      return SkColorSetRGB(108, 167, 210);
+      return color_utils::BlendTowardOppositeLuminance(
+          GetColor(Properties::COLOR_FRAME), 0x80);
   }
 
   return Properties::GetDefaultColor(id);
 }
 
 bool ThemeService::GetDisplayProperty(int id, int* result) const {
-  if (theme_pack_.get())
-    return theme_pack_->GetDisplayProperty(id, result);
+  if (theme_supplier_.get())
+    return theme_supplier_->GetDisplayProperty(id, result);
 
   return Properties::GetDefaultDisplayProperty(id, result);
 }
@@ -197,13 +177,8 @@ bool ThemeService::HasCustomImage(int id) const {
   if (!Properties::IsThemeableImage(id))
     return false;
 
-  if (theme_pack_.get())
-    return theme_pack_->HasCustomImage(id);
-
-  if (IsManagedUser() &&
-      (id == IDR_THEME_FRAME || id == IDR_THEME_FRAME_INACTIVE ||
-       id == IDR_THEME_TAB_BACKGROUND || id == IDR_THEME_TAB_BACKGROUND_V))
-    return true;
+  if (theme_supplier_.get())
+    return theme_supplier_->HasCustomImage(id);
 
   return false;
 }
@@ -218,8 +193,8 @@ base::RefCountedMemory* ThemeService::GetRawData(
     id = IDR_PRODUCT_LOGO_WHITE;
 
   base::RefCountedMemory* data = NULL;
-  if (theme_pack_.get())
-    data = theme_pack_->GetRawData(id, scale_factor);
+  if (theme_supplier_.get())
+    data = theme_supplier_->GetRawData(id, scale_factor);
   if (!data)
     data = rb_.LoadDataResourceBytesForScale(id, ui::SCALE_FACTOR_100P);
 
@@ -261,9 +236,24 @@ void ThemeService::SetTheme(const Extension* extension) {
   content::RecordAction(UserMetricsAction("Themes_Installed"));
 }
 
+void ThemeService::SetCustomDefaultTheme(
+    scoped_refptr<CustomThemeSupplier> theme_supplier) {
+  ClearAllThemeData();
+  SwapThemeSupplier(theme_supplier);
+  NotifyThemeChanged();
+}
+
+bool ThemeService::ShouldInitWithNativeTheme() const {
+  return false;
+}
+
 void ThemeService::RemoveUnusedThemes() {
-  if (!profile_)
+  // We do not want to garbage collect themes on startup (|ready_| is false).
+  // Themes will get garbage collected once
+  // ExtensionService::GarbageCollectExtensions() runs.
+  if (!profile_ || !ready_)
     return;
+
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return;
@@ -281,9 +271,16 @@ void ThemeService::RemoveUnusedThemes() {
 }
 
 void ThemeService::UseDefaultTheme() {
-  ClearAllThemeData();
-  NotifyThemeChanged();
-  content::RecordAction(UserMetricsAction("Themes_Reset"));
+  if (ready_)
+    content::RecordAction(UserMetricsAction("Themes_Reset"));
+  if (IsManagedUser()) {
+    SetManagedUserTheme();
+    return;
+  }
+  if (ready_) {
+    ClearAllThemeData();
+    NotifyThemeChanged();
+  }
 }
 
 void ThemeService::SetNativeTheme() {
@@ -293,7 +290,7 @@ void ThemeService::SetNativeTheme() {
 bool ThemeService::UsingDefaultTheme() const {
   std::string id = GetThemeID();
   return id == ThemeService::kDefaultThemeID ||
-      id == kDefaultThemeGalleryID;
+      (id == kDefaultThemeGalleryID && !IsManagedUser());
 }
 
 bool ThemeService::UsingNativeTheme() const {
@@ -308,16 +305,17 @@ color_utils::HSL ThemeService::GetTint(int id) const {
   DCHECK(CalledOnValidThread());
 
   color_utils::HSL hsl;
-  if (theme_pack_.get() && theme_pack_->GetTint(id, &hsl))
+  if (theme_supplier_.get() && theme_supplier_->GetTint(id, &hsl))
     return hsl;
 
   return ThemeProperties::GetDefaultTint(id);
 }
 
 void ThemeService::ClearAllThemeData() {
+  SwapThemeSupplier(NULL);
+
   // Clear our image cache.
   FreePlatformCaches();
-  theme_pack_ = NULL;
 
   profile_->GetPrefs()->ClearPref(prefs::kCurrentThemePackFilename);
   SaveThemeID(kDefaultThemeID);
@@ -330,6 +328,13 @@ void ThemeService::LoadThemePrefs() {
 
   std::string current_id = GetThemeID();
   if (current_id == kDefaultThemeID) {
+    // Managed users have a different default theme.
+    if (IsManagedUser())
+      SetManagedUserTheme();
+    else if (ShouldInitWithNativeTheme())
+      SetNativeTheme();
+    else
+      UseDefaultTheme();
     set_ready();
     return;
   }
@@ -339,8 +344,8 @@ void ThemeService::LoadThemePrefs() {
   // If we don't have a file pack, we're updating from an old version.
   base::FilePath path = prefs->GetFilePath(prefs::kCurrentThemePackFilename);
   if (path != base::FilePath()) {
-    theme_pack_ = BrowserThemePack::BuildFromDataPack(path, current_id);
-    loaded_pack = theme_pack_.get() != NULL;
+    SwapThemeSupplier(BrowserThemePack::BuildFromDataPack(path, current_id));
+    loaded_pack = theme_supplier_.get() != NULL;
   }
 
   if (loaded_pack) {
@@ -359,6 +364,9 @@ void ThemeService::LoadThemePrefs() {
 }
 
 void ThemeService::NotifyThemeChanged() {
+  if (!ready_)
+    return;
+
   DVLOG(1) << "Sending BROWSER_THEME_CHANGED";
   // Redraw!
   content::NotificationService* service =
@@ -381,6 +389,15 @@ void ThemeService::FreePlatformCaches() {
   // Views (Skia) has no platform image cache to clear.
 }
 #endif
+
+void ThemeService::SwapThemeSupplier(
+    scoped_refptr<CustomThemeSupplier> theme_supplier) {
+  if (theme_supplier_.get())
+    theme_supplier_->StopUsingTheme();
+  theme_supplier_ = theme_supplier;
+  if (theme_supplier_.get())
+    theme_supplier_->StartUsingTheme();
+}
 
 void ThemeService::MigrateTheme() {
   ExtensionService* service =
@@ -430,7 +447,7 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
       base::Bind(&WritePackToDiskCallback, pack, pack_path));
 
   SavePackName(pack_path);
-  theme_pack_ = pack;
+  SwapThemeSupplier(pack);
 }
 
 bool ThemeService::IsManagedUser() const {
@@ -438,6 +455,12 @@ bool ThemeService::IsManagedUser() const {
   return ManagedUserService::ProfileIsManaged(profile_);
 #endif
   return false;
+}
+
+void ThemeService::SetManagedUserTheme() {
+#if defined(ENABLE_MANAGED_USERS)
+  SetCustomDefaultTheme(new ManagedUserTheme);
+#endif
 }
 
 void ThemeService::OnInfobarDisplayed() {

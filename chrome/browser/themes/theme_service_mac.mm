@@ -51,8 +51,8 @@ NSImage* ThemeService::GetNSImageNamed(int id, bool allow_default) const {
   // - For consistency with other platforms.
   // - To get the generated tinted images.
   NSImage* nsimage = nil;
-  if (theme_pack_.get()) {
-    gfx::Image image = theme_pack_->GetImageNamed(id);
+  if (theme_supplier_.get()) {
+    gfx::Image image = theme_supplier_->GetImageNamed(id);
     if (!image.IsEmpty())
       nsimage = image.ToNSImage();
   }
@@ -126,7 +126,7 @@ NSColor* ThemeService::GetNSColor(int id, bool allow_default) const {
 
   bool is_default = false;
   SkColor sk_color;
-  if (theme_pack_.get() && theme_pack_->GetColor(id, &sk_color)) {
+  if (theme_supplier_.get() && theme_supplier_->GetColor(id, &sk_color)) {
     is_default = false;
   } else {
     is_default = true;
@@ -158,7 +158,7 @@ NSColor* ThemeService::GetNSColorTint(int id, bool allow_default) const {
 
   bool is_default = false;
   color_utils::HSL tint;
-  if (theme_pack_.get() && theme_pack_->GetTint(id, &tint)) {
+  if (theme_supplier_.get() && theme_supplier_->GetTint(id, &tint)) {
     is_default = false;
   } else {
     is_default = true;
