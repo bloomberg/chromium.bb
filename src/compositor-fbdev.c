@@ -673,6 +673,7 @@ fbdev_output_reenable(struct fbdev_compositor *compositor,
 	struct fbdev_output *output = to_fbdev_output(base);
 	struct fbdev_screeninfo new_screen_info;
 	int fb_fd;
+	const char *device;
 
 	weston_log("Re-enabling fbdev output.\n");
 
@@ -697,8 +698,9 @@ fbdev_output_reenable(struct fbdev_compositor *compositor,
 		/* Remove and re-add the output so that resources depending on
 		 * the frame buffer X/Y resolution (such as the shadow buffer)
 		 * are re-initialised. */
+		device = output->device;
 		fbdev_output_destroy(base);
-		fbdev_output_create(compositor, output->device);
+		fbdev_output_create(compositor, device);
 
 		return 0;
 	}
