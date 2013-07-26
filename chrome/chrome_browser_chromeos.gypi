@@ -355,8 +355,6 @@
         'browser/chromeos/fileapi/file_system_backend.cc',
         'browser/chromeos/fileapi/file_system_backend.h',
         'browser/chromeos/fileapi/file_system_backend_delegate.h',
-        'browser/chromeos/fileapi/remote_file_system_operation.cc',
-        'browser/chromeos/fileapi/remote_file_system_operation.h',
         'browser/chromeos/imageburner/burn_controller.cc',
         'browser/chromeos/imageburner/burn_controller.h',
         'browser/chromeos/imageburner/burn_device_handler.cc',
