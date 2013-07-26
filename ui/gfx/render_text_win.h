@@ -90,6 +90,8 @@ class RenderTextWin : public RenderText {
   virtual void DrawVisualText(Canvas* canvas) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Win_LogicalClusters);
+
   void ItemizeLogicalText();
   void LayoutVisualText();
   void LayoutTextRun(internal::TextRun* run);

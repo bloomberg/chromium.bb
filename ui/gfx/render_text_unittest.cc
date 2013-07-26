@@ -12,6 +12,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "ui/gfx/render_text_win.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -1099,6 +1100,21 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
   EXPECT_EQ(6U, render_text->cursor_position());
 }
 #endif
+
+#if defined(OS_WIN)
+TEST_F(RenderTextTest, Win_LogicalClusters) {
+  scoped_ptr<RenderTextWin> render_text(
+      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+
+  const string16 test_string(L"\x0930\x0930\x0930\x0930\x0930");
+  render_text->SetText(test_string);
+  render_text->EnsureLayout();
+  ASSERT_EQ(1U, render_text->runs_.size());
+  WORD* logical_clusters = render_text->runs_[0]->logical_clusters.get();
+  for (size_t i = 0; i < test_string.length(); ++i)
+    EXPECT_EQ(i, logical_clusters[i]);
+}
+#endif  // defined(OS_WIN)
 
 TEST_F(RenderTextTest, StringSizeSanity) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());

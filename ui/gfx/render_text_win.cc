@@ -720,16 +720,27 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
   properties.cBytes = sizeof(properties);
   HRESULT hr = ScriptGetFontProperties(cached_hdc_, &run->script_cache,
                                        &properties);
+
+  // The initial values for the "missing" glyph and the space glyph are taken
+  // from the recommendations section of the OpenType spec:
+  // https://www.microsoft.com/typography/otspec/recom.htm
+  WORD missing_glyph = 0;
+  WORD space_glyph = 3;
   if (hr == S_OK) {
-    // Finally, initialize |glyph_count|, |glyphs| and |visible_attributes| on
-    // the run (since they may not have been set yet).
-    run->glyph_count = run_length;
-    memset(run->visible_attributes.get(), 0,
-           run->glyph_count * sizeof(SCRIPT_VISATTR));
-    for (int i = 0; i < run->glyph_count; ++i) {
-      run->glyphs[i] = IsWhitespace(run_text[i]) ? properties.wgBlank :
-                                                   properties.wgDefault;
-    }
+    missing_glyph = properties.wgDefault;
+    space_glyph = properties.wgBlank;
+  }
+
+  // Finally, initialize |glyph_count|, |glyphs|, |visible_attributes| and
+  // |logical_clusters| on the run (since they may not have been set yet).
+  run->glyph_count = run_length;
+  memset(run->visible_attributes.get(), 0,
+         run->glyph_count * sizeof(SCRIPT_VISATTR));
+  for (int i = 0; i < run->glyph_count; ++i)
+    run->glyphs[i] = IsWhitespace(run_text[i]) ? space_glyph : missing_glyph;
+  for (size_t i = 0; i < run_length; ++i) {
+    run->logical_clusters[i] = run->script_analysis.fRTL ?
+        run_length - 1 - i : i;
   }
 
   // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
