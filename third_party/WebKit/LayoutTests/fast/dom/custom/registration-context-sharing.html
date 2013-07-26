@@ -177,7 +177,7 @@ withFrame(t.step_func(function (frameA) {
         frameA.remove();
         frameB.remove();
         t.done();
-    }), frameA.contentDocument);
+    }));
 }));
 
 })();
@@ -247,6 +247,44 @@ withFrame(t.step_func(function (frame) {
     frame.remove();
     t.done();
 }));
+
+})();
+
+(function () {
+
+var t = async_test('registration context is shared with imported documents');
+var link;
+var documentA;
+
+t.step(function () {
+    // FIXME: When inserting a <link> within a frame triggers an import,
+    // run this part of the test in isolation within a frame.
+    documentA = document;
+
+    link = documentA.createElement('link');
+    link.rel = 'import';
+    link.href = 'resources/empty-document.html';
+    documentA.head.appendChild(link);
+
+    // FIXME: When imports raise the 'load' event, use that instead of
+    // polling.
+    waitForLinkToLoad();
+});
+
+function waitForLinkToLoad() {
+    if (!link.import) {
+        setTimeout(waitForLinkToLoad, 100);
+        return;
+    }
+
+    t.step(function () {
+        var documentB = link.import;
+        var tester = new TestRegistrationContextSharing(window, documentA,
+                                                        window, documentB);
+        tester.testRegistrationContextIsShared();
+        t.done();
+    });
+}
 
 })();
 

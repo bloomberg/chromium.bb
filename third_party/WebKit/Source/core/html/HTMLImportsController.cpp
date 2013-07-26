@@ -180,7 +180,7 @@ HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceR
     if (!m_parent->document()->fetcher()->canAccess(m_resource.get()))
         return StateError;
 
-    m_importedDocument = HTMLDocument::create(DocumentInit(response.url(), 0, this));
+    m_importedDocument = HTMLDocument::create(DocumentInit(response.url(), 0, this).withRegistrationContext(controller()->document()->registrationContext()));
     m_importedDocument->initContentSecurityPolicy(ContentSecurityPolicyResponseHeaders(response));
     m_writer = DocumentWriter::create(m_importedDocument.get(), response.mimeType(), response.textEncodingName());
 
