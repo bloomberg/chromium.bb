@@ -206,46 +206,43 @@ TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
 }
 
 // A regression test for http://crbug.com/31497.
-// This certificate will expire on 2012-04-08. The test will still
-// pass if error == ERR_CERT_DATE_INVALID.  TODO(wtc): generate test
-// certificates for this unit test. http://crbug.com/111742
-TEST_F(CertVerifyProcTest, IntermediateCARequireExplicitPolicy) {
+#if defined(OS_ANDROID)
+// Disabled on Android, as the Android verification libraries require an
+// explicit policy to be specified, even when anyPolicy is permitted.
+#define MAYBE_IntermediateCARequireExplicitPolicy \
+    DISABLED_IntermediateCARequireExplicitPolicy
+#else
+#define MAYBE_IntermediateCARequireExplicitPolicy \
+    IntermediateCARequireExplicitPolicy
+#endif
+TEST_F(CertVerifyProcTest, MAYBE_IntermediateCARequireExplicitPolicy) {
   base::FilePath certs_dir = GetTestCertsDirectory();
 
-  scoped_refptr<X509Certificate> server_cert =
-      ImportCertFromFile(certs_dir, "www_us_army_mil_cert.der");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);
-
-  // The intermediate CA certificate's policyConstraints extension has a
-  // requireExplicitPolicy field with SkipCerts=0.
-  scoped_refptr<X509Certificate> intermediate_cert =
-      ImportCertFromFile(certs_dir, "dod_ca_17_cert.der");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert);
-
-  scoped_refptr<X509Certificate> root_cert =
-      ImportCertFromFile(certs_dir, "dod_root_ca_2_cert.der");
-  ScopedTestRoot scoped_root(root_cert.get());
+  CertificateList certs = CreateCertificateListFromFile(
+      certs_dir, "explicit-policy-chain.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(3U, certs.size());
 
   X509Certificate::OSCertHandles intermediates;
-  intermediates.push_back(intermediate_cert->os_cert_handle());
-  scoped_refptr<X509Certificate> cert_chain =
-      X509Certificate::CreateFromHandle(server_cert->os_cert_handle(),
+  intermediates.push_back(certs[1]->os_cert_handle());
+
+  scoped_refptr<X509Certificate> cert =
+      X509Certificate::CreateFromHandle(certs[0]->os_cert_handle(),
                                         intermediates);
+  ASSERT_TRUE(cert.get());
+
+  ScopedTestRoot scoped_root(certs[2].get());
 
   int flags = 0;
   CertVerifyResult verify_result;
-  int error = Verify(cert_chain.get(),
-                     "www.us.army.mil",
+  int error = Verify(cert.get(),
+                     "policy_test.example",
                      flags,
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-  if (error == OK) {
-    EXPECT_EQ(0U, verify_result.cert_status);
-  } else {
-    EXPECT_EQ(ERR_CERT_DATE_INVALID, error);
-    EXPECT_EQ(CERT_STATUS_DATE_INVALID, verify_result.cert_status);
-  }
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(0u, verify_result.cert_status);
 }
 
 
@@ -783,18 +780,18 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainFiltersUnrelatedCerts) {
   ASSERT_EQ(3U, certs.size());
   ScopedTestRoot scoped_root(certs[2].get());
 
-  scoped_refptr<X509Certificate> unrelated_dod_certificate =
-      ImportCertFromFile(certs_dir, "dod_ca_17_cert.der");
-  scoped_refptr<X509Certificate> unrelated_dod_certificate2 =
-      ImportCertFromFile(certs_dir, "dod_root_ca_2_cert.der");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), unrelated_dod_certificate);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), unrelated_dod_certificate2);
+  scoped_refptr<X509Certificate> unrelated_certificate =
+      ImportCertFromFile(certs_dir, "duplicate_cn_1.pem");
+  scoped_refptr<X509Certificate> unrelated_certificate2 =
+      ImportCertFromFile(certs_dir, "aia-cert.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), unrelated_certificate);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), unrelated_certificate2);
 
   // Interject unrelated certificates into the list of intermediates.
   X509Certificate::OSCertHandles intermediates;
-  intermediates.push_back(unrelated_dod_certificate->os_cert_handle());
+  intermediates.push_back(unrelated_certificate->os_cert_handle());
   intermediates.push_back(certs[1]->os_cert_handle());
-  intermediates.push_back(unrelated_dod_certificate2->os_cert_handle());
+  intermediates.push_back(unrelated_certificate2->os_cert_handle());
   intermediates.push_back(certs[2]->os_cert_handle());
 
   scoped_refptr<X509Certificate> google_full_chain =

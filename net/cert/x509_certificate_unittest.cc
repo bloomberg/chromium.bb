@@ -724,58 +724,63 @@ TEST(X509CertificateTest, IsIssuedByEncoded) {
 }
 
 TEST(X509CertificateTest, IsIssuedByEncodedWithIntermediates) {
+  static const unsigned char kPolicyRootDN[] = {
+    0x30, 0x1e, 0x31, 0x1c, 0x30, 0x1a, 0x06, 0x03, 0x55, 0x04, 0x03, 0x0c,
+    0x13, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x20, 0x54, 0x65, 0x73, 0x74,
+    0x20, 0x52, 0x6f, 0x6f, 0x74, 0x20, 0x43, 0x41
+  };
+  static const unsigned char kPolicyIntermediateDN[] = {
+    0x30, 0x26, 0x31, 0x24, 0x30, 0x22, 0x06, 0x03, 0x55, 0x04, 0x03, 0x0c,
+    0x1b, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x20, 0x54, 0x65, 0x73, 0x74,
+    0x20, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6d, 0x65, 0x64, 0x69, 0x61, 0x74,
+    0x65, 0x20, 0x43, 0x41
+  };
+
   base::FilePath certs_dir = GetTestCertsDirectory();
 
-  scoped_refptr<X509Certificate> server_cert =
-      ImportCertFromFile(certs_dir, "www_us_army_mil_cert.der");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);
+  CertificateList policy_chain = CreateCertificateListFromFile(
+      certs_dir, "explicit-policy-chain.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(3u, policy_chain.size());
 
   // The intermediate CA certificate's policyConstraints extension has a
   // requireExplicitPolicy field with SkipCerts=0.
-  scoped_refptr<X509Certificate> intermediate_cert =
-      ImportCertFromFile(certs_dir, "dod_ca_17_cert.der");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert);
-
-  std::string dod_ca_17_issuer(reinterpret_cast<const char*>(DodCA17DN),
-                               sizeof(DodCA17DN));
-
-  scoped_refptr<X509Certificate> root_cert =
-      ImportCertFromFile(certs_dir, "dod_root_ca_2_cert.der");
-
-  std::string dod_root_ca_2_issuer(
-      reinterpret_cast<const char*>(DodRootCA2DN), sizeof(DodRootCA2DN));
+  std::string policy_intermediate_dn(
+      reinterpret_cast<const char*>(kPolicyIntermediateDN),
+      sizeof(kPolicyIntermediateDN));
+  std::string policy_root_dn(reinterpret_cast<const char*>(kPolicyRootDN),
+                             sizeof(kPolicyRootDN));
 
   X509Certificate::OSCertHandles intermediates;
-  intermediates.push_back(intermediate_cert->os_cert_handle());
+  intermediates.push_back(policy_chain[1]->os_cert_handle());
   scoped_refptr<X509Certificate> cert_chain =
-      X509Certificate::CreateFromHandle(server_cert->os_cert_handle(),
+      X509Certificate::CreateFromHandle(policy_chain[0]->os_cert_handle(),
                                         intermediates);
 
   std::vector<std::string> issuers;
 
-  // Check that the chain is issued by DOD CA-17.
+  // Check that the chain is issued by the intermediate.
   issuers.clear();
-  issuers.push_back(dod_ca_17_issuer);
+  issuers.push_back(policy_intermediate_dn);
   EXPECT_TRUE(cert_chain->IsIssuedByEncoded(issuers));
 
-  // Check that the chain is also issued by DoD Root CA 2.
+  // Check that the chain is also issued by the root.
   issuers.clear();
-  issuers.push_back(dod_root_ca_2_issuer);
+  issuers.push_back(policy_root_dn);
   EXPECT_TRUE(cert_chain->IsIssuedByEncoded(issuers));
 
-  // Check that the chain is issued by either one of the two DOD issuers.
+  // Check that the chain is issued by either the intermediate or the root.
   issuers.clear();
-  issuers.push_back(dod_ca_17_issuer);
-  issuers.push_back(dod_root_ca_2_issuer);
+  issuers.push_back(policy_intermediate_dn);
+  issuers.push_back(policy_root_dn);
   EXPECT_TRUE(cert_chain->IsIssuedByEncoded(issuers));
 
   // Check that an empty issuers list returns false.
   issuers.clear();
   EXPECT_FALSE(cert_chain->IsIssuedByEncoded(issuers));
 
-  // Check that the chain is not issued by MIT
-  std::string mit_issuer(reinterpret_cast<const char*>(MITDN),
-                         sizeof(MITDN));
+  // Check that the chain is not issued by Verisign
+  std::string mit_issuer(reinterpret_cast<const char*>(VerisignDN),
+                         sizeof(VerisignDN));
   issuers.clear();
   issuers.push_back(mit_issuer);
   EXPECT_FALSE(cert_chain->IsIssuedByEncoded(issuers));
