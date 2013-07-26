@@ -166,6 +166,12 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, RetrieveBaseParts) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicAddCancel) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   manager()->Add(CreateTestNotification("hey"), profile());
   EXPECT_EQ(1u, message_center()->NotificationCount());
@@ -260,6 +266,12 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
                        MAYBE_QueueWhenCenterVisible) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestAddObserver observer("n2", message_center());
 

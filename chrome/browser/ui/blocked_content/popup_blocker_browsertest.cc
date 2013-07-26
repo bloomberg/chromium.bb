@@ -36,6 +36,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::WebContents;
 
 namespace {
@@ -233,6 +237,12 @@ class BetterPopupBlockerBrowserTest : public PopupBlockerBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
                        BlockWebContentsCreation) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   CountRenderViewHosts counter;
 
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
@@ -276,6 +286,12 @@ IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
                        PopupBlockedFakeClickOnAnchorNoTarget) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   GURL url(ui_test_utils::GetTestUrl(
       base::FilePath(kTestDir),
       base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor2.html"))));

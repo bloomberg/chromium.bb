@@ -26,6 +26,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/label_button.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
 
 class AvatarMenuButtonTest : public InProcessBrowserTest,
                              public testing::WithParamInterface<bool> {
@@ -106,6 +109,12 @@ void AvatarMenuButtonTest::StartAvatarMenu() {
 }
 
 IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, HideOnSecondClick) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   if (!profiles::IsMultipleProfilesEnabled() ||
       UsingNewProfileChooser()) {
     return;
@@ -136,7 +145,7 @@ IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, NewSignOut) {
   StartAvatarMenu();
 
   BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+      BrowserList::GetInstance(chrome::GetActiveDesktop());
   EXPECT_EQ(1U, browser_list->size());
   content::WindowedNotificationObserver window_close_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,

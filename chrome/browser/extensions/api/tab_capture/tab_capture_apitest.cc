@@ -25,6 +25,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 namespace chrome {
 
 namespace {
@@ -50,6 +54,12 @@ class TabCaptureApiTest : public ExtensionApiTest {
 #define MAYBE_ApiTests ApiTests
 #endif
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
 

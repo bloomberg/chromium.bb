@@ -15,6 +15,10 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_utils.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 namespace {
 
 // An observer that returns back to test code after a new profile is
@@ -55,6 +59,12 @@ IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SignOut) {
 }
 
 IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SwitchToProfile) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
@@ -78,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SwitchToProfile) {
 
   AvatarMenuModel model(&cache, NULL, browser());
   BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+      BrowserList::GetInstance(chrome::GetActiveDesktop());
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 
@@ -98,4 +108,5 @@ IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SwitchToProfile) {
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
 
 }
+
 }  // namespace

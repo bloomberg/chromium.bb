@@ -1852,6 +1852,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
 
 // Make sure a dangerous file shows up properly in the history.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // .swf file so that it's dangerous on all platforms (including CrOS).
   base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));

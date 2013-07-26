@@ -12,6 +12,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/id_util.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 const std::string kAllUrlsTarget =
     "files/extensions/api_test/all_urls/index.html";
 
@@ -24,6 +28,12 @@ typedef ExtensionApiTest AllUrlsApiTest;
 #define MAYBE_WhitelistedExtension WhitelistedExtension
 #endif
 IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, MAYBE_WhitelistedExtension) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // First setup the two extensions.
   base::FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("content_script");

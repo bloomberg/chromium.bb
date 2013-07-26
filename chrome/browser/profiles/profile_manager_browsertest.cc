@@ -18,6 +18,10 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 namespace {
 
 // An observer that returns back to test code after a new profile is
@@ -64,7 +68,6 @@ class ProfileRemovalObserver : public ProfileInfoCacheObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ProfileRemovalObserver);
 };
-
 
 } // namespace
 
@@ -186,10 +189,15 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
                        SwitchToProfile) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
-
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
@@ -209,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   // by OnUnblockOnProfileCreation when the profile is created.
   content::RunMessageLoop();
 
-  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+  chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
   BrowserList* browser_list = BrowserList::GetInstance(desktop_type);
   ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);
   EXPECT_EQ(1U, browser_list->size());
@@ -233,5 +241,4 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
 
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
-
 }
