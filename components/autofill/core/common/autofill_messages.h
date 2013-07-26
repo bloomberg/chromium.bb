@@ -249,12 +249,6 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_RequestAutocomplete,
                     autofill::FormData /* form_data */,
                     GURL /* frame_url */)
 
-// Instructs the browser to remove the specified Autocomplete entry from the
-// database.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_RemoveAutocompleteEntry,
-                    base::string16 /* field name */,
-                    base::string16 /* value */)
-
 // Instructs the browser to show the Autofill dialog.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_ShowAutofillDialog)
 

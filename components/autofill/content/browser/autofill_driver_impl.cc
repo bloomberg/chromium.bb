@@ -194,9 +194,6 @@ bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD(AutofillHostMsg_MaybeShowAutocheckoutBubble,
                         autofill_manager_.get(),
                         AutofillManager::OnMaybeShowAutocheckoutBubble)
-    IPC_MESSAGE_FORWARD(AutofillHostMsg_RemoveAutocompleteEntry,
-                        autofill_manager_.get(),
-                        AutofillManager::RemoveAutocompleteEntry)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
