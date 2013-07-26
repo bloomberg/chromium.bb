@@ -831,6 +831,7 @@ void XMLHttpRequest::clearResponse()
 void XMLHttpRequest::clearResponseBuffers()
 {
     m_responseText.clear();
+    m_responseEncoding = String();
     m_createdDocument = false;
     m_responseDocument = 0;
     m_responseBlob = 0;
@@ -1082,6 +1083,7 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     m_loader = 0;
 
     changeState(DONE);
+    m_responseEncoding = String();
     m_decoder = 0;
 
     if (hadLoader)
