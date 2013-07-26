@@ -710,7 +710,7 @@ DirectoryModel.prototype.findIndexByName_ = function(name) {
  * Rename the entry in the filesystem and update the file list.
  * @param {Entry} entry Entry to rename.
  * @param {string} newName New name.
- * @param {function} errorCallback Called on error.
+ * @param {function(FileError)} errorCallback Called on error.
  * @param {function()=} opt_successCallback Called on success.
  */
 DirectoryModel.prototype.renameEntry = function(entry, newName,
@@ -779,8 +779,8 @@ DirectoryModel.prototype.doesExist = function(entry, name, callback) {
  * Creates directory and updates the file list.
  *
  * @param {string} name Directory name.
- * @param {function} successCallback Callback on success.
- * @param {function} errorCallback Callback on failure.
+ * @param {function(DirectoryEntry)} successCallback Callback on success.
+ * @param {function(FileError)} errorCallback Callback on failure.
  */
 DirectoryModel.prototype.createDirectory = function(name, successCallback,
                                                     errorCallback) {
@@ -1331,10 +1331,10 @@ DirectoryModel.isMountableRoot = function(path) {
  * name search over current directory wil be performed.
  *
  * @param {string} query Query that will be searched for.
- * @param {function} onSearchRescan Function that will be called when the search
- *     directory is rescanned (i.e. search results are displayed).
- * @param {function} onClearSearch Function to be called when search state gets
- *     cleared.
+ * @param {function(Event)} onSearchRescan Function that will be called when the
+ *     search directory is rescanned (i.e. search results are displayed).
+ * @param {function()} onClearSearch Function to be called when search state
+ *     gets cleared.
  * TODO(olege): Change callbacks to events.
  */
 DirectoryModel.prototype.search = function(query,

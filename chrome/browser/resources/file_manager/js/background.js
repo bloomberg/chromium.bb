@@ -52,7 +52,7 @@ var LaunchType = {
  * @param {AsyncUtil.Queue} queue Queue for asynchronous window launches.
  * @param {string} url App window content url.
  * @param {string} id App window id.
- * @param {Object|function} options Options object or a function to create it.
+ * @param {Object|function()} options Options object or a function to create it.
  * @constructor
  */
 function AppWindowWrapper(queue, url, id, options) {
@@ -195,7 +195,7 @@ AppWindowWrapper.prototype.enqueueLaunch = function(appState) {
  *
  * @param {AsyncUtil.Queue} queue Queue for asynchronous window launches.
  * @param {string} url App window content url.
- * @param {Object|function} options Options object or a function to return it.
+ * @param {Object|function()} options Options object or a function to return it.
  * @constructor
  */
 function SingletonAppWindowWrapper(queue, url, options) {

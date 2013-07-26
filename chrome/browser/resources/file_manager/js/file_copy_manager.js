@@ -80,7 +80,7 @@ FileCopyManager.Task = function(targetDirEntry,
 
 /**
  * @param {Array.<Entry>} entries Entries.
- * @param {function} callback When entries resolved.
+ * @param {function()} callback When entries resolved.
  */
 FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   var self = this;
@@ -453,7 +453,7 @@ FileCopyManager.prototype.resetQueue_ = function() {
 /**
  * Request that the current copy queue be abandoned.
  *
- * @param {function=} opt_callback On cancel.
+ * @param {function()=} opt_callback On cancel.
  */
 FileCopyManager.prototype.requestCancel = function(opt_callback) {
   this.cancelRequested_ = true;

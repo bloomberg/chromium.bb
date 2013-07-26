@@ -368,8 +368,8 @@ VolumeManager.prototype.makeRequestKey_ = function(requestType,
 
 
 /**
- * @param {function} successCallback Success callback.
- * @param {function} errorCallback Error callback.
+ * @param {function(string)} successCallback Success callback.
+ * @param {function(VolumeManager.Error)} errorCallback Error callback.
  */
 VolumeManager.prototype.mountDrive = function(successCallback, errorCallback) {
   if (this.getDriveStatus() == VolumeManager.DriveStatus.ERROR) {
@@ -394,8 +394,8 @@ VolumeManager.prototype.mountDrive = function(successCallback, errorCallback) {
 
 /**
  * @param {string} fileUrl File url to the archive file.
- * @param {function} successCallback Success callback.
- * @param {function} errorCallback Error callback.
+ * @param {function(string)} successCallback Success callback.
+ * @param {function(VolumeManager.Error)} errorCallback Error callback.
  */
 VolumeManager.prototype.mountArchive = function(fileUrl, successCallback,
                                                 errorCallback) {
@@ -405,8 +405,8 @@ VolumeManager.prototype.mountArchive = function(fileUrl, successCallback,
 /**
  * Unmounts volume.
  * @param {string} mountPath Volume mounted path.
- * @param {function} successCallback Success callback.
- * @param {function} errorCallback Error callback.
+ * @param {function(string)} successCallback Success callback.
+ * @param {function(VolumeManager.Error)} errorCallback Error callback.
  */
 VolumeManager.prototype.unmount = function(mountPath,
                                            successCallback,
@@ -480,8 +480,8 @@ VolumeManager.prototype.getVolumeInfo_ = function(mountPath) {
  * @param {string} url URL for for |fileBrowserPrivate.addMount|.
  * @param {'drive'|'file'} mountType Mount type for
  *     |fileBrowserPrivate.addMount|.
- * @param {function} successCallback Success callback.
- * @param {function} errorCallback Error callback.
+ * @param {function(string)} successCallback Success callback.
+ * @param {function(VolumeManager.Error)} errorCallback Error callback.
  * @private
  */
 VolumeManager.prototype.mount_ = function(url, mountType,
@@ -503,9 +503,10 @@ VolumeManager.prototype.mount_ = function(url, mountType,
 
 /**
  * @param {string} key Key produced by |makeRequestKey_|.
- * @param {function} successCallback To be called when request finishes
- *                                   successfully.
- * @param {function} errorCallback To be called when request fails.
+ * @param {function(string)} successCallback To be called when request finishes
+ *     successfully.
+ * @param {function(VolumeManager.Error)} errorCallback To be called when
+ *     request fails.
  * @private
  */
 VolumeManager.prototype.startRequest_ = function(key,
