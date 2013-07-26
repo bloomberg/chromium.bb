@@ -69,11 +69,18 @@ bool GetOtherVisibleAndManageableWindow(const aura::Window* window,
 }
 
 // Get the work area for a given |window|.
-gfx::Rect GetWorkAreaForWindow(const aura::Window* window) {
+gfx::Rect GetWorkAreaForWindow(aura::Window* window) {
+#if defined(OS_WIN)
+  // On Win 8, the host window can't be resized, so
+  // use window's bounds instead.
+  // TODO(oshima): Emulate host window resize on win8.
   gfx::Rect work_area = gfx::Rect(window->parent()->bounds().size());
   work_area.Inset(Shell::GetScreen()->GetDisplayMatching(
       work_area).GetWorkAreaInsets());
   return work_area;
+#else
+  return Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
+#endif
 }
 
 // Move the given |bounds| on the available |parent_width| to the

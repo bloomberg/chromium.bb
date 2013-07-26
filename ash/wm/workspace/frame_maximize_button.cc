@@ -597,7 +597,8 @@ FrameMaximizeButton::GetMaximizeBubbleFrameState() const {
     return FRAME_STATE_FULL;
   // For Left/right maximize we need to check the dimensions.
   gfx::Rect bounds = frame_->GetWidget()->GetWindowBoundsInScreen();
-  gfx::Rect screen = Shell::GetScreen()->GetDisplayMatching(bounds).work_area();
+  gfx::Rect screen = Shell::GetScreen()->GetDisplayNearestWindow(
+      frame_->GetWidget()->GetNativeView()).work_area();
   if (bounds.width() < (screen.width() * kMinSnapSizePercent) / 100)
     return FRAME_STATE_NONE;
   // We might still have a horizontally filled window at this point which we
