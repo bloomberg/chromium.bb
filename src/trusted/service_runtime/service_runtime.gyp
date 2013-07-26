@@ -258,13 +258,13 @@
         ['target_arch == "ia32"', {
           'dependencies': [
             'arch/x86_32/service_runtime_x86_32.gyp:service_runtime_x86_32',
-            '<(DEPTH)/native_client/src/trusted/validator/x86/32/validator_x86_32.gyp:ncvalidate_x86_32',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:nccopy_x86_32',
           ],
         }],
         ['target_arch == "x64"', {
           'dependencies': [
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
-            '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:nccopy_x86_64',
           ],
         }],
       ],
@@ -343,7 +343,7 @@
             '<(DEPTH)/native_client/src/trusted/manifest_name_service_proxy/manifest_name_service_proxy.gyp:manifest_proxy64',
             '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service64',
             '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface64',
-            '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:nccopy_x86_64',
             '<(DEPTH)/native_client/src/trusted/validator/validator.gyp:validation_cache64',
             '<(DEPTH)/native_client/src/trusted/validator/validator.gyp:validators64',
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',
