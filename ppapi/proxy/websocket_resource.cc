@@ -5,6 +5,7 @@
 #include "ppapi/proxy/websocket_resource.h"
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -362,8 +363,10 @@ void WebSocketResource::OnPluginMsgConnectReply(
     const ResourceMessageReplyParams& params,
     const std::string& url,
     const std::string& protocol) {
-  if (!TrackedCallback::IsPending(connect_callback_))
+  if (!TrackedCallback::IsPending(connect_callback_) ||
+      TrackedCallback::IsScheduledToRun(connect_callback_)) {
     return;
+  }
 
   int32_t result = params.result();
   if (result == PP_OK) {
@@ -389,12 +392,14 @@ void WebSocketResource::OnPluginMsgCloseReply(
 
   if (TrackedCallback::IsPending(receive_callback_)) {
     receive_callback_var_ = NULL;
-    receive_callback_->PostRun(PP_ERROR_FAILED);
+    if (!TrackedCallback::IsScheduledToRun(receive_callback_))
+      receive_callback_->PostRun(PP_ERROR_FAILED);
     receive_callback_ = NULL;
   }
 
   if (TrackedCallback::IsPending(close_callback_)) {
-    close_callback_->PostRun(params.result());
+    if (!TrackedCallback::IsScheduledToRun(close_callback_))
+      close_callback_->PostRun(params.result());
     close_callback_ = NULL;
   }
 }
@@ -409,8 +414,10 @@ void WebSocketResource::OnPluginMsgReceiveTextReply(
   // Append received data to queue.
   received_messages_.push(scoped_refptr<Var>(new StringVar(message)));
 
-  if (!TrackedCallback::IsPending(receive_callback_))
+  if (!TrackedCallback::IsPending(receive_callback_) ||
+      TrackedCallback::IsScheduledToRun(receive_callback_)) {
     return;
+  }
 
   receive_callback_->Run(DoReceive());
 }
@@ -429,8 +436,10 @@ void WebSocketResource::OnPluginMsgReceiveBinaryReply(
           &message.front()));
   received_messages_.push(message_var);
 
-  if (!TrackedCallback::IsPending(receive_callback_))
+  if (!TrackedCallback::IsPending(receive_callback_) ||
+      TrackedCallback::IsScheduledToRun(receive_callback_)) {
     return;
+  }
 
   receive_callback_->Run(DoReceive());
 }
@@ -439,8 +448,10 @@ void WebSocketResource::OnPluginMsgErrorReply(
     const ResourceMessageReplyParams& params) {
   error_was_received_ = true;
 
-  if (!TrackedCallback::IsPending(receive_callback_))
+  if (!TrackedCallback::IsPending(receive_callback_) ||
+      TrackedCallback::IsScheduledToRun(receive_callback_)) {
     return;
+  }
 
   // No more text or binary messages will be received. If there is ongoing
   // ReceiveMessage(), we must invoke the callback with error code here.

@@ -172,6 +172,12 @@ bool TrackedCallback::IsPending(
   return !callback->completed();
 }
 
+// static
+bool TrackedCallback::IsScheduledToRun(
+    const scoped_refptr<TrackedCallback>& callback) {
+  return IsPending(callback) && callback->is_scheduled_;
+}
+
 int32_t TrackedCallback::BlockUntilComplete() {
   // Note, we are already holding the proxy lock in all these methods, including
   // this one (see ppapi/thunk/enter.cc for where it gets acquired).

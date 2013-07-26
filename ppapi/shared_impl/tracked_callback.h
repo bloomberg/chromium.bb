@@ -105,6 +105,10 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   // of the callback (which may still be out-standing via a PostAbort).
   static bool IsPending(const scoped_refptr<TrackedCallback>& callback);
 
+  // Helper to determine if the given callback is scheduled to run on another
+  // message loop.
+  static bool IsScheduledToRun(const scoped_refptr<TrackedCallback>& callback);
+
  protected:
   bool is_blocking() {
     return !callback_.func;

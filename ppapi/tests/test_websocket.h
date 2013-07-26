@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PAPPI_TESTS_TEST_WEBSOCKET_H_
-#define PAPPI_TESTS_TEST_WEBSOCKET_H_
+#ifndef PPAPI_TESTS_TEST_WEBSOCKET_H_
+#define PPAPI_TESTS_TEST_WEBSOCKET_H_
 
 #include <string>
+#include <vector>
 
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_var.h"
@@ -34,6 +35,8 @@ class TestWebSocket : public TestCase {
                       int32_t* result,
                       const std::string& protocol);
 
+  void Send(int32_t result, PP_Resource ws, const std::string& message);
+
   std::string TestIsWebSocket();
   std::string TestUninitializedPropertiesAccess();
   std::string TestInvalidConnect();
@@ -44,6 +47,7 @@ class TestWebSocket : public TestCase {
   std::string TestValidClose();
   std::string TestGetProtocol();
   std::string TestTextSendReceive();
+  std::string TestTextSendReceiveTwice();
   std::string TestBinarySendReceive();
   std::string TestStressedSendReceive();
   std::string TestBufferedAmount();
@@ -73,4 +77,4 @@ class TestWebSocket : public TestCase {
   const PPB_Core* core_interface_;
 };
 
-#endif  // PAPPI_TESTS_TEST_WEBSOCKET_H_
+#endif  // PPAPI_TESTS_TEST_WEBSOCKET_H_

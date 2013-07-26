@@ -214,6 +214,7 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST_WITH_REFERENCE_CHECK(ValidClose, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(GetProtocol, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(TextSendReceive, filter);
+  RUN_TEST_BACKGROUND(TestWebSocket, TextSendReceiveTwice, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(BinarySendReceive, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(StressedSendReceive, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(BufferedAmount, filter);
@@ -319,6 +320,13 @@ PP_Resource TestWebSocket::Connect(const std::string& url,
     ReleaseVar(protocols[0]);
   *result = callback.result();
   return ws;
+}
+
+void TestWebSocket::Send(int32_t /* result */, PP_Resource ws,
+                         const std::string& message) {
+  PP_Var message_var = CreateVarString(message);
+  websocket_interface_->SendMessage(ws, message_var);
+  ReleaseVar(message_var);
 }
 
 std::string TestWebSocket::TestIsWebSocket() {
@@ -743,6 +751,55 @@ std::string TestWebSocket::TestTextSendReceive() {
   ReleaseVar(received_message);
   core_interface_->ReleaseResource(ws);
 
+  PASS();
+}
+
+// Run as a BACKGROUND test.
+std::string TestWebSocket::TestTextSendReceiveTwice() {
+  // Connect to test echo server.
+  int32_t connect_result;
+  PP_Resource ws =
+      Connect(GetFullURL(kEchoServerURL), &connect_result, std::string());
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, connect_result);
+  pp::MessageLoop message_loop = pp::MessageLoop::GetCurrent();
+  pp::CompletionCallbackFactory<TestWebSocket> factory(this);
+
+  message_loop.PostWork(factory.NewCallback(&TestWebSocket::Send,
+                                            ws, std::string("hello")));
+  // When the server receives 'Goodbye', it closes the session.
+  message_loop.PostWork(factory.NewCallback(&TestWebSocket::Send,
+                                            ws, std::string("Goodbye")));
+  message_loop.PostQuit(false);
+  message_loop.Run();
+
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  PP_Var received_message;
+  int32_t result = websocket_interface_->ReceiveMessage(
+      ws, &received_message, callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK, result);
+  // Since we don't run the message loop, the callback will stay
+  // "pending and scheduled to run" state.
+
+  // Waiting for the connection close which will be done by the server.
+  while (true) {
+    PP_WebSocketReadyState ready_state =
+        websocket_interface_->GetReadyState(ws);
+    if (ready_state != PP_WEBSOCKETREADYSTATE_CONNECTING &&
+        ready_state != PP_WEBSOCKETREADYSTATE_OPEN) {
+      break;
+    }
+    PlatformSleep(100);  // 100ms
+  }
+
+  // Cleanup the message loop
+  message_loop.PostQuit(false);
+  message_loop.Run();
+
+  ASSERT_EQ(PP_OK, callback.result());
+  ASSERT_TRUE(AreEqualWithString(received_message, "hello"));
+  ReleaseVar(received_message);
+  core_interface_->ReleaseResource(ws);
   PASS();
 }
 
