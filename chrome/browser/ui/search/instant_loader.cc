@@ -17,7 +17,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
@@ -113,16 +112,10 @@ void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {
   // And some flat-out paranoia.
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(contents());
 
-#if defined(OS_MACOSX)
-  // If |contents_| doesn't yet have a RWHV, SetTakesFocusOnlyOnMouseDown() will
-  // be called later, when NOTIFICATION_RENDER_VIEW_HOST_CHANGED is received.
-  if (content::RenderWidgetHostView* rwhv =
-          contents_->GetRenderWidgetHostView())
-    rwhv->SetTakesFocusOnlyOnMouseDown(true);
-  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                 content::Source<content::NavigationController>(
-                     &contents_->GetController()));
-#endif
+  // When the WebContents finishes loading it should be checked to ensure that
+  // it is in the instant process.
+  registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                 content::Source<content::WebContents>(contents_.get()));
 }
 
 scoped_ptr<content::WebContents> InstantLoader::ReleaseContents() {
@@ -138,29 +131,19 @@ scoped_ptr<content::WebContents> InstantLoader::ReleaseContents() {
 
   CoreTabHelper::FromWebContents(contents())->set_delegate(NULL);
 
-#if defined(OS_MACOSX)
-  if (content::RenderWidgetHostView* rwhv =
-          contents_->GetRenderWidgetHostView())
-    rwhv->SetTakesFocusOnlyOnMouseDown(false);
-  registrar_.Remove(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                    content::Source<content::NavigationController>(
-                        &contents_->GetController()));
-#endif
+  registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                    content::Source<content::WebContents>(contents_.get()));
   return contents_.Pass();
 }
 
 void InstantLoader::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
-#if defined(OS_MACOSX)
-  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
-    if (content::RenderWidgetHostView* rwhv =
-            contents_->GetRenderWidgetHostView())
-      rwhv->SetTakesFocusOnlyOnMouseDown(true);
-    return;
-  }
-#endif
-  NOTREACHED();
+  DCHECK_EQ(type, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
+  const content::WebContents* web_contents =
+      content::Source<content::WebContents>(source).ptr();
+  DCHECK_EQ(contents_.get(), web_contents);
+  delegate_->LoadCompletedMainFrame();
 }
 
 void InstantLoader::SwapTabContents(content::WebContents* old_contents,

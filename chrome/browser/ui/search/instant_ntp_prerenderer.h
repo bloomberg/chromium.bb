@@ -52,6 +52,9 @@ class InstantNTPPrerenderer
   // Invoked when the InstantNTP renderer process crashes.
   void RenderProcessGone();
 
+  // Invoked when the |ntp_| main frame load completes.
+  void LoadCompletedMainFrame();
+
  protected:
   // Returns the local Instant URL. (Just a convenience wrapper to get the local
   // Instant URL from InstantService.)

@@ -24,6 +24,8 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/network_change_notifier.h"
 
 namespace {
@@ -98,6 +100,23 @@ void InstantNTPPrerenderer::DeleteNTPContents() {
 
 void InstantNTPPrerenderer::RenderProcessGone() {
   DeleteNTPSoon(ntp_.Pass());
+}
+
+void InstantNTPPrerenderer::LoadCompletedMainFrame() {
+  if (!ntp_ || ntp_->supports_instant())
+    return;
+
+  content::WebContents* ntp_contents = ntp_->contents();
+  DCHECK(ntp_contents);
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  if (instant_service &&
+      instant_service->IsInstantProcess(
+          ntp_contents->GetRenderProcessHost()->GetID())) {
+    return;
+  }
+  InstantSupportDetermined(ntp_contents, false);
 }
 
 std::string InstantNTPPrerenderer::GetLocalInstantURL() const {

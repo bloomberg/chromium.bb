@@ -57,6 +57,7 @@ class InstantNTP : public InstantPage,
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
+  virtual void LoadCompletedMainFrame() OVERRIDE;
 
   InstantLoader loader_;
   InstantNTPPrerenderer* const ntp_prerenderer_;

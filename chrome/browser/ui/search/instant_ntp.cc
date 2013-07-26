@@ -45,6 +45,10 @@ scoped_ptr<content::WebContents> InstantNTP::ReleaseContents() {
   return loader_.ReleaseContents();
 }
 
+void InstantNTP::LoadCompletedMainFrame() {
+  ntp_prerenderer_->LoadCompletedMainFrame();
+}
+
 void InstantNTP::RenderViewCreated(content::RenderViewHost* render_view_host) {
   InitializeFonts();
   InitializePromos();
