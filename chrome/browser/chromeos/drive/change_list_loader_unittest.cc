@@ -38,6 +38,8 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
   const std::set<base::FilePath>& changed_directories() const {
     return changed_directories_;
   }
+  void clear_changed_directories() { changed_directories_.clear(); }
+
   int load_from_server_complete_count() const {
     return load_from_server_complete_count_;
   }
@@ -254,6 +256,8 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded_LocalMetadataAvailable) {
 }
 
 TEST_F(ChangeListLoaderTest, LoadIfNeeded_MyDrive) {
+  TestChangeListLoaderObserver observer(change_list_loader_.get());
+
   // Emulate the slowness of GetAllResourceList().
   drive_service_->set_never_return_all_resource_list(true);
 
@@ -264,6 +268,9 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded_MyDrive) {
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(1U, observer.changed_directories().count(
+      util::GetDriveGrandRootPath()));
+  observer.clear_changed_directories();
 
   // GetAllResourceList() was called.
   EXPECT_EQ(1, drive_service_->blocked_call_count());
@@ -288,6 +295,8 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded_MyDrive) {
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(1U, observer.changed_directories().count(
+      util::GetDriveMyDriveRootPath()));
 
   // Now the file is present.
   EXPECT_EQ(FILE_ERROR_OK,
@@ -318,12 +327,15 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded_NewDirectories) {
   EXPECT_TRUE(change_list_loader_->IsRefreshing());
 
   // Load My Drive.
+  TestChangeListLoaderObserver observer(change_list_loader_.get());
   change_list_loader_->LoadIfNeeded(
       DirectoryFetchInfo(drive_service_->GetRootResourceId(),
                          metadata_->GetLargestChangestamp()),
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(1U, observer.changed_directories().count(
+      util::GetDriveMyDriveRootPath()));
 
   // The new file is present in the local metadata.
   base::FilePath file_path =
