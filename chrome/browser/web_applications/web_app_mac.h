@@ -71,6 +71,7 @@ class WebAppShortcutCreator {
   virtual base::FilePath GetAppBundleById(const std::string& bundle_id) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, DeleteShortcuts);
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, UpdateIcon);
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, UpdateShortcuts);
 

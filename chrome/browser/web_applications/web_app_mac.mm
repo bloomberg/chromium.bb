@@ -17,6 +17,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -167,12 +168,40 @@ bool HasExistingExtensionShim(const base::FilePath& destination_directory,
   return false;
 }
 
+// Given the path to an app bundle, return the path to the Info.plist file.
+NSString* GetPlistPath(const base::FilePath& bundle_path) {
+  return base::mac::FilePathToNSString(
+      bundle_path.Append("Contents").Append("Info.plist"));
+}
+
+NSMutableDictionary* ReadPlist(NSString* plist_path) {
+  return [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
+}
+
+// Takes the path to an app bundle and checks that the CrAppModeUserDataDir in
+// the Info.plist starts with the current user_data_dir. This uses starts with
+// instead of equals because the CrAppModeUserDataDir could be the user_data_dir
+// or the app_data_path.
+bool HasSameUserDataDir(const base::FilePath& bundle_path) {
+  NSDictionary* plist = ReadPlist(GetPlistPath(bundle_path));
+  base::FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  DCHECK(!user_data_dir.empty());
+  return StartsWithASCII(
+      base::SysNSStringToUTF8(
+          [plist valueForKey:app_mode::kCrAppModeUserDataDirKey]),
+      user_data_dir.value(),
+      true /* case_sensitive */);
+}
+
 void LaunchShimOnFileThread(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   base::FilePath shim_path = web_app::GetAppInstallPath(shortcut_info);
 
-  if (shim_path.empty() || !base::PathExists(shim_path)) {
+  if (shim_path.empty() ||
+      !base::PathExists(shim_path) ||
+      !HasSameUserDataDir(shim_path)) {
     // The user may have deleted the copy in the Applications folder, use the
     // one in the web app's app_data_path.
     base::FilePath app_data_path = web_app::GetWebAppDataDirectory(
@@ -276,10 +305,7 @@ std::vector<base::FilePath> GetAllAppBundlesInPath(
 
 ShellIntegration::ShortcutInfo BuildShortcutInfoFromBundle(
     const base::FilePath& bundle_path) {
-  NSString* plist_path = base::mac::FilePathToNSString(
-      bundle_path.Append("Contents").Append("Info.plist"));
-  NSMutableDictionary* plist =
-      [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
+  NSDictionary* plist = ReadPlist(GetPlistPath(bundle_path));
 
   ShellIntegration::ShortcutInfo shortcut_info;
   shortcut_info.extension_id = base::SysNSStringToUTF8(
@@ -431,15 +457,16 @@ bool WebAppShortcutCreator::CreateShortcuts() {
 }
 
 void WebAppShortcutCreator::DeleteShortcuts() {
-  // TODO(jackhou): For the first two cases, we need to check if the
-  // user_data_dir matches that of the current browser process.
   base::FilePath dst_path = GetDestinationPath();
-  if (!dst_path.empty())
-    DeletePathAndParentIfEmpty(dst_path.Append(GetShortcutName()));
+  if (!dst_path.empty()) {
+    base::FilePath bundle_path = dst_path.Append(GetShortcutName());
+    if (HasSameUserDataDir(bundle_path))
+      DeletePathAndParentIfEmpty(bundle_path);
+  }
 
   // In case the user has moved/renamed/copied the app bundle.
   base::FilePath bundle_path = GetAppBundleById(GetBundleIdentifier());
-  if (!bundle_path.empty())
+  if (!bundle_path.empty() && HasSameUserDataDir(bundle_path))
     base::DeleteFile(bundle_path, true);
 
   // Delete the internal one.
@@ -497,10 +524,8 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
           chrome_bundle_id, app_mode::kShortcutBrowserBundleIDPlaceholder,
           nil];
 
-  NSString* plist_path = base::mac::FilePathToNSString(
-      app_path.Append("Contents").Append("Info.plist"));
-  NSMutableDictionary* plist =
-      [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
+  NSString* plist_path = GetPlistPath(app_path);
+  NSMutableDictionary* plist = ReadPlist(plist_path);
   NSArray* keys = [plist allKeys];
 
   // 1. Fill in variables.
@@ -602,11 +627,8 @@ bool WebAppShortcutCreator::UpdateIcon(const base::FilePath& app_path) const {
 }
 
 bool WebAppShortcutCreator::UpdateInternalBundleIdentifier() const {
-  NSString* plist_path = base::mac::FilePathToNSString(
-      app_data_path_.Append(GetShortcutName())
-          .Append("Contents").Append("Info.plist"));
-  NSMutableDictionary* plist =
-      [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
+  NSString* plist_path = GetPlistPath(app_data_path_.Append(GetShortcutName()));
+  NSMutableDictionary* plist = ReadPlist(plist_path);
 
   [plist setObject:base::SysUTF8ToNSString(GetInternalBundleIdentifier())
             forKey:base::mac::CFToNSCast(kCFBundleIdentifierKey)];

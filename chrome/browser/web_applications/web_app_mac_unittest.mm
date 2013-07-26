@@ -13,8 +13,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -162,6 +164,54 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
   EXPECT_FALSE(shortcut_creator.UpdateShortcuts());
   EXPECT_FALSE(base::PathExists(shim_path_));
   EXPECT_FALSE(base::PathExists(other_shim_path.Append("Contents")));
+}
+
+TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
+  // When using PathService::Override, it calls base::MakeAbsoluteFilePath.
+  // On Mac this prepends "/private" to the path, but points to the same
+  // directory in the file system.
+  app_data_path_ = base::MakeAbsoluteFilePath(app_data_path_);
+
+  base::ScopedTempDir other_folder_temp_dir;
+  EXPECT_TRUE(other_folder_temp_dir.CreateUniqueTempDir());
+  base::FilePath other_folder = other_folder_temp_dir.path();
+  base::FilePath other_shim_path = other_folder.Append(shim_base_name_);
+
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_path_, info_);
+  EXPECT_CALL(shortcut_creator, GetDestinationPath())
+      .WillRepeatedly(Return(destination_path_));
+  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
+
+  std::string expected_bundle_id = kFakeChromeBundleId;
+  expected_bundle_id += ".app.Profile-1-" + info_.extension_id;
+  EXPECT_CALL(shortcut_creator, GetAppBundleById(expected_bundle_id))
+      .WillOnce(Return(other_shim_path));
+
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts());
+  EXPECT_TRUE(base::PathExists(internal_shim_path_));
+  EXPECT_TRUE(base::PathExists(shim_path_));
+
+  // Create an extra shim in another folder. It should be deleted since its
+  // bundle id matches.
+  EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
+  EXPECT_TRUE(base::PathExists(other_shim_path));
+
+  // Change the user_data_dir of the shim at shim_path_. It should not be
+  // deleted since its user_data_dir does not match.
+  NSString* plist_path = base::mac::FilePathToNSString(
+      shim_path_.Append("Contents").Append("Info.plist"));
+  NSMutableDictionary* plist =
+      [NSDictionary dictionaryWithContentsOfFile:plist_path];
+  [plist setObject:@"fake_user_data_dir"
+            forKey:app_mode::kCrAppModeUserDataDirKey];
+  [plist writeToFile:plist_path
+          atomically:YES];
+
+  EXPECT_TRUE(PathService::Override(chrome::DIR_USER_DATA, app_data_path_));
+  shortcut_creator.DeleteShortcuts();
+  EXPECT_FALSE(base::PathExists(internal_shim_path_));
+  EXPECT_TRUE(base::PathExists(shim_path_));
+  EXPECT_FALSE(base::PathExists(other_shim_path));
 }
 
 TEST_F(WebAppShortcutCreatorTest, CreateAppListShortcut) {
