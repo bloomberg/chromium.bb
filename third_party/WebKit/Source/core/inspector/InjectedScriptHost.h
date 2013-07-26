@@ -83,7 +83,6 @@ public:
     void getEventListenersImpl(Node*, Vector<EventListenerInfo>& listenersArray);
 
     void clearConsoleMessages();
-    void copyText(const String& text);
     String databaseIdImpl(Database*);
     String storageIdImpl(Storage*);
     void debugFunction(const String& scriptId, int lineNumber, int columnNumber);

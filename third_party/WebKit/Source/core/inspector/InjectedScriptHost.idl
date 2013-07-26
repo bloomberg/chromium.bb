@@ -35,7 +35,6 @@
 ] interface InjectedScriptHost {
     void clearConsoleMessages();
 
-    void copyText(DOMString text);
     [Custom] void inspect(any objectId, any hints);
     [Custom] any inspectedObject(long num);
     [Custom] any internalConstructorName(any obj);

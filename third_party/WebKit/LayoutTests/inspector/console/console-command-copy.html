@@ -1,0 +1,27 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.evaluateInConsole("copy('qwerty')");
+    InspectorFrontendHost.copyText = copyText;
+
+    function copyText(text) {
+        InspectorTest.addResult("InspectorFrontendHost.copyText: " + text);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+    Tests that console's copy command is copying into front-end buffer.
+</p>
+
+</body>
+</html>
