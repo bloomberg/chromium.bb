@@ -61,10 +61,6 @@ bool IsApproxZero(float value) {
   return std::abs(value) < kEpsilon;
 }
 
-bool IsApproxZero(gfx::Vector2dF vector) {
-  return IsApproxZero(vector.x()) && IsApproxZero(vector.y());
-}
-
 gfx::Vector2dF ZeroSmallComponents(gfx::Vector2dF vector) {
   if (IsApproxZero(vector.x()))
     vector.set_x(0);
@@ -140,25 +136,32 @@ void OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
   if (!velocity.IsZero()) {
     // Release effects if scrolling has changed directions.
     if (velocity.x() * old_velocity_.x() < 0)
-      Release(AXIS_X, current_time);
+      ReleaseAxis(AXIS_X, current_time);
     if (velocity.y() * old_velocity_.y() < 0)
-      Release(AXIS_Y, current_time);
+      ReleaseAxis(AXIS_Y, current_time);
 
     Absorb(current_time, velocity, overscroll, old_overscroll_);
   } else {
     // Release effects when overscroll accumulation violates monotonicity.
     if (overscroll.x() * old_overscroll_.x() < 0 ||
         std::abs(overscroll.x()) < std::abs(old_overscroll_.x()))
-      Release(AXIS_X, current_time);
+      ReleaseAxis(AXIS_X, current_time);
     if (overscroll.y() * old_overscroll_.y() < 0 ||
         std::abs(overscroll.y()) < std::abs(old_overscroll_.y()))
-      Release(AXIS_Y, current_time);
+      ReleaseAxis(AXIS_Y, current_time);
 
     Pull(current_time, overscroll - old_overscroll_);
   }
 
   old_velocity_ = velocity;
   old_overscroll_ = overscroll;
+}
+
+void OverscrollGlow::Release(base::TimeTicks current_time) {
+  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
+    edge_effects_[i]->Release(current_time);
+  }
+  old_overscroll_ = old_velocity_ = gfx::Vector2dF();
 }
 
 bool OverscrollGlow::Animate(base::TimeTicks current_time) {
@@ -249,14 +252,7 @@ void OverscrollGlow::Absorb(base::TimeTicks current_time,
   }
 }
 
-void OverscrollGlow::Release(base::TimeTicks current_time) {
-  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
-    edge_effects_[i]->Release(current_time);
-  }
-  old_overscroll_ = old_velocity_ = gfx::Vector2dF();
-}
-
-void OverscrollGlow::Release(Axis axis, base::TimeTicks current_time) {
+void OverscrollGlow::ReleaseAxis(Axis axis, base::TimeTicks current_time) {
   switch (axis) {
     case AXIS_X:
       edge_effects_[EdgeEffect::EDGE_LEFT]->Release(current_time);

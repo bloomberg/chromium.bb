@@ -980,8 +980,11 @@ void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
 void RenderWidgetHostViewAndroid::SendGestureEvent(
     const WebKit::WebGestureEvent& event) {
   // Sending a gesture that may trigger overscroll should resume the effect.
-  if (overscroll_effect_)
+  if (overscroll_effect_) {
     overscroll_effect_->SetEnabled(true);
+    if (event.type == WebKit::WebInputEvent::GestureScrollEnd)
+      overscroll_effect_->Release(base::TimeTicks::Now());
+  }
 
   if (host_)
     host_->ForwardGestureEvent(event);
