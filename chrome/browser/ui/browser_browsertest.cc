@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
@@ -51,6 +52,7 @@
 #include "chrome/common/translate/language_detection_details.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -1910,6 +1912,12 @@ class NoStartupWindowTest : public BrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // kNoStartupWindow doesn't make sense in Metro+Ash.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
   // No browser window should be started by default.
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
@@ -1925,6 +1933,12 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
 // session state.
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // kNoStartupWindow doesn't make sense in Metro+Ash.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
   Profile* profile = ProfileManager::GetDefaultProfile();
 
   SessionService* session_service =
