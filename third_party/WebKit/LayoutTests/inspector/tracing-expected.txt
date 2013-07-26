@@ -1,0 +1,4 @@
+Tracing started (error: null)
+Tracing complete
+Event sanity test done
+

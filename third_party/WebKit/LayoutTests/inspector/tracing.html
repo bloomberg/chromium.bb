@@ -1,0 +1,81 @@
+<html>
+<head>
+<style>
+div#test {
+    display: none;
+    background-color: blue;
+    width: 100px;
+    height: 100px;
+}
+</style>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+function doWork()
+{
+    document.getElementById("test").style.display = "block";
+    testRunner.display();
+}
+
+function test()
+{
+    function runEventsSanityCheck(events)
+    {
+        var phaseBegin = 0;
+        var phaseEnd = 0;
+        var knownEvents = {};
+        var processes = {};
+        var threads = {};
+
+        knownEvents["MessageLoop::PostTask"] = 0;
+        knownEvents["v8.callFunction"] = 0;
+        knownEvents["Document::recalcStyle"] = 0;
+        knownEvents["FrameView::layout"] = 0;
+
+        for (var i = 0; i < events.length; ++i) {
+            var event = events[i];
+            if (event.ph === "B")
+                ++phaseBegin;
+            else if (event.ph === "E")
+                ++phaseEnd;
+            if (event.name in knownEvents)
+                ++knownEvents[event.name];
+            processes[event.pid] = (processes[event.pid] || 0) + 1;
+            threads[event.tid] = (threads[event.tid] || 0) + 1;
+        }
+        InspectorTest.assertGreaterOrEqual(events.length, 200, "Too few trace events recorded");
+        InspectorTest.assertGreaterOrEqual(knownEvents["MessageLoop::PostTask"], 20, "Too few MessageLoop::PostTask");
+        InspectorTest.assertGreaterOrEqual(knownEvents["v8.callFunction"], 10, "Too few v8.callFunction");
+        InspectorTest.assertGreaterOrEqual(knownEvents["Document::recalcStyle"], 1, "Too few Document::recalcStyle");
+        InspectorTest.assertGreaterOrEqual(knownEvents["FrameView::layout"], 1, "Too few FrameView::layout");
+        InspectorTest.assertGreaterOrEqual(phaseBegin, 50, "Too few begin events");
+        InspectorTest.assertGreaterOrEqual(Object.keys(processes).length, 2, "Too few processes");
+        InspectorTest.assertGreaterOrEqual(Object.keys(threads).length, 4, "Too few threads");
+        InspectorTest.assertTrue(Math.abs(phaseBegin - phaseEnd) < 30, "Begin/end events not balanced");
+        InspectorTest.addResult("Event sanity test done");
+    }
+
+    function onTracingComplete()
+    {
+        InspectorTest.addResult("Tracing complete");
+        runEventsSanityCheck(WebInspector.tracingAgent.events());
+        InspectorTest.completeTest();
+    }
+
+    WebInspector.tracingAgent.start("", onTracingStarted);
+    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 2000);
+    function onTracingStarted(error)
+    {
+        InspectorTest.addResult("Tracing started (error: " + JSON.stringify(error) + ")");
+        InspectorTest.evaluateInPage("doWork()", function() {
+            WebInspector.tracingAgent.stop(onTracingComplete);
+        });
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<div id="test">
+</div>
+</body>
+</html>
