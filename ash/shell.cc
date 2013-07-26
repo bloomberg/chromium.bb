@@ -232,6 +232,9 @@ Shell::Shell(ShellDelegate* delegate)
 
   base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(
       output_configurator());
+  // We can't do this with a root window listener because XI_HierarchyChanged
+  // messages don't have a target window.
+  base::MessagePumpAuraX11::Current()->AddObserver(output_configurator());
 #endif  // defined(OS_CHROMEOS)
   AddPreTargetHandler(this);
 
@@ -325,6 +328,7 @@ Shell::~Shell() {
     output_configurator_->RemoveObserver(display_error_observer_.get());
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(
       output_configurator());
+  base::MessagePumpAuraX11::Current()->RemoveObserver(output_configurator());
   display_change_observer_.reset();
 #endif  // defined(OS_CHROMEOS)
 

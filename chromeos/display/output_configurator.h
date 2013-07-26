@@ -39,7 +39,8 @@ enum OutputState {
 // This class interacts directly with the underlying Xrandr API to manipulate
 // CTRCs and Outputs.
 class CHROMEOS_EXPORT OutputConfigurator
-    : public base::MessageLoop::Dispatcher {
+    : public base::MessageLoop::Dispatcher,
+      public base::MessagePumpObserver {
  public:
   // Information about an output's current state.
   struct OutputSnapshot {
@@ -279,6 +280,12 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Spurious events will have no effect.
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
+  // Overridden from base::MessagePumpObserver:
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -298,6 +305,10 @@ class CHROMEOS_EXPORT OutputConfigurator
  private:
   // Configure outputs.
   void ConfigureOutputs();
+
+  // Configure outputs with |kConfigureDelayMs| delay,
+  // so that time-consuming ConfigureOutputs() won't be called multiple times.
+  void ScheduleConfigureOutputs();
 
   // Fires OnDisplayModeChanged() event to the observers.
   void NotifyOnDisplayChanged();

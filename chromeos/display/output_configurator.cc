@@ -6,6 +6,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
+#include <X11/extensions/XInput2.h>
 
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
@@ -301,20 +302,28 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
       // Connecting/Disconnecting display may generate multiple
       // RRNotify. Defer configuring outputs to avoid
       // grabbing X and configuring displays multiple times.
-      if (configure_timer_.get()) {
-        configure_timer_->Reset();
-      } else {
-        configure_timer_.reset(new base::OneShotTimer<OutputConfigurator>());
-        configure_timer_->Start(
-            FROM_HERE,
-            base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
-            this,
-            &OutputConfigurator::ConfigureOutputs);
-      }
+      ScheduleConfigureOutputs();
     }
   }
 
   return true;
+}
+
+base::EventStatus OutputConfigurator::WillProcessEvent(
+    const base::NativeEvent& event) {
+  // XI_HierarchyChanged events are special. There is no window associated with
+  // these events. So process them directly from here.
+  if (configure_display_ && event->type == GenericEvent &&
+      event->xgeneric.evtype == XI_HierarchyChanged) {
+    // Defer configuring outputs to not stall event processing.
+    // This also takes care of same event being received twice.
+    ScheduleConfigureOutputs();
+  }
+
+  return base::EVENT_CONTINUE;
+}
+
+void OutputConfigurator::DidProcessEvent(const base::NativeEvent& event) {
 }
 
 void OutputConfigurator::AddObserver(Observer* observer) {
@@ -365,6 +374,19 @@ void OutputConfigurator::ConfigureOutputs() {
         Observer, observers_, OnDisplayModeChangeFailed(new_state));
   }
   delegate_->SendProjectingStateToPowerManager(IsProjecting(outputs));
+}
+
+void OutputConfigurator::ScheduleConfigureOutputs() {
+  if (configure_timer_.get()) {
+    configure_timer_->Reset();
+  } else {
+    configure_timer_.reset(new base::OneShotTimer<OutputConfigurator>());
+    configure_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
+        this,
+        &OutputConfigurator::ConfigureOutputs);
+  }
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
