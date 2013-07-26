@@ -37,14 +37,13 @@ namespace WebCore {
 static NavigationType navigationType(FrameLoadType frameLoadType, bool isFormSubmission, bool haveEvent)
 {
     bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadFromOrigin;
-    bool isBackForward = isBackForwardLoadType(frameLoadType);
     if (isFormSubmission)
-        return (isReload || isBackForward) ? NavigationTypeFormResubmitted : NavigationTypeFormSubmitted;
+        return isReload ? NavigationTypeFormResubmitted : NavigationTypeFormSubmitted;
     if (haveEvent)
         return NavigationTypeLinkClicked;
     if (isReload)
         return NavigationTypeReload;
-    if (isBackForward)
+    if (isBackForwardLoadType(frameLoadType))
         return NavigationTypeBackForward;
     return NavigationTypeOther;
 }
