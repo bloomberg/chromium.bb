@@ -244,7 +244,7 @@ ExternalInstallMenuAlert::ExternalInstallMenuAlert(
       extension_(extension) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(service->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(service->profile()));
 }
 
@@ -315,16 +315,10 @@ void ExternalInstallMenuAlert::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  const Extension* extension = NULL;
-  // The error is invalidated if the extension has been reloaded or unloaded.
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
-    extension = content::Details<const Extension>(details).ptr();
-  } else {
-    DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNLOADED, type);
-    extensions::UnloadedExtensionInfo* info =
-        content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
-    extension = info->extension;
-  }
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED ||
+         type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED);
+  // The error is invalidated if the extension has been reloaded or uninstalled.
+  const Extension* extension = content::Details<const Extension>(details).ptr();
   if (extension == extension_) {
     GlobalErrorService* error_service =
         GlobalErrorServiceFactory::GetForProfile(service_->profile());
