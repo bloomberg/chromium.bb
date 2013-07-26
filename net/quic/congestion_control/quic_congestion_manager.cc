@@ -16,6 +16,11 @@ static const int kBitrateSmoothingPeriodMs = 1000;
 static const int kHistoryPeriodMs = 5000;
 
 static const int kDefaultRetransmissionTimeMs = 500;
+// TCP RFC calls for 1 second RTO however Linux differs from this default and
+// define the minimum RTO to 200ms, we will use the same until we have data to
+// support a higher or lower value.
+static const int kMinRetransmissionTimeMs = 200;
+static const int kMaxRetransmissionTimeMs = 10000;
 static const size_t kMaxRetransmissions = 10;
 static const size_t kTailDropWindowSize = 5;
 static const size_t kTailDropMaxRetransmissions = 4;
@@ -152,18 +157,30 @@ const QuicTime::Delta QuicCongestionManager::DefaultRetransmissionTime() {
 const QuicTime::Delta QuicCongestionManager::GetRetransmissionDelay(
     size_t unacked_packets_count,
     size_t number_retransmissions) {
-  // TODO(pwestin): This should take the RTT into account instead of a hard
-  // coded kDefaultRetransmissionTimeMs. Ideally the variance of the RTT too.
-  if (unacked_packets_count <= kTailDropWindowSize) {
-    if (number_retransmissions <= kTailDropMaxRetransmissions) {
-      return QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
+  QuicTime::Delta retransmission_delay = send_algorithm_->RetransmissionDelay();
+  if (retransmission_delay.IsZero()) {
+    // We are in the initial state, use default timeout values.
+    if (unacked_packets_count <= kTailDropWindowSize) {
+      if (number_retransmissions <= kTailDropMaxRetransmissions) {
+        return QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
+      }
+      number_retransmissions -= kTailDropMaxRetransmissions;
     }
-    number_retransmissions -= kTailDropMaxRetransmissions;
+    retransmission_delay =
+        QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
   }
+  // Calcluate exponential back off.
+  retransmission_delay = QuicTime::Delta::FromMilliseconds(
+      retransmission_delay.ToMilliseconds() * static_cast<size_t>(
+          (1 << min<size_t>(number_retransmissions, kMaxRetransmissions))));
 
-  return QuicTime::Delta::FromMilliseconds(
-      kDefaultRetransmissionTimeMs *
-      (1 << min<size_t>(number_retransmissions, kMaxRetransmissions)));
+  if (retransmission_delay.ToMilliseconds() < kMinRetransmissionTimeMs) {
+    return QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs);
+  }
+  if (retransmission_delay.ToMilliseconds() > kMaxRetransmissionTimeMs) {
+    return QuicTime::Delta::FromMilliseconds(kMaxRetransmissionTimeMs);
+  }
+  return retransmission_delay;
 }
 
 const QuicTime::Delta QuicCongestionManager::SmoothedRtt() {

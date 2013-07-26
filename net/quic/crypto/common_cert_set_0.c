@@ -9,7 +9,7 @@
 #include "net/quic/crypto/common_cert_set_1_50.inc"
 #include "net/quic/crypto/common_cert_set_51_100.inc"
 
-static const size_t kNumCerts = 101;
+static const size_t kNumCerts = 102;
 static const unsigned char* const kCerts[] = {
   kDERCert0,
   kDERCert1,
@@ -112,6 +112,7 @@ static const unsigned char* const kCerts[] = {
   kDERCert98,
   kDERCert99,
   kDERCert100,
+  kDERCert101,
 };
 
 static const size_t kLens[] = {
@@ -125,6 +126,7 @@ static const size_t kLens[] = {
   985,
   989,
   1022,
+  1032,
   1049,
   1055,
   1071,
@@ -218,4 +220,4 @@ static const size_t kLens[] = {
   1770,
 };
 
-static const uint64 kHash = GG_UINT64_C(0xde8086f914a3af54);
+static const uint64 kHash = GG_UINT64_C(0xc9fef74053f99f39);

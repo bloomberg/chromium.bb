@@ -69,8 +69,9 @@ bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
 QuicConnection::QuicConnection(QuicGuid guid,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
-                               bool is_server)
-    : framer_(kQuicVersion1,
+                               bool is_server,
+                               QuicVersion version)
+    : framer_(version,
               helper->GetClock()->ApproximateNow(),
               is_server),
       helper_(helper),
@@ -106,7 +107,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
   helper_->SetConnection(this);
   helper_->SetTimeoutAlarm(idle_network_timeout_);
   framer_.set_visitor(this);
-  framer_.set_entropy_calculator(&entropy_manager_);
+  framer_.set_received_entropy_calculator(&received_entropy_manager_);
   outgoing_ack_.sent_info.least_unacked = 0;
   outgoing_ack_.sent_info.entropy_hash = 0;
   outgoing_ack_.received_info.largest_observed = 0;
@@ -133,17 +134,20 @@ QuicConnection::~QuicConnection() {
 }
 
 bool QuicConnection::SelectMutualVersion(
-    const QuicTagVector& available_versions) {
-  // TODO(satyamshekhar): Make this generic.
-  if (std::find(available_versions.begin(), available_versions.end(),
-                kQuicVersion1) == available_versions.end()) {
-    return false;
+    const QuicVersionVector& available_versions) {
+  // Try to find the highest mutual version by iterating over supported
+  // versions, starting with the highest, and breaking out of the loop once we
+  // find a matching version in the provided available_versions vector.
+  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
+    const QuicVersion& version = kSupportedQuicVersions[i];
+    if (std::find(available_versions.begin(), available_versions.end(),
+                  version) != available_versions.end()) {
+      framer_.set_version(version);
+      return true;
+    }
   }
 
-  // Right now we only support kQuicVersion1 so it's okay not to
-  // update the framer version. When we start supporting more
-  // versions please update.
-  return true;
+  return false;
 }
 
 void QuicConnection::OnError(QuicFramer* framer) {
@@ -166,7 +170,7 @@ void QuicConnection::OnPublicResetPacket(
   CloseConnection(QUIC_PUBLIC_RESET, true);
 }
 
-bool QuicConnection::OnProtocolVersionMismatch(QuicTag received_version) {
+bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
   // TODO(satyamshekhar): Implement no server state in this mode.
   if (!is_server_) {
     LOG(DFATAL) << ENDPOINT << "Framer called OnProtocolVersionMismatch. "
@@ -205,10 +209,11 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicTag received_version) {
       DCHECK(false);
   }
 
-  // Right now we only support kQuicVersion1 so it's okay not to
-  // update the framer version. When we start supporting more
-  // versions please update.
   version_negotiation_state_ = NEGOTIATED_VERSION;
+
+  // Store the new version.
+  framer_.set_version(received_version);
+
   // TODO(satyamshekhar): Store the sequence number of this packet and close the
   // connection if we ever received a packet with incorrect version and whose
   // sequence number is greater.
@@ -408,7 +413,8 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
     DLOG(ERROR) << ENDPOINT << "Peer's largest_observed packet decreased:"
                 << incoming_ack.received_info.largest_observed << " vs "
                 << peer_largest_observed_packet_;
-    // We got an error for data we have not sent.  Error out.
+    // A new ack has a diminished largest_observed value.  Error out.
+    // If this was an old packet, we wouldn't even have checked.
     return false;
   }
 
@@ -454,7 +460,7 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
-  if (!entropy_manager_.IsValidEntropy(
+  if (!sent_entropy_manager_.IsValidEntropy(
           incoming_ack.received_info.largest_observed,
           incoming_ack.received_info.missing_packets,
           incoming_ack.received_info.entropy_hash)) {
@@ -544,7 +550,7 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
         *(incoming_ack.received_info.missing_packets.begin());
   }
 
-  entropy_manager_.ClearSentEntropyBefore(least_packet_awaited_by_peer_ - 1);
+  sent_entropy_manager_.ClearEntropyBefore(least_packet_awaited_by_peer_ - 1);
 
   SequenceNumberSet acked_packets;
   HandleAckForSentPackets(incoming_ack, &acked_packets);
@@ -579,7 +585,7 @@ void QuicConnection::UpdatePacketInformationSentByPeer(
       DVLOG(1) << ENDPOINT << "Updating entropy hashed since we missed packets";
       // There were some missing packets that we won't ever get now. Recalculate
       // the received entropy hash.
-      entropy_manager_.RecalculateReceivedEntropyHash(
+      received_entropy_manager_.RecalculateEntropyHash(
           incoming_ack.sent_info.least_unacked,
           incoming_ack.sent_info.entropy_hash);
     }
@@ -697,8 +703,10 @@ void QuicConnection::MaybeSendAckInResponseToPacket() {
 }
 
 void QuicConnection::SendVersionNegotiationPacket() {
-  QuicTagVector supported_versions;
-  supported_versions.push_back(kQuicVersion1);
+  QuicVersionVector supported_versions;
+  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
+    supported_versions.push_back(kSupportedQuicVersions[i]);
+  }
   QuicEncryptedPacket* encrypted =
       packet_creator_.SerializeVersionNegotiationPacket(supported_versions);
   // TODO(satyamshekhar): implement zero server state negotiation.
@@ -864,8 +872,8 @@ void QuicConnection::RecordPacketReceived(const QuicPacketHeader& header) {
         header.packet_sequence_number;
     time_largest_observed_ = time_of_last_received_packet_;
   }
-  entropy_manager_.RecordReceivedPacketEntropyHash(sequence_number,
-                                                   header.entropy_hash);
+  received_entropy_manager_.RecordPacketEntropyHash(
+      sequence_number, header.entropy_hash);
 }
 
 bool QuicConnection::MaybeRetransmitPacketForRTO(
@@ -1160,7 +1168,7 @@ int QuicConnection::WritePacketToWire(QuicPacketSequenceNumber sequence_number,
   int bytes_written = helper_->WritePacketToWire(packet, error);
   if (debug_visitor_) {
     // WritePacketToWire returned -1, then |error| will be populated with
-    // a NetErrorCode, which we want to pass along to the visitor.
+    // an error code, which we want to pass along to the visitor.
     debug_visitor_->OnPacketSent(sequence_number, level, packet,
                                  bytes_written == -1 ? *error : bytes_written);
   }
@@ -1203,7 +1211,7 @@ bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
                                        QuicPacket* packet,
                                        QuicPacketEntropyHash entropy_hash,
                                        HasRetransmittableData retransmittable) {
-  entropy_manager_.RecordSentPacketEntropyHash(sequence_number, entropy_hash);
+  sent_entropy_manager_.RecordPacketEntropyHash(sequence_number, entropy_hash);
   if (!WritePacket(level, sequence_number, packet, retransmittable, NO_FORCE)) {
     queued_packets_.push_back(QueuedPacket(sequence_number, packet, level,
                                            retransmittable));
@@ -1231,10 +1239,10 @@ void QuicConnection::UpdateOutgoingAck() {
     outgoing_ack_.sent_info.least_unacked =
         packet_creator_.sequence_number() + 1;
   }
-  outgoing_ack_.sent_info.entropy_hash = entropy_manager_.SentEntropyHash(
+  outgoing_ack_.sent_info.entropy_hash = sent_entropy_manager_.EntropyHash(
       outgoing_ack_.sent_info.least_unacked - 1);
   outgoing_ack_.received_info.entropy_hash =
-      entropy_manager_.ReceivedEntropyHash(
+      received_entropy_manager_.EntropyHash(
           outgoing_ack_.received_info.largest_observed);
 }
 
@@ -1446,8 +1454,8 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
   SerializedPacket serialized_packet =
       packet_creator_.SerializeConnectionClose(&frame);
 
-  // We need to update the sent entrophy hash for all sent packets.
-  entropy_manager_.RecordSentPacketEntropyHash(
+  // We need to update the sent entropy hash for all sent packets.
+  sent_entropy_manager_.RecordPacketEntropyHash(
       serialized_packet.sequence_number,
       serialized_packet.entropy_hash);
 

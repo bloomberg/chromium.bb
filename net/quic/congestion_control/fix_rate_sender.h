@@ -44,6 +44,7 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
       HasRetransmittableData has_retransmittable_data) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
   virtual QuicTime::Delta SmoothedRtt() OVERRIDE;
+  virtual QuicTime::Delta RetransmissionDelay() OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 
  private:

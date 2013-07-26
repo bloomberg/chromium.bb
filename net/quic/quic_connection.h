@@ -30,9 +30,10 @@
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
-#include "net/quic/quic_packet_entropy_manager.h"
 #include "net/quic/quic_packet_generator.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_received_entropy_manager.h"
+#include "net/quic/quic_sent_entropy_manager.h"
 #include "net/quic/quic_stats.h"
 
 namespace net {
@@ -101,7 +102,7 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitorInterface
 
   // Called when the protocol version on the received packet doensn't match
   // current protocol version of the connection.
-  virtual void OnProtocolVersionMismatch(QuicTag version) = 0;
+  virtual void OnProtocolVersionMismatch(QuicVersion version) = 0;
 
   // Called when the complete header of a packet has been parsed.
   virtual void OnPacketHeader(const QuicPacketHeader& header) = 0;
@@ -220,7 +221,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicConnection(QuicGuid guid,
                  IPEndPoint address,
                  QuicConnectionHelperInterface* helper,
-                 bool is_server);
+                 bool is_server,
+                 QuicVersion version);
   virtual ~QuicConnection();
 
   static void DeleteEnclosedFrame(QuicFrame* frame);
@@ -276,11 +278,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool ProcessValidatedPacket();
 
   // The version of the protocol this connection is using.
-  QuicTag version() const { return framer_.version(); }
+  QuicVersion version() const { return framer_.version(); }
 
   // From QuicFramerVisitorInterface
   virtual void OnError(QuicFramer* framer) OVERRIDE;
-  virtual bool OnProtocolVersionMismatch(QuicTag received_version) OVERRIDE;
+  virtual bool OnProtocolVersionMismatch(QuicVersion received_version) OVERRIDE;
   virtual void OnPacket() OVERRIDE;
   virtual void OnPublicResetPacket(
       const QuicPublicResetPacket& packet) OVERRIDE;
@@ -448,7 +450,11 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   QuicConnectionHelperInterface* helper() { return helper_.get(); }
 
- protected:
+  // Selects and updates the version of the protocol being used by selecting a
+  // version from |available_versions| which is also supported. Returns true if
+  // such a version exists, false otherwise.
+  bool SelectMutualVersion(const QuicVersionVector& available_versions);
+
   QuicFramer framer_;
 
  private:
@@ -519,10 +525,6 @@ class NET_EXPORT_PRIVATE QuicConnection
                               RetransmissionTimeComparator>
       RetransmissionTimeouts;
 
-  // Selects and updates the version of the protocol being used by selecting a
-  // version from |available_versions| which is also supported. Returns true if
-  // such a version exists, false otherwise.
-  bool SelectMutualVersion(const QuicTagVector& available_versions);
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();
 
@@ -651,7 +653,8 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   FecGroupMap group_map_;
 
-  QuicPacketEntropyManager entropy_manager_;
+  QuicReceivedEntropyManager received_entropy_manager_;
+  QuicSentEntropyManager sent_entropy_manager_;
 
   QuicConnectionVisitorInterface* visitor_;
   QuicConnectionDebugVisitorInterface* debug_visitor_;

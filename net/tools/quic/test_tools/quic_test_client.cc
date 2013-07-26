@@ -88,15 +88,17 @@ BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers,
   return headers;
 }
 
-QuicTestClient::QuicTestClient(IPEndPoint address, const string& hostname)
-    : client_(address, hostname) {
+QuicTestClient::QuicTestClient(IPEndPoint address, const string& hostname,
+                               const QuicVersion version)
+    : client_(address, hostname, version) {
   Initialize(address, hostname);
 }
 
 QuicTestClient::QuicTestClient(IPEndPoint address,
                                const string& hostname,
-                               bool secure)
-    : client_(address, hostname) {
+                               bool secure,
+                               const QuicVersion version)
+    : client_(address, hostname, version) {
   Initialize(address, hostname);
   secure_ = secure;
   // TODO(alyssar, agl) uncomment here and below when default certs are allowed.
@@ -105,8 +107,9 @@ QuicTestClient::QuicTestClient(IPEndPoint address,
 
 QuicTestClient::QuicTestClient(IPEndPoint address,
                                const string& hostname,
-                               const QuicConfig& config)
-    : client_(address, hostname, config) {
+                               const QuicConfig& config,
+                               const QuicVersion version)
+    : client_(address, hostname, config, version) {
   Initialize(address, hostname);
 }
 

@@ -107,7 +107,12 @@ class ServerThread : public base::SimpleThread {
   DISALLOW_COPY_AND_ASSIGN(ServerThread);
 };
 
-class EndToEndTest : public ::testing::Test {
+class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
+ public:
+  static void SetUpTestCase() {
+    QuicInMemoryCache::GetInstance()->ResetForTests();
+  }
+
  protected:
   EndToEndTest()
       : server_hostname_("example.com"),
@@ -123,16 +128,14 @@ class EndToEndTest : public ::testing::Test {
                "HTTP/1.1", "200", "OK", kFooResponseBody);
     AddToCache("GET", "https://www.google.com/bar",
                "HTTP/1.1", "200", "OK", kBarResponseBody);
-  }
-
-  static void SetUpTestCase() {
-    QuicInMemoryCache::GetInstance()->ResetForTests();
+    version_ = GetParam();
   }
 
   virtual QuicTestClient* CreateQuicClient() {
     QuicTestClient* client = new QuicTestClient(server_address_,
                                                 server_hostname_,
-                                                client_config_);
+                                                client_config_,
+                                                version_);
     client->Connect();
     return client;
   }
@@ -205,9 +208,15 @@ class EndToEndTest : public ::testing::Test {
   bool server_started_;
   QuicConfig client_config_;
   QuicConfig server_config_;
+  QuicVersion version_;
 };
 
-TEST_F(EndToEndTest, SimpleRequestResponse) {
+// Run all end to end tests with QUIC version 6.
+INSTANTIATE_TEST_CASE_P(EndToEndTests,
+                        EndToEndTest,
+                        ::testing::Values(QUIC_VERSION_6));
+
+TEST_P(EndToEndTest, SimpleRequestResponse) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -222,7 +231,7 @@ TEST_F(EndToEndTest, SimpleRequestResponse) {
 
 // TODO(rch): figure out how to detect missing v6 supprt (like on the linux
 // try bots) and selectively disable this test.
-TEST_F(EndToEndTest, DISABLED_SimpleRequestResponsev6) {
+TEST_P(EndToEndTest, DISABLED_SimpleRequestResponsev6) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -238,7 +247,7 @@ TEST_F(EndToEndTest, DISABLED_SimpleRequestResponsev6) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
-TEST_F(EndToEndTest, SeparateFinPacket) {
+TEST_P(EndToEndTest, SeparateFinPacket) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -268,7 +277,7 @@ TEST_F(EndToEndTest, SeparateFinPacket) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
-TEST_F(EndToEndTest, MultipleRequestResponse) {
+TEST_P(EndToEndTest, MultipleRequestResponse) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -283,7 +292,7 @@ TEST_F(EndToEndTest, MultipleRequestResponse) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
-TEST_F(EndToEndTest, MultipleClients) {
+TEST_P(EndToEndTest, MultipleClients) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -312,7 +321,7 @@ TEST_F(EndToEndTest, MultipleClients) {
   EXPECT_EQ(200u, client2->response_headers()->parsed_response_code());
 }
 
-TEST_F(EndToEndTest, RequestOverMultiplePackets) {
+TEST_P(EndToEndTest, RequestOverMultiplePackets) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -344,7 +353,7 @@ TEST_F(EndToEndTest, RequestOverMultiplePackets) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
-TEST_F(EndToEndTest, MultipleFramesRandomOrder) {
+TEST_P(EndToEndTest, MultipleFramesRandomOrder) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -377,7 +386,7 @@ TEST_F(EndToEndTest, MultipleFramesRandomOrder) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
-TEST_F(EndToEndTest, PostMissingBytes) {
+TEST_P(EndToEndTest, PostMissingBytes) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -399,7 +408,7 @@ TEST_F(EndToEndTest, PostMissingBytes) {
   EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
 }
 
-TEST_F(EndToEndTest, LargePost) {
+TEST_P(EndToEndTest, LargePost) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -420,7 +429,7 @@ TEST_F(EndToEndTest, LargePost) {
 }
 
 // TODO(ianswett): Enable once b/9295090 is fixed.
-TEST_F(EndToEndTest, DISABLED_LargePostFEC) {
+TEST_P(EndToEndTest, DISABLED_LargePostFEC) {
   // FLAGS_fake_packet_loss_percentage = 30;
   ASSERT_TRUE(Initialize());
   client_->options()->max_packets_per_fec_group = 6;
@@ -445,7 +454,7 @@ TEST_F(EndToEndTest, DISABLED_LargePostFEC) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
-/*TEST_F(EndToEndTest, PacketTooLarge) {
+/*TEST_P(EndToEndTest, PacketTooLarge) {
   FLAGS_quic_allow_oversized_packets_for_test = true;
   ASSERT_TRUE(Initialize());
 
@@ -462,7 +471,7 @@ TEST_F(EndToEndTest, DISABLED_LargePostFEC) {
   EXPECT_EQ(QUIC_PACKET_TOO_LARGE, client_->connection_error());
 }*/
 
-TEST_F(EndToEndTest, InvalidStream) {
+TEST_P(EndToEndTest, InvalidStream) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -487,7 +496,7 @@ TEST_F(EndToEndTest, InvalidStream) {
 }
 
 // TODO(rch): this test seems to cause net_unittests timeouts :|
-TEST_F(EndToEndTest, DISABLED_MultipleTermination) {
+TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -535,7 +544,7 @@ TEST_F(EndToEndTest, DISABLED_MultipleTermination) {
 #endif
 }
 
-TEST_F(EndToEndTest, Timeout) {
+TEST_P(EndToEndTest, Timeout) {
   client_config_.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromMicroseconds(500),
       QuicTime::Delta::FromMicroseconds(500));
@@ -547,7 +556,7 @@ TEST_F(EndToEndTest, Timeout) {
   }
 }
 
-TEST_F(EndToEndTest, LimitMaxOpenStreams) {
+TEST_P(EndToEndTest, LimitMaxOpenStreams) {
   // Server limits the number of max streams to 2.
   server_config_.set_max_streams_per_connection(2, 2);
   // Client tries to negotiate for 10.
@@ -559,7 +568,7 @@ TEST_F(EndToEndTest, LimitMaxOpenStreams) {
   EXPECT_EQ(2u, client_negotiated_config->max_streams_per_connection());
 }
 
-TEST_F(EndToEndTest, ResetConnection) {
+TEST_P(EndToEndTest, ResetConnection) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -597,7 +606,7 @@ class WrongAddressWriter : public QuicPacketWriter {
   int fd_;
 };
 
-TEST_F(EndToEndTest, ConnectionMigration) {
+TEST_P(EndToEndTest, ConnectionMigration) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";

@@ -17,11 +17,12 @@ const QuicByteCount kNoNBytesInFlight = 0;
 
 class TcpCubicSenderPeer : public TcpCubicSender {
  public:
-  explicit TcpCubicSenderPeer(const QuicClock* clock, bool reno)
+  TcpCubicSenderPeer(const QuicClock* clock, bool reno)
       : TcpCubicSender(clock, reno) {
   }
   using TcpCubicSender::AvailableCongestionWindow;
   using TcpCubicSender::CongestionWindow;
+  using TcpCubicSender::AckAccounting;
 };
 
 class TcpCubicSenderTest : public ::testing::Test {
@@ -221,5 +222,33 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
   EXPECT_EQ(expected_congestion_window, sender_->CongestionWindow());
 }
 
+TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
+  const int64 kRttMs = 10;
+  const int64 kDeviationMs = 3;
+  EXPECT_EQ(QuicTime::Delta::Zero(), sender_->RetransmissionDelay());
+
+  sender_->AckAccounting(QuicTime::Delta::FromMilliseconds(kRttMs));
+
+  // Initial value is to set the median deviation to half of the initial
+  // rtt, the median in then multiplied by a factor of 4 and finaly the
+  // smoothed rtt is added which is the inital rtt.
+  QuicTime::Delta expected_delay =
+      QuicTime::Delta::FromMilliseconds(kRttMs + kRttMs / 2 * 4);
+  EXPECT_EQ(expected_delay, sender_->RetransmissionDelay());
+
+  for (int i = 0; i < 100; ++i) {
+    // Run to make sure that we converge.
+    sender_->AckAccounting(
+        QuicTime::Delta::FromMilliseconds(kRttMs + kDeviationMs));
+    sender_->AckAccounting(
+        QuicTime::Delta::FromMilliseconds(kRttMs - kDeviationMs));
+  }
+  expected_delay = QuicTime::Delta::FromMilliseconds(kRttMs + kDeviationMs * 4);
+
+  EXPECT_NEAR(kRttMs, sender_->SmoothedRtt().ToMilliseconds(), 1);
+  EXPECT_NEAR(expected_delay.ToMilliseconds(),
+              sender_->RetransmissionDelay().ToMilliseconds(),
+              1);
+}
 }  // namespace test
 }  // namespace net

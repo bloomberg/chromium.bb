@@ -141,7 +141,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     feedback.tcp.accumulated_number_of_lost_packets = 0;
     feedback.tcp.receive_window = 256000;
 
-    QuicFramer framer(kQuicVersion1, QuicTime::Zero(), false);
+    QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), false);
     QuicFrames frames;
     frames.push_back(QuicFrame(&ack));
     frames.push_back(QuicFrame(&feedback));
@@ -193,7 +193,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
   scoped_ptr<QuicEncryptedPacket> ConstructPacket(
       const QuicPacketHeader& header,
       const QuicFrame& frame) {
-    QuicFramer framer(kQuicVersion1, QuicTime::Zero(), false);
+    QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), false);
     QuicFrames frames;
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(

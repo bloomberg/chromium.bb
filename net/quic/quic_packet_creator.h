@@ -129,7 +129,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // serialized packet to a random bool and returns that value as a member of
   // SerializedPacket.
   QuicEncryptedPacket* SerializeVersionNegotiationPacket(
-      const QuicTagVector& supported_versions);
+      const QuicVersionVector& supported_versions);
 
   QuicPacketSequenceNumber sequence_number() const {
     return sequence_number_;

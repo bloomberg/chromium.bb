@@ -46,8 +46,14 @@ void FixRateSender::OnIncomingAck(
     QuicPacketSequenceNumber /*acked_sequence_number*/,
     QuicByteCount bytes_acked,
     QuicTime::Delta rtt) {
-  latest_rtt_ = rtt;
+  // RTT can't be negative.
+  DCHECK_LE(0, rtt.ToMicroseconds());
+
   data_in_flight_ -= bytes_acked;
+  if (rtt.IsInfinite()) {
+    return;
+  }
+  latest_rtt_ = rtt;
 }
 
 void FixRateSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
@@ -103,6 +109,12 @@ QuicBandwidth FixRateSender::BandwidthEstimate() {
 QuicTime::Delta FixRateSender::SmoothedRtt() {
   // TODO(satyamshekhar): Calculate and return smoothed rtt.
   return latest_rtt_;
+}
+
+QuicTime::Delta FixRateSender::RetransmissionDelay() {
+  // TODO(pwestin): Calculate and return retransmission delay.
+  // Use 2 * the latest RTT for now.
+  return latest_rtt_.Add(latest_rtt_);
 }
 
 }  // namespace net

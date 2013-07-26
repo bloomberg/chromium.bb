@@ -108,7 +108,13 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
  private:
   void SendQueuedFrames();
 
+  // Test to see if we have pending ack, feedback, or control frames.
   bool HasPendingFrames() const;
+  // Test to see if the addition of a pending frame (which might be
+  // retransmittable) would still allow the resulting packet to be sent now.
+  bool CanSendWithNextPendingFrameAddition() const;
+  // Add exactly one pending frame, preferring ack over feedback over control
+  // frames.
   bool AddNextPendingFrame();
 
   bool AddFrame(const QuicFrame& frame);
@@ -120,10 +126,15 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   QuicPacketCreator* packet_creator_;
   QuicFrames queued_control_frames_;
   bool should_flush_;
+  // Flags to indicate the need for just-in-time construction of a frame.
   bool should_send_ack_;
+  bool should_send_feedback_;
+  // If we put a non-retransmittable frame (namley ack or feedback frame) in
+  // this packet, then we have to hold a reference to it until we flush (and
+  // serialize it). Retransmittable frames are referenced elsewhere so that they
+  // can later be (optionally) retransmitted.
   scoped_ptr<QuicAckFrame> pending_ack_frame_;
   scoped_ptr<QuicCongestionFeedbackFrame> pending_feedback_frame_;
-  bool should_send_feedback_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicPacketGenerator);
 };

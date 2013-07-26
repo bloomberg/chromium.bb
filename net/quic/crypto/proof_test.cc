@@ -35,9 +35,10 @@ TEST(Proof, Verify) {
   string error_details, signature, first_signature;
   CertVerifyResult cert_verify_result;
 
-  ASSERT_TRUE(source->GetProof(hostname, server_config, &first_certs,
-                               &first_signature));
-  ASSERT_TRUE(source->GetProof(hostname, server_config, &certs, &signature));
+  ASSERT_TRUE(source->GetProof(hostname, server_config, false /* no ECDSA */,
+                               &first_certs, &first_signature));
+  ASSERT_TRUE(source->GetProof(hostname, server_config, false /* no ECDSA */,
+                               &certs, &signature));
 
   // Check that the proof source is caching correctly:
   ASSERT_EQ(first_certs, certs);

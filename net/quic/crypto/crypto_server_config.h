@@ -58,6 +58,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     // id contains the server config id for the resulting config. If empty, a
     // random id is generated.
     std::string id;
+    // orbit contains the kOrbitSize bytes of the orbit value for the server
+    // config. If |orbit| is empty then a random orbit is generated.
+    std::string orbit;
   };
 
   // |source_address_token_secret|: secret key material used for encrypting and

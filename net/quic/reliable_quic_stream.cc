@@ -22,6 +22,7 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id,
       stream_bytes_written_(0),
       headers_decompressed_(false),
       headers_id_(0),
+      decompression_failed_(false),
       stream_error_(QUIC_STREAM_NO_ERROR),
       connection_error_(QUIC_NO_ERROR),
       read_side_closed_(false),
@@ -56,10 +57,6 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   stream_bytes_read_ += frame.data.length();
 
   bool accepted = sequencer_.OnStreamFrame(frame);
-
-  if (frame.fin) {
-    sequencer_.CloseStreamAtOffset(frame.offset + frame.data.size());
-  }
 
   return accepted;
 }
@@ -267,6 +264,9 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
     data_len -= missing_size;
   }
   DCHECK_NE(0u, headers_id_);
+  if (data_len == 0) {
+    return total_bytes_consumed;
+  }
 
   // Once the headers are finished, we simply pass the data through.
   if (headers_decompressed_) {
@@ -274,7 +274,7 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
     if (!decompressed_headers_.empty()) {
       ProcessHeaderData();
     }
-    if (decompressed_headers_.empty() && data_len > 0) {
+    if (decompressed_headers_.empty()) {
       DVLOG(1) << "Delegating procesing to ProcessData";
       total_bytes_consumed += ProcessData(data, data_len);
     }
@@ -304,20 +304,39 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
   // Decompressed data will be delivered to decompressed_headers_.
   size_t bytes_consumed = session_->decompressor()->DecompressData(
       StringPiece(data, data_len), this);
+  DCHECK_NE(0u, bytes_consumed);
+  if (bytes_consumed > data_len) {
+    DCHECK(false) << "DecompressData returned illegal value";
+    OnDecompressionError();
+    return total_bytes_consumed;
+  }
   total_bytes_consumed += bytes_consumed;
+  data += bytes_consumed;
+  data_len -= bytes_consumed;
+
+  if (decompression_failed_) {
+    // The session will have been closed in OnDecompressionError.
+    return total_bytes_consumed;
+  }
 
   // Headers are complete if the decompressor has moved on to the
   // next stream.
   headers_decompressed_ =
       session_->decompressor()->current_header_id() != headers_id_;
+  if (!headers_decompressed_) {
+    DCHECK_EQ(0u, data_len);
+  }
 
   ProcessHeaderData();
 
+  if (!headers_decompressed_ || !decompressed_headers_.empty()) {
+    return total_bytes_consumed;
+  }
+
   // We have processed all of the decompressed data but we might
   // have some more raw data to process.
-  if (decompressed_headers_.empty() && bytes_consumed < data_len) {
-    total_bytes_consumed += ProcessData(data + bytes_consumed,
-                                        data_len - bytes_consumed);
+  if (data_len > 0) {
+    total_bytes_consumed += ProcessData(data, data_len);
   }
 
   // The sequencer will push any additional buffered frames if this data
@@ -344,6 +363,7 @@ void ReliableQuicStream::OnDecompressorAvailable() {
   DCHECK_EQ(headers_id_,
             session_->decompressor()->current_header_id());
   DCHECK(!headers_decompressed_);
+  DCHECK(!decompression_failed_);
   DCHECK_EQ(0u, decompressed_headers_.length());
 
   size_t total_bytes_consumed = 0;
@@ -359,6 +379,9 @@ void ReliableQuicStream::OnDecompressorAvailable() {
       total_bytes_consumed += session_->decompressor()->DecompressData(
           StringPiece(static_cast<char*>(iovecs[i].iov_base),
                       iovecs[i].iov_len), this);
+      if (decompression_failed_) {
+        return;
+      }
 
       headers_decompressed_ =
           session_->decompressor()->current_header_id() != headers_id_;
@@ -381,6 +404,8 @@ bool ReliableQuicStream::OnDecompressedData(StringPiece data) {
 }
 
 void ReliableQuicStream::OnDecompressionError() {
+  DCHECK(!decompression_failed_);
+  decompression_failed_ = true;
   session_->connection()->SendConnectionClose(QUIC_DECOMPRESSION_FAILURE);
 }
 

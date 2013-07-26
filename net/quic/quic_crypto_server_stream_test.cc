@@ -122,12 +122,11 @@ TEST_F(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
 
   // CompleteCryptoHandshake returns the number of client hellos sent. This
   // test should send:
-  //   * One to get a source-address token.
+  //   * One to get a source-address token and certificates.
   //   * One to complete the handshake.
   // TODO(rtenneti): Until we set the crypto_config.SetProofVerifier to enable
   // ProofVerifier in CryptoTestUtils::HandshakeWithFakeClient, we would not
   // have sent the following client hello.
-  //   * One to get the server's certificates
   EXPECT_EQ(2, CompleteCryptoHandshake());
   EXPECT_TRUE(stream_.encryption_established());
   EXPECT_TRUE(stream_.handshake_confirmed());

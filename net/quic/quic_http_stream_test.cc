@@ -46,7 +46,7 @@ class TestQuicConnection : public QuicConnection {
   TestQuicConnection(QuicGuid guid,
                      IPEndPoint address,
                      QuicConnectionHelper* helper)
-      : QuicConnection(guid, address, helper, false) {
+      : QuicConnection(guid, address, helper, false, QuicVersionMax()) {
   }
 
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
@@ -118,7 +118,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
         use_closing_stream_(false),
         read_buffer_(new IOBufferWithSize(4096)),
         guid_(2),
-        framer_(kQuicVersion1, QuicTime::Zero(), false),
+        framer_(QuicVersionMax(), QuicTime::Zero(), false),
         creator_(guid_, &framer_, &random_, false) {
     IPAddressNumber ip;
     CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
@@ -168,6 +168,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     runner_ = new TestTaskRunner(&clock_);
     send_algorithm_ = new MockSendAlgorithm();
     receive_algorithm_ = new TestReceiveAlgorithm(NULL);
+    EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
+        testing::Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).
         WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
     helper_ = new QuicConnectionHelper(runner_.get(), &clock_,

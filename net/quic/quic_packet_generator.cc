@@ -112,11 +112,21 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   return QuicConsumedData(total_bytes_consumed, fin_consumed);
 }
 
+bool QuicPacketGenerator::CanSendWithNextPendingFrameAddition() const {
+  DCHECK(HasPendingFrames());
+  HasRetransmittableData retransmittable =
+      (should_send_ack_ || should_send_feedback_) ? NO_RETRANSMITTABLE_DATA
+                                                  : HAS_RETRANSMITTABLE_DATA;
+  if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
+      DCHECK(!queued_control_frames_.empty());  // These are retransmittable.
+  }
+  return delegate_->CanWrite(NOT_RETRANSMISSION, retransmittable);
+}
+
 void QuicPacketGenerator::SendQueuedFrames() {
   packet_creator_->MaybeStartFEC();
-  while (HasPendingFrames() && delegate_->CanWrite(NOT_RETRANSMISSION,
-             packet_creator_->HasPendingFrames() ?
-                 HAS_RETRANSMITTABLE_DATA : NO_RETRANSMITTABLE_DATA)) {
+  // Only add pending frames if we are SURE we can then send the whole packet.
+  while (HasPendingFrames() && CanSendWithNextPendingFrameAddition()) {
     if (!AddNextPendingFrame()) {
       // Packet was full, so serialize and send it.
       SerializeAndSendPacket();
@@ -159,28 +169,26 @@ bool QuicPacketGenerator::HasPendingFrames() const {
 
 bool QuicPacketGenerator::AddNextPendingFrame() {
   if (should_send_ack_) {
-    pending_ack_frame_.reset(delegate_->CreateAckFrame());
-    if (!AddFrame(QuicFrame(pending_ack_frame_.get()))) {
-      // packet was full
-      return false;
-    }
-    should_send_ack_ = false;
-    return true;
+    pending_ack_frame_.reset((delegate_->CreateAckFrame()));
+    // If we can't this add the frame now, then we still need to do so later.
+    should_send_ack_ = !AddFrame(QuicFrame(pending_ack_frame_.get()));
+    // Return success if we have cleared out this flag (i.e., added the frame).
+    // If we still need to send, then the frame is full, and we have failed.
+    return !should_send_ack_;
   }
 
   if (should_send_feedback_) {
-    pending_feedback_frame_.reset(delegate_->CreateFeedbackFrame());
-    if (!AddFrame(QuicFrame(pending_feedback_frame_.get()))) {
-      // packet was full
-      return false;
-    }
-    should_send_feedback_ = false;
-    return true;
+    pending_feedback_frame_.reset((delegate_->CreateFeedbackFrame()));
+    // If we can't this add the frame now, then we still need to do so later.
+    should_send_feedback_ = !AddFrame(QuicFrame(pending_feedback_frame_.get()));
+    // Return success if we have cleared out this flag (i.e., added the frame).
+    // If we still need to send, then the frame is full, and we have failed.
+    return !should_send_feedback_;
   }
 
   DCHECK(!queued_control_frames_.empty());
   if (!AddFrame(queued_control_frames_.back())) {
-    // packet was full
+    // Packet was full.
     return false;
   }
   queued_control_frames_.pop_back();

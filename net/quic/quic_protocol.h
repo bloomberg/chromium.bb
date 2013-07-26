@@ -63,9 +63,6 @@ const size_t kPublicResetNonceSize = 8;
 // Signifies that the QuicPacket will contain version of the protocol.
 const bool kIncludeVersion = true;
 
-// Returns true if |version| is a supported protocol version.
-NET_EXPORT_PRIVATE bool IsSupportedVersion(QuicTag version);
-
 // Index of the first byte in a QUIC packet which is used in hash calculation.
 const size_t kStartOfHashData = 0;
 
@@ -174,6 +171,59 @@ enum QuicPacketPrivateFlags {
   // All bits set (bits 3-7 are not currently used): 00000111
   PACKET_PRIVATE_FLAGS_MAX = (1 << 3) - 1
 };
+
+// The available versions of QUIC. Guaranteed that the integer value of the enum
+// will match the version number.
+// When adding a new version to this enum you should add it to
+// kSupportedVersions (if appropriate), and also add a new case to the helper
+// methods QuicVersionToQuicTag, and QuicTagToQuicVersion.
+enum QuicVersion {
+  // Special case to indicate unknown/unsupported QUIC version.
+  QUIC_VERSION_UNSUPPORTED = 0,
+
+  QUIC_VERSION_6 = 6,  // Current version.
+};
+
+// This vector contains QUIC versions which we currently support.
+// This should be ordered such that the highest supported version is the first
+// element, with subsequent elements in descending order (versions can be
+// skipped as necessary).
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_6};
+
+typedef std::vector<QuicVersion> QuicVersionVector;
+
+// Upper limit on versions we support.
+NET_EXPORT_PRIVATE QuicVersion QuicVersionMax();
+
+// QuicTag is written to and read from the wire, but we prefer to use
+// the more readable QuicVersion at other levels.
+// Helper function which translates from a QuicVersion to a QuicTag. Returns 0
+// if QuicVersion is unsupported.
+NET_EXPORT_PRIVATE QuicTag QuicVersionToQuicTag(const QuicVersion version);
+
+// Returns appropriate QuicVersion from a QuicTag.
+// Returns QUIC_VERSION_UNSUPPORTED if version_tag cannot be understood.
+NET_EXPORT_PRIVATE QuicVersion QuicTagToQuicVersion(const QuicTag version_tag);
+
+// Helper function which translates from a QuicVersion to a string.
+// Returns strings corresponding to enum names (e.g. QUIC_VERSION_6).
+NET_EXPORT_PRIVATE std::string QuicVersionToString(const QuicVersion version);
+
+// Returns comma separated list of string representations of QuicVersion enum
+// values in the supplied QuicVersionArray.
+NET_EXPORT_PRIVATE std::string QuicVersionArrayToString(
+    const QuicVersion versions[], int num_versions);
+
+// Version and Crypto tags are written to the wire with a big-endian
+// representation of the name of the tag.  For example
+// the client hello tag (CHLO) will be written as the
+// following 4 bytes: 'C' 'H' 'L' 'O'.  Since it is
+// stored in memory as a little endian uint32, we need
+// to reverse the order of the bytes.
+
+// MakeQuicTag returns a value given the four bytes. For example:
+//   MakeQuicTag('C', 'H', 'L', 'O');
+NET_EXPORT_PRIVATE QuicTag MakeQuicTag(char a, char b, char c, char d);
 
 // Size in bytes of the data or fec packet header.
 NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(QuicPacketHeader header);
@@ -323,27 +373,6 @@ enum QuicErrorCode {
   QUIC_LAST_ERROR,
 };
 
-// Version and Crypto tags are written to the wire with a big-endian
-// representation of the name of the tag.  For example
-// the client hello tag (CHLO) will be written as the
-// following 4 bytes: 'C' 'H' 'L' 'O'.  Since it is
-// stored in memory as a little endian uint32, we need
-// to reverse the order of the bytes.
-//
-// The TAG macro is used in header files to ensure that we don't create static
-// initialisers. In normal code, the MakeQuicTag function should be used.
-#define TAG(a, b, c, d) ((d << 24) + (c << 16) + (b << 8) + a)
-const QuicTag kUnsupportedVersion = -1;
-// Each time the wire format changes, this need needs to be incremented.
-// At some point, we will actually freeze the wire format and make an official
-// version number, but this works for now.
-const QuicTag kQuicVersion1 = TAG('Q', '0', '0', '6');
-#undef TAG
-
-// MakeQuicTag returns a value given the four bytes. For example:
-//   MakeQuicTag('C', 'H', 'L', 'O');
-uint32 NET_EXPORT_PRIVATE MakeQuicTag(char a, char b, char c, char d);
-
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
   QuicPacketPublicHeader();
   explicit QuicPacketPublicHeader(const QuicPacketPublicHeader& other);
@@ -357,7 +386,7 @@ struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
   bool reset_flag;
   bool version_flag;
   QuicSequenceNumberLength sequence_number_length;
-  QuicTagVector versions;
+  QuicVersionVector versions;
 };
 
 // Header for Data or FEC packets.

@@ -48,6 +48,8 @@ class QuicServerSession : public QuicSession {
 
   virtual void InitializeSession(const QuicCryptoServerConfig& crypto_config);
 
+  const QuicCryptoServerStream* crypto_stream() { return crypto_stream_.get(); }
+
  protected:
   // QuicSession methods:
   virtual ReliableQuicStream* CreateIncomingReliableStream(

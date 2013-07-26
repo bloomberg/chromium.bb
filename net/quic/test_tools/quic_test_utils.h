@@ -53,7 +53,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
 
   MOCK_METHOD1(OnError, void(QuicFramer* framer));
   // The constructor sets this up to return false by default.
-  MOCK_METHOD1(OnProtocolVersionMismatch, bool(QuicTag version));
+  MOCK_METHOD1(OnProtocolVersionMismatch, bool(QuicVersion version));
   MOCK_METHOD0(OnPacket, void());
   MOCK_METHOD1(OnPublicResetPacket, void(const QuicPublicResetPacket& header));
   MOCK_METHOD1(OnVersionNegotiationPacket,
@@ -88,7 +88,7 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   virtual void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) OVERRIDE {}
   virtual void OnRevivedPacket() OVERRIDE {}
-  virtual bool OnProtocolVersionMismatch(QuicTag version) OVERRIDE;
+  virtual bool OnProtocolVersionMismatch(QuicVersion version) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE {}
   virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
@@ -245,7 +245,7 @@ class MockConnection : public QuicConnection {
     QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
-  virtual bool OnProtocolVersionMismatch(QuicTag version) OVERRIDE {
+  virtual bool OnProtocolVersionMismatch(QuicVersion version) OVERRIDE {
     return false;
   }
 
@@ -338,6 +338,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                                               HasRetransmittableData));
   MOCK_METHOD0(BandwidthEstimate, QuicBandwidth(void));
   MOCK_METHOD0(SmoothedRtt, QuicTime::Delta(void));
+  MOCK_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSendAlgorithm);
@@ -349,7 +350,7 @@ class TestEntropyCalculator :
   TestEntropyCalculator() { }
   virtual ~TestEntropyCalculator() { }
 
-  virtual QuicPacketEntropyHash ReceivedEntropyHash(
+  virtual QuicPacketEntropyHash EntropyHash(
       QuicPacketSequenceNumber sequence_number) const OVERRIDE;
 };
 

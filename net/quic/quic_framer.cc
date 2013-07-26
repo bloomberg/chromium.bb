@@ -53,7 +53,7 @@ QuicPacketSequenceNumber ClosestTo(QuicPacketSequenceNumber target,
 
 }  // namespace
 
-QuicFramer::QuicFramer(QuicTag version,
+QuicFramer::QuicFramer(QuicVersion version,
                        QuicTime creation_time,
                        bool is_server)
     : visitor_(NULL),
@@ -142,8 +142,13 @@ size_t QuicFramer::GetStreamOffsetSize(QuicStreamOffset offset) {
   return 8;
 }
 
-bool QuicFramer::IsSupportedVersion(QuicTag version) {
-  return version == kQuicVersion1;
+bool QuicFramer::IsSupportedVersion(const QuicVersion version) const {
+  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
+    if (version == kSupportedQuicVersions[i]) {
+      return true;
+    }
+  }
+  return false;
 }
 
 size_t QuicFramer::GetVersionNegotiationPacketSize(size_t number_versions) {
@@ -342,7 +347,7 @@ QuicEncryptedPacket* QuicFramer::ConstructPublicResetPacket(
 
 QuicEncryptedPacket* QuicFramer::ConstructVersionNegotiationPacket(
     const QuicPacketPublicHeader& header,
-    const QuicTagVector& supported_versions) {
+    const QuicVersionVector& supported_versions) {
   DCHECK(header.version_flag);
   size_t len = GetVersionNegotiationPacketSize(supported_versions.size());
   QuicDataWriter writer(len);
@@ -359,7 +364,7 @@ QuicEncryptedPacket* QuicFramer::ConstructVersionNegotiationPacket(
   }
 
   for (size_t i = 0; i < supported_versions.size(); ++i) {
-    if (!writer.WriteUInt32(supported_versions[i])) {
+    if (!writer.WriteUInt32(QuicVersionToQuicTag(supported_versions[i]))) {
       return NULL;
     }
   }
@@ -413,7 +418,7 @@ bool QuicFramer::ProcessVersionNegotiationPacket(
       set_detailed_error("Unable to read supported version in negotiation.");
       return RaiseError(QUIC_INVALID_VERSION_NEGOTIATION_PACKET);
     }
-    public_header->versions.push_back(version);
+    public_header->versions.push_back(QuicTagToQuicVersion(version));
   } while (!reader_->IsDoneReading());
 
   visitor_->OnVersionNegotiationPacket(*public_header);
@@ -568,7 +573,7 @@ bool QuicFramer::WritePacketHeader(const QuicPacketHeader& header,
 
   if (header.public_header.version_flag) {
     DCHECK(!is_server_);
-    writer->WriteUInt32(quic_version_);
+    writer->WriteUInt32(QuicVersionToQuicTag(quic_version_));
   }
 
   if (!AppendPacketSequenceNumber(header.public_header.sequence_number_length,
@@ -712,14 +717,19 @@ bool QuicFramer::ProcessPublicHeader(
       break;
   }
 
+  // Read the version only if the packet is from the client.
+  // version flag from the server means version negotiation packet.
   if (public_header->version_flag && is_server_) {
-    QuicTag version;
-    if (!reader_->ReadUInt32(&version)) {
-      // Read the version only if the packet is from the client.
-      // version flag from the server means version negotiation packet.
+    QuicTag version_tag;
+    if (!reader_->ReadUInt32(&version_tag)) {
       set_detailed_error("Unable to read protocol version.");
       return false;
     }
+
+    // If the version from the new packet is the same as the version of this
+    // framer, then the public flags should be set to something we understand.
+    // If not, this raises an error.
+    QuicVersion version = QuicTagToQuicVersion(version_tag);
     if (version == quic_version_ && public_flags > PACKET_PUBLIC_FLAGS_MAX) {
       set_detailed_error("Illegal public flags value.");
       return false;
@@ -1549,7 +1559,7 @@ bool QuicFramer::AppendAckFramePayload(
           CalculateLargestObserved(frame.received_info.missing_packets, --it);
       // Overwrite entropy hash for received packets.
       writer->WriteUInt8ToOffset(
-          entropy_calculator_->ReceivedEntropyHash(largest_observed),
+          entropy_calculator_->EntropyHash(largest_observed),
           received_entropy_offset);
       // Overwrite largest_observed.
       writer->WriteUInt48ToOffset(largest_observed & k6ByteSequenceNumberMask,

@@ -49,9 +49,6 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // this will return true, or it will be rejected and this will return false.
   bool OnStreamFrame(const QuicStreamFrame& frame);
 
-  // Wait until we've seen 'offset' bytes, and then terminate the stream.
-  void CloseStreamAtOffset(QuicStreamOffset offset);
-
   // Once data is buffered, it's up to the stream to read it when the stream
   // can handle more data.  The following three functions make that possible.
 
@@ -85,6 +82,9 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
 
   // TODO(alyssar) use something better than strings.
   typedef map<QuicStreamOffset, string> FrameMap;
+
+  // Wait until we've seen 'offset' bytes, and then terminate the stream.
+  void CloseStreamAtOffset(QuicStreamOffset offset);
 
   bool MaybeCloseStream();
 

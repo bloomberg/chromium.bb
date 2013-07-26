@@ -221,7 +221,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     revived_packets_++;
   }
 
-  virtual bool OnProtocolVersionMismatch(QuicTag version) OVERRIDE {
+  virtual bool OnProtocolVersionMismatch(QuicVersion version) OVERRIDE {
     DLOG(INFO) << "QuicFramer Version Mismatch, version: " << version;
     version_mismatch_++;
     return true;
@@ -305,17 +305,20 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   QuicGoAwayFrame goaway_frame_;
 };
 
-class QuicFramerTest : public ::testing::Test {
+class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicFramerTest()
       : encrypter_(new test::TestEncrypter()),
         decrypter_(new test::TestDecrypter()),
         start_(QuicTime::Zero().Add(QuicTime::Delta::FromMicroseconds(0x10))),
-        framer_(kQuicVersion1, start_, true) {
+        framer_(QuicVersionMax(), start_, true) {
     framer_.SetDecrypter(decrypter_);
     framer_.SetEncrypter(ENCRYPTION_NONE, encrypter_);
     framer_.set_visitor(&visitor_);
-    framer_.set_entropy_calculator(&entropy_calculator_);
+    framer_.set_received_entropy_calculator(&entropy_calculator_);
+
+    QuicVersion version = GetParam();
+    framer_.set_version(version);
   }
 
   bool CheckEncryption(QuicPacketSequenceNumber sequence_number,
@@ -415,7 +418,12 @@ class QuicFramerTest : public ::testing::Test {
   test::TestEntropyCalculator entropy_calculator_;
 };
 
-TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearEpochStart) {
+// Run all framer tests with QUIC version 6.
+INSTANTIATE_TEST_CASE_P(QuicFramerTests,
+                        QuicFramerTest,
+                        ::testing::Values(QUIC_VERSION_6));
+
+TEST_P(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearEpochStart) {
   // A few quick manual sanity checks
   CheckCalculatePacketSequenceNumber(GG_UINT64_C(1), GG_UINT64_C(0));
   CheckCalculatePacketSequenceNumber(kEpoch + 1, kMask);
@@ -435,7 +443,7 @@ TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearEpochStart) {
   }
 }
 
-TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearEpochEnd) {
+TEST_P(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearEpochEnd) {
   // Cases where the last number was close to the end of the range
   for (uint64 i = 0; i < 10; i++) {
     QuicPacketSequenceNumber last = kEpoch - i;
@@ -454,7 +462,7 @@ TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearEpochEnd) {
 
 // Next check where we're in a non-zero epoch to verify we handle
 // reverse wrapping, too.
-TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearPrevEpoch) {
+TEST_P(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearPrevEpoch) {
   const uint64 prev_epoch = 1 * kEpoch;
   const uint64 cur_epoch = 2 * kEpoch;
   // Cases where the last number was close to the start of the range
@@ -473,7 +481,7 @@ TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearPrevEpoch) {
   }
 }
 
-TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearNextEpoch) {
+TEST_P(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearNextEpoch) {
   const uint64 cur_epoch = 2 * kEpoch;
   const uint64 next_epoch = 3 * kEpoch;
   // Cases where the last number was close to the end of the range
@@ -493,7 +501,7 @@ TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearNextEpoch) {
   }
 }
 
-TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearNextMax) {
+TEST_P(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearNextMax) {
   const uint64 max_number = numeric_limits<uint64>::max();
   const uint64 max_epoch = max_number & ~kMask;
 
@@ -516,14 +524,14 @@ TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearNextMax) {
   }
 }
 
-TEST_F(QuicFramerTest, EmptyPacket) {
+TEST_P(QuicFramerTest, EmptyPacket) {
   char packet[] = { 0x00 };
   QuicEncryptedPacket encrypted(packet, 0, false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
   EXPECT_EQ(QUIC_INVALID_PACKET_HEADER, framer_.error());
 }
 
-TEST_F(QuicFramerTest, LargePacket) {
+TEST_P(QuicFramerTest, LargePacket) {
   unsigned char packet[kMaxPacketSize + 1] = {
     // public flags (8 byte guid)
     0x3C,
@@ -555,7 +563,7 @@ TEST_F(QuicFramerTest, LargePacket) {
   EXPECT_EQ(QUIC_PACKET_TOO_LARGE, framer_.error());
 }
 
-TEST_F(QuicFramerTest, PacketHeader) {
+TEST_P(QuicFramerTest, PacketHeader) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -606,7 +614,7 @@ TEST_F(QuicFramerTest, PacketHeader) {
   }
 }
 
-TEST_F(QuicFramerTest, PacketHeaderWith4ByteGuid) {
+TEST_P(QuicFramerTest, PacketHeaderWith4ByteGuid) {
   QuicFramerPeer::SetLastSerializedGuid(&framer_,
                                         GG_UINT64_C(0xFEDCBA9876543210));
 
@@ -661,7 +669,7 @@ TEST_F(QuicFramerTest, PacketHeaderWith4ByteGuid) {
   }
 }
 
-TEST_F(QuicFramerTest, PacketHeader1ByteGuid) {
+TEST_P(QuicFramerTest, PacketHeader1ByteGuid) {
   QuicFramerPeer::SetLastSerializedGuid(&framer_,
                                         GG_UINT64_C(0xFEDCBA9876543210));
 
@@ -715,7 +723,7 @@ TEST_F(QuicFramerTest, PacketHeader1ByteGuid) {
   }
 }
 
-TEST_F(QuicFramerTest, PacketHeaderWith0ByteGuid) {
+TEST_P(QuicFramerTest, PacketHeaderWith0ByteGuid) {
   QuicFramerPeer::SetLastSerializedGuid(&framer_,
                                         GG_UINT64_C(0xFEDCBA9876543210));
 
@@ -768,7 +776,10 @@ TEST_F(QuicFramerTest, PacketHeaderWith0ByteGuid) {
   }
 }
 
-TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
+TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
+  // Set a specific version.
+  framer_.set_version(QUIC_VERSION_6);
+
   unsigned char packet[] = {
     // public flags (version)
     0x3D,
@@ -792,7 +803,7 @@ TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
             visitor_.header_->public_header.guid);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_TRUE(visitor_.header_->public_header.version_flag);
-  EXPECT_EQ(kQuicVersion1, visitor_.header_->public_header.versions[0]);
+  EXPECT_EQ(QUIC_VERSION_6, visitor_.header_->public_header.versions[0]);
   EXPECT_FALSE(visitor_.header_->fec_flag);
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
@@ -824,7 +835,7 @@ TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
   }
 }
 
-TEST_F(QuicFramerTest, PacketHeaderWith4ByteSequenceNumber) {
+TEST_P(QuicFramerTest, PacketHeaderWith4ByteSequenceNumber) {
   QuicFramerPeer::SetLastSequenceNumber(&framer_,
                                         GG_UINT64_C(0x123456789ABA));
 
@@ -879,7 +890,7 @@ TEST_F(QuicFramerTest, PacketHeaderWith4ByteSequenceNumber) {
   }
 }
 
-TEST_F(QuicFramerTest, PacketHeaderWith2ByteSequenceNumber) {
+TEST_P(QuicFramerTest, PacketHeaderWith2ByteSequenceNumber) {
   QuicFramerPeer::SetLastSequenceNumber(&framer_,
                                         GG_UINT64_C(0x123456789ABA));
 
@@ -934,7 +945,7 @@ TEST_F(QuicFramerTest, PacketHeaderWith2ByteSequenceNumber) {
   }
 }
 
-TEST_F(QuicFramerTest, PacketHeaderWith1ByteSequenceNumber) {
+TEST_P(QuicFramerTest, PacketHeaderWith1ByteSequenceNumber) {
   QuicFramerPeer::SetLastSequenceNumber(&framer_,
                                         GG_UINT64_C(0x123456789ABA));
 
@@ -989,9 +1000,9 @@ TEST_F(QuicFramerTest, PacketHeaderWith1ByteSequenceNumber) {
   }
 }
 
-TEST_F(QuicFramerTest, InvalidPublicFlag) {
+TEST_P(QuicFramerTest, InvalidPublicFlag) {
   unsigned char packet[] = {
-    // public flags
+    // public flags, unknown flag at bit 6
     0x40,
     // guid
     0x10, 0x32, 0x54, 0x76,
@@ -1026,7 +1037,10 @@ TEST_F(QuicFramerTest, InvalidPublicFlag) {
                        QUIC_INVALID_PACKET_HEADER);
 };
 
-TEST_F(QuicFramerTest, InvalidPublicFlagWithMatchingVersions) {
+TEST_P(QuicFramerTest, InvalidPublicFlagWithMatchingVersions) {
+  // Set a specific version.
+  framer_.set_version(QUIC_VERSION_6);
+
   unsigned char packet[] = {
     // public flags (8 byte guid and version flag and an unknown flag)
     0x4D,
@@ -1065,7 +1079,7 @@ TEST_F(QuicFramerTest, InvalidPublicFlagWithMatchingVersions) {
                        QUIC_INVALID_PACKET_HEADER);
 };
 
-TEST_F(QuicFramerTest, LargePublicFlagWithMismatchedVersions) {
+TEST_P(QuicFramerTest, LargePublicFlagWithMismatchedVersions) {
   unsigned char packet[] = {
     // public flags (8 byte guid, version flag and an unknown flag)
     0x7D,
@@ -1091,7 +1105,7 @@ TEST_F(QuicFramerTest, LargePublicFlagWithMismatchedVersions) {
   EXPECT_EQ(1, visitor_.version_mismatch_);
 };
 
-TEST_F(QuicFramerTest, InvalidPrivateFlag) {
+TEST_P(QuicFramerTest, InvalidPrivateFlag) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1128,7 +1142,7 @@ TEST_F(QuicFramerTest, InvalidPrivateFlag) {
                        QUIC_INVALID_PACKET_HEADER);
 };
 
-TEST_F(QuicFramerTest, PaddingFrame) {
+TEST_P(QuicFramerTest, PaddingFrame) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1171,7 +1185,7 @@ TEST_F(QuicFramerTest, PaddingFrame) {
       "Unable to read frame type.", QUIC_INVALID_FRAME_DATA);
 }
 
-TEST_F(QuicFramerTest, StreamFrame) {
+TEST_P(QuicFramerTest, StreamFrame) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1241,7 +1255,10 @@ TEST_F(QuicFramerTest, StreamFrame) {
   }
 }
 
-TEST_F(QuicFramerTest, StreamFrameWithVersion) {
+TEST_P(QuicFramerTest, StreamFrameWithVersion) {
+  // Set a specific version.
+  framer_.set_version(QUIC_VERSION_6);
+
   unsigned char packet[] = {
     // public flags (version, 8 byte guid)
     0x3D,
@@ -1279,7 +1296,7 @@ TEST_F(QuicFramerTest, StreamFrameWithVersion) {
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_TRUE(visitor_.header_.get()->public_header.version_flag);
-  EXPECT_EQ(kQuicVersion1, visitor_.header_.get()->public_header.versions[0]);
+  EXPECT_EQ(QUIC_VERSION_6, visitor_.header_.get()->public_header.versions[0]);
   EXPECT_TRUE(CheckDecryption(encrypted, kIncludeVersion));
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
@@ -1315,7 +1332,7 @@ TEST_F(QuicFramerTest, StreamFrameWithVersion) {
   }
 }
 
-TEST_F(QuicFramerTest, RejectPacket) {
+TEST_P(QuicFramerTest, RejectPacket) {
   visitor_.accept_packet_ = false;
 
   unsigned char packet[] = {
@@ -1358,7 +1375,7 @@ TEST_F(QuicFramerTest, RejectPacket) {
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
 }
 
-TEST_F(QuicFramerTest, RevivedStreamFrame) {
+TEST_P(QuicFramerTest, RevivedStreamFrame) {
   unsigned char payload[] = {
     // frame type (stream frame)
     0x01,
@@ -1416,7 +1433,7 @@ TEST_F(QuicFramerTest, RevivedStreamFrame) {
   EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
 }
 
-TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
+TEST_P(QuicFramerTest, StreamFrameInFecGroup) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1472,7 +1489,7 @@ TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
   EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
 }
 
-TEST_F(QuicFramerTest, AckFrame) {
+TEST_P(QuicFramerTest, AckFrame) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1567,7 +1584,7 @@ TEST_F(QuicFramerTest, AckFrame) {
   }
 }
 
-TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
+TEST_P(QuicFramerTest, CongestionFeedbackFrameTCP) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1626,7 +1643,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
   }
 }
 
-TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
+TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1724,7 +1741,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
   }
 }
 
-TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
+TEST_P(QuicFramerTest, CongestionFeedbackFrameFixRate) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1779,7 +1796,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
 }
 
 
-TEST_F(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
+TEST_P(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1804,7 +1821,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
   EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
 }
 
-TEST_F(QuicFramerTest, RstStreamFrame) {
+TEST_P(QuicFramerTest, RstStreamFrame) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1863,7 +1880,7 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
   }
 }
 
-TEST_F(QuicFramerTest, ConnectionCloseFrame) {
+TEST_P(QuicFramerTest, ConnectionCloseFrame) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1950,7 +1967,7 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
   }
 }
 
-TEST_F(QuicFramerTest, GoAwayFrame) {
+TEST_P(QuicFramerTest, GoAwayFrame) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -2011,7 +2028,7 @@ TEST_F(QuicFramerTest, GoAwayFrame) {
   }
 }
 
-TEST_F(QuicFramerTest, PublicResetPacket) {
+TEST_P(QuicFramerTest, PublicResetPacket) {
   unsigned char packet[] = {
     // public flags (public reset, 8 byte guid)
     0x3E,
@@ -2063,7 +2080,10 @@ TEST_F(QuicFramerTest, PublicResetPacket) {
   }
 }
 
-TEST_F(QuicFramerTest, VersionNegotiationPacket) {
+TEST_P(QuicFramerTest, VersionNegotiationPacket) {
+  // Set a specific version.
+  framer_.set_version(QUIC_VERSION_6);
+
   unsigned char packet[] = {
     // public flags (version, 8 byte guid)
     0x3D,
@@ -2082,7 +2102,7 @@ TEST_F(QuicFramerTest, VersionNegotiationPacket) {
   ASSERT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.version_negotiation_packet_.get());
   EXPECT_EQ(2u, visitor_.version_negotiation_packet_->versions.size());
-  EXPECT_EQ(kQuicVersion1,
+  EXPECT_EQ(QUIC_VERSION_6,
             visitor_.version_negotiation_packet_->versions[0]);
 
   for (size_t i = 0; i <= kPublicFlagsSize + PACKET_8BYTE_GUID; ++i) {
@@ -2100,7 +2120,7 @@ TEST_F(QuicFramerTest, VersionNegotiationPacket) {
   }
 }
 
-TEST_F(QuicFramerTest, FecPacket) {
+TEST_P(QuicFramerTest, FecPacket) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -2137,7 +2157,7 @@ TEST_F(QuicFramerTest, FecPacket) {
   EXPECT_EQ("abcdefghijklmnop", fec_data.redundancy);
 }
 
-TEST_F(QuicFramerTest, ConstructPaddingFramePacket) {
+TEST_P(QuicFramerTest, ConstructPaddingFramePacket) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2182,7 +2202,7 @@ TEST_F(QuicFramerTest, ConstructPaddingFramePacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, Construct4ByteSequenceNumberPaddingFramePacket) {
+TEST_P(QuicFramerTest, Construct4ByteSequenceNumberPaddingFramePacket) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2227,7 +2247,7 @@ TEST_F(QuicFramerTest, Construct4ByteSequenceNumberPaddingFramePacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, Construct2ByteSequenceNumberPaddingFramePacket) {
+TEST_P(QuicFramerTest, Construct2ByteSequenceNumberPaddingFramePacket) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2272,7 +2292,7 @@ TEST_F(QuicFramerTest, Construct2ByteSequenceNumberPaddingFramePacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, Construct1ByteSequenceNumberPaddingFramePacket) {
+TEST_P(QuicFramerTest, Construct1ByteSequenceNumberPaddingFramePacket) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2317,7 +2337,7 @@ TEST_F(QuicFramerTest, Construct1ByteSequenceNumberPaddingFramePacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructStreamFramePacket) {
+TEST_P(QuicFramerTest, ConstructStreamFramePacket) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2374,7 +2394,7 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
+TEST_P(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2393,6 +2413,8 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
   QuicFrames frames;
   frames.push_back(QuicFrame(&stream_frame));
 
+  // Set a specific version.
+  framer_.set_version(QUIC_VERSION_6);
   unsigned char packet[] = {
     // public flags (version, 8 byte guid)
     0x3D,
@@ -2434,7 +2456,7 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructVersionNegotiationPacket) {
+TEST_P(QuicFramerTest, ConstructVersionNegotiationPacket) {
   QuicPacketPublicHeader header;
   header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.reset_flag = false;
@@ -2448,13 +2470,12 @@ TEST_F(QuicFramerTest, ConstructVersionNegotiationPacket) {
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
     'Q', '0', '0', '6',
-    'Q', '2', '.', '0',
+    // 'Q', '0', '0', '7',
   };
 
-  const int kQuicVersion2 = MakeQuicTag('Q', '2', '.', '0');
-  QuicTagVector versions;
-  versions.push_back(kQuicVersion1);
-  versions.push_back(kQuicVersion2);
+  QuicVersionVector versions;
+  versions.push_back(QUIC_VERSION_6);
+  // versions.push_back(QUIC_VERSION_7);
   scoped_ptr<QuicEncryptedPacket> data(
       framer_.ConstructVersionNegotiationPacket(header, versions));
 
@@ -2463,7 +2484,7 @@ TEST_F(QuicFramerTest, ConstructVersionNegotiationPacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructAckFramePacket) {
+TEST_P(QuicFramerTest, ConstructAckFramePacket) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2527,7 +2548,7 @@ TEST_F(QuicFramerTest, ConstructAckFramePacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
+TEST_P(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2576,7 +2597,7 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
+TEST_P(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2649,7 +2670,7 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
+TEST_P(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2696,7 +2717,7 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInvalidFeedback) {
+TEST_P(QuicFramerTest, ConstructCongestionFeedbackFramePacketInvalidFeedback) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2718,7 +2739,7 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInvalidFeedback) {
   ASSERT_TRUE(data == NULL);
 }
 
-TEST_F(QuicFramerTest, ConstructRstFramePacket) {
+TEST_P(QuicFramerTest, ConstructRstFramePacket) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2772,7 +2793,7 @@ TEST_F(QuicFramerTest, ConstructRstFramePacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
+TEST_P(QuicFramerTest, ConstructCloseFramePacket) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2849,7 +2870,7 @@ TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructGoAwayPacket) {
+TEST_P(QuicFramerTest, ConstructGoAwayPacket) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2903,7 +2924,7 @@ TEST_F(QuicFramerTest, ConstructGoAwayPacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructPublicResetPacket) {
+TEST_P(QuicFramerTest, ConstructPublicResetPacket) {
   QuicPublicResetPacket reset_packet;
   reset_packet.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   reset_packet.public_header.reset_flag = true;
@@ -2934,7 +2955,7 @@ TEST_F(QuicFramerTest, ConstructPublicResetPacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, ConstructFecPacket) {
+TEST_P(QuicFramerTest, ConstructFecPacket) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2979,7 +3000,7 @@ TEST_F(QuicFramerTest, ConstructFecPacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_F(QuicFramerTest, EncryptPacket) {
+TEST_P(QuicFramerTest, EncryptPacket) {
   QuicPacketSequenceNumber sequence_number = GG_UINT64_C(0x123456789ABC);
   unsigned char packet[] = {
     // public flags (8 byte guid)
@@ -3013,7 +3034,7 @@ TEST_F(QuicFramerTest, EncryptPacket) {
   EXPECT_TRUE(CheckEncryption(sequence_number, raw.get()));
 }
 
-TEST_F(QuicFramerTest, EncryptPacketWithVersionFlag) {
+TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
   QuicPacketSequenceNumber sequence_number = GG_UINT64_C(0x123456789ABC);
   unsigned char packet[] = {
     // public flags (version, 8 byte guid)
@@ -3052,7 +3073,7 @@ TEST_F(QuicFramerTest, EncryptPacketWithVersionFlag) {
 // TODO(rch): re-enable after https://codereview.chromium.org/11820005/
 // lands.  Currently this is causing valgrind problems, but it should be
 // fixed in the followup CL.
-TEST_F(QuicFramerTest, DISABLED_CalculateLargestReceived) {
+TEST_P(QuicFramerTest, DISABLED_CalculateLargestReceived) {
   SequenceNumberSet missing;
   missing.insert(1);
   missing.insert(5);
@@ -3071,7 +3092,7 @@ TEST_F(QuicFramerTest, DISABLED_CalculateLargestReceived) {
 }
 
 // TODO(rch) enable after landing the revised truncation CL.
-TEST_F(QuicFramerTest, DISABLED_Truncation) {
+TEST_P(QuicFramerTest, DISABLED_Truncation) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -3127,7 +3148,7 @@ TEST_F(QuicFramerTest, DISABLED_Truncation) {
   ASSERT_TRUE(framer_.ProcessPacket(*close_packet));
 }
 
-TEST_F(QuicFramerTest, CleanTruncation) {
+TEST_P(QuicFramerTest, CleanTruncation) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -3207,7 +3228,7 @@ TEST_F(QuicFramerTest, CleanTruncation) {
   EXPECT_EQ(original_raw_length, raw_close_packet->length());
 }
 
-TEST_F(QuicFramerTest, EntropyFlagTest) {
+TEST_P(QuicFramerTest, EntropyFlagTest) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -3246,7 +3267,7 @@ TEST_F(QuicFramerTest, EntropyFlagTest) {
   EXPECT_FALSE(visitor_.header_->fec_flag);
 };
 
-TEST_F(QuicFramerTest, FecEntropyTest) {
+TEST_P(QuicFramerTest, FecEntropyTest) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -3287,7 +3308,7 @@ TEST_F(QuicFramerTest, FecEntropyTest) {
   EXPECT_EQ(1 << 4, visitor_.header_->entropy_hash);
 };
 
-TEST_F(QuicFramerTest, StopPacketProcessing) {
+TEST_P(QuicFramerTest, StopPacketProcessing) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -3348,7 +3369,7 @@ TEST_F(QuicFramerTest, StopPacketProcessing) {
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
 }
 
-TEST_F(QuicFramerTest, ConnectionCloseWithInvalidAck) {
+TEST_P(QuicFramerTest, ConnectionCloseWithInvalidAck) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,

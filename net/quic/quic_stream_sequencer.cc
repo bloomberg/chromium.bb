@@ -74,9 +74,18 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     return true;
   }
 
+  if (frame.fin) {
+    CloseStreamAtOffset(frame.offset + frame.data.size());
+  }
+
   QuicStreamOffset byte_offset = frame.offset;
   const char* data = frame.data.data();
   size_t data_len = frame.data.size();
+
+  if (data_len == 0) {
+    // TODO(rch): Close the stream if there was no data and no fin.
+    return true;
+  }
 
   if (byte_offset == num_bytes_consumed_) {
     DVLOG(1) << "Processing byte offset " << byte_offset;

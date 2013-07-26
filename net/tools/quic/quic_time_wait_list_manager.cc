@@ -18,6 +18,8 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 
+using std::make_pair;
+
 namespace net {
 namespace tools {
 
@@ -91,7 +93,7 @@ class QuicTimeWaitListManager::QueuedPacket {
 QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicPacketWriter* writer,
     EpollServer* epoll_server)
-    : framer_(kQuicVersion1,
+    : framer_(QUIC_VERSION_6,
               QuicTime::Zero(),  // unused
               true),
       epoll_server_(epoll_server),
@@ -110,10 +112,12 @@ QuicTimeWaitListManager::~QuicTimeWaitListManager() {
   STLDeleteElements(&pending_packets_queue_);
 }
 
-void QuicTimeWaitListManager::AddGuidToTimeWait(QuicGuid guid) {
+void QuicTimeWaitListManager::AddGuidToTimeWait(QuicGuid guid,
+                                                QuicVersion version) {
   DCHECK(!IsGuidInTimeWait(guid));
   // Initialize the guid with 0 packets received.
-  guid_map_.insert(std::make_pair(guid, 0));
+  GuidData data(0, version);
+  guid_map_.insert(make_pair(guid, data));
   time_ordered_guid_list_.push_back(new GuidAddTime(guid,
                                                     clock_.ApproximateNow()));
 }
@@ -130,9 +134,18 @@ void QuicTimeWaitListManager::ProcessPacket(
   DCHECK(IsGuidInTimeWait(guid));
   server_address_ = server_address;
   client_address_ = client_address;
-  // TODO(satyamshekhar): Also store the version of protocol for and
-  // update the protocol version of the framer before processing.
+
+  // Set the framer to the appropriate version for this GUID, before processing.
+  QuicVersion version = GetQuicVersionFromGuid(guid);
+  framer_.set_version(version);
+
   framer_.ProcessPacket(packet);
+}
+
+QuicVersion QuicTimeWaitListManager::GetQuicVersionFromGuid(QuicGuid guid) {
+  GuidMapIterator it = guid_map_.find(guid);
+  DCHECK(it != guid_map_.end());
+  return (it->second).version;
 }
 
 bool QuicTimeWaitListManager::OnCanWrite() {
@@ -154,7 +167,7 @@ void QuicTimeWaitListManager::OnError(QuicFramer* framer) {
 }
 
 bool QuicTimeWaitListManager::OnProtocolVersionMismatch(
-    QuicTag received_version) {
+    QuicVersion received_version) {
   // Drop such packets whose version don't match.
   return false;
 }
@@ -192,8 +205,8 @@ bool QuicTimeWaitListManager::OnPacketHeader(const QuicPacketHeader& header) {
   GuidMapIterator it = guid_map_.find(header.public_header.guid);
   DCHECK(it != guid_map_.end());
   // Increment the received packet count.
-  ++(it->second);
-  if (ShouldSendPublicReset(it->second)) {
+  ++((it->second).num_packets);
+  if (ShouldSendPublicReset((it->second).num_packets)) {
     // We don't need the packet anymore. Just tell the client what sequence
     // number we rejected.
     SendPublicReset(server_address_,

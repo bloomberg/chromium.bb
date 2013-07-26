@@ -55,7 +55,7 @@ MockFramerVisitor::MockFramerVisitor() {
 MockFramerVisitor::~MockFramerVisitor() {
 }
 
-bool NoOpFramerVisitor::OnProtocolVersionMismatch(QuicTag version) {
+bool NoOpFramerVisitor::OnProtocolVersionMismatch(QuicVersion version) {
   return false;
 }
 
@@ -189,7 +189,7 @@ MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                bool is_server)
     : QuicConnection(guid, address, new testing::NiceMock<MockHelper>(),
-                     is_server),
+                     is_server, QuicVersionMax()),
       has_mock_helper_(true) {
 }
 
@@ -197,7 +197,7 @@ MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
                                bool is_server)
-    : QuicConnection(guid, address, helper, is_server),
+    : QuicConnection(guid, address, helper, is_server, QuicVersionMax()),
       has_mock_helper_(false) {
 }
 
@@ -354,7 +354,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
     bool should_include_version) {
   CryptoFramer crypto_framer;
   scoped_ptr<QuicData> data(crypto_framer.ConstructHandshakeMessage(message));
-  QuicFramer quic_framer(kQuicVersion1, QuicTime::Zero(), false);
+  QuicFramer quic_framer(QuicVersionMax(), QuicTime::Zero(), false);
 
   QuicPacketHeader header;
   header.public_header.guid = guid;
@@ -403,7 +403,7 @@ size_t GetPacketLengthForOneStream(
           PACKET_6BYTE_SEQUENCE_NUMBER, is_in_fec_group);
 }
 
-QuicPacketEntropyHash TestEntropyCalculator::ReceivedEntropyHash(
+QuicPacketEntropyHash TestEntropyCalculator::EntropyHash(
     QuicPacketSequenceNumber sequence_number) const {
   return 1u;
 }

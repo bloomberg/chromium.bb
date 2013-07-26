@@ -77,6 +77,11 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
 
   // TODO(satyamshekhar): Monitor MinRtt.
   virtual QuicTime::Delta SmoothedRtt() = 0;
+
+  // Get the send algorithm specific retransmission delay, called RTO in TCP,
+  // Note 1: the caller is responsible for sanity checking this value.
+  // Note 2: this will return zero if we don't have enough data for an estimate.
+  virtual QuicTime::Delta RetransmissionDelay() = 0;
 };
 
 }  // namespace net

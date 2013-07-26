@@ -89,7 +89,7 @@ size_t QuicConnectionPeer::GetRetransmissionCount(
 QuicPacketEntropyHash QuicConnectionPeer::GetSentEntropyHash(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
-  return connection->entropy_manager_.SentEntropyHash(sequence_number);
+  return connection->sent_entropy_manager_.EntropyHash(sequence_number);
 }
 
 // static
@@ -98,7 +98,7 @@ bool QuicConnectionPeer::IsValidEntropy(
     QuicPacketSequenceNumber largest_observed,
     const SequenceNumberSet& missing_packets,
     QuicPacketEntropyHash entropy_hash) {
-  return connection->entropy_manager_.IsValidEntropy(
+  return connection->sent_entropy_manager_.IsValidEntropy(
       largest_observed, missing_packets, entropy_hash);
 }
 
@@ -106,7 +106,8 @@ bool QuicConnectionPeer::IsValidEntropy(
 QuicPacketEntropyHash QuicConnectionPeer::ReceivedEntropyHash(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
-  return connection->entropy_manager_.ReceivedEntropyHash(sequence_number);
+  return connection->received_entropy_manager_.EntropyHash(
+      sequence_number);
 }
 
 // static

@@ -63,7 +63,7 @@ class MockConnection : public QuicConnection {
     return QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
-  virtual bool OnProtocolVersionMismatch(QuicTag version) { return false; }
+  virtual bool OnProtocolVersionMismatch(QuicVersion version) { return false; }
 
  private:
   const bool has_mock_helper_;

@@ -20,7 +20,8 @@ MockConnection::MockConnection(QuicGuid guid,
                                EpollServer* eps,
                                bool is_server)
     : QuicConnection(guid, address,
-                     new QuicEpollConnectionHelper(fd, eps), is_server),
+                     new QuicEpollConnectionHelper(fd, eps), is_server,
+                     QuicVersionMax()),
       has_mock_helper_(false) {
 }
 
@@ -28,7 +29,7 @@ MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                bool is_server)
     : QuicConnection(guid, address, new testing::NiceMock<MockHelper>(),
-                     is_server),
+                     is_server, QuicVersionMax()),
       has_mock_helper_(true) {
 }
 
@@ -36,7 +37,7 @@ MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
                                bool is_server)
-    : QuicConnection(guid, address, helper, is_server),
+    : QuicConnection(guid, address, helper, is_server, QuicVersionMax()),
       has_mock_helper_(false) {
 }
 

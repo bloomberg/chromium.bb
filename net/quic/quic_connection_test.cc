@@ -13,6 +13,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -250,7 +251,7 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
              sizeof(final_bytes_of_last_packet_));
     }
 
-    QuicFramer framer(kQuicVersion1, QuicTime::Zero(), is_server_);
+    QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), is_server_);
     if (use_tagging_decrypter_) {
       framer.SetDecrypter(new TaggingDecrypter);
     }
@@ -380,7 +381,7 @@ class TestConnection : public QuicConnection {
                  IPEndPoint address,
                  TestConnectionHelper* helper,
                  bool is_server)
-      : QuicConnection(guid, address, helper, is_server),
+      : QuicConnection(guid, address, helper, is_server, QuicVersionMax()),
         helper_(helper) {
     helper_->set_is_server(!is_server);
   }
@@ -409,6 +410,10 @@ class TestConnection : public QuicConnection {
     return QuicConnectionPeer::IsServer(this);
   }
 
+  void set_version(QuicVersion version) {
+    framer_.set_version(version);
+  }
+
   void set_is_server(bool is_server) {
     helper_->set_is_server(!is_server);
     QuicPacketCreatorPeer::SetIsServer(
@@ -418,6 +423,7 @@ class TestConnection : public QuicConnection {
 
   using QuicConnection::SendOrQueuePacket;
   using QuicConnection::DontWaitForPacketsBefore;
+  using QuicConnection::SelectMutualVersion;
 
  private:
   TestConnectionHelper* helper_;
@@ -429,7 +435,7 @@ class QuicConnectionTest : public ::testing::Test {
  protected:
   QuicConnectionTest()
       : guid_(42),
-        framer_(kQuicVersion1, QuicTime::Zero(), false),
+        framer_(QuicVersionMax(), QuicTime::Zero(), false),
         creator_(guid_, &framer_, QuicRandom::GetInstance(), false),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
@@ -446,6 +452,8 @@ class QuicConnectionTest : public ::testing::Test {
     EXPECT_CALL(*receive_algorithm_,
                 RecordIncomingPacket(_, _, _, _)).Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(AnyNumber());
+    EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
+        Return(QuicTime::Delta::Zero()));
   }
 
   QuicAckFrame* outgoing_ack() {
@@ -821,6 +829,25 @@ TEST_F(QuicConnectionTest, TruncatedAck) {
 
   ProcessAckPacket(&frame, true);
   EXPECT_FALSE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
+}
+
+TEST_F(QuicConnectionTest, DISABLED_AckReceiptCausesAckSend) {
+  ProcessPacket(1);
+  // Delay sending, then queue up an ack.
+  EXPECT_CALL(*send_algorithm_,
+              TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
+                  testing::Return(QuicTime::Delta::FromMicroseconds(1)));
+  QuicConnectionPeer::SendAck(&connection_);
+
+  // Process an ack with a least unacked of the received ack.
+  // This causes an ack to be sent when TimeUntilSend returns 0.
+  EXPECT_CALL(*send_algorithm_,
+              TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillRepeatedly(
+                  testing::Return(QuicTime::Delta::Zero()));
+  // Skip a packet and then record an ack.
+  creator_.set_sequence_number(2);
+  QuicAckFrame frame(0, QuicTime::Zero(), 3);
+  ProcessAckPacket(&frame, true);
 }
 
 TEST_F(QuicConnectionTest, LeastUnackedLower) {
@@ -2093,8 +2120,9 @@ TEST_F(QuicConnectionTest, CheckSentEntropyHash) {
 
 // TODO(satyamsehkhar): Add more test when we start supporting more versions.
 TEST_F(QuicConnectionTest, SendVersionNegotiationPacket) {
-  QuicTag kRandomVersion = 143;
-  QuicFramerPeer::SetVersion(&framer_, kRandomVersion);
+  // TODO(rjshade): Update this to use a real version once we have multiple
+  //                versions in the codebase.
+  framer_.set_version_for_tests(QUIC_VERSION_UNSUPPORTED);
 
   QuicPacketHeader header;
   header.public_header.guid = guid_;
@@ -2113,14 +2141,21 @@ TEST_F(QuicConnectionTest, SendVersionNegotiationPacket) {
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
-  QuicFramerPeer::SetVersion(&framer_, kQuicVersion1);
+  framer_.set_version(QuicVersionMax());
   connection_.set_is_server(true);
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
   EXPECT_TRUE(helper_->version_negotiation_packet() != NULL);
-  EXPECT_EQ(1u,
+
+  size_t num_versions = arraysize(kSupportedQuicVersions);
+  EXPECT_EQ(num_versions,
             helper_->version_negotiation_packet()->versions.size());
-  EXPECT_EQ(kQuicVersion1,
-            helper_->version_negotiation_packet()->versions[0]);
+
+  // We expect all versions in kSupportedQuicVersions to be
+  // included in the packet.
+  for (size_t i = 0; i < num_versions; ++i) {
+    EXPECT_EQ(kSupportedQuicVersions[i],
+              helper_->version_negotiation_packet()->versions[i]);
+  }
 }
 
 TEST_F(QuicConnectionTest, CheckSendStats) {
@@ -2250,6 +2285,27 @@ TEST_F(QuicConnectionTest, DontProcessFramesIfPacketClosedConnection) {
 
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
 }
+
+//// The QUIC_VERSION_X versions are deliberately set, rather than using all
+//// values in kSupportedQuicVersions.
+//TEST_F(QuicConnectionTest, SelectMutualVersion) {
+//  // Set the connection to speak QUIC_VERSION_6.
+//  connection_.set_version(QUIC_VERSION_6);
+//  EXPECT_EQ(connection_.version(), QUIC_VERSION_6);
+//
+//  // Pass in available versions which includes a higher mutually supported
+//  // version.  The higher mutually supported version should be selected.
+//  EXPECT_TRUE(
+//      connection_.SelectMutualVersion({QUIC_VERSION_6, QUIC_VERSION_7}));
+//  EXPECT_EQ(connection_.version(), QUIC_VERSION_7);
+//
+//  // Expect that the lower version is selected.
+//  EXPECT_TRUE(connection_.SelectMutualVersion({QUIC_VERSION_6}));
+//  EXPECT_EQ(connection_.version(), QUIC_VERSION_6);
+//
+//  // Shouldn't be able to find a mutually supported version.
+//  EXPECT_FALSE(connection_.SelectMutualVersion({QUIC_VERSION_UNSUPPORTED}));
+//}
 
 }  // namespace
 }  // namespace test

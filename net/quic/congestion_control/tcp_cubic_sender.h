@@ -28,6 +28,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
  public:
   // Reno option provided for testing.
   TcpCubicSender(const QuicClock* clock, bool reno);
+  virtual ~TcpCubicSender();
 
   // Start implementation of SendAlgorithmInterface.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
@@ -50,6 +51,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
       HasRetransmittableData has_retransmittable_data) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
   virtual QuicTime::Delta SmoothedRtt() OVERRIDE;
+  virtual QuicTime::Delta RetransmissionDelay() OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 
  private:
@@ -93,6 +95,14 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // Min RTT during this session.
   QuicTime::Delta delay_min_;
+
+  // Smoothed RTT during this session.
+  QuicTime::Delta smoothed_rtt_;
+
+  // Mean RTT deviation during this session.
+  // Approximation of standard deviation, the error is roughly 1.25 times
+  // larger than the standard deviation, for a normally distributed signal.
+  QuicTime::Delta mean_deviation_;
 
   DISALLOW_COPY_AND_ASSIGN(TcpCubicSender);
 };

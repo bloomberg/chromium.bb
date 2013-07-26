@@ -31,20 +31,23 @@ namespace tools {
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 
 QuicClient::QuicClient(IPEndPoint server_address,
-                       const string& server_hostname)
+                       const string& server_hostname,
+                       const QuicVersion version)
     : server_address_(server_address),
       server_hostname_(server_hostname),
       local_port_(0),
       fd_(-1),
       initialized_(false),
       packets_dropped_(0),
-      overflow_supported_(false) {
+      overflow_supported_(false),
+      version_(version) {
   config_.SetDefaults();
 }
 
 QuicClient::QuicClient(IPEndPoint server_address,
                        const string& server_hostname,
-                       const QuicConfig& config)
+                       const QuicConfig& config,
+                       const QuicVersion version)
     : server_address_(server_address),
       server_hostname_(server_hostname),
       config_(config),
@@ -52,7 +55,8 @@ QuicClient::QuicClient(IPEndPoint server_address,
       fd_(-1),
       initialized_(false),
       packets_dropped_(0),
-      overflow_supported_(false) {
+      overflow_supported_(false),
+      version_(version) {
 }
 
 QuicClient::~QuicClient() {
@@ -152,7 +156,7 @@ bool QuicClient::StartConnect() {
       config_,
       new QuicConnection(guid, server_address_,
                          new QuicEpollConnectionHelper(fd_, &epoll_server_),
-                         false),
+                         false, version_),
       &crypto_config_));
   return session_->CryptoConnect();
 }

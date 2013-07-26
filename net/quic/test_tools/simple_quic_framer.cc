@@ -25,7 +25,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     error_ = framer->error();
   }
 
-  virtual bool OnProtocolVersionMismatch(QuicTag version) OVERRIDE {
+  virtual bool OnProtocolVersionMismatch(QuicVersion version) OVERRIDE {
     return false;
   }
 
@@ -128,7 +128,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 };
 
 SimpleQuicFramer::SimpleQuicFramer()
-    : framer_(kQuicVersion1, QuicTime::Zero(), true) {
+    : framer_(QuicVersionMax(), QuicTime::Zero(), true) {
 }
 
 SimpleQuicFramer::~SimpleQuicFramer() {

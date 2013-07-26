@@ -14,6 +14,7 @@ ProofSourceChromium::ProofSourceChromium() {
 
 bool ProofSourceChromium::GetProof(const string& hostname,
                                    const string& server_config,
+                                   bool ecdsa_ok,
                                    const vector<string>** out_certs,
                                    string* out_signature) {
   return false;

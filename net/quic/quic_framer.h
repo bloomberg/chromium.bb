@@ -64,7 +64,7 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // |quic_version_|. The visitor should return true after it updates the
   // version of the |framer_| to |received_version| or false to stop processing
   // this packet.
-  virtual bool OnProtocolVersionMismatch(QuicTag received_version) = 0;
+  virtual bool OnProtocolVersionMismatch(QuicVersion received_version) = 0;
 
   // Called when a new packet has been received, before it
   // has been validated or processed.
@@ -141,7 +141,7 @@ class NET_EXPORT_PRIVATE QuicReceivedEntropyHashCalculatorInterface {
   // missing packets are not added and the largest observed might be lowered.
   // This should return the received entropy hash of the packets received up to
   // and including |sequence_number|.
-  virtual QuicPacketEntropyHash ReceivedEntropyHash(
+  virtual QuicPacketEntropyHash EntropyHash(
       QuicPacketSequenceNumber sequence_number) const = 0;
 };
 
@@ -153,14 +153,14 @@ class NET_EXPORT_PRIVATE QuicFramer {
  public:
   // Constructs a new framer that installs a kNULL QuicEncrypter and
   // QuicDecrypter for level ENCRYPTION_NONE.
-  QuicFramer(QuicTag quic_version,
+  QuicFramer(QuicVersion quic_version,
              QuicTime creation_time,
              bool is_server);
 
   virtual ~QuicFramer();
 
   // Returns true if |version| is a supported protocol version.
-  bool IsSupportedVersion(QuicTag version);
+  bool IsSupportedVersion(const QuicVersion version) const;
 
   // Calculates the largest observed packet to advertise in the case an Ack
   // Frame was truncated.  last_written in this case is the iterator for the
@@ -184,20 +184,26 @@ class NET_EXPORT_PRIVATE QuicFramer {
     fec_builder_ = builder;
   }
 
-  QuicTag version() const {
+  QuicVersion version() const {
     return quic_version_;
   }
 
-  void set_version(QuicTag version) {
+  void set_version(const QuicVersion version) {
     DCHECK(IsSupportedVersion(version));
+    quic_version_ = version;
+  }
+
+  // Does not DCHECK for supported version. Used by tests to set unsupported
+  // version to trigger version negotiation.
+  void set_version_for_tests(const QuicVersion version) {
     quic_version_ = version;
   }
 
   // Set entropy calculator to be called from the framer when it needs the
   // entropy of a truncated ack frame. An entropy calculator must be set or else
   // the framer will likely crash. If this is called multiple times, only the
-  // last visitor will be used.
-  void set_entropy_calculator(
+  // last calculator will be used.
+  void set_received_entropy_calculator(
       QuicReceivedEntropyHashCalculatorInterface* entropy_calculator) {
     entropy_calculator_ = entropy_calculator;
   }
@@ -285,7 +291,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   QuicEncryptedPacket* ConstructVersionNegotiationPacket(
       const QuicPacketPublicHeader& header,
-      const QuicTagVector& supported_versions);
+      const QuicVersionVector& supported_versions);
 
   // SetDecrypter sets the primary decrypter, replacing any that already exists,
   // and takes ownership. If an alternative decrypter is in place then the
@@ -419,7 +425,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Buffer containing decrypted payload data during parsing.
   scoped_ptr<QuicData> decrypted_;
   // Version of the protocol being used.
-  QuicTag quic_version_;
+  QuicVersion quic_version_;
   // Primary decrypter used to decrypt packets during parsing.
   scoped_ptr<QuicDecrypter> decrypter_;
   // Alternative decrypter that can also be used to decrypt packets.

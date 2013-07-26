@@ -43,6 +43,104 @@ TEST(QuicProtocolTest, InsertMissingPacketsBetween) {
   }
 }
 
+TEST(QuicProtocolTest, QuicVersionToQuicTag) {
+  // If you add a new version to the QuicVersion enum you will need to add a new
+  // case to QuicVersionToQuicTag, otherwise this test will fail.
+
+  // TODO(rtenneti): Enable checking of Log(ERROR) messages.
+#if 0
+  // Any logs would indicate an unsupported version which we don't expect.
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+  EXPECT_CALL(log, Log(_, _, _)).Times(0);
+  log.StartCapturingLogs();
+#endif
+
+  // Explicitly test a specific version.
+  EXPECT_EQ(MakeQuicTag('Q', '0', '0', '6'),
+            QuicVersionToQuicTag(QUIC_VERSION_6));
+
+  // Loop over all supported versions and make sure that we never hit the
+  // default case (i.e. all supported versions should be successfully converted
+  // to valid QuicTags).
+  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
+    const QuicVersion& version = kSupportedQuicVersions[i];
+    EXPECT_LT(0u, QuicVersionToQuicTag(version));
+  }
+}
+
+TEST(QuicProtocolTest, QuicVersionToQuicTagUnsupported) {
+  // TODO(rtenneti): Enable checking of Log(ERROR) messages.
+#if 0
+  // TODO(rjshade): Change to DFATAL once we actually support multiple versions,
+  // and QuicConnectionTest::SendVersionNegotiationPacket can be changed to use
+  // mis-matched versions rather than relying on QUIC_VERSION_UNSUPPORTED.
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+  EXPECT_CALL(log, Log(ERROR, _, "Unsupported QuicVersion: 0")).Times(1);
+  log.StartCapturingLogs();
+#endif
+
+  EXPECT_EQ(0u, QuicVersionToQuicTag(QUIC_VERSION_UNSUPPORTED));
+}
+
+TEST(QuicProtocolTest, QuicTagToQuicVersion) {
+  // If you add a new version to the QuicVersion enum you will need to add a new
+  // case to QuicTagToQuicVersion, otherwise this test will fail.
+
+  // TODO(rtenneti): Enable checking of Log(ERROR) messages.
+#if 0
+  // Any logs would indicate an unsupported version which we don't expect.
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+  EXPECT_CALL(log, Log(_, _, _)).Times(0);
+  log.StartCapturingLogs();
+#endif
+
+  // Explicitly test specific versions.
+  EXPECT_EQ(QUIC_VERSION_6,
+            QuicTagToQuicVersion(MakeQuicTag('Q', '0', '0', '6')));
+
+  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
+    const QuicVersion& version = kSupportedQuicVersions[i];
+
+    // Get the tag from the version (we can loop over QuicVersions easily).
+    QuicTag tag = QuicVersionToQuicTag(version);
+    EXPECT_LT(0u, tag);
+
+    // Now try converting back.
+    QuicVersion tag_to_quic_version = QuicTagToQuicVersion(tag);
+    EXPECT_EQ(version, tag_to_quic_version);
+    EXPECT_NE(QUIC_VERSION_UNSUPPORTED, tag_to_quic_version);
+  }
+}
+
+TEST(QuicProtocolTest, QuicTagToQuicVersionUnsupported) {
+  // TODO(rtenneti): Enable checking of Log(ERROR) messages.
+#if 0
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+#ifndef NDEBUG
+  EXPECT_CALL(log, Log(INFO, _, "Unsupported QuicTag version: FAKE")).Times(1);
+#endif
+  log.StartCapturingLogs();
+#endif
+
+  EXPECT_EQ(QUIC_VERSION_UNSUPPORTED,
+            QuicTagToQuicVersion(MakeQuicTag('F', 'A', 'K', 'E')));
+}
+
+TEST(QuicProtocolTest, QuicVersionToString) {
+  EXPECT_EQ("QUIC_VERSION_6",
+            QuicVersionToString(QUIC_VERSION_6));
+  EXPECT_EQ("QUIC_VERSION_UNSUPPORTED",
+            QuicVersionToString(QUIC_VERSION_UNSUPPORTED));
+
+  QuicVersion single_version[] = {QUIC_VERSION_6};
+  EXPECT_EQ("QUIC_VERSION_6,", QuicVersionArrayToString(single_version,
+                                   arraysize(single_version)));
+  // QuicVersion multiple_versions[] = {QUIC_VERSION_7, QUIC_VERSION_6};
+  // EXPECT_EQ("QUIC_VERSION_7,QUIC_VERSION_6,",
+  //           QuicVersionArrayToString(multiple_versions,
+  //                                    arraysize(multiple_versions)));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

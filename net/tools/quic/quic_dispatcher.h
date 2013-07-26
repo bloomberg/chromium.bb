@@ -104,6 +104,10 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   const QuicConfig& config_;
   const QuicCryptoServerConfig& crypto_config_;
 
+  QuicTimeWaitListManager* time_wait_list_manager() {
+    return time_wait_list_manager_.get();
+  }
+
  private:
   friend class net::tools::test::QuicDispatcherPeer;
 

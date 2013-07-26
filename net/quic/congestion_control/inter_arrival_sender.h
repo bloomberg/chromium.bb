@@ -58,6 +58,7 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
 
   virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
   virtual QuicTime::Delta SmoothedRtt() OVERRIDE;
+  virtual QuicTime::Delta RetransmissionDelay() OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 
  private:

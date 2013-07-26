@@ -573,6 +573,13 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
 #endif
   }
 
+  if (proof_verifier_.get() && !cached->proof_valid()) {
+    // If we are expecting a certificate chain, double the size of the client
+    // hello so that the response from the server can be larger - hopefully
+    // including the whole certificate chain.
+    out->set_minimum_size(kClientHelloMinimumSize * 2);
+  }
+
   if (common_cert_sets) {
     out->SetStringPiece(kCCS, common_cert_sets->GetCommonHashes());
   }

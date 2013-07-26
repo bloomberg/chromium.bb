@@ -39,7 +39,7 @@ class TestConnectionHelper : public QuicEpollConnectionHelper {
 
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
                                 int* error) OVERRIDE {
-    QuicFramer framer(kQuicVersion1, QuicTime::Zero(), true);
+    QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), true);
     FramerVisitorCapturingFrames visitor;
     framer.set_visitor(&visitor);
     EXPECT_TRUE(framer.ProcessPacket(packet));
@@ -59,7 +59,7 @@ class TestConnection : public QuicConnection {
   TestConnection(QuicGuid guid,
                  IPEndPoint address,
                  TestConnectionHelper* helper)
-      : QuicConnection(guid, address, helper, false) {
+      : QuicConnection(guid, address, helper, false, QuicVersionMax()) {
   }
 
   void SendAck() {
@@ -77,7 +77,7 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
  protected:
   QuicEpollConnectionHelperTest()
       : guid_(42),
-        framer_(kQuicVersion1, QuicTime::Zero(), false),
+        framer_(QuicVersionMax(), QuicTime::Zero(), false),
         send_algorithm_(new testing::StrictMock<MockSendAlgorithm>),
         helper_(new TestConnectionHelper(0, &epoll_server_)),
         connection_(guid_, IPEndPoint(), helper_),
@@ -120,6 +120,8 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
 
 TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRetransmission) {
   //FLAGS_fake_packet_loss_percentage = 100;
+  EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
+      Return(QuicTime::Delta::Zero()));
   const int64 kDefaultRetransmissionTimeMs = 500;
 
   const char buffer[] = "foo";
@@ -178,6 +180,8 @@ TEST_F(QuicEpollConnectionHelperTest, TimeoutAfterSend) {
 
 TEST_F(QuicEpollConnectionHelperTest, SendSchedulerDelayThenSend) {
   // Test that if we send a packet with a delay, it ends up queued.
+  EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
+      Return(QuicTime::Delta::Zero()));
   QuicPacket* packet = ConstructDataPacket(1, 0);
   EXPECT_CALL(
       *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(

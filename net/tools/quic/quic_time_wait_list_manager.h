@@ -44,8 +44,9 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
   // any packet bearing this guid should not be processed while the guid remains
   // in this list. Public reset packets are sent to the clients by the time wait
   // list manager that send packets to guids in this state. DCHECKs that guid is
-  // not already on the list.
-  void AddGuidToTimeWait(QuicGuid guid);
+  // not already on the list. Pass in the version as well so that if a public
+  // reset packet needs to be sent the framer version can be set first.
+  void AddGuidToTimeWait(QuicGuid guid, QuicVersion version);
 
   // Returns true if the guid is in time wait state, false otherwise. Packets
   // received for this guid should not lead to creation of new QuicSessions.
@@ -71,7 +72,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
 
   // FramerVisitorInterface
   virtual void OnError(QuicFramer* framer) OVERRIDE;
-  virtual bool OnProtocolVersionMismatch(QuicTag received_version) OVERRIDE;
+  virtual bool OnProtocolVersionMismatch(QuicVersion received_version) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnPacket() OVERRIDE {}
   virtual void OnPublicResetPacket(
@@ -94,6 +95,8 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
   virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
   virtual void OnFecData(const QuicFecData& fec) OVERRIDE {}
 
+  QuicVersion version() const { return framer_.version(); }
+
  protected:
   // Exposed for tests.
   bool is_write_blocked() const { return is_write_blocked_; }
@@ -104,6 +107,11 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
 
   // Exposed for tests.
   const QuicTime::Delta time_wait_period() const { return kTimeWaitPeriod_; }
+
+  // Given a GUID that exists in the time wait list, returns the QuicVersion
+  // associated with it. Used internally to set the framer version before
+  // writing the public reset packet.
+  QuicVersion GetQuicVersionFromGuid(QuicGuid guid);
 
  private:
   // Stores the guid and the time it was added to time wait state.
@@ -132,8 +140,14 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
 
   // A map from a recently closed guid to the number of packets received after
   // the termination of the connection bound to the guid.
-  base::hash_map<QuicGuid, int> guid_map_;
-  typedef base::hash_map<QuicGuid, int>::iterator GuidMapIterator;
+  struct GuidData {
+    GuidData(int num_packets_, QuicVersion version_)
+        : num_packets(num_packets_), version(version_) {}
+    int num_packets;
+    QuicVersion version;
+  };
+  base::hash_map<QuicGuid, GuidData> guid_map_;
+  typedef base::hash_map<QuicGuid, GuidData>::iterator GuidMapIterator;
 
   // Maintains a list of GuidAddTime elements which it owns, in the
   // order they should be deleted.

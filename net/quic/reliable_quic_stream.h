@@ -172,6 +172,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // Contains a copy of the decompressed headers_ until they are consumed
   // via ProcessData or Readv.
   string decompressed_headers_;
+  // True if an error was encountered during decompression.
+  bool decompression_failed_;
 
   // Stream error code received from a RstStreamFrame or error code sent by the
   // visitor or sequencer in the RstStreamFrame.

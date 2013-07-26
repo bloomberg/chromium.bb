@@ -137,7 +137,12 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
   }
 
   char orbit_bytes[kOrbitSize];
-  rand->RandBytes(orbit_bytes, sizeof(orbit_bytes));
+  if (options.orbit.size() == kOrbitSize) {
+    memcpy(orbit_bytes, options.orbit.data(), sizeof(orbit_bytes));
+  } else {
+    DCHECK(options.orbit.empty());
+    rand->RandBytes(orbit_bytes, sizeof(orbit_bytes));
+  }
   msg.SetStringPiece(kORBT, StringPiece(orbit_bytes, sizeof(orbit_bytes)));
 
   if (options.channel_id_enabled) {
@@ -674,43 +679,59 @@ void QuicCryptoServerConfig::BuildRejection(
   const QuicTag* their_proof_demands;
   size_t num_their_proof_demands;
 
-  if (proof_source_.get() != NULL &&
+  if (proof_source_.get() == NULL ||
       client_hello.GetTaglist(kPDMD, &their_proof_demands,
-                              &num_their_proof_demands) ==
+                              &num_their_proof_demands) !=
           QUIC_NO_ERROR) {
-    for (size_t i = 0; i < num_their_proof_demands; i++) {
-      if (their_proof_demands[i] != kX509) {
-        continue;
-      }
+    return;
+  }
 
-      const vector<string>* certs;
-      string signature;
-      if (!proof_source_->GetProof(info.sni.as_string(), config->serialized,
-                                   &certs, &signature)) {
+  bool x509_supported = false, x509_ecdsa_supported = false;
+  for (size_t i = 0; i < num_their_proof_demands; i++) {
+    switch (their_proof_demands[i]) {
+      case kX509:
+        x509_supported = true;
+        x509_ecdsa_supported = true;
         break;
-      }
-
-      StringPiece their_common_set_hashes;
-      StringPiece their_cached_cert_hashes;
-      client_hello.GetStringPiece(kCCS, &their_common_set_hashes);
-      client_hello.GetStringPiece(kCCRT, &their_cached_cert_hashes);
-
-      const string compressed = CertCompressor::CompressChain(
-          *certs, their_common_set_hashes, their_cached_cert_hashes,
-          config->common_cert_sets);
-
-      // kMaxUnverifiedSize is the number of bytes that the certificate chain
-      // and signature can consume before we will demand a valid
-      // source-address token.
-      // TODO(agl): make this configurable.
-      static const size_t kMaxUnverifiedSize = 400;
-      if (info.valid_source_address_token ||
-          signature.size() + compressed.size() < kMaxUnverifiedSize) {
-        out->SetStringPiece(kCertificateTag, compressed);
-        out->SetStringPiece(kPROF, signature);
-      }
-      break;
+      case kX59R:
+        x509_supported = true;
+        break;
     }
+  }
+
+  if (!x509_supported) {
+    return;
+  }
+
+  const vector<string>* certs;
+  string signature;
+  if (!proof_source_->GetProof(info.sni.as_string(), config->serialized,
+                               x509_ecdsa_supported, &certs, &signature)) {
+    return;
+  }
+
+  StringPiece their_common_set_hashes;
+  StringPiece their_cached_cert_hashes;
+  client_hello.GetStringPiece(kCCS, &their_common_set_hashes);
+  client_hello.GetStringPiece(kCCRT, &their_cached_cert_hashes);
+
+  const string compressed = CertCompressor::CompressChain(
+      *certs, their_common_set_hashes, their_cached_cert_hashes,
+      config->common_cert_sets);
+
+  // kREJOverheadBytes is a very rough estimate of how much of a REJ
+  // message is taken up by things other than the certificates.
+  const size_t kREJOverheadBytes = 112;
+  // kMaxUnverifiedSize is the number of bytes that the certificate chain
+  // and signature can consume before we will demand a valid source-address
+  // token.
+  const size_t kMaxUnverifiedSize = client_hello.size() - kREJOverheadBytes;
+  COMPILE_ASSERT(kClientHelloMinimumSize >= kREJOverheadBytes,
+                 overhead_calculation_may_underflow);
+  if (info.valid_source_address_token ||
+      signature.size() + compressed.size() < kMaxUnverifiedSize) {
+    out->SetStringPiece(kCertificateTag, compressed);
+    out->SetStringPiece(kPROF, signature);
   }
 }
 

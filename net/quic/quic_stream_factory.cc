@@ -440,7 +440,8 @@ QuicClientSession* QuicStreamFactory::CreateSession(
       random_generator_,
       socket);
 
-  QuicConnection* connection = new QuicConnection(guid, addr, helper, false);
+  QuicConnection* connection = new QuicConnection(guid, addr, helper, false,
+                                                  QuicVersionMax());
 
   QuicCryptoClientConfig* crypto_config =
       GetOrCreateCryptoConfig(host_port_proxy_pair);

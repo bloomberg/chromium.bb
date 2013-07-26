@@ -26,13 +26,16 @@ class HTTPMessage;
 // A toy QUIC client used for testing.
 class QuicTestClient :  public ReliableQuicStream::Visitor {
  public:
-  QuicTestClient(IPEndPoint server_address, const string& server_hostname);
+  QuicTestClient(IPEndPoint server_address, const string& server_hostname,
+                 const QuicVersion version);
   QuicTestClient(IPEndPoint server_address,
                  const string& server_hostname,
-                 bool secure);
+                 bool secure,
+                 const QuicVersion version);
   QuicTestClient(IPEndPoint server_address,
                  const string& server_hostname,
-                 const QuicConfig& config);
+                 const QuicConfig& config,
+                 const QuicVersion version);
 
   virtual ~QuicTestClient();
 
@@ -114,6 +117,7 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   // If true, the client will always reconnect if necessary before creating a
   // stream.
   bool auto_reconnect_;
+
   // proof_verifier_ points to a RecordingProofVerifier that is owned by
   // client_.
   ProofVerifier* proof_verifier_;

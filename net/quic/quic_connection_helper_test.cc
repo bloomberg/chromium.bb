@@ -30,7 +30,7 @@ class TestConnection : public QuicConnection {
   TestConnection(QuicGuid guid,
                  IPEndPoint address,
                  QuicConnectionHelper* helper)
-      : QuicConnection(guid, address, helper, false) {
+      : QuicConnection(guid, address, helper, false, QuicVersionMax()) {
   }
 
   void SendAck() {
@@ -59,7 +59,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
 
   QuicConnectionHelperTest()
       : guid_(2),
-        framer_(kQuicVersion1, QuicTime::Zero(), false),
+        framer_(QuicVersionMax(), QuicTime::Zero(), false),
         net_log_(BoundNetLog()),
         frame_(1, false, 0, kData) {
     Initialize();
@@ -304,6 +304,9 @@ TEST_F(QuicConnectionHelperTest, TestRetransmission) {
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2));
   Initialize();
 
+  EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
+      testing::Return(QuicTime::Delta::Zero()));
+
   QuicTime::Delta kDefaultRetransmissionTime =
       QuicTime::Delta::FromMilliseconds(500);
   QuicTime start = clock_.ApproximateNow();
@@ -327,6 +330,9 @@ TEST_F(QuicConnectionHelperTest, TestMultipleRetransmission) {
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2));
   AddWrite(SYNCHRONOUS, ConstructDataPacket(3));
   Initialize();
+
+  EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
+      testing::Return(QuicTime::Delta::Zero()));
 
   QuicTime::Delta kDefaultRetransmissionTime =
       QuicTime::Delta::FromMilliseconds(500);
@@ -442,6 +448,8 @@ TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
   Initialize();
 
   // Test that if we send a packet with a delay, it ends up queued.
+  EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
+      testing::Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(
       *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
           testing::Return(QuicTime::Delta::FromMicroseconds(1)));

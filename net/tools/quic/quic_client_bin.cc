@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_client.h"
 
 int32 FLAGS_port = 6121;
@@ -42,8 +43,9 @@ int main(int argc, char *argv[]) {
 
   net::IPAddressNumber addr;
   CHECK(net::ParseIPLiteralToNumber(FLAGS_address, &addr));
+  // TODO(rjshade): Set version on command line.
   net::tools::QuicClient client(
-      net::IPEndPoint(addr, FLAGS_port), FLAGS_hostname);
+      net::IPEndPoint(addr, FLAGS_port), FLAGS_hostname, net::QuicVersionMax());
 
   client.Initialize();
 

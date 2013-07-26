@@ -213,7 +213,7 @@ SerializedPacket QuicPacketCreator::SerializeConnectionClose(
 }
 
 QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
-    const QuicTagVector& supported_versions) {
+    const QuicVersionVector& supported_versions) {
   DCHECK(is_server_);
   QuicPacketPublicHeader header;
   header.guid = guid_;

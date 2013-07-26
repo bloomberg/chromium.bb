@@ -78,7 +78,7 @@ TEST(CommonCertSets, FindGIA) {
 
   const CommonCertSets* sets(CommonCertSets::GetInstanceQUIC());
 
-  const uint64 in_hash = GG_UINT64_C(0xde8086f914a3af54);
+  const uint64 in_hash = GG_UINT64_C(0xc9fef74053f99f39);
   uint64 hash;
   uint32 index;
   ASSERT_TRUE(sets->MatchCert(
@@ -96,7 +96,7 @@ TEST(CommonCertSets, FindGIA) {
 TEST(CommonCertSets, NonMatch) {
   const CommonCertSets* sets(CommonCertSets::GetInstanceQUIC());
   StringPiece not_a_cert("hello");
-  const uint64 in_hash = GG_UINT64_C(0xde8086f914a3af54);
+  const uint64 in_hash = GG_UINT64_C(0xc9fef74053f99f39);
   uint64 hash;
   uint32 index;
   EXPECT_FALSE(sets->MatchCert(

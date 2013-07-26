@@ -15,7 +15,11 @@ const int64 kInitialCongestionWindow = 10;
 const int64 kMaxCongestionWindow = 10000;
 const int kMaxBurstLength = 3;
 const int kInitialRttMs = 60;  // At a typical RTT 60 ms.
-};
+const float kAlpha = 0.125f;
+const float kOneMinusAlpha = (1 - kAlpha);
+const float kBeta = 0.25f;
+const float kOneMinusBeta = (1 - kBeta);
+};  // namespace
 
 TcpCubicSender::TcpCubicSender(const QuicClock* clock, bool reno)
     : hybrid_slow_start_(clock),
@@ -29,7 +33,12 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock, bool reno)
       end_sequence_number_(0),
       congestion_window_(kInitialCongestionWindow),
       slowstart_threshold_(kMaxCongestionWindow),
-      delay_min_(QuicTime::Delta::Zero()) {
+      delay_min_(QuicTime::Delta::Zero()),
+      smoothed_rtt_(QuicTime::Delta::Zero()),
+      mean_deviation_(QuicTime::Delta::Zero()) {
+}
+
+TcpCubicSender::~TcpCubicSender() {
 }
 
 void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
@@ -136,11 +145,15 @@ QuicBandwidth TcpCubicSender::BandwidthEstimate() {
 }
 
 QuicTime::Delta TcpCubicSender::SmoothedRtt() {
-  // TODO(satyamshekhar): Return the smoothed averaged RTT.
-  if (delay_min_.IsZero()) {
+  if (smoothed_rtt_.IsZero()) {
     return QuicTime::Delta::FromMilliseconds(kInitialRttMs);
   }
-  return delay_min_;
+  return smoothed_rtt_;
+}
+
+QuicTime::Delta TcpCubicSender::RetransmissionDelay() {
+  return QuicTime::Delta::FromMicroseconds(
+      smoothed_rtt_.ToMicroseconds() + 4 * mean_deviation_.ToMicroseconds());
 }
 
 void TcpCubicSender::Reset() {
@@ -218,6 +231,21 @@ void TcpCubicSender::AckAccounting(QuicTime::Delta rtt) {
   if (delay_min_.IsZero() || delay_min_ > rtt) {
     delay_min_ = rtt;
   }
+  // First time call.
+  if (smoothed_rtt_.IsZero()) {
+    smoothed_rtt_ = rtt;
+    mean_deviation_ = QuicTime::Delta::FromMicroseconds(
+        rtt.ToMicroseconds() / 2);
+  } else {
+    mean_deviation_ = QuicTime::Delta::FromMicroseconds(
+        kOneMinusBeta * mean_deviation_.ToMicroseconds() +
+        kBeta * abs(smoothed_rtt_.ToMicroseconds() - rtt.ToMicroseconds()));
+    smoothed_rtt_ = QuicTime::Delta::FromMicroseconds(
+        kOneMinusAlpha * smoothed_rtt_.ToMicroseconds() +
+        kAlpha * rtt.ToMicroseconds());
+    DLOG(INFO) << "Cubic; mean_deviation_:" << mean_deviation_.ToMicroseconds();
+  }
+
   // Hybrid start triggers when cwnd is larger than some threshold.
   if (congestion_window_ <= slowstart_threshold_ &&
       congestion_window_ >= kHybridStartLowWindow) {
