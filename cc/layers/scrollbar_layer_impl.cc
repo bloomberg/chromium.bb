@@ -4,6 +4,8 @@
 
 #include "cc/layers/scrollbar_layer_impl.h"
 
+#include <algorithm>
+
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/quad_sink.h"
@@ -241,7 +243,9 @@ gfx::Rect ScrollbarLayerImpl::ComputeThumbQuadRect() const {
   }
 
   // With the length known, we can compute the thumb's position.
-  float ratio = current_pos_ / maximum_;
+  float clamped_current_pos =
+      std::min(std::max(current_pos_, 0.f), static_cast<float>(maximum_));
+  float ratio = clamped_current_pos / maximum_;
   float max_offset = track_length - thumb_length;
   int thumb_offset = static_cast<int>(ratio * max_offset) + track_start_;
 
