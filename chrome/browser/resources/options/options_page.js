@@ -565,12 +565,20 @@ cr.define('options', function() {
   };
 
   /**
-   * Callback for window.onpopstate.
+   * Callback for window.onpopstate to handle back/forward navigations.
    * @param {Object} data State data pushed into history.
    */
   OptionsPage.setState = function(data) {
     if (data && data.pageName) {
-      this.willClose();
+      var currentOverlay = this.getVisibleOverlay_();
+      var lowercaseName = data.pageName.toLowerCase();
+      var newPage = this.registeredPages[lowercaseName] ||
+                    this.registeredOverlayPages[lowercaseName] ||
+                    this.getDefaultPage();
+      if (currentOverlay && !currentOverlay.isAncestorOfPage(newPage)) {
+        currentOverlay.visible = false;
+        if (currentOverlay.didClosePage) currentOverlay.didClosePage();
+      }
       this.showPageByName(data.pageName, false);
     }
   };

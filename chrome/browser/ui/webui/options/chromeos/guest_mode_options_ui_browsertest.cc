@@ -9,11 +9,11 @@
 
 namespace {
 
-// Same as OptionsBrowserTest but launches with Guest mode command line
+// Same as OptionsUIBrowserTest but launches with Guest mode command line
 // switches.
-class GuestModeOptionsBrowserTest : public options::OptionsBrowserTest {
+class GuestModeOptionsBrowserTest : public options::OptionsUIBrowserTest {
  public:
-  GuestModeOptionsBrowserTest() : OptionsBrowserTest() {}
+  GuestModeOptionsBrowserTest() : OptionsUIBrowserTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);

@@ -31,7 +31,7 @@ using testing::AnyNumber;
 using testing::Return;
 using testing::_;
 
-class CertificateManagerBrowserTest : public options::OptionsBrowserTest {
+class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
  public:
   CertificateManagerBrowserTest() {}
   virtual ~CertificateManagerBrowserTest() {}

@@ -1639,6 +1639,7 @@
         'browser/ui/webui/options/font_settings_browsertest.js',
         'browser/ui/webui/options/language_options_browsertest.js',
         'browser/ui/webui/options/language_options_dictionary_download_browsertest.js',
+        'browser/ui/webui/options/options_browsertest.cc',
         'browser/ui/webui/options/options_browsertest.js',
         'browser/ui/webui/options/options_ui_browsertest.cc',
         'browser/ui/webui/options/options_ui_browsertest.h',
