@@ -25,11 +25,10 @@ function StoredSortedArray(type, name) {
     // case.
     var list = value[name];
     if (list instanceof Array) {
-      var changedEvent = new Event('changed');
-      changedEvent.permutation = this.createPermutation_(this.array_, list);
-
+      var permutedEvent = new Event('permuted');
+      permutedEvent.permutation = this.createPermutation_(this.array_, list);
       this.array_ = list;
-      this.dispatchEvent(changedEvent);
+      this.dispatchEvent(permutedEvent);
     }
   }.bind(this));
 
@@ -42,11 +41,23 @@ function StoredSortedArray(type, name) {
     // Since the value comes from outer resource, we have to check it just in
     // case.
     if (list instanceof Array) {
-      var changedEvent = new Event('changed');
-      changedEvent.permutation = this.createPermutation_(this.array_, list);
+      // If the list is not changed, do nothing and just return.
+      if (this.array_.length == list.length) {
+        var changed = false;
+        for (var i = 0; i < this.array_.length; i++) {
+          if (this.array_[i] != list[i]) {
+            changed = true;
+            break;
+          }
+        }
+        if (!changed)
+          return;
+      }
 
+      var permutedEvent = new Event('permuted');
+      permutedEvent.permutation = this.createPermutation_(this.array_, list);
       this.array_ = list;
-      this.dispatchEvent(changedEvent);
+      this.dispatchEvent(permutedEvent);
     }
   }.bind(this));
 }
@@ -190,14 +201,14 @@ function FolderShortcutsDataModel() {
   // Syncable array for Drive.
   this.remoteList_ = new StoredSortedArray('sync', 'folder-shortcuts-list');
   this.remoteList_.addEventListener(
-      'changed',
-      this.onArrayChanged_.bind(this, 'sync'));
+      'permuted',
+      this.onArrayPermuted_.bind(this, 'sync'));
 
   // Syncable array for other volumes.
   this.localList_ = new StoredSortedArray('local', 'folder-shortcuts-list');
   this.localList_.addEventListener(
-      'changed',
-      this.onArrayChanged_.bind(this, 'local'));
+      'permuted',
+      this.onArrayPermuted_.bind(this, 'local'));
 }
 
 /**
@@ -225,12 +236,12 @@ FolderShortcutsDataModel.prototype = {
   add: function(path) {
     if (PathUtil.isDriveBasedPath(path)) {
       var index = this.remoteList_.add(path);
-      this.fireChangeEvents_('sync', index,
-                             FolderShortcutsDataModel.EventType.ADDED);
+      this.fireAddRemoveEvent_('sync', index,
+                               FolderShortcutsDataModel.EventType.ADDED);
     } else {
       var index = this.localList_.add(path);
-      this.fireChangeEvents_('local', index,
-                             FolderShortcutsDataModel.EventType.ADDED);
+      this.fireAddRemoveEvent_('local', index,
+                               FolderShortcutsDataModel.EventType.ADDED);
     }
   },
 
@@ -240,12 +251,12 @@ FolderShortcutsDataModel.prototype = {
   remove: function(path) {
     if (PathUtil.isDriveBasedPath(path)) {
       var index = this.remoteList_.remove(path);
-      this.fireChangeEvents_('sync', index,
-                             FolderShortcutsDataModel.EventType.REMOVED);
+      this.fireAddRemoveEvent_('sync', index,
+                               FolderShortcutsDataModel.EventType.REMOVED);
     } else {
       var index = this.localList_.remove(path);
-      this.fireChangeEvents_('local', index,
-                             FolderShortcutsDataModel.EventType.REMOVED);
+      this.fireAddRemoveEvent_('local', index,
+                               FolderShortcutsDataModel.EventType.REMOVED);
     }
   },
 
@@ -282,18 +293,50 @@ FolderShortcutsDataModel.prototype = {
    *
    * @param {string} type Type of the array from which the change event comes.
    * @param {Event} event The 'changed' event from the array.
+   * @private
    */
-  onArrayChanged_: function(type, event) {
-    var changeEvent = new Event('change');
-    changeEvent.index = (type == 'sync') ? 0 : this.remoteList_.length;
-    this.dispatchEvent(changeEvent);
+  onArrayPermuted_: function(type, event) {
+    var newPemutation = [];
+    if (type == 'sync') {
+      // The first (remote) list is changed.
 
+      // 1) Copy permutations of the remote (first) list.
+      newPemutation = event.permutation;
+
+      // 2) Adds the unchanged-permutation of the local (latter) list below.
+      var oldRemoteListLength = event.permutation.length;
+      var newRemoteListLength = this.remoteList_.length;
+      for (var i = 0; i < this.remoteList_.length; i++) {
+        newPemutation[oldRemoteListLength + i] = newRemoteListLength + i;
+      }
+    } else {
+      // The latter (local) list is changed.
+      var remoteListLength = this.remoteList_.length;
+
+      // 1) Adds unchanged-permutations of the remote (first) list.
+      for (var i = 0; i < remoteListLength; i++) {
+        newPemutation[i] = i;
+      }
+
+      // 2) Copies the permutation of the local (latter) list below changing
+      //    the index of the permutation.
+      for (var i = 0; i < event.permutation.length; i++) {
+        newPemutation[remoteListLength + i] =
+            (event.permutation[i] == -1) ?
+                -1 :  // Keeps -1, if the element is removed.
+                (remoteListLength + event.permutation[i]);  // Otherwise.
+      }
+    }
     var permutedEvent = new Event('permuted');
     permutedEvent.newLength = this.length;
-    permutedEvent.permutation = event.permutation;
+    permutedEvent.permutation = newPemutation;
     this.dispatchEvent(permutedEvent);
 
-    // 'splice' and 'sorted' events are not implemented.
+    // Note:
+    // 1) 'change' event is not necessary to fire since it is covered by
+    //    'permuted' event.
+    // 2) 'splice' and 'sorted' events are not implemented. We have to implement
+    //    them when necessary.
   },
 
   /**
@@ -302,13 +345,10 @@ FolderShortcutsDataModel.prototype = {
    * @param {string} type Type of the array from which the change event comes.
    * @param {number} index Changed index in the array.
    * @param {FolderShortcutsDataModel.EventType} type Type of the event.
+   * @private
    */
-  fireChangeEvents_: function(type, index, eventType) {
+  fireAddRemoveEvent_: function(type, index, eventType) {
     var changedIndex = ((type == 'sync') ? 0 : this.remoteList_.length) + index;
-
-    var changeEvent = new Event('change');
-    changeEvent.index = changedIndex;
-    this.dispatchEvent(changeEvent);
 
     var permutation = [];
     if (eventType == FolderShortcutsDataModel.EventType.ADDED) {
@@ -340,6 +380,10 @@ FolderShortcutsDataModel.prototype = {
     permutedEvent.permutation = permutation;
     this.dispatchEvent(permutedEvent);
 
-    // 'splice' and 'sorted' events are not implemented.
+    // Note:
+    // 1) 'change' event is not necessary to fire since it is covered by
+    //    'permuted' event.
+    // 2) 'splice' and 'sorted' events are not implemented. We have to implement
+    //    them when necessary.
   }
 };
