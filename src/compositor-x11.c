@@ -1525,8 +1525,10 @@ x11_compositor_create(struct wl_display *display,
 		if (strcmp(section_name, "output") != 0)
 			continue;
 		weston_config_section_get_string(section, "name", &name, NULL);
-		if (name == NULL || name[0] != 'X')
+		if (name == NULL || name[0] != 'X') {
+			free(name);
 			continue;
+		}
 
 		weston_config_section_get_string(section,
 						 "mode", &mode, "1024x600");
