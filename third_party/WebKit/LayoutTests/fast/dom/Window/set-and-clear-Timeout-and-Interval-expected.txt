@@ -1,6 +1,0 @@
-Actions registered with setTimeout should not be cleared with clearInterval (and vice versa).
-
-
-PASS Actions created with setTimeout should not be cleared by clearInterval. 
-PASS Actions created with setInterval should not be cleared by clearTimeout. 
-

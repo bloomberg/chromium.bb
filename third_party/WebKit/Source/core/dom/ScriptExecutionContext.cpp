@@ -263,7 +263,7 @@ int ScriptExecutionContext::circularSequentialID()
     return m_circularSequentialID;
 }
 
-int ScriptExecutionContext::installNewTimeout(DOMTimer::Type timerType, PassOwnPtr<ScheduledAction> action, int timeout)
+int ScriptExecutionContext::installNewTimeout(PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
 {
     int timeoutID;
     while (true) {
@@ -271,25 +271,20 @@ int ScriptExecutionContext::installNewTimeout(DOMTimer::Type timerType, PassOwnP
         if (!m_timeouts.contains(timeoutID))
             break;
     }
-    TimeoutMap::AddResult result = m_timeouts.add(timeoutID, DOMTimer::create(this, timerType, action, timeout, timeoutID));
+    TimeoutMap::AddResult result = m_timeouts.add(timeoutID, DOMTimer::create(this, action, timeout, singleShot, timeoutID));
     ASSERT(result.isNewEntry);
     DOMTimer* timer = result.iterator->value.get();
 
     timer->suspendIfNeeded();
 
-    return timeoutID;
+    return timer->timeoutID();
 }
 
-bool ScriptExecutionContext::removeTimeoutByIDIfTypeMatches(DOMTimer::Type timerType, int timeoutID)
+void ScriptExecutionContext::removeTimeoutByID(int timeoutID)
 {
     if (timeoutID <= 0)
-        return false;
-    TimeoutMap::iterator iter = m_timeouts.find(timeoutID);
-    if (iter != m_timeouts.end() && iter->value->type() == timerType) {
-        m_timeouts.remove(iter);
-        return true;
-    }
-    return false;
+        return;
+    m_timeouts.remove(timeoutID);
 }
 
 PublicURLManager& ScriptExecutionContext::publicURLManager()
