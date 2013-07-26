@@ -625,10 +625,6 @@ TEST_F(FramePainterTest, MinimalHeaderStyle) {
   SetTrackedByWorkspace(w->GetNativeWindow(), false);
   EXPECT_FALSE(p->ShouldUseMinimalHeaderStyle(FramePainter::THEMED_NO));
   SetTrackedByWorkspace(w->GetNativeWindow(), true);
-
-  w->GetNativeWindow()->GetRootWindow()->SetProperty(
-      ash::internal::kCyclingThroughWorkspacesKey, true);
-  EXPECT_FALSE(p->ShouldUseMinimalHeaderStyle(FramePainter::THEMED_NO));
 }
 
 // Ensure the title text is vertically aligned with the window icon.

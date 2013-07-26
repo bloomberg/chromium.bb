@@ -2353,37 +2353,6 @@ const char kImmersiveModeRevealDelayMs[] =
     "immersive_mode.reveal_delay_ms";
 const char kImmersiveModeRevealXThresholdPixels[] =
     "immersive_mode.reveal_x_threshold_pixels";
-
-// Tuning settings for the animations when a user is cycling through workspaces
-// via a three finger vertical scroll.
-const char kWorkspaceCyclerShallowerThanSelectedYOffsets[] =
-    "workspace_cycler.shallower_than_selected_y_offsets";
-const char kWorkspaceCyclerDeeperThanSelectedYOffsets[] =
-    "workspace_cycler.deeper_than_selected_y_offsets";
-const char kWorkspaceCyclerSelectedYOffset[] =
-    "workspace_cycler.selected_y_offset";
-const char kWorkspaceCyclerSelectedScale[] =
-    "workspace_cycler.selected_scale";
-const char kWorkspaceCyclerMinScale[] =
-    "workspace_cycler.min_scale";
-const char kWorkspaceCyclerMaxScale[] =
-    "workspace_cycler.max_scale";
-const char kWorkspaceCyclerMinBrightness[] =
-    "workspace_cycler.min_brightness";
-const char kWorkspaceCyclerBackgroundOpacity[] =
-    "workspace_cycler.background_opacity";
-const char kWorkspaceCyclerDesktopWorkspaceBrightness[] =
-    "workspace_cycler.desktop_workspace_brightness";
-const char kWorkspaceCyclerDistanceToInitiateCycling[] =
-    "workspace_cycler.distance_to_initiate_cycling";
-const char kWorkspaceCyclerScrollDistanceToCycleToNextWorkspace[] =
-    "workspace_cycler.scroll_distance_to_cycle_to_next_workspace";
-const char kWorkspaceCyclerCyclerStepAnimationDurationRatio[] =
-    "workspace_cycler.cycler_step_animation_duration_ratio";
-const char kWorkspaceCyclerStartCyclerAnimationDuration[] =
-    "workspace_cycler.start_cycler_animation_duration";
-const char kWorkspaceCyclerStopCyclerAnimationDuration[] =
-    "workspace_cycler.stop_cycler_animation_duration";
 #endif
 
 #if defined(USE_AURA)

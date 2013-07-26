@@ -27,7 +27,6 @@ class GesturePrefsObserverFactoryAura
   void RegisterOverscrollPrefs(user_prefs::PrefRegistrySyncable* registry);
   void RegisterFlingCurveParameters(user_prefs::PrefRegistrySyncable* registry);
   void RegisterImmersiveModePrefs(user_prefs::PrefRegistrySyncable* registry);
-  void RegisterWorkspaceCyclerPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // BrowserContextKeyedServiceFactory:
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(

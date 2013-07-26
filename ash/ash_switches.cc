@@ -132,9 +132,6 @@ const char kAshEnableStickyEdges[] = "ash-enable-sticky-edges";
 // Enables showing the tray bubble by dragging on the shelf.
 const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 
-// Enable workspace switching via a three finger vertical scroll.
-const char kAshEnableWorkspaceScrubbing[] = "ash-enable-workspace-scrubbing";
-
 // Forces chrome to use mirror mode when an external display is connected.
 const char kAshForceMirrorMode[] = "ash-force-mirror-mode";
 

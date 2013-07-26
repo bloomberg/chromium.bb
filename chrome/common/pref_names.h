@@ -849,21 +849,6 @@ extern const char kShelfPreferences[];
 
 extern const char kImmersiveModeRevealDelayMs[];
 extern const char kImmersiveModeRevealXThresholdPixels[];
-
-extern const char kWorkspaceCyclerShallowerThanSelectedYOffsets[];
-extern const char kWorkspaceCyclerDeeperThanSelectedYOffsets[];
-extern const char kWorkspaceCyclerSelectedYOffset[];
-extern const char kWorkspaceCyclerSelectedScale[];
-extern const char kWorkspaceCyclerMinScale[];
-extern const char kWorkspaceCyclerMaxScale[];
-extern const char kWorkspaceCyclerMinBrightness[];
-extern const char kWorkspaceCyclerBackgroundOpacity[];
-extern const char kWorkspaceCyclerDesktopWorkspaceBrightness[];
-extern const char kWorkspaceCyclerDistanceToInitiateCycling[];
-extern const char kWorkspaceCyclerScrollDistanceToCycleToNextWorkspace[];
-extern const char kWorkspaceCyclerCyclerStepAnimationDurationRatio[];
-extern const char kWorkspaceCyclerStartCyclerAnimationDuration[];
-extern const char kWorkspaceCyclerStopCyclerAnimationDuration[];
 #endif
 
 #if defined(USE_AURA)

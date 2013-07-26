@@ -20,9 +20,6 @@
 #include "ash/wm/workspace/auto_window_management.h"
 #include "ash/wm/workspace/desktop_background_fade_controller.h"
 #include "ash/wm/workspace/workspace_animations.h"
-#include "ash/wm/workspace/workspace_cycler.h"
-#include "ash/wm/workspace/workspace_cycler_animator.h"
-#include "ash/wm/workspace/workspace_cycler_configuration.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace.h"
 #include "base/auto_reset.h"
@@ -123,9 +120,6 @@ WorkspaceManager::WorkspaceManager(Window* contents_window)
   workspaces_.push_back(active_workspace_);
   active_workspace_->window()->Show();
   Shell::GetInstance()->AddShellObserver(this);
-
-  if (ash::WorkspaceCyclerConfiguration::IsCyclerEnabled())
-    workspace_cycler_.reset(new WorkspaceCycler(this));
 }
 
 WorkspaceManager::~WorkspaceManager() {
@@ -232,30 +226,6 @@ Window* WorkspaceManager::GetParentForNewWindow(Window* window) {
   return desktop_workspace()->window();
 }
 
-bool WorkspaceManager::CanStartCyclingThroughWorkspaces() const {
-  return workspace_cycler_.get() && workspaces_.size() > 1u;
-}
-
-void WorkspaceManager::InitWorkspaceCyclerAnimatorWithCurrentState(
-    WorkspaceCyclerAnimator* animator) {
-  if (animator)
-    animator->Init(workspaces_, active_workspace_);
-}
-
-void WorkspaceManager::SetActiveWorkspaceFromCycler(Workspace* workspace) {
-  if (!workspace || workspace == active_workspace_)
-    return;
-
-  SetActiveWorkspace(workspace, SWITCH_WORKSPACE_CYCLER);
-
-  // Activate the topmost window in the newly activated workspace as
-  // SetActiveWorkspace() does not do so.
-  aura::Window* topmost_activatable_window =
-      workspace->GetTopmostActivatableWindow();
-  if (topmost_activatable_window)
-    wm::ActivateWindow(topmost_activatable_window);
-}
-
 void WorkspaceManager::DoInitialAnimation() {
   ShowWorkspace(active_workspace_, active_workspace_, SWITCH_INITIAL);
 }
@@ -284,11 +254,6 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
   DCHECK(workspace);
   if (active_workspace_ == workspace)
     return;
-
-  // It is possible for a user to use accelerator keys to restore windows etc
-  // while the user is cycling through workspaces.
-  if (workspace_cycler_)
-    workspace_cycler_->AbortCycling();
 
   pending_workspaces_.erase(workspace);
 
@@ -339,11 +304,6 @@ void WorkspaceManager::MoveWorkspaceToPendingOrDelete(
     return;
 
   DCHECK_NE(desktop_workspace(), workspace);
-
-  // The user may have closed or minimized a window via accelerator keys while
-  // cycling through workspaces.
-  if (workspace_cycler_)
-    workspace_cycler_->AbortCycling();
 
   if (workspace == active_workspace_)
     SelectNextWorkspace(reason);

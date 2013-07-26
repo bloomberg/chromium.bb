@@ -24,12 +24,7 @@
 #include "ui/base/gestures/gesture_configuration.h"
 
 #if defined(USE_ASH)
-#include "ash/wm/workspace/workspace_cycler_configuration.h"
 #include "chrome/browser/ui/immersive_fullscreen_configuration.h"
-#endif  // USE_ASH
-
-#if defined(USE_ASH)
-using ash::WorkspaceCyclerConfiguration;
 #endif  // USE_ASH
 
 using ui::GestureConfiguration;
@@ -74,50 +69,6 @@ const char* kImmersiveModePrefs[] = {
   prefs::kImmersiveModeRevealDelayMs,
   prefs::kImmersiveModeRevealXThresholdPixels,
 };
-
-struct WorkspaceCyclerPref {
-  const char* pref_name;
-  WorkspaceCyclerConfiguration::Property property;
-};
-
-const std::vector<WorkspaceCyclerPref>& GetWorkspaceCyclerPrefs() {
-  CR_DEFINE_STATIC_LOCAL(std::vector<WorkspaceCyclerPref>, cycler_prefs, ());
-  if (cycler_prefs.empty()) {
-    const WorkspaceCyclerPref kCyclerPrefs[] = {
-      { prefs::kWorkspaceCyclerShallowerThanSelectedYOffsets,
-        WorkspaceCyclerConfiguration::SHALLOWER_THAN_SELECTED_Y_OFFSETS },
-      { prefs::kWorkspaceCyclerDeeperThanSelectedYOffsets,
-        WorkspaceCyclerConfiguration::DEEPER_THAN_SELECTED_Y_OFFSETS },
-      { prefs::kWorkspaceCyclerSelectedYOffset,
-        WorkspaceCyclerConfiguration::SELECTED_Y_OFFSET },
-      { prefs::kWorkspaceCyclerSelectedScale,
-        WorkspaceCyclerConfiguration::SELECTED_SCALE },
-      { prefs::kWorkspaceCyclerMinScale,
-        WorkspaceCyclerConfiguration::MIN_SCALE },
-      { prefs::kWorkspaceCyclerMaxScale,
-        WorkspaceCyclerConfiguration::MAX_SCALE },
-      { prefs::kWorkspaceCyclerMinBrightness,
-        WorkspaceCyclerConfiguration::MIN_BRIGHTNESS },
-      { prefs::kWorkspaceCyclerBackgroundOpacity,
-        WorkspaceCyclerConfiguration::BACKGROUND_OPACITY },
-      { prefs::kWorkspaceCyclerDesktopWorkspaceBrightness,
-        WorkspaceCyclerConfiguration::DESKTOP_WORKSPACE_BRIGHTNESS },
-      { prefs::kWorkspaceCyclerDistanceToInitiateCycling,
-        WorkspaceCyclerConfiguration::DISTANCE_TO_INITIATE_CYCLING },
-      { prefs::kWorkspaceCyclerScrollDistanceToCycleToNextWorkspace,
-        WorkspaceCyclerConfiguration::
-            SCROLL_DISTANCE_TO_CYCLE_TO_NEXT_WORKSPACE },
-      { prefs::kWorkspaceCyclerCyclerStepAnimationDurationRatio,
-        WorkspaceCyclerConfiguration::CYCLER_STEP_ANIMATION_DURATION_RATIO },
-      { prefs::kWorkspaceCyclerStartCyclerAnimationDuration,
-        WorkspaceCyclerConfiguration::START_CYCLER_ANIMATION_DURATION },
-      { prefs::kWorkspaceCyclerStopCyclerAnimationDuration,
-        WorkspaceCyclerConfiguration::STOP_CYCLER_ANIMATION_DURATION },
-    };
-    cycler_prefs.assign(kCyclerPrefs, kCyclerPrefs + arraysize(kCyclerPrefs));
-  }
-  return cycler_prefs;
-}
 #endif  // USE_ASH
 
 // This class manages gesture configuration preferences.
@@ -144,7 +95,6 @@ class GesturePrefsObserver : public BrowserContextKeyedService {
   void UpdateOverscrollPrefs();
 
   void UpdateImmersiveModePrefs();
-  void UpdateWorkspaceCyclerPrefs();
 
   PrefChangeRegistrar registrar_;
   PrefService* prefs_;
@@ -224,11 +174,6 @@ GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
 #if defined(USE_ASH)
   for (size_t i = 0; i < arraysize(kImmersiveModePrefs); ++i)
     registrar_.Add(kImmersiveModePrefs[i], callback);
-
-  const std::vector<WorkspaceCyclerPref>& cycler_prefs =
-      GetWorkspaceCyclerPrefs();
-  for (size_t i = 0; i < cycler_prefs.size(); ++i)
-    registrar_.Add(cycler_prefs[i].pref_name, callback);
 #endif  // USE_ASH
   Update();
 }
@@ -318,7 +263,6 @@ void GesturePrefsObserver::Update() {
 
   UpdateOverscrollPrefs();
   UpdateImmersiveModePrefs();
-  UpdateWorkspaceCyclerPrefs();
 }
 
 void GesturePrefsObserver::UpdateOverscrollPrefs() {
@@ -336,24 +280,6 @@ void GesturePrefsObserver::UpdateImmersiveModePrefs() {
   ImmersiveFullscreenConfiguration::
       set_immersive_mode_reveal_x_threshold_pixels(
           prefs_->GetInteger(prefs::kImmersiveModeRevealXThresholdPixels));
-#endif  // USE_ASH
-}
-
-void GesturePrefsObserver::UpdateWorkspaceCyclerPrefs() {
-#if defined(USE_ASH)
-  const std::vector<WorkspaceCyclerPref>& cycler_prefs =
-      GetWorkspaceCyclerPrefs();
-  for (size_t i = 0; i < cycler_prefs.size(); ++i) {
-    WorkspaceCyclerConfiguration::Property property =
-        cycler_prefs[i].property;
-    if (WorkspaceCyclerConfiguration::IsListProperty(property)) {
-      WorkspaceCyclerConfiguration::SetListValue(property,
-          *prefs_->GetList(cycler_prefs[i].pref_name));
-    } else {
-      WorkspaceCyclerConfiguration::SetDouble(property,
-          prefs_->GetDouble(cycler_prefs[i].pref_name));
-    }
-  }
 #endif  // USE_ASH
 }
 
@@ -428,29 +354,6 @@ void GesturePrefsObserverFactoryAura::RegisterImmersiveModePrefs(
       ImmersiveFullscreenConfiguration::
           immersive_mode_reveal_x_threshold_pixels(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-#endif  // USE_ASH
-}
-
-void GesturePrefsObserverFactoryAura::RegisterWorkspaceCyclerPrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-#if defined(USE_ASH)
-  const std::vector<WorkspaceCyclerPref>& cycler_prefs =
-      GetWorkspaceCyclerPrefs();
-  for (size_t i = 0; i < cycler_prefs.size(); ++i) {
-    WorkspaceCyclerConfiguration::Property property =
-        cycler_prefs[i].property;
-    if (WorkspaceCyclerConfiguration::IsListProperty(property)) {
-      registry->RegisterListPref(
-          cycler_prefs[i].pref_name,
-          WorkspaceCyclerConfiguration::GetListValue(property).DeepCopy(),
-          user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-    } else {
-      registry->RegisterDoublePref(
-          cycler_prefs[i].pref_name,
-          WorkspaceCyclerConfiguration::GetDouble(property),
-          user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-    }
-  }
 #endif  // USE_ASH
 }
 
@@ -578,7 +481,6 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
   RegisterOverscrollPrefs(registry);
   RegisterFlingCurveParameters(registry);
   RegisterImmersiveModePrefs(registry);
-  RegisterWorkspaceCyclerPrefs(registry);
 }
 
 bool

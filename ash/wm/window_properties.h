@@ -27,11 +27,6 @@ class RootWindowController;
 // after the window is reparented to another container.
 extern const aura::WindowProperty<bool>* const kContinueDragAfterReparent;
 
-// A property key to indicate that the user is cycling through workspaces.
-// The property should only be set on the root window.
-ASH_EXPORT extern const aura::WindowProperty<bool>* const
-    kCyclingThroughWorkspacesKey;
-
 // A property key to store display_id an aura::RootWindow is mapped to.
 extern const aura::WindowProperty<int64>* const kDisplayIdKey;
 

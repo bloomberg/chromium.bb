@@ -41,8 +41,6 @@ namespace internal {
 
 class DesktopBackgroundFadeController;
 class ShelfLayoutManager;
-class WorkspaceCycler;
-class WorkspaceCyclerAnimator;
 class WorkspaceLayoutManager;
 class WorkspaceManagerTest2;
 class Workspace;
@@ -73,19 +71,6 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   // Returns the parent for |window|. This is invoked from StackingController
   // when a new Window is being added.
   aura::Window* GetParentForNewWindow(aura::Window* window);
-
-  // Returns true if the user can start cycling through workspaces.
-  bool CanStartCyclingThroughWorkspaces() const;
-
-  // Initializes |animator| with the workspace manager's current state on
-  // behalf of the workspace cycler.
-  // This state should be cleared by the workspace cycler when
-  // WorkspaceCycler::AbortCycling() is called.
-  void InitWorkspaceCyclerAnimatorWithCurrentState(
-      WorkspaceCyclerAnimator* animator);
-
-  // Called by the workspace cycler to update the active workspace.
-  void SetActiveWorkspaceFromCycler(Workspace* workspace);
 
   // Starts the animation that occurs on first login.
   void DoInitialAnimation();
@@ -240,10 +225,6 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   // Set to true while in the process of creating a
   // DesktopBackgroundFadeController.
   bool creating_fade_;
-
-  // Cycles through the workspace manager's workspaces in response to a three
-  // finger vertical scroll.
-  scoped_ptr<WorkspaceCycler> workspace_cycler_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManager);
 };
