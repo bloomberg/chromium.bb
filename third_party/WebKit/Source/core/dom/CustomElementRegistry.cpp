@@ -64,8 +64,10 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
     // consolidated in one place.
     RegistrationContextObserver observer(document);
 
-    if (!constructorBuilder->isFeatureAllowed())
+    if (!constructorBuilder->isFeatureAllowed()) {
+        ec = NotSupportedError;
         return 0;
+    }
 
     AtomicString type = userSuppliedName.lower();
     if (!CustomElementRegistrationContext::isValidTypeName(type)) {
