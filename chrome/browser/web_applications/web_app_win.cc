@@ -155,15 +155,15 @@ std::vector<base::FilePath> FindAppShortcutsByProfileAndTitle(
 
 // Creates application shortcuts in a given set of paths.
 // |shortcut_paths| is a list of directories in which shortcuts should be
-// created. If |creation_policy| is DONT_CREATE_DUPLICATE_SHORTCUTS and there is
-// an existing shortcut to this app for this profile, does nothing (succeeding).
+// created. If |creation_reason| is SHORTCUT_CREATION_AUTOMATED and there is an
+// existing shortcut to this app for this profile, does nothing (succeeding).
 // Returns true on success, false on failure.
 // Must be called on the FILE thread.
 bool CreateShortcutsInPaths(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const std::vector<base::FilePath>& shortcut_paths,
-    web_app::ShortcutCreationPolicy creation_policy,
+    web_app::ShortcutCreationReason creation_reason,
     std::vector<base::FilePath>* out_filenames) {
   // Ensure web_app_path exists.
   if (!base::PathExists(web_app_path) &&
@@ -215,7 +215,7 @@ bool CreateShortcutsInPaths(
   for (size_t i = 0; i < shortcut_paths.size(); ++i) {
     base::FilePath shortcut_file = shortcut_paths[i].Append(file_name).
         AddExtension(installer::kLnkExt);
-    if (creation_policy == web_app::DONT_CREATE_DUPLICATE_SHORTCUTS) {
+    if (creation_reason == web_app::SHORTCUT_CREATION_AUTOMATED) {
       // Check whether there is an existing shortcut to this app.
       std::vector<base::FilePath> shortcut_files =
           FindAppShortcutsByProfileAndTitle(shortcut_paths[i],
@@ -336,7 +336,7 @@ base::FilePath CreateShortcutInWebAppDir(
   paths.push_back(web_app_dir);
   std::vector<base::FilePath> out_filenames;
   CreateShortcutsInPaths(web_app_dir, shortcut_info, paths,
-                         ALLOW_DUPLICATE_SHORTCUTS, &out_filenames);
+                         SHORTCUT_CREATION_BY_USER, &out_filenames);
   DCHECK_EQ(out_filenames.size(), 1u);
   return out_filenames[0];
 }
@@ -367,7 +367,7 @@ bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationPolicy creation_policy) {
+    ShortcutCreationReason creation_reason) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   // Shortcut paths under which to create shortcuts.
@@ -388,7 +388,7 @@ bool CreatePlatformShortcuts(
     return false;
 
   if (!CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths,
-                              creation_policy, NULL))
+                              creation_reason, NULL))
     return false;
 
   if (pin_to_taskbar) {
@@ -425,7 +425,7 @@ void UpdatePlatformShortcuts(
         web_app_path, shortcut_info.profile_path, old_app_title,
         &was_pinned_to_taskbar, &shortcut_paths);
     CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths,
-                           ALLOW_DUPLICATE_SHORTCUTS, NULL);
+                           SHORTCUT_CREATION_BY_USER, NULL);
     // If the shortcut was pinned to the taskbar,
     // GetShortcutLocationsAndDeleteShortcuts will have deleted it. In that
     // case, re-pin it.

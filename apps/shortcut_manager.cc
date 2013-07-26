@@ -41,7 +41,7 @@ void CreateShortcutsInApplicationsMenu(
   creation_locations.applications_menu_subdir =
       web_app::GetAppShortcutsSubdirName();
   web_app::CreateShortcuts(shortcut_info, creation_locations,
-                           web_app::DONT_CREATE_DUPLICATE_SHORTCUTS);
+                           web_app::SHORTCUT_CREATION_AUTOMATED);
 }
 
 bool ShouldCreateShortcutFor(const extensions::Extension* extension) {

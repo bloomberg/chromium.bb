@@ -174,7 +174,7 @@ void CreateAppListShim(const base::FilePath& profile_path) {
   // TODO(tapted): Create a dock icon using chrome/browser/mac/dock.h .
   web_app::CreateShortcuts(shortcut_info,
                            ShellIntegration::ShortcutLocations(),
-                           web_app::ALLOW_DUPLICATE_SHORTCUTS);
+                           web_app::SHORTCUT_CREATION_BY_USER);
 }
 
 // Check that there is an app list shim. If enabling and there is not, make one.
@@ -204,7 +204,7 @@ void CreateShortcutsInDefaultLocation(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   web_app::CreateShortcuts(shortcut_info,
                            ShellIntegration::ShortcutLocations(),
-                           web_app::ALLOW_DUPLICATE_SHORTCUTS);
+                           web_app::SHORTCUT_CREATION_BY_USER);
 }
 
 NSRunningApplication* ActiveApplicationNotChrome() {

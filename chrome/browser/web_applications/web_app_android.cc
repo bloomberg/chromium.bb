@@ -11,7 +11,7 @@ bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationPolicy creation_policy) {
+    ShortcutCreationReason creation_reason) {
   return true;
 }
 

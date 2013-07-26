@@ -150,14 +150,14 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
 void CreateShortcuts(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationPolicy creation_policy) {
+    ShortcutCreationReason creation_reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(base::IgnoreResult(&CreateShortcutsOnFileThread),
-                 shortcut_info, creation_locations, creation_policy));
+                 shortcut_info, creation_locations, creation_reason));
 }
 
 void DeleteAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info) {
@@ -182,7 +182,7 @@ void UpdateAllShortcuts(const string16& old_app_title,
 bool CreateShortcutsOnFileThread(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationPolicy creation_policy) {
+    ShortcutCreationReason creation_reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::FilePath shortcut_data_dir = GetWebAppDataDirectory(
@@ -190,7 +190,7 @@ bool CreateShortcutsOnFileThread(
       shortcut_info.url);
   return internals::CreatePlatformShortcuts(shortcut_data_dir, shortcut_info,
                                             creation_locations,
-                                            creation_policy);
+                                            creation_reason);
 }
 
 bool IsValidUrl(const GURL& url) {

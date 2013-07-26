@@ -683,7 +683,7 @@ bool CreatePlatformShortcuts(
     const base::FilePath& app_data_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationPolicy /*creation_policy*/) {
+    ShortcutCreationReason /*creation_reason*/) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   WebAppShortcutCreator shortcut_creator(
       app_data_path, shortcut_info, base::mac::BaseBundleID());

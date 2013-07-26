@@ -17,7 +17,7 @@ bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationPolicy /*creation_policy*/) {
+    ShortcutCreationReason /*creation_reason*/) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   return ShellIntegrationLinux::CreateDesktopShortcut(
       shortcut_info, creation_locations);
@@ -52,7 +52,7 @@ void UpdatePlatformShortcuts(
   creation_locations.applications_menu_subdir = GetAppShortcutsSubdirName();
 
   CreatePlatformShortcuts(web_app_path, shortcut_info, creation_locations,
-                          ALLOW_DUPLICATE_SHORTCUTS);
+                          SHORTCUT_CREATION_BY_USER);
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {

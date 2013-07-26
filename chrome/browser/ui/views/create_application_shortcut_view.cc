@@ -383,7 +383,7 @@ bool CreateApplicationShortcutView::Accept() {
 #endif
 
   web_app::CreateShortcuts(shortcut_info_, creation_locations,
-                           web_app::ALLOW_DUPLICATE_SHORTCUTS);
+                           web_app::SHORTCUT_CREATION_BY_USER);
   return true;
 }
 

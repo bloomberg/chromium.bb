@@ -24,12 +24,11 @@ class ImageFamily;
 
 namespace web_app {
 
-// Policy on whether to create duplicate shortcuts.
-enum ShortcutCreationPolicy {
-  // Duplicate shortcuts may be created, at the discretion of the
-  // implementation.
-  ALLOW_DUPLICATE_SHORTCUTS,
-  DONT_CREATE_DUPLICATE_SHORTCUTS
+// This encodes the cause of shortcut creation as the correct behavior in each
+// case is implementation specific.
+enum ShortcutCreationReason {
+  SHORTCUT_CREATION_BY_USER,
+  SHORTCUT_CREATION_AUTOMATED,
 };
 
 // Gets the user data directory for given web app. The path for the directory is
@@ -65,7 +64,7 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 void CreateShortcuts(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationPolicy creation_policy);
+    ShortcutCreationReason creation_reason);
 
 // Delete all the shortcuts that have been created for the given
 // |shortcut_data| in the profile with |profile_path|.
@@ -85,7 +84,7 @@ void UpdateAllShortcuts(const string16& old_app_title,
 bool CreateShortcutsOnFileThread(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationPolicy creation_policy);
+    ShortcutCreationReason creation_reason);
 
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
@@ -125,7 +124,7 @@ bool CreatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationPolicy creation_policy);
+    ShortcutCreationReason creation_reason);
 
 // Delete all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the DeleteAllShortcuts function, and
