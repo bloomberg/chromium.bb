@@ -230,6 +230,18 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
+  virtual void GetWiMaxStatus(const GetWiMaxStatusCallback& callback)
+      OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetWiMaxStatus);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetWiMaxStatus,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
   virtual void GetNetworkInterfaces(
       const GetNetworkInterfacesCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
@@ -459,6 +471,15 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       callback.Run(false, "");
   }
 
+  void OnGetWiMaxStatus(const GetWiMaxStatusCallback& callback,
+                        dbus::Response* response) {
+    std::string status;
+    if (response && dbus::MessageReader(response).PopString(&status))
+      callback.Run(true, status);
+    else
+      callback.Run(false, "");
+  }
+
   void OnGetNetworkInterfaces(const GetNetworkInterfacesCallback& callback,
                               dbus::Response* response) {
     std::string status;
@@ -614,6 +635,11 @@ class DebugDaemonClientStubImpl : public DebugDaemonClient {
                                            base::Bind(callback, false, ""));
   }
   virtual void GetModemStatus(const GetModemStatusCallback& callback)
+      OVERRIDE {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, false, ""));
+  }
+  virtual void GetWiMaxStatus(const GetWiMaxStatusCallback& callback)
       OVERRIDE {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(callback, false, ""));

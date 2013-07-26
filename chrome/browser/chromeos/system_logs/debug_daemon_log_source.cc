@@ -23,6 +23,7 @@ const char kNotAvailable[] = "<not available>";
 const char kRoutesKeyName[] = "routes";
 const char kNetworkStatusKeyName[] = "network-status";
 const char kModemStatusKeyName[] = "modem-status";
+const char kWiMaxStatusKeyName[] = "wimax-status";
 const char kUserLogFileKeyName[] = "user_log_files";
 
 namespace chromeos {
@@ -51,6 +52,9 @@ void DebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
                                       weak_ptr_factory_.GetWeakPtr()));
   ++num_pending_requests_;
   client->GetModemStatus(base::Bind(&DebugDaemonLogSource::OnGetModemStatus,
+                                    weak_ptr_factory_.GetWeakPtr()));
+  ++num_pending_requests_;
+  client->GetWiMaxStatus(base::Bind(&DebugDaemonLogSource::OnGetWiMaxStatus,
                                     weak_ptr_factory_.GetWeakPtr()));
   ++num_pending_requests_;
   client->GetAllLogs(base::Bind(&DebugDaemonLogSource::OnGetLogs,
@@ -91,6 +95,17 @@ void DebugDaemonLogSource::OnGetModemStatus(bool succeeded,
     (*response_)[kModemStatusKeyName] = status;
   else
     (*response_)[kModemStatusKeyName] = kNotAvailable;
+  RequestCompleted();
+}
+
+void DebugDaemonLogSource::OnGetWiMaxStatus(bool succeeded,
+                                            const std::string& status) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (succeeded)
+    (*response_)[kWiMaxStatusKeyName] = status;
+  else
+    (*response_)[kWiMaxStatusKeyName] = kNotAvailable;
   RequestCompleted();
 }
 

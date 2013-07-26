@@ -33,6 +33,7 @@ class DebugDaemonLogSource : public SystemLogsSource {
   void OnGetRoutes(bool succeeded, const std::vector<std::string>& routes);
   void OnGetNetworkStatus(bool succeeded, const std::string& status);
   void OnGetModemStatus(bool succeeded, const std::string& status);
+  void OnGetWiMaxStatus(bool succeeded, const std::string& status);
   void OnGetLogs(bool succeeded,
                  const KeyValueMap& logs);
   void OnGetUserLogFiles(bool succeeded,
