@@ -205,7 +205,7 @@ class FileCache {
   // Marks the specified entry dirty.
   FileError MarkDirty(const std::string& resource_id);
 
-  // Clears dirty state of the specified entry.
+  // Clears dirty state of the specified entry and updates its MD5.
   FileError ClearDirty(const std::string& resource_id,
                        const std::string& md5);
 
