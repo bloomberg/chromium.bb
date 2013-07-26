@@ -433,8 +433,10 @@ DevToolsAdbBridge::Factory* DevToolsAdbBridge::Factory::GetInstance() {
 // static
 DevToolsAdbBridge* DevToolsAdbBridge::Factory::GetForProfile(
     Profile* profile) {
-  return static_cast<DevToolsAdbBridge::Wrapper*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true))->Get();
+  DevToolsAdbBridge::Wrapper* wrapper =
+      static_cast<DevToolsAdbBridge::Wrapper*>(GetInstance()->
+          GetServiceForBrowserContext(profile, true));
+  return wrapper ? wrapper->Get() : NULL;
 }
 
 DevToolsAdbBridge::Factory::Factory()

@@ -48,8 +48,6 @@ class InspectUI : public content::WebUIController,
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
 
-  DevToolsAdbBridge* adb_bridge_;
-
   DISALLOW_COPY_AND_ASSIGN(InspectUI);
 };
 

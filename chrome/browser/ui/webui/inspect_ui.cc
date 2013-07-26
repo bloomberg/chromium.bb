@@ -221,7 +221,8 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
         data->GetString(kAdbFrontendUrlField, &frontend_url)) {
       scoped_refptr<DevToolsAdbBridge> adb_bridge =
           DevToolsAdbBridge::Factory::GetForProfile(profile);
-      adb_bridge->Attach(serial, socket, debug_url, frontend_url);
+      if (adb_bridge)
+        adb_bridge->Attach(serial, socket, debug_url, frontend_url);
     }
     return;
   }
@@ -408,8 +409,10 @@ void InspectUI::StartListeningNotifications() {
   observer_->Init(this);
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  adb_bridge_ = DevToolsAdbBridge::Factory::GetForProfile(profile);
-  adb_bridge_->AddListener(this);
+  DevToolsAdbBridge* adb_bridge =
+      DevToolsAdbBridge::Factory::GetForProfile(profile);
+  if (adb_bridge)
+    adb_bridge->AddListener(this);
 
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
@@ -426,8 +429,11 @@ void InspectUI::StopListeningNotifications()
 {
   if (!observer_.get())
     return;
-  adb_bridge_->RemoveListener(this);
-  adb_bridge_ = NULL;
+  Profile* profile = Profile::FromWebUI(web_ui());
+  DevToolsAdbBridge* adb_bridge =
+      DevToolsAdbBridge::Factory::GetForProfile(profile);
+  if (adb_bridge)
+    adb_bridge->RemoveListener(this);
   observer_->InspectUIDestroyed();
   observer_ = NULL;
   registrar_.RemoveAll();
