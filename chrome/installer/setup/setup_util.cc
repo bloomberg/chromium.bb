@@ -18,9 +18,11 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
 #include "base/version.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
+#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -368,6 +370,76 @@ bool AdjustProcessPriority() {
     }
   }
   return false;
+}
+
+void MigrateGoogleUpdateStateMultiToSingle(
+    bool system_level,
+    BrowserDistribution::Type to_migrate,
+    const installer::InstallationState& machine_state) {
+  const HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  const ProductState* product = NULL;
+  BrowserDistribution* dist = NULL;
+  LONG result = ERROR_SUCCESS;
+  base::win::RegKey state_key;
+
+  Product product_to_migrate(
+      BrowserDistribution::GetSpecificDistribution(to_migrate));
+
+  // Copy usagestats from the binaries to the product's ClientState key.
+  product = machine_state.GetProductState(system_level,
+                                          BrowserDistribution::CHROME_BINARIES);
+  DWORD usagestats = 0;
+  if (product && product->GetUsageStats(&usagestats)) {
+    dist = product_to_migrate.distribution();
+    result = state_key.Open(root, dist->GetStateKey().c_str(),
+                            KEY_SET_VALUE);
+    if (result != ERROR_SUCCESS) {
+      LOG(ERROR) << "Failed opening ClientState key for "
+                 << dist->GetAppShortCutName() << " to migrate usagestats.";
+    } else {
+      state_key.WriteValue(google_update::kRegUsageStatsField, usagestats);
+    }
+  }
+
+  // Remove the migrating product from the "ap" value of other multi-install
+  // products.
+  for (int i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
+    BrowserDistribution::Type type =
+        static_cast<BrowserDistribution::Type>(i);
+    if (type == to_migrate)
+      continue;
+    product = machine_state.GetProductState(system_level, type);
+    if (product && product->is_multi_install()) {
+      installer::ChannelInfo channel_info;
+      dist = BrowserDistribution::GetSpecificDistribution(type);
+      result = state_key.Open(root, dist->GetStateKey().c_str(),
+                              KEY_QUERY_VALUE | KEY_SET_VALUE);
+      if (result == ERROR_SUCCESS &&
+          channel_info.Initialize(state_key) &&
+          product_to_migrate.SetChannelFlags(false, &channel_info)) {
+        VLOG(1) << "Moving " << dist->GetAppShortCutName()
+                << " to channel: " << channel_info.value();
+        channel_info.Write(&state_key);
+      }
+    }
+  }
+
+  // Remove -multi, all product modifiers, and everything else but the channel
+  // name from the "ap" value of the product to migrate.
+  dist = product_to_migrate.distribution();
+  result = state_key.Open(root, dist->GetStateKey().c_str(),
+                          KEY_QUERY_VALUE | KEY_SET_VALUE);
+  if (result == ERROR_SUCCESS) {
+    installer::ChannelInfo channel_info;
+    if (!channel_info.Initialize(state_key)) {
+      LOG(ERROR) << "Failed reading " << dist->GetAppShortCutName()
+                 << " channel info.";
+    } else if (channel_info.RemoveAllModifiersAndSuffixes()) {
+      VLOG(1) << "Moving " << dist->GetAppShortCutName()
+              << " to channel: " << channel_info.value();
+      channel_info.Write(&state_key);
+    }
+  }
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)

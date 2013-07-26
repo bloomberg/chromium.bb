@@ -1285,6 +1285,55 @@ installer::InstallStatus RegisterDevChrome(
   return status;
 }
 
+// Migrates multi-install Chrome Frame to single-install at the current
+// level. Does not remove the multi-install binaries if no other products are
+// using them. --uncompressed-archive=chrome.7z is expected to be given on the
+// command line to point this setup.exe at the (possibly patched) archive from
+// the calling instance.
+installer::InstallStatus MigrateChromeFrame(
+    const InstallationState& original_state,
+    InstallerState* installer_state) {
+  const bool system_level = installer_state->system_install();
+
+  // Nothing to do if multi-install Chrome Frame is not installed.
+  const ProductState* multi_chrome_frame = original_state.GetProductState(
+      system_level, BrowserDistribution::CHROME_FRAME);
+  if (!multi_chrome_frame || !multi_chrome_frame->is_multi_install())
+    return installer::INVALID_STATE_FOR_OPTION;
+
+  // Install SxS Chrome Frame.
+  InstallerState install_gcf(installer_state->level());
+  {
+    scoped_ptr<Product> chrome_frame(
+        new Product(BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_FRAME)));
+    install_gcf.AddProduct(&chrome_frame);
+  }
+  DCHECK(!install_gcf.is_multi_install());
+
+  installer::ArchiveType archive_type = installer::UNKNOWN_ARCHIVE_TYPE;
+  bool delegated_to_existing = false;
+  installer::InstallStatus install_status = InstallProductsHelper(
+      original_state, *CommandLine::ForCurrentProcess(),
+      MasterPreferences::ForCurrentProcess(), install_gcf,
+      &archive_type, &delegated_to_existing);
+
+  if (!InstallUtil::GetInstallReturnCode(install_status)) {
+    // Migration was successful. There's no turning back now. The multi-install
+    // npchrome_frame.dll and/or chrome.exe may still be in use at this point,
+    // although the user-level helper will not be. It is not safe to delete the
+    // multi-install binaries until npchrome_frame.dll and chrome.exe are no
+    // longer in use. The remaining tasks here are best-effort. Failure does not
+    // do any harm.
+    installer::MigrateGoogleUpdateStateMultiToSingle(
+        system_level,
+        BrowserDistribution::CHROME_FRAME,
+        original_state);
+  }
+
+  return install_status;
+}
+
 // This method processes any command line options that make setup.exe do
 // various tasks other than installation (renaming chrome.exe, showing eula
 // among others). This function returns true if any such command line option
@@ -1541,6 +1590,8 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     } else {
       *exit_code = installer::PATCH_INVALID_ARGUMENTS;
     }
+  } else if (cmd_line.HasSwitch(installer::switches::kMigrateChromeFrame)) {
+    *exit_code = MigrateChromeFrame(original_state, installer_state);
   } else {
     handled = false;
   }

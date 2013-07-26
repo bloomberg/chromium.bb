@@ -204,3 +204,15 @@ TEST(ChannelInfoTest, SetStage) {
   EXPECT_TRUE(ci.SetStage(NULL));
   EXPECT_EQ(L"2.0-beta-multi", ci.value());
 }
+
+TEST(ChannelInfoTest, RemoveAllModifiersAndSuffixes) {
+  ChannelInfo ci;
+
+  ci.set_value(L"");
+  EXPECT_FALSE(ci.RemoveAllModifiersAndSuffixes());
+  EXPECT_EQ(L"", ci.value());
+
+  ci.set_value(L"2.0-dev-multi-chrome-chromeframe");
+  EXPECT_TRUE(ci.RemoveAllModifiersAndSuffixes());
+  EXPECT_EQ(L"2.0-dev", ci.value());
+}

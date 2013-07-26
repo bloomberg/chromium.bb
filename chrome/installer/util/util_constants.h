@@ -159,6 +159,7 @@ extern const char kInstallArchive[];
 extern const char kInstallerData[];
 extern const char kLogFile[];
 extern const char kMakeChromeDefault[];
+extern const char kMigrateChromeFrame[];
 extern const char kMsi[];
 extern const char kMultiInstall[];
 extern const char kNewSetupExe[];

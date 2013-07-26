@@ -99,6 +99,14 @@ bool WillProductBePresentAfterSetup(
 // procesing mode is entered.
 bool AdjustProcessPriority();
 
+// Makes registry adjustments to migrate the Google Update state of |to_migrate|
+// from multi-install to single-install. This includes copying the usagestats
+// value and adjusting the ap values of all multi-install products.
+void MigrateGoogleUpdateStateMultiToSingle(
+    bool system_level,
+    BrowserDistribution::Type to_migrate,
+    const installer::InstallationState& machine_state);
+
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the
 // ScopedTokenPrivilege's destruction (unless it was already enabled when the

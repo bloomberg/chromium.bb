@@ -101,6 +101,10 @@ class ChannelInfo {
   // modified.
   bool SetMultiFailSuffix(bool value);
 
+  // Removes all modifiers and suffixes. For example, 2.0-dev-multi-chrome-full
+  // becomes 2.0-dev. Returns true if the value is modified.
+  bool RemoveAllModifiersAndSuffixes();
+
  private:
   std::wstring value_;
 };  // class ChannelInfo

@@ -12,10 +12,10 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/version.h"
@@ -23,6 +23,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/setup_constants.h"
+#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/util_constants.h"
@@ -398,4 +399,91 @@ TEST_F(FindArchiveToPatchTest, NoVersionFound) {
   base::FilePath patch_source(installer::FindArchiveToPatch(
       *original_state_, *installer_state_));
   EXPECT_EQ(base::FilePath::StringType(), patch_source.value());
+}
+
+namespace {
+
+class MigrateMultiToSingleTest : public testing::Test {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    registry_override_manager_.OverrideRegistry(kRootKey,
+                                                L"MigrateMultiToSingleTest");
+  }
+
+  virtual void TearDown() OVERRIDE {
+    registry_override_manager_.RemoveAllOverrides();
+  }
+
+  static const bool kSystemLevel = false;
+  static const HKEY kRootKey;
+  static const wchar_t kVersionString[];
+  static const wchar_t kMultiChannel[];
+  registry_util::RegistryOverrideManager registry_override_manager_;
+};
+
+const bool MigrateMultiToSingleTest::kSystemLevel;
+const HKEY MigrateMultiToSingleTest::kRootKey =
+    kSystemLevel ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+const wchar_t MigrateMultiToSingleTest::kVersionString[] = L"30.0.1574.0";
+const wchar_t MigrateMultiToSingleTest::kMultiChannel[] =
+    L"2.0-dev-multi-chromeframe";
+
+}  // namespace
+
+// Test migrating Chrome Frame from multi to single.
+TEST_F(MigrateMultiToSingleTest, ChromeFrame) {
+  installer::ProductState chrome_frame;
+  installer::ProductState binaries;
+  DWORD usagestats = 0;
+
+  // Set up a config with dev-channel multi-install GCF.
+  base::win::RegKey key;
+
+  BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_BINARIES);
+  ASSERT_EQ(ERROR_SUCCESS,
+            base::win::RegKey(kRootKey, dist->GetVersionKey().c_str(),
+                              KEY_SET_VALUE)
+                .WriteValue(google_update::kRegVersionField, kVersionString));
+  ASSERT_EQ(ERROR_SUCCESS,
+            base::win::RegKey(kRootKey, dist->GetStateKey().c_str(),
+                              KEY_SET_VALUE)
+                .WriteValue(google_update::kRegApField, kMultiChannel));
+  ASSERT_EQ(ERROR_SUCCESS,
+            base::win::RegKey(kRootKey, dist->GetStateKey().c_str(),
+                              KEY_SET_VALUE)
+                .WriteValue(google_update::kRegUsageStatsField, 1U));
+
+  dist = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_FRAME);
+  ASSERT_EQ(ERROR_SUCCESS,
+            base::win::RegKey(kRootKey, dist->GetVersionKey().c_str(),
+                              KEY_SET_VALUE)
+                .WriteValue(google_update::kRegVersionField, kVersionString));
+  ASSERT_EQ(ERROR_SUCCESS,
+            base::win::RegKey(kRootKey, dist->GetStateKey().c_str(),
+                              KEY_SET_VALUE)
+                .WriteValue(google_update::kRegApField, kMultiChannel));
+
+  // Do the registry migration.
+  installer::InstallationState machine_state;
+  machine_state.Initialize();
+
+  installer::MigrateGoogleUpdateStateMultiToSingle(
+      kSystemLevel,
+      BrowserDistribution::CHROME_FRAME,
+      machine_state);
+
+  // Confirm that usagestats were copied to CF and that its channel was
+  // stripped.
+  ASSERT_TRUE(chrome_frame.Initialize(kSystemLevel,
+                                      BrowserDistribution::CHROME_FRAME));
+  EXPECT_TRUE(chrome_frame.GetUsageStats(&usagestats));
+  EXPECT_EQ(1U, usagestats);
+  EXPECT_EQ(L"2.0-dev", chrome_frame.channel().value());
+
+  // Confirm that the binaries' channel no longer contains GCF.
+  ASSERT_TRUE(binaries.Initialize(kSystemLevel,
+                                  BrowserDistribution::CHROME_BINARIES));
+  EXPECT_EQ(L"2.0-dev-multi", binaries.channel().value());
 }

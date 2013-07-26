@@ -281,4 +281,15 @@ bool ChannelInfo::SetMultiFailSuffix(bool value) {
   return SetModifier(SFX_MULTI_FAIL, value, &value_);
 }
 
+bool ChannelInfo::RemoveAllModifiersAndSuffixes() {
+  bool modified = false;
+
+  for (int scan = 0; scan < NUM_MODIFIERS; ++scan) {
+    ModifierIndex index = static_cast<ModifierIndex>(scan);
+    modified = SetModifier(index, false, &value_) || modified;
+  }
+
+  return modified;
+}
+
 }  // namespace installer

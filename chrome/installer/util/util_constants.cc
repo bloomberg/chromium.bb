@@ -112,6 +112,10 @@ const char kLogFile[] = "log-file";
 // register as default browser only for the current user.
 const char kMakeChromeDefault[] = "make-chrome-default";
 
+// Migrate multi-install Chrome Frame to single-install. Use in conjunction with
+// --uncompressed-archive.
+const char kMigrateChromeFrame[] = "migrate-chrome-frame";
+
 // Tells installer to expect to be run as a subsidiary to an MSI.
 const char kMsi[] = "msi";
 
