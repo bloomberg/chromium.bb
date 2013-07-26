@@ -60,6 +60,27 @@ const uint8_t Font::s_roundingHackCharacterTable[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
+static const UChar32 cjkIsolatedSymbolsArray[] = {
+    // 0x2C7 Caron, Mandarin Chinese 3rd Tone
+    0x2C7,
+    // 0x2CA Modifier Letter Acute Accent, Mandarin Chinese 2nd Tone
+    0x2CA,
+    // 0x2CB Modifier Letter Grave Access, Mandarin Chinese 4th Tone
+    0x2CB,
+    // 0x2D9 Dot Above, Mandarin Chinese 5th Tone
+    0x2D9,
+    0x2020, 0x2021, 0x2030, 0x203B, 0x203C, 0x2042, 0x2047, 0x2048, 0x2049, 0x2051,
+    0x20DD, 0x20DE, 0x2100, 0x2103, 0x2105, 0x2109, 0x210A, 0x2113, 0x2116, 0x2121,
+    0x212B, 0x213B, 0x2150, 0x2151, 0x2152, 0x217F, 0x2189, 0x2307, 0x2312, 0x23CE,
+    0x2423, 0x25A0, 0x25A1, 0x25A2, 0x25AA, 0x25AB, 0x25B1, 0x25B2, 0x25B3, 0x25B6,
+    0x25B7, 0x25BC, 0x25BD, 0x25C0, 0x25C1, 0x25C6, 0x25C7, 0x25C9, 0x25CB, 0x25CC,
+    0x25EF, 0x2605, 0x2606, 0x260E, 0x2616, 0x2617, 0x2640, 0x2642, 0x26A0, 0x26BD,
+    0x26BE, 0x2713, 0x271A, 0x273F, 0x2740, 0x2756, 0x2B1A, 0xFE10, 0xFE11, 0xFE12,
+    0xFE19, 0xFF1D,
+    // Emoji.
+    0x1F100
+};
+
 Font::CodePath Font::s_codePath = Auto;
 
 TypesettingFeatures Font::s_defaultTypesettingFeatures = 0;
@@ -527,89 +548,8 @@ bool Font::isCJKIdeographOrSymbol(UChar32 c)
     static HashSet<UChar32>* cjkIsolatedSymbols = 0;
     if (!cjkIsolatedSymbols) {
         cjkIsolatedSymbols = new HashSet<UChar32>();
-        // 0x2C7 Caron, Mandarin Chinese 3rd Tone
-        cjkIsolatedSymbols->add(0x2C7);
-        // 0x2CA Modifier Letter Acute Accent, Mandarin Chinese 2nd Tone
-        cjkIsolatedSymbols->add(0x2CA);
-        // 0x2CB Modifier Letter Grave Access, Mandarin Chinese 4th Tone
-        cjkIsolatedSymbols->add(0x2CB);
-        // 0x2D9 Dot Above, Mandarin Chinese 5th Tone
-        cjkIsolatedSymbols->add(0x2D9);
-
-        cjkIsolatedSymbols->add(0x2020);
-        cjkIsolatedSymbols->add(0x2021);
-        cjkIsolatedSymbols->add(0x2030);
-        cjkIsolatedSymbols->add(0x203B);
-        cjkIsolatedSymbols->add(0x203C);
-        cjkIsolatedSymbols->add(0x2042);
-        cjkIsolatedSymbols->add(0x2047);
-        cjkIsolatedSymbols->add(0x2048);
-        cjkIsolatedSymbols->add(0x2049);
-        cjkIsolatedSymbols->add(0x2051);
-        cjkIsolatedSymbols->add(0x20DD);
-        cjkIsolatedSymbols->add(0x20DE);
-        cjkIsolatedSymbols->add(0x2100);
-        cjkIsolatedSymbols->add(0x2103);
-        cjkIsolatedSymbols->add(0x2105);
-        cjkIsolatedSymbols->add(0x2109);
-        cjkIsolatedSymbols->add(0x210A);
-        cjkIsolatedSymbols->add(0x2113);
-        cjkIsolatedSymbols->add(0x2116);
-        cjkIsolatedSymbols->add(0x2121);
-        cjkIsolatedSymbols->add(0x212B);
-        cjkIsolatedSymbols->add(0x213B);
-        cjkIsolatedSymbols->add(0x2150);
-        cjkIsolatedSymbols->add(0x2151);
-        cjkIsolatedSymbols->add(0x2152);
-        cjkIsolatedSymbols->add(0x217F);
-        cjkIsolatedSymbols->add(0x2189);
-        cjkIsolatedSymbols->add(0x2307);
-        cjkIsolatedSymbols->add(0x2312);
-        cjkIsolatedSymbols->add(0x23CE);
-        cjkIsolatedSymbols->add(0x2423);
-        cjkIsolatedSymbols->add(0x25A0);
-        cjkIsolatedSymbols->add(0x25A1);
-        cjkIsolatedSymbols->add(0x25A2);
-        cjkIsolatedSymbols->add(0x25AA);
-        cjkIsolatedSymbols->add(0x25AB);
-        cjkIsolatedSymbols->add(0x25B1);
-        cjkIsolatedSymbols->add(0x25B2);
-        cjkIsolatedSymbols->add(0x25B3);
-        cjkIsolatedSymbols->add(0x25B6);
-        cjkIsolatedSymbols->add(0x25B7);
-        cjkIsolatedSymbols->add(0x25BC);
-        cjkIsolatedSymbols->add(0x25BD);
-        cjkIsolatedSymbols->add(0x25C0);
-        cjkIsolatedSymbols->add(0x25C1);
-        cjkIsolatedSymbols->add(0x25C6);
-        cjkIsolatedSymbols->add(0x25C7);
-        cjkIsolatedSymbols->add(0x25C9);
-        cjkIsolatedSymbols->add(0x25CB);
-        cjkIsolatedSymbols->add(0x25CC);
-        cjkIsolatedSymbols->add(0x25EF);
-        cjkIsolatedSymbols->add(0x2605);
-        cjkIsolatedSymbols->add(0x2606);
-        cjkIsolatedSymbols->add(0x260E);
-        cjkIsolatedSymbols->add(0x2616);
-        cjkIsolatedSymbols->add(0x2617);
-        cjkIsolatedSymbols->add(0x2640);
-        cjkIsolatedSymbols->add(0x2642);
-        cjkIsolatedSymbols->add(0x26A0);
-        cjkIsolatedSymbols->add(0x26BD);
-        cjkIsolatedSymbols->add(0x26BE);
-        cjkIsolatedSymbols->add(0x2713);
-        cjkIsolatedSymbols->add(0x271A);
-        cjkIsolatedSymbols->add(0x273F);
-        cjkIsolatedSymbols->add(0x2740);
-        cjkIsolatedSymbols->add(0x2756);
-        cjkIsolatedSymbols->add(0x2B1A);
-        cjkIsolatedSymbols->add(0xFE10);
-        cjkIsolatedSymbols->add(0xFE11);
-        cjkIsolatedSymbols->add(0xFE12);
-        cjkIsolatedSymbols->add(0xFE19);
-        cjkIsolatedSymbols->add(0xFF1D);
-        // Emoji.
-        cjkIsolatedSymbols->add(0x1F100);
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(cjkIsolatedSymbolsArray); ++i)
+            cjkIsolatedSymbols->add(cjkIsolatedSymbolsArray[i]);
     }
     if (cjkIsolatedSymbols->contains(c))
         return true;
