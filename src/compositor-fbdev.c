@@ -695,6 +695,8 @@ fbdev_output_reenable(struct fbdev_compositor *compositor,
 			           "Attempting to re-open output anyway.\n");
 		}
 
+		close(fb_fd);
+
 		/* Remove and re-add the output so that resources depending on
 		 * the frame buffer X/Y resolution (such as the shadow buffer)
 		 * are re-initialised. */
