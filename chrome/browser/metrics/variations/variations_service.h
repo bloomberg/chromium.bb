@@ -80,26 +80,13 @@ class VariationsService
                     PrefService* local_state);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyChannel);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyLocale);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyPlatform);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersion);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersionWildcards);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyStartDate);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, DoNotFetchIfOffline);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, DoNotFetchIfOnlineToOnline);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, FetchOnReconnect);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, IsStudyExpired);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, LoadSeed);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, StoreSeed);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ValidateStudy);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedStoredWhenOKStatus);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedNotStoredWhenNonOKStatus);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ForceGroupWithFlag1);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ForceGroupWithFlag2);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ForceFirstGroupWithFlag);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, DontChooseGroupWithFlag);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, VariationParams);
 
   // Creates the VariationsService with the given |local_state| prefs service.
   // Use the |Create| factory method to create a VariationsService.
@@ -121,53 +108,10 @@ class VariationsService
   // fails, the existing prefs are left as is and the function returns false.
   bool StoreSeedData(const std::string& seed_data, const base::Time& seed_date);
 
-  // Returns whether |study| should be disabled according to its restriction
-  // parameters. Uses |version_info| for min / max version checks,
-  // |reference_date| for the start date check and |channel| for channel
-  // checks.
-  static bool ShouldAddStudy(const Study& study,
-                             const chrome::VersionInfo& version_info,
-                             const base::Time& reference_date,
-                             chrome::VersionInfo::Channel channel);
-
-  // Checks whether a study is applicable for the given |channel| per |filter|.
-  static bool CheckStudyChannel(const Study_Filter& filter,
-                                chrome::VersionInfo::Channel channel);
-
-  // Checks whether a study is applicable for the given |locale| per |filter|.
-  static bool CheckStudyLocale(const chrome_variations::Study_Filter& filter,
-                               const std::string& locale);
-
-  // Checks whether a study is applicable for the given |platform| per |filter|.
-  static bool CheckStudyPlatform(const Study_Filter& filter,
-                                 chrome_variations::Study_Platform platform);
-
-  // Checks whether a study is applicable for the given version per |filter|.
-  static bool CheckStudyVersion(const Study_Filter& filter,
-                                const std::string& version_string);
-
-  // Checks whether a study is applicable for the given date/time per |filter|.
-  static bool CheckStudyStartDate(const Study_Filter& filter,
-                                  const base::Time& date_time);
-
-  // Checks whether |study| is expired using the given date/time.
-  static bool IsStudyExpired(const Study& study,
-                             const base::Time& date_time);
-
-  // Validates the sanity of |study| and computes the total probability.
-  static bool ValidateStudyAndComputeTotalProbability(
-      const Study& study,
-      base::FieldTrial::Probability* total_probability);
-
   // Loads the Variations seed data from local state into |seed|. If there is a
   // problem with loading, the pref value is cleared and false is returned. If
   // successful, |seed| will contain the loaded data and true is returned.
   bool LoadTrialsSeedFromPref(TrialsSeed* seed);
-
-  // Creates and registers a field trial from the |study| data. Disables the
-  // trial if IsStudyExpired(study, reference_date) is true.
-  void CreateTrialFromStudy(const Study& study,
-                            const base::Time& reference_date);
 
   // Record the time of the most recent successful fetch.
   void RecordLastFetchTime();
@@ -209,6 +153,8 @@ class VariationsService
   // Helper that handles synchronizing Variations with the Registry.
   VariationsRegistrySyncer registry_syncer_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(VariationsService);
 };
 
 }  // namespace chrome_variations

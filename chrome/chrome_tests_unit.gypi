@@ -946,6 +946,7 @@
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/time_ticks_experiment_unittest.cc',
+        'browser/metrics/variations/variations_seed_processor_unittest.cc',
         'browser/metrics/variations/variations_service_unittest.cc',
         'browser/metrics/variations/variations_request_scheduler_unittest.cc',
         'browser/nacl_host/nacl_file_host_unittest.cc',

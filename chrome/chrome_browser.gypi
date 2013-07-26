@@ -1062,6 +1062,8 @@
         'browser/metrics/variations/variations_request_scheduler.h',
         'browser/metrics/variations/variations_request_scheduler_mobile.cc',
         'browser/metrics/variations/variations_request_scheduler_mobile.h',
+        'browser/metrics/variations/variations_seed_processor.cc',
+        'browser/metrics/variations/variations_seed_processor.h',
         'browser/metrics/variations/variations_service.cc',
         'browser/metrics/variations/variations_service.h',
         'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.cc',

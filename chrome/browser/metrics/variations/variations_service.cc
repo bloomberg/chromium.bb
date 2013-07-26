@@ -10,7 +10,6 @@
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -20,6 +19,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
+#include "chrome/browser/metrics/variations/variations_seed_processor.h"
 #include "chrome/browser/net/network_time_tracker.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/variations/variations_util.h"
@@ -54,25 +54,6 @@ const int kMaxRetrySeedFetch = 5;
 // For the HTTP date headers, the resolution of the server time is 1 second.
 const int64 kServerTimeResolutionMs = 1000;
 
-// Maps Study_Channel enum values to corresponding chrome::VersionInfo::Channel
-// enum values.
-chrome::VersionInfo::Channel ConvertStudyChannelToVersionChannel(
-    Study_Channel study_channel) {
-  switch (study_channel) {
-    case Study_Channel_CANARY:
-      return chrome::VersionInfo::CHANNEL_CANARY;
-    case Study_Channel_DEV:
-      return chrome::VersionInfo::CHANNEL_DEV;
-    case Study_Channel_BETA:
-      return chrome::VersionInfo::CHANNEL_BETA;
-    case Study_Channel_STABLE:
-      return chrome::VersionInfo::CHANNEL_STABLE;
-  }
-  // All enum values of |study_channel| were handled above.
-  NOTREACHED();
-  return chrome::VersionInfo::CHANNEL_UNKNOWN;
-}
-
 // Wrapper around channel checking, used to enable channel mocking for
 // testing. If the current browser channel is not UNKNOWN, this will return
 // that channel value. Otherwise, if the fake channel flag is provided, this
@@ -96,26 +77,6 @@ chrome::VersionInfo::Channel GetChannelForVariations() {
   else
     DVLOG(1) << "Invalid channel provided: " << forced_channel;
   return channel;
-}
-
-Study_Platform GetCurrentPlatform() {
-#if defined(OS_WIN)
-  return Study_Platform_PLATFORM_WINDOWS;
-#elif defined(OS_IOS)
-  return Study_Platform_PLATFORM_IOS;
-#elif defined(OS_MACOSX)
-  return Study_Platform_PLATFORM_MAC;
-#elif defined(OS_CHROMEOS)
-  return Study_Platform_PLATFORM_CHROMEOS;
-#elif defined(OS_ANDROID)
-  return Study_Platform_PLATFORM_ANDROID;
-#elif defined(OS_LINUX) || defined(OS_BSD) || defined(OS_SOLARIS)
-  // Default BSD and SOLARIS to Linux to not break those builds, although these
-  // platforms are not officially supported by Chrome.
-  return Study_Platform_PLATFORM_LINUX;
-#else
-#error Unknown platform
-#endif
 }
 
 // Returns a string that will be used for the value of the 'osname' URL param
@@ -235,13 +196,9 @@ bool VariationsService::CreateTrialsFromSeed() {
   if (!current_version_info.is_valid())
     return false;
 
-  chrome::VersionInfo::Channel channel = GetChannelForVariations();
-  for (int i = 0; i < seed.study_size(); ++i) {
-    if (ShouldAddStudy(seed.study(i), current_version_info, reference_date,
-                       channel)) {
-      CreateTrialFromStudy(seed.study(i), reference_date);
-    }
-  }
+  VariationsSeedProcessor().CreateTrialsFromSeed(
+      seed, g_browser_process->GetApplicationLocale(), reference_date,
+      current_version_info, GetChannelForVariations());
 
   // Log the "freshness" of the seed that was just used. The freshness is the
   // time between the last successful seed download and now.
@@ -492,193 +449,6 @@ bool VariationsService::StoreSeedData(const std::string& seed_data,
   return true;
 }
 
-// static
-bool VariationsService::ShouldAddStudy(
-    const Study& study,
-    const chrome::VersionInfo& version_info,
-    const base::Time& reference_date,
-    const chrome::VersionInfo::Channel channel) {
-  if (study.has_filter()) {
-    if (!CheckStudyChannel(study.filter(), channel)) {
-      DVLOG(1) << "Filtered out study " << study.name() << " due to channel.";
-      return false;
-    }
-
-    if (!CheckStudyLocale(study.filter(),
-                          g_browser_process->GetApplicationLocale())) {
-      DVLOG(1) << "Filtered out study " << study.name() << " due to locale.";
-      return false;
-    }
-
-    if (!CheckStudyPlatform(study.filter(), GetCurrentPlatform())) {
-      DVLOG(1) << "Filtered out study " << study.name() << " due to platform.";
-      return false;
-    }
-
-    if (!CheckStudyVersion(study.filter(), version_info.Version())) {
-      DVLOG(1) << "Filtered out study " << study.name() << " due to version.";
-      return false;
-    }
-
-    if (!CheckStudyStartDate(study.filter(), reference_date)) {
-      DVLOG(1) << "Filtered out study " << study.name() <<
-                  " due to start date.";
-      return false;
-    }
-  }
-
-  DVLOG(1) << "Kept study " << study.name() << ".";
-  return true;
-}
-
-// static
-bool VariationsService::CheckStudyChannel(
-    const Study_Filter& filter,
-    chrome::VersionInfo::Channel channel) {
-  // An empty channel list matches all channels.
-  if (filter.channel_size() == 0)
-    return true;
-
-  for (int i = 0; i < filter.channel_size(); ++i) {
-    if (ConvertStudyChannelToVersionChannel(filter.channel(i)) == channel)
-      return true;
-  }
-  return false;
-}
-
-// static
-bool VariationsService::CheckStudyLocale(
-    const chrome_variations::Study_Filter& filter,
-    const std::string& locale) {
-  // An empty locale list matches all locales.
-  if (filter.locale_size() == 0)
-    return true;
-
-  for (int i = 0; i < filter.locale_size(); ++i) {
-    if (filter.locale(i) == locale)
-      return true;
-  }
-  return false;
-}
-
-// static
-bool VariationsService::CheckStudyPlatform(
-    const Study_Filter& filter,
-    Study_Platform platform) {
-  // An empty platform list matches all platforms.
-  if (filter.platform_size() == 0)
-    return true;
-
-  for (int i = 0; i < filter.platform_size(); ++i) {
-    if (filter.platform(i) == platform)
-      return true;
-  }
-  return false;
-}
-
-// static
-bool VariationsService::CheckStudyVersion(
-    const Study_Filter& filter,
-    const std::string& version_string) {
-  const Version version(version_string);
-  if (!version.IsValid()) {
-    NOTREACHED();
-    return false;
-  }
-
-  if (filter.has_min_version()) {
-    if (version.CompareToWildcardString(filter.min_version()) < 0)
-      return false;
-  }
-
-  if (filter.has_max_version()) {
-    if (version.CompareToWildcardString(filter.max_version()) > 0)
-      return false;
-  }
-
-  return true;
-}
-
-// static
-bool VariationsService::CheckStudyStartDate(
-    const Study_Filter& filter,
-    const base::Time& date_time) {
-  if (filter.has_start_date()) {
-    const base::Time start_date =
-        ConvertStudyDateToBaseTime(filter.start_date());
-    return date_time >= start_date;
-  }
-
-  return true;
-}
-
-bool VariationsService::IsStudyExpired(const Study& study,
-                                       const base::Time& date_time) {
-  if (study.has_expiry_date()) {
-    const base::Time expiry_date =
-        ConvertStudyDateToBaseTime(study.expiry_date());
-    return date_time >= expiry_date;
-  }
-
-  return false;
-}
-
-// static
-bool VariationsService::ValidateStudyAndComputeTotalProbability(
-    const Study& study,
-    base::FieldTrial::Probability* total_probability) {
-  // At the moment, a missing default_experiment_name makes the study invalid.
-  if (study.default_experiment_name().empty()) {
-    DVLOG(1) << study.name() << " has no default experiment defined.";
-    return false;
-  }
-  if (study.filter().has_min_version() &&
-      !Version::IsValidWildcardString(study.filter().min_version())) {
-    DVLOG(1) << study.name() << " has invalid min version: "
-             << study.filter().min_version();
-    return false;
-  }
-  if (study.filter().has_max_version() &&
-      !Version::IsValidWildcardString(study.filter().max_version())) {
-    DVLOG(1) << study.name() << " has invalid max version: "
-             << study.filter().max_version();
-    return false;
-  }
-
-  const std::string& default_group_name = study.default_experiment_name();
-  base::FieldTrial::Probability divisor = 0;
-
-  bool found_default_group = false;
-  std::set<std::string> experiment_names;
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    if (study.experiment(i).name().empty()) {
-      DVLOG(1) << study.name() << " is missing experiment " << i << " name";
-      return false;
-    }
-    if (!experiment_names.insert(study.experiment(i).name()).second) {
-      DVLOG(1) << study.name() << " has a repeated experiment name "
-               << study.experiment(i).name();
-      return false;
-    }
-
-    if (!study.experiment(i).has_forcing_flag())
-      divisor += study.experiment(i).probability_weight();
-    if (study.experiment(i).name() == default_group_name)
-      found_default_group = true;
-  }
-
-  if (!found_default_group) {
-    DVLOG(1) << study.name() << " is missing default experiment in its "
-             << "experiment list";
-    // The default group was not found in the list of groups. This study is not
-    // valid.
-    return false;
-  }
-
-  *total_probability = divisor;
-  return true;
-}
-
 bool VariationsService::LoadTrialsSeedFromPref(TrialsSeed* seed) {
   const std::string base64_seed_data =
       local_state_->GetString(prefs::kVariationsSeed);
@@ -705,84 +475,6 @@ bool VariationsService::LoadTrialsSeedFromPref(TrialsSeed* seed) {
   variations_serial_number_ = seed->serial_number();
   RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_NOT_EMPTY);
   return true;
-}
-
-void VariationsService::CreateTrialFromStudy(const Study& study,
-                                             const base::Time& reference_date) {
-  base::FieldTrial::Probability total_probability = 0;
-  if (!ValidateStudyAndComputeTotalProbability(study, &total_probability))
-    return;
-
-  // Check if any experiments need to be forced due to a command line
-  // flag. Force the first experiment with an existing flag.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    const Study_Experiment& experiment = study.experiment(i);
-    if (experiment.has_forcing_flag() &&
-        command_line->HasSwitch(experiment.forcing_flag())) {
-      base::FieldTrialList::CreateFieldTrial(study.name(), experiment.name());
-      DVLOG(1) << "Trial " << study.name() << " forced by flag: "
-               << experiment.forcing_flag();
-      return;
-    }
-  }
-
-  // The trial is created without specifying an expiration date because the
-  // expiration check in field_trial.cc is based on the build date. Instead,
-  // the expiration check using |reference_date| is done explicitly below.
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          study.name(), total_probability, study.default_experiment_name(),
-          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL));
-
-  if (study.has_consistency() &&
-      study.consistency() == Study_Consistency_PERMANENT) {
-    if (study.has_randomization_seed())
-      trial->UseOneTimeRandomizationWithCustomSeed(study.randomization_seed());
-    else
-      trial->UseOneTimeRandomization();
-  }
-
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    const Study_Experiment& experiment = study.experiment(i);
-
-    std::map<std::string, std::string> params;
-    for (int j = 0; j < experiment.param_size(); j++) {
-      if (experiment.param(j).has_name() && experiment.param(j).has_value())
-        params[experiment.param(j).name()] = experiment.param(j).value();
-    }
-    if (!params.empty())
-      AssociateVariationParams(study.name(), experiment.name(), params);
-
-    // Groups with flags can't be selected randomly, so we don't add them to
-    // the field trial.
-    if (experiment.has_forcing_flag())
-      continue;
-
-    if (experiment.name() != study.default_experiment_name())
-      trial->AppendGroup(experiment.name(), experiment.probability_weight());
-
-    if (experiment.has_google_web_experiment_id()) {
-      const VariationID variation_id =
-          static_cast<VariationID>(experiment.google_web_experiment_id());
-      AssociateGoogleVariationIDForce(GOOGLE_WEB_PROPERTIES,
-                                      study.name(),
-                                      experiment.name(),
-                                      variation_id);
-    }
-    if (experiment.has_google_update_experiment_id()) {
-      const VariationID variation_id =
-          static_cast<VariationID>(experiment.google_update_experiment_id());
-      AssociateGoogleVariationIDForce(GOOGLE_UPDATE_SERVICE,
-                                      study.name(),
-                                      experiment.name(),
-                                      variation_id);
-    }
-  }
-
-  trial->SetForced();
-  if (IsStudyExpired(study, reference_date))
-    trial->Disable();
 }
 
 void VariationsService::RecordLastFetchTime() {
