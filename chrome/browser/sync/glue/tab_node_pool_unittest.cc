@@ -12,7 +12,7 @@ class SyncTabNodePoolTest : public testing::Test {
  protected:
   SyncTabNodePoolTest() : pool_(NULL) { pool_.SetMachineTag("tag"); }
 
-  size_t GetMaxUsedTabNodeId() const { return pool_.max_used_tab_node_id_; }
+  int GetMaxUsedTabNodeId() const { return pool_.max_used_tab_node_id_; }
 
   TabNodePool pool_;
 };
@@ -24,24 +24,24 @@ TEST_F(SyncTabNodePoolTest, TabNodeIdIncreases) {
   SessionID session_id;
   session_id.set_id(1);
   pool_.AddTabNode(4, session_id, 10);
-  EXPECT_EQ(10u, GetMaxUsedTabNodeId());
+  EXPECT_EQ(10, GetMaxUsedTabNodeId());
   session_id.set_id(2);
   pool_.AddTabNode(5, session_id, 1);
-  EXPECT_EQ(10u, GetMaxUsedTabNodeId());
+  EXPECT_EQ(10, GetMaxUsedTabNodeId());
   session_id.set_id(3);
   pool_.AddTabNode(6, session_id, 1000);
-  EXPECT_EQ(1000u, GetMaxUsedTabNodeId());
+  EXPECT_EQ(1000, GetMaxUsedTabNodeId());
   pool_.ReassociateTabNode(6, 500);
   // Freeing a tab node does not change max_used_tab_node_id_.
   pool_.FreeTabNode(6);
   pool_.FreeUnassociatedTabNodes();
-  EXPECT_EQ(1000u, GetMaxUsedTabNodeId());
+  EXPECT_EQ(1000, GetMaxUsedTabNodeId());
   for (int i = 0; i < 3; ++i) {
     pool_.AssociateTabNode(pool_.GetFreeTabNode(), i + 1);
-    EXPECT_EQ(1000u, GetMaxUsedTabNodeId());
+    EXPECT_EQ(1000, GetMaxUsedTabNodeId());
   }
 
-  EXPECT_EQ(1000u, GetMaxUsedTabNodeId());
+  EXPECT_EQ(1000, GetMaxUsedTabNodeId());
 }
 
 TEST_F(SyncTabNodePoolTest, OldTabNodesAddAndRemove) {

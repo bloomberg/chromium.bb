@@ -76,7 +76,8 @@ struct RecentTabsBuilderTestHelper::SessionInfo {
   std::vector<WindowInfo> windows;
 };
 
-RecentTabsBuilderTestHelper::RecentTabsBuilderTestHelper() {
+RecentTabsBuilderTestHelper::RecentTabsBuilderTestHelper()
+    : max_tab_node_id_(0) {
   start_time_ = base::Time::Now();
 }
 
@@ -262,6 +263,7 @@ void RecentTabsBuilderTestHelper::BuildTabSpecifics(
   SessionID::id_type tab_id = GetTabID(session_index, window_index, tab_index);
 
   tab_base->set_session_tag(ToSessionTag(session_id));
+  tab_base->set_tab_node_id(++max_tab_node_id_);
   sync_pb::SessionTab* tab = tab_base->mutable_tab();
   tab->set_window_id(window_id);
   tab->set_tab_id(tab_id);
