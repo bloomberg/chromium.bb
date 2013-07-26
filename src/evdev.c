@@ -230,16 +230,21 @@ is_motion_event(struct input_event *e)
 static void
 transform_absolute(struct evdev_device *device)
 {
+	int32_t x, y;
+
 	if (!device->abs.apply_calibration)
 		return;
 
-	device->abs.x = device->abs.x * device->abs.calibration[0] +
-			device->abs.y * device->abs.calibration[1] +
-			device->abs.calibration[2];
+	x = device->abs.x * device->abs.calibration[0] +
+		device->abs.y * device->abs.calibration[1] +
+		device->abs.calibration[2];
 
-	device->abs.y = device->abs.x * device->abs.calibration[3] +
-			device->abs.y * device->abs.calibration[4] +
-			device->abs.calibration[5];
+	y = device->abs.x * device->abs.calibration[3] +
+		device->abs.y * device->abs.calibration[4] +
+		device->abs.calibration[5];
+
+	device->abs.x = x;
+	device->abs.y = y;
 }
 
 static void
