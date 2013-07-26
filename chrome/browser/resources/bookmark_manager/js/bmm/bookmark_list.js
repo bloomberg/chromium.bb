@@ -94,15 +94,12 @@ cr.define('bmm', function() {
       var callback = this.handleBookmarkCallback_.bind(this);
       this.loading_ = true;
 
-      if (!parentId) {
+      if (!parentId)
         callback([]);
-      } else if (/^q=/.test(parentId)) {
+      else if (/^q=/.test(parentId))
         chrome.bookmarks.search(parentId.slice(2), callback);
-      } else if (parentId == 'recent') {
-        chrome.bookmarks.getRecent(50, callback);
-      } else {
+      else
         chrome.bookmarks.getChildren(parentId, callback);
-      }
     },
 
     /**
@@ -128,11 +125,11 @@ cr.define('bmm', function() {
 
     /**
      * The bookmark node that the list is currently displaying. If we are
-     * currently displaying recent or search this returns null.
+     * currently displaying search this returns null.
      * @type {BookmarkTreeNode}
      */
     get bookmarkNode() {
-      if (this.isSearch() || this.isRecent())
+      if (this.isSearch())
         return null;
       var treeItem = bmm.treeLookup[this.parentId];
       return treeItem && treeItem.bookmarkNode;
@@ -143,13 +140,6 @@ cr.define('bmm', function() {
      */
     isSearch: function() {
       return this.parentId_[0] == 'q';
-    },
-
-    /**
-     * @return {boolean} Whether we are currently showing recent bookmakrs.
-     */
-    isRecent: function() {
-      return this.parentId_ == 'recent';
     },
 
     /**

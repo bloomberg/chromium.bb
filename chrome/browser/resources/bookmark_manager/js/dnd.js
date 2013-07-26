@@ -199,10 +199,10 @@ cr.define('dnd', function() {
     return el;
   }
 
-  // If we are over the list and the list is showing recent or search result,
-  // we cannot drop.
-  function isOverRecentOrSearch(overElement) {
-    return (list.isRecent() || list.isSearch()) && list.contains(overElement);
+  // If we are over the list and the list is showing search result, we cannot
+  // drop.
+  function isOverSearch(overElement) {
+    return list.isSearch() && list.contains(overElement);
   }
 
   /**
@@ -212,7 +212,7 @@ cr.define('dnd', function() {
    * @return {DropPosition} An bit field enumeration of valid drop locations.
    */
   function calculateValidDropTargets(overElement) {
-    if (!dragInfo.isDragValid() || isOverRecentOrSearch(overElement))
+    if (!dragInfo.isDragValid() || isOverSearch(overElement))
       return DropPosition.NONE;
 
     if (dragInfo.isSameProfile() &&

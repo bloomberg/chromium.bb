@@ -71,15 +71,6 @@ var searchTreeItem = new TreeItem({
 });
 
 /**
- * @type {TreeItem}
- * @const
- */
-var recentTreeItem = new TreeItem({
-  icon: 'images/bookmark_manager_recent.png',
-  bookmarkId: 'recent'
-});
-
-/**
  * Command shortcut mapping.
  * @const
  */
@@ -115,7 +106,6 @@ var folderMetricsNameMap = {
   '1': 'BookmarkBar',
   '2': 'Other',
   '3': 'Mobile',
-  'recent': 'Recent',
   'q=': 'Search',
   'subfolder': 'SubFolder',
 };
@@ -144,7 +134,6 @@ function loadLocalizedStrings(data) {
   loadTimeData.data = data;
   i18nTemplate.process(document, loadTimeData);
 
-  recentTreeItem.label = loadTimeData.getString('recent');
   searchTreeItem.label = loadTimeData.getString('search');
   searchTreeItem.icon = isRTL() ? 'images/bookmark_manager_search_rtl.png' :
                                   'images/bookmark_manager_search.png';
@@ -231,8 +220,6 @@ function processHash() {
     // In case we got a search hash, update the text input and the
     // bmm.treeLookup to use the new id.
     setSearch(id.slice(2));
-    valid = true;
-  } else if (id == 'recent') {
     valid = true;
   }
 
@@ -321,8 +308,6 @@ function getFolder(parentId) {
 }
 
 function handleLoadForTree(e) {
-  // Add hard coded tree items.
-  tree.add(recentTreeItem);
   processHash();
 }
 
@@ -373,7 +358,7 @@ function getAllUrls(nodes) {
 function getNodesForOpen(target) {
   if (target == tree) {
     var folderItem = tree.selectedItem;
-    return folderItem == recentTreeItem || folderItem == searchTreeItem ?
+    return folderItem == searchTreeItem ?
         list.dataModel.slice() : tree.selectedFolders;
   }
   var items = list.selectedItems;
@@ -442,12 +427,11 @@ function updatePasteCommand(opt_f) {
     if (opt_f)
       opt_f();
   }
-  // We cannot paste into search and recent view.
-  if (list.isSearch() || list.isRecent()) {
+  // We cannot paste into search view.
+  if (list.isSearch())
     update(false);
-  } else {
+  else
     chrome.bookmarkManagerPrivate.canPaste(list.parentId, update);
-  }
 }
 
 function handleCanExecuteForDocument(e) {
@@ -461,8 +445,7 @@ function handleCanExecuteForDocument(e) {
       e.canExecute = true;
       break;
     case 'sort-command':
-      e.canExecute = !list.isRecent() && !list.isSearch() &&
-          list.dataModel.length > 1;
+      e.canExecute = !list.isSearch() && list.dataModel.length > 1;
       break;
     case 'undo-command':
       // The global undo command has no visible UI, so always enable it, and
@@ -478,10 +461,10 @@ function handleCanExecuteForDocument(e) {
 /**
  * Helper function for handling canExecute for the list and the tree.
  * @param {!Event} e Can execute event object.
- * @param {boolean} isRecentOrSearch Whether the user is trying to do a command
- *     on recent or search.
+ * @param {boolean} isSearch Whether the user is trying to do a command on
+ *     search.
  */
-function canExecuteShared(e, isRecentOrSearch) {
+function canExecuteShared(e, isSearch) {
   var command = e.command;
   var commandId = command.id;
   switch (commandId) {
@@ -492,7 +475,7 @@ function canExecuteShared(e, isRecentOrSearch) {
 
     case 'add-new-bookmark-command':
     case 'new-folder-command':
-      e.canExecute = !isRecentOrSearch && canEdit;
+      e.canExecute = !isSearch && canEdit;
       break;
 
     case 'open-in-new-tab-command':
@@ -545,8 +528,8 @@ function canExecuteForList(e) {
     return selectedItems && selectedItems.some(canCopyItem);
   }
 
-  function isRecentOrSearch() {
-    return list.isRecent() || list.isSearch();
+  function isSearch() {
+    return list.isSearch();
   }
 
   switch (commandId) {
@@ -577,7 +560,7 @@ function canExecuteForList(e) {
       break;
 
     case 'show-in-folder-command':
-      e.canExecute = isRecentOrSearch() && hasSingleSelected();
+      e.canExecute = isSearch() && hasSingleSelected();
       break;
 
     case 'delete-command':
@@ -594,7 +577,7 @@ function canExecuteForList(e) {
       break;
 
     default:
-      canExecuteShared(e, isRecentOrSearch());
+      canExecuteShared(e, isSearch());
   }
 }
 
@@ -615,9 +598,9 @@ function handleCanExecuteForTree(e) {
     return !!e.target.selectedItem;
   }
 
-  function isRecentOrSearch() {
+  function isSearch() {
     var item = e.target.selectedItem;
-    return item == recentTreeItem || item == searchTreeItem;
+    return item == searchTreeItem;
   }
 
   function isTopLevelItem() {
@@ -645,7 +628,7 @@ function handleCanExecuteForTree(e) {
       break;
 
     default:
-      canExecuteShared(e, isRecentOrSearch());
+      canExecuteShared(e, isSearch());
   }
 }
 
@@ -1235,7 +1218,6 @@ function initializeBookmarkManager() {
   chrome.bookmarkManagerPrivate.getStrings(loadLocalizedStrings);
 
   bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
-  bmm.treeLookup[recentTreeItem.bookmarkId] = recentTreeItem;
 
   cr.ui.decorate('menu', Menu);
   cr.ui.decorate('button[menu]', MenuButton);
