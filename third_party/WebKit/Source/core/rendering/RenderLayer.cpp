@@ -3721,6 +3721,13 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     bool forceBlackText = localPaintingInfo.paintBehavior & PaintBehaviorForceBlackText;
     bool selectionOnly  = localPaintingInfo.paintBehavior & PaintBehaviorSelectionOnly;
 
+    bool shouldPaintBackground = isPaintingCompositedBackground && shouldPaintContent && !selectionOnly;
+    bool shouldPaintNegZOrderList = (isPaintingScrollingContent && isPaintingOverflowContents) || (!isPaintingScrollingContent && isPaintingCompositedBackground);
+    bool shouldPaintOwnContents = isPaintingCompositedForeground && shouldPaintContent;
+    bool shouldPaintNormalFlowAndPosZOrderLists = isPaintingCompositedForeground;
+    bool shouldPaintOverlayScrollbars = isPaintingOverlayScrollbars;
+    bool shouldPaintMask = (localPaintFlags & PaintLayerPaintingCompositingMaskPhase) && shouldPaintContent && renderer()->hasMask() && !selectionOnly;
+
     PaintBehavior paintBehavior = PaintBehaviorNormal;
     if (localPaintFlags & PaintLayerPaintingSkipRootBackground)
         paintBehavior |= PaintBehaviorSkipRootBackground;
@@ -3737,35 +3744,27 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
         updatePaintingInfoForFragments(layerFragments, localPaintingInfo, localPaintFlags, shouldPaintContent, &offsetFromRoot);
     }
 
-    if (isPaintingCompositedBackground) {
-        // Paint only the backgrounds for all of the fragments of the layer.
-        if (shouldPaintContent && !selectionOnly)
-            paintBackgroundForFragments(layerFragments, context, transparencyLayerContext, paintingInfo.paintDirtyRect, haveTransparency,
+    if (shouldPaintBackground)
+        paintBackgroundForFragments(layerFragments, context, transparencyLayerContext, paintingInfo.paintDirtyRect, haveTransparency,
                 localPaintingInfo, paintBehavior, paintingRootForRenderer);
-    }
 
-    // Now walk the sorted list of children with negative z-indices.
-    if ((isPaintingScrollingContent && isPaintingOverflowContents) || (!isPaintingScrollingContent && isPaintingCompositedBackground))
+    if (shouldPaintNegZOrderList)
         paintList(negZOrderList(), context, localPaintingInfo, localPaintFlags);
 
-    if (isPaintingCompositedForeground) {
-        if (shouldPaintContent)
-            paintForegroundForFragments(layerFragments, context, transparencyLayerContext, paintingInfo.paintDirtyRect, haveTransparency,
+    if (shouldPaintOwnContents)
+        paintForegroundForFragments(layerFragments, context, transparencyLayerContext, paintingInfo.paintDirtyRect, haveTransparency,
                 localPaintingInfo, paintBehavior, paintingRootForRenderer, selectionOnly, forceBlackText);
-    }
 
     if (shouldPaintOutline)
         paintOutlineForFragments(layerFragments, context, localPaintingInfo, paintBehavior, paintingRootForRenderer);
 
-    if (isPaintingCompositedForeground) {
-        // Paint any child layers that have overflow.
+    if (shouldPaintNormalFlowAndPosZOrderLists)
         paintList(m_normalFlowList.get(), context, localPaintingInfo, localPaintFlags);
 
-        // Now walk the sorted list of children with positive z-indices.
+    if (shouldPaintNormalFlowAndPosZOrderLists)
         paintList(posZOrderList(), context, localPaintingInfo, localPaintFlags);
-    }
 
-    if (isPaintingOverlayScrollbars)
+    if (shouldPaintOverlayScrollbars)
         paintOverflowControlsForFragments(layerFragments, context, localPaintingInfo);
 
     if (filterPainter.hasStartedFilterEffect()) {
@@ -3780,10 +3779,8 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     // Make sure that we now use the original transparency context.
     ASSERT(transparencyLayerContext == context);
 
-    if ((localPaintFlags & PaintLayerPaintingCompositingMaskPhase) && shouldPaintContent && renderer()->hasMask() && !selectionOnly) {
-        // Paint the mask for the fragments.
+    if (shouldPaintMask)
         paintMaskForFragments(layerFragments, context, localPaintingInfo, paintingRootForRenderer);
-    }
 
     // End our transparency layer
     if (haveTransparency && m_usedTransparency && !m_paintingInsideReflection) {
