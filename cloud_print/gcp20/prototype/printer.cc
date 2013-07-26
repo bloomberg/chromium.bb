@@ -27,9 +27,12 @@ const base::FilePath::CharType kPrinterStatePath[] =
 
 namespace {
 
+const uint16 kHttpPortDefault = 10101;
+const uint32 kTtlDefault = 60*60;
+
 const char kServiceType[] = "_privet._tcp.local";
-const char kServiceNamePrefix[] = "first_gcp20_device";
-const char kServiceDomainName[] = "my-privet-device.local";
+const char kServiceNamePrefixDefault[] = "first_gcp20_device";
+const char kServiceDomainNameDefault[] = "my-privet-device.local";
 
 const char kPrinterName[] = "Google GCP2.0 Prototype";
 const char kPrinterDescription[] = "Printer emulator";
@@ -126,7 +129,7 @@ bool Printer::Start() {
   }
   VLOG(1) << "Local address: " << net::IPAddressToString(ip);
 
-  uint16 port = command_line_reader::ReadHttpPort();
+  uint16 port = command_line_reader::ReadHttpPort(kHttpPortDefault);
 
   // Starting HTTP server.
   if (!http_server_.Start(port))
@@ -136,10 +139,14 @@ bool Printer::Start() {
     reg_info_ = RegistrationInfo();
 
   // Starting DNS-SD server.
+  std::string service_name_prefix =
+      command_line_reader::ReadServiceNamePrefix(kServiceNamePrefixDefault);
+  std::string service_domain_name =
+      command_line_reader::ReadDomainName(kServiceDomainNameDefault);
   if (!dns_server_.Start(
-      ServiceParameters(kServiceType, kServiceNamePrefix, kServiceDomainName,
+      ServiceParameters(kServiceType, service_name_prefix, service_domain_name,
                         ip, port),
-      command_line_reader::ReadTtl(),
+      command_line_reader::ReadTtl(kTtlDefault),
       CreateTxt())) {
     http_server_.Shutdown();
     return false;

@@ -8,45 +8,65 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 
-namespace {
-
-const uint16 kDefaultHttpPort = 10101;
-const uint32 kDefaultTTL = 60*60;
-
-}  // namespace
-
 namespace command_line_reader {
 
-uint16 ReadHttpPort() {
-  uint32 http_port = kDefaultHttpPort;
+uint16 ReadHttpPort(uint16 default_value) {
+  uint32 http_port = 0;
 
   std::string http_port_string =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII("http-port");
 
   if (!base::StringToUint(http_port_string, &http_port))
-    http_port = kDefaultHttpPort;
+    http_port = default_value;
 
   if (http_port > kuint16max) {
-    LOG(ERROR) << "Port " << http_port << " is too large (maximum is " <<
-        kuint16max << "). Using default port: " << kDefaultHttpPort;
-
-    http_port = kDefaultHttpPort;
+    LOG(ERROR) << "HTTP Port is too large";
+    http_port = default_value;
   }
 
   VLOG(1) << "HTTP port for responses: " << http_port;
   return static_cast<uint16>(http_port);
 }
 
-uint32 ReadTtl() {
-  uint32 ttl = kDefaultTTL;
+uint32 ReadTtl(uint32 default_value) {
+  uint32 ttl = 0;
 
   if (!base::StringToUint(
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII("ttl"), &ttl)) {
-    ttl = kDefaultTTL;
+    ttl = default_value;
   }
 
   VLOG(1) << "TTL for announcements: " << ttl;
   return ttl;
+}
+
+std::string ReadServiceNamePrefix(const std::string& default_value) {
+  std::string service_name =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII("service-name");
+
+  return service_name.empty() ? default_value : service_name;
+}
+
+std::string ReadDomainName(const std::string& default_value) {
+  std::string domain_name =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII("domain-name");
+
+  if (domain_name.empty())
+    return default_value;
+
+  std::string suffix = ".local";
+  if (domain_name == suffix) {
+    LOG(ERROR) << "Domain name cannot be only \"" << suffix << "\"";
+    return default_value;
+  }
+
+  if (domain_name.size() < suffix.size() ||
+      domain_name.substr(domain_name.size() - suffix.size()) != suffix) {
+    LOG(ERROR) << "Domain name should end with \"" << suffix << "\"";
+    return default_value;
+  }
+
+  return domain_name;
 }
 
 }  // namespace command_line_reader
