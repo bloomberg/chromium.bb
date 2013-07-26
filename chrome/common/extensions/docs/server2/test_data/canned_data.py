@@ -41,6 +41,10 @@ CANNED_BRANCHES = {
 
 CANNED_TEST_FILE_SYSTEM_DATA = {
   'api': {
+    '_api_features.json': json.dumps({
+      'ref_test': { 'dependencies': ['permission:ref_test'] },
+      'tester': { 'dependencies': ['permission:tester', 'manifest:tester'] }
+    }),
     '_manifest_features.json': json.dumps({
       'manifest': 'features'
     }),
@@ -64,8 +68,8 @@ CANNED_TEST_FILE_SYSTEM_DATA = {
           'tester': {
             'Permissions': [
               {
-                'perm': 'tester',
-                'text': '"thing1", "thing2"'
+                'class': 'override',
+                'text': '"tester"'
               },
               {
                 'text': 'is an API for testing things.'

@@ -167,10 +167,17 @@ class APIDataSourceTest(unittest.TestCase):
       },
       { 'title': 'Permissions',
         'content': [
-          { 'perm': 'tester',
-            'text': '"thing1", "thing2"'
+          { 'class': 'override',
+            'text': '"tester"'
           },
           { 'text': 'is an API for testing things.' }
+        ]
+      },
+      { 'title': 'Manifest',
+        'content': [
+          { 'class': 'code',
+            'text': '"tester": {...}'
+          }
         ]
       },
       { 'title': 'Learn More',

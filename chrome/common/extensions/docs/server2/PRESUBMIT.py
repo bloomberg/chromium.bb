@@ -49,7 +49,7 @@ Q: Does this change any data that might get stored?
   * Did you add/remove/update some data that gets sent to templates?
   * Is this change to support a new feature in the templates?
   * Does this change include changes to templates?
-Yes? Bump the middle version, i.e. 2-5-2 -> 2-6-2.
+Yes? Bump the middle version and zero out the end version, i.e. 2-5-2 -> 2-6-0.
      THIS WILL CAUSE THE CURRENTLY RUNNING SERVER TO STOP UPDATING.
      PUSH THE NEW VERSION ASAP.
 No? Continue.

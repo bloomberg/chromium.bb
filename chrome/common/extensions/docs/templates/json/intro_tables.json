@@ -1,16 +1,9 @@
 {
-  // TODO(epeterson) Generate permissions information dynamically.
   "alarms": {
     "Learn More": [
       {
         "link": "event_pages.html",
         "text": "Event Pages"
-      }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"alarms\""
       }
     ]
   },
@@ -48,36 +41,6 @@
         "link": "app_hardware.html",
         "text": "Accessing Hardware Devices"
       }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"bluetooth\""
-      }
-    ]
-  },
-  "bookmarks": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"bookmarks\""
-      }
-    ]
-  },
-  "browsingData": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"browsingData\""
-      }
-    ]
-  },
-  "contextMenus": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"contextMenus\""
-      }
     ]
   },
   "cookies": {
@@ -92,14 +55,6 @@
       }
     ]
   },
-  "debugger": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"debugger\""
-      }
-    ]
-  },
   "declarativeContent": {
     "Learn More": [
       {
@@ -109,12 +64,6 @@
       {
         "link": "activeTab.html",
         "text": "activeTab"
-      }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"declarativeContent\""
       }
     ]
   },
@@ -142,29 +91,7 @@
       }
     ]
   },
-  "fileBrowserHandler": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"fileBrowserHandler\""
-      }
-    ]
-  },
   "fileSystem": {
-    "Learn More": [
-      {
-        "link": "app_storage.html",
-        "text": "Manage Data"
-      },
-      {
-        "link": "angular_framework.html",
-        "text": "Build Apps with AngularJS"
-      },
-      {
-        "link": "https://developers.google.com/live/shows/7320022-1001/",
-        "text": "Chrome Apps Office Hours: TextDrive and AngularJS"
-      }
-    ],
     "Permissions": [
       {
         "class": "code",
@@ -178,21 +105,19 @@
         "class": "code",
         "text": "{\"fileSystem\": [\"write\", \"retainEntries\"]}"
       }
-    ]
-  },
-  "fontSettings": {
-    "Permissions": [
+    ],
+    "Learn More": [
       {
-        "class": "code",
-        "text": "\"fontSettings\""
-      }
-    ]
-  },
-  "history": {
-    "Permissions": [
+        "link": "app_storage.html",
+        "text": "Manage Data"
+      },
       {
-        "class": "code",
-        "text": "\"history\""
+        "link": "angular_framework.html",
+        "text": "Build Apps with AngularJS"
+      },
+      {
+        "link": "https://developers.google.com/live/shows/7320022-1001/",
+        "text": "Chrome Apps Office Hours: TextDrive and AngularJS"
       }
     ]
   },
@@ -202,45 +127,9 @@
         "link": "app_identity.html",
         "text": "Identify User"
       }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"identity\""
-      }
-    ]
-  },
-  "idle": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"idle\""
-      }
-    ]
-  },
-  "input_ime": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"input\""
-      }
-    ]
-  },
-  "management": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"management\""
-      }
     ]
   },
   "mediaGalleries": {
-    "Learn More": [
-      {
-        "link": "https://developers.google.com/live/shows/10479832/",
-        "text": "Chrome Office Hours: The Media Galleries API"
-      }
-    ],
     "Permissions": [
       {
         "class": "code",
@@ -253,6 +142,12 @@
       {
         "partial": "intro_tables/see_manifest.html"
       }
+    ],
+    "Learn More": [
+      {
+        "link": "https://developers.google.com/live/shows/10479832/",
+        "text": "Chrome Office Hours: The Media Galleries API"
+      }
     ]
   },
   "notifications": {
@@ -260,44 +155,6 @@
       {
         "link": "https://developers.google.com/live/shows/83992232-1001/",
         "text": "Chrome Apps Office Hours: Rich Notifications"
-      }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"notifications\""
-      }
-    ]
-  },
-  "pageCapture": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"pageCapture\""
-      }
-    ]
-  },
-  "power": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"power\""
-      }
-    ]
-  },
-  "privacy": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"privacy\""
-      }
-    ]
-  },
-  "proxy": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"proxy\""
       }
     ]
   },
@@ -310,12 +167,6 @@
       {
         "link": "gcm_server.html",
         "text": "API Reference for GCM service"
-      }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"pushMessaging\""
       }
     ]
   },
@@ -337,15 +188,18 @@
         "link": "app_hardware.html",
         "text": "Accessing Hardware Devices"
       }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"serial\""
-      }
     ]
   },
   "socket": {
+    "Permissions": [
+      {
+        "class": "code",
+        "text": "{\"socket\": [\"rule1\", \"rule2\"]}"
+      },
+      {
+        "partial": "intro_tables/socket_permissions.html"
+      }
+    ],
     "Learn More": [
       {
         "link": "app_network.html",
@@ -363,15 +217,6 @@
         "link": "https://developers.google.com/live/shows/7320022-2001/",
         "text": "Chrome Apps Office Hours: Controlling an AR ParrotDrone"
       }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "{\"socket\": [\"rule1\", \"rule2\"]}"
-      },
-      {
-        "partial": "intro_tables/socket_permissions.html"
-      }
     ]
   },
   "storage": {
@@ -383,12 +228,6 @@
       {
         "link": "https://developers.google.com/live/shows/7320022-1/",
         "text": "Chrome Apps Office Hours: Storage API Deep Dive"
-      }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"storage\""
       }
     ]
   },
@@ -402,12 +241,6 @@
         "link": "https://developers.google.com/live/shows/83992232-2001/",
         "text": "Chrome Office Hours: Synched File System"
       }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"syncFileSystem\""
-      }
     ]
   },
   "tabs": {
@@ -418,41 +251,11 @@
       }
     ]
   },
-  "textSettings": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"textSettings\""
-      }
-    ]
-  },
-  "topSites": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"topSites\""
-      }
-    ]
-  },
   "tts": {
     "Learn More": [
       {
         "link": "https://developers.google.com/live/shows/7320022-7001/",
         "text": "Chrome Office Hours: Text to Speech API"
-      }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"tts\""
-      }
-    ]
-  },
-  "ttsEngine": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"ttsEngine\""
       }
     ]
   },
@@ -461,20 +264,6 @@
       {
         "link": "app_hardware.html",
         "text": "Accessing Hardware Devices"
-      }
-    ],
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"usb\""
-      }
-    ]
-  },
-  "webNavigation": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"webNavigation\""
       }
     ]
   },
@@ -495,14 +284,6 @@
       {
         "link": "https://developers.google.com/chrome/web-store/docs/inline_installation",
         "text": "Using Inline Installation"
-      }
-    ]
-  },
-  "windows": {
-    "Permissions": [
-      {
-        "class": "code",
-        "text": "\"tabs\""
       }
     ]
   }

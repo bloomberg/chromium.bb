@@ -111,14 +111,16 @@ class _JSCModel(object):
                ref_resolver,
                disable_refs,
                availability_finder,
-               intro_cache,
+               parse_cache,
                template_data_source,
                idl=False):
     self._ref_resolver = ref_resolver
     self._disable_refs = disable_refs
     self._availability_finder = availability_finder
-    self._intro_tables = intro_cache.GetFromFile(
+    self._intro_tables = parse_cache.GetFromFile(
         '%s/intro_tables.json' % svn_constants.JSON_PATH)
+    self._api_features = parse_cache.GetFromFile(
+        '%s/_api_features.json' % svn_constants.API_PATH)
     self._template_data_source = template_data_source
     clean_json = copy.deepcopy(json)
     if _RemoveNoDocs(clean_json):
@@ -158,13 +160,35 @@ class _JSCModel(object):
     """Create a generic data structure that can be traversed by the templates
     to create an API intro table.
     """
-    intro_list = [{
+    intro_rows = [
+      self._GetIntroDescriptionRow(),
+      self._GetIntroAvailabilityRow()
+    ] + self._GetIntroDependencyRows()
+
+    # Add rows using data from intro_tables.json, overriding any existing rows
+    # if they share the same 'title' attribute.
+    row_titles = [row['title'] for row in intro_rows]
+    for misc_row in self._GetMiscIntroRows():
+      if misc_row['title'] in row_titles:
+        intro_rows[row_titles.index(misc_row['title'])] = misc_row
+      else:
+        intro_rows.append(misc_row)
+
+    return intro_rows
+
+  def _GetIntroDescriptionRow(self):
+    """ Generates the 'Description' row data for an API intro table.
+    """
+    return {
       'title': 'Description',
       'content': [
         { 'text': self._FormatDescription(self._namespace.description) }
       ]
-    }]
+    }
 
+  def _GetIntroAvailabilityRow(self):
+    """ Generates the 'Availability' row data for an API intro table.
+    """
     if self._IsExperimental():
       status = 'experimental'
       version = None
@@ -172,32 +196,69 @@ class _JSCModel(object):
       availability = self._GetApiAvailability()
       status = availability.channel
       version = availability.version
-    intro_list.append({
+    return {
       'title': 'Availability',
-      'content': [
-        {
-          'partial': self._template_data_source.get(
-              'intro_tables/%s_message.html' % status),
-          'version': version
-        }
-      ]
-    })
+      'content': [{
+        'partial': self._template_data_source.get(
+            'intro_tables/%s_message.html' % status),
+        'version': version
+      }]
+    }
 
-    # Look up the API name in intro_tables.json, which is structured similarly
-    # to the data structure being created. If the name is found, loop through
-    # the attributes and add them to this structure.
+  def _GetIntroDependencyRows(self):
+    # Devtools aren't in _api_features. If we're dealing with devtools, bail.
+    if 'devtools' in self._namespace.name:
+      return []
+    feature = self._api_features.get(self._namespace.name)
+    assert feature, ('"%s" not found in _api_features.json.'
+                     % self._namespace.name)
+
+    dependencies = feature.get('dependencies')
+    if dependencies is None:
+      return []
+
+    def make_code_node(text):
+      return { 'class': 'code', 'text': text }
+
+    permissions_content = []
+    manifest_content = []
+
+    for dependency in dependencies:
+      context, name = dependency.split(':', 1)
+      if context == 'permission':
+        permissions_content.append(make_code_node('"%s"' % name))
+      elif context == 'manifest':
+        manifest_content.append(make_code_node('"%s": {...}' % name))
+      else:
+        raise ValueError('Unrecognized dependency for %s: %s'
+                         % (self._namespace.name, context))
+
+    dependency_rows = []
+    if permissions_content:
+      dependency_rows.append({
+        'title': 'Permissions',
+        'content': permissions_content
+      })
+    if manifest_content:
+      dependency_rows.append({
+        'title': 'Manifest',
+        'content': manifest_content
+      })
+    return dependency_rows
+
+  def _GetMiscIntroRows(self):
+    """ Generates miscellaneous intro table row data, such as 'Permissions',
+    'Samples', and 'Learn More', using intro_tables.json.
+    """
+    misc_rows = []
+    # Look up the API name in intro_tables.json, which is structured
+    # similarly to the data structure being created. If the name is found, loop
+    # through the attributes and add them to this structure.
     table_info = self._intro_tables.get(self._namespace.name)
     if table_info is None:
-      return intro_list
+      return misc_rows
 
-    # The intro tables have a specific ordering that needs to be followed.
-    ordering = ('Permissions', 'Samples', 'Learn More')
-
-    for category in ordering:
-      if category not in table_info.keys():
-        continue
-      # Transform the 'partial' argument from the partial name to the
-      # template itself.
+    for category in table_info.keys():
       content = table_info[category]
       for node in content:
         # If there is a 'partial' argument and it hasn't already been
@@ -206,11 +267,8 @@ class _JSCModel(object):
         # since it should be caching.
         if 'partial' in node and not isinstance(node['partial'], Handlebar):
           node['partial'] = self._template_data_source.get(node['partial'])
-      intro_list.append({
-        'title': category,
-        'content': content
-      })
-    return intro_list
+      misc_rows.append({ 'title': category, 'content': content })
+    return misc_rows
 
   def _GetApiAvailability(self):
     return self._availability_finder.GetApiAvailability(self._namespace.name)
@@ -438,7 +496,7 @@ class APIDataSource(object):
 
       self._base_path = base_path
       self._availability_finder = availability_finder_factory.Create()
-      self._intro_cache = create_compiled_fs(
+      self._parse_cache = create_compiled_fs(
           lambda _, json: json_parse.Parse(json),
           'intro-cache')
       # These must be set later via the SetFooDataSourceFactory methods.
@@ -488,7 +546,7 @@ class APIDataSource(object):
           self._ref_resolver_factory.Create() if not disable_refs else None,
           disable_refs,
           self._availability_finder,
-          self._intro_cache,
+          self._parse_cache,
           self._template_data_source).ToDict()
 
     def _LoadIdlAPI(self, api, disable_refs):
@@ -498,7 +556,7 @@ class APIDataSource(object):
           self._ref_resolver_factory.Create() if not disable_refs else None,
           disable_refs,
           self._availability_finder,
-          self._intro_cache,
+          self._parse_cache,
           self._template_data_source,
           idl=True).ToDict()
 
