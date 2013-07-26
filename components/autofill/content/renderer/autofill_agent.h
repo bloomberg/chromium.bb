@@ -163,15 +163,6 @@ class AutofillAgent : public content::RenderViewObserver,
   void QueryAutofillSuggestions(const WebKit::WebInputElement& element,
                                 bool display_warning_if_disabled);
 
-  // Combines DataList suggestion entries with the autofill ones and show them
-  // to the user.
-  void CombineDataListEntriesAndShow(const WebKit::WebInputElement& element,
-                                     const std::vector<base::string16>& values,
-                                     const std::vector<base::string16>& labels,
-                                     const std::vector<base::string16>& icons,
-                                     const std::vector<int>& item_ids,
-                                     bool has_autofill_item);
-
   // Sets the element value to reflect the selected |suggested_value|.
   void AcceptDataListSuggestion(const base::string16& suggested_value);
 
