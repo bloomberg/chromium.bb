@@ -39,13 +39,9 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
                         PP_Resource file_ref_resource,
                         int32_t open_flags);
-  int32_t OnHostMsgQuery(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgTouch(ppapi::host::HostMessageContext* context,
                          PP_Time last_access_time,
                          PP_Time last_modified_time);
-  int32_t OnHostMsgRead(ppapi::host::HostMessageContext* context,
-                        int64_t offset,
-                        int32_t bytes_to_read);
   int32_t OnHostMsgWrite(ppapi::host::HostMessageContext* context,
                          int64_t offset,
                          const std::string& buffer);
@@ -80,15 +76,11 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       base::PassPlatformFile file,
       quota::QuotaLimitType quota_policy,
       const PluginDelegate::NotifyCloseFileCallback& callback);
-  void ExecutePlatformQueryCallback(ReplyMessageContext reply_context,
-                                    base::PlatformFileError error_code,
-                                    const base::PlatformFileInfo& file_info);
-  void ExecutePlatformReadCallback(ReplyMessageContext reply_context,
-                                   base::PlatformFileError error_code,
-                                   const char* data, int bytes_read);
   void ExecutePlatformWriteCallback(ReplyMessageContext reply_context,
                                     base::PlatformFileError error_code,
                                     int bytes_written);
+
+  RendererPpapiHost* renderer_ppapi_host_;
 
   // TODO(victorhsieh): eliminate plugin_delegate_ as it's no longer needed.
   PluginDelegate* plugin_delegate_;  // Not owned.
