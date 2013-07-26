@@ -23,11 +23,11 @@ namespace chrome {
 TEST(StorageMonitorTest, TestInitialize) {
   test::TestStorageMonitor::RemoveSingleton();
   test::TestStorageMonitor monitor;
-  EXPECT_FALSE(monitor.init_called_);
+  EXPECT_FALSE(monitor.init_called());
 
   bool initialized = false;
   monitor.EnsureInitialized(base::Bind(&SetLatch, &initialized));
-  EXPECT_TRUE(monitor.init_called_);
+  EXPECT_TRUE(monitor.init_called());
   EXPECT_FALSE(initialized);
   monitor.MarkInitialized();
   EXPECT_TRUE(initialized);

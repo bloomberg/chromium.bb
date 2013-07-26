@@ -22,12 +22,16 @@ class TestStorageMonitor : public chrome::StorageMonitor {
   void MarkInitialized();
 
   // Create and initialize a new TestStorageMonitor and install it
-  // in the TestingBrowserProcess.
+  // in the TestingBrowserProcess. The TestingBrowserProcess owns the created
+  // TestStorageMonitor, but it is also returned for convenience. If there is
+  // no TestingBrowserProcess to own the TestStorageMonitor, it is destroyed
+  // and the return value is NULL.
   static TestStorageMonitor* CreateAndInstall();
 
   // Create and initialize a new TestStorageMonitor, and install it
   // in the BrowserProcessImpl. (Browser tests use the production browser
-  // process implementation.)
+  // process implementation.) The BrowserProcessImpl owns the created
+  // TestStorageMonitor, but it is also returned for convenience.
   static TestStorageMonitor* CreateForBrowserTests();
 
   // Remove the singleton StorageMonitor from the TestingBrowserProcess.
@@ -61,9 +65,13 @@ class TestStorageMonitor : public chrome::StorageMonitor {
 
   const std::string& ejected_device() const { return ejected_device_; }
 
-  bool init_called_;
+  bool init_called() const { return init_called_; }
 
  private:
+  // Whether TestStorageMonitor::Init() has been called for not.
+  bool init_called_;
+
+  // The last device to be ejected.
   std::string ejected_device_;
 
 #if defined(OS_LINUX)

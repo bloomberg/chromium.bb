@@ -378,8 +378,6 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 
-  scoped_ptr<chrome::test::TestStorageMonitor> monitor_;
-
   MockProfileSharedRenderProcessHostFactory rph_factory_;
 
   ScopedVector<ProfileState> profile_states_;
@@ -747,11 +745,7 @@ size_t MediaFileSystemRegistryTest::GetExtensionGalleriesHostCount(
 
 void MediaFileSystemRegistryTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-  monitor_.reset(new test::TestStorageMonitor());
-  monitor_->MarkInitialized();
-  base::RunLoop runloop;
-  monitor_->EnsureInitialized(runloop.QuitClosure());
-  runloop.Run();
+  ASSERT_TRUE(test::TestStorageMonitor::CreateAndInstall());
 
   DeleteContents();
   SetRenderProcessHostFactory(&rph_factory_);

@@ -86,6 +86,8 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(test::TestStorageMonitor::CreateAndInstall());
+
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get())));
@@ -812,7 +814,7 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
 }
 
 TEST(MediaGalleryPrefInfoTest, NameGeneration) {
-  test::TestStorageMonitor monitor;
+  ASSERT_TRUE(test::TestStorageMonitor::CreateAndInstall());
 
   MediaGalleryPrefInfo info;
   info.pref_id = 1;

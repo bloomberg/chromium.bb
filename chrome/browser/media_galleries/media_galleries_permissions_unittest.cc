@@ -28,17 +28,10 @@ void AddGalleryPermission(MediaGalleryPrefId gallery,
 }  // namespace
 
 // Test the MediaGalleries permissions functions.
-class MediaGalleriesPermissionsTest
-    : public extensions::ExtensionPrefsTest {
+class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
  protected:
-  MediaGalleriesPermissionsTest()
-      : profile_(new TestingProfile),
-        gallery_prefs_(new MediaGalleriesPreferences(profile_.get())) {
-    gallery_prefs_->SetExtensionPrefsForTesting(prefs());
-  }
-
-  virtual ~MediaGalleriesPermissionsTest() {
-  }
+  MediaGalleriesPermissionsTest() {}
+  virtual ~MediaGalleriesPermissionsTest() {}
 
   // This is the same implementation as ExtensionPrefsTest::TearDown(), except
   // for also resetting the ExtensionPrefs used by |gallery_prefs_| after
@@ -59,6 +52,11 @@ class MediaGalleriesPermissionsTest
   }
 
   virtual void Initialize() OVERRIDE {
+    ASSERT_TRUE(test::TestStorageMonitor::CreateAndInstall());
+    profile_.reset(new TestingProfile);
+    gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
+    gallery_prefs_->SetExtensionPrefsForTesting(prefs());
+
     extension1_id_ = prefs_.AddExtensionAndReturnId("test1");
     extension2_id_ = prefs_.AddExtensionAndReturnId("test2");
     extension3_id_ = prefs_.AddExtensionAndReturnId("test3");
@@ -136,7 +134,6 @@ class MediaGalleriesPermissionsTest
   std::vector<MediaGalleryPermission> extension3_expectation_;
   std::vector<MediaGalleryPermission> extension4_expectation_;
 
-  test::TestStorageMonitor monitor_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MediaGalleriesPreferences> gallery_prefs_;
 };

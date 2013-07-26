@@ -329,13 +329,6 @@ chrome::StorageMonitor* TestingBrowserProcess::storage_monitor() {
   NOTIMPLEMENTED();
   return NULL;
 #else
-  if (!storage_monitor_.get()) {
-    chrome::test::TestStorageMonitor* monitor =
-        new chrome::test::TestStorageMonitor();
-    monitor->Init();
-    monitor->MarkInitialized();
-    storage_monitor_.reset(monitor);
-  }
   return storage_monitor_.get();
 #endif
 }
@@ -422,6 +415,6 @@ void TestingBrowserProcess::SetSafeBrowsingService(
 void TestingBrowserProcess::SetStorageMonitor(
     scoped_ptr<chrome::StorageMonitor> storage_monitor) {
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
-  storage_monitor_.reset(storage_monitor.release());
+  storage_monitor_ = storage_monitor.Pass();
 #endif
 }
