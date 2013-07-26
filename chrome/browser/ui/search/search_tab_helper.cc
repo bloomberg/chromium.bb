@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -14,6 +16,8 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -41,6 +45,16 @@ bool IsSearchResults(const content::WebContents* contents) {
 bool IsLocal(const content::WebContents* contents) {
   return contents &&
       contents->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
+}
+
+// Returns true if |contents| are rendered inside an Instant process.
+bool InInstantProcess(Profile* profile,
+                      const content::WebContents* contents) {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile);
+  return instant_service &&
+      instant_service->IsInstantProcess(
+          contents->GetRenderProcessHost()->GetID());
 }
 
 }  // namespace
@@ -195,16 +209,7 @@ void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
 void SearchTabHelper::DetermineIfPageSupportsInstant() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  // Use the underlying URL rather than the virtual URL when checking whether
-  // this navigation can land in the Instant process. Otherwise this check
-  // would fail if a URL like chrome://newtab is being rewritten to an Instant
-  // URL.
-  // TODO(samarth): actually check whether this WebContents is rendered in an
-  // Instant process rather than checking the URL.
-  const content::NavigationEntry* entry =
-      web_contents_->GetController().GetActiveEntry();
-  const GURL& current_url = entry ? entry->GetURL() : web_contents_->GetURL();
-  if (!chrome::ShouldAssignURLToInstantRenderer(current_url, profile)) {
+  if (!InInstantProcess(profile, web_contents_)) {
     // The page is not in the Instant process. This page does not support
     // instant. If we send an IPC message to a page that is not in the Instant
     // process, it will never receive it and will never respond. Therefore,
