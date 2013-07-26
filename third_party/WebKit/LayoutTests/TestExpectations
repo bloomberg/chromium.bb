@@ -1690,6 +1690,8 @@ crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li
 
 crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Failure ]
 
+crbug.com/264501 [ Debug ] xmlviewer/extensions-api.html [ Pass Crash ]
+
 # started timing out around r154246..r154251
 crbug.com/260744 [ Debug ] fast/js/regress/function-dot-apply.html  [ Timeout ]
 crbug.com/260744 [ Debug ] fast/js/regress/inline-arguments-local-escape.html  [ Timeout ]
