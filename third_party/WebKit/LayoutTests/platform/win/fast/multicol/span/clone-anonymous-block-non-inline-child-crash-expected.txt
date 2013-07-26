@@ -14,10 +14,10 @@ layer at (8,16) size 784x175
         RenderBlock (anonymous) at (0,0) size 379x20
           RenderText {#text} at (0,0) size 99x19
             text run at (0,0) width 99: "Some block text"
-        RenderBlock {H2} at (0,39) size 379x28 [bgcolor=#EEEEEE]
+        RenderBlock {H2} at (0,39.91) size 379x27 [bgcolor=#EEEEEE]
           RenderText {#text} at (0,0) size 58x26
             text run at (0,0) width 58: "PASS"
-        RenderBlock (anonymous) at (0,86) size 379x219
+        RenderBlock (anonymous) at (0,86.81) size 379x218.19
           RenderText {#text} at (0,0) size 379x217
             text run at (0,0) width 373: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Nulla"
             text run at (0,20) width 331: "varius enim ac mi. Curabitur sollicitudin felis quis lectus."

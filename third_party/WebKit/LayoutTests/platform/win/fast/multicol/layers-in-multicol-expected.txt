@@ -11,7 +11,7 @@ layer at (0,0) size 785x676
           text run at (0,0) width 82: "RTL Version:"
 layer at (8,28) size 769x310
   RenderBlock {DIV} at (0,20) size 769x310 [border: (5px solid #800000)]
-    RenderBlock (anonymous) at (5,5) size 243x260
+    RenderBlock (anonymous) at (5,5) size 242.33x260
       RenderText {#text} at (0,0) size 100x19
         text run at (0,0) width 100: "This is some text"
       RenderBR {BR} at (100,15) size 0x0
@@ -51,9 +51,9 @@ layer at (8,28) size 769x310
       RenderText {#text} at (0,240) size 100x19
         text run at (0,240) width 100: "This is some text"
       RenderBR {BR} at (100,255) size 0x0
-    RenderBlock {DIV} at (5,305) size 243x270
+    RenderBlock {DIV} at (5,305) size 242.33x270
       RenderText {#text} at (0,0) size 0x0
-    RenderBlock (anonymous) at (5,575) size 243x570
+    RenderBlock (anonymous) at (5,575) size 242.33x570
       RenderText {#text} at (0,0) size 100x19
         text run at (0,0) width 100: "This is some text"
       RenderBR {BR} at (100,15) size 0x0
@@ -136,7 +136,7 @@ layer at (8,28) size 769x310
         text run at (0,530) width 100: "This is some text"
       RenderBR {BR} at (100,545) size 0x0
       RenderText {#text} at (0,0) size 0x0
-    RenderBlock (anonymous) at (5,1165) size 243x280
+    RenderBlock (anonymous) at (5,1165) size 242.33x280
       RenderText {#text} at (0,0) size 100x19
         text run at (0,0) width 100: "This is some text"
       RenderBR {BR} at (100,15) size 0x0
@@ -181,7 +181,7 @@ layer at (8,28) size 769x310
       RenderBR {BR} at (100,275) size 0x0
 layer at (8,358) size 769x310
   RenderBlock {DIV} at (0,350) size 769x310 [border: (5px solid #800000)]
-    RenderBlock (anonymous) at (5,5) size 243x260
+    RenderBlock (anonymous) at (5,5) size 242.33x260
       RenderText {#text} at (142,0) size 100x19
         text run at (142,0) width 100: "This is some text"
       RenderBR {BR} at (142,15) size 0x0
@@ -221,9 +221,9 @@ layer at (8,358) size 769x310
       RenderText {#text} at (142,240) size 100x19
         text run at (142,240) width 100: "This is some text"
       RenderBR {BR} at (142,255) size 0x0
-    RenderBlock {DIV} at (5,305) size 243x270
+    RenderBlock {DIV} at (5,305) size 242.33x270
       RenderText {#text} at (0,0) size 0x0
-    RenderBlock (anonymous) at (5,575) size 243x570
+    RenderBlock (anonymous) at (5,575) size 242.33x570
       RenderText {#text} at (142,0) size 100x19
         text run at (142,0) width 100: "This is some text"
       RenderBR {BR} at (142,15) size 0x0
@@ -306,7 +306,7 @@ layer at (8,358) size 769x310
         text run at (142,530) width 100: "This is some text"
       RenderBR {BR} at (142,545) size 0x0
       RenderText {#text} at (0,0) size 0x0
-    RenderBlock (anonymous) at (5,1165) size 243x280
+    RenderBlock (anonymous) at (5,1165) size 242.33x280
       RenderText {#text} at (142,0) size 100x19
         text run at (142,0) width 100: "This is some text"
       RenderBR {BR} at (142,15) size 0x0

@@ -44,13 +44,13 @@ layer at (0,0) size 800x600
                   text run at (6,266) width 86: "other parts of "
                   text run at (92,266) width 320: "the ground, Alice soon came to the conclusion that it"
                   text run at (57,286) width 69: "was a very "
-                RenderBlock (floating) {SPAN} at (6,289) size 48x65 [bgcolor=#ADD8E6]
+                RenderBlock (floating) {SPAN} at (6,289.19) size 48x64 [bgcolor=#ADD8E6]
                 RenderText {#text} at (126,286) size 131x19
                   text run at (126,286) width 131: "difficult game indeed. "
                 RenderBR {BR} at (0,0) size 0x0
                 RenderText {#text} at (57,306) size 286x19
                   text run at (57,306) width 286: "The players all played at once without waiting "
-                RenderBlock (floating) {SPAN} at (364,309) size 48x65 [bgcolor=#90EE90]
+                RenderBlock (floating) {SPAN} at (364,309.19) size 48x64 [bgcolor=#90EE90]
                 RenderText {#text} at (343,306) size 303x59
                   text run at (343,306) width 17: "for"
                   text run at (57,326) width 38: "turns, "

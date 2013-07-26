@@ -1,16 +1,16 @@
 layer at (0,0) size 4566x585
   RenderView at (0,0) size 800x585
 layer at (-3766,0) size 4566x585 backgroundClip at (0,0) size 4566x585 clip at (0,0) size 4566x585 outlineClip at (0,0) size 4566x585
-  RenderBlock {HTML} at (0,0) size 4567x585
-    RenderBody {BODY} at (58,46) size 4450x493
-      RenderBlock {H1} at (0,0) size 48x492
+  RenderBlock {HTML} at (0,0) size 4566.34x585
+    RenderBody {BODY} at (58.50,46.80) size 4449.34x491.41
+      RenderBlock {H1} at (0,0) size 48x491.41
         RenderText {#text} at (5,0) size 37x64
           text run at (5,0) width 64: "\x{8349}\x{6795}"
-      RenderBlock {H2} at (69,0) size 37x492
+      RenderBlock {H2} at (69.44,0) size 36x491.41
         RenderText {#text} at (4,0) size 28x96
           text run at (4,0) width 96: "\x{590F}\x{76EE}\x{6F31}\x{77F3}"
-      RenderBlock {DIV} at (125,0) size 4325x492
-        RenderBlock (anonymous) at (0,0) size 2403x492
+      RenderBlock {DIV} at (125.34,0) size 4324x491.41
+        RenderBlock (anonymous) at (0,0) size 2403x491.41
           RenderBR {BR} at (0,0) size 18x0
           RenderBR {BR} at (18,0) size 18x0
           RenderBR {BR} at (36,0) size 18x0
@@ -1819,7 +1819,7 @@ layer at (-3766,0) size 4566x585 backgroundClip at (0,0) size 4566x585 clip at (
             text run at (2358,103) width 368: "\x{3057}\x{3066}\x{898B}\x{305F}\x{304C}\x{3001}\x{899A}\x{3048}\x{3066}\x{3044}\x{308B}\x{3068}\x{3053}\x{308D}\x{306F}\x{4E8C}\x{4E09}\x{53E5}\x{3057}\x{304B}\x{306A}\x{304B}\x{3063}"
             text run at (2382,0) width 304: "\x{305F}\x{3002}\x{305D}\x{306E}\x{4E8C}\x{4E09}\x{53E5}\x{306E}\x{306A}\x{304B}\x{306B}\x{3053}\x{3093}\x{306A}\x{306E}\x{304C}\x{3042}\x{308B}\x{3002}"
           RenderBR {BR} at (2382,304) size 18x0
-        RenderBlock {DIV} at (2403,32) size 114x460
+        RenderBlock {DIV} at (2403,32) size 114x459.41
           RenderText {#text} at (3,0) size 18x189
             text run at (3,0) width 189: "\x{3000}\x{3000}We look before and after"
           RenderBR {BR} at (3,189) size 18x0
@@ -1835,7 +1835,7 @@ layer at (-3766,0) size 4566x585 backgroundClip at (0,0) size 4566x585 clip at (
           RenderText {#text} at (96,0) size 18x355
             text run at (96,0) width 355: "Our sweetest songs are those that tell of saddest thought."
           RenderBR {BR} at (96,355) size 18x0
-        RenderBlock (anonymous) at (2517,0) size 1807x492
+        RenderBlock (anonymous) at (2517,0) size 1807x491.41
           RenderText {#text} at (10,0) size 18x112
             text run at (10,0) width 112: "\x{300C}\x{524D}\x{3092}\x{307F}\x{3066}\x{306F}\x{3001}"
           RenderRuby (inline) {RUBY} at (0,0) size 18x16

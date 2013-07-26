@@ -46,7 +46,7 @@ layer at (0,0) size 800x600
                   text run at (6,240) width 292: "getting up and walking off to other parts of "
                   text run at (298,240) width 114: "the ground, Alice"
                   text run at (57,258) width 306: "soon came to the conclusion that it was a very "
-                RenderBlock (floating) {SPAN} at (6,261) size 48x65 [bgcolor=#ADD8E6]
+                RenderBlock (floating) {SPAN} at (6,261.19) size 48x64 [bgcolor=#ADD8E6]
                   RenderText {#text} at (13,0) size 22x18
                     text run at (13,0) width 22: "foo"
                 RenderText {#text} at (363,258) size 355x36
@@ -55,7 +55,7 @@ layer at (0,0) size 800x600
                 RenderBR {BR} at (0,0) size 0x0
                 RenderText {#text} at (57,294) size 303x18
                   text run at (57,294) width 303: "The players all played at once without waiting"
-                RenderBlock (floating) {SPAN} at (364,297) size 48x81 [bgcolor=#90EE90]
+                RenderBlock (floating) {SPAN} at (364,297.19) size 48x80 [bgcolor=#90EE90]
                 RenderText {#text} at (57,312) size 354x36
                   text run at (57,312) width 63: "for turns, "
                   text run at (120,312) width 240: "quarrelling all the while, and fighting"

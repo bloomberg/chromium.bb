@@ -1,11 +1,11 @@
 layer at (0,0) size 785x812
   RenderView at (0,0) size 785x600
 layer at (0,0) size 785x812
-  RenderBlock {HTML} at (0,0) size 785x812
+  RenderBlock {HTML} at (0,0) size 785x811.81
 layer at (8,8) size 769x796
-  RenderBody {BODY} at (8,8) size 769x796
-    RenderBlock {DIV} at (0,19) size 769x29 [bgcolor=#00FFFF]
-      RenderBlock (floating) {DIV} at (4,4) size 386x463 [bgcolor=#FFFF00]
+  RenderBody {BODY} at (8,8) size 769x795.81
+    RenderBlock {DIV} at (0,19.91) size 769x28 [bgcolor=#00FFFF]
+      RenderBlock (floating) {DIV} at (4.80,4.80) size 384.50x462 [bgcolor=#FFFF00]
         RenderImage {IMG} at (0,0) size 133x70
         RenderText {#text} at (133,0) size 379x90
           text run at (133,0) width 229: "You've already downloaded a build."
@@ -13,7 +13,7 @@ layer at (8,8) size 769x796
           text run at (133,36) width 208: "everyday browser and mail/news"
           text run at (133,54) width 246: "reader. If you downloaded a build with"
           text run at (0,72) width 253: "Talkback, please turn it on when it asks."
-        RenderBlock (floating) {DIV} at (302,72) size 83x390 [bgcolor=#FF0000]
+        RenderBlock (floating) {DIV} at (302.50,72) size 82x390 [bgcolor=#FF0000]
           RenderBlock {P} at (0,16) size 82x18
             RenderText {#text} at (0,0) size 74x18
               text run at (0,0) width 74: "Hola hola 1"
@@ -82,7 +82,7 @@ layer at (8,8) size 769x796
       RenderBlock {H2} at (0,0) size 769x28
         RenderText {#text} at (394,0) size 262x28
           text run at (394,0) width 262: "What Needs To Be Done?"
-    RenderBlock (floating) {DIV} at (394,67) size 83x391 [bgcolor=#808080]
+    RenderBlock (floating) {DIV} at (394.09,67.81) size 82x390 [bgcolor=#808080]
       RenderBlock {P} at (0,16) size 82x18
         RenderText {#text} at (0,0) size 74x18
           text run at (0,0) width 74: "Hola hola 1"
@@ -116,7 +116,7 @@ layer at (8,8) size 769x796
       RenderBlock {P} at (0,356) size 82x18
         RenderText {#text} at (0,0) size 82x18
           text run at (0,0) width 82: "Hola hola 11"
-    RenderBlock {DL} at (0,67) size 769x589
+    RenderBlock {DL} at (0,67.81) size 769x588
       RenderBlock {DT} at (0,0) size 769x18
         RenderText {#text} at (476,0) size 80x18
           text run at (476,0) width 80: "Report Bugs"
@@ -162,7 +162,7 @@ layer at (8,8) size 769x796
               text run at (459,270) width 165: "bug submission procedure"
           RenderText {#text} at (624,270) size 4x18
             text run at (624,270) width 4: "."
-      RenderBlock (floating) {DIV} at (476,338) size 83x390 [bgcolor=#008000]
+      RenderBlock (floating) {DIV} at (476.09,338) size 82x390 [bgcolor=#008000]
         RenderBlock {P} at (0,16) size 82x18
           RenderText {#text} at (0,0) size 74x18
             text run at (0,0) width 74: "Hola hola 1"

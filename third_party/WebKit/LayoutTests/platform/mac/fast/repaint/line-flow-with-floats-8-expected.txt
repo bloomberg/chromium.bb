@@ -52,7 +52,7 @@ layer at (0,0) size 800x600
                 RenderBR {BR} at (0,0) size 0x0
                 RenderText {#text} at (6,294) size 296x18
                   text run at (6,294) width 296: "The players all played at once without waiting "
-                RenderBlock (floating) {SPAN} at (364,297) size 48x81 [bgcolor=#90EE90]
+                RenderBlock (floating) {SPAN} at (364,297.19) size 48x80 [bgcolor=#90EE90]
                 RenderText {#text} at (302,294) size 354x54
                   text run at (302,294) width 58: "for turns,"
                   text run at (6,312) width 354: "quarrelling all the while, and fighting for the hedgehogs;"

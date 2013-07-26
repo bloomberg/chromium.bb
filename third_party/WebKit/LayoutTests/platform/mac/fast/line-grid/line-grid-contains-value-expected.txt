@@ -29,12 +29,12 @@ layer at (0,0) size 800x600 layerType: foreground only
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
 layer at (10,10) size 620x301
-  RenderBlock (positioned) {DIV} at (10,10) size 620x301
-    RenderBlock {DIV} at (10,10) size 600x150
+  RenderBlock (positioned) {DIV} at (10,10) size 620x300.50
+    RenderBlock {DIV} at (10,10) size 600x149.50
       RenderText {#text} at (0,13) size 594x137
         text run at (0,13) width 594: "This header should be centered"
         text run at (0,95) width 310: "in the grid lines."
-    RenderBlock {DIV} at (10,159) size 600x132
+    RenderBlock {DIV} at (10,159.50) size 600x131
       RenderText {#text} at (0,35) size 101x14
         text run at (0,35) width 101: "This text should snap"
       RenderBR {BR} at (101,46) size 0x0
