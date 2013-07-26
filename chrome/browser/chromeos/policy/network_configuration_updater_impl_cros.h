@@ -19,7 +19,9 @@ class Value;
 }
 
 namespace chromeos {
-class CertificateHandler;
+namespace onc {
+class CertificateImporter;
+}
 }
 
 namespace policy {
@@ -42,7 +44,7 @@ class NetworkConfigurationUpdaterImplCros
   NetworkConfigurationUpdaterImplCros(
       PolicyService* device_policy_service,
       chromeos::NetworkLibrary* network_library,
-      scoped_ptr<chromeos::CertificateHandler> certificate_handler);
+      scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer);
   virtual ~NetworkConfigurationUpdaterImplCros();
 
   // NetworkProfileObserver overrides.
@@ -88,7 +90,7 @@ class NetworkConfigurationUpdaterImplCros
   // Network library to write network configuration to.
   chromeos::NetworkLibrary* network_library_;
 
-  scoped_ptr<chromeos::CertificateHandler> certificate_handler_;
+  scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer_;
 
   // Needed to check whether user policies are ready.
   // Unowned.

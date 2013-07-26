@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chromeos/network/certificate_handler.h"
+#include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "policy/policy_constants.h"
@@ -22,12 +22,12 @@ namespace policy {
 NetworkConfigurationUpdaterImplCros::NetworkConfigurationUpdaterImplCros(
     PolicyService* device_policy_service,
     chromeos::NetworkLibrary* network_library,
-    scoped_ptr<chromeos::CertificateHandler> certificate_handler)
+    scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer)
     : policy_change_registrar_(
           device_policy_service,
           PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())),
       network_library_(network_library),
-      certificate_handler_(certificate_handler.Pass()),
+      certificate_importer_(certificate_importer.Pass()),
       user_policy_service_(NULL),
       device_policy_service_(device_policy_service) {
   DCHECK(network_library_);
@@ -166,7 +166,7 @@ void NetworkConfigurationUpdaterImplCros::ApplyNetworkConfiguration(
       onc_blob, onc_source, "", &network_configs, &certificates);
 
   scoped_ptr<net::CertificateList> web_trust_certs(new net::CertificateList);
-  certificate_handler_->ImportCertificates(
+  certificate_importer_->ImportCertificates(
       certificates, onc_source, web_trust_certs.get());
 
   network_library_->LoadOncNetworks(network_configs, onc_source);

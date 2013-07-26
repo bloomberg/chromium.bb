@@ -60,6 +60,7 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater_impl.h"
+#include "chrome/browser/chromeos/policy/network_configuration_updater_impl_cros.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -70,8 +71,8 @@
 #include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/certificate_handler.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #endif
 
 using content::BrowserThread;
@@ -207,10 +208,11 @@ void BrowserPolicyConnector::Init(
   policy_statistics_collector_->Initialize();
 
 #if defined(OS_CHROMEOS)
-  network_configuration_updater_.reset(
-      new NetworkConfigurationUpdaterImpl(
-          GetPolicyService(),
-          make_scoped_ptr(new chromeos::CertificateHandler)));
+
+  network_configuration_updater_.reset(new NetworkConfigurationUpdaterImpl(
+      GetPolicyService(),
+      scoped_ptr<chromeos::onc::CertificateImporter>(
+          new chromeos::onc::CertificateImporterImpl)));
 #endif
 
   is_initialized_ = true;

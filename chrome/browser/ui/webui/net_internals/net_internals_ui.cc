@@ -82,7 +82,7 @@
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "chromeos/network/certificate_handler.h"
+#include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
 #endif
@@ -1555,8 +1555,8 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
     LOG(ERROR) << error;
   }
 
-  chromeos::CertificateHandler certificate_handler;
-  if (!certificate_handler.ImportCertificates(certificates, onc_source, NULL)) {
+  chromeos::onc::CertificateImporterImpl cert_importer;
+  if (!cert_importer.ImportCertificates(certificates, onc_source, NULL)) {
     error += "Some certificates couldn't be imported. ";
     LOG(ERROR) << error;
   }

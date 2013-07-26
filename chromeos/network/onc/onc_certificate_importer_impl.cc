@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/network/onc/onc_certificate_importer.h"
+#include "chromeos/network/onc/onc_certificate_importer_impl.h"
 
 #include <cert.h>
 #include <keyhi.h>
@@ -27,15 +27,32 @@
 namespace chromeos {
 namespace onc {
 
-CertificateImporter::CertificateImporter(bool allow_trust_imports)
-    : allow_trust_imports_(allow_trust_imports) {
+CertificateImporterImpl::CertificateImporterImpl() {
 }
 
-CertificateImporter::ParseResult CertificateImporter::ParseAndStoreCertificates(
+bool CertificateImporterImpl::ImportCertificates(
+    const base::ListValue& certificates,
+    onc::ONCSource source,
+    net::CertificateList* onc_trusted_certificates) {
+  VLOG(2) << "ONC file has " << certificates.GetSize() << " certificates";
+
+  // Web trust is only granted to certificates imported by the user.
+  bool allow_trust_imports = source == onc::ONC_SOURCE_USER_IMPORT;
+  if (!ParseAndStoreCertificates(
+          allow_trust_imports, certificates, onc_trusted_certificates, NULL)) {
+    LOG(ERROR) << "Cannot parse some of the certificates in the ONC from "
+               << onc::GetSourceAsString(source);
+    return false;
+  }
+  return true;
+}
+
+bool CertificateImporterImpl::ParseAndStoreCertificates(
+    bool allow_trust_imports,
     const base::ListValue& certificates,
     net::CertificateList* onc_trusted_certificates,
     CertsByGUID* imported_server_and_ca_certs) {
-  size_t successful_imports = 0;
+  bool success = true;
   for (size_t i = 0; i < certificates.GetSize(); ++i) {
     const base::DictionaryValue* certificate = NULL;
     certificates.GetDictionary(i, &certificate);
@@ -43,27 +60,22 @@ CertificateImporter::ParseResult CertificateImporter::ParseAndStoreCertificates(
 
     VLOG(2) << "Parsing certificate at index " << i << ": " << *certificate;
 
-    if (!ParseAndStoreCertificate(*certificate, onc_trusted_certificates,
+    if (!ParseAndStoreCertificate(allow_trust_imports,
+                                  *certificate,
+                                  onc_trusted_certificates,
                                   imported_server_and_ca_certs)) {
+      success = false;
       ONC_LOG_ERROR(
           base::StringPrintf("Cannot parse certificate at index %zu", i));
     } else {
       VLOG(2) << "Successfully imported certificate at index " << i;
-      ++successful_imports;
     }
   }
-
-  if (successful_imports == certificates.GetSize()) {
-    return IMPORT_OK;
-  } else if (successful_imports == 0) {
-    return IMPORT_FAILED;
-  } else {
-    return IMPORT_INCOMPLETE;
-  }
+  return success;
 }
 
 // static
-void CertificateImporter::ListCertsWithNickname(const std::string& label,
+void CertificateImporterImpl::ListCertsWithNickname(const std::string& label,
                                                 net::CertificateList* result) {
   net::CertificateList all_certs;
   net::NSSCertDatabase::GetInstance()->ListCerts(&all_certs);
@@ -101,7 +113,8 @@ void CertificateImporter::ListCertsWithNickname(const std::string& label,
 }
 
 // static
-bool CertificateImporter::DeleteCertAndKeyByNickname(const std::string& label) {
+bool CertificateImporterImpl::DeleteCertAndKeyByNickname(
+    const std::string& label) {
   net::CertificateList cert_list;
   ListCertsWithNickname(label, &cert_list);
   bool result = true;
@@ -120,7 +133,8 @@ bool CertificateImporter::DeleteCertAndKeyByNickname(const std::string& label) {
   return result;
 }
 
-bool CertificateImporter::ParseAndStoreCertificate(
+bool CertificateImporterImpl::ParseAndStoreCertificate(
+    bool allow_trust_imports,
     const base::DictionaryValue& certificate,
     net::CertificateList* onc_trusted_certificates,
     CertsByGUID* imported_server_and_ca_certs) {
@@ -144,7 +158,10 @@ bool CertificateImporter::ParseAndStoreCertificate(
   certificate.GetStringWithoutPathExpansion(certificate::kType, &cert_type);
   if (cert_type == certificate::kServer ||
       cert_type == certificate::kAuthority) {
-    return ParseServerOrCaCertificate(cert_type, guid, certificate,
+    return ParseServerOrCaCertificate(allow_trust_imports,
+                                      cert_type,
+                                      guid,
+                                      certificate,
                                       onc_trusted_certificates,
                                       imported_server_and_ca_certs);
   } else if (cert_type == certificate::kClient) {
@@ -155,7 +172,8 @@ bool CertificateImporter::ParseAndStoreCertificate(
   return false;
 }
 
-bool CertificateImporter::ParseServerOrCaCertificate(
+bool CertificateImporterImpl::ParseServerOrCaCertificate(
+    bool allow_trust_imports,
     const std::string& cert_type,
     const std::string& guid,
     const base::DictionaryValue& certificate,
@@ -186,7 +204,7 @@ bool CertificateImporter::ParseServerOrCaCertificate(
 
   bool import_with_ssl_trust = false;
   if (web_trust_flag) {
-    if (!allow_trust_imports_)
+    if (!allow_trust_imports)
       ONC_LOG_WARNING("Web trust not granted for certificate: " + guid);
     else
       import_with_ssl_trust = true;
@@ -270,7 +288,7 @@ bool CertificateImporter::ParseServerOrCaCertificate(
   return true;
 }
 
-bool CertificateImporter::ParseClientCertificate(
+bool CertificateImporterImpl::ParseClientCertificate(
     const std::string& guid,
     const base::DictionaryValue& certificate) {
   std::string pkcs12_data;

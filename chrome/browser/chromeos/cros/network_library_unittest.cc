@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/network/onc/onc_certificate_importer.h"
+#include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -294,9 +294,9 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectWifiWithCertPattern) {
   onc_root->GetListWithoutPathExpansion(onc::toplevel_config::kCertificates,
                                         &certificates);
 
-  onc::CertificateImporter importer(true /* allow trust imports */);
-  ASSERT_EQ(onc::CertificateImporter::IMPORT_OK,
-            importer.ParseAndStoreCertificates(*certificates, NULL, NULL));
+  onc::CertificateImporterImpl importer;
+  ASSERT_TRUE(importer.ImportCertificates(
+      *certificates, onc::ONC_SOURCE_USER_IMPORT, NULL));
 
   WifiNetwork* wifi = cros_->FindWifiNetworkByPath("wifi_cert_pattern");
 
@@ -323,9 +323,9 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectVPNWithCertPattern) {
   onc_root->GetListWithoutPathExpansion(onc::toplevel_config::kCertificates,
                                         &certificates);
 
-  onc::CertificateImporter importer(true /* allow trust imports */);
-  ASSERT_EQ(onc::CertificateImporter::IMPORT_OK,
-            importer.ParseAndStoreCertificates(*certificates, NULL, NULL));
+  onc::CertificateImporterImpl importer;
+  ASSERT_TRUE(importer.ImportCertificates(
+      *certificates, onc::ONC_SOURCE_USER_IMPORT, NULL));
 
   VirtualNetwork* vpn = cros_->FindVirtualNetworkByPath("vpn_cert_pattern");
 

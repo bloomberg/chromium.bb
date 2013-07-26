@@ -12,8 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chromeos/network/certificate_handler.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "policy/policy_constants.h"
@@ -22,13 +22,13 @@ namespace policy {
 
 NetworkConfigurationUpdaterImpl::NetworkConfigurationUpdaterImpl(
     PolicyService* device_policy_service,
-    scoped_ptr<chromeos::CertificateHandler> certificate_handler)
+    scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer)
     : device_policy_change_registrar_(device_policy_service,
                                       PolicyNamespace(POLICY_DOMAIN_CHROME,
                                                       std::string())),
       user_policy_service_(NULL),
       device_policy_service_(device_policy_service),
-      certificate_handler_(certificate_handler.Pass()) {
+      certificate_importer_(certificate_importer.Pass()) {
   device_policy_change_registrar_.Observe(
       key::kDeviceOpenNetworkConfiguration,
       base::Bind(&NetworkConfigurationUpdaterImpl::OnPolicyChanged,
@@ -156,7 +156,7 @@ void NetworkConfigurationUpdaterImpl::ApplyNetworkConfiguration(
       onc_blob, onc_source, "", &network_configs, &certificates);
 
   scoped_ptr<net::CertificateList> web_trust_certs(new net::CertificateList);
-  certificate_handler_->ImportCertificates(
+  certificate_importer_->ImportCertificates(
       certificates, onc_source, web_trust_certs.get());
 
   std::string userhash;

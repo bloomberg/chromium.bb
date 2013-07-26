@@ -14,7 +14,9 @@ class Value;
 }
 
 namespace chromeos {
-class CertificateHandler;
+namespace onc {
+class CertificateImporter;
+}
 }
 
 namespace policy {
@@ -29,7 +31,7 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater,
  public:
   NetworkConfigurationUpdaterImpl(
       PolicyService* device_policy_service,
-      scoped_ptr<chromeos::CertificateHandler> certificate_handler);
+      scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer);
   virtual ~NetworkConfigurationUpdaterImpl();
 
   // NetworkConfigurationUpdater overrides.
@@ -69,7 +71,7 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater,
    // User hash of the user that the user policy applies to.
    std::string hashed_username_;
 
-   scoped_ptr<chromeos::CertificateHandler> certificate_handler_;
+   scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer_;
 
    DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationUpdaterImpl);
 };
