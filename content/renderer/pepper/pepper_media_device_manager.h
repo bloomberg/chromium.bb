@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PEPPER_DEVICE_ENUMERATION_EVENT_HANDLER_H_
-#define CONTENT_RENDERER_PEPPER_PEPPER_DEVICE_ENUMERATION_EVENT_HANDLER_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_MEDIA_DEVICE_MANAGER_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_MEDIA_DEVICE_MANAGER_H_
 
 #include <map>
 
@@ -16,16 +16,15 @@
 namespace content {
 class RenderViewImpl;
 
-class PepperDeviceEnumerationEventHandler
+class PepperMediaDeviceManager
     : public MediaStreamDispatcherEventHandler,
       public PepperDeviceEnumerationHostHelper::Delegate,
       public RenderViewObserver,
-      public RenderViewObserverTracker<PepperDeviceEnumerationEventHandler>,
-      public base::SupportsWeakPtr<PepperDeviceEnumerationEventHandler> {
+      public RenderViewObserverTracker<PepperMediaDeviceManager>,
+      public base::SupportsWeakPtr<PepperMediaDeviceManager> {
  public:
-  static PepperDeviceEnumerationEventHandler* GetForRenderView(
-      RenderView* render_view);
-  virtual ~PepperDeviceEnumerationEventHandler();
+  static PepperMediaDeviceManager* GetForRenderView(RenderView* render_view);
+  virtual ~PepperMediaDeviceManager();
 
   // PepperDeviceEnumerationHostHelper::Delegate implementation:
   virtual int EnumerateDevices(
@@ -76,7 +75,7 @@ class PepperDeviceEnumerationEventHandler
   static PP_DeviceType_Dev FromMediaStreamType(MediaStreamType type);
 
  private:
-  PepperDeviceEnumerationEventHandler(RenderView* render_view);
+  PepperMediaDeviceManager(RenderView* render_view);
 
   void NotifyDevicesEnumerated(
       int request_id,
@@ -97,9 +96,9 @@ class PepperDeviceEnumerationEventHandler
   typedef std::map<int, OpenDeviceCallback> OpenCallbackMap;
   OpenCallbackMap open_callbacks_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperDeviceEnumerationEventHandler);
+  DISALLOW_COPY_AND_ASSIGN(PepperMediaDeviceManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PEPPER_DEVICE_ENUMERATION_EVENT_HANDLER_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_MEDIA_DEVICE_MANAGER_H_

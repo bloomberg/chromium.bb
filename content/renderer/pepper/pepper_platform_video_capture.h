@@ -21,7 +21,7 @@ class VideoCaptureHandlerProxy;
 }
 
 namespace content {
-class PepperDeviceEnumerationEventHandler;
+class PepperMediaDeviceManager;
 class PepperPluginDelegateImpl;
 class PepperVideoCaptureHost;
 class RenderViewImpl;
@@ -74,7 +74,7 @@ class PepperPlatformVideoCapture
                       bool succeeded,
                       const std::string& label);
 
-  PepperDeviceEnumerationEventHandler* GetDeviceEnumerationEventHandler();
+  PepperMediaDeviceManager* GetMediaDeviceManager();
 
   base::WeakPtr<RenderViewImpl> render_view_;
 

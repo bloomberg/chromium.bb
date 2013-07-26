@@ -11,7 +11,7 @@
 #include "content/child/child_process.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/pepper/pepper_audio_input_host.h"
-#include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
+#include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_manager_base.h"
@@ -164,7 +164,7 @@ bool PepperPlatformAudioInput::Initialize(
 
   // We need to open the device and obtain the label and session ID before
   // initializing.
-  pending_open_device_id_ = GetHandler()->OpenDevice(
+  pending_open_device_id_ = GetMediaDeviceManager()->OpenDevice(
       PP_DEVICETYPE_DEV_AUDIOCAPTURE,
       device_id.empty() ? media::AudioManagerBase::kDefaultDeviceId : device_id,
       document_url,
@@ -228,7 +228,7 @@ void PepperPlatformAudioInput::OnDeviceOpened(int request_id,
     label_ = label;
 
     if (client_) {
-      int session_id = GetHandler()->GetSessionID(
+      int session_id = GetMediaDeviceManager()->GetSessionID(
           PP_DEVICETYPE_DEV_AUDIOCAPTURE, label);
       io_message_loop_proxy_->PostTask(
           FROM_HERE,
@@ -248,11 +248,11 @@ void PepperPlatformAudioInput::CloseDevice() {
 
   if (render_view_.get()) {
     if (!label_.empty()) {
-      GetHandler()->CloseDevice(label_);
+      GetMediaDeviceManager()->CloseDevice(label_);
       label_.clear();
     }
     if (pending_open_device_) {
-      GetHandler()->CancelOpenDevice(pending_open_device_id_);
+      GetMediaDeviceManager()->CancelOpenDevice(pending_open_device_id_);
       pending_open_device_ = false;
       pending_open_device_id_ = -1;
     }
@@ -266,9 +266,8 @@ void PepperPlatformAudioInput::NotifyStreamCreationFailed() {
     client_->StreamCreationFailed();
 }
 
-PepperDeviceEnumerationEventHandler* PepperPlatformAudioInput::GetHandler() {
-  return PepperDeviceEnumerationEventHandler::GetForRenderView(
-      render_view_.get());
+PepperMediaDeviceManager* PepperPlatformAudioInput::GetMediaDeviceManager() {
+  return PepperMediaDeviceManager::GetForRenderView(render_view_.get());
 }
 
 }  // namespace content

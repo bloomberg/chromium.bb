@@ -28,7 +28,7 @@ class AudioParameters;
 namespace content {
 
 class PepperAudioInputHost;
-class PepperDeviceEnumerationEventHandler;
+class PepperMediaDeviceManager;
 class RenderViewImpl;
 
 // PepperPlatformAudioInput is operated on two threads: the main thread (the
@@ -96,7 +96,7 @@ class PepperPlatformAudioInput
   void CloseDevice();
   void NotifyStreamCreationFailed();
 
-  PepperDeviceEnumerationEventHandler* GetHandler();
+  PepperMediaDeviceManager* GetMediaDeviceManager();
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.

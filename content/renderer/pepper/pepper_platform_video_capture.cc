@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
-#include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
+#include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/render_thread_impl.h"
@@ -36,7 +36,7 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
   // We need to open the device and obtain the label and session ID before
   // initializing.
   if (render_view_.get()) {
-    pending_open_device_id_ = GetDeviceEnumerationEventHandler()->OpenDevice(
+    pending_open_device_id_ = GetMediaDeviceManager()->OpenDevice(
         PP_DEVICETYPE_DEV_VIDEOCAPTURE,
         device_id,
         document_url,
@@ -107,12 +107,11 @@ void PepperPlatformVideoCapture::DetachEventHandler() {
 
   if (render_view_.get()) {
     if (!label_.empty()) {
-      GetDeviceEnumerationEventHandler()->CloseDevice(label_);
+      GetMediaDeviceManager()->CloseDevice(label_);
       label_.clear();
     }
     if (pending_open_device_) {
-      GetDeviceEnumerationEventHandler()->CancelOpenDevice(
-          pending_open_device_id_);
+      GetMediaDeviceManager()->CancelOpenDevice(pending_open_device_id_);
       pending_open_device_ = false;
       pending_open_device_id_ = -1;
     }
@@ -187,7 +186,7 @@ void PepperPlatformVideoCapture::OnDeviceOpened(int request_id,
   succeeded = succeeded && render_view_.get();
   if (succeeded) {
     label_ = label;
-    session_id_ = GetDeviceEnumerationEventHandler()->GetSessionID(
+    session_id_ = GetMediaDeviceManager()->GetSessionID(
         PP_DEVICETYPE_DEV_VIDEOCAPTURE, label);
     Initialize();
   }
@@ -196,10 +195,9 @@ void PepperPlatformVideoCapture::OnDeviceOpened(int request_id,
     handler_->OnInitialized(this, succeeded);
 }
 
-PepperDeviceEnumerationEventHandler*
-    PepperPlatformVideoCapture::GetDeviceEnumerationEventHandler() {
-  return PepperDeviceEnumerationEventHandler::GetForRenderView(
-      render_view_.get());
+PepperMediaDeviceManager*
+    PepperPlatformVideoCapture::GetMediaDeviceManager() {
+  return PepperMediaDeviceManager::GetForRenderView(render_view_.get());
 }
 
 }  // namespace content

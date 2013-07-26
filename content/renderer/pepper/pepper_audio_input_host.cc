@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
+#include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_platform_audio_input.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
@@ -52,7 +52,7 @@ PepperAudioInputHost::PepperAudioInputHost(
       audio_input_(NULL),
       enumeration_helper_(
           this,
-          PepperDeviceEnumerationEventHandler::GetForRenderView(
+          PepperMediaDeviceManager::GetForRenderView(
               host->GetRenderViewForInstance(pp_instance())),
           PP_DEVICETYPE_DEV_AUDIOCAPTURE) {
 }

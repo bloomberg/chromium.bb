@@ -5,7 +5,7 @@
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
+#include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_platform_video_capture.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
@@ -44,7 +44,7 @@ PepperVideoCaptureHost::PepperVideoCaptureHost(RendererPpapiHostImpl* host,
       status_(PP_VIDEO_CAPTURE_STATUS_STOPPED),
       enumeration_helper_(
           this,
-          PepperDeviceEnumerationEventHandler::GetForRenderView(
+          PepperMediaDeviceManager::GetForRenderView(
               host->GetRenderViewForInstance(pp_instance())),
           PP_DEVICETYPE_DEV_VIDEOCAPTURE) {
 }
