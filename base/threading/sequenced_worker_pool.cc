@@ -1124,10 +1124,6 @@ SequencedWorkerPool::Inner::g_last_sequence_number_;
 // static
 SequencedWorkerPool::SequenceToken
 SequencedWorkerPool::GetSequenceTokenForCurrentThread() {
-  // Don't construct lazy instance on check.
-  if (g_lazy_tls_ptr == NULL)
-    return SequenceToken();
-
   SequencedWorkerPool::SequenceToken* token = g_lazy_tls_ptr.Get().Get();
   if (!token)
     return SequenceToken();
