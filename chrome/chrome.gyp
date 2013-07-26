@@ -213,6 +213,7 @@
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            '../third_party/libusb/libusb.gyp:libusb',
           ],
           'include_dirs': [
             '..',
