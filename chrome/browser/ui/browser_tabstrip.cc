@@ -77,8 +77,8 @@ void AddWebContents(Browser* browser,
          disposition == NEW_BACKGROUND_TAB) && !user_gesture &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisablePopupBlocking) &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBetterPopupBlocking)) {
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableBetterPopupBlocking)) {
       // Unrequested popups from normal pages are constrained unless they're in
       // the white list.  The popup owner will handle checking this.
       source_blocked_content->AddPopup(

@@ -137,8 +137,8 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
       web_contents, PasswordManagerDelegateImpl::FromWebContents(web_contents));
   PDFTabHelper::CreateForWebContents(web_contents);
   PluginObserver::CreateForWebContents(web_contents);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBetterPopupBlocking)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBetterPopupBlocking)) {
     PopupBlockerTabHelper::CreateForWebContents(web_contents);
   }
   PrefsTabHelper::CreateForWebContents(web_contents);

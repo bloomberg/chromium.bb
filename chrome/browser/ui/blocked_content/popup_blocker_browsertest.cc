@@ -74,6 +74,11 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
  public:
   PopupBlockerBrowserTest() {}
 
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableBetterPopupBlocking);
+  }
+
   // Returns a url that shows one popup.
   GURL GetTestURL() {
     return ui_test_utils::GetTestUrl(
@@ -219,8 +224,7 @@ class BetterPopupBlockerBrowserTest : public PopupBlockerBrowserTest {
   virtual ~BetterPopupBlockerBrowserTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    PopupBlockerBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableBetterPopupBlocking);
+    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
  private:

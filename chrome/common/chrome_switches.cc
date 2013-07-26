@@ -272,6 +272,9 @@ const char kDisableBackgroundMode[]         = "disable-background-mode";
 // measurements.
 const char kDisableBackgroundNetworking[]   = "disable-background-networking";
 
+// Disables more strict popup blocking.
+const char kDisableBetterPopupBlocking[]    = "disable-better-popup-blocking";
+
 // Disables the bundled PPAPI version of Flash.
 const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 
@@ -510,9 +513,6 @@ const char kEnableAutologin[]               = "enable-autologin";
 
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
-
-// Enables (experimental) more strict popup blocking.
-const char kEnableBetterPopupBlocking[]     = "enable-better-popup-blocking";
 
 // Enables a sync promo that is displayed in the bookmark bubble.
 const char kEnableBookmarkSyncPromo[]       = "enable-bookmark-sync-promo";

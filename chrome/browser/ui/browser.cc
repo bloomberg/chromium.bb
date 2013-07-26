@@ -1284,8 +1284,8 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   if (source)
     popup_blocker_helper = PopupBlockerTabHelper::FromWebContents(source);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBetterPopupBlocking) &&
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBetterPopupBlocking) &&
       popup_blocker_helper) {
 
     if ((params.disposition == NEW_POPUP ||
@@ -1504,8 +1504,8 @@ bool Browser::ShouldCreateWebContents(
         route_id, web_contents, frame_name, target_url);
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBetterPopupBlocking)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBetterPopupBlocking)) {
     return true;
   }
 

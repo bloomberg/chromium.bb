@@ -545,8 +545,8 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
 
 
 void ContentSettingPopupBubbleModel::SetPopups() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBetterPopupBlocking)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBetterPopupBlocking)) {
     std::map<int32, GURL> blocked_popups =
         PopupBlockerTabHelper::FromWebContents(web_contents())
             ->GetBlockedPopupRequests();
@@ -584,8 +584,8 @@ void ContentSettingPopupBubbleModel::SetPopups() {
 
 void ContentSettingPopupBubbleModel::OnPopupClicked(int index) {
   if (web_contents()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBetterPopupBlocking)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableBetterPopupBlocking)) {
       PopupBlockerTabHelper::FromWebContents(web_contents())->
           ShowBlockedPopup(bubble_content().popup_items[index].popup_id);
     } else {
