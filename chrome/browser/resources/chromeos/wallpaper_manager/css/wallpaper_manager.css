@@ -283,7 +283,7 @@ body:not([custom]) [visibleif~='custom'] {
 }
 
 .close-overlay {
-  background-image: url('../images/ui/close-error.png');
+  background-image: url('../images/ui/close-overlay.png');
   height: 14px;
   position: absolute;
   right: 10px;
@@ -292,7 +292,7 @@ body:not([custom]) [visibleif~='custom'] {
 }
 
 .close-overlay:hover {
-  background-image: url('../images/ui/close-error-hover.png');
+  background-image: url('../images/ui/close-overlay-hover.png');
 }
 
 /* Custom wallpaper thumbnail container. */
