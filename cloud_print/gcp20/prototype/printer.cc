@@ -201,12 +201,17 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationStart(
   reg_info_.user = user;
   reg_info_.state = RegistrationInfo::DEV_REG_REGISTRATION_STARTED;
 
-  printf(kUserConfirmationTitle);
-  base::Time valid_until = base::Time::Now() +
-      base::TimeDelta::FromSeconds(kUserConfirmationTimeout);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&Printer::WaitUserConfirmation, AsWeakPtr(), valid_until));
+  if (CommandLine::ForCurrentProcess()->HasSwitch("disable-confirmation")) {
+    reg_info_.confirmation_state = RegistrationInfo::CONFIRMATION_CONFIRMED;
+    LOG(INFO) << "Registration confirmed by default.";
+  } else {
+    printf("%s", kUserConfirmationTitle);
+    base::Time valid_until = base::Time::Now() +
+        base::TimeDelta::FromSeconds(kUserConfirmationTimeout);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&Printer::WaitUserConfirmation, AsWeakPtr(), valid_until));
+  }
 
   requester_->StartRegistration(GenerateProxyId(), kPrinterName, user, kCdd);
 
