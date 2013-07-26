@@ -28,6 +28,10 @@ CreateFileSystemContext(
     bool is_incognito,
     quota::QuotaManagerProxy* quota_manager_proxy);
 
+// Verifies that |url| is valid and has a registered backend in |context|.
+CONTENT_EXPORT bool FileSystemURLIsValid(fileapi::FileSystemContext* context,
+                                         const fileapi::FileSystemURL& url);
+
 // Check whether a process has permission to access the file system URL.
 CONTENT_EXPORT bool CheckFileSystemPermissionsForProcess(
     fileapi::FileSystemContext* context,

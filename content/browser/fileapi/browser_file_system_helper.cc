@@ -92,32 +92,34 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
   return file_system_context;
 }
 
+bool FileSystemURLIsValid(
+    fileapi::FileSystemContext* context,
+    const fileapi::FileSystemURL& url) {
+  if (!url.is_valid())
+    return false;
+
+  return context->GetFileSystemBackend(url.type()) != NULL;
+}
+
 bool CheckFileSystemPermissionsForProcess(
     fileapi::FileSystemContext* context, int process_id,
     const fileapi::FileSystemURL& url, int permissions,
     base::PlatformFileError* error) {
   DCHECK(error);
+
+  if (!FileSystemURLIsValid(context, url)) {
+    *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
+    return false;
+  }
+
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
+          HasPermissionsForFileSystemFile(process_id, url, permissions)) {
+    *error = base::PLATFORM_FILE_ERROR_SECURITY;
+    return false;
+  }
+
   *error = base::PLATFORM_FILE_OK;
-
-  if (!url.is_valid()) {
-    *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
-    return false;
-  }
-
-  if (!context->GetFileSystemBackend(url.type())) {
-    *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
-    return false;
-  }
-
-  base::FilePath file_path;
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  if (policy->HasPermissionsForFileSystemFile(process_id, url, permissions))
-    return true;
-
-  *error = base::PLATFORM_FILE_ERROR_SECURITY;
-  return false;
+  return true;
 }
 
 void SyncGetPlatformPath(fileapi::FileSystemContext* context,
@@ -129,27 +131,24 @@ void SyncGetPlatformPath(fileapi::FileSystemContext* context,
   DCHECK(platform_path);
   *platform_path = base::FilePath();
   fileapi::FileSystemURL url(context->CrackURL(path));
-  if (!url.is_valid())
+  if (!FileSystemURLIsValid(context, url))
     return;
 
   // Make sure if this file is ok to be read (in the current architecture
   // which means roughly same as the renderer is allowed to get the platform
   // path to the file).
-  base::PlatformFileError error;
-  if (!CheckFileSystemPermissionsForProcess(
-      context, process_id, url, fileapi::kReadFilePermissions, &error))
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanReadFileSystemFile(process_id, url))
     return;
 
   context->operation_runner()->SyncGetPlatformPath(url, platform_path);
 
   // The path is to be attached to URLLoader so we grant read permission
-  // for the file. (We first need to check if it can already be read not to
-  // overwrite existing permissions)
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-          process_id, *platform_path)) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        process_id, *platform_path);
-  }
+  // for the file. (We need to check first because a parent directory may
+  // already have the permissions and we don't need to grant it to the file.)
+  if (!policy->CanReadFile(process_id, *platform_path))
+    policy->GrantReadFile(process_id, *platform_path);
 }
 
 }  // namespace content

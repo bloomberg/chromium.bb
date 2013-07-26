@@ -127,9 +127,27 @@ base::FilePath PepperFileRefHost::GetExternalPath() const {
   return base::FilePath();
 }
 
-int32_t PepperFileRefHost::HasPermissions(int permissions) const {
+int32_t PepperFileRefHost::CanRead() const {
   if (backend_)
-    return backend_->HasPermissions(permissions);
+    return backend_->CanRead();
+  return PP_ERROR_FAILED;
+}
+
+int32_t PepperFileRefHost::CanWrite() const {
+  if (backend_)
+    return backend_->CanWrite();
+  return PP_ERROR_FAILED;
+}
+
+int32_t PepperFileRefHost::CanCreate() const {
+  if (backend_)
+    return backend_->CanCreate();
+  return PP_ERROR_FAILED;
+}
+
+int32_t PepperFileRefHost::CanReadWrite() const {
+  if (backend_)
+    return backend_->CanReadWrite();
   return PP_ERROR_FAILED;
 }
 
@@ -163,7 +181,7 @@ int32_t PepperFileRefHost::OnResourceMessageReceived(
 int32_t PepperFileRefHost::OnMakeDirectory(
     ppapi::host::HostMessageContext* context,
     bool make_ancestors) {
-  int32_t rv = HasPermissions(fileapi::kCreateFilePermissions);
+  int32_t rv = CanCreate();
   if (rv != PP_OK)
     return rv;
   return backend_->MakeDirectory(context->MakeReplyMessageContext(),
@@ -175,7 +193,7 @@ int32_t PepperFileRefHost::OnTouch(ppapi::host::HostMessageContext* context,
                                    PP_Time last_modified_time) {
   // TODO(teravest): Change this to be kWriteFilePermissions here and in
   // fileapi_message_filter.
-  int32_t rv = HasPermissions(fileapi::kCreateFilePermissions);
+  int32_t rv = CanCreate();
   if (rv != PP_OK)
     return rv;
   return backend_->Touch(context->MakeReplyMessageContext(),
@@ -184,7 +202,7 @@ int32_t PepperFileRefHost::OnTouch(ppapi::host::HostMessageContext* context,
 }
 
 int32_t PepperFileRefHost::OnDelete(ppapi::host::HostMessageContext* context) {
-  int32_t rv = HasPermissions(fileapi::kWriteFilePermissions);
+  int32_t rv = CanWrite();
   if (rv != PP_OK)
     return rv;
   return backend_->Delete(context->MakeReplyMessageContext());
@@ -192,8 +210,7 @@ int32_t PepperFileRefHost::OnDelete(ppapi::host::HostMessageContext* context) {
 
 int32_t PepperFileRefHost::OnRename(ppapi::host::HostMessageContext* context,
                                     PP_Resource new_file_ref) {
-  int32_t rv = HasPermissions(
-      fileapi::kReadFilePermissions | fileapi::kWriteFilePermissions);
+  int32_t rv = CanReadWrite();
   if (rv != PP_OK)
     return rv;
 
@@ -206,7 +223,7 @@ int32_t PepperFileRefHost::OnRename(ppapi::host::HostMessageContext* context,
   if (!file_ref_host)
     return PP_ERROR_BADRESOURCE;
 
-  rv = file_ref_host->HasPermissions(fileapi::kCreateFilePermissions);
+  rv = file_ref_host->CanCreate();
   if (rv != PP_OK)
     return rv;
 
@@ -215,7 +232,7 @@ int32_t PepperFileRefHost::OnRename(ppapi::host::HostMessageContext* context,
 }
 
 int32_t PepperFileRefHost::OnQuery(ppapi::host::HostMessageContext* context) {
-  int32_t rv = HasPermissions(fileapi::kReadFilePermissions);
+  int32_t rv = CanRead();
   if (rv != PP_OK)
     return rv;
   return backend_->Query(context->MakeReplyMessageContext());
@@ -223,7 +240,7 @@ int32_t PepperFileRefHost::OnQuery(ppapi::host::HostMessageContext* context) {
 
 int32_t PepperFileRefHost::OnReadDirectoryEntries(
     ppapi::host::HostMessageContext* context) {
-  int32_t rv = HasPermissions(fileapi::kReadFilePermissions);
+  int32_t rv = CanRead();
   if (rv != PP_OK)
     return rv;
   return backend_->ReadDirectoryEntries(context->MakeReplyMessageContext());

@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_util_proxy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/public/browser/browser_context.h"
@@ -256,14 +257,50 @@ int32_t PepperInternalFileRefBackend::GetAbsolutePath(
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PepperInternalFileRefBackend::HasPermissions(int permissions) const {
-  base::PlatformFileError error;
-  CheckFileSystemPermissionsForProcess(GetFileSystemContext().get(),
-                                       render_process_id_,
-                                       GetFileSystemURL(),
-                                       permissions,
-                                       &error);
-  return ppapi::PlatformFileErrorToPepperError(error);
+int32_t PepperInternalFileRefBackend::CanRead() const {
+  fileapi::FileSystemURL url = GetFileSystemURL();
+  if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
+    return PP_ERROR_FAILED;
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
+          CanReadFileSystemFile(render_process_id_, url)) {
+    return PP_ERROR_NOACCESS;
+  }
+  return PP_OK;
+}
+
+int32_t PepperInternalFileRefBackend::CanWrite() const {
+  fileapi::FileSystemURL url = GetFileSystemURL();
+  if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
+    return PP_ERROR_FAILED;
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
+          CanWriteFileSystemFile(render_process_id_, url)) {
+    return PP_ERROR_NOACCESS;
+  }
+  return PP_OK;
+}
+
+int32_t PepperInternalFileRefBackend::CanCreate() const {
+  fileapi::FileSystemURL url = GetFileSystemURL();
+  if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
+    return PP_ERROR_FAILED;
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
+          CanCreateFileSystemFile(render_process_id_, url)) {
+    return PP_ERROR_NOACCESS;
+  }
+  return PP_OK;
+}
+
+int32_t PepperInternalFileRefBackend::CanReadWrite() const {
+  fileapi::FileSystemURL url = GetFileSystemURL();
+  if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
+    return PP_ERROR_FAILED;
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanReadFileSystemFile(render_process_id_, url) ||
+      !policy->CanWriteFileSystemFile(render_process_id_, url)) {
+    return PP_ERROR_NOACCESS;
+  }
+  return PP_OK;
 }
 
 }  // namespace content

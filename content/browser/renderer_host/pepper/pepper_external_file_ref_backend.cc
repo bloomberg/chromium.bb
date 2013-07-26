@@ -105,10 +105,35 @@ base::FilePath PepperExternalFileRefBackend::GetExternalPath() const {
   return path_;
 }
 
-int32_t PepperExternalFileRefBackend::HasPermissions(
-    int permissions) const {
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
-      render_process_id_, path_, permissions)) {
+int32_t PepperExternalFileRefBackend::CanRead() const {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
+          CanReadFile(render_process_id_, path_)) {
+    return PP_ERROR_NOACCESS;
+  }
+  return PP_OK;
+}
+
+int32_t PepperExternalFileRefBackend::CanWrite() const {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
+          CanWriteFile(render_process_id_, path_)) {
+    return PP_ERROR_NOACCESS;
+  }
+  return PP_OK;
+}
+
+int32_t PepperExternalFileRefBackend::CanCreate() const {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
+          CanCreateFile(render_process_id_, path_)) {
+    return PP_ERROR_NOACCESS;
+  }
+  return PP_OK;
+}
+
+int32_t PepperExternalFileRefBackend::CanReadWrite() const {
+  ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanReadFile(render_process_id_, path_) ||
+      !policy->CanWriteFile(render_process_id_, path_)) {
     return PP_ERROR_NOACCESS;
   }
   return PP_OK;
