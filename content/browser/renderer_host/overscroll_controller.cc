@@ -277,14 +277,16 @@ void OverscrollController::ProcessEventForOverscroll(
 }
 
 void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
-  if (scroll_state_ == STATE_CONTENT_SCROLLING)
-    return;
-  overscroll_delta_x_ += delta_x;
+  if (scroll_state_ != STATE_CONTENT_SCROLLING)
+    overscroll_delta_x_ += delta_x;
   overscroll_delta_y_ += delta_y;
 
-  float threshold = GetOverscrollConfig(OVERSCROLL_CONFIG_MIN_THRESHOLD_START);
-  if (fabs(overscroll_delta_x_) < threshold &&
-      fabs(overscroll_delta_y_) < threshold) {
+  float horiz_threshold = GetOverscrollConfig(
+      OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START);
+  float vert_threshold = GetOverscrollConfig(
+      OVERSCROLL_CONFIG_VERT_THRESHOLD_START);
+  if (fabs(overscroll_delta_x_) <= horiz_threshold &&
+      fabs(overscroll_delta_y_) <= vert_threshold) {
     SetOverscrollMode(OVERSCROLL_NONE);
     return;
   }
@@ -294,17 +296,20 @@ void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
   // to make sure that subsequent scroll events go through to the page first.
   OverscrollMode new_mode = OVERSCROLL_NONE;
   const float kMinRatio = 2.5;
-  if (fabs(overscroll_delta_x_) > fabs(overscroll_delta_y_) * kMinRatio)
+  if (fabs(overscroll_delta_x_) > horiz_threshold &&
+      fabs(overscroll_delta_x_) > fabs(overscroll_delta_y_) * kMinRatio)
     new_mode = overscroll_delta_x_ > 0.f ? OVERSCROLL_EAST : OVERSCROLL_WEST;
-  else if (fabs(overscroll_delta_y_) > fabs(overscroll_delta_x_) * kMinRatio)
+  else if (fabs(overscroll_delta_y_) > vert_threshold &&
+           fabs(overscroll_delta_y_) > fabs(overscroll_delta_x_) * kMinRatio)
     new_mode = overscroll_delta_y_ > 0.f ? OVERSCROLL_SOUTH : OVERSCROLL_NORTH;
 
-  if (overscroll_mode_ == OVERSCROLL_NONE) {
+  if (overscroll_mode_ == OVERSCROLL_NONE)
     SetOverscrollMode(new_mode);
-  } else if (new_mode != overscroll_mode_) {
+  else if (new_mode != overscroll_mode_)
     SetOverscrollMode(OVERSCROLL_NONE);
+
+  if (overscroll_mode_ == OVERSCROLL_NONE)
     return;
-  }
 
   // Tell the delegate about the overscroll update so that it can update
   // the display accordingly (e.g. show history preview etc.).
@@ -312,21 +317,21 @@ void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
     // Do not include the threshold amount when sending the deltas to the
     // delegate.
     float delegate_delta_x = overscroll_delta_x_;
-    if (fabs(delegate_delta_x) > threshold) {
+    if (fabs(delegate_delta_x) > horiz_threshold) {
       if (delegate_delta_x < 0)
-        delegate_delta_x += threshold;
+        delegate_delta_x += horiz_threshold;
       else
-        delegate_delta_x -= threshold;
+        delegate_delta_x -= horiz_threshold;
     } else {
       delegate_delta_x = 0.f;
     }
 
     float delegate_delta_y = overscroll_delta_y_;
-    if (fabs(delegate_delta_y) > threshold) {
+    if (fabs(delegate_delta_y) > vert_threshold) {
       if (delegate_delta_y < 0)
-        delegate_delta_y += threshold;
+        delegate_delta_y += vert_threshold;
       else
-        delegate_delta_y -= threshold;
+        delegate_delta_y -= vert_threshold;
     } else {
       delegate_delta_y = 0.f;
     }

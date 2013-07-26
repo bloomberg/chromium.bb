@@ -11,7 +11,8 @@ namespace {
 float g_horiz_threshold_complete = 0.25f;
 float g_vert_threshold_complete = 0.20f;
 
-float g_min_threshold_start = 50.f;
+float g_horiz_threshold_start = 50.f;
+float g_vert_threshold_start = 0.f;
 
 float g_horiz_resist_after = 30.f;
 float g_vert_resist_after = 30.f;
@@ -30,8 +31,12 @@ void SetOverscrollConfig(OverscrollConfig config, float value) {
       g_vert_threshold_complete = value;
       break;
 
-    case OVERSCROLL_CONFIG_MIN_THRESHOLD_START:
-      g_min_threshold_start = value;
+    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START:
+      g_horiz_threshold_start = value;
+      break;
+
+    case OVERSCROLL_CONFIG_VERT_THRESHOLD_START:
+      g_vert_threshold_start = value;
       break;
 
     case OVERSCROLL_CONFIG_HORIZ_RESIST_AFTER:
@@ -56,8 +61,11 @@ float GetOverscrollConfig(OverscrollConfig config) {
     case OVERSCROLL_CONFIG_VERT_THRESHOLD_COMPLETE:
       return g_vert_threshold_complete;
 
-    case OVERSCROLL_CONFIG_MIN_THRESHOLD_START:
-      return g_min_threshold_start;
+    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START:
+      return g_horiz_threshold_start;
+
+    case OVERSCROLL_CONFIG_VERT_THRESHOLD_START:
+      return g_vert_threshold_start;
 
     case OVERSCROLL_CONFIG_HORIZ_RESIST_AFTER:
       return g_horiz_resist_after;

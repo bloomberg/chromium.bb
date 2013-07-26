@@ -55,6 +55,7 @@ const char* kWhitelist[] = {
   prefs::kOverscrollHorizontalThresholdComplete,
   prefs::kOverscrollVerticalThresholdComplete,
   prefs::kOverscrollMinimumThresholdStart,
+  prefs::kOverscrollVerticalThresholdStart,
   prefs::kOverscrollHorizontalResistThreshold,
   prefs::kOverscrollVerticalResistThreshold,
   prefs::kImmersiveModeRevealDelayMs,

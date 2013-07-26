@@ -120,7 +120,7 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
 
   base::WeakPtrFactory<WindowSlider> weak_factory_;
 
-  const float min_start_threshold_;
+  const float horiz_start_threshold_;
   const float complete_threshold_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSlider);

@@ -331,7 +331,12 @@ function OverscrollConfig() {
     },
     {
       key: 'minimum_threshold_start',
-      label: 'Start overscroll gesture after scrolling',
+      label: 'Start overscroll gesture (horizontal)',
+      units: 'pixels'
+    },
+    {
+      key: 'vertical_threshold_start',
+      label: 'Start overscroll gesture (vertical)',
       units: 'pixels'
     },
     {
