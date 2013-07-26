@@ -1697,7 +1697,6 @@ crbug.com/263879 [ Mac ] fast/dom/HTMLProgressElement/progress-element.html [ Sk
 crbug.com/263879 [ Mac ] fast/flexbox/011.html [ Skip ]
 crbug.com/263879 [ Mac ] fast/forms/searchfield-heights.html [ Skip ]
 crbug.com/263879 [ Mac ] fast/forms/search-rtl.html [ Skip ]
-crbug.com/263879 fast/js/kde/inbuilt_function_tostring.html [ NeedsRebaseline ]
 crbug.com/263879 [ Mac ] fast/repaint/block-layout-inline-children-float-positioned.html [ Skip ]
 crbug.com/263879 [ Mac ] fast/replaced/007.html [ Skip ]
 crbug.com/263879 [ Mac ] fast/speech/input-appearance-numberandspeech.html [ Skip ]
@@ -2024,3 +2023,7 @@ crbug.com/249600 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.
 crbug.com/249600 [ Mac ] fast/table/table-all-rowspans-height-distribution-in-rows-except-overlapped.html [ NeedsRebaseline ]
 # Text and image both
 crbug.com/249600 [ Mac ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
+
+# Temporary expectation until v8's i18n support is turned on. Then it needs to
+# be rebaslined.
+Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Failure Pass ]
