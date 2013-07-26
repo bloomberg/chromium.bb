@@ -629,7 +629,7 @@ int GetTouchId(const base::NativeEvent& xev) {
   double tracking_id;
   if (!manager->GetEventData(
       *xev, ui::DeviceDataManager::DT_TOUCH_TRACKING_ID, &tracking_id)) {
-    LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
+    LOG(ERROR) << "Could not get the tracking ID for the event. Using 0.";
   } else {
     slot = factory->GetSlotForTrackingID(tracking_id);
     ui::EventType type = ui::EventTypeFromNative(xev);

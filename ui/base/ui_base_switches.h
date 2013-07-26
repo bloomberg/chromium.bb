@@ -37,6 +37,7 @@ UI_EXPORT extern const char kTouchOptimizedUI[];
 UI_EXPORT extern const char kTouchOptimizedUIAuto[];
 UI_EXPORT extern const char kTouchOptimizedUIDisabled[];
 UI_EXPORT extern const char kTouchOptimizedUIEnabled[];
+UI_EXPORT extern const char kTouchSideBezels[];
 
 #if defined(USE_XI2_MT)
 UI_EXPORT extern const char kTouchCalibration[];

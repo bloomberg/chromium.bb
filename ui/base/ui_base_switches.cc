@@ -90,6 +90,9 @@ const char kTouchOptimizedUIEnabled[] = "enabled";
 //   disabled: never optimized for touch.
 const char kTouchOptimizedUIDisabled[] = "disabled";
 
+// Enables touch events on the side bezels.
+const char kTouchSideBezels[] = "touch-side-bezels";
+
 #if defined(USE_XI2_MT)
 // The calibration factors given as "<left>,<right>,<top>,<bottom>".
 const char kTouchCalibration[] = "touch-calibration";

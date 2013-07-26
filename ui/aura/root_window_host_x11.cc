@@ -81,6 +81,15 @@ const char* kAtomsToCache[] = {
   return target;
 }
 
+#if defined(USE_XI2_MT)
+bool IsSideBezelsEnabled() {
+  static bool side_bezels_enabled =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kTouchSideBezels) == "1";
+  return side_bezels_enabled;
+}
+#endif
+
 void SelectEventsForRootWindow() {
   Display* display = ui::GetXDisplay();
   ::Window root_window = ui::GetX11RootWindow();
@@ -202,6 +211,19 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
   virtual ~TouchEventCalibrate() {
     base::MessageLoopForUI::current()->RemoveObserver(this);
   }
+
+#if defined(USE_XI2_MT)
+  bool IsEventOnSideBezels(
+      const base::NativeEvent& xev,
+      const gfx::Rect& bounds) {
+    if (!left_ && !right_)
+      return false;
+
+    gfx::Point location = ui::EventLocationFromNative(xev);
+    int x = location.x();
+    return x < left_ || x > bounds.width() - right_;
+  }
+#endif  // defined(USE_XI2_MT)
 
   // Modify the location of the |event|,
   // expanding it from |bounds| to (|bounds| + bezels).
@@ -928,6 +950,14 @@ void RootWindowHostX11::DispatchXI2Event(const base::NativeEvent& event) {
     case ui::ET_TOUCH_PRESSED:
     case ui::ET_TOUCH_CANCELLED:
     case ui::ET_TOUCH_RELEASED: {
+#if defined(USE_XI2_MT)
+      // Ignore events from the bezel when the side bezel flag is not explicitly
+      // enabled.
+      if (!IsSideBezelsEnabled() &&
+          touch_calibrate_->IsEventOnSideBezels(xev, bounds_)) {
+        break;
+      }
+#endif  // defined(USE_XI2_MT)
       ui::TouchEvent touchev(xev);
 #if defined(OS_CHROMEOS)
       if (base::chromeos::IsRunningOnChromeOS()) {
