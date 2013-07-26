@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
         RenderTableSection {TBODY} at (1,1) size 232x152
           RenderTableRow {TR} at (0,2) size 232x148
             RenderTableCell {TD} at (2,2) size 228x148 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderBlock {P} at (214,2) size 12x144
+              RenderBlock {P} at (214.80,2) size 11.20x144
                 RenderText {#text} at (0,0) size 33x144
                   text run at (0,0) width 28: "This"
                   text run at (0,18) width 10: "is"

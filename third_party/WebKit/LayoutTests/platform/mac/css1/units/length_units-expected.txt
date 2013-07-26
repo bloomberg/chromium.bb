@@ -43,7 +43,7 @@ layer at (0,0) size 785x1592
       RenderBlock {P} at (48,282) size 721x18
         RenderText {#text} at (0,0) size 310x18
           text run at (0,0) width 310: "This paragraph should have a left margin of 3em."
-      RenderBlock {P} at (21,316) size 748x18
+      RenderBlock {P} at (21.53,316) size 747.47x18
         RenderText {#text} at (0,0) size 306x18
           text run at (0,0) width 306: "This paragraph should have a left margin of 3ex."
       RenderBlock {P} at (36,350) size 733x18
@@ -118,7 +118,7 @@ layer at (0,0) size 785x1592
               RenderBlock {P} at (52,56) size 699x18
                 RenderText {#text} at (0,0) size 310x18
                   text run at (0,0) width 310: "This paragraph should have a left margin of 3em."
-              RenderBlock {P} at (25,90) size 726x18
+              RenderBlock {P} at (25.53,90) size 725.47x18
                 RenderText {#text} at (0,0) size 306x18
                   text run at (0,0) width 306: "This paragraph should have a left margin of 3ex."
               RenderBlock {P} at (40,124) size 711x18
