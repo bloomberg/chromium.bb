@@ -87,6 +87,13 @@ WebCryptoAesKeyGenParams* WebCryptoAlgorithm::aesKeyGenParams() const
     return 0;
 }
 
+WebCryptoHmacParams* WebCryptoAlgorithm::hmacParams() const
+{
+    if (paramsType() == WebCryptoAlgorithmParamsTypeHmacParams)
+        return static_cast<WebCryptoHmacParams*>(m_private->params.get());
+    return 0;
+}
+
 void WebCryptoAlgorithm::assign(const WebCryptoAlgorithm& other)
 {
     m_private = other.m_private;

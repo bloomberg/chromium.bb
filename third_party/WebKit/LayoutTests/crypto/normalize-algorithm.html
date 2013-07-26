@@ -24,6 +24,12 @@ function normalizeEncrypt(algorithmIdentifier) {
     return crypto.subtle.encrypt(algorithmIdentifier, key).algorithm;
 }
 
+function normalizeSign(algorithmIdentifier) {
+    // TODO(eroman): Use a valid key.
+    var key;
+    return crypto.subtle.sign(algorithmIdentifier, key).algorithm;
+}
+
 // -------------------------------
 // Case insensitivity of "name"
 // -------------------------------
@@ -108,6 +114,20 @@ shouldBe("algorithm.iv[1]", "1");
 // -------------------------------
 shouldThrow("normalizeEncrypt({ name: 'SHA-1' })");
 shouldThrow("normalizeDigest({ name: 'AES-CBC', iv: originalIv })");
+
+// -------------------------------
+// Normalize HMAC
+// -------------------------------
+shouldThrow("normalizeSign({name: 'hmac'})"); // Missing "hash"
+shouldThrow("normalizeSign({name: 'hmac', hash: 'foo'})"); // Not a valid "hash"
+shouldThrow("normalizeSign({name: 'hmac', hash: { name: 'AES-CBC', iv: originalIv }})"); // Not a valid "hash"
+
+validHmacSha1 = {name: 'hmac', hash: {name: 'Sha-1'}};
+algorithm = normalizeSign(validHmacSha1);
+shouldBe("algorithm.name", "'HMAC'");
+shouldBe("algorithm.hash.name", "'SHA-1'");
+
+shouldThrow("normalizeEncrypt(validHmacSha1)"); // Not defined for encrypt()
 
 </script>
 

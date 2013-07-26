@@ -66,6 +66,7 @@ struct OperationParamsMapping {
 
 const AlgorithmNameMapping algorithmNameMappings[] = {
     {"AES-CBC", WebKit::WebCryptoAlgorithmIdAesCbc},
+    {"HMAC", WebKit::WebCryptoAlgorithmIdHmac},
     {"SHA-1", WebKit::WebCryptoAlgorithmIdSha1},
     {"SHA-224", WebKit::WebCryptoAlgorithmIdSha224},
     {"SHA-256", WebKit::WebCryptoAlgorithmIdSha256},
@@ -79,6 +80,11 @@ const OperationParamsMapping operationParamsMappings[] = {
     {WebKit::WebCryptoAlgorithmIdAesCbc, Decrypt, WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams},
     {WebKit::WebCryptoAlgorithmIdAesCbc, Encrypt, WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams},
     {WebKit::WebCryptoAlgorithmIdAesCbc, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
+
+    // HMAC (section 18.14.)
+    {WebKit::WebCryptoAlgorithmIdHmac, Sign, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
+    {WebKit::WebCryptoAlgorithmIdHmac, Verify, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
+    {WebKit::WebCryptoAlgorithmIdHmac, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
 
     // SHA-1 (section 18.16.)
     {WebKit::WebCryptoAlgorithmIdSha1, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
@@ -175,6 +181,22 @@ PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseAesKeyGenParams(const Dictiona
     return adoptPtr(new WebKit::WebCryptoAesKeyGenParams(length));
 }
 
+PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseHmacParams(const Dictionary& raw)
+{
+    Dictionary rawHash;
+    if (!raw.get("hash", rawHash))
+        return nullptr;
+
+    // Normalizing the algorithm for a Digest operation means it will only
+    // match the SHA-* algorithms.
+    WebKit::WebCryptoAlgorithm hash;
+    NonThrowExceptionState es;
+    if (!normalizeAlgorithm(rawHash, Digest, hash, es))
+        return nullptr;
+
+    return adoptPtr(new WebKit::WebCryptoHmacParams(hash));
+}
+
 PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseAlgorithmParams(const Dictionary& raw, WebKit::WebCryptoAlgorithmParamsType type)
 {
     switch (type) {
@@ -184,6 +206,8 @@ PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseAlgorithmParams(const Dictiona
         return parseAesCbcParams(raw);
     case WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
         return parseAesKeyGenParams(raw);
+    case WebKit::WebCryptoAlgorithmParamsTypeHmacParams:
+        return parseHmacParams(raw);
     }
     ASSERT_NOT_REACHED();
     return nullptr;

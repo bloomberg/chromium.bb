@@ -87,6 +87,20 @@ private:
     const unsigned short m_length;
 };
 
+class WebCryptoHmacParams : public WebCryptoAlgorithmParams {
+public:
+    WebCryptoHmacParams(const WebCryptoAlgorithm& hash)
+        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeHmacParams)
+        , m_hash(hash)
+    {
+    }
+
+    const WebCryptoAlgorithm& hash() const { return m_hash; }
+
+private:
+    WebCryptoAlgorithm m_hash;
+};
+
 } // namespace WebKit
 
 #endif

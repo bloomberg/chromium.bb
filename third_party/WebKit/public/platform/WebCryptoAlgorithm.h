@@ -42,6 +42,7 @@ namespace WebKit {
 
 enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdAesCbc,
+    WebCryptoAlgorithmIdHmac,
     WebCryptoAlgorithmIdSha1,
     WebCryptoAlgorithmIdSha224,
     WebCryptoAlgorithmIdSha256,
@@ -56,10 +57,12 @@ enum WebCryptoAlgorithmParamsType {
     WebCryptoAlgorithmParamsTypeNone,
     WebCryptoAlgorithmParamsTypeAesCbcParams,
     WebCryptoAlgorithmParamsTypeAesKeyGenParams,
+    WebCryptoAlgorithmParamsTypeHmacParams,
 };
 
 class WebCryptoAesCbcParams;
 class WebCryptoAesKeyGenParams;
+class WebCryptoHmacParams;
 
 class WebCryptoAlgorithmParams;
 class WebCryptoAlgorithmPrivate;
@@ -93,6 +96,7 @@ public:
     // type of parameters. Retrieving an invalid parameter will return 0.
     WEBKIT_EXPORT WebCryptoAesCbcParams* aesCbcParams() const;
     WEBKIT_EXPORT WebCryptoAesKeyGenParams* aesKeyGenParams() const;
+    WEBKIT_EXPORT WebCryptoHmacParams* hmacParams() const;
 
 private:
     WEBKIT_EXPORT void assign(const WebCryptoAlgorithm& other);

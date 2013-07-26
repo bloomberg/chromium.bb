@@ -28,36 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NormalizeAlgorithm_h
-#define NormalizeAlgorithm_h
+#ifndef HmacParams_h
+#define HmacParams_h
 
-#include "wtf/Assertions.h"
-
-namespace WebKit { class WebCryptoAlgorithm; }
+#include "modules/crypto/Algorithm.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class Dictionary;
-class ExceptionState;
+class HmacParams : public Algorithm {
+public:
+    static PassRefPtr<HmacParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new HmacParams(algorithm)); }
 
-enum AlgorithmOperation {
-    Encrypt,
-    Decrypt,
-    Sign,
-    Verify,
-    Digest,
-    GenerateKey,
-    DeriveKey,
-    WrapKey,
-    UnwrapKey,
-    // <---- End of list
-    NumberOfAlgorithmOperations,
+    Algorithm* hash();
+
+private:
+    explicit HmacParams(const WebKit::WebCryptoAlgorithm&);
+
+    RefPtr<Algorithm> m_hash;
 };
-
-// Normalizes an algorithm identifier (dictionary) into a WebCryptoAlgorithm. If
-// normalization fails then returns false and sets the ExceptionState.
-bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, WebKit::WebCryptoAlgorithm&, ExceptionState&) WARN_UNUSED_RETURN;
-bool normalizeAlgorithmForImportKey(const Dictionary&, WebKit::WebCryptoAlgorithm&, ExceptionState&) WARN_UNUSED_RETURN;
 
 } // namespace WebCore
 
