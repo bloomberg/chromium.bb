@@ -38,7 +38,6 @@ class MP4StreamParserTest : public testing::Test {
 
  protected:
   scoped_ptr<MP4StreamParser> parser_;
-  base::TimeDelta segment_start_;
   bool configs_received_;
 
   bool AppendData(const uint8* data, size_t length) {
@@ -70,15 +69,22 @@ class MP4StreamParserTest : public testing::Test {
     return true;
   }
 
-  bool NewBuffersF(const StreamParser::BufferQueue& bufs) {
-    DVLOG(2) << "NewBuffersF: " << bufs.size() << " buffers";
-    for (StreamParser::BufferQueue::const_iterator buf = bufs.begin();
-         buf != bufs.end(); buf++) {
-      DVLOG(3) << "  n=" << buf - bufs.begin()
+
+  void DumpBuffers(const std::string& label,
+                   const StreamParser::BufferQueue& buffers) {
+    DVLOG(2) << "DumpBuffers: " << label << " size " << buffers.size();
+    for (StreamParser::BufferQueue::const_iterator buf = buffers.begin();
+         buf != buffers.end(); buf++) {
+      DVLOG(3) << "  n=" << buf - buffers.begin()
                << ", size=" << (*buf)->data_size()
                << ", dur=" << (*buf)->duration().InMilliseconds();
-      EXPECT_GE((*buf)->timestamp(), segment_start_);
     }
+  }
+
+  bool NewBuffersF(const StreamParser::BufferQueue& audio_buffers,
+                   const StreamParser::BufferQueue& video_buffers) {
+    DumpBuffers("audio_buffers", audio_buffers);
+    DumpBuffers("video_buffers", video_buffers);
     return true;
   }
 
@@ -102,9 +108,8 @@ class MP4StreamParserTest : public testing::Test {
     return scoped_ptr<TextTrack>();
   }
 
-  void NewSegmentF(TimeDelta start_dts) {
-    DVLOG(1) << "NewSegmentF: " << start_dts.InMilliseconds();
-    segment_start_ = start_dts;
+  void NewSegmentF() {
+    DVLOG(1) << "NewSegmentF";
   }
 
   void EndOfSegmentF() {
@@ -115,7 +120,6 @@ class MP4StreamParserTest : public testing::Test {
     parser_->Init(
         base::Bind(&MP4StreamParserTest::InitF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewConfigF, base::Unretained(this)),
-        base::Bind(&MP4StreamParserTest::NewBuffersF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewBuffersF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewTextBuffersF,
                    base::Unretained(this)),

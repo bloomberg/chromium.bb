@@ -61,9 +61,6 @@ class MEDIA_EXPORT TrackRunIterator {
   // in bytes past the the head of the MOOF box).
   int64 GetMaxClearOffset();
 
-  // Returns the minimum timestamp (or kInfiniteDuration if no runs present).
-  TimeDelta GetMinDecodeTimestamp();
-
   // Property of the current run. Only valid if IsRunValid().
   uint32 track_id() const;
   int64 aux_info_offset() const;

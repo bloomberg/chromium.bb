@@ -135,6 +135,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   void MarkEndOfStream(PipelineStatus status);
   void UnmarkEndOfStream();
 
+  // Set the append window start and end values for the source buffer
+  // associated with |id|.
+  void SetAppendWindowStart(const std::string& id, base::TimeDelta start);
+  void SetAppendWindowEnd(const std::string& id, base::TimeDelta end);
+
   void Shutdown();
 
   void SetMemoryLimitsForTesting(int memory_limit);

@@ -64,6 +64,14 @@ bool WebSourceBufferImpl::setTimestampOffset(double offset) {
   return demuxer_->SetTimestampOffset(id_, time_offset);
 }
 
+void WebSourceBufferImpl::setAppendWindowStart(double start) {
+  demuxer_->SetAppendWindowStart(id_, DoubleToTimeDelta(start));
+}
+
+void WebSourceBufferImpl::setAppendWindowEnd(double end) {
+  demuxer_->SetAppendWindowEnd(id_, DoubleToTimeDelta(end));
+}
+
 void WebSourceBufferImpl::removedFromMediaSource() {
   demuxer_->RemoveId(id_);
   demuxer_ = NULL;

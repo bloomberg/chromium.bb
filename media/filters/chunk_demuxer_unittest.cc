@@ -6,6 +6,9 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -289,12 +292,6 @@ class ChunkDemuxerTest : public testing::Test {
 
   void AppendSingleStreamCluster(const std::string& source_id, int track_number,
                                  int timecode, int block_count) {
-    static const int kVideoTrackNum = 1;
-    static const int kAudioTrackNum = 2;
-
-    static const int kAudioBlockDuration = 23;
-    static const int kVideoBlockDuration = 33;
-
     int block_duration = 0;
     switch(track_number) {
       case kVideoTrackNum:
@@ -311,6 +308,33 @@ class ChunkDemuxerTest : public testing::Test {
     AppendData(source_id, cluster->data(), cluster->size());
   }
 
+  void AppendSingleStreamCluster(const std::string& source_id, int track_number,
+                                 const std::string& cluster_description) {
+    std::vector<std::string> timestamps;
+    base::SplitString(cluster_description, ' ', &timestamps);
+
+    ClusterBuilder cb;
+    std::vector<uint8> data(10);
+    for (size_t i = 0; i < timestamps.size(); ++i) {
+      std::string timestamp_str = timestamps[i];
+      int block_flags = 0;
+      if (EndsWith(timestamp_str, "K", true)) {
+        block_flags = kWebMFlagKeyframe;
+        // Remove the "K" off of the token.
+        timestamp_str = timestamp_str.substr(0, timestamps[i].length() - 1);
+      }
+      int timestamp_in_ms;
+      CHECK(base::StringToInt(timestamp_str, &timestamp_in_ms));
+
+      if (i == 0)
+        cb.SetClusterTimecode(timestamp_in_ms);
+
+      cb.AddSimpleBlock(track_number, timestamp_in_ms, block_flags,
+                        &data[0], data.size());
+    }
+    scoped_ptr<Cluster> cluster(cb.Finish());
+    AppendData(source_id, cluster->data(), cluster->size());
+  }
 
   void AppendData(const std::string& source_id,
                   const uint8* data, size_t length) {
@@ -731,6 +755,27 @@ class ChunkDemuxerTest : public testing::Test {
     demuxer_->GetStream(type)->Read(base::Bind(
         &ChunkDemuxerTest::ReadDone, base::Unretained(this)));
     message_loop_.RunUntilIdle();
+  }
+
+  void CheckExpectedBuffers(DemuxerStream* stream,
+                            const std::string& expected) {
+    std::vector<std::string> timestamps;
+    base::SplitString(expected, ' ', &timestamps);
+    std::stringstream ss;
+    for (size_t i = 0; i < timestamps.size(); ++i) {
+      DemuxerStream::Status status;
+      scoped_refptr<DecoderBuffer> buffer;
+      stream->Read(base::Bind(&ChunkDemuxerTest::StoreStatusAndBuffer,
+                              base::Unretained(this), &status, &buffer));
+      base::MessageLoop::current()->RunUntilIdle();
+      if (status != DemuxerStream::kOk || buffer->end_of_stream())
+        break;
+
+      if (i > 0)
+        ss << " ";
+      ss << buffer->timestamp().InMilliseconds();
+    }
+    EXPECT_EQ(expected, ss.str());
   }
 
   MOCK_METHOD1(Checkpoint, void(int id));
@@ -2668,6 +2713,37 @@ TEST_F(ChunkDemuxerTest, RemoveBeforeInitSegment) {
 
     demuxer_->Remove(kSourceId, base::TimeDelta::FromMilliseconds(0),
                      base::TimeDelta::FromMilliseconds(1));
+}
+
+TEST_F(ChunkDemuxerTest, AppendWindow) {
+  ASSERT_TRUE(InitDemuxer(false, true));
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+
+  // Set the append window to [20,280).
+  demuxer_->SetAppendWindowStart(kSourceId,
+                                 base::TimeDelta::FromMilliseconds(20));
+  demuxer_->SetAppendWindowEnd(kSourceId,
+                               base::TimeDelta::FromMilliseconds(280));
+
+  // Append a cluster that starts before and ends after the append window.
+  AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
+                            "0K 30 60 90 120K 150 180 210 240K 270 300 330K");
+
+  // Verify that GOPs that start outside the window are not included
+  // in the buffer. Also verify that buffers that extend beyond the
+  // window are not included.
+  CheckExpectedRanges(kSourceId, "{ [120,300) }");
+  CheckExpectedBuffers(stream, "120 150 180 210 240 270");
+
+  // Extend the append window to [20,650).
+  demuxer_->SetAppendWindowEnd(kSourceId,
+                               base::TimeDelta::FromMilliseconds(650));
+
+  // Append more data and verify that adding buffers start at the next
+  // keyframe.
+  AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
+                            "360 390 420K 450 480 510 540K 570 600 630K");
+  CheckExpectedRanges(kSourceId, "{ [120,300) [420,660) }");
 }
 
 }  // namespace media

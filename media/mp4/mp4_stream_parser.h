@@ -29,8 +29,7 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   virtual ~MP4StreamParser();
 
   virtual void Init(const InitCB& init_cb, const NewConfigCB& config_cb,
-                    const NewBuffersCB& audio_cb,
-                    const NewBuffersCB& video_cb,
+                    const NewBuffersCB& new_buffers_cb,
                     const NewTextBuffersCB& text_cb,
                     const NeedKeyCB& need_key_cb,
                     const AddTextTrackCB& add_text_track_cb,
@@ -83,8 +82,7 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   State state_;
   InitCB init_cb_;
   NewConfigCB config_cb_;
-  NewBuffersCB audio_cb_;
-  NewBuffersCB video_cb_;
+  NewBuffersCB new_buffers_cb_;
   NeedKeyCB need_key_cb_;
   NewMediaSegmentCB new_segment_cb_;
   base::Closure end_of_segment_cb_;

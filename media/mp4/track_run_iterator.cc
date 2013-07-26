@@ -343,15 +343,6 @@ int64 TrackRunIterator::GetMaxClearOffset() {
   return offset;
 }
 
-TimeDelta TrackRunIterator::GetMinDecodeTimestamp() {
-  TimeDelta dts = kInfiniteDuration();
-  for (size_t i = 0; i < runs_.size(); i++) {
-    dts = std::min(dts, TimeDeltaFromRational(runs_[i].start_dts,
-                                              runs_[i].timescale));
-  }
-  return dts;
-}
-
 uint32 TrackRunIterator::track_id() const {
   DCHECK(IsRunValid());
   return run_itr_->track_id;

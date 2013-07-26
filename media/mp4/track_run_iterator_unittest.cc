@@ -251,16 +251,6 @@ TEST_F(TrackRunIteratorTest, FirstSampleFlagTest) {
   EXPECT_FALSE(iter_->is_keyframe());
 }
 
-TEST_F(TrackRunIteratorTest, MinDecodeTest) {
-  iter_.reset(new TrackRunIterator(&moov_, log_cb_));
-  MovieFragment moof = CreateFragment();
-  moof.tracks[0].decode_time.decode_time = kAudioScale;
-  ASSERT_TRUE(iter_->Init(moof));
-  EXPECT_EQ(TimeDeltaFromRational(moof.tracks[1].decode_time.decode_time,
-                                  kVideoScale),
-            iter_->GetMinDecodeTimestamp());
-}
-
 TEST_F(TrackRunIteratorTest, ReorderingTest) {
   // Test frame reordering and edit list support. The frames have the following
   // decode timestamps:

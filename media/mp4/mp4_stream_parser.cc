@@ -42,8 +42,7 @@ MP4StreamParser::~MP4StreamParser() {}
 
 void MP4StreamParser::Init(const InitCB& init_cb,
                            const NewConfigCB& config_cb,
-                           const NewBuffersCB& audio_cb,
-                           const NewBuffersCB& video_cb,
+                           const NewBuffersCB& new_buffers_cb,
                            const NewTextBuffersCB& /* text_cb */ ,
                            const NeedKeyCB& need_key_cb,
                            const AddTextTrackCB& /* add_text_track_cb */ ,
@@ -54,15 +53,14 @@ void MP4StreamParser::Init(const InitCB& init_cb,
   DCHECK(init_cb_.is_null());
   DCHECK(!init_cb.is_null());
   DCHECK(!config_cb.is_null());
-  DCHECK(!audio_cb.is_null() || !video_cb.is_null());
+  DCHECK(!new_buffers_cb.is_null());
   DCHECK(!need_key_cb.is_null());
   DCHECK(!end_of_segment_cb.is_null());
 
   ChangeState(kParsingBoxes);
   init_cb_ = init_cb;
   config_cb_ = config_cb;
-  audio_cb_ = audio_cb;
-  video_cb_ = video_cb;
+  new_buffers_cb_ = new_buffers_cb;
   need_key_cb_ = need_key_cb;
   new_segment_cb_ = new_segment_cb;
   end_of_segment_cb_ = end_of_segment_cb;
@@ -324,7 +322,7 @@ bool MP4StreamParser::ParseMoof(BoxReader* reader) {
     runs_.reset(new TrackRunIterator(moov_.get(), log_cb_));
   RCHECK(runs_->Init(moof));
   EmitNeedKeyIfNecessary(moof.pssh);
-  new_segment_cb_.Run(runs_->GetMinDecodeTimestamp());
+  new_segment_cb_.Run();
   ChangeState(kEmittingSamples);
   return true;
 }
@@ -534,16 +532,13 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
 
 bool MP4StreamParser::SendAndFlushSamples(BufferQueue* audio_buffers,
                                           BufferQueue* video_buffers) {
-  bool err = false;
-  if (!audio_buffers->empty()) {
-    err |= (audio_cb_.is_null() || !audio_cb_.Run(*audio_buffers));
-    audio_buffers->clear();
-  }
-  if (!video_buffers->empty()) {
-    err |= (video_cb_.is_null() || !video_cb_.Run(*video_buffers));
-    video_buffers->clear();
-  }
-  return !err;
+  if (audio_buffers->empty() && video_buffers->empty())
+    return true;
+
+  bool success = new_buffers_cb_.Run(*audio_buffers, *video_buffers);
+  audio_buffers->clear();
+  video_buffers->clear();
+  return success;
 }
 
 bool MP4StreamParser::ReadAndDiscardMDATsUntil(const int64 offset) {

@@ -29,8 +29,7 @@ WebMStreamParser::~WebMStreamParser() {
 
 void WebMStreamParser::Init(const InitCB& init_cb,
                             const NewConfigCB& config_cb,
-                            const NewBuffersCB& audio_cb,
-                            const NewBuffersCB& video_cb,
+                            const NewBuffersCB& new_buffers_cb,
                             const NewTextBuffersCB& text_cb,
                             const NeedKeyCB& need_key_cb,
                             const AddTextTrackCB& add_text_track_cb,
@@ -41,7 +40,7 @@ void WebMStreamParser::Init(const InitCB& init_cb,
   DCHECK(init_cb_.is_null());
   DCHECK(!init_cb.is_null());
   DCHECK(!config_cb.is_null());
-  DCHECK(!audio_cb.is_null() || !video_cb.is_null());
+  DCHECK(!new_buffers_cb.is_null());
   DCHECK(!text_cb.is_null());
   DCHECK(!need_key_cb.is_null());
   DCHECK(!new_segment_cb.is_null());
@@ -50,8 +49,7 @@ void WebMStreamParser::Init(const InitCB& init_cb,
   ChangeState(kParsingHeaders);
   init_cb_ = init_cb;
   config_cb_ = config_cb;
-  audio_cb_ = audio_cb;
-  video_cb_ = video_cb;
+  new_buffers_cb_ = new_buffers_cb;
   text_cb_ = text_cb;
   need_key_cb_ = need_key_cb;
   add_text_track_cb_ = add_text_track_cb;
@@ -283,19 +281,18 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
 
   const BufferQueue& audio_buffers = cluster_parser_->audio_buffers();
   const BufferQueue& video_buffers = cluster_parser_->video_buffers();
-  base::TimeDelta cluster_start_time = cluster_parser_->cluster_start_time();
   bool cluster_ended = cluster_parser_->cluster_ended();
 
-  if (waiting_for_buffers_ && cluster_start_time != kNoTimestamp()) {
-    new_segment_cb_.Run(cluster_start_time);
+  if (waiting_for_buffers_ &&
+      cluster_parser_->cluster_start_time() != kNoTimestamp()) {
+    new_segment_cb_.Run();
     waiting_for_buffers_ = false;
   }
 
-  if (!audio_buffers.empty() && !audio_cb_.Run(audio_buffers))
+  if ((!audio_buffers.empty() || !video_buffers.empty()) &&
+      !new_buffers_cb_.Run(audio_buffers, video_buffers)) {
     return -1;
-
-  if (!video_buffers.empty() && !video_cb_.Run(video_buffers))
-    return -1;
+  }
 
   WebMClusterParser::TextTrackIterator text_track_iter =
     cluster_parser_->CreateTextTrackIterator();
