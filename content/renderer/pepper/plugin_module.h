@@ -45,7 +45,7 @@ class WebPluginContainer;
 }  // namespace WebKit
 
 namespace content {
-  
+class HostDispatcherWrapper;
 class PepperPluginInstanceImpl;
 class PluginDelegate;
 
@@ -97,7 +97,7 @@ class CONTENT_EXPORT PluginModule :
 
   // Initializes this module for the given out of process proxy. This takes
   // ownership of the given pointer, even in the failure case.
-  void InitAsProxied(PluginDelegate::OutOfProcessProxy* out_of_process_proxy);
+  void InitAsProxied(HostDispatcherWrapper* host_dispatcher_wrapper);
 
   // Creates a new module for an external plugin instance that will be using the
   // IPC proxy. We can't use the existing module, or new instances of the plugin
@@ -227,7 +227,7 @@ class CONTENT_EXPORT PluginModule :
   // Manages the out of process proxy interface. The presence of this
   // pointer indicates that the plugin is running out of process and that the
   // entry_points_ aren't valid.
-  scoped_ptr<PluginDelegate::OutOfProcessProxy> out_of_process_proxy_;
+  scoped_ptr<HostDispatcherWrapper> host_dispatcher_wrapper_;
 
   // Non-owning pointer to the broker for this plugin module, if one exists.
   // It is populated and cleared in the main thread.
@@ -241,7 +241,7 @@ class CONTENT_EXPORT PluginModule :
 
   // Contains pointers to the entry points of the actual plugin implementation.
   // These will be NULL for out-of-process plugins, which is indicated by the
-  // presence of the out_of_process_proxy_ value.
+  // presence of the host_dispatcher_wrapper_ value.
   PepperPluginInfo::EntryPoints entry_points_;
 
   // The name and file location of the module.

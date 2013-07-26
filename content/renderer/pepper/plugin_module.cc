@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/common.h"
+#include "content/renderer/pepper/host_dispatcher_wrapper.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
@@ -471,9 +472,9 @@ bool PluginModule::InitAsLibrary(const base::FilePath& path) {
 }
 
 void PluginModule::InitAsProxied(
-    PluginDelegate::OutOfProcessProxy* out_of_process_proxy) {
-  DCHECK(!out_of_process_proxy_.get());
-  out_of_process_proxy_.reset(out_of_process_proxy);
+    HostDispatcherWrapper* host_dispatcher_wrapper) {
+  DCHECK(!host_dispatcher_wrapper_.get());
+  host_dispatcher_wrapper_.reset(host_dispatcher_wrapper);
 }
 
 scoped_refptr<PluginModule>
@@ -489,12 +490,12 @@ scoped_refptr<PluginModule>
 
 PP_ExternalPluginResult PluginModule::InitAsProxiedExternalPlugin(
     PepperPluginInstanceImpl* instance) {
-  DCHECK(out_of_process_proxy_.get());
+  DCHECK(host_dispatcher_wrapper_.get());
   // InitAsProxied (for the trusted/out-of-process case) initializes only the
   // module, and one or more instances are added later. In this case, the
   // PluginInstance was already created as in-process, so we missed the proxy
   // AddInstance step and must do it now.
-  out_of_process_proxy_->AddInstance(instance->pp_instance());
+  host_dispatcher_wrapper_->AddInstance(instance->pp_instance());
   // For external plugins, we need to tell the instance to reset itself as
   // proxied. This will clear cached interface pointers and send DidCreate (etc)
   // to the plugin side of the proxy.
@@ -502,18 +503,18 @@ PP_ExternalPluginResult PluginModule::InitAsProxiedExternalPlugin(
 }
 
 bool PluginModule::IsProxied() const {
-  return !!out_of_process_proxy_;
+  return !!host_dispatcher_wrapper_;
 }
 
 base::ProcessId PluginModule::GetPeerProcessId() {
-  if (out_of_process_proxy_)
-    return out_of_process_proxy_->GetPeerProcessId();
+  if (host_dispatcher_wrapper_)
+    return host_dispatcher_wrapper_->peer_pid();
   return base::kNullProcessId;
 }
 
 int PluginModule::GetPluginChildId() {
-  if (out_of_process_proxy_)
-    return out_of_process_proxy_->GetPluginChildId();
+  if (host_dispatcher_wrapper_)
+    return host_dispatcher_wrapper_->plugin_child_id();
   return 0;
 }
 
@@ -543,8 +544,8 @@ PepperPluginInstanceImpl* PluginModule::CreateInstance(
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;
   }
-  if (out_of_process_proxy_)
-    out_of_process_proxy_->AddInstance(instance->pp_instance());
+  if (host_dispatcher_wrapper_)
+    host_dispatcher_wrapper_->AddInstance(instance->pp_instance());
   return instance;
 }
 
@@ -556,8 +557,8 @@ PepperPluginInstanceImpl* PluginModule::GetSomeInstance() const {
 }
 
 const void* PluginModule::GetPluginInterface(const char* name) const {
-  if (out_of_process_proxy_)
-    return out_of_process_proxy_->GetProxiedInterface(name);
+  if (host_dispatcher_wrapper_)
+    return host_dispatcher_wrapper_->GetProxiedInterface(name);
 
   // In-process plugins.
   if (!entry_points_.get_interface)
@@ -570,8 +571,8 @@ void PluginModule::InstanceCreated(PepperPluginInstanceImpl* instance) {
 }
 
 void PluginModule::InstanceDeleted(PepperPluginInstanceImpl* instance) {
-  if (out_of_process_proxy_)
-    out_of_process_proxy_->RemoveInstance(instance->pp_instance());
+  if (host_dispatcher_wrapper_)
+    host_dispatcher_wrapper_->RemoveInstance(instance->pp_instance());
   instances_.erase(instance);
 }
 
@@ -620,7 +621,7 @@ void PluginModule::ResetHostGlobalsForTest() {
 
 bool PluginModule::InitializeModule(
     const PepperPluginInfo::EntryPoints& entry_points) {
-  DCHECK(!out_of_process_proxy_.get()) << "Don't call for proxied modules.";
+  DCHECK(!host_dispatcher_wrapper_.get()) << "Don't call for proxied modules.";
   DCHECK(entry_points.initialize_module != NULL);
   int retval = entry_points.initialize_module(pp_module(), &GetInterface);
   if (retval != 0) {

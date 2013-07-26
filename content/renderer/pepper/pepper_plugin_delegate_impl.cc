@@ -35,12 +35,12 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/renderer_restrict_dispatch_group.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/pepper_platform_video_decoder_impl.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
+#include "content/renderer/pepper/host_dispatcher_wrapper.h"
 #include "content/renderer/pepper/pepper_broker_impl.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
@@ -53,7 +53,6 @@
 #include "content/renderer/pepper/pepper_platform_image_2d_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
-#include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
@@ -73,14 +72,12 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/host/ppapi_host.h"
-#include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/url_loader_resource.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
-#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/ppp_instance_combined.h"
@@ -89,11 +86,8 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_tcp_server_socket_private_api.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/size.h"
@@ -104,123 +98,6 @@ using WebKit::WebFrame;
 namespace content {
 
 namespace {
-
-// This class wraps a dispatcher and has the same lifetime. A dispatcher has
-// the same lifetime as a plugin module, which is longer than any particular
-// RenderView or plugin instance.
-class HostDispatcherWrapper : public PluginDelegate::OutOfProcessProxy {
- public:
-  HostDispatcherWrapper(PluginModule* module,
-                        base::ProcessId peer_pid,
-                        int plugin_child_id,
-                        const ppapi::PpapiPermissions& perms,
-                        bool is_external)
-      : module_(module),
-        peer_pid_(peer_pid),
-        plugin_child_id_(plugin_child_id),
-        permissions_(perms),
-        is_external_(is_external) {
-  }
-  virtual ~HostDispatcherWrapper() {}
-
-  bool Init(const IPC::ChannelHandle& channel_handle,
-            PP_GetInterface_Func local_get_interface,
-            const ppapi::Preferences& preferences,
-            PepperHungPluginFilter* filter) {
-    if (channel_handle.name.empty())
-      return false;
-
-#if defined(OS_POSIX)
-    DCHECK_NE(-1, channel_handle.socket.fd);
-    if (channel_handle.socket.fd == -1)
-      return false;
-#endif
-
-    dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
-    dispatcher_.reset(new ppapi::proxy::HostDispatcher(
-        module_->pp_module(), local_get_interface, filter, permissions_));
-
-    if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(),
-                                          peer_pid_,
-                                          channel_handle,
-                                          true,  // Client.
-                                          preferences)) {
-      dispatcher_.reset();
-      dispatcher_delegate_.reset();
-      return false;
-    }
-    dispatcher_->channel()->SetRestrictDispatchChannelGroup(
-        kRendererRestrictDispatchGroup_Pepper);
-    return true;
-  }
-
-  // OutOfProcessProxy implementation.
-  virtual const void* GetProxiedInterface(const char* name) OVERRIDE {
-    return dispatcher_->GetProxiedInterface(name);
-  }
-  virtual void AddInstance(PP_Instance instance) OVERRIDE {
-    ppapi::proxy::HostDispatcher::SetForInstance(instance, dispatcher_.get());
-
-    RendererPpapiHostImpl* host =
-        RendererPpapiHostImpl::GetForPPInstance(instance);
-    // TODO(brettw) remove this null check when the old-style pepper-based
-    // browser tag is removed from this file. Getting this notification should
-    // always give us an instance we can find in the map otherwise, but that
-    // isn't true for browser tag support.
-    if (host) {
-      RenderView* render_view = host->GetRenderViewForInstance(instance);
-      PepperPluginInstance* plugin_instance = host->GetPluginInstance(instance);
-      render_view->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
-          plugin_child_id_,
-          instance,
-          PepperRendererInstanceData(
-              0,  // The render process id will be supplied in the browser.
-              render_view->GetRoutingID(),
-              plugin_instance->GetContainer()->element().document().url(),
-              plugin_instance->GetPluginURL()),
-          is_external_));
-    }
-  }
-  virtual void RemoveInstance(PP_Instance instance) OVERRIDE {
-    ppapi::proxy::HostDispatcher::RemoveForInstance(instance);
-
-    RendererPpapiHostImpl* host =
-        RendererPpapiHostImpl::GetForPPInstance(instance);
-    // TODO(brettw) remove null check as described in AddInstance.
-    if (host) {
-      RenderView* render_view = host->GetRenderViewForInstance(instance);
-      render_view->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
-          plugin_child_id_,
-          instance,
-          is_external_));
-    }
-  }
-  virtual base::ProcessId GetPeerProcessId() OVERRIDE {
-    return peer_pid_;
-  }
-
-  virtual int GetPluginChildId() OVERRIDE {
-    return plugin_child_id_;
-  }
-
-  ppapi::proxy::HostDispatcher* dispatcher() { return dispatcher_.get(); }
-
- private:
-  PluginModule* module_;
-
-  base::ProcessId peer_pid_;
-
-  // ID that the browser process uses to idetify the child process for the
-  // plugin. This isn't directly useful from our process (the renderer) except
-  // in messages to the browser to disambiguate plugins.
-  int plugin_child_id_;
-
-  ppapi::PpapiPermissions permissions_;
-  bool is_external_;
-
-  scoped_ptr<ppapi::proxy::HostDispatcher> dispatcher_;
-  scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
-};
 
 class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
  public:
