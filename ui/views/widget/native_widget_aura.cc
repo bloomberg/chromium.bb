@@ -48,6 +48,10 @@
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
+#endif
+
 #if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 #endif
@@ -915,13 +919,10 @@ void Widget::NotifyLocaleChanged() {
   // Deliberately not implemented.
 }
 
-#if defined(OS_WIN)
 namespace {
-BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
-  aura::Window* root_window =
-      DesktopRootWindowHostWin::GetContentWindowForHWND(hwnd);
-  if (root_window) {
-    Widget* widget = Widget::GetWidgetForNativeView(root_window);
+void CloseWindow(aura::Window* window) {
+  if (window) {
+    Widget* widget = Widget::GetWidgetForNativeView(window);
     if (widget && widget->is_secondary_widget())
       // To avoid the delay in shutdown caused by using Close which may wait
       // for animations, use CloseNow. Because this is only used on secondary
@@ -929,15 +930,28 @@ BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
       // Close.
       widget->CloseNow();
   }
+}
+#if defined(OS_WIN)
+BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
+  aura::Window* root_window =
+      DesktopRootWindowHostWin::GetContentWindowForHWND(hwnd);
+  CloseWindow(root_window);
   return TRUE;
 }
-}  // namespace
 #endif
+}  // namespace
 
 // static
 void Widget::CloseAllSecondaryWidgets() {
 #if defined(OS_WIN)
   EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, 0);
+#endif
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  std::vector<aura::Window*> open_windows =
+      DesktopRootWindowHostX11::GetAllOpenWindows();
+  std::for_each(open_windows.begin(), open_windows.end(), CloseWindow);
+  DesktopRootWindowHostX11::CleanUpWindowList();
 #endif
 }
 

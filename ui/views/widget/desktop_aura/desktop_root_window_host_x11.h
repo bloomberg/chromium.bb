@@ -56,9 +56,16 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   // A way of converting an X11 |xid| host window into this object.
   static DesktopRootWindowHostX11* GetHostForXID(XID xid);
 
+  // Get all open top-level windows. This includes windows that may not be
+  // visible.
+  static std::vector<aura::Window*> GetAllOpenWindows();
+
   // Called by X11DesktopHandler to notify us that the native windowing system
   // has changed our activation.
   void HandleNativeWidgetActivationChanged(bool active);
+
+  // Deallocates the internal list of open windows.
+  static void CleanUpWindowList();
 
  private:
   // Initializes our X11 surface to draw on. This method performs all
@@ -89,6 +96,9 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   // different host has capture, we translate the event to its coordinate space
   // and dispatch it to that host instead.
   void DispatchMouseEvent(ui::MouseEvent* event);
+
+  // See comment for variable open_windows_.
+  static std::list<XID>& open_windows();
 
   // Overridden from DesktopRootWindowHost:
   virtual aura::RootWindow* Init(aura::Window* content_window,
@@ -241,6 +251,10 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   // can notify widgets when they have lost capture, which controls a bunch of
   // things in views like hiding menus.
   static DesktopRootWindowHostX11* g_current_capture;
+
+  // A list of all (top-level) windows that have been created but not yet
+  // destroyed.
+  static std::list<XID>* open_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostX11);
 };

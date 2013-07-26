@@ -50,6 +50,7 @@ namespace views {
 
 DesktopRootWindowHostX11* DesktopRootWindowHostX11::g_current_capture =
     NULL;
+std::list<XID>* DesktopRootWindowHostX11::open_windows_ = NULL;
 
 DEFINE_WINDOW_PROPERTY_KEY(
     aura::Window*, kViewsWindowForRootWindow, NULL);
@@ -181,6 +182,7 @@ void DesktopRootWindowHostX11::InitX11Window(
       attribute_mask,
       &swa);
   base::MessagePumpAuraX11::Current()->AddDispatcherForWindow(this, xwindow_);
+  open_windows().push_back(xwindow_);
 
   // TODO(erg): Maybe need to set a ViewProp here like in RWHL::RWHL().
 
@@ -257,10 +259,25 @@ DesktopRootWindowHostX11* DesktopRootWindowHostX11::GetHostForXID(XID xid) {
   return root ? root->GetProperty(kHostForRootWindow) : NULL;
 }
 
+// static
+std::vector<aura::Window*> DesktopRootWindowHostX11::GetAllOpenWindows() {
+  std::vector<aura::Window*> windows(open_windows().size());
+  std::transform(open_windows().begin(),
+                 open_windows().end(),
+                 windows.begin(),
+                 GetContentWindowForXID);
+  return windows;
+}
+
 void DesktopRootWindowHostX11::HandleNativeWidgetActivationChanged(
     bool active) {
   native_widget_delegate_->OnNativeWidgetActivationChanged(active);
   native_widget_delegate_->AsWidget()->GetRootView()->SchedulePaint();
+}
+
+void DesktopRootWindowHostX11::CleanUpWindowList() {
+  delete open_windows_;
+  open_windows_ = NULL;
 }
 
 // TODO(erg): This method should basically be everything I need form
@@ -433,6 +450,7 @@ void DesktopRootWindowHostX11::CloseNow() {
   desktop_native_widget_aura_->root_window_event_filter()->RemoveHandler(
       x11_window_event_filter_.get());
 
+  open_windows().remove(xwindow_);
   // Actually free our native resources.
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
   XDestroyWindow(xdisplay_, xwindow_);
@@ -622,6 +640,12 @@ void DesktopRootWindowHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
                                    g_current_capture->root_window_);
     g_current_capture->root_window_host_delegate_->OnHostMouseEvent(event);
   }
+}
+
+std::list<XID>& DesktopRootWindowHostX11::open_windows() {
+  if (!open_windows_)
+    open_windows_ = new std::list<XID>();
+  return *open_windows_;
 }
 
 bool DesktopRootWindowHostX11::HasCapture() const {
