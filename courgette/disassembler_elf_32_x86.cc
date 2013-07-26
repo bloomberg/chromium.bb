@@ -167,6 +167,8 @@ CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
 #endif
         p = rel32 + 4;
         continue;
+      } else {
+        delete rel32_rva;
       }
     }
     p += 1;

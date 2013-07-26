@@ -25,6 +25,8 @@ void TypedRVATest::TestRelativeTargetX86(courgette::RVA word,
 
   EXPECT_TRUE(typed_rva->ComputeRelativeTarget(op_pointer));
   EXPECT_EQ(typed_rva->relative_target(), expected);
+
+  delete typed_rva;
 }
 
 uint32 Read32LittleEndian(const void* address) {
@@ -41,6 +43,8 @@ void TypedRVATest::TestRelativeTargetARM(courgette::ARM_RVA arm_rva,
 
   EXPECT_TRUE(typed_rva->ComputeRelativeTarget(op_pointer));
   EXPECT_EQ(rva + typed_rva->relative_target(), expected);
+
+  delete typed_rva;
 }
 
 TEST_F(TypedRVATest, TestX86) {
