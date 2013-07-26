@@ -28,8 +28,6 @@
         'chown.c',
         'endpwent.c',
         'environ.c',
-        'errno.c',
-        '__errno.c',
         'execve.c',
         '_execve.c',
         'fcntl.c',
