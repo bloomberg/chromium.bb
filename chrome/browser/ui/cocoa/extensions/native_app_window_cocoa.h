@@ -138,6 +138,7 @@ class NativeAppWindowCocoa : public NativeAppWindow {
     return shell_window_->extension();
   }
 
+  NSUInteger GetWindowStyleMask() const;
   void InstallView();
   void UninstallView();
   void InstallDraggableRegionViews();

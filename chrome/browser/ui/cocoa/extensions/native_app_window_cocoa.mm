@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/extensions/native_app_window_cocoa.h"
 
+#include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -11,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_source.h"
@@ -112,12 +114,17 @@ enum {
 @end
 
 @interface ShellNSWindow : ChromeEventProcessingWindow
+@end
+@implementation ShellNSWindow
+@end
+
+@interface ShellCustomFrameNSWindow : ShellNSWindow
 
 - (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view;
 
 @end
 
-@implementation ShellNSWindow
+@implementation ShellCustomFrameNSWindow
 
 - (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view {
   [[NSBezierPath bezierPathWithRect:rect] addClip];
@@ -137,7 +144,7 @@ enum {
 
 @end
 
-@interface ShellFramelessNSWindow : ShellNSWindow
+@interface ShellFramelessNSWindow : ShellCustomFrameNSWindow
 
 @end
 
@@ -230,25 +237,22 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   }
 
   resizable_ = params.resizable;
-  NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
-                          NSMiniaturizableWindowMask |
-                          NSTexturedBackgroundWindowMask;
-  if (resizable_)
-    style_mask |= NSResizableWindowMask;
   base::scoped_nsobject<NSWindow> window;
+  Class window_class;
   if (has_frame_) {
-    window.reset([[ShellNSWindow alloc]
-        initWithContentRect:cocoa_bounds
-                  styleMask:style_mask
-                    backing:NSBackingStoreBuffered
-                      defer:NO]);
+    bool should_use_native_frame =
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAppsUseNativeFrame);
+    window_class = should_use_native_frame ?
+        [ShellNSWindow class] : [ShellCustomFrameNSWindow class];
   } else {
-    window.reset([[ShellFramelessNSWindow alloc]
-        initWithContentRect:cocoa_bounds
-                  styleMask:style_mask
-                    backing:NSBackingStoreBuffered
-                      defer:NO]);
+    window_class = [ShellFramelessNSWindow class];
   }
+  window.reset([[window_class alloc]
+      initWithContentRect:cocoa_bounds
+                styleMask:GetWindowStyleMask()
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
   [window setTitle:base::SysUTF8ToNSString(extension()->name())];
   min_size_ = params.minimum_size;
   if (min_size_.width() || min_size_.height()) {
@@ -296,6 +300,19 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
       window,
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
       shell_window));
+}
+
+NSUInteger NativeAppWindowCocoa::GetWindowStyleMask() const {
+  NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
+                          NSMiniaturizableWindowMask;
+  if (resizable_)
+    style_mask |= NSResizableWindowMask;
+  if (!has_frame_ ||
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAppsUseNativeFrame)) {
+    style_mask |= NSTexturedBackgroundWindowMask;
+  }
+  return style_mask;
 }
 
 void NativeAppWindowCocoa::InstallView() {
@@ -390,12 +407,7 @@ void NativeAppWindowCocoa::SetFullscreen(bool fullscreen) {
     base::mac::RequestFullScreen(base::mac::kFullScreenModeAutoHideAll);
   } else {
     base::mac::ReleaseFullScreen(base::mac::kFullScreenModeAutoHideAll);
-    NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
-                            NSMiniaturizableWindowMask |
-                            NSTexturedBackgroundWindowMask;
-    if (resizable_)
-      style_mask |= NSResizableWindowMask;
-    [window() setStyleMask:style_mask];
+    [window() setStyleMask:GetWindowStyleMask()];
     [window() setFrame:restored_bounds_ display:YES];
   }
   InstallView();
