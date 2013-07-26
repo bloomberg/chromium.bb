@@ -13059,6 +13059,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.WriteDependencyType"
+    enum="SimpleCacheWriteDependencyType">
+  <summary>
+    Shows whether a write operation depends on the previous operation in queue
+    particularly in the aspect of its possibility to run in parallel.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.WriteResult" enum="SimpleCacheWriteResult">
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
@@ -20500,6 +20508,17 @@ other types of suffix sets.
   <int value="1" label="Pretruncate Failure"/>
   <int value="2" label="Write Failure"/>
   <int value="3" label="Truncate Failure"/>
+</enum>
+
+<enum name="SimpleCacheWriteDependencyType" type="int">
+  <int value="0" label="First operation in the queue (Optimistic)"/>
+  <int value="1" label="Follows conflicting optimistic write"/>
+  <int value="2" label="Follows non conflicting optimistic write"/>
+  <int value="3" label="Follows conflicting conservative write"/>
+  <int value="4" label="Follows non conflicting conservative write"/>
+  <int value="5" label="Follows conflicting read"/>
+  <int value="6" label="Follows non conflicting read"/>
+  <int value="7" label="Follows other operation"/>
 </enum>
 
 <enum name="SimpleCacheWriteResult" type="int">

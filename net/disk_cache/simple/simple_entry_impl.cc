@@ -77,6 +77,14 @@ void AdjustOpenEntryCountBy(int offset) {
                              g_open_entry_count);
 }
 
+bool OperationsConflict(int index1, int offset1, int length1, bool truncate1,
+                        int index2, int offset2, int length2, bool truncate2) {
+  int end1 = truncate1 ? INT_MAX : offset1 + length1;
+  int end2 = truncate2 ? INT_MAX : offset2 + length2;
+  bool ranges_intersect = (offset1 < end2 && offset2 < end1);
+  return (index1 == index2 && ranges_intersect);
+}
+
 }  // namespace
 
 namespace disk_cache {
@@ -118,8 +126,7 @@ SimpleEntryImpl::SimpleEntryImpl(const FilePath& path,
       state_(STATE_UNINITIALIZED),
       synchronous_entry_(NULL),
       net_log_(net::BoundNetLog::Make(
-          net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY)),
-      last_queued_op_is_read_(false) {
+          net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY)) {
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
                  arrays_should_be_same_size);
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
@@ -275,7 +282,10 @@ int SimpleEntryImpl::ReadData(int stream_index,
                                   offset,
                                   make_scoped_refptr(buf),
                                   buf_len,
-                                  callback));
+                                  callback),
+                       stream_index,
+                       offset,
+                       buf_len);
   RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
@@ -298,34 +308,42 @@ int SimpleEntryImpl::WriteData(int stream_index,
   }
   ScopedOperationRunner operation_runner(this);
 
-  const bool do_optimistic_write = use_optimistic_operations_ &&
-      state_ == STATE_READY && pending_operations_.size() == 0;
-  if (!do_optimistic_write) {
-    pending_operations_.push(
-        base::Bind(&SimpleEntryImpl::WriteDataInternal, this, stream_index,
-                   offset, make_scoped_refptr(buf), buf_len, callback,
-                   truncate));
-    return net::ERR_IO_PENDING;
+  // We can only do optimistic Write if there is no pending operations, so
+  // that we are sure that the next call to RunNextOperationIfNeeded will
+  // actually run the write operation that sets the stream size. It also
+  // prevents from previous possibly-conflicting writes that could be stacked
+  // in the |pending_operations_|. We could optimize this for when we have
+  // only read operations enqueued.
+  const bool optimistic =
+      (use_optimistic_operations_ && state_ == STATE_READY &&
+       pending_operations_.size() == 0);
+  CompletionCallback op_callback;
+  scoped_refptr<net::IOBuffer> op_buf;
+  int ret_value = net::ERR_FAILED;
+  if (!optimistic) {
+    op_buf = buf;
+    op_callback = callback;
+    ret_value = net::ERR_IO_PENDING;
+  } else {
+    // TODO(gavinp,pasko): For performance, don't use a copy of an IOBuffer
+    // here to avoid paying the price of the RefCountedThreadSafe atomic
+    // operations.
+    if (buf) {
+      op_buf = new IOBuffer(buf_len);
+      memcpy(op_buf->data(), buf->data(), buf_len);
+    }
+    op_callback = CompletionCallback();
+    ret_value = buf_len;
   }
 
-  // We can only do optimistic Write if there is no pending operations, so that
-  // we are sure that the next call to RunNextOperationIfNeeded will actually
-  // run the write operation that sets the stream size. It also prevents from
-  // previous possibly-conflicting writes that could be stacked in the
-  // |pending_operations_|. We could optimize this for when we have only read
-  // operations enqueued.
-  // TODO(gavinp,pasko): For performance, don't use a copy of an IOBuffer here
-  // to avoid paying the price of the RefCountedThreadSafe atomic operations.
-  IOBuffer* buf_copy = NULL;
-  if (buf) {
-    buf_copy = new IOBuffer(buf_len);
-    memcpy(buf_copy->data(), buf->data(), buf_len);
-  }
-  EnqueueOperation(
-      base::Bind(&SimpleEntryImpl::WriteDataInternal, this, stream_index,
-                 offset, make_scoped_refptr(buf_copy), buf_len,
-                 CompletionCallback(), truncate));
-  return buf_len;
+  EnqueueWriteOperation(optimistic,
+                        stream_index,
+                        offset,
+                        op_buf.get(),
+                        buf_len,
+                        truncate,
+                        op_callback);
+  return ret_value;
 }
 
 int SimpleEntryImpl::ReadSparseData(int64 offset,
@@ -376,6 +394,9 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   NOTIMPLEMENTED();
   return net::ERR_FAILED;
 }
+
+SimpleEntryImpl::LastQueuedOpInfo::LastQueuedOpInfo()
+    : is_optimistic_write(false), is_write(false), is_read(false) {}
 
 SimpleEntryImpl::~SimpleEntryImpl() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -430,17 +451,88 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
 }
 
 void SimpleEntryImpl::EnqueueOperation(const base::Closure& operation) {
-  last_queued_op_is_read_ = false;
+  last_op_info_.is_read = false;
+  last_op_info_.is_write = false;
+  last_op_info_.is_optimistic_write = false;
   pending_operations_.push(operation);
 }
 
-void SimpleEntryImpl::EnqueueReadOperation(const base::Closure& operation) {
-  bool parallelizable_read = last_queued_op_is_read_ &&
+void SimpleEntryImpl::EnqueueReadOperation(const base::Closure& operation,
+                                           int index,
+                                           int offset,
+                                           int length) {
+  bool parallelizable_read = last_op_info_.is_read &&
       (!pending_operations_.empty() || state_ == STATE_IO_PENDING);
   UMA_HISTOGRAM_BOOLEAN("SimpleCache.ReadIsParallelizable",
                         parallelizable_read);
-  last_queued_op_is_read_ = true;
+  last_op_info_.is_read = true;
+  last_op_info_.is_write = false;
+  last_op_info_.is_optimistic_write = false;
+  last_op_info_.io_index = index;
+  last_op_info_.io_offset = offset;
+  last_op_info_.io_length = length;
   pending_operations_.push(operation);
+}
+
+void SimpleEntryImpl::EnqueueWriteOperation(
+    bool optimistic,
+    int index,
+    int offset,
+    net::IOBuffer* buf,
+    int length,
+    bool truncate,
+    const CompletionCallback& callback) {
+  // Used in histograms, please only add entries at the end.
+  enum WriteDependencyType {
+    WRITE_OPTIMISTIC = 0,
+    WRITE_FOLLOWS_CONFLICTING_OPTIMISTIC = 1,
+    WRITE_FOLLOWS_NON_CONFLICTING_OPTIMISTIC = 2,
+    WRITE_FOLLOWS_CONFLICTING_WRITE = 3,
+    WRITE_FOLLOWS_NON_CONFLICTING_WRITE = 4,
+    WRITE_FOLLOWS_CONFLICTING_READ = 5,
+    WRITE_FOLLOWS_NON_CONFLICTING_READ = 6,
+    WRITE_FOLLOWS_OTHER = 7,
+    WRITE_DEPENDENCY_TYPE_MAX = 8,
+  };
+
+  WriteDependencyType type = WRITE_FOLLOWS_OTHER;
+  if (optimistic) {
+    type = WRITE_OPTIMISTIC;
+  } else if (last_op_info_.is_read || last_op_info_.is_write) {
+    bool conflicting = OperationsConflict(
+        index, offset, length, truncate,
+        last_op_info_.io_index,
+        last_op_info_.io_offset, last_op_info_.io_length,
+        last_op_info_.truncate && last_op_info_.is_write);
+
+    if (last_op_info_.is_optimistic_write) {
+      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_OPTIMISTIC
+                         : WRITE_FOLLOWS_NON_CONFLICTING_OPTIMISTIC;
+    } else if (last_op_info_.is_read) {
+      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_READ
+                         : WRITE_FOLLOWS_NON_CONFLICTING_READ;
+    } else {
+      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_WRITE
+                         : WRITE_FOLLOWS_NON_CONFLICTING_WRITE;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "SimpleCache.WriteDependencyType", type, WRITE_DEPENDENCY_TYPE_MAX);
+  last_op_info_.is_read = false;
+  last_op_info_.is_write = true;
+  last_op_info_.is_optimistic_write = optimistic;
+  last_op_info_.io_index = index;
+  last_op_info_.io_offset = offset;
+  last_op_info_.io_length = length;
+  last_op_info_.truncate = truncate;
+  pending_operations_.push(base::Bind(&SimpleEntryImpl::WriteDataInternal,
+                                      this,
+                                      index,
+                                      offset,
+                                      make_scoped_refptr(buf),
+                                      length,
+                                      callback,
+                                      truncate));
 }
 
 void SimpleEntryImpl::OpenEntryInternal(const CompletionCallback& callback,

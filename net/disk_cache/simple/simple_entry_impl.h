@@ -126,6 +126,22 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
     CRC_CHECK_MAX = 3,
   };
 
+  // Used in histograms.
+  struct LastQueuedOpInfo {
+    LastQueuedOpInfo();
+
+    // Used for SimpleCache.WriteDependencyType.
+    int io_index;
+    int io_offset;
+    int io_length;
+    bool is_optimistic_write;
+    bool is_write;
+    bool truncate;
+
+    // Used for SimpleCache.ReadIsParallelizable histogram.
+    bool is_read;
+  };
+
   virtual ~SimpleEntryImpl();
 
   // Sets entry to STATE_UNINITIALIZED.
@@ -154,7 +170,19 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   void EnqueueOperation(const base::Closure& operation);
 
   // Adds a read operation to the queue of operations.
-  void EnqueueReadOperation(const base::Closure& operation);
+  void EnqueueReadOperation(const base::Closure& operation,
+                            int index,
+                            int offset,
+                            int length);
+
+  // Adds a write operation to the queue of operations.
+  void EnqueueWriteOperation(bool optimistic,
+                             int index,
+                             int offset,
+                             net::IOBuffer* buf,
+                             int length,
+                             bool truncate,
+                             const CompletionCallback& callback);
 
   void OpenEntryInternal(const CompletionCallback& callback, Entry** out_entry);
 
@@ -275,8 +303,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
 
   net::BoundNetLog net_log_;
 
-  // Used for SimpleCache.ReadIsParallelizable histogram.
-  bool last_queued_op_is_read_;
+  LastQueuedOpInfo last_op_info_;
 };
 
 }  // namespace disk_cache
