@@ -125,6 +125,11 @@ ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* k
         return ScriptObject();
     }
 
+    if (!keyData) {
+        es.throwDOMException(TypeError);
+        return ScriptObject();
+    }
+
     WebKit::WebCryptoKeyUsageMask keyUsages;
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages)) {
         es.throwDOMException(TypeError);

@@ -205,6 +205,10 @@ allTests = [
         // FIXME: http://crbug.com/262383
         //shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, undefined)");
 
+        // Invalid data
+        shouldThrow("crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages)");
+        shouldThrow("crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages)");
+
         startNextTest();
     },
 
