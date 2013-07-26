@@ -49,3 +49,5 @@ class ImageDecoding(page_measurement.PageMeasurement):
       return
     image_decoding_avg = sum(durations) / len(durations)
     results.Add('ImageDecoding_avg', 'ms', image_decoding_avg)
+    results.Add('ImageLoading_avg', 'ms',
+                tab.EvaluateJavaScript('averageLoadingTimeMs()'))

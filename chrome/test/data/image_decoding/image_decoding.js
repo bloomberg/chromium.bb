@@ -5,12 +5,12 @@
 // Run benchmark for at least this many milliseconds.
 var minTotalTimeMs = 10 * 1000;
 // Run benchmark at least this many times.
-var minIterations = 20;
+var minIterations = 5;
 // Discard results for this many milliseconds after startup.
-var warmUpTimeMs = 5 * 1000;
+var warmUpTimeMs = 1000;
 var benchmarkStartTime;
 var loadStartTimeMs;
-var decodingTimesMs = [];
+var loadingTimesMs = [];
 var isDone = false;
 var img;
 
@@ -35,6 +35,7 @@ prepareImageElement = function() {
   // only decode the visible portion of the image, which would skew the results
   // of this test.
   img.setAttribute('width', '100%');
+  img.setAttribute('height', '100%');
   document.body.appendChild(img);
   console.log("Running benchmark for at least " + minTotalTimeMs +
               " ms and at least " + minIterations + " times.");
@@ -56,13 +57,19 @@ runBenchmark = function() {
 var iteration = (new Date).getTime();
 
 startLoadingImage = function() {
+  img.style.display = 'none';
   img.setAttribute('onload', '');
   img.setAttribute('src', '');
-  loadStartTimeMs = now();
   img.addEventListener('load', onImageLoaded);
-  // Use a unique URL for each test iteration to work around image caching.
-  img.setAttribute('src', 'droids.' + getImageFormat() + '?' + iteration);
-  iteration += 1;
+
+  // Setting 'src' and 'display' above causes a repaint. Let it finish before
+  // loading a new image. Ensures loading and painting don't overlap.
+  requestAnimationFrame(function() {
+    loadStartTimeMs = now();
+    // Use a unique URL for each test iteration to work around image caching.
+    img.setAttribute('src', 'droids.' + getImageFormat() + '?' + iteration);
+    iteration += 1;
+  });
 }
 
 var requestAnimationFrame = (function() {
@@ -76,19 +83,37 @@ var requestAnimationFrame = (function() {
          };
 })().bind(window);
 
-onImageLoaded = function(img) {
+onImageLoaded = function() {
   var nowMs = now();
-  var decodingTimeMs = nowMs - loadStartTimeMs;
+  var loadingTimeMs = nowMs - loadStartTimeMs;
   if (nowMs - benchmarkStartTimeMs >= warmUpTimeMs) {
-    decodingTimesMs.push(decodingTimeMs);
+    loadingTimesMs.push(loadingTimeMs);
   }
   if (nowMs - benchmarkStartTimeMs < minTotalTimeMs ||
-      decodingTimesMs.length < minIterations) {
-    requestAnimationFrame(startLoadingImage);
+      loadingTimesMs.length < minIterations) {
+    // Repaint happens right after the image is loaded. Make sure painting
+    // is completed before making the image visible. Setting the image to
+    // visible will start decoding. After decoding and painting are completed
+    // we'll start next test iteration.
+    // Double rAF is needed here otherwise the image is barely visible.
+    requestAnimationFrame(function() {
+      img.style.display = '';
+      requestAnimationFrame(startLoadingImage);
+    });
   } else {
     isDone = true;
-    console.log("decodingTimes: " + decodingTimesMs);
+    console.log("loadingTimes: " + loadingTimesMs);
     setStatus(getImageFormat().toUpperCase() + " benchmark finished: " +
-              decodingTimesMs);
+              loadingTimesMs);
   }
+}
+
+averageLoadingTimeMs = function() {
+  if (!loadingTimesMs.length)
+    return 0;
+  var total = 0;
+  for (var i = 0; i < loadingTimesMs.length; ++i) {
+    total += loadingTimesMs[i];
+  }
+  return total / loadingTimesMs.length;
 }
