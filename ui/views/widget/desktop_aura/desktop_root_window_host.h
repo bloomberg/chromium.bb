@@ -38,7 +38,7 @@ class VIEWS_EXPORT DesktopRootWindowHost {
       DesktopNativeWidgetAura* desktop_native_widget_aura,
       const gfx::Rect& initial_bounds);
 
-  // Return the NativeTheme to use for |window|.
+  // Return the NativeTheme to use for |window|. WARNING: |window| may be NULL.
   static ui::NativeTheme* GetNativeTheme(aura::Window* window);
 
   // Creates the aura resources associated with the native window we built.

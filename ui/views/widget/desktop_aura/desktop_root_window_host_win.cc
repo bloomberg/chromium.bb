@@ -83,7 +83,7 @@ aura::Window* DesktopRootWindowHostWin::GetContentWindowForHWND(HWND hwnd) {
 ui::NativeTheme* DesktopRootWindowHost::GetNativeTheme(aura::Window* window) {
   // Use NativeThemeWin for windows shown on the desktop, those not on the
   // desktop come from Ash and get NativeThemeAura.
-  aura::RootWindow* root = window->GetRootWindow();
+  aura::RootWindow* root = window ? window->GetRootWindow() : NULL;
   if (root) {
     HWND root_hwnd = root->GetAcceleratedWidget();
     if (root_hwnd &&

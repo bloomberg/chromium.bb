@@ -1935,5 +1935,55 @@ TEST_F(WidgetTest, TestWidgetDeletedInOnMousePressed) {
   // Yay we did not crash!
 }
 
+// See description of RunGetNativeThemeFromDestructor() for details.
+class GetNativeThemeFromDestructorView : public WidgetDelegateView {
+ public:
+  GetNativeThemeFromDestructorView() {}
+  virtual ~GetNativeThemeFromDestructorView() {
+    VerifyNativeTheme();
+  }
+
+  virtual View* GetContentsView() OVERRIDE {
+    return this;
+  }
+
+ private:
+  void VerifyNativeTheme() {
+    ASSERT_TRUE(GetNativeTheme() != NULL);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(GetNativeThemeFromDestructorView);
+};
+
+// Verifies GetNativeTheme() from the destructor of a WidgetDelegateView doesn't
+// crash. |is_first_run| is true if this is the first call. A return value of
+// true indicates this should be run again with a value of false.
+// First run uses DesktopNativeWidgetAura (if possible). Second run doesn't.
+bool RunGetNativeThemeFromDestructor(const Widget::InitParams& in_params,
+                                     bool is_first_run) {
+  bool needs_second_run = false;
+  // Destroyed by CloseNow() below.
+  Widget* widget = new Widget;
+  Widget::InitParams params(in_params);
+  // Deletes itself when the Widget is destroyed.
+  params.delegate = new GetNativeThemeFromDestructorView;
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  if (is_first_run) {
+    params.native_widget = new DesktopNativeWidgetAura(widget);
+    needs_second_run = true;
+  }
+#endif
+  widget->Init(params);
+  widget->CloseNow();
+  return needs_second_run;
+}
+
+// See description of RunGetNativeThemeFromDestructor() for details.
+TEST_F(WidgetTest, GetNativeThemeFromDestructor) {
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  if (RunGetNativeThemeFromDestructor(params, true))
+    RunGetNativeThemeFromDestructor(params, false);
+}
+
 }  // namespace
 }  // namespace views
