@@ -71,23 +71,14 @@ void WidenView(NSView* view, CGFloat widthChange) {
 
 }  // namespace
 
-// A class for the chromium-side part of the download shelf context menu.
-
 class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
  public:
   DownloadShelfContextMenuMac(DownloadItem* downloadItem,
                               content::PageNavigator* navigator)
       : DownloadShelfContextMenu(downloadItem, navigator) { }
 
-  using DownloadShelfContextMenu::ExecuteCommand;
-  using DownloadShelfContextMenu::IsCommandIdChecked;
-  using DownloadShelfContextMenu::IsCommandIdEnabled;
-
-  using DownloadShelfContextMenu::SHOW_IN_FOLDER;
-  using DownloadShelfContextMenu::OPEN_WHEN_COMPLETE;
-  using DownloadShelfContextMenu::ALWAYS_OPEN_TYPE;
-  using DownloadShelfContextMenu::CANCEL;
-  using DownloadShelfContextMenu::TOGGLE_PAUSE;
+  // DownloadShelfContextMenu::GetMenuModel is protected.
+  using DownloadShelfContextMenu::GetMenuModel;
 };
 
 @interface DownloadItemController (Private)
@@ -107,8 +98,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
                               bundle:base::mac::FrameworkBundle()])) {
     // Must be called before [self view], so that bridge_ is set in awakeFromNib
     bridge_.reset(new DownloadItemMac(downloadItem, self));
-    menuBridge_.reset(new DownloadShelfContextMenuMac(downloadItem,
-                                                      navigator));
+    menuBridge_.reset(new DownloadShelfContextMenuMac(downloadItem, navigator));
 
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
@@ -194,13 +184,9 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     return;
   }
 
-  // Set correct popup menu. Also, set draggable download on completion.
-  if (downloadModel->download()->GetState() == DownloadItem::COMPLETE) {
-    [progressView_ setMenu:completeDownloadMenu_];
+  // Set path to draggable download on completion.
+  if (downloadModel->download()->GetState() == DownloadItem::COMPLETE)
     [progressView_ setDownload:downloadModel->download()->GetTargetFilePath()];
-  } else {
-    [progressView_ setMenu:activeDownloadMenu_];
-  }
 
   [cell_ setStateFromDownload:downloadModel];
 }
@@ -229,11 +215,11 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (IBAction)handleButtonClick:(id)sender {
   NSEvent* event = [NSApp currentEvent];
+  DownloadItem* download = [self download];
   if ([event modifierFlags] & NSCommandKeyMask) {
     // Let cmd-click show the file in Finder, like e.g. in Safari and Spotlight.
-    menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::SHOW_IN_FOLDER, 0);
+    download->ShowDownloadInShell();
   } else {
-    DownloadItem* download = bridge_->download_model()->download();
     download->OpenDownload();
   }
 }
@@ -247,6 +233,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (DownloadItem*)download {
   return bridge_->download_model()->download();
+}
+
+- (ui::MenuModel*)contextMenuModel {
+  return menuBridge_->GetMenuModel();
 }
 
 - (void)updateToolTip {
@@ -315,66 +305,6 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   DownloadItem* download = bridge_->download_model()->download();
   download->Remove();
   // WARNING: we are deleted at this point.  Don't access 'this'.
-}
-
-
-// Sets the enabled and checked state of a particular menu item for this
-// download. We translate the NSMenuItem selection to menu selections understood
-// by the non platform specific download context menu.
-- (BOOL)validateMenuItem:(NSMenuItem *)item {
-  SEL action = [item action];
-
-  int actionId = 0;
-  if (action == @selector(handleOpen:)) {
-    actionId = DownloadShelfContextMenuMac::OPEN_WHEN_COMPLETE;
-  } else if (action == @selector(handleAlwaysOpen:)) {
-    actionId = DownloadShelfContextMenuMac::ALWAYS_OPEN_TYPE;
-  } else if (action == @selector(handleReveal:)) {
-    actionId = DownloadShelfContextMenuMac::SHOW_IN_FOLDER;
-  } else if (action == @selector(handleCancel:)) {
-    actionId = DownloadShelfContextMenuMac::CANCEL;
-  } else if (action == @selector(handleTogglePause:)) {
-    actionId = DownloadShelfContextMenuMac::TOGGLE_PAUSE;
-  } else {
-    NOTREACHED();
-    return YES;
-  }
-
-  if (menuBridge_->IsCommandIdChecked(actionId))
-    [item setState:NSOnState];
-  else
-    [item setState:NSOffState];
-
-  return menuBridge_->IsCommandIdEnabled(actionId) ? YES : NO;
-}
-
-- (IBAction)handleOpen:(id)sender {
-  menuBridge_->ExecuteCommand(
-      DownloadShelfContextMenuMac::OPEN_WHEN_COMPLETE, 0);
-}
-
-- (IBAction)handleAlwaysOpen:(id)sender {
-  menuBridge_->ExecuteCommand(
-      DownloadShelfContextMenuMac::ALWAYS_OPEN_TYPE, 0);
-}
-
-- (IBAction)handleReveal:(id)sender {
-  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::SHOW_IN_FOLDER, 0);
-}
-
-- (IBAction)handleCancel:(id)sender {
-  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::CANCEL, 0);
-}
-
-- (IBAction)handleTogglePause:(id)sender {
-  if([sender state] == NSOnState) {
-    [sender setTitle:l10n_util::GetNSStringWithFixup(
-        IDS_DOWNLOAD_MENU_PAUSE_ITEM)];
-  } else {
-    [sender setTitle:l10n_util::GetNSStringWithFixup(
-        IDS_DOWNLOAD_MENU_RESUME_ITEM)];
-  }
-  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::TOGGLE_PAUSE, 0);
 }
 
 @end

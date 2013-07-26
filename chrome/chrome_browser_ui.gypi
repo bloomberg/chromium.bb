@@ -601,6 +601,8 @@
         'browser/ui/cocoa/download/download_item_controller.mm',
         'browser/ui/cocoa/download/download_item_mac.h',
         'browser/ui/cocoa/download/download_item_mac.mm',
+        'browser/ui/cocoa/download/download_shelf_context_menu_controller.h',
+        'browser/ui/cocoa/download/download_shelf_context_menu_controller.mm',
         'browser/ui/cocoa/download/download_shelf_controller.h',
         'browser/ui/cocoa/download/download_shelf_controller.mm',
         'browser/ui/cocoa/download/download_shelf_mac.h',

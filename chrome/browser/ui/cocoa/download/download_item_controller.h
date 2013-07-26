@@ -25,15 +25,16 @@ namespace gfx {
 class Font;
 }
 
+namespace ui {
+class MenuModel;
+}
+
 // A controller class that manages one download item.
 
 @interface DownloadItemController : NSViewController {
  @private
   IBOutlet DownloadItemButton* progressView_;
   IBOutlet DownloadItemCell* cell_;
-
-  IBOutlet NSMenu* activeDownloadMenu_;
-  IBOutlet NSMenu* completeDownloadMenu_;
 
   // This is shown instead of progressView_ for dangerous downloads.
   IBOutlet NSView* dangerousDownloadView_;
@@ -101,6 +102,11 @@ class Font;
 // Returns the DownloadItem model object belonging to this item.
 - (content::DownloadItem*)download;
 
+// Returns the MenuModel for the download item context menu. The returned
+// MenuModel is owned by the DownloadItemController and will be valid until the
+// DownloadItemController is destroyed.
+- (ui::MenuModel*)contextMenuModel;
+
 // Updates the tooltip with the download's path.
 - (void)updateToolTip;
 
@@ -109,12 +115,5 @@ class Font;
 - (BOOL)isDangerousMode;
 - (IBAction)saveDownload:(id)sender;
 - (IBAction)discardDownload:(id)sender;
-
-// Context menu handlers.
-- (IBAction)handleOpen:(id)sender;
-- (IBAction)handleAlwaysOpen:(id)sender;
-- (IBAction)handleReveal:(id)sender;
-- (IBAction)handleCancel:(id)sender;
-- (IBAction)handleTogglePause:(id)sender;
 
 @end
