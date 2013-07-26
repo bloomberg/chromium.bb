@@ -1520,7 +1520,6 @@ bool Browser::ShouldCreateWebContents(
           switches::kDisablePopupBlocking)) {
     chrome::NavigateParams nav_params(
         this, target_url, content::PAGE_TRANSITION_LINK);
-    // TODO(jochen): route window features here.
     nav_params.referrer = referrer;
     if (!opener_suppressed)
       nav_params.source_contents = web_contents;
