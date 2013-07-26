@@ -119,100 +119,6 @@ def ParseRdfaMessages(stdout):
       yield offset, message
 
 
-def RunRdfaWithNopPatching(options, data_chunks):
-  r"""Run RDFA validator with NOP patching for better error reporting.
-
-  If the RDFA validator encounters an invalid instruction, it resumes validation
-  from the beginning of the next bundle, while the original, non-DFA-based
-  validators skip maybe one or two bytes and recover. And there are plenty of
-  tests where there are more than one error in a single bundle. To mitigate such
-  spurious disagreements, the following procedure is used: when RDFA complaints
-  that particular piece can't be decoded, the problematic line in @hex section
-  (which usually corresponds to one instruction) is replaced with NOPs and the
-  validator is rerun from the beginning. This process may take several
-  iterations (it seems it always converges in practice). All errors reported on
-  all such runs (sans duplicate ones) are taken as validation result. So, in a
-  sense, this trick is to emulate line-level recovery as opposed to bundle-
-  level. In practice it turns out ok, and lots of spurious errors are
-  eliminated. To each error message we add the stage at which it was produced,
-  so we can destinguish 'primary' errors from additional ones.
-
-  Example. Suppose DE AD and BE EF machine codes correspond to invalid
-  instructions. Lets take a look at what happens when we invoke
-  RunRdfaWithNopPatching(options, ['\de\ad', '\be\ef']). First the RDFA
-  validator is run on the code '\de\ad\be\ef\90\90\90...'. It encounters an
-  undecipherable instruction, produces an error message at offset zero and
-  stops. Now we replace what is at offset zero ('\de\ad') with corresponding
-  amount of nops, and run the RDFA validator again on
-  '\90\90\be\ef\90\90\90...'. This time it decodes first two NOPs sucessfully
-  and reports problem at offset 2. In the next iteration of NOP patching BE EF
-  is replaced with 90 90 as well, no decoding errors are reported on the next
-  run so the whole process stops. Finally the combined output looks like
-  following:
-
-    0: [0] unrecognized instruction  <- produced at stage 0
-    2: [1] unrecognized instruction  <- produced at stage 1
-    return code: 1                   <- return code at stage 0
-
-  Args:
-    options: Options as produced by optparse.
-        Relevant fields are .bits and .update.
-    data_chunks: List of strings containing binary data. For the described
-        heuristic to work better it is desirable (although not absolutelty
-        required) that strings correspond to singular instructions, as it
-        usually happens in @hex section.
-
-  Returns:
-    String representing combined output from all stages. Error messages are
-    of the form
-      <offset in hex>: [<stage>] <message>
-  """
-
-  data_chunks = list(data_chunks)
-
-  offset_to_chunk = {}
-  offset = 0
-  for i, chunk in enumerate(data_chunks):
-    offset_to_chunk[offset] = i
-    offset += len(chunk)
-
-  first_return_code = None
-  messages = []  # list of triples (offset, stage, message)
-  messages_set = set()  # set of pairs (offset, message)
-  stage = 0
-
-  while True:
-    return_code, stdout = RunRdfaValidator(options, ''.join(data_chunks))
-    if first_return_code is None:
-      first_return_code = return_code
-
-    nop_patched = False
-
-    for offset, message in ParseRdfaMessages(stdout):
-      if (offset, message) in messages_set:
-        continue
-      messages.append((offset, stage, message))
-      messages_set.add((offset, message))
-
-      if offset in offset_to_chunk and message == 'unrecognized instruction':
-        chunk_no = offset_to_chunk[offset]
-        nops_chunk = '\x90' * len(data_chunks[chunk_no])
-        if nops_chunk != data_chunks[chunk_no]:
-          data_chunks[chunk_no] = nops_chunk
-          nop_patched = True
-
-    if not nop_patched:
-      break
-    stage += 1
-
-  messages.sort(key=lambda (offset, stage, _): (offset, stage))
-
-  result = ''.join('%x: [%d] %s\n' % (offset, stage, message)
-                   for offset, stage, message in messages)
-  result += 'return code: %d\n' % first_return_code
-  return result
-
-
 def CheckValidJumpTargets(options, data_chunks):
   """
   Check that the validator infers valid jump targets correctly.
@@ -275,10 +181,14 @@ class RdfaTestRunner(test_format.TestRunner):
 
   def GetSectionContent(self, options, sections):
     data_chunks = list(test_format.ParseHex(sections['hex']))
-    result = RunRdfaWithNopPatching(options, data_chunks)
 
-    last_line = re.search('return code: ((-)?\d+)\n$', result)
-    return_code = int(last_line.group(1))
+    return_code, stdout = RunRdfaValidator(options, ''.join(data_chunks))
+
+    # TODO(shcherbina): get rid of this '[0]' in separate commit.
+    # For now it stays to minimize diff.
+    result = ''.join('%x: [0] %s\n' % (offset, message)
+                     for offset, message in ParseRdfaMessages(stdout))
+    result += 'return code: %d\n' % return_code
 
     if return_code == 0:
       print '  Checking jump targets...'

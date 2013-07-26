@@ -26,14 +26,12 @@
 ----------------------------------------------------------------------
 @hex:
   # This is an example where we have decremented the nop by 1.
-  66 0f 1f 43
-  ff ff
+  66 0f 1f 43 ff ff
 @dis:
      0:	66 0f 1f 43 ff                               	nopw   -0x1(%ebx)
      5:	ff                                           	.byte 0xff
 @rdfa_output:
   0: [0] unrecognized instruction
-  4: [1] unrecognized instruction
   return code: 1
 @spec:
   5: ('objdump failed to decode', Instruction(0x5: ff  .byte 0xff))
