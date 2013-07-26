@@ -369,5 +369,42 @@ class InvalidOSMacroNamesTest(unittest.TestCase):
     self.assertEqual(0, len(errors))
 
 
+class CheckAddedDepsHaveTetsApprovalsTest(unittest.TestCase):
+  def testDepsFilesToCheck(self):
+    changed_lines = [
+      '"+breakpad",',
+      '"+chrome/installer",',
+      '"+chrome/plugin/chrome_content_plugin_client.h",',
+      '"+chrome/utility/chrome_content_utility_client.h",',
+      '"+chromeos/chromeos_paths.h",',
+      '"+components/breakpad",',
+      '"+components/nacl/common",',
+      '"+content/public/browser/render_process_host.h",',
+      '"+grit",  # For generated headers',
+      '"+grit/generated_resources.h",',
+      '"+grit/",',
+      '"+policy",  # For generated headers and source',
+      '"+sandbox",',
+      '"+tools/memory_watcher",',
+      '"+third_party/lss/linux_syscall_support.h",',
+    ]
+    files_to_check = PRESUBMIT._DepsFilesToCheck(re, changed_lines)
+    expected = set([
+      'breakpad/DEPS',
+      'chrome/installer/DEPS',
+      'chrome/plugin/DEPS',
+      'chrome/utility/DEPS',
+      'chromeos/DEPS',
+      'components/breakpad/DEPS',
+      'components/nacl/common/DEPS',
+      'content/public/browser/DEPS',
+      'policy/DEPS',
+      'sandbox/DEPS',
+      'tools/memory_watcher/DEPS',
+      'third_party/lss/DEPS',
+    ])
+    self.assertEqual(expected, files_to_check);
+
+
 if __name__ == '__main__':
   unittest.main()

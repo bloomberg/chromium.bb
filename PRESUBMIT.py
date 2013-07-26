@@ -727,6 +727,26 @@ def _CheckNoAbbreviationInPngFileName(input_api, output_api):
   return results
 
 
+def _DepsFilesToCheck(re, changed_lines):
+  """Helper method for _CheckAddedDepsHaveTargetApprovals. Returns
+  a set of DEPS entries that we should look up."""
+  results = set()
+
+  # This pattern grabs the path without basename in the first
+  # parentheses, and the basename (if present) in the second. It
+  # relies on the simple heuristic that if there is a basename it will
+  # be a header file ending in ".h".
+  pattern = re.compile(
+      r"""['"]\+([^'"]+?)(/[a-zA-Z0-9_]+\.h)?['"].*""")
+  for changed_line in changed_lines:
+    m = pattern.match(changed_line)
+    if m:
+      path = m.group(1)
+      if not (path.startswith('grit/') or path == 'grit'):
+        results.add('%s/DEPS' % m.group(1))
+  return results
+
+
 def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   """When a dependency prefixed with + is added to a DEPS file, we
   want to make sure that the change is reviewed by an OWNER of the
@@ -743,20 +763,7 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   if not changed_lines:
     return []
 
-  virtual_depended_on_files = set()
-  # This pattern grabs the path without basename in the first
-  # parentheses, and the basename (if present) in the second. It
-  # relies on the simple heuristic that if there is a basename it will
-  # be a header file ending in ".h".
-  pattern = input_api.re.compile(
-      r"""['"]\+([^'"]+?)(/[a-zA-Z0-9_]+\.h)?['"].*""")
-  for changed_line in changed_lines:
-    m = pattern.match(changed_line)
-    if m:
-      path = m.group(1)
-      if not path.startswith('grit/'):
-        virtual_depended_on_files.add('%s/DEPS' % m.group(1))
-
+  virtual_depended_on_files = _DepsFilesToCheck(input_api.re, changed_lines)
   if not virtual_depended_on_files:
     return []
 
