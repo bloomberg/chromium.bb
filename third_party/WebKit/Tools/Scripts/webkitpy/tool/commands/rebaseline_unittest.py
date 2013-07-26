@@ -592,9 +592,9 @@ TBR=foo@chromium.org
         def blame(path):
             return """
 6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-06-14 20:18:46 +0000   11) crbug.com/24182 [ Debug ] path/to/norebaseline.html [ ImageOnlyFailure ]
-6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   13) Bug(foo) path/to/rebaseline-without-bug-number.html [ NeedsRebaseline ]
-6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-06-14 20:18:46 +0000   11) crbug.com/24182 [ SnowLeopard ] path/to/rebaseline-with-modifiers.html [ NeedsRebaseline ]
-6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   12) crbug.com/24182 path/to/rebaseline-without-modifiers.html [ NeedsRebaseline ]
+6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   13) Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-06-14 20:18:46 +0000   11) crbug.com/24182 [ SnowLeopard ] fast/dom/prototype-strawberry.html [ NeedsRebaseline ]
+6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   12) crbug.com/24182 fast/dom/prototype-chocolate.html [ NeedsRebaseline ]
 624caaaaaa path/to/TestExpectations                   (foo@chromium.org        2013-04-28 04:52:41 +0000   12) crbug.com/24182 path/to/not-cycled-through-bots.html [ NeedsRebaseline ]
 0000000000 path/to/TestExpectations                   (foo@chromium.org        2013-04-28 04:52:41 +0000   12) crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 """
@@ -612,16 +612,16 @@ TBR=foo@chromium.org
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 crbug.com/24182 [ Debug ] path/to/norebaseline.html [ Rebaseline ]
-Bug(foo) path/to/rebaseline-without-bug-number.html [ NeedsRebaseline ]
-crbug.com/24182 [ SnowLeopard ] path/to/rebaseline-with-modifiers.html [ NeedsRebaseline ]
-crbug.com/24182 path/to/rebaseline-without-modifiers.html [ NeedsRebaseline ]
+Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+crbug.com/24182 [ SnowLeopard ] fast/dom/prototype-strawberry.html [ NeedsRebaseline ]
+crbug.com/24182 fast/dom/prototype-chocolate.html [ NeedsRebaseline ]
 crbug.com/24182 path/to/not-cycled-through-bots.html [ NeedsRebaseline ]
 crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 """)
 
-        self._write_test_file(test_port, 'path/to/rebaseline-without-bug-number.html', "Dummy test contents")
-        self._write_test_file(test_port, 'path/to/rebaseline-with-modifiers.html', "Dummy test contents")
-        self._write_test_file(test_port, 'path/to/rebaseline-without-modifiers.html', "Dummy test contents")
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+        self._write_test_file(test_port, 'fast/dom/prototype-strawberry.html', "Dummy test contents")
+        self._write_test_file(test_port, 'fast/dom/prototype-chocolate.html', "Dummy test contents")
 
         old_exact_matches = builders._exact_matches
         try:
@@ -640,22 +640,22 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
             self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
                 [
-                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'png,wav,txt', '--builder', 'MOCK Leopard', '--test', 'path/to/rebaseline-without-modifiers.html'],
-                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'png,wav,txt', '--builder', 'MOCK SnowLeopard', '--test', 'path/to/rebaseline-without-modifiers.html'],
-                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'png,wav,txt', '--builder', 'MOCK Leopard', '--test', 'path/to/rebaseline-without-bug-number.html'],
-                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'png,wav,txt', '--builder', 'MOCK SnowLeopard', '--test', 'path/to/rebaseline-without-bug-number.html'],
-                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'png,wav,txt', '--builder', 'MOCK SnowLeopard', '--test', 'path/to/rebaseline-with-modifiers.html'],
+                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-chocolate.html'],
+                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-chocolate.html'],
+                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'png', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-strawberry.html'],
+                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-taco.html'],
+                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
                 ],
                 [
-                    ['echo', 'rebaseline-test-internal', '--suffixes', 'png,wav,txt', '--builder', 'MOCK Leopard', '--test', 'path/to/rebaseline-without-modifiers.html'],
-                    ['echo', 'rebaseline-test-internal', '--suffixes', 'png,wav,txt', '--builder', 'MOCK SnowLeopard', '--test', 'path/to/rebaseline-without-modifiers.html'],
-                    ['echo', 'rebaseline-test-internal', '--suffixes', 'png,wav,txt', '--builder', 'MOCK Leopard', '--test', 'path/to/rebaseline-without-bug-number.html'],
-                    ['echo', 'rebaseline-test-internal', '--suffixes', 'png,wav,txt', '--builder', 'MOCK SnowLeopard', '--test', 'path/to/rebaseline-without-bug-number.html'],
-                    ['echo', 'rebaseline-test-internal', '--suffixes', 'png,wav,txt', '--builder', 'MOCK SnowLeopard', '--test', 'path/to/rebaseline-with-modifiers.html'],
+                    ['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-chocolate.html'],
+                    ['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-chocolate.html'],
+                    ['echo', 'rebaseline-test-internal', '--suffixes', 'png', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-strawberry.html'],
+                    ['echo', 'rebaseline-test-internal', '--suffixes', 'txt', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-taco.html'],
+                    ['echo', 'rebaseline-test-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
                 ],
-                ['echo', 'optimize-baselines', '--suffixes', 'wav,txt,png', 'path/to/rebaseline-without-modifiers.html'],
-                ['echo', 'optimize-baselines', '--suffixes', 'wav,txt,png', 'path/to/rebaseline-without-bug-number.html'],
-                ['echo', 'optimize-baselines', '--suffixes', 'wav,txt,png', 'path/to/rebaseline-with-modifiers.html'],
+                ['echo', 'optimize-baselines', '--suffixes', 'txt,png', 'fast/dom/prototype-chocolate.html'],
+                ['echo', 'optimize-baselines', '--suffixes', 'png', 'fast/dom/prototype-strawberry.html'],
+                ['echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html'],
                 ['git', 'pull'],
             ])
         finally:

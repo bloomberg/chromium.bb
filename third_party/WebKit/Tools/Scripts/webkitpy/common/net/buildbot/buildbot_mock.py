@@ -28,6 +28,9 @@
 
 import logging
 
+from webkitpy.common.net.layouttestresults import LayoutTestResults
+from webkitpy.common.net import layouttestresults_unittest
+
 _log = logging.getLogger(__name__)
 
 
@@ -56,6 +59,8 @@ class MockBuilder(object):
     def latest_layout_test_results_url(self):
         return self.accumulated_results_url()
 
+    def latest_layout_test_results(self):
+        return LayoutTestResults.results_from_string(layouttestresults_unittest.LayoutTestResultsTest.example_full_results_json)
 
 class MockBuildBot(object):
     def __init__(self):

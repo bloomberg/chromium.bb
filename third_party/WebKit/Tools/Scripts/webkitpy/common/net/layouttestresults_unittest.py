@@ -43,7 +43,7 @@ class LayoutTestResultsTest(unittest.TestCase):
             "dom": {
                 "prototype-inheritance.html": {
                     "expected": "PASS",
-                    "actual": "FAIL",
+                    "actual": "TEXT",
                     "is_unexpected": true
                 },
                 "prototype-banana.html": {
@@ -53,16 +53,16 @@ class LayoutTestResultsTest(unittest.TestCase):
                 },
                 "prototype-taco.html": {
                     "expected": "PASS",
-                    "actual": "PASS FAIL",
+                    "actual": "PASS TEXT",
                     "is_unexpected": true
                 },
                 "prototype-chocolate.html": {
                     "expected": "FAIL",
-                    "actual": "FAIL"
+                    "actual": "IMAGE+TEXT"
                 },
                 "prototype-strawberry.html": {
                     "expected": "PASS",
-                    "actual": "FAIL PASS",
+                    "actual": "IMAGE PASS",
                     "is_unexpected": true
                 }
             }
@@ -100,3 +100,9 @@ class LayoutTestResultsTest(unittest.TestCase):
 
     def test_blink_revision(self):
         self.assertEqual(LayoutTestResults.results_from_string(self.example_full_results_json).blink_revision(), 1234)
+
+    def test_actual_results(self):
+        results = LayoutTestResults.results_from_string(self.example_full_results_json)
+        self.assertEqual(results.actual_results("fast/dom/prototype-banana.html"), "PASS")
+        self.assertEqual(results.actual_results("fast/dom/prototype-taco.html"), "PASS TEXT")
+        self.assertEqual(results.actual_results("nonexistant.html"), "")

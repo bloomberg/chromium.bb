@@ -545,12 +545,18 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             # FIXME: Remove this option.
             self.results_directory_option,
             ])
+        self._builder_data = {}
+
+    def builder_data(self):
+        if not self._builder_data:
+            for builder_name in self._release_builders():
+                builder = self._tool.buildbot_for_builder_name(builder_name).builder_with_name(builder_name)
+                self._builder_data[builder_name] = builder.latest_layout_test_results()
+        return self._builder_data
 
     def latest_revision_processed_on_all_bots(self):
         revisions = []
-        for builder_name in self._release_builders():
-            builder = self._tool.buildbot_for_builder_name(builder_name).builder_with_name(builder_name)
-            result = builder.latest_layout_test_results()
+        for result in self.builder_data().values():
             if result.run_was_interrupted():
                 _log.error("Can't rebaseline. The latest run on %s did not complete." % builder_name)
                 return 0
@@ -614,6 +620,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
     def get_test_prefix_list(self, tests):
         test_prefix_list = {}
+        builder_data = self.builder_data()
 
         for builder_name in self._release_builders():
             port_name = builders.port_name_for_builder_name(builder_name)
@@ -622,9 +629,18 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             for test in expectations.get_needs_rebaseline_failures():
                 if test not in tests:
                     continue
+
+                actual_results = builder_data[builder_name].actual_results(test)
+                if not actual_results:
+                    continue
+
+                suffixes = TestExpectations.suffixes_for_actual_expectations_string(actual_results)
+                if not suffixes:
+                    continue
+
                 if test not in test_prefix_list:
                     test_prefix_list[test] = {}
-                test_prefix_list[test][builder_name] = BASELINE_SUFFIX_LIST
+                test_prefix_list[test][builder_name] = suffixes
 
         return test_prefix_list
 

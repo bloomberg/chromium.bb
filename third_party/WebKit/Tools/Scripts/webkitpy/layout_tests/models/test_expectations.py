@@ -940,6 +940,21 @@ class TestExpectations(object):
             suffixes.add('wav')
         return set(suffixes)
 
+    @staticmethod
+    def suffixes_for_actual_expectations_string(expectations):
+        suffixes = set()
+        if 'TEXT' in expectations:
+            suffixes.add('txt')
+        if 'IMAGE' in expectations:
+            suffixes.add('png')
+        if 'AUDIO' in expectations:
+            suffixes.add('wav')
+        if 'MISSING' in expectations:
+            suffixes.add('txt')
+            suffixes.add('png')
+            suffixes.add('wav')
+        return suffixes
+
     # FIXME: This constructor does too much work. We should move the actual parsing of
     # the expectations into separate routines so that linting and handling overrides
     # can be controlled separately, and the constructor can be more of a no-op.

@@ -50,6 +50,8 @@ def for_each_test(tree, handler, prefix=''):
 def result_for_test(tree, test):
     parts = test.split('/')
     for part in parts:
+        if part not in tree:
+            return None
         tree = tree[part]
     return tree
 
@@ -103,3 +105,9 @@ class LayoutTestResults(object):
 
     def blink_revision(self):
         return int(self._results["blink_revision"])
+
+    def actual_results(self, test):
+        result = result_for_test(self._results["tests"], test)
+        if result:
+            return result["actual"]
+        return ""
