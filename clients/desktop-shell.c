@@ -1205,15 +1205,13 @@ panel_add_launchers(struct panel *panel, struct desktop *desktop)
 
 		if (icon != NULL && path != NULL) {
 			panel_add_launcher(panel, icon, path);
+			count++;
 		} else {
 			fprintf(stderr, "invalid launcher section\n");
-			continue;
 		}
 
 		free(icon);
 		free(path);
-
-		count++;
 	}
 
 	if (count == 0) {
