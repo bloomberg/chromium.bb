@@ -68,13 +68,15 @@ UsbService::UsbService() {
   event_handler_ = new UsbEventHandler(context_);
 }
 
-UsbService::~UsbService() {}
-
-void UsbService::Shutdown() {
+UsbService::~UsbService() {
   event_handler_->Stop();
   delete event_handler_;
   libusb_exit(context_);
   context_ = NULL;
+}
+
+UsbService* UsbService::GetInstance() {
+  return Singleton<UsbService>::get();
 }
 
 void UsbService::FindDevices(const uint16 vendor_id,

@@ -9,7 +9,10 @@
 
 namespace {
 
-typedef testing::Test UsbServiceTest;
+class UsbServiceTest : public testing::Test {
+ protected:
+  class UsbServiceForTest : public UsbService {};
+};
 
 #if defined(OS_LINUX)
 // Linux trybot does not support usb.
@@ -23,8 +26,9 @@ typedef testing::Test UsbServiceTest;
 
 TEST_F(UsbServiceTest, MAYBE_GracefulShutdown) {
   base::TimeTicks start = base::TimeTicks::Now();
-  scoped_ptr<UsbService> service(new UsbService());
-  service->Shutdown();
+  {
+    scoped_ptr<UsbServiceForTest> service(new UsbServiceForTest());
+  }
   base::TimeDelta elapse = base::TimeTicks::Now() - start;
   if (elapse > base::TimeDelta::FromSeconds(2)) {
     FAIL();

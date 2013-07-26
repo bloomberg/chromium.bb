@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_device_handle.h"
 #include "chrome/browser/usb/usb_service.h"
-#include "chrome/browser/usb/usb_service_factory.h"
 #include "chrome/common/extensions/api/usb.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
@@ -441,16 +440,12 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
     return;
   }
 
-  UsbService* const service = UsbServiceFactory::GetInstance()->GetForProfile(
-      profile());
-  if (!service) {
-    LOG(WARNING) << "Could not get UsbService for active profile.";
-    CompleteWithError(kErrorNoDevice);
-    return;
-  }
-
-  service->FindDevices(vendor_id, product_id, interface_id, &devices_,
-                       base::Bind(&UsbFindDevicesFunction::OnCompleted, this));
+  UsbService::GetInstance()->FindDevices(
+      vendor_id,
+      product_id,
+      interface_id,
+      &devices_,
+      base::Bind(&UsbFindDevicesFunction::OnCompleted, this));
 }
 
 void UsbFindDevicesFunction::OnCompleted() {

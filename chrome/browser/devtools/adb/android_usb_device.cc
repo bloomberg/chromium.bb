@@ -15,7 +15,6 @@
 #include "chrome/browser/devtools/adb/android_usb_socket.h"
 #include "chrome/browser/usb/usb_interface.h"
 #include "chrome/browser/usb/usb_service.h"
-#include "chrome/browser/usb/usb_service_factory.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -153,8 +152,7 @@ AdbMessage::~AdbMessage() {
 void AndroidUsbDevice::Enumerate(Profile* profile,
                                  crypto::RSAPrivateKey* rsa_key,
                                  const AndroidUsbDevicesCallback& callback) {
-  UsbService* service =
-      UsbServiceFactory::GetInstance()->GetForProfile(profile);
+  UsbService* service = UsbService::GetInstance();
   UsbDevices usb_devices;
   service->EnumerateDevices(&usb_devices);
 

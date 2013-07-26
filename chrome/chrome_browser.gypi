@@ -2282,8 +2282,6 @@
         'browser/usb/usb_interface.h',
         'browser/usb/usb_service.cc',
         'browser/usb/usb_service.h',
-        'browser/usb/usb_service_factory.cc',
-        'browser/usb/usb_service_factory.h',
         'browser/user_data_dir_extractor.cc',
         'browser/user_data_dir_extractor.h',
         'browser/user_data_dir_extractor_win.cc',

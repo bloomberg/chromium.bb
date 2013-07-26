@@ -10,26 +10,24 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/singleton.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/usb/usb_device_handle.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 class UsbEventHandler;
-typedef libusb_context* PlatformUsbContext;
+template <typename T> struct DefaultSingletonTraits;
+struct libusb_context;
+
+typedef struct libusb_context* PlatformUsbContext;
 
 // The USB service handles creating and managing an event handler thread that is
 // used to manage and dispatch USB events. It is also responsbile for device
 // discovery on the system, which allows it to re-use device handles to prevent
 // competition for the same USB device.
-class UsbService : public BrowserContextKeyedService {
+class UsbService {
  public:
-  UsbService();
-  virtual ~UsbService();
-
-  // Shutdown must be invoked before the service is destroyed. It interrupts the
-  // event handling thread and disposes of open devices.
-  virtual void Shutdown() OVERRIDE;
+  static UsbService* GetInstance();
 
   // Find all of the devices attached to the system that are identified by
   // |vendor_id| and |product_id|, inserting them into |devices|. Clears
@@ -48,7 +46,14 @@ class UsbService : public BrowserContextKeyedService {
   // UsbDevice's Close function and disposes of the associated platform handle.
   void CloseDevice(scoped_refptr<UsbDeviceHandle> device);
 
+ protected:
+  UsbService();
+  virtual ~UsbService();
+
  private:
+  friend struct DefaultSingletonTraits<UsbService>;
+
+
   // RefCountedPlatformUsbDevice takes care of managing the underlying reference
   // count of a single PlatformUsbDevice. This allows us to construct things
   // like vectors of RefCountedPlatformUsbDevices and not worry about having to

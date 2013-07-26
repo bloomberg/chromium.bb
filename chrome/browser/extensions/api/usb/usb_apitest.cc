@@ -5,8 +5,6 @@
 #include "chrome/browser/extensions/api/usb/usb_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/usb/usb_service.h"
-#include "chrome/browser/usb/usb_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
