@@ -926,9 +926,10 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
       drop_target_.slot = tiles_per_page() - 1;
     }
   } else {
-    const int drop_row = point.y() / kPreferredTileHeight;
+    gfx::Rect bounds(GetContentsBounds());
+    const int drop_row = (point.y() - bounds.y()) / kPreferredTileHeight;
     const int drop_col = std::min(cols_ - 1,
-                                  point.x() / kPreferredTileWidth);
+        (point.x() - bounds.x()) / kPreferredTileWidth);
 
     drop_target_.page = current_page;
     drop_target_.slot = std::max(0, std::min(
