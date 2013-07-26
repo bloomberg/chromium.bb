@@ -220,6 +220,11 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   // notification bubble is visible).
   bool hide_notifications_;
 
+  // This is true when the displayed system tray menu is a full tray menu,
+  // otherwise a single line item menu like the volume slider is shown.
+  // Note that the value is only valid when |system_bubble_| is true.
+  bool full_system_tray_menu_;
+
   internal::TrayAccessibility* tray_accessibility_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);

@@ -122,6 +122,7 @@ SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
       items_(),
       default_bubble_height_(0),
       hide_notifications_(false),
+      full_system_tray_menu_(false),
       tray_accessibility_(NULL) {
   SetContentsBackground();
 }
@@ -321,9 +322,13 @@ bool SystemTray::HasNotificationBubble() const {
 }
 
 bool SystemTray::IsPressed() {
-  // We only return true when the full system bubble was triggered. Small
-  // bubbles (like audio modifications via keyboard) do not count.
-  return HasSystemBubble() && !detailed_item_;
+  // Only when a full system tray bubble gets shown true will be returned.
+  // Small bubbles (like audio modifications via keyboard) should return false.
+  // Since showing the e.g. network portion of the system tray menu will convert
+  // the |system_bubble_| from type |BUBBLE_TYPE_DEFAULT| into
+  // |BUBBLE_TYPE_DETAILED| the full tray cannot reliably be checked trhough the
+  // type. As such |full_system_tray_menu_| gets checked here.
+  return HasSystemBubble() && full_system_tray_menu_;
 }
 
 internal::SystemTrayBubble* SystemTray::GetSystemBubble() {
@@ -424,10 +429,15 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   // Destroy the notification bubble here so that it doesn't get rebuilt
   // while we add items to the main bubble_ (e.g. in HideNotificationView).
   notification_bubble_.reset();
-
   if (system_bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
     system_bubble_->bubble()->UpdateView(items, bubble_type);
   } else {
+    // Remember if the menu is a single property (like e.g. volume) or the
+    // full tray menu. Note that in case of the |BUBBLE_USE_EXISTING| case
+    // above, |full_system_tray_menu_| does not get changed since the fact that
+    // the menu is full (or not) doesn't change even if a "single property"
+    // (like network) replaces most of the menu.
+    full_system_tray_menu_ = items.size() > 1;
     // The menu width is fixed, and it is a per language setting.
     int menu_width = std::max(kMinimumSystemTrayMenuWidth,
         Shell::GetInstance()->system_tray_delegate()->GetSystemTrayMenuWidth());
