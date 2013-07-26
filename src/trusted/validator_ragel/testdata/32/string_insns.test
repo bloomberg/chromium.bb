@@ -50,7 +50,7 @@
 @dis:
      0:	ac                                           	lods   %ds:(%esi),%al
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -62,7 +62,7 @@
 @dis:
      0:	f3 66 ab                                     	rep stos %ax,%es:(%edi)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -73,7 +73,7 @@
 @dis:
      0:	66 f3 ab                                     	rep stos %ax,%es:(%edi)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE

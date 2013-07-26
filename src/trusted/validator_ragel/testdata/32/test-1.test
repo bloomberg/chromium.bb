@@ -22,10 +22,10 @@
     17:	00 00                                        	add    %al,(%eax)
     19:	f4                                           	hlt    
 @rdfa_output:
-  6: [0] direct jump out of range
-  b: [0] direct jump out of range
-  10: [0] direct jump out of range
-  16: [0] unrecognized instruction
+  6: direct jump out of range
+  b: direct jump out of range
+  10: direct jump out of range
+  16: unrecognized instruction
   return code: 1
 @spec:
   16: unrecognized instruction 'ret'

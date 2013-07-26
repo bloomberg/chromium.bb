@@ -16,7 +16,7 @@
 @dis:
      0:	f0 66 83 00 01                               	lock addw $0x1,(%eax)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE

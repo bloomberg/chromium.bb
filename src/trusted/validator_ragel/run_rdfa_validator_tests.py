@@ -184,9 +184,7 @@ class RdfaTestRunner(test_format.TestRunner):
 
     return_code, stdout = RunRdfaValidator(options, ''.join(data_chunks))
 
-    # TODO(shcherbina): get rid of this '[0]' in separate commit.
-    # For now it stays to minimize diff.
-    result = ''.join('%x: [0] %s\n' % (offset, message)
+    result = ''.join('%x: %s\n' % (offset, message)
                      for offset, message in ParseRdfaMessages(stdout))
     result += 'return code: %d\n' % return_code
 

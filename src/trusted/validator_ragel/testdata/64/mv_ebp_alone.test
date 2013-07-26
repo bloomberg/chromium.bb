@@ -5,7 +5,7 @@
 @dis:
      0:	44 89 dd                                     	mov    %r11d,%ebp
 @rdfa_output:
-  3: [0] improper %rbp sandboxing
+  3: improper %rbp sandboxing
   return code: 1
 @spec:
   3: %rbp should not be restricted at the end of chunk

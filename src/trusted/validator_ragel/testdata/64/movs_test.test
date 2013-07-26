@@ -65,7 +65,7 @@
     26:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
     2a:	a4                                           	movsb  %ds:(%rsi),%es:(%rdi)
 @rdfa_output:
-  2a: [0] unrecognized instruction
+  2a: unrecognized instruction
   return code: 1
 @spec:
   1e: superinstruction crosses bundle boundary

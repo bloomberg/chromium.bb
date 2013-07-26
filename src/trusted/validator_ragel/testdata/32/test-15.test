@@ -13,7 +13,7 @@
      9:	90                                           	nop
      a:	f4                                           	hlt    
 @rdfa_output:
-  1: [0] unrecognized instruction
+  1: unrecognized instruction
   return code: 1
 @spec:
   1: unrecognized instruction 'xsave (%ecx)'

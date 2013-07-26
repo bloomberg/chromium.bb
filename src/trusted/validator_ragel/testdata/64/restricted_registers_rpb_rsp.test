@@ -8,7 +8,7 @@
      0:	89 ed                                        	mov    %ebp,%ebp
      2:	41 8a 04 2f                                  	mov    (%r15,%rbp,1),%al
 @rdfa_output:
-  2: [0] improper %rbp sandboxing
+  2: improper %rbp sandboxing
   return code: 1
 @spec:
   2: ("%rbp can't be used as index in memory access", Instruction(0x2: 41 8a 04 2f  mov (%r15,%rbp,1),%al))
@@ -21,8 +21,8 @@
      0:	89 e4                                        	mov    %esp,%esp
      2:	42 8a 04 3c                                  	mov    (%rsp,%r15,1),%al
 @rdfa_output:
-  2: [0] improper memory address - bad index
-  2: [0] improper %rsp sandboxing
+  2: improper memory address - bad index
+  2: improper %rsp sandboxing
   return code: 1
 @spec:
   2: ("%r15 can't be used as index in memory access", Instruction(0x2: 42 8a 04 3c  mov (%rsp,%r15,1),%al))
@@ -60,8 +60,8 @@
      0:	89 ed                                        	mov    %ebp,%ebp
      2:	49 8d 2c 2f                                  	lea    (%r15,%rbp,1),%rbp
 @rdfa_output:
-  2: [0] improper %rbp sandboxing
-  2: [0] error - %bpl or %bp is changed
+  2: improper %rbp sandboxing
+  2: error - %bpl or %bp is changed
   return code: 1
 @spec:
   2: ('changes to rbp are not allowed', Instruction(0x2: 49 8d 2c 2f  lea (%r15,%rbp,1),%rbp))
@@ -91,7 +91,7 @@
      0:	89 ed                                        	mov    %ebp,%ebp
      2:	48 89 e5                                     	mov    %rsp,%rbp
 @rdfa_output:
-  2: [0] improper %rbp sandboxing
+  2: improper %rbp sandboxing
   return code: 1
 @spec:
   2: %rbp should not be restricted
@@ -104,8 +104,8 @@
      0:	11 c4                                        	adc    %eax,%esp
      2:	4c 01 fc                                     	add    %r15,%rsp
 @rdfa_output:
-  0: [0] error - %spl or %sp is changed
-  2: [0] improper %rsp sandboxing
+  0: error - %spl or %sp is changed
+  2: improper %rsp sandboxing
   return code: 1
 @spec:
   0: ('non-zero-extending changes to ebp and esp are not allowed', Instruction(0x0: 11 c4  adc %eax,%esp))

@@ -7,7 +7,7 @@
      0:	87 d9                                        	xchg   %ebx,%ecx
      2:	41 8a 04 1f                                  	mov    (%r15,%rbx,1),%al
 @rdfa_output:
-  2: [0] improper memory address - bad index
+  2: improper memory address - bad index
   return code: 1
 @spec:
   2: register %rbx should be restricted, while in fact '%rcx' is restricted
@@ -33,7 +33,7 @@
      0:	87 e9                                        	xchg   %ebp,%ecx
      2:	41 8a 04 0f                                  	mov    (%r15,%rcx,1),%al
 @rdfa_output:
-  0: [0] improper %rbp sandboxing
+  0: improper %rbp sandboxing
   return code: 1
 @spec:
   0: ('non-zero-extending changes to ebp and esp are not allowed', Instruction(0x0: 87 e9  xchg %ebp,%ecx))

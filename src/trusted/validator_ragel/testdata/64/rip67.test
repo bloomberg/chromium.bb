@@ -11,7 +11,7 @@
      0:	b8 78 56 34 12                               	mov    $0x12345678,%eax
      5:	67 48 89 05 cf e0 61 00                      	mov    %rax,0x61e0cf(%eip)        # 0x61e0dc
 @rdfa_output:
-  5: [0] unrecognized instruction
+  5: unrecognized instruction
   return code: 1
 @spec:
   5: ('addr prefix is not allowed', Instruction(0x5: 67 48 89 05 cf e0 61 00  mov %rax,0x61e0cf(%eip) # 0x61e0dc))

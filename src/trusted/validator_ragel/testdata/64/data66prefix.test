@@ -8,7 +8,7 @@
      0:	0f 73                                        	(bad)  
      2:	ff 00                                        	incl   (%rax)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: 0f 73  (bad)))

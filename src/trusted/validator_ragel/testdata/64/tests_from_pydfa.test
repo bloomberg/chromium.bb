@@ -23,7 +23,7 @@
 @dis:
      0:	cd 80                                        	int    $0x80
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'int $0x80'
@@ -33,7 +33,7 @@
 @dis:
      0:	c3                                           	retq   
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'retq'
@@ -43,7 +43,7 @@
 @dis:
      0:	0f 05                                        	syscall 
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'syscall'
@@ -60,9 +60,9 @@
     14:	48 b8 78 56 34 12 78 56 34 12                	movabs $0x1234567812345678,%rax
     1e:	48 b8 78 56 34 12 78 56 34 12                	movabs $0x1234567812345678,%rax
 @rdfa_output:
-  1e: [0] unrecognized instruction
-  20: [0] direct jump out of range
-  24: [0] direct jump out of range
+  1e: unrecognized instruction
+  20: direct jump out of range
+  24: direct jump out of range
   return code: 1
 @spec:
   1e: instruction crosses bundle boundary
@@ -97,7 +97,7 @@
 @dis:
      0:	eb fd                                        	jmp    0xffffffff
 @rdfa_output:
-  0: [0] direct jump out of range
+  0: direct jump out of range
   return code: 1
 @spec:
   0: jump into a middle of instruction (0xffffffff)
@@ -109,7 +109,7 @@
 @dis:
      0:	eb 1f                                        	jmp    0x21
 @rdfa_output:
-  0: [0] direct jump out of range
+  0: direct jump out of range
   return code: 1
 @spec:
   0: jump into a middle of instruction (0x21)
@@ -124,7 +124,7 @@
      0:	48 b8 78 56 34 12 78 56 34 12                	movabs $0x1234567812345678,%rax
      a:	eb f9                                        	jmp    0x5
 @rdfa_output:
-  a: [0] bad jump target
+  a: bad jump target
   return code: 1
 @spec:
   a: jump into a middle of instruction (0x5)
@@ -135,7 +135,7 @@
 @dis:
      0:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'jmpq *%rax'
@@ -145,7 +145,7 @@
 @dis:
      0:	ff 20                                        	jmpq   *(%rax)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'jmpq *(%rax)'
@@ -155,7 +155,7 @@
 @dis:
      0:	ff d0                                        	callq  *%rax
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'callq *%rax'
@@ -165,7 +165,7 @@
 @dis:
      0:	ff 10                                        	callq  *(%rax)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'callq *(%rax)'
@@ -256,7 +256,7 @@
      3:	4c 01 f8                                     	add    %r15,%rax
      6:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
-  6: [0] unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   0: ('nacljump64/naclcall64: registers do not match (%rbx, %rax, %rax)', [Instruction(0x0: 83 e3 e0  and $0xffffffe0,%ebx), Instruction(0x3: 4c 01 f8  add %r15,%rax), Instruction(0x6: ff e0  jmpq *%rax)])
@@ -274,7 +274,7 @@
      3:	4c 01 fb                                     	add    %r15,%rbx
      6:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
-  6: [0] unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   0: ('nacljump64/naclcall64: registers do not match (%rax, %rbx, %rax)', [Instruction(0x0: 83 e0 e0  and $0xffffffe0,%eax), Instruction(0x3: 4c 01 fb  add %r15,%rbx), Instruction(0x6: ff e0  jmpq *%rax)])
@@ -292,7 +292,7 @@
      3:	4c 01 f8                                     	add    %r15,%rax
      6:	ff e3                                        	jmpq   *%rbx
 @rdfa_output:
-  6: [0] unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   0: ('nacljump64/naclcall64: registers do not match (%rax, %rax, %rbx)', [Instruction(0x0: 83 e0 e0  and $0xffffffe0,%eax), Instruction(0x3: 4c 01 f8  add %r15,%rax), Instruction(0x6: ff e3  jmpq *%rbx)])
@@ -310,7 +310,7 @@
      3:	4c 01 fb                                     	add    %r15,%rbx
      6:	ff e3                                        	jmpq   *%rbx
 @rdfa_output:
-  6: [0] unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   0: ('nacljump64/naclcall64: registers do not match (%rax, %rbx, %rbx)', [Instruction(0x0: 83 e0 e0  and $0xffffffe0,%eax), Instruction(0x3: 4c 01 fb  add %r15,%rbx), Instruction(0x6: ff e3  jmpq *%rbx)])
@@ -332,7 +332,7 @@
      4:	4c 01 f8                                     	add    %r15,%rax
      7:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
-  7: [0] unrecognized instruction
+  7: unrecognized instruction
   return code: 1
 @spec:
   7: unrecognized instruction 'jmpq *%rax'
@@ -352,7 +352,7 @@
      6:	90                                           	nop
      7:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
-  7: [0] unrecognized instruction
+  7: unrecognized instruction
   return code: 1
 @spec:
   7: unrecognized instruction 'jmpq *%rax'
@@ -373,7 +373,7 @@
      6:	ff e0                                        	jmpq   *%rax
      8:	eb fc                                        	jmp    0x6
 @rdfa_output:
-  8: [0] bad jump target
+  8: bad jump target
   return code: 1
 @spec:
   8: jump into a middle of instruction (0x6)
@@ -393,7 +393,7 @@
      6:	ff e0                                        	jmpq   *%rax
      8:	eb f9                                        	jmp    0x3
 @rdfa_output:
-  8: [0] bad jump target
+  8: bad jump target
   return code: 1
 @spec:
   8: jump into a middle of instruction (0x3)
@@ -432,7 +432,7 @@
 @dis:
      0:	5d                                           	pop    %rbp
 @rdfa_output:
-  0: [0] error - %bpl or %bp is changed
+  0: error - %bpl or %bp is changed
   return code: 1
 @spec:
   0: ('changes to rbp are not allowed', Instruction(0x0: 5d  pop %rbp))
@@ -442,7 +442,7 @@
 @dis:
      0:	5c                                           	pop    %rsp
 @rdfa_output:
-  0: [0] error - %spl or %sp is changed
+  0: error - %spl or %sp is changed
   return code: 1
 @spec:
   0: ('changes to rsp are not allowed', Instruction(0x0: 5c  pop %rsp))
@@ -452,7 +452,7 @@
 @dis:
      0:	41 5f                                        	pop    %r15
 @rdfa_output:
-  0: [0] error - %r15 is changed
+  0: error - %r15 is changed
   return code: 1
 @spec:
   0: ('changes to r15 are not allowed', Instruction(0x0: 41 5f  pop %r15))
@@ -529,7 +529,7 @@
 @dis:
      0:	41 8b 1c 07                                  	mov    (%r15,%rax,1),%ebx
 @rdfa_output:
-  0: [0] improper memory address - bad index
+  0: improper memory address - bad index
   return code: 1
 @spec:
   0: register %rax should be restricted, while in fact None is restricted
@@ -546,7 +546,7 @@
      2:	41 8b 1c 07                                  	mov    (%r15,%rax,1),%ebx
      6:	eb fa                                        	jmp    0x2
 @rdfa_output:
-  6: [0] bad jump target
+  6: bad jump target
   return code: 1
 @spec:
   6: jump into a middle of instruction (0x2)
@@ -572,7 +572,7 @@
      6:	ff e0                                        	jmpq   *%rax
      8:	41 8b 1c 07                                  	mov    (%r15,%rax,1),%ebx
 @rdfa_output:
-  8: [0] improper memory address - bad index
+  8: improper memory address - bad index
   return code: 1
 @spec:
   8: register %rax should be restricted, while in fact None is restricted
@@ -593,7 +593,7 @@
      6:	f3 aa                                        	rep stos %al,%es:(%rdi)
      8:	41 8b 1c 3f                                  	mov    (%r15,%rdi,1),%ebx
 @rdfa_output:
-  8: [0] improper memory address - bad index
+  8: improper memory address - bad index
   return code: 1
 @spec:
   8: register %rdi should be restricted, while in fact None is restricted
@@ -620,7 +620,7 @@
      c:	f3 a4                                        	rep movsb %ds:(%rsi),%es:(%rdi)
      e:	41 8b 1c 37                                  	mov    (%r15,%rsi,1),%ebx
 @rdfa_output:
-  e: [0] improper memory address - bad index
+  e: improper memory address - bad index
   return code: 1
 @spec:
   e: register %rsi should be restricted, while in fact None is restricted
@@ -648,7 +648,7 @@
 @dis:
      0:	8b 84 1c 34 12 00 00                         	mov    0x1234(%rsp,%rbx,1),%eax
 @rdfa_output:
-  0: [0] improper memory address - bad index
+  0: improper memory address - bad index
   return code: 1
 @spec:
   0: register %rbx should be restricted, while in fact None is restricted
@@ -659,7 +659,7 @@
 @dis:
      0:	8b 84 1d 34 12 00 00                         	mov    0x1234(%rbp,%rbx,1),%eax
 @rdfa_output:
-  0: [0] improper memory address - bad index
+  0: improper memory address - bad index
   return code: 1
 @spec:
   0: register %rbx should be restricted, while in fact None is restricted
@@ -740,7 +740,7 @@
      3:	4c 01 fd                                     	add    %r15,%rbp
      6:	eb fb                                        	jmp    0x3
 @rdfa_output:
-  6: [0] bad jump target
+  6: bad jump target
   return code: 1
 @spec:
   6: jump into a middle of instruction (0x3)
@@ -752,7 +752,7 @@
 @dis:
      0:	4c 01 fd                                     	add    %r15,%rbp
 @rdfa_output:
-  0: [0] improper %rbp sandboxing
+  0: improper %rbp sandboxing
   return code: 1
 @spec:
   0: register %rbp should be restricted, while in fact None is restricted
@@ -763,7 +763,7 @@
 @dis:
      0:	4c 01 fc                                     	add    %r15,%rsp
 @rdfa_output:
-  0: [0] improper %rsp sandboxing
+  0: improper %rsp sandboxing
   return code: 1
 @spec:
   0: register %rsp should be restricted, while in fact None is restricted
@@ -774,7 +774,7 @@
 @dis:
      0:	4d 01 ff                                     	add    %r15,%r15
 @rdfa_output:
-  0: [0] error - %r15 is changed
+  0: error - %r15 is changed
   return code: 1
 @spec:
   0: ('changes to r15 are not allowed', Instruction(0x0: 4d 01 ff  add %r15,%r15))
@@ -796,7 +796,7 @@
 @dis:
      0:	48 8e c0                                     	mov    %rax,%es
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('access to segment registers is not allowed', Instruction(0x0: 48 8e c0  mov %rax,%es))
@@ -806,7 +806,7 @@
 @dis:
      0:	48 8c c0                                     	mov    %es,%rax
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('access to segment registers is not allowed', Instruction(0x0: 48 8c c0  mov %es,%rax))

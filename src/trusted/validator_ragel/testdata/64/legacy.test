@@ -6,7 +6,7 @@
 @dis:
      0:	37                                           	(bad)  
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: 37  (bad)))
@@ -18,7 +18,7 @@
      0:	d5                                           	(bad)  
      1:	0a                                           	.byte 0xa
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: d5  (bad)))
@@ -31,7 +31,7 @@
      0:	d4                                           	(bad)  
      1:	0a                                           	.byte 0xa
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: d4  (bad)))
@@ -43,7 +43,7 @@
 @dis:
      0:	3f                                           	(bad)  
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: 3f  (bad)))
@@ -55,7 +55,7 @@
      0:	62                                           	(bad)  
      1:	00                                           	.byte 0x0
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: 62  (bad)))
@@ -67,7 +67,7 @@
 @dis:
      0:	27                                           	(bad)  
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: 27  (bad)))
@@ -78,7 +78,7 @@
 @dis:
      0:	2f                                           	(bad)  
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: 2f  (bad)))
@@ -89,7 +89,7 @@
 @dis:
      0:	60                                           	(bad)  
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: 60  (bad)))
@@ -101,7 +101,7 @@
 @dis:
      0:	f1                                           	icebp  
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'icebp'
@@ -112,7 +112,7 @@
 @dis:
      0:	d6                                           	(bad)  
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: d6  (bad)))
@@ -123,7 +123,7 @@
 @dis:
      0:	d7                                           	xlat   %ds:(%rbx)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('segments in memory references are not allowed', Instruction(0x0: d7  xlat %ds:(%rbx)))
@@ -134,7 +134,7 @@
 @dis:
      0:	48 d7                                        	rex.W xlat %ds:(%rbx)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('segments in memory references are not allowed', Instruction(0x0: 48 d7  xlat %ds:(%rbx)))

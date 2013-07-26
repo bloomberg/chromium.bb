@@ -9,8 +9,8 @@
      0:	89 cd                                        	mov    %ecx,%ebp
      2:	4a 8d 2c 3c                                  	lea    (%rsp,%r15,1),%rbp
 @rdfa_output:
-  2: [0] improper %rbp sandboxing
-  2: [0] error - %bpl or %bp is changed
+  2: improper %rbp sandboxing
+  2: error - %bpl or %bp is changed
   return code: 1
 @spec:
   2: ('changes to rbp are not allowed', Instruction(0x2: 4a 8d 2c 3c  lea (%rsp,%r15,1),%rbp))

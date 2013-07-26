@@ -8,7 +8,7 @@
 @dis:
      0:	66 f3 0f b8 d8                               	popcnt %ax,%bx
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -18,7 +18,7 @@
 @dis:
      0:	f3 66 0f b8 d8                               	popcnt %ax,%bx
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -28,7 +28,7 @@
 @dis:
      0:	66 f3 0f bd d1                               	lzcnt  %cx,%dx
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -38,7 +38,7 @@
 @dis:
      0:	f3 66 0f bd d1                               	lzcnt  %cx,%dx
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -48,7 +48,7 @@
 @dis:
      0:	66 f3 0f bc dd                               	tzcnt  %bp,%bx
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -58,7 +58,7 @@
 @dis:
      0:	f3 66 0f bc dd                               	tzcnt  %bp,%bx
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE

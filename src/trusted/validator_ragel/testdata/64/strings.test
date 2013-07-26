@@ -21,7 +21,7 @@
      2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
      6:	ae                                           	scas   %es:(%rdi),%al
 @rdfa_output:
-  6: [0] unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   6: ('segments in memory references are not allowed', Instruction(0x6: ae  scas %es:(%rdi),%al))
@@ -35,7 +35,7 @@
      2:	4c 01 ff                                     	add    %r15,%rdi
      5:	ae                                           	scas   %es:(%rdi),%al
 @rdfa_output:
-  5: [0] unrecognized instruction
+  5: unrecognized instruction
   return code: 1
 @spec:
   5: ('segments in memory references are not allowed', Instruction(0x5: ae  scas %es:(%rdi),%al))
@@ -49,7 +49,7 @@
      2:	4a 8d 3c 3f                                  	lea    (%rdi,%r15,1),%rdi
      6:	ae                                           	scas   %es:(%rdi),%al
 @rdfa_output:
-  6: [0] unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   6: ('segments in memory references are not allowed', Instruction(0x6: ae  scas %es:(%rdi),%al))
@@ -68,7 +68,7 @@
      7:	4c 01 ff                                     	add    %r15,%rdi
      a:	a5                                           	movsl  %ds:(%rsi),%es:(%rdi)
 @rdfa_output:
-  a: [0] unrecognized instruction
+  a: unrecognized instruction
   return code: 1
 @spec:
   a: ('segments in memory references are not allowed', Instruction(0xa: a5  movsl %ds:(%rsi),%es:(%rdi)))
@@ -86,7 +86,7 @@
      7:	4c 01 ff                                     	add    %r15,%rdi
      a:	a7                                           	cmpsl  %es:(%rdi),%ds:(%rsi)
 @rdfa_output:
-  a: [0] unrecognized instruction
+  a: unrecognized instruction
   return code: 1
 @spec:
   a: ('segments in memory references are not allowed', Instruction(0xa: a7  cmpsl %es:(%rdi),%ds:(%rsi)))
@@ -121,7 +121,7 @@
      8:	49 8d 34 37                                  	lea    (%r15,%rsi,1),%rsi
      c:	a7                                           	cmpsl  %es:(%rdi),%ds:(%rsi)
 @rdfa_output:
-  c: [0] unrecognized instruction
+  c: unrecognized instruction
   return code: 1
 @spec:
   c: ('segments in memory references are not allowed', Instruction(0xc: a7  cmpsl %es:(%rdi),%ds:(%rsi)))
@@ -139,7 +139,7 @@
      8:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
      c:	a7                                           	cmpsl  %es:(%rdi),%ds:(%rsi)
 @rdfa_output:
-  c: [0] unrecognized instruction
+  c: unrecognized instruction
   return code: 1
 @spec:
   c: ('segments in memory references are not allowed', Instruction(0xc: a7  cmpsl %es:(%rdi),%ds:(%rsi)))

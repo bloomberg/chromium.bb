@@ -44,7 +44,7 @@
     1d:	1d                                           	.byte 0x1d
     1e:	20 00                                        	and    %al,(%eax)
 @rdfa_output:
-  1c: [0] unrecognized instruction
+  1c: unrecognized instruction
   return code: 1
 @spec:
   1c: ('objdump failed to decode', Instruction(0x1c: 03  .byte 0x3))

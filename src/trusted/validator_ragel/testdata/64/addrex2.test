@@ -6,7 +6,7 @@
      0:	40                                           	rex
      1:	41 01 c3                                     	add    %eax,%r11d
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('dangling rex prefix', Instruction(0x0: 40  rex))

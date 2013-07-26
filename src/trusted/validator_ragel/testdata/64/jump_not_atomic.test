@@ -10,7 +10,7 @@
      5:	4c 01 fa                                     	add    %r15,%rdx
      8:	ff e2                                        	jmpq   *%rdx
 @rdfa_output:
-  0: [0] bad jump target
+  0: bad jump target
   return code: 1
 @spec:
   0: jump into a middle of instruction (0x5)

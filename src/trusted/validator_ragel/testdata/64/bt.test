@@ -5,7 +5,7 @@
 @dis:
      0:	48 0f b3 00                                  	btr    %rax,(%rax)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('bt* is only allowed with immediate as bit offset', Instruction(0x0: 48 0f b3 00  btr %rax,(%rax)))
@@ -15,7 +15,7 @@
 @dis:
      0:	48 0f ab 00                                  	bts    %rax,(%rax)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('bt* is only allowed with immediate as bit offset', Instruction(0x0: 48 0f ab 00  bts %rax,(%rax)))
@@ -25,7 +25,7 @@
 @dis:
      0:	48 0f bb 00                                  	btc    %rax,(%rax)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('bt* is only allowed with immediate as bit offset', Instruction(0x0: 48 0f bb 00  btc %rax,(%rax)))
@@ -35,7 +35,7 @@
 @dis:
      0:	0f ba 30 01                                  	btrl   $0x1,(%rax)
 @rdfa_output:
-  0: [0] improper memory address - bad base
+  0: improper memory address - bad base
   return code: 1
 @spec:
   0: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x0: 0f ba 30 01  btrl $0x1,(%rax)))
@@ -45,7 +45,7 @@
 @dis:
      0:	0f ba 28 01                                  	btsl   $0x1,(%rax)
 @rdfa_output:
-  0: [0] improper memory address - bad base
+  0: improper memory address - bad base
   return code: 1
 @spec:
   0: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x0: 0f ba 28 01  btsl $0x1,(%rax)))
@@ -55,7 +55,7 @@
 @dis:
      0:	0f ba 38 01                                  	btcl   $0x1,(%rax)
 @rdfa_output:
-  0: [0] improper memory address - bad base
+  0: improper memory address - bad base
   return code: 1
 @spec:
   0: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x0: 0f ba 38 01  btcl $0x1,(%rax)))
@@ -65,7 +65,7 @@
 @dis:
      0:	66 41 0f a3 07                               	bt     %ax,(%r15)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('bt* is only allowed with immediate as bit offset', Instruction(0x0: 66 41 0f a3 07  bt %ax,(%r15)))
@@ -77,7 +77,7 @@
 @dis:
      0:	48 0f a3 c3                                  	bt     %rax,%rbx
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('bt* is only allowed with immediate as bit offset', Instruction(0x0: 48 0f a3 c3  bt %rax,%rbx))

@@ -14,7 +14,7 @@
      6:	90                                           	nop
      7:	90                                           	nop
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('16-bit conditional jumps are disallowed', Instruction(0x0: 66 0f 84 05 00  je 0xa))

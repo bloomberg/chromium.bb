@@ -192,7 +192,7 @@
      a:	66 0f 78 c0 02 01                            	extrq  $0x1,$0x2,%xmm0
     10:	f3 0f 2b 04 24                               	movntss %xmm0,(%rsp)
 @rdfa_output:
-  a: [0] unrecognized instruction
+  a: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -219,7 +219,7 @@
 @dis:
      0:	c4 e3 f1 69 d8 20                            	vfmaddpd %xmm0,%xmm2,%xmm1,%xmm3
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -235,9 +235,9 @@
      5:	66 0f 3a df c8 01                            	aeskeygenassist $0x1,%xmm0,%xmm1
      b:	66 0f 38 db c8                               	aesimc %xmm0,%xmm1
 @rdfa_output:
-  0: [0] unrecognized instruction
-  5: [0] unrecognized instruction
-  b: [0] unrecognized instruction
+  0: unrecognized instruction
+  5: unrecognized instruction
+  b: unrecognized instruction
   return code: 1
 @spec:
   SAFE

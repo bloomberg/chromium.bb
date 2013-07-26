@@ -3,8 +3,8 @@
 @dis:
      0:	87 e5                                        	xchg   %esp,%ebp
 @rdfa_output:
-  0: [0] improper %rsp sandboxing
-  2: [0] improper %rbp sandboxing
+  0: improper %rsp sandboxing
+  2: improper %rbp sandboxing
   return code: 1
 @spec:
   0: ('non-zero-extending changes to ebp and esp are not allowed', Instruction(0x0: 87 e5  xchg %esp,%ebp))
@@ -14,8 +14,8 @@
 @dis:
      0:	48 87 e5                                     	xchg   %rsp,%rbp
 @rdfa_output:
-  0: [0] error - %bpl or %bp is changed
-  0: [0] error - %spl or %sp is changed
+  0: error - %bpl or %bp is changed
+  0: error - %spl or %sp is changed
   return code: 1
 @spec:
   0: ('changes to rsp are not allowed', Instruction(0x0: 48 87 e5  xchg %rsp,%rbp))
@@ -39,8 +39,8 @@
      0:	31 e5                                        	xor    %esp,%ebp
      2:	49 8d 2c 2f                                  	lea    (%r15,%rbp,1),%rbp
 @rdfa_output:
-  2: [0] improper %rbp sandboxing
-  2: [0] error - %bpl or %bp is changed
+  2: improper %rbp sandboxing
+  2: error - %bpl or %bp is changed
   return code: 1
 @spec:
   2: ('changes to rbp are not allowed', Instruction(0x2: 49 8d 2c 2f  lea (%r15,%rbp,1),%rbp))
@@ -74,7 +74,7 @@
      0:	89 c0                                        	mov    %eax,%eax
      2:	49 8d 24 07                                  	lea    (%r15,%rax,1),%rsp
 @rdfa_output:
-  2: [0] error - %spl or %sp is changed
+  2: error - %spl or %sp is changed
   return code: 1
 @spec:
   2: ('changes to rsp are not allowed', Instruction(0x2: 49 8d 24 07  lea (%r15,%rax,1),%rsp))
@@ -86,7 +86,7 @@
      0:	89 c0                                        	mov    %eax,%eax
      2:	4a 8d 24 38                                  	lea    (%rax,%r15,1),%rsp
 @rdfa_output:
-  2: [0] error - %spl or %sp is changed
+  2: error - %spl or %sp is changed
   return code: 1
 @spec:
   2: ('changes to rsp are not allowed', Instruction(0x2: 4a 8d 24 38  lea (%rax,%r15,1),%rsp))

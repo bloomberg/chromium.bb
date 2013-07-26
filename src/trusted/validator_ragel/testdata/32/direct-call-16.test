@@ -47,7 +47,7 @@
     20:	90                                           	nop
     21:	90                                           	nop
 @rdfa_output:
-  1c: [0] unrecognized instruction
+  1c: unrecognized instruction
   return code: 1
 @spec:
   1c: ('16-bit jumps are disallowed', Instruction(0x1c: 66 e8 f0 ff  callw 0x10))

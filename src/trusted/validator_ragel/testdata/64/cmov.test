@@ -17,7 +17,7 @@
      0:	0f 44 d8                                     	cmove  %eax,%ebx
      3:	41 8a 04 1f                                  	mov    (%r15,%rbx,1),%al
 @rdfa_output:
-  3: [0] improper memory address - bad index
+  3: improper memory address - bad index
   return code: 1
 @spec:
   3: register %rbx should be restricted, while in fact None is restricted

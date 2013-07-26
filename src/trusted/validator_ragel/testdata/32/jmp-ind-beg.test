@@ -7,7 +7,7 @@
      0:	ff e0                                        	jmp    *%eax
      2:	90                                           	nop
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'jmp *%eax'

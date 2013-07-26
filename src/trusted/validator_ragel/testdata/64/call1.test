@@ -33,7 +33,7 @@
     1a:	90                                           	nop
     1b:	e8 21 fd fd ff                               	callq  0xfffdfd41
 @rdfa_output:
-  1b: [0] direct jump out of range
+  1b: direct jump out of range
   return code: 1
 @spec:
   1b: jump into a middle of instruction (0xfffdfd41)

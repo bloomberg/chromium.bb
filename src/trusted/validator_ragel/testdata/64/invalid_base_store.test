@@ -7,7 +7,7 @@
      0:	83 e1 e0                                     	and    $0xffffffe0,%ecx
      3:	49 89 44 cd 36                               	mov    %rax,0x36(%r13,%rcx,8)
 @rdfa_output:
-  3: [0] improper memory address - bad base
+  3: improper memory address - bad base
   return code: 1
 @spec:
   3: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x3: 49 89 44 cd 36  mov %rax,0x36(%r13,%rcx,8)))

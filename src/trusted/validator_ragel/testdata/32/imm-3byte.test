@@ -6,7 +6,7 @@
 @dis:
      0:	c8 01 02 03                                  	enter  $0x201,$0x3
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'enter $0x201,$0x3'

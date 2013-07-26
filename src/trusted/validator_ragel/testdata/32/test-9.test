@@ -12,7 +12,7 @@
      c:	90                                           	nop
      d:	f4                                           	hlt    
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'jmp *0x8056ec8(,%edx,4)'

@@ -6,7 +6,7 @@
      0:	66                                           	data16
      1:	00 c0                                        	add    %al,%al
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('dangling legacy prefixes', Instruction(0x0: 66  data16))

@@ -70,7 +70,7 @@
 @dis:
      0:	66 66 90                                     	data32 xchg %ax,%ax
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('duplicate legacy prefix', Instruction(0x0: 66 66 90  data32 xchg %ax,%ax))
@@ -80,7 +80,7 @@
 @dis:
      0:	66 66 66 90                                  	data32 data32 xchg %ax,%ax
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('duplicate legacy prefix', Instruction(0x0: 66 66 66 90  data32 data32 xchg %ax,%ax))
@@ -90,7 +90,7 @@
 @dis:
      0:	3e 0f 1f 84 00 00 00 00 00                   	nopl   %ds:0x0(%rax,%rax,1)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('segments in memory references are not allowed', Instruction(0x0: 3e 0f 1f 84 00 00 00 00 00  nopl %ds:0x0(%rax,%rax,1)))
@@ -100,7 +100,7 @@
 @dis:
      0:	66 3e 0f 1f 84 00 00 00 00 00                	nopw   %ds:0x0(%rax,%rax,1)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('segments in memory references are not allowed', Instruction(0x0: 66 3e 0f 1f 84 00 00 00 00 00  nopw %ds:0x0(%rax,%rax,1)))
@@ -112,7 +112,7 @@
 @dis:
      0:	66 66 0f 1f 84 00 00 00 00 00                	data32 nopw 0x0(%rax,%rax,1)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   SAFE

@@ -184,8 +184,8 @@
    14d:	29 d0                                        	sub    %edx,%eax
    14f:	f4                                           	hlt    
 @rdfa_output:
-  4b: [0] direct jump out of range
-  eb: [0] direct jump out of range
+  4b: direct jump out of range
+  eb: direct jump out of range
   return code: 1
 @spec:
   4b: jump into a middle of instruction (0x210)

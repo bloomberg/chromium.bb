@@ -16,7 +16,7 @@
      0:	48 63 d5                                     	movslq %ebp,%rdx
      3:	2b 44 15 00                                  	sub    0x0(%rbp,%rdx,1),%eax
 @rdfa_output:
-  3: [0] improper memory address - bad index
+  3: improper memory address - bad index
   return code: 1
 @spec:
   3: register %rdx should be restricted, while in fact None is restricted

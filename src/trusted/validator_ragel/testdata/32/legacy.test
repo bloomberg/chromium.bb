@@ -3,7 +3,7 @@
 @dis:
      0:	37                                           	aaa    
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'aaa'
@@ -13,7 +13,7 @@
 @dis:
      0:	d5 0a                                        	aad    $0xa
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'aad $0xa'
@@ -23,7 +23,7 @@
 @dis:
      0:	d4 0a                                        	aam    $0xa
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'aam $0xa'
@@ -33,7 +33,7 @@
 @dis:
      0:	3f                                           	aas    
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'aas'
@@ -43,7 +43,7 @@
 @dis:
      0:	62 00                                        	bound  %eax,(%eax)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'bound %eax,(%eax)'
@@ -53,7 +53,7 @@
 @dis:
      0:	27                                           	daa    
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'daa'
@@ -63,7 +63,7 @@
 @dis:
      0:	2f                                           	das    
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'das'
@@ -73,7 +73,7 @@
 @dis:
      0:	d7                                           	xlat   %ds:(%ebx)
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('segments in memory references are not allowed', Instruction(0x0: d7  xlat %ds:(%ebx)))
@@ -85,7 +85,7 @@
 @dis:
      0:	f1                                           	icebp  
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'icebp'
@@ -96,7 +96,7 @@
 @dis:
      0:	d6                                           	(bad)  
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: ('objdump failed to decode', Instruction(0x0: d6  (bad)))

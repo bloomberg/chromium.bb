@@ -3,7 +3,7 @@
 @dis:
      0:	c5 00                                        	lds    (%eax),%eax
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'lds (%eax),%eax'
@@ -13,7 +13,7 @@
 @dis:
      0:	c4 00                                        	les    (%eax),%eax
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'les (%eax),%eax'
@@ -23,7 +23,7 @@
 @dis:
      0:	0f b4 00                                     	lfs    (%eax),%eax
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'lfs (%eax),%eax'
@@ -33,7 +33,7 @@
 @dis:
      0:	0f b5 00                                     	lgs    (%eax),%eax
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'lgs (%eax),%eax'
@@ -43,7 +43,7 @@
 @dis:
      0:	0f b2 00                                     	lss    (%eax),%eax
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'lss (%eax),%eax'
@@ -53,7 +53,7 @@
 @dis:
      0:	0f b4 18                                     	lfs    (%eax),%ebx
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'lfs (%eax),%ebx'
@@ -63,7 +63,7 @@
 @dis:
      0:	0f b5 18                                     	lgs    (%eax),%ebx
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'lgs (%eax),%ebx'
@@ -73,7 +73,7 @@
 @dis:
      0:	0f b2 18                                     	lss    (%eax),%ebx
 @rdfa_output:
-  0: [0] unrecognized instruction
+  0: unrecognized instruction
   return code: 1
 @spec:
   0: unrecognized instruction 'lss (%eax),%ebx'

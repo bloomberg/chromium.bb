@@ -9,7 +9,7 @@
      0:	e9 1b 00 00 00                               	jmpq   0x20
      5:	e9 17 00 00 00                               	jmpq   0x21
 @rdfa_output:
-  5: [0] direct jump out of range
+  5: direct jump out of range
   return code: 1
 @spec:
   5: jump into a middle of instruction (0x21)

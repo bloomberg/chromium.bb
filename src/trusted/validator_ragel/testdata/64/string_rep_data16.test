@@ -14,7 +14,7 @@
      2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
      6:	66 f3 af                                     	repz scas %es:(%rdi),%ax
 @rdfa_output:
-  6: [0] unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -31,7 +31,7 @@
      2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
      6:	66 f2 af                                     	repnz scas %es:(%rdi),%ax
 @rdfa_output:
-  6: [0] unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -48,7 +48,7 @@
      2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
      6:	66 f3 ab                                     	rep stos %ax,%es:(%rdi)
 @rdfa_output:
-  6: [0] unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -65,7 +65,7 @@
      2:	49 8d 34 37                                  	lea    (%r15,%rsi,1),%rsi
      6:	66 f3 ad                                     	rep lods %ds:(%rsi),%ax
 @rdfa_output:
-  6: [0] unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -88,7 +88,7 @@
      8:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
      c:	66 f3 a5                                     	rep movsw %ds:(%rsi),%es:(%rdi)
 @rdfa_output:
-  c: [0] unrecognized instruction
+  c: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -111,7 +111,7 @@
      8:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
      c:	66 f3 a7                                     	repz cmpsw %es:(%rdi),%ds:(%rsi)
 @rdfa_output:
-  c: [0] unrecognized instruction
+  c: unrecognized instruction
   return code: 1
 @spec:
   SAFE
@@ -134,7 +134,7 @@
      8:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
      c:	66 f2 a7                                     	repnz cmpsw %es:(%rdi),%ds:(%rsi)
 @rdfa_output:
-  c: [0] unrecognized instruction
+  c: unrecognized instruction
   return code: 1
 @spec:
   SAFE
