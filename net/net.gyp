@@ -2108,11 +2108,6 @@
             '../testing/android/native_test.gyp:native_test_native_code',
           ]
         }],
-        [ 'OS != "win" and OS != "mac"', {
-          'sources!': [
-            'cert/x509_cert_types_unittest.cc',
-          ],
-        }],
       ],
     },
     {
