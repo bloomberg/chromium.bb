@@ -5,7 +5,6 @@
 #include "chromeos/network/network_handler.h"
 
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/cert_loader.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -26,7 +25,6 @@ NetworkHandler::NetworkHandler() {
 
   network_event_log::Initialize();
 
-  cert_loader_.reset(new CertLoader);
   network_state_handler_.reset(new NetworkStateHandler());
   network_device_handler_.reset(new NetworkDeviceHandler());
   network_profile_handler_.reset(new NetworkProfileHandler());
@@ -49,8 +47,7 @@ void NetworkHandler::Init() {
       network_state_handler_.get(),
       network_profile_handler_.get(),
       network_configuration_handler_.get());
-  network_connection_handler_->Init(cert_loader_.get(),
-                                    network_state_handler_.get(),
+  network_connection_handler_->Init(network_state_handler_.get(),
                                     network_configuration_handler_.get());
   geolocation_handler_->Init();
 }
@@ -79,10 +76,6 @@ NetworkHandler* NetworkHandler::Get() {
 // static
 bool NetworkHandler::IsInitialized() {
   return g_network_handler;
-}
-
-CertLoader* NetworkHandler::cert_loader() {
-  return cert_loader_.get();
 }
 
 NetworkStateHandler* NetworkHandler::network_state_handler() {

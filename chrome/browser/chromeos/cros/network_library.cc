@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/cros/network_library_impl_cros.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_stub.h"
 #include "chrome/common/net/x509_certificate_model.h"
-#include "chromeos/network/cert_loader.h"
 #include "chromeos/network/certificate_pattern.h"
 #include "chromeos/network/certificate_pattern_matcher.h"
 #include "chromeos/network/cros_network_functions.h"

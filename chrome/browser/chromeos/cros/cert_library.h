@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "chromeos/network/cert_loader.h"
+#include "chromeos/cert_loader.h"
 #include "net/cert/x509_certificate.h"
 
 namespace chromeos {

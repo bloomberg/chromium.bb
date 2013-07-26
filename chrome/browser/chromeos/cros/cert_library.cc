@@ -121,11 +121,11 @@ bool CertLibrary::IsInitialized() {
 }
 
 CertLibrary::CertLibrary() {
-  NetworkHandler::Get()->cert_loader()->AddObserver(this);
+  CertLoader::Get()->AddObserver(this);
 }
 
 CertLibrary::~CertLibrary() {
-  NetworkHandler::Get()->cert_loader()->RemoveObserver(this);
+  CertLoader::Get()->RemoveObserver(this);
 }
 
 void CertLibrary::AddObserver(CertLibrary::Observer* observer) {
@@ -137,15 +137,15 @@ void CertLibrary::RemoveObserver(CertLibrary::Observer* observer) {
 }
 
 bool CertLibrary::CertificatesLoading() const {
-  return NetworkHandler::Get()->cert_loader()->CertificatesLoading();
+  return CertLoader::Get()->CertificatesLoading();
 }
 
 bool CertLibrary::CertificatesLoaded() const {
-  return NetworkHandler::Get()->cert_loader()->certificates_loaded();
+  return CertLoader::Get()->certificates_loaded();
 }
 
 bool CertLibrary::IsHardwareBacked() const {
-  return NetworkHandler::Get()->cert_loader()->IsHardwareBacked();
+  return CertLoader::Get()->IsHardwareBacked();
 }
 
 int CertLibrary::NumCertificates(CertType type) const {
@@ -169,13 +169,13 @@ std::string CertLibrary::GetCertPkcs11IdAt(CertType type, int index) const {
 }
 
 bool CertLibrary::IsCertHardwareBackedAt(CertType type, int index) const {
-  if (!NetworkHandler::Get()->cert_loader()->IsHardwareBacked())
+  if (!CertLoader::Get()->IsHardwareBacked())
     return false;
   net::X509Certificate* cert = GetCertificateAt(type, index);
   std::string cert_token_name =
       x509_certificate_model::GetTokenName(cert->os_cert_handle());
   return cert_token_name ==
-      NetworkHandler::Get()->cert_loader()->tpm_token_name();
+      CertLoader::Get()->tpm_token_name();
 }
 
 int CertLibrary::GetCertIndexByPEM(CertType type,

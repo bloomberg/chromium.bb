@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_NETWORK_CERT_LOADER_H_
-#define CHROMEOS_NETWORK_CERT_LOADER_H_
+#ifndef CHROMEOS_CERT_LOADER_H_
+#define CHROMEOS_CERT_LOADER_H_
 
 #include <string>
 
@@ -15,9 +15,12 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/network/network_handler.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/x509_certificate.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace crypto {
 class SymmetricKey;
@@ -50,7 +53,24 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  virtual ~CertLoader();
+  // Sets the global instance. Must be called before any calls to Get().
+  static void Initialize();
+
+  // Destroys the global instance.
+  static void Shutdown();
+
+  // Gets the global instance. Initialize() must be called first.
+  static CertLoader* Get();
+
+  // Returns true if the global instance has been initialized.
+  static bool IsInitialized();
+
+  // |crypto_task_runner| is the task runner that any synchronous crypto calls
+  // should be made from. e.g. in Chrome this is the IO thread. Must be called
+  // after the thread is started. Certificate loading will not happen unless
+  // this is set.
+  void SetCryptoTaskRunner(
+      const scoped_refptr<base::SequencedTaskRunner>& crypto_task_runner);
 
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
@@ -75,15 +95,17 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   const net::CertificateList& cert_list() const { return cert_list_; }
 
  private:
-  friend class NetworkHandler;
   CertLoader();
+  virtual ~CertLoader();
 
-  void RequestCertificates();
+  void Init();
+  void MaybeRequestCertificates();
 
   // This is the cyclic chain of callbacks to initialize the TPM token and to
   // kick off the update of the certificate list.
   void InitializeTokenAndLoadCertificates();
   void RetryTokenInitializationLater();
+  void OnPersistentNSSDBOpened();
   void OnTpmIsEnabled(DBusMethodCallStatus call_status,
                       bool tpm_is_enabled);
   void OnPkcs11IsTpmTokenReady(DBusMethodCallStatus call_status,
@@ -91,7 +113,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   void OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
                                const std::string& token_name,
                                const std::string& user_pin);
-  void InitializeNSSForTPMToken();
+  void OnTPMTokenInitialized(bool success);
 
   // These calls handle the updating of the certificate list after the TPM token
   // was initialized.
@@ -119,11 +141,12 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   // be left.
   enum TPMTokenState {
     TPM_STATE_UNKNOWN,
+    TPM_DB_OPENED,
     TPM_DISABLED,
     TPM_ENABLED,
     TPM_TOKEN_READY,
     TPM_TOKEN_INFO_RECEIVED,
-    TPM_TOKEN_NSS_INITIALIZED,
+    TPM_TOKEN_INITIALIZED,
   };
   TPMTokenState tpm_token_state_;
 
@@ -141,6 +164,9 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
 
   base::ThreadChecker thread_checker_;
 
+  // TaskRunner for crypto calls.
+  scoped_refptr<base::SequencedTaskRunner> crypto_task_runner_;
+
   // This factory should be used only for callbacks during TPMToken
   // initialization.
   base::WeakPtrFactory<CertLoader> initialize_token_factory_;
@@ -154,4 +180,4 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_NETWORK_CERT_LOADER_H_
+#endif  // CHROMEOS_CERT_LOADER_H_

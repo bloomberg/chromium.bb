@@ -11,7 +11,6 @@
 
 namespace chromeos {
 
-class CertLoader;
 class GeolocationHandler;
 class ManagedNetworkConfigurationHandler;
 class NetworkConfigurationHandler;
@@ -40,7 +39,6 @@ class CHROMEOS_EXPORT NetworkHandler {
   // Do not use these accessors within this module; all dependencies should be
   // explicit so that classes can be constructed explicitly in tests without
   // NetworkHandler.
-  CertLoader* cert_loader();
   NetworkStateHandler* network_state_handler();
   NetworkDeviceHandler* network_device_handler();
   NetworkProfileHandler* network_profile_handler();
@@ -56,7 +54,6 @@ class CHROMEOS_EXPORT NetworkHandler {
   void Init();
 
   // The order of these determines the (inverse) destruction order.
-  scoped_ptr<CertLoader> cert_loader_;
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<NetworkDeviceHandler> network_device_handler_;
   scoped_ptr<NetworkProfileHandler> network_profile_handler_;

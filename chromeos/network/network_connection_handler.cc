@@ -11,7 +11,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/network/cert_loader.h"
 #include "chromeos/network/certificate_pattern_matcher.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -175,7 +174,6 @@ NetworkConnectionHandler::~NetworkConnectionHandler() {
 }
 
 void NetworkConnectionHandler::Init(
-    CertLoader* cert_loader,
     NetworkStateHandler* network_state_handler,
     NetworkConfigurationHandler* network_configuration_handler) {
   if (LoginState::IsInitialized()) {
@@ -183,10 +181,10 @@ void NetworkConnectionHandler::Init(
     logged_in_ =
         LoginState::Get()->GetLoggedInState() == LoginState::LOGGED_IN_ACTIVE;
   }
-  if (cert_loader) {
-    cert_loader_ = cert_loader;
+  if (CertLoader::IsInitialized()) {
+    cert_loader_ = CertLoader::Get();
     cert_loader_->AddObserver(this);
-    certificates_loaded_ = cert_loader->certificates_loaded();
+    certificates_loaded_ = cert_loader_->certificates_loaded();
   } else {
     // TODO(stevenjb): Require a mock or stub cert_loader in tests.
     certificates_loaded_ = true;

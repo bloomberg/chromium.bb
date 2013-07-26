@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"
+#include "chromeos/cert_loader.h"
 #include "chromeos/dbus/session_manager_client.h"
 
 namespace crypto {
@@ -71,7 +72,8 @@ class OwnerKey : public base::RefCountedThreadSafe<OwnerKey> {
 //
 // DeviceSettingsService generates notifications for key and policy update
 // events so interested parties can reload state as appropriate.
-class DeviceSettingsService : public SessionManagerClient::Observer {
+class DeviceSettingsService : public SessionManagerClient::Observer,
+                              public CertLoader::Observer {
  public:
   // Indicates ownership status of the device.
   enum OwnershipStatus {
@@ -187,6 +189,10 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // SessionManagerClient::Observer:
   virtual void OwnerKeySet(bool success) OVERRIDE;
   virtual void PropertyChangeComplete(bool success) OVERRIDE;
+
+  // CertLoader::Observer:
+  virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
+                                    bool initial_load) OVERRIDE;
 
  private:
   // Enqueues a new operation. Takes ownership of |operation| and starts it

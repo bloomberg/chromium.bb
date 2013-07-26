@@ -12,10 +12,10 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/network/cert_loader.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -118,8 +118,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
 
   NetworkConnectionHandler();
 
-  void Init(CertLoader* cert_loader,
-            NetworkStateHandler* network_state_handler,
+  void Init(NetworkStateHandler* network_state_handler,
             NetworkConfigurationHandler* network_configuration_handler);
 
   ConnectRequest* pending_request(const std::string& service_path);

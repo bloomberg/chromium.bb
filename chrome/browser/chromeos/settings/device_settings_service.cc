@@ -75,10 +75,14 @@ DeviceSettingsService::DeviceSettingsService()
       weak_factory_(this),
       store_status_(STORE_SUCCESS),
       load_retries_left_(kMaxLoadRetries) {
+  if (CertLoader::IsInitialized())
+    CertLoader::Get()->AddObserver(this);
 }
 
 DeviceSettingsService::~DeviceSettingsService() {
   DCHECK(pending_operations_.empty());
+  if (CertLoader::IsInitialized())
+    CertLoader::Get()->RemoveObserver(this);
 }
 
 void DeviceSettingsService::SetSessionManager(
@@ -206,6 +210,14 @@ void DeviceSettingsService::PropertyChangeComplete(bool success) {
   }
 
   EnsureReload(false);
+}
+
+void DeviceSettingsService::OnCertificatesLoaded(
+    const net::CertificateList& cert_list,
+    bool initial_load) {
+  // CertLoader initializes the TPM and NSS database which is necessary to
+  // determine ownership. Force a reload once we know these are initialized.
+  EnsureReload(true);
 }
 
 void DeviceSettingsService::Enqueue(SessionManagerOperation* operation) {
