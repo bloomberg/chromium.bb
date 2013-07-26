@@ -693,6 +693,8 @@ FileCopyManager.prototype.serviceTask_ = function(
     task, successCallback, errorCallback) {
   if (task.zip)
     this.serviceZipTask_(task, successCallback, errorCallback);
+  else if (task.move)
+    this.serviceMoveTask_(task, successCallback, errorCallback);
   else
     this.serviceCopyTask_(task, successCallback, errorCallback);
 };
@@ -701,7 +703,6 @@ FileCopyManager.prototype.serviceTask_ = function(
  * Service all entries in the copy (and move) task.
  * Note: this method contains also the operation of "Move" due to historical
  * reason.
- * TODO(hidehiko): extract "move" related code into another method.
  *
  * @param {FileCopyManager.Task} task A copy task to be run.
  * @param {function()} successCallback On success.
@@ -753,7 +754,7 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
 };
 
 /**
- * Service the next entry in a given task.
+ * Copies the next entry in a given task.
  * TODO(olege): Refactor this method into a separate class.
  *
  * @param {FileManager.Task} task A task.
@@ -817,28 +818,11 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
     onCopyCompleteBase(targetEntry, 0);
   };
 
-  var onFilesystemMoveComplete = function(sourceEntry, targetEntry) {
-    self.sendOperationEvent_('moved', [sourceEntry, targetEntry]);
-    onCopyCompleteBase(targetEntry, 0);
-  };
-
   var onFilesystemError = function(err) {
     onError('FILESYSTEM_ERROR', err);
   };
 
   var onDeduplicated = function(targetRelativePath) {
-    if (task.move) {
-      targetDirEntry.getDirectory(
-          PathUtil.dirname(targetRelativePath), {create: false},
-          function(dirEntry) {
-            sourceEntry.moveTo(dirEntry, PathUtil.basename(targetRelativePath),
-                               onFilesystemMoveComplete.bind(self, sourceEntry),
-                               onFilesystemError);
-          },
-          onFilesystemError);
-      return;
-    }
-
     // TODO(benchan): drive::FileSystem has not implemented directory copy,
     // and thus we only call FileEntry.copyTo() for files. Revisit this
     // code when drive::FileSystem supports directory copy.
@@ -983,6 +967,106 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
 
   util.deduplicatePath(targetDirEntry, originalPath,
                        onDeduplicated, onError);
+};
+
+/**
+ * Moves all entries in the task.
+ *
+ * @param {FileCopyManager.Task} task A move task to be run.
+ * @param {function()} successCallback On success.
+ * @param {function(FileCopyManager.Error)} errorCallback On error.
+ * @private
+ */
+FileCopyManager.prototype.serviceMoveTask_ = function(
+    task, successCallback, errorCallback) {
+  this.serviceNextMoveTaskEntry_(
+      task,
+      (function onCompleted() {
+        // We should not dispatch a PROGRESS event when there is no pending
+        // items in the task.
+        if (task.pendingDirectories.length + task.pendingFiles.length == 0) {
+          successCallback();
+          return;
+        }
+
+        // Move the next entry.
+        this.sendProgressEvent_('PROGRESS');
+        this.serviceNextMoveTaskEntry_(
+            task, onCompleted.bind(this), errorCallback);
+      }).bind(this),
+      errorCallback);
+};
+
+/**
+ * Moves the next entry in a given task.
+ *
+ * Implementation note: This method can be simplified more. For example, in
+ * Task.setEntries(), the flag to recurse is set to false for move task,
+ * so that all the entries' originalSourcePath should be
+ * dirname(sourceEntry.fullPath).
+ * Thus, targetRelativePath should contain exact one component. Also we can
+ * skip applyRenames, because the destination directory always should be
+ * task.targetDirEntry.
+ * The unnecessary complexity is due to historical reason.
+ * TODO(hidehiko): Refactor this method.
+ *
+ * @param {FileManager.Task} task A move task.
+ * @param {function()} successCallback On success.
+ * @param {function(FileCopyManager.Error)} errorCallback On error.
+ * @private
+ */
+FileCopyManager.prototype.serviceNextMoveTaskEntry_ = function(
+    task, successCallback, errorCallback) {
+  if (this.maybeCancel_())
+    return;
+
+  var self = this;
+  var sourceEntry = task.getNextEntry();
+
+  if (!sourceEntry) {
+    // All entries in this task have been copied.
+    successCallback();
+    return;
+  }
+
+  var onError = function(reason, data) {
+    self.log_('serviceNextMoveTaskEntry error: ' + reason + ':', data);
+    errorCallback(new FileCopyManager.Error(reason, data));
+  };
+
+  // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
+  var sourcePath = sourceEntry.originalSourcePath;
+  if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
+    // We found an entry in the list that is not relative to the base source
+    // path, something is wrong.
+    onError('UNEXPECTED_SOURCE_FILE', sourceEntry.fullPath);
+    return;
+  }
+
+  util.deduplicatePath(
+      task.targetDirEntry,
+      task.applyRenames(sourceEntry.fullPath.substr(sourcePath.length + 1)),
+      function(targetRelativePath) {
+        var onFilesystemError = function(err) {
+          onError('FILESYSTEM_ERROR', err);
+        };
+
+        task.targetDirEntry.getDirectory(
+            PathUtil.dirname(targetRelativePath), {create: false},
+            function(dirEntry) {
+              sourceEntry.moveTo(
+                  dirEntry, PathUtil.basename(targetRelativePath),
+                  function(targetEntry) {
+                    self.sendOperationEvent_(
+                        'moved', [sourceEntry, targetEntry]);
+                    task.markEntryComplete(targetEntry, 0);
+                    successCallback();
+                  },
+                  onFilesystemError);
+            },
+            onFilesystemError);
+      },
+      onError);
 };
 
 /**
