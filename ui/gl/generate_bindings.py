@@ -691,7 +691,7 @@ GL_FUNCTIONS = [
   'arguments':
     'GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length,'
     'GLint* values', },
-{ 'return_type': 'void',
+{ 'return_type': 'GLenum',
   'names': ['glClientWaitSync'],
   'arguments':
     'GLsync sync, GLbitfield flags, GLuint64 timeout', },

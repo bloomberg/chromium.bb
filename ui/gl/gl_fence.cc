@@ -56,14 +56,10 @@ class GLFenceARBSync: public gfx::GLFence {
     if (!sync_)
       return true;
 
-    GLsizei length = 0;
-    GLsizei value = 0;
-    glGetSynciv(sync_,
-                GL_SYNC_STATUS,
-                1,  // bufSize
-                &length,
-                &value);
-    return length == 1 && value == GL_SIGNALED;
+    // We could potentially use glGetSynciv here, but it doesn't work
+    // on OSX 10.7 (always says the fence is not signaled yet).
+    // glClientWaitSync works better, so let's use that instead.
+    return  glClientWaitSync(sync_, 0, 0) != GL_TIMEOUT_EXPIRED;
   }
 
   virtual void ClientWait() OVERRIDE {
