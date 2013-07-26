@@ -195,6 +195,11 @@ class InstantPage : public content::WebContentsObserver,
 
   void ClearContents();
 
+  // Removes recommended URLs if a matching URL is already open in the Browser,
+  // if the Most Visited Tile Placement experiment is enabled, and the client is
+  // in the experiment group.
+  void MaybeRemoveMostVisitedItems(std::vector<InstantMostVisitedItem>* items);
+
   // Returns the InstantService for the |profile_|.
   InstantService* GetInstantService();
 

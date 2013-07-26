@@ -897,6 +897,7 @@
         'browser/history/history_unittest_base.h',
         'browser/history/in_memory_url_index_types_unittest.cc',
         'browser/history/in_memory_url_index_unittest.cc',
+        'browser/history/most_visited_tiles_experiment_unittest.cc',
         'browser/history/query_parser_unittest.cc',
         'browser/history/scored_history_match_unittest.cc',
         'browser/history/select_favicon_frames_unittest.cc',

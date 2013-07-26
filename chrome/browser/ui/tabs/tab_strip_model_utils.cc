@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/web_contents.h"
 
 namespace chrome {
 
@@ -16,6 +18,16 @@ int IndexOfFirstBlockedTab(const TabStripModel* model) {
   }
   // No blocked tabs.
   return model->count();
+}
+
+void GetOpenUrls(const TabStripModel& tabs,
+                 const history::TopSites& top_sites,
+                 std::set<std::string>* urls) {
+  for (int i = 0; i < tabs.count(); ++i) {
+    content::WebContents* web_contents = tabs.GetWebContentsAt(i);
+    if (web_contents)
+      urls->insert(top_sites.GetCanonicalURLString(web_contents->GetURL()));
+  }
 }
 
 }  // namespace chrome

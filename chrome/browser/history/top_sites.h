@@ -44,9 +44,6 @@ class TopSites
   // Initializes TopSites.
   static TopSites* Create(Profile* profile, const base::FilePath& db_name);
 
-  // Helper method to shuffle MostVisited tiles for A/B testing purposes.
-  static void MaybeShuffle(MostVisitedURLList* data);
-
   // Sets the given thumbnail for the given URL. Returns true if the thumbnail
   // was updated. False means either the URL wasn't known to us, or we felt
   // that our current thumbnail was superior to the given one. Should be called

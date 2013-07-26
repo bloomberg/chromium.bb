@@ -7,13 +7,18 @@
 #include "apps/app_launcher.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/history/most_visited_tiles_experiment.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -187,7 +192,10 @@ void InstantPage::ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) {
 
 void InstantPage::MostVisitedItemsChanged(
     const std::vector<InstantMostVisitedItem>& items) {
-  sender()->SendMostVisitedItems(items);
+  std::vector<InstantMostVisitedItem> items_copy(items);
+  MaybeRemoveMostVisitedItems(&items_copy);
+
+  sender()->SendMostVisitedItems(items_copy);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
@@ -282,4 +290,29 @@ void InstantPage::ClearContents() {
 
   sender()->SetContents(NULL);
   Observe(NULL);
+}
+
+void InstantPage::MaybeRemoveMostVisitedItems(
+    std::vector<InstantMostVisitedItem>* items) {
+// The code below uses APIs not available on Android and the experiment should
+// not run there.
+#if !defined(OS_ANDROID)
+  if (!history::MostVisitedTilesExperiment::IsDontShowOpenURLsEnabled())
+    return;
+
+  TabStripModel* tab_strip_model = chrome::FindBrowserWithProfile(
+      profile_,
+      chrome::GetActiveDesktop())->tab_strip_model();
+  history::TopSites* top_sites = profile_->GetTopSites();
+  if (!tab_strip_model || !top_sites) {
+    NOTREACHED();
+    return;
+  }
+
+  std::set<std::string> open_urls;
+  chrome::GetOpenUrls(*tab_strip_model, *top_sites, &open_urls);
+  history::MostVisitedTilesExperiment::RemoveItemsMatchingOpenTabs(
+      open_urls, items);
+
+#endif
 }

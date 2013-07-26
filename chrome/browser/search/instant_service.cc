@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/most_visited_tiles_experiment.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
@@ -249,7 +250,7 @@ void InstantService::Observe(int type,
 void InstantService::OnMostVisitedItemsReceived(
     const history::MostVisitedURLList& data) {
   history::MostVisitedURLList reordered_data(data);
-  history::TopSites::MaybeShuffle(&reordered_data);
+  history::MostVisitedTilesExperiment::MaybeShuffle(&reordered_data);
 
   std::vector<InstantMostVisitedItem> new_most_visited_items;
   for (size_t i = 0; i < reordered_data.size(); i++) {

@@ -8934,6 +8934,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.MostVisitedTilePlacementExperiment"
+    enum="NtpTileExperimentActions">
+  <summary>
+    Records anomalous events for the Most Visited Tile Placement experiment,
+    where it is unable to operate as expected. These are recorded during New Tab
+    Page load time, once for every NTP.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.NonVisibleScreenshots">
   <summary>
     The number of screenshots that were cached for the non-visible but ranked
@@ -19521,6 +19530,18 @@ other types of suffix sets.
   <int value="0" label="NTP Promo viewed"/>
   <int value="1" label="NTP Promo closed"/>
   <int value="2" label="NTP Promo link clicked"/>
+</enum>
+
+<enum name="NtpTileExperimentActions" type="int">
+  <summary>
+    The types of actions performed by the Most Visited Tile Placement
+    experiment, used to identify the cases where the experiment could not
+    operate as expected, and the reason for it.
+  </summary>
+  <int value="0" label="Removed URL that was already open in browser"/>
+  <int value="1" label="Didn't remove URL, too few suggestions in MV"/>
+  <int value="2" label="Too few URLs, didn't flip tiles 1 and 8"/>
+  <int value="3" label="Too few URLs, didn't flip tiles 1 and 4"/>
 </enum>
 
 <enum name="OfflineStatus" type="int">
