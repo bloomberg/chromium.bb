@@ -15,8 +15,7 @@ namespace views {
 InputMethodBase::InputMethodBase() : delegate_(NULL), widget_(NULL) {}
 
 InputMethodBase::~InputMethodBase() {
-  widget_->GetFocusManager()->RemoveFocusChangeListener(this);
-  widget_ = NULL;
+  DetachFromWidget();
 }
 
 void InputMethodBase::SetDelegate(internal::InputMethodDelegate* delegate) {
@@ -38,13 +37,13 @@ void InputMethodBase::Init(Widget* widget) {
 }
 
 views::View* InputMethodBase::GetFocusedView() const {
-  return widget_->GetFocusManager()->GetFocusedView();
+  return widget_ ? widget_->GetFocusManager()->GetFocusedView() : NULL;
 }
 
 void InputMethodBase::OnTextInputTypeChanged(View* view) {}
 
 ui::TextInputClient* InputMethodBase::GetTextInputClient() const {
-  return (widget_->IsActive() && GetFocusedView()) ?
+  return (widget_ && widget_->IsActive() && GetFocusedView()) ?
       GetFocusedView()->GetTextInputClient() : NULL;
 }
 
@@ -62,7 +61,7 @@ void InputMethodBase::OnWillChangeFocus(View* focused_before, View* focused) {}
 void InputMethodBase::OnDidChangeFocus(View* focused_before, View* focused) {}
 
 bool InputMethodBase::IsViewFocused(View* view) const {
-  return widget_->IsActive() && view && GetFocusedView() == view;
+  return widget_ && widget_->IsActive() && view && GetFocusedView() == view;
 }
 
 bool InputMethodBase::IsTextInputTypeNone() const {
@@ -96,6 +95,14 @@ bool InputMethodBase::GetCaretBoundsInWidget(gfx::Rect* rect) const {
   if (GetFocusedView()->GetWidget() != widget_)
     return Widget::ConvertRect(GetFocusedView()->GetWidget(), widget_, rect);
   return true;
+}
+
+void InputMethodBase::DetachFromWidget() {
+  if (!widget_)
+    return;
+
+  widget_->GetFocusManager()->RemoveFocusChangeListener(this);
+  widget_ = NULL;
 }
 
 }  // namespace views

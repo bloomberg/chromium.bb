@@ -62,6 +62,11 @@ class VIEWS_EXPORT InputMethodBase : public InputMethod,
   // Returns false if the current text input client doesn't support text input.
   bool GetCaretBoundsInWidget(gfx::Rect* rect) const;
 
+  // Removes any state installed on |widget_| and NULLs it out. Use if the
+  // widget is in a state such that it should no longer be used (such as when
+  // this is in its destructor).
+  void DetachFromWidget();
+
  private:
   internal::InputMethodDelegate* delegate_;
   Widget* widget_;

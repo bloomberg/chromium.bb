@@ -727,6 +727,7 @@
         'focus/focus_manager_unittest.cc',
         'focus/focus_manager_unittest_win.cc',
         'focus/focus_traversal_unittest.cc',
+        'ime/input_method_bridge_unittest.cc',
         'layout/box_layout_unittest.cc',
         'layout/grid_layout_unittest.cc',
         'touchui/touch_selection_controller_impl_unittest.cc',
@@ -748,8 +749,9 @@
           'sources!': [
             'touchui/touch_selection_controller_impl_unittest.cc',
           ],
-        }, { # use_aura==0
+        }, { # use_chromeos==1
           'sources/': [
+            ['exclude', 'ime/input_method_bridge_unittest.cc'],
             ['exclude', 'widget/desktop_aura'],
           ],
         }],
@@ -789,6 +791,7 @@
           ],
           'sources/': [
             ['exclude', 'corewm'],
+            ['exclude', 'ime/input_method_bridge_unittest.cc'],
             ['exclude', 'widget/desktop_aura'],
             ['exclude', 'widget/window_reorderer_unittest.cc']
           ],

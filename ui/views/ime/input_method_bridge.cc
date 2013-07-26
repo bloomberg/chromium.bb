@@ -23,12 +23,14 @@ InputMethodBridge::InputMethodBridge(internal::InputMethodDelegate* delegate,
 }
 
 InputMethodBridge::~InputMethodBridge() {
+  // By the time we get here it's very likely |widget_|'s NativeWidget has been
+  // destroyed. This means any calls to |widget_| that go to the NativeWidget,
+  // such as IsActive(), will crash. SetFocusedTextInputClient() may callback to
+  // this and go into |widget_|. NULL out |widget_| so we don't attempt to use
+  // it.
+  DetachFromWidget();
   if (host_->GetTextInputClient() == this)
     host_->SetFocusedTextInputClient(NULL);
-}
-
-void InputMethodBridge::Init(Widget* widget) {
-  InputMethodBase::Init(widget);
 }
 
 void InputMethodBridge::OnFocus() {

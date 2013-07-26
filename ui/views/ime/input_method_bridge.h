@@ -35,7 +35,6 @@ class InputMethodBridge : public InputMethodBase,
   virtual ~InputMethodBridge();
 
   // Overridden from InputMethod:
-  virtual void Init(Widget* widget) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
