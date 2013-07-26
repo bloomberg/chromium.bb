@@ -544,6 +544,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
           chromeos::PowerPolicyController::ACTION_SUSPEND,
           chromeos::PowerPolicyController::ACTION_DO_NOTHING,
           false));
+  handlers_.push_back(new DeprecatedIdleActionHandler());
   handlers_.push_back(
       new IntRangePolicyHandler(
           key::kLidCloseAction,

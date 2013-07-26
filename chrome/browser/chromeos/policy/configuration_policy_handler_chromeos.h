@@ -101,6 +101,21 @@ class LoginScreenPowerManagementPolicyHandler
   DISALLOW_COPY_AND_ASSIGN(LoginScreenPowerManagementPolicyHandler);
 };
 
+// Handles the deprecated IdleAction policy, so both kIdleActionBattery and
+// kIdleActionAC fall back to the deprecated action.
+class DeprecatedIdleActionHandler : public IntRangePolicyHandlerBase {
+ public:
+  DeprecatedIdleActionHandler();
+  virtual ~DeprecatedIdleActionHandler();
+
+  // ConfigurationPolicyHandler methods:
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeprecatedIdleActionHandler);
+};
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_CHROMEOS_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_

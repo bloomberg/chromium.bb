@@ -20,6 +20,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -236,6 +237,26 @@ bool LoginScreenPowerManagementPolicyHandler::CheckPolicySettings(
 void LoginScreenPowerManagementPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
+}
+
+DeprecatedIdleActionHandler::DeprecatedIdleActionHandler()
+    : IntRangePolicyHandlerBase(
+          key::kIdleAction,
+          chromeos::PowerPolicyController::ACTION_SUSPEND,
+          chromeos::PowerPolicyController::ACTION_DO_NOTHING,
+          false) {}
+
+DeprecatedIdleActionHandler::~DeprecatedIdleActionHandler() {}
+
+void DeprecatedIdleActionHandler::ApplyPolicySettings(const PolicyMap& policies,
+                                                      PrefValueMap* prefs) {
+  const base::Value* value = policies.GetValue(policy_name());
+  if (value && EnsureInRange(value, NULL, NULL)) {
+    if (!prefs->GetValue(prefs::kPowerAcIdleAction, NULL))
+      prefs->SetValue(prefs::kPowerAcIdleAction, value->DeepCopy());
+    if (!prefs->GetValue(prefs::kPowerBatteryIdleAction, NULL))
+      prefs->SetValue(prefs::kPowerBatteryIdleAction, value->DeepCopy());
+  }
 }
 
 }  // namespace policy

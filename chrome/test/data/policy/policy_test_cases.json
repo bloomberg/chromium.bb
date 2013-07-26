@@ -1663,6 +1663,15 @@
     ]
   },
 
+  "IdleAction": {
+    "os": ["chromeos"],
+    "test_policy": { "IdleAction": 0 },
+    "pref_mappings": [
+      { "pref": "power.ac_idle_action" },
+      { "pref": "power.battery_idle_action" }
+    ]
+  },
+
   "IdleActionAC": {
     "os": ["chromeos"],
     "test_policy": { "IdleActionAC": 0 },
