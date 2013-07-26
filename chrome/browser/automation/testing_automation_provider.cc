@@ -4158,7 +4158,8 @@ bool TestingAutomationProvider::BuildWebKeyEventFromArgs(
                   key_identifier.c_str(),
                   WebKit::WebKeyboardEvent::keyIdentifierLengthCap);
   } else {
-    event->setKeyIdentifierFromWindowsKeyCode();
+    *error = "'keyIdentifier' missing or invalid.";
+    return false;
   }
 
   if (type == automation::kRawKeyDownType) {
@@ -4197,35 +4198,6 @@ bool TestingAutomationProvider::BuildWebKeyEventFromArgs(
   event->timeStampSeconds = base::Time::Now().ToDoubleT();
   event->skip_in_browser = true;
   return true;
-}
-
-void TestingAutomationProvider::BuildSimpleWebKeyEvent(
-    WebKit::WebInputEvent::Type type,
-    int windows_key_code,
-    NativeWebKeyboardEvent* event) {
-  event->nativeKeyCode = 0;
-  event->windowsKeyCode = windows_key_code;
-  event->setKeyIdentifierFromWindowsKeyCode();
-  event->type = type;
-  event->modifiers = 0;
-  event->isSystemKey = false;
-  event->timeStampSeconds = base::Time::Now().ToDoubleT();
-  event->skip_in_browser = true;
-}
-
-void TestingAutomationProvider::SendWebKeyPressEventAsync(
-    int key_code,
-    WebContents* web_contents) {
-  // Create and send a "key down" event for the specified key code.
-  NativeWebKeyboardEvent event_down;
-  BuildSimpleWebKeyEvent(WebKit::WebInputEvent::RawKeyDown, key_code,
-                         &event_down);
-  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_down);
-
-  // Create and send a corresponding "key up" event.
-  NativeWebKeyboardEvent event_up;
-  BuildSimpleWebKeyEvent(WebKit::WebInputEvent::KeyUp, key_code, &event_up);
-  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_up);
 }
 
 void TestingAutomationProvider::SendWebkitKeyEvent(

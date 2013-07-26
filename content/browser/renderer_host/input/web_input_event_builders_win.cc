@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/web_input_event_builders_win.h"
 
 #include "base/logging.h"
+#include "content/browser/renderer_host/input/web_input_event_util.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
@@ -144,8 +145,11 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd, UINT message,
     result.text[0] = result.windowsKeyCode;
     result.unmodifiedText[0] = result.windowsKeyCode;
   }
-  if (result.type != WebInputEvent::Char)
-    result.setKeyIdentifierFromWindowsKeyCode();
+  if (result.type != WebInputEvent::Char) {
+    UpdateWindowsKeyCodeAndKeyIdentifier(
+        &result,
+        static_cast<ui::KeyboardCode>(result.windowsKeyCode));
+  }
 
   if (::GetKeyState(VK_SHIFT) & 0x8000)
     result.modifiers |= WebInputEvent::ShiftKey;

@@ -187,38 +187,6 @@ class AutomatedUITest : public AutomatedUITestBase {
   // XML element: <Options/>
   bool Options();
 
-  // Simulates a page up key press on the active window.
-  // XML element: <DownArrow/>
-  bool PressDownArrow();
-
-  // Simulates an enter key press on the active window.
-  // XML element: <PressEnterKey/>
-  bool PressEnterKey();
-
-  // Simulates an escape key press on the active window.
-  // XML element: <PressEscapeKey/>
-  bool PressEscapeKey();
-
-  // Simulates a page down key press on the active window.
-  // XML element: <PageDown/>
-  bool PressPageDown();
-
-  // Simulates a page up key press on the active window.
-  // XML element: <PageUp/>
-  bool PressPageUp();
-
-  // Simulates a space bar press on the active window.
-  // XML element: <PressSpaceBar/>
-  bool PressSpaceBar();
-
-  // Simulates a tab key press on the active window.
-  // XML element: <PressTabKey/>
-  bool PressTabKey();
-
-  // Simulates a page up key press on the active window.
-  // XML element: <UpArrow/>
-  bool PressUpArrow();
-
   // Stars the current page. This opens a dialog that may or may not be
   // dismissed.
   // XML element: <Star/>
@@ -291,9 +259,6 @@ class AutomatedUITest : public AutomatedUITestBase {
   bool ForceCrash();
 
   // Utility functions --------------------------------------------------------
-
-  // Calls SimulateKeyPress on the active tab. |key| is the key pressed.
-  bool SimulateKeyPress(ui::KeyboardCode key);
 
   // Opens init file, reads it into the reader, and closes the file.
   // Returns false if there are any errors.

@@ -957,11 +957,3 @@ IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_SendJSONRequest,
                             std::string /* JSON request */,
                             std::string /* JSON response */,
                             bool /* success */)
-
-// This message requests that a key press be performed.
-// Request:
-//   int - tab handle
-//   int - the ui::KeyboardCode of the key that was pressed.
-IPC_MESSAGE_CONTROL2(AutomationMsg_KeyPress,
-                     int /* tab_handle */,
-                     int /* key */)

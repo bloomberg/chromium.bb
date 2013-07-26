@@ -224,9 +224,6 @@ class TabProxy : public AutomationResourceProxy {
   void Copy();
   void Paste();
 
-  // Simulates a key press. |key| is the virtual key code of the key pressed.
-  void SimulateKeyPress(ui::KeyboardCode key);
-
   // These handlers issue asynchronous Reload, Stop and SaveAs notifications to
   // the chrome instance.
   void ReloadAsync();

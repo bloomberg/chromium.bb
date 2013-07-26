@@ -579,18 +579,6 @@ class TestingAutomationProvider : public AutomationProvider,
                                 std::string* error,
                                 content::NativeWebKeyboardEvent* event);
 
-  // Populates the fields of the event parameter with default data, except for
-  // the specified key type and key code.
-  void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
-                              int windows_key_code,
-                              content::NativeWebKeyboardEvent* event);
-
-  // Sends a key press event using the given key code to the specified tab.
-  // A key press is a combination of a "key down" event and a "key up" event.
-  // This function does not wait before returning.
-  void SendWebKeyPressEventAsync(int key_code,
-                                 content::WebContents* web_contents);
-
   // Launches the specified app from the currently-selected tab.
   void LaunchApp(Browser* browser,
                  base::DictionaryValue* args,

@@ -276,8 +276,6 @@ class AutomationProvider
   void Copy(int tab_handle);
   void Paste(int tab_handle);
 
-  void KeyPress(int tab_handle, int key);
-
   void ReloadAsync(int tab_handle);
   void StopAsync(int tab_handle);
   void SaveAsAsync(int tab_handle);
