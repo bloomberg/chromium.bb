@@ -2014,3 +2014,13 @@ crbug.com/262857 svg/custom/use-clipped-hit.svg [ NeedsRebaseline ]
 crbug.com/262857 svg/custom/use-detach.svg [ NeedsRebaseline ]
 crbug.com/262857 svg/repaint/text-mask-update.svg [ NeedsRebaseline ]
 crbug.com/262857 svg/custom/js-update-pattern-child.svg [ NeedsRebaseline ]
+
+# Below test case need to rebaseline after crbug.com/249600
+# Image only
+crbug.com/249600 [ Linux Win ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
+# Text only
+crbug.com/249600 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ NeedsRebaseline ]
+crbug.com/249600 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ NeedsRebaseline ]
+crbug.com/249600 [ Mac ] fast/table/table-all-rowspans-height-distribution-in-rows-except-overlapped.html [ NeedsRebaseline ]
+# Text and image both
+crbug.com/249600 [ Mac ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]

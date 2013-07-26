@@ -375,51 +375,68 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
 {
     ASSERT(rowSpanCells.size());
 
-    // FIXME: For now, we handle the first rowspan cell in the table but this is wrong.
-    RenderTableCell* cell = rowSpanCells[0];
+    unsigned extraHeightToPropagate = 0;
+    unsigned lastRowIndex = 0;
+    unsigned lastRowSpan = 0;
 
-    unsigned rowSpan = cell->rowSpan();
+    for (unsigned i = 0; i < rowSpanCells.size(); i++) {
+        RenderTableCell* cell = rowSpanCells[i];
 
-    struct SpanningRowsHeight spanningRowsHeight;
+        unsigned rowIndex = cell->rowIndex();
 
-    populateSpanningRowsHeightFromCell(cell, spanningRowsHeight);
+        // FIXME: For now, we are handling only rowspan cells those are not overlapping with other
+        // rowspan cells but this is wrong.
+        if (rowIndex < lastRowIndex + lastRowSpan)
+            continue;
 
-    if (!spanningRowsHeight.totalRowsHeight || spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing <= spanningRowsHeight.totalRowsHeight)
-        return;
+        unsigned rowSpan = cell->rowSpan();
+        int originalBeforePosition = m_rowPos[rowIndex + rowSpan];
 
-    unsigned rowIndex = cell->rowIndex();
-    int totalPercent = 0;
-    int totalAutoRowsHeight = 0;
-    int totalRemainingRowsHeight = spanningRowsHeight.totalRowsHeight;
-
-    // Calculate total percentage, total auto rows height and total rows height except percent rows.
-    for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
-        if (m_grid[row].logicalHeight.isPercent()) {
-            totalPercent += m_grid[row].logicalHeight.percent();
-            totalRemainingRowsHeight -= spanningRowsHeight.rowHeight[row - rowIndex];
-        } else if (m_grid[row].logicalHeight.isAuto()) {
-            totalAutoRowsHeight += spanningRowsHeight.rowHeight[row - rowIndex];
+        if (extraHeightToPropagate) {
+            for (unsigned row = lastRowIndex + lastRowSpan + 1; row <= rowIndex + rowSpan; row++)
+                m_rowPos[row] += extraHeightToPropagate;
         }
+
+        lastRowIndex = rowIndex;
+        lastRowSpan = rowSpan;
+
+        struct SpanningRowsHeight spanningRowsHeight;
+
+        populateSpanningRowsHeightFromCell(cell, spanningRowsHeight);
+
+        if (!spanningRowsHeight.totalRowsHeight || spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing <= spanningRowsHeight.totalRowsHeight)
+            continue;
+
+        int totalPercent = 0;
+        int totalAutoRowsHeight = 0;
+        int totalRemainingRowsHeight = spanningRowsHeight.totalRowsHeight;
+
+        // Calculate total percentage, total auto rows height and total rows height except percent rows.
+        for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
+            if (m_grid[row].logicalHeight.isPercent()) {
+                totalPercent += m_grid[row].logicalHeight.percent();
+                totalRemainingRowsHeight -= spanningRowsHeight.rowHeight[row - rowIndex];
+            } else if (m_grid[row].logicalHeight.isAuto()) {
+                totalAutoRowsHeight += spanningRowsHeight.rowHeight[row - rowIndex];
+            }
+        }
+
+        int extraRowSpanningHeight = spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing - spanningRowsHeight.totalRowsHeight;
+
+        distributeExtraRowSpanHeightToPercentRows(cell, totalPercent, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+        distributeExtraRowSpanHeightToAutoRows(cell, totalAutoRowsHeight, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+        distributeExtraRowSpanHeightToRemainingRows(cell, totalRemainingRowsHeight, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+
+        ASSERT(!extraRowSpanningHeight);
+
+        // Getting total changed height in the table
+        extraHeightToPropagate = m_rowPos[rowIndex + rowSpan] - originalBeforePosition;
     }
 
-    int initialPos = m_rowPos[rowIndex + rowSpan];
-    int extraRowSpanningHeight = spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing - spanningRowsHeight.totalRowsHeight;
-
-    distributeExtraRowSpanHeightToPercentRows(cell, totalPercent, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
-    distributeExtraRowSpanHeightToAutoRows(cell, totalAutoRowsHeight, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
-    distributeExtraRowSpanHeightToRemainingRows(cell, totalRemainingRowsHeight, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
-
-    ASSERT(!extraRowSpanningHeight);
-
-    // Getting total changed height in the table
-    unsigned changedHeight = m_rowPos[rowIndex + rowSpan] - initialPos;
-
-    if (changedHeight) {
-        unsigned totalRows = m_grid.size();
-
+    if (extraHeightToPropagate) {
         // Apply changed height by rowSpan cells to rows present at the end of the table
-        for (unsigned row = rowIndex + rowSpan + 1; row <= totalRows; row++)
-            m_rowPos[row] += changedHeight;
+        for (unsigned row = lastRowIndex + lastRowSpan + 1; row <= m_grid.size(); row++)
+            m_rowPos[row] += extraHeightToPropagate;
     }
 }
 
