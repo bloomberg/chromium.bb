@@ -55,7 +55,7 @@ class BalloonCollection {
                    Profile* profile) = 0;
 
   // Returns true if any balloon has this notification id.
-  virtual bool DoesIdExist(const std::string& id) = 0;
+  virtual const Notification* FindById(const std::string& id) const = 0;
 
   // Removes any balloons that have this notification id. Returns
   // true if anything was removed.

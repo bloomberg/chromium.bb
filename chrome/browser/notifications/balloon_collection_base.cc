@@ -35,13 +35,15 @@ void BalloonCollectionBase::Remove(Balloon* balloon) {
   }
 }
 
-bool BalloonCollectionBase::DoesIdExist(const std::string& id) {
-  Balloons::iterator iter;
+const Notification* BalloonCollectionBase::FindById(
+    const std::string& id) const {
+  Balloons::const_iterator iter;
   for (iter = balloons_.begin(); iter != balloons_.end(); ++iter) {
-    if ((*iter)->notification().notification_id() == id)
-      return true;
+    if ((*iter)->notification().notification_id() == id) {
+      return &((*iter)->notification());
+    }
   }
-  return false;
+  return NULL;
 }
 
 bool BalloonCollectionBase::CloseById(const std::string& id) {

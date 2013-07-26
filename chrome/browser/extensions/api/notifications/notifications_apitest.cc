@@ -191,43 +191,160 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestBaseFormatNotification) {
-  scoped_refptr<extensions::NotificationsCreateFunction>
-      notification_create_function(
-          new extensions::NotificationsCreateFunction());
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
-  notification_create_function->set_extension(empty_extension.get());
-  notification_create_function->set_has_callback(true);
+  // Create a new notification with the minimum required properties.
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      notification_create_function.get(),
-      "[\"\", "
-      "{"
-      "\"type\": \"basic\","
-      "\"iconUrl\": \"an/image/that/does/not/exist.png\","
-      "\"title\": \"Attention!\","
-      "\"message\": \"Check out Cirque du Soleil\","
-      "\"priority\": 1,"
-      "\"eventTime\": 1234567890.12345678,"
-      "\"buttons\": ["
-      "  {"
-      "   \"title\": \"Up\","
-      "   \"iconUrl\":\"http://www.google.com/logos/2012/\""
-      "  },"
-      "  {"
-      "   \"title\": \"Down\""  // note: no iconUrl
-      "  }"
-      "],"
-      "\"expandedMessage\": \"This is a longer expanded message.\","
-      "\"imageUrl\": \"http://www.google.com/logos/2012/election12-hp.jpg\""
-      "}]",
-      browser(),
-      utils::NONE));
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_create_function.get(),
+        "[\"\", "
+        "{"
+        "\"type\": \"basic\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+        "\"title\": \"Attention!\","
+        "\"message\": \"Check out Cirque du Soleil\""
+        "}]",
+        browser(),
+        utils::NONE));
 
-  std::string notification_id;
-  ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
-  ASSERT_TRUE(result->GetAsString(&notification_id));
-  ASSERT_TRUE(notification_id.length() > 0);
+    std::string notification_id;
+    ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
+    ASSERT_TRUE(result->GetAsString(&notification_id));
+    ASSERT_TRUE(notification_id.length() > 0);
+  }
+
+  // Create another new notification with more than the required properties.
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_create_function.get(),
+        "[\"\", "
+        "{"
+        "\"type\": \"basic\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+        "\"title\": \"Attention!\","
+        "\"message\": \"Check out Cirque du Soleil\","
+        "\"priority\": 1,"
+        "\"eventTime\": 1234567890.12345678,"
+        "\"buttons\": ["
+        "  {"
+        "   \"title\": \"Up\","
+        "   \"iconUrl\":\"http://www.google.com/logos/2012/\""
+        "  },"
+        "  {"
+        "   \"title\": \"Down\""  // note: no iconUrl
+        "  }"
+        "],"
+        "\"expandedMessage\": \"This is a longer expanded message.\","
+        "\"imageUrl\": \"http://www.google.com/logos/2012/election12-hp.jpg\""
+        "}]",
+        browser(),
+        utils::NONE));
+
+    std::string notification_id;
+    ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
+    ASSERT_TRUE(result->GetAsString(&notification_id));
+    ASSERT_TRUE(notification_id.length() > 0);
+  }
+
+  // Error case: missing type property.
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
+
+    utils::RunFunction(
+        notification_create_function.get(),
+        "[\"\", "
+        "{"
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+        "\"title\": \"Attention!\","
+        "\"message\": \"Check out Cirque du Soleil\""
+        "}]",
+        browser(),
+        utils::NONE);
+
+    EXPECT_FALSE(notification_create_function->GetError().empty());
+  }
+
+  // Error case: missing iconUrl property.
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
+
+    utils::RunFunction(
+        notification_create_function.get(),
+        "[\"\", "
+        "{"
+        "\"type\": \"basic\","
+        "\"title\": \"Attention!\","
+        "\"message\": \"Check out Cirque du Soleil\""
+        "}]",
+        browser(),
+        utils::NONE);
+
+    EXPECT_FALSE(notification_create_function->GetError().empty());
+  }
+
+  // Error case: missing title property.
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
+
+    utils::RunFunction(
+        notification_create_function.get(),
+        "[\"\", "
+        "{"
+        "\"type\": \"basic\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+        "\"message\": \"Check out Cirque du Soleil\""
+        "}]",
+        browser(),
+        utils::NONE);
+
+    EXPECT_FALSE(notification_create_function->GetError().empty());
+  }
+
+  // Error case: missing message property.
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
+
+    utils::RunFunction(
+        notification_create_function.get(),
+        "[\"\", "
+        "{"
+        "\"type\": \"basic\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+        "\"title\": \"Attention!\""
+        "}]",
+        browser(),
+        utils::NONE);
+
+    EXPECT_FALSE(notification_create_function->GetError().empty());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestMultipleItemNotification) {
@@ -399,6 +516,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestByUser) {
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestProgressNotification) {
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
+  // Create a new progress notification.
+  std::string notification_id;
   {
     scoped_refptr<extensions::NotificationsCreateFunction>
         notification_create_function(
@@ -421,10 +540,33 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestProgressNotification) {
         browser(),
         utils::NONE));
 
-    std::string notification_id;
     EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
     EXPECT_TRUE(result->GetAsString(&notification_id));
     EXPECT_TRUE(notification_id.length() > 0);
+  }
+
+  // Update the progress property only.
+  {
+    scoped_refptr<extensions::NotificationsUpdateFunction>
+        notification_function(
+            new extensions::NotificationsUpdateFunction());
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function.get(),
+        "[\"" + notification_id +
+            "\", "
+            "{"
+            "\"progress\": 60"
+            "}]",
+        browser(),
+        utils::NONE));
+
+    EXPECT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
+    bool copy_bool_value = false;
+    EXPECT_TRUE(result->GetAsBoolean(&copy_bool_value));
+    EXPECT_TRUE(copy_bool_value);
   }
 
   // Error case: progress value provided for non-progress type.
@@ -500,5 +642,84 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestProgressNotification) {
         browser(),
         utils::NONE);
     EXPECT_FALSE(notification_create_function->GetError().empty());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+
+  // Create a new notification.
+  std::string notification_id;
+  {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_function(
+            new extensions::NotificationsCreateFunction());
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function.get(),
+        "[\"\", "  // Empty string: ask API to generate ID
+        "{"
+        "\"type\": \"basic\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+        "\"title\": \"Attention!\","
+        "\"message\": \"Check out Cirque du Soleil\""
+        "}]",
+        browser(),
+        utils::NONE));
+
+    ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
+    ASSERT_TRUE(result->GetAsString(&notification_id));
+    ASSERT_TRUE(notification_id.length() > 0);
+  }
+
+  // Update a few properties in the existing notification.
+  {
+    scoped_refptr<extensions::NotificationsUpdateFunction>
+        notification_function(
+            new extensions::NotificationsUpdateFunction());
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function.get(),
+        "[\"" + notification_id +
+            "\", "
+            "{"
+            "\"title\": \"Changed!\","
+            "\"message\": \"Too late! The show ended yesterday\""
+            "}]",
+        browser(),
+        utils::NONE));
+
+    ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
+    bool copy_bool_value = false;
+    ASSERT_TRUE(result->GetAsBoolean(&copy_bool_value));
+    ASSERT_TRUE(copy_bool_value);
+  }
+
+  // Update another property in the existing notification.
+  {
+    scoped_refptr<extensions::NotificationsUpdateFunction>
+        notification_function(
+            new extensions::NotificationsUpdateFunction());
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function.get(),
+        "[\"" + notification_id +
+            "\", "
+            "{"
+            "\"priority\": 2"
+            "}]",
+        browser(),
+        utils::NONE));
+
+    ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
+    bool copy_bool_value = false;
+    ASSERT_TRUE(result->GetAsBoolean(&copy_bool_value));
+    ASSERT_TRUE(copy_bool_value);
   }
 }

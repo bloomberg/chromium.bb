@@ -34,7 +34,7 @@ class BalloonCollectionBase {
   virtual void Remove(Balloon* balloon);
 
   // Returns true if any balloon matches the given notification id.
-  virtual bool DoesIdExist(const std::string& id);
+  virtual const Notification* FindById(const std::string& id) const;
 
   // Finds any balloon matching the given notification id, and
   // calls CloseByScript on it.  Returns true if anything was

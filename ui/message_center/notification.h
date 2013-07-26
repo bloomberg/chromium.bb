@@ -69,9 +69,15 @@ class MESSAGE_CENTER_EXPORT Notification {
   void CopyState(Notification* base);
 
   NotificationType type() const { return type_; }
+  void set_type(NotificationType type) { type_ = type; }
+
   const std::string& id() const { return id_; }
+
   const string16& title() const { return title_; }
+  void set_title(const string16& title) { title_ = title; }
+
   const string16& message() const { return message_; }
+  void set_message(const string16& message) { message_ = message; }
 
   // A display string for the source of the notification.
   const string16& display_source() const { return display_source_; }
@@ -82,14 +88,29 @@ class MESSAGE_CENTER_EXPORT Notification {
 
   // Begin unpacked values from optional_fields.
   int priority() const { return optional_fields_.priority; }
+  void set_priority(int priority) { optional_fields_.priority = priority; }
+
   base::Time timestamp() const { return optional_fields_.timestamp; }
+  void set_timestamp(const base::Time& timestamp) {
+    optional_fields_.timestamp = timestamp;
+  }
+
   const string16& expanded_message() const {
     return optional_fields_.expanded_message;
   }
+  void set_expanded_message(const string16& expanded_message) {
+    optional_fields_.expanded_message = expanded_message;
+  }
+
   const std::vector<NotificationItem>& items() const {
     return optional_fields_.items;
   }
+  void set_items(const std::vector<NotificationItem>& items) {
+    optional_fields_.items = items;
+  }
+
   int progress() const { return optional_fields_.progress; }
+  void set_progress(int progress) { optional_fields_.progress = progress; }
   // End unpacked values.
 
   // Images fetched asynchronously.

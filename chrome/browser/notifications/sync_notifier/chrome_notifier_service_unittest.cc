@@ -65,8 +65,8 @@ class StubNotificationUIManager : public NotificationUIManager {
 
   // Returns true if any notifications match the supplied ID, either currently
   // displayed or in the queue.
-  virtual bool DoesIdExist(const std::string& id) OVERRIDE {
-    return true;
+  virtual const Notification* FindById(const std::string& id) const OVERRIDE {
+    return (notification_.id() == id) ? &notification_ : NULL;
   }
 
   // Removes any notifications matching the supplied ID, either currently

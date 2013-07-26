@@ -41,17 +41,17 @@ namespace notifications {
 
   dictionary NotificationOptions {
     // Which type of notification to display.
-    TemplateType type;
+    TemplateType? type;
 
     // Sender's avatar, app icon, or a thumbnail for image notifications.
-    DOMString iconUrl;
+    DOMString? iconUrl;
     [nodoc] NotificationBitmap? iconBitmap;
 
     // Title of the notification (e.g. sender name for email).
-    DOMString title;
+    DOMString? title;
 
     // Main notification content.
-    DOMString message;
+    DOMString? message;
 
     // Priority ranges from -2 to 2. -2 is lowest priority. 2 is highest. Zero
     // is default.

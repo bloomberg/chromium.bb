@@ -46,7 +46,7 @@ class BalloonCollectionImpl : public BalloonCollection,
   // BalloonCollection interface.
   virtual void Add(const Notification& notification,
                    Profile* profile) OVERRIDE;
-  virtual bool DoesIdExist(const std::string& id) OVERRIDE;
+  virtual const Notification* FindById(const std::string& id) const OVERRIDE;
   virtual bool RemoveById(const std::string& id) OVERRIDE;
   virtual bool RemoveBySourceOrigin(const GURL& source_origin) OVERRIDE;
   virtual bool RemoveByProfile(Profile* profile) OVERRIDE;

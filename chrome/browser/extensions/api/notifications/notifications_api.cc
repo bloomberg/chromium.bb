@@ -35,6 +35,9 @@ namespace extensions {
 namespace {
 
 const char kResultKey[] = "result";
+const char kMissingRequiredPropertiesForCreateNotification[] =
+    "Some of the required properties are missing: type, iconUrl, title and "
+    "message.";
 const char kUnexpectedProgressValueForNonProgressType[] =
     "The progress value should not be specified for non-progress notification";
 const char kInvalidProgressValue[] =
@@ -231,12 +234,21 @@ NotificationsApiFunction::~NotificationsApiFunction() {
 bool NotificationsApiFunction::CreateNotification(
     const std::string& id,
     api::notifications::NotificationOptions* options) {
+  // First, make sure the required fields exist: type, title, message,  icon.
+  // These fields are defined as optional in IDL such that they can be used as
+  // optional for notification updates. But for notification creations, they
+  // should be present.
+  if (options->type == api::notifications::TEMPLATE_TYPE_NONE ||
+      !options->icon_url || !options->title || !options->message) {
+    SetError(kMissingRequiredPropertiesForCreateNotification);
+    return false;
+  }
 
-  // First, extract required fields: type, title, message, and icon.
+  // Extract required fields: type, title, message, and icon.
   message_center::NotificationType type =
       MapApiTemplateTypeToType(options->type);
-  const string16 title(UTF8ToUTF16(options->title));
-  const string16 message(UTF8ToUTF16(options->message));
+  const string16 title(UTF8ToUTF16(*options->title));
+  const string16 message(UTF8ToUTF16(*options->message));
   gfx::Image icon;
 
   // TODO(dewittj): Return error if this fails.
@@ -326,6 +338,96 @@ bool NotificationsApiFunction::CreateNotification(
   return true;
 }
 
+bool NotificationsApiFunction::UpdateNotification(
+    const std::string& id,
+    api::notifications::NotificationOptions* options,
+    Notification* notification) {
+  // Update optional fields if provided.
+  if (options->type != api::notifications::TEMPLATE_TYPE_NONE)
+    notification->set_type(MapApiTemplateTypeToType(options->type));
+  if (options->title)
+    notification->set_title(UTF8ToUTF16(*options->title));
+  if (options->message)
+    notification->set_message(UTF8ToUTF16(*options->message));
+
+  // TODO(dewittj): Return error if this fails.
+  if (options->icon_bitmap) {
+    gfx::Image icon;
+    NotificationBitmapToGfxImage(options->icon_bitmap.get(), &icon);
+    notification->set_icon(icon);
+  }
+
+  message_center::RichNotificationData optional_fields;
+  if (message_center::IsRichNotificationEnabled()) {
+    if (options->priority)
+      notification->set_priority(*options->priority);
+
+    if (options->event_time)
+      notification->set_timestamp(base::Time::FromJsTime(*options->event_time));
+
+    if (options->buttons) {
+      // Currently we allow up to 2 buttons.
+      size_t number_of_buttons = options->buttons->size();
+      number_of_buttons = number_of_buttons > 2 ? 2 : number_of_buttons;
+
+      for (size_t i = 0; i < number_of_buttons; i++) {
+        message_center::ButtonInfo info(
+            UTF8ToUTF16((*options->buttons)[i]->title));
+        NotificationBitmapToGfxImage((*options->buttons)[i]->icon_bitmap.get(),
+                                     &info.icon);
+        optional_fields.buttons.push_back(info);
+      }
+    }
+
+    if (options->expanded_message) {
+      notification->set_expanded_message(
+          UTF8ToUTF16(*options->expanded_message));
+    }
+
+    gfx::Image image;
+    if (NotificationBitmapToGfxImage(options->image_bitmap.get(), &image)) {
+      // We should have an image if and only if the type is an image type.
+      if (notification->type() != message_center::NOTIFICATION_TYPE_IMAGE)
+        return false;
+      notification->set_image(image);
+    }
+
+    if (options->progress) {
+      // We should have progress if and only if the type is a progress type.
+      if (notification->type() != message_center::NOTIFICATION_TYPE_PROGRESS) {
+        SetError(kUnexpectedProgressValueForNonProgressType);
+        return false;
+      }
+      int progress = *options->progress;
+      // Progress value should range from 0 to 100.
+      if (progress < 0 || progress > 100) {
+        SetError(kInvalidProgressValue);
+        return false;
+      }
+      notification->set_progress(progress);
+    }
+
+    if (options->items.get() && options->items->size() > 0) {
+      // We should have list items if and only if the type is a multiple type.
+      if (notification->type() != message_center::NOTIFICATION_TYPE_MULTIPLE)
+        return false;
+
+      std::vector< message_center::NotificationItem> items;
+      using api::notifications::NotificationItem;
+      std::vector<linked_ptr<NotificationItem> >::iterator i;
+      for (i = options->items->begin(); i != options->items->end(); ++i) {
+        message_center::NotificationItem item(UTF8ToUTF16(i->get()->title),
+                                              UTF8ToUTF16(i->get()->message));
+        items.push_back(item);
+      }
+      notification->set_items(items);
+    }
+  }
+
+  g_browser_process->notification_ui_manager()->Add(*notification, profile());
+  return true;
+}
+
 bool NotificationsApiFunction::IsNotificationsApiEnabled() {
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile());
@@ -411,21 +513,24 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
 
   // We are in update.  If the ID doesn't exist, succeed but call the callback
   // with "false".
-  if (!g_browser_process->notification_ui_manager()->DoesIdExist(
-          CreateScopedIdentifier(extension_->id(), params_->notification_id))) {
+  const Notification* matched_notification =
+      g_browser_process->notification_ui_manager()->FindById(
+          CreateScopedIdentifier(extension_->id(), params_->notification_id));
+  if (!matched_notification) {
     SetResult(Value::CreateBooleanValue(false));
     SendResponse(true);
     return true;
   }
 
-  // If we have trouble creating the notification (could be improper use of API
+  // If we have trouble updating the notification (could be improper use of API
   // or some other reason), mark the function as failed, calling the callback
   // with false.
   // TODO(dewittj): Add more human-readable error strings if this fails.
-  bool could_create_notification =
-      CreateNotification(params_->notification_id, &params_->options);
-  SetResult(Value::CreateBooleanValue(could_create_notification));
-  if (!could_create_notification)
+  Notification notification = *matched_notification;
+  bool could_update_notification = UpdateNotification(
+      params_->notification_id, &params_->options, &notification);
+  SetResult(Value::CreateBooleanValue(could_update_notification));
+  if (!could_update_notification)
     return false;
 
   // No trouble, created the notification, send true to the callback and

@@ -44,10 +44,12 @@ void BalloonNotificationUIManager::SetBalloonCollection(
   balloon_collection_->set_space_change_listener(this);
 }
 
-bool BalloonNotificationUIManager::DoesIdExist(const std::string& id) {
-  if (NotificationUIManagerImpl::DoesIdExist(id))
-    return true;
-  return balloon_collection_->DoesIdExist(id);
+const Notification* BalloonNotificationUIManager::FindById(
+    const std::string& id) const {
+  const Notification* notification = NotificationUIManagerImpl::FindById(id);
+  if (notification)
+    return notification;
+  return balloon_collection_->FindById(id);
 }
 
 bool BalloonNotificationUIManager::CancelById(const std::string& id) {

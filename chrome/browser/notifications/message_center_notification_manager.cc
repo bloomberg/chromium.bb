@@ -64,13 +64,15 @@ MessageCenterNotificationManager::~MessageCenterNotificationManager() {
 ////////////////////////////////////////////////////////////////////////////////
 // NotificationUIManager
 
-bool MessageCenterNotificationManager::DoesIdExist(const std::string& id) {
-  if (NotificationUIManagerImpl::DoesIdExist(id))
-    return true;
-  NotificationMap::iterator iter = profile_notifications_.find(id);
+const Notification* MessageCenterNotificationManager::FindById(
+    const std::string& id) const {
+  const Notification* notification = NotificationUIManagerImpl::FindById(id);
+  if (notification)
+    return notification;
+  NotificationMap::const_iterator iter = profile_notifications_.find(id);
   if (iter == profile_notifications_.end())
-    return false;
-  return true;
+    return NULL;
+  return &(iter->second->notification());
 }
 
 bool MessageCenterNotificationManager::CancelById(const std::string& id) {

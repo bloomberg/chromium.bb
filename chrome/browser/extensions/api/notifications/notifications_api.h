@@ -13,6 +13,8 @@
 #include "chrome/common/extensions/api/notifications.h"
 #include "ui/message_center/notification_types.h"
 
+class Notification;
+
 namespace extensions {
 
 class NotificationsApiFunction : public ApiFunction {
@@ -27,6 +29,9 @@ class NotificationsApiFunction : public ApiFunction {
 
   bool CreateNotification(const std::string& id,
                           api::notifications::NotificationOptions* options);
+  bool UpdateNotification(const std::string& id,
+                          api::notifications::NotificationOptions* options,
+                          Notification* notification);
 
   bool IsNotificationsApiEnabled();
 

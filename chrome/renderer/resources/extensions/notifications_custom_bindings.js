@@ -26,13 +26,16 @@ function replaceNotificationOptionURLs(notification_details, callback) {
   //    field in the output of create.
 
   // TODO(dewittj): Try to remove hard-coding of image sizes.
-  // |iconUrl| is required.
-  var url_specs = [{
-    path: notification_details.iconUrl,
-    width: 80,
-    height: 80,
-    callback: image_data_setter(notification_details, 'iconBitmap')
-  }];
+  // |iconUrl| might be optional for notification updates.
+  var url_specs = [];
+  if (notification_details.iconUrl) {
+    $Array.push(url_specs, {
+      path: notification_details.iconUrl,
+      width: 80,
+      height: 80,
+      callback: image_data_setter(notification_details, 'iconBitmap')
+    });
+  }
 
   // |imageUrl| is optional.
   if (notification_details.imageUrl) {
@@ -58,6 +61,11 @@ function replaceNotificationOptionURLs(notification_details, callback) {
         });
       }
     }
+  }
+
+  if (!url_specs.length) {
+    callback(true);
+    return;
   }
 
   var errors = 0;

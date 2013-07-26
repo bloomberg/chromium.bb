@@ -38,7 +38,8 @@ class MessageCenterNotificationManager
   virtual ~MessageCenterNotificationManager();
 
   // NotificationUIManager
-  virtual bool DoesIdExist(const std::string& notification_id) OVERRIDE;
+  virtual const Notification* FindById(
+      const std::string& notification_id) const OVERRIDE;
   virtual bool CancelById(const std::string& notification_id) OVERRIDE;
   virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
       Profile* profile,

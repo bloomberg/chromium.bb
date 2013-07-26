@@ -118,8 +118,8 @@ TEST_F(ScreenshotTakerTest, TakeScreenshot) {
 
 #if defined(OS_CHROMEOS)
   // Screenshot notifications on Windows not yet turned on.
-  EXPECT_TRUE(g_browser_process->notification_ui_manager()->DoesIdExist(
-                  std::string("screenshot")));
+  EXPECT_TRUE(g_browser_process->notification_ui_manager()->FindById(
+      std::string("screenshot")) != NULL);
   g_browser_process->notification_ui_manager()->CancelAll();
 #endif
 
