@@ -7310,3 +7310,8 @@
   fun:_ZN14TestingProfile20CreateRequestContextEPSt3mapISs10linked_ptrIN3net20URLRequestJobFactory15ProtocolHandlerEESt4lessISsESaISt4pairIKSsS5_EEE
   fun:_ZN20UbertokenFetcherTest5SetUpEv
 }
+{
+  bug_264760
+  Memcheck:Uninitialized
+  fun:_ZN7content14RenderViewImpl13webMIDIClientEv
+}
