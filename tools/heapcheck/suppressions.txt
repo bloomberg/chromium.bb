@@ -414,6 +414,27 @@
    fun:*InitializeHelper
 }
 {
+   bug_114750_a
+   Heapcheck:Leak
+   fun:::FindBestMatchFontFamilyName
+   fun:gfx::PlatformFontPango::PlatformFontPango
+   fun:PlatformFontPangoTest_FamilyList_Test::TestBody
+}
+{
+   bug_114750_b
+   Heapcheck:Leak
+   fun:??
+   fun:FindBestMatchFontFamilyName
+   fun:PlatformFontPango
+   fun:gfx::PlatformFont::CreateFromNativeFont
+   fun:Font
+   fun:PlatformFontPango
+   fun:gfx::PlatformFont::CreateDefault
+   fun:Font
+   ...
+   fun:*Test*
+}
+{
    bug_114770
    Heapcheck:Leak
    ...
