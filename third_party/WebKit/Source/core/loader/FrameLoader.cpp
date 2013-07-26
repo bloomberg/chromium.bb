@@ -1203,8 +1203,7 @@ void FrameLoader::commitProvisionalLoad()
     RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
     RefPtr<Frame> protect(m_frame);
 
-    if (m_loadType != FrameLoadTypeReplace)
-        closeOldDataSources();
+    closeOldDataSources();
 
     // Check if the destination page is allowed to access the previous page's timing information.
     if (m_frame->document()) {
@@ -1280,16 +1279,6 @@ bool FrameLoader::isLoadingMainFrame() const
 {
     Page* page = m_frame->page();
     return page && m_frame == page->mainFrame();
-}
-
-bool FrameLoader::isReplacing() const
-{
-    return m_loadType == FrameLoadTypeReplace;
-}
-
-void FrameLoader::setReplacing()
-{
-    m_loadType = FrameLoadTypeReplace;
 }
 
 bool FrameLoader::subframeIsLoading() const
@@ -1373,11 +1362,6 @@ void FrameLoader::checkLoadCompleteForThisFrame()
                 m_delegateIsHandlingProvisionalLoadError = false;
 
                 ASSERT(!pdl->isLoading());
-
-                // If we're in the middle of loading multipart data, we need to restore the document loader.
-                if (isReplacing() && !m_documentLoader.get())
-                    setDocumentLoader(m_provisionalDocumentLoader.get());
-
                 // Finish resetting the load state, but only if another load hasn't been started by the
                 // delegate callback.
                 if (pdl == m_provisionalDocumentLoader)
@@ -1715,7 +1699,6 @@ bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const S
 {
     ASSERT(loadType != FrameLoadTypeBackForward);
     ASSERT(loadType != FrameLoadTypeReloadFromOrigin);
-    ASSERT(loadType != FrameLoadTypeReplace);
     // We don't do this if we are submitting a form with method other than "GET", explicitly reloading,
     // currently displaying a frameset, or if the URL does not have a fragment.
     return (!isFormSubmission || equalIgnoringCase(httpMethod, "GET"))

@@ -94,7 +94,6 @@ private:
 
     void recursiveSetProvisionalItem(HistoryItem*, HistoryItem*);
     void recursiveGoToItem(HistoryItem*, HistoryItem*);
-    bool isReplaceLoadTypeWithProvisionalItem(FrameLoadType);
     bool isReloadTypeWithProvisionalItem(FrameLoadType);
     void recursiveUpdateForCommit();
     void recursiveUpdateForSameDocumentNavigation();

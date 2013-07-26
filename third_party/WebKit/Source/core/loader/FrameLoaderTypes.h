@@ -39,7 +39,6 @@ namespace WebCore {
         FrameStateComplete
     };
 
-    // NOTE: Keep in sync with WebKit/mac/WebView/WebFramePrivate.h and WebKit/win/Interfaces/IWebFramePrivate.idl
     enum FrameLoadType {
         FrameLoadTypeStandard,
         FrameLoadTypeBackForward,
@@ -47,7 +46,6 @@ namespace WebCore {
         FrameLoadTypeSame, // user loads same URL again (but not reload button)
         FrameLoadTypeRedirectWithLockedBackForwardList,
         FrameLoadTypeInitialInChildFrame,
-        FrameLoadTypeReplace,
         FrameLoadTypeReloadFromOrigin,
     };
 

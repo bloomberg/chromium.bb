@@ -151,8 +151,6 @@ public:
     bool isHostedByObjectElement() const;
     bool isLoadingMainFrame() const;
 
-    bool isReplacing() const;
-    void setReplacing();
     bool subframeIsLoading() const;
     void didChangeTitle(DocumentLoader*);
     void didChangeIcons(IconType);

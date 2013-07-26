@@ -958,13 +958,8 @@ void WebFrameImpl::loadData(const WebData& data, const WebString& mimeType, cons
 
     FrameLoadRequest frameRequest(0, request, SubstituteData(data, mimeType, textEncoding, unreachableURL));
     ASSERT(frameRequest.substituteData().isValid());
+    frameRequest.setLockBackForwardList(replace);
     frame()->loader()->load(frameRequest);
-    if (replace) {
-        // Do this to force WebKit to treat the load as replacing the currently
-        // loaded page.
-        // FIXME: Can we use lock history instead?
-        frame()->loader()->setReplacing();
-    }
 }
 
 void WebFrameImpl::loadHTMLString(const WebData& data, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)

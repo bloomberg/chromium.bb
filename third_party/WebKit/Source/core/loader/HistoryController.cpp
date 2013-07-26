@@ -189,7 +189,6 @@ void HistoryController::restoreDocumentState()
         case FrameLoadTypeReload:
         case FrameLoadTypeReloadFromOrigin:
         case FrameLoadTypeSame:
-        case FrameLoadTypeReplace:
             break;
         case FrameLoadTypeBackForward:
         case FrameLoadTypeRedirectWithLockedBackForwardList:
@@ -337,9 +336,7 @@ void HistoryController::updateForCommit()
         LOG(History, "WebCoreHistory: Updating History for commit in frame %s", frameLoader->documentLoader()->title().string().utf8().data());
 #endif
     FrameLoadType type = frameLoader->loadType();
-    if (isBackForwardLoadType(type)
-        || isReplaceLoadTypeWithProvisionalItem(type)
-        || (isReloadTypeWithProvisionalItem(type) && !frameLoader->documentLoader()->unreachableURL().isEmpty())) {
+    if (isBackForwardLoadType(type) || (isReloadTypeWithProvisionalItem(type) && !frameLoader->documentLoader()->unreachableURL().isEmpty())) {
         // Once committed, we want to use current item for saving DocState, and
         // the provisional item for restoring state.
         // Note previousItem must be set before we close the URL, which will
@@ -365,7 +362,6 @@ void HistoryController::updateForCommit()
     case FrameLoadTypeReload:
     case FrameLoadTypeReloadFromOrigin:
     case FrameLoadTypeSame:
-    case FrameLoadTypeReplace:
         updateForReload();
         return;
     case FrameLoadTypeStandard:
@@ -380,13 +376,6 @@ void HistoryController::updateForCommit()
     default:
         ASSERT_NOT_REACHED();
     }
-}
-
-bool HistoryController::isReplaceLoadTypeWithProvisionalItem(FrameLoadType type)
-{
-    // Going back to an error page in a subframe can trigger a FrameLoadTypeReplace
-    // while m_provisionalItem is set, so we need to commit it.
-    return type == FrameLoadTypeReplace && m_provisionalItem;
 }
 
 bool HistoryController::isReloadTypeWithProvisionalItem(FrameLoadType type)
