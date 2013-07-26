@@ -1714,7 +1714,6 @@ crbug.com/263879 [ Mac ] tables/mozilla_expected_failures/core/captions1.html [ 
 crbug.com/263879 [ Mac ] tables/mozilla_expected_failures/core/captions2.html [ Skip ]
 crbug.com/263879 [ Mac ] tables/mozilla/marvin/tables_align_center.html [ Skip ]
 crbug.com/263879 [ Mac ] tables/mozilla/marvin/x_table_align_center.xml [ Skip ]
-crbug.com/263879 tables/mozilla/other/test3.html [ NeedsRebaseline ]
 crbug.com/263879 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ NeedsRebaseline ]
 crbug.com/263879 [ Linux MountainLion SnowLeopard Win ] virtual/softwarecompositing/direct-image-compositing.html
 crbug.com/263879 fast/forms/placeholder-position.html [ NeedsManualRebaseline ]
