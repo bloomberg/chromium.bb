@@ -1365,6 +1365,19 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   EXPECT_FALSE(database_->ContainsDownloadWhitelistedUrl(
       GURL(std::string("http://www.google.com/"))));
 
+  // Test only add the malware IP killswitch
+  csd_chunks.clear();
+  chunk.hosts.clear();
+  InsertAddChunkHostFullHashes(
+      &chunk, 15, "sb-ssl.google.com/",
+      "sb-ssl.google.com/safebrowsing/csd/killswitch_malware");
+  csd_chunks.push_back(chunk);
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+  database_->InsertChunks(safe_browsing_util::kCsdWhiteList, csd_chunks);
+  database_->UpdateFinished(true);
+
+  EXPECT_TRUE(database_->IsMalwareIPMatchKillSwitchOn());
+
   // Test that the kill-switch works as intended.
   csd_chunks.clear();
   download_chunks.clear();
@@ -1373,7 +1386,6 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   InsertAddChunkHostFullHashes(&chunk, 5, "sb-ssl.google.com/",
                                "sb-ssl.google.com/safebrowsing/csd/killswitch");
   csd_chunks.push_back(chunk);
-
   chunk.hosts.clear();
   InsertAddChunkHostFullHashes(&chunk, 5, "sb-ssl.google.com/",
                                "sb-ssl.google.com/safebrowsing/csd/killswitch");
@@ -1385,6 +1397,7 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
                           download_chunks);
   database_->UpdateFinished(true);
 
+  EXPECT_TRUE(database_->IsMalwareIPMatchKillSwitchOn());
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("https://") + kGood1Url2 + "/c.html")));
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
@@ -1413,6 +1426,12 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   csd_chunks.push_back(sub_chunk);
 
   sub_chunk.hosts.clear();
+  InsertSubChunkHostFullHash(
+      &sub_chunk, 10, 15, "sb-ssl.google.com/",
+      "sb-ssl.google.com/safebrowsing/csd/killswitch_malware");
+  csd_chunks.push_back(sub_chunk);
+
+  sub_chunk.hosts.clear();
   InsertSubChunkHostFullHash(&sub_chunk, 1, 5,
                              "sb-ssl.google.com/",
                              "sb-ssl.google.com/safebrowsing/csd/killswitch");
@@ -1424,6 +1443,7 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
                           download_chunks);
   database_->UpdateFinished(true);
 
+  EXPECT_FALSE(database_->IsMalwareIPMatchKillSwitchOn());
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("https://") + kGood1Url2 + "/c.html")));
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(

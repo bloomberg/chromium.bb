@@ -102,6 +102,10 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
       SafeBrowsingUIManager* ui_manager,
       SafeBrowsingDatabaseManager* database_manager);
 
+  // Get/Set malware_killswitch_on_ value. These methods called on UI thread.
+  bool MalwareKillSwitchIsOn();
+  void SetMalwareKillSwitch(bool killswitch_on);
+
   // This pointer may be NULL if client-side phishing detection is disabled.
   ClientSideDetectionService* csd_service_;
   // These pointers may be NULL if SafeBrowsing is disabled.
@@ -137,8 +141,14 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   int unsafe_unique_page_id_;
   scoped_ptr<SafeBrowsingUIManager::UnsafeResource> unsafe_resource_;
 
+  // Whether the malware IP matching feature killswitch is on.
+  // This should be accessed from UI thread.
+  bool malware_killswitch_on_;
+
   // Whether the malware bad ip matching and report feature is enabled.
+  // This should be accessed from UI thread.
   bool malware_report_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);
 };
 

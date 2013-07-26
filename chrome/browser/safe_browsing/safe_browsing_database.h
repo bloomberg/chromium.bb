@@ -171,6 +171,10 @@ class SafeBrowsingDatabase {
       const std::vector<SBPrefix>& prefixes,
       const std::vector<SBFullHashResult>& full_hits) = 0;
 
+  // Returns true if the malware IP blacklisting killswitch URL is present
+  // in the csd whitelist.
+  virtual bool IsMalwareIPMatchKillSwitchOn() = 0;
+
   // The name of the bloom-filter file for the given database file.
   // NOTE(shess): OBSOLETE.  Present for deleting stale files.
   static base::FilePath BloomFilterForFilename(
@@ -297,6 +301,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
       const std::vector<SBPrefix>& prefixes,
       const std::vector<SBFullHashResult>& full_hits) OVERRIDE;
 
+  // Returns the value of malware_kill_switch_;
+  virtual bool IsMalwareIPMatchKillSwitchOn() OVERRIDE;
+
  private:
   friend class SafeBrowsingDatabaseTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseTest, HashCaching);
@@ -368,8 +375,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   // Lock for protecting access to variables that may be used on the
   // IO thread.  This includes |prefix_set_|, |full_browse_hashes_|,
-  // |pending_browse_hashes_|, |prefix_miss_cache_|, |csd_whitelist_|,
-  // and |csd_whitelist_all_urls_|.
+  // |pending_browse_hashes_|, |prefix_miss_cache_|, |csd_whitelist_|.
   base::Lock lookup_lock_;
 
   // Underlying persistent store for chunk data.
