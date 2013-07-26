@@ -6,6 +6,7 @@
 #define CLOUD_PRINT_GCP20_PROTOTYPE_CLOUD_PRINT_RESPONSE_PARSER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 
@@ -17,14 +18,26 @@ class DictionaryValue;
 
 namespace cloud_print_response_parser {
 
-// Callback for handling parse errors.
-typedef base::Callback<void(const std::string&)> ErrorCallback;
+struct Job {
+  Job();
+  ~Job();
+
+  std::string job_id;
+  std::string create_time;
+  std::string file_url;
+  std::string ticket_url;
+  std::string title;
+
+  // Downloaded data:
+  std::string file;
+  std::string ticket;
+};
 
 // Parses CloudPrint register start response to out parameters.
 // Returns |true| on success. Callback is called with description as a parameter
-// when parsing failed.
+// when parsing is failed.
 bool ParseRegisterStartResponse(const std::string& response,
-                                const ErrorCallback error_callback,
+                                std::string* error_description,
                                 std::string* polling_url_result,
                                 std::string* registration_token_result,
                                 std::string* complete_invite_url_result,
@@ -32,10 +45,17 @@ bool ParseRegisterStartResponse(const std::string& response,
 
 // Parses CloudPrint register complete response to out parameters.
 // Returns |true| on success. Callback is called with description as a parameter
-// when parsing failed.
+// when parsing is failed.
 bool ParseRegisterCompleteResponse(const std::string& response,
-                                   const ErrorCallback error_callback,
+                                   std::string* error_description,
                                    std::string* authorization_code_result);
+
+// Parses CloudPrint fetch response to out parameters.
+// Returns |true| on success. Callback is called with description as a parameter
+// when parsing is failed.
+bool ParseFetchResponse(const std::string& response,
+                        std::string* error_description,
+                        std::vector<Job>* list_result);
 
 }  // namespace cloud_print_response_parser
 

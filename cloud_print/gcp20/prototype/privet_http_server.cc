@@ -133,7 +133,8 @@ void PrivetHttpServer::OnHttpRequest(int connection_id,
 }
 
 void PrivetHttpServer::OnWebSocketRequest(
-    int connection_id, const net::HttpServerRequestInfo& info) {
+    int connection_id,
+    const net::HttpServerRequestInfo& info) {
 }
 
 void PrivetHttpServer::OnWebSocketMessage(int connection_id,

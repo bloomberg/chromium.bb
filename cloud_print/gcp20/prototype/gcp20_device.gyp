@@ -29,6 +29,8 @@
       'sources': [
         'cloud_print_response_parser.cc',
         'cloud_print_response_parser.h',
+        'cloud_print_request.cc',
+        'cloud_print_request.h',
         'cloud_print_requester.cc',
         'cloud_print_requester.h',
         'conio_posix.cc',  
@@ -41,6 +43,8 @@
         'dns_response_builder.h',
         'dns_sd_server.cc',
         'dns_sd_server.h',
+        'print_job_handler.cc',
+        'print_job_handler.h',
         'printer.cc',
         'printer.h',
         'privet_http_server.cc',

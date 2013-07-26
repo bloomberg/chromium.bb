@@ -37,7 +37,8 @@ class DnsSdServer : public base::SupportsWeakPtr<DnsSdServer> {
 
   // Starts the server. Returns |true| if server works. Also sends
   // announcement.
-  bool Start(const ServiceParameters& serv_params, uint32 full_ttl,
+  bool Start(const ServiceParameters& serv_params,
+             uint32 full_ttl,
              const std::vector<std::string>& metadata) WARN_UNUSED_RESULT;
 
   // Sends announcement if server works.
@@ -57,7 +58,8 @@ class DnsSdServer : public base::SupportsWeakPtr<DnsSdServer> {
   bool CreateSocket();
 
   // Processes single query.
-  void ProccessQuery(uint32 current_ttl, const DnsQueryRecord& query,
+  void ProccessQuery(uint32 current_ttl,
+                     const DnsQueryRecord& query,
                      DnsResponseBuilder* builder) const;
 
   // Processes DNS message.

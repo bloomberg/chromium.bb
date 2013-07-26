@@ -123,7 +123,8 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
   // Returns |true| if |request| should be done with correct |method|.
   // Otherwise sends |Invalid method| error.
   // Also checks support of |request| by this server.
-  bool ValidateRequestMethod(int connection_id, const std::string& request,
+  bool ValidateRequestMethod(int connection_id,
+                             const std::string& request,
                              const std::string& method);
 
   // Processes http request after all preparations (XPrivetHeader check,
