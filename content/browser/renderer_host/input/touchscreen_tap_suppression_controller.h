@@ -1,13 +1,13 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/gesture_event_filter.h"
-#include "content/browser/renderer_host/tap_suppression_controller_client.h"
+#include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 
 namespace content {
 
@@ -61,4 +61,4 @@ class TouchscreenTapSuppressionController
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_

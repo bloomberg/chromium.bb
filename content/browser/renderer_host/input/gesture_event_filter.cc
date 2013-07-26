@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/gesture_event_filter.h"
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/input/input_router.h"
-#include "content/browser/renderer_host/touchpad_tap_suppression_controller.h"
-#include "content/browser/renderer_host/touchscreen_tap_suppression_controller.h"
+#include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
+#include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
 #include "content/public/common/content_switches.h"
 
 using WebKit::WebGestureEvent;

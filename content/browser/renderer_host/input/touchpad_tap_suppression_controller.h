@@ -1,12 +1,12 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_TOUCHPAD_TAP_SUPPRESSION_CONTROLLER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_TOUCHPAD_TAP_SUPPRESSION_CONTROLLER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHPAD_TAP_SUPPRESSION_CONTROLLER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHPAD_TAP_SUPPRESSION_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/tap_suppression_controller_client.h"
+#include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 #include "content/port/browser/event_with_latency_info.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -60,4 +60,4 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_TOUCHPAD_TAP_SUPPRESSION_CONTROLLER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHPAD_TAP_SUPPRESSION_CONTROLLER_H_

@@ -1,11 +1,11 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/touchscreen_tap_suppression_controller.h"
+#include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
 
-#include "content/browser/renderer_host/gesture_event_filter.h"
-#include "content/browser/renderer_host/tap_suppression_controller.h"
+#include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/tap_suppression_controller.h"
 #include "ui/base/gestures/gesture_configuration.h"
 
 namespace content {

@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/input_router.h"
-#include "content/browser/renderer_host/touch_event_queue.h"
+#include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
 namespace ui {

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/touch_event_queue.h"
+#include "content/browser/renderer_host/input/touch_event_queue.h"
 
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
