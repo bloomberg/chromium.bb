@@ -1803,7 +1803,42 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
   for (DetailInputs::const_iterator it = inputs.begin();
        it != inputs.end(); ++it) {
     const DetailInput& input = *it;
+    ui::ComboboxModel* input_model =
+        controller_->ComboboxModelForAutofillType(input.type);
+    scoped_ptr<views::View> view_to_add;
+    if (input_model) {
+      views::Combobox* combobox = new views::Combobox(input_model);
+      combobox->set_listener(this);
+      comboboxes->insert(std::make_pair(&input, combobox));
+
+      for (int i = 0; i < input_model->GetItemCount(); ++i) {
+        if (input.initial_value == input_model->GetItemAt(i)) {
+          combobox->SetSelectedIndex(i);
+          break;
+        }
+      }
+
+      view_to_add.reset(combobox);
+    } else {
+      DecoratedTextfield* field = new DecoratedTextfield(
+          input.initial_value,
+          l10n_util::GetStringUTF16(input.placeholder_text_rid),
+          this);
+
+      gfx::Image icon =
+          controller_->IconForField(input.type, input.initial_value);
+      field->SetIcon(icon);
+
+      textfields->insert(std::make_pair(&input, field));
+      view_to_add.reset(field);
+    }
+
     int kColumnSetId = input.row_id;
+    if (kColumnSetId < 0) {
+      other_owned_views_.push_back(view_to_add.release());
+      continue;
+    }
+
     views::ColumnSet* column_set = layout->GetColumnSet(kColumnSetId);
     if (!column_set) {
       // Create a new column set and row.
@@ -1827,39 +1862,10 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
                           0,
                           0);
 
-    ui::ComboboxModel* input_model =
-        controller_->ComboboxModelForAutofillType(input.type);
-    views::View* view_to_add = NULL;
-    if (input_model) {
-      views::Combobox* combobox = new views::Combobox(input_model);
-      combobox->set_listener(this);
-      comboboxes->insert(std::make_pair(&input, combobox));
-
-      for (int i = 0; i < input_model->GetItemCount(); ++i) {
-        if (input.initial_value == input_model->GetItemAt(i)) {
-          combobox->SetSelectedIndex(i);
-          break;
-        }
-      }
-      view_to_add = combobox;
-    } else {
-      DecoratedTextfield* field = new DecoratedTextfield(
-          input.initial_value,
-          l10n_util::GetStringUTF16(input.placeholder_text_rid),
-          this);
-
-      gfx::Image icon =
-          controller_->IconForField(input.type, input.initial_value);
-      field->SetIcon(icon);
-
-      textfields->insert(std::make_pair(&input, field));
-      view_to_add = field;
-    }
-
     // This is the same as AddView(view_to_add), except that 1 is used for the
     // view's preferred width. Thus the width of the column completely depends
     // on |expand|.
-    layout->AddView(view_to_add, 1, 1,
+    layout->AddView(view_to_add.release(), 1, 1,
                     views::GridLayout::FILL, views::GridLayout::BASELINE,
                     1, 0);
   }

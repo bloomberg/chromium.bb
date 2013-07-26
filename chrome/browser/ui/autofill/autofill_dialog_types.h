@@ -35,7 +35,8 @@ extern int const kSplashFadeInDialogDurationMs;
 struct DetailInput {
   // Multiple DetailInput structs with the same row_id go on the same row. The
   // actual order of the rows is determined by their order of appearance in
-  // kBillingInputs.
+  // kBillingInputs. If negative, don't show the input at all (leave it hidden
+  // at all times).
   int row_id;
   AutofillFieldType type;
   // Placeholder text resource ID.

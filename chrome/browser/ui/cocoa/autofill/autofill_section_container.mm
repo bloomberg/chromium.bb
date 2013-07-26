@@ -434,6 +434,8 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   for (size_t i = 0; i < detailInputs_.size(); ++i) {
     const autofill::DetailInput& input = *detailInputs_[i];
     int kColumnSetId = input.row_id;
+    if (kColumnSetId < 0)
+      continue;
     ColumnSet* column_set = layout->GetColumnSet(kColumnSetId);
     if (!column_set) {
       // Create a new column set and row.

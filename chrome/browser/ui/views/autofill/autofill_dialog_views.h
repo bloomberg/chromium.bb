@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
@@ -622,6 +623,10 @@ class AutofillDialogViews : public AutofillDialogView,
   // This checkbox controls whether new details are saved to the Autofill
   // database. It lives in |extra_view_|.
   views::Checkbox* save_in_chrome_checkbox_;
+
+  // View that aren't in the hierarchy but are owned by |this|. Currently
+  // just holds the (hidden) country comboboxes.
+  ScopedVector<views::View> other_owned_views_;
 
   // View to host Autocheckout steps.
   AutocheckoutStepsArea* autocheckout_steps_area_;
