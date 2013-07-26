@@ -62,7 +62,7 @@ const int kTooltipMaxWidth = 1000;
 // The minimum width we will ever draw the download item. Used as a lower bound
 // during animation. This number comes from the width of the images used to
 // make the download item.
-const int kMinDownloadItemWidth = DownloadShelf::kSmallProgressIconSize;
+const int kMinDownloadItemWidth = download_util::kSmallProgressIconSize;
 
 // New download item animation speed in milliseconds.
 const int kNewItemAnimationDurationMs = 800;
@@ -71,11 +71,11 @@ const int kNewItemAnimationDurationMs = 800;
 const int kCompleteAnimationDurationMs = 2500;
 
 // Height of the body.
-const int kBodyHeight = DownloadShelf::kSmallProgressIconSize;
+const int kBodyHeight = download_util::kSmallProgressIconSize;
 
 // Width of the body area of the download item.
 // TODO(estade): get rid of the fudge factor. http://crbug.com/18692
-const int kBodyWidth = kTextWidth + 50 + DownloadShelf::kSmallProgressIconSize;
+const int kBodyWidth = kTextWidth + 50 + download_util::kSmallProgressIconSize;
 
 // The font size of the text, and that size rounded down to the nearest integer
 // for the size of the arrow in GTK theme mode.
@@ -111,7 +111,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
       menu_showing_(false),
       theme_service_(
           GtkThemeService::GetFrom(parent_shelf->browser()->profile())),
-      progress_angle_(DownloadShelf::kStartAngleDegrees),
+      progress_angle_(download_util::kStartAngleDegrees),
       download_model_(download_item),
       dangerous_prompt_(NULL),
       dangerous_label_(NULL),
@@ -162,8 +162,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   // This choice of widget is not critically important though.
   progress_area_.Own(gtk_fixed_new());
   gtk_widget_set_size_request(progress_area_.get(),
-      DownloadShelf::kSmallProgressIconSize,
-      DownloadShelf::kSmallProgressIconSize);
+      download_util::kSmallProgressIconSize,
+      download_util::kSmallProgressIconSize);
   gtk_widget_set_app_paintable(progress_area_.get(), TRUE);
   g_signal_connect(progress_area_.get(), "expose-event",
                    G_CALLBACK(OnProgressAreaExposeThunk), this);
@@ -429,9 +429,9 @@ void DownloadItemGtk::Observe(int type,
 // Download progress animation functions.
 
 void DownloadItemGtk::UpdateDownloadProgress() {
-  progress_angle_ =
-      (progress_angle_ + DownloadShelf::kUnknownIncrementDegrees) %
-      DownloadShelf::kMaxDegrees;
+  progress_angle_ = (progress_angle_ +
+                     download_util::kUnknownIncrementDegrees) %
+                    download_util::kMaxDegrees;
   gtk_widget_queue_draw(progress_area_.get());
 }
 
@@ -439,7 +439,7 @@ void DownloadItemGtk::StartDownloadProgress() {
   if (progress_timer_.IsRunning())
     return;
   progress_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(DownloadShelf::kProgressRateMs), this,
+      base::TimeDelta::FromMilliseconds(download_util::kProgressRateMs), this,
       &DownloadItemGtk::UpdateDownloadProgress);
 }
 
@@ -852,34 +852,29 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
   DownloadItem::DownloadState state = download()->GetState();
   if (complete_animation_.is_animating()) {
     if (state == DownloadItem::INTERRUPTED) {
-      DownloadShelf::PaintDownloadInterrupted(
-          &canvas,
-          allocation.x,
-          allocation.y,
+      download_util::PaintDownloadInterrupted(&canvas,
+          allocation.x, allocation.y,
           complete_animation_.GetCurrentValue(),
-          DownloadShelf::SMALL);
+          download_util::SMALL);
     } else {
-      DownloadShelf::PaintDownloadComplete(
-          &canvas,
-          allocation.x,
-          allocation.y,
+      download_util::PaintDownloadComplete(&canvas,
+          allocation.x, allocation.y,
           complete_animation_.GetCurrentValue(),
-          DownloadShelf::SMALL);
+          download_util::SMALL);
     }
   } else if (state == DownloadItem::IN_PROGRESS) {
-    DownloadShelf::PaintDownloadProgress(&canvas,
-                                         allocation.x,
-                                         allocation.y,
-                                         progress_angle_,
-                                         download_model_.PercentComplete(),
-                                         DownloadShelf::SMALL);
+    download_util::PaintDownloadProgress(&canvas,
+        allocation.x, allocation.y,
+        progress_angle_,
+        download_model_.PercentComplete(),
+        download_util::SMALL);
   }
 
   // |icon_small_| may be NULL if it is still loading. If the file is an
   // unrecognized type then we will get back a generic system icon. Hence
   // there is no need to use the chromium-specific default download item icon.
   if (icon_small_) {
-    const int offset = DownloadShelf::kSmallProgressIconOffset;
+    const int offset = download_util::kSmallProgressIconOffset;
     canvas.DrawImageInt(icon_small_->AsImageSkia(),
         allocation.x + offset, allocation.y + offset);
   }

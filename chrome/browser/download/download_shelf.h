@@ -7,26 +7,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
-
-class Browser;
-
-namespace gfx {
-class Canvas;
-class ImageSkia;
-class Rect;
-}
 
 namespace content {
 class DownloadItem;
 class DownloadManager;
 }
 
-#if defined(TOOLKIT_VIEWS)
-namespace views {
-class View;
-}
-#endif
+class Browser;
 
 // This is an abstract base class for platform specific download shelf
 // implementations.
@@ -45,93 +32,8 @@ class DownloadShelf {
     USER_ACTION
   };
 
-  enum PaintDownloadProgressSize {
-    SMALL = 0,
-    BIG
-  };
-
-  // Download progress animations ----------------------------------------------
-
-  // Arc sweep angle for use with downloads of unknown size
-  static const int kUnknownAngleDegrees;
-
-  // Rate of progress for use with downloads of unknown size
-  static const int kUnknownIncrementDegrees;
-
-  // Start angle for downloads with known size (midnight position)
-  static const int kStartAngleDegrees;
-
-  // A circle.
-  static const int kMaxDegrees;
-
-  // Progress animation timer period, in milliseconds.
-  static const int kProgressRateMs;
-
-  // XP and Vista must support icons of this size.
-  static const int kSmallIconSize;
-  static const int kBigIconSize;
-
-  static const int kBigProgressIconSize;
-  static const int kSmallProgressIconSize;
-
-  static const int kSmallProgressIconOffset;
-
   DownloadShelf();
   virtual ~DownloadShelf();
-
-  // Our progress halo around the icon.
-  // Load a language dependent height so that the dangerous download
-  // confirmation message doesn't overlap with the download link label.
-  static int GetBigProgressIconSize();
-
-  // The offset required to center the icon in the progress images.
-  static int GetBigProgressIconOffset();
-
-  // Paint the common download animation progress foreground and background,
-  // clipping the foreground to 'percent' full. If percent is -1, then we don't
-  // know the total size, so we just draw a rotating segment until we're done.
-  //
-  // |containing_view| is the View subclass within which the progress animation
-  // is drawn (generally either DownloadItemTabView or DownloadItemView). We
-  // require the containing View in addition to the canvas because if we are
-  // drawing in a right-to-left locale, we need to mirror the position of the
-  // progress animation within the containing View.
-  static void PaintCustomDownloadProgress(
-      gfx::Canvas* canvas,
-      const gfx::ImageSkia& background_image,
-      const gfx::ImageSkia& foreground_image,
-      int image_size,
-      const gfx::Rect& bounds,
-      int start_angle,
-      int percent_done);
-
-  static void PaintDownloadProgress(gfx::Canvas* canvas,
-#if defined(TOOLKIT_VIEWS)
-                                    views::View* containing_view,
-#endif
-                                    int origin_x,
-                                    int origin_y,
-                                    int start_angle,
-                                    int percent,
-                                    PaintDownloadProgressSize size);
-
-  static void PaintDownloadComplete(gfx::Canvas* canvas,
-#if defined(TOOLKIT_VIEWS)
-                                    views::View* containing_view,
-#endif
-                                    int origin_x,
-                                    int origin_y,
-                                    double animation_progress,
-                                    PaintDownloadProgressSize size);
-
-  static void PaintDownloadInterrupted(gfx::Canvas* canvas,
-#if defined(TOOLKIT_VIEWS)
-                                       views::View* containing_view,
-#endif
-                                       int origin_x,
-                                       int origin_y,
-                                       double animation_progress,
-                                       PaintDownloadProgressSize size);
 
   // A new download has started. Add it to our shelf and show the download
   // started animation.

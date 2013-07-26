@@ -6,7 +6,6 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/download/background_theme.h"
@@ -35,7 +34,7 @@ const CGFloat kImageHeight = 16;
 
 // x coordinate of download name string, in view coords.
 const CGFloat kTextPosLeft = kImagePaddingLeft +
-    kImageWidth + DownloadShelf::kSmallProgressIconOffset;
+    kImageWidth + download_util::kSmallProgressIconOffset;
 
 // Distance from end of download name string to dropdown area.
 const CGFloat kTextPaddingRight = 3;
@@ -133,7 +132,7 @@ using content::DownloadItem;
   isStatusTextVisible_ = NO;
   titleY_ = kPrimaryTextPosTop;
   statusAlpha_ = 0.0;
-  indeterminateProgressAngle_ = DownloadShelf::kStartAngleDegrees;
+  indeterminateProgressAngle_ = download_util::kStartAngleDegrees;
 
   [self setFont:[NSFont systemFontOfSize:
       [NSFont systemFontSizeForControlSize:NSSmallControlSize]]];
@@ -555,40 +554,36 @@ using content::DownloadItem;
 
     // Always repaint the whole disk.
     NSPoint imagePosition = [self imageRectForBounds:cellFrame].origin;
-    int x = imagePosition.x - DownloadShelf::kSmallProgressIconOffset;
-    int y = imagePosition.y - DownloadShelf::kSmallProgressIconOffset;
+    int x = imagePosition.x - download_util::kSmallProgressIconOffset;
+    int y = imagePosition.y - download_util::kSmallProgressIconOffset;
     NSRect dirtyRect = NSMakeRect(
         x, y,
-        DownloadShelf::kSmallProgressIconSize,
-        DownloadShelf::kSmallProgressIconSize);
+        download_util::kSmallProgressIconSize,
+        download_util::kSmallProgressIconSize);
 
     gfx::CanvasSkiaPaint canvas(dirtyRect, false);
     canvas.set_composite_alpha(true);
     if (completionAnimation_.get()) {
       if ([completionAnimation_ isAnimating]) {
         if (percentDone_ == -1) {
-          DownloadShelf::PaintDownloadComplete(
-              &canvas,
-              x,
-              y,
+          download_util::PaintDownloadComplete(&canvas,
+              x, y,
               [completionAnimation_ currentValue],
-              DownloadShelf::SMALL);
+              download_util::SMALL);
         } else {
-          DownloadShelf::PaintDownloadInterrupted(
-              &canvas,
-              x,
-              y,
+          download_util::PaintDownloadInterrupted(&canvas,
+              x, y,
               [completionAnimation_ currentValue],
-              DownloadShelf::SMALL);
+              download_util::SMALL);
         }
       }
     } else if (percentDone_ >= 0 || indeterminateProgressTimer_) {
-      DownloadShelf::PaintDownloadProgress(&canvas,
+      download_util::PaintDownloadProgress(&canvas,
                                            x,
                                            y,
                                            indeterminateProgressAngle_,
                                            percentDone_,
-                                           DownloadShelf::SMALL);
+                                           download_util::SMALL);
     }
   }
 
@@ -701,8 +696,8 @@ using content::DownloadItem;
 
 - (void)updateIndeterminateDownload {
   indeterminateProgressAngle_ =
-      (indeterminateProgressAngle_ + DownloadShelf::kUnknownIncrementDegrees) %
-      DownloadShelf::kMaxDegrees;
+      (indeterminateProgressAngle_ + download_util::kUnknownIncrementDegrees) %
+      download_util::kMaxDegrees;
   [[self controlView] setNeedsDisplay:YES];
 }
 
@@ -759,7 +754,7 @@ using content::DownloadItem;
   if ((self = [super init])) {
     cell_ = cell;
     timer_.reset([[NSTimer
-        scheduledTimerWithTimeInterval:DownloadShelf::kProgressRateMs / 1000.0
+        scheduledTimerWithTimeInterval:download_util::kProgressRateMs / 1000.0
                                 target:self
                               selector:@selector(onTimer:)
                               userInfo:nil

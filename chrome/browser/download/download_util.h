@@ -46,6 +46,89 @@ const base::FilePath& GetDefaultDownloadDirectory();
 // Return true if the |download_path| is dangerous path.
 bool DownloadPathIsDangerous(const base::FilePath& download_path);
 
+// Download progress animations ------------------------------------------------
+
+// Arc sweep angle for use with downloads of unknown size
+const int kUnknownAngleDegrees = 50;
+
+// Rate of progress for use with downloads of unknown size
+const int kUnknownIncrementDegrees = 12;
+
+// Start angle for downloads with known size (midnight position)
+const int kStartAngleDegrees = -90;
+
+// A circle
+const int kMaxDegrees = 360;
+
+// Progress animation timer period, in milliseconds.
+const int kProgressRateMs = 150;
+
+// XP and Vista must support icons of this size.
+const int kSmallIconSize = 16;
+const int kBigIconSize = 32;
+
+// Our progress halo around the icon.
+int GetBigProgressIconSize();
+
+const int kSmallProgressIconSize = 39;
+const int kBigProgressIconSize = 52;
+
+// The offset required to center the icon in the progress images.
+int GetBigProgressIconOffset();
+
+const int kSmallProgressIconOffset =
+    (kSmallProgressIconSize - kSmallIconSize) / 2;
+
+enum PaintDownloadProgressSize {
+  SMALL = 0,
+  BIG
+};
+
+// Paint the common download animation progress foreground and background,
+// clipping the foreground to 'percent' full. If percent is -1, then we don't
+// know the total size, so we just draw a rotating segment until we're done.
+//
+// |containing_view| is the View subclass within which the progress animation
+// is drawn (generally either DownloadItemTabView or DownloadItemView). We
+// require the containing View in addition to the canvas because if we are
+// drawing in a right-to-left locale, we need to mirror the position of the
+// progress animation within the containing View.
+void PaintCustomDownloadProgress(gfx::Canvas* canvas,
+                                 const gfx::ImageSkia& background_image,
+                                 const gfx::ImageSkia& foreground_image,
+                                 int image_size,
+                                 const gfx::Rect& bounds,
+                                 int start_angle,
+                                 int percent_done);
+
+void PaintDownloadProgress(gfx::Canvas* canvas,
+#if defined(TOOLKIT_VIEWS)
+                           views::View* containing_view,
+#endif
+                           int origin_x,
+                           int origin_y,
+                           int start_angle,
+                           int percent,
+                           PaintDownloadProgressSize size);
+
+void PaintDownloadComplete(gfx::Canvas* canvas,
+#if defined(TOOLKIT_VIEWS)
+                           views::View* containing_view,
+#endif
+                           int origin_x,
+                           int origin_y,
+                           double animation_progress,
+                           PaintDownloadProgressSize size);
+
+void PaintDownloadInterrupted(gfx::Canvas* canvas,
+#if defined(TOOLKIT_VIEWS)
+                              views::View* containing_view,
+#endif
+                              int origin_x,
+                              int origin_y,
+                              double animation_progress,
+                              PaintDownloadProgressSize size);
+
 // Drag support ----------------------------------------------------------------
 
 // Helper function for download views to use when acting as a drag source for a
