@@ -1673,7 +1673,7 @@ parse_modeline(const char *s, drmModeModeInfo *mode)
 	mode->vrefresh = 0;
 	mode->flags = 0;
 
-	if (sscanf(s, "%f %hd %hd %hd %hd %hd %hd %hd %hd %s %s",
+	if (sscanf(s, "%f %hd %hd %hd %hd %hd %hd %hd %hd %15s %15s",
 		   &fclock,
 		   &mode->hdisplay,
 		   &mode->hsync_start,
