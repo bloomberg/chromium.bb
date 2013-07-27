@@ -761,7 +761,7 @@ bool HTMLElement::rendererIsNeeded(const NodeRenderingContext& context)
             return false;
     } else if (hasLocalName(noembedTag)) {
         Frame* frame = document()->frame();
-        if (frame && frame->loader()->subframeLoader()->allowPlugins(NotAboutToInstantiatePlugin))
+        if (frame && frame->loader()->allowPlugins(NotAboutToInstantiatePlugin))
             return false;
     }
     return Element::rendererIsNeeded(context);

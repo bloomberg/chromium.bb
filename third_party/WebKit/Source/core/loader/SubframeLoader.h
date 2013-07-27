@@ -63,10 +63,6 @@ public:
 
     PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const Vector<String>& paramNames, const Vector<String>& paramValues);
 
-    bool allowPlugins(ReasonForCallingAllowPlugins);
-
-    bool containsPlugins() const { return m_containsPlugins; }
-
     bool resourceWillUsePlugin(const String& url, const String& mimeType, bool shouldPreferPlugInsForImages);
 
 private:

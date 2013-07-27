@@ -106,7 +106,7 @@ void PluginDocumentParser::createDocumentStructure()
     if (!frame)
         return;
     Settings* settings = frame->settings();
-    if (!settings || !frame->loader()->subframeLoader()->allowPlugins(NotAboutToInstantiatePlugin))
+    if (!settings || !frame->loader()->allowPlugins(NotAboutToInstantiatePlugin))
         return;
 
     document()->updateLayout();

@@ -166,6 +166,7 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_wasUnloadEventEmitted(false)
     , m_pageDismissalEventBeingDispatched(NoDismissal)
     , m_isComplete(false)
+    , m_containsPlugins(false)
     , m_needsClear(false)
     , m_checkTimer(this, &FrameLoader::checkTimerFired)
     , m_shouldCallCheckCompleted(false)
@@ -436,7 +437,7 @@ void FrameLoader::clear(ClearOptions options)
     if (options & ClearWindowObject)
         m_frame->clearDOMWindow();
 
-    m_subframeLoader.clear();
+    m_containsPlugins = false;
 
     if (options & ClearScriptObjects)
         m_frame->script()->clearScriptObjects();
@@ -728,6 +729,16 @@ void FrameLoader::handleFallbackContent()
         return;
     static_cast<HTMLObjectElement*>(owner)->renderFallbackContent();
 }
+
+bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
+{
+    Settings* settings = m_frame->settings();
+    bool allowed = m_client->allowPlugins(settings && settings->arePluginsEnabled());
+    if (!allowed && reason == AboutToInstantiatePlugin)
+        m_client->didNotAllowPlugins();
+    return allowed;
+}
+
 void FrameLoader::resetMultipleFormSubmissionProtection()
 {
     m_submittedFormURL = KURL();
@@ -1362,6 +1373,7 @@ void FrameLoader::checkLoadCompleteForThisFrame()
                 m_delegateIsHandlingProvisionalLoadError = false;
 
                 ASSERT(!pdl->isLoading());
+
                 // Finish resetting the load state, but only if another load hasn't been started by the
                 // delegate callback.
                 if (pdl == m_provisionalDocumentLoader)

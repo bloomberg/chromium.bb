@@ -57,14 +57,8 @@ namespace WebCore {
 using namespace HTMLNames;
 
 SubframeLoader::SubframeLoader(Frame* frame)
-    : m_containsPlugins(false)
-    , m_frame(frame)
+    :  m_frame(frame)
 {
-}
-
-void SubframeLoader::clear()
-{
-    m_containsPlugins = false;
 }
 
 bool SubframeLoader::requestFrame(HTMLFrameOwnerElement* ownerElement, const String& urlString, const AtomicString& frameName, bool lockBackForwardList)
@@ -143,7 +137,7 @@ bool SubframeLoader::requestPlugin(HTMLPlugInImageElement* ownerElement, const K
     // Application plug-ins are plug-ins implemented by the user agent, for example Qt plug-ins,
     // as opposed to third-party code such as Flash. The user agent decides whether or not they are
     // permitted, rather than WebKit.
-    if ((!allowPlugins(AboutToInstantiatePlugin) && !MIMETypeRegistry::isApplicationPluginMIMEType(mimeType)))
+    if ((!m_frame->loader()->allowPlugins(AboutToInstantiatePlugin) && !MIMETypeRegistry::isApplicationPluginMIMEType(mimeType)))
         return false;
 
     if (!pluginIsLoadable(ownerElement, url, mimeType))
@@ -210,7 +204,7 @@ PassRefPtr<Widget> SubframeLoader::createJavaAppletWidget(const IntSize& size, H
     KURL baseURL = completeURL(baseURLString);
 
     RefPtr<Widget> widget;
-    if (allowPlugins(AboutToInstantiatePlugin))
+    if (m_frame->loader()->allowPlugins(AboutToInstantiatePlugin))
         widget = m_frame->loader()->client()->createJavaAppletWidget(size, element, baseURL, paramNames, paramValues);
 
     if (!widget) {
@@ -221,7 +215,7 @@ PassRefPtr<Widget> SubframeLoader::createJavaAppletWidget(const IntSize& size, H
         return 0;
     }
 
-    m_containsPlugins = true;
+    m_frame->loader()->setContainsPlugins();
     return widget;
 }
 
@@ -291,15 +285,6 @@ bool SubframeLoader::loadSubframe(HTMLFrameOwnerElement* ownerElement, const KUR
     return true;
 }
 
-bool SubframeLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
-{
-    Settings* settings = m_frame->settings();
-    bool allowed = m_frame->loader()->client()->allowPlugins(settings && settings->arePluginsEnabled());
-    if (!allowed && reason == AboutToInstantiatePlugin)
-        m_frame->loader()->client()->didNotAllowPlugins();
-    return allowed;
-}
-
 bool SubframeLoader::shouldUsePlugin(const KURL& url, const String& mimeType, bool shouldPreferPlugInsForImages, bool hasFallback, bool& useFallback)
 {
     // Allow other plug-ins to win over QuickTime because if the user has installed a plug-in that
@@ -335,7 +320,7 @@ bool SubframeLoader::loadPlugin(HTMLPlugInImageElement* pluginElement, const KUR
     pluginElement->subframeLoaderWillCreatePlugIn(url);
 
     IntSize contentSize = roundedIntSize(LayoutSize(renderer->contentWidth(), renderer->contentHeight()));
-    bool loadManually = document()->isPluginDocument() && !m_containsPlugins && toPluginDocument(document())->shouldLoadPluginManually();
+    bool loadManually = document()->isPluginDocument() && !m_frame->loader()->containsPlugins() && toPluginDocument(document())->shouldLoadPluginManually();
     RefPtr<Widget> widget = m_frame->loader()->client()->createPlugin(contentSize,
         pluginElement, url, paramNames, paramValues, mimeType, loadManually);
 
@@ -346,7 +331,7 @@ bool SubframeLoader::loadPlugin(HTMLPlugInImageElement* pluginElement, const KUR
     }
 
     renderer->setWidget(widget);
-    m_containsPlugins = true;
+    m_frame->loader()->setContainsPlugins();
     pluginElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
     return true;
 }

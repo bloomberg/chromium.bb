@@ -238,6 +238,10 @@ public:
 
     void started();
 
+    void setContainsPlugins() { m_containsPlugins = true; }
+    bool containsPlugins() const { return m_containsPlugins; }
+    bool allowPlugins(ReasonForCallingAllowPlugins);
+
     enum PageDismissalType {
         NoDismissal = 0,
         BeforeUnloadDismissal = 1,
@@ -344,6 +348,7 @@ private:
     bool m_isComplete;
 
     bool m_needsClear;
+    bool m_containsPlugins;
 
     KURL m_submittedFormURL;
 

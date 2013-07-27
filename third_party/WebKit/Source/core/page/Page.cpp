@@ -363,7 +363,7 @@ void Page::refreshPlugins(bool reload)
             continue;
 
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-            if (frame->loader()->subframeLoader()->containsPlugins())
+            if (frame->loader()->containsPlugins())
                 framesNeedingReload.append(frame);
         }
     }
@@ -374,7 +374,7 @@ void Page::refreshPlugins(bool reload)
 
 PluginData* Page::pluginData() const
 {
-    if (!mainFrame()->loader()->subframeLoader()->allowPlugins(NotAboutToInstantiatePlugin))
+    if (!mainFrame()->loader()->allowPlugins(NotAboutToInstantiatePlugin))
         return 0;
     if (!m_pluginData)
         m_pluginData = PluginData::create(this);
