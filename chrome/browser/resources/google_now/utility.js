@@ -315,8 +315,8 @@ var storage = chrome.storage.local;
  */
 function buildAttemptManager(
     name, attempt, initialDelaySeconds, maximumDelaySeconds) {
-  var alarmName = name + '-scheduler';
-  var currentDelayStorageKey = name + '-current-delay';
+  var alarmName = 'attempt-scheduler-' + name;
+  var currentDelayStorageKey = 'current-delay-' + name;
 
   /**
    * Creates an alarm for the next attempt. The alarm is repeating for the case

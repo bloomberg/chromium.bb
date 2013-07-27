@@ -122,6 +122,7 @@
       </if>
       <if expr="pp_ifdef('enable_google_now')">
         <include name="IDR_GOOGLE_NOW_BACKGROUND_JS" file="google_now/background.js" type="BINDATA" />
+        <include name="IDR_GOOGLE_NOW_CARDS_JS" file="google_now/cards.js" type="BINDATA" />
         <include name="IDR_GOOGLE_NOW_UTILITY_JS" file="google_now/utility.js" type="BINDATA" />
       </if>
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_BACKGROUND_JS" file="identity_scope_approval_dialog/background.js" type="BINDATA" />

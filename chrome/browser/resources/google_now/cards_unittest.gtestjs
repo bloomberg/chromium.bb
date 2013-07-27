@@ -1,0 +1,435 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * Test fixture for cards.js.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function GoogleNowCardsUnitTest () {
+  testing.Test.call(this);
+}
+
+GoogleNowCardsUnitTest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  extraLibraries: [
+    'cards.js'
+  ]
+};
+
+var testCardId = 'TEST CARD ID';
+var testNotification = {testNotificationField: 'TEST NOTIFICATION VALUE'};
+var expectedShowAlarmId = 'card-show-TEST CARD ID';
+var expectedHideAlarmId = 'card-hide-TEST CARD ID';
+var testActionUrls = {testField: 'TEST VALUE'};
+var testDismissal = {testDismissalField: 'TEST DISMISSAL VALUE'};
+
+function setUpCardManagerTest(fixture) {
+  fixture.makeAndRegisterMockApis([
+      'chrome.alarms.onAlarm.addListener',
+      'chrome.alarms.clear',
+      'chrome.alarms.create',
+      'chrome.notifications.clear',
+      'chrome.notifications.create',
+      'chrome.notifications.update',
+      'storage.get'
+  ]);
+
+  chrome.runtime = {}; // No error.
+
+  var onAlarmSavedArgs = new SaveMockArguments();
+  fixture.mockApis.expects(once()).
+      chrome_alarms_onAlarm_addListener(
+          onAlarmSavedArgs.match(ANYTHING));
+
+  var cardSet = buildCardSet();
+
+  Mock4JS.verifyAllMocks();
+
+  Date.now = function() { return 300000; };
+
+  var test = {
+    cardSet: cardSet,
+    alarmCallback: onAlarmSavedArgs.arguments [0]
+  };
+
+  return test;
+}
+
+TEST_F('GoogleNowCardsUnitTest', 'BuildCardManager', function() {
+  // Tests that buildCardSet() call completes with no problems.
+  var test = setUpCardManagerTest(this);
+
+  assertEquals('object', typeof test.cardSet);
+  assertEquals('function', typeof test.alarmCallback);
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'CreateCard', function() {
+  // Creates a new card with no trigger.
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedShowAlarmId);
+  var chromeNotificationsCreateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      chrome_notifications_create(
+          chromeNotificationsCreateSavedArgs.match(eq(testCardId)),
+          chromeNotificationsCreateSavedArgs.match(eqJSON(testNotification)),
+          chromeNotificationsCreateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(chromeNotificationsCreateSavedArgs, 2, testCardId));
+
+  // Call tested method.
+  var notificationData = test.cardSet.update({
+    notificationId: testCardId,
+    notification: testNotification,
+    actionUrls: testActionUrls,
+    dismissal: testDismissal,
+    version: 0});
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        actionUrls: testActionUrls,
+        cardCreateInfo: {
+          notification: testNotification,
+          timeHide: undefined,
+          version: 0
+        },
+        dismissalParameters: testDismissal 
+      }),
+    JSON.stringify(notificationData));
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'CreateCardEmptyTrigger', function() {
+  // Creates a new card with empty trigger.
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedShowAlarmId);
+  this.mockApis.expects(once()).
+      chrome_notifications_create(
+          testCardId, eqJSON(testNotification), ANYTHING);
+
+  // Call tested method.
+  var notificationData = test.cardSet.update({
+    notificationId: testCardId,
+    notification: testNotification,
+    actionUrls: testActionUrls,
+    dismissal: testDismissal,
+    version: 0,
+    trigger: {}});
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        actionUrls: testActionUrls,
+        cardCreateInfo: {
+          notification: testNotification,
+          timeHide: undefined,
+          version: 0
+        },
+        dismissalParameters: testDismissal
+     }),
+    JSON.stringify(notificationData));
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'CreateCardHideTime', function() {
+  // Creates a new card with trigger specifying hide time.
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedShowAlarmId);
+  var chromeNotificationsCreateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      chrome_notifications_create(
+          chromeNotificationsCreateSavedArgs.match(eq(testCardId)),
+          chromeNotificationsCreateSavedArgs.match(eqJSON(testNotification)),
+          chromeNotificationsCreateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(chromeNotificationsCreateSavedArgs, 2, testCardId));
+  this.mockApis.expects(once()).
+      chrome_alarms_create(expectedHideAlarmId, eqJSON({when: 1313000}));
+
+  // Call tested method.
+  var notificationData = test.cardSet.update({
+    notificationId: testCardId,
+    notification: testNotification,
+    actionUrls: testActionUrls,
+    dismissal: testDismissal,
+    version: 0,
+    trigger: {hideTimeSec: 1013}});
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        actionUrls: testActionUrls,
+        cardCreateInfo: {
+          notification: testNotification,
+          timeHide: 1313000,
+          version: 0
+        },
+        dismissalParameters: testDismissal
+      }),
+    JSON.stringify(notificationData));
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'UpdateCardSameVersion', function() {
+  // Updates a card with another card with same version.
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedShowAlarmId);
+  var chromeNotificationsCreateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      chrome_notifications_update(
+          chromeNotificationsCreateSavedArgs.match(eq(testCardId)),
+          chromeNotificationsCreateSavedArgs.match(eqJSON(testNotification)),
+          chromeNotificationsCreateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(chromeNotificationsCreateSavedArgs, 2, true));
+
+  // Call tested method.
+  var notificationData = test.cardSet.update({
+    notificationId: testCardId,
+    notification: testNotification,
+    actionUrls: testActionUrls,
+    dismissal: testDismissal,
+    version: 0},
+      0);
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        actionUrls: testActionUrls,
+        cardCreateInfo: {
+          notification: testNotification,
+          version: 0,
+          previousVersion: 0
+        },
+        dismissalParameters: testDismissal
+      }),
+    JSON.stringify(notificationData));
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'UpdateCardSameVersionHideTime', function() {
+  // Updates a card with another card with same version and specifying hide
+  // time.
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedShowAlarmId);
+  var chromeNotificationsCreateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      chrome_notifications_update(
+          chromeNotificationsCreateSavedArgs.match(eq(testCardId)),
+          chromeNotificationsCreateSavedArgs.match(eqJSON(testNotification)),
+          chromeNotificationsCreateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(chromeNotificationsCreateSavedArgs, 2, testCardId));
+  this.mockApis.expects(once()).
+      chrome_alarms_create(expectedHideAlarmId, eqJSON({when: 1313000}));
+
+  // Call tested method.
+  test.cardSet.update({
+                        notificationId: testCardId,
+                        notification: testNotification,
+                        actionUrls: testActionUrls,
+                        dismissal: testDismissal,
+                        version: 0,
+                        trigger: {hideTimeSec: 1013}},
+                      0);
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'UpdateCardDifferentVersion', function() {
+  // Updates a card with another card with different version.
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedShowAlarmId);
+  this.mockApis.expects(once()).
+      chrome_notifications_create(
+          testCardId, eqJSON(testNotification), ANYTHING);
+
+  // Call tested method.
+  test.cardSet.update({
+                        notificationId: testCardId,
+                        notification: testNotification,
+                        actionUrls: testActionUrls,
+                        dismissal: testDismissal,
+                        version: 0},
+                      1);
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'CreateCardTriggerShowNow', function() {
+  // Creates a new card with trigger that requires showing the card immediately.
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedShowAlarmId);
+  this.mockApis.expects(once()).
+      chrome_notifications_create(
+          testCardId, eqJSON(testNotification), ANYTHING);
+
+  // Call tested method.
+  test.cardSet.update({
+    notificationId: testCardId,
+    notification: testNotification,
+    actionUrls: testActionUrls,
+    dismissal: testDismissal,
+    version: 0,
+    trigger: {showTimeSec: 0}});
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'CreateCardTriggerShowLater', function() {
+  // Creates a new card with trigger that requires showing the card later.
+  // We are supposed to schedule an alarm to show the notification later.
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_create(expectedShowAlarmId, eqJSON({when: 539000}));
+
+  // Call tested method.
+  test.cardSet.update({
+    notificationId: testCardId,
+    notification: testNotification,
+    actionUrls: testActionUrls,
+    dismissal: testDismissal,
+    version: 0,
+    trigger: {showTimeSec: 239}});
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'ClearCard', function() {
+  // Clears a card.
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_notifications_clear(testCardId, ANYTHING);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedShowAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+
+  // Call tested method.
+  test.cardSet.clear(testCardId);
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'onAlarmUnrecognized', function() {
+  // Tests onAlarm does nothing on an unrelated alarm.
+  var test = setUpCardManagerTest(this);
+
+  // Call tested method.
+  test.alarmCallback({name: 'unrelated'});
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowNoData', function() {
+  // Tests onAlarm for the 'show' alarm when there is no data for the card.
+  var test = setUpCardManagerTest(this);
+  var storageGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      storage_get(
+          storageGetSavedArgs.match(eq('notificationsData')),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(storageGetSavedArgs, 1, {}));
+
+  // Call tested method.
+  test.alarmCallback({name: expectedShowAlarmId});
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowHasDataCreate', function() {
+  // Tests onAlarm for the 'show' alarm when there is data for the card. The
+  // notification will be created because there is no previous version.
+  var test = setUpCardManagerTest(this);
+  var storageGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      storage_get(
+          storageGetSavedArgs.match(eq('notificationsData')),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          storageGetSavedArgs,
+          1,
+          {
+            notificationsData: {
+              'TEST CARD ID': {
+              actionUrls: testActionUrls,
+              cardCreateInfo: {
+                notification: testNotification,
+                timeHide: 1313000,
+                version: 0}}}}));
+  var chromeNotificationsCreateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      chrome_notifications_create(
+          chromeNotificationsCreateSavedArgs.match(eq(testCardId)),
+          chromeNotificationsCreateSavedArgs.match(eqJSON(testNotification)),
+          chromeNotificationsCreateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(chromeNotificationsCreateSavedArgs, 2, testCardId));
+  this.mockApis.expects(once()).
+      chrome_alarms_create(expectedHideAlarmId, eqJSON({when: 1313000}));
+
+  // Call tested method.
+  test.alarmCallback({name: expectedShowAlarmId});
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowHasDataUpdate', function() {
+  // Tests onAlarm for the 'show' alarm when there is data for the card. The
+  // notification will be updated because previous version is same as current.
+  var test = setUpCardManagerTest(this);
+  var storageGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      storage_get(
+          storageGetSavedArgs.match(eq('notificationsData')),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          storageGetSavedArgs,
+          1,
+          {
+            notificationsData: {
+              'TEST CARD ID': {
+              actionUrls: testActionUrls,
+              cardCreateInfo: {
+                notification: testNotification,
+                timeHide: 1313000,
+                version: 0,
+                previousVersion:0}}}}));
+  var chromeNotificationsCreateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      chrome_notifications_update(
+          testCardId, eqJSON(testNotification), ANYTHING);
+
+  // Call tested method.
+  test.alarmCallback({name: expectedShowAlarmId});
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'onAlarmHide', function() {
+  // Tests onAlarm for the 'hide' alarm.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_notifications_clear(testCardId, ANYTHING);
+
+  // Call tested method.
+  test.alarmCallback({name: expectedHideAlarmId});
+});

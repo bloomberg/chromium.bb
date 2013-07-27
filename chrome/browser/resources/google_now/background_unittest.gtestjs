@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * Test fixture for ../background.js.
+ * Test fixture for background.js.
  * @constructor
  * @extends {testing.Test}
  */

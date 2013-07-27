@@ -1585,6 +1585,64 @@ var testing = {};
                             Array.prototype.slice.call(arguments, 1));
   }
 
+  /**
+   * Syntactic sugar for use with will() on a Mock4JS.Mock.
+   * Creates an action for will() that invokes a callback that the tested code
+   * passes to a mocked function.
+   * @param {SaveMockArguments} savedArgs Arguments that will contain the
+   *     callback once the mocked function is called.
+   * @param {number} callbackParameter Index of the callback parameter in
+   *     |savedArgs|.
+   * @param {...Object} var_args Arguments to pass to the callback.
+   * @return {CallFunctionAction} Action for use in will().
+   */
+  function invokeCallback(savedArgs, callbackParameter, var_args) {
+    var callbackArguments = Array.prototype.slice.call(arguments, 2);
+    return callFunction(function() {
+      savedArgs.arguments[callbackParameter].apply(null, callbackArguments);
+    });
+  }
+
+  /**
+   * Mock4JS matcher object that matches the actual agrument and the expected
+   * value iff their JSON represenations are same.
+   * @param {Object} expectedValue Expected value.
+   * @constructor
+   */
+  function MatchJSON(expectedValue) {
+    this.expectedValue_ = expectedValue;
+  }
+
+  MatchJSON.prototype = {
+    /**
+     * Checks that JSON represenation of the actual and expected arguments are
+     * same.
+     * @param {Object} actualArgument The argument to match.
+     * @return {boolean} Result of the comparison.
+     */
+    argumentMatches: function(actualArgument) {
+      return JSON.stringify(this.expectedValue_) ===
+          JSON.stringify(actualArgument);
+    },
+
+    /**
+     * Describes the matcher.
+     * @return {string} Description of this Mock4JS matcher.
+     */
+    describe: function() {
+      return 'eqJSON(' + JSON.stringify(this.expectedValue_) + ')';
+    },
+  };
+
+  /**
+   * Builds a MatchJSON agrument matcher for a given expected value.
+   * @param {Object} expectedValue Expected value.
+   * @return {MatchJSON} Resulting Mock4JS matcher.
+   */
+  function eqJSON(expectedValue) {
+    return new MatchJSON(expectedValue);
+  }
+
   // Exports.
   testing.Test = Test;
   exports.testDone = testDone;
@@ -1601,6 +1659,7 @@ var testing = {};
   exports.callFunction = callFunction;
   exports.callFunctionWithSavedArgs = callFunctionWithSavedArgs;
   exports.callGlobalWithSavedArgs = callGlobalWithSavedArgs;
+  exports.eqJSON = eqJSON;
   exports.expectTrue = createExpect(assertTrue);
   exports.expectFalse = createExpect(assertFalse);
   exports.expectGE = createExpect(assertGE);
@@ -1611,6 +1670,7 @@ var testing = {};
   exports.expectNotEquals = createExpect(assertNotEquals);
   exports.expectNotReached = createExpect(assertNotReached);
   exports.expectAccessibilityOk = createExpect(assertAccessibilityOk);
+  exports.invokeCallback = invokeCallback;
   exports.preloadJavascriptLibraries = preloadJavascriptLibraries;
   exports.registerMessageCallback = registerMessageCallback;
   exports.registerMockGlobals = registerMockGlobals;

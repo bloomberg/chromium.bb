@@ -147,6 +147,7 @@ var dismissalAttempts = buildAttemptManager(
     retryPendingDismissals,
     INITIAL_RETRY_DISMISS_PERIOD_SECONDS,
     MAXIMUM_RETRY_DISMISS_PERIOD_SECONDS);
+var cardSet = buildCardSet();
 
 /**
  * Diagnostic event identifier.
@@ -224,69 +225,6 @@ function setAuthorization(request, callbackBoolean) {
 }
 
 /**
- * Shows a notification and remembers information associated with it.
- * @param {Object} card Google Now card represented as a set of parameters for
- *     showing a Chrome notification.
- * @param {Object} notificationsData Map from notification id to the data
- *     associated with a notification.
- * @param {number=} opt_previousVersion The version of the shown card with this
- *     id, if it exists, undefined otherwise.
- */
-function showNotification(card, notificationsData, opt_previousVersion) {
-  console.log('showNotification ' + JSON.stringify(card) + ' ' +
-             opt_previousVersion);
-
-  if (typeof card.version != 'number') {
-    console.error('card.version is not a number');
-    // Fix card version.
-    card.version = opt_previousVersion !== undefined ? opt_previousVersion : 0;
-  }
-
-  if (opt_previousVersion !== card.version) {
-    try {
-      // Delete a notification with the specified id if it already exists, and
-      // then create a notification.
-      chrome.notifications.create(
-          card.notificationId,
-          card.notification,
-          function(notificationId) {
-            if (!notificationId || chrome.runtime.lastError) {
-              var errorMessage =
-                  chrome.runtime.lastError && chrome.runtime.lastError.message;
-              console.error('notifications.create: ID=' + notificationId +
-                            ', ERROR=' + errorMessage);
-            }
-          });
-    } catch (error) {
-      console.error('Error in notifications.create: ' + error);
-    }
-  } else {
-    try {
-      // Update existing notification.
-      chrome.notifications.update(
-          card.notificationId,
-          card.notification,
-          function(wasUpdated) {
-            if (!wasUpdated || chrome.runtime.lastError) {
-              var errorMessage =
-                  chrome.runtime.lastError && chrome.runtime.lastError.message;
-              console.error('notifications.update: UPDATED=' + wasUpdated +
-                            ', ERROR=' + errorMessage);
-            }
-          });
-    } catch (error) {
-      console.error('Error in notifications.update: ' + error);
-    }
-  }
-
-  notificationsData[card.notificationId] = {
-    actionUrls: card.actionUrls,
-    version: card.version,
-    dismissalParameters: card.dismissal
-  };
-}
-
-/**
  * Parses JSON response from the notification server, show notifications and
  * schedule next update.
  * @param {string} response Server response.
@@ -309,7 +247,7 @@ function parseAndShowNotificationCards(response, callback) {
     return;
   }
 
-  if (typeof parsedResponse.expiration_timestamp_seconds != 'number') {
+  if (typeof parsedResponse.next_poll_seconds != 'number') {
     callback();
     return;
   }
@@ -359,9 +297,7 @@ function parseAndShowNotificationCards(response, callback) {
                     notificationId);
         if (!(notificationId in updatedNotifications)) {
           console.log('parseAndShowNotificationCards-delete ' + notificationId);
-          chrome.notifications.clear(
-              notificationId,
-              function() {});
+          cardSet.clear(notificationId);
         }
       }
 
@@ -375,12 +311,14 @@ function parseAndShowNotificationCards(response, callback) {
           var notificationData = items.notificationsData[card.notificationId];
           var previousVersion = notifications[card.notificationId] &&
                                 notificationData &&
-                                notificationData.previousVersion;
-          showNotification(card, newNotificationsData, previousVersion);
+                                notificationData.cardCreateInfo &&
+                                notificationData.cardCreateInfo.version;
+          newNotificationsData[card.notificationId] =
+              cardSet.update(card, previousVersion);
         }
       }
 
-      updateCardsAttempts.start(parsedResponse.expiration_timestamp_seconds);
+      updateCardsAttempts.start(parsedResponse.next_poll_seconds);
 
       storage.set({
         notificationsData: newNotificationsData,
@@ -670,9 +608,7 @@ function onNotificationClosed(notificationId, byUser) {
 
     // Deleting the notification in case it was re-added while this task was
     // scheduled, waiting for execution.
-    chrome.notifications.clear(
-        notificationId,
-        function() {});
+    cardSet.clear(notificationId);
 
     tasks.debugSetStepName('onNotificationClosed-storage-get');
     storage.get(['pendingDismissals', 'notificationsData'], function(items) {

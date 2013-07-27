@@ -19,7 +19,7 @@
   ],
   "manifest_version": 2,
   "background": {
-    "scripts": ["utility.js", "background.js"],
+    "scripts": ["utility.js", "cards.js", "background.js"],
     "persistent": false
   },
   // TODO(vadimt): Remove using chrome.omnibox.
