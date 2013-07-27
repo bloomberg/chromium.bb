@@ -4,6 +4,10 @@
 
 #include "chrome/common/url_constants.h"
 
+#include <algorithm>
+
+#include "base/basictypes.h"
+#include "content/public/common/url_constants.h"
 #include "url/url_util.h"
 
 namespace chrome {
@@ -510,6 +514,96 @@ const char kLearnMoreEnterpriseURL[] =
 
 const char kNotificationsHelpURL[] =
     "https://support.google.com/chrome/?p=ui_notifications";
+
+// Add hosts here to be included in chrome://chrome-urls (about:about).
+// These hosts will also be suggested by BuiltinProvider.
+const char* const kChromeHostURLs[] = {
+  kChromeUICacheHost,
+  kChromeUIChromeURLsHost,
+  kChromeUICrashesHost,
+  kChromeUICreditsHost,
+  kChromeUIDNSHost,
+  kChromeUIFlagsHost,
+  kChromeUIHistoryHost,
+  kChromeUIIPCHost,
+  kChromeUIMemoryHost,
+  kChromeUIMemoryInternalsHost,
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  kChromeUINetExportHost,
+#endif
+  kChromeUINetInternalsHost,
+  kChromeUINewTabHost,
+  kChromeUIOmniboxHost,
+  kChromeUIPredictorsHost,
+  kChromeUIProfilerHost,
+  kChromeUIQuotaInternalsHost,
+  kChromeUISignInInternalsHost,
+  kChromeUIStatsHost,
+  kChromeUISyncInternalsHost,
+  kChromeUITermsHost,
+  kChromeUITranslateInternalsHost,
+  kChromeUIUserActionsHost,
+  kChromeUIVersionHost,
+#if defined(OS_ANDROID)
+  kChromeUIWelcomeHost,
+#else
+  kChromeUIBookmarksHost,
+  kChromeUIDownloadsHost,
+  kChromeUIFlashHost,
+  kChromeUIInspectHost,
+  kChromeUIPluginsHost,
+  kChromeUISettingsHost,
+#endif
+#if defined(OS_WIN)
+  kChromeUIConflictsHost,
+#endif
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+  kChromeUILinuxProxyConfigHost,
+  kChromeUISandboxHost,
+#endif
+#if defined(OS_CHROMEOS)
+  kChromeUIChooseMobileNetworkHost,
+  kChromeUICryptohomeHost,
+  kChromeUIDiagnosticsHost,
+  kChromeUIDiscardsHost,
+  kChromeUIDriveInternalsHost,
+  kChromeUIImageBurnerHost,
+  kChromeUIKeyboardOverlayHost,
+  kChromeUILoginHost,
+  kChromeUINetworkHost,
+  kChromeUIOobeHost,
+  kChromeUIOSCreditsHost,
+  kChromeUIProxySettingsHost,
+  kChromeUISystemInfoHost,
+  kChromeUITaskManagerHost,
+#endif
+#if !defined(DISABLE_NACL)
+  kChromeUINaClHost,
+#endif
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  kChromeUIPolicyHost,
+#endif
+#if defined(ENABLE_EXTENSIONS)
+  kChromeUIExtensionsHost,
+#endif
+#if defined(ENABLE_PRINTING)
+  kChromeUIPrintHost,
+#endif
+  content::kChromeUIAccessibilityHost,
+  content::kChromeUIAppCacheInternalsHost,
+  content::kChromeUIBlobInternalsHost,
+  content::kChromeUIGpuHost,
+  content::kChromeUIHistogramHost,
+  content::kChromeUIIndexedDBInternalsHost,
+  content::kChromeUIMediaInternalsHost,
+  content::kChromeUINetworkViewCacheHost,
+  content::kChromeUITracingHost,
+  content::kChromeUIWebRTCInternalsHost,
+#if defined(ENABLE_WEBRTC)
+  kChromeUIWebRtcLogsHost,
+#endif
+};
+const size_t kNumberOfChromeHostURLs = arraysize(kChromeHostURLs);
 
 const char* const kChromeDebugURLs[] = {
   content::kChromeUICrashURL,

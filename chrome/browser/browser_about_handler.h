@@ -36,9 +36,6 @@ bool WillHandleBrowserAboutURL(GURL* url,
 // case, normal tab navigation should be skipped.
 bool HandleNonNavigationAboutURL(const GURL& url);
 
-// Gets the paths that are shown in chrome://chrome-urls.
-std::vector<std::string> ChromePaths();
-
 #if defined(USE_TCMALLOC)
 // A map of header strings (e.g. "Browser", "Renderer PID 123")
 // to the tcmalloc output collected for each process.

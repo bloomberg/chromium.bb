@@ -12,103 +12,10 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
-
-namespace {
-
-// Add paths here to be included in chrome://chrome-urls (about:about).
-// These paths will also be suggested by BuiltinProvider.
-const char* const kPaths[] = {
-  chrome::kChromeUICacheHost,
-  chrome::kChromeUIChromeURLsHost,
-  chrome::kChromeUICrashesHost,
-  chrome::kChromeUICreditsHost,
-  chrome::kChromeUIDNSHost,
-  chrome::kChromeUIFlagsHost,
-  chrome::kChromeUIHistoryHost,
-  chrome::kChromeUIIPCHost,
-  chrome::kChromeUIMemoryHost,
-  chrome::kChromeUIMemoryInternalsHost,
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  chrome::kChromeUINetExportHost,
-#endif
-  chrome::kChromeUINetInternalsHost,
-  chrome::kChromeUINewTabHost,
-  chrome::kChromeUIOmniboxHost,
-  chrome::kChromeUIPredictorsHost,
-  chrome::kChromeUIProfilerHost,
-  chrome::kChromeUIQuotaInternalsHost,
-  chrome::kChromeUISignInInternalsHost,
-  chrome::kChromeUIStatsHost,
-  chrome::kChromeUISyncInternalsHost,
-  chrome::kChromeUITermsHost,
-  chrome::kChromeUITranslateInternalsHost,
-  chrome::kChromeUIUserActionsHost,
-  chrome::kChromeUIVersionHost,
-#if defined(OS_ANDROID)
-  chrome::kChromeUIWelcomeHost,
-#else
-  chrome::kChromeUIBookmarksHost,
-  chrome::kChromeUIDownloadsHost,
-  chrome::kChromeUIFlashHost,
-  chrome::kChromeUIInspectHost,
-  chrome::kChromeUIPluginsHost,
-  chrome::kChromeUISettingsHost,
-#endif
-#if defined(OS_WIN)
-  chrome::kChromeUIConflictsHost,
-#endif
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-  chrome::kChromeUILinuxProxyConfigHost,
-  chrome::kChromeUISandboxHost,
-#endif
-#if defined(OS_CHROMEOS)
-  chrome::kChromeUIChooseMobileNetworkHost,
-  chrome::kChromeUICryptohomeHost,
-  chrome::kChromeUIDiagnosticsHost,
-  chrome::kChromeUIDiscardsHost,
-  chrome::kChromeUIDriveInternalsHost,
-  chrome::kChromeUIImageBurnerHost,
-  chrome::kChromeUIKeyboardOverlayHost,
-  chrome::kChromeUILoginHost,
-  chrome::kChromeUINetworkHost,
-  chrome::kChromeUIOobeHost,
-  chrome::kChromeUIOSCreditsHost,
-  chrome::kChromeUIProxySettingsHost,
-  chrome::kChromeUISystemInfoHost,
-  chrome::kChromeUITaskManagerHost,
-#endif
-#if !defined(DISABLE_NACL)
-  chrome::kChromeUINaClHost,
-#endif
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  chrome::kChromeUIPolicyHost,
-#endif
-#if defined(ENABLE_EXTENSIONS)
-  chrome::kChromeUIExtensionsHost,
-#endif
-#if defined(ENABLE_PRINTING)
-  chrome::kChromeUIPrintHost,
-#endif
-  content::kChromeUIAccessibilityHost,
-  content::kChromeUIAppCacheInternalsHost,
-  content::kChromeUIBlobInternalsHost,
-  content::kChromeUIGpuHost,
-  content::kChromeUIHistogramHost,
-  content::kChromeUIIndexedDBInternalsHost,
-  content::kChromeUIMediaInternalsHost,
-  content::kChromeUINetworkViewCacheHost,
-  content::kChromeUITracingHost,
-  content::kChromeUIWebRTCInternalsHost,
-#if defined(ENABLE_WEBRTC)
-  chrome::kChromeUIWebRtcLogsHost,
-#endif
-};
-
-}  // namespace
 
 bool WillHandleBrowserAboutURL(GURL* url,
                                content::BrowserContext* browser_context) {
@@ -197,8 +104,3 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
   return false;
 }
 
-std::vector<std::string> ChromePaths() {
-  std::vector<std::string> paths(kPaths, kPaths + arraysize(kPaths));
-  std::sort(paths.begin(), paths.end());
-  return paths;
-}

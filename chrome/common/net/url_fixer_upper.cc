@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/common/net/url_fixer_upper.h"
 
 #include <algorithm>
 

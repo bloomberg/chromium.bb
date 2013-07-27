@@ -1151,8 +1151,6 @@
         'browser/net/timed_cache.h',
         'browser/net/transport_security_persister.cc',
         'browser/net/transport_security_persister.h',
-        'browser/net/url_fixer_upper.cc',
-        'browser/net/url_fixer_upper.h',
         'browser/net/url_info.cc',
         'browser/net/url_info.h',
         'browser/notifications/balloon.cc',

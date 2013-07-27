@@ -59,6 +59,23 @@ void LoadDefaultBookmarks(const base::FilePath& app_path,
     urls->insert(bookmarks[i].url);
 }
 
+// Returns true if |url| has a valid scheme that we allow to import. We
+// filter out the URL with a unsupported scheme.
+bool CanImportURL(const GURL& url) {
+  // The URL is not valid.
+  if (!url.is_valid())
+    return false;
+
+  // Filter out the URLs with unsupported schemes.
+  const char* const kInvalidSchemes[] = {"wyciwyg", "place", "about", "chrome"};
+  for (size_t i = 0; i < arraysize(kInvalidSchemes); ++i) {
+    if (url.SchemeIs(kInvalidSchemes[i]))
+      return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 struct FirefoxImporter::BookmarkItem {

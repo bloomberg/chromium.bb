@@ -976,7 +976,6 @@
         'browser/net/sqlite_server_bound_cert_store_unittest.cc',
         'browser/net/ssl_config_service_manager_pref_unittest.cc',
         'browser/net/transport_security_persister_unittest.cc',
-        'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
         'browser/notifications/message_center_notifications_unittest_win.cc',
@@ -1716,6 +1715,7 @@
         'common/metrics/metrics_util_unittest.cc',
         'common/metrics/variations/variations_util_unittest.cc',
         'common/multi_process_lock_unittest.cc',
+        'common/net/url_fixer_upper_unittest.cc',
         'common/net/x509_certificate_model_unittest.cc',
         'common/partial_circular_buffer_unittest.cc',
         'common/policy/policy_schema_unittest.cc',
@@ -1782,6 +1782,7 @@
         'tools/convert_dict/convert_dict_unittest.cc',
         'utility/extensions/unpacker_unittest.cc',
         'utility/importer/bookmark_html_reader_unittest.cc',
+        'utility/importer/bookmarks_file_importer_unittest.cc',
         'utility/importer/firefox_importer_unittest.cc',
         'utility/importer/safari_importer_unittest.mm',
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_URL_FIXER_UPPER_H_
-#define CHROME_BROWSER_NET_URL_FIXER_UPPER_H_
+#ifndef CHROME_COMMON_NET_URL_FIXER_UPPER_H_
+#define CHROME_COMMON_NET_URL_FIXER_UPPER_H_
 
 #include <string>
 
@@ -64,7 +64,8 @@ namespace URLFixerUpper {
   // For "regular" input, even if it is possibly a file with a full path, you
   // should use FixupURL() directly.  This function should only be used when
   // relative path handling is desired, as for command line processing.
-  GURL FixupRelativeFile(const base::FilePath& base_dir, const base::FilePath& text);
+  GURL FixupRelativeFile(const base::FilePath& base_dir,
+                         const base::FilePath& text);
 
   // Offsets the beginning index of |part| by |offset|, which is allowed to be
   // negative.  In some cases, the desired component does not exist at the given
@@ -78,6 +79,7 @@ namespace URLFixerUpper {
   // directory.  For tests, we allow our idea of $HOME to be overriden
   // by this variable.
   extern const char* home_directory_override;
-};
 
-#endif  // CHROME_BROWSER_NET_URL_FIXER_UPPER_H_
+}  // namespace URLFixerUpper
+
+#endif  // CHROME_COMMON_NET_URL_FIXER_UPPER_H_

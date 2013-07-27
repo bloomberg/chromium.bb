@@ -5,12 +5,14 @@
 #include "chrome/utility/importer/bookmarks_file_importer.h"
 
 #include "base/bind.h"
-#include "chrome/common/importer/firefox_importer_utils.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_data_types.h"
+#include "chrome/common/net/url_fixer_upper.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/utility/importer/bookmark_html_reader.h"
+#include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -20,6 +22,53 @@ bool IsImporterCancelled(BookmarksFileImporter* importer) {
 }
 
 }  // namespace
+
+namespace internal {
+
+// Returns true if |url| has a valid scheme that we allow to import. We
+// filter out the URL with a unsupported scheme.
+bool CanImportURL(const GURL& url) {
+  // The URL is not valid.
+  if (!url.is_valid())
+    return false;
+
+  // Filter out the URLs with unsupported schemes.
+  const char* const kInvalidSchemes[] = {"wyciwyg", "place"};
+  for (size_t i = 0; i < arraysize(kInvalidSchemes); ++i) {
+    if (url.SchemeIs(kInvalidSchemes[i]))
+      return false;
+  }
+
+  // Check if |url| is about:blank.
+  if (url == GURL(content::kAboutBlankURL))
+    return true;
+
+  // If |url| starts with chrome:// or about:, check if it's one of the URLs
+  // that we support.
+  if (url.SchemeIs(chrome::kChromeUIScheme) ||
+      url.SchemeIs(chrome::kAboutScheme)) {
+    GURL fixed_url(URLFixerUpper::FixupURL(url.spec(), std::string()));
+    for (size_t i = 0; i < chrome::kNumberOfChromeHostURLs; ++i) {
+      if (fixed_url.DomainIs(chrome::kChromeHostURLs[i]))
+        return true;
+    }
+
+    for (int i = 0; i < chrome::kNumberOfChromeDebugURLs; ++i) {
+      if (fixed_url == GURL(chrome::kChromeDebugURLs[i]))
+        return true;
+    }
+
+    // If url has either chrome:// or about: schemes but wasn't found in the
+    // above lists, it means we don't support it, so we don't allow the user
+    // to import it.
+    return false;
+  }
+
+  // Otherwise, we assume the url has a valid (importable) scheme.
+  return true;
+}
+
+}  // namespace internal
 
 BookmarksFileImporter::BookmarksFileImporter() {}
 
@@ -41,7 +90,7 @@ void BookmarksFileImporter::StartImport(
 
   bookmark_html_reader::ImportBookmarksFile(
       base::Bind(IsImporterCancelled, base::Unretained(this)),
-      base::Bind(CanImportURL),
+      base::Bind(internal::CanImportURL),
       source_profile.source_path,
       &bookmarks,
       &favicons);

@@ -143,7 +143,7 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
   const string16 kSeparator3 = ASCIIToUTF16(content::kStandardSchemeSeparator);
 
   // This makes assumptions about the chrome URLs listed by the BuiltinProvider.
-  // Currently they are derived from ChromePaths() in browser_about_handler.cc.
+  // Currently they are derived from chrome::kChromeHostURLs[].
   const string16 kHostM1 = ASCIIToUTF16(content::kChromeUIMediaInternalsHost);
   const string16 kHostM2 = ASCIIToUTF16(chrome::kChromeUIMemoryHost);
   const string16 kHostM3 = ASCIIToUTF16(chrome::kChromeUIMemoryInternalsHost);
@@ -189,7 +189,7 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
 // Disabled on Android where we use native UI instead of chrome://settings.
 TEST_F(BuiltinProviderTest, ChromeSettingsSubpages) {
   // This makes assumptions about the chrome URLs listed by the BuiltinProvider.
-  // Currently they are derived from ChromePaths() in browser_about_handler.cc.
+  // Currently they are derived from chrome::kChromeHostURLs[].
   const string16 kSettings = ASCIIToUTF16(chrome::kChromeUISettingsURL);
   const string16 kDefaultPage1 = ASCIIToUTF16(chrome::kAutofillSubPage);
   const string16 kDefaultPage2 = ASCIIToUTF16(chrome::kClearBrowserDataSubPage);

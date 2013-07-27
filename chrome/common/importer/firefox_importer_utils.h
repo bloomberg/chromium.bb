@@ -72,10 +72,6 @@ base::FilePath GetProfilesINI();
 // "Genenral.StartWithLastProfile" has the value "1".
 void ParseProfileINI(const base::FilePath& file, base::DictionaryValue* root);
 
-// Returns true if we want to add the URL to the history. We filter out the URL
-// with a unsupported scheme.
-bool CanImportURL(const GURL& url);
-
 // Returns the home page set in Firefox in a particular profile.
 GURL GetHomepage(const base::FilePath& profile_path);
 

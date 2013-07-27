@@ -736,6 +736,8 @@
         'common/net/net_resource_provider.cc',
         'common/net/net_resource_provider.h',
         'common/net/predictor_common.h',
+        'common/net/url_fixer_upper.cc',
+        'common/net/url_fixer_upper.h',
         'common/net/url_util.cc',
         'common/net/url_util.h',
         'common/net/x509_certificate_model.cc',

@@ -13,8 +13,8 @@
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
 #include "url/url_util.h"
 

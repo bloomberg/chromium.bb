@@ -7,6 +7,9 @@
 #ifndef CHROME_COMMON_URL_CONSTANTS_H_
 #define CHROME_COMMON_URL_CONSTANTS_H_
 
+#include <string>
+#include <vector>
+
 #include "build/build_config.h"
 #include "content/public/common/url_constants.h"
 
@@ -421,6 +424,10 @@ extern const char kLearnMoreEnterpriseURL[];
 #endif
 
 extern const char kNotificationsHelpURL[];
+
+// Gets the hosts/domains that are shown in chrome://chrome-urls.
+extern const char* const kChromeHostURLs[];
+extern const size_t kNumberOfChromeHostURLs;
 
 // "Debug" pages which are dangerous and not for general consumption.
 extern const char* const kChromeDebugURLs[];

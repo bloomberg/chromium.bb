@@ -128,22 +128,6 @@ bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
   return ret;
 }
 
-bool CanImportURL(const GURL& url) {
-  const char* kInvalidSchemes[] = {"wyciwyg", "place", "about", "chrome"};
-
-  // The URL is not valid.
-  if (!url.is_valid())
-    return false;
-
-  // Filter out the URLs with unsupported schemes.
-  for (size_t i = 0; i < arraysize(kInvalidSchemes); ++i) {
-    if (url.SchemeIs(kInvalidSchemes[i]))
-      return false;
-  }
-
-  return true;
-}
-
 bool ReadPrefFile(const base::FilePath& path, std::string* content) {
   if (content == NULL)
     return false;

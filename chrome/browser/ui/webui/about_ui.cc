@@ -28,16 +28,15 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
-#include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -384,9 +383,12 @@ std::string ChromeURLs() {
   AppendHeader(&html, 0, "Chrome URLs");
   AppendBody(&html);
   html += "<h2>List of Chrome URLs</h2>\n<ul>\n";
-  std::vector<std::string> paths(ChromePaths());
-  for (std::vector<std::string>::const_iterator i = paths.begin();
-       i != paths.end(); ++i)
+  std::vector<std::string> hosts(
+      chrome::kChromeHostURLs,
+      chrome::kChromeHostURLs + chrome::kNumberOfChromeHostURLs);
+  std::sort(hosts.begin(), hosts.end());
+  for (std::vector<std::string>::const_iterator i = hosts.begin();
+       i != hosts.end(); ++i)
     html += "<li><a href='chrome://" + *i + "/'>chrome://" + *i + "</a></li>\n";
   html += "</ul>\n<h2>For Debug</h2>\n"
       "<p>The following pages are for debugging purposes only. Because they "

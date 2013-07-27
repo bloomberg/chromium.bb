@@ -6,10 +6,10 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
