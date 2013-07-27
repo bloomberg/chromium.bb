@@ -65,8 +65,8 @@
           'branding%': 'Chromium',
 
           'conditions': [
-            # ChromeOS implies ash and for a limited time Windows. Call now!
-            ['chromeos==1 or OS=="win"', {
+            # ChromeOS implies ash.
+            ['chromeos==1', {
               'use_ash%': 1,
               'use_aura%': 1,
             }],
