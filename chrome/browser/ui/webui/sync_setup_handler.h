@@ -147,10 +147,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // If a wizard already exists, focus it and return true.
   bool FocusExistingWizardIfPresent();
 
-  // Invokes the javascript call to close the setup overlay, and terminates the
-  // sync setup flow.
-  void CloseOverlay();
-
   // Helper object used to wait for the sync backend to startup.
   scoped_ptr<SyncStartupTracker> sync_startup_tracker_;
 

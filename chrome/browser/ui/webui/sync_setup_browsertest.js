@@ -21,7 +21,7 @@ SyncSetupWebUITest.prototype = {
 
   /** @inheritDoc */
   preLoad: function() {
-    this.makeAndRegisterMockHandler(['SyncSetupDidClosePage',
+    this.makeAndRegisterMockHandler(['SyncSetupConfigure',
                                      'SyncSetupShowSetupUI',
                                      'SyncSetupStartSignIn',
                                     ]);
@@ -81,8 +81,8 @@ TEST_F('SyncSetupWebUITestAsync', 'VerifySignIn', function() {
                           okButton.click();
                         }));
 
-  // The test completes after the asynchronous close.
-  this.mockHandler.expects(once()).SyncSetupDidClosePage().
+  // The test completes after the sync config is sent out.
+  this.mockHandler.expects(once()).SyncSetupConfigure(ANYTHING).
       will(callFunction(testDone));
 
   // For testing, don't wait to execute timeouts.

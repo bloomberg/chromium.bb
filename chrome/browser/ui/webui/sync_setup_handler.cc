@@ -522,7 +522,7 @@ bool SyncSetupHandler::PrepareSyncSetup() {
   // If the wizard is already visible, just focus that one.
   if (FocusExistingWizardIfPresent()) {
     if (!IsActiveLogin())
-      CloseOverlay();
+      CloseSyncSetup();
     return false;
   }
 
@@ -568,7 +568,7 @@ void SyncSetupHandler::DisplayTimeout() {
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {
-  CloseOverlay();
+  CloseSyncSetup();
 }
 
 void SyncSetupHandler::SyncStartupFailed() {
@@ -577,7 +577,7 @@ void SyncSetupHandler::SyncStartupFailed() {
 
   // Just close the sync overlay (the idea is that the base settings page will
   // display the current err
-  CloseOverlay();
+  CloseSyncSetup();
 }
 
 void SyncSetupHandler::SyncStartupCompleted() {
@@ -627,7 +627,7 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
   // If the sync engine has shutdown for some reason, just close the sync
   // dialog.
   if (!service || !service->sync_initialized()) {
-    CloseOverlay();
+    CloseSyncSetup();
     return;
   }
 
@@ -638,7 +638,7 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
   if (configuration.sync_nothing) {
     ProfileSyncService::SyncEvent(
         ProfileSyncService::STOP_FROM_ADVANCED_DIALOG);
-    CloseOverlay();
+    CloseSyncSetup();
     service->OnStopSyncingPermanently();
     service->SetSetupInProgress(false);
     return;
@@ -731,16 +731,21 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
     // signin) or by directly navigating to settings/syncSetup
     // (http://crbug.com/229836). So just exit.
     DLOG(WARNING) << "Cannot display sync setup UI when not signed in";
-    CloseOverlay();
+    CloseSyncSetup();
     return;
   }
 
   // If a setup wizard is already present, but not on this page, close the
-  // blank setup overlay on this page. This can happen if the user navigates to
-  // chrome://settings/syncSetup in more than one tab. See crbug.com/261566.
+  // blank setup overlay on this page by showing the "done" page. This can
+  // happen if the user navigates to chrome://settings/syncSetup in more than
+  // one tab. See crbug.com/261566.
   // Note: The following block will transfer focus to the existing wizard.
-  if (IsExistingWizardPresent() && !IsActiveLogin())
-    CloseOverlay();
+  if (IsExistingWizardPresent() && !IsActiveLogin()) {
+    CloseSyncSetup();
+    StringValue page("done");
+    web_ui()->CallJavascriptFunction(
+        "SyncSetupOverlay.showSyncSetupPage", page);
+  }
 
   // If a setup wizard is present on this page or another, bring it to focus.
   // Otherwise, display a new one on this page.
@@ -852,7 +857,7 @@ void SyncSetupHandler::OpenSyncSetup() {
     // because previously working credentials have expired (case 3). Close sync
     // setup including any visible overlays, and display the gaia auth page.
     // Control will be returned to the sync settings page once auth is complete.
-    CloseOverlay();
+    CloseSyncSetup();
     DisplayGaiaLogin();
     return;
   }
@@ -860,7 +865,7 @@ void SyncSetupHandler::OpenSyncSetup() {
   if (!GetSyncService()) {
     // This can happen if the user directly navigates to /settings/syncSetup.
     DLOG(WARNING) << "Cannot display sync UI when sync is disabled";
-    CloseOverlay();
+    CloseSyncSetup();
     return;
   }
 
@@ -885,7 +890,7 @@ void SyncSetupHandler::FocusUI() {
 
 void SyncSetupHandler::CloseUI() {
   DCHECK(IsActiveLogin());
-  CloseOverlay();
+  CloseSyncSetup();
 }
 
 bool SyncSetupHandler::IsExistingWizardPresent() {
@@ -906,9 +911,4 @@ bool SyncSetupHandler::FocusExistingWizardIfPresent() {
 
 LoginUIService* SyncSetupHandler::GetLoginUIService() const {
   return LoginUIServiceFactory::GetForProfile(GetProfile());
-}
-
-void SyncSetupHandler::CloseOverlay() {
-  CloseSyncSetup();
-  web_ui()->CallJavascriptFunction("OptionsPage.closeOverlay");
 }
