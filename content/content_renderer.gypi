@@ -648,6 +648,7 @@
         'renderer/p2p/ipc_network_manager.h',
         'renderer/p2p/ipc_socket_factory.cc',
         'renderer/p2p/ipc_socket_factory.h',
+        'renderer/p2p/network_list_observer.h',
         'renderer/p2p/port_allocator.cc',
         'renderer/p2p/port_allocator.h',
         'renderer/p2p/socket_client.cc',

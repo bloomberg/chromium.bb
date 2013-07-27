@@ -155,7 +155,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui',
       ],
       'sources': [
-        'network_list_observer.h',
         'simple_webmimeregistry_impl.cc',
         'simple_webmimeregistry_impl.h',
         'webfileutilities_impl.cc',
