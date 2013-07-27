@@ -33,7 +33,7 @@ setup_gitsvn
 
   git checkout -q -b test2 master
 
-  test_expect_success "git cl patch $ISSUE"
+  test_expect_success "$GIT_CL patch $ISSUE"
 )
 SUCCESS=$?
 

@@ -57,7 +57,7 @@ setup_gitgit
       "git show | grep -q 'foo-quux'"
 
   test_expect_success "issue no longer has a branch" \
-      "git cl status | grep -q 'work: None'"
+      "$GIT_CL status | grep -q 'work: None'"
 
   cd $GITREPO_PATH
   test_expect_success "upstream repo has our commit" \

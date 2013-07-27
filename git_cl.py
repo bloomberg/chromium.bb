@@ -1169,8 +1169,12 @@ def CMDstatus(parser, args):
       b, i, color = output.get()
       tmp[b] = (i, color)
     issue, color = tmp.pop(branch)
+    reset = Fore.RESET
+    if not sys.stdout.isatty():
+      color = ''
+      reset = ''
     print '  %*s: %s%s%s' % (
-          alignment, ShortBranchName(branch), color, issue, Fore.RESET)
+          alignment, ShortBranchName(branch), color, issue, reset)
 
   cl = Changelist()
   print
