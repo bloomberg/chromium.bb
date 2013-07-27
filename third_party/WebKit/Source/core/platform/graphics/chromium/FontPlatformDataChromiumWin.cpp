@@ -119,11 +119,12 @@ PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size, int* pain
 }
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
-    : m_font(hashTableDeletedFontValue())
+    : m_font(0)
     , m_size(-1)
     , m_orientation(Horizontal)
     , m_scriptCache(0)
     , m_paintTextFlags(0)
+    , m_isHashTableDeletedValue(true)
 {
 }
 
@@ -133,6 +134,7 @@ FontPlatformData::FontPlatformData()
     , m_orientation(Horizontal)
     , m_scriptCache(0)
     , m_paintTextFlags(0)
+    , m_isHashTableDeletedValue(false)
 {
 }
 
@@ -142,6 +144,7 @@ FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orien
     , m_orientation(orientation)
     , m_scriptCache(0)
     , m_typeface(CreateTypefaceFromHFont(font, 0, &m_paintTextFlags))
+    , m_isHashTableDeletedValue(false)
 {
 }
 
@@ -152,6 +155,7 @@ FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     , m_orientation(Horizontal)
     , m_scriptCache(0)
     , m_paintTextFlags(0)
+    , m_isHashTableDeletedValue(false)
 {
 }
 
@@ -162,6 +166,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data)
     , m_scriptCache(0)
     , m_typeface(data.m_typeface)
     , m_paintTextFlags(data.m_paintTextFlags)
+    , m_isHashTableDeletedValue(false)
 {
 }
 
@@ -172,6 +177,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
     , m_scriptCache(0)
     , m_typeface(data.m_typeface)
     , m_paintTextFlags(data.m_paintTextFlags)
+    , m_isHashTableDeletedValue(false)
 {
 }
 
@@ -230,16 +236,7 @@ bool FontPlatformData::isFixedPitch() const
 
 FontPlatformData::RefCountedHFONT::~RefCountedHFONT()
 {
-    if (m_hfont != reinterpret_cast<HFONT>(-1)) {
-        DeleteObject(m_hfont);
-    }
-}
-
-FontPlatformData::RefCountedHFONT* FontPlatformData::hashTableDeletedFontValue()
-{
-    DEFINE_STATIC_LOCAL(RefPtr<RefCountedHFONT>, deletedValue,
-                        (RefCountedHFONT::create(reinterpret_cast<HFONT>(-1))));
-    return deletedValue.get();
+    DeleteObject(m_hfont);
 }
 
 SCRIPT_FONTPROPERTIES* FontPlatformData::scriptFontProperties() const

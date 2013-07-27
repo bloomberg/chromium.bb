@@ -80,7 +80,7 @@ public:
 
     FontPlatformData& operator=(const FontPlatformData&);
 
-    bool isHashTableDeletedValue() const { return m_font == hashTableDeletedFontValue(); }
+    bool isHashTableDeletedValue() const { return m_isHashTableDeletedValue; }
 
     ~FontPlatformData();
 
@@ -151,8 +151,6 @@ private:
         HFONT m_hfont;
     };
 
-    static RefCountedHFONT* hashTableDeletedFontValue();
-
     RefPtr<RefCountedHFONT> m_font;
     float m_size;  // Point size of the font in pixels.
     FontOrientation m_orientation;
@@ -162,6 +160,8 @@ private:
 
     mutable SCRIPT_CACHE m_scriptCache;
     mutable OwnPtr<SCRIPT_FONTPROPERTIES> m_scriptFontProperties;
+
+    bool m_isHashTableDeletedValue;
 };
 
 } // WebCore
