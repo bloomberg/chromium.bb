@@ -10,6 +10,7 @@
     "128": "img/icon_128.png",
     "16": "img/icon_16.png"
   },
+  "incognito": "split",
   "permissions" : [
    { "socket" : [
      "tcp-connect:*:443",
@@ -22,10 +23,5 @@
    "experimental",
    "http://*.google.com/*",
    "http://www.yahoo.com/*"
-  ],
-  "app": {
-    "background": {
-      "scripts": ["background.js"]
-    }
-  }
+  ]
 }
