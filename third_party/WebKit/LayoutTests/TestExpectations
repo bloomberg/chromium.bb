@@ -1704,16 +1704,6 @@ crbug.com/263879 fast/writing-mode/broken-ideographic-font.html [ NeedsManualReb
 crbug.com/263879 [ Mac ] editing/selection/selection-button-text.html [ Timeout NeedsManualRebaseline ]
 crbug.com/263879 fast/text/international/hindi-spacing.html [ NeedsManualRebaseline ]
 
-# Below test case need to rebaseline after crbug.com/249600
-# Image only
-crbug.com/249600 [ Linux Win ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
-# Text only
-crbug.com/249600 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ NeedsRebaseline ]
-crbug.com/249600 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ NeedsRebaseline ]
-crbug.com/249600 [ Mac ] fast/table/table-all-rowspans-height-distribution-in-rows-except-overlapped.html [ NeedsRebaseline ]
-# Text and image both
-crbug.com/249600 [ Mac ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
-
 # Temporary expectation until v8's i18n support is turned on. Then it needs to
 # be rebaslined.
 Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Failure Pass ]

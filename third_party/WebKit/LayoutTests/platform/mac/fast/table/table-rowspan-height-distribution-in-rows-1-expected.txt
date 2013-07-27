@@ -129,7 +129,7 @@ Test 8 - Table Similar to CSS table with rowspan.
 
 row0 col0	row0 col1	row0 col2
 FAIL:
-Expected 39 for height, but got 34. 
+Expected 39 for height, but got 19. 
 
 <tr data-expected-height="39">
         <td rowspan="5" style="height:300px">row0 col0</td>
@@ -161,7 +161,12 @@ PASS
 row6 col0	row6 col1
 PASS
 row7 col1
-PASS
+FAIL:
+Expected 37 for height, but got 38. 
+
+<tr data-expected-height="37">
+        <td>row7 col1</td>
+    </tr>
 row8 col1
 PASS
 row9 col1
