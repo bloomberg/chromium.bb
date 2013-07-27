@@ -13,9 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -25,7 +26,7 @@ namespace chromeos {
 // credentials (SID+LSID) and populate current session's cookie jar.
 class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
                             public GaiaAuthConsumer,
-                            public OAuth2AccessTokenConsumer {
+                            public OAuth2TokenService::Consumer {
  public:
   class Delegate {
    public:
@@ -48,7 +49,7 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
 
   // Attempts to restore session from OAuth2 refresh token minting all necesarry
   // tokens along the way (OAuth2 access token, SID/LSID, GAIA service token).
-  void VerifyOAuth2RefreshToken(const std::string& oauth2_refresh_token);
+  void VerifyProfileTokens(Profile* profile);
 
  private:
   enum SessionRestoreType {
@@ -67,13 +68,15 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   virtual void OnMergeSessionFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
 
-  // OAuth2AccessTokenConsumer overrides.
-  virtual void OnGetTokenSuccess(const std::string& access_token,
+  // OAuth2TokenService::Consumer overrides.
+  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                                 const std::string& access_token,
                                  const base::Time& expiration_time) OVERRIDE;
-  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                                 const GoogleServiceAuthError& error) OVERRIDE;
 
   // Starts fetching OAuth1 access token for OAuthLogin call.
-  void StartFetchingOAuthLoginAccessToken();
+  void StartFetchingOAuthLoginAccessToken(Profile* profile);
 
   // Starts OAuthLogin request for GAIA uber-token.
   void StartOAuthLoginForUberToken();
@@ -94,13 +97,11 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   OAuth2LoginVerifier::Delegate* delegate_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;
   scoped_refptr<net::URLRequestContextGetter> user_request_context_;
-  scoped_ptr<OAuth2AccessTokenFetcher> token_fetcher_;
   scoped_ptr<GaiaAuthFetcher> gaia_system_fetcher_;
   scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
-  ClientLoginResult gaia_credentials_;
   std::string access_token_;
-  std::string refresh_token_;
   std::string gaia_token_;
+  scoped_ptr<OAuth2TokenService::Request> login_token_request_;
   // The retry counter. Increment this only when failure happened.
   int retry_count_;
 

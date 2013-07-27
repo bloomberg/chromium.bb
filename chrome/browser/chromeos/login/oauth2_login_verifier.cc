@@ -12,6 +12,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -43,8 +45,7 @@ OAuth2LoginVerifier::OAuth2LoginVerifier(
 OAuth2LoginVerifier::~OAuth2LoginVerifier() {
 }
 
-void OAuth2LoginVerifier::VerifyOAuth2RefreshToken(
-    const std::string& oauth2_refresh_token) {
+void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Delay the verification if the network is not connected or on a captive
@@ -54,53 +55,25 @@ void OAuth2LoginVerifier::VerifyOAuth2RefreshToken(
     // If network is offline, defer the token fetching until online.
     VLOG(1) << "Network is offline.  Deferring OAuth2 access token fetch.";
     BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&OAuth2LoginVerifier::VerifyOAuth2RefreshToken,
-                   AsWeakPtr(),
-                   oauth2_refresh_token),
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(
+            &OAuth2LoginVerifier::VerifyProfileTokens, AsWeakPtr(), profile),
         base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
     return;
   }
 
   access_token_.clear();
-  refresh_token_ = oauth2_refresh_token;
   gaia_token_.clear();
-  StartFetchingOAuthLoginAccessToken();
+  StartFetchingOAuthLoginAccessToken(profile);
 }
 
-void OAuth2LoginVerifier::StartFetchingOAuthLoginAccessToken() {
-  access_token_.clear();
-  gaia_token_.clear();
-  std::vector<std::string> scopes;
-  scopes.push_back(GaiaUrls::GetInstance()->oauth1_login_scope());
-  token_fetcher_
-      .reset(new OAuth2AccessTokenFetcher(this, system_request_context_.get())),
-      token_fetcher_
-      ->Start(GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-              GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-              refresh_token_,
-              scopes);
-}
-
-void OAuth2LoginVerifier::OnGetTokenSuccess(
-    const std::string& access_token, const base::Time& expiration_time) {
-  LOG(INFO) << "Got OAuth2 access token!";
-  retry_count_ = 0;
-  access_token_ = access_token;
-  StartOAuthLoginForUberToken();
-}
-
-void OAuth2LoginVerifier::OnGetTokenFailure(
-    const GoogleServiceAuthError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(ERROR) << "Failed to get OAuth2 access token, "
-             << " error: " << error.state();
-  RetryOnError(
-      "GetOAuth2AccessToken", error,
-      base::Bind(&OAuth2LoginVerifier::StartFetchingOAuthLoginAccessToken,
-                 AsWeakPtr()),
-      base::Bind(&Delegate::OnOAuthLoginFailure,
-                 base::Unretained(delegate_)));
+void OAuth2LoginVerifier::StartFetchingOAuthLoginAccessToken(Profile* profile) {
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert(GaiaUrls::GetInstance()->oauth1_login_scope());
+  login_token_request_ = ProfileOAuth2TokenServiceFactory::
+      GetForProfile(profile)->StartRequestWithContext(
+          system_request_context_.get(), scopes, this);
 }
 
 void OAuth2LoginVerifier::StartOAuthLoginForUberToken() {
@@ -146,8 +119,7 @@ void OAuth2LoginVerifier::OnClientLoginSuccess(
     const ClientLoginResult& gaia_credentials) {
   LOG(INFO) << "OAuthLogin(SID+LSID) successful!";
   retry_count_ = 0;
-  gaia_credentials_ = gaia_credentials;
-  delegate_->OnOAuthLoginSuccess(gaia_credentials_);
+  delegate_->OnOAuthLoginSuccess(gaia_credentials);
 }
 
 void OAuth2LoginVerifier::OnClientLoginFailure(
@@ -193,6 +165,35 @@ void OAuth2LoginVerifier::OnMergeSessionFailure(
                  AsWeakPtr()),
       base::Bind(&Delegate::OnSessionMergeFailure,
                  base::Unretained(delegate_)));
+}
+
+void OAuth2LoginVerifier::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const std::string& access_token,
+    const base::Time& expiration_time) {
+  DCHECK_EQ(login_token_request_.get(), request);
+  login_token_request_.reset();
+
+  LOG(INFO) << "Got OAuth2 access token!";
+  retry_count_ = 0;
+  access_token_ = access_token;
+  StartOAuthLoginForUberToken();
+}
+
+void OAuth2LoginVerifier::OnGetTokenFailure(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(login_token_request_.get(), request);
+  login_token_request_.reset();
+
+  LOG(ERROR) << "Failed to get OAuth2 access token, "
+             << " error: " << error.state();
+  UMA_HISTOGRAM_ENUMERATION(
+      base::StringPrintf("OAuth2Login.%sFailure", "GetOAuth2AccessToken"),
+      error.state(),
+      GoogleServiceAuthError::NUM_STATES);
+  delegate_->OnOAuthLoginFailure();
 }
 
 void OAuth2LoginVerifier::RetryOnError(const char* operation_id,
