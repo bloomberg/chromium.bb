@@ -138,8 +138,6 @@ void StatisticsProviderImpl::Init() {
 
   // Load the machine info file immediately to get the channel info.
   LoadMachineOSInfoFile();
-  // Load the machine info file immediately to get the channel info.
-  LoadOemManifest();
 }
 
 bool StatisticsProviderImpl::GetMachineStatistic(

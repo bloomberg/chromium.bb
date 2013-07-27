@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/common/chrome_constants.h"
 #include "chromeos/chromeos_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -68,9 +68,8 @@ void ProxyHandler::GetLocalizedValues(
 void ProxyHandler::InitializePage() {
   ::options::OptionsPageUIHandler::InitializePage();
 
-  bool keyboard_driven_oobe = false;
-  system::StatisticsProvider::GetInstance()->GetMachineFlag(
-      chromeos::system::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+  bool keyboard_driven_oobe =
+      system::keyboard_settings::ForceKeyboardDrivenUINavigation();
   if (keyboard_driven_oobe) {
     web_ui()->CallJavascriptFunction(
         "DetailsInternetPage.initializeKeyboardFlow");

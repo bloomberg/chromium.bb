@@ -7,7 +7,7 @@
 #include <X11/Xlib.h>
 
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "ui/base/events/event.h"
 
 namespace chromeos {
@@ -19,12 +19,9 @@ const int kModifierMask = ui::EF_SHIFT_DOWN;
 // Returns true if and only if it is on login screen (i.e. user is not logged
 // in) and the keyboard driven flag in the OEM manifest is on.
 bool ShouldStripModifiersForArrowKeysAndEnter() {
-  if (chromeos::UserManager::IsInitialized() &&
-      !chromeos::UserManager::Get()->IsUserLoggedIn()) {
-    bool keyboard_driven_oobe = false;
-    chromeos::system::StatisticsProvider::GetInstance()->GetMachineFlag(
-        chromeos::system::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
-    return keyboard_driven_oobe;
+  if (UserManager::IsInitialized() &&
+      !UserManager::Get()->IsUserLoggedIn()) {
+    return system::keyboard_settings::ForceKeyboardDrivenUINavigation();
   }
 
   return false;

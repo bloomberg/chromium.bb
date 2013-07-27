@@ -21,6 +21,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -30,6 +35,8 @@ namespace {
 
 const char kTpControl[] = "/opt/google/touchpad/tpcontrol";
 const char kMouseControl[] = "/opt/google/mouse/mousecontrol";
+
+const char kRemoraRequisition[] = "remora";
 
 typedef base::RefCountedData<bool> RefCountedBool;
 
@@ -179,6 +186,33 @@ void SetPrimaryButtonRight(bool right) {
 }
 
 }  // namespace mouse_settings
+
+namespace keyboard_settings {
+
+bool ForceKeyboardDrivenUINavigation() {
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  if (!connector)
+    return false;
+
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      connector->GetDeviceCloudPolicyManager();
+  if (!policy_manager)
+    return false;
+
+  if (policy_manager->GetDeviceRequisition() == kRemoraRequisition)
+    return true;
+
+  bool keyboard_driven = false;
+  if (chromeos::system::StatisticsProvider::GetInstance()->GetMachineFlag(
+      kOemKeyboardDrivenOobeKey, &keyboard_driven)) {
+    return keyboard_driven;
+  }
+
+  return false;
+}
+
+}  // namespace keyboard_settings
 
 }  // namespace system
 }  // namespace chromeos

@@ -153,7 +153,7 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chromeos/chromeos_switches.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
@@ -2088,12 +2088,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   // Enable password echo during OOBE when keyboard driven flag is set.
   if (chromeos::UserManager::IsInitialized() &&
       !chromeos::UserManager::Get()->IsUserLoggedIn() &&
-      !chromeos::StartupUtils::IsOobeCompleted()) {
-    bool keyboard_driven_oobe = false;
-    chromeos::system::StatisticsProvider::GetInstance()->GetMachineFlag(
-        chromeos::system::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
-    if (keyboard_driven_oobe)
-       web_prefs->password_echo_enabled = true;
+      !chromeos::StartupUtils::IsOobeCompleted() &&
+      chromeos::system::keyboard_settings::ForceKeyboardDrivenUINavigation()) {
+    web_prefs->password_echo_enabled = true;
   }
 #endif
 

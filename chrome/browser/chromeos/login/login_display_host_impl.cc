@@ -40,7 +40,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -257,11 +257,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
                << " wait_for_pods_: " << waiting_for_user_pods_
                << " init_webui_hidden_: " << initialize_webui_hidden_;
 
-  bool keyboard_driven_oobe = false;
-  system::StatisticsProvider::GetInstance()->GetMachineFlag(
-      chromeos::system::kOemKeyboardDrivenOobeKey,
-      &keyboard_driven_oobe);
-  if (keyboard_driven_oobe) {
+  if (system::keyboard_settings::ForceKeyboardDrivenUINavigation()) {
     views::FocusManager::set_arrow_key_traversal_enabled(true);
 
     focus_ring_controller_.reset(new FocusRingController);

@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -347,9 +347,8 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
     localized_strings->SetString("bootIntoWallpaper", "off");
   }
 
-  bool keyboard_driven_oobe = false;
-  system::StatisticsProvider::GetInstance()->GetMachineFlag(
-      chromeos::system::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+  bool keyboard_driven_oobe =
+      system::keyboard_settings::ForceKeyboardDrivenUINavigation();
   localized_strings->SetString("highlightStrength",
                                keyboard_driven_oobe ? "strong" : "normal");
 }

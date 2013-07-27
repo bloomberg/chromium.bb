@@ -49,6 +49,14 @@ void SetPrimaryButtonRight(bool right);
 
 }  // namespace mouse_settings
 
+namespace keyboard_settings {
+
+// Returns true if UI should implement enhanced keyboard support for cases where
+// other input devices like mouse are absent.
+bool ForceKeyboardDrivenUINavigation();
+
+}  // namespace keyboard_settings
+
 }  // namespace system
 }  // namespace chromeos
 

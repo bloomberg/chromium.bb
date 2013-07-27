@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
@@ -196,14 +196,8 @@ void CoreOobeHandler::UpdateOobeUIVisibility() {
   }
   CallJS("cr.ui.Oobe.showVersion", should_show_version);
   CallJS("cr.ui.Oobe.showOobeUI", show_oobe_ui_);
-
-  bool enable_keyboard_flow = false;
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  provider->GetMachineFlag(chromeos::system::kOemKeyboardDrivenOobeKey,
-                           &enable_keyboard_flow);
-  if (enable_keyboard_flow)
-    CallJS("cr.ui.Oobe.enableKeyboardFlow", enable_keyboard_flow);
+  if (system::keyboard_settings::ForceKeyboardDrivenUINavigation())
+    CallJS("cr.ui.Oobe.enableKeyboardFlow", true);
 }
 
 void CoreOobeHandler::OnOSVersionLabelTextUpdated(

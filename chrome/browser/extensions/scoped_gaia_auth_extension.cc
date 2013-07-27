@@ -14,7 +14,7 @@
 #include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #endif
@@ -40,10 +40,8 @@ void LoadGaiaAuthExtension(Profile* profile) {
 
   bool force_keyboard_oobe = false;
 #if defined(OS_CHROMEOS)
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  provider->GetMachineFlag(chromeos::system::kOemKeyboardDrivenOobeKey,
-                           &force_keyboard_oobe);
+  force_keyboard_oobe =
+      chromeos::system::keyboard_settings::ForceKeyboardDrivenUINavigation();
 #endif // OS_CHROMEOS
   if (force_keyboard_oobe) {
     component_loader->Add(IDR_GAIA_AUTH_KEYBOARD_MANIFEST,
