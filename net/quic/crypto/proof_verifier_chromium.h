@@ -23,13 +23,6 @@ namespace net {
 class CertVerifier;
 class SingleRequestCertVerifier;
 
-// ProofVerifyDetailsChromium is the implementation-specific information that a
-// ProofVerifierChromium returns about a certificate verification.
-struct ProofVerifyDetailsChromium : public ProofVerifyDetails {
- public:
-  CertVerifyResult cert_verify_result;
-};
-
 // ProofVerifierChromium implements the QUIC ProofVerifier interface.
 // TODO(rtenneti): Add support for multiple requests for one ProofVerifier.
 class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
@@ -39,13 +32,13 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
   virtual ~ProofVerifierChromium();
 
   // ProofVerifier interface
-  virtual Status VerifyProof(const std::string& hostname,
-                             const std::string& server_config,
-                             const std::vector<std::string>& certs,
-                             const std::string& signature,
-                             std::string* error_details,
-                             scoped_ptr<ProofVerifyDetails>* details,
-                             ProofVerifierCallback* callback) OVERRIDE;
+  virtual int VerifyProof(const std::string& hostname,
+                          const std::string& server_config,
+                          const std::vector<std::string>& certs,
+                          const std::string& signature,
+                          std::string* error_details,
+                          CertVerifyResult* cert_verify_result,
+                          const CompletionCallback& callback) OVERRIDE;
 
  private:
   enum State {
@@ -70,9 +63,11 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
   // |hostname| specifies the hostname for which |certs| is a valid chain.
   std::string hostname_;
 
-  scoped_ptr<ProofVerifierCallback> callback_;
-  scoped_ptr<ProofVerifyDetailsChromium> verify_details_;
-  std::string error_details_;
+  CompletionCallback callback_;
+
+  // The result of certificate verification.
+  CertVerifyResult* cert_verify_result_;
+  std::string* error_details_;
 
   // X509Certificate from a chain of DER encoded certificates.
   scoped_refptr<X509Certificate> cert_;

@@ -33,6 +33,8 @@ namespace net {
 ProofVerifierChromium::ProofVerifierChromium(CertVerifier* cert_verifier,
                                              const BoundNetLog& net_log)
   : cert_verifier_(cert_verifier),
+    cert_verify_result_(NULL),
+    error_details_(NULL),
     next_state_(STATE_NONE),
     net_log_(net_log) {
 }
@@ -41,36 +43,29 @@ ProofVerifierChromium::~ProofVerifierChromium() {
   verifier_.reset();
 }
 
-ProofVerifierChromium::Status ProofVerifierChromium::VerifyProof(
-    const string& hostname,
-    const string& server_config,
-    const vector<string>& certs,
-    const string& signature,
-    std::string* error_details,
-    scoped_ptr<ProofVerifyDetails>* details,
-    ProofVerifierCallback* callback) {
+int ProofVerifierChromium::VerifyProof(const string& hostname,
+                                       const string& server_config,
+                                       const vector<string>& certs,
+                                       const string& signature,
+                                       std::string* error_details,
+                                       CertVerifyResult* cert_verify_result,
+                                       const CompletionCallback& callback) {
   DCHECK(error_details);
-  DCHECK(details);
-  DCHECK(callback);
-
-  callback_.reset(callback);
+  DCHECK(cert_verify_result);
   error_details->clear();
+  cert_verify_result->Reset();
 
   DCHECK_EQ(STATE_NONE, next_state_);
   if (STATE_NONE != next_state_) {
     *error_details = "Certificate is already set and VerifyProof has begun";
     DLOG(WARNING) << *error_details;
-    return FAILURE;
+    return ERR_FAILED;
   }
-
-  verify_details_.reset(new ProofVerifyDetailsChromium);
 
   if (certs.empty()) {
     *error_details = "Failed to create certificate chain. Certs are empty.";
     DLOG(WARNING) << *error_details;
-    verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    details->reset(verify_details_.release());
-    return FAILURE;
+    return ERR_FAILED;
   }
 
   // Convert certs to X509Certificate.
@@ -82,9 +77,8 @@ ProofVerifierChromium::Status ProofVerifierChromium::VerifyProof(
   if (!cert_.get()) {
     *error_details = "Failed to create certificate chain";
     DLOG(WARNING) << *error_details;
-    verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    details->reset(verify_details_.release());
-    return FAILURE;
+    cert_verify_result->cert_status = CERT_STATUS_INVALID;
+    return ERR_FAILED;
   }
 
   // We call VerifySignature first to avoid copying of server_config and
@@ -92,23 +86,16 @@ ProofVerifierChromium::Status ProofVerifierChromium::VerifyProof(
   if (!VerifySignature(server_config, signature, certs[0])) {
     *error_details = "Failed to verify signature of server config";
     DLOG(WARNING) << *error_details;
-    verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    details->reset(verify_details_.release());
-    return FAILURE;
+    return ERR_FAILED;
   }
 
   hostname_ = hostname;
+  callback_ = callback;
+  error_details_ = error_details;
+  cert_verify_result_ = cert_verify_result;
 
   next_state_ = STATE_VERIFY_CERT;
-  switch (DoLoop(OK)) {
-    case OK:
-      return SUCCESS;
-    case ERR_IO_PENDING:
-      return PENDING;
-    default:
-      *error_details = error_details_;
-      return FAILURE;
-  }
+  return DoLoop(OK);
 }
 
 int ProofVerifierChromium::DoLoop(int last_result) {
@@ -137,9 +124,7 @@ int ProofVerifierChromium::DoLoop(int last_result) {
 void ProofVerifierChromium::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {
-    scoped_ptr<ProofVerifyDetails> scoped_details(verify_details_.release());
-    callback_->Run(rv == OK, error_details_, &scoped_details);
-    callback_.reset();
+    base::ResetAndReturn(&callback_).Run(rv);
   }
 }
 
@@ -153,7 +138,7 @@ int ProofVerifierChromium::DoVerifyCert(int result) {
       hostname_,
       flags,
       SSLConfigService::GetCRLSet().get(),
-      &verify_details_->cert_verify_result,
+      cert_verify_result_,
       base::Bind(&ProofVerifierChromium::OnIOComplete,
                  base::Unretained(this)),
       net_log_);
@@ -163,9 +148,9 @@ int ProofVerifierChromium::DoVerifyCertComplete(int result) {
   verifier_.reset();
 
   if (result <= ERR_FAILED) {
-    error_details_ = StringPrintf("Failed to verify certificate chain: %s",
-                                  ErrorToString(result));
-    DLOG(WARNING) << error_details_;
+    *error_details_ = StringPrintf("Failed to verify certificate chain: %s",
+                                   ErrorToString(result));
+    DLOG(WARNING) << *error_details_;
     result = ERR_FAILED;
   }
 

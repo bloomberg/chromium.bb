@@ -15,7 +15,6 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/crypto_protocol.h"
-#include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -282,12 +281,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     const std::string& signature() const;
     bool proof_valid() const;
     uint64 generation_counter() const;
-    const ProofVerifyDetails* proof_verify_details() const;
+    const CertVerifyResult* cert_verify_result() const;
 
     void set_source_address_token(base::StringPiece token);
-
-    // SetProofVerifyDetails takes ownership of |details|.
-    void SetProofVerifyDetails(ProofVerifyDetails* details);
+    void SetCertVerifyResult(const CertVerifyResult& cert_verify_result);
 
    private:
     std::string server_config_id_;      // An opaque id from the server.
@@ -304,7 +301,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // server_config_valid_ to false.
     uint64 generation_counter_;
 
-    scoped_ptr<ProofVerifyDetails> proof_verify_details_;
+    // The result of certificate verification.
+    // TODO(rtenneti): should we change CertVerifyResult to be
+    // RefCountedThreadSafe object to avoid copying.
+    CertVerifyResult cert_verify_result_;
 
     // scfg contains the cached, parsed value of |server_config|.
     mutable scoped_ptr<CryptoHandshakeMessage> scfg_;

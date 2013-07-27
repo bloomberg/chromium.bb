@@ -10,13 +10,11 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/crypto_handshake.h"
-#include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_crypto_stream.h"
 
 namespace net {
 
-class ProofVerifyDetails;
 class QuicSession;
 class SSLInfo;
 
@@ -49,29 +47,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   bool GetSSLInfo(SSLInfo* ssl_info);
 
  private:
-  // ProofVerifierCallbackImpl is passed as the callback method to VerifyProof.
-  // The ProofVerifier calls this class with the result of proof verification
-  // when verification is performed asynchronously.
-  class ProofVerifierCallbackImpl : public ProofVerifierCallback {
-   public:
-    explicit ProofVerifierCallbackImpl(QuicCryptoClientStream* stream);
-    virtual ~ProofVerifierCallbackImpl();
-
-    // ProofVerifierCallback interface.
-    virtual void Run(bool ok,
-                     const string& error_details,
-                     scoped_ptr<ProofVerifyDetails>* details) OVERRIDE;
-
-    // Cancel causes any future callbacks to be ignored. It must be called on
-    // the same thread as the callback will be made on.
-    void Cancel();
-
-   private:
-    QuicCryptoClientStream* stream_;
-  };
-
   friend class test::CryptoTestUtils;
-  friend class ProofVerifierCallbackImpl;
 
   enum State {
     STATE_IDLE,
@@ -83,8 +59,17 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   };
 
   // DoHandshakeLoop performs a step of the handshake state machine. Note that
-  // |in| may be NULL if the call did not result from a received message
-  void DoHandshakeLoop(const CryptoHandshakeMessage* in);
+  // |in| is NULL for the first call. OnVerifyProofComplete passes the |result|
+  // it has received from VerifyProof call (from all other places |result| is
+  // set to OK).
+  void DoHandshakeLoop(const CryptoHandshakeMessage* in, int result);
+
+  // OnVerifyProofComplete is passed as the callback method to VerifyProof.
+  // ProofVerifier calls this method with the result of proof verification when
+  // verification is performed asynchronously.
+  void OnVerifyProofComplete(int result);
+
+  base::WeakPtrFactory<QuicCryptoClientStream> weak_factory_;
 
   State next_state_;
   // num_client_hellos_ contains the number of client hello messages that this
@@ -101,15 +86,13 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // Generation counter from QuicCryptoClientConfig's CachedState.
   uint64 generation_counter_;
 
-  // proof_verify_callback_ contains the callback object that we passed to an
-  // asynchronous proof verification. The ProofVerifier owns this object.
-  ProofVerifierCallbackImpl* proof_verify_callback_;
+  // The result of certificate verification.
+  // TODO(rtenneti): should we change CertVerifyResult to be
+  // RefCountedThreadSafe object to avoid copying.
+  CertVerifyResult cert_verify_result_;
 
-  // These members are used to store the result of an asynchronous proof
-  // verification.
-  bool verify_ok_;
-  string verify_error_details_;
-  scoped_ptr<ProofVerifyDetails> verify_details_;
+  // Error details for ProofVerifier's VerifyProof call.
+  std::string error_details_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);
 };
