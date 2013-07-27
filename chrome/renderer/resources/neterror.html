@@ -310,6 +310,10 @@ function toggleHelpBox() {
   }
 }
 
+function diagnoseErrors() {
+  location = "chrome-extension://kodldpbjkkmmnilagfdheibampofhaom/index.html";
+}
+
 // Subframes use a different layout but the same html file.  This is to make it
 // easier to support platforms that load the error page via different
 // mechanisms (Currently just iOS).
@@ -348,6 +352,8 @@ function updateForDnsProbe(strings) {
       <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
       <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
     </div>
+    <button id="diagnose-button" onclick="diagnoseErrors()"
+      jscontent="diagnose" jsdisplay="diagnose"></button>
     <div class="error-code" jscontent="errorCode"></div>
    </div>
   </div>

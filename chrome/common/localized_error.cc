@@ -550,6 +550,10 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   error_strings->SetString(
       "less", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_LESS));
   error_strings->Set("summary", summary);
+#if defined(OS_CHROMEOS)
+  error_strings->SetString(
+      "diagnose", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DIAGNOSE));
+#endif  // defined(OS_CHROMEOS)
 
   if (options.details_resource_id != kErrorPagesNoDetails) {
     error_strings->SetString(
