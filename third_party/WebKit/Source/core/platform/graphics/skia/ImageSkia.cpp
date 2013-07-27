@@ -398,7 +398,7 @@ void Image::drawPattern(GraphicsContext* context,
     resampling = limitResamplingMode(context, resampling);
 
     SkMatrix shaderTransform;
-    SkShader* shader;
+    RefPtr<SkShader> shader;
 
     // Bicubic filter is only applied to defer-decoded images, see
     // paintSkBitmap() for details.
@@ -416,7 +416,7 @@ void Image::drawPattern(GraphicsContext* context,
         // fragment is slightly larger to align to integer
         // boundaries.
         SkBitmap resampled = extractScaledImageFragment(*bitmap, normSrcRect, scaleX, scaleY, &scaledSrcRect);
-        shader = SkShader::CreateBitmapShader(resampled, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
+        shader = adoptRef(SkShader::CreateBitmapShader(resampled, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
 
         // Since we just resized the bitmap, we need to remove the scale
         // applied to the pixels in the bitmap shader. This means we need
@@ -429,7 +429,7 @@ void Image::drawPattern(GraphicsContext* context,
         // No need to resample before drawing.
         SkBitmap srcSubset;
         bitmap->bitmap().extractSubset(&srcSubset, enclosingIntRect(normSrcRect));
-        shader = SkShader::CreateBitmapShader(srcSubset, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
+        shader = adoptRef(SkShader::CreateBitmapShader(srcSubset, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
         // Because no resizing occurred, the shader transform should be
         // set to the pattern's transform, which just includes scale.
         shaderTransform.setScale(scale.width(), scale.height());
@@ -445,7 +445,7 @@ void Image::drawPattern(GraphicsContext* context,
     shader->setLocalMatrix(shaderTransform);
 
     SkPaint paint;
-    paint.setShader(shader)->unref();
+    paint.setShader(shader.get());
     paint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
 
     paint.setFilterBitmap(resampling == RESAMPLE_LINEAR);
