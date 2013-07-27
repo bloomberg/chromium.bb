@@ -31,10 +31,11 @@
 #ifndef DrawLooper_h
 #define DrawLooper_h
 
-#include "third_party/skia/include/core/SkDrawLooper.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
+
+class SkDrawLooper;
+class SkLayerDrawLooper;
 
 namespace WebCore {
 
@@ -57,11 +58,11 @@ public:
     };
 
     DrawLooper();
-    ~DrawLooper() { }
+    ~DrawLooper();
 
     // Callees should not modify this looper other than to iterate over it.
     // A downcast to SkLayerDrawLooper* is tantamount to a const_cast.
-    SkDrawLooper* skDrawLooper() const { return m_skDrawLooper.get(); }
+    SkDrawLooper* skDrawLooper() const;
 
     void addUnmodifiedContent();
     void addShadow(const FloatSize& offset, float blur, const Color&,
@@ -69,7 +70,7 @@ public:
         ShadowAlphaMode = ShadowRespectsAlpha);
 
 private:
-    SkAutoTUnref<SkLayerDrawLooper> m_skDrawLooper;
+    RefPtr<SkLayerDrawLooper> m_skDrawLooper;
 };
 
 } // namespace WebCore

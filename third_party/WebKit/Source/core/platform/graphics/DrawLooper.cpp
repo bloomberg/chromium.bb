@@ -35,13 +35,22 @@
 #include "core/platform/graphics/FloatSize.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
+#include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 
 namespace WebCore {
 
-DrawLooper::DrawLooper() : m_skDrawLooper(new SkLayerDrawLooper) { }
+DrawLooper::DrawLooper() : m_skDrawLooper(adoptRef(new SkLayerDrawLooper)) { }
+
+DrawLooper::~DrawLooper() { }
+
+SkDrawLooper* DrawLooper::skDrawLooper() const
+{
+    return m_skDrawLooper.get();
+}
 
 void DrawLooper::addUnmodifiedContent()
 {
@@ -83,13 +92,13 @@ void DrawLooper::addShadow(const FloatSize& offset, float blur, const Color& col
         uint32_t mfFlags = SkBlurMaskFilter::kHighQuality_BlurFlag;
         if (shadowTransformMode == ShadowIgnoresTransforms)
             mfFlags |= SkBlurMaskFilter::kIgnoreTransform_BlurFlag;
-        SkMaskFilter* mf = SkBlurMaskFilter::Create((double)blur / 2.0,
-            SkBlurMaskFilter::kNormal_BlurStyle, mfFlags);
-        SkSafeUnref(paint->setMaskFilter(mf));
+        RefPtr<SkMaskFilter> mf = adoptRef(SkBlurMaskFilter::Create(
+            (double)blur / 2.0, SkBlurMaskFilter::kNormal_BlurStyle, mfFlags));
+        paint->setMaskFilter(mf.get());
     }
 
-    SkColorFilter* cf = SkColorFilter::CreateModeFilter(skColor, SkXfermode::kSrcIn_Mode);
-    SkSafeUnref(paint->setColorFilter(cf));
+    RefPtr<SkColorFilter> cf = adoptRef(SkColorFilter::CreateModeFilter(skColor, SkXfermode::kSrcIn_Mode));
+    paint->setColorFilter(cf.get());
 }
 
 } // namespace WebCore
