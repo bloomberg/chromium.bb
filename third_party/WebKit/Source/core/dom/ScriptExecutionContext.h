@@ -41,7 +41,6 @@
 
 namespace WebCore {
 
-class CachedScript;
 class ContextLifecycleNotifier;
 class DatabaseContext;
 class EventListener;
@@ -69,8 +68,8 @@ public:
 
     virtual void disableEval(const String& errorMessage) = 0;
 
-    bool sanitizeScriptError(String& errorMessage, int& lineNumber, int& columnNumber, String& sourceURL, CachedScript* = 0);
-    void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, PassRefPtr<ScriptCallStack>, CachedScript* = 0);
+    bool sanitizeScriptError(String& errorMessage, int& lineNumber, int& columnNumber, String& sourceURL);
+    void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, PassRefPtr<ScriptCallStack>);
 
     void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* = 0, unsigned long requestIdentifier = 0);
     virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0) = 0;
@@ -157,7 +156,7 @@ private:
     virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState* = 0, unsigned long requestIdentifier = 0) = 0;
     virtual EventTarget* errorEventTarget() = 0;
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
-    bool dispatchErrorEvent(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, CachedScript*);
+    bool dispatchErrorEvent(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL);
 
     void closeMessagePorts();
 

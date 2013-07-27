@@ -35,7 +35,6 @@
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/loader/cache/CachedScript.h"
 #include "core/page/DOMTimer.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
@@ -195,10 +194,10 @@ void ScriptExecutionContext::closeMessagePorts() {
     }
 }
 
-bool ScriptExecutionContext::sanitizeScriptError(String& errorMessage, int& lineNumber, int& columnNumber, String& sourceURL, CachedScript* cachedScript)
+bool ScriptExecutionContext::sanitizeScriptError(String& errorMessage, int& lineNumber, int& columnNumber, String& sourceURL)
 {
     KURL targetURL = completeURL(sourceURL);
-    if (securityOrigin()->canRequest(targetURL) || (cachedScript && cachedScript->passesAccessControlCheck(securityOrigin())))
+    if (securityOrigin()->canRequest(targetURL))
         return false;
     errorMessage = "Script error.";
     sourceURL = String();
@@ -207,7 +206,7 @@ bool ScriptExecutionContext::sanitizeScriptError(String& errorMessage, int& line
     return true;
 }
 
-void ScriptExecutionContext::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, PassRefPtr<ScriptCallStack> callStack, CachedScript* cachedScript)
+void ScriptExecutionContext::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, PassRefPtr<ScriptCallStack> callStack)
 {
     if (m_inDispatchErrorEvent) {
         if (!m_pendingExceptions)
@@ -217,7 +216,7 @@ void ScriptExecutionContext::reportException(const String& errorMessage, int lin
     }
 
     // First report the original exception and only then all the nested ones.
-    if (!dispatchErrorEvent(errorMessage, lineNumber, columnNumber, sourceURL, cachedScript))
+    if (!dispatchErrorEvent(errorMessage, lineNumber, columnNumber, sourceURL))
         logExceptionToConsole(errorMessage, sourceURL, lineNumber, columnNumber, callStack);
 
     if (!m_pendingExceptions)
@@ -235,7 +234,7 @@ void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLeve
     addMessage(source, level, message, sourceURL, lineNumber, 0, state, requestIdentifier);
 }
 
-bool ScriptExecutionContext::dispatchErrorEvent(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, CachedScript* cachedScript)
+bool ScriptExecutionContext::dispatchErrorEvent(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)
 {
     EventTarget* target = errorEventTarget();
     if (!target)
@@ -245,7 +244,7 @@ bool ScriptExecutionContext::dispatchErrorEvent(const String& errorMessage, int 
     int line = lineNumber;
     int column = columnNumber;
     String sourceName = sourceURL;
-    sanitizeScriptError(message, line, column, sourceName, cachedScript);
+    sanitizeScriptError(message, line, column, sourceName);
 
     ASSERT(!m_inDispatchErrorEvent);
     m_inDispatchErrorEvent = true;
