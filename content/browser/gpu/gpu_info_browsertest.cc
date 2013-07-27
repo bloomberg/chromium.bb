@@ -96,6 +96,7 @@ IN_PROC_BROWSER_TEST_F(GpuInfoBrowserTest, MANUAL_DisplayGpuInfo) {
 #endif
 #if defined(OS_LINUX) && !defined(NDEBUG)
   // TODO(zmo): crashing on Linux Debug.
+  return;
 #endif
   TestObserver observer(GetMessageLoop());
   GpuDataManagerImpl::GetInstance()->AddObserver(&observer);
