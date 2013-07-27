@@ -80,7 +80,7 @@
                 '<(PRODUCT_DIR)/widevinecdm.dll.lib',
               ],
             }],
-            [ 'OS == "mac" and target_arch == "ia32"', {
+            [ 'OS == "mac"', {
               'type': 'loadable_module',
               'product_extension': 'plugin',
               'libraries': [
