@@ -533,6 +533,23 @@ Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
 
+    def test_remove_needs_rebaseline(self):
+        host = MockHost()
+        test_port = host.port_factory.get('test-win-xp', None)
+        test_port.test_exists = lambda test: True
+        test_port.test_isfile = lambda test: True
+
+        test_config = test_port.test_configuration()
+        test_port.expectations_dict = lambda: {"expectations": """Bug(x) [ Win ] failures/expected/foo.html [ NeedsRebaseline ]
+"""}
+        expectations = TestExpectations(test_port, self.get_basic_tests())
+
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
+
+        self.assertEqual("""Bug(x) [ XP Debug ] failures/expected/foo.html [ NeedsRebaseline ]
+Bug(x) [ Win7 ] failures/expected/foo.html [ NeedsRebaseline ]
+""", actual_expectations)
+
     def test_remove_line_with_comments(self):
         host = MockHost()
         test_port = host.port_factory.get('test-win-xp', None)
@@ -785,7 +802,7 @@ class TestExpectationSerializationTests(unittest.TestCase):
         expectation_line.parsed_expectations = set([FAIL])
         self.assertEqual(expectation_line._serialize_parsed_expectations(parsed_expectation_to_string), 'fail')
         expectation_line.parsed_expectations = set([PASS, IMAGE])
-        self.assertEqual(expectation_line._serialize_parsed_expectations(parsed_expectation_to_string), 'pass image')
+        self.assertEqual(expectation_line._serialize_parsed_expectations(parsed_expectation_to_string), 'image pass')
         expectation_line.parsed_expectations = set([FAIL, PASS])
         self.assertEqual(expectation_line._serialize_parsed_expectations(parsed_expectation_to_string), 'pass fail')
 

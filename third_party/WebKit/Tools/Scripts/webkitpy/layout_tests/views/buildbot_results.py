@@ -79,7 +79,7 @@ class BuildBotPrinter(object):
                 run_results.tests_by_timeline[timeline]))
         self._print("=> %s (%d):" % (heading, not_passing))
 
-        for result in TestExpectations.EXPECTATION_ORDER:
+        for result in TestExpectations.EXPECTATION_DESCRIPTIONS.keys():
             if result in (test_expectations.PASS, test_expectations.SKIP):
                 continue
             results = (run_results.tests_by_expectation[result] & run_results.tests_by_timeline[timeline])

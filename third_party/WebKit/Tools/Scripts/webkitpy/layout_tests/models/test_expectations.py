@@ -224,8 +224,8 @@ class TestExpectationParser(object):
         MISSING_KEYWORD: 'MISSING',
         'Pass': 'PASS',
         'Rebaseline': 'REBASELINE',
-        NEEDS_REBASELINE_KEYWORD: NEEDS_REBASELINE_KEYWORD,
-        NEEDS_MANUAL_REBASELINE_KEYWORD: NEEDS_MANUAL_REBASELINE_KEYWORD,
+        NEEDS_REBASELINE_KEYWORD: 'NEEDSREBASELINE',
+        NEEDS_MANUAL_REBASELINE_KEYWORD: 'NEEDSMANUALREBASELINE',
         'Skip': 'SKIP',
         'Slow': 'SLOW',
         'Timeout': 'TIMEOUT',
@@ -474,7 +474,7 @@ class TestExpectationLine(object):
 
     def _serialize_parsed_expectations(self, parsed_expectation_to_string):
         result = []
-        for index in TestExpectations.EXPECTATION_ORDER:
+        for index in TestExpectations.EXPECTATIONS.values():
             if index in self.parsed_expectations:
                 result.append(parsed_expectation_to_string[index])
         return ' '.join(result)
@@ -805,8 +805,6 @@ class TestExpectations(object):
                                 CRASH: 'crashes',
                                 TIMEOUT: 'timeouts',
                                 MISSING: 'missing results'}
-
-    EXPECTATION_ORDER = (PASS, CRASH, TIMEOUT, MISSING, FAIL, IMAGE, SKIP)
 
     NON_TEST_OUTCOME_EXPECTATIONS = (REBASELINE, SKIP, SLOW, WONTFIX)
 
