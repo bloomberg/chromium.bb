@@ -1577,7 +1577,7 @@ crbug.com/229120 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html
 # Slow because of bug 259094
 crbug.com/229120 virtual/deferred/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure Slow ]
 
-crbug.com/246749 [ Debug ] inspector/extensions/extensions-panel.html [ Timeout Pass ]
+crbug.com/246749 inspector/extensions/extensions-panel.html [ Timeout Pass ]
 
 crbug.com/226256 storage/indexeddb/pending-version-change-stuck.html [ Timeout Pass ]
 
