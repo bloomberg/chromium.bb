@@ -28,7 +28,7 @@
 namespace WebCore {
 
 {%- for property_id, property in properties.items() %}
-{% if property.camel_case_name != "border" %}
+
 const StylePropertyShorthand& {{ property.camel_case_name }}Shorthand()
 {
     static const CSSPropertyID {{ property.camel_case_name }}Properties[] = {
@@ -39,8 +39,7 @@ const StylePropertyShorthand& {{ property.camel_case_name }}Shorthand()
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, {{ property.camel_case_name }}Longhands, ({{ property_id }}, {{ property.camel_case_name }}Properties, WTF_ARRAY_LENGTH({{ property.camel_case_name }}Properties)));
     return {{ property.camel_case_name }}Longhands;
 }
-{%- endif -%}
-{% endfor %}
+{%- endfor %}
 
 // Returns an empty list if the property is not a shorthand
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)

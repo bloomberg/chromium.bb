@@ -24,19 +24,6 @@
 
 namespace WebCore {
 
-const StylePropertyShorthand& borderShorthand()
-{
-    // Do not change the order of the following four shorthands, and keep them together.
-    static const CSSPropertyID borderProperties[4][3] = {
-        { CSSPropertyBorderTopColor, CSSPropertyBorderTopStyle, CSSPropertyBorderTopWidth },
-        { CSSPropertyBorderRightColor, CSSPropertyBorderRightStyle, CSSPropertyBorderRightWidth },
-        { CSSPropertyBorderBottomColor, CSSPropertyBorderBottomStyle, CSSPropertyBorderBottomWidth },
-        { CSSPropertyBorderLeftColor, CSSPropertyBorderLeftStyle, CSSPropertyBorderLeftWidth }
-    };
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, borderLonghands, (CSSPropertyBorder, borderProperties[0], sizeof(borderProperties) / sizeof(borderProperties[0][0])));
-    return borderLonghands;
-}
-
 const StylePropertyShorthand& borderShorthandForParsing()
 {
     static const CSSPropertyID borderShorthandProperties[] = { CSSPropertyBorderWidth, CSSPropertyBorderStyle, CSSPropertyBorderColor };
