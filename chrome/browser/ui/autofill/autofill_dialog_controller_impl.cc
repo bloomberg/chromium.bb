@@ -1895,6 +1895,9 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
           DialogNotification::WALLET_USAGE_CONFIRMATION,
           l10n_util::GetStringUTF16(
               IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET));
+      notification.set_tooltip_text(
+          l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_DIALOG_SAVE_IN_WALLET_TOOLTIP));
       notification.set_checked(account_chooser_model_.WalletIsSelected());
       notification.set_interactive(!is_submitting_);
       notifications.push_back(notification);

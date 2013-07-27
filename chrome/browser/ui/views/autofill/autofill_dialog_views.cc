@@ -77,13 +77,10 @@ const int kDogEarSize = 10;
 
 // The space between the edges of a notification bar and the text within (in
 // pixels).
-const int kNotificationPadding = 14;
+const int kNotificationPadding = 17;
 
 // Vertical padding above and below each detail section (in pixels).
 const int kDetailSectionVerticalPadding = 10;
-
-// Horizontal padding before each detail section (in pixels).
-const int kDetailSectionIndent = 20;
 
 const int kAutocheckoutStepsAreaPadding = 28;
 const int kAutocheckoutStepInset = 20;
@@ -94,8 +91,8 @@ const int kAutocheckoutProgressBarHeight = 15;
 const int kArrowHeight = 7;
 const int kArrowWidth = 2 * kArrowHeight;
 
-// The padding around the edges of the legal documents text, in pixels.
-const int kLegalDocPadding = 20;
+// The padding inside the edges of the dialog, in pixels.
+const int kDialogEdgePadding = 20;
 
 // Slight shading for mouse hover and legal document background.
 SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
@@ -107,9 +104,6 @@ SkColor kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
 // arrows.
 const int kMenuButtonTopInset = 3;
 const int kMenuButtonBottomInset = 6;
-
-// The padding around text in the overlay view.
-const int kOverlayTextPadding = 20;
 
 // Spacing between lines of text in the overlay view.
 const int kOverlayTextInterlineSpacing = 10;
@@ -197,7 +191,7 @@ class SectionRowView : public views::View {
 // This view is used for the contents of the error bubble widget.
 class ErrorBubbleContents : public views::View {
  public:
-  explicit ErrorBubbleContents(const string16& message)
+  explicit ErrorBubbleContents(const base::string16& message)
       : color_(kWarningColor) {
     set_border(views::Border::CreateEmptyBorder(kArrowHeight, 0, 0, 0));
 
@@ -265,7 +259,7 @@ class LayoutPropagationView : public views::View {
 // Autocheckout flow.
 class AutocheckoutStepProgressView : public views::View {
  public:
-  AutocheckoutStepProgressView(const string16& description,
+  AutocheckoutStepProgressView(const base::string16& description,
                                const gfx::Font& font,
                                const SkColor color,
                                const bool is_icon_visible) {
@@ -309,12 +303,128 @@ class AutocheckoutStepProgressView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(AutocheckoutStepProgressView);
 };
 
+// A tooltip icon (just an ImageView with a tooltip). Looks like (?).
+class TooltipIcon : public views::ImageView {
+ public:
+  explicit TooltipIcon(const base::string16& tooltip) : tooltip_(tooltip) {
+    SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_AUTOFILL_TOOLTIP_ICON).ToImageSkia());
+  }
+  virtual ~TooltipIcon() {}
+
+  // views::View implementation
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              base::string16* tooltip) const OVERRIDE {
+    *tooltip = tooltip_;
+    return !tooltip_.empty();
+  }
+
+ private:
+  base::string16 tooltip_;
+
+  DISALLOW_COPY_AND_ASSIGN(TooltipIcon);
+};
+
+// A View for a single notification banner.
+class NotificationView : public views::View {
+ public:
+  explicit NotificationView(const DialogNotification& data) : checkbox_(NULL) {
+    scoped_ptr<views::View> label_view;
+    if (data.HasCheckbox()) {
+      scoped_ptr<views::Checkbox> checkbox(
+          new views::Checkbox(base::string16()));
+      if (!data.interactive())
+        checkbox->SetState(views::Button::STATE_DISABLED);
+      checkbox->SetText(data.display_text());
+      checkbox->SetTextMultiLine(true);
+      checkbox->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      checkbox->SetTextColor(views::Button::STATE_NORMAL,
+                             data.GetTextColor());
+      checkbox->SetTextColor(views::Button::STATE_HOVERED,
+                             data.GetTextColor());
+      checkbox->SetChecked(data.checked());
+      checkbox_ = checkbox.get();
+      label_view.reset(checkbox.release());
+    } else {
+      scoped_ptr<views::Label> label(new views::Label());
+      label->SetText(data.display_text());
+      label->SetMultiLine(true);
+      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      label->SetAutoColorReadabilityEnabled(false);
+      label->SetEnabledColor(data.GetTextColor());
+      label_view.reset(label.release());
+    }
+
+    AddChildView(label_view.release());
+
+    if (!data.tooltip_text().empty())
+      AddChildView(new TooltipIcon(data.tooltip_text()));
+
+    set_background(
+       views::Background::CreateSolidBackground(data.GetBackgroundColor()));
+  }
+
+  virtual ~NotificationView() {}
+
+  views::Checkbox* checkbox() {
+    return checkbox_;
+  }
+
+  // views::View implementation
+  virtual gfx::Insets GetInsets() const OVERRIDE {
+    int vertical_padding = kNotificationPadding;
+    if (checkbox_)
+      vertical_padding -= 3;
+    return gfx::Insets(vertical_padding, kDialogEdgePadding,
+                       vertical_padding, kDialogEdgePadding);
+  }
+
+  virtual int GetHeightForWidth(int width) OVERRIDE {
+    int label_width = width - GetInsets().width();
+    if (child_count() > 1) {
+      views::View* tooltip_icon = child_at(1);
+      label_width -= tooltip_icon->GetPreferredSize().width() +
+          kDialogEdgePadding;
+    }
+
+    return child_at(0)->GetHeightForWidth(label_width) + GetInsets().height();
+  }
+
+  virtual void Layout() OVERRIDE {
+    // Surprisingly, GetContentsBounds() doesn't consult GetInsets().
+    gfx::Rect bounds = GetLocalBounds();
+    bounds.Inset(GetInsets());
+    int right_bound = bounds.right();
+
+    if (child_count() > 1) {
+      // The icon takes up the entire vertical space and an extra 20px on
+      // each side. This increases the hover target for the tooltip.
+      views::View* tooltip_icon = child_at(1);
+      gfx::Size icon_size = tooltip_icon->GetPreferredSize();
+      int icon_width = icon_size.width() + kDialogEdgePadding;
+      right_bound -= icon_width;
+      tooltip_icon->SetBounds(
+          right_bound, 0,
+          icon_width + kDialogEdgePadding, GetLocalBounds().height());
+    }
+
+    child_at(0)->SetBounds(bounds.x(), bounds.y(),
+                           right_bound - bounds.x(), bounds.height());
+  }
+
+ private:
+  // The checkbox associated with this notification, or NULL if there is none.
+  views::Checkbox* checkbox_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationView);
+};
+
 }  // namespace
 
 // AutofillDialogViews::ErrorBubble --------------------------------------------
 
 AutofillDialogViews::ErrorBubble::ErrorBubble(views::View* anchor,
-                                              const string16& message)
+                                              const base::string16& message)
     : anchor_(anchor),
       contents_(new ErrorBubbleContents(message)),
       observer_(this) {
@@ -375,8 +485,8 @@ gfx::Rect AutofillDialogViews::ErrorBubble::GetBoundsForWidget() {
 // AutofillDialogViews::DecoratedTextfield -------------------------------------
 
 AutofillDialogViews::DecoratedTextfield::DecoratedTextfield(
-    const string16& default_value,
-    const string16& placeholder,
+    const base::string16& default_value,
+    const base::string16& placeholder,
     views::TextfieldController* controller)
     : border_(new views::FocusableBorder()),
       invalid_(false) {
@@ -539,7 +649,7 @@ void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
 AutofillDialogViews::OverlayView::OverlayView(views::ButtonListener* listener)
     : image_view_(new views::ImageView()),
       message_stack_(new views::View()),
-      button_(new views::BlueButton(listener, string16())) {
+      button_(new views::BlueButton(listener, base::string16())) {
   set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
       GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
 
@@ -550,7 +660,7 @@ AutofillDialogViews::OverlayView::OverlayView(views::ButtonListener* listener)
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
                            kOverlayTextInterlineSpacing));
   message_stack_->set_border(views::Border::CreateEmptyBorder(
-      kOverlayTextPadding, kOverlayTextPadding, 0, kOverlayTextPadding));
+      kDialogEdgePadding, kDialogEdgePadding, 0, kDialogEdgePadding));
 
   AddChildView(button_);
   button_->set_focusable(true);
@@ -773,46 +883,15 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
 
   for (size_t i = 0; i < notifications_.size(); ++i) {
     const DialogNotification& notification = notifications_[i];
+    scoped_ptr<NotificationView> view(new NotificationView(notification));
+    if (view->checkbox())
+      checkbox_ = view->checkbox();
 
-    scoped_ptr<views::View> view;
-    if (notification.HasCheckbox()) {
-      scoped_ptr<views::Checkbox> checkbox(new views::Checkbox(string16()));
-      checkbox_ = checkbox.get();
-      // We have to do this instead of using set_border() because a border
-      // is being used to draw the check square.
-      static_cast<views::LabelButtonBorder*>(checkbox->border())->
-          set_insets(gfx::Insets(kNotificationPadding,
-                                 kNotificationPadding,
-                                 kNotificationPadding,
-                                 kNotificationPadding));
-      if (!notification.interactive())
-        checkbox->SetState(views::Button::STATE_DISABLED);
-      checkbox->SetText(notification.display_text());
-      checkbox->SetTextMultiLine(true);
-      checkbox->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      checkbox->SetTextColor(views::Button::STATE_NORMAL,
-                             notification.GetTextColor());
-      checkbox->SetTextColor(views::Button::STATE_HOVERED,
-                             notification.GetTextColor());
-      checkbox->SetChecked(notification.checked());
-      checkbox->set_listener(this);
-      view.reset(checkbox.release());
-    } else {
-      scoped_ptr<views::Label> label(new views::Label());
-      label->SetText(notification.display_text());
-      label->SetMultiLine(true);
-      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      label->SetAutoColorReadabilityEnabled(false);
-      label->SetEnabledColor(notification.GetTextColor());
-      label->set_border(views::Border::CreateSolidBorder(
-          kNotificationPadding, notification.GetBackgroundColor()));
-      view.reset(label.release());
-    }
-
-    view->set_background(views::Background::CreateSolidBackground(
-        notification.GetBackgroundColor()));
     AddChildView(view.release());
   }
+
+  if (checkbox_)
+    checkbox_->set_listener(this);
 
   PreferredSizeChanged();
 }
@@ -863,7 +942,7 @@ bool AutofillDialogViews::NotificationArea::HasArrow() {
 // AutofillDialogViews::SectionContainer ---------------------------------------
 
 AutofillDialogViews::SectionContainer::SectionContainer(
-    const string16& label,
+    const base::string16& label,
     views::View* controls,
     views::Button* proxy_button)
     : proxy_button_(proxy_button),
@@ -871,9 +950,9 @@ AutofillDialogViews::SectionContainer::SectionContainer(
   set_notify_enter_exit_on_child(true);
 
   set_border(views::Border::CreateEmptyBorder(kDetailSectionVerticalPadding,
-                                              kDetailSectionIndent,
+                                              kDialogEdgePadding,
                                               kDetailSectionVerticalPadding,
-                                              kDetailSectionIndent));
+                                              kDialogEdgePadding));
 
   views::Label* label_view = new views::Label(label);
   label_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -984,14 +1063,16 @@ ui::MouseEvent AutofillDialogViews::SectionContainer::ProxyEvent(
 // AutofilDialogViews::SuggestionView ------------------------------------------
 
 AutofillDialogViews::SuggestionView::SuggestionView(
-    const string16& edit_label,
+    const base::string16& edit_label,
     AutofillDialogViews* autofill_dialog)
     : label_(new views::Label()),
       label_line_2_(new views::Label()),
       icon_(new views::ImageView()),
       label_container_(new SectionRowView()),
       decorated_(
-          new DecoratedTextfield(string16(), string16(), autofill_dialog)) {
+          new DecoratedTextfield(base::string16(),
+                                 base::string16(),
+                                 autofill_dialog)) {
   // Label and icon.
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_container_->AddChildView(icon_);
@@ -1013,15 +1094,15 @@ AutofillDialogViews::SuggestionView::SuggestionView(
 AutofillDialogViews::SuggestionView::~SuggestionView() {}
 
 void AutofillDialogViews::SuggestionView::SetSuggestionText(
-    const string16& text,
+    const base::string16& text,
     gfx::Font::FontStyle text_style) {
   label_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::BaseFont).DeriveFont(0, text_style));
 
   // TODO(estade): does this localize well?
-  string16 line_return(ASCIIToUTF16("\n"));
+  base::string16 line_return(ASCIIToUTF16("\n"));
   size_t position = text.find(line_return);
-  if (position == string16::npos) {
+  if (position == base::string16::npos) {
     label_->SetText(text);
     label_line_2_->SetVisible(false);
   } else {
@@ -1038,7 +1119,7 @@ void AutofillDialogViews::SuggestionView::SetSuggestionIcon(
 }
 
 void AutofillDialogViews::SuggestionView::ShowTextfield(
-    const string16& placeholder_text,
+    const base::string16& placeholder_text,
     const gfx::Image& icon) {
   decorated_->set_placeholder_text(placeholder_text);
   decorated_->SetIcon(icon);
@@ -1176,7 +1257,7 @@ void AutofillDialogViews::UpdateAccountChooser() {
   account_chooser_->Update();
   // TODO(estade): replace this with a better loading image/animation.
   // See http://crbug.com/230932
-  string16 new_loading_message = (controller_->ShouldShowSpinner() ?
+  base::string16 new_loading_message = (controller_->ShouldShowSpinner() ?
       ASCIIToUTF16("Loading...") : base::string16());
   if (new_loading_message != loading_shield_->text()) {
     loading_shield_->SetText(new_loading_message);
@@ -1186,7 +1267,7 @@ void AutofillDialogViews::UpdateAccountChooser() {
 
   // Update legal documents for the account.
   if (footnote_view_) {
-    const string16 text = controller_->LegalDocumentsText();
+    const base::string16 text = controller_->LegalDocumentsText();
     legal_document_view_->SetText(text);
 
     if (!text.empty()) {
@@ -1248,7 +1329,7 @@ void AutofillDialogViews::FillSection(DialogSection section,
   TextfieldMap::iterator text_mapping =
       group->textfields.find(&originating_input);
   if (text_mapping != group->textfields.end())
-    text_mapping->second->SetText(string16());
+    text_mapping->second->SetText(base::string16());
 
   // If the Autofill data comes from a credit card, make sure to overwrite the
   // CC comboboxes (even if they already have something in them). If the
@@ -1280,7 +1361,7 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
   }
 }
 
-string16 AutofillDialogViews::GetCvc() {
+base::string16 AutofillDialogViews::GetCvc() {
   DialogSection billing_section = controller_->SectionIsActive(SECTION_CC) ?
       SECTION_CC : SECTION_CC_BILLING;
   return GroupForSection(billing_section)->suggested_info->
@@ -1341,7 +1422,8 @@ void AutofillDialogViews::CancelForTesting() {
   GetDialogClientView()->CancelWindow();
 }
 
-string16 AutofillDialogViews::GetTextContentsOfInput(const DetailInput& input) {
+base::string16 AutofillDialogViews::GetTextContentsOfInput(
+    const DetailInput& input) {
   views::Textfield* textfield = TextfieldForInput(input);
   if (textfield)
     return textfield->text();
@@ -1351,11 +1433,12 @@ string16 AutofillDialogViews::GetTextContentsOfInput(const DetailInput& input) {
     return combobox->model()->GetItemAt(combobox->selected_index());
 
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-void AutofillDialogViews::SetTextContentsOfInput(const DetailInput& input,
-                                                 const string16& contents) {
+void AutofillDialogViews::SetTextContentsOfInput(
+    const DetailInput& input,
+    const base::string16& contents) {
   views::Textfield* textfield = TextfieldForInput(input);
   if (textfield) {
     TextfieldForInput(input)->SetText(contents);
@@ -1492,7 +1575,7 @@ void AutofillDialogViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   sign_in_delegate_->SetMinWidth(GetContentsBounds().width());
 }
 
-string16 AutofillDialogViews::GetWindowTitle() const {
+base::string16 AutofillDialogViews::GetWindowTitle() const {
   return controller_->DialogTitle();
 }
 
@@ -1513,8 +1596,8 @@ int AutofillDialogViews::GetDialogButtons() const {
   return controller_->GetDialogButtons();
 }
 
-string16 AutofillDialogViews::GetDialogButtonLabel(ui::DialogButton button)
-    const {
+base::string16 AutofillDialogViews::GetDialogButtonLabel(
+    ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ?
       controller_->ConfirmButtonText() : controller_->CancelButtonText();
 }
@@ -1539,15 +1622,15 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
   footnote_view_ = new LayoutPropagationView();
   footnote_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical,
-                           kLegalDocPadding,
-                           kLegalDocPadding,
+                           kDialogEdgePadding,
+                           kDialogEdgePadding,
                            0));
   footnote_view_->set_border(
       views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
   footnote_view_->set_background(
       views::Background::CreateSolidBackground(kShadingColor));
 
-  legal_document_view_ = new views::StyledLabel(string16(), this);
+  legal_document_view_ = new views::StyledLabel(base::string16(), this);
   views::StyledLabel::RangeStyleInfo default_style;
   default_style.color = kGreyTextColor;
   legal_document_view_->SetDefaultStyle(default_style);
@@ -1626,7 +1709,7 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
 }
 
 void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
-                                          const string16& new_contents) {
+                                          const base::string16& new_contents) {
   TextfieldEditedOrActivated(sender, true);
 }
 
@@ -1805,7 +1888,7 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
       rb.GetImageSkiaNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_D));
   menu_button->set_border(views::Border::CreateEmptyBorder(
       kMenuButtonTopInset,
-      kDetailSectionIndent,
+      kDialogEdgePadding,
       kMenuButtonBottomInset,
       0));
 
@@ -1980,7 +2063,7 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
 template<class T>
 void AutofillDialogViews::SetValidityForInput(
     T* input,
-    const string16& message) {
+    const base::string16& message) {
   bool invalid = !message.empty();
   input->SetInvalid(invalid);
 
@@ -2003,7 +2086,7 @@ void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
   if (error_bubble_ && error_bubble_->anchor() == view)
     return;
 
-  std::map<views::View*, string16>::iterator error_message =
+  std::map<views::View*, base::string16>::iterator error_message =
       validity_map_.find(view);
   if (error_message != validity_map_.end()) {
     view->ScrollRectToVisible(view->GetLocalBounds());
@@ -2058,7 +2141,7 @@ void AutofillDialogViews::MarkInputsInvalid(DialogSection section,
   // Flag invalid fields, removing them from |field_map|.
   for (ValidityData::const_iterator iter = validity_data.begin();
        iter != validity_data.end(); ++iter) {
-    const string16& message = iter->second;
+    const base::string16& message = iter->second;
     field_map[iter->first].Run(message);
     field_map.erase(iter->first);
   }
@@ -2091,7 +2174,7 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
         continue;
 
       views::Combobox* combobox = iter->second;
-      string16 item =
+      base::string16 item =
           combobox->model()->GetItemAt(combobox->selected_index());
       detail_outputs[iter->first] = item;
     }
