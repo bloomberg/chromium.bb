@@ -23,6 +23,7 @@
 #include "content/common/gpu/client/gl_helper_scaling.h"
 #include "content/public/test/unittest_test_suite.h"
 #include "content/test/content_test_suite.h"
+#include "gpu/config/gpu_util.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -1255,6 +1256,7 @@ int main(int argc, char** argv) {
   gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 #endif
   gfx::GLSurface::InitializeOneOff();
+  gpu::ApplyGpuDriverBugWorkarounds(CommandLine::ForCurrentProcess());
 
   content::UnitTestTestSuite runner(suite);
   base::MessageLoop message_loop;
