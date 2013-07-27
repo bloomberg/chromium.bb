@@ -82,7 +82,19 @@ void HTMLFrameElementBase::openURL(bool lockBackForwardList)
     if (!parentFrame)
         return;
 
-    parentFrame->loader()->subframeLoader()->requestFrame(this, m_URL, m_frameName, lockBackForwardList);
+    // Support for <frame src="javascript:string">
+    KURL scriptURL;
+    KURL url = document()->completeURL(m_URL);
+    if (protocolIsJavaScript(m_URL)) {
+        scriptURL = url;
+        url = blankURL();
+    }
+
+    if (!parentFrame->loader()->subframeLoader()->loadOrRedirectSubframe(this, url, m_frameName, lockBackForwardList))
+        return;
+    if (!contentFrame() || scriptURL.isEmpty())
+        return;
+    contentFrame()->script()->executeScriptIfJavaScriptURL(scriptURL);
 }
 
 void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const AtomicString& value)

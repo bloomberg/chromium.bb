@@ -61,29 +61,6 @@ SubframeLoader::SubframeLoader(Frame* frame)
 {
 }
 
-bool SubframeLoader::requestFrame(HTMLFrameOwnerElement* ownerElement, const String& urlString, const AtomicString& frameName, bool lockBackForwardList)
-{
-    // Support for <frame src="javascript:string">
-    KURL scriptURL;
-    KURL url;
-    if (protocolIsJavaScript(urlString)) {
-        scriptURL = completeURL(urlString); // completeURL() encodes the URL.
-        url = blankURL();
-    } else
-        url = completeURL(urlString);
-
-    if (!loadOrRedirectSubframe(ownerElement, url, frameName, lockBackForwardList))
-        return false;
-
-    if (!ownerElement->contentFrame())
-        return false;
-
-    if (!scriptURL.isEmpty())
-        ownerElement->contentFrame()->script()->executeScriptIfJavaScriptURL(scriptURL);
-
-    return true;
-}
-
 bool SubframeLoader::resourceWillUsePlugin(const String& url, const String& mimeType, bool shouldPreferPlugInsForImages)
 {
     KURL completedURL;
