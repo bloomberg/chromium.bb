@@ -1031,31 +1031,6 @@ void PepperPluginDelegateImpl::TCPServerSocketStopListening(
   }
 }
 
-bool PepperPluginDelegateImpl::AddNetworkListObserver(
-    webkit_glue::NetworkListObserver* observer) {
-#if defined(ENABLE_WEBRTC)
-  P2PSocketDispatcher* socket_dispatcher =
-      RenderThreadImpl::current()->p2p_socket_dispatcher();
-  if (!socket_dispatcher) {
-    return false;
-  }
-  socket_dispatcher->AddNetworkListObserver(observer);
-  return true;
-#else
-  return false;
-#endif
-}
-
-void PepperPluginDelegateImpl::RemoveNetworkListObserver(
-    webkit_glue::NetworkListObserver* observer) {
-#if defined(ENABLE_WEBRTC)
-  P2PSocketDispatcher* socket_dispatcher =
-      RenderThreadImpl::current()->p2p_socket_dispatcher();
-  if (socket_dispatcher)
-    socket_dispatcher->RemoveNetworkListObserver(observer);
-#endif
-}
-
 bool PepperPluginDelegateImpl::X509CertificateParseDER(
     const std::vector<char>& der,
     ppapi::PPB_X509Certificate_Fields* fields) {

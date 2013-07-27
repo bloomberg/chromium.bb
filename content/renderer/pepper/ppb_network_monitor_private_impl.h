@@ -7,18 +7,18 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "content/renderer/p2p/network_list_observer.h"
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_network_monitor_private_api.h"
-#include "webkit/glue/network_list_observer.h"
 
 namespace content {
 
 class PPB_NetworkMonitor_Private_Impl
     : public ::ppapi::Resource,
       public ::ppapi::thunk::PPB_NetworkMonitor_Private_API,
-      public webkit_glue::NetworkListObserver {
+      public content::NetworkListObserver {
  public:
   static PP_Resource Create(PP_Instance instance,
                             PPB_NetworkMonitor_Callback callback,

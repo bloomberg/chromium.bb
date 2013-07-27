@@ -137,10 +137,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void TCPServerSocketStopListening(PP_Resource socket_resource,
                                             uint32 socket_id) OVERRIDE;
   // Add/remove a network list observer.
-  virtual bool AddNetworkListObserver(
-      webkit_glue::NetworkListObserver* observer) OVERRIDE;
-  virtual void RemoveNetworkListObserver(
-      webkit_glue::NetworkListObserver* observer) OVERRIDE;
   virtual bool X509CertificateParseDER(
       const std::vector<char>& der,
       ::ppapi::PPB_X509Certificate_Fields* fields) OVERRIDE;

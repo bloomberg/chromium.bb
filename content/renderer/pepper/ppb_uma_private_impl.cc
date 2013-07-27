@@ -8,7 +8,6 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/shared_impl/var.h"
-#include "webkit/glue/webkit_glue.h"
 
 using ppapi::StringVar;
 

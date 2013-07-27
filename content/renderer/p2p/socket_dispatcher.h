@@ -41,12 +41,9 @@ namespace net {
 class IPEndPoint;
 }  // namespace net
 
-namespace webkit_glue {
-class NetworkListObserver;
-}  // webkit_glue
-
 namespace content {
 
+class NetworkListObserver;
 class RenderViewImpl;
 class P2PHostAddressRequest;
 class P2PSocketClient;
@@ -60,13 +57,11 @@ class CONTENT_EXPORT P2PSocketDispatcher
   // immidiately after it is registered and then later whenever
   // network configuration changes. Can be called on any thread. The
   // observer is always called on the thread it was added.
-  void AddNetworkListObserver(
-      webkit_glue::NetworkListObserver* network_list_observer);
+  void AddNetworkListObserver(NetworkListObserver* network_list_observer);
 
   // Removes network list observer. Must be called on the thread on
   // which the observer was added.
-  void RemoveNetworkListObserver(
-      webkit_glue::NetworkListObserver* network_list_observer);
+  void RemoveNetworkListObserver(NetworkListObserver* network_list_observer);
 
  protected:
   virtual ~P2PSocketDispatcher();
@@ -115,7 +110,7 @@ class CONTENT_EXPORT P2PSocketDispatcher
   IDMap<P2PHostAddressRequest> host_address_requests_;
 
   bool network_notifications_started_;
-  scoped_refptr<ObserverListThreadSafe<webkit_glue::NetworkListObserver> >
+  scoped_refptr<ObserverListThreadSafe<NetworkListObserver> >
       network_list_observers_;
 
   IPC::Channel* channel_;

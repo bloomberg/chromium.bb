@@ -98,11 +98,6 @@ class WebURLLoaderClient;
 class WebURLResponse;
 }
 
-namespace webkit_glue {
-class P2PTransport;
-class NetworkListObserver;
-}  // namespace webkit_glue
-
 namespace content {
 
 class FileIO;
@@ -436,12 +431,6 @@ class PluginDelegate {
   virtual void TCPServerSocketStopListening(
       PP_Resource socket_resource,
       uint32 socket_id) = 0;
-
-  // Add/remove a network list observer.
-  virtual bool AddNetworkListObserver(
-      webkit_glue::NetworkListObserver* observer) = 0;
-  virtual void RemoveNetworkListObserver(
-      webkit_glue::NetworkListObserver* observer) = 0;
 
   // For PPB_X509Certificate_Private.
   virtual bool X509CertificateParseDER(

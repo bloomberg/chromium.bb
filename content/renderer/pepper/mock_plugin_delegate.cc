@@ -271,15 +271,6 @@ void MockPluginDelegate::TCPServerSocketStopListening(
     uint32 socket_id) {
 }
 
-bool MockPluginDelegate::AddNetworkListObserver(
-    webkit_glue::NetworkListObserver* observer) {
-  return false;
-}
-
-void MockPluginDelegate::RemoveNetworkListObserver(
-    webkit_glue::NetworkListObserver* observer) {
-}
-
 bool MockPluginDelegate::X509CertificateParseDER(
     const std::vector<char>& der,
     ::ppapi::PPB_X509Certificate_Fields* fields) {

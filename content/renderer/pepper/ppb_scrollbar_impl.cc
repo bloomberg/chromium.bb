@@ -21,7 +21,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebPluginScrollbar.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

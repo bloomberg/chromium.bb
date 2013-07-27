@@ -5,13 +5,41 @@
 #include "content/renderer/pepper/ppb_network_monitor_private_impl.h"
 
 #include "base/bind.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/pepper/resource_helper.h"
+#include "content/renderer/render_thread_impl.h"
 #include "ppapi/shared_impl/ppb_network_list_private_shared.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 
 namespace content {
+namespace {
+
+bool AddNetworkListObserver(NetworkListObserver* observer) {
+#if defined(ENABLE_WEBRTC)
+  P2PSocketDispatcher* socket_dispatcher =
+      RenderThreadImpl::current()->p2p_socket_dispatcher();
+  if (!socket_dispatcher) {
+    return false;
+  }
+  socket_dispatcher->AddNetworkListObserver(observer);
+  return true;
+#else
+  return false;
+#endif
+}
+
+void RemoveNetworkListObserver(NetworkListObserver* observer) {
+#if defined(ENABLE_WEBRTC)
+  P2PSocketDispatcher* socket_dispatcher =
+      RenderThreadImpl::current()->p2p_socket_dispatcher();
+  if (socket_dispatcher)
+    socket_dispatcher->RemoveNetworkListObserver(observer);
+#endif
+}
+
+}  // namespace
 
 PPB_NetworkMonitor_Private_Impl::PPB_NetworkMonitor_Private_Impl(
     PP_Instance instance,
@@ -24,10 +52,7 @@ PPB_NetworkMonitor_Private_Impl::PPB_NetworkMonitor_Private_Impl(
 }
 
 PPB_NetworkMonitor_Private_Impl::~PPB_NetworkMonitor_Private_Impl() {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
-  if (plugin_delegate && started_) {
-    plugin_delegate->RemoveNetworkListObserver(this);
-  }
+  RemoveNetworkListObserver(this);
 }
 
 // static
@@ -48,10 +73,7 @@ PPB_NetworkMonitor_Private_Impl::AsPPB_NetworkMonitor_Private_API() {
 }
 
 bool PPB_NetworkMonitor_Private_Impl::Start() {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
-  if (!plugin_delegate)
-    return false;
-  started_ = plugin_delegate->AddNetworkListObserver(this);
+  started_ = AddNetworkListObserver(this);
   return started_;
 }
 

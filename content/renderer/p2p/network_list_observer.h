@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_NETWORK_LIST_OBSERVER_H_
-#define WEBKIT_GLUE_NETWORK_LIST_OBSERVER_H_
+#ifndef CONTENT_RENDERER_P2P_NETWORK_LIST_OBSERVER_H_
+#define CONTENT_RENDERER_P2P_NETWORK_LIST_OBSERVER_H_
 
 #include <vector>
 
@@ -12,7 +12,7 @@ struct NetworkInterface;
 typedef std::vector<NetworkInterface> NetworkInterfaceList;
 }  // namespace net
 
-namespace webkit_glue {
+namespace content {
 
 class NetworkListObserver {
  public:
@@ -23,11 +23,8 @@ class NetworkListObserver {
 
  protected:
   NetworkListObserver() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkListObserver);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_GLUE_NETWORK_LIST_OBSERVER_H_
+#endif  // CONTENT_RENDERER_P2P_NETWORK_LIST_OBSERVER_H_
