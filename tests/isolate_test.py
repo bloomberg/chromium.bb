@@ -926,6 +926,42 @@ class IsolateTest(IsolateBase):
     isolate.add_variable_option(parser)
     self.assertRaises(SystemExit, parser.parse_args, ['-V', 'Foo'])
 
+  def test_blacklist(self):
+    ok = [
+      '.git2',
+      '.pyc',
+      '.swp',
+      'allo.git',
+      'foo',
+    ]
+    blocked = [
+      '.git',
+      os.path.join('foo', '.git'),
+      'foo.pyc',
+      'bar.swp',
+    ]
+    blacklist = isolate.trace_inputs.gen_blacklist(isolate.DEFAULT_BLACKLIST)
+    for i in ok:
+      self.assertFalse(blacklist(i), i)
+    for i in blocked:
+      self.assertTrue(blacklist(i), i)
+
+  def test_blacklist_chromium(self):
+    ok = [
+      '.run_test_cases',
+      'testserver.log2',
+    ]
+    blocked = [
+      'foo.run_test_cases',
+      'testserver.log',
+      os.path.join('foo', 'testserver.log'),
+    ]
+    blacklist = isolate.trace_inputs.gen_blacklist(isolate.DEFAULT_BLACKLIST)
+    for i in ok:
+      self.assertFalse(blacklist(i), i)
+    for i in blocked:
+      self.assertTrue(blacklist(i), i)
+
   if sys.platform == 'darwin':
     def test_expand_symlinks_path_case(self):
       # Ensures that the resulting path case is fixed on case insensitive file

@@ -121,7 +121,7 @@ def run_tests(
 
 
 @with_tempfile
-def trace_some(tempfilepath, isolated, test_cases, blacklist, verbosity):
+def trace_some(tempfilepath, isolated, test_cases, trace_blacklist, verbosity):
   """Traces the test cases."""
   with open(tempfilepath, 'w') as f:
     f.write('\n'.join(test_cases))
@@ -133,14 +133,14 @@ def trace_some(tempfilepath, isolated, test_cases, blacklist, verbosity):
     # Do not use --run-all here, we assume the test cases will pass inside the
     # checkout.
   ]
-  for i in blacklist:
+  for i in trace_blacklist:
     cmd.extend(('--trace-blacklist', i))
   add_verbosity(cmd, verbosity)
   logging.debug(cmd)
   return subprocess.call(cmd)
 
 
-def fix_all(isolated, all_test_cases, blacklist, verbosity):
+def fix_all(isolated, all_test_cases, trace_blacklist, verbosity):
   """Runs all the test cases in a gtest executable and trace the failing tests.
 
   Returns True on success.
@@ -210,7 +210,7 @@ def fix_all(isolated, all_test_cases, blacklist, verbosity):
 
     # Trace the test cases and update the .isolate file.
     print('\nTracing the %d failing tests.' % len(failures))
-    if trace_some(isolated, failures, blacklist, verbosity):
+    if trace_some(isolated, failures, trace_blacklist, verbosity):
       logging.info('The tracing itself failed.')
       return False
     previous_failures.update(failures)
@@ -220,15 +220,10 @@ def main():
   run_isolated.disable_buffering()
   parser = run_test_cases.OptionParserTestCases(
       usage='%prog <options> -s <something.isolated>')
+  isolate.add_trace_option(parser)
   parser.add_option(
       '-s', '--isolated',
       help='The isolated file')
-  parser.add_option(
-      '--trace-blacklist',
-      action='append', default=[],
-      help='List of regexp to use as blacklist filter for files to consider '
-           'important, not to be confused with --blacklist which blacklists '
-           'test case.')
   options, args = parser.parse_args()
 
   if args:

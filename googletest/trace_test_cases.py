@@ -12,7 +12,6 @@ with ./trace_inputs.py read -l /path/to/executable.logs
 import logging
 import multiprocessing
 import os
-import re
 import sys
 import time
 
@@ -160,6 +159,9 @@ def main():
   parser.add_option(
       '-r', '--root-dir',
       help='Root directory under which file access should be noted')
+  parser.add_option(
+      '--trace-blacklist', action='append', default=[],
+      help='List of regexp to use as blacklist filter')
   # TODO(maruel): Add support for options.timeout.
   parser.remove_option('--timeout')
   options, args = parser.parse_args()
@@ -182,9 +184,6 @@ def main():
     options.root_dir = os.path.abspath(options.root_dir)
   logname = options.out + '.log'
 
-  def blacklist(f):
-    return any(re.match(b, f) for b in options.blacklist)
-
   test_cases = parser.process_gtest_options(cmd, os.getcwd(), options)
 
   # Then run them.
@@ -196,6 +195,7 @@ def main():
       options.jobs,
       logname)
   print('Reading trace logs...')
+  blacklist = trace_inputs.gen_blacklist(options.trace_blacklist)
   write_details(logname, options.out, options.root_dir, blacklist, results)
   return 0
 

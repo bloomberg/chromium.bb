@@ -168,9 +168,9 @@ class TraceInputs(TraceInputsBase):
         'read',
         [
           '--root-dir', ROOT_DIR,
-          '--blacklist', '.+\\.pyc',
-          '--blacklist', '.*\\.svn',
-          '--blacklist', '.*do_not_care\\.txt',
+          '--trace-blacklist', '.+\\.pyc',
+          '--trace-blacklist', '.*\\.svn',
+          '--trace-blacklist', '.*do_not_care\\.txt',
         ],
         cwd=unicode(ROOT_DIR))
     self.assertEqual(expected, actual)
@@ -246,9 +246,9 @@ class TraceInputs(TraceInputsBase):
         'read',
         [
           '--root-dir', ROOT_DIR,
-          '--blacklist', '.+\\.pyc',
-          '--blacklist', '.*\\.svn',
-          '--blacklist', '.*do_not_care\\.txt',
+          '--trace-blacklist', '.+\\.pyc',
+          '--trace-blacklist', '.*\\.svn',
+          '--trace-blacklist', '.*do_not_care\\.txt',
           '--json',
         ],
         cwd=unicode(ROOT_DIR))

@@ -43,9 +43,6 @@ KEY_TRACKED = 'isolate_dependency_tracked'
 # Files that should not be tracked by the build tool.
 KEY_UNTRACKED = 'isolate_dependency_untracked'
 
-_GIT_PATH = os.path.sep + '.git'
-_SVN_PATH = os.path.sep + '.svn'
-
 
 class ExecutionError(Exception):
   """A generic error occurred."""
@@ -54,6 +51,21 @@ class ExecutionError(Exception):
 
 
 ### Path handling code.
+
+
+DEFAULT_BLACKLIST = (
+  # Temporary vim or python files.
+  r'^.+\.(?:pyc|swp)$',
+  # .git or .svn directory.
+  r'^(?:.+' + re.escape(os.path.sep) + r'|)\.(?:git|svn)$',
+)
+
+
+# Chromium-specific.
+DEFAULT_BLACKLIST += (
+  r'^.+\.(?:run_test_cases)$',
+  r'^(?:.+' + re.escape(os.path.sep) + r'|)testserver\.log$',
+)
 
 
 def relpath(path, root):
@@ -107,21 +119,6 @@ def cleanup_path(x):
 
 def is_url(path):
   return bool(re.match(r'^https?://.+$', path))
-
-
-def default_blacklist(f):
-  """Filters unimportant files normally ignored."""
-  return (
-      f.endswith(('.pyc', '.swp')) or
-      _GIT_PATH in f or
-      _SVN_PATH in f or
-      f in ('.git', '.svn'))
-
-
-def chromium_default_blacklist(f):
-  """Filters unimportant files normally ignored."""
-  return (
-      default_blacklist(f) or f.endswith(('.run_test_cases', 'testserver.log')))
 
 
 def path_starts_with(prefix, path):
@@ -652,7 +649,8 @@ def chromium_fix(f, variables):
 
 
 def generate_simplified(
-    tracked, untracked, touched, root_dir, variables, relative_cwd):
+    tracked, untracked, touched, root_dir, variables, relative_cwd,
+    trace_blacklist):
   """Generates a clean and complete .isolate 'variables' dictionary.
 
   Cleans up and extracts only files from within root_dir then processes
@@ -679,9 +677,9 @@ def generate_simplified(
   # part untracked, the directory will not be extracted. Tracked files should be
   # 'promoted' to be untracked as needed.
   tracked = trace_inputs.extract_directories(
-      root_dir, tracked, chromium_default_blacklist)
+      root_dir, tracked, trace_blacklist)
   untracked = trace_inputs.extract_directories(
-      root_dir, untracked, chromium_default_blacklist)
+      root_dir, untracked, trace_blacklist)
   # touched is not compressed, otherwise it would result in files to be archived
   # that we don't need.
 
@@ -735,10 +733,12 @@ def chromium_filter_flags(variables):
 
 
 def generate_isolate(
-    tracked, untracked, touched, root_dir, variables, relative_cwd):
+    tracked, untracked, touched, root_dir, variables, relative_cwd,
+    trace_blacklist):
   """Generates a clean and complete .isolate file."""
   dependencies = generate_simplified(
-      tracked, untracked, touched, root_dir, variables, relative_cwd)
+      tracked, untracked, touched, root_dir, variables, relative_cwd,
+      trace_blacklist)
   config_variables = chromium_filter_flags(variables)
   config_variable_names, config_values = zip(
       *sorted(config_variables.iteritems()))
@@ -1844,7 +1844,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
   return complete_state
 
 
-def read_trace_as_isolate_dict(complete_state):
+def read_trace_as_isolate_dict(complete_state, trace_blacklist):
   """Reads a trace and returns the .isolate dictionary.
 
   Returns exceptions during the log parsing so it can be re-raised.
@@ -1855,7 +1855,7 @@ def read_trace_as_isolate_dict(complete_state):
     raise ExecutionError(
         'No log file \'%s\' to read, did you forget to \'trace\'?' % logfile)
   try:
-    data = api.parse_log(logfile, chromium_default_blacklist, None)
+    data = api.parse_log(logfile, trace_blacklist, None)
     exceptions = [i['exception'] for i in data if 'exception' in i]
     results = (i['results'] for i in data if 'results' in i)
     results_stripped = (i.strip_root(complete_state.root_dir) for i in results)
@@ -1867,7 +1867,8 @@ def read_trace_as_isolate_dict(complete_state):
         touched,
         complete_state.root_dir,
         complete_state.saved_state.variables,
-        complete_state.saved_state.relative_cwd)
+        complete_state.saved_state.relative_cwd,
+        trace_blacklist)
     return value, exceptions
   except trace_inputs.TracingFailure, e:
     raise ExecutionError(
@@ -1884,9 +1885,10 @@ def print_all(comment, data, stream):
   pretty_print(data, stream)
 
 
-def merge(complete_state):
+def merge(complete_state, trace_blacklist):
   """Reads a trace and merges it back into the source .isolate file."""
-  value, exceptions = read_trace_as_isolate_dict(complete_state)
+  value, exceptions = read_trace_as_isolate_dict(
+      complete_state, trace_blacklist)
 
   # Now take that data and union it into the original .isolate file.
   with open(complete_state.saved_state.isolate_filepath, 'r') as f:
@@ -2003,11 +2005,13 @@ def CMDmerge(args):
   Ignores --outdir.
   """
   parser = OptionParserIsolate(command='merge', require_isolated=False)
+  add_trace_option(parser)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
   complete_state = load_complete_state(options, os.getcwd(), None, False)
-  merge(complete_state)
+  blacklist = trace_inputs.gen_blacklist(options.trace_blacklist)
+  merge(complete_state, blacklist)
   return 0
 
 
@@ -2017,6 +2021,7 @@ def CMDread(args):
   Ignores --outdir.
   """
   parser = OptionParserIsolate(command='read', require_isolated=False)
+  add_trace_option(parser)
   parser.add_option(
       '--skip-refresh', action='store_true',
       help='Skip reading .isolate file and do not refresh the sha1 of '
@@ -2026,7 +2031,8 @@ def CMDread(args):
     parser.error('Unsupported argument: %s' % args)
   complete_state = load_complete_state(
       options, os.getcwd(), None, options.skip_refresh)
-  value, exceptions = read_trace_as_isolate_dict(complete_state)
+  blacklist = trace_inputs.gen_blacklist(options.trace_blacklist)
+  value, exceptions = read_trace_as_isolate_dict(complete_state, blacklist)
   pretty_print(value, sys.stdout)
   if exceptions:
     # It got an exception, raise the first one.
@@ -2177,6 +2183,7 @@ def CMDtrace(args):
   use: isolate.py --isolated foo.isolated -- --gtest_filter=Foo.Bar
   """
   parser = OptionParserIsolate(command='trace')
+  add_trace_option(parser)
   parser.enable_interspersed_args()
   parser.add_option(
       '-m', '--merge', action='store_true',
@@ -2223,7 +2230,8 @@ def CMDtrace(args):
   complete_state.save_files()
 
   if options.merge:
-    merge(complete_state)
+    blacklist = trace_inputs.gen_blacklist(options.trace_blacklist)
+    merge(complete_state, blacklist)
 
   return result
 
@@ -2269,6 +2277,16 @@ def add_variable_option(parser):
       help='Variables to process in the .isolate file, default: %default. '
             'Variables are persistent accross calls, they are saved inside '
             '<.isolated>.state')
+
+
+def add_trace_option(parser):
+  """Adds --trace-blacklist to the parser."""
+  parser.add_option(
+      '--trace-blacklist',
+      action='append', default=list(DEFAULT_BLACKLIST),
+      help='List of regexp to use as blacklist filter for files to consider '
+           'important, not to be confused with --blacklist which blacklists '
+           'test case.')
 
 
 def parse_isolated_option(parser, options, cwd, require_isolated):

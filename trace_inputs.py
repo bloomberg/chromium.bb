@@ -499,6 +499,14 @@ def fix_python_path(cmd):
   return out
 
 
+def gen_blacklist(regexes):
+  """Returns a lambda to be used as a blacklist."""
+  compiled = [re.compile(i) for i in regexes]
+  def match(f):
+    return any(j.match(f) for j in compiled)
+  return match
+
+
 def create_subprocess_thunk():
   """Creates a small temporary script to start the child process.
 
@@ -3550,7 +3558,7 @@ def extract_directories(root_dir, files, blacklist):
   Arguments:
     - root_dir: Optional base directory that shouldn't be search further.
     - files: list of Results.File instances.
-    - blacklist: regexp of files to ignore, for example r'.+\.pyc'.
+    - blacklist: lambda to reject unneeded files, for example r'.+\.pyc'.
   """
   logging.info(
       'extract_directories(%s, %d files, ...)' % (root_dir, len(files)))
@@ -3688,7 +3696,7 @@ def CMDread(args):
       '-j', '--json', action='store_true',
       help='Outputs raw result data as json')
   parser.add_option(
-      '-b', '--blacklist', action='append', default=[],
+      '--trace-blacklist', action='append', default=[],
       help='List of regexp to use as blacklist filter')
   options, args = parser.parse_args(args)
 
@@ -3698,8 +3706,7 @@ def CMDread(args):
 
   variables = dict(options.variables)
   api = get_api()
-  def blacklist(f):
-    return any(re.match(b, f) for b in options.blacklist)
+  blacklist = gen_blacklist(options.trace_blacklist)
   data = api.parse_log(options.log, blacklist, options.trace_name)
   # Process each trace.
   output_as_json = []

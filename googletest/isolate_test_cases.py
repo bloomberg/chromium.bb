@@ -14,7 +14,6 @@ and isolate_test_cases.py uses the same filename for the trace by default.
 
 import logging
 import os
-import re
 import subprocess
 import sys
 
@@ -31,7 +30,7 @@ import trace_test_cases
 
 def isolate_test_cases(
     cmd, test_cases, jobs, isolated_file, isolate_file,
-    root_dir, reldir, variables, blacklist):
+    root_dir, reldir, variables, trace_blacklist):
   assert os.path.isabs(root_dir) and os.path.isdir(root_dir), root_dir
 
   logname = isolated_file + '.log'
@@ -40,16 +39,10 @@ def isolate_test_cases(
   # Do the actual tracing.
   results = trace_test_cases.trace_test_cases(
       cmd, cwd_dir, test_cases, jobs, logname)
-
-  def effective_blacklist(f):
-    return (
-        isolate.chromium_default_blacklist(f) or
-        any(re.match(b, f) for b in blacklist))
-
   api = trace_inputs.get_api()
+  blacklist = trace_inputs.gen_blacklist(trace_blacklist)
   logs = dict(
-      (i.pop('trace'), i)
-      for i in api.parse_log(logname, effective_blacklist, None))
+      (i.pop('trace'), i) for i in api.parse_log(logname, blacklist, None))
   exception = None
   try:
     inputs = []
@@ -70,7 +63,8 @@ def isolate_test_cases(
           touched,
           root_dir,
           variables,
-          reldir)
+          reldir,
+          blacklist)
       # item['test_case'] could be an invalid file name.
       out = basename + '.' + item['tracename'] + '.isolate'
       with open(out, 'w') as f:
@@ -142,12 +136,7 @@ def main():
       usage='%prog <options> --isolated <.isolated>')
   parser.format_description = lambda *_: parser.description
   isolate.add_variable_option(parser)
-  parser.add_option(
-      '--trace-blacklist',
-      action='append', default=[],
-      help='List of regexp to use as blacklist filter for files to consider '
-           'important, not to be confused with --blacklist which blacklists '
-           'test case.')
+  isolate.add_trace_option(parser)
 
   # TODO(maruel): Add support for options.timeout.
   parser.remove_option('--timeout')
