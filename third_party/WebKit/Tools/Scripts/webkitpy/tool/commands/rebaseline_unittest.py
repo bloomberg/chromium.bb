@@ -699,3 +699,75 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 """)
         finally:
             builders._exact_matches = old_exact_matches
+
+    def test_execute_test_passes_everywhere(self):
+        def blame(path):
+            return """
+6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   13) Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+"""
+        self.tool.scm().blame = blame
+
+        test_port = self.tool.port_factory.get('test')
+        original_get = self.tool.port_factory.get
+
+        def get_test_port(port_name=None, options=None, **kwargs):
+            if not port_name:
+                return test_port
+            return original_get(port_name, options, **kwargs)
+        # Need to make sure all the ports grabbed use the test checkout path instead of the mock checkout path.
+        self.tool.port_factory.get = get_test_port
+
+        old_builder_data = self.command.builder_data
+
+        def builder_data():
+            self.command._builder_data['MOCK Leopard'] = self.command._builder_data['MOCK SnowLeopard'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
+    "tests": {
+        "fast": {
+            "dom": {
+                "prototype-taco.html": {
+                    "expected": "PASS",
+                    "actual": "PASS TEXT",
+                    "is_unexpected": true
+                }
+            }
+        }
+    }
+});""")
+            return self.command._builder_data
+
+        self.command.builder_data = builder_data
+
+        self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
+Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+""")
+
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+
+        old_exact_matches = builders._exact_matches
+        try:
+            builders._exact_matches = {
+                "MOCK Leopard": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
+                "MOCK SnowLeopard": {"port_name": "test-mac-snowleopard", "specifiers": set(["mock-specifier"])},
+            }
+
+            self.command.tree_status = lambda: 'open'
+            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
+            self.assertEqual(self.tool.executive.calls, [
+                [
+                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-taco.html'],
+                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
+                ],
+                [
+                    ['echo', 'rebaseline-test-internal', '--suffixes', 'txt', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-taco.html'],
+                    ['echo', 'rebaseline-test-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
+                ],
+                ['echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html'],
+                ['git', 'pull'],
+            ])
+
+            # The mac ports should both be removed since they're the only ones in builders._exact_matches.
+            self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
+Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
+""")
+        finally:
+            builders._exact_matches = old_exact_matches

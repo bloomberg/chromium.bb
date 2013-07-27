@@ -700,7 +700,10 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             tool.scm().delete_branch(self.AUTO_REBASELINE_BRANCH_NAME)
             tool.scm().create_clean_branch(self.AUTO_REBASELINE_BRANCH_NAME)
 
-            self._rebaseline(options, test_prefix_list)
+            # If the tests are passing everywhere, then this list will be empty. We don't need
+            # to rebaseline, but we'll still need to update TestExpectations.
+            if test_prefix_list:
+                self._rebaseline(options, test_prefix_list)
             # If a test is not failing on the bot, we don't try to rebaseline it, but we still
             # want to remove the NeedsRebaseline line.
             self._update_expectations_files(lines_to_remove)
