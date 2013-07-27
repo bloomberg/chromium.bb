@@ -36,6 +36,7 @@
 #include "V8SVGElement.h"
 #include "V8SVGElementWrapperFactory.h"
 #include "bindings/v8/DOMDataStore.h"
+#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/CustomElement.h"
 #include "core/dom/CustomElementRegistrationContext.h"
@@ -95,7 +96,7 @@ v8::Handle<v8::Object> CustomElementWrapper<ElementType, WrapperType>::wrap(Pass
     // to never pass an empty creation context.
     v8::Handle<v8::Context> context = creationContext.IsEmpty() ? isolate->GetCurrentContext() : creationContext->CreationContext();
 
-    if (!element->isUpgradedCustomElement())
+    if (!element->isUpgradedCustomElement() || DOMWrapperWorld::isolatedWorld(context))
         return createUpgradeCandidateWrapper(element.get(), creationContext, isolate, createSpecificWrapper);
 
     V8PerContextData* perContextData = V8PerContextData::from(context);
