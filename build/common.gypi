@@ -3827,9 +3827,6 @@
                 # this is worth fixing.
                 '-Wno-c++11-narrowing',
 
-                # TODO(thakis): Remove, http://crbug.com/263960
-                '-Wno-reserved-user-defined-literal',
-
                 # Don't die on dtoa code that uses a char as an array index.
                 # This is required solely for base/third_party/dmg_fp/dtoa.cc.
                 '-Wno-char-subscripts',
@@ -4135,8 +4132,6 @@
             '-Wno-unnamed-type-template-args',
             # Match OS X clang C++11 warning settings.
             '-Wno-c++11-narrowing',
-            # TODO(thakis): Remove, http://crbug.com/263960
-            '-Wno-reserved-user-defined-literal',
           ],
         },
         'target_conditions': [
