@@ -621,6 +621,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
     def get_test_prefix_list(self, tests):
         test_prefix_list = {}
+        lines_to_remove = {}
         builder_data = self.builder_data()
 
         for builder_name in self._release_builders():
@@ -630,6 +631,10 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             for test in expectations.get_needs_rebaseline_failures():
                 if test not in tests:
                     continue
+
+                if test not in lines_to_remove:
+                    lines_to_remove[test] = []
+                lines_to_remove[test].append(builder_name)
 
                 actual_results = builder_data[builder_name].actual_results(test)
                 if not actual_results:
@@ -643,7 +648,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                     test_prefix_list[test] = {}
                 test_prefix_list[test][builder_name] = suffixes
 
-        return test_prefix_list
+        return test_prefix_list, lines_to_remove
 
     def _run_git_cl_command(self, options, command):
         subprocess_command = ['git', 'cl'] + command
@@ -679,7 +684,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             _log.info("Bot min revision is %s." % min_revision)
 
         tests, revision, author, bugs = self.tests_to_rebaseline(tool, min_revision, print_revisions=options.verbose)
-        test_prefix_list = self.get_test_prefix_list(tests)
+        test_prefix_list, lines_to_remove = self.get_test_prefix_list(tests)
 
         if not tests:
             _log.debug('No tests to rebaseline.')
@@ -696,6 +701,9 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             tool.scm().create_clean_branch(self.AUTO_REBASELINE_BRANCH_NAME)
 
             self._rebaseline(options, test_prefix_list)
+            # If a test is not failing on the bot, we don't try to rebaseline it, but we still
+            # want to remove the NeedsRebaseline line.
+            self._update_expectations_files(lines_to_remove)
 
             tool.scm().commit_locally_with_message(self.commit_message(author, revision, bugs))
 

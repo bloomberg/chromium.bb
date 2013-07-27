@@ -31,6 +31,7 @@ import webkitpy.thirdparty.unittest2 as unittest
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.common.net.buildbot.buildbot_mock import MockBuilder
+from webkitpy.common.net.layouttestresults import LayoutTestResults
 from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.thirdparty.mock import Mock
 from webkitpy.tool.commands.rebaseline import *
@@ -610,6 +611,37 @@ TBR=foo@chromium.org
         # Need to make sure all the ports grabbed use the test checkout path instead of the mock checkout path.
         self.tool.port_factory.get = get_test_port
 
+        old_builder_data = self.command.builder_data
+
+        def builder_data():
+            old_builder_data()
+            # have prototype-chocolate only fail on "MOCK Leopard".
+            self.command._builder_data['MOCK SnowLeopard'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
+    "tests": {
+        "fast": {
+            "dom": {
+                "prototype-taco.html": {
+                    "expected": "PASS",
+                    "actual": "PASS TEXT",
+                    "is_unexpected": true
+                },
+                "prototype-chocolate.html": {
+                    "expected": "FAIL",
+                    "actual": "PASS"
+                },
+                "prototype-strawberry.html": {
+                    "expected": "PASS",
+                    "actual": "IMAGE PASS",
+                    "is_unexpected": true
+                }
+            }
+        }
+    }
+});""")
+            return self.command._builder_data
+
+        self.command.builder_data = builder_data
+
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 crbug.com/24182 [ Debug ] path/to/norebaseline.html [ Rebaseline ]
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -641,14 +673,12 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
             self.assertEqual(self.tool.executive.calls, [
                 [
                     ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-chocolate.html'],
-                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-chocolate.html'],
                     ['echo', 'copy-existing-baselines-internal', '--suffixes', 'png', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-strawberry.html'],
                     ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-taco.html'],
                     ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
                 ],
                 [
                     ['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-chocolate.html'],
-                    ['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-chocolate.html'],
                     ['echo', 'rebaseline-test-internal', '--suffixes', 'png', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-strawberry.html'],
                     ['echo', 'rebaseline-test-internal', '--suffixes', 'txt', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-taco.html'],
                     ['echo', 'rebaseline-test-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
@@ -658,5 +688,14 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
                 ['echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html'],
                 ['git', 'pull'],
             ])
+
+            # The mac ports should both be removed since they're the only ones in builders._exact_matches.
+            self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
+crbug.com/24182 [ Debug ] path/to/norebaseline.html [ Rebaseline ]
+Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
+crbug.com/24182 [ Linux Win ] fast/dom/prototype-chocolate.html [ NeedsRebaseline ]
+crbug.com/24182 path/to/not-cycled-through-bots.html [ NeedsRebaseline ]
+crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
+""")
         finally:
             builders._exact_matches = old_exact_matches
