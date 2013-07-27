@@ -6,7 +6,6 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
-#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/base_layout_manager.h"
@@ -38,42 +37,6 @@ namespace {
 // the window is added to the workspace.
 const float kMinimumPercentOnScreenArea = 0.66f;
 
-typedef std::map<const aura::Window*, gfx::Rect> BoundsMap;
-
-// Adds an entry from |window| to its bounds and recursively invokes this for
-// all children.
-void BuildWindowBoundsMap(const aura::Window* window, BoundsMap* bounds_map) {
-  (*bounds_map)[window] = window->bounds();
-  for (size_t i = 0; i < window->children().size(); ++i)
-    BuildWindowBoundsMap(window->children()[i], bounds_map);
-}
-
-// Resets |window|s bounds from |bounds_map| if currently empty. Recursively
-// invokes this for all children.
-void ResetBoundsIfNecessary(const BoundsMap& bounds_map, aura::Window* window) {
-  if (window->bounds().IsEmpty() && window->GetTargetBounds().IsEmpty()) {
-    BoundsMap::const_iterator i = bounds_map.find(window);
-    if (i != bounds_map.end())
-      window->SetBounds(i->second);
-  }
-  for (size_t i = 0; i < window->children().size(); ++i)
-    ResetBoundsIfNecessary(bounds_map, window->children()[i]);
-}
-
-// Resets |window|s bounds from |bounds_map| if |window| is marked as a
-// constrained window. Recursively invokes this for all children.
-// TODO(sky): this should key off window type.
-void ResetConstrainedWindowBoundsIfNecessary(const BoundsMap& bounds_map,
-                                             aura::Window* window) {
-  if (window->GetProperty(aura::client::kConstrainedWindowKey)) {
-    BoundsMap::const_iterator i = bounds_map.find(window);
-    if (i != bounds_map.end())
-      window->SetBounds(i->second);
-  }
-  for (size_t i = 0; i < window->children().size(); ++i)
-    ResetConstrainedWindowBoundsIfNecessary(bounds_map, window->children()[i]);
-}
-
 bool IsMaximizedState(ui::WindowShowState state) {
   return state == ui::SHOW_STATE_MAXIMIZED ||
       state == ui::SHOW_STATE_FULLSCREEN;
@@ -82,40 +45,24 @@ bool IsMaximizedState(ui::WindowShowState state) {
 }  // namespace
 
 WorkspaceLayoutManager::WorkspaceLayoutManager(Workspace* workspace)
-    : root_window_(workspace->window()->GetRootWindow()),
+    : BaseLayoutManager(workspace->window()->GetRootWindow()),
       workspace_(workspace),
       work_area_(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
                      workspace->window()->parent())) {
-  Shell::GetInstance()->AddShellObserver(this);
-  root_window_->AddObserver(this);
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {
-  if (root_window_)
-    root_window_->RemoveObserver(this);
-  for (WindowSet::const_iterator i = windows_.begin(); i != windows_.end(); ++i)
-    (*i)->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
   // Adjust window bounds in case that the new child is out of the workspace.
   AdjustWindowSizeForScreenChange(child, ADJUST_WINDOW_WINDOW_ADDED);
-
-  windows_.insert(child);
-  child->AddObserver(this);
-
-  // Only update the bounds if the window has a show state that depends on the
-  // workspace area.
-  if (wm::IsWindowMaximized(child) || wm::IsWindowFullscreen(child))
-    UpdateBoundsFromShowState(child);
-
+  BaseLayoutManager::OnWindowAddedToLayout(child);
   workspace_manager()->OnWindowAddedToWorkspace(workspace_, child);
 }
 
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(Window* child) {
-  windows_.erase(child);
-  child->RemoveObserver(this);
+  BaseLayoutManager::OnWillRemoveWindowFromLayout(child);
   workspace_manager()->OnWillRemoveWindowFromWorkspace(workspace_, child);
 }
 
@@ -125,12 +72,7 @@ void WorkspaceLayoutManager::OnWindowRemovedFromLayout(Window* child) {
 
 void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
                                                             bool visible) {
-  if (visible && wm::IsWindowMinimized(child)) {
-    // Attempting to show a minimized window. Unminimize it.
-    child->SetProperty(aura::client::kShowStateKey,
-                       child->GetProperty(aura::client::kRestoreShowStateKey));
-    child->ClearProperty(aura::client::kRestoreShowStateKey);
-  }
+  BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
   workspace_manager()->OnWorkspaceChildWindowVisibilityChanged(workspace_,
                                                                child);
 }
@@ -214,21 +156,6 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
   }
 }
 
-void WorkspaceLayoutManager::OnWindowDestroying(aura::Window* window) {
-  if (root_window_ == window) {
-    root_window_->RemoveObserver(this);
-    root_window_ = NULL;
-  }
-}
-
-void WorkspaceLayoutManager::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
-  if (root_window_ == window)
-    AdjustWindowSizesForScreenChange(ADJUST_WINDOW_SCREEN_SIZE_CHANGED);
-}
-
 void WorkspaceLayoutManager::ShowStateChanged(
     Window* window,
     ui::WindowShowState last_show_state) {
@@ -262,24 +189,9 @@ void WorkspaceLayoutManager::ShowStateChanged(
 
 void WorkspaceLayoutManager::AdjustWindowSizesForScreenChange(
     AdjustWindowReason reason) {
-  // Don't do any adjustments of the insets while we are in screen locked mode.
-  // This would happen if the launcher was auto hidden before the login screen
-  // was shown and then gets shown when the login screen gets presented.
-  if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED &&
-      Shell::GetInstance()->session_state_delegate()->IsScreenLocked())
-    return;
   work_area_ = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
       workspace_->window()->parent());
-  // If a user plugs an external display into a laptop running Aura the
-  // display size will change.  Maximized windows need to resize to match.
-  // We also do this when developers running Aura on a desktop manually resize
-  // the host window.
-  // We also need to do this when the work area insets changes.
-  for (WindowSet::const_iterator it = windows_.begin();
-       it != windows_.end();
-       ++it) {
-    AdjustWindowSizeForScreenChange(*it, reason);
-  }
+  BaseLayoutManager::AdjustWindowSizesForScreenChange(reason);
 }
 
 void WorkspaceLayoutManager::AdjustWindowSizeForScreenChange(

@@ -5,6 +5,8 @@
 #include "ash/wm/base_layout_manager.h"
 
 #include "ash/screen_ash.h"
+#include "ash/session_state_delegate.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -32,9 +34,6 @@ class BaseLayoutManagerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
-    Shell::GetInstance()->SetDisplayWorkAreaInsets(
-        Shell::GetPrimaryRootWindow(),
-        gfx::Insets(1, 2, 3, 4));
     UpdateDisplay("800x600");
     aura::Window* default_container = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(),
@@ -291,6 +290,34 @@ TEST_F(BaseLayoutManagerTest, BoundsAfterRestoringToMaximizeFromMinimize) {
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
 }
 
-}  // namespace
+// Verify if the window is not resized during screen lock. See: crbug.com/173127
+TEST_F(BaseLayoutManagerTest, NotResizeWhenScreenIsLocked) {
+  SetCanLockScreen(true);
+  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
+  // window with AlwaysOnTop will be managed by BaseLayoutManager.
+  window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window->Show();
 
+  internal::ShelfLayoutManager* shelf =
+      internal::ShelfLayoutManager::ForLauncher(window.get());
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  window->SetBounds(ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()));
+  gfx::Rect window_bounds = window->bounds();
+  EXPECT_EQ(
+      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      window_bounds.ToString());
+
+  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  shelf->UpdateVisibilityState();
+  EXPECT_NE(
+      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      window_bounds.ToString());
+
+  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+  shelf->UpdateVisibilityState();
+  EXPECT_EQ(window_bounds.ToString(), window->bounds().ToString());
+}
+
+}  // namespace
 }  // namespace ash
