@@ -22,6 +22,10 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#endif
+
 namespace {
 
 // This HTTP header and value are set on loads that originate from Instant.
@@ -128,6 +132,14 @@ scoped_ptr<content::WebContents> InstantLoader::ReleaseContents() {
       SetAllContentsBlocked(false);
   TabSpecificContentSettings::FromWebContents(contents())->
       SetPopupsBlocked(false);
+#if !defined(OS_ANDROID)
+  PopupBlockerTabHelper* popup_helper =
+      PopupBlockerTabHelper::FromWebContents(contents());
+  if (popup_helper) {
+    TabSpecificContentSettings::FromWebContents(contents())
+        ->SetPopupsBlocked(!!popup_helper->GetBlockedPopupsCount());
+  }
+#endif
 
   CoreTabHelper::FromWebContents(contents())->set_delegate(NULL);
 
