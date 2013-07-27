@@ -14,7 +14,7 @@
 # This test verifies that a mismatch reftest will fail if both results are the
 # same.  Because the whole point is that this test should fail when run, it's
 # not SKIP, just WONTFIX.
-fast/harness/sample-fail-mismatch-reftest.html [ WontFix ImageOnlyFailure ]
+fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Chrome Win/Linux doesn't support emacs key-bindings.
 [ Win Linux ] editing/pasteboard/emacs-cntl-y-001.html [ WontFix ]
