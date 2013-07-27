@@ -2035,8 +2035,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   if (is_guest)
     return true;
 
-  LOG(ERROR) << "opener " << opener_url << " - " << source_origin;
-
   HostContentSettingsMap* content_settings =
       ProfileIOData::FromResourceContext(context)->GetHostContentSettingsMap();
 
