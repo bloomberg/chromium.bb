@@ -26,7 +26,7 @@ setup_gitgit
     "$GIT_CL upload -m test | grep -q 'Issue created'"
 
   test_expect_failure "description shouldn't contain unrelated commits" \
-    "$GIT_CL status | grep -q 'second commit'"
+    "$GIT_CL_STATUS | grep -q 'second commit'"
 )
 SUCCESS=$?
 

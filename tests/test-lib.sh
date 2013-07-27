@@ -15,7 +15,9 @@ TRUNK_URL=$REPO_URL/trunk
 BRANCH_URL=$REPO_URL/branches/some_branch
 GITREPO_PATH=$PWD/gitrepo
 GITREPO_URL=file://$GITREPO_PATH
+PATH="$PWD/..:$PATH"
 GIT_CL=$PWD/../git-cl
+GIT_CL_STATUS="$GIT_CL status -f"
 
 # Set up an SVN repo that has a few commits to trunk.
 setup_initsvn() {

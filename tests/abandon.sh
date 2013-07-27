@@ -33,7 +33,7 @@ setup_gitsvn
   # Verify that "status" doesn't know about it anymore.
   # The "exit" trickiness is inverting the exit status of grep.
   test_expect_success "git-cl status dropped abandoned branch" \
-    "$GIT_CL status | grep -q abandoned && exit 1 || exit 0"
+    "$GIT_CL_STATUS | grep -q abandoned && exit 1 || exit 0"
 )
 
 SUCCESS=$?

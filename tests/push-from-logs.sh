@@ -26,7 +26,7 @@ setup_gitgit
   git config rietveld.server localhost:8080
 
   test_expect_success "git-cl status has no issue" \
-    "$GIT_CL status | grep -q 'no issue'"
+    "$GIT_CL_STATUS | grep -q 'no issue'"
 
   # Prevent the editor from coming up when you upload.
   export EDITOR=$(which true)
@@ -35,15 +35,15 @@ setup_gitgit
       grep -q 'Issue created'"
 
   test_expect_success "git-cl status now knows the issue" \
-      "$GIT_CL status | grep -q 'Issue number'"
+      "$GIT_CL_STATUS | grep -q 'Issue number'"
 
   # Check to see if the description contains the local commit messages.
   # Should contain 'branch work' x 2.
   test_expect_success "git-cl status has the right description for the log" \
-      "$GIT_CL status --field desc | [ $( egrep -q '^branch work$' -c ) -eq 2 ]
+      "$GIT_CL_STATUS --field desc | [ $( egrep -q '^branch work$' -c ) -eq 2 ]
   
   test_expect_success "git-cl status has the right subject from message" \
-      "$GIT_CL status --field desc | \
+      "$GIT_CL_STATUS --field desc | \
       [ $( egrep -q '^test$' --byte-offset) | grep '^0:' ]
 
   test_expect_success "git-cl push ok" \
@@ -56,7 +56,7 @@ setup_gitgit
       "git show | [ $( egrep -q '^branch work$' -c ) -eq 2 ]
 
   test_expect_success "issue no longer has a branch" \
-      "$GIT_CL status | grep -q 'work: None'"
+      "$GIT_CL_STATUS | grep -q 'work: None'"
 
   cd $GITREPO_PATH
   test_expect_success "upstream repo has our commit" \

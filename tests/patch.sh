@@ -27,9 +27,9 @@ setup_gitsvn
     "$GIT_CL upload -m test master | grep -q 'Issue created'"
 
   test_expect_success "git-cl status now knows the issue" \
-    "$GIT_CL status | grep -q 'Issue number'"
+    "$GIT_CL_STATUS | grep -q 'Issue number'"
 
-  ISSUE=$($GIT_CL status | awk '$0 ~ "Issue number:" { print $3 }')
+  ISSUE=$($GIT_CL_STATUS | awk '$0 ~ "Issue number:" { print $3 }')
 
   git checkout -q -b test2 master
 
