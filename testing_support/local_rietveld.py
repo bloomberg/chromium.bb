@@ -39,15 +39,12 @@ def test_port(port):
     s.close()
 
 
-def find_free_port():
-  # Test to find an available port starting at 8080.
-  port = 8080
-  max_val = (2<<16)
-  while test_port(port) and port < max_val:
-    port += 1
-  if port == max_val:
-    raise Failure('Having issues finding an available port')
-  return port
+def find_free_port(start_port):
+  """Search for a free port starting at specified port."""
+  for port in xrange(start_port, (2<<16)):
+    if not test_port(port):
+      return port
+  raise Failure('Having issues finding an available port')
 
 
 class LocalRietveld(object):
@@ -110,7 +107,8 @@ class LocalRietveld(object):
     self.install_prerequisites()
     assert not self.tempdir
     self.tempdir = tempfile.mkdtemp(prefix='rietveld_test')
-    self.port = find_free_port()
+    self.port = find_free_port(8080)
+    admin_port = find_free_port(self.port + 1)
     if verbose:
       stdout = stderr = None
     else:
@@ -121,6 +119,7 @@ class LocalRietveld(object):
         self.dev_app,
         '.',
         '--port', str(self.port),
+        '--admin_port', str(admin_port),
         '--storage', self.tempdir,
         '--clear_search_indexes',
         '--skip_sdk_update_check',
