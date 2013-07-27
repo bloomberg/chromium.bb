@@ -49,7 +49,7 @@ private:
 
 void CreatedInvocation::dispatch(Element* element)
 {
-    if (element->inDocument())
+    if (element->inDocument() && element->document()->defaultView())
         CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(callbacks(), element);
     callbacks()->created(element);
 }

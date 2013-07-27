@@ -1235,7 +1235,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
         return InsertionDone;
 
     if (isUpgradedCustomElement())
-        CustomElement::didEnterDocument(this);
+        CustomElement::didEnterDocument(this, document());
 
     const AtomicString& idValue = getIdAttribute();
     if (!idValue.isNull())
@@ -1297,7 +1297,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
             document()->accessSVGExtensions()->removeElementFromPendingResources(this);
 
         if (isUpgradedCustomElement())
-            CustomElement::didLeaveDocument(this);
+            CustomElement::didLeaveDocument(this, insertionPoint->document());
     }
 }
 

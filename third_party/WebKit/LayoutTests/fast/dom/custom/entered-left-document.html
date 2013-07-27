@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="test-harness-utils.js"></script>
+<body>
+<script>
+(function () {
+var t = async_test('entered callback should not be invoked for documents ' +
+                   'without a view');
+withFrame(t.step_func(function (frame) {
+    // Set up a definition
+
+    var docA = frame.contentDocument;
+    var docB = docA.implementation.createHTMLDocument();
+
+    var invocations = [];
+    function log(msg) {
+        return function () { invocations.push(msg); };
+    }
+
+    var proto = Object.create(frame.contentWindow.HTMLElement.prototype);
+    proto.createdCallback = log('created');
+    proto.attributeChangedCallback = log('attribute changed');
+    proto.enteredDocumentCallback = log('entered');
+    proto.leftDocumentCallback = log('left');
+
+    // Created, owned by a document without a view
+
+    var A = docB.register('x-a', {prototype: proto});
+    var a = new A();
+    assert_equals(a.ownerDocument, docB,
+                  'new instance should be owned by the document the ' +
+                  'definition was registered with');
+    assert_array_equals(invocations, ['created'],
+                        'calling the constructor should invoke the created ' +
+                        'callback');
+
+    // Entered document without a view
+
+    invocations = [];
+    docB.body.appendChild(a);
+    assert_array_equals(invocations, [],
+                        'entered callback should not be invoked for a ' +
+                        'document without a view');
+
+    // Attribute changed in document without a view
+
+    a.setAttribute('data-foo', 'bar');
+    assert_array_equals(invocations, ['attribute changed'],
+                        'changing an attribute should invoke the callback, ' +
+                        'even in a document without a view');
+
+    // Entered document with a view
+
+    invocations = [];
+    docA.body.appendChild(a);
+    assert_array_equals(invocations, ['entered'],
+                        'entered callback should be invoked for a document ' +
+                        'with a view');
+
+    // Created in a document without a view
+
+    invocations = [];
+    docB.body.innerHTML = '<x-a></x-a>';
+    assert_array_equals(invocations, ['created'],
+                        'only created callback should be invoked when ' +
+                        'parsing a custom element in a document without a ' +
+                        'view');
+
+    frame.remove();    
+    t.done();
+}));
+})();
+</script>

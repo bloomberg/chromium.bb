@@ -40,6 +40,7 @@
 
 namespace WebCore {
 
+class Document;
 class Element;
 
 class CustomElement {
@@ -53,8 +54,8 @@ public:
     // API for Element to kick off changes
 
     static void attributeDidChange(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
-    static void didEnterDocument(Element*);
-    static void didLeaveDocument(Element*);
+    static void didEnterDocument(Element*, Document*);
+    static void didLeaveDocument(Element*, Document*);
     static void wasDestroyed(Element*);
 
 private:

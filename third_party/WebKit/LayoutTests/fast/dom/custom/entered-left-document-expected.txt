@@ -1,0 +1,3 @@
+ 
+PASS entered callback should not be invoked for documents without a view 
+
