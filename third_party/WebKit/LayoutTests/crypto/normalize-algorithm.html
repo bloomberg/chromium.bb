@@ -10,152 +10,124 @@
 <script>
 description("Tests algorithm normalization.");
 
-jsTestIsAsync = true;
-
 // -------------------------------
 // Helpers to return a normalized algorithm identifier.
 // -------------------------------
 
-key = null;
-
-function normalizeDigest(algorithmIdentifier)
-{
+function normalizeDigest(algorithmIdentifier) {
     return crypto.subtle.digest(algorithmIdentifier).algorithm;
 }
 
-function normalizeEncrypt(algorithmIdentifier)
-{
+function normalizeEncrypt(algorithmIdentifier) {
+    // TODO(eroman): Use a valid key.
+    var key;
     return crypto.subtle.encrypt(algorithmIdentifier, key).algorithm;
 }
 
-function normalizeSign(algorithmIdentifier)
-{
+function normalizeSign(algorithmIdentifier) {
+    // TODO(eroman): Use a valid key.
+    var key;
     return crypto.subtle.sign(algorithmIdentifier, key).algorithm;
 }
 
-function runTests()
-{
-    // -------------------------------
-    // Case insensitivity of "name"
-    // -------------------------------
-    algorithm = normalizeDigest({name: "SHA-1"});
-    shouldBe("algorithm.name", "'SHA-1'");
-    algorithm = normalizeDigest({name: "sHa-256"});
-    shouldBe("algorithm.name", "'SHA-256'");
+// -------------------------------
+// Case insensitivity of "name"
+// -------------------------------
+algorithm = normalizeDigest({name: "SHA-1"});
+shouldBe("algorithm.name", "'SHA-1'");
+algorithm = normalizeDigest({name: "sHa-256"});
+shouldBe("algorithm.name", "'SHA-256'");
 
-    // -------------------------------
-    // Failures if "name" is invalid
-    // -------------------------------
-    shouldThrow("normalizeDigest({})");
-    shouldThrow("normalizeDigest({name: null})");
-    shouldThrow("normalizeDigest({name: -1})");
-    shouldThrow("normalizeDigest({name: ''})");
-    shouldThrow("normalizeDigest({name: 'nosuchalgorithm'})");
-    shouldThrow("normalizeDigest({name: '\\u0189'})");
+// -------------------------------
+// Failures if "name" is invalid
+// -------------------------------
+shouldThrow("normalizeDigest({})");
+shouldThrow("normalizeDigest({name: null})");
+shouldThrow("normalizeDigest({name: -1})");
+shouldThrow("normalizeDigest({name: ''})");
+shouldThrow("normalizeDigest({name: 'nosuchalgorithm'})");
+shouldThrow("normalizeDigest({name: '\\u0189'})");
 
-    // -------------------------------
-    // Failures if the algorithm identifier is not an object
-    // -------------------------------
-    shouldThrow("normalizeDigest(null)");
-    shouldThrow("normalizeDigest(0)");
-    shouldThrow("normalizeDigest(undefined)");
-    shouldThrow("normalizeDigest('')");
+// -------------------------------
+// Failures if the algorithm identifier is not an object
+// -------------------------------
+shouldThrow("normalizeDigest(null)");
+shouldThrow("normalizeDigest(0)");
+shouldThrow("normalizeDigest(undefined)");
+shouldThrow("normalizeDigest('')");
 
-    // -------------------------------
-    // Skip unrecognized parameters.
-    // -------------------------------
-    algorithm = normalizeDigest({name: "sHa-1", noSuchParam: 3});
-    shouldBeUndefined("algorithm.noSuchParam");
+// -------------------------------
+// Skip unrecognized parameters.
+// -------------------------------
+algorithm = normalizeDigest({name: "sHa-1", noSuchParam: 3});
+shouldBeUndefined("algorithm.noSuchParam");
 
-    // -------------------------------
-    // Normalized algorithm COPIES all data
-    // -------------------------------
-    originalIv = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
-    algorithm = normalizeEncrypt({ name: "aes-cbc", iv: originalIv });
+// -------------------------------
+// Normalized algorithm COPIES all data
+// -------------------------------
+originalIv = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+algorithm = normalizeEncrypt({ name: "aes-cbc", iv: originalIv });
 
-    // Make sure it constructed the normalized result.
-    shouldBe("algorithm.name", "'AES-CBC'");
-    shouldBe("algorithm.iv.length", "16");
-    shouldBe("algorithm.iv[3]", "3");
+// Make sure it constructed the normalized result.
+shouldBe("algorithm.name", "'AES-CBC'");
+shouldBe("algorithm.iv.length", "16");
+shouldBe("algorithm.iv[3]", "3");
 
-    // Mutate the original (un-normalized) algorithm. Verify that this doesn't affect the normalized output.
-    originalIv[3] = 0;
-    shouldBe("algorithm.iv[3]", "3");
+// Mutate the original (un-normalized) algorithm. Verify that this doesn't affect the normalized output.
+originalIv[3] = 0;
+shouldBe("algorithm.iv[3]", "3");
 
-    // -------------------------------
-    // AES-CBC normalization failures
-    // -------------------------------
+// -------------------------------
+// AES-CBC normalization failures
+// -------------------------------
 
-    // The "iv" MUST be 16 bytes long.
-    rawAlgorithm = {
-        name: "AES-CBC",
-        iv: new Uint8Array([1, 2, 3])
-    };
-    shouldThrow("normalizeEncrypt(rawAlgorithm)");
+// The "iv" MUST be 16 bytes long.
+rawAlgorithm = {
+    name: "AES-CBC",
+    iv: new Uint8Array([1, 2, 3])
+};
+shouldThrow("normalizeEncrypt(rawAlgorithm)");
 
-    // -------------------------------
-    // Normalize a normalized algorithm (SHA-384)
-    // -------------------------------
-    algorithm = normalizeDigest({name: "sHa-384"});
-    shouldBe("algorithm.name", "'SHA-384'");
-    algorithm = normalizeDigest(algorithm);
-    shouldBe("algorithm.name", "'SHA-384'");
+// -------------------------------
+// Normalize a normalized algorithm (SHA-384)
+// -------------------------------
+algorithm = normalizeDigest({name: "sHa-384"});
+shouldBe("algorithm.name", "'SHA-384'");
+algorithm = normalizeDigest(algorithm);
+shouldBe("algorithm.name", "'SHA-384'");
 
-    // -------------------------------
-    // Normalize a normalized algorithm (AES-CBC, encrypt)
-    // -------------------------------
-    algorithm = normalizeEncrypt({ name: "aEs-cbc", iv: originalIv });
-    // Make sure it constructed the normalized result.
-    shouldBe("algorithm.name", "'AES-CBC'");
-    shouldBe("algorithm.iv.length", "16");
-    shouldBe("algorithm.iv[1]", "1");
-    algorithm = normalizeEncrypt(algorithm);
-    shouldBe("algorithm.name", "'AES-CBC'");
-    shouldBe("algorithm.iv.length", "16");
-    shouldBe("algorithm.iv[1]", "1");
+// -------------------------------
+// Normalize a normalized algorithm (AES-CBC, encrypt)
+// -------------------------------
+algorithm = normalizeEncrypt({ name: "aEs-cbc", iv: originalIv });
+// Make sure it constructed the normalized result.
+shouldBe("algorithm.name", "'AES-CBC'");
+shouldBe("algorithm.iv.length", "16");
+shouldBe("algorithm.iv[1]", "1");
+algorithm = normalizeEncrypt(algorithm);
+shouldBe("algorithm.name", "'AES-CBC'");
+shouldBe("algorithm.iv.length", "16");
+shouldBe("algorithm.iv[1]", "1");
 
-    // -------------------------------
-    // Unsupported operation on algorithm
-    // -------------------------------
-    shouldThrow("normalizeEncrypt({ name: 'SHA-1' })");
-    shouldThrow("normalizeDigest({ name: 'AES-CBC', iv: originalIv })");
+// -------------------------------
+// Unsupported operation on algorithm
+// -------------------------------
+shouldThrow("normalizeEncrypt({ name: 'SHA-1' })");
+shouldThrow("normalizeDigest({ name: 'AES-CBC', iv: originalIv })");
 
-    // -------------------------------
-    // Normalize HMAC
-    // -------------------------------
-    shouldThrow("normalizeSign({name: 'hmac'})"); // Missing "hash"
-    shouldThrow("normalizeSign({name: 'hmac', hash: 'foo'})"); // Not a valid "hash"
-    shouldThrow("normalizeSign({name: 'hmac', hash: { name: 'AES-CBC', iv: originalIv }})"); // Not a valid "hash"
+// -------------------------------
+// Normalize HMAC
+// -------------------------------
+shouldThrow("normalizeSign({name: 'hmac'})"); // Missing "hash"
+shouldThrow("normalizeSign({name: 'hmac', hash: 'foo'})"); // Not a valid "hash"
+shouldThrow("normalizeSign({name: 'hmac', hash: { name: 'AES-CBC', iv: originalIv }})"); // Not a valid "hash"
 
-    validHmacSha1 = {name: 'hmac', hash: {name: 'Sha-1'}};
-    algorithm = normalizeSign(validHmacSha1);
-    shouldBe("algorithm.name", "'HMAC'");
-    shouldBe("algorithm.hash.name", "'SHA-1'");
+validHmacSha1 = {name: 'hmac', hash: {name: 'Sha-1'}};
+algorithm = normalizeSign(validHmacSha1);
+shouldBe("algorithm.name", "'HMAC'");
+shouldBe("algorithm.hash.name", "'SHA-1'");
 
-    shouldThrow("normalizeEncrypt(validHmacSha1)"); // Not defined for encrypt()
-}
-
-function keyImported(newKey)
-{
-    key = newKey;
-    runTests();
-    finishJSTest();
-}
-
-function failedKeyImport(value)
-{
-    debug("Failed importing key: " + value);
-    finishJSTest();
-}
-
-// This is a bogus key import, however the mock constructs something usable.
-keyFormat = "spki";
-data = new Uint8Array([]);
-algorithm = {name: "Sha-256"};
-extractable = false;
-keyUsages = [];
-
-crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(keyImported, failedKeyImport);
+shouldThrow("normalizeEncrypt(validHmacSha1)"); // Not defined for encrypt()
 
 </script>
 
