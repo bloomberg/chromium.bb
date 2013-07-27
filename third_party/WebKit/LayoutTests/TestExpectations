@@ -76,6 +76,11 @@ webkit.org/b/90488 [ Debug ] http/tests/inspector [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled [ Slow ]
 webkit.org/b/90488 [ Debug ] inspector-protocol [ Slow ]
 
+# Got slow after Blink r155029-155040
+crbug.com/265059 [ Debug ] webaudio/audiobuffersource-loop-points.html [ Slow ]
+crbug.com/265059 [ Debug ] webaudio/audiobuffersource-playbackrate.html [ Slow ]
+crbug.com/265059 [ Debug ] webaudio/audiobuffersource-multi-channels.html [ Slow ]
+
 crbug.com/257132 http/tests/inspector/extensions-useragent.html [ Failure Pass Timeout ]
 crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure Pass Timeout ]
 crbug.com/257132 http/tests/inspector/resource-har-conversion.html [ Failure Pass Timeout ]
@@ -1709,3 +1714,4 @@ crbug.com/263879 fast/text/international/hindi-spacing.html [ NeedsManualRebasel
 # Temporary expectation until v8's i18n support is turned on. Then it needs to
 # be rebaslined.
 Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Failure Pass ]
+
