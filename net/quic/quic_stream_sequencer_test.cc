@@ -148,6 +148,7 @@ TEST_F(QuicStreamSequencerTest, RejectOldFrame) {
 }
 
 TEST_F(QuicStreamSequencerTest, RejectOverlyLargeFrame) {
+  // TODO(rch): enable when chromium supports EXPECT_DFATAL.
   /*
   EXPECT_DFATAL(sequencer_.reset(new QuicStreamSequencerPeer(2, &stream_)),
                 "Setting max frame memory to 2.  "
@@ -384,6 +385,43 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
   // Verify data.
   const char* expected4[] = {"i"};
   ASSERT_TRUE(VerifyReadableRegions(expected4, arraysize(expected4)));
+}
+
+TEST_F(QuicStreamSequencerTest, MarkConsumedError) {
+  // TODO(rch): enable when chromium supports EXPECT_DFATAL.
+  /*
+  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(0));
+
+  EXPECT_TRUE(sequencer_->OnFrame(0, "abc"));
+  EXPECT_TRUE(sequencer_->OnFrame(9, "jklmnopqrstuvwxyz"));
+
+  // Peek into the data.  Only the first chunk should be readable
+  // because of the missing data.
+  const char* expected[] = {"abc"};
+  ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
+
+  // Now, attempt to mark consumed more data than was readable
+  // and expect the stream to be closed.
+  EXPECT_CALL(stream_, Close(QUIC_SERVER_ERROR_PROCESSING_STREAM));
+  EXPECT_DFATAL(sequencer_->MarkConsumed(4),
+                "Invalid argument to MarkConsumed.  num_bytes_consumed_: 3 "
+                "end_offset: 4 offset: 9 length: 17");
+  */
+}
+
+TEST_F(QuicStreamSequencerTest, MarkConsumedWithMissingPacket) {
+  InSequence s;
+  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(0));
+
+  EXPECT_TRUE(sequencer_->OnFrame(0, "abc"));
+  EXPECT_TRUE(sequencer_->OnFrame(3, "def"));
+  // Missing packet: 6, ghi
+  EXPECT_TRUE(sequencer_->OnFrame(9, "jkl"));
+
+  const char* expected[] = {"abc", "def"};
+  ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
+
+  sequencer_->MarkConsumed(6);
 }
 
 TEST_F(QuicStreamSequencerTest, BasicHalfCloseOrdered) {
