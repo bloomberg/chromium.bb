@@ -51,6 +51,8 @@ public:
     bool isCSS() const { return m_isCSS; }
     bool isXSL() const { return m_isXSL; }
 
+    bool isLoading() const;
+
 private:
     ProcessingInstruction(Document*, const String& target, const String& data);
 
@@ -69,7 +71,6 @@ private:
     virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet*);
     virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet);
 
-    bool isLoading() const;
     virtual bool sheetLoaded();
 
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
