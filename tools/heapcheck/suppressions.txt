@@ -510,15 +510,6 @@
    fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
    fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
 }
-# Intentionally comment this out temporarily to get a stack trace from the bot.
-#{
-#   bug_155530
-#   Heapcheck:Leak
-#   ...
-#   fun:*CreateLocaleDefaultValue
-#   ...
-#   fun:PermissionQueueControllerTests::SetUp
-#}
 {
    bug_157885
    Heapcheck:Leak
