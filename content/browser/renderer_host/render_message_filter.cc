@@ -290,6 +290,7 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
 
 RenderMessageFilter::RenderMessageFilter(
     int render_process_id,
+    bool is_guest,
     PluginServiceImpl* plugin_service,
     BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
@@ -306,6 +307,7 @@ RenderMessageFilter::RenderMessageFilter(
       incognito_(browser_context->IsOffTheRecord()),
       dom_storage_context_(dom_storage_context),
       render_process_id_(render_process_id),
+      is_guest_(is_guest),
       cpu_usage_(0),
       audio_manager_(audio_manager),
       media_internals_(media_internals) {
@@ -459,8 +461,16 @@ void RenderMessageFilter::OnCreateWindow(
           params.opener_url,
           params.opener_security_origin,
           params.window_container_type,
+          params.target_url,
+          params.referrer,
+          params.disposition,
+          params.features,
+          params.user_gesture,
+          params.opener_suppressed,
           resource_context_,
           render_process_id_,
+          is_guest_,
+          params.opener_id,
           &no_javascript_access);
 
   if (!can_create_window) {

@@ -147,7 +147,7 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
       if (!params->extension_app_id.empty()) {
         app_name = web_app::GenerateApplicationNameFromExtensionId(
             params->extension_app_id);
-      } else if (!params->browser->app_name().empty()) {
+      } else if (params->browser && !params->browser->app_name().empty()) {
         app_name = params->browser->app_name();
       } else if (params->source_contents) {
         extensions::TabHelper* extensions_tab_helper =

@@ -24,6 +24,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
+#include "ui/base/window_open_disposition.h"
 #include "webkit/common/resource_type.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -33,6 +34,10 @@
 class CommandLine;
 class GURL;
 struct WebPreferences;
+
+namespace WebKit {
+struct WebWindowFeatures;
+}
 
 namespace base {
 class DictionaryValue;
@@ -93,6 +98,7 @@ class WebContents;
 class WebContentsViewDelegate;
 class WebContentsViewPort;
 struct MainFunctionParams;
+struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
 
 // A mapping from the scheme name to the protocol handler that services its
@@ -460,13 +466,20 @@ class CONTENT_EXPORT ContentBrowserClient {
   // type. If true is returned, |no_javascript_access| will indicate whether
   // the window that is created should be scriptable/in the same process.
   // This is called on the IO thread.
-  virtual bool CanCreateWindow(
-      const GURL& opener_url,
-      const GURL& source_origin,
-      WindowContainerType container_type,
-      ResourceContext* context,
-      int render_process_id,
-      bool* no_javascript_access);
+  virtual bool CanCreateWindow(const GURL& opener_url,
+                               const GURL& source_origin,
+                               WindowContainerType container_type,
+                               const GURL& target_url,
+                               const content::Referrer& referrer,
+                               WindowOpenDisposition disposition,
+                               const WebKit::WebWindowFeatures& features,
+                               bool user_gesture,
+                               bool opener_suppressed,
+                               content::ResourceContext* context,
+                               int render_process_id,
+                               bool is_guest,
+                               int opener_id,
+                               bool* no_javascript_access);
 
   // Returns a title string to use in the task manager for a process host with
   // the given URL, or the empty string to fall back to the default logic.

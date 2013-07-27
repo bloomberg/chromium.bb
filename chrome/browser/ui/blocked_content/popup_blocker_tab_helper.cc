@@ -9,12 +9,14 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 
 using WebKit::WebWindowFeatures;
@@ -88,6 +90,44 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
         OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS, std::string());
     return true;
   }
+}
+
+void PopupBlockerTabHelper::AddBlockedPopup(
+    const GURL& target_url,
+    const content::Referrer& referrer,
+    WindowOpenDisposition disposition,
+    const WebWindowFeatures& features,
+    bool user_gesture,
+    bool opener_suppressed) {
+  chrome::NavigateParams nav_params(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+      target_url,
+      content::PAGE_TRANSITION_LINK);
+  nav_params.referrer = referrer;
+  nav_params.source_contents = web_contents();
+  nav_params.is_renderer_initiated = true;
+  nav_params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
+  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  nav_params.user_gesture = user_gesture;
+  web_contents()->GetView()->GetContainerBounds(&nav_params.window_bounds);
+  if (features.xSet)
+    nav_params.window_bounds.set_x(features.x);
+  if (features.ySet)
+    nav_params.window_bounds.set_y(features.y);
+  if (features.widthSet)
+    nav_params.window_bounds.set_width(features.width);
+  if (features.heightSet)
+    nav_params.window_bounds.set_height(features.height);
+
+  // Compare RenderViewImpl::show().
+  if (!user_gesture && disposition != NEW_BACKGROUND_TAB)
+    nav_params.disposition = NEW_POPUP;
+  else
+    nav_params.disposition = disposition;
+
+  blocked_popups_.Add(new BlockedRequest(nav_params, features));
+  TabSpecificContentSettings::FromWebContents(web_contents())->
+      OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS, std::string());
 }
 
 void PopupBlockerTabHelper::ShowBlockedPopup(int32 id) {

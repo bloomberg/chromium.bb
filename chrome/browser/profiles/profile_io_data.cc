@@ -228,6 +228,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->io_thread = g_browser_process->io_thread();
 
   params->cookie_settings = CookieSettings::Factory::GetForProfile(profile);
+  params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->ssl_config_service = profile->GetSSLConfigService();
   base::Callback<Profile*(void)> profile_getter =
       base::Bind(&GetProfileOnUI, g_browser_process->profile_manager(),
@@ -611,6 +612,11 @@ CookieSettings* ProfileIOData::GetCookieSettings() const {
   return cookie_settings_.get();
 }
 
+HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
+  DCHECK(initialized_);
+  return host_content_settings_map_.get();
+}
+
 #if defined(ENABLE_NOTIFICATIONS)
 DesktopNotificationService* ProfileIOData::GetNotificationService() const {
   DCHECK(initialized_);
@@ -762,6 +768,7 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
+  host_content_settings_map_ = profile_params_->host_content_settings_map;
 #if defined(ENABLE_NOTIFICATIONS)
   notification_service_ = profile_params_->notification_service;
 #endif

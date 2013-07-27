@@ -214,12 +214,21 @@ WebKit::WebNotificationPresenter::Permission
   return WebKit::WebNotificationPresenter::PermissionAllowed;
 }
 
-bool ContentBrowserClient::CanCreateWindow(const GURL& opener_url,
-                                           const GURL& origin,
-                                           WindowContainerType container_type,
-                                           ResourceContext* context,
-                                           int render_process_id,
-                                           bool* no_javascript_access) {
+bool ContentBrowserClient::CanCreateWindow(
+    const GURL& opener_url,
+    const GURL& source_origin,
+    WindowContainerType container_type,
+    const GURL& target_url,
+    const content::Referrer& referrer,
+    WindowOpenDisposition disposition,
+    const WebKit::WebWindowFeatures& features,
+    bool user_gesture,
+    bool opener_suppressed,
+    content::ResourceContext* context,
+    int render_process_id,
+    bool is_guest,
+    int opener_id,
+    bool* no_javascript_access) {
   *no_javascript_access = false;
   return true;
 }

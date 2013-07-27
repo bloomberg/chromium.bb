@@ -114,6 +114,7 @@ class ProfileIOData {
   // that profile.
   ExtensionInfoMap* GetExtensionInfoMap() const;
   CookieSettings* GetCookieSettings() const;
+  HostContentSettingsMap* GetHostContentSettingsMap() const;
 
 #if defined(ENABLE_NOTIFICATIONS)
   DesktopNotificationService* GetNotificationService() const;
@@ -245,6 +246,7 @@ class ProfileIOData {
     base::FilePath path;
     IOThread* io_thread;
     scoped_refptr<CookieSettings> cookie_settings;
+    scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
@@ -511,6 +513,8 @@ class ProfileIOData {
   mutable scoped_ptr<ResourceContext> resource_context_;
 
   mutable scoped_refptr<CookieSettings> cookie_settings_;
+
+  mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   mutable scoped_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
       resource_prefetch_predictor_observer_;

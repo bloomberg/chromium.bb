@@ -29,9 +29,17 @@ class PopupBlockerTabHelper
   virtual ~PopupBlockerTabHelper();
 
   // Returns true if the popup request defined by |params| should be blocked.
-  // In that case, it is also added to the |blocked_contents_| container.
+  // In that case, it is also added to the |blocked_popups_| container.
   bool MaybeBlockPopup(const chrome::NavigateParams& params,
                        const WebKit::WebWindowFeatures& window_features);
+
+  // Adds a popup request to the |blocked_popups_| container.
+  void AddBlockedPopup(const GURL& target_url,
+                       const content::Referrer& referrer,
+                       WindowOpenDisposition disposition,
+                       const WebKit::WebWindowFeatures& features,
+                       bool user_gesture,
+                       bool opener_suppressed);
 
   // Creates the blocked popup with |popup_id|.
   void ShowBlockedPopup(int32 popup_id);

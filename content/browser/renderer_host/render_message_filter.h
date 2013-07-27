@@ -81,6 +81,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
  public:
   // Create the filter.
   RenderMessageFilter(int render_process_id,
+                      bool is_guest,
                       PluginServiceImpl * plugin_service,
                       BrowserContext* browser_context,
                       net::URLRequestContextGetter* request_context,
@@ -291,6 +292,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   scoped_refptr<DOMStorageContextImpl> dom_storage_context_;
 
   int render_process_id_;
+
+  bool is_guest_;
 
   std::set<OpenChannelToNpapiPluginCallback*> plugin_host_clients_;
 

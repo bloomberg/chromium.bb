@@ -199,13 +199,20 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int render_process_id,
       int render_view_id,
       int notification_id) OVERRIDE;
-  virtual bool CanCreateWindow(
-      const GURL& opener_url,
-      const GURL& source_origin,
-      WindowContainerType container_type,
-      content::ResourceContext* context,
-      int render_process_id,
-      bool* no_javascript_access) OVERRIDE;
+  virtual bool CanCreateWindow(const GURL& opener_url,
+                               const GURL& source_origin,
+                               WindowContainerType container_type,
+                               const GURL& target_url,
+                               const content::Referrer& referrer,
+                               WindowOpenDisposition disposition,
+                               const WebKit::WebWindowFeatures& features,
+                               bool user_gesture,
+                               bool opener_suppressed,
+                               content::ResourceContext* context,
+                               int render_process_id,
+                               bool is_guest,
+                               int opener_id,
+                               bool* no_javascript_access) OVERRIDE;
   virtual std::string GetWorkerProcessTitle(
       const GURL& url, content::ResourceContext* context) OVERRIDE;
   virtual void ResourceDispatcherHostCreated() OVERRIDE;

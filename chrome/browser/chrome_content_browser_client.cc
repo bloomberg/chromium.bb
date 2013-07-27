@@ -58,6 +58,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/plugin_info_message_filter.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_message_filter.h"
@@ -170,6 +171,10 @@
 #include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#endif
+
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
@@ -223,6 +228,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_x11.h"
 #endif
 
+using WebKit::WebWindowFeatures;
 using base::FileDescriptor;
 using content::AccessTokenStore;
 using content::BrowserChildProcessHostIterator;
@@ -515,6 +521,63 @@ void SetApplicationLocaleOnIOThread(const std::string& locale) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   g_io_thread_application_locale.Get() = locale;
 }
+
+#if !defined(OS_ANDROID)
+struct BlockedPopupParams {
+  BlockedPopupParams(const GURL& target_url,
+                     const content::Referrer& referrer,
+                     WindowOpenDisposition disposition,
+                     const WebWindowFeatures& features,
+                     bool user_gesture,
+                     bool opener_suppressed,
+                     int render_process_id,
+                     int opener_id)
+      : target_url(target_url),
+        referrer(referrer),
+        disposition(disposition),
+        features(features),
+        user_gesture(user_gesture),
+        opener_suppressed(opener_suppressed),
+        render_process_id(render_process_id),
+        opener_id(opener_id)
+        {}
+
+  GURL target_url;
+  content::Referrer referrer;
+  WindowOpenDisposition disposition;
+  WebWindowFeatures features;
+  bool user_gesture;
+  bool opener_suppressed;
+  int render_process_id;
+  int opener_id;
+};
+
+void HandleBlockedPopupOnUIThread(const BlockedPopupParams& params) {
+  WebContents* tab =
+      tab_util::GetWebContentsByID(params.render_process_id, params.opener_id);
+  if (!tab)
+    return;
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(tab->GetBrowserContext()));
+  prerender_manager->DestroyPrerenderForRenderView(
+      params.render_process_id,
+      params.opener_id,
+      prerender::FINAL_STATUS_CREATE_NEW_WINDOW);
+
+  PopupBlockerTabHelper* popup_helper =
+      PopupBlockerTabHelper::FromWebContents(tab);
+  if (!popup_helper)
+    return;
+  popup_helper->AddBlockedPopup(params.target_url,
+                                params.referrer,
+                                params.disposition,
+                                params.features,
+                                params.user_gesture,
+                                params.opener_suppressed);
+}
+#endif
 
 }  // namespace
 
@@ -1915,8 +1978,16 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
     const GURL& source_origin,
     WindowContainerType container_type,
+    const GURL& target_url,
+    const content::Referrer& referrer,
+    WindowOpenDisposition disposition,
+    const WebWindowFeatures& features,
+    bool user_gesture,
+    bool opener_suppressed,
     content::ResourceContext* context,
     int render_process_id,
+    bool is_guest,
+    int opener_id,
     bool* no_javascript_access) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -1945,6 +2016,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
         map->extensions().GetExtensionOrAppByURL(opener_url);
     if (extension && !extensions::BackgroundInfo::AllowJSAccess(extension))
       *no_javascript_access = true;
+
+    return true;
   }
 
   // No new browser window (popup or tab) in app mode.
@@ -1952,6 +2025,47 @@ bool ChromeContentBrowserClient::CanCreateWindow(
       chrome::IsRunningInForcedAppMode()) {
     return false;
   }
+
+#if !defined(OS_ANDROID)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBetterPopupBlocking)) {
+    return true;
+  }
+
+  if (is_guest)
+    return true;
+
+  LOG(ERROR) << "opener " << opener_url << " - " << source_origin;
+
+  HostContentSettingsMap* content_settings =
+      ProfileIOData::FromResourceContext(context)->GetHostContentSettingsMap();
+
+  if ((disposition == NEW_POPUP || disposition == NEW_FOREGROUND_TAB ||
+       disposition == NEW_BACKGROUND_TAB) && !user_gesture &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePopupBlocking)) {
+    if (content_settings->GetContentSetting(opener_url,
+                                            opener_url,
+                                            CONTENT_SETTINGS_TYPE_POPUPS,
+                                            std::string()) ==
+        CONTENT_SETTING_ALLOW) {
+      return true;
+    }
+
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&HandleBlockedPopupOnUIThread,
+                                       BlockedPopupParams(target_url,
+                                                          referrer,
+                                                          disposition,
+                                                          features,
+                                                          user_gesture,
+                                                          opener_suppressed,
+                                                          render_process_id,
+                                                          opener_id)));
+    return false;
+  }
+#endif
 
   return true;
 }
