@@ -44,17 +44,6 @@ bool MockWebHyphenator::canHyphenate(const WebKit::WebString& locale) {
       locale.equals("en_GB");
 }
 
-// DEPRECATED
-size_t MockWebHyphenator::computeLastHyphenLocation(
-    const char16* characters,
-    size_t length,
-    size_t before_index,
-    const WebKit::WebString& locale)
-{
-    return computeLastHyphenLocation(
-        WebKit::WebString(characters, length), before_index, locale);
-}
-
 size_t MockWebHyphenator::computeLastHyphenLocation(
     const WebKit::WebString& characters,
     size_t before_index,

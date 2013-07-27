@@ -175,13 +175,6 @@ class RendererWebKitPlatformSupportImpl::Hyphenator
       size_t before_index,
       const WebKit::WebString& locale);
 
-  // DEPRECATED
-  virtual size_t computeLastHyphenLocation(
-      const char16* characters,
-      size_t length,
-      size_t before_index,
-      const WebKit::WebString& locale);
-
  private:
   scoped_ptr<content::Hyphenator> hyphenator_;
 
@@ -593,19 +586,6 @@ bool RendererWebKitPlatformSupportImpl::Hyphenator::canHyphenate(
     return hyphenator_->Attach(RenderThreadImpl::current(), locale);
   }
   return hyphenator_->CanHyphenate(locale);
-}
-
-// DEPRECATED
-size_t RendererWebKitPlatformSupportImpl::Hyphenator::computeLastHyphenLocation(
-    const char16* characters,
-    size_t length,
-    size_t before_index,
-    const WebKit::WebString& locale) {
-  // Crash if WebKit calls this function when canHyphenate returns false.
-  DCHECK(locale.isEmpty() || locale.equals("en-US"));
-  DCHECK(hyphenator_.get());
-  return hyphenator_->ComputeLastHyphenLocation(string16(characters, length),
-                                                before_index);
 }
 
 size_t RendererWebKitPlatformSupportImpl::Hyphenator::computeLastHyphenLocation(

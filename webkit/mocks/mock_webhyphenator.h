@@ -33,13 +33,6 @@ class MockWebHyphenator : public WebKit::WebHyphenator {
       size_t before_index,
       const WebKit::WebString& locale);
 
-  // DEPRECATED
-  virtual size_t computeLastHyphenLocation(
-      const char16* characters,
-      size_t length,
-      size_t before_index,
-      const WebKit::WebString& locale);
-
  private:
   HyphenDict* hyphen_dictionary_;
 
