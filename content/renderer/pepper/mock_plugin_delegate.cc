@@ -77,12 +77,6 @@ WebKit::WebPlugin* MockPluginDelegate::CreatePluginReplacement(
   return NULL;
 }
 
-PluginDelegate::PlatformGraphics2D* MockPluginDelegate::GetGraphics2D(
-    PepperPluginInstanceImpl* instance,
-    PP_Resource graphics_2d) {
-  return NULL;
-}
-
 MockPluginDelegate::PlatformContext3D* MockPluginDelegate::CreateContext3D() {
   return NULL;
 }

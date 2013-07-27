@@ -97,6 +97,7 @@ namespace content {
 class ContentDecryptorDelegate;
 class FullscreenContainer;
 class MessageChannel;
+class PepperGraphics2DHost;
 class PluginDelegate;
 class PluginModule;
 class PluginObject;
@@ -249,11 +250,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   bool CanRotateView();
   void RotateView(WebKit::WebPlugin::RotationType type);
-
-  // Sets the bound_graphics_2d_platform_ for testing purposes. This is instead
-  // of calling BindGraphics and allows any PlatformGraphics implementation to
-  // be used, not just a resource one.
-  void SetBoundGraphics2DForTest(PluginDelegate::PlatformGraphics2D* graphics);
 
   // There are 2 implementations of the fullscreen interface
   // PPB_FlashFullscreen is used by Pepper Flash.
@@ -599,10 +595,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool GetPreferredPrintOutputFormat(PP_PrintOutputFormat_Dev* format);
   bool PrintPDFOutput(PP_Resource print_output, WebKit::WebCanvas* canvas);
 
-  // Get the bound graphics context as a concrete 2D graphics context or returns
-  // null if the context is not 2D.
-  PluginDelegate::PlatformGraphics2D* GetBoundGraphics2D() const;
-
   // Updates the layer for compositing. This creates a layer and attaches to the
   // container if:
   // - we have a bound Graphics3D
@@ -692,7 +684,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // The current device context for painting in 2D and 3D.
   scoped_refptr<PPB_Graphics3D_Impl> bound_graphics_3d_;
-  PluginDelegate::PlatformGraphics2D* bound_graphics_2d_platform_;
+  PepperGraphics2DHost* bound_graphics_2d_platform_;
 
   // We track two types of focus, one from WebKit, which is the focus among
   // all elements of the page, one one from the browser, which is whether the

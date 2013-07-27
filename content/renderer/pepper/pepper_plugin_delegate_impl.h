@@ -33,6 +33,9 @@ class FilePath;
 namespace ppapi {
 class PepperFilePath;
 class PPB_X509Certificate_Fields;
+namespace host {
+class ResourceHost;
+}
 }
 
 namespace WebKit {
@@ -54,6 +57,9 @@ class PepperPluginDelegateImpl
       public base::SupportsWeakPtr<PepperPluginDelegateImpl>,
       public RenderViewObserver {
  public:
+  static ppapi::host::ResourceHost* GetRendererResourceHost(
+      PP_Instance instance, PP_Resource resource);
+
   explicit PepperPluginDelegateImpl(RenderViewImpl* render_view);
   virtual ~PepperPluginDelegateImpl();
 
@@ -139,9 +145,6 @@ class PepperPluginDelegateImpl
       uint32_t sample_rate,
       uint32_t sample_count,
       PlatformAudioOutputClient* client) OVERRIDE;
-  virtual PlatformGraphics2D* GetGraphics2D(
-      PepperPluginInstanceImpl* instance,
-      PP_Resource resource) OVERRIDE;
   virtual PlatformContext3D* CreateContext3D() OVERRIDE;
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,

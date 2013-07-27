@@ -113,35 +113,6 @@ class PPB_TCPSocket_Private_Impl;
 // PPAPI plugins.
 class PluginDelegate {
  public:
-  class CONTENT_EXPORT PlatformGraphics2D {
-   public:
-    virtual ~PlatformGraphics2D() {}
-
-    virtual bool ReadImageData(PP_Resource image, const PP_Point* top_left) = 0;
-
-    // Assciates this device with the given plugin instance. You can pass NULL
-    // to clear the existing device. Returns true on success. In this case, a
-    // repaint of the page will also be scheduled. Failure means that the device
-    // is already bound to a different instance, and nothing will happen.
-    virtual bool BindToInstance(PepperPluginInstanceImpl* new_instance) = 0;
-
-    // Paints the current backing store to the web page.
-    virtual void Paint(WebKit::WebCanvas* canvas,
-                       const gfx::Rect& plugin_rect,
-                       const gfx::Rect& paint_rect) = 0;
-
-    // Notifications about the view's progress painting.  See PluginInstance.
-    // These messages are used to send Flush callbacks to the plugin.
-    virtual void ViewWillInitiatePaint() = 0;
-    virtual void ViewInitiatedPaint() = 0;
-    virtual void ViewFlushedPaint() = 0;
-
-    virtual bool IsAlwaysOpaque() const = 0;
-    virtual void SetScale(float scale) = 0;
-    virtual float GetScale() const = 0;
-    virtual PPB_ImageData_Impl* ImageData() = 0;
-  };
-
   class PlatformContext3D {
    public:
     virtual ~PlatformContext3D() {}
@@ -276,10 +247,6 @@ class PluginDelegate {
   // couldn't be loaded.
   virtual WebKit::WebPlugin* CreatePluginReplacement(
       const base::FilePath& file_path) = 0;
-
-  // Returns the internal PlatformGraphics2D implementation.
-  virtual PlatformGraphics2D* GetGraphics2D(PepperPluginInstanceImpl* instance,
-                                            PP_Resource graphics_2d) = 0;
 
   // The caller will own the pointer returned from this.
   virtual PlatformContext3D* CreateContext3D() = 0;

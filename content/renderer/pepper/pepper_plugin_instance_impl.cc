@@ -25,6 +25,8 @@
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/npapi_glue.h"
+#include "content/renderer/pepper/pepper_graphics_2d_host.h"
+#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
@@ -552,9 +554,8 @@ void PepperPluginInstanceImpl::Paint(WebCanvas* canvas,
     return;
   }
 
-  PluginDelegate::PlatformGraphics2D* bound_graphics_2d = GetBoundGraphics2D();
-  if (bound_graphics_2d)
-    bound_graphics_2d->Paint(canvas, plugin_rect, paint_rect);
+  if (bound_graphics_2d_platform_)
+    bound_graphics_2d_platform_->Paint(canvas, plugin_rect, paint_rect);
 }
 
 void PepperPluginInstanceImpl::InvalidateRect(const gfx::Rect& rect) {
@@ -1012,15 +1013,15 @@ void PepperPluginInstanceImpl::PageVisibilityChanged(bool is_visible) {
 }
 
 void PepperPluginInstanceImpl::ViewWillInitiatePaint() {
-  if (GetBoundGraphics2D())
-    GetBoundGraphics2D()->ViewWillInitiatePaint();
+  if (bound_graphics_2d_platform_)
+    bound_graphics_2d_platform_->ViewWillInitiatePaint();
   else if (bound_graphics_3d_.get())
     bound_graphics_3d_->ViewWillInitiatePaint();
 }
 
 void PepperPluginInstanceImpl::ViewInitiatedPaint() {
-  if (GetBoundGraphics2D())
-    GetBoundGraphics2D()->ViewInitiatedPaint();
+  if (bound_graphics_2d_platform_)
+    bound_graphics_2d_platform_->ViewInitiatedPaint();
   else if (bound_graphics_3d_.get())
     bound_graphics_3d_->ViewInitiatedPaint();
 }
@@ -1028,8 +1029,8 @@ void PepperPluginInstanceImpl::ViewInitiatedPaint() {
 void PepperPluginInstanceImpl::ViewFlushedPaint() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  if (GetBoundGraphics2D())
-    GetBoundGraphics2D()->ViewFlushedPaint();
+  if (bound_graphics_2d_platform_)
+    bound_graphics_2d_platform_->ViewFlushedPaint();
   else if (bound_graphics_3d_.get())
     bound_graphics_3d_->ViewFlushedPaint();
 }
@@ -1042,13 +1043,15 @@ bool PepperPluginInstanceImpl::GetBitmapForOptimizedPluginPaint(
     float* scale_factor) {
   if (!always_on_top_)
     return false;
-  if (!GetBoundGraphics2D() || !GetBoundGraphics2D()->IsAlwaysOpaque())
+  if (!bound_graphics_2d_platform_ ||
+      !bound_graphics_2d_platform_->IsAlwaysOpaque()) {
     return false;
+  }
 
   // We specifically want to compare against the area covered by the backing
   // store when seeing if we cover the given paint bounds, since the backing
   // store could be smaller than the declared plugin area.
-  PPB_ImageData_Impl* image_data = GetBoundGraphics2D()->ImageData();
+  PPB_ImageData_Impl* image_data = bound_graphics_2d_platform_->ImageData();
   // ImageDatas created by NaCl don't have a TransportDIB, so can't be
   // optimized this way.
   if (!image_data->GetTransportDIB())
@@ -1062,7 +1065,7 @@ bool PepperPluginInstanceImpl::GetBitmapForOptimizedPluginPaint(
 
   gfx::Rect pixel_plugin_backing_store_rect(
       0, 0, image_data->width(), image_data->height());
-  float scale = GetBoundGraphics2D()->GetScale();
+  float scale = bound_graphics_2d_platform_->GetScale();
   gfx::Rect plugin_backing_store_rect = gfx::ToEnclosedRect(
       gfx::ScaleRect(pixel_plugin_backing_store_rect, scale));
 
@@ -1499,15 +1502,6 @@ bool PepperPluginInstanceImpl::CanRotateView() {
   return true;
 }
 
-void PepperPluginInstanceImpl::SetBoundGraphics2DForTest(
-    PluginDelegate::PlatformGraphics2D* graphics) {
-  BindGraphics(pp_instance(), 0);  // Unbind any old stuff.
-  if (graphics) {
-    bound_graphics_2d_platform_ = graphics;
-    bound_graphics_2d_platform_->BindToInstance(this);
-  }
-}
-
 void PepperPluginInstanceImpl::RotateView(WebPlugin::RotationType type) {
   if (!LoadPdfInterface())
     return;
@@ -1709,11 +1703,6 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
 #endif
 }
 
-PluginDelegate::PlatformGraphics2D*
-    PepperPluginInstanceImpl::GetBoundGraphics2D() const {
-  return bound_graphics_2d_platform_;
-}
-
 static void IgnoreCallback(unsigned, bool) {}
 
 void PepperPluginInstanceImpl::UpdateLayer() {
@@ -1902,7 +1891,7 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
     bound_graphics_3d_ = NULL;
   }
   if (bound_graphics_2d_platform_) {
-    GetBoundGraphics2D()->BindToInstance(NULL);
+    bound_graphics_2d_platform_->BindToInstance(NULL);
     bound_graphics_2d_platform_ = NULL;
   }
 
@@ -1919,8 +1908,14 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
       desired_fullscreen_state_ != view_data_.is_fullscreen)
     return PP_FALSE;
 
-  PluginDelegate::PlatformGraphics2D* graphics_2d =
-      delegate_->GetGraphics2D(this, device);
+  ppapi::host::ResourceHost* host =
+      PepperPluginDelegateImpl::GetRendererResourceHost(pp_instance(), device);
+  PepperGraphics2DHost* graphics_2d = NULL;
+  if (host) {
+    graphics_2d = host->AsPepperGraphics2DHost();
+    DLOG_IF(ERROR, !graphics_2d) << "Resource is not PepperGraphics2DHost.";
+  }
+
   EnterResourceNoLock<PPB_Graphics3D_API> enter_3d(device, false);
   PPB_Graphics3D_Impl* graphics_3d = enter_3d.succeeded() ?
       static_cast<PPB_Graphics3D_Impl*>(enter_3d.object()) : NULL;

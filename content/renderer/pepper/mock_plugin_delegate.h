@@ -42,8 +42,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
   virtual WebKit::WebPlugin* CreatePluginReplacement(
       const base::FilePath& file_path) OVERRIDE;
-  virtual PlatformGraphics2D* GetGraphics2D(PepperPluginInstanceImpl* instance,
-                                            PP_Resource graphics_2d) OVERRIDE;
   virtual PlatformContext3D* CreateContext3D() OVERRIDE;
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,

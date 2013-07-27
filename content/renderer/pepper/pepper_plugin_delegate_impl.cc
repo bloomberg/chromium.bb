@@ -171,7 +171,9 @@ void CreateHostForInProcessModule(RenderViewImpl* render_view,
   render_view->PpapiPluginCreated(host_impl);
 }
 
-ppapi::host::ResourceHost* GetRendererResourceHost(
+}  // namespace
+
+ppapi::host::ResourceHost* PepperPluginDelegateImpl::GetRendererResourceHost(
     PP_Instance instance, PP_Resource resource) {
   const ppapi::host::PpapiHost* ppapi_host =
       RendererPpapiHost::GetForPPInstance(instance)->GetPpapiHost();
@@ -179,8 +181,6 @@ ppapi::host::ResourceHost* GetRendererResourceHost(
     return NULL;
   return ppapi_host->GetResourceHost(resource);
 }
-
-}  // namespace
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
     : RenderViewObserver(render_view),
@@ -625,19 +625,6 @@ WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePluginReplacement(
     const base::FilePath& file_path) {
   return GetContentClient()->renderer()->CreatePluginReplacement(
       render_view_, file_path);
-}
-
-PluginDelegate::PlatformGraphics2D*
-    PepperPluginDelegateImpl::GetGraphics2D(
-        PepperPluginInstanceImpl* instance,
-        PP_Resource resource) {
-  ppapi::host::ResourceHost* host =
-      GetRendererResourceHost(instance->pp_instance(), resource);
-  if (!host)
-    return NULL;
-  PepperGraphics2DHost* result = host->AsPepperGraphics2DHost();
-  DLOG_IF(ERROR, !result) << "Resource is not PepperGraphics2DHost.";
-  return result;
 }
 
 PluginDelegate::PlatformContext3D*

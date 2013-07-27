@@ -30,7 +30,6 @@ class RendererPpapiHost;
 
 class CONTENT_EXPORT PepperGraphics2DHost
     : public ppapi::host::ResourceHost,
-      public PluginDelegate::PlatformGraphics2D,
       public base::SupportsWeakPtr<PepperGraphics2DHost> {
  public:
   static PepperGraphics2DHost* Create(RendererPpapiHost* host,
@@ -47,20 +46,28 @@ class CONTENT_EXPORT PepperGraphics2DHost
       ppapi::host::HostMessageContext* context) OVERRIDE;
   virtual PepperGraphics2DHost* AsPepperGraphics2DHost() OVERRIDE;
 
-  // PlatformGraphics2D overrides.
-  virtual bool ReadImageData(PP_Resource image,
-                             const PP_Point* top_left) OVERRIDE;
-  virtual bool BindToInstance(PepperPluginInstanceImpl* new_instance) OVERRIDE;
-  virtual void Paint(WebKit::WebCanvas* canvas,
-                     const gfx::Rect& plugin_rect,
-                     const gfx::Rect& paint_rect) OVERRIDE;
-  virtual void ViewWillInitiatePaint() OVERRIDE;
-  virtual void ViewInitiatedPaint() OVERRIDE;
-  virtual void ViewFlushedPaint() OVERRIDE;
-  virtual void SetScale(float scale) OVERRIDE;
-  virtual float GetScale() const OVERRIDE;
-  virtual bool IsAlwaysOpaque() const OVERRIDE;
-  virtual PPB_ImageData_Impl* ImageData() OVERRIDE;
+  bool ReadImageData(PP_Resource image,
+                     const PP_Point* top_left);
+  // Assciates this device with the given plugin instance. You can pass NULL
+  // to clear the existing device. Returns true on success. In this case, a
+  // repaint of the page will also be scheduled. Failure means that the device
+  // is already bound to a different instance, and nothing will happen.
+  bool BindToInstance(PepperPluginInstanceImpl* new_instance);
+  // Paints the current backing store to the web page.
+  void Paint(WebKit::WebCanvas* canvas,
+             const gfx::Rect& plugin_rect,
+             const gfx::Rect& paint_rect);
+
+  // Notifications about the view's progress painting.  See PluginInstance.
+  // These messages are used to send Flush callbacks to the plugin.
+  void ViewWillInitiatePaint();
+  void ViewInitiatedPaint();
+  void ViewFlushedPaint();
+
+  void SetScale(float scale);
+  float GetScale() const;
+  bool IsAlwaysOpaque() const;
+  PPB_ImageData_Impl* ImageData();
 
  private:
   PepperGraphics2DHost(RendererPpapiHost* host,
