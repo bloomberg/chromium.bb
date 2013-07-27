@@ -536,8 +536,7 @@ void SVGSMILElement::connectConditions()
                 condition.m_syncbase = 0;
                 continue;
             }
-            SVGSMILElement* syncbase = static_cast<SVGSMILElement*>(condition.m_syncbase.get());
-            syncbase->addTimeDependent(this);
+            toSVGSMILElement(condition.m_syncbase.get())->addTimeDependent(this);
         }
     }
 }
@@ -564,10 +563,8 @@ void SVGSMILElement::disconnectConditions()
             condition.m_eventListener->disconnectAnimation();
             condition.m_eventListener = 0;
         } else if (condition.m_type == Condition::Syncbase) {
-            if (condition.m_syncbase) {
-                ASSERT(isSMILElement(condition.m_syncbase.get()));
-                static_cast<SVGSMILElement*>(condition.m_syncbase.get())->removeTimeDependent(this);
-            }
+            if (condition.m_syncbase)
+                toSVGSMILElement(condition.m_syncbase.get())->removeTimeDependent(this);
         }
         condition.m_syncbase = 0;
     }
