@@ -50,10 +50,8 @@ class Rietveld(object):
       if email == '':
         # If email is given as an empty string, then assume we want to make
         # requests that do not need authentication.  Bypass authentication by
-        # setting the flag to True.
-        get_creds = lambda: (email, None)
-        self.rpc_server = upload.HttpRpcServer(url, get_creds)
-        self.rpc_server.authenticated = True
+        # setting the auth_function to None.
+        self.rpc_server = upload.HttpRpcServer(url, None)
       else:
         self.rpc_server = upload.GetRpcServer(url, email)
 

@@ -65,6 +65,8 @@ def main():
       '--server',
       default='http://codereview.chromium.org',
       help='Rietveld server')
+  parser.add_option('--no-auth', action='store_true',
+                    help='Do not attempt authenticated requests.')
   options, args = parser.parse_args()
   logging.basicConfig(
       format='%(levelname)5s %(module)11s(%(lineno)4d): %(message)s',
@@ -96,6 +98,8 @@ def main():
   except urllib2.HTTPError, e:
     if e.getcode() != 302:
       raise
+    elif options.no_auth:
+      exit('FAIL: Login detected -- is issue private?')
     # TODO(maruel): A few 'Invalid username or password.' are printed first, we
     # should get rid of those.
   except rietveld.upload.ClientLoginError, e:
