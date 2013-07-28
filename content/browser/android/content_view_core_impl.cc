@@ -394,11 +394,6 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       controls_offset.y(),
       content_offset.y(),
       overdraw_bottom_height);
-
-  for (size_t i = 0; i < update_frame_info_callbacks_.size(); ++i) {
-    update_frame_info_callbacks_[i].Run(
-        content_size, scroll_offset, page_scale_factor);
-  }
 }
 
 void ContentViewCoreImpl::SetTitle(const string16& title) {
@@ -539,22 +534,6 @@ unsigned int ContentViewCoreImpl::GetScaledContentTexture(
     return 0;
 
   return view->GetScaledContentTexture(scale, out_size);
-}
-
-void ContentViewCoreImpl::AddFrameInfoCallback(
-    const UpdateFrameInfoCallback& callback) {
-  update_frame_info_callbacks_.push_back(callback);
-}
-
-void ContentViewCoreImpl::RemoveFrameInfoCallback(
-    const UpdateFrameInfoCallback& callback) {
-  for (size_t i = 0; i < update_frame_info_callbacks_.size(); ++i) {
-    if (update_frame_info_callbacks_[i].Equals(callback)) {
-      update_frame_info_callbacks_.erase(
-          update_frame_info_callbacks_.begin() + i);
-      return;
-    }
-  }
 }
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {

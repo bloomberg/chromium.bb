@@ -60,10 +60,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual float GetDpiScale() const OVERRIDE;
   virtual void RequestContentClipping(const gfx::Rect& clipping,
                                       const gfx::Size& content_size) OVERRIDE;
-  virtual void AddFrameInfoCallback(
-      const UpdateFrameInfoCallback& callback) OVERRIDE;
-  virtual void RemoveFrameInfoCallback(
-      const UpdateFrameInfoCallback& callback) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -365,8 +361,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // The owning window that has a hold of main application activity.
   ui::WindowAndroid* window_android_;
-
-  std::vector<UpdateFrameInfoCallback> update_frame_info_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
 };

@@ -61,11 +61,6 @@ class CONTENT_EXPORT ContentViewCore {
       const gfx::Vector2dF& scroll_offset,
       float page_scale_factor)> UpdateFrameInfoCallback;
 
-  virtual void AddFrameInfoCallback(
-      const UpdateFrameInfoCallback& callback) = 0;
-  virtual void RemoveFrameInfoCallback(
-      const UpdateFrameInfoCallback& callback) = 0;
-
  protected:
   virtual ~ContentViewCore() {};
 };
