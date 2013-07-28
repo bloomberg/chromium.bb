@@ -747,7 +747,8 @@ class RemoteInspectorClient(object):
   # TODO(dennisjeffrey): Allow a user to specify a window index too (not just a
   # tab index), when running through PyAuto.
   def __init__(self, tab_index=0, tab_filter=None,
-               verbose=False, show_socket_messages=False):
+               verbose=False, show_socket_messages=False,
+               url='http://localhost:9222'):
     """Initialize.
 
     Args:
@@ -775,10 +776,6 @@ class RemoteInspectorClient(object):
     # AttributeError in the destructor.
     self._remote_inspector_thread = None
     self._remote_inspector_driver_thread = None
-
-    # TODO(dennisjeffrey): Do not assume port 9222. The port should be passed
-    # as input to this function.
-    url = 'http://localhost:9222'
 
     self._version = self._GetVersion(url)
 
