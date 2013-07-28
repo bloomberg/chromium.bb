@@ -5730,34 +5730,43 @@ TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUMAlreadySet) {
       .RetiresOnSaturation();
 }
 
-TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUM) {
+TEST_F(GLES2DecoderManualInitTest, DrawStreamTextureCHROMIUM) {
   InitDecoder(
       "GL_CHROMIUM_stream_texture GL_OES_EGL_image_external",  // extensions
-      false,   // has alpha
-      false,   // has depth
-      false,   // has stencil
-      false,   // request alpha
-      false,   // request depth
-      false,   // request stencil
-      true);   // bind generates resource
+      true,                                                    // has alpha
+      true,                                                    // has depth
+      false,                                                   // has stencil
+      true,                                                    // request alpha
+      true,                                                    // request depth
+      false,  // request stencil
+      true);  // bind generates resource
 
   StrictMock<MockStreamTexture> stream_texture;
 
   TextureRef* texture_ref = GetTexture(client_texture_id_);
   group().texture_manager()->SetStreamTexture(texture_ref, true);
 
-  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kServiceTextureId))
-      .Times(1)
-      .RetiresOnSaturation();
+  DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  SetupSamplerExternalProgram();
+  SetupIndexBuffer();
+  AddExpectationsForSimulatedAttrib0(kMaxValidIndex + 1, 0);
+  SetupExpectationsForApplyingDefaultDirtyState();
+  EXPECT_TRUE(group().texture_manager()->CanRender(texture_ref));
+
+  InSequence s;
   EXPECT_CALL(*stream_texture_manager(), LookupStreamTexture(kServiceTextureId))
       .WillOnce(Return(&stream_texture))
       .RetiresOnSaturation();
   EXPECT_CALL(stream_texture, Update())
       .Times(1)
       .RetiresOnSaturation();
-
-  BindTexture cmd;
-  cmd.Init(GL_TEXTURE_EXTERNAL_OES, client_texture_id_);
+  EXPECT_CALL(*gl_, DrawElements(_, _, _, _))
+      .Times(1);
+  DrawElements cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
@@ -5895,14 +5904,6 @@ TEST_F(GLES2DecoderManualInitTest, ReCreateStreamTextureCHROMIUM) {
       false,   // request stencil
       true);   // bind generates resource
 
-  StrictMock<MockStreamTexture> stream_texture;
-
-  EXPECT_CALL(*stream_texture_manager(), LookupStreamTexture(kServiceTextureId))
-      .WillOnce(Return(&stream_texture))
-      .RetiresOnSaturation();
-  EXPECT_CALL(stream_texture, Update())
-      .Times(1)
-      .RetiresOnSaturation();
   EXPECT_CALL(*stream_texture_manager(),
               DestroyStreamTexture(kServiceTextureId))
       .Times(1)
@@ -5947,25 +5948,10 @@ TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
       false,   // request stencil
       true);   // bind generates resource
 
-  StrictMock<MockStreamTexture> stream_texture;
-
   TextureRef* texture_ref = GetTexture(client_texture_id_);
   group().texture_manager()->SetStreamTexture(texture_ref, true);
 
-  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kServiceTextureId))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*stream_texture_manager(), LookupStreamTexture(kServiceTextureId))
-      .WillOnce(Return(&stream_texture))
-      .RetiresOnSaturation();
-  EXPECT_CALL(stream_texture, Update())
-      .Times(1)
-      .RetiresOnSaturation();
-
-  BindTexture cmd;
-  cmd.Init(GL_TEXTURE_EXTERNAL_OES, client_texture_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
 
   GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
   group().mailbox_manager()->GenerateMailboxName(

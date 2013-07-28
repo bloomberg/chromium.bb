@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/service/stream_texture.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace content {
 
@@ -26,7 +27,10 @@ StreamTextureManagerAndroid::StreamTextureAndroid::~StreamTextureAndroid() {
 }
 
 void StreamTextureManagerAndroid::StreamTextureAndroid::Update() {
+  GLint texture_id = 0;
+  glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_id);
   surface_texture_bridge_->UpdateTexImage();
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
   if (matrix_callback_.is_null())
     return;
 

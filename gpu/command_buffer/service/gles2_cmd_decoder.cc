@@ -1402,8 +1402,12 @@ class GLES2DecoderImpl : public GLES2Decoder {
       const char* function_name, GLuint max_vertex_accessed, bool* simulated);
   void RestoreStateForAttrib(GLuint attrib);
 
-  // Returns true if textures were set.
-  bool SetBlackTextureForNonRenderableTextures();
+  // If texture is a stream texture, this will update the stream to the newest
+  // buffer.
+  void UpdateStreamTextureIfNeeded(Texture* texture);
+
+  // Returns false if unrenderable textures were replaced.
+  bool PrepareTexturesForRender();
   void RestoreStateForNonRenderableTextures();
 
   // Returns true if GL_FIXED attribs were simulated.
@@ -3901,14 +3905,6 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
       break;
     case GL_TEXTURE_EXTERNAL_OES:
       unit.bound_texture_external_oes = texture_ref;
-      if (texture->IsStreamTexture()) {
-        DCHECK(stream_texture_manager());
-        StreamTexture* stream_tex =
-            stream_texture_manager()->LookupStreamTexture(
-                texture->service_id());
-        if (stream_tex)
-          stream_tex->Update();
-      }
       break;
     case GL_TEXTURE_RECTANGLE_ARB:
       unit.bound_texture_rectangle_arb = texture_ref;
@@ -5673,11 +5669,22 @@ void GLES2DecoderImpl::ForceCompileShaderIfPending(Shader* shader) {
   }
 }
 
-bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
+void GLES2DecoderImpl::UpdateStreamTextureIfNeeded(Texture* texture) {
+  if (texture && texture->IsStreamTexture()) {
+    DCHECK(stream_texture_manager());
+    StreamTexture* stream_tex =
+        stream_texture_manager()->LookupStreamTexture(texture->service_id());
+    if (stream_tex)
+      stream_tex->Update();
+  }
+}
+
+bool GLES2DecoderImpl::PrepareTexturesForRender() {
   DCHECK(state_.current_program.get());
-  // Only check if there are some unrenderable textures.
-  if (!texture_manager()->HaveUnrenderableTextures()) {
-    return false;
+  bool have_unrenderable_textures =
+      texture_manager()->HaveUnrenderableTextures();
+  if (!have_unrenderable_textures && !features().oes_egl_image_external) {
+    return true;
   }
 
   bool textures_set = false;
@@ -5693,7 +5700,9 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
         TextureUnit& texture_unit = state_.texture_units[texture_unit_index];
         TextureRef* texture =
             texture_unit.GetInfoForSamplerType(uniform_info->type).get();
-        if (!texture || !texture_manager()->CanRender(texture)) {
+        UpdateStreamTextureIfNeeded(texture->texture());
+        if (have_unrenderable_textures &&
+            (!texture || !texture_manager()->CanRender(texture))) {
           textures_set = true;
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
           glBindTexture(
@@ -5710,7 +5719,7 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
       // else: should this be an error?
     }
   }
-  return textures_set;
+  return !textures_set;
 }
 
 void GLES2DecoderImpl::RestoreStateForNonRenderableTextures() {
@@ -6070,7 +6079,7 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     if (SimulateFixedAttribs(
         function_name, max_vertex_accessed, &simulated_fixed_attribs,
         primcount)) {
-      bool textures_set = SetBlackTextureForNonRenderableTextures();
+      bool textures_set = !PrepareTexturesForRender();
       ApplyDirtyState();
       if (!instanced) {
         glDrawArrays(mode, first, count);
@@ -6188,7 +6197,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(
     if (SimulateFixedAttribs(
         function_name, max_vertex_accessed, &simulated_fixed_attribs,
         primcount)) {
-      bool textures_set = SetBlackTextureForNonRenderableTextures();
+      bool textures_set = !PrepareTexturesForRender();
       ApplyDirtyState();
       // TODO(gman): Refactor to hide these details in BufferManager or
       // VertexAttribManager.
@@ -9730,6 +9739,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   }
 
   if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
+    UpdateStreamTextureIfNeeded(source_texture);
     DCHECK(stream_texture_manager());
     StreamTexture* stream_tex =
         stream_texture_manager()->LookupStreamTexture(

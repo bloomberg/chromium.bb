@@ -198,6 +198,7 @@ class GLES2DecoderTestBase : public testing::Test {
   void SetupShaderForUniform(GLenum uniform_type);
   void SetupDefaultProgram();
   void SetupCubemapProgram();
+  void SetupSamplerExternalProgram();
   void SetupTexture();
 
   // Note that the error is returned as GLint instead of GLenum.
@@ -470,6 +471,7 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLenum kUniform1Type = GL_SAMPLER_2D;
   static const GLenum kUniform2Type = GL_INT_VEC2;
   static const GLenum kUniform3Type = GL_FLOAT_VEC3;
+  static const GLenum kUniformSamplerExternalType = GL_SAMPLER_EXTERNAL_OES;
   static const GLenum kUniformCubemapType = GL_SAMPLER_CUBE;
   static const GLint kInvalidUniformLocation = 30;
   static const GLint kBadUniformIndex = 1000;
