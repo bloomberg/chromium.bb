@@ -22,7 +22,7 @@ namespace downloads {
   //     <dt>prompt</dt>
   //     <dd>The user will be prompted with a file chooser dialog.</dd>
   // </dl>
-  [inline_doc] enum FilenameConflictAction {uniquify, overwrite, prompt};
+  enum FilenameConflictAction {uniquify, overwrite, prompt};
 
   [inline_doc] dictionary FilenameSuggestion {
     // The $ref:DownloadItem's new target $ref:DownloadItem.filename, as a path
@@ -32,23 +32,50 @@ namespace downloads {
     DOMString filename;
 
     // The action to take if <code>filename</code> already exists.
-    FilenameConflictAction? conflict_action;
+    FilenameConflictAction? conflictAction;
   };
 
   [inline_doc] enum HttpMethod {GET, POST};
+
+  enum InterruptReason {
+    FILE_FAILED,
+    FILE_ACCESS_DENIED,
+    FILE_NO_SPACE,
+    FILE_NAME_TOO_LONG,
+    FILE_TOO_LARGE,
+    FILE_VIRUS_INFECTED,
+    FILE_TRANSIENT_ERROR,
+    FILE_BLOCKED,
+    FILE_SECURITY_CHECK_FAILED,
+    FILE_TOO_SHORT,
+    NETWORK_FAILED,
+    NETWORK_TIMEOUT,
+    NETWORK_DISCONNECTED,
+    NETWORK_SERVER_DOWN,
+    SERVER_FAILED,
+    SERVER_NO_RANGE,
+    SERVER_PRECONDITION,
+    SERVER_BAD_CONTENT,
+    USER_CANCELED,
+    USER_SHUTDOWN,
+    CRASH};
 
   [inline_doc] dictionary DownloadOptions {
     // The URL to download.
     DOMString url;
 
     // A file path relative to the Downloads directory to contain the downloaded
-    // file. Cannot yet contain subdirectories; support for subdirectories will
-    // be implemented before this API is released to the stable channel. See
-    // $ref:onDeterminingFilename for how to dynamically suggest a filename
-    // after the file's MIME type and a tentative filename have been determined.
+    // file, possibly containing subdirectories. Absolute paths, empty paths,
+    // and paths containing back-references ".." will cause an error.
+    // $ref:onDeterminingFilename allows suggesting a filename after the file's
+    // MIME type and a tentative filename have been determined.
     DOMString? filename;
 
-    // Use a file-chooser to allow the user to select a filename.
+    // The action to take if <code>filename</code> already exists.
+    FilenameConflictAction? conflictAction;
+
+    // Use a file-chooser to allow the user to select a filename regardless of
+    // whether <code>filename</code> is set or already exists.
     boolean? saveAs;
 
     // The HTTP method to use if the URL uses the HTTP[S] protocol.
@@ -103,6 +130,9 @@ namespace downloads {
     // Absolute URL.
     DOMString url;
 
+    // Absolute URL.
+    DOMString referrer;
+
     // Absolute local path.
     DOMString filename;
 
@@ -113,9 +143,6 @@ namespace downloads {
     // Indication of whether this download is thought to be safe or known to be
     // suspicious.
     DangerType danger;
-
-    // True if the user has accepted the download's danger.
-    boolean? dangerAccepted;
 
     // The file's MIME type.
     DOMString mime;
@@ -132,6 +159,13 @@ namespace downloads {
     // console.log(new Date(item.endTime))})})</code>
     DOMString? endTime;
 
+    // Estimated time when the download will complete in ISO 8601 format. May be
+    // passed directly to the Date constructor:
+    // <code>chrome.downloads.search({},
+    // function(items){items.forEach(function(item){if (item.estimatedEndTime)
+    // console.log(new Date(item.estimatedEndTime))})})</code>
+    DOMString? estimatedEndTime;
+
     // Indicates whether the download is progressing, interrupted, or complete.
     State state;
 
@@ -139,8 +173,17 @@ namespace downloads {
     // connection open.
     boolean paused;
 
-    // Number indicating why a download was interrupted.
-    long? error;
+    // True if the download is in progress and paused, or else if it is
+    // interrupted and can be resumed starting from where it was interrupted.
+    boolean canResume;
+
+    // Why the download was interrupted. Several kinds of HTTP errors may be
+    // grouped under one of the errors beginning with <code>SERVER_</code>.
+    // Errors relating to the network begin with <code>NETWORK_</code>, errors
+    // relating to the process of writing the file to the file system begin with
+    // <code>FILE_</code>, and interruptions initiated by the user begin with
+    // <code>USER_</code>.
+    InterruptReason? error;
 
     // Number of bytes received so far from the host, without considering file
     // compression.
@@ -166,12 +209,11 @@ namespace downloads {
   };
 
   [inline_doc] dictionary DownloadQuery {
-    // This space-separated string of search terms that may be grouped using
-    // quotation marks limits results to
-    // $ref:DownloadItem whose <code>filename</code>
-    // or <code>url</code> contain all of the search terms that do not begin with a dash '-'
-    // and none of the search terms that do begin with a dash.
-    DOMString? query;
+    // This array of search terms limits results to $ref:DownloadItem whose
+    // <code>filename</code> or <code>url</code> contain all of the search terms
+    // that do not begin with a dash '-' and none of the search terms that do
+    // begin with a dash.
+    DOMString[]? query;
 
     // Limits results to $ref:DownloadItem that
     // started before the given ms since the epoch.
@@ -205,18 +247,17 @@ namespace downloads {
     // <code>url</code> matches the given regular expression.
     DOMString? urlRegex;
 
-    // Setting this integer limits the number of results. Otherwise, all
-    // matching $ref:DownloadItem will be returned.
+    // The maximum number of matching $ref:DownloadItem returned. Defaults to
+    // 1000. Set to 0 in order to return all matching $ref:DownloadItem. See
+    // $ref:search for how to page through results.
     long? limit;
 
-    // Setting this string to a $ref:DownloadItem
-    // property sorts the $ref:DownloadItem prior
-    // to applying the above filters. For example, setting
-    // <code>orderBy='startTime'</code> sorts the
-    // $ref:DownloadItem by their start time in
-    // ascending order. To specify descending order, prefix <code>orderBy</code>
-    // with a hyphen: '-startTime'.
-    DOMString? orderBy;
+    // Set elements of this array to $ref:DownloadItem properties in order to
+    // sort search results. For example, setting
+    // <code>orderBy=['startTime']</code> sorts the $ref:DownloadItem by their
+    // start time in ascending order. To specify descending order, prefix with a
+    // hyphen: '-startTime'.
+    DOMString[]? orderBy;
 
     // The <code>id</code> of the $ref:DownloadItem to query.
     long? id;
@@ -230,9 +271,6 @@ namespace downloads {
     // Indication of whether this download is thought to be safe or known to be
     // suspicious.
     DangerType? danger;
-
-    // True if the user has accepted the download's danger.
-    boolean? dangerAccepted;
 
     // The file's MIME type.
     DOMString? mime;
@@ -250,8 +288,8 @@ namespace downloads {
     // connection open.
     boolean? paused;
 
-    // Number indicating why a download was interrupted.
-    long? error;
+    // Why a download was interrupted.
+    InterruptReason? error;
 
     // Number of bytes received so far from the host, without considering file
     // compression.
@@ -298,9 +336,6 @@ namespace downloads {
     // The change in <code>danger</code>, if any.
     StringDelta? danger;
 
-    // The change in <code>dangerAccepted</code>, if any.
-    BooleanDelta? dangerAccepted;
-
     // The change in <code>mime</code>, if any.
     StringDelta? mime;
 
@@ -313,11 +348,14 @@ namespace downloads {
     // The change in <code>state</code>, if any.
     StringDelta? state;
 
+    // The change in <code>canResume</code>, if any.
+    BooleanDelta? canResume;
+
     // The change in <code>paused</code>, if any.
     BooleanDelta? paused;
 
     // The change in <code>error</code>, if any.
-    LongDelta? error;
+    StringDelta? error;
 
     // The change in <code>totalBytes</code>, if any.
     LongDelta? totalBytes;
@@ -360,27 +398,24 @@ namespace downloads {
     static void download(DownloadOptions options,
                          optional DownloadCallback callback);
 
-    // Find $ref:DownloadItem. Set
-    // <code>query</code> to the empty object to get all
-    // $ref:DownloadItem. To get a specific
-    // $ref:DownloadItem, set only the <code>id</code>
-    // field.
+    // Find $ref:DownloadItem. Set <code>query</code> to the empty object to get
+    // all $ref:DownloadItem. To get a specific $ref:DownloadItem, set only the
+    // <code>id</code> field. To page through a large number of items, set
+    // <code>orderBy: ['-startTime']</code>, set <code>limit</code> to the
+    // number of items per page, and set <code>startedAfter</code> to the
+    // <code>startTime</code> of the last item from the last page.
     static void search(DownloadQuery query, SearchCallback callback);
 
     // Pause the download. If the request was successful the download is in a
-    // paused state. Otherwise
-    // $ref:runtime.lastError
-    // contains an error message. The request will fail if the download is not
-    // active.
+    // paused state. Otherwise $ref:runtime.lastError contains an error message.
+    // The request will fail if the download is not active.
     // |downloadId|: The id of the download to pause.
     // |callback|: Called when the pause request is completed.
     static void pause(long downloadId, optional NullCallback callback);
 
     // Resume a paused download. If the request was successful the download is
-    // in progress and unpaused. Otherwise
-    // $ref:runtime.lastError
-    // contains an error message. The request will fail if the download is not
-    // active.
+    // in progress and unpaused. Otherwise $ref:runtime.lastError contains an
+    // error message. The request will fail if the download is not active.
     // |downloadId|: The id of the download to resume.
     // |callback|: Called when the resume request is completed.
     static void resume(long downloadId, optional NullCallback callback);
@@ -392,16 +427,14 @@ namespace downloads {
     static void cancel(long downloadId, optional NullCallback callback);
 
     // Retrieve an icon for the specified download. For new downloads, file
-    // icons are available after the $ref:onCreated
-    // event has been received. The image returned by this function while a
-    // download is in progress may be different from the image returned after
-    // the download is complete. Icon retrieval is done by querying the
-    // underlying operating system or toolkit depending on the platform. The
-    // icon that is returned will therefore depend on a number of factors
-    // including state of the download, platform, registered file types and
-    // visual theme. If a file icon cannot be determined,
-    // $ref:runtime.lastError
-    // will contain an error message.
+    // icons are available after the $ref:onCreated event has been received. The
+    // image returned by this function while a download is in progress may be
+    // different from the image returned after the download is complete. Icon
+    // retrieval is done by querying the underlying operating system or toolkit
+    // depending on the platform. The icon that is returned will therefore
+    // depend on a number of factors including state of the download, platform,
+    // registered file types and visual theme. If a file icon cannot be
+    // determined, $ref:runtime.lastError will contain an error message.
     // |downloadId|: The identifier for the download.
     // |callback|: A URL to an image that represents the download.
     static void getFileIcon(long downloadId,
@@ -409,7 +442,7 @@ namespace downloads {
                             GetFileIconCallback callback);
 
     // Open the downloaded file now if the $ref:DownloadItem is complete;
-    // returns an error through $ref:runtime.lastError otherwise. Requires the
+    // otherwise returns an error through $ref:runtime.lastError. Requires the
     // <code>"downloads.open"</code> permission in addition to the
     // <code>"downloads"</code> permission. An $ref:onChanged event will fire
     // when the item is opened for the first time.
@@ -420,10 +453,18 @@ namespace downloads {
     // |downloadId|: The identifier for the downloaded file.
     static void show(long downloadId);
 
-    // Erase matching $ref:DownloadItem from history. An $ref:onErased event
-    // will fire for each $ref:DownloadItem that matches <code>query</code>,
-    // then <code>callback</code> will be called.
+    // Show the default Downloads folder in a file manager.
+    static void showDefaultFolder();
+
+    // Erase matching $ref:DownloadItem from history without deleting the
+    // downloaded file. An $ref:onErased event will fire for each
+    // $ref:DownloadItem that matches <code>query</code>, then
+    // <code>callback</code> will be called.
     static void erase(DownloadQuery query, optional EraseCallback callback);
+
+    // Remove the downloaded file if it exists and the $ref:DownloadItem is
+    // complete; otherwise return an error through $ref:runtime.lastError.
+    static void removeFile(long downloadId, optional NullCallback callback);
 
     // Prompt the user to accept a dangerous download. Does not automatically
     // accept dangerous downloads. If the download is accepted, then an
@@ -433,15 +474,17 @@ namespace downloads {
     // renamed to the target filename, the |state| changes to 'complete', and
     // $ref:onChanged fires.
     // |downloadId|: The identifier for the $ref:DownloadItem.
-    static void acceptDanger(long downloadId);
+    // |callback|: Called when the danger prompt dialog closes.
+    static void acceptDanger(long downloadId, optional NullCallback callback);
 
-    // Initiate dragging the downloaded file to another application.
+    // Initiate dragging the downloaded file to another application. Call in a
+    // javascript <code>ondragstart</code> handler.
     static void drag(long downloadId);
   };
 
   interface Events {
-    // This event fires with the $ref:DownloadItem
-    // object when a download begins.
+    // This event fires with the $ref:DownloadItem object when a download
+    // begins.
     static void onCreated(DownloadItem downloadItem);
 
     // Fires with the <code>downloadId</code> when a download is erased from
@@ -451,9 +494,9 @@ namespace downloads {
     static void onErased(long downloadId);
 
     // When any of a $ref:DownloadItem's properties except
-    // <code>bytesReceived</code> changes, this event fires with the
-    // <code>downloadId</code> and an object containing the properties that
-    // changed.
+    // <code>bytesReceived</code> and <code>estimatedEndTime</code> changes,
+    // this event fires with the <code>downloadId</code> and an object
+    // containing the properties that changed.
     static void onChanged(DownloadDelta downloadDelta);
 
     // During the filename determination process, extensions will be given the

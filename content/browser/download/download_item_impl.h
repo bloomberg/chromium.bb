@@ -127,6 +127,7 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual const std::string& GetHash() const OVERRIDE;
   virtual const std::string& GetHashState() const OVERRIDE;
   virtual bool GetFileExternallyRemoved() const OVERRIDE;
+  virtual void DeleteFile() OVERRIDE;
   virtual bool IsDangerous() const OVERRIDE;
   virtual DownloadDangerType GetDangerType() const OVERRIDE;
   virtual bool TimeRemaining(base::TimeDelta* remaining) const OVERRIDE;

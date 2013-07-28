@@ -24,8 +24,10 @@ class DownloadDangerPrompt {
   // Actions resulting from showing the danger prompt.
   enum Action {
     ACCEPT,
-    CANCEL
+    CANCEL,
+    DISMISS,
   };
+  typedef base::Callback<void(Action)> OnDone;
 
   // Return a new self-deleting DownloadDangerPrompt. |accepted| or |canceled|
   // will be run when the the respective action is invoked. |canceled| may also
@@ -39,8 +41,7 @@ class DownloadDangerPrompt {
       content::DownloadItem* item,
       content::WebContents* web_contents,
       bool show_context,
-      const base::Closure& accepted,
-      const base::Closure& canceled);
+      const OnDone& done);
 
  protected:
   friend class DownloadDangerPromptTest;

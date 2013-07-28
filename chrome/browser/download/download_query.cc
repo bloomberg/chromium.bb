@@ -50,22 +50,30 @@ template<> bool GetAs(const base::Value& in, std::string* out) {
 template<> bool GetAs(const base::Value& in, string16* out) {
   return in.GetAsString(out);
 }
+template<> bool GetAs(const base::Value& in, std::vector<string16>* out) {
+  out->clear();
+  const base::ListValue* list = NULL;
+  if (!in.GetAsList(&list))
+    return false;
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    string16 element;
+    if (!list->GetString(i, &element)) {
+      out->clear();
+      return false;
+    }
+    out->push_back(element);
+  }
+  return true;
+}
 
 // The next several functions are helpers for making Callbacks that access
 // DownloadItem fields.
 
-static bool MatchesQuery(const string16& query, const DownloadItem& item) {
-  if (query.empty())
-    return true;
-
-  DCHECK_EQ(query, base::i18n::ToLower(query));
-
+static bool MatchesQuery(
+    const std::vector<string16>& query_terms,
+    const DownloadItem& item) {
+  DCHECK(!query_terms.empty());
   string16 url_raw(UTF8ToUTF16(item.GetOriginalUrl().spec()));
-  if (base::i18n::StringSearchIgnoringCaseAndAccents(
-          query, url_raw, NULL, NULL)) {
-    return true;
-  }
-
   string16 url_formatted = url_raw;
   if (item.GetBrowserContext()) {
     Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
@@ -73,14 +81,21 @@ static bool MatchesQuery(const string16& query, const DownloadItem& item) {
         item.GetOriginalUrl(),
         profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
   }
-  if (base::i18n::StringSearchIgnoringCaseAndAccents(
-        query, url_formatted, NULL, NULL)) {
-    return true;
-  }
-
   string16 path(item.GetTargetFilePath().LossyDisplayName());
-  return base::i18n::StringSearchIgnoringCaseAndAccents(
-      query, path, NULL, NULL);
+
+  for (std::vector<string16>::const_iterator it = query_terms.begin();
+       it != query_terms.end(); ++it) {
+    string16 term = base::i18n::ToLower(*it);
+    if (!base::i18n::StringSearchIgnoringCaseAndAccents(
+            term, url_raw, NULL, NULL) &&
+        !base::i18n::StringSearchIgnoringCaseAndAccents(
+            term, url_formatted, NULL, NULL) &&
+        !base::i18n::StringSearchIgnoringCaseAndAccents(
+            term, path, NULL, NULL)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 static int64 GetStartTimeMsEpoch(const DownloadItem& item) {
@@ -268,9 +283,10 @@ bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
     case FILTER_PAUSED:
       return AddFilter(BuildFilter<bool>(value, EQ, &IsPaused));
     case FILTER_QUERY: {
-      string16 query;
-      return GetAs(value, &query) &&
-             AddFilter(base::Bind(&MatchesQuery, query));
+      std::vector<string16> query_terms;
+      return GetAs(value, &query_terms) &&
+             (query_terms.empty() ||
+              AddFilter(base::Bind(&MatchesQuery, query_terms)));
     }
     case FILTER_ENDED_AFTER:
       return AddFilter(BuildFilter<std::string>(value, GT, &GetEndTime));

@@ -518,14 +518,16 @@ void DownloadsDOMHandler::ShowDangerPrompt(
       dangerous_item,
       GetWebUIWebContents(),
       false,
-      base::Bind(&DownloadsDOMHandler::DangerPromptAccepted,
-                 weak_ptr_factory_.GetWeakPtr(), dangerous_item->GetId()),
-      base::Closure());
+      base::Bind(&DownloadsDOMHandler::DangerPromptDone,
+                 weak_ptr_factory_.GetWeakPtr(), dangerous_item->GetId()));
   // danger_prompt will delete itself.
   DCHECK(danger_prompt);
 }
 
-void DownloadsDOMHandler::DangerPromptAccepted(int download_id) {
+void DownloadsDOMHandler::DangerPromptDone(
+    int download_id, DownloadDangerPrompt::Action action) {
+  if (action != DownloadDangerPrompt::ACCEPT)
+    return;
   content::DownloadItem* item = NULL;
   if (main_notifier_.GetManager())
     item = main_notifier_.GetManager()->GetDownload(download_id);

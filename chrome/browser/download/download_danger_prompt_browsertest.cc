@@ -86,10 +86,7 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
         &download_,
         browser()->tab_strip_model()->GetActiveWebContents(),
         false,
-        base::Bind(&DownloadDangerPromptTest::PromptCallback, this,
-                   DownloadDangerPrompt::ACCEPT),
-        base::Bind(&DownloadDangerPromptTest::PromptCallback, this,
-                   DownloadDangerPrompt::CANCEL));
+        base::Bind(&DownloadDangerPromptTest::PromptCallback, this));
     content::RunAllPendingInMessageLoop();
   }
 
@@ -112,26 +109,26 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, TestAll) {
   OpenNewTab();
 
-  // The Accept action should cause the accept callback to be invoked.
+  // Clicking the Accept button should invoke the ACCEPT action.
   SetUpExpectations(DownloadDangerPrompt::ACCEPT);
   SimulatePromptAction(DownloadDangerPrompt::ACCEPT);
   VerifyExpectations();
 
-  // The Discard action should cause the discard callback to be invoked.
+  // Clicking the Cancel button should invoke the CANCEL action.
   SetUpExpectations(DownloadDangerPrompt::CANCEL);
   SimulatePromptAction(DownloadDangerPrompt::CANCEL);
   VerifyExpectations();
 
   // If the download is no longer dangerous (because it was accepted), the
-  // dialog should dismiss itself.
-  SetUpExpectations(DownloadDangerPrompt::CANCEL);
+  // dialog should DISMISS itself.
+  SetUpExpectations(DownloadDangerPrompt::DISMISS);
   EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(false));
   download_observer()->OnDownloadUpdated(&download());
   VerifyExpectations();
 
-  // If the download is in a terminal state then the dialog should dismiss
+  // If the download is in a terminal state then the dialog should DISMISS
   // itself.
-  SetUpExpectations(DownloadDangerPrompt::CANCEL);
+  SetUpExpectations(DownloadDangerPrompt::DISMISS);
   EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(true));
   EXPECT_CALL(download(), IsDone()).WillOnce(Return(true));
   download_observer()->OnDownloadUpdated(&download());
@@ -146,8 +143,10 @@ IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, TestAll) {
   SimulatePromptAction(DownloadDangerPrompt::ACCEPT);
   VerifyExpectations();
 
-  // If the containing tab is closed, the dialog should be canceled.
+  // If the containing tab is closed, the dialog should DISMISS itself.
   OpenNewTab();
+  // TODO(benjhayden):
+  // SetUpExpectations(DownloadDangerPrompt::DISMISS);
   SetUpExpectations(DownloadDangerPrompt::CANCEL);
   chrome::CloseTab(browser());
   VerifyExpectations();

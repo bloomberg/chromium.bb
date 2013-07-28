@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_danger_prompt.h"
 
 #include "base/bind.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
@@ -23,8 +24,7 @@ class DownloadDangerPromptImpl
  public:
   DownloadDangerPromptImpl(content::DownloadItem* item,
                            bool show_context,
-                           const base::Closure& accepted,
-                           const base::Closure& canceled);
+                           const OnDone& done);
   virtual ~DownloadDangerPromptImpl();
 
   // DownloadDangerPrompt
@@ -33,7 +33,6 @@ class DownloadDangerPromptImpl
  private:
   // content::DownloadItem::Observer
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
 
   // TabModalConfirmDialogDelegate
   virtual string16 GetTitle() OVERRIDE;
@@ -42,20 +41,11 @@ class DownloadDangerPromptImpl
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;
 
-  // Runs |callback|. PrepareToClose() is called beforehand. Doing so prevents
-  // this object from responding to state changes in |download_| that might
-  // result from invoking the callback. |callback| must refer to either
-  // |accepted_| or |canceled_|.
-  void RunCallback(const base::Closure& callback);
-
-  // Resets |accepted_|, |canceled_| and removes the observer from |download_|,
-  // in preparation for closing the prompt.
-  void PrepareToClose();
+  void RunDone(Action action);
 
   content::DownloadItem* download_;
   bool show_context_;
-  base::Closure accepted_;
-  base::Closure canceled_;
+  OnDone done_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDangerPromptImpl);
 };
@@ -63,29 +53,29 @@ class DownloadDangerPromptImpl
 DownloadDangerPromptImpl::DownloadDangerPromptImpl(
     content::DownloadItem* download,
     bool show_context,
-    const base::Closure& accepted,
-    const base::Closure& canceled)
+    const OnDone& done)
     : download_(download),
       show_context_(show_context),
-      accepted_(accepted),
-      canceled_(canceled) {
-  DCHECK(!accepted_.is_null());
-  // canceled_ is allowed to be null.
-  DCHECK(download_);
+      done_(done) {
+  DCHECK(!done_.is_null());
   download_->AddObserver(this);
 }
 
 DownloadDangerPromptImpl::~DownloadDangerPromptImpl() {
   // |this| might be deleted without invoking any callbacks. E.g. pressing Esc
   // on GTK or if the user navigates away from the page showing the prompt.
-  PrepareToClose();
+  RunDone(DISMISS);
 }
 
 void DownloadDangerPromptImpl::InvokeActionForTesting(Action action) {
-  if (action == ACCEPT)
-    Accept();
-  else
-    Cancel();
+  switch (action) {
+    case ACCEPT: Accept(); break;
+    case CANCEL: Cancel(); break;
+    case DISMISS:
+      RunDone(DISMISS);
+      Cancel();
+      break;
+  }
 }
 
 void DownloadDangerPromptImpl::OnDownloadUpdated(
@@ -93,12 +83,10 @@ void DownloadDangerPromptImpl::OnDownloadUpdated(
   // If the download is nolonger dangerous (accepted externally) or the download
   // is in a terminal state, then the download danger prompt is no longer
   // necessary.
-  if (!download->IsDangerous() || download->IsDone())
+  if (!download->IsDangerous() || download->IsDone()) {
+    RunDone(DISMISS);
     Cancel();
-}
-
-void DownloadDangerPromptImpl::OnDownloadOpened(
-    content::DownloadItem* download) {
+  }
 }
 
 string16 DownloadDangerPromptImpl::GetTitle() {
@@ -144,30 +132,25 @@ string16 DownloadDangerPromptImpl::GetAcceptButtonTitle() {
 }
 
 void DownloadDangerPromptImpl::OnAccepted() {
-  RunCallback(accepted_);
+  RunDone(ACCEPT);
 }
 
 void DownloadDangerPromptImpl::OnCanceled() {
-  RunCallback(canceled_);
+  RunDone(CANCEL);
 }
 
-void DownloadDangerPromptImpl::RunCallback(const base::Closure& callback) {
+void DownloadDangerPromptImpl::RunDone(Action action) {
   // Invoking the callback can cause the download item state to change or cause
   // the constrained window to close, and |callback| refers to a member
   // variable.
-  base::Closure callback_copy = callback;
-  PrepareToClose();
-  if (!callback_copy.is_null())
-    callback_copy.Run();
-}
-
-void DownloadDangerPromptImpl::PrepareToClose() {
-  accepted_.Reset();
-  canceled_.Reset();
+  OnDone done = done_;
+  done_.Reset();
   if (download_ != NULL) {
     download_->RemoveObserver(this);
     download_ = NULL;
   }
+  if (!done.is_null())
+    done.Run(action);
 }
 
 }  // namespace
@@ -177,10 +160,9 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
     content::DownloadItem* item,
     content::WebContents* web_contents,
     bool show_context,
-    const base::Closure& accepted,
-    const base::Closure& canceled) {
+    const OnDone& done) {
   DownloadDangerPromptImpl* prompt = new DownloadDangerPromptImpl(
-      item, show_context, accepted, canceled);
+      item, show_context, done);
   // |prompt| will be deleted when the dialog is done.
   TabModalConfirmDialog::Create(prompt, web_contents);
   return prompt;

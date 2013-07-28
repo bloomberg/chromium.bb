@@ -235,6 +235,12 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // external action.
   virtual bool GetFileExternallyRemoved() const = 0;
 
+  // If the file is successfully deleted, then GetFileExternallyRemoved() will
+  // become true and DownloadItem::OnDownloadUpdated() will be called. Does
+  // nothing if GetState() == COMPLETE or GetFileExternallyRemoved() is already
+  // true.
+  virtual void DeleteFile() = 0;
+
   // True if the file that will be written by the download is dangerous
   // and we will require a call to ValidateDangerousDownload() to complete.
   // False if the download is safe or that function has been called.

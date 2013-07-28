@@ -62,6 +62,10 @@ using content::URLRequestSlowDownloadJob;
 
 namespace events = extensions::event_names;
 
+namespace errors = download_extension_errors;
+
+namespace api = extensions::api::downloads;
+
 namespace {
 
 // Comparator that orders download items by their ID. Can be used with
@@ -349,19 +353,22 @@ class DownloadExtensionTest : public ExtensionApiTest {
         current_browser()->profile(), event_name, json_args);
   }
 
-  bool WaitForInterruption(DownloadItem* item, int expected_error,
-                           const std::string& on_created_event) {
+  bool WaitForInterruption(
+      DownloadItem* item,
+      content::DownloadInterruptReason expected_error,
+      const std::string& on_created_event) {
     if (!WaitFor(events::kOnDownloadCreated, on_created_event))
       return false;
     // Now, onCreated is always fired before interruption.
     return WaitFor(events::kOnDownloadChanged,
         base::StringPrintf("[{\"id\": %d,"
-                            "  \"error\": {\"current\": %d},"
-                            "  \"state\": {"
-                            "    \"previous\": \"in_progress\","
-                            "    \"current\": \"interrupted\"}}]",
-                            item->GetId(),
-                            expected_error));
+                           "  \"error\": {\"current\": \"%s\"},"
+                           "  \"state\": {"
+                           "    \"previous\": \"in_progress\","
+                           "    \"current\": \"interrupted\"}}]",
+                           item->GetId(),
+                           content::InterruptReasonDebugString(
+                             expected_error).c_str()));
   }
 
   void ClearEvents() {
@@ -904,12 +911,42 @@ bool ItemIsInterrupted(DownloadItem* item) {
   return item->GetState() == DownloadItem::INTERRUPTED;
 }
 
+content::DownloadInterruptReason InterruptReasonExtensionToContent(
+    api::InterruptReason error) {
+  switch (error) {
+    case api::INTERRUPT_REASON_NONE:
+      return content::DOWNLOAD_INTERRUPT_REASON_NONE;
+#define INTERRUPT_REASON(name, value) \
+    case api::INTERRUPT_REASON_##name: \
+      return content::DOWNLOAD_INTERRUPT_REASON_##name;
+#include "content/public/browser/download_interrupt_reason_values.h"
+#undef INTERRUPT_REASON
+  }
+  NOTREACHED();
+  return content::DOWNLOAD_INTERRUPT_REASON_NONE;
+}
+
+api::InterruptReason InterruptReasonContentToExtension(
+    content::DownloadInterruptReason error) {
+  switch (error) {
+    case content::DOWNLOAD_INTERRUPT_REASON_NONE:
+      return api::INTERRUPT_REASON_NONE;
+#define INTERRUPT_REASON(name, value) \
+    case content::DOWNLOAD_INTERRUPT_REASON_##name: \
+      return api::INTERRUPT_REASON_##name;
+#include "content/public/browser/download_interrupt_reason_values.h"
+#undef INTERRUPT_REASON
+  }
+  NOTREACHED();
+  return api::INTERRUPT_REASON_NONE;
+}
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Open) {
   LoadExtension("downloads_split");
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+  EXPECT_STREQ(errors::kInvalidId,
                RunFunctionAndReturnError(
                    new DownloadsOpenFunction(),
                    "[-42]").c_str());
@@ -925,7 +962,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"paused\": false,"
                          "  \"url\": \"%s\"}]",
                          download_item->GetURL().spec().c_str())));
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+  EXPECT_STREQ(errors::kNotComplete,
                RunFunctionAndReturnError(
                    new DownloadsOpenFunction(),
                    DownloadItemIdAsArgList(download_item)).c_str());
@@ -978,29 +1015,25 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           DownloadItemIdAsArgList(download_item)));
   EXPECT_EQ(DownloadItem::CANCELLED, download_item->GetState());
 
-  // Calling paused on a non-active download yields kInvalidOperationError.
+  // Calling paused on a non-active download yields kInvalidId.
   std::string error = RunFunctionAndReturnError(
       new DownloadsPauseFunction(), DownloadItemIdAsArgList(download_item));
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
-               error.c_str());
+  EXPECT_STREQ(errors::kNotInProgress, error.c_str());
 
-  // Calling resume on a non-active download yields kInvalidOperationError
+  // Calling resume on a non-active download yields kInvalidId
   error = RunFunctionAndReturnError(
       new DownloadsResumeFunction(), DownloadItemIdAsArgList(download_item));
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
-               error.c_str());
+  EXPECT_STREQ(errors::kNotResumable, error.c_str());
 
-  // Calling paused on a non-existent download yields kInvalidOperationError.
+  // Calling paused on a non-existent download yields kInvalidId.
   error = RunFunctionAndReturnError(
       new DownloadsPauseFunction(), "[-42]");
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
-               error.c_str());
+  EXPECT_STREQ(errors::kInvalidId, error.c_str());
 
-  // Calling resume on a non-existent download yields kInvalidOperationError
+  // Calling resume on a non-existent download yields kInvalidId
   error = RunFunctionAndReturnError(
       new DownloadsResumeFunction(), "[-42]");
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
-               error.c_str());
+  EXPECT_STREQ(errors::kInvalidId, error.c_str());
 
   int id = download_item->GetId();
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
@@ -1096,16 +1129,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                                 IconLoader::NORMAL,
                                 std::string()),
       args32);
-  EXPECT_STREQ(download_extension_errors::kIconNotFoundError, error.c_str());
+  EXPECT_STREQ(errors::kIconNotFound, error.c_str());
 
-  // Once the download item is deleted, we should return kInvalidOperationError.
+  // Once the download item is deleted, we should return kInvalidId.
   int id = download_item->GetId();
   download_item->Remove();
   download_item = NULL;
   EXPECT_EQ(static_cast<DownloadItem*>(NULL),
             GetCurrentManager()->GetDownload(id));
   error = RunFunctionAndReturnError(new DownloadsGetFileIconFunction(), args32);
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+  EXPECT_STREQ(errors::kInvalidId,
                error.c_str());
 }
 
@@ -1146,8 +1179,6 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
         &result_string));
     EXPECT_STREQ("hello", result_string.c_str());
   }
-
-  // The temporary files should be cleaned up when the base::ScopedTempDir is removed.
 }
 
 // Test passing the empty query to search().
@@ -1244,7 +1275,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                                      &items));
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
-      new DownloadsSearchFunction(), "[{\"orderBy\": \"filename\"}]"));
+      new DownloadsSearchFunction(), "[{\"orderBy\": [\"filename\"]}]"));
   ASSERT_TRUE(result.get());
   base::ListValue* result_list = NULL;
   ASSERT_TRUE(result->GetAsList(&result_list));
@@ -1277,7 +1308,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                                      &items));
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
-      new DownloadsSearchFunction(), "[{\"orderBy\": \"\"}]"));
+      new DownloadsSearchFunction(), "[{\"orderBy\": []}]"));
   ASSERT_TRUE(result.get());
   base::ListValue* result_list = NULL;
   ASSERT_TRUE(result->GetAsList(&result_list));
@@ -1354,15 +1385,15 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     DownloadExtensionTest_SearchInvalid) {
   std::string error = RunFunctionAndReturnError(
       new DownloadsSearchFunction(), "[{\"filenameRegex\": \"(\"}]");
-  EXPECT_STREQ(download_extension_errors::kInvalidFilterError,
+  EXPECT_STREQ(errors::kInvalidFilter,
       error.c_str());
   error = RunFunctionAndReturnError(
-      new DownloadsSearchFunction(), "[{\"orderBy\": \"goat\"}]");
-  EXPECT_STREQ(download_extension_errors::kInvalidOrderByError,
+      new DownloadsSearchFunction(), "[{\"orderBy\": [\"goat\"]}]");
+  EXPECT_STREQ(errors::kInvalidOrderBy,
       error.c_str());
   error = RunFunctionAndReturnError(
       new DownloadsSearchFunction(), "[{\"limit\": -1}]");
-  EXPECT_STREQ(download_extension_errors::kInvalidQueryLimit,
+  EXPECT_STREQ(errors::kInvalidQueryLimit,
       error.c_str());
 }
 
@@ -1388,7 +1419,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsSearchFunction(), "[{"
       "\"state\": \"complete\", "
       "\"danger\": \"content\", "
-      "\"orderBy\": \"filename\", "
+      "\"orderBy\": [\"filename\"], "
       "\"limit\": 1}]"));
   ASSERT_TRUE(result.get());
   base::ListValue* result_list = NULL;
@@ -1468,16 +1499,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   // Pausing/Resuming the off-record item while on the record should return an
   // error. Cancelling "non-existent" downloads is not an error.
   error = RunFunctionAndReturnError(new DownloadsPauseFunction(), off_item_arg);
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+  EXPECT_STREQ(errors::kInvalidId,
                error.c_str());
   error = RunFunctionAndReturnError(new DownloadsResumeFunction(),
                                     off_item_arg);
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+  EXPECT_STREQ(errors::kInvalidId,
                error.c_str());
   error = RunFunctionAndReturnError(
       new DownloadsGetFileIconFunction(),
       base::StringPrintf("[%d, {}]", off_item->GetId()));
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+  EXPECT_STREQ(errors::kInvalidId,
                error.c_str());
 
   GoOffTheRecord();
@@ -1509,11 +1540,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(), on_item_arg));
   EXPECT_EQ(DownloadItem::CANCELLED, on_item->GetState());
   error = RunFunctionAndReturnError(new DownloadsPauseFunction(), on_item_arg);
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
-               error.c_str());
+  EXPECT_STREQ(errors::kNotInProgress, error.c_str());
   error = RunFunctionAndReturnError(new DownloadsResumeFunction(), on_item_arg);
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
-               error.c_str());
+  EXPECT_STREQ(errors::kNotResumable, error.c_str());
   EXPECT_TRUE(RunFunction(new DownloadsPauseFunction(), off_item_arg));
   EXPECT_TRUE(off_item->IsPaused());
   EXPECT_TRUE(RunFunction(new DownloadsPauseFunction(), off_item_arg));
@@ -1528,14 +1557,11 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_EQ(DownloadItem::CANCELLED, off_item->GetState());
   EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(), off_item_arg));
   EXPECT_EQ(DownloadItem::CANCELLED, off_item->GetState());
-  error = RunFunctionAndReturnError(new DownloadsPauseFunction(),
-                                    off_item_arg);
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
-               error.c_str());
+  error = RunFunctionAndReturnError(new DownloadsPauseFunction(), off_item_arg);
+  EXPECT_STREQ(errors::kNotInProgress, error.c_str());
   error = RunFunctionAndReturnError(new DownloadsResumeFunction(),
                                     off_item_arg);
-  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
-               error.c_str());
+  EXPECT_STREQ(errors::kNotResumable, error.c_str());
 }
 
 // Test that we can start a download and that the correct sequence of events is
@@ -1673,7 +1699,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   for (size_t index = 0; index < arraysize(kUnsafeHeaders); ++index) {
     std::string download_url = test_server()->GetURL("slow?0").spec();
-    EXPECT_STREQ(download_extension_errors::kGenericError,
+    EXPECT_STREQ(errors::kInvalidHeader,
                   RunFunctionAndReturnError(new DownloadsDownloadFunction(),
                                             base::StringPrintf(
         "[{\"url\": \"%s\","
@@ -1687,8 +1713,6 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   }
 }
 
-// Test that subdirectories (slashes) are disallowed in filenames.
-// TODO(benjhayden) Update this when subdirectories are supported.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Subdirectory) {
   LoadExtension("downloads_split");
@@ -1697,12 +1721,39 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   std::string download_url = test_server()->GetURL("slow?0").spec();
   GoOnTheRecord();
 
-  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError,
-                RunFunctionAndReturnError(new DownloadsDownloadFunction(),
-                                          base::StringPrintf(
-      "[{\"url\": \"%s\","
-      "  \"filename\": \"sub/dir/ect/ory.txt\"}]",
-      download_url.c_str())).c_str());
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+          "[{\"url\": \"%s\","
+          "  \"filename\": \"sub/dir/ect/ory.txt\"}]",
+          download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_url.c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\": {"
+                         "    \"previous\": \"\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("sub/dir/ect/ory.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
 }
 
 // Test that invalid filenames are disallowed.
@@ -1714,7 +1765,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   std::string download_url = test_server()->GetURL("slow?0").spec();
   GoOnTheRecord();
 
-  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError,
+  EXPECT_STREQ(errors::kInvalidFilename,
                 RunFunctionAndReturnError(new DownloadsDownloadFunction(),
                                           base::StringPrintf(
       "[{\"url\": \"%s\","
@@ -1732,14 +1783,14 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     "foo bar",
     "../hello",
     "/hello",
-    "google.com/",
     "http://",
     "#frag",
     "foo/bar.html#frag",
+    "google.com/",
   };
 
   for (size_t index = 0; index < arraysize(kInvalidURLs); ++index) {
-    EXPECT_STREQ(download_extension_errors::kInvalidURLError,
+    EXPECT_STREQ(errors::kInvalidURL,
                   RunFunctionAndReturnError(new DownloadsDownloadFunction(),
                                             base::StringPrintf(
         "[{\"url\": \"%s\"}]", kInvalidURLs[index])).c_str())
@@ -1920,13 +1971,15 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ScopedCancellingItem canceller(item);
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
 
-  ASSERT_TRUE(WaitForInterruption(item, 30, base::StringPrintf(
-      "[{\"danger\": \"safe\","
-      "  \"incognito\": false,"
-      "  \"mime\": \"text/html\","
-      "  \"paused\": false,"
-      "  \"url\": \"%s\"}]",
-      download_url.c_str())));
+  ASSERT_TRUE(WaitForInterruption(
+      item,
+      content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"text/html\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_url.c_str())));
 }
 
 // Test that DownloadsDownloadFunction propagates |headers| to the URLRequest.
@@ -2003,14 +2056,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ScopedCancellingItem canceller(item);
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
 
-  ASSERT_TRUE(WaitForInterruption(item, 33, base::StringPrintf(
-      "[{\"danger\": \"safe\","
-      "  \"incognito\": false,"
-      "  \"bytesReceived\": 0,"
-      "  \"mime\": \"\","
-      "  \"paused\": false,"
-      "  \"url\": \"%s\"}]",
-      download_url.c_str())));
+  ASSERT_TRUE(WaitForInterruption(
+      item,
+      content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"bytesReceived\": 0,"
+                         "  \"mime\": \"\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_url.c_str())));
 }
 
 // Test that DownloadsDownloadFunction propagates the Authorization header
@@ -2129,15 +2184,17 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ScopedCancellingItem canceller(item);
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
 
-  ASSERT_TRUE(WaitForInterruption(item, 33, base::StringPrintf(
-      "[{\"danger\": \"safe\","
-      "  \"incognito\": false,"
-      "  \"mime\": \"\","
-      "  \"paused\": false,"
-      "  \"id\": %d,"
-      "  \"url\": \"%s\"}]",
-      result_id,
-      download_url.c_str())));
+  ASSERT_TRUE(WaitForInterruption(
+      item,
+      content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"\","
+                         "  \"paused\": false,"
+                         "  \"id\": %d,"
+                         "  \"url\": \"%s\"}]",
+                         result_id,
+                         download_url.c_str())));
 }
 
 // Test that downloadPostSuccess would fail if the resource requires the POST
@@ -2168,15 +2225,17 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ScopedCancellingItem canceller(item);
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
 
-  ASSERT_TRUE(WaitForInterruption(item, 33, base::StringPrintf(
-      "[{\"danger\": \"safe\","
-      "  \"incognito\": false,"
-      "  \"mime\": \"\","
-      "  \"paused\": false,"
-      "  \"id\": %d,"
-      "  \"url\": \"%s\"}]",
-      result_id,
-      download_url.c_str())));
+  ASSERT_TRUE(WaitForInterruption(
+      item,
+      content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"\","
+                         "  \"paused\": false,"
+                         "  \"id\": %d,"
+                         "  \"url\": \"%s\"}]",
+                         result_id,
+                         download_url.c_str())));
 }
 
 // Test that cancel()ing an in-progress download causes its state to transition
@@ -2215,7 +2274,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   item->Cancel(true);
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"error\": {\"current\": 40},"
+                          "  \"error\": {\"current\":\"USER_CANCELED\"},"
                           "  \"state\": {"
                           "    \"previous\": \"in_progress\","
                           "    \"current\": \"interrupted\"}}]",
@@ -2324,7 +2383,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       GetExtensionId(),
       result_id,
       base::FilePath(),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -2391,7 +2450,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("overridden.swf")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -2399,17 +2458,15 @@ IN_PROC_BROWSER_TEST_F(
       base::StringPrintf("[{\"id\": %d,"
                          "  \"danger\": {"
                          "    \"previous\":\"safe\","
-                         "    \"current\":\"file\"},"
-                         "  \"dangerAccepted\": {"
-                         "    \"current\":false}}]",
+                         "    \"current\":\"file\"}}]",
                          result_id)));
 
   item->ValidateDangerousDownload();
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                         "  \"dangerAccepted\": {"
-                         "    \"previous\":false,"
-                         "    \"current\":true}}]",
+                         "  \"danger\": {"
+                         "    \"previous\":\"file\","
+                         "    \"current\":\"accepted\"}}]",
                          result_id)));
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2468,9 +2525,9 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("sneaky/../../sneaky.txt")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
-  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  EXPECT_STREQ(errors::kInvalidFilename, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                           "  \"filename\": {"
@@ -2533,9 +2590,9 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("<")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
-  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  EXPECT_STREQ(errors::kInvalidFilename, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
       "[{\"id\": %d,"
       "  \"filename\": {"
@@ -2599,9 +2656,9 @@ IN_PROC_BROWSER_TEST_F(
       result_id,
       base::FilePath(FILE_PATH_LITERAL(
           "My Computer.{20D04FE0-3AEA-1069-A2D8-08002B30309D}/foo")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
-  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  EXPECT_STREQ(errors::kInvalidFilename, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
       "[{\"id\": %d,"
       "  \"filename\": {"
@@ -2664,9 +2721,9 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("con.foo")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
-  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  EXPECT_STREQ(errors::kInvalidFilename, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged, base::StringPrintf(
       "[{\"id\": %d,"
       "  \"filename\": {"
@@ -2729,9 +2786,9 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL(".")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
-  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  EXPECT_STREQ(errors::kInvalidFilename, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
@@ -2794,9 +2851,9 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("..")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
-  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  EXPECT_STREQ(errors::kInvalidFilename, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"filename\": {"
@@ -2859,9 +2916,9 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       downloads_directory().Append(FILE_PATH_LITERAL("sneaky.txt")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
-  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  EXPECT_STREQ(errors::kInvalidFilename, error.c_str());
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2925,9 +2982,9 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("foo/")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
-  EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
+  EXPECT_STREQ(errors::kInvalidFilename, error.c_str());
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
@@ -2990,7 +3047,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -3048,7 +3105,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("foo")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_OVERWRITE,
+      api::FILENAME_CONFLICT_ACTION_OVERWRITE,
       &error));
   EXPECT_EQ("", error);
 
@@ -3173,7 +3230,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("42.txt")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -3232,7 +3289,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("5.txt")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -3307,7 +3364,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("42.txt")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -3365,7 +3422,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("42.txt")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -3471,7 +3528,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       item->GetId(),
       base::FilePath(FILE_PATH_LITERAL("42.txt")),
-      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error)) << error;
   EXPECT_EQ("", error);
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
@@ -3487,7 +3544,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(interrupted.WaitForEvent());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                         "  \"error\":{\"current\":20},"
+                         "  \"error\":{\"current\":\"NETWORK_FAILED\"},"
                          "  \"state\":{"
                          "    \"previous\":\"in_progress\","
                          "    \"current\":\"interrupted\"}}]",
@@ -3506,7 +3563,7 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                         "  \"error\":{\"previous\":20},"
+                         "  \"error\":{\"previous\":\"NETWORK_FAILED\"},"
                          "  \"state\":{"
                          "    \"previous\":\"interrupted\","
                          "    \"current\":\"in_progress\"}}]",
@@ -3541,4 +3598,18 @@ class DownloadsApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DownloadsApiTest) {
   ASSERT_TRUE(RunExtensionTest("downloads")) << message_;
+}
+
+
+TEST(DownloadInterruptReasonEnumsSynced,
+     DownloadInterruptReasonEnumsSynced) {
+#define INTERRUPT_REASON(name, value) \
+  EXPECT_EQ(InterruptReasonContentToExtension( \
+      content::DOWNLOAD_INTERRUPT_REASON_##name), \
+      api::INTERRUPT_REASON_##name); \
+  EXPECT_EQ(InterruptReasonExtensionToContent( \
+      api::INTERRUPT_REASON_##name), \
+      content::DOWNLOAD_INTERRUPT_REASON_##name);
+#include "content/public/browser/download_interrupt_reason_values.h"
+#undef INTERRUPT_REASON
 }

@@ -608,6 +608,20 @@ bool DownloadItemImpl::GetFileExternallyRemoved() const {
   return file_externally_removed_;
 }
 
+void DownloadItemImpl::DeleteFile() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if ((GetState() != DownloadItem::COMPLETE) ||
+      file_externally_removed_) {
+    return;
+  }
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeleteDownloadedFile, current_path_),
+      base::Bind(&DownloadItemImpl::OnDownloadedFileRemoved,
+                 weak_ptr_factory_.GetWeakPtr()));
+  current_path_.clear();
+}
+
 bool DownloadItemImpl::IsDangerous() const {
 #if defined(OS_WIN)
   // TODO(noelutz): At this point only the windows views UI supports

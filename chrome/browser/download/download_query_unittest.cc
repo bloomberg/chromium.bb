@@ -128,6 +128,26 @@ template<> void DownloadQueryTest::AddFilter(
   CHECK(query_.AddFilter(name, *value.get()));
 }
 
+template<> void DownloadQueryTest::AddFilter(
+    DownloadQuery::FilterType name, std::vector<string16> cpp_value) {
+  scoped_ptr<base::ListValue> list(new base::ListValue());
+  for (std::vector<string16>::const_iterator it = cpp_value.begin();
+       it != cpp_value.end(); ++it) {
+    list->Append(Value::CreateStringValue(*it));
+  }
+  CHECK(query_.AddFilter(name, *list.get()));
+}
+
+template<> void DownloadQueryTest::AddFilter(
+    DownloadQuery::FilterType name, std::vector<std::string> cpp_value) {
+  scoped_ptr<base::ListValue> list(new base::ListValue());
+  for (std::vector<std::string>::const_iterator it = cpp_value.begin();
+       it != cpp_value.end(); ++it) {
+    list->Append(Value::CreateStringValue(*it));
+  }
+  CHECK(query_.AddFilter(name, *list.get()));
+}
+
 #if defined(OS_WIN)
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, std::wstring cpp_value) {
@@ -177,7 +197,9 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryFilename) {
   GURL fail_url("http://example.com/fail");
   EXPECT_CALL(mock(0), GetOriginalUrl()).WillRepeatedly(ReturnRef(fail_url));
   EXPECT_CALL(mock(1), GetOriginalUrl()).WillRepeatedly(ReturnRef(fail_url));
-  AddFilter(DownloadQuery::FILTER_QUERY, "query");
+  std::vector<std::string> query_terms;
+  query_terms.push_back("query");
+  AddFilter(DownloadQuery::FILTER_QUERY, query_terms);
   ExpectStandardFilterResults();
 }
 
@@ -196,7 +218,9 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryUrl) {
   EXPECT_CALL(mock(0), GetOriginalUrl()).WillRepeatedly(ReturnRef(match_url));
   GURL fail_url("http://example.com/fail");
   EXPECT_CALL(mock(1), GetOriginalUrl()).WillRepeatedly(ReturnRef(fail_url));
-  AddFilter(DownloadQuery::FILTER_QUERY, "query");
+  std::vector<std::string> query_terms;
+  query_terms.push_back("query");
+  AddFilter(DownloadQuery::FILTER_QUERY, query_terms);
   ExpectStandardFilterResults();
 }
 
@@ -222,7 +246,9 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryFilenameI18N) {
   GURL fail_url("http://example.com/fail");
   EXPECT_CALL(mock(0), GetOriginalUrl()).WillRepeatedly(ReturnRef(fail_url));
   EXPECT_CALL(mock(1), GetOriginalUrl()).WillRepeatedly(ReturnRef(fail_url));
-  AddFilter(DownloadQuery::FILTER_QUERY, kTestString);
+  std::vector<base::FilePath::StringType> query_terms;
+  query_terms.push_back(kTestString);
+  AddFilter(DownloadQuery::FILTER_QUERY, query_terms);
   ExpectStandardFilterResults();
 }
 

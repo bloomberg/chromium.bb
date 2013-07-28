@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
+#include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -34,18 +35,26 @@ class ResourceDispatcherHost;
 namespace download_extension_errors {
 
 // Errors that can be returned through chrome.runtime.lastError.message.
-extern const char kGenericError[];
-extern const char kIconNotFoundError[];
-extern const char kInvalidDangerTypeError[];
-extern const char kInvalidFilenameError[];
-extern const char kInvalidFilterError[];
-extern const char kInvalidOperationError[];
-extern const char kInvalidOrderByError[];
+extern const char kEmptyFile[];
+extern const char kFileAlreadyDeleted[];
+extern const char kIconNotFound[];
+extern const char kInvalidDangerType[];
+extern const char kInvalidFilename[];
+extern const char kInvalidFilter[];
+extern const char kInvalidHeader[];
+extern const char kInvalidId[];
+extern const char kInvalidOrderBy[];
 extern const char kInvalidQueryLimit[];
-extern const char kInvalidStateError[];
-extern const char kInvalidURLError[];
-extern const char kNotImplementedError[];
-extern const char kTooManyListenersError[];
+extern const char kInvalidState[];
+extern const char kInvalidURL[];
+extern const char kInvisibleContext[];
+extern const char kNotComplete[];
+extern const char kNotDangerous[];
+extern const char kNotInProgress[];
+extern const char kNotResumable[];
+extern const char kOpenPermission[];
+extern const char kTooManyListeners[];
+extern const char kUnexpectedDeterminer[];
 
 }  // namespace download_extension_errors
 
@@ -60,7 +69,12 @@ class DownloadsDownloadFunction : public AsyncExtensionFunction {
   virtual ~DownloadsDownloadFunction();
 
  private:
-  void OnStarted(content::DownloadItem* item, net::Error error);
+  void OnStarted(
+      const base::FilePath& creator_suggested_filename,
+      extensions::api::downloads::FilenameConflictAction
+        creator_conflict_action,
+      content::DownloadItem* item,
+      net::Error error);
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDownloadFunction);
 };
@@ -130,6 +144,25 @@ class DownloadsEraseFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsEraseFunction);
 };
 
+class DownloadsRemoveFileFunction : public AsyncExtensionFunction,
+                                    public content::DownloadItem::Observer {
+ public:
+  DECLARE_EXTENSION_FUNCTION("downloads.removeFile", DOWNLOADS_REMOVEFILE)
+  DownloadsRemoveFileFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ protected:
+  virtual ~DownloadsRemoveFileFunction();
+
+ private:
+  virtual void OnDownloadUpdated(content::DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadDestroyed(content::DownloadItem* item) OVERRIDE;
+
+  content::DownloadItem* item_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadsRemoveFileFunction);
+};
+
 class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.acceptDanger", DOWNLOADS_ACCEPTDANGER)
@@ -138,7 +171,8 @@ class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~DownloadsAcceptDangerFunction();
-  void DangerPromptCallback(bool accept, int download_id);
+  void DangerPromptCallback(int download_id,
+                            DownloadDangerPrompt::Action action);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);
@@ -155,6 +189,20 @@ class DownloadsShowFunction : public AsyncExtensionFunction {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowFunction);
+};
+
+class DownloadsShowDefaultFolderFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "downloads.showDefaultFolder", DOWNLOADS_SHOWDEFAULTFOLDER)
+  DownloadsShowDefaultFolderFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ protected:
+  virtual ~DownloadsShowDefaultFolderFunction();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadsShowDefaultFolderFunction);
 };
 
 class DownloadsOpenFunction : public SyncExtensionFunction {
