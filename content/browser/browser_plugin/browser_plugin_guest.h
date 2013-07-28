@@ -302,6 +302,17 @@ class CONTENT_EXPORT BrowserPluginGuest
   // BrowserPluginGuest.
   void DestroyUnattachedWindows();
 
+  // Bridge IDs correspond to a geolocation request. This method will remove
+  // the bookkeeping for a particular geolocation request associated with the
+  // provided |bridge_id|. It returns the request ID of the geolocation request.
+  int RemoveBridgeID(int bridge_id);
+
+  // Returns the |request_id| generated for the |request| provided.
+  int RequestPermission(
+      BrowserPluginPermissionType permission_type,
+      scoped_refptr<BrowserPluginGuest::PermissionRequest> request,
+      const base::DictionaryValue& request_info);
+
   base::SharedMemory* damage_buffer() const { return damage_buffer_.get(); }
   const gfx::Size& damage_view_size() const { return damage_view_size_; }
   float damage_buffer_scale_factor() const {
@@ -426,9 +437,10 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   // Requests download permission through embedder JavaScript API after
   // retrieving url information from IO thread.
-  void DidRetrieveDownloadURLFromRequestId(const std::string& request_method,
-                                           int permission_request_id,
-                                           const std::string& url);
+  void DidRetrieveDownloadURLFromRequestId(
+      const std::string& request_method,
+      const base::Callback<void(bool)>& callback,
+      const std::string& url);
 
   // Embedder sets permission to allow or deny geolocation request.
   void SetGeolocationPermission(
@@ -494,7 +506,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   int next_permission_request_id_;
 
   // A map to store relevant info for a request keyed by the request's id.
-  typedef std::map<int, PermissionRequest*> RequestMap;
+  typedef std::map<int, scoped_refptr<PermissionRequest> > RequestMap;
   RequestMap permission_request_map_;
 
   // Indicates that this BrowserPluginGuest has associated renderer-side state.

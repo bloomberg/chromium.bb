@@ -59,15 +59,17 @@ BrowserPluginHostFactory* BrowserPluginGuest::factory_ = NULL;
 
 // Parent class for the various types of permission requests, each of which
 // should be able to handle the response to their permission request.
-class BrowserPluginGuest::PermissionRequest {
+class BrowserPluginGuest::PermissionRequest :
+    public base::RefCounted<BrowserPluginGuest::PermissionRequest> {
  public:
   virtual void Respond(bool should_allow, const std::string& user_input) = 0;
-  virtual ~PermissionRequest() {}
-  virtual BrowserPluginPermissionType GetType() const = 0;
  protected:
   PermissionRequest() {
     RecordAction(UserMetricsAction("BrowserPlugin.Guest.PermissionRequest"));
   }
+  virtual ~PermissionRequest() {}
+  // Friend RefCounted so that the dtor can be non-public.
+  friend class base::RefCounted<BrowserPluginGuest::PermissionRequest>;
 };
 
 class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
@@ -82,12 +84,8 @@ class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
     callback_.Run(should_allow);
   }
 
-  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
-    return BrowserPluginPermissionTypeDownload;
-  }
-
-  virtual ~DownloadRequest() {}
  private:
+  virtual ~DownloadRequest() {}
   base::Callback<void(bool)> callback_;
 };
 
@@ -95,11 +93,9 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
  public:
   GeolocationRequest(GeolocationCallback callback,
                      int bridge_id,
-                     BrowserPluginGuest* guest,
                      base::WeakPtrFactory<BrowserPluginGuest>* weak_ptr_factory)
                      : callback_(callback),
                        bridge_id_(bridge_id),
-                       guest_(guest),
                        weak_ptr_factory_(weak_ptr_factory) {
     RecordAction(
         UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Geolocation"));
@@ -107,7 +103,9 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
 
   virtual void Respond(bool should_allow,
                        const std::string& user_input) OVERRIDE {
-    WebContents* web_contents = guest_->embedder_web_contents();
+    base::WeakPtr<BrowserPluginGuest> guest(weak_ptr_factory_->GetWeakPtr());
+
+    WebContents* web_contents = guest->embedder_web_contents();
     if (should_allow && web_contents) {
       // If renderer side embedder decides to allow gelocation, we need to check
       // if the app/embedder itself has geolocation access.
@@ -118,7 +116,7 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
         if (geolocation_context) {
           base::Callback<void(bool)> geolocation_callback = base::Bind(
               &BrowserPluginGuest::SetGeolocationPermission,
-              weak_ptr_factory_->GetWeakPtr(),
+              guest,
               callback_,
               bridge_id_);
           geolocation_context->RequestGeolocationPermission(
@@ -135,18 +133,13 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
         }
       }
     }
-    guest_->SetGeolocationPermission(callback_, bridge_id_, false);
+    guest->SetGeolocationPermission(callback_, bridge_id_, false);
   }
 
-  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
-    return BrowserPluginPermissionTypeGeolocation;
-  }
-
-  virtual ~GeolocationRequest() {}
  private:
+  virtual ~GeolocationRequest() {}
   base::Callback<void(bool)> callback_;
   int bridge_id_;
-  BrowserPluginGuest* guest_;
   base::WeakPtrFactory<BrowserPluginGuest>* weak_ptr_factory_;
 };
 
@@ -175,12 +168,8 @@ class BrowserPluginGuest::MediaRequest : public PermissionRequest {
     }
   }
 
-  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
-    return BrowserPluginPermissionTypeMedia;
-  }
-
-  virtual ~MediaRequest() {}
  private:
+  virtual ~MediaRequest() {}
   MediaStreamRequest request_;
   MediaResponseCallback callback_;
   BrowserPluginGuest* guest_;
@@ -212,12 +201,8 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
       guest->Destroy();
   }
 
-  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
-    return BrowserPluginPermissionTypeNewWindow;
-  }
-
-  virtual ~NewWindowRequest() {}
  private:
+  virtual ~NewWindowRequest() {}
   int instance_id_;
   BrowserPluginGuest* guest_;
 };
@@ -236,13 +221,9 @@ class BrowserPluginGuest::JavaScriptDialogRequest : public PermissionRequest {
     callback_.Run(should_allow, UTF8ToUTF16(user_input));
   }
 
-  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
-    return BrowserPluginPermissionTypeJavaScriptDialog;
-  }
-
-  virtual ~JavaScriptDialogRequest() {}
  private:
-   DialogClosedCallback callback_;
+  virtual ~JavaScriptDialogRequest() {}
+  DialogClosedCallback callback_;
 };
 
 class BrowserPluginGuest::PointerLockRequest : public PermissionRequest {
@@ -259,12 +240,8 @@ class BrowserPluginGuest::PointerLockRequest : public PermissionRequest {
         new BrowserPluginMsg_SetMouseLock(guest_->instance_id(), should_allow));
   }
 
-  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
-    return BrowserPluginPermissionTypePointerLock;
-  }
-
-  virtual ~PointerLockRequest() {}
  private:
+  virtual ~PointerLockRequest() {}
   BrowserPluginGuest* guest_;
 };
 
@@ -406,15 +383,23 @@ void BrowserPluginGuest::DestroyUnattachedWindows() {
   DCHECK_EQ(0ul, pending_new_windows_.size());
 }
 
+int BrowserPluginGuest::RequestPermission(
+    BrowserPluginPermissionType permission_type,
+    scoped_refptr<BrowserPluginGuest::PermissionRequest> request,
+    const base::DictionaryValue& request_info) {
+  int request_id = next_permission_request_id_++;
+  permission_request_map_[request_id] = request;
+
+  SendMessageToEmbedder(new BrowserPluginMsg_RequestPermission(
+      instance_id(), permission_type, request_id, request_info));
+
+  return request_id;
+}
+
 void BrowserPluginGuest::Destroy() {
   if (!attached() && opener())
     opener()->pending_new_windows_.erase(this);
   DestroyUnattachedWindows();
-  // Clean up any pending permission requests.
-  for (RequestMap::iterator it = permission_request_map_.begin();
-       it != permission_request_map_.end(); ++it) {
-    delete it->second;
-  }
   GetWebContents()->GetBrowserPluginGuestManager()->RemoveGuest(instance_id_);
   delete GetWebContents();
 }
@@ -635,10 +620,6 @@ void BrowserPluginGuest::CanDownload(
     return;
   }
 
-  int permission_request_id = next_permission_request_id_++;
-  permission_request_map_[permission_request_id] =
-      new DownloadRequest(callback);
-
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&RetrieveDownloadURLFromRequestId,
@@ -646,7 +627,7 @@ void BrowserPluginGuest::CanDownload(
       base::Bind(&BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId,
                  weak_ptr_factory_.GetWeakPtr(),
                  request_method,
-                 permission_request_id));
+                 callback));
 }
 
 void BrowserPluginGuest::CloseContents(WebContents* source) {
@@ -812,6 +793,7 @@ void BrowserPluginGuest::RequestNewWindowPermission(
   if (it == pending_new_windows_.end())
     return;
   const NewWindowInfo& new_window_info = it->second;
+
   base::DictionaryValue request_info;
   request_info.Set(browser_plugin::kInitialHeight,
                    base::Value::CreateIntegerValue(initial_bounds.height()));
@@ -826,12 +808,10 @@ void BrowserPluginGuest::RequestNewWindowPermission(
   request_info.Set(browser_plugin::kWindowOpenDisposition,
                    base::Value::CreateStringValue(
                        WindowOpenDispositionToString(disposition)));
-  int request_id = next_permission_request_id_++;
-  permission_request_map_[request_id] =
-      new NewWindowRequest(guest->instance_id(), this);
-  SendMessageToEmbedder(new BrowserPluginMsg_RequestPermission(
-      instance_id(), BrowserPluginPermissionTypeNewWindow,
-      request_id, request_info));
+
+  RequestPermission(BrowserPluginPermissionTypeNewWindow,
+                    new NewWindowRequest(guest->instance_id(), this),
+                    request_info);
 }
 
 bool BrowserPluginGuest::UnlockMouseIfNecessary(
@@ -894,34 +874,38 @@ void BrowserPluginGuest::AskEmbedderForGeolocationPermission(
     callback.Run(false);
     return;
   }
-  int request_id = next_permission_request_id_++;
-  permission_request_map_[request_id] = new GeolocationRequest(
-      callback, bridge_id, this, &weak_ptr_factory_);
-  DCHECK(bridge_id_to_request_id_map_.find(bridge_id) ==
-         bridge_id_to_request_id_map_.end());
-  bridge_id_to_request_id_map_[bridge_id] = request_id;
 
   base::DictionaryValue request_info;
   request_info.Set(browser_plugin::kURL,
                    base::Value::CreateStringValue(requesting_frame.spec()));
 
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_RequestPermission(instance_id(),
-          BrowserPluginPermissionTypeGeolocation, request_id, request_info));
+  int request_id =
+      RequestPermission(BrowserPluginPermissionTypeGeolocation,
+                        new GeolocationRequest(
+                            callback, bridge_id, &weak_ptr_factory_),
+                        request_info);
+
+  DCHECK(bridge_id_to_request_id_map_.find(bridge_id) ==
+         bridge_id_to_request_id_map_.end());
+  bridge_id_to_request_id_map_[bridge_id] = request_id;
 }
 
-void BrowserPluginGuest::CancelGeolocationRequest(int bridge_id) {
+int BrowserPluginGuest::RemoveBridgeID(int bridge_id) {
   std::map<int, int>::iterator bridge_itr =
       bridge_id_to_request_id_map_.find(bridge_id);
   if (bridge_itr == bridge_id_to_request_id_map_.end())
-    return;
+    return -1;
 
   int request_id = bridge_itr->second;
   bridge_id_to_request_id_map_.erase(bridge_itr);
+  return request_id;
+}
+
+void BrowserPluginGuest::CancelGeolocationRequest(int bridge_id) {
+  int request_id = RemoveBridgeID(bridge_id);
   RequestMap::iterator request_itr = permission_request_map_.find(request_id);
   if (request_itr == permission_request_map_.end())
     return;
-  delete request_itr->second;
   permission_request_map_.erase(request_itr);
 }
 
@@ -929,7 +913,7 @@ void BrowserPluginGuest::SetGeolocationPermission(GeolocationCallback callback,
                                                   int bridge_id,
                                                   bool allowed) {
   callback.Run(allowed);
-  CancelGeolocationRequest(bridge_id);
+  RemoveBridgeID(bridge_id);
 }
 
 void BrowserPluginGuest::SendQueuedMessages() {
@@ -985,7 +969,6 @@ void BrowserPluginGuest::RenderViewReady() {
 }
 
 void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
-
   SendMessageToEmbedder(new BrowserPluginMsg_GuestGone(instance_id()));
   switch (status) {
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
@@ -1000,6 +983,8 @@ void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
     default:
       break;
   }
+  // TODO(fsamuel): Consider whether we should be clearing
+  // |permission_request_map_| here.
   if (delegate_)
     delegate_->GuestProcessGone(status);
 }
@@ -1246,8 +1231,6 @@ void BrowserPluginGuest::OnLockMouse(bool user_gesture,
     return;
   }
   pending_lock_request_ = true;
-  int request_id = next_permission_request_id_++;
-  permission_request_map_[request_id] = new PointerLockRequest(this);
   base::DictionaryValue request_info;
   request_info.Set(browser_plugin::kUserGesture,
                    base::Value::CreateBooleanValue(user_gesture));
@@ -1257,9 +1240,9 @@ void BrowserPluginGuest::OnLockMouse(bool user_gesture,
                    base::Value::CreateStringValue(
                        web_contents()->GetURL().spec()));
 
-  SendMessageToEmbedder(new BrowserPluginMsg_RequestPermission(
-      instance_id(), BrowserPluginPermissionTypePointerLock,
-      request_id, request_info));
+  RequestPermission(BrowserPluginPermissionTypePointerLock,
+                    new PointerLockRequest(this),
+                    request_info);
 }
 
 void BrowserPluginGuest::OnLockMouseAck(int instance_id, bool succeeded) {
@@ -1398,15 +1381,8 @@ void BrowserPluginGuest::OnRespondPermission(
     LOG(INFO) << "Not a valid request ID.";
     return;
   }
-  BrowserPluginPermissionType permission_type = request_itr->second->GetType();
   request_itr->second->Respond(should_allow, user_input);
-
-  // Geolocation requests have to hang around for a while, so we don't delete
-  // them here.
-  if (permission_type != BrowserPluginPermissionTypeGeolocation) {
-    delete request_itr->second;
-    permission_request_map_.erase(request_itr);
-  }
+  permission_request_map_.erase(request_itr);
 }
 
 void BrowserPluginGuest::OnSwapBuffersACK(int instance_id,
@@ -1514,17 +1490,15 @@ void BrowserPluginGuest::RequestMediaAccessPermission(
     callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
     return;
   }
-  int request_id = next_permission_request_id_++;
-  permission_request_map_[request_id] =
-      new MediaRequest(request, callback, this);
 
   base::DictionaryValue request_info;
   request_info.Set(
       browser_plugin::kURL,
       base::Value::CreateStringValue(request.security_origin.spec()));
-  SendMessageToEmbedder(new BrowserPluginMsg_RequestPermission(
-      instance_id(), BrowserPluginPermissionTypeMedia,
-      request_id, request_info));
+
+  RequestPermission(BrowserPluginPermissionTypeMedia,
+                    new MediaRequest(request, callback, this),
+                    request_info);
 }
 
 void BrowserPluginGuest::RunJavaScriptDialog(
@@ -1541,8 +1515,6 @@ void BrowserPluginGuest::RunJavaScriptDialog(
     callback.Run(false, string16());
     return;
   }
-  int request_id = next_permission_request_id_++;
-  permission_request_map_[request_id] = new JavaScriptDialogRequest(callback);
   base::DictionaryValue request_info;
   request_info.Set(
       browser_plugin::kDefaultPromptText,
@@ -1557,9 +1529,10 @@ void BrowserPluginGuest::RunJavaScriptDialog(
   request_info.Set(
       browser_plugin::kURL,
       base::Value::CreateStringValue(origin_url.spec()));
-  SendMessageToEmbedder(new BrowserPluginMsg_RequestPermission(
-      instance_id(), BrowserPluginPermissionTypeJavaScriptDialog,
-      request_id, request_info));
+
+  RequestPermission(BrowserPluginPermissionTypeJavaScriptDialog,
+                    new JavaScriptDialogRequest(callback),
+                    request_info);
 }
 
 void BrowserPluginGuest::RunBeforeUnloadDialog(
@@ -1638,11 +1611,10 @@ void BrowserPluginGuest::OnUpdateRect(
 
 void BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId(
     const std::string& request_method,
-    int permission_request_id,
+    const base::Callback<void(bool)>& callback,
     const std::string& url) {
   if (url.empty()) {
-    OnRespondPermission(instance_id(), permission_request_id,
-        false, std::string());
+    callback.Run(false);
     return;
   }
 
@@ -1651,10 +1623,9 @@ void BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId(
                    base::Value::CreateStringValue(request_method));
   request_info.Set(browser_plugin::kURL, base::Value::CreateStringValue(url));
 
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_RequestPermission(instance_id(),
-          BrowserPluginPermissionTypeDownload, permission_request_id,
-          request_info));
+  RequestPermission(BrowserPluginPermissionTypeDownload,
+                    new DownloadRequest(callback),
+                    request_info);
 }
 
 }  // namespace content
