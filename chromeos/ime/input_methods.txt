@@ -102,6 +102,9 @@ xkb:jp::jpn	jp	ja
 xkb:ru::rus	ru	ru
 xkb:ru:phonetic:rus	ru(phonetic)	ru
 
+# Arabic
+m17n:ar:kbd     us      ar
+
 # Keyboard layouts.
 xkb:br::por	br	pt-BR
 xkb:bg::bul	bg	bg
