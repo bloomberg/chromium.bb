@@ -8,7 +8,6 @@
 #include <jni.h>
 
 #include "base/files/file_path.h"
-#include "base/time/time.h"
 #include "components/web_contents_delegate_android/web_contents_delegate_android.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -54,9 +53,6 @@ class ChromeWebContentsDelegateAndroid
                                    const gfx::RectF& active_rect) OVERRIDE;
   virtual content::JavaScriptDialogManager*
   GetJavaScriptDialogManager() OVERRIDE;
-  virtual void DidNavigateToPendingEntry(content::WebContents* source) OVERRIDE;
-  virtual void DidNavigateMainFramePostCommit(
-      content::WebContents* source) OVERRIDE;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
@@ -77,8 +73,6 @@ class ChromeWebContentsDelegateAndroid
                              const FindNotificationDetails* find_result);
 
   content::NotificationRegistrar notification_registrar_;
-
-  base::TimeTicks navigation_start_time_;
 };
 
 // Register the native methods through JNI.
