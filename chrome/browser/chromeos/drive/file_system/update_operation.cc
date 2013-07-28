@@ -58,8 +58,8 @@ FileError UpdateFileLocalState(
     internal::FileCache* cache,
     scoped_ptr<google_apis::ResourceEntry> resource_entry,
     base::FilePath* drive_file_path) {
-  const ResourceEntry& entry = ConvertToResourceEntry(*resource_entry);
-  if (entry.resource_id().empty())
+  ResourceEntry entry;
+  if (!ConvertToResourceEntry(*resource_entry, &entry))
     return FILE_ERROR_NOT_A_FILE;
 
   FileError error = metadata->RefreshEntry(entry);

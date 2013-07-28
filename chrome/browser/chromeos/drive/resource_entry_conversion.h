@@ -14,8 +14,8 @@ namespace drive {
 class ResourceEntry;
 
 // Converts a google_apis::ResourceEntry into a drive::ResourceEntry.
-ResourceEntry ConvertToResourceEntry(
-    const google_apis::ResourceEntry& resource_entry);
+bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
+                            ResourceEntry* output);
 
 }  // namespace drive
 

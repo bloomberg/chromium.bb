@@ -98,12 +98,19 @@ void TouchOperation::TouchFileAfterServerTimeStampUpdated(
     return;
   }
 
+  DCHECK(resource_entry);
+  ResourceEntry entry;
+  if (!ConvertToResourceEntry(*resource_entry, &entry)) {
+    callback.Run(FILE_ERROR_NOT_A_FILE);
+    return;
+  }
+
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::RefreshEntry,
                  base::Unretained(metadata_),
-                 ConvertToResourceEntry(*resource_entry)),
+                 entry),
       base::Bind(&TouchOperation::TouchFileAfterRefreshMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,

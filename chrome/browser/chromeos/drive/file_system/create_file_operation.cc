@@ -82,8 +82,10 @@ FileError UpdateLocalStateForCreateFile(
   DCHECK(file_path);
 
   // Add the entry to the local resource metadata.
-  ResourceEntry entry = ConvertToResourceEntry(*resource_entry);
-  FileError error = metadata->AddEntry(entry);
+  FileError error = FILE_ERROR_NOT_A_FILE;
+  ResourceEntry entry;
+  if (ConvertToResourceEntry(*resource_entry, &entry))
+    error = metadata->AddEntry(entry);
 
   // Depending on timing, the metadata may have inserted via change list
   // already. So, FILE_ERROR_EXISTS is not an error.

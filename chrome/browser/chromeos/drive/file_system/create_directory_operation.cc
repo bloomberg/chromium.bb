@@ -194,6 +194,12 @@ void CreateDirectoryOperation::CreateDirectoryRecursivelyAfterAddNewDirectory(
   }
   DCHECK(resource_entry);
 
+  ResourceEntry entry;
+  if (!ConvertToResourceEntry(*resource_entry, &entry)) {
+    callback.Run(FILE_ERROR_NOT_A_FILE);
+    return;
+  }
+
   // Note that the created directory may be renamed inside
   // ResourceMetadata::AddEntry due to name confliction.
   // What we actually need here is the new created path (not the path we try
@@ -204,7 +210,7 @@ void CreateDirectoryOperation::CreateDirectoryRecursivelyAfterAddNewDirectory(
       FROM_HERE,
       base::Bind(&UpdateLocalStateForCreateDirectoryRecursively,
                  metadata_,
-                 ConvertToResourceEntry(*resource_entry),
+                 entry,
                  file_path),
       base::Bind(&CreateDirectoryOperation::
                      CreateDirectoryRecursivelyAfterUpdateLocalState,

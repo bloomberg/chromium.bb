@@ -263,11 +263,17 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
   }
   DCHECK(resource_entry);
 
+  ResourceEntry entry;
+  if (!ConvertToResourceEntry(*resource_entry, &entry)) {
+    callback.Run(FILE_ERROR_NOT_A_FILE);
+    return;
+  }
+
   // The entry was added in the root directory on the server, so we should
   // first add it to the root to mirror the state and then move it to the
   // destination directory by MoveEntryFromRootDirectory().
   metadata_->AddEntryOnUIThread(
-      ConvertToResourceEntry(*resource_entry),
+      entry,
       base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
                  dir_path,
@@ -380,7 +386,13 @@ void CopyOperation::OnCopyResourceCompleted(
     callback.Run(error);
     return;
   }
+
   DCHECK(resource_entry);
+  ResourceEntry entry;
+  if (!ConvertToResourceEntry(*resource_entry, &entry)) {
+    callback.Run(FILE_ERROR_NOT_A_FILE);
+    return;
+  }
 
   // The copy on the server side is completed successfully. Update the local
   // metadata.
@@ -389,7 +401,7 @@ void CopyOperation::OnCopyResourceCompleted(
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::AddEntry,
                  base::Unretained(metadata_),
-                 ConvertToResourceEntry(*resource_entry)),
+                 entry),
       callback);
 }
 

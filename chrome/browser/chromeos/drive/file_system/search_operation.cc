@@ -38,7 +38,10 @@ FileError RefreshEntriesOnBlockingPool(
       resource_list->entries();
   result->reserve(entries.size());
   for (size_t i = 0; i < entries.size(); ++i) {
-    ResourceEntry entry = ConvertToResourceEntry(*entries[i]);
+    ResourceEntry entry;
+    if (!ConvertToResourceEntry(*entries[i], &entry))
+      continue;  // Skip non-file entries.
+
     const std::string id = entry.resource_id();
     FileError error = resource_metadata->RefreshEntry(entry);
     if (error == FILE_ERROR_NOT_FOUND) {

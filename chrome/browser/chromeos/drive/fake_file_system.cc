@@ -278,8 +278,9 @@ void FakeFileSystem::GetFileContentByPathAfterGetWapiResourceEntry(
   }
   DCHECK(gdata_entry);
 
-  scoped_ptr<ResourceEntry> entry(
-      new ResourceEntry(ConvertToResourceEntry(*gdata_entry)));
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+  bool converted = ConvertToResourceEntry(*gdata_entry, entry.get());
+  DCHECK(converted);
 
   base::FilePath cache_path =
       cache_dir_.path().AppendASCII(entry->resource_id());
@@ -369,8 +370,10 @@ void FakeFileSystem::GetResourceEntryByPathAfterGetResourceList(
   const ScopedVector<google_apis::ResourceEntry>& entries =
       resource_list->entries();
   for (size_t i = 0; i < entries.size(); ++i) {
-    scoped_ptr<ResourceEntry> entry(new ResourceEntry(
-        ConvertToResourceEntry(*entries[i])));
+    scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+    bool converted = ConvertToResourceEntry(*entries[i], entry.get());
+    DCHECK(converted);
+
     if (entry->base_name() == base_name.AsUTF8Unsafe()) {
       // Found the target entry.
       callback.Run(FILE_ERROR_OK, entry.Pass());

@@ -24,8 +24,8 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
       google_apis::ResourceEntry::ExtractAndParse(*value));
   ASSERT_TRUE(gdata_resource_entry.get());
 
-  ResourceEntry entry =
-      ConvertToResourceEntry(*gdata_resource_entry);
+  ResourceEntry entry;
+  EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry));
 
   EXPECT_EQ("File 1.mp3",  entry.title());
   EXPECT_EQ("File 1.mp3",  entry.base_name());
@@ -100,8 +100,8 @@ TEST(ResourceEntryConversionTest,
       google_apis::ResourceEntry::ExtractAndParse(*value));
   ASSERT_TRUE(gdata_resource_entry.get());
 
-  ResourceEntry entry =
-      ConvertToResourceEntry(*gdata_resource_entry);
+  ResourceEntry entry;
+  EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry));
 
   EXPECT_EQ("Document 1",  entry.title());
   EXPECT_EQ("Document 1.gdoc",  entry.base_name());  // The suffix added.
@@ -181,8 +181,8 @@ TEST(ResourceEntryConversionTest,
       google_apis::ResourceEntry::ExtractAndParse(*value));
   ASSERT_TRUE(gdata_resource_entry.get());
 
-  ResourceEntry entry =
-      ConvertToResourceEntry(*gdata_resource_entry);
+  ResourceEntry entry;
+  EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry));
 
   EXPECT_EQ("Sub Directory Folder",  entry.title());
   EXPECT_EQ("Sub Directory Folder",  entry.base_name());
@@ -252,8 +252,8 @@ TEST(ResourceEntryConversionTest,
       google_apis::ResourceEntry::ExtractAndParse(*value));
   ASSERT_TRUE(gdata_resource_entry.get());
 
-  ResourceEntry entry =
-      ConvertToResourceEntry(*gdata_resource_entry);
+  ResourceEntry entry;
+  EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry));
 
   EXPECT_EQ("Deleted document",  entry.title());
   EXPECT_EQ("Deleted document.gdoc",  entry.base_name());
@@ -330,8 +330,8 @@ TEST(ResourceEntryConversionTest,
       google_apis::ResourceEntry::ExtractAndParse(*value));
   ASSERT_TRUE(gdata_resource_entry.get());
 
-  ResourceEntry entry =
-      ConvertToResourceEntry(*gdata_resource_entry);
+  ResourceEntry entry;
+  EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry));
 
   EXPECT_TRUE(entry.shared_with_me());
 }
