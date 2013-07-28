@@ -809,6 +809,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       browser_plugin_manager_(NULL),
       media_stream_client_(NULL),
       web_user_media_client_(NULL),
+      midi_dispatcher_(NULL),
       devtools_agent_(NULL),
       accessibility_mode_(AccessibilityModeOff),
       renderer_accessibility_(NULL),
