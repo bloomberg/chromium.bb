@@ -5,6 +5,7 @@
 
 import unittest
 
+from file_system import FileNotFoundError
 from link_error_detector import LinkErrorDetector
 from servlet import Response
 from test_file_system import TestFileSystem
@@ -53,26 +54,25 @@ class LinkErrorDetectorTest(unittest.TestCase):
       return Response(
           content=file_system.ReadSingle('docs/templates/public/' + path),
           status=200)
-    except AttributeError:
+    except FileNotFoundError:
       return Response(status=404)
 
   def testGetBrokenLinks(self):
     expected_broken_links = set([
-      ('apps/crx.html', 'apps/broken.html'),
-      ('apps/index.html', 'apps/broken.json'),
-      ('apps/unreachable.html', 'apps/invalid.html'),
-      ('apps/devtools_events.html', 'apps/fake.html#invalid')])
-
-    expected_broken_anchors  = set([
-      ('apps/devtools_events.html', 'apps/index.html#invalid'),
-      ('apps/unreachable.html', '#aoesu')])
+      (404, 'apps/crx.html', 'apps/broken.html', ''),
+      (404, 'apps/index.html', 'apps/broken.json', ''),
+      (404, 'apps/unreachable.html', 'apps/invalid.html', ''),
+      (404, 'apps/devtools_events.html', 'apps/fake.html#invalid',
+          'target page not found'),
+      (200, 'apps/devtools_events.html', 'apps/index.html#invalid',
+          'target anchor not found'),
+      (200, 'apps/unreachable.html', '#aoesu', 'target anchor not found')])
 
     link_error_detector = LinkErrorDetector(
         file_system, self.render, 'templates/public', ('apps/index.html'))
-    broken_links, broken_anchors = link_error_detector.GetBrokenLinks()
+    broken_links = link_error_detector.GetBrokenLinks()
 
     self.assertEqual(expected_broken_links, set(broken_links))
-    self.assertEqual(expected_broken_anchors, set(broken_anchors))
 
   def testGetOrphanedPages(self):
     expected_orphaned_pages = set([

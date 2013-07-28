@@ -73,37 +73,6 @@ def _Process(path, renderer):
 
   return Page(200, edges, anchors, anchor_refs)
 
-def _CategorizeBrokenLinks(url, page, pages):
-  '''Find all the broken links on a page and categorize them as either
-  broken_links, which link to a page that 404s, or broken_anchors. |page| is
-  the page to search at |url|, |pages| is a callable that takes a path and
-  returns a Page. Returns two lists, the first of all the broken_links, the
-  second of all the broken_anchors.
-  '''
-  broken_links = []
-  broken_anchors = []
-
-  # First test links without anchors.
-  for link in page.links:
-    if pages(link).status != 200:
-      broken_links.append((url, link))
-
-  # Then find broken links with an anchor component.
-  for ref in page.anchor_refs:
-    path, anchor = _SplitAnchor(ref)
-
-    if path == '':
-      if not anchor in page.anchors and anchor != 'top':
-        broken_anchors.append((url, ref))
-    else:
-      target_page = pages(path)
-      if target_page.status != 200:
-        broken_links.append((url, ref))
-      elif not anchor in target_page.anchors:
-        broken_anchors.append((url, ref))
-
-  return broken_links, broken_anchors
-
 class _ContentParser(HTMLParser):
   '''Parse an html file pulling out all links and anchor_refs, where an
   anchor_ref is a link that contains an anchor.
@@ -150,6 +119,7 @@ class LinkErrorDetector(object):
     self._pages = defaultdict(lambda: Page(404, (), (), ()))
     self._root_pages = frozenset(root_pages)
     self._always_detached = frozenset(('apps/404.html', 'extensions/404.html'))
+    self._redirection_whitelist = frozenset(('extensions/', 'apps/'))
 
     self._RenderAllPages()
 
@@ -172,30 +142,99 @@ class LinkErrorDetector(object):
           print(url, ', a url derived from the path', dirpath +
               ', resulted in a', self._pages[url].status)
 
-  def GetBrokenLinks(self):
-    '''Finds all broken links. A broken link is a link that leads to a page that
-    does not exist (404s when rendered) or that contains an anchor that does not
-    properly resolve.
+  def _FollowRedirections(self, starting_url, limit=4):
+    '''Follow redirection until a non-redirectable page is reached. Start at
+    |starting_url| which must return a 301 or 302 status code.
 
-    Returns a pair of lists, the first all of the links that lead to a
-    non-existant page, the second all of the links that contain a broken
-    anchor. Each item in the lists is a tuple of the page a broken link
-    occurred on and the href of the broken link.
+    Return a tuple of: the status of rendering |staring_url|, the final url,
+    and a list of the pages reached including |starting_url|. If no redirection
+    occurred, returns (None, None, None).
+    '''
+    pages_reached = [starting_url]
+    redirect_link = None
+    target_page = self._renderer(starting_url)
+    original_status = status = target_page.status
+    count = 0
+
+    while status in (301, 302):
+      if count > limit:
+        return None, None, None
+      redirect_link = target_page.headers.get('Location')
+      target_page = self._renderer(redirect_link)
+      status = target_page.status
+      pages_reached.append(redirect_link)
+      count += 1
+
+    if redirect_link is None:
+      return None, None, None
+
+    return original_status, redirect_link, pages_reached
+
+  def _CategorizeBrokenLinks(self, url, page, pages):
+    '''Find all broken links on a page and create appropriate notes describing
+    why tehy are broken (broken anchor, target redirects, etc). |page| is the
+    current page being checked and is the result of rendering |url|. |pages|
+    is a callable that takes a path and returns a Page.
     '''
     broken_links = []
-    broken_anchors = []
+
+    for link in page.links + page.anchor_refs:
+      components = urlsplit(link)
+      fragment = components.fragment
+
+      if components.path == '':
+        if fragment == 'top':
+          continue
+        if not fragment in page.anchors:
+          broken_links.append((200, url, link, 'target anchor not found'))
+      else:
+        # Render the target page
+        target_page = pages(components.path)
+
+        if target_page.status != 200:
+          if components.path in self._redirection_whitelist:
+            continue
+
+          status, relink, _ = self._FollowRedirections(components.path)
+          if relink:
+            broken_links.append((
+                status,
+                url,
+                link,
+                'redirects to %s' % relink))
+
+          # target page with fragment is broken
+          elif fragment:
+            broken_links.append((
+                target_page.status, url, link, 'target page not found'))
+          else:
+            broken_links.append((target_page.status, url, link, ''))
+
+        elif fragment:
+          if not fragment in target_page.anchors:
+            broken_links.append((
+                target_page.status, url, link, 'target anchor not found'))
+
+    return broken_links
+
+  def GetBrokenLinks(self):
+    '''Find all broken links. A broken link is a link that leads to a page
+    that does not exist (404s), redirects to another page (301 or 302), or
+    has an anchor whose target does not exist.
+
+    Returns a list of tuples of four elements: status, url, target_page,
+    notes.
+    '''
+    broken_links = []
 
     for url in self._pages.keys():
       page = self._pages[url]
       if page.status != 200:
         continue
-      links, anchors = _CategorizeBrokenLinks(
-          url, page, lambda x: self._pages[x])
+      broken_links.extend(self._CategorizeBrokenLinks(
+          url, page, lambda x: self._pages[x]))
 
-      broken_links.extend(links)
-      broken_anchors.extend(anchors)
-
-    return broken_links, broken_anchors
+    return broken_links
 
   def GetOrphanedPages(self):
     '''Crawls the server find all pages that are connected to the pages at
@@ -208,7 +247,14 @@ class LinkErrorDetector(object):
 
     while pages_to_check:
       item = pages_to_check.popleft()
-      for link in self._pages[item].links:
+      target_page = self._pages[item]
+
+      if target_page.status != 200:
+        redirected_page = self._FollowRedirections(item)[1]
+        if not redirected_page is None:
+          target_page = self._pages[redirected_page]
+
+      for link in target_page.links:
         if link not in found:
           found.add(link)
           pages_to_check.append(link)
