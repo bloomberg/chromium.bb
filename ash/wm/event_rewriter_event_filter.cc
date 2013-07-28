@@ -27,6 +27,8 @@ void EventRewriterEventFilter::EnableStickyKeys(bool enabled) {
 #if defined(OS_CHROMEOS)
   if (enabled)
     sticky_keys_.reset(new StickyKeys());
+  else
+    sticky_keys_.reset();
 #endif  // OS_CHROMEOS
 }
 
