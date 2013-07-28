@@ -170,7 +170,7 @@ class BasePerfTest(pyauto.PyUITest):
         logging.info('_WaitForChromeExit() took: %s seconds',
                      time.time() - initial_time)
         return
-    self.fail('_WaitForChromeExit() did not finish within %s seconds',
+    self.fail('_WaitForChromeExit() did not finish within %s seconds' %
               timeout)
 
   def tearDown(self):
