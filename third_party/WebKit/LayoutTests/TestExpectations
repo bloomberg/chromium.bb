@@ -1705,6 +1705,7 @@ crbug.com/263879 fast/forms/range/range-appearance-basic.html [ NeedsManualRebas
 crbug.com/263879 fast/writing-mode/broken-ideographic-font.html [ NeedsManualRebaseline Crash ]
 crbug.com/263879 [ Mac ] editing/selection/selection-button-text.html [ Timeout NeedsManualRebaseline ]
 crbug.com/263879 fast/text/international/hindi-spacing.html [ NeedsManualRebaseline ]
+crbug.com/265259 [ Mac Debug ] fast/dom/custom/registration-context-sharing.html [ Pass Failure ]
 
 # Temporary expectation until v8's i18n support is turned on. Then it needs to
 # be rebaslined.
