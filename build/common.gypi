@@ -1105,6 +1105,9 @@
     # Turns on compiler optimizations in V8 in Debug build.
     'v8_optimized_debug': 1,
 
+    # Turns on the i18n support in V8.
+    'v8_enable_i18n_support': 1,
+
     'conditions': [
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all
