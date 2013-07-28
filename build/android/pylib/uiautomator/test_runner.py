@@ -21,7 +21,7 @@ class TestRunner(instr_test_runner.TestRunner):
       See the super class for all other args.
     """
     super(TestRunner, self).__init__(
-        build_type, test_data, False, save_perf_json, screenshot_failures, tool,
+        build_type, test_data, save_perf_json, screenshot_failures, tool,
         wait_for_debugger, disable_assertions, push_deps, cleanup_test_files,
         device, shard_index, test_pkg, ports_to_forward)
 
