@@ -193,7 +193,7 @@ cr.define('options', function() {
 
       if (active) {
         var hash = location.hash;
-        if (hash && this.searchField != document.activeElement) {
+        if (hash) {
           this.searchField.value =
               decodeURIComponent(hash.slice(1).replace(/\+/g, ' '));
         } else if (!this.searchField.value) {
