@@ -378,8 +378,10 @@ void SystemTray::DestroySystemBubble() {
 }
 
 void SystemTray::DestroyNotificationBubble() {
-  notification_bubble_.reset();
-  status_area_widget()->SetHideWebNotifications(false);
+  if (notification_bubble_) {
+    notification_bubble_.reset();
+    status_area_widget()->SetHideWebNotifications(false);
+  }
 }
 
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {

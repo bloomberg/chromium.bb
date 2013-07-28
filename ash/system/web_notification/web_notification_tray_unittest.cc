@@ -6,11 +6,13 @@
 
 #include <vector>
 
+#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/test_system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,6 +35,21 @@ namespace {
 WebNotificationTray* GetTray() {
   return Shell::GetPrimaryRootWindowController()->shelf()->
       status_area_widget()->web_notification_tray();
+}
+
+WebNotificationTray* GetSecondaryTray() {
+  internal::RootWindowController* primary_controller =
+      Shell::GetPrimaryRootWindowController();
+  Shell::RootWindowControllerList controllers =
+      Shell::GetAllRootWindowControllers();
+  for (size_t i = 0; i < controllers.size(); ++i) {
+    if (controllers[i] != primary_controller) {
+      return controllers[i]->shelf()->
+          status_area_widget()->web_notification_tray();
+    }
+  }
+
+  return NULL;
 }
 
 message_center::MessageCenter* GetMessageCenter() {
@@ -188,6 +205,51 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
   NotificationList::PopupNotifications popups =
       GetMessageCenter()->GetPopupNotifications();
   EXPECT_EQ(message_center::kMaxVisiblePopupNotifications, popups.size());
+}
+
+#if defined(OS_CHROMEOS)
+// Display notification is ChromeOS only.
+#define MAYBE_PopupShownOnBothDisplays PopupShownOnBothDisplays
+#else
+#define MAYBE_PopupShownOnBothDisplays DISABLED_PopupShownOnBothDisplays
+#endif
+
+// Verifies if the notification appears on both displays when extended mode.
+TEST_F(WebNotificationTrayTest, MAYBE_PopupShownOnBothDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  // Enables to appear the notification for display changes.
+  test::TestSystemTrayDelegate* tray_delegate =
+      static_cast<test::TestSystemTrayDelegate*>(
+          Shell::GetInstance()->system_tray_delegate());
+  tray_delegate->set_should_show_display_notification(true);
+
+  UpdateDisplay("400x400,200x200");
+  // UpdateDisplay() creates the display notifications, so popup is visible.
+  EXPECT_TRUE(GetTray()->IsPopupVisible());
+  WebNotificationTray* secondary_tray = GetSecondaryTray();
+  ASSERT_TRUE(secondary_tray);
+  EXPECT_TRUE(secondary_tray->IsPopupVisible());
+
+  // Transition to mirroring and then back to extended display, which recreates
+  // root window controller and shelf with having notifications. This code
+  // verifies it doesn't cause crash and popups are still visible. See
+  // http://crbug.com/263664
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+
+  display_manager->SetSoftwareMirroring(true);
+  UpdateDisplay("400x400,200x200");
+  EXPECT_TRUE(GetTray()->IsPopupVisible());
+  EXPECT_FALSE(GetSecondaryTray());
+
+  display_manager->SetSoftwareMirroring(false);
+  UpdateDisplay("400x400,200x200");
+  EXPECT_TRUE(GetTray()->IsPopupVisible());
+  secondary_tray = GetSecondaryTray();
+  ASSERT_TRUE(secondary_tray);
+  EXPECT_TRUE(secondary_tray->IsPopupVisible());
 }
 
 }  // namespace ash
