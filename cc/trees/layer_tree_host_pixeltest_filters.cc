@@ -52,7 +52,7 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlur) {
                base::FilePath(FILE_PATH_LITERAL("background_filter_blur.png")));
 }
 
-TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
+TEST_F(LayerTreeHostFiltersPixelTest, DISABLED_BackgroundFilterBlurOutsets) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -73,8 +73,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
   blur->SetBackgroundFilters(filters);
 
 #if defined(OS_WIN)
-  // Windows has 2596 pixels off by at most 2: crbug.com/259922
-  float percentage_pixels_large_error = 6.49f;  // 2596px / (200*200)
+  // Windows has 2250 pixels off by at most 2: crbug.com/259922
+  float percentage_pixels_large_error = 5.625f;  // 2250px / (200*200)
   float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 1.f;
   int large_error_allowed = 2;
