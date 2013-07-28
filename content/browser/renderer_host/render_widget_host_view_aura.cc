@@ -1185,7 +1185,9 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
           &RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult,
           dst_size_in_pixel,
           callback));
-  request->set_area(src_subrect);
+  gfx::Rect src_subrect_in_pixel =
+      ConvertRectToPixel(current_device_scale_factor_, src_subrect);
+  request->set_area(src_subrect_in_pixel);
   window_->layer()->RequestCopyOfOutput(request.Pass());
 }
 

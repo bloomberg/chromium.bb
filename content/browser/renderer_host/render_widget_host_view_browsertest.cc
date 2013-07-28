@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/port/browser/render_widget_host_view_port.h"
@@ -25,23 +26,39 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_setup.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_MACOSX)
 #include "ui/gl/io_surface_support_mac.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/base/win/dpi.h"
+#endif
+
 namespace content {
 namespace {
 
-// Convenience macro: Short-cicuit a pass for the tests where platform support
+// Convenience macro: Short-circuit a pass for the tests where platform support
 // for forced-compositing mode (or disabled-compositing mode) is lacking.
 #define SET_UP_SURFACE_OR_PASS_TEST(wait_message)  \
   if (!SetUpSourceSurface(wait_message)) {  \
     LOG(WARNING)  \
         << ("Blindly passing this test: This platform does not support "  \
             "forced compositing (or forced-disabled compositing) mode.");  \
+    return;  \
+  }
+
+// Convenience macro: Short-circuit a pass for platforms where setting up
+// high-DPI fails.
+#define PASS_TEST_IF_SCALE_FACTOR_NOT_SUPPORTED(factor) \
+  if (ui::GetScaleFactorScale( \
+          GetScaleFactorForView(GetRenderWidgetHostViewPort())) != factor) {  \
+    LOG(WARNING) << "Blindly passing this test: failed to set up "  \
+                    "scale factor: " << factor;  \
     return;  \
   }
 
@@ -1064,6 +1081,111 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                  video_frame,
                  run_loop.QuitClosure());
   rwhvp->CopyFromCompositingSurfaceToVideoFrame(bounds, video_frame, callback);
+  run_loop.Run();
+}
+
+class CompositingRenderWidgetHostViewTabCaptureHighDPI
+    : public CompositingRenderWidgetHostViewBrowserTestTabCapture {
+ public:
+  CompositingRenderWidgetHostViewTabCaptureHighDPI()
+      : kScale(2.f) {
+  }
+
+  virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
+    CompositingRenderWidgetHostViewBrowserTestTabCapture::SetUpCommandLine(cmd);
+    cmd->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
+                           base::StringPrintf("%f", scale()));
+#if defined(OS_WIN)
+    cmd->AppendSwitchASCII(switches::kHighDPISupport, "1");
+    ui::EnableHighDPISupport();
+#endif
+  }
+
+  float scale() const { return kScale; }
+
+ private:
+  const float kScale;
+
+  DISALLOW_COPY_AND_ASSIGN(CompositingRenderWidgetHostViewTabCaptureHighDPI);
+};
+
+// High-DPI doesn't work right with content-shell on linux-aura.
+// http://crbug.com/265028
+#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_CopyFromCompositingSurface DISABLED_CopyFromCompositingSurface
+#else
+#define MAYBE_CopyFromCompositingSurface CopyFromCompositingSurface
+#endif
+IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewTabCaptureHighDPI,
+                       MAYBE_CopyFromCompositingSurface) {
+  SetTestUrl("data:text/html,<!doctype html>"
+             "<div class='left'>"
+             "  <div class='right'></div>"
+             "</div>"
+             "<style>"
+             "body { padding: 0; margin: 0; }"
+             ".left { position: absolute;"
+             "        background: #0ff;"
+             "        width: 100px;"
+             "        height: 150px;"
+             "}"
+             ".right { position: absolute;"
+             "         left: 100px;"
+             "         background: #ff0;"
+             "         width: 100px;"
+             "         height: 150px;"
+             "}"
+             "</style>"
+             "<script>"
+             "  domAutomationController.setAutomationId(0);"
+             "  domAutomationController.send(\"DONE\");"
+             "</script>");
+  SET_UP_SURFACE_OR_PASS_TEST("\"DONE\"");
+  PASS_TEST_IF_SCALE_FACTOR_NOT_SUPPORTED(scale());
+
+  RenderViewHost* const rwh =
+      shell()->web_contents()->GetRenderViewHost();
+  RenderWidgetHostViewPort* rwhvp =
+      static_cast<RenderWidgetHostViewPort*>(rwh->GetView());
+
+  // The page is loaded in the renderer, wait for a new frame to arrive.
+  uint32 frame = rwhvp->RendererFrameNumber();
+  RenderWidgetHostImpl::From(rwh)->ScheduleComposite();
+  while (rwhvp->RendererFrameNumber() == frame)
+    GiveItSomeTime();
+
+  gfx::Rect bounds = gfx::Rect(200, 150);
+  gfx::Size out_size = bounds.size();
+  gfx::Size out_size_pixels = gfx::ToFlooredSize(gfx::ScaleSize(out_size,
+                                                                scale(),
+                                                                scale()));
+
+  SkBitmap expected_bitmap;
+  expected_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                            out_size_pixels.width(),
+                            out_size_pixels.height());
+  expected_bitmap.allocPixels();
+  // Left half is #0ff.
+  expected_bitmap.eraseARGB(255, 0, 255, 255);
+  // Right half is #ff0.
+  {
+    SkAutoLockPixels lock(expected_bitmap);
+    for (int i = 0; i < out_size_pixels.width() / 2; ++i) {
+      for (int j = 0; j < out_size_pixels.height(); ++j) {
+        *expected_bitmap.getAddr32(out_size_pixels.width() / 2 + i, j) =
+            SkColorSetARGB(255, 255, 255, 0);
+      }
+    }
+  }
+  SetExpectedCopyFromCompositingSurfaceResult(true, expected_bitmap);
+
+  base::RunLoop run_loop;
+  base::Callback<void(bool, const SkBitmap&)> callback =
+      base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
+                     CopyFromCompositingSurfaceCallback,
+                 base::Unretained(this),
+                 run_loop.QuitClosure());
+  rwhvp->CopyFromCompositingSurface(bounds, out_size, callback);
   run_loop.Run();
 }
 
