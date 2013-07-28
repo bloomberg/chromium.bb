@@ -23,6 +23,7 @@
         'common_net',
         'feedback_proto',
         'in_memory_url_index_cache_proto',
+        'probe_message_proto',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'variations_seed_proto',
@@ -1131,6 +1132,8 @@
         'browser/net/pref_proxy_config_tracker.h',
         'browser/net/pref_proxy_config_tracker_impl.cc',
         'browser/net/pref_proxy_config_tracker_impl.h',
+        'browser/net/probe_message.cc',
+        'browser/net/probe_message.h',
         'browser/net/proxy_service_factory.cc',
         'browser/net/proxy_service_factory.h',
         'browser/net/referrer.cc',
@@ -3178,6 +3181,17 @@
         'proto_out_dir': 'chrome/browser/net',
       },
       'includes': [ '../build/protoc.gypi', ],
+    },
+    {
+      # Protobuf compiler / generator for Probe Message.
+      'target_name': 'probe_message_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/net/probe_message.proto' ],
+      'variables': {
+        'proto_in_dir': 'browser/net',
+        'proto_out_dir': 'chrome/browser/net',
+      },
+      'includes': [ '../build/protoc.gypi' ]
     },
     {
       # Protobuf compiler / generate rule for feedback

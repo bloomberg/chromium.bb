@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,140 +11,148 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "base/tuple.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/single_request_host_resolver.h"
 #include "net/proxy/proxy_service.h"
-#include "net/udp/udp_client_socket.h"
-#include "net/udp/udp_server_socket.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/udp/datagram_client_socket.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
 
 namespace chrome_browser_net {
 
-// This specifies the number of bytes to be sent to the UDP echo servers as part
-// of small packet size test.
-static const uint32 kSmallTestBytesToSend = 100;
+// static
+uint32 NetworkStats::maximum_tests_ = 6;
+// static
+uint32 NetworkStats::maximum_sequential_packets_ = 21;
+// static
+uint32 NetworkStats::maximum_NAT_packets_ = 2;
+// static
+uint32 NetworkStats::maximum_NAT_idle_seconds_ = 300;
+// static
+bool NetworkStats::start_test_after_connect_ = true;
 
-// This specifies the number of bytes to be sent to the UDP echo servers as part
-// of medium packet size test.
-static const uint32 kMediumTestBytesToSend = 500;
+// Specify the possible choices of probe packet sizes.
+const uint32 kProbePacketBytes[] = {100, 500, 1200};
+const uint32 kPacketSizeChoices = arraysize(kProbePacketBytes);
 
-// This specifies the number of bytes to be sent to the UDP echo servers as part
-// of large packet size test.
-static const uint32 kLargeTestBytesToSend = 1200;
+// List of ports used for probing test.
+const uint16 kPorts[] = {443, 80};
 
-// This specifies starting position of the <version> and length of the
-// <version> in "echo request" and "echo response".
-static const uint32 kVersionNumber = 1;
-static const uint32 kVersionStart = 0;
-static const uint32 kVersionLength = 2;
-static const uint32 kVersionEnd = kVersionStart + kVersionLength;
+// Number of first few packets that are recorded in a packet-correlation
+// histogram, which shows exactly what sequence of packets were received.
+// We use this to deduce specific packet loss correlation.
+const uint32 kCorrelatedLossPacketCount = 6;
 
-// This specifies the starting position of the <checksum> and length of the
-// <checksum> in "echo request" and "echo response". Maximum value for the
-// <checksum> is less than (2 ** 31 - 1).
-static const uint32 kChecksumStart = kVersionEnd;
-static const uint32 kChecksumLength = 10;
-static const uint32 kChecksumEnd = kChecksumStart + kChecksumLength;
+// This specifies the maximum message (payload) size of one packet.
+const uint32 kMaxMessageSize = 1300;
 
-// This specifies the starting position of the <payload_size> and length of the
-// <payload_size> in "echo request" and "echo response". Maximum number of bytes
-// that can be sent in the <payload> is 9,999,999.
-static const uint32 kPayloadSizeStart = kChecksumEnd;
-static const uint32 kPayloadSizeLength = 7;
-static const uint32 kPayloadSizeEnd = kPayloadSizeStart + kPayloadSizeLength;
+// This specifies the maximum udp receiver buffer size.
+const uint32 kMaxUdpReceiveBufferSize = 63000;
 
-// This specifies the starting position of the <key> and length of the <key> in
-// "echo response".
-static const uint32 kKeyStart = kPayloadSizeEnd;
-static const uint32 kKeyLength = 6;
-static const uint32 kKeyEnd = kKeyStart + kKeyLength;
-static const int32 kKeyMinValue = 0;
-static const int32 kKeyMaxValue = 999999;
+// This specifies the maximum udp receiver buffer size.
+const uint32 kMaxUdpSendBufferSize = 4096;
 
-// This specifies the starting position of the <payload> in "echo request".
-static const uint32 kPayloadStart = kPayloadSizeEnd;
+// This should match TestType except for the last one.
+const char* kTestName[] = {"TokenRequest", "StartPacket", "NonPacedPacket",
+                           "PacedPacket", "NATBind"};
 
-// This specifies the length of the packet_number in the payload.
-static const uint32 kPacketNumberLength = 10;
+// Perform Pacing/Non-pacing test only if at least 2 packets are received
+// in the StartPacketTest.
+const uint32 kMinimumReceivedPacketsForPacingTest = 2;
+// Perform NAT binding test only if at least 10 packets are received.
+const uint32 kMinimumReceivedPacketsForNATTest = 10;
 
-// This specifies the starting position of the <encoded_payload> in
-// "echo response".
-static const uint32 kEncodedPayloadStart = kKeyEnd;
+// Maximum inter-packet pacing interval in microseconds.
+const uint32 kMaximumPacingMicros = 1000000;
+// Timeout value for getting the token.
+const uint32 kGetTokenTimeoutSeconds = 10;
+// Timeout value for StartPacket and NonPacedPacket if the client does not get
+// reply. For PacedPacket test, the timeout value is this number plus the total
+// pacing interval.
+const uint32 kReadDataTimeoutSeconds = 30;
+// This is the timeout for NAT without Idle periods.
+// For NAT test with idle periods, the timeout is the Idle period + this value.
+const uint32 kReadNATTimeoutSeconds = 10;
 
-// HistogramPortSelector and kPorts should be kept in sync. Port 999999 is
-// used by the unit tests.
-static const int32 kPorts[] = {443, 999999};
+// These helper functions are similar to UMA_HISTOGRAM_XXX except that they do
+// not create a static histogram_pointer.
+void DynamicHistogramEnumeration(const std::string& name,
+                                 uint32 sample,
+                                 uint32 boundary_value) {
+  base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
+      name,
+      1,
+      boundary_value,
+      boundary_value + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->Add(sample);
+}
 
-// Number of packets that are recorded in a packet-correlation histogram, which
-// shows exactly what sequence of packets were responded to.  We use this to
-// deduce specific packet loss correlation.
-static const uint32 kCorrelatedLossPacketCount = 6;
+void DynamicHistogramTimes(const std::string& name,
+                           const base::TimeDelta& sample) {
+  base::HistogramBase* histogram_pointer = base::Histogram::FactoryTimeGet(
+      name,
+      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromSeconds(30),
+      50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->AddTime(sample);
+}
 
-// Maximum number of packets that can be sent to the server.
-static const uint32 kMaximumSequentialPackets = 21;
+void DynamicHistogramCounts(const std::string& name,
+                            uint32 sample,
+                            uint32 min,
+                            uint32 max,
+                            uint32 bucket_count) {
+  base::HistogramBase* histogram_pointer = base::Histogram::FactoryGet(
+      name, min, max, bucket_count, base::HistogramBase::kNoFlags);
+  histogram_pointer->Add(sample);
+}
 
-// This specifies the maximum message (payload) size.
-static const uint32 kMaxMessage = kMaximumSequentialPackets * 2048;
-
-// NetworkStats methods and members.
-NetworkStats::NetworkStats()
-    : read_buffer_(NULL),
-      write_buffer_(NULL),
-      load_size_(0),
-      bytes_to_read_(0),
-      bytes_to_send_(0),
+NetworkStats::NetworkStats(net::ClientSocketFactory* socket_factory)
+    : socket_factory_(socket_factory),
+      histogram_port_(0),
       has_proxy_server_(false),
-      packets_to_send_(0),
-      packets_sent_(0),
-      packets_received_(0),
-      packets_received_mask_(0),
-      packet_number_(0),
-      base_packet_number_(0),
-      sending_complete_(false),
-      current_test_(START_PACKET_TEST),
-      next_test_(TEST_TYPE_MAX),
+      probe_packet_bytes_(0),
+      current_test_index_(0),
       weak_factory_(this) {
+  ResetData();
 }
 
-NetworkStats::~NetworkStats() {
-  socket_.reset();
-}
+NetworkStats::~NetworkStats() {}
 
 bool NetworkStats::Start(net::HostResolver* host_resolver,
                          const net::HostPortPair& server_host_port_pair,
-                         HistogramPortSelector histogram_port,
+                         uint16 histogram_port,
                          bool has_proxy_server,
-                         uint32 bytes_to_send,
-                         uint32 packets_to_send,
+                         uint32 probe_bytes,
                          const net::CompletionCallback& finished_callback) {
   DCHECK(host_resolver);
-  DCHECK(bytes_to_send);   // We should have data to send.
-  DCHECK_LE(packets_to_send, kMaximumSequentialPackets);
+  histogram_port_ = histogram_port;
+  has_proxy_server_ = has_proxy_server;
+  probe_packet_bytes_ = probe_bytes;
+  finished_callback_ = finished_callback;
+  test_sequence_.clear();
+  test_sequence_.push_back(TOKEN_REQUEST);
 
-  Initialize(bytes_to_send,
-             histogram_port,
-             has_proxy_server,
-             packets_to_send,
-             finished_callback);
+  ResetData();
 
   scoped_ptr<net::SingleRequestHostResolver> resolver(
       new net::SingleRequestHostResolver(host_resolver));
   net::HostResolver::RequestInfo request(server_host_port_pair);
-  int rv = resolver->Resolve(
-      request, &addresses_,
-      base::Bind(&NetworkStats::OnResolveComplete,
-                 base::Unretained(this)),
-      net::BoundNetLog());
+  int rv =
+      resolver->Resolve(request,
+                        &addresses_,
+                        base::Bind(base::IgnoreResult(&NetworkStats::DoConnect),
+                                   base::Unretained(this)),
+                        net::BoundNetLog());
   if (rv == net::ERR_IO_PENDING) {
     resolver_.swap(resolver);
     return true;
@@ -152,175 +160,148 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
   return DoConnect(rv);
 }
 
-void NetworkStats::RestartPacketTest() {
-  ResetData();
-  current_test_ = next_test_;
-  next_test_ = TEST_TYPE_MAX;
-  if (!bytes_to_read_) {
-    read_buffer_ = NULL;
-    ReadData();
+void NetworkStats::StartOneTest() {
+  if (test_sequence_[current_test_index_] == TOKEN_REQUEST) {
+    write_buffer_ = NULL;
+    SendHelloRequest();
+  } else {
+    SendProbeRequest();
   }
-  SendPacket();
-}
-
-void NetworkStats::Initialize(
-    uint32 bytes_to_send,
-    HistogramPortSelector histogram_port,
-    bool has_proxy_server,
-    uint32 packets_to_send,
-    const net::CompletionCallback& finished_callback) {
-  DCHECK(bytes_to_send);    // We should have data to send.
-  DCHECK(packets_to_send);  // We should send at least 1 packet.
-  DCHECK_LE(bytes_to_send, kLargeTestBytesToSend);
-  DCHECK_LE(packets_to_send,  8 * sizeof(packets_received_mask_));
-
-  load_size_ = bytes_to_send;
-  packets_to_send_ = packets_to_send;
-  histogram_port_ = histogram_port;
-  has_proxy_server_ = has_proxy_server;
-  finished_callback_ = finished_callback;
-  ResetData();
-  packet_number_ = base::RandInt(1 << 28, INT_MAX);
 }
 
 void NetworkStats::ResetData() {
   write_buffer_ = NULL;
-  bytes_to_send_ = 0;
-  packet_status_.clear();
-  packet_status_.resize(packets_to_send_);
-  packets_sent_ = 0;
-  packets_received_ = 0;
-  packets_received_mask_ = 0;
-  sending_complete_ = false;
-}
+  packets_received_mask_.reset();
+  first_arrival_time_ = base::TimeTicks();
+  last_arrival_time_ = base::TimeTicks();
 
-void NetworkStats::OnResolveComplete(int result) {
-  DoConnect(result);
+  packet_rtt_.clear();
+  packet_rtt_.resize(maximum_sequential_packets_);
+  probe_request_time_ = base::TimeTicks();
+  // Note: inter_arrival_time_ should not be reset here because it is used in
+  // subsequent tests.
 }
 
 bool NetworkStats::DoConnect(int result) {
   if (result != net::OK) {
-    Finish(RESOLVE_FAILED, result);
+    TestPhaseComplete(RESOLVE_FAILED, result);
     return false;
   }
 
-  net::UDPClientSocket* udp_socket =
-      new net::UDPClientSocket(net::DatagramSocket::DEFAULT_BIND,
-                               net::RandIntCallback(),
-                               NULL,
-                               net::NetLog::Source());
+  net::DatagramClientSocket* udp_socket =
+      socket_factory_->CreateDatagramClientSocket(
+          net::DatagramSocket::DEFAULT_BIND,
+          net::RandIntCallback(),
+          NULL,
+          net::NetLog::Source());
   if (!udp_socket) {
-    Finish(SOCKET_CREATE_FAILED, net::ERR_INVALID_ARGUMENT);
+    TestPhaseComplete(SOCKET_CREATE_FAILED, net::ERR_INVALID_ARGUMENT);
     return false;
   }
-  set_socket(udp_socket);
+  DCHECK(!socket_.get());
+  socket_.reset(udp_socket);
 
-  const net::IPEndPoint& endpoint = addresses().front();
+  const net::IPEndPoint& endpoint = addresses_.front();
   int rv = udp_socket->Connect(endpoint);
   if (rv < 0) {
-    Finish(CONNECT_FAILED, rv);
+    TestPhaseComplete(CONNECT_FAILED, rv);
     return false;
   }
 
-  const int kSocketBufferSize = 2 * packets_to_send_ * 2048;
-  udp_socket->SetSendBufferSize(kSocketBufferSize);
-  udp_socket->SetReceiveBufferSize(kSocketBufferSize);
+  udp_socket->SetSendBufferSize(kMaxUdpSendBufferSize);
+  udp_socket->SetReceiveBufferSize(kMaxUdpReceiveBufferSize);
   return ConnectComplete(rv);
 }
 
 bool NetworkStats::ConnectComplete(int result) {
   if (result < 0) {
-    Finish(CONNECT_FAILED, result);
+    TestPhaseComplete(CONNECT_FAILED, result);
     return false;
   }
 
-  ReadData();
-  SendPacket();
+  if (start_test_after_connect_) {
+    ReadData();  // This ReadData() reads data for all HelloReply and all
+                 // subsequent probe tests.
+    SendHelloRequest();
+  } else {
+    // For unittesting. Only run the callback, do not destroy it.
+    if (!finished_callback_.is_null())
+      finished_callback_.Run(result);
+  }
   return true;
 }
 
-void NetworkStats::SendPacket() {
-  while (true) {
-    if (bytes_to_send_ == 0u) {
-      if (packets_sent_ >= packets_to_send_) {
-        // Timeout if we don't get response back from echo servers in 30 secs.
-        sending_complete_ = true;
-        const int kReadDataTimeoutMs = 30000;
-        StartReadDataTimer(kReadDataTimeoutMs);
-        break;
-      }
+void NetworkStats::SendHelloRequest() {
+  StartReadDataTimer(kGetTokenTimeoutSeconds, current_test_index_);
+  ProbePacket probe_packet;
+  probe_message_.SetPacketHeader(ProbePacket_Type_HELLO_REQUEST, &probe_packet);
+  probe_packet.set_group_id(current_test_index_);
+  std::string output = probe_message_.MakeEncodedPacket(probe_packet);
 
-      ++packet_number_;
-      if (packets_sent_ == 0)
-        base_packet_number_ = packet_number_;
-      bytes_to_send_ = SendingPacketSize();
-      SendNextPacketAfterDelay();
-      break;
-    }
-
-    int rv = SendData();
-    if (rv < 0) {
-      if (rv != net::ERR_IO_PENDING)
-        Finish(WRITE_FAILED, rv);
-      break;
-    }
-    DCHECK_EQ(bytes_to_send_, 0u);
-  };
+  SendData(output);
 }
 
-void NetworkStats::SendNextPacketAfterDelay() {
-  if (current_test_ == PACED_PACKET_TEST) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&NetworkStats::SendPacket, weak_factory_.GetWeakPtr()),
-        average_time_);
+void NetworkStats::SendProbeRequest() {
+  ResetData();
+  // Use default timeout except for the NAT bind test.
+  uint32 timeout_seconds = kReadDataTimeoutSeconds;
+  uint32 number_packets = maximum_sequential_packets_;
+  pacing_interval_ = base::TimeDelta();
+  switch (test_sequence_[current_test_index_]) {
+    case START_PACKET_TEST:
+    case NON_PACED_PACKET_TEST:
+      break;
+    case PACED_PACKET_TEST: {
+      pacing_interval_ =
+          std::min(inter_arrival_time_,
+                   base::TimeDelta::FromMicroseconds(kMaximumPacingMicros));
+      timeout_seconds += pacing_interval_.InMicroseconds() *
+                         (maximum_sequential_packets_ - 1) / 1000000;
+      break;
+    }
+    case NAT_BIND_TEST: {
+      // Make sure no integer overflow.
+      DCHECK_LE(maximum_NAT_idle_seconds_, 4000U);
+      int nat_test_idle_seconds = base::RandInt(1, maximum_NAT_idle_seconds_);
+      pacing_interval_ = base::TimeDelta::FromSeconds(nat_test_idle_seconds);
+      timeout_seconds = nat_test_idle_seconds + kReadNATTimeoutSeconds;
+      number_packets = maximum_NAT_packets_;
+      break;
+    }
+    default:
+      NOTREACHED();
+      return;
+  }
+  DVLOG(1) << "NetworkStat: Probe pacing " << pacing_interval_.InMicroseconds()
+           << " microseconds. Time out " << timeout_seconds << " seconds";
+  ProbePacket probe_packet;
+  probe_message_.GenerateProbeRequest(token_,
+                                      current_test_index_,
+                                      probe_packet_bytes_,
+                                      pacing_interval_.InMicroseconds(),
+                                      number_packets,
+                                      &probe_packet);
+  std::string output = probe_message_.MakeEncodedPacket(probe_packet);
+
+  StartReadDataTimer(timeout_seconds, current_test_index_);
+  probe_request_time_ = base::TimeTicks::Now();
+  SendData(output);
+}
+
+void NetworkStats::ReadData() {
+  if (!socket_.get())
     return;
-  }
 
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&NetworkStats::SendPacket, weak_factory_.GetWeakPtr()));
-}
+  int rv = 0;
+  do {
+    DCHECK(!read_buffer_.get());
+    read_buffer_ = new net::IOBuffer(kMaxMessageSize);
 
-bool NetworkStats::ReadComplete(int result) {
-  DCHECK(socket_.get());
-  DCHECK_NE(net::ERR_IO_PENDING, result);
-  if (result < 0) {
-    Finish(READ_FAILED, result);
-    return true;
-  }
-
-  if (result > 0) {
-    std::string encoded_message;
-    encoded_message.append(read_buffer_->data(), result);
-    if (VerifyBytes(encoded_message) == SUCCESS) {
-      base::TimeTicks now = base::TimeTicks::Now();
-      if (packets_received_ == 0)
-        packet_1st_byte_read_time_ = now;
-      packet_last_byte_read_time_ = now;
-
-      DCHECK_GE(bytes_to_read_, static_cast<uint32>(result));
-      if (bytes_to_read_ >= static_cast<uint32>(result))
-        bytes_to_read_ -= result;
-      ++packets_received_;
-    }
-  }
-
-  read_buffer_ = NULL;
-
-  // No more data to read.
-  if (!bytes_to_read_ || result == 0) {
-    if (!sending_complete_)
-      return false;
-
-    Status status = VerifyPackets();
-    if (status == SUCCESS)
-      Finish(status, net::OK);
-    else
-      Finish(status, net::ERR_INVALID_RESPONSE);
-    return true;
-  }
-  return false;
+    rv = socket_->Read(
+        read_buffer_.get(),
+        kMaxMessageSize,
+        base::Bind(&NetworkStats::OnReadComplete, base::Unretained(this)));
+  } while (rv > 0 && !ReadComplete(rv));
 }
 
 void NetworkStats::OnReadComplete(int result) {
@@ -336,341 +317,213 @@ void NetworkStats::OnReadComplete(int result) {
   }
 }
 
+bool NetworkStats::ReadComplete(int result) {
+  DCHECK(socket_.get());
+  DCHECK_NE(net::ERR_IO_PENDING, result);
+  if (result < 0) {
+    // Something is wrong, finish the test.
+    read_buffer_ = NULL;
+    TestPhaseComplete(READ_FAILED, result);
+    return true;
+  }
+
+  std::string encoded_message(read_buffer_->data(),
+                              read_buffer_->data() + result);
+  read_buffer_ = NULL;
+  ProbePacket probe_packet;
+  if (!probe_message_.ParseInput(encoded_message, &probe_packet))
+    return false;
+  // Discard if the packet is for a different test.
+  if (probe_packet.group_id() != current_test_index_)
+    return false;
+
+  // Whether all packets in the current test have been received.
+  bool current_test_complete = false;
+  switch (probe_packet.header().type()) {
+    case ProbePacket_Type_HELLO_REPLY:
+      token_ = probe_packet.token();
+      if (current_test_index_ == 0)
+        test_sequence_.push_back(START_PACKET_TEST);
+      current_test_complete = true;
+      break;
+    case ProbePacket_Type_PROBE_REPLY:
+      current_test_complete = UpdateReception(probe_packet);
+      break;
+    default:
+      DVLOG(1) << "Received unexpected packet type: "
+               << probe_packet.header().type();
+  }
+
+  if (current_test_complete) {
+    TestPhaseComplete(SUCCESS, net::OK);
+    // Read only completes if all tests are done.
+    // current_test_index_ is incremented in TestPhaseComplete().
+    return current_test_index_ >= test_sequence_.size();
+  }
+  // All packets have not been received.
+  return false;
+}
+
+bool NetworkStats::UpdateReception(const ProbePacket& probe_packet) {
+  uint32 packet_index = probe_packet.packet_index();
+  if (packet_index >= packet_rtt_.size())
+    return false;
+  packets_received_mask_.set(packet_index);
+  TestType test_type = test_sequence_[current_test_index_];
+  uint32 received_packets = packets_received_mask_.count();
+
+  // Now() has resolution ~1-15ms. HighResNow() has high resolution but it
+  // is warned not to use it unless necessary.
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  last_arrival_time_ = current_time;
+  if (first_arrival_time_.is_null())
+    first_arrival_time_ = current_time;
+
+  // Need to do this after updating the last_arrival_time_ since NAT_BIND_TEST
+  // records the SendToLastRecvDelay.
+  if (test_type == NAT_BIND_TEST) {
+    return received_packets >= maximum_NAT_packets_;
+  }
+
+  base::TimeDelta rtt =
+      current_time - probe_request_time_ -
+      base::TimeDelta::FromMicroseconds(std::max(
+          static_cast<int64>(0), probe_packet.server_processing_micros()));
+  base::TimeDelta min_rtt = base::TimeDelta::FromMicroseconds(1L);
+  packet_rtt_[packet_index] = (rtt >= min_rtt) ? rtt : min_rtt;
+
+  if (received_packets < maximum_sequential_packets_)
+    return false;
+  // All packets in the current test are received.
+  inter_arrival_time_ = (last_arrival_time_ - first_arrival_time_) /
+      std::max(1U, (received_packets - 1));
+  if (test_type == START_PACKET_TEST) {
+    // No need to add TOKEN_REQUEST here when all packets are received.
+    test_sequence_.push_back(base::RandInt(0, 1) ? PACED_PACKET_TEST
+                                                 : NON_PACED_PACKET_TEST);
+    test_sequence_.push_back(TOKEN_REQUEST);
+    test_sequence_.push_back(NAT_BIND_TEST);
+    test_sequence_.push_back(TOKEN_REQUEST);
+  }
+  return true;
+}
+
+void NetworkStats::SendData(const std::string& output) {
+  DCHECK(!write_buffer_.get());
+  scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer(output));
+  write_buffer_ = new net::DrainableIOBuffer(buffer.get(), buffer->size());
+
+  int bytes_written = socket_->Write(
+      write_buffer_.get(),
+      write_buffer_->BytesRemaining(),
+      base::Bind(&NetworkStats::OnWriteComplete, base::Unretained(this)));
+  if (bytes_written < 0) {
+    if (bytes_written != net::ERR_IO_PENDING)
+      // There is some unexpected error.
+      TestPhaseComplete(WRITE_FAILED, bytes_written);
+  } else {
+    UpdateSendBuffer(bytes_written);
+  }
+}
+
 void NetworkStats::OnWriteComplete(int result) {
   DCHECK(socket_.get());
   DCHECK_NE(net::ERR_IO_PENDING, result);
   if (result < 0) {
-    Finish(WRITE_FAILED, result);
+    TestPhaseComplete(WRITE_FAILED, result);
     return;
   }
-
-  DidSendData(result);
-  if (bytes_to_send_) {
-    int rv = SendData();
-    if (rv < 0) {
-      if (rv != net::ERR_IO_PENDING)
-        Finish(WRITE_FAILED, rv);
-      return;
-    }
-    DCHECK_EQ(rv, net::OK);
-    DCHECK_EQ(bytes_to_send_, 0u);
-  }
-
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&NetworkStats::SendPacket, weak_factory_.GetWeakPtr()));
+  UpdateSendBuffer(result);
 }
 
-void NetworkStats::ReadData() {
-  int rv;
-  do {
-    if (!socket_.get())
-      break;
-
-    DCHECK(!read_buffer_.get());
-
-    // We release the read_buffer_ in the destructor if there is an error.
-    read_buffer_ = new net::IOBuffer(kMaxMessage);
-
-    rv = socket_->Read(
-        read_buffer_.get(),
-        kMaxMessage,
-        base::Bind(&NetworkStats::OnReadComplete, base::Unretained(this)));
-    if (rv == net::ERR_IO_PENDING)
-      break;
-
-    // If we have read all the data then return.
-    if (ReadComplete(rv))
-      break;
-  } while (rv > 0);
-}
-
-int NetworkStats::SendData() {
-  DCHECK(bytes_to_send_);   // We should have data to send.
-  do {
-    if (!write_buffer_.get()) {
-      // Send a new packet.
-      scoped_refptr<net::IOBufferWithSize> buffer(
-          new net::IOBufferWithSize(bytes_to_send_));
-      GetEchoRequest(buffer.get());
-      write_buffer_ = new net::DrainableIOBuffer(buffer.get(), bytes_to_send_);
-
-      // As soon as we write, a read could happen. Thus update all the book
-      // keeping data.
-      bytes_to_read_ += ReceivingPacketSize();
-      ++packets_sent_;
-      if (packets_sent_ >= packets_to_send_)
-        sending_complete_ = true;
-
-      uint32 packet_index = packet_number_ - base_packet_number_;
-      DCHECK_GE(packet_index, 0u);
-      DCHECK_LT(packet_index, packet_status_.size());
-      packet_status_[packet_index].start_time_ = base::TimeTicks::Now();
-    }
-
-    if (!socket_.get())
-      return net::ERR_UNEXPECTED;
-    int rv = socket_->Write(
-        write_buffer_.get(),
-        write_buffer_->BytesRemaining(),
-        base::Bind(&NetworkStats::OnWriteComplete, base::Unretained(this)));
-    if (rv < 0)
-      return rv;
-    DidSendData(rv);
-  } while (bytes_to_send_);
-  return net::OK;
-}
-
-uint32 NetworkStats::SendingPacketSize() const {
-  return kVersionLength + kChecksumLength + kPayloadSizeLength + load_size_;
-}
-
-uint32 NetworkStats::ReceivingPacketSize() const {
-  return kVersionLength + kChecksumLength + kPayloadSizeLength + kKeyLength +
-      load_size_;
-}
-
-void NetworkStats::DidSendData(int bytes_sent) {
+void NetworkStats::UpdateSendBuffer(int bytes_sent) {
   write_buffer_->DidConsume(bytes_sent);
-  if (!write_buffer_->BytesRemaining())
-    write_buffer_ = NULL;
-  bytes_to_send_ -= bytes_sent;
+  DCHECK_EQ(write_buffer_->BytesRemaining(), 0);
+  write_buffer_ = NULL;
 }
 
-void NetworkStats::StartReadDataTimer(int milliseconds) {
+void NetworkStats::StartReadDataTimer(uint32 seconds, uint32 test_index) {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NetworkStats::OnReadDataTimeout,
                  weak_factory_.GetWeakPtr(),
-                 base_packet_number_),
-      base::TimeDelta::FromMilliseconds(milliseconds));
+                 test_index),
+      base::TimeDelta::FromSeconds(seconds));
 }
 
-void NetworkStats::OnReadDataTimeout(uint32 test_base_packet_number) {
-  if (test_base_packet_number != base_packet_number_)
+void NetworkStats::OnReadDataTimeout(uint32 test_index) {
+  // If the current_test_index_ has changed since we set the timeout,
+  // the current test has been completed, so do nothing.
+  if (test_index != current_test_index_)
     return;
+  // If test_type is TOKEN_REQUEST, it will do nothing but call
+  // TestPhaseComplete().
+  TestType test_type = test_sequence_[current_test_index_];
 
-  Status status = VerifyPackets();
-  if (status == SUCCESS)
-    Finish(status, net::OK);
-  else
-    Finish(READ_TIMED_OUT, net::ERR_INVALID_ARGUMENT);
-}
-
-uint32 NetworkStats::GetChecksum(const char* message, uint32 message_length) {
-  // Calculate the <checksum> of the <message>.
-  uint32 sum = 0;
-  for (uint32 i = 0; i < message_length; ++i)
-    sum += message[i];
-  return sum;
-}
-
-void NetworkStats::Crypt(const char* key,
-                         uint32 key_length,
-                         const char* data,
-                         uint32 data_length,
-                         char* encoded_data) {
-  // Decrypt the data by looping through the |data| and XOR each byte with the
-  // |key| to get the decoded byte. Append the decoded byte to the
-  // |encoded_data|.
-  for (uint32 data_index = 0, key_index = 0;
-       data_index < data_length;
-       ++data_index) {
-    char data_byte = data[data_index];
-    char key_byte = key[key_index];
-    char encoded_byte = data_byte ^ key_byte;
-    encoded_data[data_index] = encoded_byte;
-    key_index = (key_index + 1) % key_length;
+  uint32 received_packets = packets_received_mask_.count();
+  if (received_packets >= 2) {
+    inter_arrival_time_ =
+        (last_arrival_time_ - first_arrival_time_) / (received_packets - 1);
   }
-}
-
-void NetworkStats::GetEchoRequest(net::IOBufferWithSize* io_buffer) {
-  char* buffer = io_buffer->data();
-  uint32 buffer_size = static_cast<uint32>(io_buffer->size());
-
-  // Copy the <version> into the io_buffer starting from the kVersionStart
-  // position.
-  std::string version = base::StringPrintf("%02d", kVersionNumber);
-  DCHECK(kVersionLength == version.length());
-  DCHECK_GE(buffer_size, kVersionStart + kVersionLength);
-  memcpy(buffer + kVersionStart, version.c_str(), kVersionLength);
-
-  // Copy the packet_number into the payload.
-  std::string packet_number = base::StringPrintf("%010d", packet_number_);
-  DCHECK(kPacketNumberLength == packet_number.length());
-  DCHECK_GE(buffer_size, kPayloadStart + kPacketNumberLength);
-  memcpy(buffer + kPayloadStart, packet_number.c_str(), kPacketNumberLength);
-
-  // Get the <payload> from the |stream_| and copy it into io_buffer after
-  // packet_number.
-  stream_.Reset();
-  DCHECK_GE(buffer_size, kPayloadStart + load_size_);
-  stream_.GetBytes(buffer + kPayloadStart + kPacketNumberLength,
-                   load_size_ - kPacketNumberLength);
-
-  // Calculate the <checksum> of the <payload>.
-  uint32 sum = GetChecksum(buffer + kPayloadStart, load_size_);
-
-  // Copy the <checksum> into the io_buffer starting from the kChecksumStart
-  // position.
-  std::string checksum = base::StringPrintf("%010d", sum);
-  DCHECK(kChecksumLength == checksum.length());
-  DCHECK_GE(buffer_size, kChecksumStart + kChecksumLength);
-  memcpy(buffer + kChecksumStart, checksum.c_str(), kChecksumLength);
-
-  // Copy the size of the <payload> into the io_buffer starting from the
-  // kPayloadSizeStart position.
-  std::string payload_size = base::StringPrintf("%07d", load_size_);
-  DCHECK(kPayloadSizeLength == payload_size.length());
-  DCHECK_GE(buffer_size, kPayloadSizeStart + kPayloadSizeLength);
-  memcpy(buffer + kPayloadSizeStart, payload_size.c_str(), kPayloadSizeLength);
-}
-
-NetworkStats::Status NetworkStats::VerifyPackets() {
-  Status status = SUCCESS;
-  uint32 successful_packets = 0;
-
-  for (uint32 i = 0; i < packet_status_.size(); i++) {
-    if (packets_received_mask_ & (1 << i))
-      ++successful_packets;
-  }
-
-  if (packets_received_ > packets_to_send_)
-    status = TOO_MANY_PACKETS;
-
-  if (packets_to_send_ > successful_packets)
-    status = SOME_PACKETS_NOT_VERIFIED;
-
-  if (packets_to_send_ == kMaximumSequentialPackets &&
-      successful_packets > 1) {
-    base::TimeDelta total_time;
-    if (packet_last_byte_read_time_ > packet_1st_byte_read_time_) {
-      total_time =
-          packet_last_byte_read_time_ - packet_1st_byte_read_time_;
+  // Add other tests if this is START_PACKET_TEST.
+  if (test_type == START_PACKET_TEST) {
+    if (received_packets >= kMinimumReceivedPacketsForPacingTest) {
+      test_sequence_.push_back(TOKEN_REQUEST);
+      test_sequence_.push_back(base::RandInt(0, 1) ? PACED_PACKET_TEST
+                                                   : NON_PACED_PACKET_TEST);
     }
-    average_time_ = total_time / (successful_packets - 1);
-    std::string histogram_name = base::StringPrintf(
-        "NetConnectivity3.%s.Sent%02d.%d.%dB.PacketDelay",
-        TestName(),
-        kMaximumSequentialPackets,
-        kPorts[histogram_port_],
-        load_size_);
-    base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
-        histogram_name, base::TimeDelta::FromMilliseconds(1),
-        base::TimeDelta::FromSeconds(30), 50,
-        base::Histogram::kUmaTargetedHistogramFlag);
-    histogram->AddTime(total_time);
+    if (received_packets >= kMinimumReceivedPacketsForNATTest) {
+      test_sequence_.push_back(TOKEN_REQUEST);
+      test_sequence_.push_back(NAT_BIND_TEST);
+      test_sequence_.push_back(TOKEN_REQUEST);
+    }
+  }
+  TestPhaseComplete(READ_TIMED_OUT, net::ERR_FAILED);
+}
 
-    if (current_test_ == START_PACKET_TEST) {
-        int experiment_to_run = base::RandInt(1, 2);
-        if (experiment_to_run == 1)
-          next_test_ = NON_PACED_PACKET_TEST;
-        else
-          next_test_ = PACED_PACKET_TEST;
+void NetworkStats::TestPhaseComplete(Status status, int result) {
+  // If there is no valid token, do nothing and delete self.
+  // This includes all connection error, name resolve error, etc.
+  if (token_.timestamp_micros() != 0) {
+    TestType current_test = test_sequence_[current_test_index_];
+    DCHECK_LT(current_test, TEST_TYPE_MAX);
+    if (current_test != TOKEN_REQUEST)
+      RecordHistograms(current_test);
+    else if (current_test_index_ > 0 &&
+             test_sequence_[current_test_index_ - 1] == NAT_BIND_TEST) {
+      // We record the NATTestReceivedHistograms after the succeeding
+      // TokenRequest.
+      RecordNATTestReceivedHistograms(status);
+    }
+
+    // Move to the next test.
+    current_test = GetNextTest();
+    if (current_test_index_ <= maximum_tests_ && current_test < TEST_TYPE_MAX) {
+      DVLOG(1) << "NetworkStat: Start Probe test: " << current_test;
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&NetworkStats::StartOneTest, weak_factory_.GetWeakPtr()));
+      return;
     }
   }
 
-  return status;
-}
-
-NetworkStats::Status NetworkStats::VerifyBytes(const std::string& response) {
-  // If the "echo response" doesn't have enough bytes, then return false.
-  if (response.length() <= kVersionStart)
-    return ZERO_LENGTH_ERROR;
-  if (response.length() <= kChecksumStart)
-    return NO_CHECKSUM_ERROR;
-  if (response.length() <= kPayloadSizeStart)
-    return NO_PAYLOAD_SIZE_ERROR;
-  if (response.length() <= kKeyStart)
-    return NO_KEY_ERROR;
-  if (response.length() <= kEncodedPayloadStart)
-    return NO_PAYLOAD_ERROR;
-
-  // Extract the |key| from the "echo response".
-  std::string key_string = response.substr(kKeyStart, kKeyLength);
-  const char* key = key_string.c_str();
-  int key_value = atoi(key);
-  if (key_value < kKeyMinValue || key_value > kKeyMaxValue)
-    return INVALID_KEY_ERROR;
-
-  std::string encoded_payload = response.substr(kEncodedPayloadStart);
-  const char* encoded_data = encoded_payload.c_str();
-  uint32 message_length = encoded_payload.length();
-  message_length = std::min(message_length, kMaxMessage);
-  if (message_length < load_size_)
-    return TOO_SHORT_PAYLOAD;
-  if (message_length > load_size_)
-    return TOO_LONG_PAYLOAD;
-
-  // Decode/decrypt the |encoded_data| into |decoded_data|.
-  char decoded_data[kMaxMessage + 1];
-  DCHECK_LE(message_length, kMaxMessage);
-  memset(decoded_data, 0, kMaxMessage + 1);
-  Crypt(key, kKeyLength, encoded_data, message_length, decoded_data);
-
-  // Calculate the <checksum> of the <decoded_data>.
-  uint32 sum = GetChecksum(decoded_data, message_length);
-  // Extract the |checksum| from the "echo response".
-  std::string checksum_string =
-      response.substr(kChecksumStart, kChecksumLength);
-  const char* checksum = checksum_string.c_str();
-  uint32 checksum_value = atoi(checksum);
-  if (checksum_value != sum)
-    return INVALID_CHECKSUM;
-
-  // Verify the packet_number.
-  char packet_number_data[kPacketNumberLength + 1];
-  memset(packet_number_data, 0, kPacketNumberLength + 1);
-  memcpy(packet_number_data, decoded_data, kPacketNumberLength);
-  uint32 packet_number_received = atoi(packet_number_data);
-  if (packet_number_received < base_packet_number_)
-    return PREVIOUS_PACKET_NUMBER;
-  uint32 packet_index = packet_number_received - base_packet_number_;
-  if (packet_index >= packets_to_send_)
-    return INVALID_PACKET_NUMBER;
-
-  stream_.Reset();
-  if (!stream_.VerifyBytes(&decoded_data[kPacketNumberLength],
-                           message_length - kPacketNumberLength)) {
-    return PATTERN_CHANGED;
-  }
-
-  if (packets_received_mask_ & (1 << packet_index))
-    return DUPLICATE_PACKET;
-
-  packets_received_mask_ |= 1 << packet_index;
-  DCHECK_GE(packet_index, 0u);
-  DCHECK_LT(packet_index, packet_status_.size());
-  packet_status_[packet_index].end_time_ = base::TimeTicks::Now();
-  return SUCCESS;
-}
-
-void NetworkStats::Finish(Status status, int result) {
-  // Set the base_packet_number_ for the start of next test. Changing the
-  // |base_packet_number_| indicates to OnReadDataTimeout that the Finish has
-  // already been called for the test and that it doesn't need to call Finish
-  // again.
-  base_packet_number_ = packet_number_ + 1;
-  RecordHistograms(PROTOCOL_UDP, status, result);
-
-  if (next_test() == NON_PACED_PACKET_TEST ||
-      next_test() == PACED_PACKET_TEST) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&NetworkStats::RestartPacketTest,
-                   weak_factory_.GetWeakPtr()));
-    return;
-  }
-
+  // All tests are done.
   DoFinishCallback(result);
 
   // Close the socket so that there are no more IO operations.
-  net::UDPClientSocket* udp_socket =
-      static_cast<net::UDPClientSocket*>(socket());
-  if (udp_socket)
-    udp_socket->Close();
+  if (socket_.get())
+    socket_->Close();
 
-  delete this;
+  DVLOG(1) << "NetworkStat: schedule delete self at test index "
+           << current_test_index_;
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+NetworkStats::TestType NetworkStats::GetNextTest() {
+  ++current_test_index_;
+  if (current_test_index_ >= test_sequence_.size())
+    return TEST_TYPE_MAX;
+  return test_sequence_[current_test_index_];
 }
 
 void NetworkStats::DoFinishCallback(int result) {
@@ -681,176 +534,183 @@ void NetworkStats::DoFinishCallback(int result) {
   }
 }
 
-void NetworkStats::RecordHistograms(const ProtocolValue& protocol,
-                                    const Status& status,
-                                    int result) {
-  if (packets_to_send_ != kMaximumSequentialPackets)
-    return;
-
-  std::string load_size_string = base::StringPrintf("%dB", load_size_);
-
-  RecordPacketLossSeriesHistograms(protocol, load_size_string, status, result);
-
-  for (uint32 i = 0; i < 3; i++)
-    RecordRTTHistograms(protocol, load_size_string, i);
-
-  RecordRTTHistograms(protocol, load_size_string, 9);
-  RecordRTTHistograms(protocol, load_size_string, 19);
-
-  RecordAcksReceivedHistograms(load_size_string);
+void NetworkStats::RecordHistograms(TestType test_type) {
+  switch (test_type) {
+    case START_PACKET_TEST:
+    case NON_PACED_PACKET_TEST:
+    case PACED_PACKET_TEST: {
+      RecordInterArrivalHistograms(test_type);
+      RecordPacketLossSeriesHistograms(test_type);
+      RecordPacketsReceivedHistograms(test_type);
+      // Only record RTT for these packet indices.
+      uint32 rtt_indices[] = {0, 1, 2, 9, 19};
+      for (uint32 i = 0; i < arraysize(rtt_indices); ++i) {
+        if (rtt_indices[i] < packet_rtt_.size())
+          RecordRTTHistograms(test_type, rtt_indices[i]);
+      }
+      RecordSendToLastRecvDelayHistograms(test_type);
+      return;
+    }
+    case NAT_BIND_TEST:
+      RecordSendToLastRecvDelayHistograms(test_type);
+      return;
+    default:
+      DVLOG(1) << "Unexpected test type " << test_type
+               << " in RecordHistograms.";
+  }
 }
 
-void NetworkStats::RecordAcksReceivedHistograms(
-    const std::string& load_size_string) {
-  DCHECK_EQ(packets_to_send_, kMaximumSequentialPackets);
+void NetworkStats::RecordInterArrivalHistograms(TestType test_type) {
+  std::string histogram_name =
+      base::StringPrintf("NetConnectivity4.%s.Sent%02d.PacketDelay.%d.%dB",
+                         kTestName[test_type],
+                         maximum_sequential_packets_,
+                         histogram_port_,
+                         probe_packet_bytes_);
+  // Record the time normalized to 20 packet inter-arrivals.
+  DynamicHistogramTimes(histogram_name, inter_arrival_time_ * 20);
+}
 
-  const char* test_name = TestName();
-  bool received_atleast_one_packet = packets_received_mask_ > 0;
+void NetworkStats::RecordPacketsReceivedHistograms(TestType test_type) {
+  const char* test_name = kTestName[test_type];
+  std::string histogram_prefix = base::StringPrintf(
+      "NetConnectivity4.%s.Sent%02d.", test_name, maximum_sequential_packets_);
+  std::string histogram_suffix =
+      base::StringPrintf(".%d.%dB", histogram_port_, probe_packet_bytes_);
+  std::string name = histogram_prefix + "GotAPacket" + histogram_suffix;
+  base::HistogramBase* histogram_pointer = base::BooleanHistogram::FactoryGet(
+      name, base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->Add(packets_received_mask_.any());
 
-  std::string histogram_name = base::StringPrintf(
-      "NetConnectivity3.%s.Sent%02d.GotAnAck.%d.%s",
-      test_name,
-      kMaximumSequentialPackets,
-      kPorts[histogram_port_],
-      load_size_string.c_str());
-  base::HistogramBase* got_an_ack_histogram =
-      base::BooleanHistogram::FactoryGet(
-          histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag);
-  got_an_ack_histogram->AddBoolean(received_atleast_one_packet);
+  DynamicHistogramEnumeration(
+      histogram_prefix + "PacketsRecv" + histogram_suffix,
+      packets_received_mask_.count(),
+      maximum_sequential_packets_ + 1);
 
-  histogram_name = base::StringPrintf(
-      "NetConnectivity3.%s.Sent%02d.PacketsSent.%d.%s",
-      test_name,
-      kMaximumSequentialPackets,
-      kPorts[histogram_port_],
-      load_size_string.c_str());
-  base::HistogramBase* packets_sent_histogram =
-      base::Histogram::FactoryGet(
-          histogram_name,
-          1, kMaximumSequentialPackets, kMaximumSequentialPackets + 1,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-  packets_sent_histogram->Add(packets_sent_);
-
-  if (!received_atleast_one_packet || packets_sent_ != packets_to_send_)
+  if (!packets_received_mask_.any())
     return;
 
-  histogram_name = base::StringPrintf(
-      "NetConnectivity3.%s.Sent%02d.AckReceivedForNthPacket.%02d.%s",
-      test_name,
-      kMaximumSequentialPackets,
-      kPorts[histogram_port_],
-      load_size_string.c_str());
-  base::HistogramBase* ack_received_for_nth_packet_histogram =
+  base::HistogramBase* received_nth_packet_histogram =
       base::Histogram::FactoryGet(
-          histogram_name,
-          1, kMaximumSequentialPackets + 1, kMaximumSequentialPackets + 2,
+          histogram_prefix + "RecvNthPacket" + histogram_suffix,
+          1,
+          maximum_sequential_packets_ + 1,
+          maximum_sequential_packets_ + 2,
           base::HistogramBase::kUmaTargetedHistogramFlag);
 
   int count = 0;
-  for (size_t j = 0; j < packets_to_send_; j++) {
+  for (size_t j = 0; j < maximum_sequential_packets_; ++j) {
     int packet_number = j + 1;
-    if (packets_received_mask_ & (1 << j)) {
-      ack_received_for_nth_packet_histogram->Add(packet_number);
-      count++;
+    if (packets_received_mask_.test(j)) {
+      received_nth_packet_histogram->Add(packet_number);
+      ++count;
     }
-    if (packet_number < 2)
-      continue;
-    histogram_name = base::StringPrintf(
-        "NetConnectivity3.%s.Sent%02d.AcksReceivedFromFirst%02dPackets.%d.%s",
-        test_name,
-        kMaximumSequentialPackets,
-        packet_number,
-        kPorts[histogram_port_],
-        load_size_string.c_str());
-    base::HistogramBase* acks_received_count_histogram =
-        base::Histogram::FactoryGet(
-            histogram_name, 1, packet_number, packet_number + 1,
-            base::HistogramBase::kUmaTargetedHistogramFlag);
-    acks_received_count_histogram->Add(count);
+    std::string histogram_name =
+        base::StringPrintf("%sNumRecvFromFirst%02dPackets%s",
+                           histogram_prefix.c_str(),
+                           packet_number,
+                           histogram_suffix.c_str());
+    DynamicHistogramEnumeration(histogram_name, count, packet_number + 1);
   }
 }
 
-void NetworkStats::RecordPacketLossSeriesHistograms(
-    const ProtocolValue& protocol,
-    const std::string& load_size_string,
-    const Status& status,
-    int result) {
-  DCHECK_GT(packets_to_send_, kCorrelatedLossPacketCount);
-  const char* test_name = TestName();
+void NetworkStats::RecordNATTestReceivedHistograms(Status status) {
+  const char* test_name = kTestName[NAT_BIND_TEST];
+  bool test_result = status == SUCCESS;
+  std::string middle_name = test_result ? "Connectivity.Success"
+                                        : "Connectivity.Failure";
+  // Record whether the HelloRequest got reply successfully.
+  std::string histogram_name =
+      base::StringPrintf("NetConnectivity4.%s.Sent%d.%s.%d.%dB",
+                         test_name,
+                         maximum_NAT_packets_,
+                         middle_name.c_str(),
+                         histogram_port_,
+                         probe_packet_bytes_);
+  uint32 bucket_count = std::min(maximum_NAT_idle_seconds_ + 2, 50U);
+  DynamicHistogramCounts(histogram_name,
+                         pacing_interval_.InSeconds(),
+                         1,
+                         maximum_NAT_idle_seconds_ + 1,
+                         bucket_count);
 
-  // Build "NetConnectivity3.Send6.SeriesAcked.<port>.<load_size>" histogram
-  // name. Total number of histograms are 5*2.
-  std::string series_acked_histogram_name = base::StringPrintf(
-      "NetConnectivity3.%s.Send6.SeriesAcked.%d.%s",
-      test_name,
-      kPorts[histogram_port_],
-      load_size_string.c_str());
+  // Record the NAT bind result only if the HelloRequest successfully got the
+  // token and the first NAT test packet is received.
+  if (!test_result || !packets_received_mask_.test(0))
+    return;
 
+  middle_name = packets_received_mask_.test(1) ? "Bind.Success"
+                                               : "Bind.Failure";
+  histogram_name = base::StringPrintf("NetConnectivity4.%s.Sent%d.%s.%d.%dB",
+                                      test_name,
+                                      maximum_NAT_packets_,
+                                      middle_name.c_str(),
+                                      histogram_port_,
+                                      probe_packet_bytes_);
+  DynamicHistogramCounts(histogram_name,
+                         pacing_interval_.InSeconds(),
+                         1,
+                         maximum_NAT_idle_seconds_ + 1,
+                         bucket_count);
+}
+
+void NetworkStats::RecordPacketLossSeriesHistograms(TestType test_type) {
+  const char* test_name = kTestName[test_type];
+  // Build "NetConnectivity4.<TestName>.First6.SeriesRecv.<port>.<probe_size>"
+  // histogram name. Total 3(tests) x 12 histograms.
+  std::string series_acked_histogram_name =
+      base::StringPrintf("NetConnectivity4.%s.First6.SeriesRecv.%d.%dB",
+                         test_name,
+                         histogram_port_,
+                         probe_packet_bytes_);
+  uint32 histogram_boundary = 1 << kCorrelatedLossPacketCount;
   uint32 correlated_packet_mask =
-    ((1 << kCorrelatedLossPacketCount) - 1) & packets_received_mask_;
+      (histogram_boundary - 1) & packets_received_mask_.to_ulong();
+  DynamicHistogramEnumeration(
+      series_acked_histogram_name, correlated_packet_mask, histogram_boundary);
 
-  // If we are running without a proxy, we'll generate 2 distinct histograms in
-  // each case, one will have the ".NoProxy" suffix.
-  size_t histogram_count = has_proxy_server_ ? 1 : 2;
-  for (size_t i = 0; i < histogram_count; i++) {
-    // For packet loss test, just record packet loss data.
-    base::HistogramBase* series_acked_histogram =
-        base::LinearHistogram::FactoryGet(
-             series_acked_histogram_name,
-             1,
-             1 << kCorrelatedLossPacketCount,
-             (1 << kCorrelatedLossPacketCount) + 1,
-             base::HistogramBase::kUmaTargetedHistogramFlag);
-    series_acked_histogram->Add(correlated_packet_mask);
+  // If we are running without a proxy, we'll generate an extra histogram with
+  // the ".NoProxy" suffix.
+  if (!has_proxy_server_) {
     series_acked_histogram_name.append(".NoProxy");
+    DynamicHistogramEnumeration(series_acked_histogram_name,
+                                correlated_packet_mask,
+                                histogram_boundary);
   }
 }
 
-void NetworkStats::RecordRTTHistograms(const ProtocolValue& protocol,
-                                       const std::string& load_size_string,
-                                       uint32 index) {
-  DCHECK_GE(index, 0u);
-  DCHECK_LT(index, packet_status_.size());
+void NetworkStats::RecordRTTHistograms(TestType test_type, uint32 index) {
+  DCHECK_LT(index, packet_rtt_.size());
 
-  if (packet_status_[index].end_time_ ==  base::TimeTicks())
-    return;  // Echo response packet never arrived.
+  if (!packets_received_mask_.test(index))
+    return;  // Probe packet never received.
 
-  const char* test_name = TestName();
   std::string rtt_histogram_name = base::StringPrintf(
-      "NetConnectivity3.%s.Sent%02d.Success.RTT.Packet%02d.%d.%s",
-      test_name,
-      packets_to_send_,
+      "NetConnectivity4.%s.Sent%02d.Success.RTT.Packet%02d.%d.%dB",
+      kTestName[test_type],
+      maximum_sequential_packets_,
       index + 1,
-      kPorts[histogram_port_],
-      load_size_string.c_str());
-  base::HistogramBase* rtt_histogram = base::Histogram::FactoryTimeGet(
-      rtt_histogram_name,
-      base::TimeDelta::FromMilliseconds(10),
-      base::TimeDelta::FromSeconds(30), 50,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  base::TimeDelta duration =
-      packet_status_[index].end_time_ - packet_status_[index].start_time_;
-  rtt_histogram->AddTime(duration);
+      histogram_port_,
+      probe_packet_bytes_);
+  DynamicHistogramTimes(rtt_histogram_name, packet_rtt_[index]);
 }
 
-const char* NetworkStats::TestName() {
-  switch (current_test_) {
-    case START_PACKET_TEST:
-      return "StartPacket";
-    case NON_PACED_PACKET_TEST:
-      return "NonPacedPacket";
-    case PACED_PACKET_TEST:
-      return "PacedPacket";
-    default:
-      NOTREACHED();
-      return "None";
-  }
-}
-
-void NetworkStats::set_socket(net::Socket* socket) {
-  DCHECK(socket);
-  DCHECK(!socket_.get());
-  socket_.reset(socket);
+void NetworkStats::RecordSendToLastRecvDelayHistograms(TestType test_type) {
+  if (packets_received_mask_.count() < 2)
+    return;  // Too few packets are received.
+  uint32 packets_sent = test_type == NAT_BIND_TEST
+      ? maximum_NAT_packets_ : maximum_sequential_packets_;
+  std::string histogram_name = base::StringPrintf(
+      "NetConnectivity4.%s.Sent%02d.SendToLastRecvDelay.%d.%dB",
+      kTestName[test_type],
+      packets_sent,
+      histogram_port_,
+      probe_packet_bytes_);
+  base::TimeDelta send_to_last_recv_time =
+      std::max(last_arrival_time_ - probe_request_time_ -
+                   pacing_interval_ * (packets_sent - 1),
+               base::TimeDelta::FromMilliseconds(0));
+  DynamicHistogramTimes(histogram_name, send_to_last_recv_time);
 }
 
 // ProxyDetector methods and members.
@@ -860,8 +720,7 @@ ProxyDetector::ProxyDetector(net::ProxyService* proxy_service,
     : proxy_service_(proxy_service),
       server_address_(server_address),
       callback_(callback),
-      has_pending_proxy_resolution_(false) {
-}
+      has_pending_proxy_resolution_(false) {}
 
 ProxyDetector::~ProxyDetector() {
   CHECK(!has_pending_proxy_resolution_);
@@ -887,22 +746,19 @@ void ProxyDetector::StartResolveProxy() {
 
 void ProxyDetector::OnResolveProxyComplete(int result) {
   has_pending_proxy_resolution_ = false;
-  bool has_proxy_server = (result == net::OK &&
-                           proxy_info_.proxy_server().is_valid() &&
-                           !proxy_info_.proxy_server().is_direct());
+  bool has_proxy_server =
+      (result == net::OK && proxy_info_.proxy_server().is_valid() &&
+       !proxy_info_.proxy_server().is_direct());
 
   OnResolvedCallback callback = callback_;
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(callback, has_proxy_server));
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, has_proxy_server));
 
   // TODO(rtenneti): Will we leak if ProxyResolve is cancelled (or proxy
   // resolution never completes).
   delete this;
 }
 
-// static
 void CollectNetworkStats(const std::string& network_stats_server,
                          IOThread* io_thread) {
   // TODO(honghaiz): The echotest is temporarily stopped and will be replaced
@@ -918,8 +774,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        base::Bind(
-            &CollectNetworkStats, network_stats_server, io_thread));
+        base::Bind(&CollectNetworkStats, network_stats_server, io_thread));
     return;
   }
 
@@ -931,8 +786,6 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
   CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::FieldTrial>, trial, ());
   static bool collect_stats = false;
-  static NetworkStats::HistogramPortSelector histogram_port =
-      NetworkStats::PORT_443;
 
   if (!trial.get()) {
     // Set up a field trial to collect network stats for UDP.
@@ -951,15 +804,19 @@ void CollectNetworkStats(const std::string& network_stats_server,
       // Enable the connectivity testing for 5% of the users in beta channel.
       probability_per_group = 50;
 
-    // After October 30, 2013 builds, it will always be in default group
+    // After July 31, 2014 builds, it will always be in default group
     // (disable_network_stats).
-    trial = base::FieldTrialList::FactoryGetFieldTrial(
-        "NetworkConnectivity", kDivisor, "disable_network_stats",
-        2013, 10, 30, NULL);
+    trial = base::FieldTrialList::FactoryGetFieldTrial("NetworkConnectivity",
+                                                       kDivisor,
+                                                       "disable_network_stats",
+                                                       2014,
+                                                       7,
+                                                       31,
+                                                       NULL);
 
     // Add option to collect_stats for NetworkConnectivity.
-    int collect_stats_group = trial->AppendGroup("collect_stats",
-                                                 probability_per_group);
+    int collect_stats_group =
+        trial->AppendGroup("collect_stats", probability_per_group);
     if (trial->group() == collect_stats_group)
       collect_stats = true;
   }
@@ -972,63 +829,42 @@ void CollectNetworkStats(const std::string& network_stats_server,
   static size_t number_of_tests_done = 0;
   if (number_of_tests_done > kMaxNumberOfTests)
     return;
-
   ++number_of_tests_done;
 
   net::HostResolver* host_resolver = io_thread->globals()->host_resolver.get();
   DCHECK(host_resolver);
 
-  net::HostPortPair server_address(network_stats_server,
-                                   kPorts[histogram_port]);
+  uint32 port_index = base::RandInt(0, arraysize(kPorts) - 1);
+  uint16 histogram_port = kPorts[port_index];
+  net::HostPortPair server_address(network_stats_server, histogram_port);
 
   net::ProxyService* proxy_service =
       io_thread->globals()->system_proxy_service.get();
   DCHECK(proxy_service);
 
-  ProxyDetector::OnResolvedCallback callback =
-      base::Bind(&StartNetworkStatsTest,
-          host_resolver, server_address, histogram_port);
+  ProxyDetector::OnResolvedCallback callback = base::Bind(
+      &StartNetworkStatsTest, host_resolver, server_address, histogram_port);
 
-  ProxyDetector* proxy_client = new ProxyDetector(
-      proxy_service, server_address, callback);
+  ProxyDetector* proxy_client =
+      new ProxyDetector(proxy_service, server_address, callback);
   proxy_client->StartResolveProxy();
 }
 
-// static
 void StartNetworkStatsTest(net::HostResolver* host_resolver,
                            const net::HostPortPair& server_address,
-                           NetworkStats::HistogramPortSelector histogram_port,
+                           uint16 histogram_port,
                            bool has_proxy_server) {
-  int experiment_to_run = base::RandInt(1, 3);
-  switch (experiment_to_run) {
-    case 1:
-      {
-        NetworkStats* udp_stats_client = new NetworkStats();
-        udp_stats_client->Start(
-            host_resolver, server_address, histogram_port, has_proxy_server,
-            kSmallTestBytesToSend, kMaximumSequentialPackets,
-            net::CompletionCallback());
-      }
-      break;
-    case 2:
-      {
-        NetworkStats* udp_stats_client = new NetworkStats();
-        udp_stats_client->Start(
-            host_resolver, server_address, histogram_port, has_proxy_server,
-            kMediumTestBytesToSend, kMaximumSequentialPackets,
-            net::CompletionCallback());
-      }
-      break;
-    case 3:
-      {
-        NetworkStats* udp_stats_client = new NetworkStats();
-        udp_stats_client->Start(
-            host_resolver, server_address, histogram_port, has_proxy_server,
-            kLargeTestBytesToSend, kMaximumSequentialPackets,
-            net::CompletionCallback());
-      }
-      break;
-  }
+  int probe_choice = base::RandInt(0, kPacketSizeChoices - 1);
+
+  // |udp_stats_client| is owned and deleted in the class NetworkStats.
+  NetworkStats* udp_stats_client =
+      new NetworkStats(net::ClientSocketFactory::GetDefaultFactory());
+  udp_stats_client->Start(host_resolver,
+                          server_address,
+                          histogram_port,
+                          has_proxy_server,
+                          kProbePacketBytes[probe_choice],
+                          net::CompletionCallback());
 }
 
 }  // namespace chrome_browser_net
