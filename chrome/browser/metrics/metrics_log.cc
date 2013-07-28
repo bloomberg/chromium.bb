@@ -141,6 +141,28 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
   }
 }
 
+OmniboxEventProto::PageClassification AsOmniboxEventPageClassification(
+    AutocompleteInput::PageClassification page_classification) {
+  switch (page_classification) {
+    case AutocompleteInput::INVALID_SPEC:
+      return OmniboxEventProto::INVALID_SPEC;
+    case AutocompleteInput::NEW_TAB_PAGE:
+      return OmniboxEventProto::NEW_TAB_PAGE;
+    case AutocompleteInput::BLANK:
+      return OmniboxEventProto::BLANK;
+    case AutocompleteInput::HOMEPAGE:
+      return OmniboxEventProto::HOMEPAGE;
+    case AutocompleteInput::OTHER:
+      return OmniboxEventProto::OTHER;
+    case AutocompleteInput::INSTANT_NEW_TAB_PAGE:
+      return OmniboxEventProto::INSTANT_NEW_TAB_PAGE;
+    case AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT:
+      return OmniboxEventProto::
+          SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
+  }
+  return OmniboxEventProto::INVALID_SPEC;
+}
+
 ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
     int process_type) {
   switch (process_type) {
@@ -829,7 +851,7 @@ void MetricsLog::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   omnibox_event->set_duration_since_last_default_match_update_ms(
       log.elapsed_time_since_last_change_to_default_match.InMilliseconds());
   omnibox_event->set_current_page_classification(
-      log.current_page_classification);
+      AsOmniboxEventPageClassification(log.current_page_classification));
   omnibox_event->set_input_type(AsOmniboxEventInputType(log.input_type));
   for (AutocompleteResult::const_iterator i(log.result.begin());
        i != log.result.end(); ++i) {

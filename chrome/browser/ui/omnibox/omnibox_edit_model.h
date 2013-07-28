@@ -13,7 +13,6 @@
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
-#include "chrome/common/metrics/proto/omnibox_event.pb.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -387,7 +386,7 @@ class OmniboxEditModel {
   // page or a normal web page.  Used for logging omnibox events for
   // UMA opted-in users.  Examines the user's profile to determine if the
   // current page is the user's home page.
-  metrics::OmniboxEventProto::PageClassification ClassifyPage() const;
+  AutocompleteInput::PageClassification ClassifyPage() const;
 
   // Sets |match| and |alternate_nav_url| based on classifying |text|.
   // |alternate_nav_url| may be NULL.

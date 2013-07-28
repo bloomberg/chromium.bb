@@ -44,6 +44,27 @@ class AutocompleteInput {
     ALL_MATCHES,
   };
 
+  // The type of page currently displayed.
+  // Note: when adding an element to this enum, please add it at the end
+  // and update omnibox_event.proto::PageClassification and
+  // omnibox_edit_model.cc::ClassifyPage() too.
+  enum PageClassification {
+    INVALID_SPEC = 0,   // invalid URI; shouldn't happen
+    NEW_TAB_PAGE = 1,   // chrome://newtab/
+    // Note that chrome://newtab/ doesn't have to be the built-in
+    // version; it could be replaced by an extension.
+    BLANK = 2,          // about:blank
+    HOMEPAGE = 3,       // user switched settings to "open this page" mode.
+    // Note that if the homepage is set to the new tab page or about blank,
+    // then we'll classify the web page into those categories, not HOMEPAGE.
+    OTHER = 4,          // everything not included somewhere else on this list
+    INSTANT_NEW_TAB_PAGE = 5,  // new tab page rendered by Instant
+    // The user is on a search result page that's doing search term
+    // replacement, meaning the search terms should've appeared in the omnibox
+    // before the user started editing it, not the URL of the page.
+    SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT = 6
+  };
+
   AutocompleteInput();
   // |text| and |cursor_position| represent the input query and location of
   // the cursor with the query respectively.  |cursor_position| may be set to
