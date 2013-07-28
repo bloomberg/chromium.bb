@@ -1713,8 +1713,15 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   }
 }
 
+#if defined(OS_WIN)
+#define MAYBE_DownloadExtensionTest_Download_Subdirectory\
+        DISABLED_DownloadExtensionTest_Download_Subdirectory
+#else
+#define MAYBE_DownloadExtensionTest_Download_Subdirectory\
+        DownloadExtensionTest_Download_Subdirectory
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_Download_Subdirectory) {
+                       MAYBE_DownloadExtensionTest_Download_Subdirectory) {
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(test_server()->Start());
