@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 
+#include "ash/system/tray/actionable_view.h"
+#include "ash/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_popup_header_button.h"
 #include "base/bind.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -90,11 +93,27 @@ void FocusRingLayer::SetForView(views::View* view) {
   ui::Layer* widget_layer = view->GetWidget()->GetNativeWindow()->layer();
   widget_layer->parent()->Add(layer_.get());
 
-  // A workaround that attempts to pick a better bounds for LabelButton.
+  // Workarounds that attempts to pick a better bounds.
   gfx::Rect view_bounds = view->GetContentsBounds();
   if (view->GetClassName() == views::LabelButton::kViewClassName) {
     view_bounds = view->GetLocalBounds();
     view_bounds.Inset(2, 2, 2, 2);
+  }
+
+  // Workarounds for system tray items that has a customized OnPaintFocusBorder.
+  // The insets here must be consistent with the ones used in OnPaintFocusBorder
+  // and DrawBorder.
+  if (view->GetClassName() ==
+             ash::internal::ActionableView::kViewClassName) {
+    view_bounds = view->GetLocalBounds();
+    view_bounds.Inset(1, 1, 3, 3);
+  } else if (view->GetClassName() ==
+             ash::internal::TrayBackgroundView::kViewClassName) {
+    view_bounds.Inset(1, 1, 3, 3);
+  } else if (view->GetClassName() ==
+             ash::internal::TrayPopupHeaderButton::kViewClassName) {
+    view_bounds = view->GetLocalBounds();
+    view_bounds.Inset(2, 1, 2, 2);
   }
 
   // Note the bounds calculation below assumes no transformation and ignores

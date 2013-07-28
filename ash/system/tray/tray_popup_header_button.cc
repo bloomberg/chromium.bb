@@ -12,6 +12,10 @@
 namespace ash {
 namespace internal {
 
+// static
+const char TrayPopupHeaderButton::kViewClassName[] =
+    "tray/TrayPopupHeaderButton";
+
 TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
                                              int enabled_resource_id,
                                              int disabled_resource_id,
@@ -36,6 +40,10 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
 }
 
 TrayPopupHeaderButton::~TrayPopupHeaderButton() {}
+
+const char* TrayPopupHeaderButton::GetClassName() const {
+  return kViewClassName;
+}
 
 gfx::Size TrayPopupHeaderButton::GetPreferredSize() {
   return gfx::Size(ash::kTrayPopupItemHeight, ash::kTrayPopupItemHeight);

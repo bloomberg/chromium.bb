@@ -11,6 +11,9 @@
 namespace ash {
 namespace internal {
 
+// static
+const char ActionableView::kViewClassName[] = "tray/ActionableView";
+
 ActionableView::ActionableView()
     : has_capture_(false) {
   set_focusable(true);
@@ -23,6 +26,10 @@ void ActionableView::DrawBorder(gfx::Canvas* canvas, const gfx::Rect& bounds) {
   gfx::Rect rect = bounds;
   rect.Inset(1, 1, 3, 3);
   canvas->DrawRect(rect, kFocusBorderColor);
+}
+
+const char* ActionableView::GetClassName() const {
+  return kViewClassName;
 }
 
 bool ActionableView::OnKeyPressed(const ui::KeyEvent& event) {

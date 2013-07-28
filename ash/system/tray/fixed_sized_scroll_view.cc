@@ -8,7 +8,6 @@ namespace ash {
 namespace internal {
 
 FixedSizedScrollView::FixedSizedScrollView() {
-  set_focusable(true);
   set_notify_enter_exit_on_child(true);
 }
 

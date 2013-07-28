@@ -53,6 +53,9 @@ using views::TrayBubbleView;
 namespace ash {
 namespace internal {
 
+// static
+const char TrayBackgroundView::kViewClassName[] = "tray/TrayBackgroundView";
+
 // Used to track when the anchor widget changes position on screen so that the
 // bubble position can be updated.
 class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
@@ -348,6 +351,10 @@ TrayBackgroundView::~TrayBackgroundView() {
 void TrayBackgroundView::Initialize() {
   GetWidget()->AddObserver(widget_observer_.get());
   SetBorder();
+}
+
+const char* TrayBackgroundView::GetClassName() const {
+  return kViewClassName;
 }
 
 void TrayBackgroundView::OnMouseEntered(const ui::MouseEvent& event) {
