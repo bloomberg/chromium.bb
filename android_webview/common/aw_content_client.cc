@@ -5,6 +5,8 @@
 #include "android_webview/common/aw_content_client.h"
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
+#include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -18,7 +20,12 @@ std::string AwContentClient::GetProduct() const {
 }
 
 std::string AwContentClient::GetUserAgent() const {
-  return webkit_glue::BuildUserAgentFromProduct(GetProduct());
+  std::string product = GetProduct();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kUseMobileUserAgent)) {
+    product += " Mobile";
+  }
+  return webkit_glue::BuildUserAgentFromProduct(product);
 }
 
 string16 AwContentClient::GetLocalizedString(int message_id) const {
