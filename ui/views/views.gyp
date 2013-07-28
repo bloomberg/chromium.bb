@@ -737,6 +737,7 @@
         'window/dialog_client_view_unittest.cc',
         'window/dialog_delegate_unittest.cc',
         'widget/desktop_aura/desktop_capture_client_unittest.cc',
+        'widget/desktop_aura/desktop_screen_position_client_unittest.cc',
         'widget/native_widget_aura_unittest.cc',
         'widget/native_widget_unittest.cc',
         'widget/native_widget_win_unittest.cc',
