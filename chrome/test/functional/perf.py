@@ -178,7 +178,7 @@ class BasePerfTest(pyauto.PyUITest):
       browser_info = self.GetBrowserInfo()
       pid = browser_info['browser_pid']
       os.kill(pid, signal.SIGINT)
-      self._WaitForChromeExit(browser_info, 30)
+      self._WaitForChromeExit(browser_info, 120)
 
     pyauto.PyUITest.tearDown(self)
 
