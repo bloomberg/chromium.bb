@@ -457,6 +457,23 @@
     'sync_proto': {
       'filepath': 'sync/protocol/',
     },
+    'tab_capture': {
+      'filepath': 'chrome/browser/extensions/api/tab_capture/'\
+        '|chrome/browser/media/media_stream'\
+        '|content/browser/renderer_host/(backing_store|compositing_iosurface|'\
+            'render_widget_host_view)'\
+        '|content/browser/renderer_host/media/(audio_|'\
+            'media_stream_manager\.cc|video_|web_contents_)'\
+        '|content/browser/web_contents/web_contents_impl'\
+        '|content/renderer/media/audio_(device_factory|message_filter|'\
+            'renderer_mixer_manager)'\
+        '|content/renderer/p2p/ipc_socket_factory'\
+        '|content/renderer/pepper/pepper_platform_audio_output'\
+        '|media/audio/(audio_output|fake_audio_consumer|virtual_audio)'\
+        '|media/base/video_util'\
+        '|media/video/capture/video_capture'\
+        '|ui/surface/accelerated_surface.*_win',
+    },
     'tab_contents': {
       'filepath': 'chrome/browser/tab_contents/|'\
         'content/browser/tab_contents/|'\
@@ -723,6 +740,7 @@
                'tzik+watch@chromium.org',
                'nhiroki+watch@chromium.org'],
     'sync_proto': ['albertb+watch@chromium.org'],
+    'tab_capture': ['miu+watch@chromium.org'],
     'tab_contents': ['avi@chromium.org',
                      'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'task_manager': ['yoshiki+watch@chromium.org'],
