@@ -398,7 +398,8 @@ TEST_F(ReliableQuicStreamTest, ProcessCorruptHeadersEarly) {
 
   headers_["content-type"] = "text/plain";
   string compressed_headers2 = compressor_->CompressHeaders(headers_);
-  compressed_headers2[4] ^= 0xA1;  // Corrupt the comressed data.
+  // Corrupt the compressed data.
+  compressed_headers2[compressed_headers2.length() - 1] ^= 0xA1;
   QuicStreamFrame frame2(stream2_->id(), false, 0, compressed_headers2);
   string decompressed_headers2 =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
@@ -417,12 +418,61 @@ TEST_F(ReliableQuicStreamTest, ProcessCorruptHeadersEarly) {
   EXPECT_EQ(decompressed_headers1, stream_->data());
 
   // Verify that the decompressor is available, and inform stream2
-  // that it can now decompress the buffered compressed data.  Since
+  // that it can now decompress the buffered compressed data.    Since
   // the compressed data is corrupt, the stream will shutdown the session.
   EXPECT_EQ(2u, session_->decompressor()->current_header_id());
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_DECOMPRESSION_FAILURE));
   stream2_->OnDecompressorAvailable();
   EXPECT_EQ("", stream2_->data());
+}
+
+TEST_F(ReliableQuicStreamTest, ProcessPartialHeadersEarly) {
+  Initialize(kShouldProcessData);
+
+  string compressed_headers1 = compressor_->CompressHeaders(headers_);
+  QuicStreamFrame frame1(stream_->id(), false, 0, compressed_headers1);
+  string decompressed_headers1 =
+      SpdyUtils::SerializeUncompressedHeaders(headers_);
+
+  headers_["content-type"] = "text/plain";
+  string compressed_headers2 = compressor_->CompressHeaders(headers_);
+  string partial_compressed_headers =
+      compressed_headers2.substr(0, compressed_headers2.length() / 2);
+  QuicStreamFrame frame2(stream2_->id(), false, 0, partial_compressed_headers);
+  string decompressed_headers2 =
+      SpdyUtils::SerializeUncompressedHeaders(headers_);
+
+  // Deliver frame2 to stream2 out of order.  The decompressor is not
+  // available yet, so no data will be processed.  The compressed data
+  // will be buffered until OnDecompressorAvailable() is called
+  // to process it.
+  stream2_->OnStreamFrame(frame2);
+  EXPECT_EQ("", stream2_->data());
+
+  // Now deliver frame1 to stream1.  The decompressor is available so
+  // the data will be processed, and the decompressor will become
+  // available for stream2.
+  stream_->OnStreamFrame(frame1);
+  EXPECT_EQ(decompressed_headers1, stream_->data());
+
+  // Verify that the decompressor is available, and inform stream2
+  // that it can now decompress the buffered compressed data.  Since
+  // the compressed data is incomplete it will not be passed to
+  // the stream.
+  EXPECT_EQ(2u, session_->decompressor()->current_header_id());
+  stream2_->OnDecompressorAvailable();
+  EXPECT_EQ("", stream2_->data());
+
+  // Now send remaining data and verify that we have now received the
+  // compressed headers.
+  string remaining_compressed_headers =
+      compressed_headers2.substr(partial_compressed_headers.length());
+
+  QuicStreamFrame frame3(stream2_->id(), false,
+                         partial_compressed_headers.length(),
+                         remaining_compressed_headers);
+  stream2_->OnStreamFrame(frame3);
+  EXPECT_EQ(decompressed_headers2, stream2_->data());
 }
 
 TEST_F(ReliableQuicStreamTest, ProcessHeadersEarly) {

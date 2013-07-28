@@ -366,30 +366,27 @@ void ReliableQuicStream::OnDecompressorAvailable() {
   DCHECK(!decompression_failed_);
   DCHECK_EQ(0u, decompressed_headers_.length());
 
-  size_t total_bytes_consumed = 0;
-  struct iovec iovecs[5];
   while (!headers_decompressed_) {
-    size_t num_iovecs =
-        sequencer_.GetReadableRegions(iovecs, arraysize(iovecs));
-
-    if (num_iovecs == 0) {
+    struct iovec iovec;
+    if (sequencer_.GetReadableRegions(&iovec, 1) == 0) {
       return;
     }
-    for (size_t i = 0; i < num_iovecs && !headers_decompressed_; i++) {
-      total_bytes_consumed += session_->decompressor()->DecompressData(
-          StringPiece(static_cast<char*>(iovecs[i].iov_base),
-                      iovecs[i].iov_len), this);
-      if (decompression_failed_) {
-        return;
-      }
 
-      headers_decompressed_ =
-          session_->decompressor()->current_header_id() != headers_id_;
+    size_t bytes_consumed = session_->decompressor()->DecompressData(
+        StringPiece(static_cast<char*>(iovec.iov_base),
+                    iovec.iov_len),
+        this);
+    DCHECK_LE(bytes_consumed, iovec.iov_len);
+    if (decompression_failed_) {
+      return;
     }
+    sequencer_.MarkConsumed(bytes_consumed);
+
+    headers_decompressed_ =
+        session_->decompressor()->current_header_id() != headers_id_;
   }
 
   // Either the headers are complete, or the all data as been consumed.
-  sequencer_.MarkConsumed(total_bytes_consumed);
   ProcessHeaderData();  // Unprocessed headers remain in decompressed_headers_.
   if (IsHalfClosed()) {
     TerminateFromPeer(true);
