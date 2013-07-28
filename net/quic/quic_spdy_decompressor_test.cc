@@ -38,6 +38,36 @@ TEST_F(QuicSpdyDecompressorTest, Decompress) {
   EXPECT_EQ(2u, decompressor_.current_header_id());
 }
 
+TEST_F(QuicSpdyDecompressorTest, DecompressPartial) {
+  SpdyHeaderBlock headers;
+  headers[":host"] = "www.google.com";
+  headers[":path"] = "/index.hml";
+  headers[":scheme"] = "https";
+  string compressed_headers = compressor_.CompressHeaders(headers).substr(4);
+
+  for (size_t i = 0; i < compressed_headers.length(); ++i) {
+    QuicSpdyDecompressor decompressor;
+    TestDecompressorVisitor visitor;
+
+    EXPECT_EQ(1u, decompressor.current_header_id());
+
+    string partial_compressed_headers = compressed_headers.substr(0, i);
+    EXPECT_EQ(partial_compressed_headers.length(),
+              decompressor.DecompressData(partial_compressed_headers,
+                                          &visitor));
+    EXPECT_EQ(1u, decompressor.current_header_id()) << "i: " << i;
+
+    string remaining_compressed_headers =
+        compressed_headers.substr(partial_compressed_headers.length());
+    EXPECT_EQ(remaining_compressed_headers.length(),
+              decompressor.DecompressData(remaining_compressed_headers,
+                                          &visitor));
+    EXPECT_EQ(SpdyUtils::SerializeUncompressedHeaders(headers), visitor.data());
+
+    EXPECT_EQ(2u, decompressor.current_header_id());
+  }
+}
+
 TEST_F(QuicSpdyDecompressorTest, DecompressAndIgnoreTrailingData) {
   SpdyHeaderBlock headers;
   headers[":host"] = "www.google.com";
