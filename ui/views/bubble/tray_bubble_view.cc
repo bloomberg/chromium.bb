@@ -36,6 +36,7 @@ const int kBubbleSpacing = 20;
 const int kArrowOffsetTopBottom = 5;
 const int kArrowOffsetLeft = 9;
 const int kArrowOffsetRight = -5;
+const int kOffsetLeftRightForTopBottomOrientation = 2;
 
 }  // namespace
 
@@ -73,6 +74,9 @@ class TrayBubbleBorder : public BubbleBorder {
         if (arrow() == BubbleBorder::BOTTOM_RIGHT ||
             arrow() == BubbleBorder::BOTTOM_LEFT) {
           rect.set_y(rect.y() + kArrowOffsetTopBottom);
+          int rtl_factor = base::i18n::IsRTL() ? -1 : 1;
+          rect.set_x(rect.x() +
+                     rtl_factor * kOffsetLeftRightForTopBottomOrientation);
         } else if (arrow() == BubbleBorder::LEFT_BOTTOM) {
           rect.set_x(rect.x() + kArrowOffsetLeft);
         } else if (arrow() == BubbleBorder::RIGHT_BOTTOM) {

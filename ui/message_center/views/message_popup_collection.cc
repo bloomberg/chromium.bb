@@ -40,7 +40,13 @@ const int kMouseExitedDeferTimeoutMs = 200;
 
 // The margin between messages (and between the anchor unless
 // first_item_has_no_margin was specified).
-const int kToastMargin = kMarginBetweenItems;
+const int kToastMarginY = kMarginBetweenItems;
+#if defined(OS_CHROMEOS)
+const int kToastMarginX = 3;
+#else
+const int kToastMarginX = kMarginBetweenItems;
+#endif
+
 
 // If there should be no margin for the first item, this value needs to be
 // substracted to flush the message to the shelf (the width of the border +
@@ -112,7 +118,7 @@ void MessagePopupCollection::UpdateWidgets() {
       work_area_.bottom() : toasts_.back()->origin().y();
 
   if (!first_item_has_no_margin_)
-    bottom -= kToastMargin;
+    bottom -= kToastMarginY;
   else
     bottom += kNoToastMarginBorderAndShadowOffset;
 
@@ -130,7 +136,7 @@ void MessagePopupCollection::UpdateWidgets() {
                                  true,  // Create expanded.
                                  true); // Create top-level notification.
     int view_height = ToastContentsView::GetToastSizeForView(view).height();
-    if (bottom - view_height - kToastMargin < 0) {
+    if (bottom - view_height - kToastMarginY < 0) {
       delete view;
       break;
     }
@@ -146,7 +152,7 @@ void MessagePopupCollection::UpdateWidgets() {
         GetToastOriginX(gfx::Rect(preferred_size)) + preferred_size.width(),
         bottom);
     toast->RevealWithAnimation(origin);
-    bottom -= view_height + kToastMargin;
+    bottom -= view_height + kToastMarginY;
 
     message_center_->DisplayedNotification((*iter)->id());
     if (views::ViewsDelegate::views_delegate) {
@@ -199,15 +205,15 @@ int MessagePopupCollection::GetToastOriginX(const gfx::Rect& toast_bounds) {
   // In ChromeOS, RTL UI language mirrors the whole desktop layout, so the toast
   // widgets should be at the bottom-left instead of bottom right.
   if (base::i18n::IsRTL())
-    return work_area_.x() + kToastMargin;
+    return work_area_.x() + kToastMarginX;
 #endif
-  return work_area_.right() - kToastMargin - toast_bounds.width();
+  return work_area_.right() - kToastMarginX - toast_bounds.width();
 }
 
 void MessagePopupCollection::RepositionWidgets() {
   int bottom = work_area_.bottom();
   if (!first_item_has_no_margin_)
-    bottom -= kToastMargin;
+    bottom -= kToastMarginY;
   else
     bottom += kNoToastMarginBorderAndShadowOffset;
 
@@ -224,7 +230,7 @@ void MessagePopupCollection::RepositionWidgets() {
       (*curr)->SetBoundsWithAnimation(bounds);
     else
       (*curr)->CloseWithAnimation(false);
-    bottom -= bounds.height() + kToastMargin;
+    bottom -= bounds.height() + kToastMarginY;
   }
 }
 

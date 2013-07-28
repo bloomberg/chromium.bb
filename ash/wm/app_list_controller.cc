@@ -46,7 +46,7 @@ const int kArrowTipHeight = 10;
 // The minimal anchor position offset to make sure that the bubble is still on
 // the screen with 8 pixels spacing on the left / right. This constant is a
 // result of minimal bubble arrow sizes and offsets.
-const int kMinimalAnchorPositionOffset = 60;
+const int kMinimalAnchorPositionOffset = 57;
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
