@@ -25,6 +25,7 @@
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/client/image_factory.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -70,8 +71,7 @@ static base::LazyInstance<
 
 static bool g_use_virtualized_gl_context = false;
 
-static GLInProcessContext::GpuMemoryBufferCreator* g_gpu_memory_buffer_creator =
-    NULL;
+static GpuMemoryBufferFactory* g_gpu_memory_buffer_factory = NULL;
 
 // Also calls DetachFromThreadHack on all GLES2Decoders before the lock is
 // released to maintain the invariant that all decoders are unbound while the
@@ -89,6 +89,12 @@ class AutoLockAndDecoderDetachThread {
   base::AutoLock auto_lock_;
   const std::set<GLInProcessContextImpl*>& contexts_;
 };
+
+size_t SharedContextCount() {
+  AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
+                                      g_all_shared_contexts.Get());
+  return g_all_shared_contexts.Get().size();
+}
 
 class GLInProcessContextImpl
     : public GLInProcessContext,
@@ -180,14 +186,12 @@ scoped_ptr<GpuMemoryBuffer> GLInProcessContextImpl::CreateGpuMemoryBuffer(
   // shared IdManager.
   AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
                                       g_all_shared_contexts.Get());
-  // For Android WebView we assume the |internalformat| will always be
-  // GL_RGBA8_OES.
-  DCHECK_EQ(static_cast<GLenum>(GL_RGBA8_OES), internalformat);
-  scoped_ptr<GpuMemoryBuffer> buffer =
-      g_gpu_memory_buffer_creator(width, height);
-
-  if (buffer.get() == NULL)
-    return buffer.Pass();
+  scoped_ptr<GpuMemoryBuffer> buffer(
+      g_gpu_memory_buffer_factory->CreateGpuMemoryBuffer(width,
+                                                         height,
+                                                         internalformat));
+  if (!buffer)
+    return scoped_ptr<GpuMemoryBuffer>();
 
   scoped_refptr<gfx::GLImage> gl_image =
       gfx::GLImage::CreateGLImageForGpuMemoryBuffer(buffer->GetNativeBuffer(),
@@ -594,20 +598,15 @@ GLInProcessContext* GLInProcessContext::CreateContext(
 }
 
 // static
-void GLInProcessContext::SetGpuMemoryBufferCreator(
-    GpuMemoryBufferCreator* creator) {
-  g_gpu_memory_buffer_creator = creator;
+void GLInProcessContext::SetGpuMemoryBufferFactory(
+    GpuMemoryBufferFactory* factory) {
+  DCHECK_EQ(0u, SharedContextCount());
+  g_gpu_memory_buffer_factory = factory;
 }
 
 // static
 void GLInProcessContext::EnableVirtualizedContext() {
-#if !defined(NDEBUG)
-  {
-    AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
-                                        g_all_shared_contexts.Get());
-    DCHECK(g_all_shared_contexts.Get().empty());
-  }
-#endif  // !defined(NDEBUG)
+  DCHECK_EQ(0u, SharedContextCount());
   g_use_virtualized_gl_context = true;
 }
 

@@ -21,15 +21,14 @@ namespace gles2 {
 class GLES2Implementation;
 }
 
-class GpuMemoryBuffer;
+class GpuMemoryBufferFactory;
 
 class GLES2_IMPL_EXPORT GLInProcessContext {
  public:
   virtual ~GLInProcessContext() {}
 
-  typedef scoped_ptr< ::gpu::GpuMemoryBuffer> GpuMemoryBufferCreator(
-      int width, int height);
-  static void SetGpuMemoryBufferCreator(GpuMemoryBufferCreator* creator);
+  // Must be called before any GLInProcessContext instances are created.
+  static void SetGpuMemoryBufferFactory(GpuMemoryBufferFactory* factory);
 
   // Must be called before any GLInProcessContext instances are created.
   // Default value is false.

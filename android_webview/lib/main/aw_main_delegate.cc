@@ -5,6 +5,7 @@
 #include "android_webview/lib/main/aw_main_delegate.h"
 
 #include "android_webview/browser/aw_content_browser_client.h"
+#include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_geolocation_permission_context.h"
@@ -34,7 +35,8 @@ base::LazyInstance<scoped_ptr<ScopedAllowWaitForLegacyWebViewApi> >
 
 }
 
-AwMainDelegate::AwMainDelegate() {
+AwMainDelegate::AwMainDelegate()
+    : gpu_memory_buffer_factory_(new GpuMemoryBufferFactoryImpl) {
 }
 
 AwMainDelegate::~AwMainDelegate() {
@@ -44,6 +46,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
 
   gpu::GLInProcessContext::EnableVirtualizedContext();
+  gpu::GLInProcessContext::SetGpuMemoryBufferFactory(
+      gpu_memory_buffer_factory_.get());
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableBeginFrameScheduling);

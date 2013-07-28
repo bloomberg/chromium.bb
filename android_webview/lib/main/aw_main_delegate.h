@@ -18,6 +18,7 @@ namespace android_webview {
 
 class AwContentBrowserClient;
 class AwContentRendererClient;
+class GpuMemoryBufferFactoryImpl;
 
 // Android WebView implementation of ContentMainDelegate.
 class AwMainDelegate : public content::ContentMainDelegate,
@@ -51,6 +52,7 @@ class AwMainDelegate : public content::ContentMainDelegate,
   AwContentClient content_client_;
   scoped_ptr<AwContentBrowserClient> content_browser_client_;
   scoped_ptr<AwContentRendererClient> content_renderer_client_;
+  scoped_ptr<GpuMemoryBufferFactoryImpl> gpu_memory_buffer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMainDelegate);
 };
