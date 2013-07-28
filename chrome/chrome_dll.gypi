@@ -346,12 +346,14 @@
             '<@(chromium_child_dependencies)',
             '../content/content.gyp:content_app_child',
             '../content/content.gyp:content_worker',
+            'chrome_version_resources',
             'policy_path_parser',
           ],
           'defines': [
             'CHROME_MULTIPLE_DLL_CHILD',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
             'app/chrome_main.cc',
             'app/chrome_main_delegate.cc',
             'app/chrome_main_delegate.h',
