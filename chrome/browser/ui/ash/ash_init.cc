@@ -11,7 +11,6 @@
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/event_rewriter_event_filter.h"
-#include "ash/wm/property_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -58,10 +57,6 @@ void OpenAsh() {
   if (!chromeos::LoginState::Get()->IsUserLoggedIn())
     ash::Shell::set_initially_hide_cursor(true);
 #endif
-
-  // Its easier to mark all windows as persisting and exclude the ones we care
-  // about (browser windows), rather than explicitly excluding certain windows.
-  ash::SetDefaultPersistsAcrossAllWorkspaces(true);
 
   // Shell takes ownership of ChromeShellDelegate.
   ash::Shell* shell = ash::Shell::CreateInstance(new ChromeShellDelegate);

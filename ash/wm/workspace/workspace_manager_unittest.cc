@@ -532,34 +532,6 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
   EXPECT_TRUE(GetWindowOverlapsShelf());
 }
 
-// Test that a persistent window across all workspaces which got fullscreen
-// first, then got minimized and finally got restored does not crash the
-// system (see http://crbug.com/151698) and restores its fullscreen workspace
-// instead.
-TEST_F(WorkspaceManagerTest, MaximizeMinimizeRestoreDoesNotCrash) {
-  // We need to create a regular window first so there's an active workspace.
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->Show();
-
-  // Create a window that persists across all workspaces.
-  scoped_ptr<Window> w2(CreateTestWindow());
-  SetPersistsAcrossAllWorkspaces(
-      w2.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  w2->Show();
-  wm::ActivateWindow(w2.get());
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  EXPECT_FALSE(w2->IsVisible());
-  // This is the critical call which should switch to the fullscreen workspace
-  // of that window instead of reparenting it to the other workspace (and
-  // crashing while trying to do so).
-  wm::ActivateWindow(w2.get());
-  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN,
-            w2->GetProperty(aura::client::kShowStateKey));
-  EXPECT_TRUE(w2->IsVisible());
-}
-
 // Verifies going from maximized to minimized sets the right state for painting
 // the background of the launcher.
 TEST_F(WorkspaceManagerTest, MinimizeResetsVisibility) {

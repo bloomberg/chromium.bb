@@ -15,9 +15,6 @@
 #include "ui/gfx/rect.h"
 
 namespace ash {
-namespace {
-bool g_default_windows_persist_across_all_workspaces = false;
-}  // namespace
 
 void SetRestoreBoundsInScreen(aura::Window* window, const gfx::Rect& bounds) {
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
@@ -65,30 +62,6 @@ void SetWindowAlwaysRestoresToRestoreBounds(aura::Window* window, bool value) {
 
 bool GetWindowAlwaysRestoresToRestoreBounds(const aura::Window* window) {
   return window->GetProperty(internal::kWindowRestoresToRestoreBounds);
-}
-
-void SetPersistsAcrossAllWorkspaces(
-    aura::Window* window,
-    WindowPersistsAcrossAllWorkspacesType type) {
-  window->SetProperty(
-      internal::kWindowPersistsAcrossAllWorkspacesKey, type);
-}
-
-bool GetPersistsAcrossAllWorkspaces(aura::Window* window) {
-  switch (window->GetProperty(
-      internal::kWindowPersistsAcrossAllWorkspacesKey)) {
-    case WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES:
-      return true;
-    case WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO:
-      return false;
-    case WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT:
-      return g_default_windows_persist_across_all_workspaces;
-  }
-  return false;
-}
-
-void SetDefaultPersistsAcrossAllWorkspaces(bool value) {
-  g_default_windows_persist_across_all_workspaces = value;
 }
 
 internal::RootWindowController* GetRootWindowController(

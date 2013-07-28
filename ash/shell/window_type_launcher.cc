@@ -201,8 +201,6 @@ void InitWindowTypeLauncher() {
 WindowTypeLauncher::WindowTypeLauncher()
     : create_button_(new views::LabelButton(
           this, ASCIIToUTF16("Create Window"))),
-      create_persistant_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Create Persistant Window"))),
       panel_button_(new views::LabelButton(
           this, ASCIIToUTF16("Create Panel"))),
       create_nonresizable_button_(new views::LabelButton(
@@ -230,7 +228,6 @@ WindowTypeLauncher::WindowTypeLauncher()
       show_web_notification_(new views::LabelButton(
           this, ASCIIToUTF16("Show a web/app notification"))) {
   create_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  create_persistant_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   panel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   create_nonresizable_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   bubble_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
@@ -256,7 +253,6 @@ WindowTypeLauncher::WindowTypeLauncher()
                         0,
                         0);
   AddViewToLayout(layout, create_button_);
-  AddViewToLayout(layout, create_persistant_button_);
   AddViewToLayout(layout, panel_button_);
   AddViewToLayout(layout, create_nonresizable_button_);
   AddViewToLayout(layout, bubble_button_);
@@ -309,12 +305,6 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     ToplevelWindow::CreateParams params;
     params.can_resize = true;
     params.can_maximize = true;
-    ToplevelWindow::CreateToplevelWindow(params);
-  } else if (sender == create_persistant_button_) {
-    ToplevelWindow::CreateParams params;
-    params.can_resize = true;
-    params.can_maximize = true;
-    params.persist_across_all_workspaces = true;
     ToplevelWindow::CreateToplevelWindow(params);
   } else if (sender == panel_button_) {
     PanelWindow::CreatePanelWindow(gfx::Rect());

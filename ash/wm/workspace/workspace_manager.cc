@@ -180,7 +180,7 @@ void WorkspaceManager::SetActiveWorkspaceByWindow(Window* window) {
     return;
 
   if (workspace != active_workspace_) {
-    // A window is being made active. In the following cases we reparent to
+    // A window is being made active. In the following case we reparent to
     // the active desktop:
     // . The window is not tracked by workspace code. This is used for tab
     //   dragging. Since tab dragging needs to happen in the active workspace we
@@ -189,20 +189,10 @@ void WorkspaceManager::SetActiveWorkspaceByWindow(Window* window) {
     //   only transiently used (property reset on input release) we don't worry
     //   about window state. In fact we can't consider window state here as we
     //   have to allow dragging of a fullscreen window to work in this case.
-    // . The window persists across all workspaces. For example, the task
-    //   manager is in the desktop worskpace and the current workspace is
-    //   fullscreen. If we swapped to the desktop you would lose context.
-    //   Instead we reparent.  The exception to this is if the window is
-    //   fullscreen (it needs its own workspace then) or we're in the process of
-    //   fullscreen. If we're in the process of fullscreen the window needs its
-    //   own workspace.
-    if (!GetTrackedByWorkspace(window) ||
-        (GetPersistsAcrossAllWorkspaces(window) &&
-         !wm::IsWindowFullscreen(window))) {
+    if (!GetTrackedByWorkspace(window))
       ReparentWindow(window, active_workspace_->window(), NULL);
-    } else {
+    else
       SetActiveWorkspace(workspace, SWITCH_WINDOW_MADE_ACTIVE);
-    }
   }
 }
 

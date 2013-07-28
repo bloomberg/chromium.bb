@@ -18,7 +18,6 @@
 #include "ui/views/view.h"
 
 #if defined(USE_ASH)
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #endif
@@ -102,21 +101,6 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
   GetNativeWindow()->SetName(kWindowName);
   GetNativeWindow()->AddObserver(window_property_watcher_.get());
 #if defined(USE_ASH)
-  bool gets_own_workspace = false;
-  if (browser_view->browser()->type() != Browser::TYPE_POPUP) {
-    gets_own_workspace = true;
-  } else if (browser_view->browser()->is_app() &&
-             browser_view->browser()->app_type() == Browser::APP_TYPE_HOST) {
-    // All app windows are of type Browser::TYPE_POPUP. App windows created
-    // from the launcher get their own workspace.
-    gets_own_workspace = true;
-  }
-
-  if (gets_own_workspace) {
-    ash::SetPersistsAcrossAllWorkspaces(
-        GetNativeWindow(),
-        ash::WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO);
-  }
   // Turn on auto window management if we don't need an explicit bounds.
   // This way the requested bounds are honored.
   if (!browser_view->browser()->bounds_overridden() &&

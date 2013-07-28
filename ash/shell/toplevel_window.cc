@@ -19,8 +19,7 @@ namespace shell {
 
 ToplevelWindow::CreateParams::CreateParams()
     : can_resize(false),
-      can_maximize(false),
-      persist_across_all_workspaces(false) {
+      can_maximize(false) {
 }
 
 // static
@@ -37,11 +36,6 @@ void ToplevelWindow::CreateToplevelWindow(const CreateParams& params) {
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       new ToplevelWindow(params), root, bounds);
   widget->GetNativeView()->SetName("Examples:ToplevelWindow");
-  if (params.persist_across_all_workspaces) {
-    SetPersistsAcrossAllWorkspaces(
-        widget->GetNativeView(),
-        WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  }
   widget->Show();
 }
 
@@ -56,9 +50,7 @@ void ToplevelWindow::OnPaint(gfx::Canvas* canvas) {
 }
 
 base::string16 ToplevelWindow::GetWindowTitle() const {
-  return params_.persist_across_all_workspaces ?
-      ASCIIToUTF16("Examples: Toplevel Window (P)") :
-      ASCIIToUTF16("Examples: Toplevel Window");
+  return ASCIIToUTF16("Examples: Toplevel Window");
 }
 
 views::View* ToplevelWindow::GetContentsView() {
