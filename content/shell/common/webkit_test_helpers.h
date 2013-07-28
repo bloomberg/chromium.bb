@@ -32,9 +32,6 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs);
 // Returns the root of the Blink checkout.
 base::FilePath GetWebKitRootDirFilePath();
 
-// Returns the root of the chromium checkout.
-base::FilePath GetChromiumRootDirFilePath();
-
 }  // namespace content
 
 #endif  // CONTENT_SHELL_COMMON_WEBKIT_TEST_HELPERS_H_
