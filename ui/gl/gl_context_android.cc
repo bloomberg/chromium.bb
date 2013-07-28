@@ -89,12 +89,10 @@ bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
   // end devices, 1/2 of the heap size can be too high, but this
   // correlates well with having a small heap-growth-limit. So for
   // devices with less ram, we factor in the growth limit.
-  // For devices with very limited memory, (e.g. Nexus S) we use
-  // 1/8 of the heap_size.
   //
   // This is the result of the calculation below:
   // Droid DNA 1080P  128MB
-  // Nexus S           16MB
+  // Nexus S           56MB
   // Galaxy Nexus     112MB
   // Nexus 4/10       256MB
   // Xoom              88MB
@@ -105,11 +103,9 @@ bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
                              base::SysInfo::DalvikHeapGrowthLimitMB());
     size_t limit = 0;
     if (heap_size >= 350)
-      limit = heap_size / 2;
-    else if (heap_size <= 128)
-      limit = heap_size / 8;
+        limit = heap_size / 2;
     else
-      limit = (heap_size + (heap_growth * 2)) / 4;
+        limit = (heap_size + (heap_growth * 2)) / 4;
     dalvik_limit = limit * 1024 * 1024;
   }
   *bytes = dalvik_limit;
