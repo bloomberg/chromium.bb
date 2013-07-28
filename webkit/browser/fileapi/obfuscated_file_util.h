@@ -193,6 +193,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
                            DestroyDirectoryDatabase_Isolated);
   FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
                            GetDirectoryDatabase_Isolated);
+  FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
+                           MigrationBackFromIsolated);
 
   base::PlatformFileError GetFileInfoInternal(
       SandboxDirectoryDatabase* db,

@@ -55,6 +55,28 @@ bool SandboxIsolatedOriginDatabase::ListAllOrigins(
 void SandboxIsolatedOriginDatabase::DropDatabase() {
 }
 
+void SandboxIsolatedOriginDatabase::MigrateBackDatabase(
+    const std::string& origin,
+    const base::FilePath& file_system_directory,
+    SandboxOriginDatabase* database) {
+  base::FilePath isolated_directory =
+      file_system_directory.Append(kOriginDirectory);
+
+  if (database->HasOriginPath(origin)) {
+    // Don't bother.
+    base::DeleteFile(isolated_directory, true /* recursive */);
+    return;
+  }
+
+  base::FilePath directory_name;
+  if (database->GetPathForOrigin(origin, &directory_name)) {
+    base::FilePath origin_directory =
+        file_system_directory.Append(directory_name);
+    base::DeleteFile(origin_directory, true /* recursive */);
+    base::Move(isolated_directory, origin_directory);
+  }
+}
+
 void SandboxIsolatedOriginDatabase::MigrateDatabaseIfNeeded() {
   if (migration_checked_)
     return;

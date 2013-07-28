@@ -9,6 +9,8 @@
 
 namespace fileapi {
 
+class SandboxOriginDatabase;
+
 class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxIsolatedOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
@@ -26,6 +28,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxIsolatedOriginDatabase
   virtual bool RemovePathForOrigin(const std::string& origin) OVERRIDE;
   virtual bool ListAllOrigins(std::vector<OriginRecord>* origins) OVERRIDE;
   virtual void DropDatabase() OVERRIDE;
+
+  static void MigrateBackDatabase(
+      const std::string& origin,
+      const base::FilePath& file_system_directory,
+      SandboxOriginDatabase* origin_database);
 
  private:
   void MigrateDatabaseIfNeeded();

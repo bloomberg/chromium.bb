@@ -993,6 +993,9 @@ int64 ObfuscatedFileUtil::ComputeFilePathCost(const base::FilePath& path) {
 }
 
 void ObfuscatedFileUtil::MaybePrepopulateDatabase() {
+  // Always disable this for now. crbug.com/264429
+  return;
+
   base::FilePath isolated_origin_dir = file_system_directory_.Append(
       SandboxIsolatedOriginDatabase::kOriginDirectory);
   if (!base::DirectoryExists(isolated_origin_dir))
@@ -1306,16 +1309,19 @@ bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
     return false;
   }
 
-  if (!isolated_origin_.is_empty()) {
-    origin_database_.reset(
-        new SandboxIsolatedOriginDatabase(
-            webkit_database::GetIdentifierFromOrigin(isolated_origin_),
-            file_system_directory_));
-    return true;
-  }
-
   origin_database_.reset(
       new SandboxOriginDatabase(file_system_directory_));
+
+  base::FilePath isolated_origin_dir = file_system_directory_.Append(
+      SandboxIsolatedOriginDatabase::kOriginDirectory);
+  if (base::DirectoryExists(isolated_origin_dir) &&
+      !isolated_origin_.is_empty()) {
+    SandboxIsolatedOriginDatabase::MigrateBackDatabase(
+        webkit_database::GetIdentifierFromOrigin(isolated_origin_),
+        file_system_directory_,
+        static_cast<SandboxOriginDatabase*>(origin_database_.get()));
+  }
+
   return true;
 }
 
@@ -1438,16 +1444,9 @@ bool ObfuscatedFileUtil::HasIsolatedStorage(const GURL& origin) {
       special_storage_policy_->HasIsolatedStorage(origin)) {
     if (isolated_origin_.is_empty())
       isolated_origin_ = origin;
-    CHECK_EQ(isolated_origin_.spec(), origin.spec())
-        << "multiple origins for an isolated site";
-    return true;
-  }
-  // This could happen when the origin is already unloaded and
-  // special_storage_policy_->HasIsolatedStorage(origin) returns false
-  // for the same origin.
-  if (!isolated_origin_.is_empty()) {
-    CHECK_EQ(isolated_origin_.spec(), origin.spec());
-    return true;
+    // Record isolated_origin_, but always disable for now.
+    // crbug.com/264429
+    return false;
   }
   return false;
 }

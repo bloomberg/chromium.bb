@@ -26,10 +26,12 @@
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/fileapi/sandbox_directory_database.h"
 #include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
+#include "webkit/browser/fileapi/sandbox_isolated_origin_database.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 #include "webkit/browser/fileapi/test_file_set.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_manager.h"
+#include "webkit/common/database/database_identifier.h"
 #include "webkit/common/quota/quota_types.h"
 
 namespace fileapi {
@@ -2325,6 +2327,50 @@ TEST_F(ObfuscatedFileUtilTest, GetDirectoryDatabase_Isolated) {
   SandboxDirectoryDatabase* db2 = file_util.GetDirectoryDatabase(
       origin_, kFileSystemTypePersistent, false /* create */);
   ASSERT_EQ(db, db2);
+}
+
+TEST_F(ObfuscatedFileUtilTest, MigrationBackFromIsolated) {
+  std::string kFakeDirectoryData("0123456789");
+  base::FilePath old_directory_db_path;
+
+  // Initialize the directory with one origin using
+  // SandboxIsolatedOriginDatabase.
+  {
+    std::string origin_string =
+        webkit_database::GetIdentifierFromOrigin(origin_);
+    SandboxIsolatedOriginDatabase database_old(origin_string, data_dir_path());
+    base::FilePath path;
+    EXPECT_TRUE(database_old.GetPathForOrigin(origin_string, &path));
+    EXPECT_FALSE(path.empty());
+
+    // Populate the origin directory with some fake data.
+    old_directory_db_path = data_dir_path().Append(path);
+    ASSERT_TRUE(file_util::CreateDirectory(old_directory_db_path));
+    EXPECT_EQ(static_cast<int>(kFakeDirectoryData.size()),
+              file_util::WriteFile(old_directory_db_path.AppendASCII("dummy"),
+                                   kFakeDirectoryData.data(),
+                                   kFakeDirectoryData.size()));
+  }
+
+  storage_policy_->AddIsolated(origin_);
+  ObfuscatedFileUtil file_util(
+      storage_policy_.get(), data_dir_path(),
+      base::MessageLoopProxy::current().get());
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  base::FilePath origin_directory = file_util.GetDirectoryForOrigin(
+      origin_, true /* create */, &error);
+  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+
+  // The database is migrated from the old one.
+  EXPECT_TRUE(base::DirectoryExists(origin_directory));
+  EXPECT_FALSE(base::DirectoryExists(old_directory_db_path));
+
+  // Check we see the same contents in the new origin directory.
+  std::string origin_db_data;
+  EXPECT_TRUE(base::PathExists(origin_directory.AppendASCII("dummy")));
+  EXPECT_TRUE(file_util::ReadFileToString(
+      origin_directory.AppendASCII("dummy"), &origin_db_data));
+  EXPECT_EQ(kFakeDirectoryData, origin_db_data);
 }
 
 }  // namespace fileapi
