@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "content/renderer/media/pepper_platform_video_decoder.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/plugin_module.h"
@@ -141,7 +142,7 @@ bool PPB_VideoDecoder_Impl::Init(
   if (!plugin_delegate)
     return false;
 
-  platform_video_decoder_.reset(plugin_delegate->CreateVideoDecoder(
+  platform_video_decoder_.reset(new PlatformVideoDecoder(
       this, command_buffer_route_id));
   if (!platform_video_decoder_)
     return false;

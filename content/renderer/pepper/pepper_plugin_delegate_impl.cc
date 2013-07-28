@@ -37,7 +37,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
-#include "content/renderer/media/pepper_platform_video_decoder_impl.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
@@ -623,13 +622,6 @@ WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePluginReplacement(
     const base::FilePath& file_path) {
   return GetContentClient()->renderer()->CreatePluginReplacement(
       render_view_, file_path);
-}
-
-PluginDelegate::PlatformVideoDecoder*
-    PepperPluginDelegateImpl::CreateVideoDecoder(
-        media::VideoDecodeAccelerator::Client* client,
-        int32 command_buffer_route_id) {
-  return new PlatformVideoDecoderImpl(client, command_buffer_route_id);
 }
 
 void PepperPluginDelegateImpl::NumberOfFindResultsChanged(int identifier,

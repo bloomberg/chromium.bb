@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/pepper_platform_video_decoder_impl.h"
+#include "content/renderer/media/pepper_platform_video_decoder.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -14,7 +14,7 @@ using media::BitstreamBuffer;
 
 namespace content {
 
-PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
+PlatformVideoDecoder::PlatformVideoDecoder(
     VideoDecodeAccelerator::Client* client,
     int32 command_buffer_route_id)
     : client_(client),
@@ -22,9 +22,9 @@ PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
   DCHECK(client);
 }
 
-PlatformVideoDecoderImpl::~PlatformVideoDecoderImpl() {}
+PlatformVideoDecoder::~PlatformVideoDecoder() {}
 
-bool PlatformVideoDecoderImpl::Initialize(media::VideoCodecProfile profile) {
+bool PlatformVideoDecoder::Initialize(media::VideoCodecProfile profile) {
   // TODO(vrk): Support multiple decoders.
   if (decoder_)
     return true;
@@ -46,47 +46,46 @@ bool PlatformVideoDecoderImpl::Initialize(media::VideoCodecProfile profile) {
   return decoder_.get() != NULL;
 }
 
-void PlatformVideoDecoderImpl::Decode(const BitstreamBuffer& bitstream_buffer) {
+void PlatformVideoDecoder::Decode(const BitstreamBuffer& bitstream_buffer) {
   DCHECK(decoder_.get());
   decoder_->Decode(bitstream_buffer);
 }
 
-void PlatformVideoDecoderImpl::AssignPictureBuffers(
+void PlatformVideoDecoder::AssignPictureBuffers(
     const std::vector<media::PictureBuffer>& buffers) {
   DCHECK(decoder_.get());
   decoder_->AssignPictureBuffers(buffers);
 }
 
-void PlatformVideoDecoderImpl::ReusePictureBuffer(
-    int32 picture_buffer_id) {
+void PlatformVideoDecoder::ReusePictureBuffer(int32 picture_buffer_id) {
   DCHECK(decoder_.get());
   decoder_->ReusePictureBuffer(picture_buffer_id);
 }
 
-void PlatformVideoDecoderImpl::Flush() {
+void PlatformVideoDecoder::Flush() {
   DCHECK(decoder_.get());
   decoder_->Flush();
 }
 
-void PlatformVideoDecoderImpl::Reset() {
+void PlatformVideoDecoder::Reset() {
   DCHECK(decoder_.get());
   decoder_->Reset();
 }
 
-void PlatformVideoDecoderImpl::Destroy() {
+void PlatformVideoDecoder::Destroy() {
   if (decoder_)
     decoder_.release()->Destroy();
   client_ = NULL;
   delete this;
 }
 
-void PlatformVideoDecoderImpl::NotifyError(
+void PlatformVideoDecoder::NotifyError(
     VideoDecodeAccelerator::Error error) {
   DCHECK(RenderThreadImpl::current());
   client_->NotifyError(error);
 }
 
-void PlatformVideoDecoderImpl::ProvidePictureBuffers(
+void PlatformVideoDecoder::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
     const gfx::Size& dimensions,
     uint32 texture_target) {
@@ -95,32 +94,32 @@ void PlatformVideoDecoderImpl::ProvidePictureBuffers(
                                  texture_target);
 }
 
-void PlatformVideoDecoderImpl::DismissPictureBuffer(int32 picture_buffer_id) {
+void PlatformVideoDecoder::DismissPictureBuffer(int32 picture_buffer_id) {
   DCHECK(RenderThreadImpl::current());
   client_->DismissPictureBuffer(picture_buffer_id);
 }
 
-void PlatformVideoDecoderImpl::PictureReady(const media::Picture& picture) {
+void PlatformVideoDecoder::PictureReady(const media::Picture& picture) {
   DCHECK(RenderThreadImpl::current());
   client_->PictureReady(picture);
 }
 
-void PlatformVideoDecoderImpl::NotifyInitializeDone() {
+void PlatformVideoDecoder::NotifyInitializeDone() {
   NOTREACHED() << "GpuVideoDecodeAcceleratorHost::Initialize is synchronous!";
 }
 
-void PlatformVideoDecoderImpl::NotifyEndOfBitstreamBuffer(
+void PlatformVideoDecoder::NotifyEndOfBitstreamBuffer(
   int32 bitstream_buffer_id) {
   DCHECK(RenderThreadImpl::current());
   client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
 }
 
-void PlatformVideoDecoderImpl::NotifyFlushDone() {
+void PlatformVideoDecoder::NotifyFlushDone() {
   DCHECK(RenderThreadImpl::current());
   client_->NotifyFlushDone();
 }
 
-void PlatformVideoDecoderImpl::NotifyResetDone() {
+void PlatformVideoDecoder::NotifyResetDone() {
   DCHECK(RenderThreadImpl::current());
   client_->NotifyResetDone();
 }

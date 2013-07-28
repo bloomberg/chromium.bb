@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -107,13 +106,6 @@ class PPB_TCPSocket_Private_Impl;
 // PPAPI plugins.
 class PluginDelegate {
  public:
-  // Interface for PlatformVideoDecoder is directly inherited from general media
-  // VideoDecodeAccelerator interface.
-  class PlatformVideoDecoder : public media::VideoDecodeAccelerator {
-   public:
-    virtual ~PlatformVideoDecoder() {}
-  };
-
   // Provides access to the ppapi broker.
   class Broker {
    public:
@@ -174,11 +166,6 @@ class PluginDelegate {
   // couldn't be loaded.
   virtual WebKit::WebPlugin* CreatePluginReplacement(
       const base::FilePath& file_path) = 0;
-
-  // The caller will own the pointer returned from this.
-  virtual PlatformVideoDecoder* CreateVideoDecoder(
-      media::VideoDecodeAccelerator::Client* client,
-      int32 command_buffer_route_id) = 0;
 
   // Get audio hardware output sample rate.
   virtual uint32_t GetAudioHardwareOutputSampleRate() = 0;
