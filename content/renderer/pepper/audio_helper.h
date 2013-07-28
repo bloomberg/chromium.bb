@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
@@ -17,15 +16,15 @@
 
 namespace content {
 
-class AudioHelper : public PluginDelegate::PlatformAudioOutputClient {
+class AudioHelper {
  public:
   AudioHelper();
   virtual ~AudioHelper();
 
-  // |PluginDelegate::PlatformAudioOutputClient| implementation.
-  virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
-                             size_t shared_memory_size_,
-                             base::SyncSocket::Handle socket) OVERRIDE;
+  // Called when the stream is created.
+  void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
+                     size_t shared_memory_size_,
+                     base::SyncSocket::Handle socket);
 
   void SetCreateCallback(
       scoped_refptr< ::ppapi::TrackedCallback> create_callback);

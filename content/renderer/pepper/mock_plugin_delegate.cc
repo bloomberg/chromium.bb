@@ -92,13 +92,6 @@ uint32_t MockPluginDelegate::GetAudioHardwareOutputBufferSize() {
   return 0;
 }
 
-MockPluginDelegate::PlatformAudioOutput* MockPluginDelegate::CreateAudioOutput(
-    uint32_t sample_rate,
-    uint32_t sample_count,
-    PlatformAudioOutputClient* client) {
-  return NULL;
-}
-
 MockPluginDelegate::Broker* MockPluginDelegate::ConnectToBroker(
     PPB_Broker_Impl* client) {
   return NULL;

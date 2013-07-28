@@ -141,10 +141,6 @@ class PepperPluginDelegateImpl
       const base::FilePath& file_path) OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputSampleRate() OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputBufferSize() OVERRIDE;
-  virtual PlatformAudioOutput* CreateAudioOutput(
-      uint32_t sample_rate,
-      uint32_t sample_count,
-      PlatformAudioOutputClient* client) OVERRIDE;
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id) OVERRIDE;

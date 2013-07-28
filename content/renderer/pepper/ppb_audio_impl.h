@@ -10,7 +10,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "content/renderer/pepper/audio_helper.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
@@ -20,6 +19,7 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 
 namespace content {
+class PepperPlatformAudioOutput;
 
 // Some of the backend functionality of this class is implemented by the
 // PPB_Audio_Shared so it can be shared with the proxy.
@@ -71,7 +71,7 @@ class PPB_Audio_Impl : public ::ppapi::Resource,
 
   // PluginDelegate audio object that we delegate audio IPC through. We don't
   // own this pointer but are responsible for calling Shutdown on it.
-  PluginDelegate::PlatformAudioOutput* audio_;
+  PepperPlatformAudioOutput* audio_;
 
   // Track frame count for passing on to PPB_Audio_Shared::SetStreamInfo().
   int sample_frame_count_;

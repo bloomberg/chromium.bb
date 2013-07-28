@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_INSTANCE_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_INSTANCE_IMPL_H_
 
+#include <list>
 #include <set>
 #include <string>
 #include <vector>

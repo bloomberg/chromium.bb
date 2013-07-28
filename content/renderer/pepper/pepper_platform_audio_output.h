@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "media/audio/audio_output_ipc.h"
 
 namespace media {
@@ -20,24 +19,32 @@ class MessageLoopProxy;
 }
 
 namespace content {
+class AudioHelper;
 
-class PepperPlatformAudioOutputImpl
-    : public PluginDelegate::PlatformAudioOutput,
-      public media::AudioOutputIPCDelegate,
-      public base::RefCountedThreadSafe<PepperPlatformAudioOutputImpl> {
+class PepperPlatformAudioOutput
+    : public media::AudioOutputIPCDelegate,
+      public base::RefCountedThreadSafe<PepperPlatformAudioOutput> {
  public:
   // Factory function, returns NULL on failure. StreamCreated() will be called
   // when the stream is created.
-  static PepperPlatformAudioOutputImpl* Create(
-      int sample_rate,
-      int frames_per_buffer,
-      int source_render_view_id,
-      PluginDelegate::PlatformAudioOutputClient* client);
+  static PepperPlatformAudioOutput* Create(int sample_rate,
+                                           int frames_per_buffer,
+                                           int source_render_view_id,
+                                           AudioHelper* client);
 
-  // PlatformAudioOutput implementation (called on main thread).
-  virtual bool StartPlayback() OVERRIDE;
-  virtual bool StopPlayback() OVERRIDE;
-  virtual void ShutDown() OVERRIDE;
+  // The following three methods are all called on main thread.
+
+  // Starts the playback. Returns false on error or if called before the
+  // stream is created or after the stream is closed.
+  bool StartPlayback();
+
+  // Stops the playback. Returns false on error or if called before the stream
+  // is created or after the stream is closed.
+  bool StopPlayback();
+
+  // Closes the stream. Make sure to call this before the object is
+  // destructed.
+  void ShutDown();
 
   // media::AudioOutputIPCDelegate implementation.
   virtual void OnStateChanged(
@@ -48,18 +55,17 @@ class PepperPlatformAudioOutputImpl
   virtual void OnIPCClosed() OVERRIDE;
 
  protected:
-  virtual ~PepperPlatformAudioOutputImpl();
+  virtual ~PepperPlatformAudioOutput();
 
  private:
-  friend class base::RefCountedThreadSafe<PepperPlatformAudioOutputImpl>;
+  friend class base::RefCountedThreadSafe<PepperPlatformAudioOutput>;
 
-  PepperPlatformAudioOutputImpl();
+  PepperPlatformAudioOutput();
 
-  bool Initialize(
-      int sample_rate,
-      int frames_per_buffer,
-      int source_render_view_id,
-      PluginDelegate::PlatformAudioOutputClient* client);
+  bool Initialize(int sample_rate,
+                  int frames_per_buffer,
+                  int source_render_view_id,
+                  AudioHelper* client);
 
   // I/O thread backends to above functions.
   void InitializeOnIOThread(const media::AudioParameters& params);
@@ -69,7 +75,7 @@ class PepperPlatformAudioOutputImpl
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.
-  PluginDelegate::PlatformAudioOutputClient* client_;
+  AudioHelper* client_;
 
   // Used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
   // I/O thread except to send messages and get the message loop.
@@ -78,7 +84,7 @@ class PepperPlatformAudioOutputImpl
   scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioOutputImpl);
+  DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioOutput);
 };
 
 }  // namespace content

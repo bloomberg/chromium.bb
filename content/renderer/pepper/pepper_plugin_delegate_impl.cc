@@ -48,7 +48,6 @@
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
-#include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
@@ -653,16 +652,6 @@ uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputSampleRate() {
 uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputBufferSize() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread->GetAudioHardwareConfig()->GetOutputBufferSize();
-}
-
-PluginDelegate::PlatformAudioOutput*
-    PepperPluginDelegateImpl::CreateAudioOutput(
-        uint32_t sample_rate,
-        uint32_t sample_count,
-        PluginDelegate::PlatformAudioOutputClient* client) {
-  return PepperPlatformAudioOutputImpl::Create(
-      static_cast<int>(sample_rate), static_cast<int>(sample_count),
-      GetRoutingID(), client);
 }
 
 // If a broker has not already been created for this plugin, creates one.

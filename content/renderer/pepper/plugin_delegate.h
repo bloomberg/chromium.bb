@@ -14,7 +14,6 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/process/process.h"
-#include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
@@ -108,34 +107,6 @@ class PPB_TCPSocket_Private_Impl;
 // PPAPI plugins.
 class PluginDelegate {
  public:
-  class PlatformAudioOutputClient {
-   public:
-    virtual ~PlatformAudioOutputClient() {}
-
-    // Called when the stream is created.
-    virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
-                               size_t shared_memory_size,
-                               base::SyncSocket::Handle socket) = 0;
-  };
-
-  class PlatformAudioOutput {
-   public:
-    // Starts the playback. Returns false on error or if called before the
-    // stream is created or after the stream is closed.
-    virtual bool StartPlayback() = 0;
-
-    // Stops the playback. Returns false on error or if called before the stream
-    // is created or after the stream is closed.
-    virtual bool StopPlayback() = 0;
-
-    // Closes the stream. Make sure to call this before the object is
-    // destructed.
-    virtual void ShutDown() = 0;
-
-   protected:
-    virtual ~PlatformAudioOutput() {}
-  };
-
   // Interface for PlatformVideoDecoder is directly inherited from general media
   // VideoDecodeAccelerator interface.
   class PlatformVideoDecoder : public media::VideoDecodeAccelerator {
@@ -214,13 +185,6 @@ class PluginDelegate {
 
   // Get audio hardware output buffer size.
   virtual uint32_t GetAudioHardwareOutputBufferSize() = 0;
-
-  // The caller is responsible for calling Shutdown() on the returned pointer
-  // to clean up the corresponding resources allocated during this call.
-  virtual PlatformAudioOutput* CreateAudioOutput(
-      uint32_t sample_rate,
-      uint32_t sample_count,
-      PlatformAudioOutputClient* client) = 0;
 
   // A pointer is returned immediately, but it is not ready to be used until
   // BrokerConnected has been called.

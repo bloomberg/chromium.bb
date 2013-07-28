@@ -6,7 +6,10 @@
 
 #include "base/logging.h"
 #include "content/renderer/pepper/common.h"
+#include "content/renderer/pepper/pepper_platform_audio_output.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
+#include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_output_controller.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio.h"
@@ -71,14 +74,16 @@ bool PPB_Audio_Impl::Init(PP_Resource config,
     return false;
   SetCallback(callback, user_data);
 
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
-  if (!plugin_delegate)
+  PepperPluginInstanceImpl* instance = ResourceHelper::GetPluginInstance(this);
+  if (!instance)
     return false;
 
   // When the stream is created, we'll get called back on StreamCreated().
   CHECK(!audio_);
-  audio_ = plugin_delegate->CreateAudioOutput(
-      enter.object()->GetSampleRate(), enter.object()->GetSampleFrameCount(),
+  audio_ = PepperPlatformAudioOutput::Create(
+      static_cast<int>(enter.object()->GetSampleRate()),
+      static_cast<int>(enter.object()->GetSampleFrameCount()),
+      instance->GetRenderView()->GetRoutingID(),
       this);
   sample_frame_count_ = enter.object()->GetSampleFrameCount();
   return audio_ != NULL;
@@ -119,14 +124,16 @@ int32_t PPB_Audio_Impl::Open(
     return PP_ERROR_FAILED;
   config_ = config;
 
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
-  if (!plugin_delegate)
+  PepperPluginInstanceImpl* instance = ResourceHelper::GetPluginInstance(this);
+  if (!instance)
     return PP_ERROR_FAILED;
 
   // When the stream is created, we'll get called back on StreamCreated().
   DCHECK(!audio_);
-  audio_ = plugin_delegate->CreateAudioOutput(
-      enter.object()->GetSampleRate(), enter.object()->GetSampleFrameCount(),
+  audio_ = PepperPlatformAudioOutput::Create(
+      static_cast<int>(enter.object()->GetSampleRate()),
+      static_cast<int>(enter.object()->GetSampleFrameCount()),
+      instance->GetRenderView()->GetRoutingID(),
       this);
   if (!audio_)
     return PP_ERROR_FAILED;

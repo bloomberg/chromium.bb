@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
+#include "content/renderer/pepper/pepper_platform_audio_output.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -11,65 +11,64 @@
 #include "content/child/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_message_filter.h"
+#include "content/renderer/pepper/audio_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_hardware_config.h"
 
 namespace content {
 
 // static
-PepperPlatformAudioOutputImpl* PepperPlatformAudioOutputImpl::Create(
+PepperPlatformAudioOutput* PepperPlatformAudioOutput::Create(
     int sample_rate,
     int frames_per_buffer,
     int source_render_view_id,
-    PluginDelegate::PlatformAudioOutputClient* client) {
-  scoped_refptr<PepperPlatformAudioOutputImpl> audio_output(
-      new PepperPlatformAudioOutputImpl());
+    AudioHelper* client) {
+  scoped_refptr<PepperPlatformAudioOutput> audio_output(
+      new PepperPlatformAudioOutput());
   if (audio_output->Initialize(sample_rate, frames_per_buffer,
                                source_render_view_id, client)) {
     // Balanced by Release invoked in
-    // PepperPlatformAudioOutputImpl::ShutDownOnIOThread().
+    // PepperPlatformAudioOutput::ShutDownOnIOThread().
     audio_output->AddRef();
     return audio_output.get();
   }
   return NULL;
 }
 
-bool PepperPlatformAudioOutputImpl::StartPlayback() {
+bool PepperPlatformAudioOutput::StartPlayback() {
   if (ipc_) {
     io_message_loop_proxy_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutputImpl::StartPlaybackOnIOThread,
-                   this));
+        base::Bind(&PepperPlatformAudioOutput::StartPlaybackOnIOThread, this));
     return true;
   }
   return false;
 }
 
-bool PepperPlatformAudioOutputImpl::StopPlayback() {
+bool PepperPlatformAudioOutput::StopPlayback() {
   if (ipc_) {
     io_message_loop_proxy_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutputImpl::StopPlaybackOnIOThread,
-                   this));
+        base::Bind(&PepperPlatformAudioOutput::StopPlaybackOnIOThread, this));
     return true;
   }
   return false;
 }
 
-void PepperPlatformAudioOutputImpl::ShutDown() {
+void PepperPlatformAudioOutput::ShutDown() {
   // Called on the main thread to stop all audio callbacks. We must only change
   // the client on the main thread, and the delegates from the I/O thread.
   client_ = NULL;
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioOutputImpl::ShutDownOnIOThread, this));
+      base::Bind(&PepperPlatformAudioOutput::ShutDownOnIOThread, this));
 }
 
-void PepperPlatformAudioOutputImpl::OnStateChanged(
+void PepperPlatformAudioOutput::OnStateChanged(
     media::AudioOutputIPCDelegate::State state) {
 }
 
-void PepperPlatformAudioOutputImpl::OnStreamCreated(
+void PepperPlatformAudioOutput::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     int length) {
@@ -90,33 +89,33 @@ void PepperPlatformAudioOutputImpl::OnStreamCreated(
       client_->StreamCreated(handle, length, socket_handle);
   } else {
     main_message_loop_proxy_->PostTask(FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutputImpl::OnStreamCreated, this,
-                   handle, socket_handle, length));
+        base::Bind(&PepperPlatformAudioOutput::OnStreamCreated, this, handle,
+                   socket_handle, length));
   }
 }
 
-void PepperPlatformAudioOutputImpl::OnIPCClosed() {
+void PepperPlatformAudioOutput::OnIPCClosed() {
   ipc_.reset();
 }
 
-PepperPlatformAudioOutputImpl::~PepperPlatformAudioOutputImpl() {
+PepperPlatformAudioOutput::~PepperPlatformAudioOutput() {
   // Make sure we have been shut down. Warning: this will usually happen on
   // the I/O thread!
   DCHECK(!ipc_);
   DCHECK(!client_);
 }
 
-PepperPlatformAudioOutputImpl::PepperPlatformAudioOutputImpl()
+PepperPlatformAudioOutput::PepperPlatformAudioOutput()
     : client_(NULL),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
       io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()) {
 }
 
-bool PepperPlatformAudioOutputImpl::Initialize(
+bool PepperPlatformAudioOutput::Initialize(
     int sample_rate,
     int frames_per_buffer,
     int source_render_view_id,
-    PluginDelegate::PlatformAudioOutputClient* client) {
+    AudioHelper* client) {
   DCHECK(client);
   client_ = client;
 
@@ -131,12 +130,12 @@ bool PepperPlatformAudioOutputImpl::Initialize(
 
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioOutputImpl::InitializeOnIOThread,
-                 this, params));
+      base::Bind(&PepperPlatformAudioOutput::InitializeOnIOThread, this,
+                 params));
   return true;
 }
 
-void PepperPlatformAudioOutputImpl::InitializeOnIOThread(
+void PepperPlatformAudioOutput::InitializeOnIOThread(
     const media::AudioParameters& params) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   const int kSessionId = 0;
@@ -144,19 +143,19 @@ void PepperPlatformAudioOutputImpl::InitializeOnIOThread(
     ipc_->CreateStream(this, params, kSessionId);
 }
 
-void PepperPlatformAudioOutputImpl::StartPlaybackOnIOThread() {
+void PepperPlatformAudioOutput::StartPlaybackOnIOThread() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (ipc_)
     ipc_->PlayStream();
 }
 
-void PepperPlatformAudioOutputImpl::StopPlaybackOnIOThread() {
+void PepperPlatformAudioOutput::StopPlaybackOnIOThread() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (ipc_)
     ipc_->PauseStream();
 }
 
-void PepperPlatformAudioOutputImpl::ShutDownOnIOThread() {
+void PepperPlatformAudioOutput::ShutDownOnIOThread() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   // Make sure we don't call shutdown more than once.
