@@ -37,15 +37,20 @@ public class JniInterface {
     /** Whether we've already loaded the library. */
     private static boolean sLoaded = false;
 
-    /** To be called once from the main Activity. */
+    /**
+     * To be called once from the main Activity. Any subsequent calls will update the application
+     * context, but not reload the library. This is useful e.g. when the activity is closed and the
+     * user later wants to return to the application.
+     */
     public static void loadLibrary(Activity context) {
+        sContext = context;
+
         synchronized(JniInterface.class) {
             if (sLoaded) return;
         }
 
         System.loadLibrary("remoting_client_jni");
         loadNative(context);
-        sContext = context;
         sLoaded = true;
     }
 
@@ -163,7 +168,10 @@ public class JniInterface {
         pinPrompt.show();
     }
 
-    /** Sets the redraw callback to the provided functor. */
+    /**
+     * Sets the redraw callback to the provided functor. Provide a value of null whenever the
+     * window is no longer visible so that we don't continue to draw onto it.
+     */
     public static void provideRedrawCallback(Runnable redrawCallback) {
         sRedrawCallback = redrawCallback;
     }
@@ -178,9 +186,10 @@ public class JniInterface {
         return true;
     }
 
-    /** Performs the redrawing callback. */
+    /** Performs the redrawing callback. This is a no-op if the window isn't visible. */
     private static void redrawGraphicsInternal() {
-        sRedrawCallback.run();
+        if (sRedrawCallback != null)
+            sRedrawCallback.run();
     }
 
     /**

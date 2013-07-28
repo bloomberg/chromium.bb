@@ -73,8 +73,8 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
     private int mMouseButton;
     private boolean mMousePressed;
 
-    /** Whether the device has just been rotated, necessitating a canvas redraw. */
-    private boolean mJustRotated;
+    /** Whether the canvas needs to be redrawn. The update occurs when its size is next updated. */
+    private boolean mCanvasNeedsRedraw;
 
     public DesktopView(Context context) {
         super(context);
@@ -94,7 +94,7 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
         mMouseButton = BUTTON_UNDEFINED;
         mMousePressed = false;
 
-        mJustRotated = false;
+        mCanvasNeedsRedraw = false;
     }
 
     /**
@@ -210,8 +210,8 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
     }
 
     /** Causes the canvas to be redrawn the next time our surface changes. */
-    public void announceScreenRotation() {
-        mJustRotated = true;
+    public void requestCanvasRedraw() {
+        mCanvasNeedsRedraw = true;
     }
 
     /**
@@ -227,10 +227,9 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
             mConstraint = Constraint.UNDEFINED;
         }
 
-        // If the size actually *changed*, we need to redraw the canvas.
-        if (mJustRotated) {
+        if (mCanvasNeedsRedraw) {
             JniInterface.redrawGraphics();
-            mJustRotated = false;
+            mCanvasNeedsRedraw = false;
         }
     }
 
@@ -241,10 +240,17 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
         JniInterface.provideRedrawCallback(this);
     }
 
-    /** Called when the canvas is finally destroyed. */
+    /**
+     * Called when the canvas is finally destroyed. Marks the canvas as needing a redraw so that it
+     * will not be blank if the user later switches back to our window.
+     */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.i("deskview", "DesktopView.surfaceDestroyed(...)");
+        JniInterface.provideRedrawCallback(null);
+
+        // Redraw the desktop as soon as the user switches back to this window.
+        mCanvasNeedsRedraw = true;
     }
 
     /** Called when a mouse action is made. */

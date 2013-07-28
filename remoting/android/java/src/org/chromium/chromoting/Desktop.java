@@ -36,8 +36,6 @@ public class Desktop extends Activity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-
-        // Redraw the canvas on SurfaceHolder's next callback.
-        remoteHostDesktop.announceScreenRotation();
+        remoteHostDesktop.requestCanvasRedraw();
     }
 }
