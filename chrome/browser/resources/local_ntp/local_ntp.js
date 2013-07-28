@@ -791,13 +791,11 @@ function disposeNtp(wasFakeboxInput) {
 
 
 /**
- * Restores the NTP (reloads the custom theme, re-enables the fakebox and
- * unhides the logo.)
+ * Restores the NTP (re-enables the fakebox and unhides the logo.)
  */
 function restoreNtp() {
   setFakeboxActive(true);
   setFakeboxAndLogoVisibility(true);
-  onThemeChange();
 }
 
 
