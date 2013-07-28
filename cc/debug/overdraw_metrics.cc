@@ -39,7 +39,7 @@ static inline float PolygonArea(gfx::PointF points[8], int num_points) {
   float area = 0;
   for (int i = 0; i < num_points; ++i)
     area += WedgeProduct(points[i], points[(i+1)%num_points]);
-  return fabs(0.5f * area);
+  return std::abs(0.5f * area);
 }
 
 // Takes a given quad, maps it by the given transformation, and gives the area

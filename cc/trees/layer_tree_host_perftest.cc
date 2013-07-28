@@ -268,7 +268,7 @@ class PageScaleImplSidePaintingPerfTest : public ImplSidePaintingPerfTest {
                                     : time_in_two_intervals;
     // Normalize time to -1..1.
     float normalized = 2.f * time_in_one_interval - 1.f;
-    float scale_factor = std::fabs(normalized) * (max_scale_ - 1.f) + 1.f;
+    float scale_factor = std::abs(normalized) * (max_scale_ - 1.f) + 1.f;
     float total_scale = normalized < 0.f ? 1.f / scale_factor : scale_factor;
 
     float desired_delta =
