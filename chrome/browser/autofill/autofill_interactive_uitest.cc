@@ -95,6 +95,7 @@ class AutofillManagerTestDelegateImpl
   }
 
   void Wait() {
+    LOG(INFO) << "Wait";
     loop_runner_->Run();
   }
 
@@ -299,6 +300,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   }
 
   void SendKeyToPageAndWait(ui::KeyboardCode key) {
+    LOG(INFO) << "SendKeyToPageAndWait";
+
     test_delegate_.Reset();
     content::SimulateKeyPress(
         browser()->tab_strip_model()->GetActiveWebContents(),

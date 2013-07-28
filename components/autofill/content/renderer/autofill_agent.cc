@@ -141,6 +141,9 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
       has_new_forms_for_browser_(false),
       ignore_text_changes_(false),
       weak_ptr_factory_(this) {
+  // TODO(csharp): Remove once Autofill test flakiness is fixed.
+  LOG(INFO) << "AutofillAgent::AutofillAgent";
+
   render_view->GetWebView()->setAutofillClient(this);
 
   // The PageClickTracker is a RenderViewObserver, and hence will be freed when
@@ -148,7 +151,10 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
   new PageClickTracker(render_view, this);
 }
 
-AutofillAgent::~AutofillAgent() {}
+AutofillAgent::~AutofillAgent() {
+  // TODO(csharp): Remove once Autofill test flakiness is fixed.
+  LOG(INFO) << "AutofillAgent::~AutofillAgent";
+}
 
 bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -418,6 +424,8 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
 
 void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
                                                const WebKeyboardEvent& event) {
+  // TODO(csharp): Remove once Autofill test flakiness is fixed.
+  LOG(INFO) << "AutofillAgent::textFieldDidReceiveKeyDown";
   if (password_autofill_agent_->TextFieldHandlingKeyDown(element, event)) {
     element_ = element;
     return;
