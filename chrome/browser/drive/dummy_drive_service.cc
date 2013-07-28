@@ -25,7 +25,7 @@ DummyDriveService::DummyDriveService() {}
 
 DummyDriveService::~DummyDriveService() {}
 
-void DummyDriveService::Initialize(Profile* profile) {}
+void DummyDriveService::Initialize() {}
 
 void DummyDriveService::AddObserver(DriveServiceObserver* observer) {}
 

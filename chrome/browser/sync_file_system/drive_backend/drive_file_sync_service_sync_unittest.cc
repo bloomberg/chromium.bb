@@ -91,7 +91,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     local_sync_service_.reset(new LocalFileSyncService(&profile_));
 
     fake_drive_service_ = new drive::FakeDriveService();
-    fake_drive_service_->Initialize(&profile_);
+    fake_drive_service_->Initialize();
     ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
         "sync_file_system/account_metadata.json"));
     ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
@@ -117,7 +117,6 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     EXPECT_TRUE(created);
 
     scoped_ptr<APIUtil> api_util(APIUtil::CreateForTesting(
-        &profile_,
         fake_drive_helper_->base_dir_path().AppendASCII("tmp"),
         scoped_ptr<drive::DriveServiceInterface>(fake_drive_service_),
         scoped_ptr<drive::DriveUploaderInterface>(drive_uploader_)));

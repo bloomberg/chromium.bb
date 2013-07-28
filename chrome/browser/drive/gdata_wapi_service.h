@@ -18,7 +18,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 
 class GURL;
-class Profile;
+class OAuth2TokenService;
 
 namespace base {
 class FilePath;
@@ -42,13 +42,15 @@ namespace drive {
 class GDataWapiService : public DriveServiceInterface,
                          public google_apis::AuthServiceObserver {
  public:
+  // |oauth2_token_service| is used for obtaining OAuth2 access tokens.
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |blocking_task_runner| is used to run blocking tasks (like parsing JSON).
   // |base_url| is used to generate URLs for communicating with the WAPI
   // |base_download_url| is used to generate URLs for downloading file with WAPI
   // |custom_user_agent| is used for the User-Agent header in HTTP
   // requests issued through the service if the value is not empty.
-  GDataWapiService(net::URLRequestContextGetter* url_request_context_getter,
+  GDataWapiService(OAuth2TokenService* oauth2_token_service,
+                   net::URLRequestContextGetter* url_request_context_getter,
                    base::TaskRunner* blocking_task_runner,
                    const GURL& base_url,
                    const GURL& base_download_url,
@@ -56,7 +58,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual ~GDataWapiService();
 
   // DriveServiceInterface Overrides
-  virtual void Initialize(Profile* profile) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanSendRequest() const OVERRIDE;
@@ -172,6 +174,7 @@ class GDataWapiService : public DriveServiceInterface,
   // AuthService::Observer override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
+  OAuth2TokenService* oauth2_token_service_;  // Not owned.
   net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
   scoped_ptr<google_apis::RequestSender> sender_;

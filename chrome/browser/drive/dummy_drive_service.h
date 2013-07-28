@@ -18,7 +18,7 @@ class DummyDriveService : public DriveServiceInterface {
   virtual ~DummyDriveService();
 
   // DriveServiceInterface Overrides
-  virtual void Initialize(Profile* profile) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanSendRequest() const OVERRIDE;

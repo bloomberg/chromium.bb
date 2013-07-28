@@ -263,14 +263,15 @@ const char kDriveApiRootDirectoryResourceId[] = "root";
 }  // namespace
 
 DriveAPIService::DriveAPIService(
+    OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* url_request_context_getter,
     base::TaskRunner* blocking_task_runner,
     const GURL& base_url,
     const GURL& base_download_url,
     const std::string& custom_user_agent)
-    : url_request_context_getter_(url_request_context_getter),
+    : oauth2_token_service_(oauth2_token_service),
+      url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
-      profile_(NULL),
       url_generator_(base_url, base_download_url),
       custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -282,16 +283,15 @@ DriveAPIService::~DriveAPIService() {
     sender_->auth_service()->RemoveObserver(this);
 }
 
-void DriveAPIService::Initialize(Profile* profile) {
+void DriveAPIService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  profile_ = profile;
 
   std::vector<std::string> scopes;
   scopes.push_back(kDriveScope);
   scopes.push_back(kDriveAppsReadonlyScope);
   sender_.reset(new RequestSender(
      new google_apis::AuthService(
-         profile, url_request_context_getter_, scopes),
+         oauth2_token_service_, url_request_context_getter_, scopes),
      url_request_context_getter_,
      blocking_task_runner_.get(),
      custom_user_agent_));

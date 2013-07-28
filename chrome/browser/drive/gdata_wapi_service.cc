@@ -156,12 +156,14 @@ void ParseAppListAndRun(
 }  // namespace
 
 GDataWapiService::GDataWapiService(
+    OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* url_request_context_getter,
     base::TaskRunner* blocking_task_runner,
     const GURL& base_url,
     const GURL& base_download_url,
     const std::string& custom_user_agent)
-    : url_request_context_getter_(url_request_context_getter),
+    : oauth2_token_service_(oauth2_token_service),
+      url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
       url_generator_(base_url, base_download_url),
       custom_user_agent_(custom_user_agent) {
@@ -174,7 +176,7 @@ GDataWapiService::~GDataWapiService() {
     sender_->auth_service()->RemoveObserver(this);
 }
 
-void GDataWapiService::Initialize(Profile* profile) {
+void GDataWapiService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<std::string> scopes;
@@ -184,7 +186,8 @@ void GDataWapiService::Initialize(Profile* profile) {
   // Drive App scope is required for even WAPI v3 apps access.
   scopes.push_back(kDriveAppsScope);
   sender_.reset(new RequestSender(
-      new AuthService(profile, url_request_context_getter_, scopes),
+      new AuthService(
+          oauth2_token_service_, url_request_context_getter_, scopes),
       url_request_context_getter_,
       blocking_task_runner_.get(),
       custom_user_agent_));

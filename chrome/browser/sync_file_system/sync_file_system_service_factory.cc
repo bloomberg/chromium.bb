@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
@@ -41,6 +42,7 @@ SyncFileSystemServiceFactory::SyncFileSystemServiceFactory()
         "SyncFileSystemService",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(drive::DriveNotificationManagerFactory::GetInstance());
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 SyncFileSystemServiceFactory::~SyncFileSystemServiceFactory() {}

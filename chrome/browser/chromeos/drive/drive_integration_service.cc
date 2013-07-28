@@ -32,6 +32,8 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
@@ -152,10 +154,14 @@ DriveIntegrationService::DriveIntegrationService(
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
       blocking_pool->GetSequenceToken());
 
+  OAuth2TokenService* oauth_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+
   if (test_drive_service) {
     drive_service_.reset(test_drive_service);
   } else if (util::IsDriveV2ApiEnabled()) {
     drive_service_.reset(new DriveAPIService(
+        oauth_service,
         g_browser_process->system_request_context(),
         blocking_task_runner_.get(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
@@ -163,6 +169,7 @@ DriveIntegrationService::DriveIntegrationService(
         GetDriveUserAgent()));
   } else {
     drive_service_.reset(new GDataWapiService(
+        oauth_service,
         g_browser_process->system_request_context(),
         blocking_task_runner_.get(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
@@ -208,7 +215,7 @@ DriveIntegrationService::~DriveIntegrationService() {
 
 void DriveIntegrationService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  drive_service_->Initialize(profile_);
+  drive_service_->Initialize();
   file_system_->Initialize();
 
   base::PostTaskAndReplyWithResult(
@@ -453,6 +460,7 @@ DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "DriveIntegrationService",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(DriveNotificationManagerFactory::GetInstance());
   DependsOn(DownloadServiceFactory::GetInstance());
 }

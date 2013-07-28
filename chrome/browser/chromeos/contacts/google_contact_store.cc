@@ -17,6 +17,8 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -129,7 +131,8 @@ void GoogleContactStore::Init() {
     gdata_service_.reset(new GDataContactsService(
         url_request_context_getter_,
         new google_apis::AuthService(
-            profile_, url_request_context_getter_, scopes)));
+            ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
+            url_request_context_getter_, scopes)));
   }
 
   base::FilePath db_path = profile_->GetPath().Append(kDatabaseDirectoryName);

@@ -35,7 +35,7 @@ class AuthService : public AuthServiceInterface,
   // URLFetcher.
   //
   // |scopes| specifies OAuth2 scopes.
-  AuthService(Profile* profile,
+  AuthService(OAuth2TokenService* oauth2_token_service,
               net::URLRequestContextGetter* url_request_context_getter,
               const std::vector<std::string>& scopes);
   virtual ~AuthService();
@@ -76,7 +76,7 @@ class AuthService : public AuthServiceInterface,
                        GDataErrorCode error,
                        const std::string& access_token);
 
-  Profile* profile_;
+  OAuth2TokenService* oauth2_token_service_;
   net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
   bool has_refresh_token_;
   std::string access_token_;

@@ -78,7 +78,7 @@ class FakeDriveService : public DriveServiceInterface {
   static GURL GetFakeLinkUrl(const std::string& resource_id);
 
   // DriveServiceInterface Overrides
-  virtual void Initialize(Profile* profile) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanSendRequest() const OVERRIDE;

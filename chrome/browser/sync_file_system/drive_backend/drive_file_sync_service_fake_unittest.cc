@@ -205,7 +205,6 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
         fake_drive_service_, drive_uploader));
 
     api_util_ = APIUtil::CreateForTesting(
-        profile_.get(),
         fake_drive_helper_->base_dir_path().AppendASCII("tmp"),
         scoped_ptr<DriveServiceInterface>(fake_drive_service_),
         scoped_ptr<DriveUploaderInterface>(drive_uploader)).Pass();

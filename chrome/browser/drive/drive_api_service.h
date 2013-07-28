@@ -16,7 +16,7 @@
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 
 class GURL;
-class Profile;
+class OAuth2TokenService;
 
 namespace base {
 class FilePath;
@@ -39,6 +39,7 @@ namespace drive {
 class DriveAPIService : public DriveServiceInterface,
                         public google_apis::AuthServiceObserver {
  public:
+  // |oauth2_token_service| is used for obtaining OAuth2 access tokens.
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |blocking_task_runner| is used to run blocking tasks (like parsing JSON).
   // |base_url| is used to generate URLs for communication with the drive API.
@@ -47,6 +48,7 @@ class DriveAPIService : public DriveServiceInterface,
   // |custom_user_agent| will be used for the User-Agent header in HTTP
   // requests issues through the service if the value is not empty.
   DriveAPIService(
+      OAuth2TokenService* oauth2_token_service,
       net::URLRequestContextGetter* url_request_context_getter,
       base::TaskRunner* blocking_task_runner,
       const GURL& base_url,
@@ -55,7 +57,7 @@ class DriveAPIService : public DriveServiceInterface,
   virtual ~DriveAPIService();
 
   // DriveServiceInterface Overrides
-  virtual void Initialize(Profile* profile) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanSendRequest() const OVERRIDE;
@@ -171,9 +173,9 @@ class DriveAPIService : public DriveServiceInterface,
   // AuthServiceObserver override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
+  OAuth2TokenService* oauth2_token_service_;
   net::URLRequestContextGetter* url_request_context_getter_;
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
-  Profile* profile_;
   scoped_ptr<google_apis::RequestSender> sender_;
   ObserverList<DriveServiceObserver> observers_;
   google_apis::DriveApiUrlGenerator url_generator_;

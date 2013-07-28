@@ -13,8 +13,6 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -38,7 +36,7 @@ const int kSuccessRatioHistogramMaxValue = 4;  // The max value is exclusive.
 // OAuth2 authorization token retrieval request.
 class AuthRequest : public OAuth2TokenService::Consumer {
  public:
-  AuthRequest(Profile* profile,
+  AuthRequest(OAuth2TokenService* oauth2_token_service,
               net::URLRequestContextGetter* url_request_context_getter,
               const AuthStatusCallback& callback,
               const std::vector<std::string>& scopes);
@@ -61,14 +59,14 @@ class AuthRequest : public OAuth2TokenService::Consumer {
 };
 
 AuthRequest::AuthRequest(
-    Profile* profile,
+    OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* url_request_context_getter,
     const AuthStatusCallback& callback,
     const std::vector<std::string>& scopes)
     : callback_(callback),
       scopes_(scopes.begin(), scopes.end()) {
   DCHECK(!callback_.is_null());
-  request_ = ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+  request_ = oauth2_token_service->
       StartRequestWithContext(url_request_context_getter, scopes_, this);
 }
 
@@ -124,27 +122,23 @@ void AuthRequest::OnGetTokenFailure(const OAuth2TokenService::Request* request,
 }  // namespace
 
 AuthService::AuthService(
-    Profile* profile,
+    OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* url_request_context_getter,
     const std::vector<std::string>& scopes)
-    : profile_(profile),
+    : oauth2_token_service_(oauth2_token_service),
       url_request_context_getter_(url_request_context_getter),
       scopes_(scopes),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(profile);
+  DCHECK(oauth2_token_service);
 
   // Get OAuth2 refresh token (if we have any) and register for its updates.
-  OAuth2TokenService* service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  service->AddObserver(this);
-  has_refresh_token_ = service->RefreshTokenIsAvailable();
+  oauth2_token_service_->AddObserver(this);
+  has_refresh_token_ = oauth2_token_service_->RefreshTokenIsAvailable();
 }
 
 AuthService::~AuthService() {
-  OAuth2TokenService* service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  service->RemoveObserver(this);
+  oauth2_token_service_->RemoveObserver(this);
 }
 
 void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
@@ -158,7 +152,7 @@ void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
                           base::Bind(callback, HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
     // We have refresh token, let's get an access token.
-    new AuthRequest(profile_,
+    new AuthRequest(oauth2_token_service_,
                     url_request_context_getter_,
                     base::Bind(&AuthService::OnAuthCompleted,
                                weak_ptr_factory_.GetWeakPtr(),

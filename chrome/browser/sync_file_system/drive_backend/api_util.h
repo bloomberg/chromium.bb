@@ -52,7 +52,6 @@ class APIUtil : public APIUtilInterface,
   virtual void RemoveObserver(APIUtilObserver* observer) OVERRIDE;
 
   static scoped_ptr<APIUtil> CreateForTesting(
-      Profile* profile,
       const base::FilePath& temp_dir_path,
       scoped_ptr<drive::DriveServiceInterface> drive_service,
       scoped_ptr<drive::DriveUploaderInterface> drive_uploader);
@@ -115,8 +114,7 @@ class APIUtil : public APIUtilInterface,
   friend class APIUtilTest;
 
   // Constructor for test use.
-  APIUtil(Profile* profile,
-          const base::FilePath& temp_dir_path,
+  APIUtil(const base::FilePath& temp_dir_path,
           const GURL& base_url,
           const GURL& base_download_url,
           scoped_ptr<drive::DriveServiceInterface> drive_service,

@@ -20,6 +20,8 @@
 #include "chrome/browser/drive/gdata_wapi_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/common/extensions/extension.h"
@@ -166,8 +168,11 @@ APIUtil::APIUtil(Profile* profile,
                kBaseDownloadUrlForProduction)),
       upload_next_key_(0),
       temp_dir_path_(temp_dir_path) {
+  OAuth2TokenService* oauth_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   if (IsDriveAPIDisabled()) {
     drive_service_.reset(new drive::GDataWapiService(
+        oauth_service,
         profile->GetRequestContext(),
         content::BrowserThread::GetBlockingPool(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
@@ -175,6 +180,7 @@ APIUtil::APIUtil(Profile* profile,
         std::string() /* custom_user_agent */));
   } else {
     drive_service_.reset(new drive::DriveAPIService(
+        oauth_service,
         profile->GetRequestContext(),
         content::BrowserThread::GetBlockingPool(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
@@ -182,7 +188,7 @@ APIUtil::APIUtil(Profile* profile,
         std::string() /* custom_user_agent */));
   }
 
-  drive_service_->Initialize(profile);
+  drive_service_->Initialize();
   drive_service_->AddObserver(this);
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
@@ -191,12 +197,10 @@ APIUtil::APIUtil(Profile* profile,
 }
 
 scoped_ptr<APIUtil> APIUtil::CreateForTesting(
-    Profile* profile,
     const base::FilePath& temp_dir_path,
     scoped_ptr<drive::DriveServiceInterface> drive_service,
     scoped_ptr<drive::DriveUploaderInterface> drive_uploader) {
   return make_scoped_ptr(new APIUtil(
-      profile,
       temp_dir_path,
       GURL(kFakeServerBaseUrl),
       GURL(kFakeDownloadServerBaseUrl),
@@ -204,8 +208,7 @@ scoped_ptr<APIUtil> APIUtil::CreateForTesting(
       drive_uploader.Pass()));
 }
 
-APIUtil::APIUtil(Profile* profile,
-                 const base::FilePath& temp_dir_path,
+APIUtil::APIUtil(const base::FilePath& temp_dir_path,
                  const GURL& base_url,
                  const GURL& base_download_url,
                  scoped_ptr<drive::DriveServiceInterface> drive_service,
@@ -215,7 +218,7 @@ APIUtil::APIUtil(Profile* profile,
       upload_next_key_(0),
       temp_dir_path_(temp_dir_path) {
   drive_service_ = drive_service.Pass();
-  drive_service_->Initialize(profile);
+  drive_service_->Initialize();
   drive_service_->AddObserver(this);
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 

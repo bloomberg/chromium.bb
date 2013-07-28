@@ -17,7 +17,6 @@
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/escape.h"
@@ -217,7 +216,6 @@ class APIUtilTest : public testing::Test {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     api_util_ = APIUtil::CreateForTesting(
-        &profile_,
         temp_dir_.path(),
         scoped_ptr<DriveServiceInterface>(fake_drive_service_),
         scoped_ptr<DriveUploaderInterface>(fake_drive_uploader_));
@@ -328,7 +326,6 @@ class APIUtilTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir temp_dir_;
-  TestingProfile profile_;
   scoped_ptr<APIUtil> api_util_;
   FakeDriveServiceWrapper* fake_drive_service_;
   FakeDriveUploader* fake_drive_uploader_;

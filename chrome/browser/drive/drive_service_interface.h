@@ -11,8 +11,6 @@
 #include "chrome/browser/google_apis/base_requests.h"
 #include "chrome/browser/google_apis/drive_common_callbacks.h"
 
-class Profile;
-
 namespace drive {
 
 // Observer interface for DriveServiceInterface.
@@ -39,8 +37,8 @@ class DriveServiceInterface {
 
   // Common service:
 
-  // Initializes the documents service tied with |profile|.
-  virtual void Initialize(Profile* profile) = 0;
+  // Initializes the documents service.
+  virtual void Initialize() = 0;
 
   // Adds an observer.
   virtual void AddObserver(DriveServiceObserver* observer) = 0;

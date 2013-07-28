@@ -10,7 +10,5 @@ specific_include_rules = {
   "auth_service\.(h|cc)": [
     "!chrome/browser/profiles/profile.h",
     "!chrome/browser/signin/oauth2_token_service.h",
-    "!chrome/browser/signin/profile_oauth2_token_service.h",
-    "!chrome/browser/signin/profile_oauth2_token_service_factory.h",
   ],
 }
