@@ -539,14 +539,6 @@ WebView.prototype.setupExecuteCodeAPI_ = function() {
 };
 
 /**
- * @private
- */
-WebView.prototype.getPermissionTypes_ = function() {
-  var PERMISSION_TYPES = ['media', 'geolocation', 'pointerLock'];
-  return PERMISSION_TYPES.concat(this.maybeGetExperimentalPermissionTypes_());
-};
-
-/**
  * @param {!Object} detail The event details, originated from <object>.
  * @private
  */
@@ -560,7 +552,7 @@ WebView.prototype.setupPermissionEvent_ = function() {
     console.warn(WARNING_MSG_PERMISSION_DENIED.replace('%1', permission));
   };
 
-  var PERMISSION_TYPES = this.getPermissionTypes_();
+  var PERMISSION_TYPES = ['media', 'geolocation', 'pointerLock', 'download'];
 
   var EXPOSED_PERMISSION_EVENT_ATTRIBS = [
       'lastUnlockedBySelf',
@@ -643,14 +635,6 @@ WebView.prototype.setupPermissionEvent_ = function() {
       showWarningMessage(detail.permission);
     }
   });
-};
-
-/**
- * Implemented when the experimental API is available.
- * @private
- */
-WebView.prototype.maybeGetExperimentalPermissionTypes_ = function() {
-  return [];
 };
 
 /**

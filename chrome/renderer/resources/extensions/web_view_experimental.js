@@ -27,14 +27,6 @@ WebView.prototype.maybeSetupExperimentalAPI_ = function() {
 /**
  * @private
  */
-WebView.prototype.maybeGetExperimentalPermissionTypes_ = function() {
-  var PERMISSION_TYPES = ['download'];
-  return PERMISSION_TYPES;
-};
-
-/**
- * @private
- */
 WebView.prototype.setupWebRequestEvents_ = function() {
   var self = this;
   // Populate the WebRequest events from the API definition.
