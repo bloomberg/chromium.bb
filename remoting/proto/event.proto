@@ -52,10 +52,12 @@ message MouseEvent {
   optional bool button_down = 6;
 
   // Mouse wheel information.
-  // These values encode the number of pixels of movement that would result
-  // from the wheel event on the client system.
+  // These values encode the number of pixels and 'ticks' of movement that
+  // would result from the wheel event on the client system.
   optional float wheel_delta_x = 7;
   optional float wheel_delta_y = 8;
+  optional float wheel_ticks_x = 9;
+  optional float wheel_ticks_y = 10;
 }
 
 // Defines an event that sends clipboard data between peers.

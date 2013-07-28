@@ -340,8 +340,15 @@ void InputInjectorLinux::Core::InjectMouseEvent(const MouseEvent& event) {
                          CurrentTime);
   }
 
+  // Older client plugins always send scroll events in pixels, which
+  // must be accumulated host-side. Recent client plugins send both
+  // pixels and ticks with every scroll event, allowing the host to
+  // choose the best model on a per-platform basis. Since we can only
+  // inject ticks on Linux, use them if available.
   int ticks_y = 0;
-  if (event.has_wheel_delta_y()) {
+  if (event.has_wheel_ticks_y()) {
+    ticks_y = event.wheel_ticks_y();
+  } else if (event.has_wheel_delta_y()) {
     wheel_ticks_y_ += event.wheel_delta_y() * kWheelTicksPerPixel;
     ticks_y = static_cast<int>(wheel_ticks_y_);
     wheel_ticks_y_ -= ticks_y;
@@ -352,7 +359,9 @@ void InputInjectorLinux::Core::InjectMouseEvent(const MouseEvent& event) {
   }
 
   int ticks_x = 0;
-  if (event.has_wheel_delta_x()) {
+  if (event.has_wheel_ticks_x()) {
+    ticks_x = event.wheel_ticks_x();
+  } else if (event.has_wheel_delta_x()) {
     wheel_ticks_x_ += event.wheel_delta_x() * kWheelTicksPerPixel;
     ticks_x = static_cast<int>(wheel_ticks_x_);
     wheel_ticks_x_ -= ticks_x;
