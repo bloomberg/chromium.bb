@@ -287,8 +287,7 @@ void AwRenderViewExt::OnSetInitialPageScale(double page_scale_factor) {
 void AwRenderViewExt::OnSetBackgroundColor(SkColor c) {
   if (!render_view() || !render_view()->GetWebView())
     return;
-  // TODO(joth): Uncomment when crrev.com/19883002/ has rolled in.
-  // render_view()->GetWebView()->setBaseBackgroundColor(c);
+  render_view()->GetWebView()->setBaseBackgroundColor(c);
 }
 
 }  // namespace android_webview

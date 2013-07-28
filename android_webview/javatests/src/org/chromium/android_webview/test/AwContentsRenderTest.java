@@ -22,6 +22,8 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.ProxyChangeListener;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,11 +62,24 @@ public class AwContentsRenderTest extends AwTestBase {
         return result;
     }
 
-    void waitForBackgroundColor(final int c) throws Throwable {
-        pollOnUiThread(new Callable<Boolean>() {
+    int sampleBackgroundColorOnUiThread() throws Throwable {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
             @Override
-            public Boolean call() throws Exception {
-                return grabViewToBitmap().getPixel(0, 0) == c;
+            public Integer call() throws Exception {
+                return grabViewToBitmap().getPixel(0, 0);
+            }
+        });
+    }
+
+    boolean waitForBackgroundColor(final int c) throws Throwable {
+        return CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return sampleBackgroundColorOnUiThread() == c;
+                } catch (Throwable e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
     }
@@ -73,31 +88,28 @@ public class AwContentsRenderTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testSetGetBackgroundColor() throws Throwable {
         setBackgroundColorOnUiThread(Color.MAGENTA);
-        waitForBackgroundColor(Color.MAGENTA);
+        assertTrue(waitForBackgroundColor(Color.MAGENTA));
 
         setBackgroundColorOnUiThread(Color.CYAN);
-        waitForBackgroundColor(Color.CYAN);
+        assertTrue(waitForBackgroundColor(Color.CYAN));
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+        assertEquals(Color.CYAN, sampleBackgroundColorOnUiThread());
 
-        // TODO(joth): Remove this bogus check  and replace with commented out block when
-        // AwRenderViewExt::OnSetBackgroundColor() is fully implemented (i.e. when
-        // crrev.com/19883002/ has rolled in)
-        waitForBackgroundColor(Color.WHITE);
+        setBackgroundColorOnUiThread(Color.YELLOW);
+        assertTrue(waitForBackgroundColor(Color.YELLOW));
 
-        // waitForBackgroundColor(Color.CYAN);
-        // setBackgroundColorOnUiThread(Color.YELLOW);
-        // waitForBackgroundColor(Color.YELLOW);
-        // loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-        //     "data:text/html,<html><head><style>body {background-color:#227788}</style></head>" +
-        //     "<body><br>HelloWorld</body></html>");
-        // waitForBackgroundColor(Color.rgb(0x22, 0x77, 0x88));
-        //
-        // // Changing the base background should not override CSS background.
-        // setBackgroundColorOnUiThread(Color.MAGENTA);
-        // Thread.sleep(1000);
-        // waitForBackgroundColor(Color.rgb(0x22, 0x77, 0x88));
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+            "data:text/html,<html><head><style>body {background-color:#227788}</style></head>" +
+            "<body><br>HelloWorld</body></html>");
+        assertTrue(waitForBackgroundColor(Color.rgb(0x22, 0x77, 0x88)));
 
+        // Changing the base background should not override CSS background.
+        setBackgroundColorOnUiThread(Color.MAGENTA);
+        assertEquals(Color.rgb(0x22, 0x77, 0x88), sampleBackgroundColorOnUiThread());
+        // ...setting the background is asynchronous, so pause a bit and retest just to be sure.
+        Thread.sleep(500);
+        assertEquals(Color.rgb(0x22, 0x77, 0x88), sampleBackgroundColorOnUiThread());
     }
 
     @SmallTest
