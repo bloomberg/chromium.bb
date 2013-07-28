@@ -8,9 +8,11 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/resource_helper.h"
+#include "content/renderer/render_view_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/thunk/enter.h"
@@ -20,6 +22,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "webkit/common/webpreferences.h"
 #include "webkit/plugins/plugin_switches.h"
 
 using ppapi::thunk::EnterResourceNoLock;
@@ -240,14 +243,22 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   if (!plugin_instance)
     return false;
 
-  PluginDelegate::PlatformContext3D* share_platform_context = NULL;
+  PlatformContext3D* share_platform_context = NULL;
   if (share_context) {
     PPB_Graphics3D_Impl* share_graphics =
         static_cast<PPB_Graphics3D_Impl*>(share_context);
     share_platform_context = share_graphics->platform_context();
   }
 
-  platform_context_.reset(plugin_instance->CreateContext3D());
+  // If accelerated compositing of plugins is disabled, fail to create a 3D
+  // context, because it won't be visible. This allows graceful fallback in the
+  // modules.
+  const WebPreferences& prefs = static_cast<RenderViewImpl*>(plugin_instance->
+      GetRenderView())->webkit_preferences();
+  if (!prefs.accelerated_compositing_for_plugins_enabled)
+    return false;
+
+  platform_context_.reset(new PlatformContext3D);
   if (!platform_context_)
     return false;
 

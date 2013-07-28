@@ -67,11 +67,6 @@ namespace gfx {
 class Point;
 }
 
-namespace gpu {
-class CommandBuffer;
-struct Mailbox;
-}
-
 namespace ppapi {
 class PepperFilePath;
 class PpapiPermissions;
@@ -113,45 +108,6 @@ class PPB_TCPSocket_Private_Impl;
 // PPAPI plugins.
 class PluginDelegate {
  public:
-  class PlatformContext3D {
-   public:
-    virtual ~PlatformContext3D() {}
-
-    // Initialize the context.
-    virtual bool Init(const int32* attrib_list,
-                      PlatformContext3D* share_context) = 0;
-
-    // Retrieves the mailbox name for the front buffer backing the context.
-    virtual void GetBackingMailbox(::gpu::Mailbox* mailbox) = 0;
-
-    // Returns true if the backing texture is always opaque.
-    virtual bool IsOpaque() = 0;
-
-    // This call will return the address of the command buffer for this context
-    // that is constructed in Initialize() and is valid until this context is
-    // destroyed.
-    virtual ::gpu::CommandBuffer* GetCommandBuffer() = 0;
-
-    // If the command buffer is routed in the GPU channel, return the route id.
-    // Otherwise return 0.
-    virtual int GetCommandBufferRouteId() = 0;
-
-    // Set an optional callback that will be invoked when the context is lost
-    // (e.g. gpu process crash). Takes ownership of the callback.
-    virtual void SetContextLostCallback(
-        const base::Callback<void()>& callback) = 0;
-
-    // Set an optional callback that will be invoked when the GPU process
-    // sends a console message.
-    typedef base::Callback<void(const std::string&, int)>
-        ConsoleMessageCallback;
-    virtual void SetOnConsoleMessageCallback(
-        const ConsoleMessageCallback& callback) = 0;
-
-    // Run the callback once the channel has been flushed.
-    virtual bool Echo(const base::Callback<void()>& callback) = 0;
-  };
-
   class PlatformAudioOutputClient {
    public:
     virtual ~PlatformAudioOutputClient() {}
@@ -247,9 +203,6 @@ class PluginDelegate {
   // couldn't be loaded.
   virtual WebKit::WebPlugin* CreatePluginReplacement(
       const base::FilePath& file_path) = 0;
-
-  // The caller will own the pointer returned from this.
-  virtual PlatformContext3D* CreateContext3D() = 0;
 
   // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(

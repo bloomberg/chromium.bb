@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
+#include "content/renderer/pepper/pepper_platform_context_3d.h"
 
 #include "base/bind.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -20,13 +20,13 @@
 
 namespace content {
 
-PlatformContext3DImpl::PlatformContext3DImpl()
+PlatformContext3D::PlatformContext3D()
     : has_alpha_(false),
       command_buffer_(NULL),
       weak_ptr_factory_(this) {
 }
 
-PlatformContext3DImpl::~PlatformContext3DImpl() {
+PlatformContext3D::~PlatformContext3D() {
   if (command_buffer_) {
     DCHECK(channel_.get());
     channel_->DestroyCommandBuffer(command_buffer_);
@@ -36,8 +36,8 @@ PlatformContext3DImpl::~PlatformContext3DImpl() {
   channel_ = NULL;
 }
 
-bool PlatformContext3DImpl::Init(const int32* attrib_list,
-                                 PlatformContext3D* share_context) {
+bool PlatformContext3D::Init(const int32* attrib_list,
+                             PlatformContext3D* share_context) {
   // Ignore initializing more than once.
   if (command_buffer_)
     return true;
@@ -88,8 +88,8 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
 
   CommandBufferProxyImpl* share_buffer = NULL;
   if (share_context) {
-    PlatformContext3DImpl* share_impl =
-        static_cast<PlatformContext3DImpl*>(share_context);
+    PlatformContext3D* share_impl =
+        static_cast<PlatformContext3D*>(share_context);
     share_buffer = share_impl->command_buffer_;
   }
 
@@ -113,54 +113,54 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
   mailbox_ = names[0];
 
   command_buffer_->SetChannelErrorCallback(
-      base::Bind(&PlatformContext3DImpl::OnContextLost,
+      base::Bind(&PlatformContext3D::OnContextLost,
                  weak_ptr_factory_.GetWeakPtr()));
   command_buffer_->SetOnConsoleMessageCallback(
-      base::Bind(&PlatformContext3DImpl::OnConsoleMessage,
+      base::Bind(&PlatformContext3D::OnConsoleMessage,
                  weak_ptr_factory_.GetWeakPtr()));
 
   return true;
 }
 
-void PlatformContext3DImpl::GetBackingMailbox(gpu::Mailbox* mailbox) {
+void PlatformContext3D::GetBackingMailbox(gpu::Mailbox* mailbox) {
   *mailbox = mailbox_;
 }
 
-bool PlatformContext3DImpl::IsOpaque() {
+bool PlatformContext3D::IsOpaque() {
   DCHECK(command_buffer_);
   return !has_alpha_;
 }
 
-gpu::CommandBuffer* PlatformContext3DImpl::GetCommandBuffer() {
+gpu::CommandBuffer* PlatformContext3D::GetCommandBuffer() {
   return command_buffer_;
 }
 
-int PlatformContext3DImpl::GetCommandBufferRouteId() {
+int PlatformContext3D::GetCommandBufferRouteId() {
   DCHECK(command_buffer_);
   return command_buffer_->GetRouteID();
 }
 
-void PlatformContext3DImpl::SetContextLostCallback(const base::Closure& task) {
+void PlatformContext3D::SetContextLostCallback(const base::Closure& task) {
   context_lost_callback_ = task;
 }
 
-void PlatformContext3DImpl::SetOnConsoleMessageCallback(
+void PlatformContext3D::SetOnConsoleMessageCallback(
     const ConsoleMessageCallback& task) {
   console_message_callback_ = task;
 }
 
-bool PlatformContext3DImpl::Echo(const base::Closure& task) {
+bool PlatformContext3D::Echo(const base::Closure& task) {
   return command_buffer_->Echo(task);
 }
 
-void PlatformContext3DImpl::OnContextLost() {
+void PlatformContext3D::OnContextLost() {
   DCHECK(command_buffer_);
 
   if (!context_lost_callback_.is_null())
     context_lost_callback_.Run();
 }
 
-void PlatformContext3DImpl::OnConsoleMessage(const std::string& msg, int id) {
+void PlatformContext3D::OnConsoleMessage(const std::string& msg, int id) {
   DCHECK(command_buffer_);
 
   if (!console_message_callback_.is_null())

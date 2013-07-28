@@ -26,6 +26,7 @@
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
+#include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
@@ -1607,10 +1608,6 @@ bool PepperPluginInstanceImpl::IsViewAccelerated() {
   return view->isAcceleratedCompositingActive();
 }
 
-PluginDelegate::PlatformContext3D* PepperPluginInstanceImpl::CreateContext3D() {
-  return delegate_->CreateContext3D();
-}
-
 bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
                                               WebKit::WebCanvas* canvas) {
 #if defined(ENABLE_PRINTING)
@@ -1711,8 +1708,7 @@ void PepperPluginInstanceImpl::UpdateLayer() {
 
   gpu::Mailbox mailbox;
   if (bound_graphics_3d_.get()) {
-    PluginDelegate::PlatformContext3D* context =
-        bound_graphics_3d_->platform_context();
+    PlatformContext3D* context = bound_graphics_3d_->platform_context();
     context->GetBackingMailbox(&mailbox);
   }
   bool want_layer = !mailbox.IsZero();

@@ -308,8 +308,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Implementation of PPP_Messaging.
   void HandleMessage(PP_Var message);
 
-  PluginDelegate::PlatformContext3D* CreateContext3D();
-
   // Returns true if the plugin is processing a user gesture.
   bool IsProcessingUserGesture();
 

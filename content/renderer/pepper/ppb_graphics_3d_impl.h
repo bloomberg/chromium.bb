@@ -6,11 +6,11 @@
 #define CONTENT_RENDERER_PEPPER_PPB_GRAPHICS_3D_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/shared_impl/resource.h"
 
 namespace content {
+class PlatformContext3D;
 
 class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
  public:
@@ -49,9 +49,7 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 
-  PluginDelegate::PlatformContext3D* platform_context() {
-    return platform_context_.get();
-  }
+  PlatformContext3D* platform_context() { return platform_context_.get(); }
 
  protected:
   virtual ~PPB_Graphics3D_Impl();
@@ -80,8 +78,8 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
   bool bound_to_instance_;
   // True when waiting for compositor to commit our backing texture.
   bool commit_pending_;
-  // PluginDelegate's 3D Context. Responsible for providing the command buffer.
-  scoped_ptr<PluginDelegate::PlatformContext3D> platform_context_;
+  // The 3D Context. Responsible for providing the command buffer.
+  scoped_ptr<PlatformContext3D> platform_context_;
   base::WeakPtrFactory<PPB_Graphics3D_Impl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Graphics3D_Impl);

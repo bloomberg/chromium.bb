@@ -26,6 +26,7 @@ class GLES2Implementation;
 }  // namespace gpu
 
 namespace content {
+class PlatformContext3D;
 
 class PPB_VideoDecoder_Impl : public ::ppapi::PPB_VideoDecoder_Shared,
                               public media::VideoDecodeAccelerator::Client {
@@ -67,7 +68,7 @@ class PPB_VideoDecoder_Impl : public ::ppapi::PPB_VideoDecoder_Shared,
 
   explicit PPB_VideoDecoder_Impl(PP_Instance instance);
   bool Init(PP_Resource graphics_context,
-            PluginDelegate::PlatformContext3D* context,
+            PlatformContext3D* context,
             gpu::gles2::GLES2Implementation* gles2_impl,
             PP_VideoDecoder_Profile profile);
 

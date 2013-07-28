@@ -77,10 +77,6 @@ WebKit::WebPlugin* MockPluginDelegate::CreatePluginReplacement(
   return NULL;
 }
 
-MockPluginDelegate::PlatformContext3D* MockPluginDelegate::CreateContext3D() {
-  return NULL;
-}
-
 MockPluginDelegate::PlatformVideoDecoder*
 MockPluginDelegate::CreateVideoDecoder(
     media::VideoDecodeAccelerator::Client* client,

@@ -13,7 +13,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
-#include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
+#include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/render_thread_impl.h"

@@ -49,7 +49,6 @@
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
-#include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
@@ -625,17 +624,6 @@ WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePluginReplacement(
     const base::FilePath& file_path) {
   return GetContentClient()->renderer()->CreatePluginReplacement(
       render_view_, file_path);
-}
-
-PluginDelegate::PlatformContext3D*
-    PepperPluginDelegateImpl::CreateContext3D() {
-  // If accelerated compositing of plugins is disabled, fail to create a 3D
-  // context, because it won't be visible. This allows graceful fallback in the
-  // modules.
-  const WebPreferences& prefs = render_view_->webkit_preferences();
-  if (!prefs.accelerated_compositing_for_plugins_enabled)
-    return NULL;
-  return new PlatformContext3DImpl;
 }
 
 PluginDelegate::PlatformVideoDecoder*

@@ -145,7 +145,6 @@ class PepperPluginDelegateImpl
       uint32_t sample_rate,
       uint32_t sample_count,
       PlatformAudioOutputClient* client) OVERRIDE;
-  virtual PlatformContext3D* CreateContext3D() OVERRIDE;
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id) OVERRIDE;
