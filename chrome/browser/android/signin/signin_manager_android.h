@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 
 class Profile;
 
@@ -42,6 +43,11 @@ class SigninManagerAndroid {
 
   void SignOut(JNIEnv* env, jobject obj);
 
+  base::android::ScopedJavaLocalRef<jstring> GetManagementDomain(JNIEnv* env,
+                                                                 jobject obj);
+
+  void WipeProfileData(JNIEnv* env, jobject obj);
+
  private:
   virtual ~SigninManagerAndroid();
 
@@ -49,6 +55,8 @@ class SigninManagerAndroid {
   void OnPolicyRegisterDone(scoped_ptr<policy::CloudPolicyClient> client);
   void OnPolicyFetchDone(bool success);
 #endif
+
+  void OnBrowsingDataRemoverDone();
 
   Profile* profile_;
 
@@ -64,6 +72,8 @@ class SigninManagerAndroid {
   // for the policy dialog, when |username_| corresponds to a managed account.
   std::string username_;
 #endif
+
+  base::WeakPtrFactory<SigninManagerAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManagerAndroid);
 };

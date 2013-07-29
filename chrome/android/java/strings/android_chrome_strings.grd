@@ -67,15 +67,21 @@
         Confirm sign in
       </message>
       <message desc="Message to show on a dialog during sign-in, indicating that the account used has policy management enabled." name="IDS_POLICY_DIALOG_MESSAGE">
-        Your account is managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>.
+        This account is managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>.
 
-Signing in to this account will apply restrictions configured by your domain administrator.
+You are signing in with a managed account and giving its administrator control over your Chrome profile. Your Chrome data will become permanently tied to this account. Disconnecting from this account will delete the local Chrome data.
       </message>
       <message desc="Label on the button to accept the policy dialog during sign-in. [CHAR-LIMIT=20]" name="IDS_POLICY_DIALOG_PROCEED">
-        Continue
+        Accept and sign in
       </message>
       <message desc="Label on the button to reject the policy dialog during sign-in. [CHAR-LIMIT=20]" name="IDS_POLICY_DIALOG_CANCEL">
-        Go back
+        Cancel
+      </message>
+      <message desc="Title for the progress dialog shown while profile data is being wiped after signing out of an enterprise account" name="IDS_WIPING_PROFILE_DATA_TITLE">
+        Clearing account data
+      </message>
+      <message desc="Message for the progress dialog shown while profile data is being wiped after signing out of an enterprise account" name="IDS_WIPING_PROFILE_DATA_MESSAGE">
+        Please wait...
       </message>
     </messages>
   </release>

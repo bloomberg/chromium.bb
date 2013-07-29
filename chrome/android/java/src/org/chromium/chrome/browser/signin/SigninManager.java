@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.os.Handler;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
@@ -46,6 +48,9 @@ public class SigninManager {
     private Account mSignInAccount;
     private Observer mSignInObserver;
     private boolean mPassive = false;
+
+    private ProgressDialog mSignOutProgressDialog;
+    private Runnable mSignOutCallback;
 
     /**
      * The Observer of startSignIn() will be notified when sign-in completes.
@@ -207,14 +212,36 @@ public class SigninManager {
     /**
      * Signs out of Chrome.
      * <p/>
-     * This method clears the signed-in username, stop sync and sends out a
+     * This method clears the signed-in username, stops sync and sends out a
      * sign-out notification on the native side.
+     *
+     * @param activity If not null then a progress dialog is shown over the activity until signout
+     * completes, in case the account had management enabled. The activity must be valid until the
+     * callback is invoked.
+     * @param callback Will be invoked after signout completes, if not null.
      */
-    public void signOut() {
-        Log.d(TAG, "Signing out");
+    public void signOut(Activity activity, Runnable callback) {
+        mSignOutCallback = callback;
+
+        boolean wipeData = getManagementDomain() != null;
+        Log.d(TAG, "Signing out, wipe data? " + wipeData);
+
         ChromeSigninController.get(mContext).clearSignedInUser();
         ProfileSyncService.get(mContext).signOut();
         nativeSignOut(mNativeSigninManagerAndroid);
+
+        if (wipeData) {
+            wipeProfileData(activity);
+        } else {
+            onSignOutDone();
+        }
+    }
+
+    /**
+     * Returns the management domain if the signed in account is managed, otherwise returns null.
+     */
+    public String getManagementDomain() {
+        return nativeGetManagementDomain(mNativeSigninManagerAndroid);
     }
 
     private void cancelSignIn() {
@@ -225,6 +252,36 @@ public class SigninManager {
         mSignInAccount = null;
     }
 
+    private void wipeProfileData(Activity activity) {
+        if (activity != null) {
+            // We don't have progress update, so this takes an indeterminate amount of time.
+            boolean indeterminate = true;
+            // This dialog is not cancelable by the user.
+            boolean cancelable = false;
+            mSignOutProgressDialog = ProgressDialog.show(
+                activity,
+                activity.getString(R.string.wiping_profile_data_title),
+                activity.getString(R.string.wiping_profile_data_message),
+                indeterminate, cancelable);
+        }
+        // This will call back to onProfileDataWiped().
+        nativeWipeProfileData(mNativeSigninManagerAndroid);
+    }
+
+    @CalledByNative
+    private void onProfileDataWiped() {
+        if (mSignOutProgressDialog != null && mSignOutProgressDialog.isShowing())
+            mSignOutProgressDialog.dismiss();
+        onSignOutDone();
+    }
+
+    private void onSignOutDone() {
+        if (mSignOutCallback != null) {
+            new Handler().post(mSignOutCallback);
+            mSignOutCallback = null;
+        }
+    }
+
     // Native methods.
     private native int nativeInit();
     private native boolean nativeShouldLoadPolicyForUser(String username);
@@ -233,4 +290,6 @@ public class SigninManager {
     private native void nativeFetchPolicyBeforeSignIn(int nativeSigninManagerAndroid);
     private native void nativeOnSignInCompleted(int nativeSigninManagerAndroid, String username);
     private native void nativeSignOut(int nativeSigninManagerAndroid);
+    private native String nativeGetManagementDomain(int nativeSigninManagerAndroid);
+    private native void nativeWipeProfileData(int nativeSigninManagerAndroid);
 }

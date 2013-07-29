@@ -93,6 +93,15 @@ class BrowsingDataRemover : public content::NotificationObserver
                        REMOVE_INDEXEDDB | REMOVE_LOCAL_STORAGE |
                        REMOVE_PLUGIN_DATA | REMOVE_WEBSQL |
                        REMOVE_SERVER_BOUND_CERTS,
+
+    // Includes all the available remove options. Meant to be used by clients
+    // that wish to wipe as much data as possible from a Profile, to make it
+    // look like a new Profile.
+    REMOVE_ALL = REMOVE_APPCACHE | REMOVE_CACHE | REMOVE_COOKIES |
+                 REMOVE_DOWNLOADS | REMOVE_FILE_SYSTEMS | REMOVE_FORM_DATA |
+                 REMOVE_HISTORY | REMOVE_INDEXEDDB | REMOVE_LOCAL_STORAGE |
+                 REMOVE_PLUGIN_DATA | REMOVE_PASSWORDS | REMOVE_WEBSQL |
+                 REMOVE_SERVER_BOUND_CERTS | REMOVE_CONTENT_LICENSES,
   };
 
   // When BrowsingDataRemover successfully removes data, a notification of type
