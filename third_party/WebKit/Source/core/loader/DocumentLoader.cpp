@@ -381,6 +381,12 @@ void DocumentLoader::handleSubstituteDataLoadNow(DocumentLoaderTimer*)
         url = m_request.url();
     ResourceResponse response(url, m_substituteData.mimeType(), m_substituteData.content()->size(), m_substituteData.textEncoding(), "");
     responseReceived(0, response);
+    if (isStopping())
+        return;
+    if (m_substituteData.content()->size())
+        dataReceived(0, m_substituteData.content()->data(), m_substituteData.content()->size());
+    if (isLoadingMainResource())
+        finishedLoading(0);
 }
 
 void DocumentLoader::startDataLoadTimer()
@@ -597,13 +603,6 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
             if (hostedByObject)
                 cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
         }
-    }
-
-    if (!isStopping() && m_substituteData.isValid()) {
-        if (m_substituteData.content()->size())
-            dataReceived(0, m_substituteData.content()->data(), m_substituteData.content()->size());
-        if (isLoadingMainResource())
-            finishedLoading(0);
     }
 }
 
