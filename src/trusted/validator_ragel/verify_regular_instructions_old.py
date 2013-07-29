@@ -298,7 +298,7 @@ class WorkerState(object):
 
       objdump_proc = subprocess.Popen(
           [options.objdump,
-           '-D',
+           '--disassemble-all', '--disassemble-zeroes',
            '-b', 'binary',
            '-m', 'i386'] +
           {32: [], 64: ['-M', 'x86-64']}[options.bitness] +
