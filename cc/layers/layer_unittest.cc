@@ -509,13 +509,7 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   EXPECT_TRUE(test_layer->NeedsDisplayForTesting());
   test_layer->ResetNeedsDisplayForTesting();
 
-  // Case 3: SetNeedsDisplay() with an empty rect.
-  test_layer->ResetNeedsDisplayForTesting();
-  EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
-  EXPECT_SET_NEEDS_COMMIT(0, test_layer->SetNeedsDisplayRect(gfx::Rect()));
-  EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
-
-  // Case 4: SetNeedsDisplay() with a non-drawable layer
+  // Case 3: SetNeedsDisplay() with a non-drawable layer
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(false));
   test_layer->ResetNeedsDisplayForTesting();
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());

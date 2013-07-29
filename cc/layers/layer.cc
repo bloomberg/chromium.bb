@@ -663,13 +663,13 @@ void Layer::SetHideLayerAndSubtree(bool hide) {
 }
 
 void Layer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
-  if (dirty_rect.IsEmpty())
-    return;
-
   update_rect_.Union(dirty_rect);
   needs_display_ = true;
 
-  if (DrawsContent())
+  // Simply mark the contents as dirty. For non-root layers, the call to
+  // SetNeedsCommit will schedule a fresh compositing pass.
+  // For the root layer, SetNeedsCommit has no effect.
+  if (DrawsContent() && !update_rect_.IsEmpty())
     SetNeedsCommit();
 }
 
