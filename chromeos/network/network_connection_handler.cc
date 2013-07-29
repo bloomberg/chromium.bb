@@ -63,39 +63,40 @@ bool NetworkRequiresActivation(const NetworkState* network) {
 
 bool VPNIsConfigured(const std::string& service_path,
                      const base::DictionaryValue& service_properties) {
-  const base::DictionaryValue* properties;
-  if (!service_properties.GetDictionary(flimflam::kProviderProperty,
-                                        &properties)) {
+  // VPN Provider values are read from the "Provider" dictionary, not the
+  // "Provider.Type", etc keys (which are used only to set the values).
+  const base::DictionaryValue* provider_properties;
+  if (!service_properties.GetDictionaryWithoutPathExpansion(
+          flimflam::kProviderProperty, &provider_properties)) {
     NET_LOG_ERROR("VPN Provider Dictionary not present", service_path);
     return false;
   }
   std::string provider_type;
-  // Note: we use Value path expansion to extract Provider.Type.
-  if (!properties->GetStringWithoutPathExpansion(
+  if (!provider_properties->GetStringWithoutPathExpansion(
           flimflam::kTypeProperty, &provider_type)) {
     NET_LOG_ERROR("VPN Provider Type not present", service_path);
     return false;
   }
   if (provider_type == flimflam::kProviderOpenVpn) {
     std::string hostname;
-    properties->GetStringWithoutPathExpansion(
+    provider_properties->GetStringWithoutPathExpansion(
         flimflam::kHostProperty, &hostname);
     if (hostname.empty()) {
       NET_LOG_EVENT("OpenVPN: No hostname", service_path);
       return false;
     }
     std::string username;
-    properties->GetStringWithoutPathExpansion(
+    provider_properties->GetStringWithoutPathExpansion(
         flimflam::kOpenVPNUserProperty, &username);
     if (username.empty()) {
       NET_LOG_EVENT("OpenVPN: No username", service_path);
       return false;
     }
     bool passphrase_required = false;
-    properties->GetBooleanWithoutPathExpansion(
+    provider_properties->GetBooleanWithoutPathExpansion(
         flimflam::kPassphraseRequiredProperty, &passphrase_required);
     std::string passphrase;
-    properties->GetStringWithoutPathExpansion(
+    provider_properties->GetStringWithoutPathExpansion(
         flimflam::kOpenVPNPasswordProperty, &passphrase);
     if (passphrase_required && passphrase.empty()) {
       NET_LOG_EVENT("OpenVPN: No passphrase", service_path);
@@ -105,9 +106,9 @@ bool VPNIsConfigured(const std::string& service_path,
   } else {
     bool passphrase_required = false;
     std::string passphrase;
-    properties->GetBooleanWithoutPathExpansion(
+    provider_properties->GetBooleanWithoutPathExpansion(
         flimflam::kL2tpIpsecPskRequiredProperty, &passphrase_required);
-    properties->GetStringWithoutPathExpansion(
+    provider_properties->GetStringWithoutPathExpansion(
         flimflam::kL2tpIpsecPskProperty, &passphrase);
     if (passphrase_required && passphrase.empty())
       return false;
@@ -134,6 +135,8 @@ const char NetworkConnectionHandler::kErrorShillError[] = "shill-error";
 const char NetworkConnectionHandler::kErrorConnectFailed[] = "connect-failed";
 const char NetworkConnectionHandler::kErrorDisconnectFailed[] =
     "disconnect-failed";
+const char NetworkConnectionHandler::kErrorMissingProviderType[] =
+    "missing-provider-type";
 const char NetworkConnectionHandler::kErrorUnknown[] = "unknown-error";
 
 struct NetworkConnectionHandler::ConnectRequest {
@@ -345,7 +348,7 @@ NetworkConnectionHandler::pending_request(
 
 void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     const std::string& service_path,
-    const base::DictionaryValue& properties) {
+    const base::DictionaryValue& service_properties) {
   NET_LOG_EVENT("VerifyConfiguredAndConnect", service_path);
 
   const NetworkState* network =
@@ -357,14 +360,14 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 
   // VPN requires a host and username to be set.
   if (network->type() == flimflam::kTypeVPN &&
-      !VPNIsConfigured(service_path, properties)) {
+      !VPNIsConfigured(service_path, service_properties)) {
     ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
     return;
   }
 
   // Check certificate properties in kUIDataProperty.
   scoped_ptr<NetworkUIData> ui_data =
-      ManagedNetworkConfigurationHandler::GetUIData(properties);
+      ManagedNetworkConfigurationHandler::GetUIData(service_properties);
   if (ui_data && ui_data->certificate_type() == CLIENT_CERT_TYPE_PATTERN) {
     // User must be logged in to connect to a network requiring a certificate.
     if (!logged_in_ || !cert_loader_) {
@@ -400,9 +403,19 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     network->GetConfigProperties(&config_properties);
 
     if (network->type() == flimflam::kTypeVPN) {
+      // VPN Provider values are read from the "Provider" dictionary, not the
+      // "Provider.Type", etc keys (which are used only to set the values).
       std::string provider_type;
-      // Get 'Type' property from 'Provider' dictionary (use expansion).
-      properties.GetString(flimflam::kProviderTypeProperty, &provider_type);
+      const base::DictionaryValue* provider_properties;
+      if (service_properties.GetDictionaryWithoutPathExpansion(
+              flimflam::kProviderProperty, &provider_properties)) {
+        provider_properties->GetStringWithoutPathExpansion(
+            flimflam::kTypeProperty, &provider_type);
+      }
+      if (provider_type.empty()) {
+        ErrorCallbackForPendingRequest(service_path, kErrorMissingProviderType);
+        return;
+      }
       if (provider_type == flimflam::kProviderOpenVpn) {
         config_properties.SetStringWithoutPathExpansion(
             flimflam::kOpenVPNClientCertSlotProperty, tpm_slot);

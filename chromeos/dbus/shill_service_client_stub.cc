@@ -401,6 +401,8 @@ void ShillServiceClientStub::SetDefaultProperties() {
                add_to_visible, add_to_watchlist);
   }
 
+  // Wifi
+
   AddService("wifi1", "wifi1",
              flimflam::kTypeWifi,
              flimflam::kStateOnline,
@@ -421,6 +423,8 @@ void ShillServiceClientStub::SetDefaultProperties() {
                      flimflam::kSignalStrengthProperty,
                      strength_value);
 
+  // Cellular
+
   AddService("cellular1", "cellular1",
              flimflam::kTypeCellular,
              flimflam::kStateIdle,
@@ -436,15 +440,32 @@ void ShillServiceClientStub::SetDefaultProperties() {
                      flimflam::kRoamingStateProperty,
                      base::StringValue(flimflam::kRoamingStateHome));
 
+  // VPN
+
+  // Set the "Provider" dictionary properties. Note: when setting these in
+  // Shill, "Provider.Type", etc keys are used, but when reading the values
+  // "Provider" . "Type", etc keys are used. Here we are setting the values
+  // that will be read (by the UI, tests, etc).
+  base::DictionaryValue provider_properties;
+  provider_properties.SetString(flimflam::kTypeProperty,
+                                flimflam::kProviderOpenVpn);
+  provider_properties.SetString(flimflam::kHostProperty, "vpn_host");
+
   AddService("vpn1", "vpn1",
              flimflam::kTypeVPN,
              flimflam::kStateOnline,
              add_to_visible, add_to_watchlist);
+  SetServiceProperty("vpn1",
+                     flimflam::kProviderProperty,
+                     provider_properties);
 
   AddService("vpn2", "vpn2",
              flimflam::kTypeVPN,
              flimflam::kStateOffline,
              add_to_visible, add_to_watchlist);
+  SetServiceProperty("vpn2",
+                     flimflam::kProviderProperty,
+                     provider_properties);
 }
 
 void ShillServiceClientStub::NotifyObserversPropertyChanged(

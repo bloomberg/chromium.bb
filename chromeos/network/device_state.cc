@@ -26,7 +26,7 @@ DeviceState::~DeviceState() {
 bool DeviceState::PropertyChanged(const std::string& key,
                                   const base::Value& value) {
   // All property values get stored in |properties_|.
-  properties_.Set(key, value.DeepCopy());
+  properties_.SetWithoutPathExpansion(key, value.DeepCopy());
 
   if (ManagedStatePropertyChanged(key, value))
     return true;

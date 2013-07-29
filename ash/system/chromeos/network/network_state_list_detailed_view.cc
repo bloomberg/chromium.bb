@@ -467,7 +467,7 @@ void NetworkStateListDetailedView::UpdateTechnologyButton(
 
 void NetworkStateListDetailedView::UpdateNetworks(
     const NetworkStateHandler::NetworkStateList& networks) {
-  DCHECK(list_type_ == LIST_TYPE_NETWORK);
+  DCHECK(list_type_ != LIST_TYPE_DEBUG_PREFERRED);
   network_list_.clear();
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {

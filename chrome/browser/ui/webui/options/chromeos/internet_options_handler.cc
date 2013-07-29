@@ -275,7 +275,7 @@ void SetNetworkProperty(const std::string& service_path,
                         base::Value* value) {
   NET_LOG_EVENT("SetNetworkProperty: " + property, service_path);
   base::DictionaryValue properties;
-  properties.Set(property, value);
+  properties.SetWithoutPathExpansion(property, value);
   NetworkHandler::Get()->network_configuration_handler()->SetProperties(
       service_path, properties,
       base::Bind(&base::DoNothing),
@@ -375,11 +375,11 @@ std::string EncryptionString(const std::string& security,
 
 std::string ProviderTypeString(
     const std::string& provider_type,
-    const base::DictionaryValue& shill_properties) {
+    const base::DictionaryValue& provider_properties) {
   int id;
   if (provider_type == flimflam::kProviderL2tpIpsec) {
     std::string client_cert_id;
-    shill_properties.GetString(
+    provider_properties.GetStringWithoutPathExpansion(
         flimflam::kL2tpIpsecClientCertIdProperty, &client_cert_id);
     if (client_cert_id.empty())
       id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK;
@@ -631,21 +631,29 @@ void CopyIntegerFromDictionary(const base::DictionaryValue& source,
 void PopulateVPNDetails(const NetworkState* vpn,
                         const base::DictionaryValue& shill_properties,
                         base::DictionaryValue* dictionary) {
-  // Name and Remembered set in PopulateConnectionDetails().
+  // Name and Remembered are set in PopulateConnectionDetails().
+  // Provider properties are stored in the "Provider" dictionary.
   const base::DictionaryValue* provider_properties = NULL;
-  if (!shill_properties.GetDictionary(
-          flimflam::kProviderProperty, &provider_properties))
+  if (!shill_properties.GetDictionaryWithoutPathExpansion(
+          flimflam::kProviderProperty, &provider_properties)) {
+    LOG(ERROR) << "No provider properties for VPN: " << vpn->path();
     return;
+  }
   std::string provider_type;
-  shill_properties.GetString(flimflam::kProviderTypeProperty, &provider_type);
+  provider_properties->GetStringWithoutPathExpansion(
+      flimflam::kTypeProperty, &provider_type);
   dictionary->SetString(kTagProviderType,
-                        ProviderTypeString(provider_type, shill_properties));
+                        ProviderTypeString(provider_type,
+                                           *provider_properties));
 
   std::string username;
-  if (provider_type == flimflam::kProviderOpenVpn)
-    shill_properties.GetString(flimflam::kOpenVPNUserProperty, &username);
-  else
-    shill_properties.GetString(flimflam::kL2tpIpsecUserProperty, &username);
+  if (provider_type == flimflam::kProviderOpenVpn) {
+    provider_properties->GetStringWithoutPathExpansion(
+        flimflam::kOpenVPNUserProperty, &username);
+  } else {
+    provider_properties->GetStringWithoutPathExpansion(
+        flimflam::kL2tpIpsecUserProperty, &username);
+  }
   dictionary->SetString(kTagUsername, username);
 
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
@@ -657,7 +665,8 @@ void PopulateVPNDetails(const NetworkState* vpn,
       onc,
       base::StringPrintf("%s.%s", onc::network_config::kVPN, onc::vpn::kHost));
   std::string provider_host;
-  shill_properties.GetString(flimflam::kProviderHostProperty, &provider_host);
+  provider_properties->GetStringWithoutPathExpansion(
+      flimflam::kHostProperty, &provider_host);
   SetValueDictionary(dictionary, kTagServerHostname,
                      new base::StringValue(provider_host),
                      hostname_ui_data);
@@ -697,8 +706,8 @@ void PopulateWimaxDetails(const NetworkState* wimax,
                           base::DictionaryValue* dictionary);
 // TODO(stevenjb): Move implementation here.
 
-base::DictionaryValue* CreateDictionaryFromCellularApn(
-    const base::DictionaryValue* apn);
+void CreateDictionaryFromCellularApn(const base::DictionaryValue* apn,
+                                     base::DictionaryValue* dictionary);
 // TODO(stevenjb): Move implementation here.
 
 void PopulateCellularDetails(const NetworkState* cellular,
@@ -1599,9 +1608,8 @@ void PopulateWimaxDetails(const NetworkState* wimax,
                            kTagIdentity, dictionary);
 }
 
-base::DictionaryValue* CreateDictionaryFromCellularApn(
-    const base::DictionaryValue* apn) {
-  base::DictionaryValue* dictionary = new base::DictionaryValue();
+void CreateDictionaryFromCellularApn(const base::DictionaryValue* apn,
+                                     base::DictionaryValue* dictionary) {
   CopyStringFromDictionary(*apn, flimflam::kApnProperty,
                            kTagApn, dictionary);
   CopyStringFromDictionary(*apn, flimflam::kApnNetworkIdProperty,
@@ -1616,7 +1624,6 @@ base::DictionaryValue* CreateDictionaryFromCellularApn(
                            kTagLocalizedName, dictionary);
   CopyStringFromDictionary(*apn, flimflam::kApnLanguageProperty,
                            kTagLanguage, dictionary);
-  return dictionary;
 }
 
 void PopulateCellularDetails(const NetworkState* cellular,
@@ -1644,25 +1651,27 @@ void PopulateCellularDetails(const NetworkState* cellular,
                           kTagOperatorCode, dictionary);
 
   const base::DictionaryValue* olp = NULL;
-  if (shill_properties.GetDictionary(flimflam::kPaymentPortalProperty, &olp)) {
+  if (shill_properties.GetDictionaryWithoutPathExpansion(
+          flimflam::kPaymentPortalProperty, &olp)) {
     std::string url;
     olp->GetStringWithoutPathExpansion(flimflam::kPaymentPortalURL, &url);
     dictionary->SetString(kTagSupportUrl, url);
   }
 
+  base::DictionaryValue* apn = new base::DictionaryValue;
   const base::DictionaryValue* source_apn = NULL;
-  if (shill_properties.GetDictionary(
+  if (shill_properties.GetDictionaryWithoutPathExpansion(
           flimflam::kCellularApnProperty, &source_apn)) {
-    base::DictionaryValue* apn = CreateDictionaryFromCellularApn(source_apn);
-    if (apn)
-      dictionary->Set(kTagApn, apn);
+    CreateDictionaryFromCellularApn(source_apn, apn);
   }
-  if (shill_properties.GetDictionary(
+  dictionary->Set(kTagApn, apn);
+
+  base::DictionaryValue* last_good_apn = new base::DictionaryValue;
+  if (shill_properties.GetDictionaryWithoutPathExpansion(
           flimflam::kCellularLastGoodApnProperty, &source_apn)) {
-    base::DictionaryValue* apn = CreateDictionaryFromCellularApn(source_apn);
-    if (apn)
-      dictionary->Set(kTagLastGoodApn, apn);
+    CreateDictionaryFromCellularApn(source_apn, last_good_apn);
   }
+  dictionary->Set(kTagLastGoodApn, last_good_apn);
 
   // These default to empty and are only set if device != NULL.
   std::string carrier_id;
@@ -1725,13 +1734,16 @@ void PopulateCellularDetails(const NetworkState* cellular,
 
     base::ListValue* apn_list_value = new base::ListValue();
     const base::ListValue* apn_list;
-    if (device_properties.GetList(
+    if (device_properties.GetListWithoutPathExpansion(
             flimflam::kCellularApnListProperty, &apn_list)) {
       for (base::ListValue::const_iterator iter = apn_list->begin();
            iter != apn_list->end(); ++iter) {
         const base::DictionaryValue* dict;
-        if ((*iter)->GetAsDictionary(&dict))
-          apn_list_value->Append(CreateDictionaryFromCellularApn(dict));
+        if ((*iter)->GetAsDictionary(&dict)) {
+          base::DictionaryValue* apn = new base::DictionaryValue;
+          CreateDictionaryFromCellularApn(dict, apn);
+          apn_list_value->Append(apn);
+        }
       }
     }
     SetValueDictionary(dictionary, kTagProviderApnList, apn_list_value,
@@ -1739,7 +1751,7 @@ void PopulateCellularDetails(const NetworkState* cellular,
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kEnableCarrierSwitching)) {
       const base::ListValue* supported_carriers;
-      if (device_properties.GetList(
+      if (device_properties.GetListWithoutPathExpansion(
               shill::kSupportedCarriersProperty, &supported_carriers)) {
         dictionary->Set(kTagCarriers, supported_carriers->DeepCopy());
         dictionary->SetInteger(kTagCurrentCarrierIndex,
