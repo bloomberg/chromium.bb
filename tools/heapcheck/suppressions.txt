@@ -583,7 +583,7 @@
    Heapcheck:Leak
    fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
    fun:v8::internal::SlotsBuffer::AddTo
-   fun:v8::internal::MarkCompactCollector::RecordSlot
+   fun:v8::internal::MarkCompactCollector::Record*
    ...
    fun:v8::internal::StaticMarkingVisitor::IterateBody
    fun:v8::internal::IncrementalMarking::VisitObject
@@ -593,91 +593,17 @@
    fun:v8::internal::*Space::AllocateRaw
 }
 {
-   bug_169185_b
-   Heapcheck:Leak
-   fun:v8::internal::SkipList::Update
-   fun:v8::internal::PagedSpace::AllocateRaw
-   fun:v8::internal::Heap::CreateCode
-   fun:v8::internal::Factory::NewCode
-   fun:v8::internal::CodeGenerator::MakeCodeEpilogue
-   fun:v8::internal::FullCodeGenerator::MakeCode
-   fun:*GenerateCode
-   fun:*MakeCode
-   fun:v8::internal::Compiler::CompileLazy
-   fun:*CompileLazyHelper
-   fun:v8::internal::JSFunction::CompileLazy
-   ...
-   fun:*Invoke
-}
-{
-   bug_169185_c
-   Heapcheck:Leak
-   fun:v8::internal::SkipList::Update
-   fun:v8::internal::PagedSpace::AllocateRaw
-   fun:v8::internal::Heap::CreateCode
-   fun:v8::internal::Factory::NewCode
-   fun:v8::internal::StubCompiler::GetCodeWithFlags
-   fun:v8::internal::StubCompiler::GetCodeWithFlags
-   ...
-   fun:v8::internal::StubCache::Compute*
-}
-{
-   bug_169185_d
-   Heapcheck:Leak
-   fun:v8::internal::SkipList::Update
-   fun:v8::internal::PagedSpace::AllocateRaw
-   fun:v8::internal::Heap::CreateCode
-   fun:v8::internal::Factory::NewCode
-   fun:v8::internal::RegExpMacroAssemblerX64::GetCode
-   fun:v8::internal::RegExpCompiler::Assemble
-   fun:v8::internal::RegExpEngine::Compile
-}
-{
-   bug_169185_e
-   Heapcheck:Leak
-   fun:v8::internal::SkipList::Update
-   fun:v8::internal::PagedSpace::AllocateRaw
-   fun:v8::internal::Heap::CreateCode
-   fun:v8::internal::Factory::NewCode
-   fun:v8::internal::CodeGenerator::MakeCodeEpilogue
-   fun:v8::internal::FullCodeGenerator::MakeCode
-   fun:GenerateCode
-   fun:MakeCode
-   fun:MakeFunctionInfo
-   fun:v8::internal::Compiler::Compile
-   fun:v8::Script::New
-   fun:v8::Script::Compile
-   fun:v8::Script::Compile
-   fun:V8UnitTest::ExecuteScriptInContext
-   fun:V8UnitTest::ExecuteJavascriptLibraries
-   fun:V8UnitTest::RunJavascriptTestF
-}
-{
-   bug_169678
+   bug_169678_b
    Heapcheck:Leak
    fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
    fun:v8::internal::SlotsBuffer::AddTo
-   fun:v8::internal::MarkCompactCollector::RecordRelocSlot
-   fun:v8::internal::StaticMarkingVisitor::VisitEmbeddedPointer
-   fun:v8::internal::RelocInfo::Visit
-   fun:v8::internal::Code::CodeIterateBody
-   fun:v8::internal::StaticMarkingVisitor::VisitCode
-   fun:v8::internal::StaticMarkingVisitor::IterateBody
+   fun:v8::internal::MarkCompactCollector::RecordCodeEntrySlot
+   fun:v8::internal::StaticMarkingVisitor::VisitCodeEntry
+   ...
    fun:v8::internal::IncrementalMarking::VisitObject
-   fun:v8::internal::IncrementalMarking::ProcessMarkingDeque
-   fun:v8::internal::IncrementalMarking::Step
-}
-{
-   bug_169678_a
-   Heapcheck:Leak
-   fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
-   fun:v8::internal::SlotsBuffer::AddTo
-   fun:v8::internal::MarkCompactCollector::RecordSlot
-   fun:v8::internal::IncrementalMarkingMarkingVisitor::VisitPointers
    ...
-   fun:v8::internal::Heap::CollectGarbage
-   ...
-   fun:v8::String::New
+   fun:v8::internal::IncrementalMarking::OldSpaceStep
+   fun:v8::internal::FreeList::Allocate
 }
 {
    bug_171547_b
