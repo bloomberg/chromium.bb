@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/app_list/search/search_webstore_result.h"
 #include "chrome/browser/ui/app_list/search/webstore_result.h"
 #include "chrome/browser/ui/app_list/search/webstore_search_fetcher.h"
@@ -98,7 +99,7 @@ void WebstoreProvider::Start(const base::string16& query) {
 
   const std::string query_utf8 = UTF16ToUTF8(query);
 
-  if (UseWebstoreSearch()) {
+  if (UseWebstoreSearch() && chrome::IsSuggestPrefEnabled(profile_)) {
     if (!webstore_search_) {
       webstore_search_.reset(new WebstoreSearchFetcher(
           base::Bind(&WebstoreProvider::OnWebstoreSearchFetched,
