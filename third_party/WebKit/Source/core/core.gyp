@@ -30,7 +30,7 @@
 
 {
   'includes': [
-    '../build/win/precompile.gypi',
+    '../WebKit/chromium/WinPrecompile.gypi',
     'features.gypi',
     '../modules/modules.gypi',
     '../bindings/bindings.gypi',
@@ -830,6 +830,11 @@
             ['include', 'platform/graphics/opentype/OpenTypeSanitizer\\.cpp$'],
           ],
         }],
+        ['OS=="win" and chromium_win_pch==1', {
+          'sources/': [
+            ['include', '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.cpp'],
+          ],
+        }],
         ['OS=="android"', {
           'sources/': [
             ['include', 'platform/chromium/ClipboardChromiumLinux\\.cpp$'],
@@ -927,6 +932,11 @@
         },{ # OS!="win"
           'sources/': [
             ['exclude', 'Win\\.cpp$'],
+          ],
+        }],
+        ['OS=="win" and chromium_win_pch==1', {
+          'sources/': [
+            ['include', '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.cpp'],
           ],
         }],
         ['OS=="mac"', {
