@@ -104,20 +104,16 @@ def main():
 
     reader = idl_reader.IdlReader(options.interface_dependencies_file, options.additional_idl_files, options.idl_attributes_file, output_directory, verbose)
     definitions = reader.read_idl_definitions(idl_filename)
+    code_generator = code_generator_v8.CodeGeneratorV8(definitions, interface_name, options.output_directory, options.idl_directories, verbose)
     if not definitions:
         # We generate dummy .h and .cpp files just to tell build scripts
         # that outputs have been created.
-        code_generator_v8.generate_dummy_header_and_cpp(interface_name, output_directory)
+        code_generator.write_dummy_header_and_cpp()
         return
     if options.dump_json_and_pickle:
         write_json_and_pickle(definitions, interface_name, output_directory)
         return
-    # FIXME: turn on code generator
-    # Currently definitions must be None (so dummy .h and .cpp files are
-    # generated), or --dump-json-and-pickle selected, as actual code generator
-    # not present yet.
-    # code_generator_v8.write_interface(definitions, interface_name, options.output_directory)
-    raise RuntimeError('Stub: code generator not implemented yet')
+    code_generator.write_header_and_cpp()
 
 
 if __name__ == '__main__':

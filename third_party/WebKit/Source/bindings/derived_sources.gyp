@@ -55,6 +55,10 @@
         '<@(deprecated_perl_webcore_test_support_idl_files)',
         '<@(python_webcore_test_support_idl_files)',
     ],
+    'code_generator_template_files': [
+        'templates/callback.h',
+        'templates/callback.cpp',
+    ],
 
     'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
     'generated_global_constructors_idl_files': [
@@ -272,6 +276,7 @@
           'scripts/idl_validator.py',
           'scripts/interface_dependency_resolver.py',
           'scripts/IDLAttributes.txt',
+          '<@(code_generator_template_files)',
           # FIXME: If the dependency structure changes, we rebuild all files,
           # since we're not computing dependencies file-by-file in the build.
           '<(SHARED_INTERMEDIATE_DIR)/InterfaceDependencies.txt',
