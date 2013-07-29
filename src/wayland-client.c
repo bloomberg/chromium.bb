@@ -1157,18 +1157,15 @@ WL_EXPORT int
 wl_display_dispatch_queue_pending(struct wl_display *display,
 				  struct wl_event_queue *queue)
 {
+	int ret;
+
 	pthread_mutex_lock(&display->mutex);
 
-	if (dispatch_queue(display, queue) == -1)
-		goto err_unlock;
+	ret = dispatch_queue(display, queue);
 
 	pthread_mutex_unlock(&display->mutex);
 
-	return 0;
-
- err_unlock:
-	pthread_mutex_unlock(&display->mutex);
-	return -1;
+	return ret;
 }
 
 /** Process incoming events
