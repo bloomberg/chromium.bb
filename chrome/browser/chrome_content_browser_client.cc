@@ -561,10 +561,12 @@ void HandleBlockedPopupOnUIThread(const BlockedPopupParams& params) {
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(
           Profile::FromBrowserContext(tab->GetBrowserContext()));
-  prerender_manager->DestroyPrerenderForRenderView(
-      params.render_process_id,
-      params.opener_id,
-      prerender::FINAL_STATUS_CREATE_NEW_WINDOW);
+  if (prerender_manager) {
+    prerender_manager->DestroyPrerenderForRenderView(
+        params.render_process_id,
+        params.opener_id,
+        prerender::FINAL_STATUS_CREATE_NEW_WINDOW);
+  }
 
   PopupBlockerTabHelper* popup_helper =
       PopupBlockerTabHelper::FromWebContents(tab);
