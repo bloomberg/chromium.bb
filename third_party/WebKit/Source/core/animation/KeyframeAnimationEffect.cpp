@@ -271,7 +271,7 @@ void KeyframeAnimationEffect::PropertySpecificKeyframeGroup::addSyntheticKeyfram
 PassRefPtr<AnimationEffect::CompositableValue> KeyframeAnimationEffect::PropertySpecificKeyframeGroup::sample(int iteration, double offset) const
 {
     // FIXME: Implement accumulation.
-    ASSERT_UNUSED(iteration, !iteration);
+    ASSERT_UNUSED(iteration, iteration >= 0);
 
     double minimumOffset = m_keyframes.first()->offset();
     double maximumOffset = m_keyframes.last()->offset();

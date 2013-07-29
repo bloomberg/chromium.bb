@@ -322,4 +322,13 @@ TEST(KeyframeAnimationEffect, RecompositeCompositableValue)
     expectDoubleValue((9.0 + 3.0) * 0.4 + (9.0 + 5.0) * 0.6, values->begin()->value->compositeOnto(pixelAnimatableValue(9.0)));
 }
 
+TEST(KeyframeAnimationEffect, MultipleIterations)
+{
+    KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(1.0), pixelAnimatableValue(3.0));
+    RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
+    expectDoubleValue(2.0, effect->sample(0, 0.5)->begin()->value->compositeOnto(unknownAnimatableValue(0.0)));
+    expectDoubleValue(2.0, effect->sample(1, 0.5)->begin()->value->compositeOnto(unknownAnimatableValue(0.0)));
+    expectDoubleValue(2.0, effect->sample(2, 0.5)->begin()->value->compositeOnto(unknownAnimatableValue(0.0)));
+}
+
 } // namespace
