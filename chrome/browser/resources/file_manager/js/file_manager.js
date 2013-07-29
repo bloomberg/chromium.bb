@@ -207,94 +207,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     THUMBNAIL: 'thumb'
   };
 
-  /**
-   * FileWatcher that also watches for metadata changes.
-   * @extends {FileWatcher}
-   */
-  FileManager.MetadataFileWatcher = function(fileManager) {
-    FileWatcher.call(this,
-                     fileManager.filesystem_.root,
-                     fileManager.directoryModel_,
-                     fileManager.volumeManager_);
-    this.metadataCache_ = fileManager.metadataCache_;
-
-    this.filesystemChangeHandler_ =
-        fileManager.updateMetadataInUI_.bind(fileManager, 'filesystem');
-    this.thumbnailChangeHandler_ =
-        fileManager.updateMetadataInUI_.bind(fileManager, 'thumbnail');
-    this.driveChangeHandler_ =
-        fileManager.updateMetadataInUI_.bind(fileManager, 'drive');
-
-    var dm = fileManager.directoryModel_;
-    this.internalChangeHandler_ = dm.rescan.bind(dm);
-
-    this.filesystemObserverId_ = null;
-    this.thumbnailObserverId_ = null;
-    this.driveObserverId_ = null;
-    this.internalObserverId_ = null;
-  };
-
-  FileManager.MetadataFileWatcher.prototype.__proto__ = FileWatcher.prototype;
-
-  /**
-   * Changed metadata observers for the new directory.
-   *
-   * @param {DirectoryEntry} entry New watched directory entry.
-   * @override
-   */
-  FileManager.MetadataFileWatcher.prototype.changeWatchedEntry = function(
-      entry) {
-    FileWatcher.prototype.changeWatchedEntry.call(this, entry);
-
-    if (this.filesystemObserverId_)
-      this.metadataCache_.removeObserver(this.filesystemObserverId_);
-    if (this.thumbnailObserverId_)
-      this.metadataCache_.removeObserver(this.thumbnailObserverId_);
-    if (this.driveObserverId_)
-      this.metadataCache_.removeObserver(this.driveObserverId_);
-    if (this.internalObserverId_)
-      this.metadataCache_.removeObserver(this.internalObserverId_);
-    this.filesystemObserverId_ = null;
-    this.driveObserverId_ = null;
-    this.internalObserverId_ = null;
-    if (!entry)
-      return;
-
-    this.filesystemObserverId_ = this.metadataCache_.addObserver(
-        entry,
-        MetadataCache.CHILDREN,
-        'filesystem',
-        this.filesystemChangeHandler_);
-
-    this.thumbnailObserverId_ = this.metadataCache_.addObserver(
-        entry,
-        MetadataCache.CHILDREN,
-        'thumbnail',
-        this.thumbnailChangeHandler_);
-
-    if (PathUtil.getRootType(entry.fullPath) === RootType.DRIVE) {
-      this.driveObserverId_ = this.metadataCache_.addObserver(
-          entry,
-          MetadataCache.CHILDREN,
-          'drive',
-          this.driveChangeHandler_);
-    }
-
-    this.internalObserverId_ = this.metadataCache_.addObserver(
-        entry,
-        MetadataCache.CHILDREN,
-        'internal',
-        this.internalChangeHandler_);
-  };
-
-  /**
-   * @override
-   */
-  FileManager.MetadataFileWatcher.prototype.onFileInWatchedDirectoryChanged =
-      function() {
-    FileWatcher.prototype.onFileInWatchedDirectoryChanged.apply(this);
-  };
-
   FileManager.prototype.initPreferences_ = function(callback) {
     var group = new AsyncUtil.Group();
 
@@ -1150,10 +1062,18 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.metadataCache_,
         false  /* Don't show dot files by default. */);
 
+    this.fileWatcher_ = new FileWatcher(
+        this.filesystem_.root,
+        this.metadataCache_);
+    this.fileWatcher_.addEventListener(
+        'watcher-metadata-changed',
+        this.onWatcherMetadataChanged_.bind(this));
+
     this.directoryModel_ = new DirectoryModel(
         this.filesystem_.root,
         singleSelection,
         this.fileFilter_,
+        this.fileWatcher_,
         this.metadataCache_,
         this.volumeManager_,
         this.isDriveEnabled(),
@@ -1168,9 +1088,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.onPreviewPanelVisibilityChanged_.bind(this, true));
     this.selectionHandler_.addEventListener('hide-preview-panel',
         this.onPreviewPanelVisibilityChanged_.bind(this, false));
-
-    this.fileWatcher_ = new FileManager.MetadataFileWatcher(this);
-    this.fileWatcher_.start();
 
     var dataModel = this.directoryModel_.getFileList();
 
@@ -1595,6 +1512,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.searchBoxWrapper_.clientWidth < 100);
 
     this.searchBreadcrumbs_.truncate();
+  };
+
+  /**
+   * Handles local metadata changes in the currect directory.
+   * @param {Event} event Change event.
+   * @private
+   */
+  FileManager.prototype.onWatcherMetadataChanged_ = function(event) {
+    this.updateMetadataInUI_(event.metadataType, event.urls, event.properties);
   };
 
   /**
@@ -2527,8 +2453,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onUnload_ = function() {
-    if (this.fileWatcher_)
-      this.fileWatcher_.stop();
+    if (this.directoryModel_)
+      this.directoryModel_.dispose();
     if (this.filePopup_ &&
         this.filePopup_.contentWindow &&
         this.filePopup_.contentWindow.unload) {
