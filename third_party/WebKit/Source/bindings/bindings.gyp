@@ -67,12 +67,6 @@
         'WEBKIT_IMPLEMENTATION=1',
         'INSIDE_WEBKIT',
       ],
-      'include_dirs': [
-        # FIXME:  Remove <(SHARED_INTERMEDIATE_DIR)/webcore when we
-        # can entice gyp into letting us put both the .cpp and .h
-        # files in the same output directory.
-        '<(SHARED_INTERMEDIATE_DIR)/webcore',
-      ],
       'xcode_settings': {
         # Some Mac-specific parts of WebKit won't compile without having this
         # prefix header injected.

@@ -96,7 +96,7 @@ class BindingsTests:
                '--write-file-only-if-changed', '0']
 
         if self.reset_results:
-            print "Reset results: EventNames.in"
+            print "Reset results: EventInterfaces.in"
 
         exit_code = 0
         try:
@@ -146,7 +146,7 @@ class BindingsTests:
 
         passed = True
 
-        if not self.reset_results and self.detect_changes_in_file(event_names_file, os.path.join(reference_directory, 'EventNames.in')):
+        if not self.reset_results and self.detect_changes_in_file(event_names_file, os.path.join(reference_directory, 'EventInterfaces.in')):
             passed = False
 
         for input_file in os.listdir(input_directory):
@@ -192,7 +192,7 @@ class BindingsTests:
         dedicatedworkerglobalscope_constructors_file = provider.newtempfile()
 
         if self.reset_results:
-            event_names_file = os.path.join(reference_directory, 'EventNames.in')
+            event_names_file = os.path.join(reference_directory, 'EventInterfaces.in')
         else:
             event_names_file = provider.newtempfile()
 

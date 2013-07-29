@@ -372,7 +372,7 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             'scripts/make_event_factory.py',
-            '<(SHARED_INTERMEDIATE_DIR)/EventNames.in',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventInterfaces.in',
             'dom/EventAliases.in',
           ],
           'outputs': [
@@ -383,7 +383,7 @@
           'action': [
             'python',
             'scripts/make_event_factory.py',
-            '<(SHARED_INTERMEDIATE_DIR)/EventNames.in',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventInterfaces.in',
             'dom/EventAliases.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
