@@ -86,7 +86,10 @@ void FontBuilder::clear()
 
 void FontBuilder::setInitial(float effectiveZoom)
 {
-    ASSERT(m_document->settings());
+    ASSERT(m_document && m_document->settings());
+    if (!m_document || !m_document->settings())
+        return;
+
     FontDescriptionChangeScope scope(this);
 
     scope.reset();
