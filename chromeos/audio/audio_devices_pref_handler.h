@@ -10,7 +10,7 @@
 #include "chromeos/audio/audio_pref_observer.h"
 #include "chromeos/chromeos_export.h"
 
-class PrefRegistrySimple;
+class PrefService;
 
 namespace chromeos {
 

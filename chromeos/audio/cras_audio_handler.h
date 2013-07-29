@@ -137,12 +137,10 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual bool has_alternative_input() const;
   virtual bool has_alternative_output() const;
 
-  // Sets volume level from 0-100%. If less than kMuteThresholdPercent, then
-  // mutes the sound. If it was muted, and |volume_percent| is larger than
-  // the threshold, then the sound is unmuted.
+  // Sets volume level to |volume_percent|, whose range is from 0-100%.
   virtual void SetOutputVolumePercent(int volume_percent);
 
-  // Sets gain level from 0-100%.
+  // Sets gain level to |gain_percent|, whose range is from 0-100%.
   virtual void SetInputGainPercent(int gain_percent);
 
   // Adjusts volume up (positive percentage) or down (negative percentage).

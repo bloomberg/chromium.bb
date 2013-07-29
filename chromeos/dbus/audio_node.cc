@@ -17,6 +17,22 @@ AudioNode::AudioNode()
       plugged_time(0) {
 }
 
+AudioNode::AudioNode(bool is_input,
+                     uint64 id,
+                     std::string device_name,
+                     std::string type,
+                     std::string name,
+                     bool active,
+                     uint64 plugged_time)
+    : is_input(is_input),
+      id(id),
+      device_name(device_name),
+      type(type),
+      name(name),
+      active(active),
+      plugged_time(plugged_time) {
+}
+
 std::string AudioNode::ToString() const {
   std::string result;
   base::StringAppendF(&result,

@@ -25,6 +25,13 @@ struct CHROMEOS_EXPORT AudioNode {
   uint64 plugged_time;
 
   AudioNode();
+  AudioNode(bool is_input,
+            uint64 id,
+            std::string device_name,
+            std::string type,
+            std::string name,
+            bool active,
+            uint64 plugged_time);
   std::string ToString() const;
 };
 

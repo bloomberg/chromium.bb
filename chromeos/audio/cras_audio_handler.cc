@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
-#include "chromeos/audio/mock_cras_audio_handler.h"
+#include "chromeos/audio/audio_devices_pref_handler_stub.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 using std::max;
@@ -69,7 +69,7 @@ void CrasAudioHandler::Initialize(
 // static
 void CrasAudioHandler::InitializeForTesting() {
   CHECK(!g_cras_audio_handler);
-  g_cras_audio_handler = new MockCrasAudioHandler();
+  CrasAudioHandler::Initialize(new AudioDevicesPrefHandlerStub());
 }
 
 // static
@@ -164,6 +164,7 @@ uint64 CrasAudioHandler::GetActiveInputNode() const {
 }
 
 void CrasAudioHandler::GetAudioDevices(AudioDeviceList* device_list) const {
+  device_list->clear();
   for (AudioDeviceMap::const_iterator it = audio_devices_.begin();
        it != audio_devices_.end(); ++it)
     device_list->push_back(it->second);
@@ -219,8 +220,6 @@ void CrasAudioHandler::SetOutputMute(bool mute_on) {
   if (!SetOutputMuteInternal(mute_on))
     return;
 
-  output_mute_on_ = mute_on;
-
   if (const AudioDevice* device = GetDeviceFromId(active_output_node_id_))
     audio_pref_handler_->SetMuteValue(*device, output_mute_on_);
 
@@ -238,8 +237,6 @@ void CrasAudioHandler::AdjustOutputVolumeToAudibleLevel() {
 void CrasAudioHandler::SetInputMute(bool mute_on) {
   if (!SetInputMuteInternal(mute_on))
     return;
-
-  input_mute_on_ = mute_on;
 
   AudioDevice device;
   if (const AudioDevice* device = GetDeviceFromId(active_input_node_id_))
@@ -442,6 +439,7 @@ bool  CrasAudioHandler::SetOutputMuteInternal(bool mute_on) {
   if (output_mute_locked_)
     return false;
 
+  output_mute_on_ = mute_on;
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetOutputUserMute(mute_on);
   return true;
@@ -456,6 +454,7 @@ bool CrasAudioHandler::SetInputMuteInternal(bool mute_on) {
   if (input_mute_locked_)
     return false;
 
+  input_mute_on_ = mute_on;
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetInputMute(mute_on);
   return true;
