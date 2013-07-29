@@ -41,7 +41,7 @@ enum DownloadDangerType {
   // known to serve mostly malicious content.
   DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST,
 
-  // Applications and extensions that modify browser and/or system settings
+  // Applications and extensions that modify browser and/or computer settings
   DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
 
   // Memory space for histograms is determined by the max.

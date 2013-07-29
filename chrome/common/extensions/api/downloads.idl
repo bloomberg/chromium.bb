@@ -105,7 +105,7 @@ namespace downloads {
   //     binaries and is likely dangerous.</dd>
   //     <dt>unwanted</dt>
   //     <dd>The download is potentially unwanted or unsafe. E.g. it could make
-  //     changes to browser or system settings.</dd>
+  //     changes to browser or computer settings.</dd>
   //     <dt>safe</dt>
   //     <dd>The download presents no known danger to the user's computer.</dd>
   //     <dt>accepted</dt>
