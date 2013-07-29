@@ -87,6 +87,36 @@ using WebKit::WebScreenInfo;
 using WebKit::WebTouchEvent;
 
 namespace content {
+
+void ReleaseMailbox(scoped_refptr<MemoryHolder> holder,
+                    unsigned sync_point,
+                    bool lost_resource) {}
+
+class MemoryHolder : public base::RefCounted<MemoryHolder> {
+ public:
+  MemoryHolder(scoped_ptr<base::SharedMemory> shared_memory,
+               gfx::Size frame_size,
+               base::Callback<void()> callback)
+      : shared_memory_(shared_memory.Pass()),
+        frame_size_(frame_size),
+        callback_(callback) {}
+
+  cc::TextureMailbox GetMailbox() {
+    return cc::TextureMailbox(
+        shared_memory_.get(),
+        frame_size_,
+        base::Bind(ReleaseMailbox, make_scoped_refptr(this)));
+  }
+
+ private:
+  friend class base::RefCounted<MemoryHolder>;
+  ~MemoryHolder() { callback_.Run(); }
+
+  scoped_ptr<base::SharedMemory> shared_memory_;
+  gfx::Size frame_size_;
+  base::Callback<void()> callback_;
+};
+
 namespace {
 
 // In mouse lock mode, we need to prevent the (invisible) cursor from hitting
@@ -346,12 +376,6 @@ void AcknowledgeBufferForGpu(
   ack.sync_point = sync_point;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(
       route_id, gpu_host_id, ack);
-}
-
-void ReleaseMailbox(scoped_ptr<base::SharedMemory> shared_memory,
-                    base::Callback<void()> callback,
-                    unsigned sync_point, bool lost_resource) {
-  callback.Run();
 }
 
 }  // namespace
@@ -1280,13 +1304,12 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     current_frame_size_ = ConvertSizeToDIP(
         current_surface_->device_scale_factor(), current_surface_->size());
     CheckResizeLock();
-  } else if (is_compositing_active &&
-             current_software_frame_.IsSharedMemory()) {
-    window_->layer()->SetTextureMailbox(current_software_frame_,
+  } else if (is_compositing_active && framebuffer_holder_) {
+    cc::TextureMailbox mailbox = framebuffer_holder_->GetMailbox();
+    window_->layer()->SetTextureMailbox(mailbox,
                                         last_swapped_surface_scale_factor_);
-    current_frame_size_ = ConvertSizeToDIP(
-        last_swapped_surface_scale_factor_,
-        current_software_frame_.shared_memory_size());
+    current_frame_size_ = ConvertSizeToDIP(last_swapped_surface_scale_factor_,
+                                           mailbox.shared_memory_size());
     CheckResizeLock();
   } else {
     window_->layer()->SetExternalTexture(NULL);
@@ -1489,20 +1512,21 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   last_swapped_surface_size_ = frame_size;
   last_swapped_surface_scale_factor_ = frame_device_scale_factor;
 
-  base::SharedMemory* shared_memory_raw_ptr = shared_memory.get();
-  cc::TextureMailbox::ReleaseCallback callback =
-      base::Bind(ReleaseMailbox, Passed(&shared_memory),
-                 base::Bind(&RenderWidgetHostViewAura::SendSoftwareFrameAck,
-                            AsWeakPtr(), output_surface_id, frame_data->id));
-  current_software_frame_ =
-      cc::TextureMailbox(shared_memory_raw_ptr, frame_size, callback);
-  DCHECK(current_software_frame_.IsSharedMemory());
+  scoped_refptr<MemoryHolder> holder(new MemoryHolder(
+      shared_memory.Pass(),
+      frame_size,
+      base::Bind(&RenderWidgetHostViewAura::SendSoftwareFrameAck,
+                 AsWeakPtr(),
+                 output_surface_id,
+                 frame_data->id)));
+  framebuffer_holder_.swap(holder);
+  cc::TextureMailbox mailbox = framebuffer_holder_->GetMailbox();
+  DCHECK(mailbox.IsSharedMemory());
   current_frame_size_ = frame_size_in_dip;
 
   released_front_lock_ = NULL;
   CheckResizeLock();
-  window_->layer()->SetTextureMailbox(current_software_frame_,
-                                      frame_device_scale_factor);
+  window_->layer()->SetTextureMailbox(mailbox, frame_device_scale_factor);
   window_->SchedulePaintInRect(
       ConvertRectToDIP(frame_device_scale_factor, damage_rect));
 

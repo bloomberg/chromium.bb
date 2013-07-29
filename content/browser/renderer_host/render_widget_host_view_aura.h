@@ -56,6 +56,7 @@ class Texture;
 }
 
 namespace content {
+class MemoryHolder;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 
@@ -578,8 +579,8 @@ class RenderWidgetHostViewAura
   // The current frontbuffer texture.
   scoped_refptr<ui::Texture> current_surface_;
 
-  // The current software frontbuffer.
-  cc::TextureMailbox current_software_frame_;
+  // This holds the current software framebuffer.
+  scoped_refptr<MemoryHolder> framebuffer_holder_;
 
   // The damage in the previously presented buffer.
   SkRegion previous_damage_;
