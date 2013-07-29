@@ -116,10 +116,10 @@ class AwContents : public FindHelper::Listener,
               jint visible_bottom);
   jint GetAwDrawGLViewContext(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jobject> CapturePicture(JNIEnv* env,
-                                                            jobject obj);
-  void EnableOnNewPicture(JNIEnv* env,
-                          jobject obj,
-                          jboolean enabled);
+                                                            jobject obj,
+                                                            int width,
+                                                            int height);
+  void EnableOnNewPicture(JNIEnv* env, jobject obj, jboolean enabled);
 
   // Geolocation API support
   void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);

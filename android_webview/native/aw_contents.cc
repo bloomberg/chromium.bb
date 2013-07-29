@@ -747,8 +747,10 @@ void AwContents::OnWebLayoutPageScaleFactorChanged(float page_scale_factor) {
 }
 
 ScopedJavaLocalRef<jobject> AwContents::CapturePicture(JNIEnv* env,
-                                                       jobject obj) {
-  return browser_view_renderer_->CapturePicture();
+                                                       jobject obj,
+                                                       int width,
+                                                       int height) {
+  return browser_view_renderer_->CapturePicture(width, height);
 }
 
 void AwContents::EnableOnNewPicture(JNIEnv* env,

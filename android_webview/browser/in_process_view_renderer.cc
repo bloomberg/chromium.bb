@@ -10,6 +10,7 @@
 #include "android_webview/public/browser/draw_gl.h"
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/android/jni_android.h"
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -363,26 +364,27 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-InProcessViewRenderer::CapturePicture() {
+InProcessViewRenderer::CapturePicture(int width, int height) {
   if (!compositor_ || !GetAwDrawSWFunctionTable()) {
     TRACE_EVENT_INSTANT0(
         "android_webview", "EarlyOut_CapturePicture", TRACE_EVENT_SCOPE_THREAD);
     return ScopedJavaLocalRef<jobject>();
   }
 
-  gfx::Size record_size(width_, height_);
-
   // Return empty Picture objects for empty SkPictures.
   JNIEnv* env = AttachCurrentThread();
-  if (record_size.width() <= 0 || record_size.height() <= 0) {
-    return java_helper_->RecordBitmapIntoPicture(
-        env, ScopedJavaLocalRef<jobject>());
+  if (width <= 0 || height <= 0) {
+    return java_helper_->RecordBitmapIntoPicture(env,
+                                                 ScopedJavaLocalRef<jobject>());
   }
 
+  // Reset scroll back to the origin, will go back to the old
+  // value when scroll_reset is out of scope.
+  base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_css_,
+                                               gfx::Vector2d());
+
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
-  SkCanvas* rec_canvas = picture->beginRecording(record_size.width(),
-                                                 record_size.height(),
-                                                 0);
+  SkCanvas* rec_canvas = picture->beginRecording(width, height, 0);
   if (!CompositeSW(rec_canvas))
     return ScopedJavaLocalRef<jobject>();
   picture->endRecording();

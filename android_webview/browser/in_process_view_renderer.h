@@ -43,7 +43,9 @@ class InProcessViewRenderer : public BrowserViewRenderer,
                       const gfx::Rect& clip,
                       const gfx::Rect& visible_rect) OVERRIDE;
   virtual void DrawGL(AwDrawGLInfo* draw_info) OVERRIDE;
-  virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture() OVERRIDE;
+  virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture(
+      int width,
+      int height) OVERRIDE;
   virtual void EnableOnNewPicture(bool enabled) OVERRIDE;
   virtual void OnVisibilityChanged(bool visible) OVERRIDE;
   virtual void OnSizeChanged(int width, int height) OVERRIDE;

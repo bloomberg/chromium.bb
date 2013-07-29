@@ -102,7 +102,9 @@ class BrowserViewRenderer {
   virtual void DrawGL(AwDrawGLInfo* draw_info) = 0;
 
   // CapturePicture API methods.
-  virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture() = 0;
+  virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture(
+      int width,
+      int height) = 0;
   virtual void EnableOnNewPicture(bool enabled) = 0;
 
   // View update notifications.
