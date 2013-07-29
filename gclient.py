@@ -1750,7 +1750,7 @@ class OptionParser(optparse.OptionParser):
     # cmp: 2013/06/19
     # Temporary workaround to lower bot-load on SVN server.
     if os.environ.get('CHROME_HEADLESS') == '1':
-      jobs = 4
+      jobs = 1
 
     self.add_option(
         '-j', '--jobs', default=jobs, type='int',
