@@ -102,7 +102,10 @@ class TestExpectations(object):
     remaining_modifiers = list(parsed.modifiers)
     test_expectation_info['Bugs'] = []
     for m in parsed.modifiers:
-      if m.startswith('BUG'):
+      if (m.startswith(WEBKIT_BUG_PREFIX) or
+          m.startswith(CHROMIUM_BUG_PREFIX) or
+          m.startswith(V8_BUG_PREFIX) or
+          m.startswith(NAMED_BUG_PREFIX)):
         test_expectation_info['Bugs'].append(m)
         remaining_modifiers.remove(m)
       elif m in KNOWN_TE_KEYWORDS:

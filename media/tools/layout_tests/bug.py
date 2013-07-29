@@ -6,6 +6,8 @@
 
 import re
 
+from webkitpy.layout_tests.models.test_expectations import *
+
 
 class Bug(object):
   """A class representing a bug.
@@ -13,8 +15,6 @@ class Bug(object):
   TODO(imasaki): add more functionalities here if bug-tracker API is available.
   For example, you can get the name of a bug owner.
   """
-  CHROME_BUG_URL = 'http://crbug.com/'
-  WEBKIT_BUG_URL = 'http://webkit.org/b/'
   # Type enum for the bug.
   WEBKIT = 0
   CHROMIUM = 1
@@ -27,33 +27,30 @@ class Bug(object):
 
     Args:
       bug_modifier: a string representing a bug modifier. According to
-        http://trac.webkit.org/wiki/TestExpectations#Modifiers,
-        currently, BUGWK12345, BUGCR12345, BUGV8_12345, BUGDPRANKE are
-        possible.
+        http://www.chromium.org/developers/testing/webkit-layout-tests/\
+        testexpectations
+        Bug identifiers are of the form "webkit.org/b/12345", "crbug.com/12345",
+         "code.google.com/p/v8/issues/detail?id=12345" or "Bug(username)"
     """
-    pattern_for_webkit_bug = r'(BUGWK(\d+))'
-    match = re.search(pattern_for_webkit_bug, bug_modifier)
-    if match:
-      self.type = self.WEBKIT
-      self.url = self.WEBKIT_BUG_URL + match.group(2)
-      self.bug_txt = match.group(1)
-      return
-    pattern_for_chrome_bug = r'(BUGCR(\d+))'
-    match = re.search(pattern_for_chrome_bug, bug_modifier)
-    if match:
-      self.type = self.CHROMIUM
-      self.url = self.CHROME_BUG_URL + match.group(2)
-      self.bug_txt = match.group(1)
-      return
-    pattern_for_other_bug = r'(BUG(\S+))'
-    match = re.search(pattern_for_other_bug, bug_modifier)
+    match = re.match('Bug\((\w+)\)$', bug_modifier)
     if match:
       self.type = self.OTHERS
-      self.url = 'mailto:%s@chromium.org' % match.group(2).lower()
-      self.bug_txt = match.group(1)
+      self.url = 'mailto:%s@chromium.org' % match.group(1).lower()
+      self.bug_txt = bug_modifier
       return
-    self.url = ''
-    self.bug_txt = ''
+
+    self.type = self.GetBugType(bug_modifier)
+    self.url = bug_modifier
+    self.bug_txt = bug_modifier
+
+
+  def GetBugType(self, bug_modifier):
+    """Returns type of the bug based on URL."""
+    if bug_modifier.startswith(WEBKIT_BUG_PREFIX):
+      return self.WEBKIT;
+    if bug_modifier.startswith(CHROMIUM_BUG_PREFIX):
+      return self.CHROMIUM;
+    return self.OTHERS
 
   def __str__(self):
     """Get a string representation of a bug object.
