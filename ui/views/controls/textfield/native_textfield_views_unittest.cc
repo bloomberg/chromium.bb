@@ -1488,13 +1488,13 @@ TEST_F(NativeTextfieldViewsTest, TextCursorDisplayTest) {
   EXPECT_EQ(prev_x, x);
 
   SendKeyEvent('a');
-  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2"L"a"), textfield_->text());
+  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2" L"a"), textfield_->text());
   x = GetCursorBounds().x();
   EXPECT_LT(prev_x, x);
   prev_x = x;
 
   SendKeyEvent('b');
-  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2"L"ab"), textfield_->text());
+  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2" L"ab"), textfield_->text());
   x = GetCursorBounds().x();
   EXPECT_LT(prev_x, x);
 }
@@ -1543,13 +1543,13 @@ TEST_F(NativeTextfieldViewsTest, TextCursorDisplayInRTLTest) {
   prev_x = x;
 
   SendKeyEvent('a');
-  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2"L"a"), textfield_->text());
+  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2" L"a"), textfield_->text());
   x = GetCursorBounds().x();
   EXPECT_EQ(prev_x, x);
   prev_x = x;
 
   SendKeyEvent('b');
-  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2"L"ab"), textfield_->text());
+  EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2" L"ab"), textfield_->text());
   x = GetCursorBounds().x();
   EXPECT_EQ(prev_x, x);
 
@@ -1631,7 +1631,7 @@ TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaTest) {
   NonClientMouseClick();
 
   // RTL-LTR string in LTR context.
-  textfield_->SetText(WideToUTF16(L"\x05E1\x5E2"L"ab"));
+  textfield_->SetText(WideToUTF16(L"\x05E1\x5E2" L"ab"));
 
   SendKeyEvent(ui::VKEY_HOME);
   bound = GetCursorBounds();
@@ -1651,7 +1651,7 @@ TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaInRTLTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
   // RTL-LTR string in RTL context.
-  textfield_->SetText(WideToUTF16(L"\x05E1\x5E2"L"ab"));
+  textfield_->SetText(WideToUTF16(L"\x05E1\x5E2" L"ab"));
   SendKeyEvent(ui::VKEY_HOME);
   gfx::Rect bound = GetCursorBounds();
   MouseClick(bound, 10);

@@ -65,7 +65,7 @@ class DisplayManagerTest : public test::AshTestBase,
   const vector<gfx::Display>& added() const { return added_; }
 
   string GetCountSummary() const {
-    return StringPrintf("%"PRIuS" %"PRIuS" %"PRIuS,
+    return StringPrintf("%" PRIuS " %" PRIuS " %" PRIuS,
                         changed_.size(), added_.size(), removed_count_);
   }
 

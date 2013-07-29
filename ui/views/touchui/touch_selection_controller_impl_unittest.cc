@@ -310,7 +310,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
 
 TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   CreateTextfield();
-  textfield_->SetText(WideToUTF16(L"abc\x05e1\x05e2\x05e3"L"def"));
+  textfield_->SetText(WideToUTF16(L"abc\x05e1\x05e2\x05e3" L"def"));
   // Tap the textfield to invoke touch selection.
   ui::GestureEvent tap(ui::ET_GESTURE_TAP, 0, 0, 0, base::TimeDelta(),
       ui::GestureEventDetails(ui::ET_GESTURE_TAP, 1.0f, 0.0f), 0);
@@ -373,7 +373,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   // Drag selection handle 1 to right by 1 char.
   x = textfield_->font().GetStringWidth(WideToUTF16(L"d"));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
-  EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3"L"d"), textfield_->GetSelectedText());
+  EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3" L"d"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(true);
 
   // Select [\x5e1] from left to right.
@@ -392,7 +392,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   // Drag selection handle 2 to right by 1 char.
   x = textfield_->font().GetStringWidth(WideToUTF16(L"d"));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
-  EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3"L"d"), textfield_->GetSelectedText());
+  EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3" L"d"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
 
   // Select [\x05r3] from right to left.

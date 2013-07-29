@@ -228,7 +228,7 @@ class TouchHudTest : public test::AshTestBase {
   }
 
   DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
-    DisplayInfo info(id, base::StringPrintf("x-%"PRId64, id), false);
+    DisplayInfo info(id, base::StringPrintf("x-%" PRId64, id), false);
     info.SetBounds(bounds);
     return info;
   }
