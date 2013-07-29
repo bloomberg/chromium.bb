@@ -82,6 +82,14 @@ public class WindowAndroid {
     }
 
     /**
+     * Displays an error message from the given resource id.
+     * @param resId The error message string's resource id.
+     */
+    public void showError(int resId) {
+        showError(mActivity.getString(resId));
+    }
+
+    /**
      * Displays an error message for a nonexistent callback.
      * @param error The error message string to be displayed.
      */
