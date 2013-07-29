@@ -52,7 +52,7 @@ protected:
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
 
 private:
-    virtual bool isMouseFocusable() const { return false; }
+    virtual bool supportsFocus() const OVERRIDE { return false; }
 };
 
 class TextControlInnerTextElement FINAL : public HTMLDivElement {
@@ -65,7 +65,7 @@ private:
     TextControlInnerTextElement(Document*);
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
-    virtual bool isMouseFocusable() const { return false; }
+    virtual bool supportsFocus() const OVERRIDE { return false; }
 };
 
 class SearchFieldDecorationElement FINAL : public HTMLDivElement {
@@ -78,7 +78,7 @@ public:
 private:
     SearchFieldDecorationElement(Document*);
     virtual const AtomicString& shadowPseudoId() const;
-    virtual bool isMouseFocusable() const { return false; }
+    virtual bool supportsFocus() const OVERRIDE { return false; }
 };
 
 class SearchFieldCancelButtonElement FINAL : public HTMLDivElement {
@@ -91,7 +91,7 @@ public:
 private:
     SearchFieldCancelButtonElement(Document*);
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual bool isMouseFocusable() const { return false; }
+    virtual bool supportsFocus() const OVERRIDE { return false; }
 
     bool m_capturing;
 };

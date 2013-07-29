@@ -2034,7 +2034,7 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
 
         // Walk up the DOM tree to search for a node to focus.
         while (node) {
-            if (node->isMouseFocusable()) {
+            if (node->isFocusable()) {
                 // To fix <rdar://problem/4895428> Can't drag selected ToDo, we don't focus a
                 // node on mouse down if it's selected and inside a focused node. It will be
                 // focused if the user does a mouseup over it, however, because the mouseup

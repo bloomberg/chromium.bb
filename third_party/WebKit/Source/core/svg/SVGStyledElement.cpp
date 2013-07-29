@@ -469,17 +469,4 @@ void SVGStyledElement::updateRelativeLengthsInformation(bool hasRelativeLengths,
     }
 }
 
-bool SVGStyledElement::isMouseFocusable() const
-{
-    if (!isFocusable())
-        return false;
-    Element* eventTarget = const_cast<SVGStyledElement *>(this);
-    return eventTarget->hasEventListeners(eventNames().focusinEvent) || eventTarget->hasEventListeners(eventNames().focusoutEvent);
-}
-
-bool SVGStyledElement::isKeyboardFocusable(KeyboardEvent*) const
-{
-    return isMouseFocusable();
-}
-
 }

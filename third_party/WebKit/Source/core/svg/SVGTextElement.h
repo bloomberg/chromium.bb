@@ -34,7 +34,7 @@ public:
 private:
     SVGTextElement(const QualifiedName&, Document*);
 
-    virtual bool supportsFocus() const { return true; }
+    virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;

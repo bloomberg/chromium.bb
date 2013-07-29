@@ -136,6 +136,7 @@ protected:
     SVGElementRareData* ensureSVGRareData();
 
     void reportAttributeParsingError(SVGParsingError, const QualifiedName&, const AtomicString&);
+    bool hasFocusEventListeners() const;
 
 private:
     friend class SVGElementInstance;
@@ -147,7 +148,7 @@ private:
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
     virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return computedStyle(pseudoElementSpecifier); }
     virtual void willRecalcStyle(StyleChange) OVERRIDE;
-
+    virtual bool isKeyboardFocusable(KeyboardEvent*) const OVERRIDE;
     virtual bool rendererIsNeeded(const NodeRenderingContext&) { return false; }
 
     virtual bool isSupported(StringImpl* feature, StringImpl* version) const;

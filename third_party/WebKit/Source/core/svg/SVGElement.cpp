@@ -640,6 +640,18 @@ RenderStyle* SVGElement::computedStyle(PseudoId pseudoElementSpecifier)
     return svgRareData()->overrideComputedStyle(this, parentStyle);
 }
 
+bool SVGElement::hasFocusEventListeners() const
+{
+    // FIXME: EventTarget::hasEventListeners should be const.
+    SVGElement* mutableThis = const_cast<SVGElement*>(this);
+    return mutableThis->hasEventListeners(eventNames().focusinEvent) || mutableThis->hasEventListeners(eventNames().focusoutEvent);
+}
+
+bool SVGElement::isKeyboardFocusable(KeyboardEvent*) const
+{
+    return isFocusable();
+}
+
 #ifndef NDEBUG
 bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
 {
