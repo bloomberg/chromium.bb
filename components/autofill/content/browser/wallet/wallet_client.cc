@@ -616,6 +616,10 @@ void WalletClient::OnURLFetchComplete(
   DCHECK_EQ(source, request_.get());
   VLOG(1) << "Got response from " << source->GetOriginalURL();
 
+  // |request_|, which is aliased to |source|, might continue to be used in this
+  // |method, but should be freed once control leaves the method.
+  scoped_ptr<net::URLFetcher> scoped_request(request_.Pass());
+
   std::string data;
   source->GetResponseAsString(&data);
   VLOG(1) << "Response body: " << data;
@@ -667,7 +671,7 @@ void WalletClient::OnURLFetchComplete(
 
   if (!(type == ACCEPT_LEGAL_DOCUMENTS || type == SEND_STATUS) &&
       !response_dict) {
-    HandleMalformedResponse();
+    HandleMalformedResponse(scoped_request.get());
     return;
   }
 
@@ -686,7 +690,7 @@ void WalletClient::OnURLFetchComplete(
         delegate_->OnDidAuthenticateInstrument(
             LowerCaseEqualsASCII(trimmed, "success"));
       } else {
-        HandleMalformedResponse();
+        HandleMalformedResponse(scoped_request.get());
       }
       break;
     }
@@ -702,7 +706,7 @@ void WalletClient::OnURLFetchComplete(
         LogRequiredActions(full_wallet->required_actions());
         delegate_->OnDidGetFullWallet(full_wallet.Pass());
       } else {
-        HandleMalformedResponse();
+        HandleMalformedResponse(scoped_request.get());
       }
       break;
     }
@@ -714,7 +718,7 @@ void WalletClient::OnURLFetchComplete(
         LogRequiredActions(wallet_items->required_actions());
         delegate_->OnDidGetWalletItems(wallet_items.Pass());
       } else {
-        HandleMalformedResponse();
+        HandleMalformedResponse(scoped_request.get());
       }
       break;
     }
@@ -731,7 +735,7 @@ void WalletClient::OnURLFetchComplete(
       GetFormFieldErrors(*response_dict, &form_errors);
       if (instrument_id.empty() && shipping_address_id.empty() &&
           required_actions.empty()) {
-        HandleMalformedResponse();
+        HandleMalformedResponse(scoped_request.get());
       } else {
         LogRequiredActions(required_actions);
         delegate_->OnDidSaveToWallet(instrument_id,
@@ -746,7 +750,6 @@ void WalletClient::OnURLFetchComplete(
       NOTREACHED();
   }
 
-  request_.reset();
   StartNextPendingRequest();
 }
 
@@ -759,9 +762,9 @@ void WalletClient::StartNextPendingRequest() {
   next_request.Run();
 }
 
-void WalletClient::HandleMalformedResponse() {
+void WalletClient::HandleMalformedResponse(net::URLFetcher* request) {
   // Called to inform exponential backoff logic of the error.
-  request_->ReceivedContentWasMalformed();
+  request->ReceivedContentWasMalformed();
   HandleWalletError(MALFORMED_RESPONSE);
 }
 
