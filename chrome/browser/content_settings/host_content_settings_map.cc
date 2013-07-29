@@ -386,6 +386,7 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
     case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return setting == CONTENT_SETTING_ASK;
     default:
       return false;
@@ -530,7 +531,8 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
     const GURL& secondary_url,
     ContentSettingsType content_type) {
   if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
-      content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+      content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
+      content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
     return false;
   }
   if (secondary_url.SchemeIs(chrome::kChromeUIScheme) &&

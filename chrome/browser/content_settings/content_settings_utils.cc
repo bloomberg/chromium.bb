@@ -40,6 +40,7 @@ const char* kTypeNames[] = {
   "register-protocol-handler",
   "ppapi-broker",
   "multiple-automatic-downloads",
+  "midi-sysex",
 #if defined(OS_WIN)
   "metro-switch-to-desktop",
 #endif

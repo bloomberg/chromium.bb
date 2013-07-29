@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
@@ -62,6 +64,7 @@ ContentSettingsType kPermissionType[] = {
   CONTENT_SETTINGS_TYPE_MOUSELOCK,
   CONTENT_SETTINGS_TYPE_MEDIASTREAM,
   CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+  CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
 };
 
 }  // namespace
@@ -120,6 +123,7 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
   ContentSettingsPattern secondary_pattern;
   switch (type) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       // TODO(markusheintz): The rule we create here should also change the
       // location permission for iframed content.
       primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
@@ -472,6 +476,11 @@ void WebsiteSettings::PresentSitePermissions() {
   WebsiteSettingsUI::PermissionInfo permission_info;
   for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
     permission_info.type = kPermissionType[i];
+    if (permission_info.type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+      const CommandLine* command_line = CommandLine::ForCurrentProcess();
+      if (!command_line->HasSwitch(switches::kEnableWebMIDI))
+        continue;
+    }
 
     content_settings::SettingInfo info;
     if (permission_info.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {

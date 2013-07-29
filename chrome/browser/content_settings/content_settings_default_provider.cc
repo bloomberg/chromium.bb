@@ -50,6 +50,7 @@ const ContentSetting kDefaultSettings[] = {
   CONTENT_SETTING_DEFAULT,  // CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_PPAPI_BROKER
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS
+  CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_MIDI_SYSEX
 #if defined(OS_WIN)
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP
 #endif
@@ -156,6 +157,11 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       "ContentSettings.DefaultMediaStreamSetting",
       ValueToContentSetting(
           default_settings_[CONTENT_SETTINGS_TYPE_MEDIASTREAM].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultMIDISysExSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_MIDI_SYSEX].get()),
       CONTENT_SETTING_NUM_SETTINGS);
 
   pref_change_registrar_.Init(prefs_);

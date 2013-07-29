@@ -101,6 +101,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera"},
   {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
   {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
+  {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
 };
 
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
@@ -693,6 +694,9 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       break;
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
       // The RPH settings are retrieved separately.
+      break;
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+      // TODO(toyoshim): The content settings for MIDI sysex is not implemented.
       break;
 #if defined(OS_WIN)
     case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
