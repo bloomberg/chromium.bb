@@ -1412,6 +1412,8 @@ def RietveldUpload(options, args, cl):
     upload_args = ['upload'] + upload_args + args
     logging.info('upload.RealMain(%s)', upload_args)
     issue, patchset = upload.RealMain(upload_args)
+    issue = int(issue)
+    patchset = int(patchset)
   except KeyboardInterrupt:
     sys.exit(1)
   except:
