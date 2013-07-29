@@ -77,9 +77,6 @@ class FileBrowserFunction : public AsyncExtensionFunction {
 
   virtual ~FileBrowserFunction();
 
-  // Figures out the tab_id of the hosting tab.
-  int32 GetTabId() const;
-
   // Returns the local FilePath associated with |url|. If the file isn't of the
   // type FileSystemBackend handles, returns an empty FilePath.
   //

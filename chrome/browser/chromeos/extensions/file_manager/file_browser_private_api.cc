@@ -400,6 +400,26 @@ std::string MakeWebAppTaskId(const std::string& app_id) {
       app_id, file_handler_util::kTaskDrive, "open-with");
 }
 
+// Returns the ID of the tab associated with the dispatcher. Returns 0 on
+// error.
+int32 GetTabId(ExtensionFunctionDispatcher* dispatcher) {
+  if (!dispatcher) {
+    LOG(WARNING) << "No dispatcher";
+    return 0;
+  }
+  if (!dispatcher->delegate()) {
+    LOG(WARNING) << "No delegate";
+    return 0;
+  }
+  WebContents* web_contents =
+      dispatcher->delegate()->GetAssociatedWebContents();
+  if (!web_contents) {
+    LOG(WARNING) << "No associated tab contents";
+    return 0;
+  }
+  return ExtensionTabUtil::GetTabId(web_contents);
+}
+
 }  // namespace
 
 FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
@@ -1039,12 +1059,7 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
     file_urls.push_back(url);
   }
 
-  WebContents* web_contents =
-      dispatcher()->delegate()->GetAssociatedWebContents();
-  int32 tab_id = 0;
-  if (web_contents)
-    tab_id = ExtensionTabUtil::GetTabId(web_contents);
-
+  int32 tab_id = GetTabId(dispatcher());
   return file_handler_util::ExecuteFileTask(
       profile(),
       source_url(),
@@ -1119,24 +1134,6 @@ FileBrowserFunction::FileBrowserFunction() : log_on_completion_(false) {
 }
 
 FileBrowserFunction::~FileBrowserFunction() {
-}
-
-int32 FileBrowserFunction::GetTabId() const {
-  if (!dispatcher()) {
-    LOG(WARNING) << "No dispatcher";
-    return 0;
-  }
-  if (!dispatcher()->delegate()) {
-    LOG(WARNING) << "No delegate";
-    return 0;
-  }
-  WebContents* web_contents =
-      dispatcher()->delegate()->GetAssociatedWebContents();
-  if (!web_contents) {
-    LOG(WARNING) << "No associated tab contents";
-    return 0;
-  }
-  return ExtensionTabUtil::GetTabId(web_contents);
 }
 
 base::FilePath FileBrowserFunction::GetLocalPathFromURL(const GURL& url) {
@@ -1279,7 +1276,7 @@ void SelectFileFunction::GetSelectedFileInfoResponse(
   }
   int index;
   args_->GetInteger(1, &index);
-  int32 tab_id = GetTabId();
+  int32 tab_id = GetTabId(dispatcher());
   SelectFileDialogExtension::OnFileSelected(tab_id, files[0], index);
   SendResponse(true);
 }
@@ -1364,13 +1361,13 @@ bool SelectFilesFunction::RunImpl() {
 void SelectFilesFunction::GetSelectedFileInfoResponse(
     const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int32 tab_id = GetTabId();
+  int32 tab_id = GetTabId(dispatcher());
   SelectFileDialogExtension::OnMultiFilesSelected(tab_id, files);
   SendResponse(true);
 }
 
 bool CancelFileDialogFunction::RunImpl() {
-  int32 tab_id = GetTabId();
+  int32 tab_id = GetTabId(dispatcher());
   SelectFileDialogExtension::OnFileSelectionCanceled(tab_id);
   SendResponse(true);
   return true;
