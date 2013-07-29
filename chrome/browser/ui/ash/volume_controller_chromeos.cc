@@ -84,10 +84,12 @@ bool VolumeController::HandleVolumeUp(const ui::Accelerator& accelerator) {
   if (ash::switches::UseNewAudioHandler()) {
     CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
 
-    if (audio_handler->IsOutputMuted())
+    if (audio_handler->IsOutputMuted()) {
       audio_handler->SetOutputMute(false);
-    else
+      audio_handler->AdjustOutputVolumeToAudibleLevel();
+    } else {
       audio_handler->AdjustOutputVolumeByPercent(kStepPercentage);
+    }
     return true;
   }
 
