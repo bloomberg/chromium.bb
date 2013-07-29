@@ -1477,8 +1477,6 @@ crbug.com/259094 virtual/deferred/fast/images/pixel-crack-image-background-webki
 
 crbug.com/246749 inspector/extensions/extensions-panel.html [ Timeout Pass ]
 
-crbug.com/226256 storage/indexeddb/pending-version-change-stuck.html [ Timeout Pass ]
-
 crbug.com/245154 editing/selection/move-by-character-brute-force.html [ Pass Timeout ]
 
 crbug.com/245630 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass  ]
