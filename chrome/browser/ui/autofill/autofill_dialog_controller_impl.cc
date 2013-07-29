@@ -915,10 +915,16 @@ bool AutofillDialogControllerImpl::IsSubmitPausedOn(
 }
 
 void AutofillDialogControllerImpl::GetWalletItems() {
+  DCHECK(previously_selected_instrument_id_.empty());
+  DCHECK(previously_selected_shipping_address_id_.empty());
+
   if (wallet_items_) {
-    previously_selected_instrument_id_ = ActiveInstrument()->object_id();
-    previously_selected_shipping_address_id_ =
-        ActiveShippingAddress()->object_id();
+    if (ActiveInstrument())
+      previously_selected_instrument_id_ = ActiveInstrument()->object_id();
+
+    const wallet::Address* address = ActiveShippingAddress();
+    if (address)
+      previously_selected_shipping_address_id_ = address->object_id();
   }
 
   last_wallet_items_fetch_timestamp_ = base::TimeTicks::Now();

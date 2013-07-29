@@ -2339,4 +2339,21 @@ TEST_F(AutofillDialogControllerTest, ReloadWalletItemsOnActivation) {
   EXPECT_TRUE(shipping_model->IsItemCheckedAt(1));
 }
 
+TEST_F(AutofillDialogControllerTest, ReloadWithEmptyWalletItems) {
+  SwitchToWallet();
+
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+  controller()->MenuModelForSection(SECTION_CC_BILLING)->ActivatedAt(1);
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
+  controller()->TabActivated();
+
+  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC_BILLING));
+  EXPECT_EQ(
+      3, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+}
+
 }  // namespace autofill
