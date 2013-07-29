@@ -1,4 +1,3 @@
-#!/bin/bash
+#!/bin/sh
 
-[ -e "build/git-hooks/pre-auto-gc" ] && exec bash "build/git-hooks/pre-auto-gc" "$@"
-exit 0
+[ -e "build/git-hooks/pre-auto-gc" ] && exec "build/git-hooks/pre-auto-gc" "$@"

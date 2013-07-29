@@ -1,4 +1,3 @@
-#!/bin/bash
+#!/bin/sh
 
-[ -e "build/git-hooks/applypatch-msg" ] && exec bash "build/git-hooks/applypatch-msg" "$@"
-exit 0
+[ -e "build/git-hooks/applypatch-msg" ] && exec "build/git-hooks/applypatch-msg" "$@"
