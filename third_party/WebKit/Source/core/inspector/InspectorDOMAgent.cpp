@@ -350,12 +350,8 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap)
             unbind(contentDocument, nodesMap);
     }
 
-    if (node->isElementNode()) {
-        if (ElementShadow* shadow = toElement(node)->shadow()) {
-            for (ShadowRoot* root = shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
-                unbind(root, nodesMap);
-        }
-    }
+    for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
+        unbind(root, nodesMap);
 
     nodesMap->remove(node);
     if (m_domListener)

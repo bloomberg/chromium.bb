@@ -1498,12 +1498,10 @@ bool Element::recalcStyle(StyleChange change)
     }
     StyleResolverParentPusher parentPusher(this);
 
-    if (ElementShadow* shadow = this->shadow()) {
-        for (ShadowRoot* root = shadow->youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-            if (shouldRecalcStyle(change, root)) {
-                parentPusher.push();
-                root->recalcStyle(change);
-            }
+    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+        if (shouldRecalcStyle(change, root)) {
+            parentPusher.push();
+            root->recalcStyle(change);
         }
     }
 
