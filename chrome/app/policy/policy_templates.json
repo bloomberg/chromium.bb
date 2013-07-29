@@ -297,7 +297,7 @@
       'name': 'DisableSpdy',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -342,7 +342,7 @@
       'name': 'JavascriptEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -630,7 +630,7 @@
       'name': 'ForceSafeSearch',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:25-', 'chrome_os:0.25-'],
+      'supported_on': ['chrome.*:25-', 'chrome_os:0.25-', 'android:30-'],
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
@@ -649,7 +649,7 @@
       'name': 'SafeBrowsingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -672,7 +672,7 @@
       'name': 'MetricsReportingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'android:30-'],
+      'supported_on': ['chrome.*:8-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': False,
@@ -744,7 +744,7 @@
       'name': 'AutoFillEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -1068,7 +1068,7 @@
               'caption': '''Use system proxy settings''',
             },
           ],
-          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1122,7 +1122,7 @@
               'caption': '''Use system proxy settings''',
             },
           ],
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1152,7 +1152,7 @@
           'name': 'ProxyServer',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1173,7 +1173,7 @@
           'name': 'ProxyPacUrl',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1194,7 +1194,7 @@
           'name': 'ProxyBypassList',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1231,7 +1231,7 @@
           'ProxyServerMode': { 'type': 'string' },
         },
       },
-      'supported_on': ['chrome.*:18-', 'chrome_os:0.18-'],
+      'supported_on': ['chrome.*:18-', 'chrome_os:0.18-', 'android:30-'],
       'future': True,
       'features': {
         'dynamic_refresh': True,
@@ -1882,7 +1882,7 @@
               'caption': '''Keep cookies for the duration of the session''',
             },
           ],
-          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1913,7 +1913,7 @@
               'caption': '''Do not allow any site to show images''',
             },
           ],
-          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1944,7 +1944,7 @@
               'caption': '''Do not allow any site to run JavaScript''',
             },
           ],
-          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2085,7 +2085,7 @@
               'caption': '''Ask whenever a site wants to track the users' physical location''',
             },
           ],
-          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2155,7 +2155,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2174,7 +2174,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2193,7 +2193,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2214,7 +2214,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2233,7 +2233,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2252,7 +2252,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2271,7 +2271,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:11-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2609,7 +2609,7 @@
       'name': 'TranslateEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
+      'supported_on': ['chrome.*:12-', 'chrome_os:0.12-', 'android:30-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -3720,7 +3720,7 @@
       'name': 'DisableSafeBrowsingProceedAnyway',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:22-', 'chrome_os:0.22-'],
+      'supported_on': ['chrome.*:22-', 'chrome_os:0.22-', 'android:30-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
