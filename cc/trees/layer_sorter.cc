@@ -159,7 +159,8 @@ LayerSorter::ABCompareResult LayerSorter::CheckOverlap(LayerShape* a,
     return ABeforeB;
 
   float max_diff =
-      fabsf(max_positive) > fabsf(max_negative) ? max_positive : max_negative;
+      std::abs(max_positive) > std::abs(max_negative) ?
+          max_positive : max_negative;
 
   // If the results are inconsistent (and the z difference substantial to rule
   // out numerical errors) then the layers are intersecting. We will still
@@ -169,7 +170,7 @@ LayerSorter::ABCompareResult LayerSorter::CheckOverlap(LayerShape* a,
   if (max_positive > z_threshold && max_negative < -z_threshold)
     *weight = 0.f;
   else
-    *weight = fabsf(max_diff);
+    *weight = std::abs(max_diff);
 
   // Maintain relative order if the layers have the same depth at all
   // intersection points.
@@ -293,7 +294,7 @@ void LayerSorter::CreateGraphNodes(LayerImplList::iterator first,
     min_z = std::min(min_z, node.shape.transform_origin.z());
   }
 
-  z_range_ = fabsf(max_z - min_z);
+  z_range_ = std::abs(max_z - min_z);
 }
 
 void LayerSorter::CreateGraphEdges() {

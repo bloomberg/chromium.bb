@@ -802,10 +802,10 @@ bool TiledLayer::Update(ResourceUpdateQueue* queue,
   delta = gfx::Vector2d(delta.x() == 0 ? 1 : delta.x(),
                         delta.y() == 0 ? 1 : delta.y());
   gfx::Vector2d major_delta =
-      (abs(delta.x()) > abs(delta.y())) ? gfx::Vector2d(delta.x(), 0)
+      (std::abs(delta.x()) > std::abs(delta.y())) ? gfx::Vector2d(delta.x(), 0)
                                         : gfx::Vector2d(0, delta.y());
   gfx::Vector2d minor_delta =
-      (abs(delta.x()) <= abs(delta.y())) ? gfx::Vector2d(delta.x(), 0)
+      (std::abs(delta.x()) <= std::abs(delta.y())) ? gfx::Vector2d(delta.x(), 0)
                                          : gfx::Vector2d(0, delta.y());
   gfx::Vector2d deltas[4] = { major_delta, minor_delta, -major_delta,
                               -minor_delta };

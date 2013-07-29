@@ -60,7 +60,7 @@ static bool ShareSameAxis(const TransformOperation* from,
   double dot = to->rotate.axis.x * from->rotate.axis.x +
                to->rotate.axis.y * from->rotate.axis.y +
                to->rotate.axis.z * from->rotate.axis.z;
-  double error = std::fabs(1.0 - (dot * dot) / (length_2 * other_length_2));
+  double error = std::abs(1.0 - (dot * dot) / (length_2 * other_length_2));
   bool result = error < kAngleEpsilon;
   if (result) {
     *axis_x = to->rotate.axis.x;
