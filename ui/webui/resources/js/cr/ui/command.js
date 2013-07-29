@@ -257,19 +257,18 @@ cr.define('cr.ui', function() {
           target.ownerDocument.querySelectorAll('command'));
 
       for (var i = 0, command; command = commands[i]; i++) {
-        if (command.matchesEvent(e)) {
+        if (!command.disabled && command.matchesEvent(e)) {
+          e.preventDefault();
+          // We do not want any other element to handle this.
+          e.stopPropagation();
+
           // When invoking a command via a shortcut, we have to manually check
           // if it can be executed, since focus might not have been changed
           // what would have updated the command's state.
           command.canExecuteChange();
 
-          if (!command.disabled) {
-            e.preventDefault();
-            // We do not want any other element to handle this.
-            e.stopPropagation();
-            command.execute();
-            return;
-          }
+          command.execute();
+          return;
         }
       }
     }
