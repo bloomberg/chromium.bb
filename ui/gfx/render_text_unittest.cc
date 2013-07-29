@@ -1106,7 +1106,8 @@ TEST_F(RenderTextTest, Win_LogicalClusters) {
   scoped_ptr<RenderTextWin> render_text(
       static_cast<RenderTextWin*>(RenderText::CreateInstance()));
 
-  const string16 test_string(L"\x0930\x0930\x0930\x0930\x0930");
+  const base::string16 test_string =
+      WideToUTF16(L"\x0930\x0930\x0930\x0930\x0930");
   render_text->SetText(test_string);
   render_text->EnsureLayout();
   ASSERT_EQ(1U, render_text->runs_.size());
@@ -1530,5 +1531,22 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
   EXPECT_EQ(was_rtl, base::i18n::IsRTL());
 }
 #endif  // !defined(OS_MACOSX)
+
+// Changing colors between ligated Arabic glyphs should not break shaping.
+// TODO(ckocagil): Check whether this test passes on other platforms and enable
+// accordingly.
+#if defined(OS_WIN)
+TEST_F(RenderTextTest, SelectionKeepsLigatures) {
+  const base::string16 kTestLigature = WideToUTF16(L"\x633\x627");
+
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->set_selection_color(SK_ColorRED);
+  render_text->SetText(kTestLigature);
+
+  const int expected_width = render_text->GetStringSize().width();
+  render_text->MoveCursorTo(SelectionModel(ui::Range(0, 1), CURSOR_FORWARD));
+  EXPECT_EQ(expected_width, render_text->GetStringSize().width());
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace gfx
