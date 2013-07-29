@@ -20417,6 +20417,12 @@ other types of suffix sets.
   <int value="13" label="PING_DISABLED"/>
   <int value="14" label="TRUSTED_EXECUTABLE"/>
   <int value="15" label="OS_NOT_SUPPORTED"/>
+  <int value="16" label="DOWNLOAD_UNCOMMON"/>
+  <int value="17" label="DOWNLOAD_NOT_SUPPORTED"/>
+  <int value="18" label="INVALID_RESPONSE_VERDICT"/>
+  <int value="19" label="ARCHIVE_WITHOUT_BINARIES"/>
+  <int value="20" label="DOWNLOAD_DANGEROUS_HOST"/>
+  <int value="21" label="DOWNLOAD_POTENTIALLY_UNWANTED"/>
 </enum>
 
 <enum name="SBClientDownloadExtensions" type="int">
