@@ -497,6 +497,8 @@
       'quota/StorageQuota.h',
       'quota/StorageQuotaCallback.h',
       'quota/StorageUsageCallback.h',
+      'quota/WebStorageQuotaCallbacksImpl.cpp',
+      'quota/WebStorageQuotaCallbacksImpl.h',
       'quota/WorkerNavigatorStorageQuota.cpp',
       'quota/WorkerNavigatorStorageQuota.h',
       'speech/DOMWindowSpeechSynthesis.cpp',

@@ -73,12 +73,7 @@ public:
     {
         return true;
     }
-    virtual void queryUsageAndQuota(WebStorageQuotaType, WebStorageQuotaCallbacks*)
-    {
-        WEBKIT_ASSERT_NOT_REACHED();
-    }
 };
-
 
 } // namespace WebKit
 

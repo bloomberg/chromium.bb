@@ -33,10 +33,8 @@
 
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
-#include "WebStorageQuotaCallbacksImpl.h"
 #include "WebStorageQuotaType.h"
 #include "WebWorkerBase.h"
-#include "WorkerStorageQuotaCallbacksBridge.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
@@ -45,46 +43,14 @@
 #include "modules/quota/StorageErrorCallback.h"
 #include "modules/quota/StorageQuotaCallback.h"
 #include "modules/quota/StorageUsageCallback.h"
+#include "modules/quota/WebStorageQuotaCallbacksImpl.h"
 #include "wtf/Threading.h"
 
 using namespace WebKit;
 
 namespace WebCore {
 
-static void queryUsageAndQuotaFromWorker(WebCommonWorkerClient* commonClient, WebStorageQuotaType storageType, WebStorageQuotaCallbacksImpl* callbacks)
-{
-    WorkerGlobalScope* workerGlobalScope = WorkerScriptController::controllerForContext()->workerGlobalScope();
-    WebCore::WorkerThread* workerThread = workerGlobalScope->thread();
-    WebCore::WorkerLoaderProxy* workerLoaderProxy = &workerThread->workerLoaderProxy();
-
-    String mode = "queryUsageAndQuotaMode" + String::number(workerThread->runLoop().createUniqueId());
-
-    RefPtr<WorkerStorageQuotaCallbacksBridge> bridge = WorkerStorageQuotaCallbacksBridge::create(workerLoaderProxy, workerGlobalScope, callbacks);
-
-    // The bridge is held by the task that is created in posted to the main thread by this method.
-    bridge->postQueryUsageAndQuotaToMainThread(commonClient, storageType, mode);
-}
-
-void StorageQuota::queryUsageAndQuota(ScriptExecutionContext* scriptExecutionContext, PassRefPtr<StorageUsageCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
-{
-    ASSERT(scriptExecutionContext);
-    WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);
-    if (storageType != WebStorageQuotaTypeTemporary && storageType != WebStorageQuotaTypePersistent) {
-        // Unknown storage type is requested.
-        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
-        return;
-    }
-    if (scriptExecutionContext->isDocument()) {
-        Document* document = toDocument(scriptExecutionContext);
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        webFrame->client()->queryStorageUsageAndQuota(webFrame, storageType, new WebStorageQuotaCallbacksImpl(successCallback, errorCallback));
-    } else {
-        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(scriptExecutionContext);
-        WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerGlobalScope->thread()->workerLoaderProxy().toWebWorkerBase());
-        queryUsageAndQuotaFromWorker(webWorker->commonClient(), storageType, new WebStorageQuotaCallbacksImpl(successCallback, errorCallback));
-    }
-}
-
+// FIXME: Implement this as StorageQuotaClient.
 void StorageQuota::requestQuota(ScriptExecutionContext* scriptExecutionContext, unsigned long long newQuotaInBytes, PassRefPtr<StorageQuotaCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
 {
     ASSERT(scriptExecutionContext);
@@ -97,7 +63,7 @@ void StorageQuota::requestQuota(ScriptExecutionContext* scriptExecutionContext, 
     if (scriptExecutionContext->isDocument()) {
         Document* document = toDocument(scriptExecutionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        webFrame->client()->requestStorageQuota(webFrame, storageType, newQuotaInBytes, new WebStorageQuotaCallbacksImpl(successCallback, errorCallback));
+        webFrame->client()->requestStorageQuota(webFrame, storageType, newQuotaInBytes, WebStorageQuotaCallbacksImpl::createLeakedPtr(successCallback, errorCallback));
     } else {
         // Requesting quota in Worker is not supported.
         scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));

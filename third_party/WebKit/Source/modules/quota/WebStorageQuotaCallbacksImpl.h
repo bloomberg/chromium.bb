@@ -28,51 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/quota/StorageQuota.h"
+#ifndef WebStorageQuotaCallbacksImpl_h
+#define WebStorageQuotaCallbacksImpl_h
 
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "modules/quota/StorageErrorCallback.h"
+#include "modules/quota/StorageQuotaCallback.h"
 #include "modules/quota/StorageUsageCallback.h"
-#include "modules/quota/WebStorageQuotaCallbacksImpl.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebStorageQuotaCallbacks.h"
-#include "public/platform/WebStorageQuotaType.h"
-#include "weborigin/KURL.h"
-#include "weborigin/SecurityOrigin.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-StorageQuota::StorageQuota(Type type)
-    : m_type(type)
-{
-    ScriptWrappable::init(this);
-}
-
-void StorageQuota::queryUsageAndQuota(ScriptExecutionContext* scriptExecutionContext, PassRefPtr<StorageUsageCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
-{
-    ASSERT(scriptExecutionContext);
-
-    WebKit::WebStorageQuotaType storageType = static_cast<WebKit::WebStorageQuotaType>(m_type);
-    if (storageType != WebKit::WebStorageQuotaTypeTemporary && storageType != WebKit::WebStorageQuotaTypePersistent) {
-        // Unknown storage type is requested.
-        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
-        return;
+class WebStorageQuotaCallbacksImpl : public WebKit::WebStorageQuotaCallbacks {
+public:
+    // The class is self-destructed and thus we have leakedPtr constructors.
+    static WebStorageQuotaCallbacksImpl* createLeakedPtr(PassRefPtr<StorageUsageCallback> success, PassRefPtr<StorageErrorCallback> error)
+    {
+        OwnPtr<WebStorageQuotaCallbacksImpl> callbacks = adoptPtr(new WebStorageQuotaCallbacksImpl(success, error));
+        return callbacks.leakPtr();
     }
 
-    SecurityOrigin* securityOrigin = scriptExecutionContext->securityOrigin();
-    if (securityOrigin->isUnique()) {
-        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
-        return;
+    static WebStorageQuotaCallbacksImpl* createLeakedPtr(PassRefPtr<StorageQuotaCallback> success, PassRefPtr<StorageErrorCallback> error)
+    {
+        OwnPtr<WebStorageQuotaCallbacksImpl> callbacks = adoptPtr(new WebStorageQuotaCallbacksImpl(success, error));
+        return callbacks.leakPtr();
     }
 
-    KURL storagePartition = KURL(KURL(), securityOrigin->toString());
-    WebKit::Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType, WebStorageQuotaCallbacksImpl::createLeakedPtr(successCallback, errorCallback));
-}
+    virtual ~WebStorageQuotaCallbacksImpl();
 
-StorageQuota::~StorageQuota()
-{
-}
+    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes);
+    virtual void didGrantStorageQuota(unsigned long long grantedQuotaInBytes);
+    virtual void didFail(WebKit::WebStorageQuotaError);
 
-} // namespace WebCore
+private:
+    WebStorageQuotaCallbacksImpl(PassRefPtr<StorageUsageCallback>, PassRefPtr<StorageErrorCallback>);
+    WebStorageQuotaCallbacksImpl(PassRefPtr<StorageQuotaCallback>, PassRefPtr<StorageErrorCallback>);
+
+    RefPtr<StorageUsageCallback> m_usageCallback;
+    RefPtr<StorageQuotaCallback> m_quotaCallback;
+    RefPtr<StorageErrorCallback> m_errorCallback;
+};
+
+} // namespace
+
+#endif // WebStorageQuotaCallbacksImpl_h

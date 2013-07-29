@@ -28,40 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebStorageQuotaCallbacksImpl_h
-#define WebStorageQuotaCallbacksImpl_h
+#include "config.h"
+#include "modules/quota/WebStorageQuotaCallbacksImpl.h"
 
-#include "WebStorageQuotaCallbacks.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "core/dom/DOMError.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
-class StorageErrorCallback;
-class StorageQuotaCallback;
-class StorageUsageCallback;
+
+WebStorageQuotaCallbacksImpl::WebStorageQuotaCallbacksImpl(PassRefPtr<StorageUsageCallback> usageCallback, PassRefPtr<StorageErrorCallback> errorCallback)
+    : m_usageCallback(usageCallback)
+    , m_errorCallback(errorCallback)
+{
 }
 
-namespace WebKit {
+WebStorageQuotaCallbacksImpl::WebStorageQuotaCallbacksImpl(PassRefPtr<StorageQuotaCallback> quotaCallback, PassRefPtr<StorageErrorCallback> errorCallback)
+    : m_quotaCallback(quotaCallback)
+    , m_errorCallback(errorCallback)
+{
+}
 
-class WebStorageQuotaCallbacksImpl : public WebStorageQuotaCallbacks {
-public:
-    // The class is self-destructed and thus we have bare constructors.
-    WebStorageQuotaCallbacksImpl(PassRefPtr<WebCore::StorageUsageCallback>, PassRefPtr<WebCore::StorageErrorCallback>);
-    WebStorageQuotaCallbacksImpl(PassRefPtr<WebCore::StorageQuotaCallback>, PassRefPtr<WebCore::StorageErrorCallback>);
+WebStorageQuotaCallbacksImpl::~WebStorageQuotaCallbacksImpl()
+{
+}
 
-    virtual ~WebStorageQuotaCallbacksImpl();
+void WebStorageQuotaCallbacksImpl::didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes)
+{
+    OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
+    if (m_usageCallback)
+        m_usageCallback->handleEvent(usageInBytes, quotaInBytes);
+}
 
-    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes);
-    virtual void didGrantStorageQuota(unsigned long long grantedQuotaInBytes);
-    virtual void didFail(WebStorageQuotaError);
+void WebStorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long grantedQuotaInBytes)
+{
+    OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
+    if (m_quotaCallback)
+        m_quotaCallback->handleEvent(grantedQuotaInBytes);
+}
 
-private:
-    RefPtr<WebCore::StorageUsageCallback> m_usageCallback;
-    RefPtr<WebCore::StorageQuotaCallback> m_quotaCallback;
-    RefPtr<WebCore::StorageErrorCallback> m_errorCallback;
-};
+void WebStorageQuotaCallbacksImpl::didFail(WebKit::WebStorageQuotaError error)
+{
+    OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
+    if (m_errorCallback)
+        m_errorCallback->handleEvent(DOMError::create(static_cast<ExceptionCode>(error)).get());
+}
 
-} // namespace WebKit
-
-#endif // WebStorageQuotaCallbacksImpl_h
+} // namespace WebCore

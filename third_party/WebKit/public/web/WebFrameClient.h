@@ -329,17 +329,6 @@ public:
 
     // Quota ---------------------------------------------------------
 
-    // Queries the origin's storage usage and quota information.
-    // WebStorageQuotaCallbacks::didQueryStorageUsageAndQuota will be called
-    // with the current usage and quota information for the origin. When
-    // an error occurs WebStorageQuotaCallbacks::didFail is called with an
-    // error code.
-    // The callbacks object is deleted when the callback method is called
-    // and does not need to be (and should not be) deleted manually.
-    // FIXME: Deprecate this from WebFrameClient.
-    virtual void queryStorageUsageAndQuota(
-        WebFrame*, WebStorageQuotaType, WebStorageQuotaCallbacks*) { }
-
     // Requests a new quota size for the origin's storage.
     // |newQuotaInBytes| indicates how much storage space (in bytes) the
     // caller expects to need.
