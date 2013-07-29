@@ -10,8 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "base/memory/ref_counted.h"
-#include "webkit/child/worker_task_runner.h"
+#include "ipc/ipc_listener.h"
 #include "webkit/common/quota/quota_types.h"
 
 class GURL;
@@ -26,14 +25,10 @@ class WebStorageQuotaCallbacks;
 
 namespace content {
 
-class ThreadSafeSender;
-class QuotaMessageFilter;
-
 // Dispatches and sends quota related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
-// per each thread.  Thread-specific instance can be obtained by
-// ThreadSpecificInstance().
-class QuotaDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
+// per child process.  Messages are dispatched on the main child thread.
+class QuotaDispatcher : public IPC::Listener {
  public:
   class Callback {
    public:
@@ -43,20 +38,11 @@ class QuotaDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
     virtual void DidFail(quota::QuotaStatusCode status) = 0;
   };
 
-  QuotaDispatcher(ThreadSafeSender* thread_safe_sender,
-                  QuotaMessageFilter* quota_message_filter);
+  QuotaDispatcher();
   virtual ~QuotaDispatcher();
 
-  // |thread_safe_sender| and |quota_message_filter| are used if
-  // calling this leads to construction.
-  static QuotaDispatcher* ThreadSpecificInstance(
-      ThreadSafeSender* thread_safe_sender,
-      QuotaMessageFilter* quota_message_filter);
-
-  // webkit_glue::WorkerTaskRunner::Observer implementation.
-  virtual void OnWorkerRunLoopStopped() OVERRIDE;
-
-  void OnMessageReceived(const IPC::Message& msg);
+  // IPC::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   void QueryStorageUsageAndQuota(const GURL& gurl,
                                  quota::StorageType type,
@@ -78,13 +64,9 @@ class QuotaDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
                                     int64 current_quota);
   void DidGrantStorageQuota(int request_id,
                             int64 granted_quota);
-  void DidFail(int request_id,
-               quota::QuotaStatusCode error);
+  void DidFail(int request_id, quota::QuotaStatusCode error);
 
   IDMap<Callback, IDMapOwnPointer> pending_quota_callbacks_;
-
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaDispatcher);
 };

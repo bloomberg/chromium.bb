@@ -37,7 +37,6 @@ class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class FileSystemDispatcher;
 class QuotaDispatcher;
-class QuotaMessageFilter;
 class ResourceDispatcher;
 class SocketStreamDispatcher;
 class ThreadSafeSender;
@@ -111,10 +110,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   ChildHistogramMessageFilter* child_histogram_message_filter() const {
     return histogram_message_filter_.get();
-  }
-
-  QuotaMessageFilter* quota_message_filter() const {
-    return quota_message_filter_.get();
   }
 
   base::MessageLoop* message_loop() const { return message_loop_; }
@@ -192,8 +187,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_refptr<ChildHistogramMessageFilter> histogram_message_filter_;
 
   scoped_refptr<ChildResourceMessageFilter> resource_message_filter_;
-
-  scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 
   base::WeakPtrFactory<ChildThread> channel_connected_factory_;
 

@@ -20,7 +20,6 @@
 #include "content/child/child_resource_message_filter.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/quota_dispatcher.h"
-#include "content/child/quota_message_filter.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/socket_stream_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
@@ -130,30 +129,24 @@ void ChildThread::Init() {
   IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
 
+  resource_dispatcher_.reset(new ResourceDispatcher(this));
+  socket_stream_dispatcher_.reset(new SocketStreamDispatcher());
+  file_system_dispatcher_.reset(new FileSystemDispatcher());
+  quota_dispatcher_.reset(new QuotaDispatcher());
+
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
   thread_safe_sender_ = new ThreadSafeSender(
       base::MessageLoopProxy::current().get(), sync_message_filter_.get());
-
-  resource_dispatcher_.reset(new ResourceDispatcher(this));
-  socket_stream_dispatcher_.reset(new SocketStreamDispatcher());
-  file_system_dispatcher_.reset(new FileSystemDispatcher());
-
   histogram_message_filter_ = new ChildHistogramMessageFilter();
   resource_message_filter_ =
       new ChildResourceMessageFilter(resource_dispatcher());
-
-  quota_message_filter_ =
-      new QuotaMessageFilter(thread_safe_sender_.get());
-  quota_dispatcher_.reset(new QuotaDispatcher(thread_safe_sender_.get(),
-                                              quota_message_filter_.get()));
 
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
   channel_->AddFilter(new tracing::ChildTraceMessageFilter(
       ChildProcess::current()->io_message_loop_proxy()));
   channel_->AddFilter(resource_message_filter_.get());
-  channel_->AddFilter(quota_message_filter_.get());
 
 #if defined(OS_POSIX)
   // Check that --process-type is specified so we don't do this in unit tests
@@ -199,7 +192,6 @@ ChildThread::~ChildThread() {
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
 
-  channel_->RemoveFilter(quota_message_filter_.get());
   channel_->RemoveFilter(histogram_message_filter_.get());
   channel_->RemoveFilter(sync_message_filter_.get());
 
@@ -303,6 +295,8 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
   if (socket_stream_dispatcher_->OnMessageReceived(msg))
     return true;
   if (file_system_dispatcher_->OnMessageReceived(msg))
+    return true;
+  if (quota_dispatcher_->OnMessageReceived(msg))
     return true;
 
   bool handled = true;

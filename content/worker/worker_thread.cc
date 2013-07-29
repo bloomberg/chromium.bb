@@ -34,9 +34,7 @@ static base::LazyInstance<base::ThreadLocalPointer<WorkerThread> > lazy_tls =
 WorkerThread::WorkerThread() {
   lazy_tls.Pointer()->Set(this);
   webkit_platform_support_.reset(new WorkerWebKitPlatformSupportImpl(
-      thread_safe_sender(),
-      sync_message_filter(),
-      quota_message_filter()));
+      thread_safe_sender(), sync_message_filter()));
   WebKit::initialize(webkit_platform_support_.get());
 
   appcache_dispatcher_.reset(

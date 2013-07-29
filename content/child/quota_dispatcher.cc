@@ -5,11 +5,7 @@
 #include "content/child/quota_dispatcher.h"
 
 #include "base/basictypes.h"
-#include "base/lazy_instance.h"
-#include "base/threading/thread_local.h"
 #include "content/child/child_thread.h"
-#include "content/child/quota_message_filter.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/common/quota_messages.h"
 #include "third_party/WebKit/public/web/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/web/WebStorageQuotaType.h"
@@ -22,13 +18,7 @@ using WebKit::WebStorageQuotaCallbacks;
 using WebKit::WebStorageQuotaError;
 using WebKit::WebStorageQuotaType;
 
-using webkit_glue::WorkerTaskRunner;
-
 namespace content {
-
-static base::LazyInstance<base::ThreadLocalPointer<QuotaDispatcher> >::Leaky
-    g_quota_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
-
 namespace {
 
 // QuotaDispatcher::Callback implementation for WebStorageQuotaCallbacks.
@@ -54,17 +44,9 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
   WebKit::WebStorageQuotaCallbacks* callbacks_;
 };
 
-int CurrentWorkerId() {
-  return WorkerTaskRunner::Instance()->CurrentWorkerId();
-}
-
 }  // namespace
 
-QuotaDispatcher::QuotaDispatcher(ThreadSafeSender* thread_safe_sender,
-                                 QuotaMessageFilter* quota_message_filter)
-    : thread_safe_sender_(thread_safe_sender),
-      quota_message_filter_(quota_message_filter) {
-  g_quota_dispatcher_tls.Pointer()->Set(this);
+QuotaDispatcher::QuotaDispatcher() {
 }
 
 QuotaDispatcher::~QuotaDispatcher() {
@@ -73,28 +55,9 @@ QuotaDispatcher::~QuotaDispatcher() {
     iter.GetCurrentValue()->DidFail(quota::kQuotaErrorAbort);
     iter.Advance();
   }
-
-  g_quota_dispatcher_tls.Pointer()->Set(NULL);
 }
 
-QuotaDispatcher* QuotaDispatcher::ThreadSpecificInstance(
-    ThreadSafeSender* thread_safe_sender,
-    QuotaMessageFilter* quota_message_filter) {
-  if (g_quota_dispatcher_tls.Pointer()->Get())
-    return g_quota_dispatcher_tls.Pointer()->Get();
-
-  QuotaDispatcher* dispatcher = new QuotaDispatcher(
-      thread_safe_sender, quota_message_filter);
-  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
-    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
-  return dispatcher;
-}
-
-void QuotaDispatcher::OnWorkerRunLoopStopped() {
-  delete this;
-}
-
-void QuotaDispatcher::OnMessageReceived(const IPC::Message& msg) {
+bool QuotaDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(QuotaDispatcher, msg)
     IPC_MESSAGE_HANDLER(QuotaMsg_DidGrantStorageQuota,
@@ -104,7 +67,7 @@ void QuotaDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(QuotaMsg_DidFail, DidFail);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  DCHECK(handled) << "Unhandled message:" << msg.type();
+  return handled;
 }
 
 void QuotaDispatcher::QueryStorageUsageAndQuota(
@@ -113,8 +76,7 @@ void QuotaDispatcher::QueryStorageUsageAndQuota(
     Callback* callback) {
   DCHECK(callback);
   int request_id = pending_quota_callbacks_.Add(callback);
-  quota_message_filter_->RegisterRequestID(request_id, CurrentWorkerId());
-  thread_safe_sender_->Send(new QuotaHostMsg_QueryStorageUsageAndQuota(
+  ChildThread::current()->Send(new QuotaHostMsg_QueryStorageUsageAndQuota(
       request_id, origin_url, type));
 }
 
@@ -125,10 +87,8 @@ void QuotaDispatcher::RequestStorageQuota(
     int64 requested_size,
     Callback* callback) {
   DCHECK(callback);
-  DCHECK(CurrentWorkerId() == 0);
   int request_id = pending_quota_callbacks_.Add(callback);
-  quota_message_filter_->RegisterRequestID(request_id, CurrentWorkerId());
-  thread_safe_sender_->Send(new QuotaHostMsg_RequestStorageQuota(
+  ChildThread::current()->Send(new QuotaHostMsg_RequestStorageQuota(
       render_view_id, request_id, origin_url, type, requested_size));
 }
 

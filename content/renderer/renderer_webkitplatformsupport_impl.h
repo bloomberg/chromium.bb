@@ -35,7 +35,6 @@ class WebGraphicsContext3DProvider;
 namespace content {
 class DeviceMotionEventPump;
 class GamepadSharedMemoryReader;
-class QuotaMessageFilter;
 class RendererClipboardClient;
 class ThreadSafeSender;
 class WebClipboardImpl;
@@ -211,7 +210,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_refptr<base::MessageLoopProxy> child_thread_loop_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 
   scoped_refptr<cc::ContextProvider> shared_offscreen_context_;
 
