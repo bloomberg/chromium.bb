@@ -259,13 +259,11 @@ class _JSCModel(object):
       return misc_rows
 
     for category in table_info.keys():
-      content = table_info[category]
+      content = copy.deepcopy(table_info[category])
       for node in content:
         # If there is a 'partial' argument and it hasn't already been
         # converted to a Handlebar object, transform it to a template.
-        # TODO(epeterson/kalman): figure out why this check is necessary
-        # since it should be caching.
-        if 'partial' in node and not isinstance(node['partial'], Handlebar):
+        if 'partial' in node:
           node['partial'] = self._template_data_source.get(node['partial'])
       misc_rows.append({ 'title': category, 'content': content })
     return misc_rows
