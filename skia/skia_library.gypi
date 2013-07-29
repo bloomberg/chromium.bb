@@ -256,7 +256,9 @@
     }],
     [ 'OS != "ios"', {
       'dependencies': [
-        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/skia_webkit.gyp:skia_webkit',
+        # FIXME: Add a dependency on
+        # '<(DEPTH)/third_party/WebKit/public/blink_skia_config.gyp:blink_skia_config'
+        # once https://codereview.chromium.org/21137002 rolls into Chromium.
       ],
     }],
     [ 'OS != "mac"', {
