@@ -1583,9 +1583,6 @@ crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Fai
 
 crbug.com/264501 [ Debug ] xmlviewer/extensions-api.html [ Pass Crash ]
 
-crbug.com/264683 svg/W3C-SVG-1.1-SE/types-dom-06-f.svg [ NeedsRebaseline ]
-crbug.com/264683 svg/W3C-SVG-1.1/struct-dom-03-b.svg [ NeedsRebaseline ]
-
 crbug.com/263879 fast/dom/HTMLMeterElement/meter-element.html [ NeedsManualRebaseline ]
 crbug.com/263879 fast/dom/HTMLMeterElement/meter-optimums.html [ NeedsManualRebaseline ]
 crbug.com/263879 fast/dom/HTMLMeterElement/meter-styles.html [ NeedsManualRebaseline ]
