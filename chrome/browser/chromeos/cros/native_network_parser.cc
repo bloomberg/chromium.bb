@@ -1220,9 +1220,13 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
       return true;
     }
     case PROPERTY_INDEX_EAP_CA_CERT_PEM: {
-      std::string ca_cert_pem;
-      if (!value.GetAsString(&ca_cert_pem))
+      const base::ListValue* pems = NULL;
+      value.GetAsList(&pems);
+      if (!pems)
         break;
+      std::string ca_cert_pem;
+      if (!pems->empty())
+        pems->GetString(0, &ca_cert_pem);
       wifi_network->set_eap_server_ca_cert_pem(ca_cert_pem);
       return true;
     }
@@ -1355,9 +1359,13 @@ bool NativeVirtualNetworkParser::ParseProviderValue(PropertyIndex index,
     }
     case PROPERTY_INDEX_L2TPIPSEC_CA_CERT_PEM:
     case PROPERTY_INDEX_OPEN_VPN_CA_CERT_PEM: {
-      std::string ca_cert_pem;
-      if (!value.GetAsString(&ca_cert_pem))
+      const base::ListValue* pems = NULL;
+      value.GetAsList(&pems);
+      if (!pems)
         break;
+      std::string ca_cert_pem;
+      if (!pems->empty())
+        pems->GetString(0, &ca_cert_pem);
       network->set_ca_cert_pem(ca_cert_pem);
       return true;
     }
