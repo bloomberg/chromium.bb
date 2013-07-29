@@ -233,6 +233,16 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     with self.cache.Lookup(self.VERSION_KEY) as r:
       self.assertTrue(r.Exists())
 
+  def testLocalSDKPath(self):
+    """Fetch components from a local --sdk-path."""
+    sdk_dir = os.path.join(self.tempdir, 'sdk_dir')
+    osutils.SafeMakedirs(sdk_dir)
+    osutils.WriteFile(os.path.join(sdk_dir, constants.METADATA_JSON),
+                      SDKFetcherMock.FAKE_METADATA)
+    self.SetupCommandMock(extra_args=['--sdk-path', sdk_dir])
+    with cros_test_lib.LoggingCapturer():
+      self.cmd_mock.inst.Run()
+
   def testGomaError(self):
     """We print an error message when GomaError is raised."""
     self.SetupCommandMock()

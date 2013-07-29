@@ -24,6 +24,7 @@ from chromite.buildbot import constants
 
 
 COMMAND_NAME = 'chrome-sdk'
+CUSTOM_VERSION = 'custom'
 
 
 def Log(*args, **kwargs):
@@ -48,8 +49,9 @@ class SDKFetcher(object):
   For the version of ChromeOS specified, the class downloads and caches
   SDK components.
   """
-  SDK_VERSION_ENV = '%SDK_VERSION'
   SDK_BOARD_ENV = '%SDK_BOARD'
+  SDK_PATH_ENV = '%SDK_PATH'
+  SDK_VERSION_ENV = '%SDK_VERSION'
 
   SDKContext = collections.namedtuple(
       'SDKContext', ['version', 'metadata', 'key_map'])
@@ -59,18 +61,25 @@ class SDKFetcher(object):
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
 
-  def __init__(self, cache_dir, board, chrome_src=None, silent=False):
+  def __init__(self, cache_dir, board, clear_cache=False, chrome_src=None,
+               sdk_path=None, silent=False):
     """Initialize the class.
 
     Arguments:
       cache_dir: The toplevel cache dir to use.
       board: The board to manage the SDK for.
+      clear_cache: Clears the sdk cache during __init__.
       chrome_src: The location of the chrome checkout.  If unspecified, the
         cwd is presumed to be within a chrome checkout.
+      sdk_path: The path (whether a local directory or a gs:// path) to fetch
+        SDK components from.
       silent: If set, the fetcher prints less output.
     """
     self.gs_ctx = gs.GSContext.Cached(cache_dir, init_boto=True)
     self.cache_base = os.path.join(cache_dir, COMMAND_NAME)
+    if clear_cache:
+      logging.warning('Clearing the SDK cache.')
+      osutils.RmDir(self.cache_base, ignore_missing=True)
     self.tarball_cache = cache.TarballCache(
         os.path.join(self.cache_base, self.TARBALL_CACHE))
     self.misc_cache = cache.DiskCache(
@@ -79,8 +88,13 @@ class SDKFetcher(object):
     self.config = cbuildbot_config.FindCanonicalConfigForBoard(board)
     self.gs_base = '%s/%s' % (constants.DEFAULT_ARCHIVE_BUCKET,
                               self.config['name'])
+    self.clear_cache = clear_cache
     self.chrome_src = chrome_src
+    self.sdk_path = sdk_path
     self.silent = silent
+
+    if self.sdk_path is None:
+      self.sdk_path = os.environ.get(self.SDK_PATH_ENV)
 
   def _UpdateTarball(self, url, ref):
     """Worker function to fetch tarballs"""
@@ -93,10 +107,9 @@ class SDKFetcher(object):
   def _GetMetadata(self, version):
     """Return metadata (in the form of a dict) for a given version."""
     raw_json = None
-    full_version = self.GetFullVersion(version)
-    version_base = os.path.join(self.gs_base, full_version)
+    version_base = self._GetVersionGSBase(version)
     with self.misc_cache.Lookup(
-        (self.board, version, constants.METADATA_JSON)) as ref:
+        self._GetCacheKeyForComponent(version, constants.METADATA_JSON)) as ref:
       if ref.Exists(lock=True):
         raw_json = osutils.ReadFile(ref.path)
       else:
@@ -245,6 +258,21 @@ class SDKFetcher(object):
         ref.AssignText(full_version)
         return full_version
 
+  def _GetVersionGSBase(self, version):
+    """The base path of the SDK for a particular version."""
+    if self.sdk_path is not None:
+      return self.sdk_path
+
+    full_version = self.GetFullVersion(version)
+    return os.path.join(self.gs_base, full_version)
+
+  def _GetCacheKeyForComponent(self, version, component):
+    """Builds the cache key tuple for an SDK component."""
+    version_section = version
+    if self.sdk_path is not None:
+      version_section = self.sdk_path.replace('/', '%')
+    return (self.board, version_section, component)
+
   @contextlib.contextmanager
   def Prepare(self, components, version=None):
     """Ensures the components of an SDK exist and are read-locked.
@@ -268,7 +296,7 @@ class SDKFetcher(object):
       key_map: Dictionary that contains CacheReference objects for the SDK
         artifacts, indexed by cache key.
     """
-    if version is None:
+    if version is None and self.sdk_path is None:
       version = self.GetDefaultVersion()
       if version is None:
         version, _ = self.UpdateDefaultVersion()
@@ -286,12 +314,11 @@ class SDKFetcher(object):
           metadata['toolchain-url'] % {'target': tc_tuple})
       components.remove(self.TARGET_TOOLCHAIN_KEY)
 
-    full_version = self.GetFullVersion(version)
-    version_base = os.path.join(self.gs_base, full_version)
+    version_base = self._GetVersionGSBase(version)
     fetch_urls.update((t, os.path.join(version_base, t)) for t in components)
     try:
       for key, url in fetch_urls.iteritems():
-        cache_key = (self.board, version, key)
+        cache_key = self._GetCacheKeyForComponent(version, key)
         ref = self.tarball_cache.Lookup(cache_key)
         key_map[key] = ref
         ref.Acquire()
@@ -302,7 +329,10 @@ class SDKFetcher(object):
           # i.e.,DiskCache.ParallelSetDefault().
           self._UpdateTarball(url, ref)
 
-      yield self.SDKContext(version, metadata, key_map)
+      ctx_version = version
+      if self.sdk_path is not None:
+        ctx_version = CUSTOM_VERSION
+      yield self.SDKContext(ctx_version, metadata, key_map)
     finally:
       # TODO(rcui): Move to using cros_build_lib.ContextManagerStack()
       cros_build_lib.SafeRun([ref.Release for ref in key_map.itervalues()])
@@ -374,6 +404,12 @@ class ChromeSDKCommand(cros.CrosCommand):
 
   @classmethod
   def AddParser(cls, parser):
+    def ExpandGSPath(path):
+      """Expand a path, possibly a gs:// URL."""
+      if path.startswith(gs.BASE_GS_URL):
+        return path
+      return osutils.ExpandPath(path)
+
     super(ChromeSDKCommand, cls).AddParser(parser)
     parser.add_argument(
         '--board', required=True, help='The board SDK to use.')
@@ -397,6 +433,9 @@ class ChromeSDKCommand(cros.CrosCommand):
         help='Sets up the environment for building with clang.  Due to a bug '
              'with ninja, requires --make and possibly --chrome-src to be set.')
     parser.add_argument(
+        '--clear-sdk-cache', action='store_true', default=False,
+        help='Removes everything in the SDK cache before starting.')
+    parser.add_argument(
         '--cwd', type=osutils.ExpandPath,
         help='Specifies a directory to switch to after setting up the SDK '
              'shell.  Defaults to the current directory.')
@@ -404,6 +443,10 @@ class ChromeSDKCommand(cros.CrosCommand):
         '--internal', action='store_true', default=False,
         help='Sets up SDK for building official (internal) Chrome '
              'Chrome, rather than Chromium.')
+    parser.add_argument(
+        '--sdk-path', type=ExpandGSPath,
+        help='Provides a path, whether a local directory or a gs:// path, to '
+             'pull SDK components from.')
     parser.add_argument(
         '--make', action='store_true', default=False,
         help='If set, gyp_chromium will generate Make files instead of Ninja '
@@ -530,8 +573,11 @@ class ChromeSDKCommand(cros.CrosCommand):
                              env['PATH'])
 
     # Export internally referenced variables.
-    os.environ[self.sdk.SDK_VERSION_ENV] = sdk_ctx.version
     os.environ[self.sdk.SDK_BOARD_ENV] = board
+    if self.options.sdk_path:
+      os.environ[self.sdk.SDK_PATH_ENV] = self.options.sdk_path
+    os.environ[self.sdk.SDK_VERSION_ENV] = sdk_ctx.version
+
     # Export the board/version info in a more accessible way, so developers can
     # reference them in their chrome_sdk.bashrc files, as well as within the
     # chrome-sdk shell.
@@ -563,9 +609,11 @@ class ChromeSDKCommand(cros.CrosCommand):
     env['GYP_DEFINES'] = chrome_util.DictToGypDefines(gyp_dict)
 
     # PS1 sets the command line prompt and xterm window caption.
-    env['PS1'] = self._CreatePS1(
-        self.board, self.sdk.GetFullVersion(sdk_ctx.version),
-        chroot=options.chroot)
+    full_version = sdk_ctx.version
+    if full_version != CUSTOM_VERSION:
+      full_version = self.sdk.GetFullVersion(sdk_ctx.version)
+    env['PS1'] = self._CreatePS1(self.board, full_version,
+                                 chroot=options.chroot)
 
     out_dir = 'out_%s' % self.board
     env['builddir_name'] = out_dir
@@ -752,11 +800,16 @@ class ChromeSDKCommand(cros.CrosCommand):
     if self.options.clang and not self.options.chrome_src:
       cros_build_lib.Die('--clang requires --chrome-src to be set.')
 
+    if self.options.version and self.options.sdk_path:
+      cros_build_lib.Die('Cannot specify both --version and --sdk-path.')
+
     self.silent = bool(self.options.cmd)
     # Lazy initialize because SDKFetcher creates a GSContext() object in its
     # constructor, which may block on user input.
     self.sdk = SDKFetcher(self.options.cache_dir, self.options.board,
+                          clear_cache=self.options.clear_sdk_cache,
                           chrome_src=self.options.chrome_src,
+                          sdk_path=self.options.sdk_path,
                           silent=self.silent)
 
     if not self.sdk.config['internal']:
@@ -764,7 +817,7 @@ class ChromeSDKCommand(cros.CrosCommand):
                          'http://crbug.com/236500')
 
     prepare_version = self.options.version
-    if not prepare_version:
+    if not prepare_version and not self.options.sdk_path:
       prepare_version, _ = self.sdk.UpdateDefaultVersion()
 
     components = [self.sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_ENV_TAR]

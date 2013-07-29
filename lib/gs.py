@@ -216,6 +216,10 @@ class GSContext(object):
   def Cat(self, path, **kwargs):
     """Returns the contents of a GS object."""
     kwargs.setdefault('redirect_stdout', True)
+    if not path.startswith(BASE_GS_URL):
+      # gsutil doesn't support cat-ting a local path, so just run 'cat' in that
+      # case.
+      return cros_build_lib.RunCommand(['cat', path], **kwargs)
     return self._DoCommand(['cat', path], **kwargs)
 
   def CopyInto(self, local_path, remote_dir, filename=None, acl=None,
@@ -330,6 +334,10 @@ class GSContext(object):
     # For ease of testing, only pass headers if we got some.
     if headers:
       kwargs['headers'] = headers
+    if not (src_path.startswith(BASE_GS_URL) or
+            dest_path.startswith(BASE_GS_URL)):
+      # Don't retry on local copies.
+      kwargs.setdefault('retries', 0)
     return self._DoCommand(cmd, **kwargs)
 
   def LS(self, path, **kwargs):
