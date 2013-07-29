@@ -27,10 +27,13 @@
 #include "HTMLNames.h"
 #include "core/html/HTMLParamElement.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
+#include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
 #include "core/platform/Widget.h"
 #include "core/rendering/RenderApplet.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
@@ -98,6 +101,9 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
 
     RenderEmbeddedObject* renderer = renderEmbeddedObject();
 
+    Frame* frame = document()->frame();
+    ASSERT(frame);
+
     LayoutUnit contentWidth = renderer->style()->width().isFixed() ? LayoutUnit(renderer->style()->width().value()) :
         renderer->width() - renderer->borderAndPaddingWidth();
     LayoutUnit contentHeight = renderer->style()->height().isFixed() ? LayoutUnit(renderer->style()->height().value()) :
@@ -111,6 +117,15 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
 
     const AtomicString& codeBase = getAttribute(codebaseAttr);
     if (!codeBase.isNull()) {
+        KURL codeBaseURL = document()->completeURL(codeBase);
+        if (!document()->securityOrigin()->canDisplay(codeBaseURL)) {
+            FrameLoader::reportLocalLoadFailed(frame, codeBaseURL.string());
+            return;
+        }
+        const char javaAppletMimeType[] = "application/x-java-applet";
+        if (!document()->contentSecurityPolicy()->allowObjectFromSource(codeBaseURL)
+            || !document()->contentSecurityPolicy()->allowPluginType(javaAppletMimeType, javaAppletMimeType, codeBaseURL))
+            return;
         paramNames.append("codeBase");
         paramValues.append(codeBase.string());
     }
@@ -128,7 +143,8 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
     }
 
     paramNames.append("baseURL");
-    paramValues.append(document()->baseURL().string());
+    KURL baseURL = document()->baseURL();
+    paramValues.append(baseURL.string());
 
     const AtomicString& mayScript = getAttribute(mayscriptAttr);
     if (!mayScript.isNull()) {
@@ -148,10 +164,17 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
         paramValues.append(param->value());
     }
 
-    Frame* frame = document()->frame();
-    ASSERT(frame);
+    RefPtr<Widget> widget;
+    if (frame->loader()->allowPlugins(AboutToInstantiatePlugin))
+        widget = frame->loader()->client()->createJavaAppletWidget(roundedIntSize(LayoutSize(contentWidth, contentHeight)), this, baseURL, paramNames, paramValues);
 
-    renderer->setWidget(frame->loader()->subframeLoader()->createJavaAppletWidget(roundedIntSize(LayoutSize(contentWidth, contentHeight)), this, paramNames, paramValues));
+    if (!widget) {
+        if (!renderer->showsUnavailablePluginIndicator())
+            renderer->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginMissing);
+        return;
+    }
+    frame->loader()->setContainsPlugins();
+    renderer->setWidget(widget);
 }
 
 bool HTMLAppletElement::canEmbedJava() const
