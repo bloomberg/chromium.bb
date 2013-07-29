@@ -62,7 +62,7 @@ void V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String> name, const v8:
         return;
     }
 
-    if (!event->serializedScriptValue()) {
+    if (!event->serializedDetail()) {
         // If we're in an isolated world and the event was created in the main world,
         // we need to find the 'detail' property on the main world wrapper and clone it.
         v8::Local<v8::Value> mainWorldDetail = getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenPropertyName::detail());
@@ -70,8 +70,8 @@ void V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String> name, const v8:
             event->setSerializedDetail(SerializedScriptValue::createAndSwallowExceptions(mainWorldDetail, info.GetIsolate()));
     }
 
-    if (event->serializedScriptValue()) {
-        result = event->serializedScriptValue()->deserialize();
+    if (event->serializedDetail()) {
+        result = event->serializedDetail()->deserialize();
         v8SetReturnValue(info, cacheState(info.Holder(), result));
         return;
     }
@@ -82,7 +82,7 @@ void V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String> name, const v8:
 void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     CustomEvent* event = V8CustomEvent::toNative(args.Holder());
-    ASSERT(!event->serializedScriptValue());
+    ASSERT(!event->serializedDetail());
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, typeArg, args[0]);
     V8TRYCATCH_VOID(bool, canBubbleArg, args[1]->BooleanValue());

@@ -52,19 +52,19 @@ public:
 
     virtual const AtomicString& interfaceName() const;
 
-    SerializedScriptValue* serializedScriptValue() { return m_serializedScriptValue.get(); }
+    SerializedScriptValue* serializedDetail() { return m_serializedDetail.get(); }
 
     void setSerializedDetail(PassRefPtr<SerializedScriptValue> detail)
     {
-        ASSERT(!m_serializedScriptValue);
-        m_serializedScriptValue = detail;
+        ASSERT(!m_serializedDetail);
+        m_serializedDetail = detail;
     }
 
 private:
     CustomEvent();
     CustomEvent(const AtomicString& type, const CustomEventInit& initializer);
 
-    RefPtr<SerializedScriptValue> m_serializedScriptValue;
+    RefPtr<SerializedScriptValue> m_serializedDetail;
 };
 
 } // namespace WebCore

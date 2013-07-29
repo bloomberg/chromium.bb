@@ -46,14 +46,14 @@ CustomEvent::~CustomEvent()
 {
 }
 
-void CustomEvent::initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> serializedScriptValue)
+void CustomEvent::initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> serializedDetail)
 {
     if (dispatched())
         return;
 
     initEvent(type, canBubble, cancelable);
 
-    m_serializedScriptValue = serializedScriptValue;
+    m_serializedDetail = serializedDetail;
 }
 
 const AtomicString& CustomEvent::interfaceName() const
