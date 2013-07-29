@@ -80,6 +80,8 @@ webkit.org/b/90488 [ Debug ] inspector-protocol [ Slow ]
 crbug.com/265059 [ Debug ] webaudio/audiobuffersource-loop-points.html [ Slow ]
 crbug.com/265059 [ Debug ] webaudio/audiobuffersource-playbackrate.html [ Slow ]
 crbug.com/265059 [ Debug ] webaudio/audiobuffersource-multi-channels.html [ Slow ]
+crbug.com/265059 [ Debug ] webaudio/up-mixing-mono-51.html [ Slow ]
+crbug.com/265059 [ Debug ] webaudio/up-mixing-stereo-51.html [ Slow ]
 
 crbug.com/257132 http/tests/inspector/extensions-useragent.html [ Failure ]
 crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure ]
