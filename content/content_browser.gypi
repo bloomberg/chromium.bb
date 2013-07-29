@@ -559,8 +559,6 @@
     'browser/host_zoom_map_impl.h',
     'browser/hyphenator/hyphenator_message_filter.cc',
     'browser/hyphenator/hyphenator_message_filter.h',
-    'browser/in_process_webkit/browser_webkitplatformsupport_impl.cc',
-    'browser/in_process_webkit/browser_webkitplatformsupport_impl.h',
     'browser/indexed_db/indexed_db.h',
     'browser/indexed_db/indexed_db_backing_store.cc',
     'browser/indexed_db/indexed_db_backing_store.h',

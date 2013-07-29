@@ -23,4 +23,7 @@ specific_include_rules = {
     "+content/public/browser/web_contents_view.h",
     "+media/filters",
   ],
+  "render_sandbox_host_linux\.cc": [
+    "+third_party/WebKit/public/web/WebKit.h"
+  ],
 }
