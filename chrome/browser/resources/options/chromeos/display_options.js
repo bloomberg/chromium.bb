@@ -828,22 +828,24 @@ cr.define('options', function() {
         }
       }
 
-      this.mirroring_ = mirroring;
       this.layout_ = layout;
       this.offset_ = offset;
       this.dirty_ = false;
 
       $('display-options-toggle-mirroring').textContent =
           loadTimeData.getString(
-              this.mirroring_ ? 'stopMirroring' : 'startMirroring');
+              mirroring ? 'stopMirroring' : 'startMirroring');
 
       // Focus to the first display next to the primary one when |displays| list
       // is updated.
-      if (this.mirroring_)
+      if (mirroring) {
         this.focusedIndex_ = null;
-      else if (this.displays_.length != displays.length)
+      } else if (this.mirroring_ != mirroring ||
+                 this.displays_.length != displays.length) {
         this.focusedIndex_ = 0;
+      }
 
+      this.mirroring_ = mirroring;
       this.displays_ = displays;
 
       this.resetDisplaysView_();
