@@ -112,10 +112,10 @@ ui.html.navbar = function(opt_extraHtml)
 {
     var html = '<div style="border-bottom:1px dashed">';
     html = ui.html._dashboardLink('Overview', 'overview.html') +
-        ui.html._dashboardLink('Stats', 'aggregate_results.html') +
-        ui.html._dashboardLink('Timeline', 'timeline_explorer.html') +
         ui.html._dashboardLink('Results', 'flakiness_dashboard.html') +
-        ui.html._dashboardLink('Treemap', 'treemap.html');
+        ui.html._dashboardLink('Times', 'treemap.html') +
+        ui.html._dashboardLink('Stats', 'aggregate_results.html') +
+        ui.html._dashboardLink('Stats Timeline', 'timeline_explorer.html');
 
     if (opt_extraHtml)
         html += opt_extraHtml;

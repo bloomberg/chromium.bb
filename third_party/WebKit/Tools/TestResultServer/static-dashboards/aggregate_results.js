@@ -147,6 +147,11 @@ function filteredValues(values, desiredNumberOfPoints)
     });
 }
 
+function isAllZeros(values)
+{
+    return !values.some(function(element) { return element > 0; });
+}
+
 function chartUrl(title, values, revisionLabel, startRevision, endRevision, desiredNumberOfPoints)
 {
     var maxValue = 0;
@@ -158,6 +163,8 @@ function chartUrl(title, values, revisionLabel, startRevision, endRevision, desi
     var numLabels = 0;
 
     for (var expectation in values) {
+        if (expectation == 'WONTFIX' || isAllZeros(values[expectation]))
+            continue;
         chartData += (chartData ? ',' : 'e:') + extendedEncode(filteredValues(values[expectation], desiredNumberOfPoints).reverse(), maxValue);
 
         if (expectation) {

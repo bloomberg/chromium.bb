@@ -34,9 +34,9 @@ from google.appengine.ext.webapp import template
 dashboards = [
     ["Overview", "/dashboards/overview.html"],
     ["Results", "/dashboards/flakiness_dashboard.html"],
-    ["Timeline", "/dashboards/timeline_explorer.html"],
-    ["Treemap", "/dashboards/treemap.html"],
+    ["Times", "/dashboards/treemap.html"],
     ["Stats", "/dashboards/aggregate_results.html"],
+    ["Stats Timeline", "/dashboards/timeline_explorer.html"],
 ]
 
 menu = [

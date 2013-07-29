@@ -63,7 +63,8 @@ function setupAggregateResultsData(includeRevisonNumbers)
             "TEXT": [ 89, 60 ],
             "TIMEOUT": [ 72, 48 ],
             "PASS": [ 28104, 28586 ],
-            "AUDIO": [ 0, 0 ]
+            "AUDIO": [ 0, 0 ],
+            "WONTFIX": [ 2, 2 ],
         },
         "buildNumbers": [5, 3]
     }
@@ -76,7 +77,7 @@ function setupAggregateResultsData(includeRevisonNumbers)
     g_totalFailureCounts = {};
 }
 
-test('htmlForBuilder', 1, function() {
+test('htmlForBuilderIncludeRevisionNumbers', 1, function() {
     var includeRevisonNumbers = true;
     setupAggregateResultsData(includeRevisonNumbers);
     g_history.dashboardSpecificState.rawValues = false;
@@ -84,8 +85,8 @@ test('htmlForBuilder', 1, function() {
     var expectedHtml = '<div class=container>' +
         '<h2>Blink Linux</h2>' +
         '<a href="timeline_explorer.html#useTestData=true&builder=Blink Linux">' +
-            '<img src="http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=e:qe..&chg=15,15,1,3&chxt=x,x,y&chxl=1:||Blink Revision|&chxr=0,1233,1234|2,0,1445&chtt=Total failing">' +
-            '<img src="http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=e:AjAt,AcAV,A7A7,DuEc,pB..,DSE4,CoD8,AAAA&chg=15,15,1,3&chxt=x,x,y&chxl=1:||Blink Revision|&chxr=0,1233,1234|2,0,1167&chtt=Detailed breakdown&chdl=CRASH|MISSING|IMAGE+TEXT|IMAGE|SKIP|TEXT|TIMEOUT|AUDIO&chco=FF0000,00FF00,0000FF,000000,FF6EB4,FFA812,9B30FF,00FFCC">' +
+            '<img src="http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=e:qg..&chg=15,15,1,3&chxt=x,x,y&chxl=1:||Blink Revision|&chxr=0,1233,1234|2,0,1447&chtt=Total failing">' +
+            '<img src="http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=e:AjAt,AcAV,A7A7,DuEc,pB..,DSE4,CoD8&chg=15,15,1,3&chxt=x,x,y&chxl=1:||Blink Revision|&chxr=0,1233,1234|2,0,1167&chtt=Detailed breakdown&chdl=CRASH|MISSING|IMAGE+TEXT|IMAGE|SKIP|TEXT|TIMEOUT&chco=FF0000,00FF00,0000FF,000000,FF6EB4,FFA812,9B30FF">' +
         '</a>' +
     '</div>';
     equal(expectedHtml, htmlForBuilder('Blink Linux'));
@@ -99,14 +100,14 @@ test('htmlForBuilder', 1, function() {
     var expectedHtml = '<div class=container>' +
         '<h2>Blink Linux</h2>' +
         '<a href="timeline_explorer.html#useTestData=true&builder=Blink Linux">' +
-            '<img src="http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=e:qe..&chg=15,15,1,3&chxt=x,x,y&chxl=1:||Build Number|&chxr=0,3,5|2,0,1445&chtt=Total failing">' +
-            '<img src="http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=e:AjAt,AcAV,A7A7,DuEc,pB..,DSE4,CoD8,AAAA&chg=15,15,1,3&chxt=x,x,y&chxl=1:||Build Number|&chxr=0,3,5|2,0,1167&chtt=Detailed breakdown&chdl=CRASH|MISSING|IMAGE+TEXT|IMAGE|SKIP|TEXT|TIMEOUT|AUDIO&chco=FF0000,00FF00,0000FF,000000,FF6EB4,FFA812,9B30FF,00FFCC">' +
+            '<img src="http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=e:qg..&chg=15,15,1,3&chxt=x,x,y&chxl=1:||Build Number|&chxr=0,3,5|2,0,1447&chtt=Total failing">' +
+            '<img src="http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=e:AjAt,AcAV,A7A7,DuEc,pB..,DSE4,CoD8&chg=15,15,1,3&chxt=x,x,y&chxl=1:||Build Number|&chxr=0,3,5|2,0,1167&chtt=Detailed breakdown&chdl=CRASH|MISSING|IMAGE+TEXT|IMAGE|SKIP|TEXT|TIMEOUT&chco=FF0000,00FF00,0000FF,000000,FF6EB4,FFA812,9B30FF">' +
         '</a>' +
     '</div>';
     equal(expectedHtml, htmlForBuilder('Blink Linux'));
 });
 
-test('htmlForBuilderRawResults', 1, function() {
+test('htmlForBuilderRawResultsIncludeRevisionNumbers', 1, function() {
     var includeRevisonNumbers = true;
     setupAggregateResultsData(includeRevisonNumbers);
     g_history.dashboardSpecificState.rawValues = true;
@@ -117,9 +118,9 @@ test('htmlForBuilderRawResults', 1, function() {
             '<tbody>' +
                 '<tr><td>Blink Revision</td><td>1234</td><td>1233</td></tr>' +
                 '<tr><td>Chrome Revision</td><td>4567</td><td>4566</td></tr>' +
-                '<tr><td>Percent passed</td><td>95.1%</td><td>96.8%</td></tr>' +
-                '<tr><td>Failures</td><td>1445</td><td>959</td></tr>' +
-                '<tr><td>Total Tests</td><td>29549</td><td>29545</td></tr>' +
+                '<tr><td>Percent passed</td><td>95.1%</td><td>96.7%</td></tr>' +
+                '<tr><td>Failures</td><td>1447</td><td>961</td></tr>' +
+                '<tr><td>Total Tests</td><td>29551</td><td>29547</td></tr>' +
                 '<tr><td>CRASH</td><td>13</td><td>10</td></tr>' +
                 '<tr><td>MISSING</td><td>6</td><td>8</td></tr>' +
                 '<tr><td>IMAGE+TEXT</td><td>17</td><td>17</td></tr>' +
@@ -129,6 +130,7 @@ test('htmlForBuilderRawResults', 1, function() {
                 '<tr><td>TIMEOUT</td><td>72</td><td>48</td></tr>' +
                 '<tr><td>PASS</td><td>28104</td><td>28586</td></tr>' +
                 '<tr><td>AUDIO</td><td>0</td><td>0</td></tr>' +
+                '<tr><td>WONTFIX</td><td>2</td><td>2</td></tr>' +
             '</tbody>' +
         '</table>' +
     '</div>';
@@ -144,9 +146,9 @@ test('htmlForBuilderRawResults', 1, function() {
         '<h2>Blink Linux</h2>' +
         '<table>' +
             '<tbody>' +
-                '<tr><td>Percent passed</td><td>95.1%</td><td>96.8%</td></tr>' +
-                '<tr><td>Failures</td><td>1445</td><td>959</td></tr>' +
-                '<tr><td>Total Tests</td><td>29549</td><td>29545</td></tr>' +
+                '<tr><td>Percent passed</td><td>95.1%</td><td>96.7%</td></tr>' +
+                '<tr><td>Failures</td><td>1447</td><td>961</td></tr>' +
+                '<tr><td>Total Tests</td><td>29551</td><td>29547</td></tr>' +
                 '<tr><td>CRASH</td><td>13</td><td>10</td></tr>' +
                 '<tr><td>MISSING</td><td>6</td><td>8</td></tr>' +
                 '<tr><td>IMAGE+TEXT</td><td>17</td><td>17</td></tr>' +
@@ -156,6 +158,7 @@ test('htmlForBuilderRawResults', 1, function() {
                 '<tr><td>TIMEOUT</td><td>72</td><td>48</td></tr>' +
                 '<tr><td>PASS</td><td>28104</td><td>28586</td></tr>' +
                 '<tr><td>AUDIO</td><td>0</td><td>0</td></tr>' +
+                '<tr><td>WONTFIX</td><td>2</td><td>2</td></tr>' +
             '</tbody>' +
         '</table>' +
     '</div>';
