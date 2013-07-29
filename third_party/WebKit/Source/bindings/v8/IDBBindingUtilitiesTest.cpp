@@ -24,25 +24,17 @@
  */
 
 #include "config.h"
-#include "FrameTestHelpers.h"
-#include "WebFrame.h"
-#include "WebFrameImpl.h"
-#include "WebView.h"
 #include "bindings/v8/IDBBindingUtilities.h"
-#include "bindings/v8/ScriptController.h"
+
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8PerIsolateData.h"
 #include "bindings/v8/V8Utilities.h"
-#include "core/dom/Document.h"
-#include "core/page/Frame.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 
 #include <gtest/gtest.h>
-#include "wtf/Vector.h"
 
 using namespace WebCore;
-using namespace WebKit;
 
 namespace {
 
@@ -100,35 +92,18 @@ void checkKeyPathNumberValue(const ScriptValue& value, const String& keyPath, in
 class IDBKeyFromValueAndKeyPathTest : public testing::Test {
 public:
     IDBKeyFromValueAndKeyPathTest()
-        : m_webView(0)
+        : m_handleScope(v8::Isolate::GetCurrent())
+        , m_scope(v8::Context::New(v8::Isolate::GetCurrent()))
     {
-    }
-
-    void SetUp() OVERRIDE
-    {
-        m_webView = FrameTestHelpers::createWebViewAndLoad("about:blank");
-        m_webView->setFocus(true);
-    }
-
-    void TearDown() OVERRIDE
-    {
-        m_webView->close();
-    }
-
-    v8::Handle<v8::Context> context()
-    {
-        return static_cast<WebFrameImpl*>(m_webView->mainFrame())->frame()->script()->mainWorldContext();
     }
 
 private:
-    WebView* m_webView;
+    v8::HandleScope m_handleScope;
+    v8::Context::Scope m_scope;
 };
 
 TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)
 {
-    v8::HandleScope handleScope;
-    v8::Context::Scope scope(context());
-
     v8::Local<v8::Object> object = v8::Object::New();
     object->Set(v8::String::New("foo"), v8::String::New("zoo"));
 
@@ -140,9 +115,6 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)
 
 TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
 {
-    v8::HandleScope handleScope;
-    v8::Context::Scope scope(context());
-
     v8::Local<v8::Object> object = v8::Object::New();
     object->Set(v8::String::New("foo"), v8::Number::New(456));
 
@@ -154,9 +126,6 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
 
 TEST_F(IDBKeyFromValueAndKeyPathTest, SubProperty)
 {
-    v8::HandleScope handleScope;
-    v8::Context::Scope scope(context());
-
     v8::Local<v8::Object> object = v8::Object::New();
     v8::Local<v8::Object> subProperty = v8::Object::New();
     subProperty->Set(v8::String::New("bar"), v8::String::New("zee"));
@@ -173,9 +142,6 @@ class InjectIDBKeyTest : public IDBKeyFromValueAndKeyPathTest {
 
 TEST_F(InjectIDBKeyTest, DISABLED_TopLevelPropertyStringValue)
 {
-    v8::HandleScope handleScope;
-    v8::Context::Scope scope(context());
-
     v8::Local<v8::Object> object = v8::Object::New();
     object->Set(v8::String::New("foo"), v8::String::New("zoo"));
 
@@ -188,9 +154,6 @@ TEST_F(InjectIDBKeyTest, DISABLED_TopLevelPropertyStringValue)
 
 TEST_F(InjectIDBKeyTest, DISABLED_SubProperty)
 {
-    v8::HandleScope handleScope;
-    v8::Context::Scope scope(context());
-
     v8::Local<v8::Object> object = v8::Object::New();
     v8::Local<v8::Object> subProperty = v8::Object::New();
     subProperty->Set(v8::String::New("bar"), v8::String::New("zee"));

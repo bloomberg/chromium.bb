@@ -234,6 +234,7 @@
             'v8/npruntime_priv.h',
         ],
         'bindings_unittest_files': [
+            'v8/IDBBindingUtilitiesTest.cpp',
             'v8/ScriptPromiseResolverTest.cpp',
         ],
         'conditions': [
