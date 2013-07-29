@@ -4,8 +4,8 @@
 
 #include "content/renderer/pepper/ppb_x509_certificate_private_impl.h"
 
-#include "content/renderer/pepper/plugin_delegate.h"
-#include "content/renderer/pepper/resource_helper.h"
+#include "content/renderer/render_thread_impl.h"
+#include "ppapi/proxy/ppapi_messages.h"
 
 namespace content {
 
@@ -23,11 +23,10 @@ PP_Resource PPB_X509Certificate_Private_Impl::CreateResource(
 bool PPB_X509Certificate_Private_Impl::ParseDER(
     const std::vector<char>& der,
     ::ppapi::PPB_X509Certificate_Fields* result) {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
-  if (!plugin_delegate)
-    return false;
-
-  return plugin_delegate->X509CertificateParseDER(der, result);
+  bool succeeded = false;
+  RenderThreadImpl::current()->Send(
+      new PpapiHostMsg_PPBX509Certificate_ParseDER(der, &succeeded, result));
+  return succeeded;
 }
 
 PPB_X509Certificate_Private_Impl::~PPB_X509Certificate_Private_Impl() {

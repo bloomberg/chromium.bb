@@ -105,6 +105,7 @@ class PluginObject;
 class PPB_Graphics3D_Impl;
 class PPB_ImageData_Impl;
 class PPB_URLLoader_Impl;
+class RenderViewImpl;
 
 // Represents one time a plugin appears on one web page.
 //
@@ -122,11 +123,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // PPP_Instance interface, returns NULL.
   static PepperPluginInstanceImpl* Create(
       PluginDelegate* delegate,
-      RenderView* render_view,
+      RenderViewImpl* render_view,
       PluginModule* module,
       WebKit::WebPluginContainer* container,
       const GURL& plugin_url);
   PluginDelegate* delegate() const { return delegate_; }
+  RenderViewImpl* render_view() const { return render_view_; }
   PluginModule* module() const { return module_.get(); }
   MessageChannel& message_channel() { return *message_channel_; }
 
@@ -407,7 +409,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual void ZoomChanged(PP_Instance instance, double factor) OVERRIDE;
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
-                                 double maximium_factor) OVERRIDE;
+                                 double maximum_factor) OVERRIDE;
   virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
   virtual PP_Bool SetCursor(PP_Instance instance,
                             PP_MouseCursor_Type type,
@@ -553,7 +555,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // PPP_Instance_Combined details while still having 1 constructor to maintain
   // for member initialization.
   PepperPluginInstanceImpl(PluginDelegate* delegate,
-                           RenderView* render_view,
+                           RenderViewImpl* render_view,
                            PluginModule* module,
                            ::ppapi::PPP_Instance_Combined* instance_interface,
                            WebKit::WebPluginContainer* container,
@@ -639,7 +641,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void ResetSizeAttributesAfterFullscreen();
 
   PluginDelegate* delegate_;
-  RenderView* render_view_;
+  RenderViewImpl* render_view_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;
   // If this is the NaCl plugin, we create a new module when we switch to the

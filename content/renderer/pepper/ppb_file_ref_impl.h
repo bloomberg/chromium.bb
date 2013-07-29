@@ -17,6 +17,12 @@
 #include "ppapi/shared_impl/var.h"
 #include "url/gurl.h"
 
+namespace ppapi {
+namespace host {
+class ResourceHost;
+}
+}
+
 namespace content {
 
 using ::ppapi::StringVar;
@@ -93,6 +99,10 @@ class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared {
   // function returns true if the filesystem is opened and isn't external as an
   // access check for these functions.
   bool IsValidNonExternalFileSystem() const;
+
+  ppapi::host::ResourceHost* GetResourceHost() const;
+  static ppapi::host::ResourceHost* GetResourceHostInternal(
+      PP_Instance instance, PP_Resource resource);
 
   // 0 for external filesystems.  This is a plugin side resource that we don't
   // hold a reference here, so file_system_ could be destroyed earlier than

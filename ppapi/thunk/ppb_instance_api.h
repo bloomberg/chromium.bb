@@ -136,7 +136,7 @@ class PPB_Instance_API {
   virtual void ZoomChanged(PP_Instance instance, double factor) = 0;
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
-                                 double maximium_factor) = 0;
+                                 double maximum_factor) = 0;
   // Testing and URLUtil.
   virtual PP_Var GetDocumentURL(PP_Instance instance,
                                 PP_URLComponents_Dev* components) = 0;

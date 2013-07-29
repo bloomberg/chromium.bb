@@ -32,10 +32,8 @@
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/quota/quota_types.h"
 
 class GURL;
-class SkBitmap;
 class SkCanvas;
 class TransportDIB;
 struct PP_NetAddress_Private;
@@ -68,23 +66,15 @@ class Point;
 namespace ppapi {
 class PepperFilePath;
 class PpapiPermissions;
-class PPB_X509Certificate_Fields;
 class SocketOptionData;
 struct DeviceRefData;
 struct HostPortPair;
-struct Preferences;
-
-namespace thunk {
-class ResourceCreationAPI;
-}
 
 }  // namespace ppapi
 
 namespace WebKit {
 typedef SkCanvas WebCanvas;
 class WebGamepads;
-class WebPlugin;
-struct WebCompositionUnderline;
 struct WebCursorInfo;
 struct WebURLError;
 class WebURLLoaderClient;
@@ -119,13 +109,6 @@ class PluginDelegate {
       PepperPluginInstanceImpl* instance) = 0;
   // Notification that the text selection in the given plugin is changed.
   virtual void PluginSelectionChanged(PepperPluginInstanceImpl* instance) = 0;
-  // Requests simulating IME events for testing purpose.
-  virtual void SimulateImeSetComposition(
-      const base::string16& text,
-      const std::vector<WebKit::WebCompositionUnderline>& underlines,
-      int selection_start,
-      int selection_end) = 0;
-  virtual void SimulateImeConfirmComposition(const base::string16& text) = 0;
 
   // Notification that the given plugin has crashed. When a plugin crashes, all
   // instances associated with that plugin will notify that they've crashed via
@@ -140,109 +123,12 @@ class PluginDelegate {
   // from this call.
   virtual void InstanceDeleted(PepperPluginInstanceImpl* instance) = 0;
 
-  // Creates the resource creation API for the given instance.
-  virtual scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
-      CreateResourceCreationAPI(PepperPluginInstanceImpl* instance) = 0;
-
-  // Returns a pointer (ownership not transferred) to the bitmap to paint the
-  // sad plugin screen with. Returns NULL on failure.
-  virtual SkBitmap* GetSadPluginBitmap() = 0;
-
-  // Creates a replacement plug-in that is shown when the plug-in at |file_path|
-  // couldn't be loaded.
-  virtual WebKit::WebPlugin* CreatePluginReplacement(
-      const base::FilePath& file_path) = 0;
-
-  // Get audio hardware output sample rate.
-  virtual uint32_t GetAudioHardwareOutputSampleRate() = 0;
-
-  // Get audio hardware output buffer size.
-  virtual uint32_t GetAudioHardwareOutputBufferSize() = 0;
-
-  // Notifies that the number of find results has changed.
-  virtual void NumberOfFindResultsChanged(int identifier,
-                                          int total,
-                                          bool final_result) = 0;
-
-  // Notifies that the index of the currently selected item has been updated.
-  virtual void SelectedFindResultChanged(int identifier, int index) = 0;
-
   // Sends an async IPC to open a local file.
   typedef base::Callback<void (base::PlatformFileError, base::PassPlatformFile)>
       AsyncOpenFileCallback;
   virtual bool AsyncOpenFile(const base::FilePath& path,
                              int flags,
                              const AsyncOpenFileCallback& callback) = 0;
-
-  // These functions expose some of PepperFileSystemHost methods for
-  // PPB_FileRef_Impl (which is in webkit) to access.  Once we migrate FileRef
-  // to the new design in content/, we won't need this delegation.
-  // TODO(victorhsieh): remove these delegation.
-  virtual bool IsFileSystemOpened(PP_Instance instance,
-                                  PP_Resource resource) const = 0;
-  virtual PP_FileSystemType GetFileSystemType(PP_Instance instance,
-                                              PP_Resource resource) const = 0;
-  virtual GURL GetFileSystemRootUrl(PP_Instance instance,
-                                    PP_Resource resource) const = 0;
-
-  // Sends an async IPC to open a file through filesystem API.
-  // When a file is successfully opened, |callback| is invoked with
-  // PLATFORM_FILE_OK, the opened file handle, and a callback function for
-  // notifying that the file is closed. When the users of this function
-  // finished using the file, they must close the file handle and then must call
-  // the supplied callback function.
-  typedef base::Callback<void (base::PlatformFileError)>
-      NotifyCloseFileCallback;
-  typedef base::Callback<
-      void (base::PlatformFileError error,
-            base::PassPlatformFile file,
-            quota::QuotaLimitType quota_policy,
-            const NotifyCloseFileCallback& close_file_callback)>
-      AsyncOpenFileSystemURLCallback;
-  virtual void AsyncOpenFileSystemURL(
-      const GURL& path,
-      int flags,
-      const AsyncOpenFileSystemURLCallback& callback) = 0;
-
-  // Callback typedefs for FileSystem related methods.
-  typedef base::Callback<void (base::PlatformFileError)> StatusCallback;
-  typedef base::Callback<void(
-      const std::vector<fileapi::DirectoryEntry>& entries,
-      bool has_more)> ReadDirectoryCallback;
-  typedef base::Callback<void(
-      const base::PlatformFileInfo& file_info)> MetadataCallback;
-
-  virtual void MakeDirectory(
-      const GURL& path,
-      bool recursive,
-      const StatusCallback& callback) = 0;
-  virtual void Query(const GURL& path,
-                     const MetadataCallback& success_callback,
-                     const StatusCallback& error_callback) = 0;
-  virtual void ReadDirectoryEntries(
-      const GURL& path,
-      const ReadDirectoryCallback& success_callback,
-      const StatusCallback& error_callback) = 0;
-  virtual void Touch(const GURL& path,
-                     const base::Time& last_access_time,
-                     const base::Time& last_modified_time,
-                     const StatusCallback& callback) = 0;
-  virtual void SetLength(const GURL& path,
-                         int64_t length,
-                         const StatusCallback& callback) = 0;
-  virtual void Delete(const GURL& path,
-                      const StatusCallback& callback) = 0;
-  virtual void Rename(const GURL& file_path,
-                      const GURL& new_file_path,
-                      const StatusCallback& callback) = 0;
-  virtual void ReadDirectory(
-      const GURL& directory_path,
-      const ReadDirectoryCallback& success_callback,
-      const StatusCallback& error_callback) = 0;
-
-  // Synchronously returns the platform file path for a filesystem URL.
-  virtual void SyncGetFileSystemPlatformPath(const GURL& url,
-                                             base::FilePath* platform_path) = 0;
 
   // Returns a MessageLoopProxy instance associated with the message loop
   // of the file thread in this renderer.
@@ -283,34 +169,6 @@ class PluginDelegate {
       PP_Resource socket_resource,
       uint32 socket_id) = 0;
 
-  // For PPB_X509Certificate_Private.
-  virtual bool X509CertificateParseDER(
-      const std::vector<char>& der,
-      ::ppapi::PPB_X509Certificate_Fields* fields) = 0;
-
-  // Create a fullscreen container for a plugin instance. This effectively
-  // switches the plugin to fullscreen.
-  virtual FullscreenContainer* CreateFullscreenContainer(
-      PepperPluginInstanceImpl* instance) = 0;
-
-  // Gets the size of the screen. The fullscreen window will be created at that
-  // size.
-  virtual gfx::Size GetScreenSize() = 0;
-
-  // Returns a string with the name of the default 8-bit char encoding.
-  virtual std::string GetDefaultEncoding() = 0;
-
-  // Sets the minimum and maximum zoom factors.
-  virtual void ZoomLimitsChanged(double minimum_factor,
-                                 double maximum_factor) = 0;
-
-  // Create an anonymous shared memory segment of size |size| bytes, and return
-  // a pointer to it, or NULL on error.  Caller owns the returned pointer.
-  virtual base::SharedMemory* CreateAnonymousSharedMemory(size_t size) = 0;
-
-  // Returns the current preferences.
-  virtual ::ppapi::Preferences GetPreferences() = 0;
-
   // Locks the mouse for |instance|. If false is returned, the lock is not
   // possible. If true is returned then the lock is pending. Success or
   // failure will be delivered asynchronously via
@@ -337,23 +195,8 @@ class PluginDelegate {
   // Notifies that |instance| has received a mouse event.
   virtual void DidReceiveMouseEvent(PepperPluginInstanceImpl* instance) = 0;
 
-  // Determines if the browser entered fullscreen mode.
-  virtual bool IsInFullscreenMode() = 0;
-
   // Retrieve current gamepad data.
   virtual void SampleGamepads(WebKit::WebGamepads* data) = 0;
-
-  // Returns true if the containing page is visible.
-  virtual bool IsPageVisible() const = 0;
-
-  // Share a given handle with the target process.
-  virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
-      base::PlatformFile handle,
-      base::ProcessId target_process_id,
-      bool should_close_source) const = 0;
-
-  // Returns true if running in process.
-  virtual bool IsRunningInProcess(PP_Instance instance) const = 0;
 
   // Notifies the plugin of the document load. This should initiate the call to
   // PPP_Instance.HandleDocumentLoad.

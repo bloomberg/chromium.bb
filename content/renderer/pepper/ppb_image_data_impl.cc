@@ -257,8 +257,8 @@ bool ImageDataSimpleBackend::Init(PPB_ImageData_Impl* impl,
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(impl);
   if (!plugin_delegate)
     return false;
-  shared_memory_.reset(
-      plugin_delegate->CreateAnonymousSharedMemory(skia_bitmap_.getSize()));
+  shared_memory_.reset(RenderThread::Get()->HostAllocateSharedMemoryBuffer(
+      skia_bitmap_.getSize()).release());
   return !!shared_memory_.get();
 }
 

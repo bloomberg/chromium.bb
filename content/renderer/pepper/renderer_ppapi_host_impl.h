@@ -10,7 +10,6 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "content/renderer/pepper/plugin_delegate.h"
-#include "content/renderer/pepper/plugin_module.h"
 #include "ppapi/host/ppapi_host.h"
 
 namespace IPC {
@@ -36,10 +35,8 @@ class PepperInProcessRouter;
 class PepperPluginInstanceImpl;
 class PluginModule;
 
-// This class is attached to a PluginModule via the module's embedder state.
-// The plugin module manages our lifetime.
-class RendererPpapiHostImpl : public RendererPpapiHost,
-                              public PluginModule::EmbedderState {
+// This class is attached to a PluginModule which manages our lifetime.
+class RendererPpapiHostImpl : public RendererPpapiHost {
  public:
   virtual ~RendererPpapiHostImpl();
 

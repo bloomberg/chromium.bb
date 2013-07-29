@@ -9,22 +9,29 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/platform_file.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/shared_impl/file_io_state_manager.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
+#include "url/gurl.h"
+#include "webkit/common/quota/quota_types.h"
 
 using ppapi::host::ReplyMessageContext;
 
 namespace content {
+class PluginDelegate;
 class QuotaFileIO;
 
 class PepperFileIOHost : public ppapi::host::ResourceHost,
                          public base::SupportsWeakPtr<PepperFileIOHost> {
  public:
+  typedef base::Callback<void (base::PlatformFileError)>
+      NotifyCloseFileCallback;
+
   PepperFileIOHost(RendererPpapiHost* host,
                    PP_Instance instance,
                    PP_Resource resource);
@@ -79,7 +86,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       base::PlatformFileError error_code,
       base::PassPlatformFile file,
       quota::QuotaLimitType quota_policy,
-      const PluginDelegate::NotifyCloseFileCallback& callback);
+      const NotifyCloseFileCallback& callback);
   void ExecutePlatformQueryCallback(ReplyMessageContext reply_context,
                                     base::PlatformFileError error_code,
                                     const base::PlatformFileInfo& file_info);
@@ -107,7 +114,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   quota::QuotaLimitType quota_policy_;
 
   // Callback function for notifying when the file handle is closed.
-  PluginDelegate::NotifyCloseFileCallback notify_close_file_callback_;
+  NotifyCloseFileCallback notify_close_file_callback_;
 
   // Pointer to a QuotaFileIO instance, which is valid only while a file
   // of type PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY} is opened.

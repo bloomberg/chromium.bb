@@ -9,10 +9,12 @@
 #include "base/debug/crash_logging.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/npobject_var.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/render_view_impl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -47,7 +49,7 @@ namespace content {
 struct PepperWebPluginImpl::InitData {
   scoped_refptr<PluginModule> module;
   base::WeakPtr<PluginDelegate> delegate;
-  base::WeakPtr<RenderView> render_view;
+  base::WeakPtr<RenderViewImpl> render_view;
   std::vector<std::string> arg_names;
   std::vector<std::string> arg_values;
   GURL url;
@@ -57,7 +59,7 @@ PepperWebPluginImpl::PepperWebPluginImpl(
     PluginModule* plugin_module,
     const WebPluginParams& params,
     const base::WeakPtr<PluginDelegate>& plugin_delegate,
-    const base::WeakPtr<RenderView>& render_view)
+    const base::WeakPtr<RenderViewImpl>& render_view)
     : init_data_(new InitData()),
       full_frame_(params.loadManually),
       instance_object_(PP_MakeUndefined()),
@@ -105,8 +107,8 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
     instance_ = NULL;
 
     WebKit::WebPlugin* replacement_plugin =
-        init_data_->delegate->CreatePluginReplacement(
-            init_data_->module->path());
+        GetContentClient()->renderer()->CreatePluginReplacement(
+            init_data_->render_view.get(), init_data_->module->path());
     if (!replacement_plugin || !replacement_plugin->initialize(container))
       return false;
 

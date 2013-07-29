@@ -6,10 +6,12 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "content/common/fileapi/file_system_messages.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
+#include "content/renderer/render_thread_impl.h"
 #include "net/http/http_util.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/var.h"
@@ -67,8 +69,9 @@ bool AppendFileRefToBody(
     case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
       // TODO(kinuko): remove this sync IPC when we fully support
       // AppendURLRange for FileSystem URL.
-      plugin_delegate->SyncGetFileSystemPlatformPath(
-          file_ref->GetFileSystemURL(), &platform_path);
+      RenderThreadImpl::current()->Send(
+          new FileSystemHostMsg_SyncGetPlatformPath(
+              file_ref->GetFileSystemURL(), &platform_path));
       break;
     case PP_FILESYSTEMTYPE_EXTERNAL:
       platform_path = file_ref->GetSystemPath();

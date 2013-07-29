@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "cc/layers/texture_layer.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/event_conversion.h"
@@ -35,7 +36,12 @@
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/ppp_pdf.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/url_request_info_util.h"
+#include "content/renderer/render_thread_impl.h"
+#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "media/base/audio_hardware_config.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
@@ -51,6 +57,7 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppp_instance_private.h"
+#include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_gamepad_shared.h"
@@ -322,7 +329,7 @@ scoped_ptr<const char*[]> StringVectorToArgArray(
 // static
 PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
     PluginDelegate* delegate,
-    RenderView* render_view,
+    RenderViewImpl* render_view,
     PluginModule* module,
     WebPluginContainer* container,
     const GURL& plugin_url) {
@@ -405,7 +412,7 @@ void PepperPluginInstanceImpl::GamepadImpl::Sample(
 
 PepperPluginInstanceImpl::PepperPluginInstanceImpl(
     PluginDelegate* delegate,
-    RenderView* render_view,
+    RenderViewImpl* render_view,
     PluginModule* module,
     ::ppapi::PPP_Instance_Combined* instance_interface,
     WebPluginContainer* container,
@@ -465,8 +472,11 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   module_->InstanceCreated(this);
   delegate_->InstanceCreated(this);
 
-  view_data_.is_page_visible = delegate->IsPageVisible();
-  resource_creation_ = delegate_->CreateResourceCreationAPI(this);
+  if (render_view)  // NULL in tests
+    view_data_.is_page_visible = !render_view->is_hidden();
+
+  RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
+  resource_creation_ = host_impl->CreateInProcessResourceCreationAPI(this);
 
   // TODO(bbudge) remove this when the trusted NaCl plugin has been removed.
   // We must defer certain plugin events for NaCl instances since we switch
@@ -549,7 +559,7 @@ void PepperPluginInstanceImpl::Paint(WebCanvas* canvas,
   if (module()->is_crashed()) {
     // Crashed plugin painting.
     if (!sad_plugin_)  // Lazily initialize bitmap.
-      sad_plugin_ = delegate_->GetSadPluginBitmap();
+      sad_plugin_ = GetContentClient()->renderer()->GetSadPluginBitmap();
     if (sad_plugin_)
       webkit::PaintSadPlugin(canvas, plugin_rect, *sad_plugin_);
     return;
@@ -654,7 +664,8 @@ bool PepperPluginInstanceImpl::Initialize(
   UpdateTouchEventRequest();
   container_->setWantsWheelEvents(IsAcceptingWheelEvents());
 
-  SetGPUHistogram(delegate_->GetPreferences(), arg_names, arg_values);
+  SetGPUHistogram(ppapi::Preferences(render_view_->webkit_preferences()),
+                  arg_names, arg_values);
 
   argn_ = arg_names;
   argv_ = arg_values;
@@ -951,7 +962,7 @@ void PepperPluginInstanceImpl::ViewChanged(
     WebDocument document = element.document();
     bool is_fullscreen_element = (element == document.fullScreenElement());
     if (!view_data_.is_fullscreen && desired_fullscreen_state_ &&
-        delegate()->IsInFullscreenMode() && is_fullscreen_element) {
+        render_view_->is_fullscreen() && is_fullscreen_element) {
       // Entered fullscreen. Only possible via SetFullscreen().
       view_data_.is_fullscreen = true;
     } else if (view_data_.is_fullscreen && !is_fullscreen_element) {
@@ -1824,8 +1835,8 @@ bool PepperPluginInstanceImpl::SimulateIMEEvent(
       SimulateImeSetCompositionEvent(input_event);
       break;
     case PP_INPUTEVENT_TYPE_IME_TEXT:
-      delegate()->SimulateImeConfirmComposition(
-          UTF8ToUTF16(input_event.character_text));
+      render_view_->SimulateImeConfirmComposition(
+          UTF8ToUTF16(input_event.character_text), ui::Range());
       break;
     default:
       return false;
@@ -1855,7 +1866,7 @@ void PepperPluginInstanceImpl::SimulateImeSetCompositionEvent(
     underlines.push_back(underline);
   }
 
-  delegate()->SimulateImeSetComposition(
+  render_view_->SimulateImeSetComposition(
       utf16_text, underlines, offsets[0], offsets[1]);
 }
 
@@ -1904,8 +1915,9 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
       desired_fullscreen_state_ != view_data_.is_fullscreen)
     return PP_FALSE;
 
-  ppapi::host::ResourceHost* host =
-      PepperPluginDelegateImpl::GetRendererResourceHost(pp_instance(), device);
+  const ppapi::host::PpapiHost* ppapi_host =
+      RendererPpapiHost::GetForPPInstance(instance)->GetPpapiHost();
+  ppapi::host::ResourceHost* host = ppapi_host->GetResourceHost(device);
   PepperGraphics2DHost* graphics_2d = NULL;
   if (host) {
     graphics_2d = host->AsPepperGraphics2DHost();
@@ -2019,17 +2031,19 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
 
 uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputSampleRate(
     PP_Instance instance) {
-  return delegate()->GetAudioHardwareOutputSampleRate();
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread->GetAudioHardwareConfig()->GetOutputSampleRate();
 }
 
 uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputBufferSize(
     PP_Instance instance) {
-  return delegate()->GetAudioHardwareOutputBufferSize();
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread->GetAudioHardwareConfig()->GetOutputBufferSize();
 }
 
 PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {
-  std::string encoding = delegate()->GetDefaultEncoding();
-  return StringVar::StringToPPVar(encoding);
+  return StringVar::StringToPPVar(
+      render_view_->webkit_preferences().default_encoding);
 }
 
 // These PPB_ContentDecryptor_Private calls are responses to
@@ -2119,14 +2133,15 @@ void PepperPluginInstanceImpl::NumberOfFindResultsChanged(
     int32_t total,
     PP_Bool final_result) {
   DCHECK_NE(find_identifier_, -1);
-  delegate_->NumberOfFindResultsChanged(find_identifier_, total,
-                                        PP_ToBool(final_result));
+  render_view_->reportFindInPageMatchCount(
+      find_identifier_, total, PP_ToBool(final_result));
 }
 
 void PepperPluginInstanceImpl::SelectedFindResultChanged(PP_Instance instance,
                                                          int32_t index) {
   DCHECK_NE(find_identifier_, -1);
-  delegate_->SelectedFindResultChanged(find_identifier_, index);
+  render_view_->reportFindInPageSelection(
+      find_identifier_, index + 1, WebKit::WebRect());
 }
 
 PP_Bool PepperPluginInstanceImpl::IsFullscreen(PP_Instance instance) {
@@ -2140,8 +2155,8 @@ PP_Bool PepperPluginInstanceImpl::SetFullscreen(PP_Instance instance,
 
 PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
                                                 PP_Size* size) {
-  gfx::Size screen_size = delegate()->GetScreenSize();
-  *size = PP_MakeSize(screen_size.width(), screen_size.height());
+  WebKit::WebScreenInfo info = render_view_->screenInfo();
+  *size = PP_MakeSize(info.rect.width, info.rect.height);
   return PP_TRUE;
 }
 
@@ -2206,12 +2221,14 @@ void PepperPluginInstanceImpl::ZoomChanged(PP_Instance instance,
 
 void PepperPluginInstanceImpl::ZoomLimitsChanged(PP_Instance instance,
                                                  double minimum_factor,
-                                                 double maximium_factor) {
-  if (minimum_factor > maximium_factor) {
+                                                 double maximum_factor) {
+  if (minimum_factor > maximum_factor) {
     NOTREACHED();
     return;
   }
-  delegate()->ZoomLimitsChanged(minimum_factor, maximium_factor);
+  double minimum_level = ZoomFactorToZoomLevel(minimum_factor);
+  double maximum_level = ZoomFactorToZoomLevel(maximum_factor);
+  render_view_->webview()->zoomLimitsChanged(minimum_level, maximum_level);
 }
 
 void PepperPluginInstanceImpl::PostMessage(PP_Instance instance,
@@ -2614,7 +2631,7 @@ void PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   if (fullscreen) {
     DCHECK(!fullscreen_container_);
-    fullscreen_container_ = delegate_->CreateFullscreenContainer(this);
+    fullscreen_container_ = render_view_->CreatePepperFullscreenContainer(this);
     UpdateLayer();
   } else {
     DCHECK(fullscreen_container_);
@@ -2711,7 +2728,8 @@ void PepperPluginInstanceImpl::KeepSizeAttributesBeforeFullscreen() {
 }
 
 void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
-  screen_size_for_fullscreen_ = delegate()->GetScreenSize();
+  WebKit::WebScreenInfo info = render_view_->screenInfo();
+  screen_size_for_fullscreen_ = gfx::Size(info.rect.width, info.rect.height);
   std::string width = StringPrintf("%d", screen_size_for_fullscreen_.width());
   std::string height = StringPrintf("%d", screen_size_for_fullscreen_.height());
 

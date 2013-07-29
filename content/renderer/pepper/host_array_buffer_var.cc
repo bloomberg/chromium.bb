@@ -9,10 +9,12 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
+#include "content/common/sandbox_util.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_instance.h"
 
 using ppapi::ArrayBufferVar;
@@ -62,9 +64,9 @@ bool HostArrayBufferVar::CopyToNewShmem(
     PP_Instance instance,
     int* host_shm_handle_id,
     base::SharedMemoryHandle* plugin_shm_handle) {
-  PepperPluginInstanceImpl* i = HostGlobals::Get()->GetInstance(instance);
-  scoped_ptr<base::SharedMemory> shm(i->delegate()->CreateAnonymousSharedMemory(
-      ByteLength()));
+  scoped_ptr<base::SharedMemory> shm(
+      RenderThread::Get()->HostAllocateSharedMemoryBuffer(ByteLength()).
+          release());
   if (!shm)
     return false;
 
@@ -91,8 +93,7 @@ bool HostArrayBufferVar::CopyToNewShmem(
 #error Not implemented.
 #endif
 
-  *plugin_shm_handle =
-      i->delegate()->ShareHandleWithRemote(platform_file, p, false);
+  *plugin_shm_handle = BrokerGetFileHandleForProcess(platform_file, p, false);
   *host_shm_handle_id = -1;
   return true;
 }

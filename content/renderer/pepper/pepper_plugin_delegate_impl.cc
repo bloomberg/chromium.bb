@@ -20,14 +20,11 @@
 #include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "content/child/child_process.h"
-#include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/fileapi/file_system_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/pepper_messages.h"
-#include "content/common/sandbox_util.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
@@ -64,12 +61,10 @@
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/base/audio_hardware_config.h"
 #include "media/video/capture/video_capture_proxy.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
-#include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/url_loader_resource.h"
 #include "ppapi/shared_impl/api_id.h"
@@ -120,39 +115,6 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
   PepperPluginInstanceImpl* plugin_;
 };
 
-void DoNotifyCloseFile(int file_open_id, base::PlatformFileError /* unused */) {
-  ChildThread::current()->file_system_dispatcher()->NotifyCloseFile(
-      file_open_id);
-}
-
-void DidOpenFileSystemURL(
-    const PluginDelegate::AsyncOpenFileSystemURLCallback& callback,
-    base::PlatformFile file,
-    int file_open_id,
-    quota::QuotaLimitType quota_policy) {
-  callback.Run(base::PLATFORM_FILE_OK,
-               base::PassPlatformFile(&file),
-               quota_policy,
-               base::Bind(&DoNotifyCloseFile, file_open_id));
-  // Make sure we won't leak file handle if the requester has died.
-  if (file != base::kInvalidPlatformFileValue) {
-    base::FileUtilProxy::Close(
-        RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
-        file,
-        base::Bind(&DoNotifyCloseFile, file_open_id));
-  }
-}
-
-void DidFailOpenFileSystemURL(
-    const PluginDelegate::AsyncOpenFileSystemURLCallback& callback,
-    base::PlatformFileError error_code) {
-  base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
-  callback.Run(error_code,
-               base::PassPlatformFile(&invalid_file),
-               quota::kQuotaLimitTypeUnknown,
-               PluginDelegate::NotifyCloseFileCallback());
-}
-
 void CreateHostForInProcessModule(RenderViewImpl* render_view,
                                   PluginModule* module,
                                   const WebPluginInfo& webplugin_info) {
@@ -171,15 +133,6 @@ void CreateHostForInProcessModule(RenderViewImpl* render_view,
 }
 
 }  // namespace
-
-ppapi::host::ResourceHost* PepperPluginDelegateImpl::GetRendererResourceHost(
-    PP_Instance instance, PP_Resource resource) {
-  const ppapi::host::PpapiHost* ppapi_host =
-      RendererPpapiHost::GetForPPInstance(instance)->GetPpapiHost();
-  if (!resource || !ppapi_host)
-    return NULL;
-  return ppapi_host->GetResourceHost(resource);
-}
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
     : RenderViewObserver(render_view),
@@ -220,7 +173,7 @@ scoped_refptr<PluginModule> PepperPluginDelegateImpl::CreatePepperPluginModule(
   scoped_refptr<PluginModule> module =
       PepperPluginRegistry::GetInstance()->GetLiveModule(path);
   if (module.get()) {
-    if (!module->GetEmbedderState()) {
+    if (!module->renderer_ppapi_host()) {
       // If the module exists and no embedder state was associated with it,
       // then the module was one of the ones preloaded and is an in-process
       // plugin. We need to associate our host state with it.
@@ -312,7 +265,7 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
   if (!dispatcher->Init(
           channel_handle,
           PluginModule::GetLocalGetInterfaceFunc(),
-          GetPreferences(),
+          ppapi::Preferences(render_view_->webkit_preferences()),
           hung_filter.get()))
     return NULL;
 
@@ -468,23 +421,6 @@ void PepperPluginDelegateImpl::PluginSelectionChanged(
     render_view_->PpapiPluginSelectionChanged();
 }
 
-void PepperPluginDelegateImpl::SimulateImeSetComposition(
-    const string16& text,
-    const std::vector<WebKit::WebCompositionUnderline>& underlines,
-    int selection_start,
-    int selection_end) {
-  if (render_view_) {
-    render_view_->SimulateImeSetComposition(
-        text, underlines, selection_start, selection_end);
-  }
-}
-
-void PepperPluginDelegateImpl::SimulateImeConfirmComposition(
-    const string16& text) {
-  if (render_view_)
-    render_view_->SimulateImeConfirmComposition(text, ui::Range());
-}
-
 void PepperPluginDelegateImpl::OnImeSetComposition(
     const string16& text,
     const std::vector<WebKit::WebCompositionUnderline>& underlines,
@@ -599,46 +535,6 @@ void PepperPluginDelegateImpl::InstanceDeleted(
     PluginFocusChanged(instance, false);
 }
 
-scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
-PepperPluginDelegateImpl::CreateResourceCreationAPI(
-    PepperPluginInstanceImpl* instance) {
-  RendererPpapiHostImpl* host_impl = static_cast<RendererPpapiHostImpl*>(
-      instance->module()->GetEmbedderState());
-  return host_impl->CreateInProcessResourceCreationAPI(instance);
-}
-
-SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
-  return GetContentClient()->renderer()->GetSadPluginBitmap();
-}
-
-WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePluginReplacement(
-    const base::FilePath& file_path) {
-  return GetContentClient()->renderer()->CreatePluginReplacement(
-      render_view_, file_path);
-}
-
-void PepperPluginDelegateImpl::NumberOfFindResultsChanged(int identifier,
-                                                          int total,
-                                                          bool final_result) {
-  render_view_->reportFindInPageMatchCount(identifier, total, final_result);
-}
-
-void PepperPluginDelegateImpl::SelectedFindResultChanged(int identifier,
-                                                         int index) {
-  render_view_->reportFindInPageSelection(
-      identifier, index + 1, WebKit::WebRect());
-}
-
-uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputSampleRate() {
-  RenderThreadImpl* thread = RenderThreadImpl::current();
-  return thread->GetAudioHardwareConfig()->GetOutputSampleRate();
-}
-
-uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputBufferSize() {
-  RenderThreadImpl* thread = RenderThreadImpl::current();
-  return thread->GetAudioHardwareConfig()->GetOutputBufferSize();
-}
-
 // If a broker has not already been created for this plugin, creates one.
 PepperBroker* PepperPluginDelegateImpl::ConnectToBroker(
     PPB_Broker_Impl* client) {
@@ -746,127 +642,6 @@ void PepperPluginDelegateImpl::WillHandleMouseEvent() {
   last_mouse_event_target_ = NULL;
 }
 
-bool PepperPluginDelegateImpl::IsFileSystemOpened(PP_Instance instance,
-                                                  PP_Resource resource) const {
-  ppapi::host::ResourceHost* host = GetRendererResourceHost(instance, resource);
-  if (!host)
-    return false;
-  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
-  return fs_host && fs_host->IsOpened();
-}
-
-PP_FileSystemType PepperPluginDelegateImpl::GetFileSystemType(
-    PP_Instance instance, PP_Resource resource) const {
-  ppapi::host::ResourceHost* host = GetRendererResourceHost(instance, resource);
-  if (!host)
-    return PP_FILESYSTEMTYPE_INVALID;
-  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
-  return fs_host ? fs_host->GetType() : PP_FILESYSTEMTYPE_INVALID;
-}
-
-GURL PepperPluginDelegateImpl::GetFileSystemRootUrl(
-    PP_Instance instance, PP_Resource resource) const {
-  ppapi::host::ResourceHost* host = GetRendererResourceHost(instance, resource);
-  if (!host)
-    return GURL();
-  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
-  return fs_host ? fs_host->GetRootUrl() : GURL();
-}
-
-void PepperPluginDelegateImpl::MakeDirectory(
-    const GURL& path,
-    bool recursive,
-    const StatusCallback& callback) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  file_system_dispatcher->CreateDirectory(
-      path, false /* exclusive */, recursive, callback);
-}
-
-void PepperPluginDelegateImpl::Query(
-    const GURL& path,
-    const MetadataCallback& success_callback,
-    const StatusCallback& error_callback) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  file_system_dispatcher->ReadMetadata(
-      path, success_callback, error_callback);
-}
-
-void PepperPluginDelegateImpl::ReadDirectoryEntries(
-    const GURL& path,
-    const ReadDirectoryCallback& success_callback,
-    const StatusCallback& error_callback) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  file_system_dispatcher->ReadDirectory(
-      path, success_callback, error_callback);
-}
-
-void PepperPluginDelegateImpl::Touch(
-    const GURL& path,
-    const base::Time& last_access_time,
-    const base::Time& last_modified_time,
-    const StatusCallback& callback) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  file_system_dispatcher->TouchFile(path, last_access_time, last_modified_time,
-                                    callback);
-}
-
-void PepperPluginDelegateImpl::SetLength(
-    const GURL& path,
-    int64_t length,
-    const StatusCallback& callback) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  file_system_dispatcher->Truncate(path, length, NULL, callback);
-}
-
-void PepperPluginDelegateImpl::Delete(
-    const GURL& path,
-    const StatusCallback& callback) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  file_system_dispatcher->Remove(path, false /* recursive */, callback);
-}
-
-void PepperPluginDelegateImpl::Rename(
-    const GURL& file_path,
-    const GURL& new_file_path,
-    const StatusCallback& callback) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  file_system_dispatcher->Move(file_path, new_file_path, callback);
-}
-
-void PepperPluginDelegateImpl::ReadDirectory(
-    const GURL& directory_path,
-    const ReadDirectoryCallback& success_callback,
-    const StatusCallback& error_callback) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  file_system_dispatcher->ReadDirectory(
-      directory_path, success_callback, error_callback);
-}
-
-void PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
-    const GURL& path,
-    int flags,
-    const AsyncOpenFileSystemURLCallback& callback) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  file_system_dispatcher->OpenFile(
-      path, flags,
-      base::Bind(&DidOpenFileSystemURL, callback),
-      base::Bind(&DidFailOpenFileSystemURL, callback));
-}
-
-void PepperPluginDelegateImpl::SyncGetFileSystemPlatformPath(
-    const GURL& url, base::FilePath* platform_path) {
-  Send(new FileSystemHostMsg_SyncGetPlatformPath(url, platform_path));
-}
-
 scoped_refptr<base::MessageLoopProxy>
 PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
   return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy();
@@ -969,43 +744,13 @@ void PepperPluginDelegateImpl::TCPServerSocketStopListening(
   }
 }
 
-bool PepperPluginDelegateImpl::X509CertificateParseDER(
-    const std::vector<char>& der,
-    ppapi::PPB_X509Certificate_Fields* fields) {
-  bool succeeded = false;
-  Send(new PpapiHostMsg_PPBX509Certificate_ParseDER(der, &succeeded, fields));
-  return succeeded;
-}
-
-FullscreenContainer* PepperPluginDelegateImpl::CreateFullscreenContainer(
-    PepperPluginInstanceImpl* instance) {
-  return render_view_->CreatePepperFullscreenContainer(instance);
-}
-
-gfx::Size PepperPluginDelegateImpl::GetScreenSize() {
-  WebKit::WebScreenInfo info = render_view_->screenInfo();
-  return gfx::Size(info.rect.width, info.rect.height);
-}
-
-std::string PepperPluginDelegateImpl::GetDefaultEncoding() {
-  return render_view_->webkit_preferences().default_encoding;
-}
-
-void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
-                                                 double maximum_factor) {
-  double minimum_level = ZoomFactorToZoomLevel(minimum_factor);
-  double maximum_level = ZoomFactorToZoomLevel(maximum_factor);
-  render_view_->webview()->zoomLimitsChanged(minimum_level, maximum_level);
-}
-
 void PepperPluginDelegateImpl::HandleDocumentLoad(
     PepperPluginInstanceImpl* instance,
     const WebKit::WebURLResponse& response) {
   DCHECK(!instance->document_loader());
 
   PP_Instance pp_instance = instance->pp_instance();
-  RendererPpapiHostImpl* host_impl = static_cast<RendererPpapiHostImpl*>(
-      instance->module()->GetEmbedderState());
+  RendererPpapiHostImpl* host_impl = instance->module()->renderer_ppapi_host();
 
   // Create a loader resource host for this load. Note that we have to set
   // the document_loader before issuing the in-process
@@ -1074,15 +819,6 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
                                   true);  // is_external = true
 }
 
-base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(
-    size_t size) {
-  return RenderThread::Get()->HostAllocateSharedMemoryBuffer(size).release();
-}
-
-ppapi::Preferences PepperPluginDelegateImpl::GetPreferences() {
-  return ppapi::Preferences(render_view_->webkit_preferences());
-}
-
 bool PepperPluginDelegateImpl::LockMouse(PepperPluginInstanceImpl* instance) {
   return GetMouseLockDispatcher(instance)->LockMouse(
       GetOrCreateLockTargetAdapter(instance));
@@ -1116,18 +852,10 @@ void PepperPluginDelegateImpl::DidReceiveMouseEvent(
   last_mouse_event_target_ = instance;
 }
 
-bool PepperPluginDelegateImpl::IsInFullscreenMode() {
-  return render_view_->is_fullscreen();
-}
-
 void PepperPluginDelegateImpl::SampleGamepads(WebKit::WebGamepads* data) {
   if (!gamepad_shared_memory_reader_)
     gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
   gamepad_shared_memory_reader_->SampleGamepads(*data);
-}
-
-bool PepperPluginDelegateImpl::IsPageVisible() const {
-  return !render_view_->is_hidden();
 }
 
 bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
@@ -1288,22 +1016,6 @@ MouseLockDispatcher* PepperPluginDelegateImpl::GetMouseLockDispatcher(
   } else {
     return render_view_->mouse_lock_dispatcher();
   }
-}
-
-IPC::PlatformFileForTransit PepperPluginDelegateImpl::ShareHandleWithRemote(
-    base::PlatformFile handle,
-    base::ProcessId target_process_id,
-    bool should_close_source) const {
-  return BrokerGetFileHandleForProcess(
-      handle,
-      target_process_id,
-      should_close_source);
-}
-
-bool PepperPluginDelegateImpl::IsRunningInProcess(PP_Instance instance) const {
-  RendererPpapiHostImpl* host =
-      RendererPpapiHostImpl::GetForPPInstance(instance);
-  return host && host->IsRunningInProcess();
 }
 
 }  // namespace content

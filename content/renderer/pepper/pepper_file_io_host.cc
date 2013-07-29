@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util_proxy.h"
 #include "content/child/child_thread.h"
+#include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/public/common/content_client.h"
@@ -95,6 +96,44 @@ class QuotaFileIODelegate : public QuotaFileIO::Delegate {
     return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy();
   }
 };
+
+typedef base::Callback<
+    void (base::PlatformFileError error,
+          base::PassPlatformFile file,
+          quota::QuotaLimitType quota_policy,
+          const PepperFileIOHost::NotifyCloseFileCallback& close_file_callback)>
+    AsyncOpenFileSystemURLCallback;
+
+void DoNotifyCloseFile(int file_open_id, base::PlatformFileError error) {
+  ChildThread::current()->file_system_dispatcher()->NotifyCloseFile(
+      file_open_id);
+}
+
+void DidOpenFileSystemURL(const AsyncOpenFileSystemURLCallback& callback,
+                          base::PlatformFile file,
+                          int file_open_id,
+                          quota::QuotaLimitType quota_policy) {
+  callback.Run(base::PLATFORM_FILE_OK,
+               base::PassPlatformFile(&file),
+               quota_policy,
+               base::Bind(&DoNotifyCloseFile, file_open_id));
+  // Make sure we won't leak file handle if the requester has died.
+  if (file != base::kInvalidPlatformFileValue) {
+    base::FileUtilProxy::Close(
+        RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
+        file,
+        base::Bind(&DoNotifyCloseFile, file_open_id));
+  }
+}
+
+void DidFailOpenFileSystemURL(const AsyncOpenFileSystemURLCallback& callback,
+    base::PlatformFileError error_code) {
+  base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
+  callback.Run(error_code,
+               base::PassPlatformFile(&invalid_file),
+               quota::kQuotaLimitTypeUnknown,
+               PepperFileIOHost::NotifyCloseFileCallback());
+}
 
 }  // namespace
 
@@ -184,12 +223,17 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
   PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(file_ref_api);
   if (file_ref->HasValidFileSystem()) {
     file_system_url_ = file_ref->GetFileSystemURL();
-    plugin_delegate_->AsyncOpenFileSystemURL(
-        file_system_url_, flags,
-        base::Bind(
-            &PepperFileIOHost::ExecutePlatformOpenFileSystemURLCallback,
-            weak_factory_.GetWeakPtr(),
-            context->MakeReplyMessageContext()));
+
+    FileSystemDispatcher* file_system_dispatcher =
+        ChildThread::current()->file_system_dispatcher();
+    AsyncOpenFileSystemURLCallback callback = base::Bind(
+        &PepperFileIOHost::ExecutePlatformOpenFileSystemURLCallback,
+        weak_factory_.GetWeakPtr(),
+        context->MakeReplyMessageContext());
+    file_system_dispatcher->OpenFile(
+      file_system_url_, flags,
+      base::Bind(&DidOpenFileSystemURL, callback),
+      base::Bind(&DidFailOpenFileSystemURL, callback));
   } else {
     if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL)
       return PP_ERROR_FAILED;
@@ -240,7 +284,9 @@ int32_t PepperFileIOHost::OnHostMsgTouch(
     return PP_ERROR_FAILED;
 
   if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
-    plugin_delegate_->Touch(
+    FileSystemDispatcher* file_system_dispatcher =
+        ChildThread::current()->file_system_dispatcher();
+    file_system_dispatcher->TouchFile(
         file_system_url_,
         PPTimeToTime(last_access_time),
         PPTimeToTime(last_modified_time),
@@ -351,8 +397,10 @@ int32_t PepperFileIOHost::OnHostMsgSetLength(
     return PP_ERROR_FAILED;
 
   if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
-    plugin_delegate_->SetLength(
-        file_system_url_, length,
+    FileSystemDispatcher* file_system_dispatcher =
+        ChildThread::current()->file_system_dispatcher();
+    file_system_dispatcher->Truncate(
+        file_system_url_, length, NULL,
         base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
                    weak_factory_.GetWeakPtr(),
                    context->MakeReplyMessageContext()));
@@ -538,7 +586,7 @@ void PepperFileIOHost::ExecutePlatformOpenFileSystemURLCallback(
     base::PlatformFileError error_code,
     base::PassPlatformFile file,
     quota::QuotaLimitType quota_policy,
-    const PluginDelegate::NotifyCloseFileCallback& callback) {
+    const PepperFileIOHost::NotifyCloseFileCallback& callback) {
   if (error_code == base::PLATFORM_FILE_OK)
     notify_close_file_callback_ = callback;
   quota_policy_ = quota_policy;

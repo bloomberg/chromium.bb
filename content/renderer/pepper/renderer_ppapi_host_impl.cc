@@ -79,13 +79,12 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
     PluginModule* module,
     ppapi::proxy::HostDispatcher* dispatcher,
     const ppapi::PpapiPermissions& permissions) {
-  DCHECK(!module->GetEmbedderState());
+  DCHECK(!module->renderer_ppapi_host());
   RendererPpapiHostImpl* result = new RendererPpapiHostImpl(
       module, dispatcher, permissions);
 
   // Takes ownership of pointer.
-  module->SetEmbedderState(
-      scoped_ptr<PluginModule::EmbedderState>(result));
+  module->SetRendererPpapiHost(scoped_ptr<RendererPpapiHostImpl>(result));
 
   return result;
 }
@@ -94,13 +93,12 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
 RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForInProcess(
     PluginModule* module,
     const ppapi::PpapiPermissions& permissions) {
-  DCHECK(!module->GetEmbedderState());
+  DCHECK(!module->renderer_ppapi_host());
   RendererPpapiHostImpl* result = new RendererPpapiHostImpl(
       module, permissions);
 
   // Takes ownership of pointer.
-  module->SetEmbedderState(
-      scoped_ptr<PluginModule::EmbedderState>(result));
+  module->SetRendererPpapiHost(scoped_ptr<RendererPpapiHostImpl>(result));
 
   return result;
 }
@@ -115,8 +113,7 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::GetForPPInstance(
 
   // All modules created by content will have their embedder state be the
   // host impl.
-  return static_cast<RendererPpapiHostImpl*>(
-      instance->module()->GetEmbedderState());
+  return instance->module()->renderer_ppapi_host();
 }
 
 scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>

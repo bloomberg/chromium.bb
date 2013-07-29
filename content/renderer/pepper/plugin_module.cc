@@ -26,6 +26,7 @@
 #include "content/renderer/pepper/ppb_uma_private_impl.h"
 #include "content/renderer/pepper/ppb_var_deprecated_impl.h"
 #include "content/renderer/pepper/ppb_video_decoder_impl.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
@@ -411,7 +412,7 @@ PluginModule::~PluginModule() {
 
   // Some resources and other stuff are hung off of the embedder state, which
   // should be torn down before the routing stuff below.
-  embedder_state_.reset();
+  renderer_ppapi_host_.reset();
 
   GetLivePluginSet()->erase(this);
 
@@ -437,12 +438,9 @@ PluginModule::~PluginModule() {
   // previous parts of the destructor.
 }
 
-void PluginModule::SetEmbedderState(scoped_ptr<EmbedderState> state) {
-  embedder_state_ = state.Pass();
-}
-
-PluginModule::EmbedderState* PluginModule::GetEmbedderState() {
-  return embedder_state_.get();
+void PluginModule::SetRendererPpapiHost(
+    scoped_ptr<RendererPpapiHostImpl> host) {
+  renderer_ppapi_host_ = host.Pass();
 }
 
 bool PluginModule::InitAsInternalPlugin(
@@ -535,7 +533,7 @@ bool PluginModule::SupportsInterface(const char* name) {
 
 PepperPluginInstanceImpl* PluginModule::CreateInstance(
     PluginDelegate* delegate,
-    RenderView* render_view,
+    RenderViewImpl* render_view,
     WebKit::WebPluginContainer* container,
     const GURL& plugin_url) {
   PepperPluginInstanceImpl* instance = PepperPluginInstanceImpl::Create(

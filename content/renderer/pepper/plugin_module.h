@@ -31,10 +31,6 @@ namespace base {
 class FilePath;
 }
 
-namespace content {
-class RenderView;
-}
-
 namespace ppapi {
 class CallbackTracker;
 class WebKitForwarding;
@@ -49,6 +45,8 @@ class HostDispatcherWrapper;
 class PepperPluginInstanceImpl;
 class PepperBroker;
 class PluginDelegate;
+class RendererPpapiHostImpl;
+class RenderViewImpl;
 
 // Represents one plugin library loaded into one renderer. This library may
 // have multiple instances.
@@ -59,14 +57,6 @@ class CONTENT_EXPORT PluginModule :
     public base::RefCounted<PluginModule>,
     public base::SupportsWeakPtr<PluginModule> {
  public:
-  // Allows the embedder to associate a class with this module. This is opaque
-  // from the PluginModule's perspective (see Set/GetEmbedderState below) but
-  // the module is in charge of deleting the class.
-  class EmbedderState {
-   public:
-    virtual ~EmbedderState() {}
-  };
-
   typedef std::set<PepperPluginInstanceImpl*> PluginInstanceSet;
 
   // You must call one of the Init functions after the constructor to create a
@@ -82,10 +72,7 @@ class CONTENT_EXPORT PluginModule :
   // Sets the given class as being associated with this module. It will be
   // deleted when the module is destroyed. You can only set it once, subsequent
   // sets will assert.
-  //
-  // See EmbedderState above for more.
-  void SetEmbedderState(scoped_ptr<EmbedderState> state);
-  EmbedderState* GetEmbedderState();
+  void SetRendererPpapiHost(scoped_ptr<RendererPpapiHostImpl> host);
 
   // Initializes this module as an internal plugin with the given entrypoints.
   // This is used for "plugins" compiled into Chrome. Returns true on success.
@@ -138,6 +125,10 @@ class CONTENT_EXPORT PluginModule :
   // considered when called on the browser process.
   static bool SupportsInterface(const char* name);
 
+  RendererPpapiHostImpl* renderer_ppapi_host() {
+    return renderer_ppapi_host_.get();
+  }
+
   // Returns the module handle. This may be used before Init() is called (the
   // proxy needs this information to set itself up properly).
   PP_Module pp_module() const { return pp_module_; }
@@ -148,7 +139,7 @@ class CONTENT_EXPORT PluginModule :
 
   PepperPluginInstanceImpl* CreateInstance(
       PluginDelegate* delegate,
-      RenderView* render_view,
+      RenderViewImpl* render_view,
       WebKit::WebPluginContainer* container,
       const GURL& plugin_url);
 
@@ -209,8 +200,7 @@ class CONTENT_EXPORT PluginModule :
   // entrypoints in that case).
   bool InitializeModule(const PepperPluginInfo::EntryPoints& entry_points);
 
-  // See EmbedderState above.
-  scoped_ptr<EmbedderState> embedder_state_;
+  scoped_ptr<RendererPpapiHostImpl> renderer_ppapi_host_;
 
   // Tracker for completion callbacks, used mainly to ensure that all callbacks
   // are properly aborted on module shutdown.

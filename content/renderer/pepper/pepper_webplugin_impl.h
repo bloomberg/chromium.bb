@@ -17,10 +17,6 @@
 
 struct _NPP;
 
-namespace content {
-class RenderView;
-}
-
 namespace WebKit {
 struct WebPluginParams;
 struct WebPrintParams;
@@ -32,13 +28,14 @@ class PepperPluginInstanceImpl;
 class PluginDelegate;
 class PluginModule;
 class PPB_URLLoader_Impl;
+class RenderViewImpl;
 
 class PepperWebPluginImpl : public WebKit::WebPlugin {
  public:
   PepperWebPluginImpl(PluginModule* module,
                       const WebKit::WebPluginParams& params,
                       const base::WeakPtr<PluginDelegate>& plugin_delegate,
-                      const base::WeakPtr<RenderView>& render_view);
+                      const base::WeakPtr<RenderViewImpl>& render_view);
 
   PepperPluginInstanceImpl* instance() { return instance_.get(); }
 

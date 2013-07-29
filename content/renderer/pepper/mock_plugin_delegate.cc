@@ -42,17 +42,6 @@ void MockPluginDelegate::PluginSelectionChanged(
     PepperPluginInstanceImpl* instance) {
 }
 
-void MockPluginDelegate::SimulateImeSetComposition(
-    const base::string16& text,
-    const std::vector<WebKit::WebCompositionUnderline>& underlines,
-    int selection_start,
-    int selection_end) {
-}
-
-void MockPluginDelegate::SimulateImeConfirmComposition(
-    const base::string16& text) {
-}
-
 void MockPluginDelegate::PluginCrashed(PepperPluginInstanceImpl* instance) {
 }
 
@@ -62,120 +51,10 @@ void MockPluginDelegate::InstanceCreated(PepperPluginInstanceImpl* instance) {
 void MockPluginDelegate::InstanceDeleted(PepperPluginInstanceImpl* instance) {
 }
 
-scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
-    MockPluginDelegate::CreateResourceCreationAPI(
-        PepperPluginInstanceImpl* instance) {
-  return scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>();
-}
-
-SkBitmap* MockPluginDelegate::GetSadPluginBitmap() {
-  return NULL;
-}
-
-WebKit::WebPlugin* MockPluginDelegate::CreatePluginReplacement(
-    const base::FilePath& file_path) {
-  return NULL;
-}
-
-uint32_t MockPluginDelegate::GetAudioHardwareOutputSampleRate() {
-  return 0;
-}
-
-uint32_t MockPluginDelegate::GetAudioHardwareOutputBufferSize() {
-  return 0;
-}
-
-void MockPluginDelegate::NumberOfFindResultsChanged(int identifier,
-                                                    int total,
-                                                    bool final_result) {
-}
-
-void MockPluginDelegate::SelectedFindResultChanged(int identifier, int index) {
-}
-
 bool MockPluginDelegate::AsyncOpenFile(const base::FilePath& path,
                                        int flags,
                                        const AsyncOpenFileCallback& callback) {
   return false;
-}
-
-void MockPluginDelegate::AsyncOpenFileSystemURL(
-    const GURL& path,
-    int flags,
-    const AsyncOpenFileSystemURLCallback& callback) {
-}
-
-bool MockPluginDelegate::IsFileSystemOpened(
-    PP_Instance instance,
-    PP_Resource resource) const {
-  return false;
-}
-
-PP_FileSystemType MockPluginDelegate::GetFileSystemType(
-    PP_Instance instance,
-    PP_Resource resource) const {
-  return PP_FILESYSTEMTYPE_INVALID;
-}
-
-GURL MockPluginDelegate::GetFileSystemRootUrl(
-    PP_Instance instance,
-    PP_Resource resource) const {
-  return GURL();
-}
-
-void MockPluginDelegate::MakeDirectory(
-    const GURL& path,
-    bool recursive,
-    const StatusCallback& callback) {
-}
-
-void MockPluginDelegate::Query(
-    const GURL& path,
-    const MetadataCallback& success_callback,
-    const StatusCallback& error_callback) {
-}
-
-void MockPluginDelegate::ReadDirectoryEntries(
-    const GURL& path,
-    const ReadDirectoryCallback& success_callback,
-    const StatusCallback& error_callback) {
-}
-
-void MockPluginDelegate::Touch(
-    const GURL& path,
-    const base::Time& last_access_time,
-    const base::Time& last_modified_time,
-    const StatusCallback& callback) {
-}
-
-void MockPluginDelegate::SetLength(
-    const GURL& path,
-    int64_t length,
-    const StatusCallback& callback) {
-}
-
-void MockPluginDelegate::Delete(
-    const GURL& path,
-    const StatusCallback& callback) {
-}
-
-void MockPluginDelegate::Rename(
-    const GURL& file_path,
-    const GURL& new_file_path,
-    const StatusCallback& callback) {
-}
-
-void MockPluginDelegate::ReadDirectory(
-    const GURL& directory_path,
-    const ReadDirectoryCallback& success_callback,
-    const StatusCallback& error_callback) {
-}
-
-void MockPluginDelegate::SyncGetFileSystemPlatformPath(
-    const GURL& url,
-    base::FilePath* platform_path) {
-  DCHECK(platform_path);
-  *platform_path = base::FilePath();
 }
 
 scoped_refptr<base::MessageLoopProxy>
@@ -242,38 +121,6 @@ void MockPluginDelegate::TCPServerSocketStopListening(
     uint32 socket_id) {
 }
 
-bool MockPluginDelegate::X509CertificateParseDER(
-    const std::vector<char>& der,
-    ::ppapi::PPB_X509Certificate_Fields* fields) {
-  return false;
-}
-
-FullscreenContainer* MockPluginDelegate::CreateFullscreenContainer(
-    PepperPluginInstanceImpl* instance) {
-  return NULL;
-}
-
-gfx::Size MockPluginDelegate::GetScreenSize() {
-  return gfx::Size(1024, 768);
-}
-
-std::string MockPluginDelegate::GetDefaultEncoding() {
-  return "iso-8859-1";
-}
-
-void MockPluginDelegate::ZoomLimitsChanged(double minimum_factor,
-                                           double maximum_factor) {
-}
-
-base::SharedMemory* MockPluginDelegate::CreateAnonymousSharedMemory(
-    size_t size) {
-  return NULL;
-}
-
-::ppapi::Preferences MockPluginDelegate::GetPreferences() {
-  return ::ppapi::Preferences();
-}
-
 bool MockPluginDelegate::LockMouse(PepperPluginInstanceImpl* instance) {
   return false;
 }
@@ -295,25 +142,6 @@ void MockPluginDelegate::DidReceiveMouseEvent(
 
 void MockPluginDelegate::SampleGamepads(WebKit::WebGamepads* data) {
   data->length = 0;
-}
-
-bool MockPluginDelegate::IsInFullscreenMode() {
-  return false;
-}
-
-bool MockPluginDelegate::IsPageVisible() const {
-  return true;
-}
-
-IPC::PlatformFileForTransit MockPluginDelegate::ShareHandleWithRemote(
-      base::PlatformFile handle,
-      base::ProcessId target_process_id,
-      bool should_close_source) const {
-  return IPC::InvalidPlatformFileForTransit();
-}
-
-bool MockPluginDelegate::IsRunningInProcess(PP_Instance instance) const {
-  return false;
 }
 
 void MockPluginDelegate::HandleDocumentLoad(

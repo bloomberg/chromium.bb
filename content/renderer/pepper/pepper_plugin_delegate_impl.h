@@ -58,9 +58,6 @@ class PepperPluginDelegateImpl
       public base::SupportsWeakPtr<PepperPluginDelegateImpl>,
       public RenderViewObserver {
  public:
-  static ppapi::host::ResourceHost* GetRendererResourceHost(
-      PP_Instance instance, PP_Resource resource);
-
   explicit PepperPluginDelegateImpl(RenderViewImpl* render_view);
   virtual ~PepperPluginDelegateImpl();
 
@@ -123,75 +120,12 @@ class PepperPluginDelegateImpl
       PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void PluginSelectionChanged(
       PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual void SimulateImeSetComposition(
-      const string16& text,
-      const std::vector<WebKit::WebCompositionUnderline>& underlines,
-      int selection_start,
-      int selection_end) OVERRIDE;
-  virtual void SimulateImeConfirmComposition(const string16& text) OVERRIDE;
   virtual void PluginCrashed(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void InstanceCreated(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void InstanceDeleted(PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
-      CreateResourceCreationAPI(PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
-  virtual WebKit::WebPlugin* CreatePluginReplacement(
-      const base::FilePath& file_path) OVERRIDE;
-  virtual uint32_t GetAudioHardwareOutputSampleRate() OVERRIDE;
-  virtual uint32_t GetAudioHardwareOutputBufferSize() OVERRIDE;
-  virtual void NumberOfFindResultsChanged(int identifier,
-                                          int total,
-                                          bool final_result) OVERRIDE;
-  virtual void SelectedFindResultChanged(int identifier, int index) OVERRIDE;
   virtual bool AsyncOpenFile(const base::FilePath& path,
                              int flags,
                              const AsyncOpenFileCallback& callback) OVERRIDE;
-  virtual void AsyncOpenFileSystemURL(
-      const GURL& path,
-      int flags,
-      const AsyncOpenFileSystemURLCallback& callback) OVERRIDE;
-  virtual bool IsFileSystemOpened(PP_Instance instance,
-                                  PP_Resource resource) const OVERRIDE;
-  virtual PP_FileSystemType GetFileSystemType(
-      PP_Instance instance,
-      PP_Resource resource) const OVERRIDE;
-  virtual GURL GetFileSystemRootUrl(PP_Instance instance,
-                                    PP_Resource resource) const OVERRIDE;
-  virtual void MakeDirectory(
-      const GURL& path,
-      bool recursive,
-      const StatusCallback& callback) OVERRIDE;
-  virtual void Query(
-      const GURL& path,
-      const MetadataCallback& success_callback,
-      const StatusCallback& error_callback) OVERRIDE;
-  virtual void ReadDirectoryEntries(
-      const GURL& path,
-      const ReadDirectoryCallback& success_callback,
-      const StatusCallback& error_callback) OVERRIDE;
-  virtual void Touch(
-      const GURL& path,
-      const base::Time& last_access_time,
-      const base::Time& last_modified_time,
-      const StatusCallback& callback) OVERRIDE;
-  virtual void SetLength(
-      const GURL& path,
-      int64_t length,
-      const StatusCallback& callback) OVERRIDE;
-  virtual void Delete(
-      const GURL& path,
-      const StatusCallback& callback) OVERRIDE;
-  virtual void Rename(
-      const GURL& file_path,
-      const GURL& new_file_path,
-      const StatusCallback& callback) OVERRIDE;
-  virtual void ReadDirectory(
-      const GURL& directory_path,
-      const ReadDirectoryCallback& success_callback,
-      const StatusCallback& error_callback) OVERRIDE;
-  virtual void SyncGetFileSystemPlatformPath(
-      const GURL& url,
-      base::FilePath* platform_path) OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy() OVERRIDE;
   virtual uint32 TCPSocketCreate() OVERRIDE;
@@ -227,18 +161,6 @@ class PepperPluginDelegateImpl
   virtual void TCPServerSocketStopListening(
       PP_Resource socket_resource,
       uint32 socket_id) OVERRIDE;
-  virtual bool X509CertificateParseDER(
-      const std::vector<char>& der,
-      ppapi::PPB_X509Certificate_Fields* fields) OVERRIDE;
-  virtual FullscreenContainer* CreateFullscreenContainer(
-      PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual gfx::Size GetScreenSize() OVERRIDE;
-  virtual std::string GetDefaultEncoding() OVERRIDE;
-  virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor)
-      OVERRIDE;
-  virtual base::SharedMemory* CreateAnonymousSharedMemory(size_t size)
-      OVERRIDE;
-  virtual ::ppapi::Preferences GetPreferences() OVERRIDE;
   virtual bool LockMouse(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void UnlockMouse(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual bool IsMouseLocked(PepperPluginInstanceImpl* instance) OVERRIDE;
@@ -246,9 +168,7 @@ class PepperPluginDelegateImpl
                                const WebKit::WebCursorInfo& cursor) OVERRIDE;
   virtual void DidReceiveMouseEvent(
       PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual bool IsInFullscreenMode() OVERRIDE;
   virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
-  virtual bool IsPageVisible() const OVERRIDE;
   virtual void HandleDocumentLoad(
       PepperPluginInstanceImpl* instance,
       const WebKit::WebURLResponse& response) OVERRIDE;
@@ -335,14 +255,6 @@ class PepperPluginDelegateImpl
 
   MouseLockDispatcher* GetMouseLockDispatcher(
       PepperPluginInstanceImpl* instance);
-
-  // Share a given handle with the target process.
-  virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
-      base::PlatformFile handle,
-      base::ProcessId target_process_id,
-      bool should_close_source) const OVERRIDE;
-
-  virtual bool IsRunningInProcess(PP_Instance instance) const OVERRIDE;
 
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;

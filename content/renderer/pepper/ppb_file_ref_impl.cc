@@ -8,13 +8,18 @@
 #include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/renderer/pepper/common.h"
+#include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
+#include "content/renderer/render_thread_impl.h"
 #include "net/base/escape.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
@@ -236,8 +241,16 @@ PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Instance instance,
   if (!plugin_instance || !plugin_instance->delegate())
     return 0;
 
-  PP_FileSystemType type =
-      plugin_instance->delegate()->GetFileSystemType(instance, pp_file_system);
+  ppapi::host::ResourceHost* host = GetResourceHostInternal(
+      instance, pp_file_system);
+  if (!host)
+    return 0;
+
+  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
+  if (!fs_host)
+    return 0;
+
+  PP_FileSystemType type = fs_host->GetType();
   if (type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
       type != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
       type != PP_FILESYSTEMTYPE_EXTERNAL &&
@@ -258,7 +271,10 @@ PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Instance instance,
   info.name = GetNameForVirtualFilePath(info.path);
 
   PPB_FileRef_Impl* file_ref = new PPB_FileRef_Impl(info, pp_file_system);
-  if (plugin_instance->delegate()->IsRunningInProcess(instance))
+
+  RendererPpapiHostImpl* renderer_host =
+      RendererPpapiHostImpl::GetForPPInstance(instance);
+  if (renderer_host && renderer_host->IsRunningInProcess())
     file_ref->AddFileSystemRefCount();
   return file_ref;
 }
@@ -308,12 +324,10 @@ int32_t PPB_FileRef_Impl::MakeDirectory(
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
-  PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
-  if (!plugin_instance)
-    return PP_ERROR_FAILED;
-  plugin_instance->delegate()->MakeDirectory(
-      GetFileSystemURL(), PP_ToBool(make_ancestors),
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  file_system_dispatcher->CreateDirectory(
+      GetFileSystemURL(), false /* exclusive */, PP_ToBool(make_ancestors),
       base::Bind(&DidFinishFileOperation, callback));
   return PP_OK_COMPLETIONPENDING;
 }
@@ -324,11 +338,9 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
-  PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
-  if (!plugin_instance)
-    return PP_ERROR_FAILED;
-  plugin_instance->delegate()->Touch(
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  file_system_dispatcher->TouchFile(
       GetFileSystemURL(),
       PPTimeToTime(last_access_time),
       PPTimeToTime(last_modified_time),
@@ -340,12 +352,11 @@ int32_t PPB_FileRef_Impl::Delete(scoped_refptr<TrackedCallback> callback) {
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
-  PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
-  if (!plugin_instance)
-    return PP_ERROR_FAILED;
-  plugin_instance->delegate()->Delete(
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  file_system_dispatcher->Remove(
       GetFileSystemURL(),
+      false /* recursive */,
       base::Bind(&DidFinishFileOperation, callback));
   return PP_OK_COMPLETIONPENDING;
 }
@@ -364,11 +375,9 @@ int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
 
   // TODO(viettrungluu): Also cancel when the new file ref is destroyed?
   // http://crbug.com/67624
-  PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
-  if (!plugin_instance)
-    return PP_ERROR_FAILED;
-  plugin_instance->delegate()->Rename(
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  file_system_dispatcher->Move(
       GetFileSystemURL(), new_file_ref->GetFileSystemURL(),
       base::Bind(&DidFinishFileOperation, callback));
   return PP_OK_COMPLETIONPENDING;
@@ -408,33 +417,32 @@ GURL PPB_FileRef_Impl::GetFileSystemURL() const {
   // We need to trim off the '/' before calling Resolve, as FileSystem URLs
   // start with a storage type identifier that looks like a path segment.
 
-  PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
-  PluginDelegate* delegate =
-      plugin_instance ? plugin_instance->delegate() : NULL;
-  if (!delegate)
+  ppapi::host::ResourceHost* host = GetResourceHost();
+  if (!host)
     return GURL();
-  return GURL(delegate->GetFileSystemRootUrl(pp_instance(), file_system_))
-      .Resolve(net::EscapePath(virtual_path.substr(1)));
+
+  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
+  if (!fs_host)
+    return GURL();
+
+  return GURL(fs_host->GetRootUrl()).Resolve(net::EscapePath(
+      virtual_path.substr(1)));
 }
 
 bool PPB_FileRef_Impl::IsValidNonExternalFileSystem() const {
-  PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
-  PluginDelegate* delegate =
-      plugin_instance ? plugin_instance->delegate() : NULL;
-  return delegate &&
-      delegate->IsFileSystemOpened(pp_instance(), file_system_) &&
-      delegate->GetFileSystemType(pp_instance(), file_system_) !=
+  ppapi::host::ResourceHost* host = GetResourceHost();
+  return HasValidFileSystem() &&
+      host->AsPepperFileSystemHost()->GetType() !=
           PP_FILESYSTEMTYPE_EXTERNAL;
 }
 
 bool PPB_FileRef_Impl::HasValidFileSystem() const {
-  PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
-  PluginDelegate* delegate =
-      plugin_instance ? plugin_instance->delegate() : NULL;
-  return delegate && delegate->IsFileSystemOpened(pp_instance(), file_system_);
+  ppapi::host::ResourceHost* host = GetResourceHost();
+  if (!host)
+    return false;
+
+  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
+  return fs_host && fs_host->IsOpened();
 }
 
 int32_t PPB_FileRef_Impl::Query(PP_FileInfo* info,
@@ -468,16 +476,11 @@ int32_t PPB_FileRef_Impl::QueryInHost(
     if (!HasValidFileSystem())
       return PP_ERROR_NOACCESS;
 
-    PepperPluginInstanceImpl* plugin_instance =
-        ResourceHelper::GetPluginInstance(this);
-    PluginDelegate* delegate =
-        plugin_instance ? plugin_instance->delegate() : NULL;
-    if (!delegate)
-      return PP_ERROR_FAILED;
-
-    PP_FileSystemType file_system_type =
-        delegate->GetFileSystemType(pp_instance(), file_system_);
-    plugin_instance->delegate()->Query(
+    PP_FileSystemType file_system_type = GetResourceHost()->
+        AsPepperFileSystemHost()->GetType();
+    FileSystemDispatcher* file_system_dispatcher =
+        ChildThread::current()->file_system_dispatcher();
+    file_system_dispatcher->ReadMetadata(
         GetFileSystemURL(),
         base::Bind(&DidReadMetadata, callback, info, file_system_type),
         base::Bind(&DidFinishFileOperation, callback));
@@ -499,19 +502,29 @@ int32_t PPB_FileRef_Impl::ReadDirectoryEntriesInHost(
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
-  PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
-  if (!plugin_instance)
-    return PP_ERROR_FAILED;
-
   // TODO(yzshen): Passing base::Unretained(this) to the callback could
   // be dangerous.
-  plugin_instance->delegate()->ReadDirectoryEntries(
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  file_system_dispatcher->ReadDirectory(
       GetFileSystemURL(),
       base::Bind(&DidReadDirectory,
                  callback, base::Unretained(this), files, file_types),
       base::Bind(&DidFinishFileOperation, callback));
   return PP_OK_COMPLETIONPENDING;
+}
+
+ppapi::host::ResourceHost* PPB_FileRef_Impl::GetResourceHost() const {
+  return GetResourceHostInternal(pp_instance(), file_system_);
+}
+
+ppapi::host::ResourceHost* PPB_FileRef_Impl::GetResourceHostInternal(
+    PP_Instance instance, PP_Resource resource) {
+  const ppapi::host::PpapiHost* ppapi_host =
+      RendererPpapiHost::GetForPPInstance(instance)->GetPpapiHost();
+  if (!resource || !ppapi_host)
+    return NULL;
+  return ppapi_host->GetResourceHost(resource);
 }
 
 }  // namespace content
