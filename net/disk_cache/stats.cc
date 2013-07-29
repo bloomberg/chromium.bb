@@ -216,7 +216,7 @@ int Stats::SerializeStats(void* data, int num_bytes, Addr* address) {
     return 0;
 
   stats->signature = kDiskSignature;
-  stats->size = sizeof(stats);
+  stats->size = sizeof(*stats);
   memcpy(stats->data_sizes, data_sizes_, sizeof(data_sizes_));
   memcpy(stats->counters, counters_, sizeof(counters_));
 

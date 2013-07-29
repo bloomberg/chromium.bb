@@ -1367,6 +1367,8 @@ bool BackendImpl::InitStats() {
 
     if (!CreateBlock(file_type, num_blocks, &address))
       return false;
+
+    data_->header.stats = address.value();
     return stats_.Init(NULL, 0, address);
   }
 

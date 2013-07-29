@@ -2632,7 +2632,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionDisableSuccess4) {
   BackendDisable4();
 }
 
-TEST_F(DiskCacheTest, Backend_UsageStats) {
+TEST_F(DiskCacheTest, Backend_UsageStatsTimer) {
   MessageLoopHelper helper;
 
   ASSERT_TRUE(CleanupCacheDir());
@@ -2646,6 +2646,34 @@ TEST_F(DiskCacheTest, Backend_UsageStats) {
   // Wait for a callback that never comes... about 2 secs :). The message loop
   // has to run to allow invocation of the usage timer.
   helper.WaitUntilCacheIoFinished(1);
+}
+
+TEST_F(DiskCacheBackendTest, Backend_UsageStats) {
+  InitCache();
+  disk_cache::Entry* entry;
+  ASSERT_EQ(net::OK, CreateEntry("key", &entry));
+  entry->Close();
+  FlushQueueForTest();
+
+  disk_cache::StatsItems stats;
+  cache_->GetStats(&stats);
+  EXPECT_FALSE(stats.empty());
+
+  disk_cache::StatsItems::value_type hits("Create hit", "0x1");
+  EXPECT_EQ(1, std::count(stats.begin(), stats.end(), hits));
+
+  delete cache_;
+
+  // Now open the cache and verify that the stats are still there.
+  DisableFirstCleanup();
+  InitCache();
+  EXPECT_EQ(1, cache_->GetEntryCount());
+
+  stats.clear();
+  cache_->GetStats(&stats);
+  EXPECT_FALSE(stats.empty());
+
+  EXPECT_EQ(1, std::count(stats.begin(), stats.end(), hits));
 }
 
 void DiskCacheBackendTest::BackendDoomAll() {
