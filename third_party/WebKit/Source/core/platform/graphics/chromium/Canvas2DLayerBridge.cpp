@@ -195,6 +195,7 @@ bool Canvas2DLayerBridge::isValid()
     if (m_context->webContext()->isContextLost() || !m_surfaceIsValid) {
         // Attempt to recover.
         m_layer->clearTexture();
+        m_mailboxes.clear();
         RefPtr<GraphicsContext3D> sharedContext = SharedGraphicsContext3D::get();
         if (!sharedContext || sharedContext->webContext()->isContextLost()) {
             m_surfaceIsValid = false;
