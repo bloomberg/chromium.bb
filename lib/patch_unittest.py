@@ -12,6 +12,7 @@ import os
 import shutil
 import sys
 import time
+import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
@@ -519,6 +520,7 @@ class TestGerritPatch(TestGitRepoPatch):
       self._run(['git', 'push', source, '%s:%s' % (sha1, refspec)], source)
     return obj
 
+  @unittest.skipIf(constants.USE_GOB, "Magic constants broken for GoB.")
   def testIsAlreadyMerged(self):
     # Note that these are magic constants- they're known to be
     # merged (and the other abandoned) in public gerrit.

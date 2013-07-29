@@ -1058,14 +1058,13 @@ class GerritPatch(GitRepoPatch):
         max(x['grantedOn'] for x in self._approvals) if self._approvals else 0
     self.commit_message = patch_dict.get('commitMessage')
 
-  @classmethod
-  def FromGerritOnBorgQuery(cls, change, remote, host):
-    """
-    Create a GerritPatch instance from the json data returned by a query.
+  @staticmethod
+  def ConvertQueryResults(change, host):
+    """Converts HTTP query results to the old SQL format.
 
     The HTTP interface to gerrit uses a different json schema from the old SQL
-    interface.  The method essentially converts data from the new schema to the
-    old one before passing it to the GerritPatch constructor.
+    interface.  This method converts data from the new schema to the old one,
+    typically before passing it to the GerritPatch constructor.
 
     Old interface:
       http://gerrit-documentation.googlecode.com/svn/Documentation/2.6/json.html
@@ -1075,22 +1074,23 @@ class GerritPatch(GitRepoPatch):
       https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#json-entities
     """
     _convert_tm = lambda tm: calendar.timegm(
-        time.strptime(tm.partition('.')[0]))
+        time.strptime(tm.partition('.')[0], '%Y-%m-%d %H:%M:%S'))
     _convert_user = lambda u: {
-        'name': u['name'],
-        'email': u['email'],
-        'username': u['name'],
+        'name': u.get('name', '??unknown??'),
+        'email': u.get('email'),
+        'username': u.get('name', '??unknown??'),
     }
+    change_id = change['change_id'].split('~')[-1]
     patch_dict = {
        'project': change['project'],
        'branch': change['branch'],
        'createdOn': _convert_tm(change['created']),
        'lastUpdated': _convert_tm(change['updated']),
        'sortKey': change.get('_sortkey'),
-       'id': change['change_id'],
+       'id': change_id,
        'owner': _convert_user(change['owner']),
-       'number': change['_number'],
-       'url': gob_util.GetChangeUrl(host, change['change_id']),
+       'number': str(change['_number']),
+       'url': gob_util.GetChangePageUrl(host, change['_number']),
        'status': change['status'],
        'subject': change.get('subject'),
     }
@@ -1100,23 +1100,26 @@ class GerritPatch(GitRepoPatch):
       approvals = []
       for label, label_data in change['labels'].iteritems():
         for review_data in label_data['all']:
+          granted_on = review_data.get('date', change['created'])
           approvals.append({
               'type': constants.GERRIT_ON_BORG_LABELS[label],
               'description': label,
-              'value': review_data.get('value', 0),
-              'grantedOn': _convert_tm(review_data['date']),
+              'value': str(review_data.get('value', '0')),
+              'grantedOn': _convert_tm(granted_on),
               'by': _convert_user(review_data),
           })
       patch_dict['currentPatchSet'] = {
           'approvals': approvals,
-          'parents': [
-              x['commit'] for x in current_revision_info['commit']['parents']],
           'ref': current_revision_info['fetch']['http']['ref'],
           'revision': current_revision,
-          'number': current_revision_info['_number'],
+          'number': str(current_revision_info['_number']),
       }
-    # pylint: disable=E0602
-    return cls(patch_dict, remote, url_prefix)
+      current_commit = current_revision_info.get('commit')
+      if current_commit:
+        patch_dict['commitMessage'] = current_commit['message']
+        parents = current_commit.get('parents', [])
+        patch_dict['dependsOn'] = [{'revision': p['commit']} for p in parents]
+    return patch_dict
 
   def __reduce__(self):
     """Used for pickling to re-create patch object."""
@@ -1132,8 +1135,20 @@ class GerritPatch(GitRepoPatch):
 
   def GerritDependencies(self):
     """Returns the list of Gerrit change numbers that this patch depends on."""
-    return [FormatGerritNumber(d['number'], force_internal=self.internal)
-            for d in self.patch_dict.get('dependsOn', [])]
+    results = []
+    for d in self.patch_dict.get('dependsOn', []):
+      if 'number' in d:
+        results.append(FormatGerritNumber(d['number'],
+                                          force_internal=self.internal))
+      elif 'id' in d:
+        results.append(FormatChangeId(d['id'], force_internal=self.internal))
+      elif 'revision' in d:
+        results.append(FormatSha1(d['revision'], force_internal=self.internal))
+      else:
+        raise AssertionError(
+            'While processing the dependencies of change %s, no "number", "id",'
+            ' or "revision" key found in: %r' % (self.gerrit_number, d))
+    return results
 
   def IsAlreadyMerged(self):
     """Returns whether the patch has already been merged in Gerrit."""

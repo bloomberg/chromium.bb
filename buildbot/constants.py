@@ -6,7 +6,7 @@
 
 import os
 
-USE_GOB = False
+USE_GOB = True
 
 SOURCE_ROOT = os.path.dirname(os.path.abspath(__file__))
 SOURCE_ROOT = os.path.realpath(os.path.join(SOURCE_ROOT, '..', '..'))
@@ -60,8 +60,8 @@ if USE_GOB:
   GERRIT_HOST = PUBLIC_GERRIT_HOST
   GERRIT_INT_HOST = INTERNAL_GERRIT_HOST
   GIT_HOST = PUBLIC_GOB_HOST
-  GERRIT_SSH_URL = PUBLIC_GOB_URL
-  GERRIT_INT_SSH_URL = INTERNAL_GOB_URL
+  GERRIT_SSH_URL = PUBLIC_GERRIT_URL
+  GERRIT_INT_SSH_URL = INTERNAL_GERRIT_URL
   GIT_HTTP_URL = PUBLIC_GOB_URL
 else:
   GERRIT_PORT = '29418'
@@ -272,9 +272,16 @@ EXTERNAL_PATCH_TAG = 'e'
 PATCH_TAGS = (INTERNAL_PATCH_TAG, EXTERNAL_PATCH_TAG)
 
 # Default gerrit query used to find changes for CQ.
-DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
-                          'AND CommitQueue=+1 '
-                          'AND NOT ( CodeReview=-2 OR Verified=-1 )')
+if USE_GOB:
+  DEFAULT_CQ_READY_QUERY = ('status:open AND '
+                            'label:Code-Review=+2 AND '
+                            'label:Verified=+1 AND '
+                            'label:Commit-Queue=+1 AND '
+                            'NOT ( label:CodeReview=-2 OR label:Verified=-1 )')
+else:
+  DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
+                            'AND CommitQueue=+1 '
+                            'AND NOT ( CodeReview=-2 OR Verified=-1 )')
 
 # Default filter rules for verifying that Gerrit returned results that matched
 # our query. This used for working around Gerrit bugs.
