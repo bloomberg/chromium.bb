@@ -1234,8 +1234,6 @@ crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-
 crbug.com/130259 [ Linux ] fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ ImageOnlyFailure ]
 crbug.com/130259 [ Linux Mac ] fast/forms/checkbox/checkbox-appearance-basic.html [ ImageOnlyFailure ]
 crbug.com/130259 [ Linux Mac ] fast/forms/radio/radio-appearance-basic.html [ ImageOnlyFailure ]
-crbug.com/14866009 [ Win ] fast/forms/checkbox/checkbox-appearance-basic.html [ Failure ]
-crbug.com/14866009 [ Win ] fast/forms/radio/radio-appearance-basic.html [ Failure ]
 
 crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 webkit.org/b/81697 fast/notifications/notifications-request-permission.html [ Failure Pass ]
@@ -1473,15 +1471,7 @@ crbug.com/244225 inspector-protocol/dom/setFileInputFiles.html [ Skip ]
 crbug.com/244276 fast/images/gif-loop-count.html [ ImageOnlyFailure ]
 crbug.com/244276 crbug.com/245189 [ Linux Win ] virtual/deferred/fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ]
 
-# New baselines are needed due to the switch to use bicubic filtering in Skia.
-crbug.com/229120 virtual/deferred/fast/images/imagemap-focus-ring-zero-outline-width.html [ ImageOnlyFailure ]
-crbug.com/229120 virtual/deferred/fast/images/jpeg-with-color-profile.html [ ImageOnlyFailure ]
-crbug.com/229120 virtual/deferred/fast/images/png-with-color-profile.html [ ImageOnlyFailure ]
-crbug.com/229120 virtual/deferred/fast/images/rgb-png-with-cmyk-color-profile.html [ ImageOnlyFailure ]
-crbug.com/229120 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html [ ImageOnlyFailure ]
-
-# Slow because of bug 259094
-crbug.com/229120 virtual/deferred/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure Slow ]
+crbug.com/259094 virtual/deferred/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Slow ]
 
 crbug.com/246749 inspector/extensions/extensions-panel.html [ Timeout Pass ]
 
@@ -1490,7 +1480,6 @@ crbug.com/226256 storage/indexeddb/pending-version-change-stuck.html [ Timeout P
 crbug.com/245154 editing/selection/move-by-character-brute-force.html [ Pass Timeout ]
 
 crbug.com/245630 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass  ]
-crbug.com/245641 [ Win ] http/tests/loading/text-content-type-with-binary-extension.html [ Failure ]
 crbug.com/245644 virtual/gpu/fast/canvas/2d.text.draw.fill.maxWidth.gradient.html [ Failure Pass ]
 
 crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
@@ -1514,9 +1503,6 @@ crbug.com/247889 [ Win ] http/tests/navigation/back-send-referrer.html [ Pass Ti
 # Needs new pixel baselines on other platforms
 Bug(jamesr) compositing/video/video-controls-layer-creation.html [ ImageOnlyFailure ]
 Bug(jamesr) virtual/softwarecompositing/video/video-controls-layer-creation.html [ ImageOnlyFailure ]
-
-# New baseline might fail on Mac according to trybots.
-crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ ImageOnlyFailure ]
 
 webkit.org/b/60109 [ Linux Release ] inspector/elements/edit-dom-actions.html [ Slow ]
 crbug.com/247979 [ Win Mac Release ] inspector/elements/edit-dom-actions.html [ Slow Failure Pass ]
@@ -1552,8 +1538,6 @@ crbug.com/254332 [ Linux Win ] fast/forms/range/range-focus-by-mouse-then-keydow
 crbug.com/254332 [ Linux Win ] fast/forms/range/range-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Win ] fast/forms/submit/submit-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
-
-crbug.com/248832 [ XP ] virtual/softwarecompositing/reflections/nested-reflection-anchor-point.html [ ImageOnlyFailure ]
 
 crbug.com/251079 [ Debug ] fast/parser/fragment-parser.html [ Pass Timeout ]
 

@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x155
-  RenderBlock {HTML} at (0,0) size 800x155
-    RenderBody {BODY} at (8,8) size 784x139
+layer at (0,0) size 800x168
+  RenderBlock {HTML} at (0,0) size 800x168
+    RenderBody {BODY} at (8,8) size 784x152
       RenderBlock {INPUT} at (4,4) size 13x13
       RenderText {#text} at (21,2) size 4x19
         text run at (21,2) width 4: " "
@@ -35,10 +35,10 @@ layer at (0,0) size 800x155
       RenderText {#text} at (80,90) size 4x19
         text run at (80,90) width 4: " "
       RenderBR {BR} at (84,90) size 0x19
-      RenderBlock {INPUT} at (6,118) size 13x13
-      RenderText {#text} at (25,116) size 4x19
-        text run at (25,116) width 4: " "
-      RenderBlock {INPUT} at (37,118) size 13x13
-      RenderText {#text} at (58,116) size 4x19
-        text run at (58,116) width 4: " "
-      RenderBR {BR} at (62,116) size 0x19
+      RenderBlock {INPUT} at (6,125) size 19x19
+      RenderText {#text} at (31,129) size 4x19
+        text run at (31,129) width 4: " "
+      RenderBlock {INPUT} at (43,118) size 26x26
+      RenderText {#text} at (77,129) size 4x19
+        text run at (77,129) width 4: " "
+      RenderBR {BR} at (81,129) size 0x19
