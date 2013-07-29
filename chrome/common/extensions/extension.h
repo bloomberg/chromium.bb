@@ -483,6 +483,9 @@ struct InstalledExtensionInfo {
 struct UnloadedExtensionInfo {
   extension_misc::UnloadedExtensionReason reason;
 
+  // Was the extension already disabled?
+  bool already_disabled;
+
   // The extension being unloaded - this should always be non-NULL.
   const Extension* extension;
 

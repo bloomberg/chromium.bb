@@ -211,7 +211,7 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
   }
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(service->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(service->profile()));
 }
 
@@ -318,18 +318,24 @@ void ExtensionDisabledGlobalError::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  const Extension* extension = NULL;
   // The error is invalidated if the extension has been reloaded
-  // or uninstalled.
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED ||
-         type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED);
-  const Extension* extension = content::Details<const Extension>(details).ptr();
+  // or unloaded.
+  if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
+    extension = content::Details<const Extension>(details).ptr();
+  } else {
+    DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNLOADED, type);
+    extensions::UnloadedExtensionInfo* info =
+        content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
+    extension = info->extension;
+  }
   if (extension == extension_) {
     GlobalErrorServiceFactory::GetForProfile(service_->profile())->
         RemoveGlobalError(this);
 
     if (type == chrome::NOTIFICATION_EXTENSION_LOADED)
       user_response_ = REENABLE;
-    else if (type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED)
+    else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED)
       user_response_ = UNINSTALL;
     delete this;
   }

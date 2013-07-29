@@ -135,8 +135,6 @@ class SyncFileSystemService
   void HandleExtensionInstalled(const content::NotificationDetails& details);
   void HandleExtensionUnloaded(int type,
                                const content::NotificationDetails& details);
-  void HandleExtensionUninstalled(int type,
-                                  const content::NotificationDetails& details);
   void HandleExtensionEnabled(int type,
                               const content::NotificationDetails& details);
 

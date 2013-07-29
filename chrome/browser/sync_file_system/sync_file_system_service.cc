@@ -62,23 +62,25 @@ SyncServiceState RemoteStateToSyncServiceState(
 
 void DidHandleOriginForExtensionUnloadedEvent(
     int type,
+    extension_misc::UnloadedExtensionReason reason,
     const GURL& origin,
     SyncStatusCode code) {
-  DCHECK(chrome::NOTIFICATION_EXTENSION_UNLOADED == type ||
-         chrome::NOTIFICATION_EXTENSION_UNINSTALLED == type);
+  DCHECK(chrome::NOTIFICATION_EXTENSION_UNLOADED == type);
+  DCHECK(extension_misc::UNLOAD_REASON_DISABLE == reason ||
+         extension_misc::UNLOAD_REASON_UNINSTALL == reason);
   if (code != SYNC_STATUS_OK &&
       code != SYNC_STATUS_UNKNOWN_ORIGIN) {
-    switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    switch (reason) {
+      case extension_misc::UNLOAD_REASON_DISABLE:
         util::Log(logging::LOG_WARNING,
                   FROM_HERE,
-                  "Disabling origin for UNLOADED(DISABLE) failed: %s",
+                  "Disabling origin for UNLOAD(DISABLE) failed: %s",
                   origin.spec().c_str());
         break;
-      case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
+      case extension_misc::UNLOAD_REASON_UNINSTALL:
         util::Log(logging::LOG_WARNING,
                   FROM_HERE,
-                  "Uninstall origin for UNINSTALLED failed: %s",
+                  "Uninstall origin for UNLOAD(UNINSTALL) failed: %s",
                   origin.spec().c_str());
         break;
       default:
@@ -278,8 +280,6 @@ void SyncFileSystemService::Initialize(
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_ENABLED,
                  content::Source<Profile>(profile_));
@@ -561,7 +561,7 @@ void SyncFileSystemService::Observe(
   // (User action)    (Notification type)
   // Install:         INSTALLED.
   // Update:          INSTALLED.
-  // Uninstall:       UNINSTALLED.
+  // Uninstall:       UNLOADED(UNINSTALL).
   // Launch, Close:   No notification.
   // Enable:          ENABLED.
   // Disable:         UNLOADED(DISABLE).
@@ -573,9 +573,6 @@ void SyncFileSystemService::Observe(
       break;
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       HandleExtensionUnloaded(type, details);
-      break;
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
-      HandleExtensionUninstalled(type, details);
       break;
     case chrome::NOTIFICATION_EXTENSION_ENABLED:
       HandleExtensionEnabled(type, details);
@@ -606,31 +603,30 @@ void SyncFileSystemService::HandleExtensionUnloaded(
   std::string extension_id = info->extension->id();
   GURL app_origin =
       extensions::Extension::GetBaseURLFromExtensionId(extension_id);
-  if (info->reason != extension_misc::UNLOAD_REASON_DISABLE)
-    return;
-  DVLOG(1) << "Handle extension notification for UNLOAD(DISABLE): "
-           << app_origin;
-  remote_file_service_->DisableOriginForTrackingChanges(
-      app_origin,
-      base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
-                 type, app_origin));
-  local_file_service_->SetOriginEnabled(app_origin, false);
-}
 
-void SyncFileSystemService::HandleExtensionUninstalled(
-    int type,
-    const content::NotificationDetails& details) {
-  std::string extension_id =
-      content::Details<const extensions::Extension>(details)->id();
-  GURL app_origin =
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id);
-  DVLOG(1) << "Handle extension notification for UNINSTALLED: "
-           << app_origin;
-  remote_file_service_->UninstallOrigin(
-      app_origin,
-      base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
-                 type, app_origin));
-  local_file_service_->SetOriginEnabled(app_origin, false);
+  switch (info->reason) {
+    case extension_misc::UNLOAD_REASON_DISABLE:
+      DVLOG(1) << "Handle extension notification for UNLOAD(DISABLE): "
+               << app_origin;
+      remote_file_service_->DisableOriginForTrackingChanges(
+          app_origin,
+          base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
+                     type, info->reason, app_origin));
+      local_file_service_->SetOriginEnabled(app_origin, false);
+      break;
+    case extension_misc::UNLOAD_REASON_UNINSTALL:
+      DVLOG(1) << "Handle extension notification for UNLOAD(UNINSTALL): "
+               << app_origin;
+      remote_file_service_->UninstallOrigin(
+          app_origin,
+          base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
+                     type, info->reason, app_origin));
+      local_file_service_->SetOriginEnabled(app_origin, false);
+      break;
+    default:
+      // Nothing to do.
+      break;
+  }
 }
 
 void SyncFileSystemService::HandleExtensionEnabled(

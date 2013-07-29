@@ -87,6 +87,8 @@ void PluginManager::Observe(int type,
       PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+    if (content::Details<UnloadedExtensionInfo>(details)->already_disabled)
+      return;
     const Extension* extension =
         content::Details<UnloadedExtensionInfo>(details)->extension;
 
