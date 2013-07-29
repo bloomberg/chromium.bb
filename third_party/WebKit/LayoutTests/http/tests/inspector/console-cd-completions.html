@@ -22,7 +22,7 @@ function test()
     option.selected = true;
     WebInspector.consoleView._frameChanged();
 
-    WebInspector.runtimeModel._completionsForExpression("", "myGlob", checkCompletions.bind(this));
+    WebInspector.runtimeModel._completionsForExpression("", "myGlob", false, checkCompletions.bind(this));
     function checkCompletions(completions)
     {
         var expected = ["myGlobalVar", "myGlobalFunction"];
