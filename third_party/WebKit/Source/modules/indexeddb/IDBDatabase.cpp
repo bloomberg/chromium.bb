@@ -328,6 +328,7 @@ void IDBDatabase::closeConnection()
     ASSERT(m_transactions.isEmpty());
 
     m_backend->close(m_databaseCallbacks);
+    m_backend.clear();
 
     if (m_contextStopped || !scriptExecutionContext())
         return;

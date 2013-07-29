@@ -743,6 +743,7 @@
       'websockets/WorkerThreadableWebSocketChannel.h',
     ],
     'modules_unittest_files': [
+      'indexeddb/IDBDatabaseTest.cpp',
       'indexeddb/IDBKeyPathTest.cpp',
       'websockets/WebSocketDeflaterTest.cpp',
       'websockets/WebSocketExtensionDispatcherTest.cpp',
