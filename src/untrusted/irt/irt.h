@@ -53,10 +53,17 @@ size_t nacl_interface_query(const char *interface_ident,
                             void *table, size_t tablesize);
 
 /*
+ * General notes about IRT interfaces:
+ *
  * All functions in IRT vectors return an int, which is zero for success
  * or a (positive) errno code for errors.  Any values are delivered via
  * result parameters.  The only exceptions exit/thread_exit, which can
  * never return, and tls_get, which can never fail.
+ *
+ * Some of the IRT interfaces below are disabled under PNaCl because
+ * they are deprecated or not portable.  The list of IRT interfaces
+ * that are allowed under PNaCl can be found in the Chromium repo in
+ * ppapi/native_client/src/untrusted/pnacl_irt_shim/shim_ppapi.c.
  */
 
 #define NACL_IRT_BASIC_v0_1     "nacl-irt-basic-0.1"
@@ -87,6 +94,11 @@ struct nacl_irt_filename {
   int (*stat)(const char *pathname, struct stat *);
 };
 
+/*
+ * This old version of irt-memory is disabled under PNaCl because it
+ * contains sysbrk() (see
+ * https://code.google.com/p/nativeclient/issues/detail?id=3542).
+ */
 #define NACL_IRT_MEMORY_v0_1    "nacl-irt-memory-0.1"
 struct nacl_irt_memory_v0_1 {
   /*
@@ -115,6 +127,7 @@ struct nacl_irt_memory_v0_1 {
   int (*munmap)(void *addr, size_t len);
 };
 
+/* This old version of irt-memory is also disabled under PNaCl. */
 #define NACL_IRT_MEMORY_v0_2    "nacl-irt-memory-0.2"
 struct nacl_irt_memory_v0_2 {
   int (*sysbrk)(void **newbrk);
@@ -130,6 +143,11 @@ struct nacl_irt_memory {
   int (*mprotect)(void *addr, size_t len, int prot);
 };
 
+/*
+ * This interface is disabled under PNaCl because it allows
+ * dynamically loading architecture-specific native code, which is not
+ * portable.
+ */
 #define NACL_IRT_DYNCODE_v0_1   "nacl-irt-dyncode-0.1"
 struct nacl_irt_dyncode {
   int (*dyncode_create)(void *dest, const void *src, size_t size);
@@ -206,9 +224,9 @@ struct nacl_irt_futex {
 
 /*
  * "irt-mutex" is deprecated and is disabled under PNaCl (see
- * https://code.google.com/p/nativeclient/issues/detail?id=3484 and
- * pnacl_irt.c).  nacl-newlib's libpthread no longer uses it.  Note,
- * however, that nacl-glibc's futex_emulation.c still uses it.
+ * https://code.google.com/p/nativeclient/issues/detail?id=3484).
+ * nacl-newlib's libpthread no longer uses it.  Note, however, that
+ * nacl-glibc's futex_emulation.c still uses it.
  */
 #define NACL_IRT_MUTEX_v0_1        "nacl-irt-mutex-0.1"
 struct nacl_irt_mutex {
@@ -221,9 +239,9 @@ struct nacl_irt_mutex {
 
 /*
  * "irt-cond" is deprecated and is disabled under PNaCl (see
- * https://code.google.com/p/nativeclient/issues/detail?id=3484 and
- * pnacl_irt.c).  nacl-newlib's libpthread no longer uses it.  Note,
- * however, that nacl-glibc's futex_emulation.c still uses it.
+ * https://code.google.com/p/nativeclient/issues/detail?id=3484).
+ * nacl-newlib's libpthread no longer uses it.  Note, however, that
+ * nacl-glibc's futex_emulation.c still uses it.
  */
 #define NACL_IRT_COND_v0_1      "nacl-irt-cond-0.1"
 struct nacl_irt_cond {
@@ -239,10 +257,10 @@ struct nacl_irt_cond {
 /*
  * The "irt-sem" interface provides semaphores.  This interface is
  * deprecated and is disabled under PNaCl (see
- * https://code.google.com/p/nativeclient/issues/detail?id=3484 and
- * pnacl_irt.c).  New versions of nacl-newlib's libpthread no longer
- * use it, and nacl-glibc has never used it.  They implement
- * semaphores using futexes instead.
+ * https://code.google.com/p/nativeclient/issues/detail?id=3484).  New
+ * versions of nacl-newlib's libpthread no longer use it, and
+ * nacl-glibc has never used it.  They implement semaphores using
+ * futexes instead.
  */
 #define NACL_IRT_SEM_v0_1       "nacl-irt-sem-0.1"
 struct nacl_irt_sem {
@@ -261,8 +279,7 @@ struct nacl_irt_tls {
 /*
  * The "irt-blockhook" interface is disabled under PNaCl because it
  * does not have a known-portable use case (see
- * https://code.google.com/p/nativeclient/issues/detail?id=3539 and
- * pnacl_irt.c).
+ * https://code.google.com/p/nativeclient/issues/detail?id=3539).
  */
 #define NACL_IRT_BLOCKHOOK_v0_1 "nacl-irt-blockhook-0.1"
 struct nacl_irt_blockhook {
@@ -275,6 +292,17 @@ struct nacl_irt_ppapihook {
   void (*ppapi_register_thread_creator)(const struct PP_ThreadFunctions *);
 };
 
+/*
+ * In Chromium, open_resource() opens a file listed in the NaCl
+ * manifest file (NMF).  It returns a read-only file descriptor.
+ *
+ * This interface is disabled under PNaCl because it was provided
+ * primarily for use by nacl-glibc's dynamic linker, which is not
+ * supported under PNaCl.  Also, open_resource() returns a file
+ * descriptor, but it is the only interface in NaCl to do so inside
+ * Chromium.  This is inconsistent with PPAPI, which does not expose
+ * file descriptors (except in private/dev interfaces).
+ */
 #define NACL_IRT_RESOURCE_OPEN_v0_1 "nacl-irt-resource-open-0.1"
 struct nacl_irt_resource_open {
   int (*open_resource)(const char *file, int *fd);
@@ -302,6 +330,10 @@ struct nacl_irt_dev_getpid {
   int (*getpid)(int *pid);
 };
 
+/*
+ * This interface is disabled under PNaCl because it exposes
+ * non-portable, architecture-specific register state.
+ */
 #define NACL_IRT_EXCEPTION_HANDLING_v0_1 \
   "nacl-irt-exception-handling-0.1"
 typedef void (*NaClExceptionHandler)(struct NaClExceptionContext *context);
