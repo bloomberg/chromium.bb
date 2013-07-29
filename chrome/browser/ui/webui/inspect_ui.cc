@@ -84,9 +84,7 @@ static const char kPidField[]  = "pid";
 static const char kAdbSerialField[] = "adbSerial";
 static const char kAdbModelField[] = "adbModel";
 static const char kAdbPackageField[] = "adbPackage";
-static const char kAdbSocketField[] = "adbSocket";
-static const char kAdbDebugUrlField[] = "adbDebugUrl";
-static const char kAdbFrontendUrlField[] = "adbFrontendUrl";
+static const char kAdbPageIdField[] = "adbPageId";
 
 DictionaryValue* BuildTargetDescriptor(
     const std::string& target_type,
@@ -208,21 +206,15 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
   int route_id;
   if (!GetProcessAndRouteId(args, &process_id, &route_id) || process_id == 0
       || route_id == 0) {
-    // Check for ADB serial
+    // Check for ADB page id
     const DictionaryValue* data;
-    std::string serial;
-    std::string socket;
-    std::string debug_url;
-    std::string frontend_url;
+    std::string page_id;
     if (args->GetSize() == 1 && args->GetDictionary(0, &data) &&
-        data->GetString(kAdbSerialField, &serial) &&
-        data->GetString(kAdbSocketField, &socket) &&
-        data->GetString(kAdbDebugUrlField, &debug_url) &&
-        data->GetString(kAdbFrontendUrlField, &frontend_url)) {
+        data->GetString(kAdbPageIdField, &page_id)) {
       scoped_refptr<DevToolsAdbBridge> adb_bridge =
           DevToolsAdbBridge::Factory::GetForProfile(profile);
       if (adb_bridge)
-        adb_bridge->Attach(serial, socket, debug_url, frontend_url);
+        adb_bridge->Attach(page_id);
     }
     return;
   }
@@ -459,9 +451,7 @@ void InspectUI::RemotePagesChanged(DevToolsAdbBridge::RemotePages* pages) {
     target_data->SetString(kAdbSerialField, page->serial());
     target_data->SetString(kAdbModelField, page->model());
     target_data->SetString(kAdbPackageField, page->package());
-    target_data->SetString(kAdbSocketField, page->socket());
-    target_data->SetString(kAdbDebugUrlField, page->debug_url());
-    target_data->SetString(kAdbFrontendUrlField, page->frontend_url());
+    target_data->SetString(kAdbPageIdField, page->id());
     targets.Append(target_data);
   }
   web_ui()->CallJavascriptFunction("populateDeviceLists", targets);

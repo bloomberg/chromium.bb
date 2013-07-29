@@ -343,8 +343,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<AdbPagesCommand> {
         continue;
       pages_->push_back(
           new DevToolsAdbBridge::RemotePage(
-              device->serial(), device->model(), socket_to_package_[socket],
-              socket, *dict));
+              device, socket_to_package_[socket], socket, *dict));
     }
     ProcessSockets();
   }
@@ -762,80 +761,11 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
   DISALLOW_COPY_AND_ASSIGN(AgentHostDelegate);
 };
 
-class AdbAttachCommand : public base::RefCountedThreadSafe<AdbAttachCommand> {
- public:
-  AdbAttachCommand(DevToolsAdbBridge* bridge,
-                   const std::string& serial,
-                   const std::string& socket,
-                   const std::string& debug_url,
-                   const std::string& frontend_url)
-      : bridge_(bridge),
-        serial_(serial),
-        socket_(socket),
-        debug_url_(debug_url),
-        frontend_url_(frontend_url) {
-    bridge_->EnumerateUsbDevices(
-        base::Bind(&AdbAttachCommand::ReceivedUsbDevices, this));
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<AdbAttachCommand>;
-  virtual ~AdbAttachCommand() {}
-
-  void ReceivedUsbDevices(const AndroidDevices& devices) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    bridge_->GetAdbMessageLoop()->PostTask(FROM_HERE,
-        base::Bind(&DevToolsAdbBridge::EnumerateAdbDevices, bridge_,
-                   base::Bind(&AdbAttachCommand::ReceivedAdbDevices, this,
-                              devices)));
-  }
-
-  void ReceivedAdbDevices(const AndroidDevices& usb_devices,
-                          const AndroidDevices& adb_devices) {
-    if (!Attach(usb_devices))
-      Attach(adb_devices);
-  }
-
-
-  bool Attach(const AndroidDevices& devices) {
-    for (AndroidDevices::const_iterator it = devices.begin();
-         it != devices.end(); ++it) {
-      if ((*it)->serial() == serial_) {
-       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-           base::Bind(&AdbAttachCommand::DoAttach, this, *it));
-        return true;
-      }
-    }
-    return false;
-  }
-
-  void DoAttach(scoped_refptr<DevToolsAdbBridge::AndroidDevice> device) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-    std::string id = base::StringPrintf("%s:%s", device->serial().c_str(),
-                                        debug_url_.c_str());
-    AgentHostDelegates::iterator it = g_host_delegates.Get().find(id);
-    if (it != g_host_delegates.Get().end())
-      it->second->OpenFrontend();
-    else
-      new AgentHostDelegate(id, device, socket_, debug_url_, frontend_url_,
-                            bridge_->adb_thread_, bridge_->profile_);
-  }
-
-  scoped_refptr<DevToolsAdbBridge> bridge_;
-  std::string serial_;
-  std::string socket_;
-  std::string debug_url_;
-  std::string frontend_url_;
-};
-
-DevToolsAdbBridge::RemotePage::RemotePage(const std::string& serial,
-                                          const std::string& model,
+DevToolsAdbBridge::RemotePage::RemotePage(scoped_refptr<AndroidDevice> device,
                                           const std::string& package,
                                           const std::string& socket,
                                           const base::DictionaryValue& value)
-    : serial_(serial),
-      model_(model),
+    : device_(device),
       package_(package),
       socket_(socket) {
   value.GetString("id", &id_);
@@ -932,15 +862,25 @@ void DevToolsAdbBridge::EnumerateAdbDevices(
       base::Bind(&DevToolsAdbBridge::ReceivedAdbDevices, this, callback));
 }
 
-void DevToolsAdbBridge::Attach(const std::string& serial,
-                               const std::string& socket,
-                               const std::string& debug_url,
-                               const std::string& frontend_url) {
+void DevToolsAdbBridge::Attach(const std::string& page_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!has_message_loop_)
     return;
 
-  new AdbAttachCommand(this, serial, socket, debug_url, frontend_url);
+  for (RemotePages::iterator it = pages_->begin(); it != pages_->end(); ++it) {
+    scoped_refptr<RemotePage> page = *it;
+    // Assuming page->id() is unique across devices (since it is a GUID).
+    if (page->id() == page_id) {
+      AgentHostDelegates::iterator it = g_host_delegates.Get().find(page_id);
+      if (it != g_host_delegates.Get().end())
+        it->second->OpenFrontend();
+      else if (!page->debug_url().empty())
+        new AgentHostDelegate(
+            page_id, page->device(), page->socket(), page->debug_url(),
+            page->frontend_url(), adb_thread_, profile_);
+      break;
+    }
+  }
 }
 
 void DevToolsAdbBridge::AddListener(Listener* listener) {
@@ -1015,12 +955,12 @@ void DevToolsAdbBridge::RequestPages() {
 
 void DevToolsAdbBridge::ReceivedPages(int result, RemotePages* pages_ptr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<RemotePages> pages(pages_ptr);
+  pages_.reset(pages_ptr);
 
   if (result == net::OK) {
     Listeners copy(listeners_);
     for (Listeners::iterator it = copy.begin(); it != copy.end(); ++it)
-      (*it)->RemotePagesChanged(pages.get());
+      (*it)->RemotePagesChanged(pages_.get());
   }
 
   if (listeners_.empty())

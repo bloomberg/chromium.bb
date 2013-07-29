@@ -177,8 +177,7 @@ function addTargetToList(data, listId, properties, canTerminate) {
   for (var j = 0; j < properties.length; j++)
     row.appendChild(formatValue(data, properties[j]));
 
-  if (!data.hasOwnProperty('adbSerial') || data['adbDebugUrl'])
-    row.appendChild(createInspectElement(data));
+  row.appendChild(createInspectElement(data));
 
   if (canTerminate)
     row.appendChild(createTerminateElement(data));
