@@ -476,9 +476,21 @@ FileBrowserPrivateAPI* FileBrowserPrivateAPI::Get(Profile* profile) {
   return FileBrowserPrivateAPIFactory::GetForProfile(profile);
 }
 
+LogoutUserFunction::LogoutUserFunction() {
+}
+
+LogoutUserFunction::~LogoutUserFunction() {
+}
+
 bool LogoutUserFunction::RunImpl() {
   chrome::AttemptUserExit();
   return true;
+}
+
+RequestFileSystemFunction::RequestFileSystemFunction() {
+}
+
+RequestFileSystemFunction::~RequestFileSystemFunction() {
 }
 
 void RequestFileSystemFunction::DidOpenFileSystem(
@@ -590,6 +602,12 @@ bool RequestFileSystemFunction::RunImpl() {
   return true;
 }
 
+FileWatchBrowserFunctionBase::FileWatchBrowserFunctionBase() {
+}
+
+FileWatchBrowserFunctionBase::~FileWatchBrowserFunctionBase() {
+}
+
 void FileWatchBrowserFunctionBase::Respond(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -625,6 +643,12 @@ bool FileWatchBrowserFunctionBase::RunImpl() {
   return true;
 }
 
+AddFileWatchBrowserFunction::AddFileWatchBrowserFunction() {
+}
+
+AddFileWatchBrowserFunction::~AddFileWatchBrowserFunction() {
+}
+
 void AddFileWatchBrowserFunction::PerformFileWatchOperation(
     const base::FilePath& local_path,
     const base::FilePath& virtual_path,
@@ -638,6 +662,12 @@ void AddFileWatchBrowserFunction::PerformFileWatchOperation(
       virtual_path,
       extension_id,
       base::Bind(&AddFileWatchBrowserFunction::Respond, this));
+}
+
+RemoveFileWatchBrowserFunction::RemoveFileWatchBrowserFunction() {
+}
+
+RemoveFileWatchBrowserFunction::~RemoveFileWatchBrowserFunction() {
 }
 
 void RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
@@ -666,6 +696,12 @@ struct GetFileTasksFileBrowserFunction::TaskInfo {
   string16 app_name;
   GURL icon_url;
 };
+
+GetFileTasksFileBrowserFunction::GetFileTasksFileBrowserFunction() {
+}
+
+GetFileTasksFileBrowserFunction::~GetFileTasksFileBrowserFunction() {
+}
 
 // static
 void GetFileTasksFileBrowserFunction::GetAvailableDriveTasks(
@@ -1003,14 +1039,11 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   return true;
 }
 
-ExecuteTasksFileBrowserFunction::ExecuteTasksFileBrowserFunction() {}
-
-void ExecuteTasksFileBrowserFunction::OnTaskExecuted(bool success) {
-  SetResult(new base::FundamentalValue(success));
-  SendResponse(true);
+ExecuteTasksFileBrowserFunction::ExecuteTasksFileBrowserFunction() {
 }
 
-ExecuteTasksFileBrowserFunction::~ExecuteTasksFileBrowserFunction() {}
+ExecuteTasksFileBrowserFunction::~ExecuteTasksFileBrowserFunction() {
+}
 
 bool ExecuteTasksFileBrowserFunction::RunImpl() {
   // First param is task id that was to the extension with getFileTasks call.
@@ -1072,9 +1105,16 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
       base::Bind(&ExecuteTasksFileBrowserFunction::OnTaskExecuted, this));
 }
 
-SetDefaultTaskFileBrowserFunction::SetDefaultTaskFileBrowserFunction() {}
+void ExecuteTasksFileBrowserFunction::OnTaskExecuted(bool success) {
+  SetResult(new base::FundamentalValue(success));
+  SendResponse(true);
+}
 
-SetDefaultTaskFileBrowserFunction::~SetDefaultTaskFileBrowserFunction() {}
+SetDefaultTaskFileBrowserFunction::SetDefaultTaskFileBrowserFunction() {
+}
+
+SetDefaultTaskFileBrowserFunction::~SetDefaultTaskFileBrowserFunction() {
+}
 
 bool SetDefaultTaskFileBrowserFunction::RunImpl() {
   // First param is task id that was to the extension with setDefaultTask call.
@@ -1226,26 +1266,8 @@ void FileBrowserFunction::ContinueGetSelectedFileInfo(
   GetSelectedFileInfoInternal(params.Pass());
 }
 
-bool SelectFileFunction::RunImpl() {
-  if (args_->GetSize() != 4) {
-    return false;
-  }
-  std::string file_url;
-  args_->GetString(0, &file_url);
-  UrlList file_paths;
-  file_paths.push_back(GURL(file_url));
-  bool for_opening = false;
-  args_->GetBoolean(2, &for_opening);
-
-  GetSelectedFileInfo(
-      file_paths,
-      for_opening,
-      base::Bind(&SelectFileFunction::GetSelectedFileInfoResponse, this));
-  return true;
-}
-
 void FileBrowserFunction::SendResponse(bool success) {
-  int64 elapsed = GetElapsedTime().InMilliseconds();
+  int64 elapsed = (base::Time::Now() - start_time_).InMilliseconds();
   if (log_on_completion_) {
     drive::util::Log("%s[%d] %s. (elapsed time: %sms)",
                      name().c_str(),
@@ -1261,24 +1283,6 @@ void FileBrowserFunction::SendResponse(bool success) {
   }
 
   AsyncExtensionFunction::SendResponse(success);
-}
-
-base::TimeDelta FileBrowserFunction::GetElapsedTime() {
-  return base::Time::Now() - start_time_;
-}
-
-void SelectFileFunction::GetSelectedFileInfoResponse(
-    const SelectedFileInfoList& files) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (files.size() != 1) {
-    SendResponse(false);
-    return;
-  }
-  int index;
-  args_->GetInteger(1, &index);
-  int32 tab_id = GetTabId(dispatcher());
-  SelectFileDialogExtension::OnFileSelected(tab_id, files[0], index);
-  SendResponse(true);
 }
 
 ViewFilesFunction::ViewFilesFunction() {
@@ -1327,6 +1331,44 @@ bool ViewFilesFunction::RunImpl() {
   return true;
 }
 
+SelectFileFunction::SelectFileFunction() {
+}
+
+SelectFileFunction::~SelectFileFunction() {
+}
+
+bool SelectFileFunction::RunImpl() {
+  if (args_->GetSize() != 4) {
+    return false;
+  }
+  std::string file_url;
+  args_->GetString(0, &file_url);
+  UrlList file_paths;
+  file_paths.push_back(GURL(file_url));
+  bool for_opening = false;
+  args_->GetBoolean(2, &for_opening);
+
+  GetSelectedFileInfo(
+      file_paths,
+      for_opening,
+      base::Bind(&SelectFileFunction::GetSelectedFileInfoResponse, this));
+  return true;
+}
+
+void SelectFileFunction::GetSelectedFileInfoResponse(
+    const SelectedFileInfoList& files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (files.size() != 1) {
+    SendResponse(false);
+    return;
+  }
+  int index;
+  args_->GetInteger(1, &index);
+  int32 tab_id = GetTabId(dispatcher());
+  SelectFileDialogExtension::OnFileSelected(tab_id, files[0], index);
+  SendResponse(true);
+}
+
 SelectFilesFunction::SelectFilesFunction() {
 }
 
@@ -1364,6 +1406,12 @@ void SelectFilesFunction::GetSelectedFileInfoResponse(
   int32 tab_id = GetTabId(dispatcher());
   SelectFileDialogExtension::OnMultiFilesSelected(tab_id, files);
   SendResponse(true);
+}
+
+CancelFileDialogFunction::CancelFileDialogFunction() {
+}
+
+CancelFileDialogFunction::~CancelFileDialogFunction() {
 }
 
 bool CancelFileDialogFunction::RunImpl() {
@@ -1751,6 +1799,12 @@ bool GetVolumeMetadataFunction::RunImpl() {
 
   SendResponse(true);
   return true;
+}
+
+FileDialogStringsFunction::FileDialogStringsFunction() {
+}
+
+FileDialogStringsFunction::~FileDialogStringsFunction() {
 }
 
 bool FileDialogStringsFunction::RunImpl() {
@@ -2502,9 +2556,11 @@ void GetDriveFilesFunction::OnFileReady(
   GetFileOrSendResponse();
 }
 
-CancelFileTransfersFunction::CancelFileTransfersFunction() {}
+CancelFileTransfersFunction::CancelFileTransfersFunction() {
+}
 
-CancelFileTransfersFunction::~CancelFileTransfersFunction() {}
+CancelFileTransfersFunction::~CancelFileTransfersFunction() {
+}
 
 bool CancelFileTransfersFunction::RunImpl() {
   ListValue* url_list = NULL;
@@ -2560,9 +2616,11 @@ bool CancelFileTransfersFunction::RunImpl() {
   return true;
 }
 
-TransferFileFunction::TransferFileFunction() {}
+TransferFileFunction::TransferFileFunction() {
+}
 
-TransferFileFunction::~TransferFileFunction() {}
+TransferFileFunction::~TransferFileFunction() {
+}
 
 bool TransferFileFunction::RunImpl() {
   std::string source_file_url;
@@ -2623,7 +2681,12 @@ void TransferFileFunction::OnTransferCompleted(drive::FileError error) {
   }
 }
 
-// Read preferences.
+GetPreferencesFunction::GetPreferencesFunction() {
+}
+
+GetPreferencesFunction::~GetPreferencesFunction() {
+}
+
 bool GetPreferencesFunction::RunImpl() {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
 
@@ -2662,7 +2725,12 @@ bool GetPreferencesFunction::RunImpl() {
   return true;
 }
 
-// Write preferences.
+SetPreferencesFunction::SetPreferencesFunction() {
+}
+
+SetPreferencesFunction::~SetPreferencesFunction() {
+}
+
 bool SetPreferencesFunction::RunImpl() {
   base::DictionaryValue* value = NULL;
 
@@ -2683,9 +2751,11 @@ bool SetPreferencesFunction::RunImpl() {
   return true;
 }
 
-SearchDriveFunction::SearchDriveFunction() {}
+SearchDriveFunction::SearchDriveFunction() {
+}
 
-SearchDriveFunction::~SearchDriveFunction() {}
+SearchDriveFunction::~SearchDriveFunction() {
+}
 
 bool SearchDriveFunction::RunImpl() {
   DictionaryValue* search_params;
@@ -2750,9 +2820,11 @@ void SearchDriveFunction::OnSearch(
   SendResponse(true);
 }
 
-SearchDriveMetadataFunction::SearchDriveMetadataFunction() {}
+SearchDriveMetadataFunction::SearchDriveMetadataFunction() {
+}
 
-SearchDriveMetadataFunction::~SearchDriveMetadataFunction() {}
+SearchDriveMetadataFunction::~SearchDriveMetadataFunction() {
+}
 
 bool SearchDriveMetadataFunction::RunImpl() {
   DictionaryValue* search_params;
@@ -2846,6 +2918,12 @@ void SearchDriveMetadataFunction::OnSearchMetadata(
   SendResponse(true);
 }
 
+ClearDriveCacheFunction::ClearDriveCacheFunction() {
+}
+
+ClearDriveCacheFunction::~ClearDriveCacheFunction() {
+}
+
 bool ClearDriveCacheFunction::RunImpl() {
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
@@ -2860,6 +2938,12 @@ bool ClearDriveCacheFunction::RunImpl() {
 
   SendResponse(true);
   return true;
+}
+
+GetDriveConnectionStateFunction::GetDriveConnectionStateFunction() {
+}
+
+GetDriveConnectionStateFunction::~GetDriveConnectionStateFunction() {
 }
 
 bool GetDriveConnectionStateFunction::RunImpl() {
@@ -2974,9 +3058,11 @@ void ZipSelectionFunction::OnZipDone(bool success) {
   Release();
 }
 
-ValidatePathNameLengthFunction::ValidatePathNameLengthFunction() {}
+ValidatePathNameLengthFunction::ValidatePathNameLengthFunction() {
+}
 
-ValidatePathNameLengthFunction::~ValidatePathNameLengthFunction() {}
+ValidatePathNameLengthFunction::~ValidatePathNameLengthFunction() {
+}
 
 bool ValidatePathNameLengthFunction::RunImpl() {
   std::string parent_url;
@@ -3018,6 +3104,12 @@ void ValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
     size_t max_length) {
   SetResult(new base::FundamentalValue(current_length <= max_length));
   SendResponse(true);
+}
+
+ZoomFunction::ZoomFunction() {
+}
+
+ZoomFunction::~ZoomFunction() {
 }
 
 bool ZoomFunction::RunImpl() {

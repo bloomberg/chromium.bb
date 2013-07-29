@@ -92,7 +92,6 @@ class FileBrowserFunction : public AsyncExtensionFunction {
   virtual void SendResponse(bool success) OVERRIDE;
 
  protected:
-  base::TimeDelta GetElapsedTime();
   void set_log_on_completion(bool log_on_completion) {
     log_on_completion_ = log_on_completion;
   }
@@ -121,8 +120,10 @@ class LogoutUserFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.logoutUser",
                              FILEBROWSERPRIVATE_LOGOUTUSER)
 
+  LogoutUserFunction();
+
  protected:
-  virtual ~LogoutUserFunction() {}
+  virtual ~LogoutUserFunction();
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -134,8 +135,10 @@ class RequestFileSystemFunction : public FileBrowserFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestFileSystem",
                              FILEBROWSERPRIVATE_REQUESTFILESYSTEM)
 
+  RequestFileSystemFunction();
+
  protected:
-  virtual ~RequestFileSystemFunction() {}
+  virtual ~RequestFileSystemFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -166,8 +169,11 @@ class RequestFileSystemFunction : public FileBrowserFunction {
 
 // Implements the chrome.fileBrowserPrivate.addFileWatch method.
 class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
+ public:
+  FileWatchBrowserFunctionBase();
+
  protected:
-  virtual ~FileWatchBrowserFunctionBase() {}
+  virtual ~FileWatchBrowserFunctionBase();
 
   // Performs a file watch operation (ex. adds or removes a file watch).
   virtual void PerformFileWatchOperation(
@@ -188,8 +194,10 @@ class AddFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.addFileWatch",
                              FILEBROWSERPRIVATE_ADDFILEWATCH)
 
+  AddFileWatchBrowserFunction();
+
  protected:
-  virtual ~AddFileWatchBrowserFunction() {}
+  virtual ~AddFileWatchBrowserFunction();
 
   // FileWatchBrowserFunctionBase override.
   virtual void PerformFileWatchOperation(
@@ -205,8 +213,10 @@ class RemoveFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.removeFileWatch",
                              FILEBROWSERPRIVATE_REMOVEFILEWATCH)
 
+  RemoveFileWatchBrowserFunction();
+
  protected:
-  virtual ~RemoveFileWatchBrowserFunction() {}
+  virtual ~RemoveFileWatchBrowserFunction();
 
   // FileWatchBrowserFunctionBase override.
   virtual void PerformFileWatchOperation(
@@ -221,8 +231,10 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getFileTasks",
                              FILEBROWSERPRIVATE_GETFILETASKS)
 
+  GetFileTasksFileBrowserFunction();
+
  protected:
-  virtual ~GetFileTasksFileBrowserFunction() {}
+  virtual ~GetFileTasksFileBrowserFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -281,13 +293,13 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
 
   ExecuteTasksFileBrowserFunction();
 
-  void OnTaskExecuted(bool success);
-
  protected:
   virtual ~ExecuteTasksFileBrowserFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
+
+  void OnTaskExecuted(bool success);
 };
 
 // Implements the chrome.fileBrowserPrivate.setDefaultTask method.
@@ -310,10 +322,10 @@ class SelectFileFunction : public FileBrowserFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFile",
                              FILEBROWSERPRIVATE_SELECTFILE)
 
-  SelectFileFunction() {}
+  SelectFileFunction();
 
  protected:
-  virtual ~SelectFileFunction() {}
+  virtual ~SelectFileFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -363,10 +375,10 @@ class CancelFileDialogFunction : public FileBrowserFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelDialog",
                              FILEBROWSERPRIVATE_CANCELDIALOG)
 
-  CancelFileDialogFunction() {}
+  CancelFileDialogFunction();
 
  protected:
-  virtual ~CancelFileDialogFunction() {}
+  virtual ~CancelFileDialogFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -500,10 +512,10 @@ class FileDialogStringsFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getStrings",
                              FILEBROWSERPRIVATE_GETSTRINGS)
 
-  FileDialogStringsFunction() {}
+  FileDialogStringsFunction();
 
  protected:
-  virtual ~FileDialogStringsFunction() {}
+  virtual ~FileDialogStringsFunction();
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -633,8 +645,10 @@ class GetPreferencesFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getPreferences",
                              FILEBROWSERPRIVATE_GETPREFERENCES)
 
+  GetPreferencesFunction();
+
  protected:
-  virtual ~GetPreferencesFunction() {}
+  virtual ~GetPreferencesFunction();
 
   virtual bool RunImpl() OVERRIDE;
 };
@@ -645,8 +659,10 @@ class SetPreferencesFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setPreferences",
                              FILEBROWSERPRIVATE_SETPREFERENCES)
 
+  SetPreferencesFunction();
+
  protected:
-  virtual ~SetPreferencesFunction() {}
+  virtual ~SetPreferencesFunction();
 
   virtual bool RunImpl() OVERRIDE;
 };
@@ -695,8 +711,10 @@ class ClearDriveCacheFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.clearDriveCache",
                              FILEBROWSERPRIVATE_CLEARDRIVECACHE)
 
+  ClearDriveCacheFunction();
+
  protected:
-  virtual ~ClearDriveCacheFunction() {}
+  virtual ~ClearDriveCacheFunction();
 
   virtual bool RunImpl() OVERRIDE;
 };
@@ -708,8 +726,10 @@ class GetDriveConnectionStateFunction : public SyncExtensionFunction {
       "fileBrowserPrivate.getDriveConnectionState",
       FILEBROWSERPRIVATE_GETDRIVECONNECTIONSTATE);
 
+  GetDriveConnectionStateFunction();
+
  protected:
-  virtual ~GetDriveConnectionStateFunction() {}
+  virtual ~GetDriveConnectionStateFunction();
 
   virtual bool RunImpl() OVERRIDE;
 };
@@ -753,13 +773,18 @@ class ValidatePathNameLengthFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+// Changes the zoom level of the file manager by internally calling
+// RenderViewHost::Zoom(). TODO(hirono): Remove this function once the zoom
+// level change is supported for all apps. crbug.com/227175.
 class ZoomFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.zoom",
                              FILEBROWSERPRIVATE_ZOOM);
 
+  ZoomFunction();
+
  protected:
-  virtual ~ZoomFunction() {}
+  virtual ~ZoomFunction();
   virtual bool RunImpl() OVERRIDE;
 };
 
