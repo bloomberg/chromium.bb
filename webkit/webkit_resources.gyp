@@ -19,16 +19,9 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'webkit_chromium_resources',
-          'variables': {
-            'grit_grd_file': '../third_party/WebKit/Source/WebKit/chromium/WebKit.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-        {
           'action_name': 'blink_chromium_resources',
           'variables': {
-            'grit_grd_file': '../third_party/WebKit/public/blink_resources.grd',
+            'grit_grd_file': '../third_party/WebKit/Source/WebKit/chromium/WebKit.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
