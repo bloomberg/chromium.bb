@@ -215,7 +215,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
                                           *signaling_config_));
 
   network_settings_.reset(new NetworkSettings(
-      NetworkSettings::NAT_TRAVERSAL_OUTGOING));
+      NetworkSettings::NAT_TRAVERSAL_ENABLED));
   scoped_ptr<protocol::TransportFactory> fact(
       protocol::LibjingleTransportFactory::Create(
           *network_settings_,
