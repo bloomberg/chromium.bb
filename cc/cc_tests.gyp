@@ -202,20 +202,26 @@
         '.',
       ],
       'conditions': [
-        ['OS == "android" and gtest_target_type == "shared_library"', {
-          'dependencies': [
-            '../testing/android/native_test.gyp:native_test_native_code',
-          ],
-        }],
-        [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
-          'conditions': [
-            [ 'linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
+        ['OS == "android" and gtest_target_type == "shared_library"',
+          {
+            'dependencies': [
+              '../testing/android/native_test.gyp:native_test_native_code',
+            ],
+          }
+        ],
+        [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"',
+          {
+            'conditions': [
+              [ 'linux_use_tcmalloc==1',
+                {
+                  'dependencies': [
+                    '../base/allocator/allocator.gyp:allocator',
+                  ],
+                }
               ],
-            }],
-          ],
-        }],
+            ],
+          }
+        ],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -245,17 +251,21 @@
         '.',
       ],
       'conditions': [
-        ['OS == "android" and gtest_target_type == "shared_library"', {
-          'dependencies': [
-            '../testing/android/native_test.gyp:native_test_native_code',
-          ],
-        }],
+        ['OS == "android" and gtest_target_type == "shared_library"',
+          {
+            'dependencies': [
+              '../testing/android/native_test.gyp:native_test_native_code',
+            ],
+          }
+        ],
         # See http://crbug.com/162998#c4 for why this is needed.
-        ['OS=="linux" and linux_use_tcmalloc==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
+        ['OS=="linux" and linux_use_tcmalloc==1',
+          {
+            'dependencies': [
+              '../base/allocator/allocator.gyp:allocator',
+            ],
+          }
+        ],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -304,33 +314,35 @@
   'conditions': [
     # Special target to wrap a gtest_target_type==shared_library
     # cc_unittests into an android apk for execution.
-    ['OS == "android" and gtest_target_type == "shared_library"', {
-      'targets': [
-        {
-          'target_name': 'cc_unittests_apk',
-          'type': 'none',
-          'dependencies': [
-            'cc_unittests',
-          ],
-          'variables': {
-            'test_suite_name': 'cc_unittests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)cc_unittests<(SHARED_LIB_SUFFIX)',
+    ['OS == "android" and gtest_target_type == "shared_library"',
+      {
+        'targets': [
+          {
+            'target_name': 'cc_unittests_apk',
+            'type': 'none',
+            'dependencies': [
+              'cc_unittests',
+            ],
+            'variables': {
+              'test_suite_name': 'cc_unittests',
+              'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)cc_unittests<(SHARED_LIB_SUFFIX)',
+            },
+            'includes': [ '../build/apk_test.gypi' ],
           },
-          'includes': [ '../build/apk_test.gypi' ],
-        },
-        {
-          'target_name': 'cc_perftests_apk',
-          'type': 'none',
-          'dependencies': [
-            'cc_perftests',
-          ],
-          'variables': {
-            'test_suite_name': 'cc_perftests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)cc_perftests<(SHARED_LIB_SUFFIX)',
+          {
+            'target_name': 'cc_perftests_apk',
+            'type': 'none',
+            'dependencies': [
+              'cc_perftests',
+            ],
+            'variables': {
+              'test_suite_name': 'cc_perftests',
+              'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)cc_perftests<(SHARED_LIB_SUFFIX)',
+            },
+            'includes': [ '../build/apk_test.gypi' ],
           },
-          'includes': [ '../build/apk_test.gypi' ],
-        },
-      ],
-    }]
+        ],
+      }
+    ]
   ],
 }
