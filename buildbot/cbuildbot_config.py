@@ -1444,6 +1444,28 @@ release_pgo.add_group('lumpy-release-pgo',
   ),
 )
 
+release_pgo.add_group('parrot-release-pgo',
+  release_pgo.add_config('parrot-release-pgo-generate',
+    boards=['parrot'],
+    pgo_generate=True,
+  ),
+  release_pgo.add_config('parrot-release-pgo-use',
+    boards=['parrot'],
+    pgo_use=True,
+  ),
+)
+
+release_pgo.add_group('daisy-release-pgo',
+  release_pgo.add_config('daisy-release-pgo-generate',
+    boards=['daisy'],
+    pgo_generate=True,
+  ),
+  release_pgo.add_config('daisy-release-pgo-use',
+    boards=['daisy'],
+    pgo_use=True,
+  ),
+)
+
 ### Release configs.
 
 _release.add_config('butterfly-release',
