@@ -152,7 +152,7 @@ PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
     if (!buffer) // failed to allocate image
         return 0;
 
-    draw(buffer->context(), rect(), rect(), CompositeSourceOver, BlendModeNormal);
+    drawForContainer(buffer->context(), size(), 1, rect(), rect(), CompositeSourceOver, BlendModeNormal);
 
     // FIXME: WK(Bug 113657): We should use DontCopyBackingStore here.
     return buffer->copyImage(CopyBackingStore)->nativeImageForCurrentFrame();
