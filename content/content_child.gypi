@@ -104,6 +104,8 @@
     'child/plugin_param_traits.h',
     'child/quota_dispatcher.cc',
     'child/quota_dispatcher.h',
+    'child/quota_message_filter.cc',
+    'child/quota_message_filter.h',
     'child/request_extra_data.cc',
     'child/request_extra_data.h',
     'child/resource_dispatcher.cc',

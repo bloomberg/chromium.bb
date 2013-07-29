@@ -23,6 +23,7 @@ class WebFileUtilities;
 }
 
 namespace content {
+class QuotaMessageFilter;
 class ThreadSafeSender;
 class WebFileSystemImpl;
 
@@ -31,7 +32,8 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
  public:
   WorkerWebKitPlatformSupportImpl(
       ThreadSafeSender* sender,
-      IPC::SyncMessageFilter* sync_message_filter);
+      IPC::SyncMessageFilter* sync_message_filter,
+      QuotaMessageFilter* quota_message_filter);
   virtual ~WorkerWebKitPlatformSupportImpl();
 
   // WebKitPlatformSupport methods:
@@ -114,6 +116,7 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<base::MessageLoopProxy> child_thread_loop_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
+  scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 };
 
 }  // namespace content
