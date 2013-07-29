@@ -28,6 +28,7 @@
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
       ],
       'conditions': [
