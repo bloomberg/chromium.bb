@@ -332,6 +332,12 @@ system call NtGdiDeleteObjectApp
 GDI32.dll!DeleteDC
 content.dll!*
 
+GDI USAGE ERROR
+name=http://crbug.com/109963 d
+system call NtGdiDeleteObjectApp
+GDI32.dll!DeleteDC
+*!base::internal::RunnableAdapter*
+
 # GDI usage errors in 3rd-party components
 GDI USAGE ERROR
 name=http://crbug.com/119552 a
