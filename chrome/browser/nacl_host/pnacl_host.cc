@@ -101,8 +101,9 @@ IPC::PlatformFileForTransit PnaclHost::DoCreateTemporaryFile(
 
   base::FilePath file_path;
   bool rv = temp_dir.empty()
-                ? file_util::CreateTemporaryFileInDir(temp_dir, &file_path)
-                : file_util::CreateTemporaryFile(&file_path);
+                ? file_util::CreateTemporaryFile(&file_path)
+                : file_util::CreateTemporaryFileInDir(temp_dir, &file_path);
+
   if (!rv)
     return IPC::InvalidPlatformFileForTransit();
 
