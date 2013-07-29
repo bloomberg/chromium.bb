@@ -41,5 +41,9 @@ List of files:
 /LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-rounded-rectangle-003.html
 /LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-rounded-rectangle-004-expected.html
 /LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-rounded-rectangle-004.html
+/LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-inset-rectangle-000-expected.html
+/LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-inset-rectangle-000.html
+/LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-inset-rectangle-001-expected.html
+/LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-inset-rectangle-001.html
 /LayoutTests/csswg/submitted/shapes/shape-outside/resources/rounded-rectangle.js
 /LayoutTests/csswg/submitted/shapes/shape-outside/resources/subpixel-utils.js
