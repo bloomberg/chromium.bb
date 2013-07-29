@@ -111,24 +111,30 @@ void DesktopResizerMac::GetSupportedModesAndSizes(
     base::ScopedCFTypeRef<CFMutableArrayRef>* modes,
     std::list<SkISize>* sizes) {
   CGDirectDisplayID display;
-  if (GetSoleDisplayId(&display)) {
-    base::ScopedCFTypeRef<CFArrayRef> all_modes(
-        CGDisplayCopyAllDisplayModes(display, NULL));
-    modes->reset(CFArrayCreateMutableCopy(NULL, 0, all_modes));
-    CFIndex count = CFArrayGetCount(*modes);
-    for (CFIndex i = 0; i < count; ++i) {
-      CGDisplayModeRef mode = const_cast<CGDisplayModeRef>(
-          static_cast<const CGDisplayMode*>(
-              CFArrayGetValueAtIndex(*modes, i)));
-      if (CGDisplayModeIsUsableForDesktopGUI(mode)) {
-        SkISize size = SkISize::Make(CGDisplayModeGetWidth(mode),
-                                     CGDisplayModeGetHeight(mode));
-        sizes->push_back(size);
-      } else {
-        CFArrayRemoveValueAtIndex(*modes, i);
-        --count;
-        --i;
-      }
+  if (!GetSoleDisplayId(&display)) {
+    return;
+  }
+
+  base::ScopedCFTypeRef<CFArrayRef> all_modes(
+      CGDisplayCopyAllDisplayModes(display, NULL));
+  if (!all_modes) {
+    return;
+  }
+
+  modes->reset(CFArrayCreateMutableCopy(NULL, 0, all_modes));
+  CFIndex count = CFArrayGetCount(*modes);
+  for (CFIndex i = 0; i < count; ++i) {
+    CGDisplayModeRef mode = const_cast<CGDisplayModeRef>(
+        static_cast<const CGDisplayMode*>(
+            CFArrayGetValueAtIndex(*modes, i)));
+    if (CGDisplayModeIsUsableForDesktopGUI(mode)) {
+      SkISize size = SkISize::Make(CGDisplayModeGetWidth(mode),
+                                   CGDisplayModeGetHeight(mode));
+      sizes->push_back(size);
+    } else {
+      CFArrayRemoveValueAtIndex(*modes, i);
+      --count;
+      --i;
     }
   }
 }
