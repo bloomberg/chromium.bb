@@ -129,7 +129,7 @@ size_t DeepHeapProfile::MemoryInfoGetterLinux::CommittedSize(
     if (Read(&state, pageframe_type_ != DUMP_NO_PAGEFRAME) == false) {
       // We can't read the last region (e.g vsyscall).
 #ifndef NDEBUG
-      RAW_LOG(0, "pagemap read failed @ %#llx %"PRId64" bytes",
+      RAW_LOG(0, "pagemap read failed @ %#llx %" PRId64 " bytes",
               first_address, last_address - first_address + 1);
 #endif
       return 0;
@@ -495,9 +495,9 @@ bool DeepHeapProfile::TextBuffer::AppendInt64(int64 value, int width) {
   int available = size_ - cursor_;
   int appended;
   if (width == 0)
-    appended = snprintf(position, available, "%"PRId64, value);
+    appended = snprintf(position, available, "%" PRId64, value);
   else
-    appended = snprintf(position, available, "%*"PRId64, width, value);
+    appended = snprintf(position, available, "%*" PRId64, width, value);
   return ForwardCursor(appended);
 }
 
@@ -506,9 +506,9 @@ bool DeepHeapProfile::TextBuffer::AppendPtr(uint64 value, int width) {
   int available = size_ - cursor_;
   int appended;
   if (width == 0)
-    appended = snprintf(position, available, "%"PRIx64, value);
+    appended = snprintf(position, available, "%" PRIx64, value);
   else
-    appended = snprintf(position, available, "%0*"PRIx64, width, value);
+    appended = snprintf(position, available, "%0*" PRIx64, width, value);
   return ForwardCursor(appended);
 }
 
@@ -947,7 +947,8 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
       int written = procmaps_iter.FormatLine(buffer, sizeof(buffer),
                                              vma_start_addr, vma_last_addr,
                                              flags, offset, inode, filename, 0);
-      RAW_LOG(0, "[%d] Mismatched total in VMA %"PRId64":%"PRId64" (%"PRId64")",
+      RAW_LOG(0, "[%d] Mismatched total in VMA %" PRId64 ":"
+              "%" PRId64 " (%" PRId64 ")",
               getpid(), vma_total, vma_subtotal, vma_total - vma_subtotal);
       RAW_LOG(0, "[%d]   in %s", getpid(), buffer);
     }

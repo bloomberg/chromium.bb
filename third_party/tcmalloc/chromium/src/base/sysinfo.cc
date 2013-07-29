@@ -679,7 +679,7 @@ static bool ParseProcMapsLine(char *text, uint64 *start, uint64 *end,
 #if defined(__linux__)
   /*
    * It's similar to:
-   * sscanf(text, "%"SCNx64"-%"SCNx64" %4s %"SCNx64" %x:%x %"SCNd64" %n",
+   * sscanf(text,"%" SCNx64 "-%" SCNx64 " %4s %" SCNx64 " %x:%x %" SCNd64 " %n",
    *        start, end, flags, offset, major, minor, inode, filename_offset)
    */
   char *endptr = text;
@@ -943,7 +943,8 @@ bool ProcMapsIterator::NextExt(uint64 *start, uint64 *end, char **flags,
             uint64 tmp_anon_mapping;
             uint64 tmp_anon_pages;
 
-            sscanf(backing_ptr+1, "F %"SCNx64" %"SCNd64") (A %"SCNx64" %"SCNd64")",
+            sscanf(backing_ptr+1,
+                   "F %" SCNx64 " %" SCNd64 ") (A %" SCNx64 " %" SCNd64 ")",
                    file_mapping ? file_mapping : &tmp_file_mapping,
                    file_pages ? file_pages : &tmp_file_pages,
                    anon_mapping ? anon_mapping : &tmp_anon_mapping,
@@ -1083,7 +1084,8 @@ int ProcMapsIterator::FormatLine(char* buffer, int bufsize,
       ? '-' : 'p';
 
   const int rc = snprintf(buffer, bufsize,
-                          "%08"PRIx64"-%08"PRIx64" %c%c%c%c %08"PRIx64" %02x:%02x %-11"PRId64" %s\n",
+                          "%08" PRIx64 "-%08" PRIx64 " %c%c%c%c %08" PRIx64 " "
+                          "%02x:%02x %-11" PRId64 " %s\n",
                           start, end, r,w,x,p, offset,
                           static_cast<int>(dev/256), static_cast<int>(dev%256),
                           inode, filename);

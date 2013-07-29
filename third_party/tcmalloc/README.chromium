@@ -91,3 +91,4 @@ Modifications:
   for -std=c++11 compatibility.
 - Added support for pseudo-stack heap profiling via a callback to retrieve a
   simulated stack from the embedding application.
+- Inserted spaces around PRIx64, SCNx64 and friends, for c++11 compatibility.
