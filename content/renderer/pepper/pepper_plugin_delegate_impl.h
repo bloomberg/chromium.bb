@@ -46,8 +46,9 @@ struct WebCompositionUnderline;
 namespace content {
 class ContextProviderCommandBuffer;
 class GamepadSharedMemoryReader;
-class PepperBrokerImpl;
+class PepperBroker;
 class PluginModule;
+class PPB_Broker_Impl;
 class RenderViewImpl;
 struct WebPluginInfo;
 
@@ -69,8 +70,14 @@ class PepperPluginDelegateImpl
     return &pepper_browser_connection_;
   }
 
+  // A pointer is returned immediately, but it is not ready to be used until
+  // BrokerConnected has been called.
+  // The caller is responsible for calling Disconnect() on the returned pointer
+  // to clean up the corresponding resources allocated during this call.
+  PepperBroker* ConnectToBroker(PPB_Broker_Impl* client);
+
   // Removes broker from pending_connect_broker_ if present. Returns true if so.
-  bool StopWaitingForBrokerConnection(PepperBrokerImpl* broker);
+  bool StopWaitingForBrokerConnection(PepperBroker* broker);
 
   CONTENT_EXPORT int GetRoutingID() const;
 
@@ -88,15 +95,6 @@ class PepperPluginDelegateImpl
       gfx::Rect* location,
       gfx::Rect* clip,
       float* scale_factor) OVERRIDE;
-  virtual void OnAsyncFileOpened(base::PlatformFileError error_code,
-                                 base::PlatformFile file,
-                                 int message_id) OVERRIDE;
-  virtual void OnPpapiBrokerChannelCreated(
-      int request_id,
-      base::ProcessId broker_pid,
-      const IPC::ChannelHandle& handle) OVERRIDE;
-  virtual void OnPpapiBrokerPermissionResult(int request_id,
-                                             bool result) OVERRIDE;
   virtual void OnSetFocus(bool has_focus) OVERRIDE;
   virtual void PageVisibilityChanged(bool is_visible) OVERRIDE;
   virtual bool IsPluginFocused() const OVERRIDE;
@@ -141,7 +139,6 @@ class PepperPluginDelegateImpl
       const base::FilePath& file_path) OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputSampleRate() OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputBufferSize() OVERRIDE;
-  virtual Broker* ConnectToBroker(PPB_Broker_Impl* client) OVERRIDE;
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
                                           bool final_result) OVERRIDE;
@@ -297,6 +294,13 @@ class PepperPluginDelegateImpl
                                   uint32 accepted_socket_id,
                                   const PP_NetAddress_Private& local_addr,
                                   const PP_NetAddress_Private& remote_addr);
+  void OnPpapiBrokerChannelCreated(int request_id,
+                                   base::ProcessId broker_pid,
+                                   const IPC::ChannelHandle& handle);
+  void OnAsyncFileOpened(base::PlatformFileError error_code,
+                         IPC::PlatformFileForTransit file_for_transit,
+                         int message_id);
+  void OnPpapiBrokerPermissionResult(int request_id, bool result);
 
   // Attempts to create a PPAPI plugin for the given filepath. On success, it
   // will return the newly-created module.
@@ -312,7 +316,7 @@ class PepperPluginDelegateImpl
       bool* pepper_plugin_was_registered);
 
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
-  scoped_refptr<PepperBrokerImpl> CreateBroker(PluginModule* plugin_module);
+  scoped_refptr<PepperBroker> CreateBroker(PluginModule* plugin_module);
 
   // Create a new HostDispatcher for proxying, hook it to the PluginModule,
   // and perform other common initialization.
@@ -358,7 +362,7 @@ class PepperPluginDelegateImpl
 
   IDMap<ppapi::PPB_TCPServerSocket_Shared> tcp_server_sockets_;
 
-  typedef IDMap<scoped_refptr<PepperBrokerImpl>, IDMapOwnPointer> BrokerMap;
+  typedef IDMap<scoped_refptr<PepperBroker>, IDMapOwnPointer> BrokerMap;
   BrokerMap pending_connect_broker_;
 
   typedef IDMap<base::WeakPtr<PPB_Broker_Impl> > PermissionRequestMap;

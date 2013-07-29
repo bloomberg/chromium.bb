@@ -97,7 +97,6 @@ class FileIO;
 class FullscreenContainer;
 class PepperPluginInstanceImpl;
 class PluginModule;
-class PPB_Broker_Impl;
 class PPB_Flash_Menu_Impl;
 class PPB_ImageData_Impl;
 class PPB_TCPSocket_Private_Impl;
@@ -106,19 +105,6 @@ class PPB_TCPSocket_Private_Impl;
 // PPAPI plugins.
 class PluginDelegate {
  public:
-  // Provides access to the ppapi broker.
-  class Broker {
-   public:
-    // Decrements the references to the broker.
-    // When there are no more references, this renderer's dispatcher is
-    // destroyed, allowing the broker to shutdown if appropriate.
-    // Callers should not reference this object after calling Disconnect().
-    virtual void Disconnect(PPB_Broker_Impl* client) = 0;
-
-   protected:
-    virtual ~Broker() {}
-  };
-
   // Notification that the given plugin is focused or unfocused.
   virtual void PluginFocusChanged(PepperPluginInstanceImpl* instance,
                                   bool focused) = 0;
@@ -172,12 +158,6 @@ class PluginDelegate {
 
   // Get audio hardware output buffer size.
   virtual uint32_t GetAudioHardwareOutputBufferSize() = 0;
-
-  // A pointer is returned immediately, but it is not ready to be used until
-  // BrokerConnected has been called.
-  // The caller is responsible for calling Disconnect() on the returned pointer
-  // to clean up the corresponding resources allocated during this call.
-  virtual Broker* ConnectToBroker(PPB_Broker_Impl* client) = 0;
 
   // Notifies that the number of find results has changed.
   virtual void NumberOfFindResultsChanged(int identifier,

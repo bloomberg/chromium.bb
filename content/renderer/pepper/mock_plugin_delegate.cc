@@ -85,11 +85,6 @@ uint32_t MockPluginDelegate::GetAudioHardwareOutputBufferSize() {
   return 0;
 }
 
-MockPluginDelegate::Broker* MockPluginDelegate::ConnectToBroker(
-    PPB_Broker_Impl* client) {
-  return NULL;
-}
-
 void MockPluginDelegate::NumberOfFindResultsChanged(int identifier,
                                                     int total,
                                                     bool final_result) {

@@ -942,13 +942,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
-  void OnAsyncFileOpened(base::PlatformFileError error_code,
-                         IPC::PlatformFileForTransit file_for_transit,
-                         int message_id);
-  void OnPpapiBrokerChannelCreated(int request_id,
-                                   base::ProcessId broker_pid,
-                                   const IPC::ChannelHandle& handle);
-  void OnPpapiBrokerPermissionResult(int request_id, bool result);
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();
   void OnClosePage();

@@ -8,14 +8,16 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_broker_api.h"
 
+class GURL;
+
 namespace content {
+class PepperBroker;
 
 class PPB_Broker_Impl : public ::ppapi::Resource,
                         public ::ppapi::thunk::PPB_Broker_API,
@@ -39,9 +41,10 @@ class PPB_Broker_Impl : public ::ppapi::Resource,
 
  private:
   virtual ~PPB_Broker_Impl();
+
   // PluginDelegate ppapi broker object.
   // We don't own this pointer but are responsible for calling Disconnect on it.
-  PluginDelegate::Broker* broker_;
+  PepperBroker* broker_;
 
   // Callback invoked from BrokerConnected.
   scoped_refptr< ::ppapi::TrackedCallback> connect_callback_;

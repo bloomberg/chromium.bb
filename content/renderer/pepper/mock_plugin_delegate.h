@@ -44,7 +44,6 @@ class MockPluginDelegate : public PluginDelegate {
       const base::FilePath& file_path) OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputSampleRate() OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputBufferSize() OVERRIDE;
-  virtual Broker* ConnectToBroker(PPB_Broker_Impl* client) OVERRIDE;
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
                                           bool final_result) OVERRIDE;

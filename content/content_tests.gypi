@@ -439,7 +439,7 @@
         'renderer/pepper/ppapi_unittest.h',
         'renderer/pepper/quota_file_io_unittest.cc',
         'renderer/pepper/v8_var_converter_unittest.cc',
-        'renderer/pepper/pepper_broker_impl_unittest.cc',
+        'renderer/pepper/pepper_broker_unittest.cc',
         'renderer/render_thread_impl_unittest.cc',
         'renderer/render_view_impl_unittest.cc',
         'renderer/skia_benchmarking_extension_unittest.cc',

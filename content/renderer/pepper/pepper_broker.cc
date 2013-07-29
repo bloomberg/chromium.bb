@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_broker_impl.h"
+#include "content/renderer/pepper/pepper_broker.h"
 
 #include "build/build_config.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
@@ -107,8 +107,8 @@ int32_t PepperBrokerDispatcherWrapper::SendHandleToBroker(
   return result;
 }
 
-PepperBrokerImpl::PepperBrokerImpl(PluginModule* plugin_module,
-                                   PepperPluginDelegateImpl* delegate)
+PepperBroker::PepperBroker(PluginModule* plugin_module,
+                           PepperPluginDelegateImpl* delegate)
     : plugin_module_(plugin_module),
       delegate_(delegate->AsWeakPtr()) {
   DCHECK(plugin_module_);
@@ -117,14 +117,14 @@ PepperBrokerImpl::PepperBrokerImpl(PluginModule* plugin_module,
   plugin_module_->SetBroker(this);
 }
 
-PepperBrokerImpl::~PepperBrokerImpl() {
+PepperBroker::~PepperBroker() {
   ReportFailureToClients(PP_ERROR_ABORTED);
   plugin_module_->SetBroker(NULL);
   plugin_module_ = NULL;
 }
 
 // If the channel is not ready, queue the connection.
-void PepperBrokerImpl::AddPendingConnect(PPB_Broker_Impl* client) {
+void PepperBroker::AddPendingConnect(PPB_Broker_Impl* client) {
   DCHECK(pending_connects_.find(client) == pending_connects_.end())
       << "Connect was already called for this client";
 
@@ -140,7 +140,7 @@ void PepperBrokerImpl::AddPendingConnect(PPB_Broker_Impl* client) {
   pending_connects_[client].client = client->AsWeakPtr();
 }
 
-void PepperBrokerImpl::Disconnect(PPB_Broker_Impl* client) {
+void PepperBroker::Disconnect(PPB_Broker_Impl* client) {
   // Remove the pending connect if one exists. This class will not call client's
   // callback.
   pending_connects_.erase(client);
@@ -174,7 +174,7 @@ void PepperBrokerImpl::Disconnect(PPB_Broker_Impl* client) {
   Release();
 }
 
-void PepperBrokerImpl::OnBrokerChannelConnected(
+void PepperBroker::OnBrokerChannelConnected(
     base::ProcessId broker_pid,
     const IPC::ChannelHandle& channel_handle) {
   scoped_ptr<PepperBrokerDispatcherWrapper> dispatcher(
@@ -202,8 +202,8 @@ void PepperBrokerImpl::OnBrokerChannelConnected(
   }
 }
 
-void PepperBrokerImpl::OnBrokerPermissionResult(PPB_Broker_Impl* client,
-                                                bool result) {
+void PepperBroker::OnBrokerPermissionResult(PPB_Broker_Impl* client,
+                                            bool result) {
   ClientMap::iterator entry = pending_connects_.find(client);
   if (entry == pending_connects_.end())
     return;
@@ -235,14 +235,13 @@ void PepperBrokerImpl::OnBrokerPermissionResult(PPB_Broker_Impl* client,
   entry->second.is_authorized = true;
 }
 
-PepperBrokerImpl::PendingConnection::PendingConnection()
-    : is_authorized(false) {
+PepperBroker::PendingConnection::PendingConnection() : is_authorized(false) {
 }
 
-PepperBrokerImpl::PendingConnection::~PendingConnection() {
+PepperBroker::PendingConnection::~PendingConnection() {
 }
 
-void PepperBrokerImpl::ReportFailureToClients(int error_code) {
+void PepperBroker::ReportFailureToClients(int error_code) {
   DCHECK_NE(PP_OK, error_code);
   for (ClientMap::iterator i = pending_connects_.begin();
        i != pending_connects_.end(); ++i) {
@@ -256,7 +255,7 @@ void PepperBrokerImpl::ReportFailureToClients(int error_code) {
   pending_connects_.clear();
 }
 
-void PepperBrokerImpl::ConnectPluginToBroker(PPB_Broker_Impl* client) {
+void PepperBroker::ConnectPluginToBroker(PPB_Broker_Impl* client) {
   base::SyncSocket::Handle plugin_handle = base::kInvalidPlatformFileValue;
   int32_t result = PP_OK;
 

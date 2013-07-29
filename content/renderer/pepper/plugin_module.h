@@ -47,6 +47,7 @@ class WebPluginContainer;
 namespace content {
 class HostDispatcherWrapper;
 class PepperPluginInstanceImpl;
+class PepperBroker;
 class PluginDelegate;
 
 // Represents one plugin library loaded into one renderer. This library may
@@ -191,8 +192,8 @@ class CONTENT_EXPORT PluginModule :
   bool ReserveInstanceID(PP_Instance instance);
 
   // These should only be called from the main thread.
-  void SetBroker(PluginDelegate::Broker* broker);
-  PluginDelegate::Broker* GetBroker();
+  void SetBroker(PepperBroker* broker);
+  PepperBroker* GetBroker();
 
   // In production we purposely leak the HostGlobals object but in unittest
   // code, this can interfere with subsequent tests. This deletes the
@@ -231,7 +232,7 @@ class CONTENT_EXPORT PluginModule :
 
   // Non-owning pointer to the broker for this plugin module, if one exists.
   // It is populated and cleared in the main thread.
-  PluginDelegate::Broker* broker_;
+  PepperBroker* broker_;
 
   // Holds a reference to the base::NativeLibrary handle if this PluginModule
   // instance wraps functions loaded from a library.  Can be NULL.  If

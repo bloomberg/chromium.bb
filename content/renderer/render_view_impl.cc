@@ -839,12 +839,6 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   RenderFrameImpl* main_frame = RenderFrameImpl::Create(
       this, params->main_frame_routing_id);
   main_render_frame_.reset(main_frame);
-
-#if defined(ENABLE_PLUGINS)
-  pepper_helper_.reset(new PepperPluginDelegateImpl(this));
-#else
-  pepper_helper_.reset(new RenderViewPepperHelper());
-#endif
   routing_id_ = params->routing_id;
   surface_id_ = params->surface_id;
   if (params->opener_id != MSG_ROUTING_NONE && params->is_renderer_created)
@@ -965,6 +959,12 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
     enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
 
   ProcessViewLayoutFlags(command_line);
+
+#if defined(ENABLE_PLUGINS)
+  pepper_helper_.reset(new PepperPluginDelegateImpl(this));
+#else
+  pepper_helper_.reset(new RenderViewPepperHelper());
+#endif
 
   GetContentClient()->renderer()->RenderViewCreated(this);
 
@@ -1259,11 +1259,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
-    IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
-    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
-                        OnPpapiBrokerChannelCreated)
-    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerPermissionResult,
-                        OnPpapiBrokerPermissionResult)
     IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
                         OnGetAllSavableResourceLinksForCurrentPage)
     IPC_MESSAGE_HANDLER(
@@ -6168,29 +6163,6 @@ bool RenderViewImpl::openDateTimeChooser(
 }
 
 #endif  // defined(OS_ANDROID)
-
-void RenderViewImpl::OnAsyncFileOpened(
-    base::PlatformFileError error_code,
-    IPC::PlatformFileForTransit file_for_transit,
-    int message_id) {
-  pepper_helper_->OnAsyncFileOpened(
-      error_code,
-      IPC::PlatformFileForTransitToPlatformFile(file_for_transit),
-      message_id);
-}
-
-void RenderViewImpl::OnPpapiBrokerChannelCreated(
-    int request_id,
-    base::ProcessId broker_pid,
-    const IPC::ChannelHandle& handle) {
-  pepper_helper_->OnPpapiBrokerChannelCreated(request_id, broker_pid, handle);
-}
-
-void RenderViewImpl::OnPpapiBrokerPermissionResult(
-    int request_id,
-    bool result) {
-  pepper_helper_->OnPpapiBrokerPermissionResult(request_id, result);
-}
 
 #if defined(OS_MACOSX)
 void RenderViewImpl::OnSelectPopupMenuItem(int selected_index) {

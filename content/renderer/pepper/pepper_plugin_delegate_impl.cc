@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/logging.h"
+#include "base/platform_file.h"
 #include "base/strings/string_split.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
@@ -40,7 +41,7 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
-#include "content/renderer/pepper/pepper_broker_impl.h"
+#include "content/renderer/pepper/pepper_broker.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
@@ -62,6 +63,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_platform_file.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/video/capture/video_capture_proxy.h"
 #include "ppapi/c/dev/pp_video_dev.h"
@@ -247,7 +249,7 @@ scoped_refptr<PluginModule> PepperPluginDelegateImpl::CreatePepperPluginModule(
   IPC::ChannelHandle channel_handle;
   base::ProcessId peer_pid;
   int plugin_child_id = 0;
-  render_view_->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
+  Send(new ViewHostMsg_OpenChannelToPepperPlugin(
       path, &channel_handle, &peer_pid, &plugin_child_id));
   if (channel_handle.name.empty()) {
     // Couldn't be initialized.
@@ -271,7 +273,7 @@ scoped_refptr<PluginModule> PepperPluginDelegateImpl::CreatePepperPluginModule(
   return module;
 }
 
-scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
+scoped_refptr<PepperBroker> PepperPluginDelegateImpl::CreateBroker(
     PluginModule* plugin_module) {
   DCHECK(plugin_module);
   DCHECK(!plugin_module->GetBroker());
@@ -279,21 +281,14 @@ scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
   // The broker path is the same as the plugin.
   const base::FilePath& broker_path = plugin_module->path();
 
-  scoped_refptr<PepperBrokerImpl> broker =
-      new PepperBrokerImpl(plugin_module, this);
+  scoped_refptr<PepperBroker> broker = new PepperBroker(plugin_module, this);
 
   int request_id =
-      pending_connect_broker_.Add(new scoped_refptr<PepperBrokerImpl>(broker));
+      pending_connect_broker_.Add(new scoped_refptr<PepperBroker>(broker));
 
   // Have the browser start the broker process for us.
-  IPC::Message* msg =
-      new ViewHostMsg_OpenChannelToPpapiBroker(render_view_->routing_id(),
-                                               request_id,
-                                               broker_path);
-  if (!render_view_->Send(msg)) {
-    pending_connect_broker_.Remove(request_id);
-    return scoped_refptr<PepperBrokerImpl>();
-  }
+  Send(new ViewHostMsg_OpenChannelToPpapiBroker(
+      routing_id(), request_id, broker_path));
 
   return broker;
 }
@@ -307,9 +302,7 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
     int plugin_child_id,
     bool is_external) {
   scoped_refptr<PepperHungPluginFilter> hung_filter(
-      new PepperHungPluginFilter(path,
-                                 render_view_->routing_id(),
-                                 plugin_child_id));
+      new PepperHungPluginFilter(path, routing_id(), plugin_child_id));
   scoped_ptr<HostDispatcherWrapper> dispatcher(
       new HostDispatcherWrapper(module,
                                 peer_pid,
@@ -336,10 +329,10 @@ void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
     int request_id,
     base::ProcessId broker_pid,
     const IPC::ChannelHandle& handle) {
-  scoped_refptr<PepperBrokerImpl>* broker_ptr =
+  scoped_refptr<PepperBroker>* broker_ptr =
       pending_connect_broker_.Lookup(request_id);
   if (broker_ptr) {
-    scoped_refptr<PepperBrokerImpl> broker = *broker_ptr;
+    scoped_refptr<PepperBroker> broker = *broker_ptr;
     pending_connect_broker_.Remove(request_id);
     broker->OnBrokerChannelConnected(broker_pid, handle);
   } else {
@@ -356,7 +349,7 @@ void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
 // Cannot use Lookup() directly because pending_connect_broker_ does not store
 // the raw pointer to the broker. Assumes maximum of one copy of broker exists.
 bool PepperPluginDelegateImpl::StopWaitingForBrokerConnection(
-    PepperBrokerImpl* broker) {
+    PepperBroker* broker) {
   for (BrokerMap::iterator i(&pending_connect_broker_);
        !i.IsAtEnd(); i.Advance()) {
     if (i.GetCurrentValue()->get() == broker) {
@@ -647,7 +640,7 @@ uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputBufferSize() {
 }
 
 // If a broker has not already been created for this plugin, creates one.
-PluginDelegate::Broker* PepperPluginDelegateImpl::ConnectToBroker(
+PepperBroker* PepperPluginDelegateImpl::ConnectToBroker(
     PPB_Broker_Impl* client) {
   DCHECK(client);
 
@@ -655,24 +648,18 @@ PluginDelegate::Broker* PepperPluginDelegateImpl::ConnectToBroker(
   if (!plugin_module)
     return NULL;
 
-  scoped_refptr<PepperBrokerImpl> broker =
-      static_cast<PepperBrokerImpl*>(plugin_module->GetBroker());
-  if (!broker.get()) {
+  scoped_refptr<PepperBroker> broker =
+      static_cast<PepperBroker*>(plugin_module->GetBroker());
+  if (!broker.get())
     broker = CreateBroker(plugin_module);
-    if (!broker.get())
-      return NULL;
-  }
 
   int request_id = pending_permission_requests_.Add(
       new base::WeakPtr<PPB_Broker_Impl>(client->AsWeakPtr()));
-  if (!render_view_->Send(
-          new ViewHostMsg_RequestPpapiBrokerPermission(
-              render_view_->routing_id(),
-              request_id,
-              client->GetDocumentUrl(),
-              plugin_module->path()))) {
-    return NULL;
-  }
+  Send(new ViewHostMsg_RequestPpapiBrokerPermission(
+      routing_id(),
+      request_id,
+      client->GetDocumentUrl(),
+      plugin_module->path()));
 
   // Adds a reference, ensuring that the broker is not deleted when
   // |broker| goes out of scope.
@@ -696,8 +683,7 @@ void PepperPluginDelegateImpl::OnPpapiBrokerPermissionResult(
   if (!plugin_module)
     return;
 
-  PepperBrokerImpl* broker =
-      static_cast<PepperBrokerImpl*>(plugin_module->GetBroker());
+  PepperBroker* broker = static_cast<PepperBroker*>(plugin_module->GetBroker());
   broker->OnBrokerPermissionResult(client.get(), result);
 }
 
@@ -707,19 +693,21 @@ bool PepperPluginDelegateImpl::AsyncOpenFile(
     const AsyncOpenFileCallback& callback) {
   int message_id = pending_async_open_files_.Add(
       new AsyncOpenFileCallback(callback));
-  IPC::Message* msg = new ViewHostMsg_AsyncOpenFile(
-      render_view_->routing_id(), path, flags, message_id);
-  return render_view_->Send(msg);
+  return Send(new ViewHostMsg_AsyncOpenFile(
+      routing_id(), path, flags, message_id));
 }
 
 void PepperPluginDelegateImpl::OnAsyncFileOpened(
     base::PlatformFileError error_code,
-    base::PlatformFile file,
+    IPC::PlatformFileForTransit file_for_transit,
     int message_id) {
   AsyncOpenFileCallback* callback =
       pending_async_open_files_.Lookup(message_id);
   DCHECK(callback);
   pending_async_open_files_.Remove(message_id);
+
+  base::PlatformFile file =
+      IPC::PlatformFileForTransitToPlatformFile(file_for_transit);
   callback->Run(error_code, base::PassPlatformFile(&file));
   // Make sure we won't leak file handle if the requester has died.
   if (file != base::kInvalidPlatformFileValue)
@@ -876,8 +864,7 @@ void PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
 
 void PepperPluginDelegateImpl::SyncGetFileSystemPlatformPath(
     const GURL& url, base::FilePath* platform_path) {
-  RenderThreadImpl::current()->Send(new FileSystemHostMsg_SyncGetPlatformPath(
-      url, platform_path));
+  Send(new FileSystemHostMsg_SyncGetPlatformPath(url, platform_path));
 }
 
 scoped_refptr<base::MessageLoopProxy>
@@ -890,8 +877,8 @@ uint32 PepperPluginDelegateImpl::TCPSocketCreate() {
   // needed anymore.
   // TODO(yzshen): Remove TCP socket-related contents from the plugin delegate.
   uint32 socket_id = 0;
-  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_CreatePrivate(
-      render_view_->routing_id(), 0, &socket_id));
+  Send(new PpapiHostMsg_PPBTCPSocket_CreatePrivate(
+      routing_id(), 0, &socket_id));
   return socket_id;
 }
 
@@ -901,9 +888,8 @@ void PepperPluginDelegateImpl::TCPSocketConnect(
     const std::string& host,
     uint16_t port) {
   RegisterTCPSocket(socket, socket_id);
-  render_view_->Send(
-      new PpapiHostMsg_PPBTCPSocket_Connect(
-          render_view_->routing_id(), socket_id, host, port));
+  Send(new PpapiHostMsg_PPBTCPSocket_Connect(
+      routing_id(), socket_id, host, port));
 }
 
 void PepperPluginDelegateImpl::TCPSocketConnectWithNetAddress(
@@ -911,9 +897,8 @@ void PepperPluginDelegateImpl::TCPSocketConnectWithNetAddress(
       uint32 socket_id,
       const PP_NetAddress_Private& addr) {
   RegisterTCPSocket(socket, socket_id);
-  render_view_->Send(
-      new PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress(
-          render_view_->routing_id(), socket_id, addr));
+  Send(new PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress(
+      routing_id(), socket_id, addr));
 }
 
 void PepperPluginDelegateImpl::TCPSocketSSLHandshake(
@@ -923,27 +908,26 @@ void PepperPluginDelegateImpl::TCPSocketSSLHandshake(
     const std::vector<std::vector<char> >& trusted_certs,
     const std::vector<std::vector<char> >& untrusted_certs) {
   DCHECK(tcp_sockets_.Lookup(socket_id));
-  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_SSLHandshake(
+  Send(new PpapiHostMsg_PPBTCPSocket_SSLHandshake(
       socket_id, server_name, server_port, trusted_certs, untrusted_certs));
 }
 
 void PepperPluginDelegateImpl::TCPSocketRead(uint32 socket_id,
                                              int32_t bytes_to_read) {
   DCHECK(tcp_sockets_.Lookup(socket_id));
-  render_view_->Send(
-      new PpapiHostMsg_PPBTCPSocket_Read(socket_id, bytes_to_read));
+  Send(new PpapiHostMsg_PPBTCPSocket_Read(socket_id, bytes_to_read));
 }
 
 void PepperPluginDelegateImpl::TCPSocketWrite(uint32 socket_id,
                                               const std::string& buffer) {
   DCHECK(tcp_sockets_.Lookup(socket_id));
-  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_Write(socket_id, buffer));
+  Send(new PpapiHostMsg_PPBTCPSocket_Write(socket_id, buffer));
 }
 
 void PepperPluginDelegateImpl::TCPSocketDisconnect(uint32 socket_id) {
   // There is no DCHECK(tcp_sockets_.Lookup(socket_id)) because this method
   // can be called before TCPSocketConnect or TCPSocketConnectWithNetAddress.
-  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id));
+  Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id));
   if (tcp_sockets_.Lookup(socket_id))
     tcp_sockets_.Remove(socket_id);
 }
@@ -953,8 +937,7 @@ void PepperPluginDelegateImpl::TCPSocketSetOption(
     PP_TCPSocket_Option name,
     const ppapi::SocketOptionData& value) {
   DCHECK(tcp_sockets_.Lookup(socket_id));
-  render_view_->Send(
-      new PpapiHostMsg_PPBTCPSocket_SetOption(socket_id, name, value));
+  Send(new PpapiHostMsg_PPBTCPSocket_SetOption(socket_id, name, value));
 }
 
 void PepperPluginDelegateImpl::RegisterTCPSocket(
@@ -967,22 +950,21 @@ void PepperPluginDelegateImpl::TCPServerSocketListen(
     PP_Resource socket_resource,
     const PP_NetAddress_Private& addr,
     int32_t backlog) {
-  render_view_->Send(
-      new PpapiHostMsg_PPBTCPServerSocket_Listen(
-          render_view_->routing_id(), 0, socket_resource, addr, backlog));
+  Send(new PpapiHostMsg_PPBTCPServerSocket_Listen(
+      routing_id(), 0, socket_resource, addr, backlog));
 }
 
 void PepperPluginDelegateImpl::TCPServerSocketAccept(uint32 server_socket_id) {
   DCHECK(tcp_server_sockets_.Lookup(server_socket_id));
-  render_view_->Send(new PpapiHostMsg_PPBTCPServerSocket_Accept(
-      render_view_->routing_id(), server_socket_id));
+  Send(new PpapiHostMsg_PPBTCPServerSocket_Accept(
+      routing_id(), server_socket_id));
 }
 
 void PepperPluginDelegateImpl::TCPServerSocketStopListening(
     PP_Resource socket_resource,
     uint32 socket_id) {
   if (socket_id != 0) {
-    render_view_->Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id));
+    Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id));
     tcp_server_sockets_.Remove(socket_id);
   }
 }
@@ -991,8 +973,7 @@ bool PepperPluginDelegateImpl::X509CertificateParseDER(
     const std::vector<char>& der,
     ppapi::PPB_X509Certificate_Fields* fields) {
   bool succeeded = false;
-  render_view_->Send(
-      new PpapiHostMsg_PPBX509Certificate_ParseDER(der, &succeeded, fields));
+  Send(new PpapiHostMsg_PPBX509Certificate_ParseDER(der, &succeeded, fields));
   return succeeded;
 }
 
@@ -1167,6 +1148,11 @@ bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
                         OnTCPServerSocketListenACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_AcceptACK,
                         OnTCPServerSocketAcceptACK)
+    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
+                        OnPpapiBrokerChannelCreated)
+    IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
+    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerPermissionResult,
+                        OnPpapiBrokerPermissionResult)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1243,7 +1229,7 @@ void PepperPluginDelegateImpl::OnTCPServerSocketListenACK(
     socket->OnListenCompleted(socket_id, local_addr, status);
   } else if (socket_id != 0 && status == PP_OK) {
     // StopListening was called before completion of Listen.
-    render_view_->Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id));
+    Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id));
   }
 }
 
@@ -1262,13 +1248,12 @@ void PepperPluginDelegateImpl::OnTCPServerSocketAcceptACK(
                               local_addr,
                               remote_addr);
   } else if (accepted_socket_id != 0) {
-    render_view_->Send(
-        new PpapiHostMsg_PPBTCPSocket_Disconnect(accepted_socket_id));
+    Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(accepted_socket_id));
   }
 }
 
 int PepperPluginDelegateImpl::GetRoutingID() const {
-  return render_view_->routing_id();
+  return routing_id();
 }
 
 MouseLockDispatcher::LockTarget*

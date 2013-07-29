@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_broker_impl.h"
+#include "content/renderer/pepper/pepper_broker.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
@@ -14,7 +14,7 @@
 
 namespace content {
 
-class PepperBrokerImplTest : public ::testing::Test {
+class PepperBrokerTest : public ::testing::Test {
  protected:
   base::MessageLoopForIO message_loop_;
   // We need a render process for ppapi::proxy::ProxyChannel to work.
@@ -23,7 +23,7 @@ class PepperBrokerImplTest : public ::testing::Test {
 
 // Try to initialize PepperBrokerDispatcherWrapper with invalid ChannelHandle.
 // Initialization should fail.
-TEST_F(PepperBrokerImplTest, InitFailure) {
+TEST_F(PepperBrokerTest, InitFailure) {
   PepperBrokerDispatcherWrapper dispatcher_wrapper;
   IPC::ChannelHandle invalid_channel;  // Invalid by default.
 
@@ -36,7 +36,7 @@ TEST_F(PepperBrokerImplTest, InitFailure) {
 }
 
 // On valid ChannelHandle, initialization should succeed.
-TEST_F(PepperBrokerImplTest, InitSuccess) {
+TEST_F(PepperBrokerTest, InitSuccess) {
   PepperBrokerDispatcherWrapper dispatcher_wrapper;
   const char kChannelName[] = "PepperPluginDelegateImplTestChannelName";
 #if defined(OS_POSIX)

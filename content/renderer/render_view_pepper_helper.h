@@ -65,20 +65,6 @@ class CONTENT_EXPORT RenderViewPepperHelper {
   virtual void ViewInitiatedPaint() {}
   virtual void ViewFlushedPaint() {}
 
-  // Called by RenderView when ViewMsg_AsyncOpenFile_ACK.
-  virtual void OnAsyncFileOpened(base::PlatformFileError error_code,
-                                 base::PlatformFile file,
-                                 int message_id) {}
-
-  // Called by RenderView when ViewMsg_PpapiBrokerChannelCreated.
-  virtual void OnPpapiBrokerChannelCreated(int request_id,
-                                           base::ProcessId broker_pid,
-                                           const IPC::ChannelHandle& handle) {}
-
-  // Called when we know whether permission to access the PPAPI broker was
-  // granted.
-  virtual void OnPpapiBrokerPermissionResult(int request_id, bool result) {}
-
   // Notification that the render view has been focused or defocused. This
   // notifies all of the plugins.
   virtual void OnSetFocus(bool has_focus) {}

@@ -604,12 +604,12 @@ bool PluginModule::ReserveInstanceID(PP_Instance instance) {
   return true;  // Instance ID is usable.
 }
 
-void PluginModule::SetBroker(PluginDelegate::Broker* broker) {
+void PluginModule::SetBroker(PepperBroker* broker) {
   DCHECK(!broker_ || !broker);
   broker_ = broker;
 }
 
-PluginDelegate::Broker* PluginModule::GetBroker() {
+PepperBroker* PluginModule::GetBroker() {
   return broker_;
 }
 

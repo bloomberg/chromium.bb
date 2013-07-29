@@ -110,7 +110,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   RenderView* render_view() const;
-  int routing_id() { return routing_id_; }
+  int routing_id() const { return routing_id_; }
 
  private:
   friend class RenderViewImpl;

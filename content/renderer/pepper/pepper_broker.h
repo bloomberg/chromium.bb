@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PEPPER_BROKER_IMPL_H_
-#define CONTENT_RENDERER_PEPPER_PEPPER_BROKER_IMPL_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_BROKER_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_BROKER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
@@ -45,14 +45,16 @@ class CONTENT_EXPORT PepperBrokerDispatcherWrapper {
   scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
 };
 
-class PepperBrokerImpl : public PluginDelegate::Broker,
-                         public base::RefCountedThreadSafe<PepperBrokerImpl>{
+class PepperBroker : public base::RefCountedThreadSafe<PepperBroker>{
  public:
-  PepperBrokerImpl(PluginModule* plugin_module,
-                   PepperPluginDelegateImpl* delegate_);
+  PepperBroker(PluginModule* plugin_module,
+               PepperPluginDelegateImpl* delegate_);
 
-  // PluginDelegate::Broker implementation.
-  virtual void Disconnect(PPB_Broker_Impl* client) OVERRIDE;
+  // Decrements the references to the broker.
+  // When there are no more references, this renderer's dispatcher is
+  // destroyed, allowing the broker to shutdown if appropriate.
+  // Callers should not reference this object after calling Disconnect().
+  void Disconnect(PPB_Broker_Impl* client);
 
   // Adds a pending connection to the broker. Balances out Disconnect() calls.
   void AddPendingConnect(PPB_Broker_Impl* client);
@@ -67,7 +69,7 @@ class PepperBrokerImpl : public PluginDelegate::Broker,
                                 bool result);
 
  private:
-  friend class base::RefCountedThreadSafe<PepperBrokerImpl>;
+  friend class base::RefCountedThreadSafe<PepperBroker>;
 
   struct PendingConnection {
     PendingConnection();
@@ -77,7 +79,7 @@ class PepperBrokerImpl : public PluginDelegate::Broker,
     base::WeakPtr<PPB_Broker_Impl> client;
   };
 
-  virtual ~PepperBrokerImpl();
+  virtual ~PepperBroker();
 
   // Reports failure to all clients that had pending operations.
   void ReportFailureToClients(int error_code);
@@ -99,9 +101,9 @@ class PepperBrokerImpl : public PluginDelegate::Broker,
 
   base::WeakPtr<PepperPluginDelegateImpl> delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperBrokerImpl);
+  DISALLOW_COPY_AND_ASSIGN(PepperBroker);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PEPPER_BROKER_IMPL_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_BROKER_H_
