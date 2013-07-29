@@ -461,7 +461,6 @@ bool GLInProcessContextImpl::Initialize(
       gles2_helper_.get(),
       context_group ? context_group->GetImplementation()->share_group() : NULL,
       transfer_buffer_.get(),
-      true,
       false,
       this));
 

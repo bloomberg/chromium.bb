@@ -362,11 +362,6 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
     attributes_.antialias = pvalues[3] > 0;
   }
 
-  if (attributes_.shareResources) {
-    base::AutoLock lock(g_all_shared_contexts_lock.Get());
-    g_all_shared_contexts.Pointer()->insert(this);
-  }
-
   visible_ = true;
   initialized_ = true;
   return true;
@@ -454,20 +449,33 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
   // process and the GPU process.
   transfer_buffer_ .reset(new gpu::TransferBuffer(gles2_helper_.get()));
 
-  WebGraphicsContext3DCommandBufferImpl* share_group_context =
-      g_all_shared_contexts.Pointer()->empty() ?
-          NULL : *g_all_shared_contexts.Pointer()->begin();
+  scoped_ptr<base::AutoLock> lock;
+  scoped_refptr<gpu::gles2::ShareGroup> share_group;
+  if (attributes_.shareResources) {
+    // Make sure two clients don't try to create a new ShareGroup
+    // simultaneously.
+    lock.reset(new base::AutoLock(g_all_shared_contexts_lock.Get()));
+    if (!g_all_shared_contexts.Pointer()->empty()) {
+      share_group = (*g_all_shared_contexts.Pointer()->begin())
+          ->GetImplementation()->share_group();
+      DCHECK(share_group);
+    }
+  }
 
   // Create the object exposing the OpenGL API.
   real_gl_.reset(new gpu::gles2::GLES2Implementation(
       gles2_helper_.get(),
-      share_group_context ?
-          share_group_context->GetImplementation()->share_group() : NULL,
+      share_group,
       transfer_buffer_.get(),
-      attributes_.shareResources,
       bind_generates_resources_,
       NULL));
   gl_ = real_gl_.get();
+
+  if (attributes_.shareResources) {
+    // Don't add ourselves to the list before others can get to our ShareGroup.
+    g_all_shared_contexts.Pointer()->insert(this);
+    lock.reset();
+  }
 
   if (!real_gl_->Initialize(
       start_transfer_buffer_size_,

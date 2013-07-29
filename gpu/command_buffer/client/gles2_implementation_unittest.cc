@@ -353,7 +353,7 @@ class GLES2ImplementationTest : public testing::Test {
     return gl_->query_tracker_->GetQuery(id);
   }
 
-  void Initialize(bool shared_resources, bool bind_generates_resource) {
+  void Initialize(bool bind_generates_resource) {
     command_buffer_.reset(new StrictMock<MockClientCommandBuffer>());
     ASSERT_TRUE(command_buffer_->Initialize());
 
@@ -400,7 +400,6 @@ class GLES2ImplementationTest : public testing::Test {
           helper_.get(),
           NULL,
           transfer_buffer_.get(),
-          shared_resources,
           bind_generates_resource,
           NULL));
       ASSERT_TRUE(gl_->Initialize(
@@ -482,7 +481,7 @@ class GLES2ImplementationTest : public testing::Test {
 };
 
 void GLES2ImplementationTest::SetUp() {
-  Initialize(false, true);
+  Initialize(true);
 }
 
 void GLES2ImplementationTest::TearDown() {
@@ -500,7 +499,7 @@ class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
 };
 
 void GLES2ImplementationStrictSharedTest::SetUp() {
-  Initialize(true, false);
+  Initialize(false);
 }
 
 // GCC requires these declarations, but MSVC requires they not be present

@@ -70,7 +70,6 @@ void GLManager::Initialize(const GLManager::Options& options) {
   const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
   const size_t kMinTransferBufferSize = 1 * 256 * 1024;
   const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
-  const bool kShareResources = true;
 
   context_lost_allowed_ = options.context_lost_allowed;
 
@@ -200,7 +199,6 @@ void GLManager::Initialize(const GLManager::Options& options) {
       gles2_helper_.get(),
       client_share_group,
       transfer_buffer_.get(),
-      kShareResources,
       options.bind_generates_resource,
       options.image_factory));
 

@@ -85,7 +85,6 @@ GLES2Implementation::GLES2Implementation(
       GLES2CmdHelper* helper,
       ShareGroup* share_group,
       TransferBufferInterface* transfer_buffer,
-      bool share_resources,
       bool bind_generates_resource,
       ImageFactory* image_factory)
     : helper_(helper),
@@ -125,8 +124,8 @@ GLES2Implementation::GLES2Implementation(
         switches::kEnableGPUClientLogging);
   });
 
-  share_group_ = (share_group ? share_group : new ShareGroup(
-      share_resources, bind_generates_resource));
+  share_group_ =
+      (share_group ? share_group : new ShareGroup(bind_generates_resource));
 
   memset(&reserved_ids_, 0, sizeof(reserved_ids_));
 }
@@ -266,11 +265,6 @@ GLES2Implementation::~GLES2Implementation() {
 #endif
   buffer_tracker_.reset();
 
-  // The share group needs to be able to use a command buffer to talk
-  // to service if it's destroyed so set one for it then release the reference.
-  // If it's destroyed it will use this GLES2Implemenation.
-  share_group_->SetGLES2ImplementationForDestruction(this);
-  share_group_ = NULL;
   // Make sure the commands make it the service.
   WaitForCmd();
 }

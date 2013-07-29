@@ -176,7 +176,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
       GLES2CmdHelper* helper,
       ShareGroup* share_group,
       TransferBufferInterface* transfer_buffer,
-      bool share_resources,
       bool bind_generates_resource,
       ImageFactory* image_factory);
 
