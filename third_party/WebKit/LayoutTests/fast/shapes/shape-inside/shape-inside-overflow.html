@@ -3,41 +3,36 @@
 <head>
 <script>
     if (window.internals)
-        window.internals.settings.setCSSExclusionsEnabled(true);
+        window.internals.settings.setCSSShapesEnabled(true);
 </script>
 <style>
     #container {
-        border: 2px solid blue;
+        font: 20px Ahem, sans-serif;
+        -webkit-font-smoothing: none;
+        line-height: 20px;
         position: relative;
         width: 200px;
         height: 200px;
+        border: 2px solid blue;
     }
-    #shape-inside {
-        -webkit-shape-inside: rectangle(50px, 0px, 100px, 50px);
-    }
+    #shape-inside { -webkit-shape-inside: rectangle(50px, 0px, 100px, 50px); }
     #border {
         position: absolute;
-        left: 48px;
+        left: 49px;
         width: 100px;
         height: 50px;
-        border: 2px solid green;
-    }
-    #border-overflow {
-        position: absolute;
-        top: 50px;
-        width: 200px;
-        height: 150px;
-        border: 2px solid blue;
+        margin-top: -2px;
+        border: 1px solid green;
     }
 </style>
 </head>
 <body>
     <div id="container">
-        <div id="border"></div>
         <div id="shape-inside">
-            This text should wrap inside the green rectangle, and overflow should wrap
-            inside the blue rectangle.
+        <div id="border"></div>
+            X X X X X X X X X X X X
         </div>
     </div>
+    <p>Requires Ahem font. The content should wrap inside the green rectangle, and the overflow should wrap inside the blue rectangle.</p>
 </body>
 </html>

@@ -52,16 +52,6 @@ const Shape* ShapeInfo<RenderType, shapeGetter, intervalGetter>::computedShape()
 }
 
 template<class RenderType, ShapeValue* (RenderStyle::*shapeGetter)() const, void (Shape::*intervalGetter)(LayoutUnit, LayoutUnit, SegmentList&) const>
-LayoutUnit ShapeInfo<RenderType, shapeGetter, intervalGetter>::logicalTopOffset() const
-{
-    LayoutUnit logicalTopOffset = m_renderer->style()->boxSizing() == CONTENT_BOX ? m_renderer->borderBefore() + m_renderer->paddingBefore() : LayoutUnit();
-    // Content in a flow thread is relative to the beginning of the thread, but the shape calculation should be relative to the current region.
-    if (m_renderer->isRenderRegion())
-        logicalTopOffset += toRenderRegion(m_renderer)->logicalTopForFlowThreadContent();
-    return logicalTopOffset;
-}
-
-template<class RenderType, ShapeValue* (RenderStyle::*shapeGetter)() const, void (Shape::*intervalGetter)(LayoutUnit, LayoutUnit, SegmentList&) const>
 bool ShapeInfo<RenderType, shapeGetter, intervalGetter>::computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight)
 {
     ASSERT(lineHeight >= 0);

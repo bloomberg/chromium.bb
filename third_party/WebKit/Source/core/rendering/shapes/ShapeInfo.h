@@ -83,6 +83,7 @@ public:
     }
 
     virtual bool computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight);
+    void clearSegments() { m_segments.clear(); }
 
     LayoutUnit shapeLogicalTop() const { return computedShapeLogicalBoundingBox().y() + logicalTopOffset(); }
     LayoutUnit shapeLogicalBottom() const { return computedShapeLogicalBoundingBox().maxY() + logicalTopOffset(); }
@@ -94,7 +95,9 @@ public:
     LayoutUnit logicalLineTop() const { return m_shapeLineTop + logicalTopOffset(); }
     LayoutUnit logicalLineBottom() const { return m_shapeLineTop + m_lineHeight + logicalTopOffset(); }
 
-    bool lineOverlapsShapeBounds() const { return logicalLineTop() < shapeLogicalBottom() && logicalLineBottom() >= shapeLogicalTop(); }
+    LayoutUnit shapeContainingBlockHeight() const { return (m_renderer->style()->boxSizing() == CONTENT_BOX) ? (m_shapeLogicalHeight + m_renderer->borderAndPaddingLogicalHeight()) : m_shapeLogicalHeight; }
+
+    bool lineOverlapsShapeBounds() const { return logicalLineTop() < shapeLogicalBottom() && shapeLogicalTop() <= logicalLineBottom(); }
 
     void dirtyShapeSize() { m_shape.clear(); }
     bool shapeSizeDirty() { return !m_shape.get(); }
@@ -106,8 +109,8 @@ protected:
     const Shape* computedShape() const;
     virtual LayoutRect computedShapeLogicalBoundingBox() const = 0;
 
-    LayoutUnit logicalTopOffset() const;
-    LayoutUnit logicalLeftOffset() const { return m_renderer->style()->boxSizing() == CONTENT_BOX ? m_renderer->borderStart() + m_renderer->paddingStart() : LayoutUnit(); }
+    LayoutUnit logicalTopOffset() const { return m_renderer->style()->boxSizing() == CONTENT_BOX ? m_renderer->borderAndPaddingBefore() : LayoutUnit(); }
+    LayoutUnit logicalLeftOffset() const { return (m_renderer->style()->boxSizing() == CONTENT_BOX && !m_renderer->isRenderRegion()) ? m_renderer->borderAndPaddingStart() : LayoutUnit(); }
 
     LayoutUnit m_shapeLineTop;
     LayoutUnit m_lineHeight;
