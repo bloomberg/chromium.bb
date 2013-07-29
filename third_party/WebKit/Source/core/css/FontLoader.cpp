@@ -258,13 +258,11 @@ void FontLoader::fireDoneEventIfPossible()
     if (m_loadingCount || (!m_pendingDoneEvent && m_fontsReadyCallbacks.isEmpty()))
         return;
 
-    if (FrameView* view = m_document->view()) {
-        if (view->needsLayout())
-            return;
-        m_document->updateStyleIfNeeded();
-        if (view->needsLayout())
-            return;
-    }
+    // If the layout was invalidated in between when we thought layout
+    // was updated and when we're ready to fire the event, just wait
+    // until after the next layout before firing events.
+    if (!m_document->view() || m_document->view()->needsLayout())
+        return;
 
     if (m_pendingDoneEvent)
         dispatchEvent(m_pendingDoneEvent.release());
