@@ -35,25 +35,33 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class Node;
-class Range;
-
 class Composition : public RefCounted<Composition>, public ScriptWrappable {
 public:
-    static PassRefPtr<Composition> create(Node*, Range*);
+    static PassRefPtr<Composition> create();
     ~Composition();
 
-    Node* text() const { return m_text.get(); }
-    Range* caret() const { return m_caret.get(); }
+    String text() const { return m_text; }
+    void setText(const String& text) { m_text = text; }
+
+    int selectionStart() const { return m_selectionStart; }
+    void setSelectionStart(int selectionStart) { selectionStart = m_selectionStart; }
+
+    int selectionEnd() const { return m_selectionEnd; }
+    void setSelectionEnd(int selectionEnd) { selectionEnd = m_selectionEnd; }
+
+    const Vector<unsigned>& getSegments() const;
 
 private:
-    Composition(Node*, Range*);
+    Composition();
 
-    RefPtr<Node> m_text;
-    RefPtr<Range> m_caret;
+    String m_text;
+    int m_selectionStart;
+    int m_selectionEnd;
+    Vector<unsigned> m_segments;
 };
 
 } // namespace WebCore

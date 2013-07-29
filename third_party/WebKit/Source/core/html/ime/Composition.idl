@@ -32,6 +32,8 @@
 [
     NoInterfaceObject
 ] interface Composition {
-    readonly attribute Node text;
-    readonly attribute Range caret;
+    readonly attribute DOMString text;
+    readonly attribute long selectionStart;
+    readonly attribute long selectionEnd;
+    sequence<unsigned long> getSegments();
 };

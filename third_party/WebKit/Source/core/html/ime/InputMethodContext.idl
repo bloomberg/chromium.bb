@@ -32,11 +32,9 @@
 [
 ] interface InputMethodContext {
     readonly attribute Composition composition;
-    attribute boolean enabled;
     readonly attribute DOMString locale;
-
+    readonly attribute HTMLElement target;
     void confirmComposition();
     void setCaretRectangle(Node anchor, long x, long y, long w, long h);
     void setExclusionRectangle(Node anchor, long x, long y, long w, long h);
-    boolean open();
 };

@@ -240,6 +240,14 @@ namespace WebCore {
     };
 
     template<>
+    struct V8ValueTraits<unsigned> {
+        static inline v8::Handle<v8::Value> arrayV8Value(const unsigned& value, v8::Isolate* isolate)
+        {
+            return v8::Integer::NewFromUnsigned(value, isolate);
+        }
+    };
+
+    template<>
     struct V8ValueTraits<unsigned long> {
         static inline v8::Handle<v8::Value> arrayV8Value(const unsigned long& value, v8::Isolate* isolate)
         {

@@ -51,17 +51,14 @@ public:
     void deref() { m_element->deref(); }
 
     Composition* composition() const;
-    bool enabled() const;
-    void setEnabled(bool);
     String locale() const;
+    HTMLElement* target() const;
     void confirmComposition();
     void setCaretRectangle(Node* anchor, int x, int y, int w, int h);
     void setExclusionRectangle(Node* anchor, int x, int y, int w, int h);
-    bool open();
 
 private:
     InputMethodContext(HTMLElement*);
-    bool m_enabled;
     RefPtr<Composition> m_composition;
     HTMLElement* m_element;
 };

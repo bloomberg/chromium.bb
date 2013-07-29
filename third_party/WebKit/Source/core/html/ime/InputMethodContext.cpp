@@ -45,8 +45,7 @@ PassOwnPtr<InputMethodContext> InputMethodContext::create(HTMLElement* element)
 }
 
 InputMethodContext::InputMethodContext(HTMLElement* element)
-    : m_enabled(false)
-    , m_composition(0)
+    : m_composition(0)
     , m_element(element)
 {
     ScriptWrappable::init(this);
@@ -63,23 +62,15 @@ Composition* InputMethodContext::composition() const
     return m_composition.get();
 }
 
-bool InputMethodContext::enabled() const
-{
-    // FIXME: Implement this. Enabled state may change between calls from user
-    // action and the status should be retrieved here.
-    return m_enabled;
-}
-
-void InputMethodContext::setEnabled(bool enabled)
-{
-    // FIXME: Implement this. The enabled state should propagate to IME.
-    m_enabled = enabled;
-}
-
 String InputMethodContext::locale() const
 {
     // FIXME: Implement this.
     return emptyString();
+}
+
+HTMLElement* InputMethodContext::target() const
+{
+    return m_element;
 }
 
 void InputMethodContext::confirmComposition()
@@ -118,12 +109,6 @@ void InputMethodContext::setCaretRectangle(Node* anchor, int x, int y, int w, in
 void InputMethodContext::setExclusionRectangle(Node* anchor, int x, int y, int w, int h)
 {
     // FIXME: Implement this.
-}
-
-bool InputMethodContext::open()
-{
-    // FIXME: Implement this.
-    return false;
 }
 
 } // namespace WebCore

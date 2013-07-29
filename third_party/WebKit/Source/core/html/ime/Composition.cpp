@@ -31,25 +31,27 @@
 #include "config.h"
 #include "core/html/ime/Composition.h"
 
-#include "core/dom/Node.h"
-#include "core/dom/Range.h"
-
 namespace WebCore {
 
 Composition::~Composition()
 {
 }
 
-PassRefPtr<Composition> Composition::create(Node* text, Range* caret)
+PassRefPtr<Composition> Composition::create()
 {
-    return adoptRef(new Composition(text, caret));
+    return adoptRef(new Composition());
 }
 
-Composition::Composition(Node* text, Range* caret)
-    : m_text(text)
-    , m_caret(caret)
+Composition::Composition()
+    : m_selectionStart(0)
+    , m_selectionEnd(0)
 {
     ScriptWrappable::init(this);
+}
+
+const Vector<unsigned>& Composition::getSegments() const
+{
+    return m_segments;
 }
 
 } // namespace WebCore
