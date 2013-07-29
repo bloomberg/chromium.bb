@@ -14,20 +14,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -205,8 +198,9 @@ void ProfileDownloader::Start() {
   VLOG(1) << "Starting profile downloader...";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  TokenService* service =
-      TokenServiceFactory::GetForProfile(delegate_->GetBrowserProfile());
+  ProfileOAuth2TokenService* service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(
+          delegate_->GetBrowserProfile());
   if (!service) {
     // This can happen in some test paths.
     LOG(WARNING) << "User has no token service";
@@ -215,15 +209,10 @@ void ProfileDownloader::Start() {
     return;
   }
 
-  if (service->HasOAuthLoginToken()) {
+  if (service->RefreshTokenIsAvailable()) {
     StartFetchingOAuth2AccessToken();
   } else {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                   content::Source<TokenService>(service));
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                   content::Source<TokenService>(service));
+    service->AddObserver(this);
   }
 }
 
@@ -260,19 +249,12 @@ void ProfileDownloader::StartFetchingImage() {
 }
 
 void ProfileDownloader::StartFetchingOAuth2AccessToken() {
-  TokenService* service =
-      TokenServiceFactory::GetForProfile(delegate_->GetBrowserProfile());
-  DCHECK(!service->GetOAuth2LoginRefreshToken().empty());
-
-  std::vector<std::string> scopes;
-  scopes.push_back(kAPIScope);
-  oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
-      this, delegate_->GetBrowserProfile()->GetRequestContext()));
-  oauth2_access_token_fetcher_->Start(
-      GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-      service->GetOAuth2LoginRefreshToken(),
-      scopes);
+  Profile* profile = delegate_->GetBrowserProfile();
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert(kAPIScope);
+  oauth2_access_token_request_ =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)
+          ->StartRequestWithContext(profile->GetRequestContext(), scopes, this);
 }
 
 ProfileDownloader::~ProfileDownloader() {}
@@ -362,42 +344,32 @@ void ProfileDownloader::OnDecodeImageFailed(const ImageDecoder* decoder) {
       this, ProfileDownloaderDelegate::IMAGE_DECODE_FAILED);
 }
 
-void ProfileDownloader::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE ||
-         type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED);
-
-  TokenService::TokenAvailableDetails* token_details =
-      content::Details<TokenService::TokenAvailableDetails>(details).ptr();
-
-  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
-    if (token_details->service() ==
-        GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
-      registrar_.RemoveAll();
-      StartFetchingOAuth2AccessToken();
-    }
-  } else {
-    if (token_details->service() ==
-        GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
-      LOG(WARNING) << "ProfileDownloader: token request failed";
-      delegate_->OnProfileDownloadFailure(
-          this, ProfileDownloaderDelegate::TOKEN_ERROR);
-    }
-  }
+void ProfileDownloader::OnRefreshTokenAvailable(const std::string& account_id) {
+  // TODO(fgorski): Once in multi-login environment we need to filter the
+  // account_id to the one that is exposed on the profile.
+  ProfileOAuth2TokenServiceFactory::GetForProfile(
+      delegate_->GetBrowserProfile())->RemoveObserver(this);
+  StartFetchingOAuth2AccessToken();
 }
 
-// Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
-// used to start fetching user data.
-void ProfileDownloader::OnGetTokenSuccess(const std::string& access_token,
-                                          const base::Time& expiration_time) {
+// Callback for OAuth2TokenService::Request on success. |access_token| is the
+// token used to start fetching user data.
+void ProfileDownloader::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const std::string& access_token,
+    const base::Time& expiration_time) {
+  DCHECK_EQ(request, oauth2_access_token_request_.get());
+  oauth2_access_token_request_.reset();
   auth_token_ = access_token;
   StartFetchingImage();
 }
 
-// Callback for OAuth2AccessTokenFetcher on failure.
-void ProfileDownloader::OnGetTokenFailure(const GoogleServiceAuthError& error) {
+// Callback for OAuth2TokenService::Request on failure.
+void ProfileDownloader::OnGetTokenFailure(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  DCHECK_EQ(request, oauth2_access_token_request_.get());
+  oauth2_access_token_request_.reset();
   LOG(WARNING) << "ProfileDownloader: token request using refresh token failed";
   delegate_->OnProfileDownloadFailure(
       this, ProfileDownloaderDelegate::TOKEN_ERROR);

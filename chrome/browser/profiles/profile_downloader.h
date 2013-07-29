@@ -12,9 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/image_decoder.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "google_apis/gaia/oauth2_access_token_consumer.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
@@ -30,8 +28,8 @@ class URLFetcher;
 // sandboxed process.
 class ProfileDownloader : public net::URLFetcherDelegate,
                           public ImageDecoder::Delegate,
-                          public content::NotificationObserver,
-                          public OAuth2AccessTokenConsumer {
+                          public OAuth2TokenService::Observer,
+                          public OAuth2TokenService::Consumer {
  public:
   enum PictureStatus {
     PICTURE_SUCCESS,
@@ -78,15 +76,15 @@ class ProfileDownloader : public net::URLFetcherDelegate,
                               const SkBitmap& decoded_image) OVERRIDE;
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
 
-  // Overriden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Overriden from OAuth2TokenService::Observer:
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
 
-  // Overriden from OAuth2AccessTokenConsumer:
-  virtual void OnGetTokenSuccess(const std::string& access_token,
+  // Overriden from OAuth2TokenService::Consumer:
+  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                                 const std::string& access_token,
                                  const base::Time& expiration_time) OVERRIDE;
-  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                                 const GoogleServiceAuthError& error) OVERRIDE;
 
   // Parses the entry response and gets the name and and profile image URL.
   // |data| should be the JSON formatted data return by the response.
@@ -113,8 +111,7 @@ class ProfileDownloader : public net::URLFetcherDelegate,
   std::string auth_token_;
   scoped_ptr<net::URLFetcher> user_entry_fetcher_;
   scoped_ptr<net::URLFetcher> profile_image_fetcher_;
-  scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
   string16 profile_full_name_;
   SkBitmap profile_picture_;
   PictureStatus picture_status_;
