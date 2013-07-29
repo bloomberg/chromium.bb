@@ -90,8 +90,6 @@ public:
     void invalidateInsertionPointList();
     const Vector<RefPtr<InsertionPoint> >& ensureInsertionPointList(ShadowRoot*);
 
-    bool isUsedForRendering() const;
-
 private:
     InsertionPoint* m_insertionPointAssignedTo;
     unsigned m_numberOfShadowElementChildren;
