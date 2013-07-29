@@ -38,6 +38,8 @@ struct DnsSession::ServerStats {
   ServerStats(base::TimeDelta rtt_estimate_param, RttBuckets* buckets)
     : last_failure_count(0), rtt_estimate(rtt_estimate_param) {
     rtt_histogram.reset(new base::SampleVector(buckets));
+    // Seed histogram with 2 samples at |rtt_estimate| timeout.
+    rtt_histogram->Accumulate(rtt_estimate.InMilliseconds(), 2);
   }
 
   // Count of consecutive failures after last success.
@@ -209,18 +211,10 @@ void DnsSession::RecordServerStats() {
 
 
 base::TimeDelta DnsSession::NextTimeout(unsigned server_index, int attempt) {
-  DCHECK_LT(server_index, server_stats_.size());
-
-  base::TimeDelta timeout = config_.timeout;
-  // If this server has not responded successfully, then don't wait too long.
-  if (server_stats_[server_index]->last_success.is_null())
-    return timeout;
-
-  // The timeout doubles every full round (each nameserver once).
-  unsigned num_backoffs = attempt / config_.nameservers.size();
-
-  return std::min(timeout * (1 << num_backoffs),
-                  base::TimeDelta::FromMilliseconds(kMaxTimeoutMs));
+  // Respect config timeout if it exceeds |kMaxTimeoutMs|.
+  if (config_.timeout.InMilliseconds() >= kMaxTimeoutMs)
+    return config_.timeout;
+  return NextTimeoutFromHistogram(server_index, attempt);
 }
 
 // Allocate a socket, already connected to the server address.

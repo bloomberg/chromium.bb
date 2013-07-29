@@ -220,6 +220,29 @@ TEST_F(DnsSessionTest, AllocateFree) {
   EXPECT_TRUE(NoMoreEvents());
 }
 
-} // namespace
+// Expect default calculated timeout to be within 10ms of in DnsConfig.
+TEST_F(DnsSessionTest, HistogramTimeoutNormal) {
+  Initialize(2);
+  base::TimeDelta timeoutDelta = session_->NextTimeout(0, 0) - config_.timeout;
+  EXPECT_LT(timeoutDelta.InMilliseconds(), 10);
+}
+
+// Expect short calculated timeout to be within 10ms of in DnsConfig.
+TEST_F(DnsSessionTest, HistogramTimeoutShort) {
+  config_.timeout = base::TimeDelta::FromMilliseconds(15);
+  Initialize(2);
+  base::TimeDelta timeoutDelta = session_->NextTimeout(0, 0) - config_.timeout;
+  EXPECT_LT(timeoutDelta.InMilliseconds(), 10);
+}
+
+// Expect long calculated timeout to be equal to one in DnsConfig.
+TEST_F(DnsSessionTest, HistogramTimeoutLong) {
+  config_.timeout = base::TimeDelta::FromSeconds(15);
+  Initialize(2);
+  base::TimeDelta timeout = session_->NextTimeout(0, 0);
+  EXPECT_EQ(config_.timeout.InMilliseconds(), timeout.InMilliseconds());
+}
+
+}  // namespace
 
 } // namespace net
