@@ -100,6 +100,10 @@ ErrorCode NaClBpfSandboxPolicy(
     case __NR_sched_setscheduler:
     case __NR_setpriority:
     case __NR_sysinfo:
+    // __NR_times needed as clock() is called by CommandBufferHelper, which is
+    // used by NaCl applications that use Pepper's 3D interfaces.
+    // See crbug.com/264856 for details.
+    case __NR_times:
     case __NR_uname:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
     case __NR_ptrace:
