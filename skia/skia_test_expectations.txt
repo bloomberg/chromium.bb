@@ -51,4 +51,11 @@
 # Image scaling difference due to ongoing Skia image resizing changes
 crbug.com/263331 virtual/deferred/fast/images/webp-color-profile-lossy.html [ ImageOnlyFailure ]
 
+# With Skia r10399 Skia's Windows text metrics have been improved
+crbug.com/265448 [ Win ] svg/batik/text/textEffect3.svg [ ImageOnlyFailure ]
+crbug.com/265448 [ Win ] svg/custom/use-referencing-nonexisting-symbol.svg [ ImageOnlyFailure ]
+crbug.com/265448 [ Win ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ]
+crbug.com/265448 [ Win ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ ImageOnlyFailure ]
+crbug.com/265448 [ Win ] svg/transforms/text-with-pattern-with-svg-transform.svg [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)

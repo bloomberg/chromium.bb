@@ -434,6 +434,10 @@
 
     'IGNORE_ROT_AA_RECT_OPT',
 
+    'SKIA_IGNORE_GPU_MIPMAPS',
+
+    'SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS',
+
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
   ],
 
