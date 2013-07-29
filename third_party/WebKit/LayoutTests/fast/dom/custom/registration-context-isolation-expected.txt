@@ -1,0 +1,3 @@
+ 
+PASS registration context should not be shared with an iframe's document 
+
