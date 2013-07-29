@@ -11,6 +11,8 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
@@ -22,7 +24,6 @@
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -52,6 +53,7 @@ BrowserActionView::BrowserActionView(const Extension* extension,
   button_->set_drag_controller(delegate_);
   button_->set_owned_by_client();
   AddChildView(button_);
+  button_->UpdateState();
 }
 
 BrowserActionView::~BrowserActionView() {
@@ -69,10 +71,6 @@ gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
   if (!button_->IsEnabled(tab_id))
     icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
   return action->GetIconWithBadge(icon, tab_id, spacing);
-}
-
-void BrowserActionView::UpdateState() {
-  button_->UpdateState();
 }
 
 void BrowserActionView::Layout() {
@@ -138,6 +136,14 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
                  notification_source);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
                  notification_source);
+
+  // We also listen for browser theme changes on linux because a switch from or
+  // to GTK requires that we regrab our browser action images.
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+      content::Source<ThemeService>(
+          ThemeServiceFactory::GetForProfile(browser->profile())));
 }
 
 void BrowserActionButton::Destroy() {
@@ -229,15 +235,16 @@ void BrowserActionButton::UpdateState() {
     if (!browser_action()->GetIsVisible(tab_id))
       icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
 
-    ui::ThemeProvider* provider = GetThemeProvider();
+    ThemeService* theme =
+        ThemeServiceFactory::GetForProfile(browser_->profile());
 
-    gfx::ImageSkia bg = *provider->GetImageSkiaNamed(IDR_BROWSER_ACTION);
+    gfx::ImageSkia bg = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION);
     SetIcon(gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon));
 
-    gfx::ImageSkia bg_h = *provider->GetImageSkiaNamed(IDR_BROWSER_ACTION_H);
+    gfx::ImageSkia bg_h = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION_H);
     SetHoverIcon(gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_h, icon));
 
-    gfx::ImageSkia bg_p = *provider->GetImageSkiaNamed(IDR_BROWSER_ACTION_P);
+    gfx::ImageSkia bg_p = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION_P);
     SetPushedIcon(
         gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_p, icon));
   }
@@ -286,6 +293,9 @@ void BrowserActionButton::Observe(int type,
       }
       break;
     }
+    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
+      UpdateState();
+      break;
     default:
       NOTREACHED();
       break;

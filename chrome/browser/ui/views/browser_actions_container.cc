@@ -158,7 +158,6 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
     BrowserActionView* view = new BrowserActionView(i->get(), browser_, this);
     browser_action_views_.push_back(view);
     AddChildView(view);
-    view->UpdateState();
   }
 }
 
@@ -616,7 +615,6 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
   BrowserActionView* view = new BrowserActionView(extension, browser_, this);
   browser_action_views_.insert(browser_action_views_.begin() + index, view);
   AddChildViewAt(view, index);
-  view->UpdateState();
 
   // If we are still initializing the container, don't bother animating.
   if (!model_->extensions_initialized())

@@ -74,9 +74,6 @@ class BrowserActionView : public views::View {
   // Gets browser action button icon with the badge.
   gfx::ImageSkia GetIconWithBadge();
 
-  // Updates the internal images used to draw this button.
-  void UpdateState();
-
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
