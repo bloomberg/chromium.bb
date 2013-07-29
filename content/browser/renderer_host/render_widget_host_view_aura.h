@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/texture_mailbox.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/renderer_host/image_transport_factory.h"
+#include "content/browser/aura/image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gl_helper.h"

@@ -77,7 +77,7 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Creates an output surface for the given compositor. The factory may keep
   // per-compositor data (e.g. a shared context), that needs to be cleaned up
   // by calling RemoveCompositor when the compositor gets destroyed.
-  virtual cc::OutputSurface* CreateOutputSurface(
+  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       Compositor* compositor) = 0;
 
   // Creates a context used for offscreen rendering. This context can be shared
@@ -108,7 +108,7 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   virtual ~DefaultContextFactory();
 
   // ContextFactory implementation
-  virtual cc::OutputSurface* CreateOutputSurface(
+  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       Compositor* compositor) OVERRIDE;
   virtual scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext()
       OVERRIDE;
@@ -146,7 +146,7 @@ class COMPOSITOR_EXPORT TestContextFactory : public ContextFactory {
   virtual ~TestContextFactory();
 
   // ContextFactory implementation
-  virtual cc::OutputSurface* CreateOutputSurface(
+  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       Compositor* compositor) OVERRIDE;
   virtual scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext()
       OVERRIDE;
@@ -213,20 +213,6 @@ class COMPOSITOR_EXPORT CompositorDelegate {
 
  protected:
   virtual ~CompositorDelegate() {}
-};
-
-class COMPOSITOR_EXPORT Reflector
-    : public base::RefCountedThreadSafe<Reflector> {
- public:
-  Reflector() {}
-
-  virtual void OnMirroringCompositorResized() {}
-
- protected:
-  friend class base::RefCountedThreadSafe<Reflector>;
-  virtual ~Reflector() {}
-
-  DISALLOW_COPY_AND_ASSIGN(Reflector);
 };
 
 // This class represents a lock on the compositor, that can be used to prevent
@@ -394,8 +380,7 @@ class COMPOSITOR_EXPORT Compositor
   virtual void Layout() OVERRIDE;
   virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,
                                    float page_scale) OVERRIDE {}
-  virtual scoped_ptr<cc::OutputSurface>
-      CreateOutputSurface() OVERRIDE;
+  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual void DidInitializeOutputSurface(bool success) OVERRIDE {}
   virtual void WillCommit() OVERRIDE {}
   virtual void DidCommit() OVERRIDE;

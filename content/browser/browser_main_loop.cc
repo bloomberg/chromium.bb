@@ -55,7 +55,7 @@
 #include "ui/base/clipboard/clipboard.h"
 
 #if defined(USE_AURA)
-#include "content/browser/renderer_host/image_transport_factory.h"
+#include "content/browser/aura/image_transport_factory.h"
 #endif
 
 #if defined(OS_ANDROID)

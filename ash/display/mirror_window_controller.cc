@@ -28,7 +28,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/compositor.h"
+#include "ui/compositor/reflector.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"

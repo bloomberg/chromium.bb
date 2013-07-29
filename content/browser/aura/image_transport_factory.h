@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_FACTORY_H_
-#define CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_FACTORY_H_
+#ifndef CONTENT_BROWSER_AURA_IMAGE_TRANSPORT_FACTORY_H_
+#define CONTENT_BROWSER_AURA_IMAGE_TRANSPORT_FACTORY_H_
 
 #include <string>
 
@@ -44,8 +44,6 @@ class ImageTransportFactoryObserver {
 // cross-process image transport, both for creating the shared surface handle
 // (destination surface for the GPU process) and the transport client (logic for
 // using that surface as a texture). The factory is a process-wide singleton.
-// As this is intimately linked to the type of 3D context we use (in-process or
-// command-buffer), implementations of this also implement ui::ContextFactory.
 class ImageTransportFactory {
  public:
   virtual ~ImageTransportFactory() {}
@@ -98,4 +96,4 @@ class ImageTransportFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_FACTORY_H_
+#endif  // CONTENT_BROWSER_AURA_IMAGE_TRANSPORT_FACTORY_H_

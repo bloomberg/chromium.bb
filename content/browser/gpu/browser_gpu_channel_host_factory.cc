@@ -289,6 +289,7 @@ void BrowserGpuChannelHostFactory::AddFilterOnIO(
     int host_id,
     scoped_refptr<IPC::ChannelProxy::MessageFilter> filter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);
   if (host)
     host->AddFilter(filter.get());
@@ -299,6 +300,11 @@ void BrowserGpuChannelHostFactory::SetHandlerForControlMessages(
       size_t num_messages,
       const base::Callback<void(const IPC::Message&)>& handler,
       base::TaskRunner* target_task_runner) {
+  DCHECK(gpu_host_id_)
+      << "Do not call"
+      << " BrowserGpuChannelHostFactory::SetHandlerForControlMessages()"
+      << " until the GpuProcessHost has been set up.";
+
   scoped_refptr<IPC::ForwardingMessageFilter> filter =
       new IPC::ForwardingMessageFilter(message_ids,
                                        num_messages,
