@@ -64,51 +64,32 @@ class FileBrowserPrivateAPI : public BrowserContextKeyedService {
   scoped_ptr<FileManagerEventRouter> event_router_;
 };
 
-// Parent class for the chromium extension APIs for the file manager.
+// This class adds a logging feature to AsyncExtensionFunction. Logging is
+// done when sending the response to JavaScript, using drive::util::Log().
+// Async API functions defined in this file should inherit this class.
+//
+// By default, logging is turned off, hence sub classes should call
+// set_log_on_completion(true) to enable it, if they want. However, even if
+// the logging is turned off, a warning is emitted when a function call is
+// very slow. See the implementation of SendResponse() for details.
+//
+// TODO(satorux): Rename this class to LoggedAsyncExtensionFunction and let
+// all async API functions inherit this (some don't inherit this now).
 class FileBrowserFunction : public AsyncExtensionFunction {
- public:
-  FileBrowserFunction();
-
  protected:
-  typedef std::vector<GURL> UrlList;
-  typedef std::vector<ui::SelectedFileInfo> SelectedFileInfoList;
-  typedef base::Callback<void(const SelectedFileInfoList&)>
-      GetSelectedFileInfoCallback;
+  FileBrowserFunction();
 
   virtual ~FileBrowserFunction();
 
-  // Returns the local FilePath associated with |url|. If the file isn't of the
-  // type FileSystemBackend handles, returns an empty FilePath.
-  //
-  // Local paths will look like "/home/chronos/user/Downloads/foo/bar.txt" or
-  // "/special/drive/foo/bar.txt".
-  base::FilePath GetLocalPathFromURL(const GURL& url);
-
-  // Runs |callback| with SelectedFileInfoList created from |file_urls|.
-  void GetSelectedFileInfo(const UrlList& file_urls,
-                           bool for_opening,
-                           GetSelectedFileInfoCallback callback);
-
+  // AsyncExtensionFunction overrides.
   virtual void SendResponse(bool success) OVERRIDE;
 
- protected:
+  // Sets the logging on completion flag. By default, logging is turned off.
   void set_log_on_completion(bool log_on_completion) {
     log_on_completion_ = log_on_completion;
   }
 
  private:
-  struct GetSelectedFileInfoParams;
-
-  // Used to implement GetSelectedFileInfo().
-  void GetSelectedFileInfoInternal(
-      scoped_ptr<GetSelectedFileInfoParams> params);
-
-  // Used to implement GetSelectedFileInfo().
-  void ContinueGetSelectedFileInfo(scoped_ptr<GetSelectedFileInfoParams> params,
-                                   drive::FileError error,
-                                   const base::FilePath& local_file_path,
-                                   scoped_ptr<drive::ResourceEntry> entry);
-
   base::Time start_time_;
   bool log_on_completion_;
 };
@@ -332,7 +313,8 @@ class SelectFileFunction : public FileBrowserFunction {
 
  private:
   // A callback method to handle the result of GetSelectedFileInfo.
-  void GetSelectedFileInfoResponse(const SelectedFileInfoList& files);
+  void GetSelectedFileInfoResponse(
+      const std::vector<ui::SelectedFileInfo>& files);
 };
 
 // View multiple selected files.  Window stays open.
@@ -366,7 +348,8 @@ class SelectFilesFunction : public FileBrowserFunction {
 
  private:
   // A callback method to handle the result of GetSelectedFileInfo.
-  void GetSelectedFileInfoResponse(const SelectedFileInfoList& files);
+  void GetSelectedFileInfoResponse(
+      const std::vector<ui::SelectedFileInfo>& files);
 };
 
 // Cancel file selection Dialog.  Closes the dialog window.
@@ -422,7 +405,8 @@ class RemoveMountFunction : public FileBrowserFunction {
 
  private:
   // A callback method to handle the result of GetSelectedFileInfo.
-  void GetSelectedFileInfoResponse(const SelectedFileInfoList& files);
+  void GetSelectedFileInfoResponse(
+      const std::vector<ui::SelectedFileInfo>& files);
 };
 
 class GetMountPointsFunction : public FileBrowserFunction {
