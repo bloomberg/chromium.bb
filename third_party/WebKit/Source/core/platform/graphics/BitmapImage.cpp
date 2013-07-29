@@ -657,4 +657,19 @@ Color BitmapImage::solidColor() const
     return m_solidColor;
 }
 
+bool FrameData::clear(bool clearMetadata)
+{
+    if (clearMetadata)
+        m_haveMetadata = false;
+
+    m_orientation = DefaultImageOrientation;
+
+    if (m_frame) {
+        m_frame.clear();
+
+        return true;
+    }
+    return false;
+}
+
 }

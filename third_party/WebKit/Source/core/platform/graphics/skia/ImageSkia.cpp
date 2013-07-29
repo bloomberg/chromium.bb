@@ -34,7 +34,6 @@
 #include "SkRect.h"
 #include "SkShader.h"
 #include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageObserver.h"
@@ -340,21 +339,6 @@ void Image::paintSkBitmap(GraphicsContext* context, const NativeImageSkia& bitma
         context->drawBitmapRect(bitmap.bitmap(), &srcRect, destRect, &paint);
     }
     context->didDrawRect(destRect, paint, &bitmap.bitmap());
-}
-
-bool FrameData::clear(bool clearMetadata)
-{
-    if (clearMetadata)
-        m_haveMetadata = false;
-
-    m_orientation = DefaultImageOrientation;
-
-    if (m_frame) {
-        m_frame.clear();
-
-        return true;
-    }
-    return false;
 }
 
 void Image::drawPattern(GraphicsContext* context,
