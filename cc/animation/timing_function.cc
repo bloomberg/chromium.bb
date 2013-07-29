@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <algorithm>
-#include <cmath>
 
 #include "base/logging.h"
 #include "cc/animation/timing_function.h"
@@ -48,14 +47,14 @@ static double bezier_interp(double x1,
   double step = 1.0;
   for (int i = 0; i < MAX_STEPS; ++i, step *= 0.5) {
     const double error = eval_bezier(x1, x2, t) - x;
-    if (std::abs(error) < BEZIER_EPSILON)
+    if (fabs(error) < BEZIER_EPSILON)
       break;
     t += error > 0.0 ? -step : step;
   }
 
   // We should have terminated the above loop because we got close to x, not
   // because we exceeded MAX_STEPS. Do a DCHECK here to confirm.
-  DCHECK_GT(BEZIER_EPSILON, std::abs(eval_bezier(x1, x2, t) - x));
+  DCHECK_GT(BEZIER_EPSILON, fabs(eval_bezier(x1, x2, t) - x));
 
   // Step 2. Return the interpolated y values at the t we computed above.
   return eval_bezier(y1, y2, t);

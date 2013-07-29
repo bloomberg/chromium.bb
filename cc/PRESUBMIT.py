@@ -57,46 +57,6 @@ def CheckAsserts(input_api, output_api, white_list=CC_SOURCE_FILES, black_list=N
       items=notreached_files)]
   return []
 
-def CheckStdAbs(input_api, output_api,
-                white_list=CC_SOURCE_FILES, black_list=None):
-  black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
-  source_file_filter = lambda x: input_api.FilterSourceFile(x,
-                                                            white_list,
-                                                            black_list)
-
-  using_std_abs_files = []
-  found_fabs_files = []
-  missing_std_prefix_files = []
-
-  for f in input_api.AffectedSourceFiles(source_file_filter):
-    contents = input_api.ReadFile(f, 'rb')
-    if re.search(r"using std::f?abs;", contents):
-      using_std_abs_files.append(f.LocalPath())
-    if re.search(r"\bfabsf?\(", contents):
-      found_fabs_files.append(f.LocalPath());
-    # The following regular expression in words says:
-    # "if there is no 'std::' behind an 'abs(' or 'absf(',
-    # or if there is no 'std::' behind a 'fabs(' or 'fabsf(',
-    # then it's a match."
-    if re.search(r"((?<!std::)(\babsf?\()|(?<!std::)(\bfabsf?\())", contents):
-      missing_std_prefix_files.append(f.LocalPath())
-
-  result = []
-  if using_std_abs_files:
-    result.append(output_api.PresubmitError(
-        'These files have "using std::abs" which is not permitted.',
-        items=using_std_abs_files))
-  if found_fabs_files:
-    result.append(output_api.PresubmitError(
-        'std::abs() should be used instead of std::fabs() for consistency.',
-        items=found_fabs_files))
-  if missing_std_prefix_files:
-    result.append(output_api.PresubmitError(
-        'These files use abs(), absf(), fabs(), or fabsf() without qualifying '
-        'the std namespace. Please use std::abs() in all places.',
-        items=missing_std_prefix_files))
-  return result
-
 def CheckSpamLogging(input_api,
                      output_api,
                      white_list=CC_SOURCE_FILES,
@@ -180,7 +140,6 @@ def CheckTodos(input_api, output_api):
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results += CheckAsserts(input_api, output_api)
-  results += CheckStdAbs(input_api, output_api)
   results += CheckSpamLogging(input_api, output_api, black_list=CC_PERF_TEST)
   results += CheckPassByValue(input_api, output_api)
   results += CheckChangeLintsClean(input_api, output_api)
