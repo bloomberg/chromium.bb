@@ -606,6 +606,22 @@
    fun:v8::internal::FreeList::Allocate
 }
 {
+   bug_169678_c
+   Heapcheck:Leak
+   fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
+   fun:v8::internal::SlotsBuffer::AddTo
+   fun:v8::internal::MarkCompactCollector::Record*
+   ...
+   fun:v8::internal::Heap::DoScavenge*
+   fun:v8::internal::Heap::Scavenge*
+   fun:v8::internal::Heap::PerformGarbageCollection
+   fun:v8::internal::Heap::CollectGarbage
+   fun:v8::internal::Heap::CollectGarbage
+   fun:v8::internal::Factory::NewStringFromUtf8
+   ...
+   fun:v8::String::NewFromUtf8
+}
+{
    bug_171547_b
    Heapcheck:Leak
    ...
