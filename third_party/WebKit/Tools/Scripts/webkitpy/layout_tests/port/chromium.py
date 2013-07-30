@@ -351,7 +351,7 @@ class ChromiumPort(Port):
                              ['--force-compositing-mode']),
             VirtualTestSuite('virtual/softwarecompositing',
                              'compositing',
-                             ['--enable-software-compositing']),
+                             ['--enable-software-compositing', '--disable-gpu-compositing']),
             VirtualTestSuite('virtual/deferred/fast/images',
                              'fast/images',
                              ['--enable-deferred-image-decoding', '--enable-per-tile-painting', '--force-compositing-mode']),
