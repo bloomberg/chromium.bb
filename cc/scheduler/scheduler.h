@@ -86,7 +86,7 @@ class CC_EXPORT Scheduler {
   void DidSwapUseIncompleteTile();
 
   void FinishCommit();
-  void BeginFrameAbortedByMainThread();
+  void BeginFrameAbortedByMainThread(bool did_handle);
 
   void DidLoseOutputSurface();
   void DidCreateAndInitializeOutputSurface();

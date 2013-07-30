@@ -1812,7 +1812,7 @@ class LayerTreeHostTestContinuousCommit : public LayerTreeHostTest {
   virtual void DidCommit() OVERRIDE {
     if (num_draw_layers_ == 2)
       return;
-    layer_tree_host()->root_layer()->SetNeedsDisplay();
+    layer_tree_host()->SetNeedsCommit();
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
@@ -3099,6 +3099,9 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
 
   virtual void SetupTree() OVERRIDE {
     layer_ = FakePictureLayer::Create(&client_);
+    // Force commits to not be aborted so new frames get drawn, otherwise
+    // the renderer gets deferred initialized but nothing new needs drawing.
+    layer_->set_always_update_resources(true);
     layer_tree_host()->SetRootLayer(layer_);
     LayerTreeHostTest::SetupTree();
   }
@@ -3395,9 +3398,11 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
         ++expected_push_properties_grandchild_;
         break;
       case 16:
+        // SetNeedsDisplay does not always set needs commit (so call it
+        // explicitly), but is a property change.
         child_->SetNeedsDisplay();
-        // The modified layer needs commit
         ++expected_push_properties_child_;
+        layer_tree_host()->SetNeedsCommit();
         break;
       case 17:
         EndTest();

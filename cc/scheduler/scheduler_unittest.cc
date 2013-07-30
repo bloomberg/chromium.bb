@@ -378,12 +378,17 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
                        client);
   client.Reset();
 
+  // Already sent a begin frame on this current frame, so wait.
+  scheduler->SetVisible(true);
+  EXPECT_EQ(0, client.num_actions_());
+  client.Reset();
+
   // Regaining visibility with textures acquired by main thread while
   // compositor is waiting for first draw should result in a request
   // for a new frame in order to escape a deadlock.
-  scheduler->SetVisible(true);
-  EXPECT_SINGLE_ACTION("ScheduledActionSendBeginFrameToMainThread", client);
-  client.Reset();
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 0, 2);
+  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
 }
 
 class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {

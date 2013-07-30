@@ -265,9 +265,28 @@ gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
   new_delta.SetToMax(min_delta);
   new_delta.SetToMin(max_delta);
   gfx::Vector2dF unscrolled = ScrollDelta() + scroll - new_delta;
-
   SetScrollDelta(new_delta);
   return unscrolled;
+}
+
+void LayerImpl::ApplySentScrollDeltas() {
+  // Pending tree never has sent scroll deltas
+  DCHECK(layer_tree_impl()->IsActiveTree());
+
+  // Apply sent scroll deltas to scroll position / scroll delta as if the
+  // main thread had applied them and then committed those values.
+  //
+  // This function should not change the total scroll offset; it just shifts
+  // some of the scroll delta to the scroll offset.  Therefore, adjust these
+  // variables directly rather than calling the scroll offset delegate to
+  // avoid sending it multiple spurious calls.
+  //
+  // Because of the way scroll delta is calculated with a delegate, this will
+  // leave the total scroll offset unchanged on this layer regardless of
+  // whether a delegate is being used.
+  scroll_offset_ += sent_scroll_delta_;
+  scroll_delta_ -= sent_scroll_delta_;
+  sent_scroll_delta_ = gfx::Vector2d();
 }
 
 InputHandler::ScrollStatus LayerImpl::TryScroll(
@@ -893,8 +912,8 @@ void LayerImpl::SetScrollDelta(gfx::Vector2dF scroll_delta) {
   } else {
     scroll_delta_ = scroll_delta;
   }
-  NoteLayerPropertyChangedForSubtree();
 
+  NoteLayerPropertyChangedForSubtree();
   UpdateScrollbarPositions();
 }
 

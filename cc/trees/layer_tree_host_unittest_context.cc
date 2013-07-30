@@ -286,6 +286,7 @@ class LayerTreeHostContextTestLostContextSucceeds
   virtual void InvalidateAndSetNeedsCommit() {
     // Cause damage so we try to draw.
     layer_tree_host()->root_layer()->SetNeedsDisplay();
+    layer_tree_host()->SetNeedsCommit();
   }
 
   bool NextTestCase() {

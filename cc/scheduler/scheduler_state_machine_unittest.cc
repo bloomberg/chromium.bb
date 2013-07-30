@@ -718,7 +718,7 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeFinishCommit) {
 
   // Become invisible and abort the main thread's begin frame.
   state.SetVisible(false);
-  state.BeginFrameAbortedByMainThread();
+  state.BeginFrameAbortedByMainThread(false);
 
   // We should now be back in the idle state as if we didn't start a frame at
   // all.
@@ -728,8 +728,14 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeFinishCommit) {
   // Become visible again.
   state.SetVisible(true);
 
-  // We should be beginning a frame now.
+  // Although we have aborted on this frame and haven't cancelled the commit
+  // (i.e. need another), don't send another begin frame yet.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
+  EXPECT_TRUE(state.NeedsCommit());
+
+  // Start a new frame.
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
             state.NextAction());
 
@@ -739,6 +745,52 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeFinishCommit) {
   // We should be starting the commit now.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
             state.CommitState());
+}
+
+TEST(SchedulerStateMachineTest, AbortBeginFrameAndCancelCommit) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.DidCreateAndInitializeOutputSurface();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  // Get into a begin frame / commit state.
+  state.SetNeedsCommit();
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
+  state.UpdateState(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
+            state.CommitState());
+  EXPECT_FALSE(state.NeedsCommit());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
+
+  // Abort the commit, cancelling future commits.
+  state.BeginFrameAbortedByMainThread(true);
+
+  // Verify that another commit doesn't start on the same frame.
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
+  EXPECT_FALSE(state.NeedsCommit());
+
+  // Start a new frame; draw because this is the first frame since output
+  // surface init'd.
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
+  state.DidLeaveBeginFrame();
+
+  // Verify another commit doesn't start on another frame either.
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
+  EXPECT_FALSE(state.NeedsCommit());
+
+  // Verify another commit can start if requested, though.
+  state.SetNeedsCommit();
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 }
 
 TEST(SchedulerStateMachineTest, TestFirstContextCreation) {
@@ -816,15 +868,23 @@ TEST(SchedulerStateMachineTest,
 
   // Recreate the context
   state.DidCreateAndInitializeOutputSurface();
+  EXPECT_FALSE(state.RedrawPending());
 
   // When the context is recreated, we should begin a commit
   EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
             state.NextAction());
   state.UpdateState(state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
+            state.CommitState());
+  state.FinishCommit();
+  EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
+  state.UpdateState(state.NextAction());
+  // Finishing the first commit after initializing an output surface should
+  // automatically cause a redraw.
+  EXPECT_TRUE(state.RedrawPending());
 
   // Once the context is recreated, whether we draw should be based on
   // SetCanDraw.
-  state.SetNeedsRedraw(true);
   state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.SetCanDraw(false);
@@ -1192,7 +1252,7 @@ TEST(SchedulerStateMachineTest,
 
   // Become invisible and abort the main thread's begin frame.
   state.SetVisible(false);
-  state.BeginFrameAbortedByMainThread();
+  state.BeginFrameAbortedByMainThread(false);
 
   // Should be back in the idle state, but needing a commit.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
@@ -1292,6 +1352,38 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawingFromAcquiredTextures) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
 
   state.UpdateState(state.NextAction());
+  EXPECT_FALSE(state.DrawSuspendedUntilCommit());
+}
+
+TEST(SchedulerStateMachineTest, AcquireTexturesWithAbort) {
+  SchedulerSettings default_scheduler_settings;
+  SchedulerStateMachine state(default_scheduler_settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanDraw(true);
+  state.SetVisible(true);
+
+  state.SetMainThreadNeedsLayerTextures();
+  EXPECT_EQ(
+      SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD,
+      state.NextAction());
+  state.UpdateState(state.NextAction());
+  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
+
+  state.SetNeedsCommit();
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
+  state.UpdateState(state.NextAction());
+  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
+
+  state.BeginFrameAbortedByMainThread(true);
+
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   EXPECT_FALSE(state.DrawSuspendedUntilCommit());
 }
 

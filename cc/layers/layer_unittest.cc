@@ -44,6 +44,7 @@ class MockLayerTreeHost : public LayerTreeHost {
   }
 
   MOCK_METHOD0(SetNeedsCommit, void());
+  MOCK_METHOD0(SetNeedsUpdateLayers, void());
   MOCK_METHOD0(SetNeedsFullTreeSync, void());
 };
 
@@ -467,7 +468,7 @@ TEST_F(LayerTest, GetRootLayerAfterTreeManipulations) {
 TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   // The semantics for SetNeedsDisplay which are tested here:
   //   1. sets NeedsDisplay flag appropriately.
-  //   2. indirectly calls SetNeedsCommit, exactly once for each call to
+  //   2. indirectly calls SetNeedsUpdate, exactly once for each call to
   //      SetNeedsDisplay.
 
   scoped_refptr<Layer> test_layer = Layer::Create();
@@ -497,7 +498,7 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   // Case 1: Layer should accept dirty rects that go beyond its bounds.
   test_layer->ResetNeedsDisplayForTesting();
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
-  EXPECT_SET_NEEDS_COMMIT(
+  EXPECT_SET_NEEDS_UPDATE(
       1, test_layer->SetNeedsDisplayRect(out_of_bounds_dirty_rect));
   EXPECT_TRUE(test_layer->NeedsDisplayForTesting());
   test_layer->ResetNeedsDisplayForTesting();
@@ -505,7 +506,7 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   // Case 2: SetNeedsDisplay() without the dirty rect arg.
   test_layer->ResetNeedsDisplayForTesting();
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetNeedsDisplay());
+  EXPECT_SET_NEEDS_UPDATE(1, test_layer->SetNeedsDisplay());
   EXPECT_TRUE(test_layer->NeedsDisplayForTesting());
   test_layer->ResetNeedsDisplayForTesting();
 
@@ -513,7 +514,7 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(false));
   test_layer->ResetNeedsDisplayForTesting();
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
-  EXPECT_SET_NEEDS_COMMIT(0, test_layer->SetNeedsDisplayRect(dirty1));
+  EXPECT_SET_NEEDS_UPDATE(0, test_layer->SetNeedsDisplayRect(dirty1));
   EXPECT_TRUE(test_layer->NeedsDisplayForTesting());
 }
 

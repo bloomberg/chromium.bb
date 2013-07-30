@@ -79,7 +79,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Indicates that the system has entered and left a BeginFrame callback.
   // The scheduler will not draw more than once in a given BeginFrame
-  // callback.
+  // callback nor send more than one BeginFrame message.
   void DidEnterBeginFrame(const BeginFrameArgs& args);
   void DidLeaveBeginFrame();
   bool inside_begin_frame() const { return inside_begin_frame_; }
@@ -120,8 +120,9 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Call this only in response to receiving an
   // ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD from NextAction if the client
-  // rejects the begin frame message.
-  void BeginFrameAbortedByMainThread();
+  // rejects the begin frame message.  If did_handle is false, then
+  // another commit will be retried soon.
+  void BeginFrameAbortedByMainThread(bool did_handle);
 
   // Request exclusive access to the textures that back single buffered
   // layers on behalf of the main thread. Upon acquisition,
@@ -168,6 +169,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool HasDrawnThisFrame() const;
   bool HasAttemptedTreeActivationThisFrame() const;
   bool HasUpdatedVisibleTilesThisFrame() const;
+  void SetPostCommitFlags();
 
   const SchedulerSettings settings_;
 
@@ -175,6 +177,7 @@ class CC_EXPORT SchedulerStateMachine {
   int commit_count_;
 
   int current_frame_number_;
+  int last_frame_number_where_begin_frame_sent_to_main_thread_;
   int last_frame_number_where_draw_was_called_;
   int last_frame_number_where_tree_activation_attempted_;
   int last_frame_number_where_update_visible_tiles_was_called_;
@@ -184,6 +187,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool swap_used_incomplete_tile_;
   bool needs_forced_redraw_;
   bool needs_forced_redraw_after_next_commit_;
+  bool needs_redraw_after_next_commit_;
   bool needs_commit_;
   bool needs_forced_commit_;
   bool expect_immediate_begin_frame_for_main_thread_;

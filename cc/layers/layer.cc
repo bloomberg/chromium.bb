@@ -121,6 +121,11 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     layer_tree_host_->set_needs_filter_context();
 }
 
+void Layer::SetNeedsUpdate() {
+  if (layer_tree_host_ && !ignore_set_needs_commit_)
+    layer_tree_host_->SetNeedsUpdateLayers();
+}
+
 void Layer::SetNeedsCommit() {
   if (!layer_tree_host_)
     return;
@@ -563,14 +568,17 @@ void Layer::SetScrollOffset(gfx::Vector2d scroll_offset) {
 
 void Layer::SetScrollOffsetFromImplSide(gfx::Vector2d scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
+  // This function only gets called during a begin frame, so there
+  // is no need to call SetNeedsUpdate here.
   DCHECK(layer_tree_host_ && layer_tree_host_->CommitRequested());
   if (scroll_offset_ == scroll_offset)
     return;
   scroll_offset_ = scroll_offset;
+  SetNeedsPushProperties();
   if (!did_scroll_callback_.is_null())
     did_scroll_callback_.Run();
-  // Note: didScroll() could potentially change the layer structure.
-  //       "this" may have been destroyed during the process.
+  // The callback could potentially change the layer structure:
+  // "this" may have been destroyed during the process.
 }
 
 void Layer::SetMaxScrollOffset(gfx::Vector2d max_scroll_offset) {
@@ -663,14 +671,16 @@ void Layer::SetHideLayerAndSubtree(bool hide) {
 }
 
 void Layer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
+  if (!update_rect_.Contains(dirty_rect)) {
+    SetNeedsPushProperties();
+  }
+
   update_rect_.Union(dirty_rect);
   needs_display_ = true;
 
-  // Simply mark the contents as dirty. For non-root layers, the call to
-  // SetNeedsCommit will schedule a fresh compositing pass.
-  // For the root layer, SetNeedsCommit has no effect.
-  if (DrawsContent() && !update_rect_.IsEmpty())
-    SetNeedsCommit();
+  if (DrawsContent() && !update_rect_.IsEmpty()) {
+    SetNeedsUpdate();
+  }
 }
 
 bool Layer::DescendantIsFixedToContainerLayer() const {

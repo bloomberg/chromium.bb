@@ -394,7 +394,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   Layer();
 
+  // These SetNeeds functions are in order of severity of update:
+  //
+  // Called when this layer has been modified in some way, but isn't sure
+  // that it needs a commit yet.  It needs CalcDrawProperties and UpdateLayers
+  // before it knows whether or not a commit is required.
+  void SetNeedsUpdate();
+  // Called when a property has been modified in a way that the layer
+  // knows immediately that a commit is required.  This implies SetNeedsUpdate
+  // as well as SetNeedsPushProperties to push that property.
   void SetNeedsCommit();
+  // Called when there's been a change in layer structure.  Implies both
+  // SetNeedsUpdate and SetNeedsCommit, but not SetNeedsPushProperties.
   void SetNeedsFullTreeSync();
   bool IsPropertyChangeAllowed() const;
 
@@ -435,7 +446,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int layer_id_;
 
   // When true, the layer is about to perform an update. Any commit requests
-  // will be handled implcitly after the update completes.
+  // will be handled implicitly after the update completes.
   bool ignore_set_needs_commit_;
 
  private:

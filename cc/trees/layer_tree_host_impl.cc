@@ -1180,8 +1180,10 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
   DCHECK(CanDraw());
 
-  if (frame->has_no_damage)
+  if (frame->has_no_damage) {
+    TRACE_EVENT0("cc", "EarlyOut_NoDamage");
     return;
+  }
 
   DCHECK(!frame->render_passes.empty());
 

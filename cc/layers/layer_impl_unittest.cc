@@ -482,5 +482,77 @@ TEST_F(LayerImplScrollTest, ScrollByWithAcceptingDelegate) {
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
 }
 
+TEST_F(LayerImplScrollTest, ApplySentScrollsNoDelegate) {
+  gfx::Vector2d max_scroll_offset(50, 80);
+  gfx::Vector2d scroll_offset(10, 5);
+  gfx::Vector2dF scroll_delta(20.5f, 8.5f);
+  gfx::Vector2d sent_scroll_delta(12, -3);
+
+  layer()->SetMaxScrollOffset(max_scroll_offset);
+  layer()->SetScrollOffset(scroll_offset);
+  layer()->ScrollBy(scroll_delta);
+  layer()->SetSentScrollDelta(sent_scroll_delta);
+
+  EXPECT_VECTOR_EQ(scroll_offset + scroll_delta, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_delta, layer()->ScrollDelta());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(sent_scroll_delta, layer()->sent_scroll_delta());
+
+  layer()->ApplySentScrollDeltas();
+
+  EXPECT_VECTOR_EQ(scroll_offset + scroll_delta, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_delta - sent_scroll_delta, layer()->ScrollDelta());
+  EXPECT_VECTOR_EQ(scroll_offset + sent_scroll_delta, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::Vector2d(), layer()->sent_scroll_delta());
+}
+
+TEST_F(LayerImplScrollTest, ApplySentScrollsWithIgnoringDelegate) {
+  gfx::Vector2d max_scroll_offset(50, 80);
+  gfx::Vector2d scroll_offset(10, 5);
+  gfx::Vector2d sent_scroll_delta(12, -3);
+  gfx::Vector2dF fixed_offset(32, 12);
+
+  layer()->SetMaxScrollOffset(max_scroll_offset);
+  layer()->SetScrollOffset(scroll_offset);
+  ScrollDelegateIgnore delegate;
+  delegate.set_fixed_offset(fixed_offset);
+  layer()->SetScrollOffsetDelegate(&delegate);
+  layer()->SetSentScrollDelta(sent_scroll_delta);
+
+  EXPECT_VECTOR_EQ(fixed_offset, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(sent_scroll_delta, layer()->sent_scroll_delta());
+
+  layer()->ApplySentScrollDeltas();
+
+  EXPECT_VECTOR_EQ(fixed_offset, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset + sent_scroll_delta, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::Vector2d(), layer()->sent_scroll_delta());
+}
+
+TEST_F(LayerImplScrollTest, ApplySentScrollsWithAcceptingDelegate) {
+  gfx::Vector2d max_scroll_offset(50, 80);
+  gfx::Vector2d scroll_offset(10, 5);
+  gfx::Vector2d sent_scroll_delta(12, -3);
+  gfx::Vector2dF scroll_delta(20.5f, 8.5f);
+
+  layer()->SetMaxScrollOffset(max_scroll_offset);
+  layer()->SetScrollOffset(scroll_offset);
+  ScrollDelegateAccept delegate;
+  layer()->SetScrollOffsetDelegate(&delegate);
+  layer()->ScrollBy(scroll_delta);
+  layer()->SetSentScrollDelta(sent_scroll_delta);
+
+  EXPECT_VECTOR_EQ(scroll_offset + scroll_delta, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(sent_scroll_delta, layer()->sent_scroll_delta());
+
+  layer()->ApplySentScrollDeltas();
+
+  EXPECT_VECTOR_EQ(scroll_offset + scroll_delta, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(scroll_offset + sent_scroll_delta, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::Vector2d(), layer()->sent_scroll_delta());
+}
+
 }  // namespace
 }  // namespace cc

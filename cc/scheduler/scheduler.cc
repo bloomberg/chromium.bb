@@ -85,9 +85,9 @@ void Scheduler::FinishCommit() {
   ProcessScheduledActions();
 }
 
-void Scheduler::BeginFrameAbortedByMainThread() {
+void Scheduler::BeginFrameAbortedByMainThread(bool did_handle) {
   TRACE_EVENT0("cc", "Scheduler::BeginFrameAbortedByMainThread");
-  state_machine_.BeginFrameAbortedByMainThread();
+  state_machine_.BeginFrameAbortedByMainThread(did_handle);
   ProcessScheduledActions();
 }
 
