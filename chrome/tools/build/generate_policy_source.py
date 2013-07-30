@@ -28,6 +28,8 @@ class PolicyDetails:
   # - the equivalent base::Value::Type
   # - the equivalent Protobuf field type
   # - the name of one of the protobufs for shared policy types
+  # TODO(joaodasilva): refactor the 'dict' type into a more generic 'json' type
+  # that can also be used to represent lists of other JSON objects.
   TYPE_MAP = {
     'dict':         ('TYPE_DICTIONARY',   'string',       'String'),
     'int':          ('TYPE_INTEGER',      'int64',        'Integer'),
@@ -448,18 +450,16 @@ base::ListValue* DecodeStringList(const em::StringList& string_list) {
   return list_value;
 }
 
-base::DictionaryValue* DecodeDictionaryValue(const std::string& json) {
+base::Value* DecodeJson(const std::string& json) {
   scoped_ptr<base::Value> root(
       base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS));
-  base::DictionaryValue* dict = NULL;
-  if (!root || !root->GetAsDictionary(&dict) || !dict) {
-    LOG(WARNING) << "Invalid JSON string, ignoring: " << json;
-    // TODO(bartfab): Figure out a way to show errors in chrome://policy.
-    return new base::DictionaryValue;
-  }
 
-  ignore_result(root.release());
-  return dict;
+  if (!root)
+    LOG(WARNING) << "Invalid JSON string, ignoring: " << json;
+
+  // Accept any Value type that parsed as JSON, and leave it to the handler to
+  // convert and check the concrete type.
+  return root.release();
 }
 
 void DecodePolicy(const em::CloudPolicySettings& policy, PolicyMap* map) {
@@ -482,7 +482,7 @@ def _CreateValue(type, arg):
   elif type == 'TYPE_LIST':
     return 'DecodeStringList(%s)' % arg
   elif type == 'TYPE_DICTIONARY':
-    return 'DecodeDictionaryValue(%s)' % arg
+    return 'DecodeJson(%s)' % arg
   else:
     raise NotImplementedError('Unknown type %s' % type)
 

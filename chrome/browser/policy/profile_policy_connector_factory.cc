@@ -7,14 +7,14 @@
 #include "base/logging.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
-#include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #endif
@@ -114,6 +114,11 @@ void ProfilePolicyConnectorFactory::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kUsedPolicyCertificatesOnce,
       false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
+#if defined(OS_ANDROID)
+  registry->RegisterListPref(
+      prefs::kManagedBookmarks,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 }

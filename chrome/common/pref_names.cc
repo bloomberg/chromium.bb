@@ -497,6 +497,11 @@ const char kUrlWhitelist[] = "policy.url_whitelist";
 // recorded on Android so that retries aren't attempted on every startup.
 // Instead the cloud policy registration is retried at least 1 or 3 days later.
 const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
+
+// A list of bookmarks to include in a Managed Bookmarks root node. Each
+// list item is a dictionary containig a "name" and an "url" entry, detailing
+// the bookmark name and target URL respectively.
+const char kManagedBookmarks[] = "policy.managed_bookmarks";
 #endif
 
 // Prefix URL for the experimental Instant ZeroSuggest provider.

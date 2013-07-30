@@ -23,6 +23,10 @@
 #include "chromeos/dbus/power_policy_controller.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/policy/configuration_policy_handler_android.h"
+#endif  // defined(OS_ANDROID)
+
 namespace policy {
 
 namespace {
@@ -570,6 +574,10 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
       NULL,
       0, ash::MAGNIFIER_FULL, false));
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+  handlers_.push_back(new ManagedBookmarksPolicyHandler());
+#endif
 }
 
 ConfigurationPolicyHandlerList::~ConfigurationPolicyHandlerList() {

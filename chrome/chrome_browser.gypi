@@ -1378,6 +1378,8 @@
         'browser/policy/config_dir_policy_loader.h',
         'browser/policy/configuration_policy_handler.cc',
         'browser/policy/configuration_policy_handler.h',
+        'browser/policy/configuration_policy_handler_android.cc',
+        'browser/policy/configuration_policy_handler_android.h',
         'browser/policy/configuration_policy_handler_list.cc',
         'browser/policy/configuration_policy_handler_list.h',
         'browser/policy/configuration_policy_pref_store.cc',

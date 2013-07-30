@@ -193,6 +193,7 @@ extern const char kUrlBlacklist[];
 extern const char kUrlWhitelist[];
 #if defined(OS_ANDROID)
 extern const char kLastPolicyCheckTime[];
+extern const char kManagedBookmarks[];
 #endif
 extern const char kInstantUIZeroSuggestUrlPrefix[];
 extern const char kMultipleProfilePrefMigration[];

@@ -6148,6 +6148,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_UNKNOWN" desc="Text displayed in the status column when a policy name is not recognized.">
         Unknown policy.
       </message>
+      <message name="IDS_POLICY_INVALID_BOOKMARK" desc="Text displayed in the status column when an entry of the ManagedBookmarks policy is not a valid bookmark.">
+        Ignored invalid bookmark at index <ph name="ENTRY_INDEX">$1<ex>3</ex></ph>
+      </message>
 
       <!-- chrome://policy -->
       <message name="IDS_POLICY_TITLE" desc="Page title and the title of the section that lists policies.">
@@ -6235,6 +6238,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_LEVEL_MANDATORY" desc="Text displayed in the Level column when a policy is mandatory.">
         Mandatory
       </message>
+
+      <if expr="is_android">
+        <message name="IDS_POLICY_MANAGED_BOOKMARKS" desc="Mobile: name of the managed bookmarks folder">
+          Managed bookmarks
+        </message>
+      </if>
 
       <!-- about:flags -->
       <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">

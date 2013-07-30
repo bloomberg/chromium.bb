@@ -5253,6 +5253,40 @@
         },
       ],
     },
+    # TODO(joaodasilva): replace the 'dict' type with a more generic
+    # 'json' type. The actual schema type for this should be 'array'.
+    {
+      'name': 'ManagedBookmarks',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'name': { 'type': 'string' },
+            'url': { 'type': 'string' },
+          },
+        },
+      },
+      'supported_on': ['android:30-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'future': True,
+      'example_value': { "name": "Google", "url": "google.com" },
+      'id': 227,
+      'caption': '''Managed Bookmarks''',
+      'desc': '''Configures a list of managed bookmarks.
+
+      The policy is a list of bookmarks, and each bookmark is a dictionary containing the bookmark "name" and target "url".
+
+      These bookmarks are placed in a Managed bookmarks folder inside the Mobile bookmarks. These bookmarks can't be modified by the user.
+
+      When this policy is set then the Managed bookmarks are the default folder opened when the bookmarks view is opened in Chrome.
+
+      Managed bookmarks are not synced to the user account.''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.

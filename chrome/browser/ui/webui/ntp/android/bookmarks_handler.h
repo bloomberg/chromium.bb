@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_NTP_ANDROID_BOOKMARKS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_NTP_ANDROID_BOOKMARKS_HANDLER_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/ui/webui/ntp/android/managed_bookmarks_shim.h"
 #include "chrome/browser/ui/webui/ntp/android/partner_bookmarks_shim.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -17,7 +19,7 @@
 // In Javascript if getBookmarks() is called without any parameter, the 'Other
 // Bookmark' folder and bookmark bar's bookmarks and folders are returned.
 // If getBookmarks() is called with a valid bookmark folder id, the given
-// folder's bookmarks and sub folders of are returned.
+// folder's bookmarks and sub folders of it are returned.
 //
 // All bookmarks and subfolder is returned by bookmarks() javascript callback
 // function.
@@ -46,7 +48,8 @@
 // }
 class BookmarksHandler : public content::WebUIMessageHandler,
                          public BaseBookmarkModelObserver,
-                         public PartnerBookmarksShim::Observer {
+                         public PartnerBookmarksShim::Observer,
+                         public ManagedBookmarksShim::Observer {
  public:
   BookmarksHandler();
   virtual ~BookmarksHandler();
@@ -87,12 +90,18 @@ class BookmarksHandler : public content::WebUIMessageHandler,
   virtual void PartnerShimLoaded(PartnerBookmarksShim* shim) OVERRIDE;
   virtual void ShimBeingDeleted(PartnerBookmarksShim* shim) OVERRIDE;
 
+  // Override the methods of ManagedBookmarksShim::Observer
+  virtual void OnManagedBookmarksChanged() OVERRIDE;
+
  private:
   // The bookmark model being observed (if it has been attached).
   BookmarkModel* bookmark_model_;
 
   // Information about the Partner bookmarks (must check for IsLoaded())
   PartnerBookmarksShim* partner_bookmarks_shim_;
+
+  // Contains the bookmarks managed via enterprise policy.
+  scoped_ptr<ManagedBookmarksShim> managed_bookmarks_shim_;
 
   // Whether the bookmark data has been requested by the UI yet.
   bool bookmark_data_requested_;
@@ -121,7 +130,7 @@ class BookmarksHandler : public content::WebUIMessageHandler,
                                  DictionaryValue* result);
 
   // Sends all bookmarks and sub folders in the given folder back to the NTP.
-  void QueryBookmarkFolder(const int64& id, bool is_partner_bookmark);
+  void QueryBookmarkFolder(const BookmarkNode* node);
 
   // Sends bookmark bar's bookmarks and sub folders and other folders back to
   // NTP.
@@ -135,6 +144,20 @@ class BookmarksHandler : public content::WebUIMessageHandler,
   void OnShortcutFaviconDataAvailable(
       const BookmarkNode* node,
       const chrome::FaviconBitmapResult& bitmap_result);
+
+  // Looks at an optional bookmark ID in |args| and returns the corresponding
+  // node if found, otherwise returns NULL.
+  const BookmarkNode* GetNodeByID(const base::ListValue* args) const;
+
+  // Returns the parent of |node|, or NULL if it's the root node.
+  const BookmarkNode* GetParentOf(const BookmarkNode* node) const;
+
+  // Returns true if |node| can be modified by the user.
+  bool IsEditable(const BookmarkNode* node) const;
+
+  // Returns true if |node| is the real root node (not the root node of the
+  // partner bookmarks shim nor the managed bookmark shim root).
+  bool IsRoot(const BookmarkNode* node) const;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);
 };

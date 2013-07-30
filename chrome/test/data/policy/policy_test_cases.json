@@ -1833,6 +1833,9 @@
   "ContentPackManualBehaviorURLs": {
   },
 
+  "ManagedBookmarks": {
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
