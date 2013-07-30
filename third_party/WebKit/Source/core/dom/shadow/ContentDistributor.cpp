@@ -372,14 +372,6 @@ void ContentDistributor::willAffectSelector(Element* host)
     invalidateDistribution(host);
 }
 
-void ContentDistributor::setNeedsStyleRecalcIfDistributedTo(InsertionPoint* insertionPoint)
-{
-    for (NodeInsertionPointMap::iterator i = m_nodeToInsertionPoint.begin(); i != m_nodeToInsertionPoint.end(); ++i) {
-        if (i->value == insertionPoint)
-            const_cast<Node*>(i->key)->setNeedsStyleRecalc(LocalStyleChange);
-    }
-}
-
 void ContentDistributor::didShadowBoundaryChange(Element* host)
 {
     setValidity(Undetermined);

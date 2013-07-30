@@ -79,10 +79,10 @@ void InsertionPoint::willRecalcStyle(StyleChange change)
 {
     if (change < Inherit)
         return;
-    if (ShadowRoot* shadowRoot = containingShadowRoot()) {
+    if (ShadowRoot* shadowRoot = containingShadowRoot())
         shadowRoot->host()->ensureDistribution();
-        shadowRoot->owner()->distributor().setNeedsStyleRecalcIfDistributedTo(this);
-    }
+    for (size_t i = 0; i < m_distribution.size(); ++i)
+        m_distribution.at(i)->setNeedsStyleRecalc(LocalStyleChange);
 }
 
 bool InsertionPoint::shouldUseFallbackElements() const

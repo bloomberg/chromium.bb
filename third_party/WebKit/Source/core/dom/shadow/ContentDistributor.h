@@ -122,7 +122,6 @@ public:
     void didShadowBoundaryChange(Element* host);
     void didAffectSelector(Element* host, AffectedSelectorMask);
     void willAffectSelector(Element* host);
-    void setNeedsStyleRecalcIfDistributedTo(InsertionPoint*);
 
     bool needsDistribution() const;
     void distribute(Element* host);
