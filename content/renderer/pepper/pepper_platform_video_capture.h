@@ -21,8 +21,8 @@ class VideoCaptureHandlerProxy;
 }
 
 namespace content {
+class PepperHelperImpl;
 class PepperMediaDeviceManager;
-class PepperPluginDelegateImpl;
 class PepperVideoCaptureHost;
 class RenderViewImpl;
 

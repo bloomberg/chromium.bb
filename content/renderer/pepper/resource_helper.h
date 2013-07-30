@@ -15,7 +15,7 @@ class Resource;
 
 namespace content {
 
-class PepperPluginDelegateImpl;
+class PepperHelperImpl;
 class PepperPluginInstanceImpl;
 class PluginModule;
 
@@ -37,8 +37,7 @@ class ResourceHelper {
 
   // Returns the plugin delegate for the given resource, or NULL if the
   // resource has outlived its instance.
-  static PepperPluginDelegateImpl* GetPluginDelegate(
-      const ::ppapi::Resource* resource);
+  static PepperHelperImpl* GetHelper(const ::ppapi::Resource* resource);
 
   // Returns the instance implementation object for the pp_instance.
   static PepperPluginInstanceImpl* PPInstanceToPluginInstance(

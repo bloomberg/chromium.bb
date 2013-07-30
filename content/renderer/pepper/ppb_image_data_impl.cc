@@ -255,8 +255,7 @@ bool ImageDataSimpleBackend::Init(PPB_ImageData_Impl* impl,
                                   bool init_to_zero) {
   skia_bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
                          impl->width(), impl->height());
-  PepperPluginDelegateImpl* plugin_delegate =
-      ResourceHelper::GetPluginDelegate(impl);
+  PepperHelperImpl* plugin_delegate = ResourceHelper::GetHelper(impl);
   if (!plugin_delegate)
     return false;
   shared_memory_.reset(RenderThread::Get()->HostAllocateSharedMemoryBuffer(

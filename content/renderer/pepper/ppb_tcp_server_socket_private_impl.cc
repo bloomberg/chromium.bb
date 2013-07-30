@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/ppb_tcp_socket_private_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -55,38 +55,37 @@ void PPB_TCPServerSocket_Private_Impl::OnAcceptCompleted(
 void PPB_TCPServerSocket_Private_Impl::SendListen(
     const PP_NetAddress_Private& addr,
     int32_t backlog) {
-  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate();
-  if (!plugin_delegate)
+  PepperHelperImpl* helper = GetHelper();
+  if (!helper)
     return;
 
-  plugin_delegate->Send(new PpapiHostMsg_PPBTCPServerSocket_Listen(
-      plugin_delegate->routing_id(), 0, pp_resource(), addr, backlog));
+  helper->Send(new PpapiHostMsg_PPBTCPServerSocket_Listen(
+      helper->routing_id(), 0, pp_resource(), addr, backlog));
 }
 
 void PPB_TCPServerSocket_Private_Impl::SendAccept() {
-  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate();
-  if (!plugin_delegate)
+  PepperHelperImpl* helper = GetHelper();
+  if (!helper)
     return;
 
-  plugin_delegate->Send(new PpapiHostMsg_PPBTCPServerSocket_Accept(
-      plugin_delegate->routing_id(), socket_id_));
+  helper->Send(new PpapiHostMsg_PPBTCPServerSocket_Accept(
+      helper->routing_id(), socket_id_));
 }
 
 void PPB_TCPServerSocket_Private_Impl::SendStopListening() {
-  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate();
-  if (!plugin_delegate)
+  PepperHelperImpl* helper = GetHelper();
+  if (!helper)
     return;
 
   if (socket_id_ != 0) {
-    plugin_delegate->Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(
+    helper->Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(
         socket_id_));
-    plugin_delegate->TCPServerSocketStopListening(socket_id_);
+    helper->TCPServerSocketStopListening(socket_id_);
   }
 }
 
-PepperPluginDelegateImpl*
-    PPB_TCPServerSocket_Private_Impl::GetPluginDelegate() {
-  return ResourceHelper::GetPluginDelegate(this);
+PepperHelperImpl* PPB_TCPServerSocket_Private_Impl::GetHelper() {
+  return ResourceHelper::GetHelper(this);
 }
 
 }  // namespace content

@@ -36,8 +36,8 @@
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
+#include "content/renderer/pepper_helper.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_view_pepper_helper.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/renderer/stats_collection_observer.h"
@@ -1540,7 +1540,7 @@ class CONTENT_EXPORT RenderViewImpl
   // NOTE: pepper_helper_ and stats_collection_observer_ should be the last
   // members because their constructors call the AddObservers method of
   // RenderViewImpl.
-  scoped_ptr<RenderViewPepperHelper> pepper_helper_;
+  scoped_ptr<PepperHelper> pepper_helper_;
   scoped_ptr<StatsCollectionObserver> stats_collection_observer_;
 
   ui::MenuSourceType context_menu_source_type_;

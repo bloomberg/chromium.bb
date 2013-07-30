@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -15,9 +15,8 @@
 
 namespace content {
 
-PepperBrowserConnection::PepperBrowserConnection(
-    PepperPluginDelegateImpl* plugin_delegate)
-    : plugin_delegate_(plugin_delegate),
+PepperBrowserConnection::PepperBrowserConnection(PepperHelperImpl* helper)
+    : helper_(helper),
       next_sequence_number_(1) {
 }
 
@@ -43,13 +42,12 @@ void PepperBrowserConnection::SendBrowserCreate(
   int32_t sequence_number = GetNextSequence();
   pending_create_map_[sequence_number] = callback;
   ppapi::proxy::ResourceMessageCallParams params(0, sequence_number);
-  plugin_delegate_->Send(
-      new PpapiHostMsg_CreateResourceHostFromHost(
-          plugin_delegate_->routing_id(),
-          child_process_id,
-          params,
-          instance,
-          nested_msg));
+  helper_->Send(new PpapiHostMsg_CreateResourceHostFromHost(
+      helper_->routing_id(),
+      child_process_id,
+      params,
+      instance,
+      nested_msg));
 }
 
 void PepperBrowserConnection::SendBrowserFileRefGetInfo(
@@ -59,9 +57,8 @@ void PepperBrowserConnection::SendBrowserFileRefGetInfo(
   int32_t sequence_number = GetNextSequence();
   get_info_map_[sequence_number] = callback;
   ppapi::proxy::ResourceMessageCallParams params(resource, sequence_number);
-  plugin_delegate_->Send(
-      new PpapiHostMsg_FileRef_GetInfoForRenderer(
-          plugin_delegate_->routing_id(), child_process_id, params));
+  helper_->Send(new PpapiHostMsg_FileRef_GetInfoForRenderer(
+      helper_->routing_id(), child_process_id, params));
 }
 
 void PepperBrowserConnection::OnMsgCreateResourceHostFromHostReply(

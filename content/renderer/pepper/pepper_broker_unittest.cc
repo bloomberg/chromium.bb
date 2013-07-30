@@ -38,7 +38,7 @@ TEST_F(PepperBrokerTest, InitFailure) {
 // On valid ChannelHandle, initialization should succeed.
 TEST_F(PepperBrokerTest, InitSuccess) {
   PepperBrokerDispatcherWrapper dispatcher_wrapper;
-  const char kChannelName[] = "PepperPluginDelegateImplTestChannelName";
+  const char kChannelName[] = "PepperHelperImplTestChannelName";
 #if defined(OS_POSIX)
   int fds[2] = {-1, -1};
   ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, fds));

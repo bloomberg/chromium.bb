@@ -29,10 +29,9 @@ PluginModule* ResourceHelper::GetPluginModule(
   return instance ? instance->module() : NULL;
 }
 
-PepperPluginDelegateImpl* ResourceHelper::GetPluginDelegate(
-    const ::ppapi::Resource* resource) {
+PepperHelperImpl* ResourceHelper::GetHelper(const ::ppapi::Resource* resource) {
   PepperPluginInstanceImpl* instance = GetPluginInstance(resource);
-  return instance ? instance->delegate() : NULL;
+  return instance ? instance->helper() : NULL;
 }
 
 }  // namespace content

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // This interface is used by RenderView to talk to the pepper plugin delegate.
-#ifndef CONTENT_RENDERER_RENDER_VIEW_PEPPER_HELPER_H
-#define CONTENT_RENDERER_RENDER_VIEW_PEPPER_HELPER_H
+#ifndef CONTENT_RENDERER_PEPPER_HELPER_H
+#define CONTENT_RENDERER_PEPPER_HELPER_H
 
 #include <string>
 #include <vector>
@@ -40,10 +40,10 @@ namespace content {
 class PepperPluginInstanceImpl;
 struct WebPluginInfo;
 
-class CONTENT_EXPORT RenderViewPepperHelper {
+class CONTENT_EXPORT PepperHelper {
  public:
-  RenderViewPepperHelper() {}
-  virtual ~RenderViewPepperHelper();
+  PepperHelper() {}
+  virtual ~PepperHelper();
 
   virtual WebKit::WebPlugin* CreatePepperWebPlugin(
       const WebPluginInfo& webplugin_info,
@@ -92,9 +92,9 @@ class CONTENT_EXPORT RenderViewPepperHelper {
   virtual void WillHandleMouseEvent() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RenderViewPepperHelper);
+  DISALLOW_COPY_AND_ASSIGN(PepperHelper);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_RENDER_VIEW_PEPPER_HELPER_H
+#endif  // CONTENT_RENDERER_PEPPER_HELPER_H

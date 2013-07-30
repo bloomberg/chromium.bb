@@ -532,12 +532,12 @@ bool PluginModule::SupportsInterface(const char* name) {
 }
 
 PepperPluginInstanceImpl* PluginModule::CreateInstance(
-    PepperPluginDelegateImpl* delegate,
+    PepperHelperImpl* helper,
     RenderViewImpl* render_view,
     WebKit::WebPluginContainer* container,
     const GURL& plugin_url) {
   PepperPluginInstanceImpl* instance = PepperPluginInstanceImpl::Create(
-      delegate, render_view, this, container, plugin_url);
+      helper, render_view, this, container, plugin_url);
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;

@@ -58,9 +58,8 @@ bool AppendFileRefToBody(
   const PPB_FileRef_Impl* file_ref =
       static_cast<PPB_FileRef_Impl*>(file_ref_api);
 
-  PepperPluginDelegateImpl* plugin_delegate =
-      ResourceHelper::GetPluginDelegate(file_ref_resource);
-  if (!plugin_delegate)
+  PepperHelperImpl* helper = ResourceHelper::GetHelper(file_ref_resource);
+  if (!helper)
     return false;
 
   base::FilePath platform_path;

@@ -107,7 +107,7 @@
 #include "content/renderer/media/webmediaplayer_params.h"
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/notification_provider.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_process.h"
@@ -961,9 +961,9 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   ProcessViewLayoutFlags(command_line);
 
 #if defined(ENABLE_PLUGINS)
-  pepper_helper_.reset(new PepperPluginDelegateImpl(this));
+  pepper_helper_.reset(new PepperHelperImpl(this));
 #else
-  pepper_helper_.reset(new RenderViewPepperHelper());
+  pepper_helper_.reset(new PepperHelper());
 #endif
 
   GetContentClient()->renderer()->RenderViewCreated(this);

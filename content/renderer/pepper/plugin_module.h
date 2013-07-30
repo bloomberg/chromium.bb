@@ -43,7 +43,7 @@ class WebPluginContainer;
 
 namespace content {
 class HostDispatcherWrapper;
-class PepperPluginDelegateImpl;
+class PepperHelperImpl;
 class PepperPluginInstanceImpl;
 class PepperBroker;
 class RendererPpapiHostImpl;
@@ -139,7 +139,7 @@ class CONTENT_EXPORT PluginModule :
   const ::ppapi::PpapiPermissions& permissions() const { return permissions_; }
 
   PepperPluginInstanceImpl* CreateInstance(
-      PepperPluginDelegateImpl* delegate,
+      PepperHelperImpl* helper,
       RenderViewImpl* render_view,
       WebKit::WebPluginContainer* container,
       const GURL& plugin_url);
@@ -147,7 +147,7 @@ class CONTENT_EXPORT PluginModule :
   // Returns "some" plugin instance associated with this module. This is not
   // guaranteed to be any one in particular. This is normally used to execute
   // callbacks up to the browser layer that are not inherently per-instance,
-  // but the delegate lives only on the plugin instance so we need one of them.
+  // but the helper lives only on the plugin instance so we need one of them.
   PepperPluginInstanceImpl* GetSomeInstance() const;
 
   const PluginInstanceSet& GetAllInstances() const { return instances_; }

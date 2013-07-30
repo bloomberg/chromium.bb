@@ -24,7 +24,7 @@ struct WebPrintParams;
 
 namespace content {
 
-class PepperPluginDelegateImpl;
+class PepperHelperImpl;
 class PepperPluginInstanceImpl;
 class PluginModule;
 class PPB_URLLoader_Impl;
@@ -35,7 +35,7 @@ class PepperWebPluginImpl : public WebKit::WebPlugin {
   PepperWebPluginImpl(
       PluginModule* module,
       const WebKit::WebPluginParams& params,
-      const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
+      const base::WeakPtr<PepperHelperImpl>& plugin_delegate,
       const base::WeakPtr<RenderViewImpl>& render_view);
 
   PepperPluginInstanceImpl* instance() { return instance_.get(); }

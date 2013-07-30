@@ -110,9 +110,9 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
   }
 };
 
-class MockRenderViewPepperHelper : public RenderViewPepperHelper {
+class MockPepperHelper : public PepperHelper {
  public:
-  MockRenderViewPepperHelper() : text_input_type_(ui::TEXT_INPUT_TYPE_NONE) {}
+  MockPepperHelper() : text_input_type_(ui::TEXT_INPUT_TYPE_NONE) {}
   virtual bool IsPluginFocused() const OVERRIDE {
     return true;
   }
@@ -1940,7 +1940,7 @@ TEST_F(RenderViewImplTest, BasicRenderFrame) {
 }
 
 TEST_F(RenderViewImplTest, TextInputTypeWithPepper) {
-  MockRenderViewPepperHelper* pepper_helper = new MockRenderViewPepperHelper();
+  MockPepperHelper* pepper_helper = new MockPepperHelper();
   pepper_helper->SetTextInputType(ui::TEXT_INPUT_TYPE_EMAIL);
   view()->pepper_helper_ .reset(pepper_helper);
 

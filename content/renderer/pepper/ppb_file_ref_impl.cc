@@ -11,7 +11,7 @@
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
@@ -238,7 +238,7 @@ PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Instance instance,
                                                    const std::string& path) {
   PepperPluginInstanceImpl* plugin_instance =
       ResourceHelper::PPInstanceToPluginInstance(instance);
-  if (!plugin_instance || !plugin_instance->delegate())
+  if (!plugin_instance || !plugin_instance->helper())
     return 0;
 
   ppapi::host::ResourceHost* host = GetResourceHostInternal(
@@ -466,7 +466,7 @@ int32_t PPB_FileRef_Impl::QueryInHost(
     // TODO(teravest): Use the SequencedWorkerPool instead.
     scoped_refptr<base::TaskRunner> task_runner =
         RenderThreadImpl::current()->GetFileThreadMessageLoopProxy();
-    if (!plugin_instance->delegate()->AsyncOpenFile(
+    if (!plugin_instance->helper()->AsyncOpenFile(
             GetSystemPath(),
             base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
             base::Bind(&QueryCallback, task_runner, info, callback)))

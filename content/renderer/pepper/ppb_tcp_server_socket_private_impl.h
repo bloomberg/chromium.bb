@@ -9,7 +9,7 @@
 #include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
 
 namespace content {
-class PepperPluginDelegateImpl;
+class PepperHelperImpl;
 
 class PPB_TCPServerSocket_Private_Impl
     : public ::ppapi::PPB_TCPServerSocket_Shared {
@@ -31,7 +31,7 @@ class PPB_TCPServerSocket_Private_Impl
   PPB_TCPServerSocket_Private_Impl(PP_Instance instance);
   virtual ~PPB_TCPServerSocket_Private_Impl();
 
-  PepperPluginDelegateImpl* GetPluginDelegate();
+  PepperHelperImpl* GetHelper();
 
   DISALLOW_COPY_AND_ASSIGN(PPB_TCPServerSocket_Private_Impl);
 };

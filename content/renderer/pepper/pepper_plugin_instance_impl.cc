@@ -27,8 +27,8 @@
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
+#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
@@ -352,7 +352,7 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
 
 // static
 PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
-    PepperPluginDelegateImpl* delegate,
+    PepperHelperImpl* helper,
     RenderViewImpl* render_view,
     PluginModule* module,
     WebPluginContainer* container,
@@ -363,7 +363,7 @@ PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
       PPP_Instance_Combined::Create(get_plugin_interface_func);
   if (!ppp_instance_combined)
     return NULL;
-  return new PepperPluginInstanceImpl(delegate, render_view, module,
+  return new PepperPluginInstanceImpl(helper, render_view, module,
                                       ppp_instance_combined, container,
                                       plugin_url);
 }
@@ -413,10 +413,9 @@ void PepperPluginInstanceImpl::NaClDocumentLoader::didFail(
   error_.reset(new WebURLError(error));
 }
 
-PepperPluginInstanceImpl::GamepadImpl::GamepadImpl(
-    PepperPluginDelegateImpl* delegate)
+PepperPluginInstanceImpl::GamepadImpl::GamepadImpl(PepperHelperImpl* helper)
     : Resource(::ppapi::Resource::Untracked()),
-      delegate_(delegate) {
+      helper_(helper) {
 }
 
 PepperPluginInstanceImpl::GamepadImpl::~GamepadImpl() {
@@ -430,19 +429,19 @@ void PepperPluginInstanceImpl::GamepadImpl::Sample(
     PP_Instance instance,
     PP_GamepadsSampleData* data) {
   WebKit::WebGamepads webkit_data;
-  delegate_->SampleGamepads(&webkit_data);
+  helper_->SampleGamepads(&webkit_data);
   ConvertWebKitGamepadData(
       *reinterpret_cast<const ::ppapi::WebKitGamepads*>(&webkit_data), data);
 }
 
 PepperPluginInstanceImpl::PepperPluginInstanceImpl(
-    PepperPluginDelegateImpl* delegate,
+    PepperHelperImpl* helper,
     RenderViewImpl* render_view,
     PluginModule* module,
     ::ppapi::PPP_Instance_Combined* instance_interface,
     WebPluginContainer* container,
     const GURL& plugin_url)
-    : delegate_(delegate),
+    : helper_(helper),
       render_view_(render_view),
       module_(module),
       instance_interface_(instance_interface),
@@ -469,7 +468,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       checked_for_plugin_input_event_interface_(false),
       checked_for_plugin_messaging_interface_(false),
       checked_for_plugin_pdf_interface_(false),
-      gamepad_impl_(new GamepadImpl(delegate)),
+      gamepad_impl_(new GamepadImpl(helper)),
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
@@ -495,8 +494,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
   module_->InstanceCreated(this);
 
-  if (delegate_)
-    delegate_->InstanceCreated(this);
+  if (helper_)
+    helper_->InstanceCreated(this);
 
   if (render_view)  // NULL in tests
     view_data_.is_page_visible = !render_view->is_hidden();
@@ -533,8 +532,8 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   if (TrackedCallback::IsPending(lock_mouse_callback_))
     lock_mouse_callback_->Abort();
 
-  if (delegate_)
-    delegate_->InstanceDeleted(this);
+  if (helper_)
+    helper_->InstanceDeleted(this);
   UnSetAndDeleteLockTargetAdapter();
   module_->InstanceDeleted(this);
   // If we switched from the NaCl plugin module, notify it too.
@@ -718,7 +717,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
       container()->element().document().frame()->stopLoading();
       return false;
     }
-    delegate_->HandleDocumentLoad(this, response);
+    helper_->HandleDocumentLoad(this, response);
     // If the load was not abandoned, document_loader_ will now be set. It's
     // possible that the load was canceled by now and document_loader_ was
     // already nulled out.
@@ -893,7 +892,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
 
   if (WebInputEvent::isMouseEventType(event.type)) {
-    delegate_->DidReceiveMouseEvent(this);
+    helper_->DidReceiveMouseEvent(this);
   }
 
   // Don't dispatch input events to crashed plugins.
@@ -1333,10 +1332,10 @@ bool PepperPluginInstanceImpl::PluginHasFocus() const {
 void PepperPluginInstanceImpl::SendFocusChangeNotification() {
   // This call can happen during PepperPluginIn>stanceImpl destruction, because
   // WebKit informs the plugin it's losing focus. See crbug.com/236574
-  if (!delegate_ || !instance_interface_)
+  if (!helper_ || !instance_interface_)
     return;
   bool has_focus = PluginHasFocus();
-  delegate_->PluginFocusChanged(this, has_focus);
+  helper_->PluginFocusChanged(this, has_focus);
   instance_interface_->DidChangeFocus(pp_instance(), PP_FromBool(has_focus));
 }
 
@@ -2345,7 +2344,7 @@ void PepperPluginInstanceImpl::SetTextInputType(PP_Instance instance,
   if (itype < 0 || itype > ui::TEXT_INPUT_TYPE_URL)
     itype = ui::TEXT_INPUT_TYPE_NONE;
   text_input_type_ = static_cast<ui::TextInputType>(itype);
-  delegate_->PluginTextInputTypeChanged(this);
+  helper_->PluginTextInputTypeChanged(this);
 }
 
 void PepperPluginInstanceImpl::UpdateCaretPosition(
@@ -2355,11 +2354,11 @@ void PepperPluginInstanceImpl::UpdateCaretPosition(
   text_input_caret_ = PP_ToGfxRect(caret);
   text_input_caret_bounds_ = PP_ToGfxRect(bounding_box);
   text_input_caret_set_ = true;
-  delegate_->PluginCaretPositionChanged(this);
+  helper_->PluginCaretPositionChanged(this);
 }
 
 void PepperPluginInstanceImpl::CancelCompositionText(PP_Instance instance) {
-  delegate_->PluginRequestedCancelComposition(this);
+  helper_->PluginRequestedCancelComposition(this);
 }
 
 void PepperPluginInstanceImpl::SelectionChanged(PP_Instance instance) {
@@ -2385,7 +2384,7 @@ void PepperPluginInstanceImpl::UpdateSurroundingText(PP_Instance instance,
   surrounding_text_ = text;
   selection_caret_ = caret;
   selection_anchor_ = anchor;
-  delegate_->PluginSelectionChanged(this);
+  helper_->PluginSelectionChanged(this);
 }
 
 PP_Var PepperPluginInstanceImpl::ResolveRelativeToDocument(
@@ -2611,7 +2610,7 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::SwitchToOutOfProcessProxy(
       module_->CreateModuleForExternalPluginInstance());
 
   RendererPpapiHost* renderer_ppapi_host =
-      delegate_->CreateExternalPluginModule(
+      helper_->CreateExternalPluginModule(
           external_plugin_module,
           file_path,
           permissions,
@@ -2636,7 +2635,7 @@ void PepperPluginInstanceImpl::DoSetCursor(WebCursorInfo* cursor) {
   if (fullscreen_container_) {
     fullscreen_container_->DidChangeCursor(*cursor);
   } else {
-    delegate_->DidChangeCursor(this, *cursor);
+    helper_->DidChangeCursor(this, *cursor);
   }
 }
 

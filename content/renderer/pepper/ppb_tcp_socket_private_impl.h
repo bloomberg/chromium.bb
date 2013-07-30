@@ -12,7 +12,7 @@
 
 namespace content {
 
-class PepperPluginDelegateImpl;
+class PepperHelperImpl;
 
 class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl {
  public:
@@ -41,7 +41,7 @@ class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl {
   PPB_TCPSocket_Private_Impl(PP_Instance instance, uint32 socket_id);
   virtual ~PPB_TCPSocket_Private_Impl();
 
-  static PepperPluginDelegateImpl* GetPluginDelegate(PP_Instance instance);
+  static PepperHelperImpl* GetHelper(PP_Instance instance);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_TCPSocket_Private_Impl);
 };

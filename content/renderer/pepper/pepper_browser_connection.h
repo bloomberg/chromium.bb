@@ -17,7 +17,7 @@
 
 namespace content {
 
-class PepperPluginDelegateImpl;
+class PepperHelperImpl;
 
 // This class represents a connection from the renderer to the browser for
 // sending/receiving pepper ResourceHost related messages. When the browser
@@ -30,7 +30,7 @@ class PepperBrowserConnection {
                               std::string,
                               base::FilePath)> FileRefGetInfoCallback;
 
-  explicit PepperBrowserConnection(PepperPluginDelegateImpl* plugin_delegate);
+  explicit PepperBrowserConnection(PepperHelperImpl* helper);
   virtual ~PepperBrowserConnection();
 
   bool OnMessageReceived(const IPC::Message& message);
@@ -65,8 +65,8 @@ class PepperBrowserConnection {
   // Return the next sequence number.
   int32_t GetNextSequence();
 
-  // The plugin delegate that owns us.
-  PepperPluginDelegateImpl* plugin_delegate_;
+  // The plugin helper that owns us.
+  PepperHelperImpl* helper_;
 
   // Sequence number to track pending callbacks.
   int32_t next_sequence_number_;

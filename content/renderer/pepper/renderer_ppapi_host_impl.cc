@@ -12,9 +12,9 @@
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
+#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/render_view_impl.h"
@@ -128,13 +128,13 @@ RendererPpapiHostImpl::GetBrowserConnection(PP_Instance instance) const {
   if (!instance_object)
     return NULL;
 
-  // Since we're the embedder, we can make assumptions about the delegate on
+  // Since we're the embedder, we can make assumptions about the helper on
   // the instance.
-  PepperPluginDelegateImpl* delegate = instance_object->delegate();
-  if (!delegate)
+  PepperHelperImpl* helper = instance_object->helper();
+  if (!helper)
     return NULL;
 
-  return delegate->pepper_browser_connection();
+  return helper->pepper_browser_connection();
 }
 
 PepperPluginInstanceImpl* RendererPpapiHostImpl::GetPluginInstanceImpl(
@@ -152,9 +152,9 @@ RenderView* RendererPpapiHostImpl::GetRenderViewForInstance(
   if (!instance_object)
     return NULL;
 
-  // Since we're the embedder, we can make assumptions about the delegate on
+  // Since we're the embedder, we can make assumptions about the helper on
   // the instance and get back to our RenderView.
-  return instance_object->delegate()->render_view();
+  return instance_object->helper()->render_view();
 }
 
 bool RendererPpapiHostImpl::IsValidInstance(PP_Instance instance) const {

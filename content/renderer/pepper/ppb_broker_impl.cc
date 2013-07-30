@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/pepper_broker.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/resource_helper.h"
@@ -66,7 +66,7 @@ int32_t PPB_Broker_Impl::Connect(
   // ConnectToBroker fails.
   connect_callback_ = connect_callback;
 
-  broker_ = plugin_instance->delegate()->ConnectToBroker(this);
+  broker_ = plugin_instance->helper()->ConnectToBroker(this);
   if (!broker_) {
     connect_callback_->Abort();
     return PP_ERROR_FAILED;

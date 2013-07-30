@@ -16,7 +16,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "content/renderer/pepper/quota_file_io.h"
@@ -227,12 +227,11 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
       base::Bind(&DidOpenFileSystemURL, callback),
       base::Bind(&DidFailOpenFileSystemURL, callback));
   } else {
-    PepperPluginDelegateImpl* plugin_delegate =
-        static_cast<PepperPluginInstanceImpl*>(
-            PepperPluginInstance::Get(pp_instance()))->delegate();
-    if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL || !plugin_delegate)
+    PepperHelperImpl* helper = static_cast<PepperPluginInstanceImpl*>(
+        PepperPluginInstance::Get(pp_instance()))->helper();
+    if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL || !helper)
       return PP_ERROR_FAILED;
-    if (!plugin_delegate->AsyncOpenFile(
+    if (!helper->AsyncOpenFile(
             file_ref->GetSystemPath(), flags,
             base::Bind(&PepperFileIOHost::ExecutePlatformOpenFileCallback,
                        weak_factory_.GetWeakPtr(),
