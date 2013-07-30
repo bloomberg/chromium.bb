@@ -132,7 +132,6 @@ cr.define('ntp', function() {
       if (this.ownerDocument.activeElement != this.input_)
         this.focus();
 
-      chrome.send('introMessageDismissed');
       e.stopPropagation();
     },
 
