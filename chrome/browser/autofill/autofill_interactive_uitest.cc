@@ -331,8 +331,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   AutofillManagerTestDelegateImpl test_delegate_;
 };
 
-// Temporarily renabled to help track down flakiness. crbug.com/150084
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
+// http://crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DISABLED_AutofillSelectViaTab) {
   CreateTestProfile();
 
   // Load the test page.
