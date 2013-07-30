@@ -8,6 +8,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
+#include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

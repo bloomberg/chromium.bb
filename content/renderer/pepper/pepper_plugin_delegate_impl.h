@@ -17,11 +17,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/render_view_pepper_helper.h"
 #include "ppapi/c/pp_file_info.h"
+#include "ppapi/c/ppb_tcp_socket.h"
+#include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 #include "ui/base/ime/text_input_type.h"
@@ -76,7 +77,18 @@ class PepperPluginDelegateImpl
   // Removes broker from pending_connect_broker_ if present. Returns true if so.
   bool StopWaitingForBrokerConnection(PepperBroker* broker);
 
-  CONTENT_EXPORT int GetRoutingID() const;
+  void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket, uint32 socket_id);
+  void UnregisterTCPSocket(uint32 socket_id);
+  void TCPServerSocketStopListening(uint32 socket_id);
+
+  // Notifies that |instance| has changed the cursor.
+  // This will update the cursor appearance if it is currently over the plugin
+  // instance.
+  void DidChangeCursor(PepperPluginInstanceImpl* instance,
+                       const WebKit::WebCursorInfo& cursor);
+
+  // Notifies that |instance| has received a mouse event.
+  void DidReceiveMouseEvent(PepperPluginInstanceImpl* instance);
 
  private:
   // RenderViewPepperHelper implementation.
@@ -120,7 +132,6 @@ class PepperPluginDelegateImpl
       PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void PluginSelectionChanged(
       PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual void PluginCrashed(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void InstanceCreated(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void InstanceDeleted(PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual bool AsyncOpenFile(const base::FilePath& path,
@@ -128,46 +139,6 @@ class PepperPluginDelegateImpl
                              const AsyncOpenFileCallback& callback) OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy() OVERRIDE;
-  virtual uint32 TCPSocketCreate() OVERRIDE;
-  virtual void TCPSocketConnect(PPB_TCPSocket_Private_Impl* socket,
-                                uint32 socket_id,
-                                const std::string& host,
-                                uint16_t port) OVERRIDE;
-  virtual void TCPSocketConnectWithNetAddress(
-      PPB_TCPSocket_Private_Impl* socket,
-      uint32 socket_id,
-      const PP_NetAddress_Private& addr) OVERRIDE;
-  virtual void TCPSocketSSLHandshake(
-      uint32 socket_id,
-      const std::string& server_name,
-      uint16_t server_port,
-      const std::vector<std::vector<char> >& trusted_certs,
-      const std::vector<std::vector<char> >& untrusted_certs) OVERRIDE;
-  virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read) OVERRIDE;
-  virtual void TCPSocketWrite(uint32 socket_id,
-                              const std::string& buffer) OVERRIDE;
-  virtual void TCPSocketDisconnect(uint32 socket_id) OVERRIDE;
-  virtual void TCPSocketSetOption(
-      uint32 socket_id,
-      PP_TCPSocket_Option name,
-      const ppapi::SocketOptionData& value) OVERRIDE;
-  virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
-                                 uint32 socket_id) OVERRIDE;
-  virtual void TCPServerSocketListen(
-      PP_Resource socket_resource,
-      const PP_NetAddress_Private& addr,
-      int32_t backlog) OVERRIDE;
-  virtual void TCPServerSocketAccept(uint32 server_socket_id) OVERRIDE;
-  virtual void TCPServerSocketStopListening(
-      PP_Resource socket_resource,
-      uint32 socket_id) OVERRIDE;
-  virtual bool LockMouse(PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual void UnlockMouse(PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual bool IsMouseLocked(PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual void DidChangeCursor(PepperPluginInstanceImpl* instance,
-                               const WebKit::WebCursorInfo& cursor) OVERRIDE;
-  virtual void DidReceiveMouseEvent(
-      PepperPluginInstanceImpl* instance) OVERRIDE;
   virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
   virtual void HandleDocumentLoad(
       PepperPluginInstanceImpl* instance,
@@ -249,13 +220,6 @@ class PepperPluginDelegateImpl
       int plugin_child_id,
       bool is_external);
 
-  MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter(
-      PepperPluginInstanceImpl* instance);
-  void UnSetAndDeleteLockTargetAdapter(PepperPluginInstanceImpl* instance);
-
-  MouseLockDispatcher* GetMouseLockDispatcher(
-      PepperPluginInstanceImpl* instance);
-
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;
 
@@ -264,9 +228,6 @@ class PepperPluginDelegateImpl
   PepperBrowserConnection pepper_browser_connection_;
 
   std::set<PepperPluginInstanceImpl*> active_instances_;
-  typedef std::map<PepperPluginInstanceImpl*,
-                   MouseLockDispatcher::LockTarget*> LockTargetMap;
-  LockTargetMap mouse_lock_instances_;
 
   IDMap<AsyncOpenFileCallback> pending_async_open_files_;
 

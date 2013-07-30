@@ -43,9 +43,9 @@ void PepperBrowserConnection::SendBrowserCreate(
   int32_t sequence_number = GetNextSequence();
   pending_create_map_[sequence_number] = callback;
   ppapi::proxy::ResourceMessageCallParams params(0, sequence_number);
-  plugin_delegate_->render_view()->Send(
+  plugin_delegate_->Send(
       new PpapiHostMsg_CreateResourceHostFromHost(
-          plugin_delegate_->GetRoutingID(),
+          plugin_delegate_->routing_id(),
           child_process_id,
           params,
           instance,
@@ -59,9 +59,9 @@ void PepperBrowserConnection::SendBrowserFileRefGetInfo(
   int32_t sequence_number = GetNextSequence();
   get_info_map_[sequence_number] = callback;
   ppapi::proxy::ResourceMessageCallParams params(resource, sequence_number);
-  plugin_delegate_->render_view()->Send(
+  plugin_delegate_->Send(
       new PpapiHostMsg_FileRef_GetInfoForRenderer(
-          plugin_delegate_->GetRoutingID(), child_process_id, params));
+          plugin_delegate_->routing_id(), child_process_id, params));
 }
 
 void PepperBrowserConnection::OnMsgCreateResourceHostFromHostReply(

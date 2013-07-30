@@ -92,29 +92,6 @@ namespace content {
 
 namespace {
 
-class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
- public:
-  PluginInstanceLockTarget(PepperPluginInstanceImpl* plugin)
-      : plugin_(plugin) {}
-
-  virtual void OnLockMouseACK(bool succeeded) OVERRIDE {
-    plugin_->OnLockMouseACK(succeeded);
-  }
-
-  virtual void OnMouseLockLost() OVERRIDE {
-    plugin_->OnMouseLockLost();
-  }
-
-  virtual bool HandleMouseLockedInputEvent(
-      const WebKit::WebMouseEvent &event) OVERRIDE {
-    plugin_->HandleMouseLockedInputEvent(event);
-    return true;
-  }
-
- private:
-  PepperPluginInstanceImpl* plugin_;
-};
-
 void CreateHostForInProcessModule(RenderViewImpl* render_view,
                                   PluginModule* module,
                                   const WebPluginInfo& webplugin_info) {
@@ -143,7 +120,6 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
 }
 
 PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
-  DCHECK(mouse_lock_instances_.empty());
 }
 
 WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePepperWebPlugin(
@@ -509,13 +485,6 @@ bool PepperPluginDelegateImpl::CanComposeInline() const {
   return IsPluginAcceptingCompositionEvents();
 }
 
-void PepperPluginDelegateImpl::PluginCrashed(
-    PepperPluginInstanceImpl* instance) {
-  render_view_->PluginCrashed(instance->module()->path(),
-                              instance->module()->GetPeerProcessId());
-  UnSetAndDeleteLockTargetAdapter(instance);
-}
-
 void PepperPluginDelegateImpl::InstanceCreated(
     PepperPluginInstanceImpl* instance) {
   active_instances_.insert(instance);
@@ -527,7 +496,6 @@ void PepperPluginDelegateImpl::InstanceCreated(
 void PepperPluginDelegateImpl::InstanceDeleted(
     PepperPluginInstanceImpl* instance) {
   active_instances_.erase(instance);
-  UnSetAndDeleteLockTargetAdapter(instance);
 
   if (last_mouse_event_target_ == instance)
     last_mouse_event_target_ = NULL;
@@ -647,101 +615,21 @@ PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
   return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy();
 }
 
-uint32 PepperPluginDelegateImpl::TCPSocketCreate() {
-  // This was used for PPB_TCPSocket_Private creation. And it shouldn't be
-  // needed anymore.
-  // TODO(yzshen): Remove TCP socket-related contents from the plugin delegate.
-  uint32 socket_id = 0;
-  Send(new PpapiHostMsg_PPBTCPSocket_CreatePrivate(
-      routing_id(), 0, &socket_id));
-  return socket_id;
-}
-
-void PepperPluginDelegateImpl::TCPSocketConnect(
-    PPB_TCPSocket_Private_Impl* socket,
-    uint32 socket_id,
-    const std::string& host,
-    uint16_t port) {
-  RegisterTCPSocket(socket, socket_id);
-  Send(new PpapiHostMsg_PPBTCPSocket_Connect(
-      routing_id(), socket_id, host, port));
-}
-
-void PepperPluginDelegateImpl::TCPSocketConnectWithNetAddress(
-      PPB_TCPSocket_Private_Impl* socket,
-      uint32 socket_id,
-      const PP_NetAddress_Private& addr) {
-  RegisterTCPSocket(socket, socket_id);
-  Send(new PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress(
-      routing_id(), socket_id, addr));
-}
-
-void PepperPluginDelegateImpl::TCPSocketSSLHandshake(
-    uint32 socket_id,
-    const std::string& server_name,
-    uint16_t server_port,
-    const std::vector<std::vector<char> >& trusted_certs,
-    const std::vector<std::vector<char> >& untrusted_certs) {
-  DCHECK(tcp_sockets_.Lookup(socket_id));
-  Send(new PpapiHostMsg_PPBTCPSocket_SSLHandshake(
-      socket_id, server_name, server_port, trusted_certs, untrusted_certs));
-}
-
-void PepperPluginDelegateImpl::TCPSocketRead(uint32 socket_id,
-                                             int32_t bytes_to_read) {
-  DCHECK(tcp_sockets_.Lookup(socket_id));
-  Send(new PpapiHostMsg_PPBTCPSocket_Read(socket_id, bytes_to_read));
-}
-
-void PepperPluginDelegateImpl::TCPSocketWrite(uint32 socket_id,
-                                              const std::string& buffer) {
-  DCHECK(tcp_sockets_.Lookup(socket_id));
-  Send(new PpapiHostMsg_PPBTCPSocket_Write(socket_id, buffer));
-}
-
-void PepperPluginDelegateImpl::TCPSocketDisconnect(uint32 socket_id) {
-  // There is no DCHECK(tcp_sockets_.Lookup(socket_id)) because this method
-  // can be called before TCPSocketConnect or TCPSocketConnectWithNetAddress.
-  Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id));
-  if (tcp_sockets_.Lookup(socket_id))
-    tcp_sockets_.Remove(socket_id);
-}
-
-void PepperPluginDelegateImpl::TCPSocketSetOption(
-    uint32 socket_id,
-    PP_TCPSocket_Option name,
-    const ppapi::SocketOptionData& value) {
-  DCHECK(tcp_sockets_.Lookup(socket_id));
-  Send(new PpapiHostMsg_PPBTCPSocket_SetOption(socket_id, name, value));
-}
-
 void PepperPluginDelegateImpl::RegisterTCPSocket(
     PPB_TCPSocket_Private_Impl* socket,
     uint32 socket_id) {
   tcp_sockets_.AddWithID(socket, socket_id);
 }
 
-void PepperPluginDelegateImpl::TCPServerSocketListen(
-    PP_Resource socket_resource,
-    const PP_NetAddress_Private& addr,
-    int32_t backlog) {
-  Send(new PpapiHostMsg_PPBTCPServerSocket_Listen(
-      routing_id(), 0, socket_resource, addr, backlog));
+void PepperPluginDelegateImpl::UnregisterTCPSocket(uint32 socket_id) {
+  // There is no DCHECK(tcp_sockets_.Lookup(socket_id)) because this method
+  // can be called before TCPSocketConnect or TCPSocketConnectWithNetAddress.
+  if (tcp_sockets_.Lookup(socket_id))
+    tcp_sockets_.Remove(socket_id);
 }
 
-void PepperPluginDelegateImpl::TCPServerSocketAccept(uint32 server_socket_id) {
-  DCHECK(tcp_server_sockets_.Lookup(server_socket_id));
-  Send(new PpapiHostMsg_PPBTCPServerSocket_Accept(
-      routing_id(), server_socket_id));
-}
-
-void PepperPluginDelegateImpl::TCPServerSocketStopListening(
-    PP_Resource socket_resource,
-    uint32 socket_id) {
-  if (socket_id != 0) {
-    Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id));
-    tcp_server_sockets_.Remove(socket_id);
-  }
+void PepperPluginDelegateImpl::TCPServerSocketStopListening(uint32 socket_id) {
+  tcp_server_sockets_.Remove(socket_id);
 }
 
 void PepperPluginDelegateImpl::HandleDocumentLoad(
@@ -817,22 +705,6 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
                                   peer_pid,
                                   plugin_child_id,
                                   true);  // is_external = true
-}
-
-bool PepperPluginDelegateImpl::LockMouse(PepperPluginInstanceImpl* instance) {
-  return GetMouseLockDispatcher(instance)->LockMouse(
-      GetOrCreateLockTargetAdapter(instance));
-}
-
-void PepperPluginDelegateImpl::UnlockMouse(PepperPluginInstanceImpl* instance) {
-  GetMouseLockDispatcher(instance)->UnlockMouse(
-      GetOrCreateLockTargetAdapter(instance));
-}
-
-bool PepperPluginDelegateImpl::IsMouseLocked(
-    PepperPluginInstanceImpl* instance) {
-  return GetMouseLockDispatcher(instance)->IsMouseLockedTo(
-      GetOrCreateLockTargetAdapter(instance));
 }
 
 void PepperPluginDelegateImpl::DidChangeCursor(
@@ -977,44 +849,6 @@ void PepperPluginDelegateImpl::OnTCPServerSocketAcceptACK(
                               remote_addr);
   } else if (accepted_socket_id != 0) {
     Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(accepted_socket_id));
-  }
-}
-
-int PepperPluginDelegateImpl::GetRoutingID() const {
-  return routing_id();
-}
-
-MouseLockDispatcher::LockTarget*
-    PepperPluginDelegateImpl::GetOrCreateLockTargetAdapter(
-    PepperPluginInstanceImpl* instance) {
-  MouseLockDispatcher::LockTarget* target = mouse_lock_instances_[instance];
-  if (target)
-    return target;
-
-  return mouse_lock_instances_[instance] =
-      new PluginInstanceLockTarget(instance);
-}
-
-void PepperPluginDelegateImpl::UnSetAndDeleteLockTargetAdapter(
-    PepperPluginInstanceImpl* instance) {
-  LockTargetMap::iterator it = mouse_lock_instances_.find(instance);
-  if (it != mouse_lock_instances_.end()) {
-    MouseLockDispatcher::LockTarget* target = it->second;
-    GetMouseLockDispatcher(instance)->OnLockTargetDestroyed(target);
-    delete target;
-    mouse_lock_instances_.erase(it);
-  }
-}
-
-MouseLockDispatcher* PepperPluginDelegateImpl::GetMouseLockDispatcher(
-    PepperPluginInstanceImpl* instance) {
-  if (instance->flash_fullscreen()) {
-    RenderWidgetFullscreenPepper* container =
-        static_cast<RenderWidgetFullscreenPepper*>(
-            instance->fullscreen_container());
-    return container->mouse_lock_dispatcher();
-  } else {
-    return render_view_->mouse_lock_dispatcher();
   }
 }
 

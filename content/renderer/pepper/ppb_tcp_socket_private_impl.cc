@@ -4,10 +4,13 @@
 
 #include "content/renderer/pepper/ppb_tcp_socket_private_impl.h"
 
+#include "content/common/pepper_messages.h"
 #include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/resource_helper.h"
+#include "content/renderer/render_thread_impl.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/socket_option_data.h"
 
 namespace content {
@@ -22,11 +25,13 @@ PPB_TCPSocket_Private_Impl::~PPB_TCPSocket_Private_Impl() {
 }
 
 PP_Resource PPB_TCPSocket_Private_Impl::CreateResource(PP_Instance instance) {
-  PluginDelegate* plugin_delegate = GetPluginDelegate(instance);
+  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate(instance);
   if (!plugin_delegate)
     return 0;
 
-  uint32 socket_id = plugin_delegate->TCPSocketCreate();
+  uint32 socket_id = 0;
+  plugin_delegate->Send(new PpapiHostMsg_PPBTCPSocket_CreatePrivate(
+      plugin_delegate->routing_id(), 0, &socket_id));
   if (!socket_id)
     return 0;
 
@@ -38,7 +43,7 @@ PP_Resource PPB_TCPSocket_Private_Impl::CreateConnectedSocket(
     uint32 socket_id,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
-  PluginDelegate* plugin_delegate = GetPluginDelegate(instance);
+  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate(instance);
   if (!plugin_delegate)
     return 0;
 
@@ -56,20 +61,24 @@ PP_Resource PPB_TCPSocket_Private_Impl::CreateConnectedSocket(
 
 void PPB_TCPSocket_Private_Impl::SendConnect(const std::string& host,
                                              uint16_t port) {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate(pp_instance());
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPSocketConnect(this, socket_id_, host, port);
+  plugin_delegate->RegisterTCPSocket(this, socket_id_);
+  plugin_delegate->Send(new PpapiHostMsg_PPBTCPSocket_Connect(
+      plugin_delegate->routing_id(), socket_id_, host, port));
 }
 
 void PPB_TCPSocket_Private_Impl::SendConnectWithNetAddress(
     const PP_NetAddress_Private& addr) {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate(pp_instance());
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPSocketConnectWithNetAddress(this, socket_id_, addr);
+  plugin_delegate->RegisterTCPSocket(this, socket_id_);
+  plugin_delegate->Send(new PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress(
+      plugin_delegate->routing_id(), socket_id_, addr));
 }
 
 void PPB_TCPSocket_Private_Impl::SendSSLHandshake(
@@ -77,56 +86,59 @@ void PPB_TCPSocket_Private_Impl::SendSSLHandshake(
     uint16_t server_port,
     const std::vector<std::vector<char> >& trusted_certs,
     const std::vector<std::vector<char> >& untrusted_certs) {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate(pp_instance());
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPSocketSSLHandshake(socket_id_, server_name, server_port,
-                                         trusted_certs, untrusted_certs);
+  plugin_delegate->Send(new PpapiHostMsg_PPBTCPSocket_SSLHandshake(
+      socket_id_, server_name, server_port, trusted_certs, untrusted_certs));
 }
 
 void PPB_TCPSocket_Private_Impl::SendRead(int32_t bytes_to_read) {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate(pp_instance());
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPSocketRead(socket_id_, bytes_to_read);
+  plugin_delegate->Send(new PpapiHostMsg_PPBTCPSocket_Read(
+      socket_id_, bytes_to_read));
 }
 
 
 void PPB_TCPSocket_Private_Impl::SendWrite(const std::string& buffer) {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate(pp_instance());
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPSocketWrite(socket_id_, buffer);
+  plugin_delegate->Send(new PpapiHostMsg_PPBTCPSocket_Write(
+      socket_id_, buffer));
 }
 
 void PPB_TCPSocket_Private_Impl::SendDisconnect() {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate(pp_instance());
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPSocketDisconnect(socket_id_);
+  plugin_delegate->Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id_));
 }
 
 void PPB_TCPSocket_Private_Impl::SendSetOption(
     PP_TCPSocket_Option name,
     const ::ppapi::SocketOptionData& value) {
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  PepperPluginDelegateImpl* plugin_delegate = GetPluginDelegate(pp_instance());
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPSocketSetOption(socket_id_, name, value);
+  plugin_delegate->Send(new PpapiHostMsg_PPBTCPSocket_SetOption(
+      socket_id_, name, value));
 }
 
-PluginDelegate* PPB_TCPSocket_Private_Impl::GetPluginDelegate(
+PepperPluginDelegateImpl* PPB_TCPSocket_Private_Impl::GetPluginDelegate(
     PP_Instance instance) {
   PepperPluginInstanceImpl* plugin_instance =
       HostGlobals::Get()->GetInstance(instance);
   if (!plugin_instance)
     return NULL;
-  return plugin_instance->delegate();
+  return static_cast<PepperPluginDelegateImpl*>(plugin_instance->delegate());
 }
 
 }  // namespace content

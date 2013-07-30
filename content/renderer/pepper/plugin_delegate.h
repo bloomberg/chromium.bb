@@ -24,9 +24,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/c/private/ppb_flash.h"
-#include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/shared_impl/dir_contents.h"
 #include "ui/gfx/size.h"
@@ -110,11 +108,6 @@ class PluginDelegate {
   // Notification that the text selection in the given plugin is changed.
   virtual void PluginSelectionChanged(PepperPluginInstanceImpl* instance) = 0;
 
-  // Notification that the given plugin has crashed. When a plugin crashes, all
-  // instances associated with that plugin will notify that they've crashed via
-  // this function.
-  virtual void PluginCrashed(PepperPluginInstanceImpl* instance) = 0;
-
   // Indicates that the given instance has been created.
   virtual void InstanceCreated(PepperPluginInstanceImpl* instance) = 0;
 
@@ -134,66 +127,6 @@ class PluginDelegate {
   // of the file thread in this renderer.
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy() = 0;
-
-  // For PPB_TCPSocket_Private.
-  virtual uint32 TCPSocketCreate() = 0;
-  virtual void TCPSocketConnect(PPB_TCPSocket_Private_Impl* socket,
-                                uint32 socket_id,
-                                const std::string& host,
-                                uint16_t port) = 0;
-  virtual void TCPSocketConnectWithNetAddress(
-      PPB_TCPSocket_Private_Impl* socket,
-      uint32 socket_id,
-      const PP_NetAddress_Private& addr) = 0;
-  virtual void TCPSocketSSLHandshake(
-      uint32 socket_id,
-      const std::string& server_name,
-      uint16_t server_port,
-      const std::vector<std::vector<char> >& trusted_certs,
-      const std::vector<std::vector<char> >& untrusted_certs) = 0;
-  virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read) = 0;
-  virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer) = 0;
-  virtual void TCPSocketDisconnect(uint32 socket_id) = 0;
-  virtual void TCPSocketSetOption(uint32 socket_id,
-                                  PP_TCPSocket_Option name,
-                                  const ::ppapi::SocketOptionData& value) = 0;
-  virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
-                                 uint32 socket_id) = 0;
-
-  // For PPB_TCPServerSocket_Private.
-  virtual void TCPServerSocketListen(PP_Resource socket_resource,
-                                     const PP_NetAddress_Private& addr,
-                                     int32_t backlog) = 0;
-  virtual void TCPServerSocketAccept(uint32 server_socket_id) = 0;
-  virtual void TCPServerSocketStopListening(
-      PP_Resource socket_resource,
-      uint32 socket_id) = 0;
-
-  // Locks the mouse for |instance|. If false is returned, the lock is not
-  // possible. If true is returned then the lock is pending. Success or
-  // failure will be delivered asynchronously via
-  // PluginInstance::OnLockMouseACK().
-  virtual bool LockMouse(PepperPluginInstanceImpl* instance) = 0;
-
-  // Unlocks the mouse if |instance| currently owns the mouse lock. Whenever an
-  // plugin instance has lost the mouse lock, it will be notified by
-  // PluginInstance::OnMouseLockLost(). Please note that UnlockMouse() is not
-  // the only cause of losing mouse lock. For example, a user may press the Esc
-  // key to quit the mouse lock mode, which also results in an OnMouseLockLost()
-  // call to the current mouse lock owner.
-  virtual void UnlockMouse(PepperPluginInstanceImpl* instance) = 0;
-
-  // Returns true iff |instance| currently owns the mouse lock.
-  virtual bool IsMouseLocked(PepperPluginInstanceImpl* instance) = 0;
-
-  // Notifies that |instance| has changed the cursor.
-  // This will update the cursor appearance if it is currently over the plugin
-  // instance.
-  virtual void DidChangeCursor(PepperPluginInstanceImpl* instance,
-                               const WebKit::WebCursorInfo& cursor) = 0;
-
-  // Notifies that |instance| has received a mouse event.
-  virtual void DidReceiveMouseEvent(PepperPluginInstanceImpl* instance) = 0;
 
   // Retrieve current gamepad data.
   virtual void SampleGamepads(WebKit::WebGamepads* data) = 0;

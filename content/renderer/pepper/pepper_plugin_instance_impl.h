@@ -18,6 +18,7 @@
 #include "cc/layers/texture_layer_client.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
+#include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/ppp_pdf.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
@@ -640,6 +641,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void SetSizeAttributesForFullscreen();
   void ResetSizeAttributesAfterFullscreen();
 
+  bool IsMouseLocked();
+  bool LockMouse();
+  MouseLockDispatcher* GetMouseLockDispatcher();
+  MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter();
+  void UnSetAndDeleteLockTargetAdapter();
+
   PluginDelegate* delegate_;
   RenderViewImpl* render_view_;
   scoped_refptr<PluginModule> module_;
@@ -845,6 +852,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // We store the isolate at construction so that we can be sure to use the
   // Isolate in which this Instance was created when interacting with v8.
   v8::Isolate* isolate_;
+
+  scoped_ptr<MouseLockDispatcher::LockTarget> lock_target_;
 
   friend class PpapiPluginInstanceTest;
   DISALLOW_COPY_AND_ASSIGN(PepperPluginInstanceImpl);

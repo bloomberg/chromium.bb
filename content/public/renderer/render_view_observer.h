@@ -102,15 +102,15 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
- protected:
-  explicit RenderViewObserver(RenderView* render_view);
-  virtual ~RenderViewObserver();
-
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   RenderView* render_view() const;
   int routing_id() const { return routing_id_; }
+
+ protected:
+  explicit RenderViewObserver(RenderView* render_view);
+  virtual ~RenderViewObserver();
 
  private:
   friend class RenderViewImpl;

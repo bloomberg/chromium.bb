@@ -324,6 +324,30 @@ scoped_ptr<const char*[]> StringVectorToArgArray(
   return array.Pass();
 }
 
+class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
+ public:
+  PluginInstanceLockTarget(PepperPluginInstanceImpl* plugin)
+      : plugin_(plugin) {}
+
+  virtual void OnLockMouseACK(bool succeeded) OVERRIDE {
+    plugin_->OnLockMouseACK(succeeded);
+  }
+
+  virtual void OnMouseLockLost() OVERRIDE {
+    plugin_->OnMouseLockLost();
+  }
+
+  virtual bool HandleMouseLockedInputEvent(
+      const WebKit::WebMouseEvent &event) OVERRIDE {
+    plugin_->HandleMouseLockedInputEvent(event);
+    return true;
+  }
+
+ private:
+  PepperPluginInstanceImpl* plugin_;
+};
+
+
 }  // namespace
 
 // static
@@ -508,6 +532,7 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
     lock_mouse_callback_->Abort();
 
   delegate_->InstanceDeleted(this);
+  UnSetAndDeleteLockTargetAdapter();
   module_->InstanceDeleted(this);
   // If we switched from the NaCl plugin module, notify it too.
   if (original_module_.get())
@@ -619,7 +644,8 @@ void PepperPluginInstanceImpl::InstanceCrashed() {
   BindGraphics(pp_instance(), 0);
   InvalidateRect(gfx::Rect());
 
-  delegate()->PluginCrashed(this);
+  render_view_->PluginCrashed(module_->path(), module_->GetPeerProcessId());
+  UnSetAndDeleteLockTargetAdapter();
 }
 
 static void SetGPUHistogram(const ::ppapi::Preferences& prefs,
@@ -863,8 +889,10 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     WebCursorInfo* cursor_info) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
 
-  if (WebInputEvent::isMouseEventType(event.type))
-    delegate()->DidReceiveMouseEvent(this);
+  if (WebInputEvent::isMouseEventType(event.type)) {
+    static_cast<PepperPluginDelegateImpl*>(delegate_)->DidReceiveMouseEvent(
+        this);
+  }
 
   // Don't dispatch input events to crashed plugins.
   if (module()->is_crashed())
@@ -1586,7 +1614,7 @@ void PepperPluginInstanceImpl::UpdateFlashFullscreenState(
 
   bool old_plugin_focus = PluginHasFocus();
   flash_fullscreen_ = flash_fullscreen;
-  if (is_mouselock_pending && !delegate()->IsMouseLocked(this)) {
+  if (is_mouselock_pending && !IsMouseLocked()) {
     if (!IsProcessingUserGesture() &&
         !module_->permissions().HasPermission(
             ::ppapi::PERMISSION_BYPASS_USER_GESTURE)) {
@@ -1595,7 +1623,7 @@ void PepperPluginInstanceImpl::UpdateFlashFullscreenState(
       // Open a user gesture here so the Webkit user gesture checks will succeed
       // for out-of-process plugins.
       WebScopedUserGesture user_gesture(CurrentUserGestureToken());
-      if (!delegate()->LockMouse(this))
+      if (!LockMouse())
         lock_mouse_callback_->Run(PP_ERROR_FAILED);
     }
   }
@@ -2281,7 +2309,7 @@ int32_t PepperPluginInstanceImpl::LockMouse(
   if (TrackedCallback::IsPending(lock_mouse_callback_))
     return PP_ERROR_INPROGRESS;
 
-  if (delegate()->IsMouseLocked(this))
+  if (IsMouseLocked())
     return PP_OK;
 
   if (!CanAccessMainFrame())
@@ -2292,11 +2320,11 @@ int32_t PepperPluginInstanceImpl::LockMouse(
 
   // Attempt mouselock only if Flash isn't waiting on fullscreen, otherwise
   // we wait and call LockMouse() in UpdateFlashFullscreenState().
-  if (!FlashIsFullscreenOrPending() || flash_fullscreen()) {
+  if (!FlashIsFullscreenOrPending() || flash_fullscreen_) {
     // Open a user gesture here so the Webkit user gesture checks will succeed
     // for out-of-process plugins.
     WebScopedUserGesture user_gesture(CurrentUserGestureToken());
-    if (!delegate()->LockMouse(this))
+    if (!LockMouse())
       return PP_ERROR_FAILED;
   }
 
@@ -2306,7 +2334,7 @@ int32_t PepperPluginInstanceImpl::LockMouse(
 }
 
 void PepperPluginInstanceImpl::UnlockMouse(PP_Instance instance) {
-  delegate()->UnlockMouse(this);
+  GetMouseLockDispatcher()->UnlockMouse(GetOrCreateLockTargetAdapter());
 }
 
 void PepperPluginInstanceImpl::SetTextInputType(PP_Instance instance,
@@ -2606,7 +2634,8 @@ void PepperPluginInstanceImpl::DoSetCursor(WebCursorInfo* cursor) {
   if (fullscreen_container_) {
     fullscreen_container_->DidChangeCursor(*cursor);
   } else {
-    delegate()->DidChangeCursor(this, *cursor);
+    static_cast<PepperPluginDelegateImpl*>(delegate_)->DidChangeCursor(
+        this, *cursor);
   }
 }
 
@@ -2758,6 +2787,40 @@ void PepperPluginInstanceImpl::ResetSizeAttributesAfterFullscreen() {
   element.setAttribute(WebString::fromUTF8(kHeight), height_before_fullscreen_);
   element.setAttribute(WebString::fromUTF8(kBorder), border_before_fullscreen_);
   element.setAttribute(WebString::fromUTF8(kStyle), style_before_fullscreen_);
+}
+
+bool PepperPluginInstanceImpl::IsMouseLocked() {
+  return GetMouseLockDispatcher()->IsMouseLockedTo(
+      GetOrCreateLockTargetAdapter());
+}
+
+bool PepperPluginInstanceImpl::LockMouse() {
+  return GetMouseLockDispatcher()->LockMouse(GetOrCreateLockTargetAdapter());
+}
+
+MouseLockDispatcher::LockTarget*
+    PepperPluginInstanceImpl::GetOrCreateLockTargetAdapter() {
+  if (!lock_target_.get()) {
+    lock_target_.reset(new PluginInstanceLockTarget(this));
+  }
+  return lock_target_.get();
+}
+
+MouseLockDispatcher* PepperPluginInstanceImpl::GetMouseLockDispatcher() {
+  if (flash_fullscreen_) {
+    RenderWidgetFullscreenPepper* container =
+        static_cast<RenderWidgetFullscreenPepper*>(fullscreen_container_);
+    return container->mouse_lock_dispatcher();
+  } else {
+    return render_view_->mouse_lock_dispatcher();
+  }
+}
+
+void PepperPluginInstanceImpl::UnSetAndDeleteLockTargetAdapter() {
+  if (lock_target_.get()) {
+    GetMouseLockDispatcher()->OnLockTargetDestroyed(lock_target_.get());
+    lock_target_.reset();
+  }
 }
 
 }  // namespace content
