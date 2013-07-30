@@ -30,6 +30,8 @@ PASS: typeof window.setInterval should be object and is.
 PASS: typeof window.clearInterval should be object and is.
 PASS: typeof window.addEventListener should be object and is.
 PASS: typeof window.removeEventListener should be object and is.
+PASS: typeof window.captureEvents should be object and is.
+PASS: typeof window.releaseEvents should be object and is.
 FAIL: typeof window.eval should be object but instead is function
 FAIL: typeof window.parseInt should be object but instead is function
 FAIL: typeof window.parseFloat should be object but instead is function

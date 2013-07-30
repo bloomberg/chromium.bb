@@ -348,6 +348,9 @@ namespace WebCore {
         DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkittransitionend, webkitTransitionEnd);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend);
 
+        void captureEvents() { }
+        void releaseEvents() { }
+
         void finishedLoading();
 
         using RefCounted<DOMWindow>::ref;

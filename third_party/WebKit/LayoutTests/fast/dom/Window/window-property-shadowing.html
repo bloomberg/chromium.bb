@@ -127,6 +127,10 @@
         log(setInterval == 1 ? "PASS: setInterval successfully shadowed" : "FAIL: setInterval was not shadowed");
         var clearInterval = 1;
         log(clearInterval == 1 ? "PASS: clearInterval successfully shadowed" : "FAIL: clearInterval was not shadowed");
+        var captureEvents = 1;
+        log(captureEvents == 1 ? "PASS: captureEvents successfully shadowed" : "FAIL: captureEvents was not shadowed");
+        var releaseEvents = 1;
+        log(releaseEvents == 1 ? "PASS: releaseEvents successfully shadowed" : "FAIL: releaseEvents was not shadowed");
         var addEventListener = 1;
         log(addEventListener == 1 ? "PASS: addEventListener successfully shadowed" : "FAIL: addEventListener was not shadowed");
         var removeEventListener = 1;

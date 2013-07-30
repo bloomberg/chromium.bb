@@ -272,6 +272,9 @@
     [EnabledAtRuntime=deviceMotion] attribute EventListener ondevicemotion;
     [EnabledAtRuntime=deviceOrientation] attribute EventListener ondeviceorientation;
 
+    [DeprecateAs=CaptureEvents] void captureEvents();
+    [DeprecateAs=ReleaseEvents] void releaseEvents();
+
     // Additional constructors.
     attribute TransitionEventConstructor WebKitTransitionEvent;
     [CustomConstructor] attribute HTMLImageElementConstructorConstructor Image; // Usable with new operator

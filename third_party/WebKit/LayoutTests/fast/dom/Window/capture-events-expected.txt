@@ -1,0 +1,2 @@
+CONSOLE MESSAGE: captureEvents() is deprecated. This method doesn't do anything.
+Tests the deprecation warning of Window captureEvents

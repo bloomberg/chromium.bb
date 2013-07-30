@@ -63,6 +63,9 @@ public:
 
     void clear();
 
+    void captureEvents() { }
+    void releaseEvents() { }
+
     void addNamedItem(const AtomicString& name);
     void removeNamedItem(const AtomicString& name);
     bool hasNamedItem(StringImpl* name);

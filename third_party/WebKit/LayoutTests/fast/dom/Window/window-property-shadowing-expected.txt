@@ -53,6 +53,8 @@ PASS: blur successfully shadowed
 PASS: close successfully shadowed
 PASS: setInterval successfully shadowed
 PASS: clearInterval successfully shadowed
+PASS: captureEvents successfully shadowed
+PASS: releaseEvents successfully shadowed
 PASS: addEventListener successfully shadowed
 PASS: removeEventListener successfully shadowed
 PASS: showModalDialog successfully shadowed

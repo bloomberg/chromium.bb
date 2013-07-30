@@ -1,0 +1,2 @@
+CONSOLE MESSAGE: releaseEvents() is deprecated. This method doesn't do anything.
+Tests the deprecation warning of Window releaseEvents

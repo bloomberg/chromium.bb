@@ -112,6 +112,7 @@ PASS: canGetDescriptor(targetWindow, 'addEventListener') should be 'false' and i
 PASS: canGetDescriptor(targetWindow, 'alert') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'atob') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'btoa') should be 'false' and is.
+PASS: canGetDescriptor(targetWindow, 'captureEvents') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'clearInterval') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'clearTimeout') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'confirm') should be 'false' and is.
@@ -124,6 +125,7 @@ PASS: canGetDescriptor(targetWindow, 'moveTo') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'open') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'print') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'prompt') should be 'false' and is.
+PASS: canGetDescriptor(targetWindow, 'releaseEvents') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'removeEventListener') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'resizeBy') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'resizeTo') should be 'false' and is.

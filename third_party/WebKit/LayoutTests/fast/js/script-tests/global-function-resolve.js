@@ -3,6 +3,7 @@ description("Test to make sure cached lookups on the global object are performed
 var functionNames = [
     'addEventListener',
     'alert',
+    'captureEvents',
     'clearInterval',
     'clearTimeout',
     'clientInformation',
@@ -39,6 +40,7 @@ var functionNames = [
     'pageYOffset',
     'parent',
     'prompt',
+    'releaseEvents',
     'removeEventListener',
     'resizeBy',
     'resizeTo',

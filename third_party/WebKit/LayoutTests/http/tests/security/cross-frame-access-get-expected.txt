@@ -132,6 +132,7 @@ PASS: canGet('targetWindow.addEventListener') should be 'false' and is.
 PASS: canGet('targetWindow.alert') should be 'false' and is.
 PASS: canGet('targetWindow.atob') should be 'false' and is.
 PASS: canGet('targetWindow.btoa') should be 'false' and is.
+PASS: canGet('targetWindow.captureEvents') should be 'false' and is.
 PASS: canGet('targetWindow.clearInterval') should be 'false' and is.
 PASS: canGet('targetWindow.clearTimeout') should be 'false' and is.
 PASS: canGet('targetWindow.confirm') should be 'false' and is.
@@ -145,6 +146,7 @@ PASS: canGet('targetWindow.moveTo') should be 'false' and is.
 PASS: canGet('targetWindow.open') should be 'false' and is.
 PASS: canGet('targetWindow.print') should be 'false' and is.
 PASS: canGet('targetWindow.prompt') should be 'false' and is.
+PASS: canGet('targetWindow.releaseEvents') should be 'false' and is.
 PASS: canGet('targetWindow.removeEventListener') should be 'false' and is.
 PASS: canGet('targetWindow.resizeBy') should be 'false' and is.
 PASS: canGet('targetWindow.resizeTo') should be 'false' and is.

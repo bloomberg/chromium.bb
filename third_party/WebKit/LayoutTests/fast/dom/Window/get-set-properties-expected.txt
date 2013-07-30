@@ -195,6 +195,8 @@ PASS: canGet('atob') should be 'true' and is.
 PASS: canSet('atob') should be 'true' and is.
 PASS: canGet('btoa') should be 'true' and is.
 PASS: canSet('btoa') should be 'true' and is.
+PASS: canGet('captureEvents') should be 'true' and is.
+PASS: canSet('captureEvents') should be 'true' and is.
 PASS: canGet('clearInterval') should be 'true' and is.
 PASS: canSet('clearInterval') should be 'true' and is.
 PASS: canGet('clearTimeout') should be 'true' and is.
@@ -360,6 +362,8 @@ PASS: canGet('print') should be 'true' and is.
 PASS: canSet('print') should be 'true' and is.
 PASS: canGet('prompt') should be 'true' and is.
 PASS: canSet('prompt') should be 'true' and is.
+PASS: canGet('releaseEvents') should be 'true' and is.
+PASS: canSet('releaseEvents') should be 'true' and is.
 PASS: canGet('removeEventListener') should be 'true' and is.
 PASS: canSet('removeEventListener') should be 'true' and is.
 PASS: canGet('resizeBy') should be 'true' and is.

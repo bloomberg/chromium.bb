@@ -33,6 +33,8 @@ var windowFunctions = [
     "addEventListener",
     "removeEventListener",
     "showModalDialog",
+    "captureEvents",
+    "releaseEvents",
 
     // Functions from the Global Object
     "eval",

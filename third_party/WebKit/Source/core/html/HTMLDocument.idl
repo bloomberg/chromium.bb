@@ -36,6 +36,9 @@
 
     [DeprecateAs=DocumentClear] void clear();
 
+    [DeprecateAs=CaptureEvents] void captureEvents();
+    [DeprecateAs=ReleaseEvents] void releaseEvents();
+
     [TreatNullAs=NullString] attribute DOMString dir;
     [TreatNullAs=NullString] attribute DOMString designMode;
     readonly attribute DOMString compatMode;

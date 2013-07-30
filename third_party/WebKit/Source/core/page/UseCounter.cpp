@@ -644,6 +644,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case KeyboardEventKeyLocation:
         return "'KeyboardEvent.keyLocation'' is deprecated. Please use 'KeyboardEvent.location' instead.";
 
+    case CaptureEvents:
+        return "captureEvents() is deprecated. This method doesn't do anything.";
+
+    case ReleaseEvents:
+        return "releaseEvents() is deprecated. This method doesn't do anything.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
