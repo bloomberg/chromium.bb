@@ -77,44 +77,44 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   virtual bool allowDatabase(WebKit::WebFrame* frame,
                              const WebKit::WebString& name,
                              const WebKit::WebString& display_name,
-                             unsigned long estimated_size) OVERRIDE;
-  virtual bool allowFileSystem(WebKit::WebFrame* frame) OVERRIDE;
+                             unsigned long estimated_size);
+  virtual bool allowFileSystem(WebKit::WebFrame* frame);
   virtual bool allowImage(WebKit::WebFrame* frame,
                           bool enabled_per_settings,
-                          const WebKit::WebURL& image_url) OVERRIDE;
+                          const WebKit::WebURL& image_url);
   virtual bool allowIndexedDB(WebKit::WebFrame* frame,
                               const WebKit::WebString& name,
-                              const WebKit::WebSecurityOrigin& origin) OVERRIDE;
+                              const WebKit::WebSecurityOrigin& origin);
   virtual bool allowPlugins(WebKit::WebFrame* frame,
-                            bool enabled_per_settings) OVERRIDE;
+                            bool enabled_per_settings);
   virtual bool allowScript(WebKit::WebFrame* frame,
-                           bool enabled_per_settings) OVERRIDE;
+                           bool enabled_per_settings);
   virtual bool allowScriptFromSource(WebKit::WebFrame* frame,
                                      bool enabled_per_settings,
-                                     const WebKit::WebURL& script_url) OVERRIDE;
-  virtual bool allowStorage(WebKit::WebFrame* frame, bool local) OVERRIDE;
+                                     const WebKit::WebURL& script_url);
+  virtual bool allowStorage(WebKit::WebFrame* frame, bool local);
   virtual bool allowReadFromClipboard(WebKit::WebFrame* frame,
-                                      bool default_value) OVERRIDE;
+                                      bool default_value);
   virtual bool allowWriteToClipboard(WebKit::WebFrame* frame,
-                                     bool default_value) OVERRIDE;
-  virtual bool allowWebComponents(const WebKit::WebDocument&, bool) OVERRIDE;
+                                     bool default_value);
+  virtual bool allowWebComponents(const WebKit::WebDocument&, bool);
   virtual bool allowHTMLNotifications(
-      const WebKit::WebDocument& document) OVERRIDE;
+      const WebKit::WebDocument& document);
   virtual bool allowMutationEvents(const WebKit::WebDocument&,
-                                   bool default_value) OVERRIDE;
-  virtual bool allowPushState(const WebKit::WebDocument&) OVERRIDE;
-  virtual void didNotAllowPlugins(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void didNotAllowScript(WebKit::WebFrame* frame) OVERRIDE;
+                                   bool default_value);
+  virtual bool allowPushState(const WebKit::WebDocument&);
+  virtual void didNotAllowPlugins(WebKit::WebFrame* frame);
+  virtual void didNotAllowScript(WebKit::WebFrame* frame);
   virtual bool allowDisplayingInsecureContent(
       WebKit::WebFrame* frame,
       bool allowed_per_settings,
       const WebKit::WebSecurityOrigin& context,
-      const WebKit::WebURL& url) OVERRIDE;
+      const WebKit::WebURL& url);
   virtual bool allowRunningInsecureContent(
       WebKit::WebFrame* frame,
       bool allowed_per_settings,
       const WebKit::WebSecurityOrigin& context,
-      const WebKit::WebURL& url) OVERRIDE;
+      const WebKit::WebURL& url);
   virtual void Navigate(const GURL& url) OVERRIDE;
 
   void OnWebUIJavaScript(const string16& frame_xpath,
