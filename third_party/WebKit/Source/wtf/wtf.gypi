@@ -67,8 +67,6 @@
             'LinkedStack.h',
             'ListHashSet.h',
             'Locker.h',
-            'MD5.cpp',
-            'MD5.h',
             'MainThread.cpp',
             'MainThread.h',
             'MallocZoneSupport.h',
