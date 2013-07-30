@@ -439,7 +439,7 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive")));
 
-// TODO(hirono): Fix this test. crbug.com/247299
+// TODO(mtomasz): Fix this test. crbug.com/252561
 INSTANTIATE_TEST_CASE_P(
     DISABLED_OpenSpecialTypes,
     FileManagerBrowserTest,
@@ -451,13 +451,12 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive"),
                       TestParameter(IN_GUEST_MODE, "galleryOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
-                                    "galleryOpenDownloads")));
-                      // Disabled temporarily since fails on Linux Chromium OS
-                      // ASAN Tests (2).  TODO(mtomasz): crbug.com/243611.
-                      // TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive")));
+                                    "galleryOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive")));
 
+// TODO(mtomasz): Fix this test. crbug.com/252561
 INSTANTIATE_TEST_CASE_P(
-    KeyboardOpeartions,
+    DISABLED_KeyboardOperations,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
