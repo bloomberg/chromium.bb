@@ -39,6 +39,7 @@ SandboxContext::SandboxContext(
           file_task_runner,
           sync_file_util(),
           usage_cache())),
+      special_storage_policy_(special_storage_policy),
       is_usage_tracking_enabled_(
           !CommandLine::ForCurrentProcess()->HasSwitch(
               kDisableUsageTracking)) {
