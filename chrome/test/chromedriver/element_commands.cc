@@ -63,6 +63,21 @@ Status SendKeysToElement(
   return SendKeysOnWindow(web_view, key_list, true, &session->sticky_modifiers);
 }
 
+Status ExecuteTouchSingleTapAtom(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  return web_view->CallFunction(
+      session->GetCurrentFrameId(),
+      webdriver::atoms::asString(webdriver::atoms::TOUCH_SINGLE_TAP),
+      args,
+      value);
+}
+
 }  // namespace
 
 Status ExecuteElementCommand(
@@ -173,13 +188,23 @@ Status ExecuteTouchSingleTap(
     const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  base::ListValue args;
-  args.Append(CreateElement(element_id));
-  return web_view->CallFunction(
-      session->GetCurrentFrameId(),
-      webdriver::atoms::asString(webdriver::atoms::TOUCH_SINGLE_TAP),
-      args,
-      value);
+  // Fall back to javascript atom for pre-m30 Chrome.
+  if (session->chrome->GetBuildNo() < 1576)
+    return ExecuteTouchSingleTapAtom(
+        session, web_view, element_id, params, value);
+
+  WebPoint location;
+  Status status = GetElementClickableLocation(
+      session, web_view, element_id, &location);
+  if (status.IsError())
+    return status;
+
+  std::list<TouchEvent> events;
+  events.push_back(
+      TouchEvent(kTouchStart, location.x, location.y));
+  events.push_back(
+      TouchEvent(kTouchEnd, location.x, location.y));
+  return web_view->DispatchTouchEvents(events);
 }
 
 Status ExecuteClearElement(

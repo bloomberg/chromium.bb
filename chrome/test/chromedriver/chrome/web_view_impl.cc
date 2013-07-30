@@ -52,6 +52,32 @@ const char* GetAsString(MouseEventType type) {
   }
 }
 
+const char* GetAsString(TouchEventType type) {
+  switch (type) {
+    case kTouchStart:
+      return "touchStart";
+    case kTouchEnd:
+      return "touchEnd";
+    case kTouchMove:
+      return "touchMove";
+    default:
+      return "";
+  }
+}
+
+const char* GetPointStateString(TouchEventType type) {
+  switch (type) {
+    case kTouchStart:
+      return "touchPressed";
+    case kTouchEnd:
+      return "touchReleased";
+    case kTouchMove:
+      return "touchMoved";
+    default:
+      return "";
+  }
+}
+
 const char* GetAsString(MouseButton button) {
   switch (button) {
     case kLeftMouseButton:
@@ -224,6 +250,25 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
       if (status.IsError())
         return status;
     }
+  }
+  return Status(kOk);
+}
+
+Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events) {
+  for (std::list<TouchEvent>::const_iterator it = events.begin();
+       it != events.end(); ++it) {
+    base::DictionaryValue params;
+    params.SetString("type", GetAsString(it->type));
+    scoped_ptr<base::ListValue> point_list(new base::ListValue);
+    scoped_ptr<base::DictionaryValue> point(new base::DictionaryValue);
+    point->SetString("state", GetPointStateString(it->type));
+    point->SetInteger("x", it->x);
+    point->SetInteger("y", it->y);
+    point_list->Set(0, point.release());
+    params.Set("touchPoints", point_list.release());
+    Status status = client_->SendCommand("Input.dispatchTouchEvent", params);
+    if (status.IsError())
+      return status;
   }
   return Status(kOk);
 }

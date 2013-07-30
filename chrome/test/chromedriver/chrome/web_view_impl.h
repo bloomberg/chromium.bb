@@ -67,6 +67,8 @@ class WebViewImpl : public WebView {
                                     std::string* out_frame) OVERRIDE;
   virtual Status DispatchMouseEvents(
       const std::list<MouseEvent>& events, const std::string& frame) OVERRIDE;
+  virtual Status DispatchTouchEvents(
+      const std::list<TouchEvent>& events) OVERRIDE;
   virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) OVERRIDE;
   virtual Status GetCookies(scoped_ptr<base::ListValue>* cookies) OVERRIDE;
   virtual Status DeleteCookie(const std::string& name,

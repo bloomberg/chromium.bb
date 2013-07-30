@@ -42,6 +42,24 @@ struct MouseEvent {
   int click_count;
 };
 
+// Specifies the type of the touch event.
+enum TouchEventType {
+  kTouchStart = 0,
+  kTouchEnd,
+  kTouchMove,
+};
+
+struct TouchEvent {
+  TouchEvent(TouchEventType type,
+             int x,
+             int y);
+  ~TouchEvent();
+
+  TouchEventType type;
+  int x;
+  int y;
+};
+
 // Specifies the type of the keyboard event.
 enum KeyEventType {
   kKeyDownEventType = 0,

@@ -19,6 +19,15 @@ MouseEvent::MouseEvent(MouseEventType type,
 
 MouseEvent::~MouseEvent() {}
 
+TouchEvent::TouchEvent(TouchEventType type,
+                       int x,
+                       int y)
+    : type(type),
+      x(x),
+      y(y) {}
+
+TouchEvent::~TouchEvent() {}
+
 KeyEvent::KeyEvent(KeyEventType type,
                    int modifiers,
                    const std::string& modified_text,
