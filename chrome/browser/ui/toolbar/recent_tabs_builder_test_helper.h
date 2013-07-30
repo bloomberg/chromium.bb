@@ -71,8 +71,6 @@ class RecentTabsBuilderTestHelper {
   std::vector<SessionInfo> sessions_;
   base::Time start_time_;
 
-  int max_tab_node_id_;
-
   DISALLOW_COPY_AND_ASSIGN(RecentTabsBuilderTestHelper);
 };
 

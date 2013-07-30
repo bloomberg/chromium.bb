@@ -182,7 +182,7 @@ class SessionModelAssociator
   // entries.
   bool ShouldSyncTab(const SyncedTabDelegate& tab) const;
 
-  // Compare |urls| against |local_tab_map_|'s urls to see if any tabs with
+  // Compare |urls| against |tab_map_|'s urls to see if any tabs with
   // outstanding favicon loads can be fulfilled.
   void FaviconsUpdated(const std::set<GURL>& urls);
 
@@ -343,15 +343,15 @@ class SessionModelAssociator
   // User-visible machine name.
   std::string current_session_name_;
 
-  // Pool of all used/available sync nodes associated with local tabs.
-  TabNodePool local_tab_pool_;
+  // Pool of all used/available sync nodes associated with tabs.
+  TabNodePool tab_pool_;
 
   // SyncID for the sync node containing all the window information for this
   // client.
   int64 local_session_syncid_;
 
   // Mapping of current open (local) tabs to their sync identifiers.
-  TabLinksMap local_tab_map_;
+  TabLinksMap tab_map_;
 
   SyncedSessionTracker synced_session_tracker_;
 
