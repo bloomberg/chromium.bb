@@ -176,7 +176,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request_info.routing_id = 0;
     RequestExtraData extra_data(WebKit::WebReferrerPolicyDefault,
                                 WebKit::WebString(),
-                                true, 0, false, -1, true,
+                                false, true, 0, false, -1, true,
                                 PAGE_TRANSITION_LINK, -1, -1);
     request_info.extra_data = &extra_data;
 

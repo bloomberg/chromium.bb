@@ -186,9 +186,11 @@ bool CreateWebURLRequest(::ppapi::URLRequestInfoData* data,
   }
 
   if (data->has_custom_user_agent) {
+    bool was_after_preconnect_request = false;
     dest->setExtraData(new webkit_glue::WebURLRequestExtraDataImpl(
         WebKit::WebReferrerPolicyDefault,  // Ignored.
-        WebString::fromUTF8(data->custom_user_agent)));
+        WebString::fromUTF8(data->custom_user_agent),
+        was_after_preconnect_request));
   }
 
   return true;

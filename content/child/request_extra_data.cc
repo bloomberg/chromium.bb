@@ -11,6 +11,7 @@ namespace content {
 
 RequestExtraData::RequestExtraData(WebReferrerPolicy referrer_policy,
                                    const WebString& custom_user_agent,
+                                   bool was_after_preconnect_request,
                                    bool is_main_frame,
                                    int64 frame_id,
                                    bool parent_is_main_frame,
@@ -20,7 +21,8 @@ RequestExtraData::RequestExtraData(WebReferrerPolicy referrer_policy,
                                    int transferred_request_child_id,
                                    int transferred_request_request_id)
     : webkit_glue::WebURLRequestExtraDataImpl(referrer_policy,
-                                              custom_user_agent),
+                                              custom_user_agent,
+                                              was_after_preconnect_request),
       is_main_frame_(is_main_frame),
       frame_id_(frame_id),
       parent_is_main_frame_(parent_is_main_frame),

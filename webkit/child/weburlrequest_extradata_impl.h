@@ -25,17 +25,20 @@ class WEBKIT_CHILD_EXPORT WebURLRequestExtraDataImpl :
   // ppb_url_request_info_impl.cc needs to be able to set it.
   explicit WebURLRequestExtraDataImpl(
       WebKit::WebReferrerPolicy referrer_policy,
-      const WebKit::WebString& custom_user_agent);
+      const WebKit::WebString& custom_user_agent,
+      bool was_after_preconnect_request);
   virtual ~WebURLRequestExtraDataImpl();
 
   WebKit::WebReferrerPolicy referrer_policy() const { return referrer_policy_; }
   const WebKit::WebString& custom_user_agent() const {
     return custom_user_agent_;
   }
+  bool was_after_preconnect_request() { return was_after_preconnect_request_; }
 
  private:
   WebKit::WebReferrerPolicy referrer_policy_;
   WebKit::WebString custom_user_agent_;
+  bool was_after_preconnect_request_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLRequestExtraDataImpl);
 };

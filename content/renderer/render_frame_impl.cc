@@ -490,6 +490,30 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(WebKit::WebFrame* frame) {
   render_view_->didUpdateCurrentHistoryItem(frame);
 }
 
+void RenderFrameImpl::willRequestAfterPreconnect(
+    WebKit::WebFrame* frame,
+    WebKit::WebURLRequest& request) {
+  WebKit::WebReferrerPolicy referrer_policy = WebKit::WebReferrerPolicyDefault;
+  WebString custom_user_agent;
+
+  if (request.extraData()) {
+    // This will only be called before willSendRequest, so only ExtraData
+    // members we have to copy here is on WebURLRequestExtraDataImpl.
+    webkit_glue::WebURLRequestExtraDataImpl* old_extra_data =
+        static_cast<webkit_glue::WebURLRequestExtraDataImpl*>(
+            request.extraData());
+
+    referrer_policy = old_extra_data->referrer_policy();
+    custom_user_agent = old_extra_data->custom_user_agent();
+  }
+
+  bool was_after_preconnect_request = true;
+  // The args after |was_after_preconnect_request| are not used, and set to
+  // correct values at |willSendRequest|.
+  request.setExtraData(new webkit_glue::WebURLRequestExtraDataImpl(
+      referrer_policy, custom_user_agent, was_after_preconnect_request));
+}
+
 void RenderFrameImpl::willSendRequest(
     WebKit::WebFrame* frame,
     unsigned identifier,
@@ -541,11 +565,14 @@ void RenderFrameImpl::willSendRequest(
   // agent. This needs to be done here, after WebKit is through with setting the
   // user agent on its own.
   WebString custom_user_agent;
+  bool was_after_preconnect_request = false;
   if (request.extraData()) {
     webkit_glue::WebURLRequestExtraDataImpl* old_extra_data =
         static_cast<webkit_glue::WebURLRequestExtraDataImpl*>(
             request.extraData());
     custom_user_agent = old_extra_data->custom_user_agent();
+    was_after_preconnect_request =
+        old_extra_data->was_after_preconnect_request();
 
     if (!custom_user_agent.isNull()) {
       if (custom_user_agent.isEmpty())
@@ -558,6 +585,7 @@ void RenderFrameImpl::willSendRequest(
   request.setExtraData(
       new RequestExtraData(referrer_policy,
                            custom_user_agent,
+                           was_after_preconnect_request,
                            (frame == top_frame),
                            frame->identifier(),
                            frame->parent() == top_frame,
@@ -569,11 +597,15 @@ void RenderFrameImpl::willSendRequest(
 
   DocumentState* top_document_state =
       DocumentState::FromDataSource(top_data_source);
-  // TODO(gavinp): separate out prefetching and prerender field trials
-  // if the rel=prerender rel type is sticking around.
-  if (top_document_state &&
-      request.targetType() == WebURLRequest::TargetIsPrefetch)
-    top_document_state->set_was_prefetcher(true);
+  if (top_document_state) {
+    // TODO(gavinp): separate out prefetching and prerender field trials
+    // if the rel=prerender rel type is sticking around.
+    if (request.targetType() == WebURLRequest::TargetIsPrefetch)
+      top_document_state->set_was_prefetcher(true);
+
+    if (was_after_preconnect_request)
+      top_document_state->set_was_after_preconnect_request(true);
+  }
 
   // This is an instance where we embed a copy of the routing id
   // into the data portion of the message. This can cause problems if we

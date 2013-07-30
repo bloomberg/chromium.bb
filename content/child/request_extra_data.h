@@ -19,6 +19,7 @@ class CONTENT_EXPORT RequestExtraData
  public:
   RequestExtraData(WebKit::WebReferrerPolicy referrer_policy,
                    const WebKit::WebString& custom_user_agent,
+                   bool was_after_preconnect_request,
                    bool is_main_frame,
                    int64 frame_id,
                    bool parent_is_main_frame,

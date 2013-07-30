@@ -186,6 +186,11 @@ class CONTENT_EXPORT DocumentState
     return was_referred_by_prefetcher_;
   }
 
+  void set_was_after_preconnect_request(bool value) {
+    was_after_preconnect_request_ = value;
+  }
+  bool was_after_preconnect_request() { return was_after_preconnect_request_; }
+
   // Record the nature of this load, for use when histogramming page load times.
   LoadType load_type() const { return load_type_; }
   void set_load_type(LoadType load_type) { load_type_ = load_type; }
@@ -220,6 +225,7 @@ class CONTENT_EXPORT DocumentState
   // A prefetcher is a page that contains link rel=prefetch elements.
   bool was_prefetcher_;
   bool was_referred_by_prefetcher_;
+  bool was_after_preconnect_request_;
 
   LoadType load_type_;
 

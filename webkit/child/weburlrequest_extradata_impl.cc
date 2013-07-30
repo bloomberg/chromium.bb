@@ -11,9 +11,11 @@ namespace webkit_glue {
 
 WebURLRequestExtraDataImpl::WebURLRequestExtraDataImpl(
     WebReferrerPolicy referrer_policy,
-    const WebString& custom_user_agent)
+    const WebString& custom_user_agent,
+    bool was_after_preconnect_request)
     : referrer_policy_(referrer_policy),
-      custom_user_agent_(custom_user_agent) {
+      custom_user_agent_(custom_user_agent),
+      was_after_preconnect_request_(was_after_preconnect_request) {
 }
 
 WebURLRequestExtraDataImpl::~WebURLRequestExtraDataImpl() {

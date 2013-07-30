@@ -506,6 +506,12 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcherReferrer",
                   begin_to_finish_all_loads);
   }
+  if (document_state->was_after_preconnect_request()) {
+    PLT_HISTOGRAM("PLT.BeginToFinishDoc_AfterPreconnectRequest",
+                  begin_to_finish_doc);
+    PLT_HISTOGRAM("PLT.BeginToFinish_AfterPreconnectRequest",
+                  begin_to_finish_all_loads);
+  }
 
   // TODO(mpcomplete): remove the extension-related histograms after we collect
   // enough data. http://crbug.com/100411

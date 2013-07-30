@@ -112,6 +112,8 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didNavigateWithinPage(WebKit::WebFrame* frame,
                                      bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(WebKit::WebFrame* frame);
+  virtual void willRequestAfterPreconnect(WebKit::WebFrame* frame,
+                                          WebKit::WebURLRequest& request);
   virtual void willSendRequest(
       WebKit::WebFrame* frame,
       unsigned identifier,
