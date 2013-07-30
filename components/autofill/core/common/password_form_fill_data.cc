@@ -29,7 +29,9 @@ bool UsernamesCollectionKey::operator<(
     const UsernamesCollectionKey& other) const {
   if (username != other.username)
     return username < other.username;
-  return password < other.password;
+  if (password != other.password)
+    return password < other.password;
+  return realm < other.realm;
 }
 
 PasswordFormFillData::PasswordFormFillData() : wait_for_username(false) {
@@ -83,6 +85,7 @@ void InitPasswordFormFillData(
       UsernamesCollectionKey key;
       key.username = iter->first;
       key.password = iter->second->password_value;
+      key.realm = GetPreferredSignonRealm(*iter->second);
       result->other_possible_usernames[key] =
           iter->second->other_possible_usernames;
     }

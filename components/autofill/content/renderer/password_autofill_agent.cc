@@ -509,6 +509,7 @@ void PasswordAutofillAgent::GetSuggestions(
       if (StartsWith(iter->second[i], input, false)) {
         usernames_usage_ = OTHER_POSSIBLE_USERNAME_SHOWN;
         suggestions->push_back(iter->second[i]);
+        realms->push_back(UTF8ToUTF16(iter->first.realm));
       }
     }
   }
@@ -528,6 +529,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   std::vector<base::string16> suggestions;
   std::vector<base::string16> realms;
   GetSuggestions(fill_data, user_input.value(), &suggestions, &realms);
+  DCHECK_EQ(suggestions.size(), realms.size());
 
   FormData form;
   FormFieldData field;

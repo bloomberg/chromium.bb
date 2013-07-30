@@ -23,6 +23,7 @@ struct UsernamesCollectionKey {
 
   base::string16 username;
   base::string16 password;
+  std::string realm;
 };
 
 struct PasswordAndRealm {

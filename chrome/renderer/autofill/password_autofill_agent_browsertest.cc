@@ -102,6 +102,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     UsernamesCollectionKey key;
     key.username = username3_;
     key.password = password3_;
+    key.realm = "google.com";
     fill_data_.other_possible_usernames[key].push_back(alternate_username3_);
 
     // We need to set the origin so it matches the frame URL and the action so
