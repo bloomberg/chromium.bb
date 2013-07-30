@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 submods=$(git diff-index --cached --ignore-submodules=dirty HEAD | grep -e '^:160000' -e '^:...... 160000' | xargs)
 if test "$submods"; then
