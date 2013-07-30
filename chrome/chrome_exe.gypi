@@ -45,10 +45,8 @@
       },
       'conditions': [
         ['component == "shared_library"', {
-          'msvs_settings': {
-            'VCManifestTool': {
-              'EmbedManifest': 'false',
-            },
+          'variables': {
+            'win_use_external_manifest': 1,
           },
         }],
         ['order_profiling!=0 and (chromeos==1 or OS=="linux")', {
@@ -499,7 +497,9 @@
               'SubSystem': '2',
             },
             'VCManifestTool': {
-              'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.exe.manifest',
+              'AdditionalManifestFiles': [
+                '$(ProjectDir)\\app\\chrome.exe.manifest',
+              ],
             },
           },
           'actions': [

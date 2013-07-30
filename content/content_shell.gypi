@@ -384,7 +384,9 @@
           'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
         },
         'VCManifestTool': {
-          'AdditionalManifestFiles': 'shell/app/shell.exe.manifest',
+          'AdditionalManifestFiles': [
+            'shell/app/shell.exe.manifest',
+          ],
         },
       },
       'conditions': [

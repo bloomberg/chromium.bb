@@ -1789,6 +1789,17 @@
       # See http://msdn.microsoft.com/en-us/library/aa985982(v=VS.80).aspx
       'win_debug_disable_iterator_debugging%': '0',
 
+      # An application manifest fragment to declare compatibility settings for
+      # 'executable' targets. Ignored in other target type.
+      'win_exe_compatibility_manifest%':
+          '<(DEPTH)\\build\\win\\compatibility.manifest',
+
+      # Set to 1 to generate external manifest instead of embedding it for
+      # 'executable' target. Does nothing for other target type. This flag is
+      # used to make mini_installer compatible with the component build.
+      # See http://crbug.com/127233
+      'win_use_external_manifest%': 0,
+
       'release_extra_cflags%': '',
       'debug_extra_cflags%': '',
 
@@ -4471,6 +4482,25 @@
               '<(SHARED_INTERMEDIATE_DIR)',
             ],
           },
+          'target_conditions': [
+            ['_type=="executable" and ">(win_exe_compatibility_manifest)"!=""', {
+              'VCManifestTool': {
+                'AdditionalManifestFiles': [
+                  '>(win_exe_compatibility_manifest)',
+                ],
+              },
+            }],
+            ['_type=="executable" and >(win_use_external_manifest)==0', {
+              'VCManifestTool': {
+                'EmbedManifest': 'true',
+              }
+            }],
+            ['_type=="executable" and >(win_use_external_manifest)==1', {
+              'VCManifestTool': {
+                'EmbedManifest': 'false',
+              }
+            }],
+          ],
         },
       },
     }],

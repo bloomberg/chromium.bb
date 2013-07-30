@@ -1020,7 +1020,9 @@
           },
           'msvs_settings': {
             'VCManifestTool': {
-              'AdditionalManifestFiles': 'examples\\views_examples.exe.manifest',
+              'AdditionalManifestFiles': [
+                'examples\\views_examples.exe.manifest',
+              ],
             },
             'VCLinkerTool': {
               'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS

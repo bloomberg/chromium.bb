@@ -952,8 +952,9 @@
               'SubSystem': '2',
             },
             'VCManifestTool': {
-              'AdditionalManifestFiles':
-                  '$(ProjectDir)\\resources\\npchrome_frame.dll.manifest',
+              'AdditionalManifestFiles': [
+                '$(ProjectDir)\\resources\\npchrome_frame.dll.manifest',
+              ],
             },
           },
         }],

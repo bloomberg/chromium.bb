@@ -222,7 +222,9 @@
                   ],
                 },
                 'VCManifestTool': {
-                  'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
+                  'AdditionalManifestFiles': [
+                    '$(ProjectDir)\\app\\chrome.dll.manifest',
+                  ],
                 },
               },
             }],

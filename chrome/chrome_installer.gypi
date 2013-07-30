@@ -137,7 +137,9 @@
           ],
           'msvs_settings': {
             'VCManifestTool': {
-              'AdditionalManifestFiles': '$(ProjectDir)\\installer\\mini_installer\\mini_installer.exe.manifest',
+              'AdditionalManifestFiles': [
+                '$(ProjectDir)\\installer\\mini_installer\\mini_installer.exe.manifest',
+              ],
             },
           },
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -233,7 +235,9 @@
           ],
           'msvs_settings': {
             'VCManifestTool': {
-              'AdditionalManifestFiles': '$(ProjectDir)\\installer\\mini_installer\\mini_installer.exe.manifest',
+              'AdditionalManifestFiles': [
+                '$(ProjectDir)\\installer\\mini_installer\\mini_installer.exe.manifest',
+              ],
             },
           },
         },
@@ -291,7 +295,9 @@
               'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
             },
             'VCManifestTool': {
-              'AdditionalManifestFiles': '$(ProjectDir)\\installer\\setup\\setup.exe.manifest',
+              'AdditionalManifestFiles': [
+                '$(ProjectDir)\\installer\\setup\\setup.exe.manifest',
+              ],
             },
           },
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -353,10 +359,8 @@
           ],
           'conditions': [
             ['component == "shared_library"', {
-              'msvs_settings': {
-                'VCManifestTool': {
-                  'EmbedManifest': 'false',
-                },
+              'variables': {
+                'win_use_external_manifest': 1,
               },
             }],
             # TODO(mark):  <(branding_dir) should be defined by the

@@ -1353,8 +1353,9 @@
           ],
           'msvs_settings': {
             'VCManifestTool': {
-              'AdditionalManifestFiles': 'host/win/dpi_aware.manifest',
-              'EmbedManifest': 'true',
+              'AdditionalManifestFiles': [
+                'host/win/dpi_aware.manifest',
+              ],
             },
             'VCLinkerTool': {
               'EntryPointSymbol': 'HostEntryPoint',
@@ -1535,8 +1536,9 @@
           ],
           'msvs_settings': {
             'VCManifestTool': {
-              'AdditionalManifestFiles': 'host/win/dpi_aware.manifest',
-              'EmbedManifest': 'true',
+              'AdditionalManifestFiles': [
+                'host/win/dpi_aware.manifest',
+              ],
             },
             'VCLinkerTool': {
               'EnableUAC': 'true',
@@ -1573,8 +1575,9 @@
           ],
           'msvs_settings': {
             'VCManifestTool': {
-              'AdditionalManifestFiles': 'host/win/dpi_aware.manifest',
-              'EmbedManifest': 'true',
+              'AdditionalManifestFiles': [
+                'host/win/dpi_aware.manifest',
+              ],
             },
             'VCLinkerTool': {
               'EntryPointSymbol': 'HostEntryPoint',
