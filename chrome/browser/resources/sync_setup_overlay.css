@@ -110,6 +110,11 @@
   margin-bottom: 5px;
 }
 
+#basic-encryption-body,
+#full-encryption-body {
+  display: table;
+}
+
 #passphrase-input {
   margin-bottom: 5px;
   margin-top: 5px;
