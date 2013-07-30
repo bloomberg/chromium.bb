@@ -5,8 +5,6 @@
 #ifndef CONTENT_RENDERER_PEPPER_PPB_FULLSCREEN_CONTAINER_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PPB_FULLSCREEN_CONTAINER_IMPL_H_
 
-#include "content/renderer/pepper/plugin_delegate.h"
-
 namespace WebKit {
 class WebLayer;
 struct WebCursorInfo;

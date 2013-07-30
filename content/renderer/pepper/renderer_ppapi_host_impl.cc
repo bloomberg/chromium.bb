@@ -16,7 +16,6 @@
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -131,8 +130,7 @@ RendererPpapiHostImpl::GetBrowserConnection(PP_Instance instance) const {
 
   // Since we're the embedder, we can make assumptions about the delegate on
   // the instance.
-  PepperPluginDelegateImpl* delegate =
-      static_cast<PepperPluginDelegateImpl*>(instance_object->delegate());
+  PepperPluginDelegateImpl* delegate = instance_object->delegate();
   if (!delegate)
     return NULL;
 
@@ -156,8 +154,7 @@ RenderView* RendererPpapiHostImpl::GetRenderViewForInstance(
 
   // Since we're the embedder, we can make assumptions about the delegate on
   // the instance and get back to our RenderView.
-  return static_cast<PepperPluginDelegateImpl*>(
-      instance_object->delegate())->render_view();
+  return instance_object->delegate()->render_view();
 }
 
 bool RendererPpapiHostImpl::IsValidInstance(PP_Instance instance) const {

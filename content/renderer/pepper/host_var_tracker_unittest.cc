@@ -7,7 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/host_var_tracker.h"
-#include "content/renderer/pepper/mock_plugin_delegate.h"
 #include "content/renderer/pepper/mock_resource.h"
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/npobject_var.h"
@@ -84,8 +83,7 @@ class HostVarTrackerTest : public PpapiUnittest {
 TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
   // Make a second instance (the test harness already creates & manages one).
   scoped_refptr<PepperPluginInstanceImpl> instance2(
-      PepperPluginInstanceImpl::Create(
-          delegate(), NULL, module(), NULL, GURL()));
+      PepperPluginInstanceImpl::Create(NULL, NULL, module(), NULL, GURL()));
   PP_Instance pp_instance2 = instance2->pp_instance();
 
   // Make an object var.

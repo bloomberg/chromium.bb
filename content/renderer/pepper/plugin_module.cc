@@ -532,7 +532,7 @@ bool PluginModule::SupportsInterface(const char* name) {
 }
 
 PepperPluginInstanceImpl* PluginModule::CreateInstance(
-    PluginDelegate* delegate,
+    PepperPluginDelegateImpl* delegate,
     RenderViewImpl* render_view,
     WebKit::WebPluginContainer* container,
     const GURL& plugin_url) {

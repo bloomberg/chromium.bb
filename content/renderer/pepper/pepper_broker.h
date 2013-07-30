@@ -9,7 +9,6 @@
 #include "base/process/process.h"
 #include "base/sync_socket.h"
 #include "content/common/content_export.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/ppb_broker_impl.h"
 #include "ppapi/proxy/proxy_channel.h"
 

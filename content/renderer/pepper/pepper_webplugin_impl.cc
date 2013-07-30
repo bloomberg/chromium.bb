@@ -48,7 +48,7 @@ namespace content {
 
 struct PepperWebPluginImpl::InitData {
   scoped_refptr<PluginModule> module;
-  base::WeakPtr<PluginDelegate> delegate;
+  base::WeakPtr<PepperPluginDelegateImpl> delegate;
   base::WeakPtr<RenderViewImpl> render_view;
   std::vector<std::string> arg_names;
   std::vector<std::string> arg_values;
@@ -58,7 +58,7 @@ struct PepperWebPluginImpl::InitData {
 PepperWebPluginImpl::PepperWebPluginImpl(
     PluginModule* plugin_module,
     const WebPluginParams& params,
-    const base::WeakPtr<PluginDelegate>& plugin_delegate,
+    const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
     const base::WeakPtr<RenderViewImpl>& render_view)
     : init_data_(new InitData()),
       full_frame_(params.loadManually),

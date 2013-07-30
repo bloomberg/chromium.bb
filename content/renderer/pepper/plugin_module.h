@@ -18,7 +18,6 @@
 #include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "content/public/common/pepper_plugin_info.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppb_core.h"
@@ -26,6 +25,8 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 typedef void* NPIdentifier;
+
+class GURL;
 
 namespace base {
 class FilePath;
@@ -42,9 +43,9 @@ class WebPluginContainer;
 
 namespace content {
 class HostDispatcherWrapper;
+class PepperPluginDelegateImpl;
 class PepperPluginInstanceImpl;
 class PepperBroker;
-class PluginDelegate;
 class RendererPpapiHostImpl;
 class RenderViewImpl;
 
@@ -138,7 +139,7 @@ class CONTENT_EXPORT PluginModule :
   const ::ppapi::PpapiPermissions& permissions() const { return permissions_; }
 
   PepperPluginInstanceImpl* CreateInstance(
-      PluginDelegate* delegate,
+      PepperPluginDelegateImpl* delegate,
       RenderViewImpl* render_view,
       WebKit::WebPluginContainer* container,
       const GURL& plugin_url);

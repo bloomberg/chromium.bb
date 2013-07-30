@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -17,7 +16,6 @@ class MessageLoop;
 
 namespace content {
 
-class MockPluginDelegate;
 class PepperPluginInstanceImpl;
 class PluginModule;
 
@@ -29,7 +27,6 @@ class PpapiUnittest : public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
 
-  MockPluginDelegate* delegate() { return delegate_.get(); }
   PluginModule* module() const { return module_.get(); }
   PepperPluginInstanceImpl* instance() const { return instance_.get(); }
 
@@ -44,8 +41,6 @@ class PpapiUnittest : public testing::Test {
   void SetViewSize(int width, int height) const;
 
  private:
-  scoped_ptr<MockPluginDelegate> delegate_;
-
   // Note: module must be declared first since we want it to get destroyed last.
   scoped_refptr<PluginModule> module_;
   scoped_refptr<PepperPluginInstanceImpl> instance_;

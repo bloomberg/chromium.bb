@@ -13,6 +13,7 @@
 #include "base/task_runner.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/render_thread_impl.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/id_assignment.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -185,12 +186,7 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
 }
 
 base::TaskRunner* HostGlobals::GetFileTaskRunner(PP_Instance instance) {
-  scoped_refptr<PepperPluginInstanceImpl> plugin_instance =
-      GetInstance(instance);
-  DCHECK(plugin_instance.get());
-  scoped_refptr<base::MessageLoopProxy> message_loop =
-      plugin_instance->delegate()->GetFileThreadMessageLoopProxy();
-  return message_loop.get();
+  return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get();
 }
 
 ::ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() {

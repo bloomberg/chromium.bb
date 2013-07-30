@@ -18,8 +18,8 @@
 #include "base/observer_list.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/render_view_pepper_helper.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
@@ -33,6 +33,7 @@ class FilePath;
 
 namespace ppapi {
 class PepperFilePath;
+class PpapiPermissions;
 class PPB_X509Certificate_Fields;
 namespace host {
 class ResourceHost;
@@ -41,7 +42,9 @@ class ResourceHost;
 
 namespace WebKit {
 class WebGamepads;
+class WebURLResponse;
 struct WebCompositionUnderline;
+struct WebCursorInfo;
 }
 
 namespace content {
@@ -50,12 +53,12 @@ class GamepadSharedMemoryReader;
 class PepperBroker;
 class PluginModule;
 class PPB_Broker_Impl;
+class PPB_TCPSocket_Private_Impl;
 class RenderViewImpl;
 struct WebPluginInfo;
 
 class PepperPluginDelegateImpl
-    : public PluginDelegate,
-      public RenderViewPepperHelper,
+    : public RenderViewPepperHelper,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl>,
       public RenderViewObserver {
  public:
@@ -90,6 +93,57 @@ class PepperPluginDelegateImpl
   // Notifies that |instance| has received a mouse event.
   void DidReceiveMouseEvent(PepperPluginInstanceImpl* instance);
 
+  // Notification that the given plugin is focused or unfocused.
+  void PluginFocusChanged(PepperPluginInstanceImpl* instance, bool focused);
+
+  // Notification that the text input status of the given plugin is changed.
+  void PluginTextInputTypeChanged(PepperPluginInstanceImpl* instance);
+
+  // Notification that the caret position in the given plugin is changed.
+  void PluginCaretPositionChanged(PepperPluginInstanceImpl* instance);
+
+  // Notification that the plugin requested to cancel the current composition.
+  void PluginRequestedCancelComposition(PepperPluginInstanceImpl* instance);
+
+  // Notification that the text selection in the given plugin is changed.
+  void PluginSelectionChanged(PepperPluginInstanceImpl* instance);
+
+  // Indicates that the given instance has been created.
+  void InstanceCreated(PepperPluginInstanceImpl* instance);
+
+  // Indicates that the given instance is being destroyed. This is called from
+  // the destructor, so it's important that the instance is not dereferenced
+  // from this call.
+  void InstanceDeleted(PepperPluginInstanceImpl* instance);
+
+  // Sends an async IPC to open a local file.
+  typedef base::Callback<void (base::PlatformFileError, base::PassPlatformFile)>
+      AsyncOpenFileCallback;
+  bool AsyncOpenFile(const base::FilePath& path,
+                     int flags,
+                     const AsyncOpenFileCallback& callback);
+
+  // Retrieve current gamepad data.
+  void SampleGamepads(WebKit::WebGamepads* data);
+
+  // Notifies the plugin of the document load. This should initiate the call to
+  // PPP_Instance.HandleDocumentLoad.
+  //
+  // The loader object should set itself on the PluginInstance as the document
+  // loader using set_document_loader.
+  void HandleDocumentLoad(PepperPluginInstanceImpl* instance,
+                          const WebKit::WebURLResponse& response);
+
+  // Sets up the renderer host and out-of-process proxy for an external plugin
+  // module. Returns the renderer host, or NULL if it couldn't be created.
+  RendererPpapiHost* CreateExternalPluginModule(
+      scoped_refptr<PluginModule> module,
+      const base::FilePath& path,
+      ::ppapi::PpapiPermissions permissions,
+      const IPC::ChannelHandle& channel_handle,
+      base::ProcessId plugin_pid,
+      int plugin_child_id);
+
  private:
   // RenderViewPepperHelper implementation.
   virtual WebKit::WebPlugin* CreatePepperWebPlugin(
@@ -120,36 +174,6 @@ class PepperPluginDelegateImpl
       int selection_end) OVERRIDE;
   virtual void OnImeConfirmComposition(const string16& text) OVERRIDE;
   virtual void WillHandleMouseEvent() OVERRIDE;
-
-  // PluginDelegate implementation.
-  virtual void PluginFocusChanged(PepperPluginInstanceImpl* instance,
-                                  bool focused) OVERRIDE;
-  virtual void PluginTextInputTypeChanged(
-      PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual void PluginCaretPositionChanged(
-      PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual void PluginRequestedCancelComposition(
-      PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual void PluginSelectionChanged(
-      PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual void InstanceCreated(PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual void InstanceDeleted(PepperPluginInstanceImpl* instance) OVERRIDE;
-  virtual bool AsyncOpenFile(const base::FilePath& path,
-                             int flags,
-                             const AsyncOpenFileCallback& callback) OVERRIDE;
-  virtual scoped_refptr<base::MessageLoopProxy>
-      GetFileThreadMessageLoopProxy() OVERRIDE;
-  virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
-  virtual void HandleDocumentLoad(
-      PepperPluginInstanceImpl* instance,
-      const WebKit::WebURLResponse& response) OVERRIDE;
-  virtual RendererPpapiHost* CreateExternalPluginModule(
-      scoped_refptr<PluginModule> module,
-      const base::FilePath& path,
-      ::ppapi::PpapiPermissions permissions,
-      const IPC::ChannelHandle& channel_handle,
-      base::ProcessId plugin_pid,
-      int plugin_child_id) OVERRIDE;
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

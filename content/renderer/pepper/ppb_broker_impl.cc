@@ -11,6 +11,7 @@
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/resource_helper.h"
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -65,8 +66,7 @@ int32_t PPB_Broker_Impl::Connect(
   // ConnectToBroker fails.
   connect_callback_ = connect_callback;
 
-  broker_ = static_cast<PepperPluginDelegateImpl*>(
-      plugin_instance->delegate())->ConnectToBroker(this);
+  broker_ = plugin_instance->delegate()->ConnectToBroker(this);
   if (!broker_) {
     connect_callback_->Abort();
     return PP_ERROR_FAILED;

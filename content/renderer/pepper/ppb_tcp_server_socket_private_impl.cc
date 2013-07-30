@@ -86,8 +86,7 @@ void PPB_TCPServerSocket_Private_Impl::SendStopListening() {
 
 PepperPluginDelegateImpl*
     PPB_TCPServerSocket_Private_Impl::GetPluginDelegate() {
-  return static_cast<PepperPluginDelegateImpl*>(
-      ResourceHelper::GetPluginDelegate(this));
+  return ResourceHelper::GetPluginDelegate(this);
 }
 
 }  // namespace content

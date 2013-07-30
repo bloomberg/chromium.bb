@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/renderer/p2p/network_list_observer.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_network_monitor_private_api.h"

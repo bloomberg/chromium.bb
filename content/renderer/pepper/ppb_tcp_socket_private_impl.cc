@@ -138,7 +138,7 @@ PepperPluginDelegateImpl* PPB_TCPSocket_Private_Impl::GetPluginDelegate(
       HostGlobals::Get()->GetInstance(instance);
   if (!plugin_instance)
     return NULL;
-  return static_cast<PepperPluginDelegateImpl*>(plugin_instance->delegate());
+  return plugin_instance->delegate();
 }
 
 }  // namespace content

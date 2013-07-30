@@ -342,7 +342,6 @@
     'renderer/pepper/pepper_webplugin_impl.h',
     'renderer/pepper/pepper_websocket_host.cc',
     'renderer/pepper/pepper_websocket_host.h',
-    'renderer/pepper/plugin_delegate.h',
     'renderer/pepper/plugin_module.cc',
     'renderer/pepper/plugin_module.h',
     'renderer/pepper/plugin_object.cc',

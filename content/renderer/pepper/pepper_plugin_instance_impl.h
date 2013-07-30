@@ -19,7 +19,6 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/ppp_pdf.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
@@ -100,7 +99,7 @@ class ContentDecryptorDelegate;
 class FullscreenContainer;
 class MessageChannel;
 class PepperGraphics2DHost;
-class PluginDelegate;
+class PepperPluginDelegateImpl;
 class PluginModule;
 class PluginObject;
 class PPB_Graphics3D_Impl;
@@ -123,12 +122,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // get_plugin_interface function. If the plugin does not support any valid
   // PPP_Instance interface, returns NULL.
   static PepperPluginInstanceImpl* Create(
-      PluginDelegate* delegate,
+      PepperPluginDelegateImpl* delegate,
       RenderViewImpl* render_view,
       PluginModule* module,
       WebKit::WebPluginContainer* container,
       const GURL& plugin_url);
-  PluginDelegate* delegate() const { return delegate_; }
+  PepperPluginDelegateImpl* delegate() const { return delegate_; }
   RenderViewImpl* render_view() const { return render_view_; }
   PluginModule* module() const { return module_.get(); }
   MessageChannel& message_channel() { return *message_channel_; }
@@ -541,21 +540,21 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   class GamepadImpl : public ::ppapi::thunk::PPB_Gamepad_API,
                       public ::ppapi::Resource {
    public:
-    explicit GamepadImpl(PluginDelegate* delegate);
+    explicit GamepadImpl(PepperPluginDelegateImpl* delegate);
     // Resource implementation.
     virtual ::ppapi::thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() OVERRIDE;
     virtual void Sample(PP_Instance instance,
                         PP_GamepadsSampleData* data) OVERRIDE;
    private:
     virtual ~GamepadImpl();
-    PluginDelegate* delegate_;
+    PepperPluginDelegateImpl* delegate_;
   };
 
   // See the static Create functions above for creating PepperPluginInstanceImpl
   // objects. This constructor is private so that we can hide the
   // PPP_Instance_Combined details while still having 1 constructor to maintain
   // for member initialization.
-  PepperPluginInstanceImpl(PluginDelegate* delegate,
+  PepperPluginInstanceImpl(PepperPluginDelegateImpl* delegate,
                            RenderViewImpl* render_view,
                            PluginModule* module,
                            ::ppapi::PPP_Instance_Combined* instance_interface,
@@ -647,7 +646,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter();
   void UnSetAndDeleteLockTargetAdapter();
 
-  PluginDelegate* delegate_;
+  PepperPluginDelegateImpl* delegate_;
   RenderViewImpl* render_view_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;

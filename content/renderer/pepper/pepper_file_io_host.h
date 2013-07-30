@@ -23,7 +23,6 @@
 using ppapi::host::ReplyMessageContext;
 
 namespace content {
-class PluginDelegate;
 class QuotaFileIO;
 
 class PepperFileIOHost : public ppapi::host::ResourceHost,
@@ -96,9 +95,6 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   void ExecutePlatformWriteCallback(ReplyMessageContext reply_context,
                                     base::PlatformFileError error_code,
                                     int bytes_written);
-
-  // TODO(victorhsieh): eliminate plugin_delegate_ as it's no longer needed.
-  PluginDelegate* plugin_delegate_;  // Not owned.
 
   base::PlatformFile file_;
 

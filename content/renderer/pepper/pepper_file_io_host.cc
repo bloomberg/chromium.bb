@@ -16,9 +16,11 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "content/renderer/pepper/quota_file_io.h"
+#include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -141,17 +143,12 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
                                    PP_Instance instance,
                                    PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      plugin_delegate_(NULL),
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       quota_policy_(quota::kQuotaLimitTypeUnknown),
       is_running_in_process_(host->IsRunningInProcess()),
       open_flags_(0),
       weak_factory_(this) {
-  // TODO(victorhsieh): eliminate plugin_delegate_ as it's no longer needed.
-  PepperPluginInstanceImpl* plugin_instance =
-      HostGlobals::Get()->GetInstance(instance);
-  plugin_delegate_ = plugin_instance ? plugin_instance->delegate() : NULL;
 }
 
 PepperFileIOHost::~PepperFileIOHost() {
@@ -217,9 +214,6 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
     return PP_ERROR_FAILED;
   file_system_type_ = type;
 
-  if (!plugin_delegate_)
-    return PP_ERROR_FAILED;
-
   PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(file_ref_api);
   if (file_ref->HasValidFileSystem()) {
     file_system_url_ = file_ref->GetFileSystemURL();
@@ -235,9 +229,12 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
       base::Bind(&DidOpenFileSystemURL, callback),
       base::Bind(&DidFailOpenFileSystemURL, callback));
   } else {
-    if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL)
+    PepperPluginDelegateImpl* plugin_delegate =
+        static_cast<PepperPluginInstanceImpl*>(
+            PepperPluginInstance::Get(pp_instance()))->delegate();
+    if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL || !plugin_delegate)
       return PP_ERROR_FAILED;
-    if (!plugin_delegate_->AsyncOpenFile(
+    if (!plugin_delegate->AsyncOpenFile(
             file_ref->GetSystemPath(), flags,
             base::Bind(&PepperFileIOHost::ExecutePlatformOpenFileCallback,
                        weak_factory_.GetWeakPtr(),
@@ -256,11 +253,8 @@ int32_t PepperFileIOHost::OnHostMsgQuery(
   if (rv != PP_OK)
     return rv;
 
-  if (!plugin_delegate_)
-    return PP_ERROR_FAILED;
-
   if (!base::FileUtilProxy::GetFileInfoFromPlatformFile(
-          plugin_delegate_->GetFileThreadMessageLoopProxy().get(),
+          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
           file_,
           base::Bind(&PepperFileIOHost::ExecutePlatformQueryCallback,
                      weak_factory_.GetWeakPtr(),
@@ -280,9 +274,6 @@ int32_t PepperFileIOHost::OnHostMsgTouch(
   if (rv != PP_OK)
     return rv;
 
-  if (!plugin_delegate_)
-    return PP_ERROR_FAILED;
-
   if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
     FileSystemDispatcher* file_system_dispatcher =
         ChildThread::current()->file_system_dispatcher();
@@ -300,7 +291,7 @@ int32_t PepperFileIOHost::OnHostMsgTouch(
   // TODO(nhiroki): fix a failure of FileIO.Touch for an external filesystem on
   // Mac and Linux due to sandbox restrictions (http://crbug.com/101128).
   if (!base::FileUtilProxy::Touch(
-          plugin_delegate_->GetFileThreadMessageLoopProxy().get(),
+          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
           file_,
           PPTimeToTime(last_access_time),
           PPTimeToTime(last_modified_time),
@@ -332,11 +323,8 @@ int32_t PepperFileIOHost::OnHostMsgRead(
     return PP_OK_COMPLETIONPENDING;
   }
 
-  if (!plugin_delegate_)
-    return PP_ERROR_FAILED;
-
   if (!base::FileUtilProxy::Read(
-          plugin_delegate_->GetFileThreadMessageLoopProxy().get(),
+          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
           file_,
           offset,
           max_read_length,
@@ -366,11 +354,8 @@ int32_t PepperFileIOHost::OnHostMsgWrite(
                        context->MakeReplyMessageContext())))
       return PP_ERROR_FAILED;
   } else {
-    if (!plugin_delegate_)
-      return PP_ERROR_FAILED;
-
     if (!base::FileUtilProxy::Write(
-            plugin_delegate_->GetFileThreadMessageLoopProxy().get(),
+            RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
             file_,
             offset,
             buffer.c_str(),
@@ -393,9 +378,6 @@ int32_t PepperFileIOHost::OnHostMsgSetLength(
   if (rv != PP_OK)
     return rv;
 
-  if (!plugin_delegate_)
-    return PP_ERROR_FAILED;
-
   if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
     FileSystemDispatcher* file_system_dispatcher =
         ChildThread::current()->file_system_dispatcher();
@@ -408,7 +390,7 @@ int32_t PepperFileIOHost::OnHostMsgSetLength(
     // TODO(nhiroki): fix a failure of FileIO.SetLength for an external
     // filesystem on Mac due to sandbox restrictions (http://crbug.com/156077).
     if (!base::FileUtilProxy::Truncate(
-            plugin_delegate_->GetFileThreadMessageLoopProxy().get(),
+            RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
             file_,
             length,
             base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
@@ -428,11 +410,8 @@ int32_t PepperFileIOHost::OnHostMsgFlush(
   if (rv != PP_OK)
     return rv;
 
-  if (!plugin_delegate_)
-    return PP_ERROR_FAILED;
-
   if (!base::FileUtilProxy::Flush(
-          plugin_delegate_->GetFileThreadMessageLoopProxy().get(),
+          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
           file_,
           base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
                      weak_factory_.GetWeakPtr(),
@@ -445,9 +424,9 @@ int32_t PepperFileIOHost::OnHostMsgFlush(
 
 int32_t PepperFileIOHost::OnHostMsgClose(
     ppapi::host::HostMessageContext* context) {
-  if (file_ != base::kInvalidPlatformFileValue && plugin_delegate_) {
+  if (file_ != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(
-        plugin_delegate_->GetFileThreadMessageLoopProxy().get(),
+        RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
         file_,
         base::ResetAndReturn(&notify_close_file_callback_));
     file_ = base::kInvalidPlatformFileValue;

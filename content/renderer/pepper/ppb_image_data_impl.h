@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/shared_impl/resource.h"
@@ -18,6 +17,10 @@
 class SkBitmap;
 class SkCanvas;
 class TransportDIB;
+
+namespace base {
+class SharedMemory;
+}
 
 namespace content {
 

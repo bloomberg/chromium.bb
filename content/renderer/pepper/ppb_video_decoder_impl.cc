@@ -12,6 +12,7 @@
 #include "content/renderer/media/pepper_platform_video_decoder.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
+#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
@@ -138,7 +139,8 @@ bool PPB_VideoDecoder_Impl::Init(
   if (command_buffer_route_id == 0)
     return false;
 
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  PepperPluginDelegateImpl* plugin_delegate =
+      ResourceHelper::GetPluginDelegate(this);
   if (!plugin_delegate)
     return false;
 

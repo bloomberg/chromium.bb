@@ -574,10 +574,12 @@ void PepperPluginDelegateImpl::OnAsyncFileOpened(
       IPC::PlatformFileForTransitToPlatformFile(file_for_transit);
   callback->Run(error_code, base::PassPlatformFile(&file));
   // Make sure we won't leak file handle if the requester has died.
-  if (file != base::kInvalidPlatformFileValue)
-    base::FileUtilProxy::Close(GetFileThreadMessageLoopProxy().get(),
-                               file,
-                               base::FileUtilProxy::StatusCallback());
+  if (file != base::kInvalidPlatformFileValue) {
+    base::FileUtilProxy::Close(
+        RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
+        file,
+        base::FileUtilProxy::StatusCallback());
+  }
   delete callback;
 }
 
@@ -608,11 +610,6 @@ void PepperPluginDelegateImpl::WillHandleMouseEvent() {
   // event, it will notify us via DidReceiveMouseEvent() and set itself as
   // |last_mouse_event_target_|.
   last_mouse_event_target_ = NULL;
-}
-
-scoped_refptr<base::MessageLoopProxy>
-PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
-  return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy();
 }
 
 void PepperPluginDelegateImpl::RegisterTCPSocket(

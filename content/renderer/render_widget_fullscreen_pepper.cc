@@ -15,7 +15,6 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "skia/ext/platform_canvas.h"

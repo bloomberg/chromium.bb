@@ -13,11 +13,12 @@
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_thread_impl.h"
-#include "skia/ext/platform_canvas.h"
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/thunk/thunk.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "ui/surface/transport_dib.h"
 
@@ -254,7 +255,8 @@ bool ImageDataSimpleBackend::Init(PPB_ImageData_Impl* impl,
                                   bool init_to_zero) {
   skia_bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
                          impl->width(), impl->height());
-  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(impl);
+  PepperPluginDelegateImpl* plugin_delegate =
+      ResourceHelper::GetPluginDelegate(impl);
   if (!plugin_delegate)
     return false;
   shared_memory_.reset(RenderThread::Get()->HostAllocateSharedMemoryBuffer(

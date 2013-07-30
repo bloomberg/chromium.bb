@@ -11,8 +11,8 @@
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
+#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/plugin_delegate.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
@@ -465,7 +465,7 @@ int32_t PPB_FileRef_Impl::QueryInHost(
 
     // TODO(teravest): Use the SequencedWorkerPool instead.
     scoped_refptr<base::TaskRunner> task_runner =
-        plugin_instance->delegate()->GetFileThreadMessageLoopProxy();
+        RenderThreadImpl::current()->GetFileThreadMessageLoopProxy();
     if (!plugin_instance->delegate()->AsyncOpenFile(
             GetSystemPath(),
             base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
