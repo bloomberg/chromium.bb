@@ -91,11 +91,14 @@ void ResetProfileSettingsHandler::HandleResetProfileSettings(
 void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
   web_ui()->CallJavascriptFunction("ResetProfileSettingsOverlay.doneResetting");
   if (setting_snapshot_) {
-    ResettableSettingsSnapshot current_snapshot(Profile::FromWebUI(web_ui()));
+    Profile* profile = Profile::FromWebUI(web_ui());
+    ResettableSettingsSnapshot current_snapshot(profile);
     int difference = setting_snapshot_->FindDifferentFields(current_snapshot);
     if (difference) {
       setting_snapshot_->SubtractStartupURLs(current_snapshot);
-      // TODO(vasilii): do something with that invaluable information.
+      std::string report = SerializeSettingsReport(*setting_snapshot_,
+                                                   difference);
+      SendSettingsFeedback(report, profile);
     }
     setting_snapshot_.reset();
   }

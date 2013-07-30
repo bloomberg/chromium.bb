@@ -19,6 +19,9 @@ class ResettableSettingsSnapshot {
     HOMEPAGE = 1 << 2,
     HOMEPAGE_IS_NTP = 1 << 3,
     DSE_URL = 1 << 4,
+
+    ALL_FIELDS = STARTUP_URLS | STARTUP_TYPE | HOMEPAGE |
+                 HOMEPAGE_IS_NTP | DSE_URL,
   };
 
   explicit ResettableSettingsSnapshot(Profile* profile);
@@ -57,5 +60,14 @@ class ResettableSettingsSnapshot {
 
   DISALLOW_COPY_AND_ASSIGN(ResettableSettingsSnapshot);
 };
+
+// Serializes specified |snapshot| members to JSON format. |field_mask| is a bit
+// mask of ResettableSettingsSnapshot::Field values.
+std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
+                                    int field_mask);
+
+// Sends |report| as a feedback. |report| is supposed to be result of
+// SerializeSettingsReport().
+void SendSettingsFeedback(const std::string& report, Profile* profile);
 
 #endif  // CHROME_BROWSER_PROFILE_RESETTER_RESETTABLE_SETTINGS_SNAPSHOT_H_

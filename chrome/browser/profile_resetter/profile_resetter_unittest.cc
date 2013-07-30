@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 
+#include "base/json/json_string_value_serializer.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -663,6 +664,47 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
   EXPECT_EQ("http://www.foo.com", nonorganic_snap.homepage());
   EXPECT_FALSE(nonorganic_snap.homepage_is_ntp());
   EXPECT_EQ("http://www.foo.com/s?q={searchTerms}", nonorganic_snap.dse_url());
+}
+
+TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
+  // Reset to non organic defaults.
+  ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
+               ProfileResetter::HOMEPAGE |
+               ProfileResetter::STARTUP_PAGES, kDistributionConfig);
+
+  const ResettableSettingsSnapshot nonorganic_snap(profile());
+
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
+                 expand_this_test);
+  for (int field_mask = 0; field_mask <= ResettableSettingsSnapshot::ALL_FIELDS;
+       ++field_mask) {
+    std::string report = SerializeSettingsReport(nonorganic_snap, field_mask);
+    JSONStringValueSerializer json(report);
+    std::string error;
+    scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
+    ASSERT_TRUE(root) << error;
+    ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY)) << error;
+
+    base::DictionaryValue* dict =
+        static_cast<base::DictionaryValue*>(root.get());
+
+    ListValue* startup_urls = NULL;
+    int startup_type = 0;
+    std::string homepage;
+    bool homepage_is_ntp = true;
+    std::string default_search_engine;
+
+    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_URLS),
+              dict->GetList("startup_urls", &startup_urls));
+    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_TYPE),
+              dict->GetInteger("startup_type", &startup_type));
+    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE),
+              dict->GetString("homepage", &homepage));
+    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE_IS_NTP),
+              dict->GetBoolean("homepage_is_ntp", &homepage_is_ntp));
+    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::DSE_URL),
+              dict->GetString("default_search_engine", &default_search_engine));
+  }
 }
 
 }  // namespace

@@ -4,11 +4,28 @@
 
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 
+#include "base/json/json_writer.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/feedback/feedback_data.h"
+#include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
+
+namespace {
+
+// Feedback bucket label.
+const char kProfileResetFeedbackBucket[] = "ProfileResetReport";
+
+// Dictionary keys for feedback report.
+const char kDefaultSearchEnginePath[] = "default_search_engine";
+const char kHomepageIsNewTabPage[] = "homepage_is_ntp";
+const char kHomepagePath[] = "homepage";
+const char kStartupTypePath[] = "startup_type";
+const char kStartupURLPath[] = "startup_urls";
+
+}  // namespace
 
 ResettableSettingsSnapshot::ResettableSettingsSnapshot(Profile* profile)
     : startup_(SessionStartupPref::GetStartupPref(profile)) {
@@ -60,5 +77,55 @@ int ResettableSettingsSnapshot::FindDifferentFields(
   if (dse_url_ != snapshot.dse_url_)
     bit_mask |= DSE_URL;
 
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
+                 add_new_field_here);
+
   return bit_mask;
+}
+
+std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
+                                    int field_mask) {
+  DictionaryValue dict;
+
+  if (field_mask & ResettableSettingsSnapshot::STARTUP_URLS) {
+    ListValue* list = new ListValue;
+    const std::vector<GURL>& urls = snapshot.startup_urls();
+    for (std::vector<GURL>::const_iterator i = urls.begin();
+         i != urls.end(); ++i)
+      list->AppendString(i->spec());
+    dict.Set(kStartupURLPath, list);
+  }
+
+  if (field_mask & ResettableSettingsSnapshot::STARTUP_TYPE)
+    dict.SetInteger(kStartupTypePath, snapshot.startup_type());
+
+  if (field_mask & ResettableSettingsSnapshot::HOMEPAGE)
+    dict.SetString(kHomepagePath, snapshot.homepage());
+
+  if (field_mask & ResettableSettingsSnapshot::HOMEPAGE_IS_NTP)
+    dict.SetBoolean(kHomepageIsNewTabPage, snapshot.homepage_is_ntp());
+
+  if (field_mask & ResettableSettingsSnapshot::DSE_URL)
+    dict.SetString(kDefaultSearchEnginePath, snapshot.dse_url());
+
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
+                 serialize_new_field_here);
+
+  std::string json;
+  base::JSONWriter::Write(&dict, &json);
+  return json;
+}
+
+void SendSettingsFeedback(const std::string& report, Profile* profile) {
+  scoped_refptr<FeedbackData> feedback_data = new FeedbackData();
+  feedback_data->set_category_tag(kProfileResetFeedbackBucket);
+  feedback_data->set_description(report);
+
+  feedback_data->set_image(ScreenshotDataPtr());
+  feedback_data->set_profile(profile);
+
+  feedback_data->set_page_url("");
+  feedback_data->set_user_email("");
+
+  FeedbackUtil::SendReport(feedback_data);
 }
