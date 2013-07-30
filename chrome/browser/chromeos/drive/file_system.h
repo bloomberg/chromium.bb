@@ -225,23 +225,16 @@ class FileSystem : public FileSystemInterface,
   void InitializePreferenceObserver();
 
   // Part of GetResourceEntryByPath()
-  // 1) Called when ResourceMetadata::GetResourceEntryByPath() is complete.
-  //    If succeeded, GetResourceEntryByPath() returns immediately here.
-  //    Otherwise, starts loading the file system.
-  // 2) Called when LoadIfNeeded() is complete.
-  // 3) Called when ResourceMetadata::GetResourceEntryByPath() is complete.
-  void GetResourceEntryByPathAfterGetEntry1(
+  // 1) Called when GetLocallyStoredResourceEntry() is complete.
+  // 2) Called when LoadDirectoryIfNeeded() is complete.
+  void GetResourceEntryByPathAfterGetEntry(
       const base::FilePath& file_path,
       const GetResourceEntryCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
+      scoped_ptr<ResourceEntry> entry,
+      FileError error);
   void GetResourceEntryByPathAfterLoad(const base::FilePath& file_path,
                                        const GetResourceEntryCallback& callback,
                                        FileError error);
-  void GetResourceEntryByPathAfterGetEntry2(
-      const GetResourceEntryCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
 
   // Loads the entry info of the children of |directory_path| to resource
   // metadata. |callback| must not be null.
@@ -265,28 +258,6 @@ class FileSystem : public FileSystemInterface,
       const ReadDirectoryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntryVector> entries);
-
-  // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
-  // local dirty cache for the entry, and if there is, replace the
-  // PlatformFileInfo part of the |entry| with the locally modified info.
-  // |callback| must not be null.
-  void CheckLocalModificationAndRun(scoped_ptr<ResourceEntry> entry,
-                                    const GetResourceEntryCallback& callback);
-  void CheckLocalModificationAndRunAfterGetCacheEntry(
-      scoped_ptr<ResourceEntry> entry,
-      const GetResourceEntryCallback& callback,
-      bool success,
-      const FileCacheEntry& cache_entry);
-  void CheckLocalModificationAndRunAfterGetCacheFile(
-      scoped_ptr<ResourceEntry> entry,
-      const GetResourceEntryCallback& callback,
-      FileError error,
-      const base::FilePath& local_cache_path);
-  void CheckLocalModificationAndRunAfterGetFileInfo(
-      scoped_ptr<ResourceEntry> entry,
-      const GetResourceEntryCallback& callback,
-      base::PlatformFileInfo* file_info,
-      bool get_file_info_result);
 
   // Part of MarkCacheFileAsMounted. Called after GetResourceEntryByPath is
   // completed. |callback| must not be null.

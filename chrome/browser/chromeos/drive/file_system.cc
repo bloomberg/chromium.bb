@@ -44,7 +44,56 @@ using content::BrowserThread;
 namespace drive {
 namespace {
 
-//================================ Helper functions ============================
+// Gets a ResourceEntry from the metadata, and overwrites its file info when the
+// cached file is dirty.
+FileError GetLocallyStoredResourceEntry(
+    internal::ResourceMetadata* resource_metadata,
+    internal::FileCache* cache,
+    const base::FilePath& file_path,
+    ResourceEntry* entry) {
+  FileError error =
+      resource_metadata->GetResourceEntryByPath(file_path, entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  // For entries that will never be cached, use the original resource entry
+  // as is.
+  if (!entry->has_file_specific_info() ||
+      entry->file_specific_info().is_hosted_document())
+    return FILE_ERROR_OK;
+
+  // When no dirty cache is found, use the original resource entry as is.
+  FileCacheEntry cache_entry;
+  if (!cache->GetCacheEntry(entry->resource_id(), &cache_entry) ||
+      !cache_entry.is_dirty())
+    return FILE_ERROR_OK;
+
+  // If the cache is dirty, obtain the file info from the cache file itself.
+  base::FilePath local_cache_path;
+  error = cache->GetFile(entry->resource_id(), &local_cache_path);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  base::PlatformFileInfo file_info;
+  if (!file_util::GetFileInfo(local_cache_path, &file_info))
+    return FILE_ERROR_NOT_FOUND;
+
+  util::ConvertPlatformFileInfoToResourceEntry(file_info,
+                                               entry->mutable_file_info());
+  return FILE_ERROR_OK;
+}
+
+// Runs the callback with parameters.
+void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
+                                 scoped_ptr<ResourceEntry> entry,
+                                 FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != FILE_ERROR_OK)
+    entry.reset();
+  callback.Run(error, entry.Pass());
+}
 
 // Callback for ResourceMetadata::GetLargestChangestamp.
 // |callback| must not be null.
@@ -467,29 +516,33 @@ void FileSystem::GetResourceEntryByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // ResourceMetadata may know about the entry even if the resource
-  // metadata is not yet fully loaded. For instance, ResourceMetadata()
-  // always knows about the root directory. For "fast fetch"
-  // (crbug.com/178348) to work, it's needed to delay the resource metadata
-  // loading until the first call to ReadDirectoryByPath().
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
-      file_path,
-      base::Bind(&FileSystem::GetResourceEntryByPathAfterGetEntry1,
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+  ResourceEntry* entry_ptr = entry.get();
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&GetLocallyStoredResourceEntry,
+                 resource_metadata_,
+                 cache_,
+                 file_path,
+                 entry_ptr),
+      base::Bind(&FileSystem::GetResourceEntryByPathAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
-                 callback));
+                 callback,
+                 base::Passed(&entry)));
 }
 
-void FileSystem::GetResourceEntryByPathAfterGetEntry1(
+void FileSystem::GetResourceEntryByPathAfterGetEntry(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
+    scoped_ptr<ResourceEntry> entry,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK) {
-    CheckLocalModificationAndRun(entry.Pass(), callback);
+    callback.Run(error, entry.Pass());
     return;
   }
 
@@ -515,27 +568,19 @@ void FileSystem::GetResourceEntryByPathAfterLoad(
     return;
   }
 
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
-      file_path,
-      base::Bind(&FileSystem::GetResourceEntryByPathAfterGetEntry2,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void FileSystem::GetResourceEntryByPathAfterGetEntry2(
-    const GetResourceEntryCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<ResourceEntry>());
-    return;
-  }
-  DCHECK(entry.get());
-
-  CheckLocalModificationAndRun(entry.Pass(), callback);
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+  ResourceEntry* entry_ptr = entry.get();
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&GetLocallyStoredResourceEntry,
+                 resource_metadata_,
+                 cache_,
+                 file_path,
+                 entry_ptr),
+      base::Bind(&RunGetResourceEntryCallback,
+                 callback,
+                 base::Passed(&entry)));
 }
 
 void FileSystem::ReadDirectoryByPath(
@@ -557,9 +602,8 @@ void FileSystem::LoadDirectoryIfNeeded(const base::FilePath& directory_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // As described in GetResourceEntryByPath(), ResourceMetadata may know
-  // about the entry even if the file system is not yet fully loaded, hence we
-  // should just ask ResourceMetadata first.
+  // ResourceMetadata may know about the entry even if the resource
+  // metadata is not yet fully loaded.
   resource_metadata_->GetResourceEntryByPathOnUIThread(
       directory_path,
       base::Bind(&FileSystem::LoadDirectoryIfNeededAfterGetEntry,
@@ -881,8 +925,6 @@ void FileSystem::SetHideHostedDocuments(bool hide) {
                     OnDirectoryChanged(util::GetDriveGrandRootPath()));
 }
 
-//============= FileSystem: internal helper functions =====================
-
 void FileSystem::InitializePreferenceObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -901,104 +943,6 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
 
   open_file_operation_->OpenFile(file_path, open_mode, callback);
-}
-
-void FileSystem::CheckLocalModificationAndRun(
-    scoped_ptr<ResourceEntry> entry,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(entry.get());
-  DCHECK(!callback.is_null());
-
-  // For entries that will never be cached, use the original resource entry
-  // as is.
-  if (!entry->has_file_specific_info() ||
-      entry->file_specific_info().is_hosted_document()) {
-    callback.Run(FILE_ERROR_OK, entry.Pass());
-    return;
-  }
-
-  // Checks if the file is cached and modified locally.
-  const std::string resource_id = entry->resource_id();
-  cache_->GetCacheEntryOnUIThread(
-      resource_id,
-      base::Bind(&FileSystem::CheckLocalModificationAndRunAfterGetCacheEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&entry),
-                 callback));
-}
-
-void FileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
-    scoped_ptr<ResourceEntry> entry,
-    const GetResourceEntryCallback& callback,
-    bool success,
-    const FileCacheEntry& cache_entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // When no dirty cache is found, use the original resource entry as is.
-  if (!success || !cache_entry.is_dirty()) {
-    callback.Run(FILE_ERROR_OK, entry.Pass());
-    return;
-  }
-
-  // Gets the cache file path.
-  const std::string& resource_id = entry->resource_id();
-  cache_->GetFileOnUIThread(
-      resource_id,
-      base::Bind(
-          &FileSystem::CheckLocalModificationAndRunAfterGetCacheFile,
-          weak_ptr_factory_.GetWeakPtr(),
-          base::Passed(&entry),
-          callback));
-}
-
-void FileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
-    scoped_ptr<ResourceEntry> entry,
-    const GetResourceEntryCallback& callback,
-    FileError error,
-    const base::FilePath& local_cache_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // When no dirty cache is found, use the original resource entry as is.
-  if (error != FILE_ERROR_OK) {
-    callback.Run(FILE_ERROR_OK, entry.Pass());
-    return;
-  }
-
-  // If the cache is dirty, obtain the file info from the cache file itself.
-  base::PlatformFileInfo* file_info = new base::PlatformFileInfo;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&file_util::GetFileInfo,
-                 local_cache_path,
-                 base::Unretained(file_info)),
-      base::Bind(&FileSystem::CheckLocalModificationAndRunAfterGetFileInfo,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&entry),
-                 callback,
-                 base::Owned(file_info)));
-}
-
-void FileSystem::CheckLocalModificationAndRunAfterGetFileInfo(
-    scoped_ptr<ResourceEntry> entry,
-    const GetResourceEntryCallback& callback,
-    base::PlatformFileInfo* file_info,
-    bool get_file_info_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (!get_file_info_result) {
-    callback.Run(FILE_ERROR_NOT_FOUND, scoped_ptr<ResourceEntry>());
-    return;
-  }
-
-  PlatformFileInfoProto entry_file_info;
-  util::ConvertPlatformFileInfoToResourceEntry(*file_info, &entry_file_info);
-  *entry->mutable_file_info() = entry_file_info;
-  callback.Run(FILE_ERROR_OK, entry.Pass());
 }
 
 }  // namespace drive
