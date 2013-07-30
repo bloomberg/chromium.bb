@@ -229,8 +229,9 @@ bool BookmarkPromptController::IsEnabled() {
           kBookmarkPromptTrialName, 100, kBookmarkPromptDefaultGroup,
           date_range->expiration_date.year,
           date_range->expiration_date.month,
-          date_range->expiration_date.day_of_month, NULL));
-  trial->UseOneTimeRandomization();
+          date_range->expiration_date.day_of_month,
+          base::FieldTrial::ONE_TIME_RANDOMIZED,
+          NULL));
   trial->AppendGroup(kBookmarkPromptControlGroup, 10);
   trial->AppendGroup(kBookmarkPromptExperimentGroup, 10);
 

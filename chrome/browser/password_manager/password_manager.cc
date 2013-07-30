@@ -311,8 +311,8 @@ void PasswordManager::OnPasswordFormsRendered(
   if (provisional_save_manager_->HasGeneratedPassword())
     UMA_HISTOGRAM_COUNTS("PasswordGeneration.Submitted", 1);
 
-  if(!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSavePasswordBubble)){
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSavePasswordBubble)) {
     if (ShouldShowSavePasswordInfoBar()) {
       delegate_->AddSavePasswordInfoBarIfPermitted(
           provisional_save_manager_.release());
@@ -344,8 +344,8 @@ void PasswordManager::PossiblyInitializeUsernamesExperiment(
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           kOtherPossibleUsernamesExperiment,
-          kDivisor, "Disabled", 2013, 12, 31, NULL));
-  trial->UseOneTimeRandomization();
+          kDivisor, "Disabled", 2013, 12, 31,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
   base::FieldTrial::Probability enabled_probability = 0;
 
   switch (chrome::VersionInfo::GetChannel()) {

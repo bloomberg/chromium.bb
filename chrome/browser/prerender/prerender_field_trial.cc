@@ -56,7 +56,7 @@ void SetupPrefetchFieldTrial() {
   scoped_refptr<FieldTrial> trial(
       FieldTrialList::FactoryGetFieldTrial(
           "Prefetch", divisor, "ContentPrefetchPrefetchOff",
-          2013, 12, 31, NULL));
+          2013, 12, 31, FieldTrial::SESSION_RANDOMIZED, NULL));
   const int kPrefetchOnGroup = trial->AppendGroup("ContentPrefetchPrefetchOn",
                                                   prefetch_probability);
   PrerenderManager::SetIsPrefetchEnabled(trial->group() == kPrefetchOnGroup);
@@ -118,7 +118,8 @@ void SetupPrerenderFieldTrial() {
   scoped_refptr<FieldTrial> trial(
       FieldTrialList::FactoryGetFieldTrial(
           "Prerender", divisor, "PrerenderEnabled",
-          2013, 12, 31, &prerender_enabled_group));
+          2013, 12, 31, FieldTrial::SESSION_RANDOMIZED,
+          &prerender_enabled_group));
   const int control_group =
       trial->AppendGroup("PrerenderControl",
                          control_probability);
@@ -229,7 +230,8 @@ void ConfigureOmniboxPrerender() {
   scoped_refptr<FieldTrial> omnibox_prerender_trial(
       FieldTrialList::FactoryGetFieldTrial(
           kOmniboxTrialName, kDivisor, "OmniboxPrerenderEnabled",
-          2013, 12, 31, &g_omnibox_trial_default_group_number));
+          2013, 12, 31, FieldTrial::SESSION_RANDOMIZED,
+          &g_omnibox_trial_default_group_number));
   omnibox_prerender_trial->AppendGroup("OmniboxPrerenderDisabled",
                                        kDisabledProbability);
 }
@@ -242,7 +244,8 @@ void ConfigureLocalPredictor() {
   }
   scoped_refptr<FieldTrial> local_predictor_trial(
       FieldTrialList::FactoryGetFieldTrial(
-          kLocalPredictorTrialName, 100, kDisabledGroup, 2013, 12, 31, NULL));
+          kLocalPredictorTrialName, 100, kDisabledGroup, 2013, 12, 31,
+          FieldTrial::SESSION_RANDOMIZED, NULL));
   local_predictor_trial->AppendGroup(kEnabledGroup, 100);
 }
 

@@ -134,8 +134,8 @@ void SetupTrial() {
   const base::FieldTrial::Probability kDivisor = 100;
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::FactoryGetFieldTrial(
-          kExperimentName, kDivisor, "Existing", 2013, 12, 31, NULL);
-  trial->UseOneTimeRandomization();
+          kExperimentName, kDivisor, "Existing", 2013, 12, 31,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL);
 
   // Split 50/50 between "Control" and "Alternamte" group for new user.
   // Existing users already have their default pinned apps and have the trial

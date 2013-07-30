@@ -55,11 +55,12 @@ int FieldTrialList::kNoExpirationYear = 0;
 
 FieldTrial::FieldTrial(const std::string& trial_name,
                        const Probability total_probability,
-                       const std::string& default_group_name)
+                       const std::string& default_group_name,
+                       double entropy_value)
     : trial_name_(trial_name),
       divisor_(total_probability),
       default_group_name_(default_group_name),
-      random_(static_cast<Probability>(divisor_ * RandDouble())),
+      random_(static_cast<Probability>(divisor_ * entropy_value)),
       accumulated_group_probability_(0),
       next_group_number_(kDefaultGroupNumber + 1),
       group_(kNotFinalized),
@@ -72,30 +73,6 @@ FieldTrial::FieldTrial(const std::string& trial_name,
 }
 
 FieldTrial::EntropyProvider::~EntropyProvider() {
-}
-
-void FieldTrial::UseOneTimeRandomization() {
-  UseOneTimeRandomizationWithCustomSeed(0);
-}
-
-void FieldTrial::UseOneTimeRandomizationWithCustomSeed(
-    uint32 randomization_seed) {
-  // No need to specify randomization when the group choice was forced.
-  if (forced_)
-    return;
-  DCHECK_EQ(group_, kNotFinalized);
-  DCHECK_EQ(kDefaultGroupNumber + 1, next_group_number_);
-  const EntropyProvider* entropy_provider =
-      FieldTrialList::GetEntropyProviderForOneTimeRandomization();
-  if (!entropy_provider) {
-    NOTREACHED();
-    Disable();
-    return;
-  }
-
-  random_ = static_cast<Probability>(
-      divisor_ * entropy_provider->GetEntropyForTrial(trial_name_,
-                                                      randomization_seed));
 }
 
 void FieldTrial::Disable() {
@@ -256,17 +233,34 @@ FieldTrialList::~FieldTrialList() {
 
 // static
 FieldTrial* FieldTrialList::FactoryGetFieldTrial(
-    const std::string& name,
+    const std::string& trial_name,
     FieldTrial::Probability total_probability,
     const std::string& default_group_name,
     const int year,
     const int month,
     const int day_of_month,
+    FieldTrial::RandomizationType randomization_type,
+    int* default_group_number) {
+  return FactoryGetFieldTrialWithRandomizationSeed(
+      trial_name, total_probability, default_group_name,
+      year, month, day_of_month, randomization_type, 0, default_group_number);
+}
+
+// static
+FieldTrial* FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
+    const std::string& trial_name,
+    FieldTrial::Probability total_probability,
+    const std::string& default_group_name,
+    const int year,
+    const int month,
+    const int day_of_month,
+    FieldTrial::RandomizationType randomization_type,
+    uint32 randomization_seed,
     int* default_group_number) {
   if (default_group_number)
     *default_group_number = FieldTrial::kDefaultGroupNumber;
   // Check if the field trial has already been created in some other way.
-  FieldTrial* existing_trial = Find(name);
+  FieldTrial* existing_trial = Find(trial_name);
   if (existing_trial) {
     CHECK(existing_trial->forced_);
     // If the default group name differs between the existing forced trial
@@ -295,8 +289,18 @@ FieldTrial* FieldTrialList::FactoryGetFieldTrial(
     return existing_trial;
   }
 
-  FieldTrial* field_trial =
-      new FieldTrial(name, total_probability, default_group_name);
+  double entropy_value;
+  if (randomization_type == FieldTrial::ONE_TIME_RANDOMIZED) {
+    entropy_value = GetEntropyProviderForOneTimeRandomization()->
+          GetEntropyForTrial(trial_name, randomization_seed);
+  } else {
+    DCHECK_EQ(FieldTrial::SESSION_RANDOMIZED, randomization_type);
+    DCHECK_EQ(0U, randomization_seed);
+    entropy_value = RandDouble();
+  }
+
+  FieldTrial* field_trial = new FieldTrial(trial_name, total_probability,
+                                           default_group_name, entropy_value);
   if (GetBuildTime() > CreateTimeFromParams(year, month, day_of_month))
     field_trial->Disable();
   FieldTrialList::Register(field_trial);
@@ -418,7 +422,7 @@ FieldTrial* FieldTrialList::CreateFieldTrial(
     return field_trial;
   }
   const int kTotalProbability = 100;
-  field_trial = new FieldTrial(name, kTotalProbability, group_name);
+  field_trial = new FieldTrial(name, kTotalProbability, group_name, 0);
   // Force the trial, which will also finalize the group choice.
   field_trial->SetForced();
   FieldTrialList::Register(field_trial);

@@ -39,6 +39,18 @@ bool IsFieldTrialActive(const std::string& trial_name) {
   return false;
 }
 
+// Call FieldTrialList::FactoryGetFieldTrial() with a future expiry date.
+scoped_refptr<base::FieldTrial> CreateFieldTrial(
+    const std::string& trial_name,
+    int total_probability,
+    const std::string& default_group_name,
+    int* default_group_number) {
+  return base::FieldTrialList::FactoryGetFieldTrial(
+      trial_name, total_probability, default_group_name,
+      base::FieldTrialList::kNoExpirationYear, 1, 1,
+      base::FieldTrial::SESSION_RANDOMIZED, default_group_number);
+}
+
 }  // namespace
 
 class VariationsUtilTest : public ::testing::Test {
@@ -49,21 +61,10 @@ class VariationsUtilTest : public ::testing::Test {
     ui_thread_.reset(new content::TestBrowserThread(
         content::BrowserThread::UI, &message_loop_));
 
-    base::Time now = base::Time::NowFromSystemTime();
-    base::TimeDelta one_year = base::TimeDelta::FromDays(365);
-    base::Time::Exploded exploded;
-
-    base::Time next_year_time = now + one_year;
-    next_year_time.LocalExplode(&exploded);
-    next_year_ = exploded.year;
-
     // Ensure that the maps are cleared between tests, since they are stored as
     // process singletons.
     testing::ClearAllVariationIDs();
   }
-
- protected:
-  int next_year_;
 
  private:
   base::FieldTrialList field_trial_list_;
@@ -115,10 +116,7 @@ TEST_F(VariationsUtilTest, GetFieldTrialActiveGroups) {
 TEST_F(VariationsUtilTest, DisableImmediately) {
   int default_group_number = -1;
   scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial("trial", 100, "default",
-                                                 next_year_, 12, 12,
-                                                 &default_group_number));
-  trial->Disable();
+      CreateFieldTrial("trial", 100, "default", &default_group_number));
 
   ASSERT_EQ(default_group_number, trial->group());
   ASSERT_EQ(EMPTY_ID, GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial.get()));
@@ -132,8 +130,8 @@ TEST_F(VariationsUtilTest, DisableAfterInitialization) {
   const std::string non_default_name = "non_default";
 
   scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial("trial", 100, default_name,
-                                                 next_year_, 12, 12, NULL));
+      CreateFieldTrial("trial", 100, default_name, NULL));
+
   trial->AppendGroup(non_default_name, 100);
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial->trial_name(),
       default_name, TEST_VALUE_A);
@@ -148,8 +146,7 @@ TEST_F(VariationsUtilTest, DisableAfterInitialization) {
 TEST_F(VariationsUtilTest, AssociateGoogleVariationID) {
   const std::string default_name1 = "default";
   scoped_refptr<base::FieldTrial> trial_true(
-      base::FieldTrialList::FactoryGetFieldTrial("d1", 10, default_name1,
-                                                 next_year_, 12, 31, NULL));
+      CreateFieldTrial("d1", 10, default_name1, NULL));
   const std::string winner = "TheWinner";
   int winner_group = trial_true->AppendGroup(winner, 10);
 
@@ -166,8 +163,7 @@ TEST_F(VariationsUtilTest, AssociateGoogleVariationID) {
 
   const std::string default_name2 = "default2";
   scoped_refptr<base::FieldTrial> trial_false(
-      base::FieldTrialList::FactoryGetFieldTrial("d2", 10, default_name2,
-                                                 next_year_, 12, 31, NULL));
+      CreateFieldTrial("d2", 10, default_name2, NULL));
   const std::string loser = "ALoser";
   const int loser_group = trial_false->AppendGroup(loser, 0);
 
@@ -186,8 +182,8 @@ TEST_F(VariationsUtilTest, AssociateGoogleVariationID) {
 TEST_F(VariationsUtilTest, NoAssociation) {
   const std::string default_name = "default";
   scoped_refptr<base::FieldTrial> no_id_trial(
-      base::FieldTrialList::FactoryGetFieldTrial("d3", 10, default_name,
-                                                 next_year_, 12, 31, NULL));
+      CreateFieldTrial("d3", 10, default_name, NULL));
+
   const std::string winner = "TheWinner";
   const int winner_group = no_id_trial->AppendGroup(winner, 10);
 
@@ -274,8 +270,7 @@ TEST_F(VariationsUtilTest, AssociateVariationParams_DoesntActivateTrial) {
 
   ASSERT_FALSE(IsFieldTrialActive(kTrialName));
   scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, "A",
-                                                 next_year_, 1, 1, NULL));
+      CreateFieldTrial(kTrialName, 100, "A", NULL));
   ASSERT_FALSE(IsFieldTrialActive(kTrialName));
 
   std::map<std::string, std::string> params;
@@ -309,8 +304,7 @@ TEST_F(VariationsUtilTest, GetVariationParams_ActivatesTrial) {
 
   ASSERT_FALSE(IsFieldTrialActive(kTrialName));
   scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, "A",
-                                                 next_year_, 1, 1, NULL));
+      CreateFieldTrial(kTrialName, 100, "A", NULL));
   ASSERT_FALSE(IsFieldTrialActive(kTrialName));
 
   std::map<std::string, std::string> params;
@@ -323,8 +317,7 @@ TEST_F(VariationsUtilTest, GetVariationParamValue_ActivatesTrial) {
 
   ASSERT_FALSE(IsFieldTrialActive(kTrialName));
   scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, "A",
-                                                 next_year_, 1, 1, NULL));
+      CreateFieldTrial(kTrialName, 100, "A", NULL));
   ASSERT_FALSE(IsFieldTrialActive(kTrialName));
 
   std::map<std::string, std::string> params;
@@ -391,9 +384,7 @@ TEST_F(VariationsUtilTest, CollectionsCoexist) {
   const std::string default_name = "default";
   int default_group_number = -1;
   scoped_refptr<base::FieldTrial> trial_true(
-      base::FieldTrialList::FactoryGetFieldTrial("d1", 10, default_name,
-                                                 next_year_, 12, 31,
-                                                 &default_group_number));
+      CreateFieldTrial("d1", 10, default_name, &default_group_number));
   ASSERT_EQ(default_group_number, trial_true->group());
   ASSERT_EQ(default_name, trial_true->group_name());
 

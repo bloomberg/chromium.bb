@@ -63,10 +63,10 @@ void SetupProgressiveScanFieldTrial() {
   const char path_to_group_file[] = "/home/chronos/.progressive_scan_variation";
   const base::FieldTrial::Probability kDivisor = 1000;
   scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::FactoryGetFieldTrial(name_of_experiment,
-                                                 kDivisor,
-                                                 "Default",
-                                                 2013, 12, 31, NULL);
+      base::FieldTrialList::FactoryGetFieldTrial(
+          name_of_experiment, kDivisor, "Default", 2013, 12, 31,
+          base::FieldTrial::SESSION_RANDOMIZED, NULL);
+
   // Announce the groups with 0 percentage; the actual percentages come from
   // the server configuration.
   std::map<int, std::string> group_to_char;
@@ -113,10 +113,10 @@ void SetupSwapJankFieldTrial() {
   // All groups are either on or off.
   const base::FieldTrial::Probability kTotalProbability = 1;
   scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::FactoryGetFieldTrial(name_of_experiment,
-                                                 kTotalProbability,
-                                                 "default",
-                                                 2013, 12, 31, NULL);
+      base::FieldTrialList::FactoryGetFieldTrial(
+          name_of_experiment, kTotalProbability, "default", 2013, 12, 31,
+          base::FieldTrial::SESSION_RANDOMIZED, NULL);
+
   // Assign probability of 1 to this Chrome's group.  Assign 0 to all other
   // choices.
   trial->AppendGroup("kernel_64_chrome_64",

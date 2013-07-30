@@ -181,21 +181,24 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
     }
   }
 
+  uint32 randomization_seed = 0;
+  base::FieldTrial::RandomizationType randomization_type =
+      base::FieldTrial::SESSION_RANDOMIZED;
+  if (study.has_consistency() &&
+      study.consistency() == Study_Consistency_PERMANENT) {
+    randomization_type = base::FieldTrial::ONE_TIME_RANDOMIZED;
+    if (study.has_randomization_seed())
+      randomization_seed = study.randomization_seed();
+  }
+
   // The trial is created without specifying an expiration date because the
   // expiration check in field_trial.cc is based on the build date. Instead,
   // the expiration check using |reference_date| is done explicitly below.
   scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
+      base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
           study.name(), total_probability, study.default_experiment_name(),
-          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL));
-
-  if (study.has_consistency() &&
-      study.consistency() == Study_Consistency_PERMANENT) {
-    if (study.has_randomization_seed())
-      trial->UseOneTimeRandomizationWithCustomSeed(study.randomization_seed());
-    else
-      trial->UseOneTimeRandomization();
-  }
+          base::FieldTrialList::kNoExpirationYear, 1, 1, randomization_type,
+          randomization_seed, NULL));
 
   for (int i = 0; i < study.experiment_size(); ++i) {
     const Study_Experiment& experiment = study.experiment(i);

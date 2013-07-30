@@ -62,9 +62,9 @@ void SetupInfiniteCacheFieldTrial() {
   base::FieldTrial::Probability infinite_cache_probability = 0;
 
   scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial("InfiniteCache", kDivisor,
-                                                 "No", 2013, 12, 31, NULL));
-  trial->UseOneTimeRandomization();
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "InfiniteCache", kDivisor, "No", 2013, 12, 31,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
   trial->AppendGroup("Yes", infinite_cache_probability);
   trial->AppendGroup("Control", infinite_cache_probability);
 }
@@ -106,9 +106,9 @@ void SetupCacheSensitivityAnalysisFieldTrial() {
 #endif
 
   scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial("CacheSensitivityAnalysis",
-                                                 kDivisor, "No",
-                                                 2013, 06, 15, NULL));
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "CacheSensitivityAnalysis", kDivisor, "No", 2013, 06, 15,
+          base::FieldTrial::SESSION_RANDOMIZED, NULL));
   trial->AppendGroup("ControlA", sensitivity_analysis_probability);
   trial->AppendGroup("ControlB", sensitivity_analysis_probability);
   trial->AppendGroup("100A", sensitivity_analysis_probability);
@@ -130,8 +130,9 @@ void WindowsOverlappedTCPReadsFieldTrial(
     const base::FieldTrial::Probability kDivisor = 2;  // 1 in 2 chance
     const base::FieldTrial::Probability kOverlappedReadProbability = 1;
     scoped_refptr<base::FieldTrial> overlapped_reads_trial(
-        base::FieldTrialList::FactoryGetFieldTrial("OverlappedReadImpact",
-            kDivisor, "OverlappedReadEnabled", 2013, 6, 1, NULL));
+        base::FieldTrialList::FactoryGetFieldTrial(
+            "OverlappedReadImpact", kDivisor, "OverlappedReadEnabled",
+            2013, 6, 1, base::FieldTrial::SESSION_RANDOMIZED, NULL));
     int overlapped_reads_disabled_group =
         overlapped_reads_trial->AppendGroup("OverlappedReadDisabled",
                                             kOverlappedReadProbability);
@@ -145,8 +146,8 @@ void WindowsOverlappedTCPReadsFieldTrial(
 void SetupLowLatencyFlashAudioFieldTrial() {
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
-          content::kLowLatencyFlashAudioFieldTrialName,
-          100, "Standard", 2013, 9, 1, NULL));
+          content::kLowLatencyFlashAudioFieldTrialName, 100, "Standard",
+          2013, 9, 1, base::FieldTrial::SESSION_RANDOMIZED, NULL));
 
   // Trial is enabled for dev / beta / canary users only.
   if (chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_STABLE)

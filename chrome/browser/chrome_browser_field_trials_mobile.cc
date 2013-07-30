@@ -37,10 +37,8 @@ void DataCompressionProxyFieldTrial() {
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           kDataCompressionProxyFieldTrialName, kDataCompressionProxyDivisor,
-          kDisabled, 2015, 1, 1, NULL));
+          kDisabled, 2015, 1, 1, base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
 
-  // We want our trial results to be persistent.
-  trial->UseOneTimeRandomization();
   // Non-stable channels will run with probability 1.
   const int kEnabledGroup = trial->AppendGroup(
       kEnabled,
@@ -77,10 +75,8 @@ void NewTabButtonInToolbarFieldTrial(const CommandLine& parsed_command_line) {
       base::FieldTrialList::FactoryGetFieldTrial(
           kPhoneNewTabToolbarButtonFieldTrialName,
           kPhoneNewTabToolbarButtonDivisor,
-          kDisabled, 2015, 1, 1, NULL));
+          kDisabled, 2015, 1, 1, base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
 
-  // We want our trial results to be persistent.
-  trial->UseOneTimeRandomization();
   const int kEnabledGroup = trial->AppendGroup(
       kEnabled,
       kIsStableChannel ?

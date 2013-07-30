@@ -99,11 +99,8 @@ void InitializeCompositingFieldTrial() {
   const base::FieldTrial::Probability kDivisor = 3;
   scoped_refptr<base::FieldTrial> trial(
     base::FieldTrialList::FactoryGetFieldTrial(
-        content::kGpuCompositingFieldTrialName, kDivisor,
-        "disable", 2013, 12, 31, NULL));
-
-  // Produce the same result on every run of this client.
-  trial->UseOneTimeRandomization();
+        content::kGpuCompositingFieldTrialName, kDivisor,  "disable",
+        2013, 12, 31, base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
 
   base::FieldTrial::Probability force_compositing_mode_probability = 0;
   base::FieldTrial::Probability threaded_compositing_probability = 0;
@@ -131,5 +128,5 @@ void InitializeCompositingFieldTrial() {
   UMA_HISTOGRAM_BOOLEAN("GPU.InCompositorThreadFieldTrial", thread);
 }
 
-}  // namespace gpu_util;
+}  // namespace gpu_util
 

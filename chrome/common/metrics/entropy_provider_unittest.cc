@@ -193,15 +193,17 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationSHA1) {
   // _might_ actually give the same result, but we know that given
   // the particular client_id we use for unit tests they won't.
   base::FieldTrialList field_trial_list(new SHA1EntropyProvider("client_id"));
+  const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   scoped_refptr<base::FieldTrial> trials[] = {
-      base::FieldTrialList::FactoryGetFieldTrial("one", 100, "default",
-          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL),
-      base::FieldTrialList::FactoryGetFieldTrial("two", 100, "default",
-          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL) };
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "one", 100, "default", kNoExpirationYear, 1, 1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "two", 100, "default", kNoExpirationYear, 1, 1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
+  };
 
   for (size_t i = 0; i < arraysize(trials); ++i) {
-    trials[i]->UseOneTimeRandomization();
-
     for (int j = 0; j < 100; ++j)
       trials[i]->AppendGroup(std::string(), 1);
   }
@@ -221,15 +223,17 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationPermuted) {
   // the particular client_id we use for unit tests they won't.
   base::FieldTrialList field_trial_list(
       new PermutedEntropyProvider(1234, kMaxLowEntropySize));
+  const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   scoped_refptr<base::FieldTrial> trials[] = {
-      base::FieldTrialList::FactoryGetFieldTrial("one", 100, "default",
-          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL),
-      base::FieldTrialList::FactoryGetFieldTrial("two", 100, "default",
-          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL) };
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "one", 100, "default", kNoExpirationYear, 1, 1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "two", 100, "default", kNoExpirationYear, 1, 1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
+  };
 
   for (size_t i = 0; i < arraysize(trials); ++i) {
-    trials[i]->UseOneTimeRandomization();
-
     for (int j = 0; j < 100; ++j)
       trials[i]->AppendGroup(std::string(), 1);
   }
@@ -245,16 +249,18 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedPermuted) {
   // for one time randomization produce the same group assignments.
   base::FieldTrialList field_trial_list(
       new PermutedEntropyProvider(1234, kMaxLowEntropySize));
-  scoped_refptr<base::FieldTrial> trials[] = {
-      base::FieldTrialList::FactoryGetFieldTrial("one", 100, "default",
-          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL),
-      base::FieldTrialList::FactoryGetFieldTrial("two", 100, "default",
-          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL) };
+  const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   const uint32 kCustomSeed = 9001;
+  scoped_refptr<base::FieldTrial> trials[] = {
+      base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
+          "one", 100, "default", kNoExpirationYear, 1, 1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, NULL),
+      base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
+          "two", 100, "default", kNoExpirationYear, 1, 1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, NULL),
+  };
 
   for (size_t i = 0; i < arraysize(trials); ++i) {
-    trials[i]->UseOneTimeRandomizationWithCustomSeed(kCustomSeed);
-
     for (int j = 0; j < 100; ++j)
       trials[i]->AppendGroup(std::string(), 1);
   }

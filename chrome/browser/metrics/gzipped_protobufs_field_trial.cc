@@ -39,8 +39,8 @@ void CreateGzippedProtobufsFieldTrial() {
           2013,
           10,
           1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED,
           NULL);
-  gzipped_protobufs_trial->UseOneTimeRandomization();
   int gzipped_protobufs_group = gzipped_protobufs_trial->AppendGroup(
       kGroupName,
       kTrialQuotient);

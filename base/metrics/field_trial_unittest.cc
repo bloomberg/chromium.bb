@@ -18,6 +18,25 @@ namespace {
 // Default group name used by several tests.
 const char kDefaultGroupName[] = "DefaultGroup";
 
+// Call FieldTrialList::FactoryGetFieldTrial() with a future expiry date.
+scoped_refptr<base::FieldTrial> CreateFieldTrial(
+    const std::string& trial_name,
+    int total_probability,
+    const std::string& default_group_name,
+    int* default_group_number) {
+  return FieldTrialList::FactoryGetFieldTrial(
+      trial_name, total_probability, default_group_name,
+      base::FieldTrialList::kNoExpirationYear, 1, 1,
+      base::FieldTrial::SESSION_RANDOMIZED, default_group_number);
+}
+
+int GetLastYear() {
+  Time last_year_time = Time::NowFromSystemTime() - TimeDelta::FromDays(365);
+  Time::Exploded exploded;
+  last_year_time.LocalExplode(&exploded);
+  return exploded.year;
+}
+
 // FieldTrialList::Observer implementation for testing.
 class TestFieldTrialObserver : public FieldTrialList::Observer {
  public:
@@ -49,26 +68,10 @@ class TestFieldTrialObserver : public FieldTrialList::Observer {
 
 class FieldTrialTest : public testing::Test {
  public:
-  FieldTrialTest() : trial_list_(NULL) {
-    Time now = Time::NowFromSystemTime();
-    TimeDelta one_year = TimeDelta::FromDays(365);
-    Time::Exploded exploded;
-
-    Time next_year_time = now + one_year;
-    next_year_time.LocalExplode(&exploded);
-    next_year_ = exploded.year;
-
-    Time last_year_time = now - one_year;
-    last_year_time.LocalExplode(&exploded);
-    last_year_ = exploded.year;
-  }
-
- protected:
-  int next_year_;
-  int last_year_;
-  MessageLoop message_loop_;
+  FieldTrialTest() : trial_list_(NULL) {}
 
  private:
+  MessageLoop message_loop_;
   FieldTrialList trial_list_;
 };
 
@@ -80,8 +83,7 @@ TEST_F(FieldTrialTest, Registration) {
   EXPECT_FALSE(FieldTrialList::Find(name1));
   EXPECT_FALSE(FieldTrialList::Find(name2));
 
-  FieldTrial* trial1 = FieldTrialList::FactoryGetFieldTrial(
-      name1, 10, "default name 1 test", next_year_, 12, 31, NULL);
+  FieldTrial* trial1 = CreateFieldTrial(name1, 10, "default name 1 test", NULL);
   EXPECT_EQ(FieldTrial::kNotFinalized, trial1->group_);
   EXPECT_EQ(name1, trial1->trial_name());
   EXPECT_EQ("", trial1->group_name_internal());
@@ -91,8 +93,7 @@ TEST_F(FieldTrialTest, Registration) {
   EXPECT_EQ(trial1, FieldTrialList::Find(name1));
   EXPECT_FALSE(FieldTrialList::Find(name2));
 
-  FieldTrial* trial2 = FieldTrialList::FactoryGetFieldTrial(
-      name2, 10, "default name 2 test", next_year_, 12, 31, NULL);
+  FieldTrial* trial2 = CreateFieldTrial(name2, 10, "default name 2 test", NULL);
   EXPECT_EQ(FieldTrial::kNotFinalized, trial2->group_);
   EXPECT_EQ(name2, trial2->trial_name());
   EXPECT_EQ("", trial2->group_name_internal());
@@ -116,16 +117,16 @@ TEST_F(FieldTrialTest, AbsoluteProbabilities) {
     always_false[0] = i;
     default_always_false[0] = i;
 
-    FieldTrial* trial_true = FieldTrialList::FactoryGetFieldTrial(
-        always_true, 10, default_always_true, next_year_, 12, 31, NULL);
+    FieldTrial* trial_true =
+        CreateFieldTrial(always_true, 10, default_always_true, NULL);
     const std::string winner = "TheWinner";
     int winner_group = trial_true->AppendGroup(winner, 10);
 
     EXPECT_EQ(winner_group, trial_true->group());
     EXPECT_EQ(winner, trial_true->group_name());
 
-    FieldTrial* trial_false = FieldTrialList::FactoryGetFieldTrial(
-        always_false, 10, default_always_false, next_year_, 12, 31, NULL);
+    FieldTrial* trial_false =
+        CreateFieldTrial(always_false, 10, default_always_false, NULL);
     int loser_group = trial_false->AppendGroup("ALoser", 0);
 
     EXPECT_NE(loser_group, trial_false->group());
@@ -141,8 +142,7 @@ TEST_F(FieldTrialTest, RemainingProbability) {
   int default_group_number = -1;
   do {
     std::string name = StringPrintf("trial%d", ++counter);
-    trial = FieldTrialList::FactoryGetFieldTrial(
-        name, 10, winner, next_year_, 12, 31, &default_group_number);
+    trial = CreateFieldTrial(name, 10, winner, &default_group_number);
     trial->AppendGroup(loser, 5);  // 50% chance of not being chosen.
     // If a group is not assigned, group_ will be kNotFinalized.
   } while (trial->group_ != FieldTrial::kNotFinalized);
@@ -166,8 +166,7 @@ TEST_F(FieldTrialTest, FiftyFiftyProbability) {
     std::string name = base::StringPrintf("FiftyFifty%d", ++counter);
     std::string default_group_name = base::StringPrintf("Default FiftyFifty%d",
                                                         ++counter);
-    scoped_refptr<FieldTrial> trial(FieldTrialList::FactoryGetFieldTrial(
-        name, 2, default_group_name, next_year_, 12, 31, NULL));
+    FieldTrial* trial = CreateFieldTrial(name, 2, default_group_name, NULL);
     trial->AppendGroup("first", 1);  // 50% chance of being chosen.
     // If group_ is kNotFinalized, then a group assignement hasn't been done.
     if (trial->group_ != FieldTrial::kNotFinalized) {
@@ -190,8 +189,7 @@ TEST_F(FieldTrialTest, MiddleProbabilities) {
   for (int i = 1; i < 250; ++i) {
     name[0] = i;
     default_group_name[0] = i;
-    FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
-        name, 10, default_group_name, next_year_, 12, 31, NULL);
+    FieldTrial* trial = CreateFieldTrial(name, 10, default_group_name, NULL);
     int might_win = trial->AppendGroup("MightWin", 5);
 
     if (trial->group() == might_win) {
@@ -214,9 +212,8 @@ TEST_F(FieldTrialTest, OneWinner) {
   int group_count(10);
 
   int default_group_number = -1;
-  FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
-      name, group_count, default_group_name, next_year_, 12, 31,
-      &default_group_number);
+  FieldTrial* trial =
+      CreateFieldTrial(name, group_count, default_group_name, NULL);
   int winner_index(-2);
   std::string winner_name;
 
@@ -247,9 +244,9 @@ TEST_F(FieldTrialTest, DisableProbability) {
 
   // Create a field trail that has expired.
   int default_group_number = -1;
-  scoped_refptr<FieldTrial> trial;
-  trial = FieldTrialList::FactoryGetFieldTrial(
-      name, 1000000000, default_group_name, last_year_, 1, 1,
+  FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
+      name, 1000000000, default_group_name, GetLastYear(), 1, 1,
+      FieldTrial::SESSION_RANDOMIZED,
       &default_group_number);
   trial->AppendGroup(loser, 999999999);  // 99.9999999% chance of being chosen.
 
@@ -262,8 +259,7 @@ TEST_F(FieldTrialTest, DisableProbability) {
 
 TEST_F(FieldTrialTest, ActiveGroups) {
   std::string no_group("No Group");
-  scoped_refptr<FieldTrial> trial(FieldTrialList::FactoryGetFieldTrial(
-      no_group, 10, "Default", next_year_, 12, 31, NULL));
+  FieldTrial* trial = CreateFieldTrial(no_group, 10, "Default", NULL);
 
   // There is no winner yet, so no NameGroupId should be returned.
   FieldTrial::ActiveGroup active_group;
@@ -271,8 +267,7 @@ TEST_F(FieldTrialTest, ActiveGroups) {
 
   // Create a single winning group.
   std::string one_winner("One Winner");
-  trial = FieldTrialList::FactoryGetFieldTrial(
-      one_winner, 10, "Default", next_year_, 12, 31, NULL);
+  trial = CreateFieldTrial(one_winner, 10, "Default", NULL);
   std::string winner("Winner");
   trial->AppendGroup(winner, 10);
   EXPECT_FALSE(trial->GetActiveGroup(&active_group));
@@ -283,9 +278,8 @@ TEST_F(FieldTrialTest, ActiveGroups) {
   EXPECT_EQ(winner, active_group.group_name);
 
   std::string multi_group("MultiGroup");
-  scoped_refptr<FieldTrial> multi_group_trial =
-      FieldTrialList::FactoryGetFieldTrial(multi_group, 9, "Default",
-                                            next_year_, 12, 31, NULL);
+  FieldTrial* multi_group_trial =
+      CreateFieldTrial(multi_group, 9, "Default", NULL);
 
   multi_group_trial->AppendGroup("Me", 3);
   multi_group_trial->AppendGroup("You", 3);
@@ -317,8 +311,7 @@ TEST_F(FieldTrialTest, ActiveGroupsNotFinalized) {
 
   int default_group = -1;
   FieldTrial* trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, &default_group);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
   const int secondary_group = trial->AppendGroup(kSecondaryGroupName, 50);
 
   // Before |group()| is called, |GetActiveGroup()| should return false.
@@ -350,8 +343,8 @@ TEST_F(FieldTrialTest, ActiveGroupsNotFinalized) {
 TEST_F(FieldTrialTest, Save) {
   std::string save_string;
 
-  FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
-      "Some name", 10, "Default some name", next_year_, 12, 31, NULL);
+  FieldTrial* trial =
+      CreateFieldTrial("Some name", 10, "Default some name", NULL);
   // There is no winner yet, so no textual group name is associated with trial.
   // In this case, the trial should not be included.
   EXPECT_EQ("", trial->group_name_internal());
@@ -368,8 +361,7 @@ TEST_F(FieldTrialTest, Save) {
   save_string.clear();
 
   // Create a second trial and winning group.
-  FieldTrial* trial2 = FieldTrialList::FactoryGetFieldTrial(
-      "xxx", 10, "Default xxx", next_year_, 12, 31, NULL);
+  FieldTrial* trial2 = CreateFieldTrial("xxx", 10, "Default xxx", NULL);
   trial2->AppendGroup("yyyy", 10);
   // Finalize the group selection by accessing the selected group.
   trial2->group();
@@ -380,8 +372,7 @@ TEST_F(FieldTrialTest, Save) {
   save_string.clear();
 
   // Create a third trial with only the default group.
-  FieldTrial* trial3 = FieldTrialList::FactoryGetFieldTrial(
-      "zzz", 10, "default", next_year_, 12, 31, NULL);
+  FieldTrial* trial3 = CreateFieldTrial("zzz", 10, "default", NULL);
   // Finalize the group selection by accessing the selected group.
   trial3->group();
 
@@ -419,8 +410,7 @@ TEST_F(FieldTrialTest, BogusRestore) {
 }
 
 TEST_F(FieldTrialTest, DuplicateRestore) {
-  FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
-      "Some name", 10, "Default some name", next_year_, 12, 31, NULL);
+  FieldTrial* trial = CreateFieldTrial("Some name", 10, "Default", NULL);
   trial->AppendGroup("Winner", 10);
   // Finalize the group selection by accessing the selected group.
   trial->group();
@@ -527,8 +517,7 @@ TEST_F(FieldTrialTest, CreateFieldTrialIsNotActive) {
 }
 
 TEST_F(FieldTrialTest, DuplicateFieldTrial) {
-  FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
-      "Some_name", 10, "Default some name", next_year_, 12, 31, NULL);
+  FieldTrial* trial = CreateFieldTrial("Some_name", 10, "Default", NULL);
   trial->AppendGroup("Winner", 10);
 
   // It is OK if we redundantly specify a winner.
@@ -541,8 +530,7 @@ TEST_F(FieldTrialTest, DuplicateFieldTrial) {
 }
 
 TEST_F(FieldTrialTest, MakeName) {
-  FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
-      "Field Trial", 10, "Winner", next_year_, 12, 31, NULL);
+  FieldTrial* trial = CreateFieldTrial("Field Trial", 10, "Winner", NULL);
   trial->group();
   EXPECT_EQ("Histogram_Winner",
             FieldTrial::MakeName("Histogram", "Field Trial"));
@@ -550,17 +538,15 @@ TEST_F(FieldTrialTest, MakeName) {
 
 TEST_F(FieldTrialTest, DisableImmediately) {
   int default_group_number = -1;
-  FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
-      "trial", 100, "default", next_year_, 12, 31, &default_group_number);
+  FieldTrial* trial =
+      CreateFieldTrial("trial", 100, "default", &default_group_number);
   trial->Disable();
   ASSERT_EQ("default", trial->group_name());
   ASSERT_EQ(default_group_number, trial->group());
 }
 
 TEST_F(FieldTrialTest, DisableAfterInitialization) {
-  FieldTrial* trial =
-      FieldTrialList::FactoryGetFieldTrial("trial", 100, "default",
-                                            next_year_, 12, 31, NULL);
+  FieldTrial* trial = CreateFieldTrial("trial", 100, "default", NULL);
   trial->AppendGroup("non_default", 100);
   trial->Disable();
   ASSERT_EQ("default", trial->group_name());
@@ -573,8 +559,8 @@ TEST_F(FieldTrialTest, ForcedFieldTrials) {
   EXPECT_STREQ("Force", forced_trial->group_name().c_str());
 
   int default_group_number = -1;
-  FieldTrial* factory_trial = FieldTrialList::FactoryGetFieldTrial(
-      "Use the", 1000, "default", next_year_, 12, 31, &default_group_number);
+  FieldTrial* factory_trial =
+      CreateFieldTrial("Use the", 1000, "default", &default_group_number);
   EXPECT_EQ(factory_trial, forced_trial);
 
   int chosen_group = factory_trial->AppendGroup("Force", 100);
@@ -596,8 +582,8 @@ TEST_F(FieldTrialTest, ForcedFieldTrialsDefaultGroup) {
   FieldTrial* forced_trial = FieldTrialList::CreateFieldTrial("Trial Name",
                                                               "Default");
   int default_group_number = -1;
-  FieldTrial* factory_trial = FieldTrialList::FactoryGetFieldTrial(
-      "Trial Name", 1000, "Default", next_year_, 12, 31, &default_group_number);
+  FieldTrial* factory_trial =
+      CreateFieldTrial("Trial Name", 1000, "Default", &default_group_number);
   EXPECT_EQ(forced_trial, factory_trial);
 
   int other_group = factory_trial->AppendGroup("Not Default", 100);
@@ -612,8 +598,8 @@ TEST_F(FieldTrialTest, ForcedFieldTrialsDefaultGroup) {
 TEST_F(FieldTrialTest, SetForced) {
   // Start by setting a trial for which we ensure a winner...
   int default_group_number = -1;
-  FieldTrial* forced_trial = FieldTrialList::FactoryGetFieldTrial(
-      "Use the", 1, "default", next_year_, 12, 31, &default_group_number);
+  FieldTrial* forced_trial =
+      CreateFieldTrial("Use the", 1, "default", &default_group_number);
   EXPECT_EQ(forced_trial, forced_trial);
 
   int forced_group = forced_trial->AppendGroup("Force", 1);
@@ -623,8 +609,8 @@ TEST_F(FieldTrialTest, SetForced) {
   forced_trial->SetForced();
 
   // Now try to set it up differently as a hard coded registration would.
-  FieldTrial* hard_coded_trial = FieldTrialList::FactoryGetFieldTrial(
-      "Use the", 1, "default", next_year_, 12, 31, &default_group_number);
+  FieldTrial* hard_coded_trial =
+      CreateFieldTrial("Use the", 1, "default", &default_group_number);
   EXPECT_EQ(hard_coded_trial, forced_trial);
 
   int would_lose_group = hard_coded_trial->AppendGroup("Force", 0);
@@ -632,8 +618,8 @@ TEST_F(FieldTrialTest, SetForced) {
   EXPECT_EQ(forced_group, would_lose_group);
 
   // Same thing if we would have done it to win again.
-  FieldTrial* other_hard_coded_trial = FieldTrialList::FactoryGetFieldTrial(
-      "Use the", 1, "default", next_year_, 12, 31, &default_group_number);
+  FieldTrial* other_hard_coded_trial =
+      CreateFieldTrial("Use the", 1, "default", &default_group_number);
   EXPECT_EQ(other_hard_coded_trial, forced_trial);
 
   int would_win_group = other_hard_coded_trial->AppendGroup("Force", 1);
@@ -647,13 +633,10 @@ TEST_F(FieldTrialTest, SetForcedDefaultOnly) {
 
   int default_group = -1;
   FieldTrial* trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, &default_group);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
   trial->SetForced();
 
-  trial = FieldTrialList::FactoryGetFieldTrial(kTrialName, 100,
-                                               kDefaultGroupName, next_year_,
-                                               12, 31, NULL);
+  trial = CreateFieldTrial(kTrialName, 100, kDefaultGroupName, NULL);
   EXPECT_EQ(default_group, trial->group());
   EXPECT_EQ(kDefaultGroupName, trial->group_name());
 }
@@ -664,13 +647,10 @@ TEST_F(FieldTrialTest, SetForcedDefaultWithExtraGroup) {
 
   int default_group = -1;
   FieldTrial* trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, &default_group);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
   trial->SetForced();
 
-  trial = FieldTrialList::FactoryGetFieldTrial(kTrialName, 100,
-                                               kDefaultGroupName, next_year_,
-                                               12, 31, NULL);
+  trial = CreateFieldTrial(kTrialName, 100, kDefaultGroupName, NULL);
   const int extra_group = trial->AppendGroup("Extra", 100);
   EXPECT_EQ(default_group, trial->group());
   EXPECT_NE(extra_group, trial->group());
@@ -685,15 +665,13 @@ TEST_F(FieldTrialTest, SetForcedTurnFeatureOn) {
   // Simulate a server-side (forced) config that turns the feature on when the
   // original hard-coded config had it disabled.
   FieldTrial* forced_trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, NULL);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, NULL);
   forced_trial->AppendGroup(kExtraGroupName, 100);
   forced_trial->SetForced();
 
   int default_group = -1;
   FieldTrial* client_trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, &default_group);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
   const int extra_group = client_trial->AppendGroup(kExtraGroupName, 0);
   EXPECT_NE(default_group, extra_group);
 
@@ -711,15 +689,13 @@ TEST_F(FieldTrialTest, SetForcedTurnFeatureOff) {
   // Simulate a server-side (forced) config that turns the feature off when the
   // original hard-coded config had it enabled.
   FieldTrial* forced_trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, NULL);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, NULL);
   forced_trial->AppendGroup(kExtraGroupName, 0);
   forced_trial->SetForced();
 
   int default_group = -1;
   FieldTrial* client_trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, &default_group);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
   const int extra_group = client_trial->AppendGroup(kExtraGroupName, 100);
   EXPECT_NE(default_group, extra_group);
 
@@ -738,15 +714,13 @@ TEST_F(FieldTrialTest, SetForcedChangeDefault_Default) {
   // Simulate a server-side (forced) config that switches which group is default
   // and ensures that the non-forced code receives the correct group numbers.
   FieldTrial* forced_trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kGroupAName,
-                                           next_year_, 12, 31, NULL);
+      CreateFieldTrial(kTrialName, 100, kGroupAName, NULL);
   forced_trial->AppendGroup(kGroupBName, 100);
   forced_trial->SetForced();
 
   int default_group = -1;
   FieldTrial* client_trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kGroupBName,
-                                           next_year_, 12, 31, &default_group);
+      CreateFieldTrial(kTrialName, 100, kGroupBName, &default_group);
   const int extra_group = client_trial->AppendGroup(kGroupAName, 50);
   EXPECT_NE(default_group, extra_group);
 
@@ -765,15 +739,13 @@ TEST_F(FieldTrialTest, SetForcedChangeDefault_NonDefault) {
   // Simulate a server-side (forced) config that switches which group is default
   // and ensures that the non-forced code receives the correct group numbers.
   FieldTrial* forced_trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kGroupAName,
-                                           next_year_, 12, 31, NULL);
+      CreateFieldTrial(kTrialName, 100, kGroupAName, NULL);
   forced_trial->AppendGroup(kGroupBName, 0);
   forced_trial->SetForced();
 
   int default_group = -1;
   FieldTrial* client_trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kGroupBName,
-                                           next_year_, 12, 31, &default_group);
+      CreateFieldTrial(kTrialName, 100, kGroupBName, &default_group);
   const int extra_group = client_trial->AppendGroup(kGroupAName, 50);
   EXPECT_NE(default_group, extra_group);
 
@@ -790,8 +762,7 @@ TEST_F(FieldTrialTest, Observe) {
   TestFieldTrialObserver observer;
   int default_group = -1;
   FieldTrial* trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, &default_group);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
   const int secondary_group = trial->AppendGroup(kSecondaryGroupName, 50);
   const int chosen_group = trial->group();
   EXPECT_TRUE(chosen_group == default_group || chosen_group == secondary_group);
@@ -810,8 +781,7 @@ TEST_F(FieldTrialTest, ObserveDisabled) {
   TestFieldTrialObserver observer;
   int default_group = -1;
   FieldTrial* trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, &default_group);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
   trial->AppendGroup("A", 25);
   trial->AppendGroup("B", 25);
   trial->AppendGroup("C", 25);
@@ -835,8 +805,7 @@ TEST_F(FieldTrialTest, ObserveForcedDisabled) {
   TestFieldTrialObserver observer;
   int default_group = -1;
   FieldTrial* trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, &default_group);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
   trial->AppendGroup("A", 25);
   trial->AppendGroup("B", 25);
   trial->AppendGroup("C", 25);
@@ -860,8 +829,7 @@ TEST_F(FieldTrialTest, DisabledTrialNotActive) {
   ASSERT_FALSE(FieldTrialList::TrialExists(kTrialName));
 
   FieldTrial* trial =
-      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
-                                           next_year_, 12, 31, NULL);
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, NULL);
   trial->AppendGroup("X", 50);
   trial->Disable();
 
@@ -883,9 +851,7 @@ TEST_F(FieldTrialTest, ExpirationYearNotExpired) {
   ASSERT_FALSE(FieldTrialList::TrialExists(kTrialName));
 
   FieldTrial* trial =
-      FieldTrialList::FactoryGetFieldTrial(
-          kTrialName, kProbability, kDefaultGroupName,
-          FieldTrialList::kNoExpirationYear, 1, 1, NULL);
+      CreateFieldTrial(kTrialName, kProbability, kDefaultGroupName, NULL);
   trial->AppendGroup(kGroupName, kProbability);
   EXPECT_EQ(kGroupName, trial->group_name());
 }

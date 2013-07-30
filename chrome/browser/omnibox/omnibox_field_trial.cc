@@ -87,9 +87,8 @@ void OmniboxFieldTrial::ActivateStaticTrials() {
   // Make it expire on March 1, 2013.
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
-      kHUPCullRedirectsFieldTrialName, kHUPCullRedirectsFieldTrialDivisor,
-      "Standard", 2013, 3, 1, NULL));
-  trial->UseOneTimeRandomization();
+          kHUPCullRedirectsFieldTrialName, kHUPCullRedirectsFieldTrialDivisor,
+          "Standard", 2013, 3, 1, base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
   hup_dont_cull_redirects_experiment_group =
       trial->AppendGroup("DontCullRedirects",
                          kHUPCullRedirectsFieldTrialExperimentFraction);
@@ -98,8 +97,8 @@ void OmniboxFieldTrial::ActivateStaticTrials() {
   // Make it expire on March 1, 2013.
   trial = base::FieldTrialList::FactoryGetFieldTrial(
       kHUPCreateShorterMatchFieldTrialName,
-      kHUPCreateShorterMatchFieldTrialDivisor, "Standard", 2013, 3, 1, NULL);
-  trial->UseOneTimeRandomization();
+      kHUPCreateShorterMatchFieldTrialDivisor, "Standard", 2013, 3, 1,
+      base::FieldTrial::ONE_TIME_RANDOMIZED, NULL);
   hup_dont_create_shorter_match_experiment_group =
       trial->AppendGroup("DontCreateShorterMatch",
                          kHUPCreateShorterMatchFieldTrialExperimentFraction);
