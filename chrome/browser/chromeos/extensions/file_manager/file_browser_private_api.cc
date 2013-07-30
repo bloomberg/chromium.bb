@@ -565,10 +565,10 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<LogoutUserFunction>();
   registry->RegisterFunction<CancelFileDialogFunction>();
-  registry->RegisterFunction<ExecuteTasksFileBrowserFunction>();
-  registry->RegisterFunction<SetDefaultTaskFileBrowserFunction>();
+  registry->RegisterFunction<ExecuteTasksFunction>();
+  registry->RegisterFunction<SetDefaultTaskFunction>();
   registry->RegisterFunction<FileDialogStringsFunction>();
-  registry->RegisterFunction<GetFileTasksFileBrowserFunction>();
+  registry->RegisterFunction<GetFileTasksFunction>();
   registry->RegisterFunction<GetVolumeMetadataFunction>();
   registry->RegisterFunction<RequestFileSystemFunction>();
   registry->RegisterFunction<AddFileWatchBrowserFunction>();
@@ -819,13 +819,13 @@ void RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
   Respond(true);
 }
 
-struct GetFileTasksFileBrowserFunction::FileInfo {
+struct GetFileTasksFunction::FileInfo {
   GURL file_url;
   base::FilePath file_path;
   std::string mime_type;
 };
 
-struct GetFileTasksFileBrowserFunction::TaskInfo {
+struct GetFileTasksFunction::TaskInfo {
   TaskInfo(const string16& app_name, const GURL& icon_url)
       : app_name(app_name), icon_url(icon_url) {
   }
@@ -834,14 +834,14 @@ struct GetFileTasksFileBrowserFunction::TaskInfo {
   GURL icon_url;
 };
 
-GetFileTasksFileBrowserFunction::GetFileTasksFileBrowserFunction() {
+GetFileTasksFunction::GetFileTasksFunction() {
 }
 
-GetFileTasksFileBrowserFunction::~GetFileTasksFileBrowserFunction() {
+GetFileTasksFunction::~GetFileTasksFunction() {
 }
 
 // static
-void GetFileTasksFileBrowserFunction::GetAvailableDriveTasks(
+void GetFileTasksFunction::GetAvailableDriveTasks(
     drive::DriveAppRegistry* registry,
     const FileInfoList& file_info_list,
     TaskInfoMap* task_info_map) {
@@ -890,7 +890,7 @@ void GetFileTasksFileBrowserFunction::GetAvailableDriveTasks(
   }
 }
 
-void GetFileTasksFileBrowserFunction::FindDefaultDriveTasks(
+void GetFileTasksFunction::FindDefaultDriveTasks(
     const FileInfoList& file_info_list,
     const TaskInfoMap& task_info_map,
     std::set<std::string>* default_tasks) {
@@ -906,7 +906,7 @@ void GetFileTasksFileBrowserFunction::FindDefaultDriveTasks(
 }
 
 // static
-void GetFileTasksFileBrowserFunction::CreateDriveTasks(
+void GetFileTasksFunction::CreateDriveTasks(
     const TaskInfoMap& task_info_map,
     const std::set<std::string>& default_tasks,
     ListValue* result_list,
@@ -942,7 +942,7 @@ void GetFileTasksFileBrowserFunction::CreateDriveTasks(
 // apps and add them, with generated task ids. Extension ids will be the app_ids
 // from drive. We'll know that they are drive apps because the extension id will
 // begin with kDriveTaskExtensionPrefix.
-bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
+bool GetFileTasksFunction::FindDriveAppTasks(
     const FileInfoList& file_info_list,
     ListValue* result_list,
     bool* default_already_set) {
@@ -974,7 +974,7 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
   return true;
 }
 
-bool GetFileTasksFileBrowserFunction::FindAppTasks(
+bool GetFileTasksFunction::FindAppTasks(
     const std::vector<base::FilePath>& file_paths,
     ListValue* result_list,
     bool* default_already_set) {
@@ -1043,7 +1043,7 @@ bool GetFileTasksFileBrowserFunction::FindAppTasks(
   return true;
 }
 
-bool GetFileTasksFileBrowserFunction::RunImpl() {
+bool GetFileTasksFunction::RunImpl() {
   // First argument is the list of files to get tasks for.
   ListValue* files_list = NULL;
   if (!args_->GetList(0, &files_list))
@@ -1176,13 +1176,13 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   return true;
 }
 
-ExecuteTasksFileBrowserFunction::ExecuteTasksFileBrowserFunction() {
+ExecuteTasksFunction::ExecuteTasksFunction() {
 }
 
-ExecuteTasksFileBrowserFunction::~ExecuteTasksFileBrowserFunction() {
+ExecuteTasksFunction::~ExecuteTasksFunction() {
 }
 
-bool ExecuteTasksFileBrowserFunction::RunImpl() {
+bool ExecuteTasksFunction::RunImpl() {
   // First param is task id that was to the extension with getFileTasks call.
   std::string task_id;
   if (!args_->GetString(0, &task_id) || !task_id.size())
@@ -1239,21 +1239,21 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
       task_type,
       action_id,
       file_urls,
-      base::Bind(&ExecuteTasksFileBrowserFunction::OnTaskExecuted, this));
+      base::Bind(&ExecuteTasksFunction::OnTaskExecuted, this));
 }
 
-void ExecuteTasksFileBrowserFunction::OnTaskExecuted(bool success) {
+void ExecuteTasksFunction::OnTaskExecuted(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }
 
-SetDefaultTaskFileBrowserFunction::SetDefaultTaskFileBrowserFunction() {
+SetDefaultTaskFunction::SetDefaultTaskFunction() {
 }
 
-SetDefaultTaskFileBrowserFunction::~SetDefaultTaskFileBrowserFunction() {
+SetDefaultTaskFunction::~SetDefaultTaskFunction() {
 }
 
-bool SetDefaultTaskFileBrowserFunction::RunImpl() {
+bool SetDefaultTaskFunction::RunImpl() {
   // First param is task id that was to the extension with setDefaultTask call.
   std::string task_id;
   if (!args_->GetString(0, &task_id) || !task_id.size())
@@ -1299,14 +1299,15 @@ bool SetDefaultTaskFileBrowserFunction::RunImpl() {
   return true;
 }
 
-FileBrowserFunction::FileBrowserFunction() : log_on_completion_(false) {
+LoggedAsyncExtensionFunction::LoggedAsyncExtensionFunction()
+    : log_on_completion_(false) {
   start_time_  = base::Time::Now();
 }
 
-FileBrowserFunction::~FileBrowserFunction() {
+LoggedAsyncExtensionFunction::~LoggedAsyncExtensionFunction() {
 }
 
-void FileBrowserFunction::SendResponse(bool success) {
+void LoggedAsyncExtensionFunction::SendResponse(bool success) {
   int64 elapsed = (base::Time::Now() - start_time_).InMilliseconds();
   if (log_on_completion_) {
     drive::util::Log("%s[%d] %s. (elapsed time: %sms)",

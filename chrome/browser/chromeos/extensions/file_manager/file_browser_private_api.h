@@ -72,14 +72,12 @@ class FileBrowserPrivateAPI : public BrowserContextKeyedService {
 // set_log_on_completion(true) to enable it, if they want. However, even if
 // the logging is turned off, a warning is emitted when a function call is
 // very slow. See the implementation of SendResponse() for details.
-//
-// TODO(satorux): Rename this class to LoggedAsyncExtensionFunction and let
-// all async API functions inherit this (some don't inherit this now).
-class FileBrowserFunction : public AsyncExtensionFunction {
- protected:
-  FileBrowserFunction();
+class LoggedAsyncExtensionFunction : public AsyncExtensionFunction {
+ public:
+  LoggedAsyncExtensionFunction();
 
-  virtual ~FileBrowserFunction();
+ protected:
+  virtual ~LoggedAsyncExtensionFunction();
 
   // AsyncExtensionFunction overrides.
   virtual void SendResponse(bool success) OVERRIDE;
@@ -111,7 +109,7 @@ class LogoutUserFunction : public SyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.requestFileSystem method.
-class RequestFileSystemFunction : public FileBrowserFunction {
+class RequestFileSystemFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestFileSystem",
                              FILEBROWSERPRIVATE_REQUESTFILESYSTEM)
@@ -149,7 +147,7 @@ class RequestFileSystemFunction : public FileBrowserFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.addFileWatch method.
-class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
+class FileWatchBrowserFunctionBase : public LoggedAsyncExtensionFunction {
  public:
   FileWatchBrowserFunctionBase();
 
@@ -207,15 +205,15 @@ class RemoveFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
 };
 
 // Implements the chrome.fileBrowserPrivate.getFileTasks method.
-class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
+class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getFileTasks",
                              FILEBROWSERPRIVATE_GETFILETASKS)
 
-  GetFileTasksFileBrowserFunction();
+  GetFileTasksFunction();
 
  protected:
-  virtual ~GetFileTasksFileBrowserFunction();
+  virtual ~GetFileTasksFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -267,15 +265,15 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.executeTask method.
-class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
+class ExecuteTasksFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.executeTask",
                              FILEBROWSERPRIVATE_EXECUTETASK)
 
-  ExecuteTasksFileBrowserFunction();
+  ExecuteTasksFunction();
 
  protected:
-  virtual ~ExecuteTasksFileBrowserFunction();
+  virtual ~ExecuteTasksFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -284,21 +282,21 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.setDefaultTask method.
-class SetDefaultTaskFileBrowserFunction : public SyncExtensionFunction {
+class SetDefaultTaskFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setDefaultTask",
                              FILEBROWSERPRIVATE_SETDEFAULTTASK)
 
-  SetDefaultTaskFileBrowserFunction();
+  SetDefaultTaskFunction();
 
  protected:
-  virtual ~SetDefaultTaskFileBrowserFunction();
+  virtual ~SetDefaultTaskFunction();
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SelectFileFunction : public FileBrowserFunction {
+class SelectFileFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFile",
                              FILEBROWSERPRIVATE_SELECTFILE)
@@ -318,7 +316,7 @@ class SelectFileFunction : public FileBrowserFunction {
 };
 
 // View multiple selected files.  Window stays open.
-class ViewFilesFunction : public FileBrowserFunction {
+class ViewFilesFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.viewFiles",
                              FILEBROWSERPRIVATE_VIEWFILES)
@@ -333,7 +331,7 @@ class ViewFilesFunction : public FileBrowserFunction {
 };
 
 // Select multiple files.  Closes the dialog window.
-class SelectFilesFunction : public FileBrowserFunction {
+class SelectFilesFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFiles",
                              FILEBROWSERPRIVATE_SELECTFILES)
@@ -353,7 +351,7 @@ class SelectFilesFunction : public FileBrowserFunction {
 };
 
 // Cancel file selection Dialog.  Closes the dialog window.
-class CancelFileDialogFunction : public FileBrowserFunction {
+class CancelFileDialogFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelDialog",
                              FILEBROWSERPRIVATE_CANCELDIALOG)
@@ -368,7 +366,7 @@ class CancelFileDialogFunction : public FileBrowserFunction {
 };
 
 // Mount a device or a file.
-class AddMountFunction : public FileBrowserFunction {
+class AddMountFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.addMount",
                              FILEBROWSERPRIVATE_ADDMOUNT)
@@ -390,7 +388,7 @@ class AddMountFunction : public FileBrowserFunction {
 };
 
 // Unmounts selected device. Expects mount point path as an argument.
-class RemoveMountFunction : public FileBrowserFunction {
+class RemoveMountFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.removeMount",
                              FILEBROWSERPRIVATE_REMOVEMOUNT)
@@ -409,7 +407,7 @@ class RemoveMountFunction : public FileBrowserFunction {
       const std::vector<ui::SelectedFileInfo>& files);
 };
 
-class GetMountPointsFunction : public FileBrowserFunction {
+class GetMountPointsFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getMountPoints",
                              FILEBROWSERPRIVATE_GETMOUNTPOINTS)
@@ -424,7 +422,7 @@ class GetMountPointsFunction : public FileBrowserFunction {
 };
 
 // Formats Device given its mount path.
-class FormatDeviceFunction : public FileBrowserFunction {
+class FormatDeviceFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.formatDevice",
                              FILEBROWSERPRIVATE_FORMATDEVICE)
@@ -439,7 +437,7 @@ class FormatDeviceFunction : public FileBrowserFunction {
 };
 
 // Sets last modified date in seconds of local file
-class SetLastModifiedFunction : public FileBrowserFunction {
+class SetLastModifiedFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setLastModified",
                              FILEBROWSERPRIVATE_SETLASTMODIFIED)
@@ -453,7 +451,7 @@ class SetLastModifiedFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetSizeStatsFunction : public FileBrowserFunction {
+class GetSizeStatsFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getSizeStats",
                              FILEBROWSERPRIVATE_GETSIZESTATS)
@@ -476,7 +474,7 @@ class GetSizeStatsFunction : public FileBrowserFunction {
 };
 
 // Retrieves devices meta-data. Expects volume's device path as an argument.
-class GetVolumeMetadataFunction : public FileBrowserFunction {
+class GetVolumeMetadataFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getVolumeMetadata",
                              FILEBROWSERPRIVATE_GETVOLUMEMETADATA)
@@ -508,7 +506,7 @@ class FileDialogStringsFunction : public SyncExtensionFunction {
 // Retrieves property information for an entry and returns it as a dictionary.
 // On error, returns a dictionary with the key "error" set to the error number
 // (drive::FileError).
-class GetDriveEntryPropertiesFunction : public FileBrowserFunction {
+class GetDriveEntryPropertiesFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveEntryProperties",
                              FILEBROWSERPRIVATE_GETDRIVEFILEPROPERTIES)
@@ -535,7 +533,7 @@ class GetDriveEntryPropertiesFunction : public FileBrowserFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.pinDriveFile method.
-class PinDriveFileFunction : public FileBrowserFunction {
+class PinDriveFileFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.pinDriveFile",
                              FILEBROWSERPRIVATE_PINDRIVEFILE)
@@ -561,7 +559,7 @@ class PinDriveFileFunction : public FileBrowserFunction {
 // file manager should check if the local paths returned from getDriveFiles()
 // contain empty paths.
 // TODO(satorux): Should we propagate error types to the JavaScript layer?
-class GetDriveFilesFunction : public FileBrowserFunction {
+class GetDriveFilesFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveFiles",
                              FILEBROWSERPRIVATE_GETDRIVEFILES)
@@ -590,7 +588,7 @@ class GetDriveFilesFunction : public FileBrowserFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.cancelFileTransfers method.
-class CancelFileTransfersFunction : public FileBrowserFunction {
+class CancelFileTransfersFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelFileTransfers",
                              FILEBROWSERPRIVATE_CANCELFILETRANSFERS)
@@ -605,7 +603,7 @@ class CancelFileTransfersFunction : public FileBrowserFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.transferFile method.
-class TransferFileFunction : public FileBrowserFunction {
+class TransferFileFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.transferFile",
                              FILEBROWSERPRIVATE_TRANSFERFILE)
@@ -651,7 +649,7 @@ class SetPreferencesFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SearchDriveFunction : public AsyncExtensionFunction {
+class SearchDriveFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDrive",
                              FILEBROWSERPRIVATE_SEARCHDRIVE)
@@ -672,7 +670,7 @@ class SearchDriveFunction : public AsyncExtensionFunction {
 
 // Similar to SearchDriveFunction but this one is used for searching drive
 // metadata which is stored locally.
-class SearchDriveMetadataFunction : public FileBrowserFunction {
+class SearchDriveMetadataFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDriveMetadata",
                              FILEBROWSERPRIVATE_SEARCHDRIVEMETADATA)
@@ -690,7 +688,7 @@ class SearchDriveMetadataFunction : public FileBrowserFunction {
                         scoped_ptr<drive::MetadataSearchResultVector> results);
 };
 
-class ClearDriveCacheFunction : public AsyncExtensionFunction {
+class ClearDriveCacheFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.clearDriveCache",
                              FILEBROWSERPRIVATE_CLEARDRIVECACHE)
@@ -719,7 +717,7 @@ class GetDriveConnectionStateFunction : public SyncExtensionFunction {
 };
 
 // Create a zip file for the selected files.
-class ZipSelectionFunction : public FileBrowserFunction,
+class ZipSelectionFunction : public LoggedAsyncExtensionFunction,
                              public extensions::ZipFileCreator::Observer {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.zipSelection",
@@ -741,7 +739,7 @@ class ZipSelectionFunction : public FileBrowserFunction,
 };
 
 // Implements the chrome.fileBrowserPrivate.validatePathNameLength method.
-class ValidatePathNameLengthFunction : public AsyncExtensionFunction {
+class ValidatePathNameLengthFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.validatePathNameLength",
                              FILEBROWSERPRIVATE_VALIDATEPATHNAMELENGTH)
@@ -773,7 +771,7 @@ class ZoomFunction : public SyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.requestAccessToken method.
-class RequestAccessTokenFunction : public AsyncExtensionFunction {
+class RequestAccessTokenFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestAccessToken",
                              FILEBROWSERPRIVATE_REQUESTACCESSTOKEN)
@@ -792,7 +790,7 @@ class RequestAccessTokenFunction : public AsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.getShareUrl method.
-class GetShareUrlFunction : public FileBrowserFunction {
+class GetShareUrlFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getShareUrl",
                              FILEBROWSERPRIVATE_GETSHAREURL)
