@@ -5700,7 +5700,8 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
         TextureUnit& texture_unit = state_.texture_units[texture_unit_index];
         TextureRef* texture =
             texture_unit.GetInfoForSamplerType(uniform_info->type).get();
-        UpdateStreamTextureIfNeeded(texture->texture());
+        if (texture)
+          UpdateStreamTextureIfNeeded(texture->texture());
         if (have_unrenderable_textures &&
             (!texture || !texture_manager()->CanRender(texture))) {
           textures_set = true;
