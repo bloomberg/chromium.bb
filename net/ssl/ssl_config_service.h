@@ -56,6 +56,15 @@ struct NET_EXPORT SSLConfig {
   // cached revocation information will be considered.
   bool rev_checking_enabled;
 
+  // rev_checking_required_local_anchors is true if revocation checking is
+  // required to succeed when certificates chain to local trust anchors (that
+  // is, non-public CAs). If revocation information cannot be obtained, such
+  // certificates will be treated as revoked ("hard-fail").
+  // Note: This is distinct from rev_checking_enabled. If true, it is
+  // equivalent to also setting rev_checking_enabled, but only when the
+  // certificate chain chains to a local (non-public) trust anchor.
+  bool rev_checking_required_local_anchors;
+
   // The minimum and maximum protocol versions that are enabled.
   // SSL 3.0 is 0x0300, TLS 1.0 is 0x0301, TLS 1.1 is 0x0302, and so on.
   // (Use the SSL_PROTOCOL_VERSION_xxx enumerators defined above.)
@@ -128,7 +137,7 @@ struct NET_EXPORT SSLConfig {
   // result in additional HTTP requests. (For example: to fetch missing
   // intermediates or to perform OCSP/CRL fetches.) It also implies that online
   // revocation checking is disabled.
-  // NOTE: currently only effective on Linux
+  // NOTE: Only used by NSS.
   bool cert_io_enabled;
 
   // The list of application level protocols supported. If set, this will

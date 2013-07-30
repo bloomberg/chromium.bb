@@ -950,6 +950,8 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
     flags |= CertVerifier::VERIFY_EV_CERT;
   if (ssl_config_.cert_io_enabled)
     flags |= CertVerifier::VERIFY_CERT_IO_ENABLED;
+  if (ssl_config_.rev_checking_required_local_anchors)
+    flags |= CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
   verifier_.reset(new SingleRequestCertVerifier(cert_verifier_));
   return verifier_->Verify(
       server_cert_.get(),

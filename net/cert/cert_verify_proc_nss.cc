@@ -67,10 +67,14 @@ typedef scoped_ptr_malloc<
 // and cert_po_certList types, but doesn't release the array itself.
 class ScopedCERTValOutParam {
  public:
-  explicit ScopedCERTValOutParam(CERTValOutParam* cvout)
-      : cvout_(cvout) {}
+  explicit ScopedCERTValOutParam(CERTValOutParam* cvout) : cvout_(cvout) {}
 
   ~ScopedCERTValOutParam() {
+    Clear();
+  }
+
+  // Free the internal resources, but do not release the array itself.
+  void Clear() {
     if (cvout_ == NULL)
       return;
     for (CERTValOutParam *p = cvout_; p->type != cert_po_end; p++) {
@@ -331,6 +335,12 @@ SECOidTag GetFirstCertPolicy(CERTCertificate* cert_handle);
 
 // Call CERT_PKIXVerifyCert for the cert_handle.
 // Verification results are stored in an array of CERTValOutParam.
+// If |hard_fail| is true, and no policy_oids are supplied (eg: EV is NOT being
+// checked), then the failure to obtain valid CRL/OCSP information for all
+// certificates that contain CRL/OCSP URLs will cause the certificate to be
+// treated as if it was revoked. Since failures may be caused by transient
+// network failures or by malicious attackers, in general, hard_fail should be
+// false.
 // If policy_oids is not NULL and num_policy_oids is positive, policies
 // are also checked.
 // additional_trust_anchors is an optional list of certificates that can be
@@ -338,6 +348,7 @@ SECOidTag GetFirstCertPolicy(CERTCertificate* cert_handle);
 // Caller must initialize cvout before calling this function.
 SECStatus PKIXVerifyCert(CERTCertificate* cert_handle,
                          bool check_revocation,
+                         bool hard_fail,
                          bool cert_io_enabled,
                          const SECOidTag* policy_oids,
                          int num_policy_oids,
@@ -385,6 +396,10 @@ SECStatus PKIXVerifyCert(CERTCertificate* cert_handle,
     // TODO(wtc): Add a bool parameter to expressly specify we're doing EV
     // verification or we want strict revocation flags.
     revocation_method_flags |= CERT_REV_M_REQUIRE_INFO_ON_MISSING_SOURCE;
+    revocation_method_independent_flags |=
+        CERT_REV_MI_REQUIRE_SOME_FRESH_INFO_AVAILABLE;
+  } else if (check_revocation && hard_fail) {
+    revocation_method_flags |= CERT_REV_M_FAIL_ON_MISSING_FRESH_INFO;
     revocation_method_independent_flags |=
         CERT_REV_MI_REQUIRE_SOME_FRESH_INFO_AVAILABLE;
   } else {
@@ -692,6 +707,7 @@ bool VerifyEV(CERTCertificate* cert_handle,
   SECStatus status = PKIXVerifyCert(
       cert_handle,
       rev_checking_enabled,
+      true, /* hard fail is implied in EV. */
       flags & CertVerifier::VERIFY_CERT_IO_ENABLED,
       &ev_policy_oid,
       1,
@@ -813,8 +829,22 @@ int CertVerifyProcNSS::VerifyInternal(
         CertificateListToCERTCertList(additional_trust_anchors));
   }
 
-  status = PKIXVerifyCert(cert_handle, check_revocation, cert_io_enabled,
-                          NULL, 0, trust_anchors.get(), cvout);
+  status = PKIXVerifyCert(cert_handle, check_revocation, false,
+                          cert_io_enabled, NULL, 0, trust_anchors.get(),
+                          cvout);
+
+  if (status == SECSuccess &&
+      (flags & CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS) &&
+      !IsKnownRoot(cvout[cvout_trust_anchor_index].value.pointer.cert)) {
+    // TODO(rsleevi): Optimize this by supplying the constructed chain to
+    // libpkix via cvin. Omitting for now, due to lack of coverage in upstream
+    // NSS tests for that feature.
+    scoped_cvout.Clear();
+    verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
+    status = PKIXVerifyCert(cert_handle, true, true,
+                            cert_io_enabled, NULL, 0, trust_anchors.get(),
+                            cvout);
+  }
 
   if (status == SECSuccess) {
     AppendPublicKeyHashes(cvout[cvout_cert_list_index].value.pointer.chain,

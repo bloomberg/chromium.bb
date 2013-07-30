@@ -37,6 +37,7 @@ SSLConfig::CertAndStatus::~CertAndStatus() {}
 
 SSLConfig::SSLConfig()
     : rev_checking_enabled(false),
+      rev_checking_required_local_anchors(false),
       version_min(g_default_version_min),
       version_max(g_default_version_max),
       cached_info_enabled(false),
@@ -154,14 +155,16 @@ void SSLConfigService::ProcessConfigUpdate(const SSLConfig& orig_config,
                                            const SSLConfig& new_config) {
   bool config_changed =
       (orig_config.rev_checking_enabled != new_config.rev_checking_enabled) ||
+      (orig_config.rev_checking_required_local_anchors !=
+       new_config.rev_checking_required_local_anchors) ||
       (orig_config.version_min != new_config.version_min) ||
       (orig_config.version_max != new_config.version_max) ||
       (orig_config.disabled_cipher_suites !=
-          new_config.disabled_cipher_suites) ||
+       new_config.disabled_cipher_suites) ||
       (orig_config.channel_id_enabled != new_config.channel_id_enabled) ||
       (orig_config.false_start_enabled != new_config.false_start_enabled) ||
       (orig_config.unrestricted_ssl3_fallback_enabled !=
-          new_config.unrestricted_ssl3_fallback_enabled);
+       new_config.unrestricted_ssl3_fallback_enabled);
 
   if (config_changed)
     NotifySSLConfigChange();

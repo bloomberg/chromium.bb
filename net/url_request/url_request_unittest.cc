@@ -5407,16 +5407,21 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
 
 class TestSSLConfigService : public SSLConfigService {
  public:
-  TestSSLConfigService(bool ev_enabled, bool online_rev_checking)
+  TestSSLConfigService(bool ev_enabled,
+                       bool online_rev_checking,
+                       bool rev_checking_required_local_anchors)
       : ev_enabled_(ev_enabled),
-        online_rev_checking_(online_rev_checking) {
-  }
+        online_rev_checking_(online_rev_checking),
+        rev_checking_required_local_anchors_(
+            rev_checking_required_local_anchors) {}
 
   // SSLConfigService:
   virtual void GetSSLConfig(SSLConfig* config) OVERRIDE {
     *config = SSLConfig();
     config->rev_checking_enabled = online_rev_checking_;
     config->verify_ev_cert = ev_enabled_;
+    config->rev_checking_required_local_anchors =
+        rev_checking_required_local_anchors_;
   }
 
  protected:
@@ -5425,6 +5430,7 @@ class TestSSLConfigService : public SSLConfigService {
  private:
   const bool ev_enabled_;
   const bool online_rev_checking_;
+  const bool rev_checking_required_local_anchors_;
 };
 
 // This the fingerprint of the "Testing CA" certificate used by the testserver.
@@ -5452,7 +5458,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
     context_.Init();
 
     scoped_refptr<net::X509Certificate> root_cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
+        ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
     CHECK_NE(static_cast<X509Certificate*>(NULL), root_cert);
     test_root_.reset(new ScopedTestRoot(root_cert.get()));
 
@@ -5496,7 +5502,9 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   virtual void SetupContext(URLRequestContext* context) {
     context->set_ssl_config_service(
         new TestSSLConfigService(true /* check for EV */,
-                                 true /* online revocation checking */));
+                                 true /* online revocation checking */,
+                                 false /* require rev. checking for local
+                                          anchors */));
   }
 
   scoped_ptr<ScopedTestRoot> test_root_;
@@ -5511,6 +5519,21 @@ static CertStatus ExpectedCertStatusForFailedOnlineRevocationCheck() {
   return CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
 #else
   return 0;
+#endif
+}
+
+// SystemSupportsHardFailRevocationChecking returns true iff the current
+// operating system supports revocation checking and can distinguish between
+// situations where a given certificate lacks any revocation information (eg:
+// no CRLDistributionPoints and no OCSP Responder AuthorityInfoAccess) and when
+// revocation information cannot be obtained (eg: the CRL was unreachable).
+// If it does not, then tests which rely on 'hard fail' behaviour should be
+// skipped.
+static bool SystemSupportsHardFailRevocationChecking() {
+#if defined(OS_WIN) || defined(USE_NSS) || defined(OS_IOS)
+  return true;
+#else
+  return false;
 #endif
 }
 
@@ -5608,12 +5631,52 @@ TEST_F(HTTPSOCSPTest, Invalid) {
   EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
+class HTTPSHardFailTest : public HTTPSOCSPTest {
+ protected:
+  virtual void SetupContext(URLRequestContext* context) OVERRIDE {
+    context->set_ssl_config_service(
+        new TestSSLConfigService(false /* check for EV */,
+                                 false /* online revocation checking */,
+                                 true /* require rev. checking for local
+                                         anchors */));
+  }
+};
+
+
+TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
+  if (!SystemSupportsOCSP()) {
+    LOG(WARNING) << "Skipping test because system doesn't support OCSP";
+    return;
+  }
+
+  if (!SystemSupportsHardFailRevocationChecking()) {
+    LOG(WARNING) << "Skipping test because system doesn't support hard fail "
+                 << "revocation checking";
+    return;
+  }
+
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_INVALID;
+
+  CertStatus cert_status;
+  DoConnection(ssl_options, &cert_status);
+
+  EXPECT_EQ(CERT_STATUS_REVOKED,
+            cert_status & CERT_STATUS_REVOKED);
+
+  // Without a positive OCSP response, we shouldn't show the EV status.
+  EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
 class HTTPSEVCRLSetTest : public HTTPSOCSPTest {
  protected:
   virtual void SetupContext(URLRequestContext* context) OVERRIDE {
     context->set_ssl_config_service(
         new TestSSLConfigService(true /* check for EV */,
-                                 false /* online revocation checking */));
+                                 false /* online revocation checking */,
+                                 false /* require rev. checking for local
+                                          anchors */));
   }
 };
 
@@ -5737,7 +5800,9 @@ class HTTPSCRLSetTest : public HTTPSOCSPTest {
   virtual void SetupContext(URLRequestContext* context) OVERRIDE {
     context->set_ssl_config_service(
         new TestSSLConfigService(false /* check for EV */,
-                                 false /* online revocation checking */));
+                                 false /* online revocation checking */,
+                                 false /* require rev. checking for local
+                                          anchors */));
   }
 };
 

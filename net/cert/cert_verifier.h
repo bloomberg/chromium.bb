@@ -55,6 +55,17 @@ class NET_EXPORT CertVerifier {
     // for certificates which may be EV, and only when VERIFY_EV_CERT is also
     // set.
     VERIFY_REV_CHECKING_ENABLED_EV_ONLY = 1 << 3,
+
+    // If set, this is equivalent to VERIFY_REV_CHECKING_ENABLED, in that it
+    // enables online revocation checking via CRLs or OCSP, but only
+    // for certificates issued by non-public trust anchors. Failure to check
+    // revocation is treated as a hard failure.
+    // Note: If VERIFY_CERT_IO_ENABLE is not also supplied, certificates
+    // that chain to local trust anchors will likely fail - for example, due to
+    // lacking fresh cached revocation issue (Windows) or because OCSP stapling
+    // can only provide information for the leaf, and not for any
+    // intermediates.
+    VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS = 1 << 4,
   };
 
   // When the verifier is destroyed, all certificate verification requests are

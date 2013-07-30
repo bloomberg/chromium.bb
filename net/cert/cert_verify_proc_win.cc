@@ -572,7 +572,7 @@ int CertVerifyProcWin::VerifyInternal(
   // We can set CERT_CHAIN_RETURN_LOWER_QUALITY_CONTEXTS to get more chains.
   DWORD chain_flags = CERT_CHAIN_CACHE_END_CERT |
                       CERT_CHAIN_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT;
-  const bool rev_checking_enabled =
+  bool rev_checking_enabled =
       (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED) ||
       (ev_policy_oid != NULL &&
        (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED_EV_ONLY));
@@ -632,9 +632,39 @@ int CertVerifyProcWin::VerifyInternal(
     }
   }
 
+  CertVerifyResult temp_verify_result = *verify_result;
+  GetCertChainInfo(chain_context, verify_result);
+  if (!verify_result->is_issued_by_known_root &&
+      (flags & CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS)) {
+    *verify_result = temp_verify_result;
+
+    rev_checking_enabled = true;
+    verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
+    chain_flags &= ~CERT_CHAIN_REVOCATION_CHECK_CACHE_ONLY;
+
+    CertFreeCertificateChain(chain_context);
+    if (!CertGetCertificateChain(
+             chain_engine,
+             cert_list.get(),
+             NULL,  // current system time
+             cert_list->hCertStore,
+             &chain_para,
+             chain_flags,
+             NULL,  // reserved
+             &chain_context)) {
+      verify_result->cert_status |= CERT_STATUS_INVALID;
+      return MapSecurityError(GetLastError());
+    }
+    GetCertChainInfo(chain_context, verify_result);
+
+    if (chain_context->TrustStatus.dwErrorStatus &
+        CERT_TRUST_IS_OFFLINE_REVOCATION) {
+      verify_result->cert_status |= CERT_STATUS_REVOKED;
+    }
+  }
+
   ScopedPCCERT_CHAIN_CONTEXT scoped_chain_context(chain_context);
 
-  GetCertChainInfo(chain_context, verify_result);
   verify_result->cert_status |= MapCertChainErrorStatusToCertStatus(
       chain_context->TrustStatus.dwErrorStatus);
 
