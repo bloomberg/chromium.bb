@@ -53,6 +53,21 @@ var test = function()
 
     function step8()
     {
+        WebInspector.runtimeModel._completionsForExpression("", "", false, checkAgainstGolden.bind(this, [], ["$"], step9));
+    }
+
+    function step9()
+    {
+        WebInspector.runtimeModel._completionsForExpression("", "", true, checkAgainstGolden.bind(this, ["$", "window"], [], step10));
+    }
+
+    function step10()
+    {
+        WebInspector.runtimeModel._completionsForExpression("console", "log('bar');", false, checkAgainstGolden.bind(this, [], ["$"], step11));
+    }
+
+    function step11()
+    {
         InspectorTest.completeDebuggerTest();
     }
 

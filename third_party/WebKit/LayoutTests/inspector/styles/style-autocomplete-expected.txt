@@ -1,0 +1,15 @@
+Tests that autocompletions are computed correctly when editing the Styles pane.
+
+
+Running: testEmptyName
+
+Running: testEmptyNameForce
+
+Running: testSingleCharName
+
+Running: testEmptyValue
+
+Running: testValueR
+
+Running: testValueWithParenthesis
+
