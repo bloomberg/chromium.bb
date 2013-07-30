@@ -627,13 +627,13 @@ const AtomicString& Node::namespaceURI() const
 
 bool Node::isContentEditable(UserSelectAllTreatment treatment)
 {
-    document()->updateStyleIfNeeded();
+    document()->updateStyleForNodeIfNeeded(this);
     return rendererIsEditable(Editable, treatment);
 }
 
 bool Node::isContentRichlyEditable()
 {
-    document()->updateStyleIfNeeded();
+    document()->updateStyleForNodeIfNeeded(this);
     return rendererIsEditable(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
 }
 

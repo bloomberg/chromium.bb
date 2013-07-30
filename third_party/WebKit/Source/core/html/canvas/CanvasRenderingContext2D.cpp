@@ -2301,7 +2301,7 @@ void CanvasRenderingContext2D::inflateStrokeRect(FloatRect& rect) const
 
 const Font& CanvasRenderingContext2D::accessFont()
 {
-    canvas()->document()->updateStyleIfNeeded();
+    canvas()->document()->updateStyleForNodeIfNeeded(canvas());
 
     if (!state().m_realizedFont)
         setFont(state().m_unparsedFont);
