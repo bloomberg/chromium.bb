@@ -70,13 +70,10 @@ void HttpStreamFactory::ProcessAlternateProtocol(
     return;
   }
 
-  AlternateProtocol protocol = ALTERNATE_PROTOCOL_BROKEN;
-  for (int i = 0; i < NUM_ALTERNATE_PROTOCOLS; ++i) {
-    if (enabled_protocols_[i] &&
-        port_protocol_vector[1] == kAlternateProtocolStrings[i]) {
-      protocol = static_cast<AlternateProtocol>(i);
-    }
-  }
+  AlternateProtocol protocol =
+      AlternateProtocolFromString(port_protocol_vector[1]);
+  if (protocol < NUM_ALTERNATE_PROTOCOLS && !enabled_protocols_[protocol])
+    protocol = ALTERNATE_PROTOCOL_BROKEN;
 
   if (protocol == ALTERNATE_PROTOCOL_BROKEN) {
     // Currently, we only recognize the npn-spdy protocol.
@@ -195,6 +192,20 @@ void HttpStreamFactory::EnableNpnSpdy4a2() {
 }
 
 // static
+void HttpStreamFactory::EnableNpnHttp2Draft04() {
+  set_use_alternate_protocols(true);
+  std::vector<NextProto> next_protos;
+  next_protos.push_back(kProtoHTTP11);
+  next_protos.push_back(kProtoQUIC1SPDY3);
+  next_protos.push_back(kProtoSPDY2);
+  next_protos.push_back(kProtoSPDY3);
+  next_protos.push_back(kProtoSPDY31);
+  next_protos.push_back(kProtoSPDY4a2);
+  next_protos.push_back(kProtoHTTP2Draft04);
+  SetNextProtos(next_protos);
+}
+
+// static
 void HttpStreamFactory::SetNextProtos(const std::vector<NextProto>& value) {
   if (!next_protos_)
     next_protos_ = new std::vector<std::string>;
@@ -204,8 +215,8 @@ void HttpStreamFactory::SetNextProtos(const std::vector<NextProto>& value) {
   for (uint32 i = 0; i < NUM_ALTERNATE_PROTOCOLS; ++i)
     enabled_protocols_[i] = false;
 
-  // TODO(rtenneti): bug 116575 - consider using same strings/enums for SPDY
-  // versions in next_protos and kAlternateProtocolStrings.
+  // TODO(rtenneti): bug 116575 - consider combining the NextProto and
+  // AlternateProtocol.
   for (uint32 i = 0; i < value.size(); ++i) {
     NextProto proto = value[i];
     // Add the protocol to the TLS next protocol list, except for QUIC

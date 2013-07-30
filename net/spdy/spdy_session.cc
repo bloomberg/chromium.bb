@@ -54,22 +54,6 @@ const SpdyStreamId kFirstStreamId = 1;
 // Minimum seconds that unclaimed pushed streams will be kept in memory.
 const int kMinPushedStreamLifetimeSeconds = 300;
 
-SpdyMajorVersion NPNToSpdyVersion(NextProto next_proto) {
-  switch (next_proto) {
-    case kProtoSPDY2:
-    case kProtoSPDY21:
-      return SPDY2;
-    case kProtoSPDY3:
-    case kProtoSPDY31:
-      return SPDY3;
-    case kProtoSPDY4a2:
-      return SPDY4;
-    default:
-      NOTREACHED();
-  }
-  return SPDY2;
-}
-
 base::Value* NetLogSpdySynCallback(const SpdyHeaderBlock* headers,
                                    bool fin,
                                    bool unidirectional,
@@ -395,7 +379,7 @@ SpdySession::SpdySession(
       enable_compression_(enable_compression),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
-      default_protocol_(default_protocol),
+      protocol_(default_protocol),
       credential_state_(SpdyCredentialState::kDefaultNumSlots),
       connection_at_risk_of_loss_time_(
           base::TimeDelta::FromSeconds(kDefaultConnectionAtRiskOfLossSeconds)),
@@ -403,6 +387,10 @@ SpdySession::SpdySession(
           base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
       trusted_spdy_proxy_(trusted_spdy_proxy),
       time_func_(time_func) {
+  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
+  // stop supporting SPDY/1.
+  DCHECK_GE(protocol_, kProtoSPDY2);
+  DCHECK_LE(protocol_, kProtoSPDYMaximumVersion);
   DCHECK(HttpStreamFactory::spdy_enabled());
   net_log_.BeginEvent(
       NetLog::TYPE_SPDY_SESSION,
@@ -452,12 +440,15 @@ Error SpdySession::InitializeWithSocket(
   is_secure_ = is_secure;
   certificate_error_code_ = certificate_error_code;
 
-  NextProto protocol = default_protocol_;
   NextProto protocol_negotiated =
       connection_->socket()->GetNegotiatedProtocol();
   if (protocol_negotiated != kProtoUnknown) {
-    protocol = protocol_negotiated;
+    protocol_ = protocol_negotiated;
   }
+  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
+  // stop supporting SPDY/1.
+  DCHECK_GE(protocol_, kProtoSPDY2);
+  DCHECK_LE(protocol_, kProtoSPDYMaximumVersion);
 
   SSLClientSocket* ssl_socket = GetSSLClientSocket();
   if (ssl_socket && ssl_socket->WasChannelIDSent()) {
@@ -467,25 +458,22 @@ Error SpdySession::InitializeWithSocket(
                                             host_port_pair().ToString()));
   }
 
-  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
-  // stop supporting SPDY/1.
-  DCHECK_GE(protocol, kProtoSPDY2);
-  DCHECK_LE(protocol, kProtoSPDYMaximumVersion);
-  if (protocol >= kProtoSPDY31) {
+  if (protocol_ >= kProtoSPDY31) {
     flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
     session_send_window_size_ = kSpdySessionInitialWindowSize;
     session_recv_window_size_ = kSpdySessionInitialWindowSize;
-  } else if (protocol >= kProtoSPDY3) {
+  } else if (protocol_ >= kProtoSPDY3) {
     flow_control_state_ = FLOW_CONTROL_STREAM;
   } else {
     flow_control_state_ = FLOW_CONTROL_NONE;
   }
 
   buffered_spdy_framer_.reset(
-      new BufferedSpdyFramer(NPNToSpdyVersion(protocol), enable_compression_));
+      new BufferedSpdyFramer(NextProtoToSpdyMajorVersion(protocol_),
+                             enable_compression_));
   buffered_spdy_framer_->set_visitor(this);
   buffered_spdy_framer_->set_debug_visitor(this);
-  UMA_HISTOGRAM_ENUMERATION("Net.SpdyVersion", protocol, kProtoMaximumVersion);
+  UMA_HISTOGRAM_ENUMERATION("Net.SpdyVersion", protocol_, kProtoMaximumVersion);
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   UMA_HISTOGRAM_BOOLEAN("Net.SpdySessions_DataReductionProxy",
                         host_port_pair().Equals(HostPortPair::FromURL(

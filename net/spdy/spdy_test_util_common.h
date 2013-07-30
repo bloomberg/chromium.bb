@@ -288,13 +288,6 @@ class SpdySessionPoolPeer {
   DISALLOW_COPY_AND_ASSIGN(SpdySessionPoolPeer);
 };
 
-// TODO(ttuttle): Move these somewhere more widely-accessible; surely this is
-// not the only place that needs such functions.
-NextProto NextProtoFromSpdyVersion(SpdyMajorVersion spdy_version);
-// TODO(akalin): Merge this with NPNToSpdyVersion() in
-// spdy_session.cc.
-SpdyMajorVersion SpdyVersionFromNextProto(NextProto next_proto);
-
 class SpdyTestUtil {
  public:
   explicit SpdyTestUtil(NextProto protocol);

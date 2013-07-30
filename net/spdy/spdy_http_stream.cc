@@ -323,19 +323,8 @@ SpdyResponseHeadersStatus SpdyHttpStream::OnResponseHeadersUpdated(
   response_info_->npn_negotiated_protocol =
       SSLClientSocket::NextProtoToString(protocol_negotiated);
   response_info_->request_time = stream_->GetRequestTime();
-  switch (stream_->GetProtocolVersion()) {
-    case SPDY2:
-      response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY2;
-      break;
-    case SPDY3:
-      response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY3;
-      break;
-    case SPDY4:
-      response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY4;
-      break;
-    default:
-      NOTREACHED();
-  }
+  response_info_->connection_info =
+      HttpResponseInfo::ConnectionInfoFromNextProto(stream_->GetProtocol());
   response_info_->vary_data
       .Init(*request_info_, *response_info_->headers.get());
 

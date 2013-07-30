@@ -53,13 +53,22 @@ SpdySessionPool::SpdySessionPool(
       enable_compression_(enable_compression),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
-      default_protocol_(default_protocol),
+      // TODO(akalin): Force callers to have a valid value of
+      // |default_protocol_|. Or at least make the default be
+      // kProtoSPDY3.
+      default_protocol_(
+          (default_protocol == kProtoUnknown) ?
+          kProtoSPDY2 : default_protocol),
       stream_initial_recv_window_size_(stream_initial_recv_window_size),
       initial_max_concurrent_streams_(initial_max_concurrent_streams),
       max_concurrent_streams_limit_(max_concurrent_streams_limit),
       time_func_(time_func),
       trusted_spdy_proxy_(
           HostPortPair::FromString(trusted_spdy_proxy)) {
+  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
+  // stop supporting SPDY/1.
+  DCHECK(default_protocol_ >= kProtoSPDY2 &&
+         default_protocol_ <= kProtoSPDYMaximumVersion);
   NetworkChangeNotifier::AddIPAddressObserver(this);
   if (ssl_config_service_.get())
     ssl_config_service_->AddObserver(this);
@@ -82,6 +91,11 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
     int certificate_error_code,
     base::WeakPtr<SpdySession>* available_session,
     bool is_secure) {
+  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
+  // stop supporting SPDY/1.
+  DCHECK_GE(default_protocol_, kProtoSPDY2);
+  DCHECK_LE(default_protocol_, kProtoSPDYMaximumVersion);
+
   UMA_HISTOGRAM_ENUMERATION(
       "Net.SpdySessionGet", IMPORTED_FROM_SOCKET, SPDY_SESSION_GET_MAX);
 

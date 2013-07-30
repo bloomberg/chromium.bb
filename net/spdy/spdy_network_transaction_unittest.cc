@@ -61,30 +61,6 @@ struct SpdyNetworkTransactionTestParams {
   SpdyNetworkTransactionTestSSLType ssl_type;
 };
 
-HttpResponseInfo::ConnectionInfo NextProtoToConnectionInfo(
-    NextProto next_proto) {
-  switch (next_proto) {
-    case kProtoSPDY2:
-      return HttpResponseInfo::CONNECTION_INFO_SPDY2;
-    case kProtoSPDY3:
-    case kProtoSPDY31:
-      return HttpResponseInfo::CONNECTION_INFO_SPDY3;
-    case kProtoSPDY4a2:
-      return HttpResponseInfo::CONNECTION_INFO_SPDY4;
-    case kProtoQUIC1SPDY3:
-      return HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3;
-
-    case kProtoUnknown:
-    case kProtoHTTP11:
-    case kProtoSPDY1:
-    case kProtoSPDY21:
-      break;
-  }
-
-  NOTREACHED();
-  return HttpResponseInfo::CONNECTION_INFO_SPDY2;
-}
-
 SpdySessionDependencies* CreateSpdySessionDependencies(
     SpdyNetworkTransactionTestParams test_params) {
   return new SpdySessionDependencies(test_params.protocol);
@@ -243,8 +219,10 @@ class SpdyNetworkTransactionTest
       EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
       EXPECT_EQ(spdy_enabled_, response->was_fetched_via_spdy);
       if (HttpStreamFactory::spdy_enabled()) {
-        EXPECT_EQ(NextProtoToConnectionInfo(test_params_.protocol),
-                  response->connection_info);
+        EXPECT_EQ(
+            HttpResponseInfo::ConnectionInfoFromNextProto(
+                test_params_.protocol),
+            response->connection_info);
       } else {
         EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1,
                   response->connection_info);
@@ -680,7 +658,10 @@ INSTANTIATE_TEST_CASE_P(
         SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYNPN),
         SpdyNetworkTransactionTestParams(kProtoSPDY4a2, SPDYNOSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY4a2, SPDYSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4a2, SPDYNPN)));
+        SpdyNetworkTransactionTestParams(kProtoSPDY4a2, SPDYNPN),
+        SpdyNetworkTransactionTestParams(kProtoHTTP2Draft04, SPDYNOSSL),
+        SpdyNetworkTransactionTestParams(kProtoHTTP2Draft04, SPDYSSL),
+        SpdyNetworkTransactionTestParams(kProtoHTTP2Draft04, SPDYNPN)));
 
 // Verify HttpNetworkTransaction constructor.
 TEST_P(SpdyNetworkTransactionTest, Constructor) {
