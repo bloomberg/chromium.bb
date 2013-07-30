@@ -30,13 +30,13 @@
 
 {
     'includes': [
-        'WinPrecompile.gypi',
-        '../../bindings/bindings.gypi',
-        '../../core/core.gypi',
-        '../../core/features.gypi',
-        '../../modules/modules.gypi',
-        '../../web/web.gypi',
-        '../../wtf/wtf.gypi',
+        '../WebKit/chromium/WinPrecompile.gypi',
+        '../bindings/bindings.gypi',
+        '../core/core.gypi',
+        '../core/features.gypi',
+        '../modules/modules.gypi',
+        '../wtf/wtf.gypi',
+        'web.gypi',
     ],
     'targets': [
         {
@@ -44,8 +44,8 @@
             'type': '<(component)',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
-                '../../core/core.gyp:webcore',
-                '../../modules/modules.gyp:modules',
+                '../core/core.gyp:webcore',
+                '../modules/modules.gyp:modules',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
@@ -60,8 +60,8 @@
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
             ],
             'include_dirs': [
-                '../../../public/web',
-                '../../web',
+                '../../public/web',
+                '.',
                 '<(DEPTH)/third_party/angle_dx11/include',
                 '<(DEPTH)/third_party/skia/include/utils',
             ],
@@ -76,8 +76,8 @@
             'conditions': [
                 ['component=="shared_library"', {
                     'dependencies': [
-                        '../../core/core.gyp:webcore_derived',
-                        '../../core/core.gyp:webcore_test_support',
+                        '../core/core.gyp:webcore_derived',
+                        '../core/core.gyp:webcore_test_support',
                         '<(DEPTH)/base/base.gyp:test_support_base',
                         '<(DEPTH)/testing/gmock.gyp:gmock',
                         '<(DEPTH)/testing/gtest.gyp:gtest',
@@ -101,15 +101,15 @@
                     'include_dirs': [
                         # WARNING: Do not view this particular case as a precedent for
                         # including WebCore headers in DumpRenderTree project.
-                        '../../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
+                        '../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
                     ],
                     'sources': [
                         '<@(bindings_unittest_files)',
                         '<@(core_unittest_files)',
                         '<@(modules_unittest_files)',
                         '<@(web_unittest_files)',
-                        '../../web/WebTestingSupport.cpp',
-                        '../../web/tests/WebUnitTests.cpp',   # Components test runner support.
+                        'WebTestingSupport.cpp',
+                        'tests/WebUnitTests.cpp',   # Components test runner support.
                     ],
                     'conditions': [
                         ['OS=="win" or OS=="mac"', {
@@ -143,7 +143,7 @@
                         '<(DEPTH)/build/linux/system.gyp:fontconfig',
                     ],
                     'include_dirs': [
-                        '../../../public/web/linux',
+                        '../../public/web/linux',
                     ],
                 }, {
                     'sources/': [
@@ -155,7 +155,7 @@
                         '<(DEPTH)/build/linux/system.gyp:x11',
                     ],
                     'include_dirs': [
-                        '../../../public/web/x11',
+                        '../../public/web/x11',
                     ],
                 }, {
                     'sources/': [
@@ -167,7 +167,7 @@
                         '<(DEPTH)/build/linux/system.gyp:gtk',
                     ],
                     'include_dirs': [
-                        '../../../public/web/gtk',
+                        '../../public/web/gtk',
                     ],
                 }, { # else: toolkit_uses_gtk != 1
                     'sources/': [
@@ -176,8 +176,8 @@
                 }],
                 ['OS=="android"', {
                     'include_dirs': [
-                        '../../../public/web/android',
-                        '../../../public/web/linux', # We need linux/WebFontRendering.h on Android.
+                        '../../public/web/android',
+                        '../../public/web/linux', # We need linux/WebFontRendering.h on Android.
                     ],
                 }, { # else: OS!="android"
                     'sources/': [
@@ -186,7 +186,7 @@
                 }],
                 ['OS=="mac"', {
                     'include_dirs': [
-                        '../../../public/web/mac',
+                        '../../public/web/mac',
                     ],
                     'link_settings': {
                         'libraries': [
@@ -201,7 +201,7 @@
                 }],
                 ['OS=="win"', {
                     'include_dirs': [
-                        '../../../public/web/win',
+                        '../../public/web/win',
                     ],
                 }, { # else: OS!="win"
                     'sources/': [['exclude', '/win/']],
@@ -212,24 +212,24 @@
                 }],
                 ['use_default_render_theme==1', {
                     'include_dirs': [
-                        '../../../public/web/default',
+                        '../../public/web/default',
                     ],
                 }, { # else use_default_render_theme==0
                     'sources/': [
-                        ['exclude', '../../web/default/WebRenderTheme.cpp'],
+                        ['exclude', 'default/WebRenderTheme.cpp'],
                     ],
                 }],
             ],
             'direct_dependent_settings': {
                 'include_dirs': [
-                    '../../../',
+                    '../../',
                 ],
             },
             'target_conditions': [
                 ['OS=="android"', {
                     'sources/': [
-                        ['include', '^../../web/linux/WebFontRendering\\.cpp$'],
-                        ['include', '^../../web/linux/WebFontRenderStyle\\.cpp$'],
+                        ['include', '^linux/WebFontRendering\\.cpp$'],
+                        ['include', '^linux/WebFontRenderStyle\\.cpp$'],
                     ],
                 }],
             ],
@@ -242,16 +242,16 @@
                 }, {
                     'type': 'static_library',
                     'dependencies': [
-                        '../../wtf/wtf.gyp:wtf',
-                        '../../core/core.gyp:webcore_test_support',
+                        '../wtf/wtf.gyp:wtf',
+                        '../core/core.gyp:webcore_test_support',
                     ],
                     'include_dirs': [
-                        '../../../public/web',
-                        '../../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
-                        '../../../',
+                        '../../public/web',
+                        '../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
+                        '../../',
                     ],
                     'sources': [
-                        '../../web/WebTestingSupport.cpp',
+                        'WebTestingSupport.cpp',
                     ],
                 }],
             ],
@@ -261,7 +261,7 @@
             'type': '<(component)',
             'variables': { 'enable_wexit_time_destructors': 1 },
             'dependencies': [
-                '../../wtf/wtf.gyp:wtf',
+                '../wtf/wtf.gyp:wtf',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
             ],
@@ -274,13 +274,13 @@
                 'BLINK_COMMON_IMPLEMENTATION=1',
             ],
             'include_dirs': [
+                '..',
                 '../..',
-                '../../..',
             ],
             'sources': [
-                '../../core/platform/chromium/support/WebCString.cpp',
-                '../../core/platform/chromium/support/WebString.cpp',
-                '../../web/WebCommon.cpp',
+                '../core/platform/chromium/support/WebCString.cpp',
+                '../core/platform/chromium/support/WebString.cpp',
+                'WebCommon.cpp',
             ],
         },
     ], # targets
