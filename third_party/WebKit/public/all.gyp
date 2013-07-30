@@ -36,7 +36,7 @@
             'target_name': 'all_blink',
             'type': 'none',
             'dependencies': [
-                '../Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests',
+                '../Source/web/web_tests.gyp:webkit_unit_tests',
                 '../Source/weborigin/weborigin_tests.gyp:weborigin_unittests',
                 '../Source/wtf/wtf_tests.gyp:wtf_unittests',
                 '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
@@ -47,7 +47,7 @@
                 # base.gyp for TODO(jrg)s about this strategy.
                 ['OS=="android" and android_webview_build==0 and gtest_target_type == "shared_library"', {
                     'dependencies': [
-                        '../Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests_apk',
+                        '../Source/web/web_tests.gyp:webkit_unit_tests_apk',
                     ],
                 }],
             ],

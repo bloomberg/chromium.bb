@@ -30,12 +30,12 @@
 
 {
     'includes': [
-        '../../bindings/bindings.gypi',
-        '../../core/core.gypi',
-        '../../core/features.gypi',
-        '../../modules/modules.gypi',
-        '../../web/web.gypi',
-        '../../wtf/wtf.gypi',
+        '../bindings/bindings.gypi',
+        '../core/core.gypi',
+        '../core/features.gypi',
+        '../modules/modules.gypi',
+        '../web/web.gypi',
+        '../wtf/wtf.gypi',
     ],
     'targets': [
         {
@@ -44,8 +44,8 @@
             'variables': { 'enable_wexit_time_destructors': 1, },
             'msvs_guid': '7CEFE800-8403-418A-AD6A-2D52C6FC3EAD',
             'dependencies': [
-                '../../../public/blink.gyp:blink',
-                '../../../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree_resources',
+                '../../public/blink.gyp:blink',
+                '../../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree_resources',
                 '<(DEPTH)/base/base.gyp:base',
                 '<(DEPTH)/base/base.gyp:base_i18n',
                 '<(DEPTH)/base/base.gyp:test_support_base',
@@ -58,11 +58,11 @@
                 '<(DEPTH)/content/content.gyp:content_webkit_unit_test_support',
             ],
             'sources': [
-                '../../web/tests/RunAllTests.cpp',
+                '../web/tests/RunAllTests.cpp',
             ],
             'include_dirs': [
-                '../../../public/web',
-                '../../web',
+                '../../public/web',
+                '../web',
                 'src',
             ],
             'conditions': [
@@ -72,7 +72,7 @@
                     ],
                 }, {
                     'dependencies': [
-                        '../../core/core.gyp:webcore',
+                        '../core/core.gyp:webcore',
                     ],
                     'defines': [
                         'WEBKIT_IMPLEMENTATION=1',
@@ -87,7 +87,7 @@
                     'conditions': [
                         ['toolkit_uses_gtk == 1', {
                             'include_dirs': [
-                                '../../../public/web/gtk',
+                                '../../public/web/gtk',
                             ],
                             'variables': {
                             # FIXME: Enable warnings on other platforms.
@@ -116,7 +116,7 @@
                 }],
                 ['OS=="mac"', {
                     'include_dirs': [
-                        '../../../public/web/mac',
+                        '../../public/web/mac',
                     ],
                 }],
                 [ 'os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and linux_use_tcmalloc==1', {
@@ -149,7 +149,7 @@
                     'test_suite_name': 'webkit_unit_tests',
                     'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)webkit_unit_tests<(SHARED_LIB_SUFFIX)',
                 },
-                'includes': [ '../../../../../build/apk_test.gypi' ],
+                'includes': [ '../../../../build/apk_test.gypi' ],
             }],
         }],
         ['clang==1', {
