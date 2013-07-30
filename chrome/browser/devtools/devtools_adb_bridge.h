@@ -14,6 +14,7 @@
 #include "chrome/browser/devtools/adb/android_usb_device.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/socket/tcp_client_socket.h"
 
 template<typename T> struct DefaultSingletonTraits;
@@ -41,7 +42,9 @@ typedef base::Callback<void(int, const std::string&)> CommandCallback;
 typedef base::Callback<void(int result, net::StreamSocket*)> SocketCallback;
 
 class DevToolsAdbBridge
-    : public base::RefCountedThreadSafe<DevToolsAdbBridge> {
+    : public base::RefCountedThreadSafe<
+          DevToolsAdbBridge,
+          content::BrowserThread::DeleteOnUIThread> {
  public:
   typedef base::Callback<void(int result,
                               const std::string& response)> Callback;
@@ -181,7 +184,9 @@ class DevToolsAdbBridge
   base::MessageLoop* GetAdbMessageLoop();
 
  private:
-  friend class base::RefCountedThreadSafe<DevToolsAdbBridge>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<DevToolsAdbBridge>;
   friend class AdbWebSocket;
   friend class AgentHostDelegate;
 

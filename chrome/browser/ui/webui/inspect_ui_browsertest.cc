@@ -56,4 +56,12 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, DISABLED_SharedWorkersList) {
   ASSERT_TRUE(result.find(kSharedWorkerTestPage) != std::string::npos);
 }
 
+IN_PROC_BROWSER_TEST_F(InspectUITest, ReloadCrash) {
+  ASSERT_TRUE(test_server()->Start());
+  // Make sure that loading the inspect UI twice in the same tab
+  // connects/disconnects listeners without crashing.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIInspectURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIInspectURL));
+}
+
 }  // namespace

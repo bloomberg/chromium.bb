@@ -28,8 +28,7 @@ AndroidUsbSocket::AndroidUsbSocket(scoped_refptr<AndroidUsbDevice> device,
                                    uint32 socket_id,
                                    const std::string& command,
                                    base::Callback<void(uint32)> delete_callback)
-    : message_loop_(base::MessageLoop::current()),
-      device_(device),
+    : device_(device),
       command_(command),
       delete_callback_(delete_callback),
       local_id_(socket_id),
@@ -39,7 +38,7 @@ AndroidUsbSocket::AndroidUsbSocket(scoped_refptr<AndroidUsbDevice> device,
 }
 
 AndroidUsbSocket::~AndroidUsbSocket() {
-  DCHECK_EQ(message_loop_, base::MessageLoop::current());
+  DCHECK(CalledOnValidThread());
   if (is_connected_)
     Disconnect();
   delete_callback_.Run(local_id_);
@@ -149,7 +148,7 @@ bool AndroidUsbSocket::SetSendBufferSize(int32 size) {
 }
 
 int AndroidUsbSocket::Connect(const net::CompletionCallback& callback) {
-  CHECK_EQ(message_loop_, base::MessageLoop::current());
+  DCHECK(CalledOnValidThread());
   if (device_->terminated())
     return net::ERR_FAILED;
   connect_callback_ = callback;
@@ -164,7 +163,7 @@ void AndroidUsbSocket::Disconnect() {
 }
 
 bool AndroidUsbSocket::IsConnected() const {
-  CHECK_EQ(message_loop_, base::MessageLoop::current());
+  DCHECK(CalledOnValidThread());
   return is_connected_;
 }
 

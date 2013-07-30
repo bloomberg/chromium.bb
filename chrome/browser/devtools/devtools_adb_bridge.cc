@@ -15,7 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -29,7 +29,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
@@ -196,7 +195,9 @@ class AdbQueryCommand : public base::RefCounted<AdbQueryCommand> {
   Callback callback_;
 };
 
-class AdbPagesCommand : public base::RefCountedThreadSafe<AdbPagesCommand> {
+class AdbPagesCommand : public base::RefCountedThreadSafe<
+    AdbPagesCommand,
+    content::BrowserThread::DeleteOnUIThread> {
  public:
   explicit AdbPagesCommand(DevToolsAdbBridge* bridge,
                            const PagesCallback& callback)
@@ -208,8 +209,13 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<AdbPagesCommand> {
   }
 
  private:
-  friend class base::RefCountedThreadSafe<AdbPagesCommand>;
-  virtual ~AdbPagesCommand() {}
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<AdbPagesCommand>;
+
+  virtual ~AdbPagesCommand() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  }
 
   void ReceivedUsbDevices(const AndroidDevices& devices) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -225,6 +231,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<AdbPagesCommand> {
   }
 
   void ProcessSerials() {
+    DCHECK_EQ(bridge_->GetAdbMessageLoop(), base::MessageLoop::current());
     if (devices_.size() == 0) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
@@ -252,6 +259,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<AdbPagesCommand> {
   }
 
   void ReceivedModel(int result, const std::string& response) {
+    DCHECK_EQ(bridge_->GetAdbMessageLoop(), base::MessageLoop::current());
     if (result < 0) {
       devices_.pop_back();
       ProcessSerials();
@@ -265,6 +273,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<AdbPagesCommand> {
 
   void ReceivedSockets(int result,
                        const std::string& response) {
+    DCHECK_EQ(bridge_->GetAdbMessageLoop(), base::MessageLoop::current());
     if (result < 0) {
       devices_.pop_back();
       ProcessSerials();
@@ -281,6 +290,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<AdbPagesCommand> {
   }
 
   void ProcessSockets() {
+    DCHECK_EQ(bridge_->GetAdbMessageLoop(), base::MessageLoop::current());
     if (sockets_.size() == 0) {
       devices_.pop_back();
       ProcessSerials();
@@ -293,6 +303,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<AdbPagesCommand> {
 
   void ReceivedVersion(int result,
                        const std::string& response) {
+    DCHECK_EQ(bridge_->GetAdbMessageLoop(), base::MessageLoop::current());
     if (result < 0) {
       sockets_.pop_back();
       ProcessSockets();
@@ -319,6 +330,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<AdbPagesCommand> {
 
   void ReceivedPages(int result,
                      const std::string& response) {
+    DCHECK_EQ(bridge_->GetAdbMessageLoop(), base::MessageLoop::current());
     std::string socket = sockets_.back();
     sockets_.pop_back();
     if (result < 0) {

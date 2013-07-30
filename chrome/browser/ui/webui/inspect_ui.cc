@@ -397,6 +397,9 @@ void InspectUI::Observe(int type,
 }
 
 void InspectUI::StartListeningNotifications() {
+  if (observer_)
+    return;
+
   observer_ = new WorkerCreationDestructionListener();
   observer_->Init(this);
 

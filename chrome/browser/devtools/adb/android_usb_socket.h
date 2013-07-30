@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/memory/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/devtools/adb/android_usb_device.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -19,7 +20,8 @@ class MessageLoop;
 
 class AdbMessage;
 
-class AndroidUsbSocket : public net::StreamSocket {
+class AndroidUsbSocket : public net::StreamSocket,
+                         public base::NonThreadSafe {
  public:
   AndroidUsbSocket(scoped_refptr<AndroidUsbDevice> device,
                    uint32 socket_id,
@@ -69,7 +71,6 @@ class AndroidUsbSocket : public net::StreamSocket {
   void RespondToReaders(bool diconnect);
   void RespondToWriters();
 
-  base::MessageLoop* message_loop_;
   scoped_refptr<AndroidUsbDevice> device_;
   std::string command_;
   base::Callback<void(uint32)> delete_callback_;
