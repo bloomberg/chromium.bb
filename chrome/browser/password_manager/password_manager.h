@@ -134,9 +134,6 @@ class PasswordManager : public LoginModel,
   // containing WebContents.
   PasswordManagerDelegate* const delegate_;
 
-  // The LoginModelObserver (i.e LoginView) requiring autofill.
-  LoginModelObserver* observer_;
-
   // Set to false to disable the password manager (will no longer ask if you
   // want to save passwords but will continue to fill passwords).
   BooleanPrefMember password_manager_enabled_;
