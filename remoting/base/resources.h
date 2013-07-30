@@ -9,10 +9,14 @@
 
 namespace remoting {
 
-// Loads chromoting resources. Returns false in case of a failure. |pref_locale|
+// Loads (or reloads) Chromoting resources for the given locale. |pref_locale|
 // is passed to l10n_util::GetApplicationLocale(), so the default system locale
-// is used if |pref_locale| is empty.
+// is used if |pref_locale| is empty. Returns |true| if the shared resource
+// bundle has been initialized.
 bool LoadResources(const std::string& pref_locale);
+
+// Unloads Chromoting resources.
+void UnloadResources();
 
 }  // namespace remoting
 

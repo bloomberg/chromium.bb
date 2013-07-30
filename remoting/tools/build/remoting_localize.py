@@ -542,7 +542,10 @@ def IsRtlLanguage(language):
 
 
 def NormalizeLanguageCode(language):
-  return language.replace('_', '-', 1)
+  lang = language.replace('_', '-', 1)
+  if lang == 'en-US':
+    lang = 'en'
+  return lang
 
 
 def GetDataPackageSuffix(language):
@@ -639,6 +642,12 @@ class MessageMap:
     return lambda message: self.GetText(message)
 
 
+# Use '@' as a delimiter for string templates instead of '$' to avoid unintended
+# expansion when passing the string from GYP.
+class GypTemplate(Template):
+    delimiter = '@'
+
+
 def Localize(source, locales, options):
   # Set the list of languages to use.
   languages = map(NormalizeLanguageCode, locales)
@@ -701,12 +710,13 @@ def Localize(source, locales, options):
   # Generate a separate file per each locale if requested.
   outputs = []
   if options.locale_output:
-    target = Template(options.locale_output)
+    target = GypTemplate(options.locale_output)
     for lang in languages:
       context['languages'] = [ lang ]
       context['language'] = lang
       context['pak_suffix'] = GetDataPackageSuffix(lang)
       context['json_suffix'] = GetJsonSuffix(lang)
+      message_map.SelectLanguage(lang)
 
       template_file_name = target.safe_substitute(context)
       outputs.append(template_file_name)

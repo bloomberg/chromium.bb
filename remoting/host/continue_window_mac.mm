@@ -9,7 +9,9 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "remoting/base/string_resources.h"
 #include "remoting/host/continue_window.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 // Handles the ContinueWindow.
 @interface ContinueWindowMacController : NSObject {
@@ -17,11 +19,9 @@
   base::scoped_nsobject<NSMutableArray> shades_;
   base::scoped_nsobject<NSAlert> continue_alert_;
   remoting::ContinueWindow* continue_window_;
-  const remoting::UiStrings* ui_strings_;
 }
 
-- (id)initWithUiStrings:(const remoting::UiStrings*)ui_strings
-        continue_window:(remoting::ContinueWindow*)continue_window;
+- (id)initWithWindow:(remoting::ContinueWindow*)continue_window;
 - (void)show;
 - (void)hide;
 - (void)onCancel:(id)sender;
@@ -34,7 +34,7 @@ namespace remoting {
 // Everything important occurs in ContinueWindowMacController.
 class ContinueWindowMac : public ContinueWindow {
  public:
-  explicit ContinueWindowMac(const UiStrings& ui_strings);
+  ContinueWindowMac();
   virtual ~ContinueWindowMac();
 
  protected:
@@ -48,8 +48,7 @@ class ContinueWindowMac : public ContinueWindow {
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowMac);
 };
 
-ContinueWindowMac::ContinueWindowMac(const UiStrings& ui_strings)
-    : ContinueWindow(ui_strings) {
+ContinueWindowMac::ContinueWindowMac() {
 }
 
 ContinueWindowMac::~ContinueWindowMac() {
@@ -61,8 +60,7 @@ void ContinueWindowMac::ShowUi() {
 
   base::mac::ScopedNSAutoreleasePool pool;
   controller_.reset(
-      [[ContinueWindowMacController alloc] initWithUiStrings:&ui_strings()
-                                             continue_window:this]);
+      [[ContinueWindowMacController alloc] initWithWindow:this]);
   [controller_ show];
 }
 
@@ -74,20 +72,17 @@ void ContinueWindowMac::HideUi() {
 }
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateContinueWindow(
-    const UiStrings& ui_strings) {
-  return scoped_ptr<HostWindow>(new ContinueWindowMac(ui_strings));
+scoped_ptr<HostWindow> HostWindow::CreateContinueWindow() {
+  return scoped_ptr<HostWindow>(new ContinueWindowMac());
 }
 
 }  // namespace remoting
 
 @implementation ContinueWindowMacController
 
-- (id)initWithUiStrings:(const remoting::UiStrings*)ui_strings
-        continue_window:(remoting::ContinueWindow*)continue_window {
+- (id)initWithWindow:(remoting::ContinueWindow*)continue_window {
   if ((self = [super init])) {
     continue_window_ = continue_window;
-    ui_strings_ = ui_strings;
   }
   return self;
 }
@@ -116,21 +111,18 @@ scoped_ptr<HostWindow> HostWindow::CreateContinueWindow(
   }
 
   // Create alert.
-  NSString* message = base::SysUTF16ToNSString(ui_strings_->continue_prompt);
-  NSString* continue_button_string = base::SysUTF16ToNSString(
-      ui_strings_->continue_button_text);
-  NSString* cancel_button_string = base::SysUTF16ToNSString(
-      ui_strings_->stop_sharing_button_text);
   continue_alert_.reset([[NSAlert alloc] init]);
-  [continue_alert_ setMessageText:message];
+  [continue_alert_ setMessageText:l10n_util::GetNSString(IDR_CONTINUE_PROMPT)];
 
   NSButton* continue_button =
-      [continue_alert_ addButtonWithTitle:continue_button_string];
+      [continue_alert_ addButtonWithTitle:l10n_util::GetNSString(
+          IDR_CONTINUE_BUTTON)];
   [continue_button setAction:@selector(onContinue:)];
   [continue_button setTarget:self];
 
   NSButton* cancel_button =
-      [continue_alert_ addButtonWithTitle:cancel_button_string];
+      [continue_alert_ addButtonWithTitle:l10n_util::GetNSString(
+          IDR_STOP_SHARING_BUTTON)];
   [cancel_button setAction:@selector(onCancel:)];
   [cancel_button setTarget:self];
 

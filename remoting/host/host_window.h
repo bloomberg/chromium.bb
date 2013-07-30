@@ -14,19 +14,16 @@
 namespace remoting {
 
 class ClientSessionControl;
-struct UiStrings;
 
 class HostWindow : public base::NonThreadSafe {
  public:
   virtual ~HostWindow() {}
 
   // Creates a platform-specific instance of the continue window.
-  static scoped_ptr<HostWindow> CreateContinueWindow(
-      const UiStrings& ui_strings);
+  static scoped_ptr<HostWindow> CreateContinueWindow();
 
   // Creates a platform-specific instance of the disconnect window.
-  static scoped_ptr<HostWindow> CreateDisconnectWindow(
-      const UiStrings& ui_strings);
+  static scoped_ptr<HostWindow> CreateDisconnectWindow();
 
   // Starts the UI state machine. |client_session_control| will be used to
   // notify the caller about the local user's actions.

@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "remoting/host/host_window.h"
-#include "remoting/host/ui_strings.h"
 
 namespace remoting {
 
@@ -29,13 +28,11 @@ class ContinueWindow : public HostWindow {
   void DisconnectSession();
 
  protected:
-  explicit ContinueWindow(const UiStrings& ui_strings);
+  ContinueWindow();
 
   // Shows and hides the UI.
   virtual void ShowUi() = 0;
   virtual void HideUi() = 0;
-
-  const UiStrings& ui_strings() const { return ui_strings_; }
 
  private:
   // Invoked periodically to ask for the local user whether the session should
@@ -50,9 +47,6 @@ class ContinueWindow : public HostWindow {
 
   // Used to ask the local user whether the session should be continued.
   base::OneShotTimer<ContinueWindow> session_expired_timer_;
-
-  // Localized UI strings.
-  UiStrings ui_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueWindow);
 };

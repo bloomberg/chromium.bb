@@ -1,6 +1,4 @@
-COPYRIGHT=Copyright 2013 Google Inc. All Rights Reserved.
 HOST_PLUGIN_FILE_NAME=Chrome Remote Desktop Host
-HOST_PLUGIN_DESCRIPTION=Allow another user to access your computer securely over the Internet.
 DAEMON_FILE_NAME=Chrome Remote Desktop Host Service
 MAC_BUNDLE_ID=com.google.Chrome
 MAC_CREATOR=rimZ
@@ -8,7 +6,4 @@ MAC_HOST_BUNDLE_ID=com.google.chrome_remote_desktop.remoting_me2me_host
 MAC_UNINSTALLER_NAME=Chrome Remote Desktop Host Uninstaller
 MAC_UNINSTALLER_BUNDLE_PREFIX=com.google.pkg
 MAC_UNINSTALLER_BUNDLE_ID=com.google.chromeremotedesktop.host_uninstaller
-MAC_UNINSTALLER_BUNDLE_NAME=Chrome Remote Desktop Host Uninstaller
 MAC_PREFPANE_BUNDLE_ID=com.google.chromeremotedesktop.preferences
-MAC_PREFPANE_BUNDLE_NAME=Chrome Remote Desktop Host Preferences
-MAC_PREFPANE_ICON_LABEL=Chrome Remote&#x0a;Desktop Host

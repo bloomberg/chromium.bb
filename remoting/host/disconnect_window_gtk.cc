@@ -9,10 +9,11 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "remoting/base/string_resources.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_window.h"
-#include "remoting/host/ui_strings.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace remoting {
 
@@ -20,7 +21,7 @@ namespace {
 
 class DisconnectWindowGtk : public HostWindow {
  public:
-  explicit DisconnectWindowGtk(const UiStrings& ui_strings);
+  DisconnectWindowGtk();
   virtual ~DisconnectWindowGtk();
 
   // HostWindow overrides.
@@ -38,9 +39,6 @@ class DisconnectWindowGtk : public HostWindow {
 
   // Used to disconnect the client session.
   base::WeakPtr<ClientSessionControl> client_session_control_;
-
-  // Localized UI strings.
-  UiStrings ui_strings_;
 
   GtkWidget* disconnect_window_;
   GtkWidget* message_;
@@ -67,9 +65,8 @@ void AddRoundRectPath(cairo_t* cairo_context, int width, int height,
   cairo_close_path(cairo_context);
 }
 
-DisconnectWindowGtk::DisconnectWindowGtk(const UiStrings& ui_strings)
-    : ui_strings_(ui_strings),
-      disconnect_window_(NULL),
+DisconnectWindowGtk::DisconnectWindowGtk()
+    : disconnect_window_(NULL),
       current_width_(0),
       current_height_(0) {
 }
@@ -98,7 +95,8 @@ void DisconnectWindowGtk::Start(
 
   g_signal_connect(disconnect_window_, "delete-event",
                    G_CALLBACK(OnDeleteThunk), this);
-  gtk_window_set_title(window, UTF16ToUTF8(ui_strings_.product_name).c_str());
+  gtk_window_set_title(window,
+                       l10n_util::GetStringUTF8(IDR_PRODUCT_NAME).c_str());
   gtk_window_set_resizable(window, FALSE);
 
   // Try to keep the window always visible.
@@ -142,7 +140,7 @@ void DisconnectWindowGtk::Start(
   gtk_container_add(GTK_CONTAINER(align), button_row);
 
   button_ = gtk_button_new_with_label(
-      UTF16ToUTF8(ui_strings_.disconnect_button_text).c_str());
+      l10n_util::GetStringUTF8(IDR_STOP_SHARING_BUTTON).c_str());
   gtk_box_pack_end(GTK_BOX(button_row), button_, FALSE, FALSE, 0);
 
   g_signal_connect(button_, "clicked", G_CALLBACK(OnClickedThunk), this);
@@ -163,9 +161,9 @@ void DisconnectWindowGtk::Start(
   // Extract the user name from the JID.
   std::string client_jid = client_session_control_->client_jid();
   string16 username = UTF8ToUTF16(client_jid.substr(0, client_jid.find('/')));
-  string16 text =
-      ReplaceStringPlaceholders(ui_strings_.disconnect_message, username, NULL);
-  gtk_label_set_text(GTK_LABEL(message_), UTF16ToUTF8(text).c_str());
+  gtk_label_set_text(
+      GTK_LABEL(message_),
+      l10n_util::GetStringFUTF8(IDR_MESSAGE_SHARED, username).c_str());
   gtk_window_present(window);
 }
 
@@ -288,9 +286,8 @@ gboolean DisconnectWindowGtk::OnButtonPress(GtkWidget* widget,
 }  // namespace
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow(
-    const UiStrings& ui_strings) {
-  return scoped_ptr<HostWindow>(new DisconnectWindowGtk(ui_strings));
+scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
+  return scoped_ptr<HostWindow>(new DisconnectWindowGtk());
 }
 
 }  // namespace remoting

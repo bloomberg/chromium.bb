@@ -57,8 +57,7 @@ void ContinueWindow::DisconnectSession() {
     client_session_control_->DisconnectSession();
 }
 
-ContinueWindow::ContinueWindow(const UiStrings& ui_strings)
-    : ui_strings_(ui_strings) {
+ContinueWindow::ContinueWindow() {
 }
 
 void ContinueWindow::OnSessionExpired() {
