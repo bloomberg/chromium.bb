@@ -332,6 +332,7 @@
         'browser/plugin_loader_posix_unittest.cc',
         'browser/renderer_host/compositing_iosurface_transformer_mac_unittest.cc',
         'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
+	'browser/renderer_host/input/immediate_input_router_unittest.cc',
         'browser/renderer_host/media/audio_input_device_manager_unittest.cc',
         'browser/renderer_host/media/audio_mirroring_manager_unittest.cc',
         'browser/renderer_host/media/audio_renderer_host_unittest.cc',
@@ -695,6 +696,7 @@
           ],
           'sources!': [
             'browser/accessibility/browser_accessibility_win_unittest.cc',
+            'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
           ],
         }],
         ['use_aura==1 and OS=="linux"', {

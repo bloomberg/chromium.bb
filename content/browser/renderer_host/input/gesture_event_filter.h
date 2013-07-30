@@ -79,6 +79,7 @@ class GestureEventFilter {
 
  private:
   friend class MockRenderWidgetHost;
+  friend class ImmediateInputRouterTest;
 
   // TODO(mohsen): There are a bunch of ShouldForward.../ShouldDiscard...
   // methods that are getting confusing. This should be somehow fixed. Maybe

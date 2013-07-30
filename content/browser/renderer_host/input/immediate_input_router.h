@@ -27,8 +27,9 @@ class RenderWidgetHostImpl;
 
 // A default implementation for browser input event routing. Input commands are
 // forwarded to the renderer immediately upon receipt.
-class ImmediateInputRouter : public InputRouter,
-                             public TouchEventQueueClient {
+class CONTENT_EXPORT ImmediateInputRouter
+    : public NON_EXPORTED_BASE(InputRouter),
+      public NON_EXPORTED_BASE(TouchEventQueueClient) {
  public:
   ImmediateInputRouter(RenderProcessHost* process,
                        InputRouterClient* client,

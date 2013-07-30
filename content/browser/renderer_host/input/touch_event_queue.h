@@ -62,6 +62,7 @@ class TouchEventQueue {
 
  private:
   friend class MockRenderWidgetHost;
+  friend class ImmediateInputRouterTest;
 
   CONTENT_EXPORT size_t GetQueueSize() const;
   CONTENT_EXPORT const TouchEventWithLatencyInfo& GetLatestEvent() const;
