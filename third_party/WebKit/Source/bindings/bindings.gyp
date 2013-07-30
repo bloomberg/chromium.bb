@@ -34,7 +34,7 @@
     'v8_enable_i18n_support%': 0,
   },
   'includes': [
-    '../build/win/precompile.gypi',
+    '../WebKit/chromium/WinPrecompile.gypi',
     'bindings.gypi',
   ],
   'target_defaults': {
