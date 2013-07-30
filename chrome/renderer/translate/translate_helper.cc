@@ -5,6 +5,7 @@
 #include "chrome/renderer/translate/translate_helper.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -12,9 +13,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/translate/language_detection_util.h"
 #include "chrome/common/translate/translate_common_metrics.h"
+#include "chrome/renderer/extensions/extension_groups.h"
+#include "chrome/renderer/isolated_world_ids.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -23,6 +27,8 @@
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/WebKit/public/web/WebWidget.h"
+#include "url/gurl.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebDocument;
@@ -31,7 +37,9 @@ using WebKit::WebFrame;
 using WebKit::WebNode;
 using WebKit::WebNodeList;
 using WebKit::WebScriptSource;
+using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
+using WebKit::WebVector;
 using WebKit::WebView;
 
 namespace {
@@ -50,6 +58,12 @@ const int kTranslateStatusCheckDelayMs = 400;
 
 // Language name passed to the Translate element for it to detect the language.
 const char kAutoDetectionLanguage[] = "auto";
+
+// Isolated world sets following content-security-policy.
+const char kContentSecurityPolicy[] = "script-src 'self' 'unsafe-eval'";
+
+// Isolated world sets following security-origin by default.
+const char kSecurityOrigin[] = "https://translate.googleapis.com";
 
 }  // namespace
 
@@ -168,8 +182,15 @@ base::TimeDelta TranslateHelper::AdjustDelay(int delayInMs) {
 
 void TranslateHelper::ExecuteScript(const std::string& script) {
   WebFrame* main_frame = GetMainFrame();
-  if (main_frame)
-    main_frame->executeScript(WebScriptSource(ASCIIToUTF16(script)));
+  if (!main_frame)
+    return;
+
+  WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
+  main_frame->executeScriptInIsolatedWorld(
+      chrome::ISOLATED_WORLD_ID_TRANSLATE,
+      &source,
+      1,
+      extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS);
 }
 
 bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
@@ -179,14 +200,20 @@ bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
     return fallback;
 
   v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
-      WebScriptSource(ASCIIToUTF16(script)));
-  if (v.IsEmpty() || !v->IsBoolean()) {
+  WebVector<v8::Local<v8::Value> > results;
+  WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
+  main_frame->executeScriptInIsolatedWorld(
+      chrome::ISOLATED_WORLD_ID_TRANSLATE,
+      &source,
+      1,
+      extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS,
+      &results);
+  if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsBoolean()) {
     NOTREACHED();
     return fallback;
   }
 
-  return v->BooleanValue();
+  return results[0]->BooleanValue();
 }
 
 std::string TranslateHelper::ExecuteScriptAndGetStringResult(
@@ -196,14 +223,20 @@ std::string TranslateHelper::ExecuteScriptAndGetStringResult(
     return std::string();
 
   v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
-      WebScriptSource(ASCIIToUTF16(script)));
-  if (v.IsEmpty() || !v->IsString()) {
+  WebVector<v8::Local<v8::Value> > results;
+  WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
+  main_frame->executeScriptInIsolatedWorld(
+      chrome::ISOLATED_WORLD_ID_TRANSLATE,
+      &source,
+      1,
+      extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS,
+      &results);
+  if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsString()) {
     NOTREACHED();
     return std::string();
   }
 
-  v8::Local<v8::String> v8_str = v->ToString();
+  v8::Local<v8::String> v8_str = results[0]->ToString();
   int length = v8_str->Utf8Length() + 1;
   scoped_ptr<char[]> str(new char[length]);
   v8_str->WriteUtf8(str.get(), length);
@@ -217,14 +250,20 @@ double TranslateHelper::ExecuteScriptAndGetDoubleResult(
     return 0.0;
 
   v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
-      WebScriptSource(ASCIIToUTF16(script)));
-  if (v.IsEmpty() || !v->IsNumber()) {
+  WebVector<v8::Local<v8::Value> > results;
+  WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
+  main_frame->executeScriptInIsolatedWorld(
+      chrome::ISOLATED_WORLD_ID_TRANSLATE,
+      &source,
+      1,
+      extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS,
+      &results);
+  if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsNumber()) {
     NOTREACHED();
     return 0.0;
   }
 
-  return v->NumberValue();
+  return results[0]->NumberValue();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -309,6 +348,19 @@ void TranslateHelper::OnTranslatePage(int page_id,
 
   GURL url(main_frame->document().url());
   TranslateCommonMetrics::ReportPageScheme(url.scheme());
+
+  // Set up v8 isolated world with proper content-security-policy and
+  // security-origin.
+  WebFrame* frame = GetMainFrame();
+  if (frame) {
+    frame->setIsolatedWorldContentSecurityPolicy(
+        chrome::ISOLATED_WORLD_ID_TRANSLATE,
+        WebString::fromUTF8(kContentSecurityPolicy));
+
+    frame->setIsolatedWorldSecurityOrigin(
+        chrome::ISOLATED_WORLD_ID_TRANSLATE,
+        WebSecurityOrigin::create(GURL(kSecurityOrigin)));
+  }
 
   if (!IsTranslateLibAvailable()) {
     // Evaluate the script to add the translation related method to the global

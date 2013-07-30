@@ -13,6 +13,10 @@ namespace extensions {
 enum ExtensionGroups {
   // Use this to mark extensions to be loaded into content scripts only.
   EXTENSION_GROUP_CONTENT_SCRIPTS = 1,
+
+  // Use this in an isolated world for internal Chrome Translate.
+  // No extension APIs are available.
+  EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS = 2,
 };
 
 }  // namespace extensions

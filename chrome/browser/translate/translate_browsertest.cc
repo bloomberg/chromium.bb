@@ -74,7 +74,9 @@ class TranslateBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TranslateBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, Translate) {
+// TODO(toyoshim): This test should be changed to work in an isolated world.
+// See also http://crbug.com/164547 .
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, DISABLED_Translate) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::win::GetVersion() >= base::win::VERSION_WIN8)
