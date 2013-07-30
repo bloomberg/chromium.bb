@@ -438,7 +438,8 @@ public:
     virtual String helpText() const { return String(); }
 
     // Location and click point in frame-relative coordinates.
-    virtual LayoutRect elementRect() const { return LayoutRect(); }
+    virtual LayoutRect elementRect() const { return m_explicitElementRect; }
+    void setElementRect(LayoutRect r) { m_explicitElementRect = r; }
     virtual void markCachedElementRectDirty() const;
     virtual IntPoint clickPoint();
 
@@ -539,6 +540,7 @@ protected:
     mutable bool m_haveChildren;
     AccessibilityRole m_role;
     AccessibilityObjectInclusion m_lastKnownIsIgnoredValue;
+    LayoutRect m_explicitElementRect;
 
     virtual bool computeAccessibilityIsIgnored() const { return true; }
 

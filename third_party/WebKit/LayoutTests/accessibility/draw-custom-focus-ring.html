@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<head>
+<title>Canvas test: drawSystemFocusRing</title>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+</head>
+<body style="padding: 0; margin: 0">
+<canvas id="canvas" class="output" width="300" height="350">
+    <button id="button1"></button>
+    <button id="button2"></button>
+</canvas>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+if (window.accessibilityController) {
+    window.axButton1 = window.accessibilityController.accessibleElementById("button1");
+    window.axButton2 = window.accessibilityController.accessibleElementById("button2");
+}
+
+var canvas = document.getElementById("canvas").getContext("2d");
+canvas.beginPath();
+canvas.rect(50, 50, 200, 100);
+canvas.fillStyle = '#ccf';
+canvas.fill();
+canvas.drawCustomFocusRing(document.getElementById('button1'));
+
+canvas.beginPath();
+canvas.rect(50, 200, 200, 100);
+canvas.fillStyle = '#cfc';
+canvas.fill();
+canvas.drawCustomFocusRing(document.getElementById('button2'));
+
+shouldBe("axButton1.x", "50");
+shouldBe("axButton1.y", "50");
+shouldBe("axButton1.width", "200");
+shouldBe("axButton1.height", "100");
+
+shouldBe("axButton2.x", "50");
+shouldBe("axButton2.y", "200");
+shouldBe("axButton2.width", "200");
+shouldBe("axButton2.height", "100");
+</script>
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>

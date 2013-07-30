@@ -214,6 +214,8 @@ AccessibilityRenderObject::~AccessibilityRenderObject()
 
 LayoutRect AccessibilityRenderObject::elementRect() const
 {
+    if (!m_explicitElementRect.isEmpty())
+        return m_explicitElementRect;
     if (!m_renderer)
         return LayoutRect();
     if (!m_renderer->isBox())

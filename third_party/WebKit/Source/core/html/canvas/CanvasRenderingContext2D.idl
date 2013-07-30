@@ -159,6 +159,10 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
 
     [RaisesException] ImageData webkitGetImageDataHD(float sx, float sy, float sw, float sh);
 
+    // Focus rings
+    [EnabledAtRuntime=experimentalCanvasFeatures] void drawSystemFocusRing(Element element);
+    [EnabledAtRuntime=experimentalCanvasFeatures] boolean drawCustomFocusRing(Element element);
+
     readonly attribute float webkitBackingStorePixelRatio;
 
     attribute boolean webkitImageSmoothingEnabled;

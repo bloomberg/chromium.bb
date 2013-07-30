@@ -34,6 +34,7 @@
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 
 #include "CSSPropertyNames.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
@@ -60,6 +61,7 @@
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderTheme.h"
 #include "weborigin/SecurityOrigin.h"
 
 #include "wtf/CheckedArithmetic.h"
@@ -2335,6 +2337,75 @@ PassRefPtr<Canvas2DContextAttributes> CanvasRenderingContext2D::getContextAttrib
     RefPtr<Canvas2DContextAttributes> attributes = Canvas2DContextAttributes::create();
     attributes->setAlpha(m_hasAlpha);
     return attributes.release();
+}
+
+void CanvasRenderingContext2D::drawSystemFocusRing(Element* element)
+{
+    if (!focusRingCallIsValid(m_path, element))
+        return;
+
+    updateFocusRingAccessibility(m_path, element);
+    if (element->focused())
+        drawFocusRing(m_path, element);
+}
+
+bool CanvasRenderingContext2D::drawCustomFocusRing(Element* element)
+{
+    if (!focusRingCallIsValid(m_path, element))
+        return false;
+
+    updateFocusRingAccessibility(m_path, element);
+
+    // Return true if the application should draw the focus ring. The spec allows us to
+    // override this for accessibility, but currently Blink doesn't take advantage of this.
+    return element->focused();
+}
+
+bool CanvasRenderingContext2D::focusRingCallIsValid(const Path& path, Element* element)
+{
+    if (!state().m_invertibleCTM)
+        return false;
+    if (path.isEmpty())
+        return false;
+    if (!element->isDescendantOf(canvas()))
+        return false;
+
+    return true;
+}
+
+void CanvasRenderingContext2D::updateFocusRingAccessibility(const Path& path, Element* element)
+{
+    // If accessibility is already enabled in this frame, associate this path's
+    // bounding box with the accessible object. Do this even if the element
+    // isn't focused because assistive technology might try to explore the object's
+    // location before it gets focus.
+    if (AXObjectCache* axObjectCache = element->document()->existingAXObjectCache()) {
+        if (AccessibilityObject* obj = axObjectCache->getOrCreate(element)) {
+            IntRect canvasRect = canvas()->renderer()->absoluteBoundingBoxRect();
+            LayoutRect rect = LayoutRect(path.boundingRect());
+            rect.moveBy(canvasRect.location());
+            obj->setElementRect(rect);
+        }
+    }
+}
+
+void CanvasRenderingContext2D::drawFocusRing(const Path& path, Element* element)
+{
+    GraphicsContext* c = drawingContext();
+    if (!c)
+        return;
+
+    c->save();
+    c->setAlpha(1.0);
+    c->clearShadow();
+    c->setCompositeOperation(CompositeSourceOver, BlendModeNormal);
+
+    RefPtr<RenderStyle> style(RenderStyle::createDefaultStyle());
+    Color focusRingColor = RenderTheme::focusRingColor();
+    c->drawFocusRing(path, style->outlineWidth(), style->outlineOffset(), focusRingColor);
+    didDraw(path.boundingRect());
+
+    c->restore();
 }
 
 } // namespace WebCore

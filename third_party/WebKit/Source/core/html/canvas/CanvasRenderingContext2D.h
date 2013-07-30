@@ -48,6 +48,7 @@ class CanvasGradient;
 class CanvasPattern;
 class CanvasStyle;
 class DOMPath;
+class Element;
 class FloatRect;
 class GraphicsContext;
 class HTMLCanvasElement;
@@ -226,6 +227,9 @@ public:
 
     PassRefPtr<Canvas2DContextAttributes> getContextAttributes() const;
 
+    void drawSystemFocusRing(Element*);
+    bool drawCustomFocusRing(Element*);
+
 private:
     struct State : FontSelectorClient {
         State();
@@ -320,6 +324,10 @@ private:
 
     PassRefPtr<ImageData> getImageData(ImageBuffer::CoordinateSystem, float sx, float sy, float sw, float sh, ExceptionCode&) const;
     void putImageData(ImageData*, ImageBuffer::CoordinateSystem, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionCode&);
+
+    bool focusRingCallIsValid(const Path&, Element*);
+    void updateFocusRingAccessibility(const Path&, Element*);
+    void drawFocusRing(const Path&, Element*);
 
     virtual bool is2d() const OVERRIDE { return true; }
     virtual bool isAccelerated() const OVERRIDE;

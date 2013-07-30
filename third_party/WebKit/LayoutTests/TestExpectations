@@ -1571,3 +1571,4 @@ crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-chang
 # be rebaslined.
 Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Failure Pass ]
 
+crbug.com/261998 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]

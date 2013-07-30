@@ -1184,6 +1184,10 @@ String AccessibilityNodeObject::helpText() const
 
 LayoutRect AccessibilityNodeObject::elementRect() const
 {
+    // First check if it has a custom rect, for example if this element is tied to a canvas path.
+    if (!m_explicitElementRect.isEmpty())
+        return m_explicitElementRect;
+
     // AccessibilityNodeObjects have no mechanism yet to return a size or position.
     // For now, let's return the position of the ancestor that does have a position,
     // and make it the width of that parent, and about the height of a line of text, so that it's clear the object is a child of the parent.
