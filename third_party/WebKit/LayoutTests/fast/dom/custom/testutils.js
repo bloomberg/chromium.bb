@@ -41,7 +41,13 @@ if (!isParentFrame()) {
 
 withFrame = function (f) {
     var frame = document.createElement('iframe');
-    frame.onload = function () { f(frame); };
+    frame.onload = function () {
+        try {
+            f(frame);
+        } catch (e) {
+            testFailed(e);
+        }
+    };
     frame.src = 'data:text/html,';
     document.body.appendChild(frame);
 };
