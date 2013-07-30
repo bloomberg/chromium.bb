@@ -306,10 +306,6 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyGridAutoFlow: return 250;
     case CSSPropertyWebkitHighlight: return 251;
     case CSSPropertyWebkitHyphenateCharacter: return 252;
-    case CSSPropertyWebkitHyphenateLimitAfter: return 253;
-    case CSSPropertyWebkitHyphenateLimitBefore: return 254;
-    case CSSPropertyWebkitHyphenateLimitLines: return 255;
-    case CSSPropertyWebkitHyphens: return 256;
     case CSSPropertyWebkitLineBoxContain: return 257;
     case CSSPropertyWebkitLineAlign: return 258;
     case CSSPropertyWebkitLineBreak: return 259;

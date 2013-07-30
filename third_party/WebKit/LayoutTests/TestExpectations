@@ -959,8 +959,6 @@ webkit.org/b/88832 [ Win ] http/tests/xmlhttprequest/origin-exact-matching.html 
 
 webkit.org/b/89702 virtual/softwarecompositing/scaling/tiled-layer-recursion.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/89820 [ Linux Win ] fast/text/hyphen-min-preferred-width.html [ ImageOnlyFailure ]
-
 # webkitIsFullScreen does not have the correct value after an iframe exits fullscreen
 webkit.org/b/90704 fullscreen/exit-full-screen-iframe.html [ Failure Pass ]
 

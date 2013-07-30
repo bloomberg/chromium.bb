@@ -1759,10 +1759,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
     case CSSPropertyWebkitFontVariantLigatures:
     case CSSPropertyWebkitHighlight:
     case CSSPropertyWebkitHyphenateCharacter:
-    case CSSPropertyWebkitHyphenateLimitAfter:
-    case CSSPropertyWebkitHyphenateLimitBefore:
-    case CSSPropertyWebkitHyphenateLimitLines:
-    case CSSPropertyWebkitHyphens:
     case CSSPropertyWebkitLineAlign:
     case CSSPropertyWebkitLineBreak:
     case CSSPropertyWebkitLineClamp:

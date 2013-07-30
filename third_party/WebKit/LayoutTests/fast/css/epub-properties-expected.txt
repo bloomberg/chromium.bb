@@ -1,5 +1,4 @@
 FAIL: element.style.epubCaptionSide is not 'bottom' after setting style to caption-side: bottom.
-FAIL: element.style.epubHyphens is not 'manual' after setting style to -webkit-hyphens: manual.
 FAIL: element.style.epubTextCombine is not 'horizontal' after setting style to -webkit-text-combine: horizontal.
 FAIL: element.style.epubTextEmphasisStyle is not 'open sesame' after setting style to -webkit-text-emphasis-style: open sesame.
 FAIL: element.style.epubTextEmphasisColor is not 'red' after setting style to -webkit-text-emphasis-color: red.

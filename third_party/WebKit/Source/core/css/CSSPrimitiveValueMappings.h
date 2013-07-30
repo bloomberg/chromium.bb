@@ -3507,40 +3507,6 @@ template<> inline CSSPrimitiveValue::operator TextRenderingMode() const
     return AutoTextRendering;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(Hyphens hyphens)
-    : CSSValue(PrimitiveClass)
-{
-    m_primitiveUnitType = CSS_VALUE_ID;
-    switch (hyphens) {
-    case HyphensNone:
-        m_value.valueID = CSSValueNone;
-        break;
-    case HyphensManual:
-        m_value.valueID = CSSValueManual;
-        break;
-    case HyphensAuto:
-        m_value.valueID = CSSValueAuto;
-        break;
-    }
-}
-
-template<> inline CSSPrimitiveValue::operator Hyphens() const
-{
-    switch (m_value.valueID) {
-    case CSSValueNone:
-        return HyphensNone;
-    case CSSValueManual:
-        return HyphensManual;
-    case CSSValueAuto:
-        return HyphensAuto;
-    default:
-        break;
-    }
-
-    ASSERT_NOT_REACHED();
-    return HyphensAuto;
-}
-
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(LineSnap gridSnap)
     : CSSValue(PrimitiveClass)
 {

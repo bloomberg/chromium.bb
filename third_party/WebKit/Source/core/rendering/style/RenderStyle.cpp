@@ -1006,8 +1006,6 @@ const CounterDirectives RenderStyle::getCounterDirectives(const AtomicString& id
 
 const AtomicString& RenderStyle::hyphenString() const
 {
-    ASSERT(hyphens() != HyphensNone);
-
     const AtomicString& hyphenationString = rareInheritedData.get()->hyphenationString;
     if (!hyphenationString.isNull())
         return hyphenationString;

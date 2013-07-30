@@ -298,10 +298,6 @@ webkitFontSmoothing
 webkitFontVariantLigatures
 webkitHighlight
 webkitHyphenateCharacter
-webkitHyphenateLimitAfter
-webkitHyphenateLimitBefore
-webkitHyphenateLimitLines
-webkitHyphens
 webkitLineAlign
 webkitLineBoxContain
 webkitLineBreak

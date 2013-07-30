@@ -310,11 +310,6 @@ grid-row-end
 grid-row-start
 -webkit-highlight
 -webkit-hyphenate-character
--webkit-hyphenate-limit-after
--webkit-hyphenate-limit-before
--webkit-hyphenate-limit-lines
--webkit-hyphens
--epub-hyphens alias_for=-webkit-hyphens
 -webkit-line-box-contain
 -webkit-line-align
 -webkit-line-break

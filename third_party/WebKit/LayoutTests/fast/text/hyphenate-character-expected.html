@@ -7,14 +7,6 @@
         text-align: justify;
     }
 
-    .hyphenate-character-auto {
-        -webkit-hyphenate-character: auto;
-    }
-
-    .hyphenate-character-bullet {
-        -webkit-hyphenate-character: "\2022";
-    }
-
     .hyphenate-character-tilde-dot {
         -webkit-hyphenate-character: "\B7~";
     }
@@ -27,24 +19,24 @@
 <div class="test">
     <p>The initial value (should be like <tt>auto</tt>)</p>
     <div class="text-box">
-      antidisestab&shy;lishment&shy;arianism
+      antidisestab-lishment-arianism
     </div>
 </div>
 <div class="test">
     <p>The default (<tt>hyphenate-character: auto</tt>)</p>
     <div class="text-box hyphenate-character-auto">
-      antidisestab&shy;lishment&shy;arianism
+      antidisestab-lishment-arianism
     </div>
 </div>
 <div class="test">
     <p>Bullet (<tt>hyphenate-character: "\2022"</tt>)</p>
     <div class="text-box hyphenate-character-bullet">
-      antidisestab&shy;lishment&shy;arianism
+      antidisestab&#x2022; lishment&#x2022; arianism
     </div>
 </div>
 <div class="test">
     <p>Middle dot and tilde (<tt>hyphenate-character: "\B7~"</tt>)</p>
     <div class="text-box hyphenate-character-tilde-dot">
-      antidisestab&shy;lishment&shy;arianism
+      antidisestab&#xb7;~ lishment&#xb7;~ arianism
     </div>
 </div>

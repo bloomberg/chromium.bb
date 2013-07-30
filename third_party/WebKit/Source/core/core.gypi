@@ -3146,8 +3146,6 @@
             'platform/text/AtomicStringKeyedMRUCache.h',
             'platform/text/BidiContext.cpp',
             'platform/text/DateTimeFormat.cpp',
-            'platform/text/Hyphenation.cpp',
-            'platform/text/Hyphenation.h',
             'platform/text/LineEnding.cpp',
             'platform/text/LocaleICU.cpp',
             'platform/text/LocaleICU.h',

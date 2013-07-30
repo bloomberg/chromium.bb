@@ -802,10 +802,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueAntialiased || valueID == CSSValueSubpixelAntialiased)
             return true;
         break;
-    case CSSPropertyWebkitHyphens:
-        if (valueID == CSSValueNone || valueID == CSSValueManual || valueID == CSSValueAuto)
-            return true;
-        break;
     case CSSPropertyGridAutoFlow:
         if (valueID == CSSValueNone || valueID == CSSValueRow || valueID == CSSValueColumn)
             return RuntimeEnabledFeatures::cssGridLayoutEnabled();
@@ -996,7 +992,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyJustifyContent:
     case CSSPropertyWebkitFontKerning:
     case CSSPropertyWebkitFontSmoothing:
-    case CSSPropertyWebkitHyphens:
     case CSSPropertyGridAutoFlow:
     case CSSPropertyWebkitLineAlign:
     case CSSPropertyWebkitLineBreak:
@@ -2537,17 +2532,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         break;
 
-    case CSSPropertyWebkitHyphenateLimitBefore:
-    case CSSPropertyWebkitHyphenateLimitAfter:
-        if (id == CSSValueAuto || validUnit(value, FInteger | FNonNeg, CSSStrictMode))
-            validPrimitive = true;
-        break;
-
-    case CSSPropertyWebkitHyphenateLimitLines:
-        if (id == CSSValueNoLimit || validUnit(value, FInteger | FNonNeg, CSSStrictMode))
-            validPrimitive = true;
-        break;
-
     case CSSPropertyWebkitLineGrid:
         if (id == CSSValueNone)
             validPrimitive = true;
@@ -2802,7 +2786,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyJustifyContent:
     case CSSPropertyWebkitFontKerning:
     case CSSPropertyWebkitFontSmoothing:
-    case CSSPropertyWebkitHyphens:
     case CSSPropertyGridAutoFlow:
     case CSSPropertyWebkitLineAlign:
     case CSSPropertyWebkitLineBreak:
