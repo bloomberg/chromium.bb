@@ -34,3 +34,7 @@ DiskCacheEntryTest.NewEvictionEvictOldEntries
 # Hang. crbug.com/265647.
 NetworkChangeNotifierWinTest.NetChangeWinBasic
 NetworkChangeNotifierWinTest.NetChangeWinSignal
+NetworkChangeNotifierWinTest.NetChangeWinFailSignal*
+
+
+
