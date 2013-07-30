@@ -14,27 +14,28 @@ namespace content {
 BrowserCompositorOutputSurfaceProxy::BrowserCompositorOutputSurfaceProxy(
     IDMap<BrowserCompositorOutputSurface>* surface_map)
     : surface_map_(surface_map),
-      connected_to_gpu_process_host_(false) {}
+      connected_to_gpu_process_host_id_(0) {}
 
 BrowserCompositorOutputSurfaceProxy::~BrowserCompositorOutputSurfaceProxy() {}
 
 void BrowserCompositorOutputSurfaceProxy::ConnectToGpuProcessHost(
     base::SingleThreadTaskRunner* compositor_thread_task_runner) {
-  // TODO(danakj): When the GpuProcessHost changes (e.g. after GPU proces
-  // crash), we must connect to the new one to continue receiving these
-  // updates.
-  if (connected_to_gpu_process_host_)
+  BrowserGpuChannelHostFactory* factory =
+      BrowserGpuChannelHostFactory::instance();
+
+  int gpu_process_host_id = factory->GpuProcessHostId();
+  if (connected_to_gpu_process_host_id_ == gpu_process_host_id)
     return;
 
   const uint32 kMessagesToFilter[] = { GpuHostMsg_UpdateVSyncParameters::ID };
-  BrowserGpuChannelHostFactory::instance()->SetHandlerForControlMessages(
+  factory->SetHandlerForControlMessages(
       kMessagesToFilter,
       arraysize(kMessagesToFilter),
       base::Bind(&BrowserCompositorOutputSurfaceProxy::
                      OnMessageReceivedOnCompositorThread,
                  this),
       compositor_thread_task_runner);
-  connected_to_gpu_process_host_ = true;
+  connected_to_gpu_process_host_id_ = gpu_process_host_id;
 }
 
 void BrowserCompositorOutputSurfaceProxy::OnMessageReceivedOnCompositorThread(

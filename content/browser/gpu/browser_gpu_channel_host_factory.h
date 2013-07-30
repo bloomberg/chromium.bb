@@ -39,12 +39,15 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   virtual GpuChannelHost* EstablishGpuChannelSync(
       CauseForGpuLaunch cause_for_gpu_launch) OVERRIDE;
 
-  // Specify a task runner and callback to be used for a set of messages.
+  // Specify a task runner and callback to be used for a set of messages. The
+  // callback will be set up on the current GpuProcessHost, identified by
+  // GpuProcessHostId().
   virtual void SetHandlerForControlMessages(
       const uint32* message_ids,
       size_t num_messages,
       const base::Callback<void(const IPC::Message&)>& handler,
       base::TaskRunner* target_task_runner);
+  int GpuProcessHostId() { return gpu_host_id_; }
 
  private:
   struct CreateRequest {

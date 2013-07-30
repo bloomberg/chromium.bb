@@ -39,7 +39,7 @@ class BrowserCompositorOutputSurfaceProxy
                                                  base::TimeDelta interval);
 
   IDMap<BrowserCompositorOutputSurface>* surface_map_;
-  bool connected_to_gpu_process_host_;
+  int connected_to_gpu_process_host_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurfaceProxy);
 };
