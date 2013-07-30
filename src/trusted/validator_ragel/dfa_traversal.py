@@ -92,15 +92,20 @@ def CreateTraversalTasks(states, initial_state):
   assert not initial_state.any_byte
   num_suffixes = GetNumSuffixes(initial_state)
 
-  # Split by first two bytes.
+  # Split by first three bytes.
   tasks = []
   for byte1, t1 in sorted(initial_state.forward_transitions.items()):
     state1 = t1.to_state
-    if state1.any_byte or state1.is_accepting or num_suffixes[state1] < 10**7:
+    if state1.any_byte or state1.is_accepting or num_suffixes[state1] < 10**4:
       tasks.append(([byte1], states.index(state1)))
       continue
     for byte2, t2 in sorted(state1.forward_transitions.items()):
       state2 = t2.to_state
-      tasks.append(([byte1, byte2], states.index(state2)))
+      if state2.any_byte or state2.is_accepting or num_suffixes[state2] < 10**4:
+        tasks.append(([byte1, byte2], states.index(state2)))
+        continue
+      for byte3, t3 in sorted(state2.forward_transitions.items()):
+        state3 = t3.to_state
+        tasks.append(([byte1, byte2, byte3], states.index(state3)))
 
   return tasks
