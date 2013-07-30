@@ -194,6 +194,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       zero_budget_(false),
       device_scale_factor_(1.f),
       overdraw_bottom_height_(0.f),
+      external_stencil_test_enabled_(false),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       need_to_update_visible_tiles_before_draw_(false) {
@@ -1133,6 +1134,10 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
   external_viewport_ = viewport;
 }
 
+void LayerTreeHostImpl::SetExternalStencilTest(bool enabled) {
+  external_stencil_test_enabled_ = enabled;
+}
+
 void LayerTreeHostImpl::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   client_->SetNeedsRedrawRectOnImplThread(damage_rect);
 }
@@ -1185,6 +1190,10 @@ bool LayerTreeHostImpl::AllowPartialSwap() const {
   // visualizations), so disable partial swaps to make the HUD layer display
   // properly.
   return !debug_state_.ShowHudRects();
+}
+
+bool LayerTreeHostImpl::ExternalStencilTestEnabled() const {
+  return external_stencil_test_enabled_;
 }
 
 static void LayerTreeHostImplDidBeginTracingCallback(LayerImpl* layer) {

@@ -22,6 +22,8 @@ class ScopedAppGLStateRestore {
   ScopedAppGLStateRestore(CallMode mode);
   ~ScopedAppGLStateRestore();
 
+  bool stencil_enabled() const { return stencil_test_; }
+
  private:
   const CallMode mode_;
 
@@ -74,6 +76,11 @@ class ScopedAppGLStateRestore {
   GLint viewport_[4];
   GLboolean scissor_test_;
   GLint scissor_box_[4];
+
+  GLboolean stencil_test_;
+  GLint stencil_func_;
+  GLint stencil_mask_;
+  GLint stencil_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAppGLStateRestore);
 };

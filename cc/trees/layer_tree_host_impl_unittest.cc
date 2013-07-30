@@ -4920,6 +4920,7 @@ class TestRenderer : public GLRenderer, public RendererClient {
   virtual bool AllowPartialSwap() const OVERRIDE {
     return true;
   }
+  virtual bool ExternalStencilTestEnabled() const OVERRIDE { return false; }
 
  protected:
   TestRenderer(ResourceProvider* resource_provider,

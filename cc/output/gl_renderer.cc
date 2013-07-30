@@ -157,6 +157,8 @@ GLRenderer::GLRenderer(RendererClient* client,
       is_using_bind_uniform_(false),
       visible_(true),
       is_scissor_enabled_(false),
+      stencil_shadow_(false),
+      blend_shadow_(false),
       highp_threshold_min_(highp_threshold_min),
       highp_threshold_cache_(0),
       offscreen_context_labelled_(false),
@@ -295,6 +297,14 @@ void GLRenderer::ViewportChanged() {
 }
 
 void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
+  // It's unsafe to clear when we have a stencil test because glClear ignores
+  // stencil.
+  if (client_->ExternalStencilTestEnabled() &&
+      frame->current_render_pass == frame->root_render_pass) {
+    DCHECK(!frame->current_render_pass->has_transparent_background);
+    return;
+  }
+
   // On DEBUG builds, opaque render passes are cleared to blue to easily see
   // regions that were not drawn on the screen.
   if (frame->current_render_pass->has_transparent_background)
@@ -310,8 +320,10 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
     GLbitfield clear_bits = GL_COLOR_BUFFER_BIT;
     // Only the Skia GPU backend uses the stencil buffer.  No need to clear it
     // otherwise.
-    if (CanUseSkiaGPUBackend())
+    if (always_clear || CanUseSkiaGPUBackend()) {
+      GLC(context_, context_->clearStencil(0));
       clear_bits |= GL_STENCIL_BUFFER_BIT;
+    }
     context_->clear(clear_bits);
   }
 }
@@ -1973,6 +1985,17 @@ void GLRenderer::SetShaderOpacity(float opacity, int alpha_location) {
     GLC(context_, context_->uniform1f(alpha_location, opacity));
 }
 
+void GLRenderer::SetStencilEnabled(bool enabled) {
+  if (enabled == stencil_shadow_)
+    return;
+
+  if (enabled)
+    GLC(context_, context_->enable(GL_STENCIL_TEST));
+  else
+    GLC(context_, context_->disable(GL_STENCIL_TEST));
+  stencil_shadow_ = enabled;
+}
+
 void GLRenderer::SetBlendEnabled(bool enabled) {
   if (enabled == blend_shadow_)
     return;
@@ -2470,6 +2493,13 @@ bool GLRenderer::UseScopedTexture(DrawingFrame* frame,
 void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   current_framebuffer_lock_.reset();
   output_surface_->BindFramebuffer();
+
+  if (client_->ExternalStencilTestEnabled()) {
+    SetStencilEnabled(true);
+    GLC(context_, context_->stencilFunc(GL_EQUAL, 1, 1));
+  } else {
+    SetStencilEnabled(false);
+  }
 }
 
 bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
@@ -2479,6 +2509,7 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
 
   current_framebuffer_lock_.reset();
 
+  SetStencilEnabled(false);
   GLC(context_,
       context_->bindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_));
   current_framebuffer_lock_ =
@@ -3079,10 +3110,11 @@ void GLRenderer::ReinitializeGLState() {
   // Bind the common vertex attributes used for drawing all the layers.
   shared_geometry_->PrepareForDraw();
 
-  GLC(context_, context_->disable(GL_STENCIL_TEST));
   GLC(context_, context_->disable(GL_DEPTH_TEST));
   GLC(context_, context_->disable(GL_CULL_FACE));
   GLC(context_, context_->colorMask(true, true, true, true));
+  GLC(context_, context_->disable(GL_STENCIL_TEST));
+  stencil_shadow_ = false;
   GLC(context_, context_->enable(GL_BLEND));
   blend_shadow_ = true;
   GLC(context_, context_->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));

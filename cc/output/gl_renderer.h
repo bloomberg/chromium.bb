@@ -101,6 +101,11 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                              gfx::Rect device_rect);
   void ReleaseRenderPassTextures();
 
+  void SetStencilEnabled(bool enabled);
+  bool stencil_enabled() const { return stencil_shadow_; }
+  void SetBlendEnabled(bool enabled);
+  bool blend_enabled() const { return blend_shadow_; }
+
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) OVERRIDE;
   virtual bool BindFramebufferToTexture(DrawingFrame* frame,
                                         const ScopedResource* resource,
@@ -161,8 +166,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                         const gfx::Transform& draw_transform,
                         const gfx::RectF& quad_rect,
                         int matrix_location);
-  void SetBlendEnabled(bool enabled);
-  bool blend_enabled() const { return blend_shadow_; }
   void SetUseProgram(unsigned program);
 
   void CopyTextureToFramebuffer(const DrawingFrame* frame,
@@ -438,6 +441,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool is_using_bind_uniform_;
   bool visible_;
   bool is_scissor_enabled_;
+  bool stencil_shadow_;
   bool blend_shadow_;
   unsigned program_shadow_;
   TexturedQuadDrawCache draw_cache_;

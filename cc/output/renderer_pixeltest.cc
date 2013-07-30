@@ -1000,6 +1000,135 @@ TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
       ExactPixelComparator(true)));
 }
 
+class ExternalStencilPixelTest : public GLRendererPixelTest {
+ protected:
+  void ClearBackgroundToGreen() {
+    WebKit::WebGraphicsContext3D* context3d = output_surface_->context3d();
+    output_surface_->EnsureBackbuffer();
+    output_surface_->Reshape(device_viewport_size_, 1);
+    context3d->clearColor(0.f, 1.f, 0.f, 1.f);
+    context3d->clear(GL_COLOR_BUFFER_BIT);
+  }
+
+  void PopulateStencilBuffer() {
+    // Set two quadrants of the stencil buffer to 1.
+    WebKit::WebGraphicsContext3D* context3d = output_surface_->context3d();
+    ASSERT_TRUE(context3d->getContextAttributes().stencil);
+    output_surface_->EnsureBackbuffer();
+    output_surface_->Reshape(device_viewport_size_, 1);
+    context3d->clearStencil(0);
+    context3d->clear(GL_STENCIL_BUFFER_BIT);
+    context3d->enable(GL_SCISSOR_TEST);
+    context3d->clearStencil(1);
+    context3d->scissor(0,
+                       0,
+                       device_viewport_size_.width() / 2,
+                       device_viewport_size_.height() / 2);
+    context3d->clear(GL_STENCIL_BUFFER_BIT);
+    context3d->scissor(device_viewport_size_.width() / 2,
+                       device_viewport_size_.height() / 2,
+                       device_viewport_size_.width(),
+                       device_viewport_size_.height());
+    context3d->clear(GL_STENCIL_BUFFER_BIT);
+  }
+};
+
+TEST_F(ExternalStencilPixelTest, StencilTestEnabled) {
+  ClearBackgroundToGreen();
+  PopulateStencilBuffer();
+  this->EnableExternalStencilTest();
+
+  // Draw a blue quad that covers the entire device viewport. It should be
+  // clipped to the bottom left and top right corners by the external stencil.
+  gfx::Rect rect(this->device_viewport_size_);
+  RenderPass::Id id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+  scoped_ptr<SharedQuadState> blue_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(blue_shared_state.get(), rect, SK_ColorBLUE, false);
+  pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+  pass->has_transparent_background = false;
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
+      ExactPixelComparator(true)));
+}
+
+TEST_F(ExternalStencilPixelTest, StencilTestDisabled) {
+  PopulateStencilBuffer();
+
+  // Draw a green quad that covers the entire device viewport. The stencil
+  // buffer should be ignored.
+  gfx::Rect rect(this->device_viewport_size_);
+  RenderPass::Id id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+  scoped_ptr<SharedQuadState> green_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+  scoped_ptr<SolidColorDrawQuad> green = SolidColorDrawQuad::Create();
+  green->SetNew(green_shared_state.get(), rect, SK_ColorGREEN, false);
+  pass->quad_list.push_back(green.PassAs<DrawQuad>());
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("green.png")),
+      ExactPixelComparator(true)));
+}
+
+TEST_F(ExternalStencilPixelTest, RenderSurfacesIgnoreStencil) {
+  // The stencil test should apply only to the final render pass.
+  ClearBackgroundToGreen();
+  PopulateStencilBuffer();
+  this->EnableExternalStencilTest();
+
+  gfx::Rect viewport_rect(this->device_viewport_size_);
+
+  RenderPass::Id root_pass_id(1, 1);
+  scoped_ptr<RenderPass> root_pass =
+      CreateTestRootRenderPass(root_pass_id, viewport_rect);
+  root_pass->has_transparent_background = false;
+
+  RenderPass::Id child_pass_id(2, 2);
+  gfx::Rect pass_rect(this->device_viewport_size_);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> child_pass =
+      CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
+
+  gfx::Transform content_to_target_transform;
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(shared_state.get(),
+               gfx::Rect(0,
+                         0,
+                         this->device_viewport_size_.width(),
+                         this->device_viewport_size_.height()),
+               SK_ColorBLUE,
+               false);
+  child_pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+
+  scoped_ptr<SharedQuadState> pass_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), pass_rect);
+  root_pass->quad_list.push_back(
+      CreateTestRenderPassDrawQuad(pass_shared_state.get(),
+                                   pass_rect,
+                                   child_pass_id));
+  RenderPassList pass_list;
+  pass_list.push_back(child_pass.Pass());
+  pass_list.push_back(root_pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
+      ExactPixelComparator(true)));
+}
+
 // Software renderer does not support anti-aliased edges.
 TEST_F(GLRendererPixelTest, AntiAliasing) {
   gfx::Rect rect(this->device_viewport_size_);

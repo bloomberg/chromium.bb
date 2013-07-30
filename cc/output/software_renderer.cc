@@ -134,6 +134,7 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
 void SoftwareRenderer::Finish() {}
 
 void SoftwareRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
+  DCHECK(!client_->ExternalStencilTestEnabled());
   current_framebuffer_lock_.reset();
   current_canvas_ = root_canvas_;
 }

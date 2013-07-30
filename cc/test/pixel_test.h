@@ -47,6 +47,7 @@ class PixelTest : public testing::Test {
 
   void ForceExpandedViewport(gfx::Size surface_expansion,
                              gfx::Vector2d viewport_offset);
+  void EnableExternalStencilTest();
 
  private:
   void ReadbackResult(base::Closure quit_run_loop,

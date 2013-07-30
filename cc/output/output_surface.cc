@@ -273,6 +273,10 @@ void OutputSurface::DidLoseOutputSurface() {
   client_->DidLoseOutputSurface();
 }
 
+void OutputSurface::SetExternalStencilTest(bool enabled) {
+  client_->SetExternalStencilTest(enabled);
+}
+
 void OutputSurface::SetExternalDrawConstraints(const gfx::Transform& transform,
                                                gfx::Rect viewport) {
   client_->SetExternalDrawConstraints(transform, viewport);

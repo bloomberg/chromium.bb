@@ -65,7 +65,8 @@ class SynchronousCompositorOutputSurface
   void ReleaseHwDraw();
   bool DemandDrawHw(gfx::Size surface_size,
                     const gfx::Transform& transform,
-                    gfx::Rect clip);
+                    gfx::Rect clip,
+                    bool stencil_enabled);
   bool DemandDrawSw(SkCanvas* canvas);
 
  private:

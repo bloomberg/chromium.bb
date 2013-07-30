@@ -159,11 +159,13 @@ void SynchronousCompositorImpl::ReleaseHwDraw() {
 bool SynchronousCompositorImpl::DemandDrawHw(
       gfx::Size view_size,
       const gfx::Transform& transform,
-      gfx::Rect damage_area) {
+      gfx::Rect damage_area,
+      bool stencil_enabled) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
 
-  return output_surface_->DemandDrawHw(view_size, transform, damage_area);
+  return output_surface_->DemandDrawHw(
+      view_size, transform, damage_area, stencil_enabled);
 }
 
 bool SynchronousCompositorImpl::DemandDrawSw(SkCanvas* canvas) {

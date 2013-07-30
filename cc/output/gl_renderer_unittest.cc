@@ -144,7 +144,8 @@ class FakeRendererClient : public RendererClient {
         set_full_root_layer_damage_count_(0),
         root_layer_(LayerImpl::Create(host_impl_.active_tree(), 1)),
         viewport_size_(gfx::Size(1, 1)),
-        scale_factor_(1.f) {
+        scale_factor_(1.f),
+        external_stencil_test_enabled_(false) {
     root_layer_->CreateRenderSurface();
     RenderPass::Id render_pass_id =
         root_layer_->render_surface()->RenderPassId();
@@ -177,6 +178,13 @@ class FakeRendererClient : public RendererClient {
   virtual bool AllowPartialSwap() const OVERRIDE {
     return true;
   }
+  virtual bool ExternalStencilTestEnabled() const OVERRIDE {
+    return external_stencil_test_enabled_;
+  }
+
+  void EnableExternalStencilTest() {
+    external_stencil_test_enabled_ = true;
+  }
 
   // Methods added for test.
   int set_full_root_layer_damage_count() const {
@@ -201,6 +209,7 @@ class FakeRendererClient : public RendererClient {
   RenderPassList render_passes_in_draw_order_;
   gfx::Size viewport_size_;
   float scale_factor_;
+  bool external_stencil_test_enabled_;
 };
 
 class FakeRendererGL : public GLRenderer {
@@ -218,6 +227,7 @@ class FakeRendererGL : public GLRenderer {
   using GLRenderer::DoDrawQuad;
   using GLRenderer::BeginDrawingFrame;
   using GLRenderer::FinishDrawingQuadList;
+  using GLRenderer::stencil_enabled;
 };
 
 class GLRendererTest : public testing::Test {
@@ -463,6 +473,16 @@ TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible) {
   renderer_.GetFramebufferPixels(pixels, gfx::Rect(0, 0, 1, 1));
   EXPECT_TRUE(renderer_.IsBackbufferDiscarded());
   EXPECT_EQ(2, mock_client_.set_full_root_layer_damage_count());
+}
+
+TEST_F(GLRendererTest, ExternalStencil) {
+  EXPECT_FALSE(renderer_.stencil_enabled());
+
+  mock_client_.EnableExternalStencilTest();
+  mock_client_.root_render_pass()->has_transparent_background = false;
+
+  renderer_.DrawFrame(mock_client_.render_passes_in_draw_order());
+  EXPECT_TRUE(renderer_.stencil_enabled());
 }
 
 class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
@@ -948,14 +968,20 @@ TEST(GLRendererTest2, ShouldClearRootRenderPass) {
 
   AddRenderPassQuad(root_pass, child_pass);
 
+#ifdef NDEBUG
+  GLint clear_bits = GL_COLOR_BUFFER_BIT;
+#else
+  GLint clear_bits = GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+#endif
+
   // First render pass is not the root one, clearing should happen.
-  EXPECT_CALL(*mock_context, clear(GL_COLOR_BUFFER_BIT)).Times(AtLeast(1));
+  EXPECT_CALL(*mock_context, clear(clear_bits)).Times(AtLeast(1));
 
   Expectation first_render_pass =
       EXPECT_CALL(*mock_context, drawElements(_, _, _, _)).Times(1);
 
   // The second render pass is the root one, clearing should be prevented.
-  EXPECT_CALL(*mock_context, clear(GL_COLOR_BUFFER_BIT)).Times(0)
+  EXPECT_CALL(*mock_context, clear(clear_bits)).Times(0)
       .After(first_render_pass);
 
   EXPECT_CALL(*mock_context, drawElements(_, _, _, _)).Times(AnyNumber())

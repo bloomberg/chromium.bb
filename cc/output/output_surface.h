@@ -169,6 +169,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   void DidSwapBuffers();
   void OnSwapBuffersComplete(const CompositorFrameAck* ack);
   void DidLoseOutputSurface();
+  void SetExternalStencilTest(bool enabled);
   void SetExternalDrawConstraints(const gfx::Transform& transform,
                                   gfx::Rect viewport);
 

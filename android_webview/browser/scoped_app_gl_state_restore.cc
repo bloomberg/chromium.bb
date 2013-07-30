@@ -128,7 +128,10 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
   glGetBooleanv(GL_SAMPLE_ALPHA_TO_COVERAGE, &enable_sample_alpha_to_coverage_);
   glGetBooleanv(GL_SAMPLE_COVERAGE, &enable_sample_coverage_);
 
-  // Intentionally not saving/restoring stencil related state.
+  glGetBooleanv(GL_STENCIL_TEST, &stencil_test_);
+  glGetIntegerv(GL_STENCIL_FUNC, &stencil_func_);
+  glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencil_mask_);
+  glGetIntegerv(GL_STENCIL_REF, &stencil_ref_);
 }
 
 ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
@@ -198,6 +201,9 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
     glScissor(
         scissor_box_[0], scissor_box_[1], scissor_box_[2], scissor_box_[3]);
   }
+
+  GLEnableDisable(GL_STENCIL_TEST, stencil_test_);
+  glStencilFunc(stencil_func_, stencil_mask_, stencil_ref_);
 }
 
 }  // namespace android_webview

@@ -72,6 +72,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   virtual bool AllowPartialSwap() const OVERRIDE {
     return true;
   }
+  virtual bool ExternalStencilTestEnabled() const OVERRIDE { return false; }
 
  protected:
   scoped_ptr<FakeOutputSurface> output_surface_;

@@ -272,7 +272,8 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
       gfx::Rect(draw_info->clip_left,
                 draw_info->clip_top,
                 draw_info->clip_right - draw_info->clip_left,
-                draw_info->clip_bottom - draw_info->clip_top));
+                draw_info->clip_bottom - draw_info->clip_top),
+      state_restore.stencil_enabled());
   block_invalidates_ = false;
 
   EnsureContinuousInvalidation(draw_info);

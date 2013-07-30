@@ -29,6 +29,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           gfx::Rect viewport) OVERRIDE {}
+  virtual void SetExternalStencilTest(bool enable) OVERRIDE {}
   virtual void SetMemoryPolicy(
       const ManagedMemoryPolicy& policy,
       bool discard_backbuffer_when_not_visible) OVERRIDE;

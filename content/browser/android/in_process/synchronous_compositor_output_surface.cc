@@ -181,7 +181,8 @@ void SynchronousCompositorOutputSurface::ReleaseHwDraw() {
 bool SynchronousCompositorOutputSurface::DemandDrawHw(
     gfx::Size surface_size,
     const gfx::Transform& transform,
-    gfx::Rect clip) {
+    gfx::Rect clip,
+    bool stencil_enabled) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   DCHECK(context3d());
@@ -190,6 +191,7 @@ bool SynchronousCompositorOutputSurface::DemandDrawHw(
   AdjustTransformForClip(&adjusted_transform, clip);
   surface_size_ = surface_size;
   SetExternalDrawConstraints(adjusted_transform, clip);
+  SetExternalStencilTest(stencil_enabled);
   InvokeComposite(clip.size());
 
   // TODO(boliu): Check if context is lost here.
@@ -214,6 +216,7 @@ bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   surface_size_ = gfx::Size(canvas->getDeviceSize().width(),
                             canvas->getDeviceSize().height());
   SetExternalDrawConstraints(transform, clip);
+  SetExternalStencilTest(false);
 
   InvokeComposite(clip.size());
 

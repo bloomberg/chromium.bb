@@ -53,7 +53,8 @@ class SynchronousCompositorImpl
   virtual bool DemandDrawHw(
       gfx::Size view_size,
       const gfx::Transform& transform,
-      gfx::Rect clip) OVERRIDE;
+      gfx::Rect clip,
+      bool stencil_enabled) OVERRIDE;
   virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;
   virtual void DidChangeRootLayerScrollOffset() OVERRIDE;
 

@@ -189,6 +189,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual bool ShouldClearRootRenderPass() const OVERRIDE;
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE;
   virtual bool AllowPartialSwap() const OVERRIDE;
+  virtual bool ExternalStencilTestEnabled() const OVERRIDE;
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE;
@@ -201,6 +202,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           gfx::Rect viewport) OVERRIDE;
+  virtual void SetExternalStencilTest(bool enabled) OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE;
   virtual void SetMemoryPolicy(
@@ -524,6 +526,7 @@ class CC_EXPORT LayerTreeHostImpl
   // used for scrollable size.
   gfx::Transform external_transform_;
   gfx::Rect external_viewport_;
+  bool external_stencil_test_enabled_;
 
   gfx::Rect viewport_damage_rect_;
 
