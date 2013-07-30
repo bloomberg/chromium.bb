@@ -212,6 +212,7 @@
         ],
         'wtf_unittest_files': [
             'PartitionAllocTest.cpp',
+            'SHA1Test.cpp',
             'testing/WTFTestHelpers.h',
             'tests/AtomicString.cpp',
             'tests/CString.cpp',

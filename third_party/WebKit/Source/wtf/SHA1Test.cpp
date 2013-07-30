@@ -28,29 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTFTestHelpers_h
-#define WTFTestHelpers_h
+#include "config.h"
+#include "wtf/SHA1.h"
 
+#include "wtf/testing/WTFTestHelpers.h"
 #include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
 
-#include <ostream> // NOLINT
+#include <gtest/gtest.h>
 
-namespace WTF {
+namespace {
 
-// Output stream operator so gTest's macros work with WebCore strings.
-static std::ostream& operator<<(std::ostream& out, const String& str)
+CString SHA1HexDigest(CString input, int repeat)
 {
-    return str.isEmpty() ? out : out << str.utf8().data();
+    SHA1 sha1;
+    for (int i = 0; i < repeat; i++)
+        sha1.addBytes(input);
+    return sha1.computeHexDigest();
 }
 
-// Output stream operator so gtest can print WTF::CString.
-static std::ostream& operator<<(std::ostream& out, const CString& str)
+TEST(SHA1Test, RFC3174)
 {
-    return out << str.data();
+    // Examples taken from sample code in RFC 3174.
+    EXPECT_EQ("A9993E364706816ABA3E25717850C26C9CD0D89D", SHA1HexDigest("abc", 1));
+    EXPECT_EQ("84983E441C3BD26EBAAE4AA1F95129E5E54670F1", SHA1HexDigest("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", 1));
+    EXPECT_EQ("34AA973CD4C4DAA4F61EEB2BDBAD27316534016F", SHA1HexDigest("a", 1000000));
+    EXPECT_EQ("DEA356A2CDDD90C7A7ECEDC5EBB563934F460452", SHA1HexDigest("0123456701234567012345670123456701234567012345670123456701234567", 10));
 }
 
-} // namespace WTF
-
-
-#endif // WTFTestHelpers_h
+} // namespace
