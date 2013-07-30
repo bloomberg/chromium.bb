@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
-#include "chrome/browser/ui/content_settings/content_setting_changed_infobar_delegate.h"
+#include "chrome/browser/ui/content_settings/media_setting_changed_infobar_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
@@ -657,10 +657,11 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
 }
 
 ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() {
-  // On some plattforms e.g. MacOS X it is possible to close a tab while the
+  // On some platforms (e.g. MacOS X) it is possible to close a tab while the
   // media stream bubble is open. This resets the web contents to NULL.
   if (!web_contents())
     return;
+
   bool media_setting_changed = false;
   for (MediaMenuMap::const_iterator it = bubble_content().media_menus.begin();
       it != bubble_content().media_menus.end(); ++it) {
@@ -678,10 +679,8 @@ ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() {
 
   // Trigger the reload infobar if the media setting has been changed.
   if (media_setting_changed) {
-    ContentSettingChangedInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(web_contents()),
-        IDR_INFOBAR_MEDIA_STREAM_CAMERA,
-        IDS_MEDIASTREAM_SETTING_CHANGED_INFOBAR_MESSAGE);
+    MediaSettingChangedInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents()));
   }
 }
 

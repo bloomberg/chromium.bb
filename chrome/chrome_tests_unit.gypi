@@ -1506,7 +1506,6 @@
         'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell_unittest.mm',
         'browser/ui/cocoa/wrench_menu/wrench_menu_controller_unittest.mm',
         'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',
-        'browser/ui/content_settings/content_setting_changed_infobar_delegate_unittest.cc',
         'browser/ui/content_settings/content_setting_image_model_unittest.cc',
         'browser/ui/find_bar/find_backend_unittest.cc',
         'browser/ui/fullscreen/fullscreen_controller_state_unittest.cc',
