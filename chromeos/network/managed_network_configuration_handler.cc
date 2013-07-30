@@ -238,40 +238,50 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
   return shill_dictionary.Pass();
 }
 
-// Returns true if |policy| matches |onc_network_part|. This is should be the
-// only such matching function within Chrome. Shill does such matching in
-// several functions for network identification. For compatibility, we currently
-// should stick to Shill's matching behavior.
+// Returns true if |policy| matches |actual_network|, which must be part of a
+// ONC NetworkConfiguration. This should be the only such matching function
+// within Chrome. Shill does such matching in several functions for network
+// identification. For compatibility, we currently should stick to Shill's
+// matching behavior.
 bool IsPolicyMatching(const base::DictionaryValue& policy,
-                      const base::DictionaryValue& onc_network_part) {
+                      const base::DictionaryValue& actual_network) {
   std::string policy_type;
   policy.GetStringWithoutPathExpansion(onc::network_config::kType,
                                        &policy_type);
   std::string network_type;
-  onc_network_part.GetStringWithoutPathExpansion(onc::network_config::kType,
-                                                 &network_type);
+  actual_network.GetStringWithoutPathExpansion(onc::network_config::kType,
+                                               &network_type);
   if (policy_type != network_type)
     return false;
 
   if (network_type != onc::network_type::kWiFi)
     return false;
 
+  const base::DictionaryValue* policy_wifi = NULL;
+  policy.GetDictionaryWithoutPathExpansion(onc::network_config::kWiFi,
+                                           &policy_wifi);
+  const base::DictionaryValue* actual_wifi = NULL;
+  actual_network.GetDictionaryWithoutPathExpansion(onc::network_config::kWiFi,
+                                                   &actual_wifi);
+  if (!policy_wifi || !actual_wifi)
+    return false;
+
   std::string policy_ssid;
-  policy.GetStringWithoutPathExpansion(onc::wifi::kSSID, &policy_ssid);
-  std::string network_ssid;
-  onc_network_part.GetStringWithoutPathExpansion(onc::wifi::kSSID,
-                                                 &network_ssid);
-  return (policy_ssid == network_ssid);
+  policy_wifi->GetStringWithoutPathExpansion(onc::wifi::kSSID, &policy_ssid);
+  std::string actual_ssid;
+  actual_wifi->GetStringWithoutPathExpansion(onc::wifi::kSSID, &actual_ssid);
+  return (policy_ssid == actual_ssid);
 }
 
-// Returns the policy of |policies| matching |onc_network_part|, if any
-// exists. Returns NULL otherwise.
+// Returns the policy from |policies| matching |actual_network|, if any exists.
+// Returns NULL otherwise. |actual_network| must be part of a ONC
+// NetworkConfiguration.
 const base::DictionaryValue* FindMatchingPolicy(
     const ManagedNetworkConfigurationHandler::GuidToPolicyMap &policies,
-    const base::DictionaryValue& onc_network_part) {
+    const base::DictionaryValue& actual_network) {
   for (ManagedNetworkConfigurationHandler::GuidToPolicyMap::const_iterator it =
            policies.begin(); it != policies.end(); ++it) {
-    if (IsPolicyMatching(*it->second, onc_network_part))
+    if (IsPolicyMatching(*it->second, actual_network))
       return it->second;
   }
   return NULL;

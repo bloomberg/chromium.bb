@@ -1,0 +1,9 @@
+{
+  "GUID": "{unmanaged_user_wifi2}",
+  "Mode": "managed",
+  "Passphrase": "user's passphrase",
+  "Profile": "/profile/chronos/shill",
+  "SSID": "wifi2",
+  "Security": "psk",
+  "Type": "wifi",
+}
