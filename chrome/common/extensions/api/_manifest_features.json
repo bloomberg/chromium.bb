@@ -147,7 +147,7 @@
     }
   ],
   "export": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["shared_module"],
     "whitelist": [
       "gpcckkmippodnppallflahfabmeilgjg", // browser and unit tests
@@ -177,7 +177,7 @@
     "extension_types": "all"
   },
   "import": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": "all"
   },
   "incognito": {
