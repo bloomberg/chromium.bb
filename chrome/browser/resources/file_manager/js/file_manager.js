@@ -430,10 +430,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Open and Save dialogs. But drag-n-drop and copy-paste are not needed.
     if (this.dialogType != DialogType.FULL_PAGE) return;
 
-    this.copyManager_.addEventListener('copy-progress',
-                                       this.onCopyProgress_.bind(this));
-    this.copyManager_.addEventListener('copy-operation-complete',
-        this.onCopyManagerOperationComplete_.bind(this));
+    // TODO(hidehiko): Extract FileCopyManager related code from FileManager
+    // to simplify it.
+    this.onCopyProgressBound_ = this.onCopyProgress_.bind(this);
+    this.copyManager_.addEventListener(
+        'copy-progress', this.onCopyProgressBound_);
+
+    this.onCopyManagerOperationCompleteBound_ =
+        this.onCopyManagerOperationComplete_.bind(this);
+    this.copyManager_.addEventListener(
+        'copy-operation-complete',
+        this.onCopyManagerOperationCompleteBound_);
 
     var controller = this.fileTransferController_ =
         new FileTransferController(this.document_,
@@ -2462,11 +2469,21 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.directoryModel_.dispose();
     if (this.filePopup_ &&
         this.filePopup_.contentWindow &&
-        this.filePopup_.contentWindow.unload) {
+        this.filePopup_.contentWindow.unload)
       this.filePopup_.contentWindow.unload(true /* exiting */);
+    if (this.butterBar_)
+      this.butterBar_.dispose();
+    if (this.copyManager_) {
+      if (this.onCopyProgressBound_) {
+        this.copyManager_.removeEventListener(
+            'copy-progress', this.onCopyProgressBound_);
+      }
+      if (this.onCopyManagerOperationCompleteBound_) {
+        this.copyManager_.removeEventListener(
+            'copy-operation-complete',
+            this.onCopyManagerOperationCompleteBound_);
+      }
     }
-    if (this.copyManager_)
-      this.copyManager_.dispose();
   };
 
   FileManager.prototype.initiateRename = function() {

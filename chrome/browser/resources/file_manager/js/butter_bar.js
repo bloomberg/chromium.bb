@@ -27,10 +27,11 @@ function ButterBar(dialogDom, copyManager, metadataCache) {
   this.lastProgressValue_ = 0;
   this.alert_ = new ErrorDialog(this.dialogDom_);
 
-  this.copyManager_.addEventListener('copy-progress',
-                                     this.onCopyProgress_.bind(this));
-  this.copyManager_.addEventListener('delete',
-                                     this.onDelete_.bind(this));
+  this.onCopyProgressBound_ = this.onCopyProgress_.bind(this);
+  this.copyManager_.addEventListener(
+      'copy-progress', this.onCopyProgressBound_);
+  this.onDeleteBound_ = this.onDelete_.bind(this);
+  this.copyManager_.addEventListener('delete', this.onDeleteBound_);
 }
 
 /**
@@ -56,6 +57,17 @@ ButterBar.ACTION_X = '--action--x--';
 ButterBar.Mode = {
   COPY: 1,
   DELETE: 2
+};
+
+/**
+ * Disposes the instance. No methods should be called after this method's
+ * invocation.
+ */
+ButterBar.prototype.dispose = function() {
+  // Unregister listeners from FileCopyManager.
+  this.copyManager_.removeEventListener(
+      'copy-progress', this.onCopyProgressBound_);
+  this.copyManager_.removeEventListener('delete', this.onDeleteBound_);
 };
 
 /**

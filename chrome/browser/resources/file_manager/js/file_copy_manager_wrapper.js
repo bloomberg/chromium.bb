@@ -23,13 +23,6 @@ function FileCopyManagerWrapper() {
    */
   this.pendingTasks_ = [];
 
-  // Keep the instance for unloading.
-  var onEventBound = this.onEventBound_ = this.onEvent_.bind(this);
-  this.pendingTasks_.push(
-      function(fileCopyManager) {
-        fileCopyManager.addListener(onEventBound);
-      });
-
   chrome.runtime.getBackgroundPage(function(backgroundPage) {
     var fileCopyManager = backgroundPage.FileCopyManager.getInstance();
     fileCopyManager.initialize(function() {
@@ -45,11 +38,6 @@ function FileCopyManagerWrapper() {
 }
 
 /**
- * Extending cr.EventTarget.
- */
-FileCopyManagerWrapper.prototype.__proto__ = cr.EventTarget.prototype;
-
-/**
  * Create a new instance or get existing instance of FCMW.
  * @return {FileCopyManagerWrapper}  A FileCopyManagerWrapper instance.
  */
@@ -58,34 +46,6 @@ FileCopyManagerWrapper.getInstance = function() {
     FileCopyManagerWrapper.instance_ = new FileCopyManagerWrapper();
 
   return FileCopyManagerWrapper.instance_;
-};
-
-/**
- * Disposes the instance. No methods should be called after this method's
- * invocation.
- */
-FileCopyManagerWrapper.prototype.dispose = function() {
-  // Cancel all pending tasks.
-  this.pendingTasks_ = [];
-
-  // Unregister the listener to avoid resource leaking.
-  if (this.fileCopyManager_)
-    this.fileCopyManager_.removeListener(this.onEventBound_);
-};
-
-/**
- * Called be FileCopyManager to raise an event in this instance of FileManager.
- * @param {string} eventName Event name.
- * @param {Object} eventArgs Arbitratry field written to event object.
- * @private
- */
-FileCopyManagerWrapper.prototype.onEvent_ = function(eventName, eventArgs) {
-  var event = new cr.Event(eventName);
-  for (var arg in eventArgs)
-    if (eventArgs.hasOwnProperty(arg))
-      event[arg] = eventArgs[arg];
-
-  this.dispatchEvent(event);
 };
 
 /**
@@ -126,3 +86,5 @@ FileCopyManagerWrapper.decorateAsyncMethod('deleteEntries');
 FileCopyManagerWrapper.decorateAsyncMethod('forceDeleteTask');
 FileCopyManagerWrapper.decorateAsyncMethod('cancelDeleteTask');
 FileCopyManagerWrapper.decorateAsyncMethod('zipSelection');
+FileCopyManagerWrapper.decorateAsyncMethod('addEventListener');
+FileCopyManagerWrapper.decorateAsyncMethod('removeEventListener');

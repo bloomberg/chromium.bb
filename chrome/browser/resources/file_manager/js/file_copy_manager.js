@@ -14,7 +14,8 @@ function FileCopyManager() {
   this.cancelRequested_ = false;
   this.cancelCallback_ = null;
   this.unloadTimeout_ = null;
-  this.listeners_ = [];
+
+  this.eventRouter_ = new FileCopyManager.EventRouter();
 }
 
 /**
@@ -28,6 +29,76 @@ FileCopyManager.getInstance = function() {
     FileCopyManager.instance_ = new FileCopyManager();
 
   return FileCopyManager.instance_;
+};
+
+/**
+ * Manages cr.Event dispatching.
+ * Currently this can send three types of events: "copy-progress",
+ * "copy-operation-completed" and "delete".
+ *
+ * TODO(hidehiko): Reorganize the event dispatching mechanism.
+ * @constructor
+ * @extends {cr.EventTarget}
+ */
+FileCopyManager.EventRouter = function() {
+};
+
+/**
+ * Extends cr.EventTarget.
+ */
+FileCopyManager.EventRouter.prototype.__proto__ = cr.EventTarget.prototype;
+
+/**
+ * Dispatches a simple "copy-progress" event with reason and current
+ * FileCopyManager status. If it is an ERROR event, error should be set.
+ *
+ * @param {string} reason Event type. One of "BEGIN", "PROGRESS", "SUCCESS",
+ *     "ERROR" or "CANCELLED". TODO(hidehiko): Use enum.
+ * @param {Object} status Current FileCopyManager's status. See also
+ *     FileCopyManager.getStatus().
+ * @param {FileCopyManager.Error=} opt_error The info for the error. This
+ *     should be set iff the reason is "ERROR".
+ */
+FileCopyManager.EventRouter.prototype.sendProgressEvent = function(
+    reason, status, opt_error) {
+  var event = new cr.Event('copy-progress');
+  event.reason = reason;
+  event.status = status;
+  if (opt_error)
+    event.error = opt.error;
+  this.dispatchEvent(event);
+};
+
+/**
+ * Dispatches an event to notify that the entries in affectedEntries are
+ * changed (created or deleted) by operation reason.
+ *
+ * @param {string} reason Completed file operation. One of "moved", "copied"
+ *     or "deleted". TODO(hidehiko): Use enum.
+ * @param {Array.<Entry>} affectedEntries Entries which are created or deleted.
+ */
+FileCopyManager.EventRouter.prototype.sendOperationEvent = function(
+    reason, affectedEntries) {
+  var event = new cr.Event('copy-operation-complete');
+  event.reason = reason;
+  event.affectedEntries = affectedEntries;
+  this.dispatchEvent(event);
+};
+
+/**
+ * Dispatches an event to notify entries are changed for delete task.
+ *
+ * @param {string} reason Event type. One of "BEGIN", "PROGRESS", "SUCCESS",
+ *     or "ERROR". TODO(hidehiko): Use enum.
+ * @param {Array.<string>} urls An array of URLs which are affected by delete
+ *     operation.
+ */
+FileCopyManager.EventRouter.prototype.sendDeleteEvent = function(
+    reason, urls) {
+  var event = new cr.Event('delete');
+  event.reason = reason;
+  event.urls = urls;
+  this.dispatchEvent(event);
 };
 
 /**
@@ -358,39 +429,22 @@ FileCopyManager.prototype.getStatus = function() {
 };
 
 /**
- * Send an event to all the FileManager windows.
- *
- * @param {string} eventName Event name.
- * @param {Object} eventArgs An object with arbitrary event parameters.
- * @private
+ * Adds an event listener for the tasks.
+ * @param {string} type The name of the event.
+ * @param {function(cr.Event)} handler The handler for the event.
+ *     This is called when the event is dispatched.
  */
-FileCopyManager.prototype.sendEvent_ = function(eventName, eventArgs) {
-  if (this.cancelRequested_)
-    return;  // Swallow events until cancellation complete.
-
-  eventArgs.status = this.getStatus();
-  for (var i = 0; i < this.listeners_.length; ++i) {
-    this.listeners_[i](eventName, eventArgs);
-  }
+FileCopyManager.prototype.addEventListener = function(type, handler) {
+  this.eventRouter_.addEventListener(type, handler);
 };
 
 /**
- * Adds a listener for running task events.
- * @param {function(string, Object)} listener A listener to be added.
+ * Removes an event listener for the tasks.
+ * @param {string} type The name of the event.
+ * @param {function(cr.Event)} handler The handler to be removed.
  */
-FileCopyManager.prototype.addListener = function(listener) {
-  this.listeners_.push(listener);
-};
-
-/**
- * Removes the listener for running task events. If the listener is not added
- * by addListener(), it is simply ignored.
- * @param {function(string, Object)} listener A listener to be removed.
- */
-FileCopyManager.prototype.removeListener = function(listener) {
-  var index = this.listeners_.indexOf(listener);
-  if (index >= 0)
-    this.listeners_.splice(index, 1);
+FileCopyManager.prototype.removeEventListener = function(type, handler) {
+  this.eventRouter_.removeEventListener(type, handler);
 };
 
 /**
@@ -416,36 +470,6 @@ FileCopyManager.prototype.maybeScheduleCloseBackgroundPage_ = function() {
     clearTimeout(this.unloadTimeout_);
     this.unloadTimeout_ = null;
   }
-};
-
-/**
- * Dispatch a simple copy-progress event with reason and optional err data.
- *
- * @param {string} reason Event type.
- * @param {FileCopyManager.Error=} opt_err Error.
- * @private
- */
-FileCopyManager.prototype.sendProgressEvent_ = function(reason, opt_err) {
-  var event = {};
-  event.reason = reason;
-  if (opt_err)
-    event.error = opt_err;
-  this.sendEvent_('copy-progress', event);
-};
-
-/**
- * Dispatch an event of file operation completion (allows to update the UI).
- *
- * @private
- * @param {string} reason Completed file operation: 'movied|copied|deleted'.
- * @param {Array.<Entry>} affectedEntries deleted ot created entries.
- */
-FileCopyManager.prototype.sendOperationEvent_ = function(reason,
-                                                         affectedEntries) {
-  var event = {};
-  event.reason = reason;
-  event.affectedEntries = affectedEntries;
-  this.sendEvent_('copy-operation-complete', event);
 };
 
 /**
@@ -489,7 +513,7 @@ FileCopyManager.prototype.requestCancel = function(opt_callback) {
 FileCopyManager.prototype.doCancel_ = function() {
   this.resetQueue_();
   this.cancelRequested_ = false;
-  this.sendProgressEvent_('CANCELLED');
+  this.eventRouter_.sendProgressEvent('CANCELLED', this.getStatus());
 };
 
 /**
@@ -576,8 +600,9 @@ FileCopyManager.prototype.paste = function(files, directories, isCut, isOnDrive,
     },
 
     onPathError: function(err) {
-      self.sendProgressEvent_(
+      self.eventRouter_.sendProgressEvent(
           'ERROR',
+          self.getStatus(),
           new FileCopyManager.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR, err));
     }
@@ -638,7 +663,7 @@ FileCopyManager.prototype.queueCopy_ = function(targetDirEntry,
     } else {
       // Force to update the progress of butter bar when there are new tasks
       // coming while servicing current task.
-      self.sendProgressEvent_('PROGRESS');
+      self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
     }
   });
 
@@ -657,7 +682,7 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
   var onTaskError = function(err) {
     if (self.maybeCancel_())
       return;
-    self.sendProgressEvent_('ERROR', err);
+    self.eventRouter_.sendProgressEvent('ERROR', self.getStatus(), err);
     self.resetQueue_();
   };
 
@@ -671,7 +696,7 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
 
     if (!self.copyTasks_.length) {
       // All tasks have been serviced, clean up and exit.
-      self.sendProgressEvent_('SUCCESS');
+      self.eventRouter_.sendProgressEvent('SUCCESS', self.getStatus());
       self.resetQueue_();
       return;
     }
@@ -680,7 +705,7 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
     // right after one task finished in the queue. We treat all tasks as one
     // big task logically, so there is only one BEGIN/SUCCESS event pair for
     // these continuous tasks.
-    self.sendProgressEvent_('PROGRESS');
+    self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
 
     self.serviceTask_(self.copyTasks_[0], onTaskSuccess, onTaskError);
   };
@@ -688,7 +713,7 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
   // If the queue size is 1 after pushing our task, it was empty before,
   // so we need to kick off queue processing and dispatch BEGIN event.
 
-  this.sendProgressEvent_('BEGIN');
+  this.eventRouter_.sendProgressEvent('BEGIN', this.getStatus());
   this.serviceTask_(this.copyTasks_[0], onTaskSuccess, onTaskError);
 };
 
@@ -732,7 +757,7 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
     var count = task.originalEntries.length;
 
     var onEntryDeleted = function(entry) {
-      self.sendOperationEvent_('deleted', [entry]);
+      self.eventRouter_.sendOperationEvent('deleted', [entry]);
       count--;
       if (!count)
         successCallback();
@@ -762,7 +787,7 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
       return;
     }
 
-    self.sendProgressEvent_('PROGRESS');
+    self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
     self.serviceNextCopyTaskEntry_(task, onEntryServiced, errorCallback);
   };
 
@@ -813,13 +838,13 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
   };
 
   var onCopyComplete = function(entry, size) {
-    self.sendOperationEvent_('copied', [entry]);
+    self.eventRouter_.sendOperationEvent('copied', [entry]);
     onCopyCompleteBase(entry, size);
   };
 
   var onCopyProgress = function(entry, size) {
     task.updateFileCopyProgress(entry, size);
-    self.sendProgressEvent_('PROGRESS');
+    self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
   };
 
   var onFilesystemCopyComplete = function(sourceEntry, targetEntry) {
@@ -827,7 +852,7 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
     // copied by FileEntry.copyTo(), so task.completedBytes will not be
     // increased. We will address this issue once we need to use
     // task.completedBytes to track the progress.
-    self.sendOperationEvent_('copied', [sourceEntry, targetEntry]);
+    self.eventRouter_.sendOperationEvent('copied', [sourceEntry, targetEntry]);
     onCopyCompleteBase(targetEntry, 0);
   };
 
@@ -1004,7 +1029,7 @@ FileCopyManager.prototype.serviceMoveTask_ = function(
         }
 
         // Move the next entry.
-        this.sendProgressEvent_('PROGRESS');
+        this.eventRouter_.sendProgressEvent('PROGRESS', this.getStatus());
         this.serviceNextMoveTaskEntry_(
             task, onCompleted.bind(this), errorCallback);
       }).bind(this),
@@ -1070,7 +1095,7 @@ FileCopyManager.prototype.serviceNextMoveTaskEntry_ = function(
               sourceEntry.moveTo(
                   dirEntry, PathUtil.basename(targetRelativePath),
                   function(targetEntry) {
-                    self.sendOperationEvent_(
+                    self.eventRouter_.sendOperationEvent(
                         'moved', [sourceEntry, targetEntry]);
                     task.markEntryComplete(targetEntry, 0);
                     successCallback();
@@ -1112,7 +1137,7 @@ FileCopyManager.prototype.serviceZipTask_ = function(
   var onDeduplicated = function(destPath) {
     var onZipSelectionComplete = function(success) {
       if (success) {
-        self.sendProgressEvent_('SUCCESS');
+        self.eventRouter_.sendProgressEvent('SUCCESS', self.getStatus());
         successCallback();
       } else {
         errorCallback(new FileCopyManager.Error(
@@ -1125,7 +1150,7 @@ FileCopyManager.prototype.serviceZipTask_ = function(
       }
     };
 
-    self.sendProgressEvent_('PROGRESS');
+    self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
     chrome.fileBrowserPrivate.zipSelection(dirURL, selectionURLs, destPath,
         onZipSelectionComplete);
   };
@@ -1228,7 +1253,11 @@ FileCopyManager.prototype.serviceAllDeleteTasks_ = function() {
     self.deleteTasks_.shift();
     if (!self.deleteTasks_.length) {
       // All tasks have been serviced, clean up and exit.
-      self.sendDeleteEvent_(task, 'SUCCESS');
+      self.eventRouter_.sendDeleteEvent(
+          'SUCCESS',
+          task.entries.map(function(e) {
+            return util.makeFilesystemUrl(e.fullPath);
+          }));
       self.maybeScheduleCloseBackgroundPage_();
       return;
     }
@@ -1237,19 +1266,31 @@ FileCopyManager.prototype.serviceAllDeleteTasks_ = function() {
     // right after one task finished in the queue. We treat all tasks as one
     // big task logically, so there is only one BEGIN/SUCCESS event pair for
     // these continuous tasks.
-    self.sendDeleteEvent_(self.deleteTasks_[0], 'PROGRESS');
+    self.eventRouter_.sendDeleteEvent(
+        'PROGRESS',
+        task.entries.map(function(e) {
+          return util.makeFilesystemUrl(e.fullPath);
+        }));
     self.serviceDeleteTask_(self.deleteTasks_[0], onTaskSuccess, onTaskFailure);
   };
 
   var onTaskFailure = function(task) {
     self.deleteTasks_ = [];
-    self.sendDeleteEvent_(task, 'ERROR');
+    self.eventRouter_.sendDeleteEvent(
+        'ERROR',
+        task.entries.map(function(e) {
+          return util.makeFilesystemUrl(e.fullPath);
+        }));
     self.maybeScheduleCloseBackgroundPage_();
   };
 
   // If the queue size is 1 after pushing our task, it was empty before,
   // so we need to kick off queue processing and dispatch BEGIN event.
-  this.sendDeleteEvent_(this.deleteTasks_[0], 'BEGIN');
+  this.eventRouter_.sendDeleteEvent(
+      'BEGIN',
+      this.deleteTasks_[0].entries.map(function(e) {
+        return util.makeFilesystemUrl(e.fullPath);
+      }));
   this.serviceDeleteTask_(this.deleteTasks_[0], onTaskSuccess, onTaskFailure);
 };
 
@@ -1290,22 +1331,6 @@ FileCopyManager.prototype.serviceDeleteTask_ = function(
 };
 
 /**
- * Send a 'delete' event to listeners.
- *
- * @param {Object} task The delete task (see deleteEntries function).
- * @param {string} reason Event reason.
- * @private
- */
-FileCopyManager.prototype.sendDeleteEvent_ = function(task, reason) {
-  this.sendEvent_('delete', {
-    reason: reason,
-    urls: task.entries.map(function(e) {
-      return util.makeFilesystemUrl(e.fullPath);
-    })
-  });
-};
-
-/**
  * Creates a zip file for the selection of files.
  *
  * @param {Entry} dirEntry the directory containing the selection.
@@ -1330,7 +1355,7 @@ FileCopyManager.prototype.zipSelection = function(dirEntry, isOnDrive,
     } else {
       // Force to update the progress of butter bar when there are new tasks
       // coming while servicing current task.
-      self.sendProgressEvent_('PROGRESS');
+      self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
     }
   });
 };
