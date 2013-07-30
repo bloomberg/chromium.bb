@@ -170,7 +170,9 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kHistoryEnableGroupByDomain));
   source->AddBoolean("allowDeletingHistory",
-      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+                     prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+  source->AddBoolean("isInstantExtendedApiEnabled",
+                     chrome::IsInstantExtendedAPIEnabled());
 
   source->SetJsonPath(kStringsJsFile);
   source->AddResourcePath(kHistoryJsFile, IDR_HISTORY_JS);

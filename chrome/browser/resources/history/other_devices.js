@@ -468,47 +468,36 @@ DevicesView.prototype.displayResults_ = function() {
       createElementWithClassName('div', 'other-devices-bottom'));
 };
 
-// We must use this namespace to reuse the handler code for foreign session and
-// login.
-cr.define('ntp', function() {
-  'use strict';
+/**
+ * Sets the menu model data. An empty list means that either there are no
+ * foreign sessions, or tab sync is disabled for this profile.
+ * |isTabSyncEnabled| makes it possible to distinguish between the cases.
+ *
+ * @param {Array} sessionList Array of objects describing the sessions
+ *     from other devices.
+ * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
+ */
+function setForeignSessions(sessionList, isTabSyncEnabled) {
+  // The other devices is shown iff tab sync is enabled.
+  if (isTabSyncEnabled)
+    devicesView.setSessionList(sessionList);
+  else
+    devicesView.clearDOM();
+}
 
-  /**
-   * Sets the menu model data. An empty list means that either there are no
-   * foreign sessions, or tab sync is disabled for this profile.
-   * |isTabSyncEnabled| makes it possible to distinguish between the cases.
-   *
-   * @param {Array} sessionList Array of objects describing the sessions
-   *     from other devices.
-   * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
-   */
-  function setForeignSessions(sessionList, isTabSyncEnabled) {
-    // The other devices is shown iff tab sync is enabled.
-    if (isTabSyncEnabled)
-      devicesView.setSessionList(sessionList);
-    else
-      devicesView.clearDOM();
-  }
-
-  /**
-   * Called when this element is initialized, and from the new tab page when
-   * the user's signed in state changes,
-   * @param {string} header The first line of text (unused here).
-   * @param {string} subHeader The second line of text (unused here).
-   * @param {string} iconURL The url for the login status icon. If this is null
-        then the login status icon is hidden (unused here).
-   * @param {boolean} isUserSignedIn Is the user currently signed in?
-   */
-  function updateSignInState(header, subHeader, iconURL, isUserSignedIn) {
-    if (devicesView)
-      devicesView.updateSignInState(isUserSignedIn);
-  }
-
-  return {
-    setForeignSessions: setForeignSessions,
-    updateLogin: updateSignInState
-  };
-});
+/**
+ * Called when this element is initialized, and from the new tab page when
+ * the user's signed in state changes,
+ * @param {string} header The first line of text (unused here).
+ * @param {string} subHeader The second line of text (unused here).
+ * @param {string} iconURL The url for the login status icon. If this is null
+ then the login status icon is hidden (unused here).
+ * @param {boolean} isUserSignedIn Is the user currently signed in?
+ */
+function updateLogin(header, subHeader, iconURL, isUserSignedIn) {
+  if (devicesView)
+    devicesView.updateSignInState(isUserSignedIn);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Document Functions:
@@ -516,6 +505,18 @@ cr.define('ntp', function() {
  * Window onload handler, sets up the other devices view.
  */
 function load() {
+  if (!loadTimeData.getBoolean('isInstantExtendedApiEnabled'))
+    return;
+
+  // We must use this namespace to reuse the handler code for foreign session
+  // and login.
+  cr.define('ntp', function() {
+    return {
+      setForeignSessions: setForeignSessions,
+      updateLogin: updateLogin
+    };
+  });
+
   devicesView = new DevicesView();
 
   // Create the context menu that appears when the user right clicks
