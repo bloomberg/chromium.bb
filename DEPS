@@ -18,7 +18,6 @@ vars = {
   "nacl_tools_revision": "11437",  # native_client/DEPS: tools_rev
   "gtm_revision": "616",
 
-  "libjingle_revision": "374",
   "libphonenumber_revision": "584",
   "libvpx_revision": "212364",
   "lss_revision": "20",
@@ -37,7 +36,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling WebRTC
   # and V8 without interference from each other.
-  "webrtc_revision": "4409",
+  "webrtc_revision": "4414",
   "jsoncpp_revision": "248",
   "nss_revision": "209026",
   # Three lines of non-changing comments so that
@@ -171,9 +170,9 @@ deps = {
     "/trunk/deps/third_party/ffmpeg@" +
     Var("ffmpeg_revision"),
 
-  "src/third_party/libjingle/source":
-    (Var("googlecode_url") % "libjingle") + "/trunk@" +
-    Var("libjingle_revision"),
+  "src/third_party/libjingle/source/talk":
+    (Var("googlecode_url") % "webrtc") + "/stable/talk@" +
+    Var("webrtc_revision"),
 
   "src/third_party/usrsctp/usrsctplib":
     (Var("googlecode_url") % "sctp-refimpl") +
@@ -232,7 +231,7 @@ deps = {
          Var("libphonenumber_revision"),
 
   "src/tools/deps2git":
-    "/trunk/tools/deps2git@202885",
+    "/trunk/tools/deps2git@214390",
 
   "src/third_party/webpagereplay":
     (Var("googlecode_url") % "web-page-replay") + "/trunk@518",
