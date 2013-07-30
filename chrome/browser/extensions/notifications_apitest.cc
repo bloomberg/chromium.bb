@@ -56,22 +56,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_NoHTMLNotifications) {
   ASSERT_TRUE(RunExtensionTest("notifications/no_html")) << message_;
 }
 
-// This test verifies that on platforms other then RichNotification-enabled
-// HTML notificaitons are enabled.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_HasHTMLNotificationsAndManifestPermission \
-    DISABLED_HasHTMLNotificationsAndManifestPermission
-#else
-#define MAYBE_HasHTMLNotificationsAndManifestPermission \
-    HasHTMLNotificationsAndManifestPermission
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       MAYBE_HasHTMLNotificationsAndManifestPermission) {
-  ASSERT_FALSE(message_center::IsRichNotificationEnabled());
-  ASSERT_TRUE(RunExtensionTest("notifications/has_permission_manifest"))
-      << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermission) {
 #if defined(OS_MACOSX)
   // TODO(kbr): re-enable: http://crbug.com/222296
