@@ -71,7 +71,6 @@ private:
     virtual int maxCharacterOffset() const OVERRIDE FINAL;
     virtual bool offsetInCharacters() const OVERRIDE FINAL;
     void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength);
-    void checkCharDataOperation(unsigned offset, ExceptionCode&);
 
     String m_data;
 };

@@ -58,9 +58,10 @@ void CharacterData::setData(const String& data)
 
 String CharacterData::substringData(unsigned offset, unsigned count, ExceptionCode& ec)
 {
-    checkCharDataOperation(offset, ec);
-    if (ec)
+    if (offset > length()) {
+        ec = IndexSizeError;
         return String();
+    }
 
     return m_data.substring(offset, count);
 }
@@ -117,9 +118,10 @@ void CharacterData::appendData(const String& data)
 
 void CharacterData::insertData(unsigned offset, const String& data, ExceptionCode& ec)
 {
-    checkCharDataOperation(offset, ec);
-    if (ec)
+    if (offset > length()) {
+        ec = IndexSizeError;
         return;
+    }
 
     String newStr = m_data;
     newStr.insert(data, offset);
@@ -131,9 +133,10 @@ void CharacterData::insertData(unsigned offset, const String& data, ExceptionCod
 
 void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionCode& ec)
 {
-    checkCharDataOperation(offset, ec);
-    if (ec)
+    if (offset > length()) {
+        ec = IndexSizeError;
         return;
+    }
 
     unsigned realCount;
     if (offset + count > length())
@@ -151,9 +154,10 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionCode& e
 
 void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionCode& ec)
 {
-    checkCharDataOperation(offset, ec);
-    if (ec)
+    if (offset > length()) {
+        ec = IndexSizeError;
         return;
+    }
 
     unsigned realCount;
     if (offset + count > length())
@@ -217,18 +221,6 @@ void CharacterData::didModifyData(const String& oldData)
         dispatchSubtreeModifiedEvent();
     }
     InspectorInstrumentation::characterDataModified(document(), this);
-}
-
-void CharacterData::checkCharDataOperation(unsigned offset, ExceptionCode& ec)
-{
-    ec = 0;
-
-    // IndexSizeError: Raised if the specified offset is negative or greater than the number of 16-bit
-    // units in data.
-    if (offset > length()) {
-        ec = IndexSizeError;
-        return;
-    }
 }
 
 int CharacterData::maxCharacterOffset() const
