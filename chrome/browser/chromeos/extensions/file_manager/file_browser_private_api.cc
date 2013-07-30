@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
@@ -117,8 +116,6 @@ const char kDriveConnectionTypeOnline[] = "online";
 const char kDriveConnectionReasonNotReady[] = "not_ready";
 const char kDriveConnectionReasonNoNetwork[] = "no_network";
 const char kDriveConnectionReasonNoService[] = "no_service";
-
-const int kSlowOperationThresholdMs = 500;  // In ms.
 
 // Unescape rules used for parsing query parameters.
 const net::UnescapeRule::Type kUnescapeRuleForQueryParameters =
@@ -1298,33 +1295,6 @@ bool SetDefaultTaskFunction::RunImpl() {
   file_handler_util::UpdateDefaultTask(profile_, task_id, suffixes, mime_types);
 
   return true;
-}
-
-LoggedAsyncExtensionFunction::LoggedAsyncExtensionFunction()
-    : log_on_completion_(false) {
-  start_time_  = base::Time::Now();
-}
-
-LoggedAsyncExtensionFunction::~LoggedAsyncExtensionFunction() {
-}
-
-void LoggedAsyncExtensionFunction::SendResponse(bool success) {
-  int64 elapsed = (base::Time::Now() - start_time_).InMilliseconds();
-  if (log_on_completion_) {
-    drive::util::Log("%s[%d] %s. (elapsed time: %sms)",
-                     name().c_str(),
-                     request_id(),
-                     success ? "succeeded" : "failed",
-                     base::Int64ToString(elapsed).c_str());
-  } else if (elapsed >= kSlowOperationThresholdMs) {
-    drive::util::Log(
-        "PEFORMANCE WARNING: %s[%d] was slow. (elapsed time: %sms)",
-        name().c_str(),
-        request_id(),
-        base::Int64ToString(elapsed).c_str());
-  }
-
-  AsyncExtensionFunction::SendResponse(success);
 }
 
 ViewFilesFunction::ViewFilesFunction() {

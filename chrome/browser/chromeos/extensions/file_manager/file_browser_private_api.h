@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/extensions/file_manager/zip_file_creator.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -64,34 +65,6 @@ class FileBrowserPrivateAPI : public BrowserContextKeyedService {
 
  private:
   scoped_ptr<FileManagerEventRouter> event_router_;
-};
-
-// This class adds a logging feature to AsyncExtensionFunction. Logging is
-// done when sending the response to JavaScript, using drive::util::Log().
-// Async API functions defined in this file should inherit this class.
-//
-// By default, logging is turned off, hence sub classes should call
-// set_log_on_completion(true) to enable it, if they want. However, even if
-// the logging is turned off, a warning is emitted when a function call is
-// very slow. See the implementation of SendResponse() for details.
-class LoggedAsyncExtensionFunction : public AsyncExtensionFunction {
- public:
-  LoggedAsyncExtensionFunction();
-
- protected:
-  virtual ~LoggedAsyncExtensionFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual void SendResponse(bool success) OVERRIDE;
-
-  // Sets the logging on completion flag. By default, logging is turned off.
-  void set_log_on_completion(bool log_on_completion) {
-    log_on_completion_ = log_on_completion;
-  }
-
- private:
-  base::Time start_time_;
-  bool log_on_completion_;
 };
 
 // Select a single file.  Closes the dialog window.
