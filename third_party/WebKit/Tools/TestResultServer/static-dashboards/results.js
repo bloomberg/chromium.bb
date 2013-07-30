@@ -44,6 +44,7 @@ results.PASS = 'PASS';
 results.NO_DATA = 'NO DATA';
 results.SKIP = 'SKIP';
 results.NOTRUN = 'NOTRUN';
+results.WONTFIX = 'WONTFIX';
 
 // FIXME: Create a ResultsJson class or something similar that abstracts out the JSON
 // data format. Code outside this class shouldn't know about the guts of the JSON format.
@@ -55,7 +56,7 @@ results.RLE = {
     VALUE: 1
 }
 
-var NON_FAILURE_TYPES = [results.PASS, results.NO_DATA, results.SKIP, results.NOTRUN];
+var NON_FAILURE_TYPES = [results.PASS, results.NO_DATA, results.SKIP, results.NOTRUN, results.WONTFIX];
 
 results.isFailingResult = function(failureMap, failureType)
 {
@@ -70,6 +71,9 @@ results.testCounts = function(failuresByType)
     };
 
     for (var failureType in failuresByType) {
+        if (failureType == results.WONTFIX)
+            continue;
+
         var failures = failuresByType[failureType];
         failures.forEach(function(count, index) {
             if (!countData.totalTests[index]) {
