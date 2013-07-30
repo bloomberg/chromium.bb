@@ -34,7 +34,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_IMAGE_UTIL_JS" file="extensions\image_util.js" type="BINDATA" />
       <include name="IDR_JSON_SCHEMA_JS" file="extensions\json_schema.js" type="BINDATA" />
       <include name="IDR_LAST_ERROR_JS" file="extensions\last_error.js" type="BINDATA" />
-      <include name="IDR_MISCELLANEOUS_BINDINGS_JS" file="extensions\miscellaneous_bindings.js" type="BINDATA" />
+      <include name="IDR_MESSAGING_JS" file="extensions\messaging.js" type="BINDATA" />
       <include name="IDR_SCHEMA_UTILS_JS" file="extensions\schema_utils.js" type="BINDATA" />
       <include name="IDR_SEARCHBOX_API" file="extensions\searchbox_api.js" type="BINDATA" />
       <include name="IDR_SEND_REQUEST_JS" file="extensions\send_request.js" type="BINDATA" />

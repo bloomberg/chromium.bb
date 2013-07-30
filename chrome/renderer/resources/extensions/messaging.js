@@ -12,7 +12,7 @@
   var Event = require('event_bindings').Event;
   var lastError = require('lastError');
   var logActivity = requireNative('activityLogger');
-  var miscNatives = requireNative('miscellaneous_bindings_natives');
+  var messagingNatives = requireNative('messaging_natives');
   var processNatives = requireNative('process');
   var unloadEvent = require('unload_event');
 
@@ -66,12 +66,12 @@
       console.error('Illegal argument to Port.postMessage');
       return;
     }
-    miscNatives.PostMessage(this.portId_, msg);
+    messagingNatives.PostMessage(this.portId_, msg);
   };
 
   // Disconnects the port from the other end.
   Port.prototype.disconnect = function() {
-    miscNatives.CloseChannel(this.portId_, true);
+    messagingNatives.CloseChannel(this.portId_, true);
     this.destroy_();
   };
 
@@ -81,7 +81,7 @@
     this.onDisconnect.destroy_();
     this.onMessage.destroy_();
 
-    miscNatives.PortRelease(portId);
+    messagingNatives.PortRelease(portId);
     unloadEvent.removeListener(portReleasers[portId]);
 
     delete ports[portId];
@@ -102,11 +102,11 @@
       throw new Error("Port '" + portId + "' already exists.");
     var port = new Port(portId, opt_name);
     ports[portId] = port;
-    portReleasers[portId] = $Function.bind(miscNatives.PortRelease,
-                                            this,
-                                            portId);
+    portReleasers[portId] = $Function.bind(messagingNatives.PortRelease,
+                                           this,
+                                           portId);
     unloadEvent.addListener(portReleasers[portId]);
-    miscNatives.PortAddRef(portId);
+    messagingNatives.PortAddRef(portId);
     return port;
   };
 
@@ -175,7 +175,7 @@
       // doesn't keep a reference to it, we need to clean up the port. Do
       // so by attaching to the garbage collection of the responseCallback
       // using some native hackery.
-      miscNatives.BindToGC(responseCallback, function() {
+      messagingNatives.BindToGC(responseCallback, function() {
         if (port) {
           port.destroy_();
           port = null;
@@ -272,7 +272,7 @@
     var port = ports[portId];
     if (port) {
       // Update the renderer's port bookkeeping, without notifying the browser.
-      miscNatives.CloseChannel(portId, false);
+      messagingNatives.CloseChannel(portId, false);
       if (errorMessage)
         lastError.set('Port', errorMessage, null, chrome);
       try {

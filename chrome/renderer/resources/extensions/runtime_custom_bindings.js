@@ -7,7 +7,7 @@
 var binding = require('binding').Binding.create('runtime');
 
 var extensionNatives = requireNative('extension');
-var miscBindings = require('miscellaneous_bindings');
+var messaging = require('messaging');
 var runtimeNatives = requireNative('runtime');
 var unloadEvent = require('unload_event');
 var process = requireNative('process');
@@ -96,7 +96,7 @@ binding.registerCustomHook(function(binding, id, contextType) {
     return 'chrome-extension://' + id + path;
   });
 
-  var sendMessageUpdateArguments = miscBindings.sendMessageUpdateArguments;
+  var sendMessageUpdateArguments = messaging.sendMessageUpdateArguments;
   apiFunctions.setUpdateArgumentsPreValidate('sendMessage',
       $Function.bind(sendMessageUpdateArguments, null, 'sendMessage'));
   apiFunctions.setUpdateArgumentsPreValidate('sendNativeMessage',
@@ -105,14 +105,14 @@ binding.registerCustomHook(function(binding, id, contextType) {
   apiFunctions.setHandleRequest('sendMessage',
                                 function(targetId, message, responseCallback) {
     var port = runtime.connect(targetId || runtime.id,
-        {name: miscBindings.kMessageChannel});
-    miscBindings.sendMessageImpl(port, message, responseCallback);
+        {name: messaging.kMessageChannel});
+    messaging.sendMessageImpl(port, message, responseCallback);
   });
 
   apiFunctions.setHandleRequest('sendNativeMessage',
                                 function(targetId, message, responseCallback) {
     var port = runtime.connectNative(targetId);
-    miscBindings.sendMessageImpl(port, message, responseCallback);
+    messaging.sendMessageImpl(port, message, responseCallback);
   });
 
   apiFunctions.setUpdateArgumentsPreValidate('connect', function() {
@@ -160,7 +160,7 @@ binding.registerCustomHook(function(binding, id, contextType) {
 
     var portId = runtimeNatives.OpenChannelToExtension(targetId, name);
     if (portId >= 0)
-      return miscBindings.createPort(portId, name);
+      return messaging.createPort(portId, name);
   });
 
   //
@@ -175,7 +175,7 @@ binding.registerCustomHook(function(binding, id, contextType) {
       var portId = runtimeNatives.OpenChannelToNativeApp(runtime.id,
                                                          nativeAppName);
       if (portId >= 0)
-        return miscBindings.createPort(portId, '');
+        return messaging.createPort(portId, '');
     }
     throw new Error('Error connecting to native app: ' + nativeAppName);
   });

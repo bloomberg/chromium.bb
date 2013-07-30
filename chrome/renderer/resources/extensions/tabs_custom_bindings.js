@@ -6,7 +6,7 @@
 
 var binding = require('binding').Binding.create('tabs');
 
-var miscBindings = require('miscellaneous_bindings');
+var messaging = require('messaging');
 var tabsNatives = requireNative('tabs');
 var OpenChannelToTab = tabsNatives.OpenChannelToTab;
 var sendRequestIsDisabled = requireNative('process').IsSendRequestDisabled();
@@ -21,21 +21,21 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       name = connectInfo.name || name;
     }
     var portId = OpenChannelToTab(tabId, extensionId, name);
-    return miscBindings.createPort(portId, name);
+    return messaging.createPort(portId, name);
   });
 
   apiFunctions.setHandleRequest('sendRequest',
                                 function(tabId, request, responseCallback) {
     if (sendRequestIsDisabled)
       throw new Error(sendRequestIsDisabled);
-    var port = tabs.connect(tabId, {name: miscBindings.kRequestChannel});
-    miscBindings.sendMessageImpl(port, request, responseCallback);
+    var port = tabs.connect(tabId, {name: messaging.kRequestChannel});
+    messaging.sendMessageImpl(port, request, responseCallback);
   });
 
   apiFunctions.setHandleRequest('sendMessage',
                                 function(tabId, message, responseCallback) {
-    var port = tabs.connect(tabId, {name: miscBindings.kMessageChannel});
-    miscBindings.sendMessageImpl(port, message, responseCallback);
+    var port = tabs.connect(tabId, {name: messaging.kMessageChannel});
+    messaging.sendMessageImpl(port, message, responseCallback);
   });
 });
 

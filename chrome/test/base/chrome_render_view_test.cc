@@ -13,7 +13,6 @@
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
-#include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -34,7 +33,6 @@
 #endif
 
 using extensions::ExtensionCustomBindings;
-using extensions::MiscellaneousBindings;
 using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;

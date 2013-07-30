@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_MISCELLANEOUS_BINDINGS_H_
-#define CHROME_RENDERER_EXTENSIONS_MISCELLANEOUS_BINDINGS_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_MESSAGING_BINDINGS_H_
+#define CHROME_RENDERER_EXTENSIONS_MESSAGING_BINDINGS_H_
 
 #include <string>
 
@@ -25,12 +25,12 @@ namespace extensions {
 class ChromeV8Extension;
 class Dispatcher;
 
-// Manually implements some random JavaScript bindings for the extension system.
+// Manually implements JavaScript bindings for extension messaging.
 //
 // TODO(aa): This should all get re-implemented using SchemaGeneratedBindings.
 // If anything needs to be manual for some reason, it should be implemented in
 // its own class.
-class MiscellaneousBindings {
+class MessagingBindings {
  public:
   // Creates an instance of the extension.
   static ChromeV8Extension* Get(Dispatcher* dispatcher,
@@ -68,4 +68,4 @@ class MiscellaneousBindings {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_MISCELLANEOUS_BINDINGS_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_MESSAGING_BINDINGS_H_

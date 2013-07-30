@@ -37,7 +37,6 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
-#include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "chrome/renderer/extensions/resource_request_policy.h"
 #include "chrome/renderer/external_extension.h"

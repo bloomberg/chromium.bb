@@ -52,7 +52,7 @@
 #include "chrome/renderer/extensions/i18n_custom_bindings.h"
 #include "chrome/renderer/extensions/logging_native_handler.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
-#include "chrome/renderer/extensions/miscellaneous_bindings.h"
+#include "chrome/renderer/extensions/messaging_bindings.h"
 #include "chrome/renderer/extensions/module_system.h"
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
@@ -522,7 +522,7 @@ void Dispatcher::OnDispatchOnConnect(
     const std::string& channel_name,
     const base::DictionaryValue& source_tab,
     const ExtensionMsg_ExternalConnectionInfo& info) {
-  MiscellaneousBindings::DispatchOnConnect(
+  MessagingBindings::DispatchOnConnect(
       v8_context_set_.GetAll(),
       target_port_id, channel_name, source_tab,
       info.source_id, info.target_id, info.source_url,
@@ -531,7 +531,7 @@ void Dispatcher::OnDispatchOnConnect(
 
 void Dispatcher::OnDeliverMessage(int target_port_id,
                                   const std::string& message) {
-  MiscellaneousBindings::DeliverMessage(
+  MessagingBindings::DeliverMessage(
       v8_context_set_.GetAll(),
       target_port_id,
       message,
@@ -540,7 +540,7 @@ void Dispatcher::OnDeliverMessage(int target_port_id,
 
 void Dispatcher::OnDispatchOnDisconnect(int port_id,
                                         const std::string& error_message) {
-  MiscellaneousBindings::DispatchOnDisconnect(
+  MessagingBindings::DispatchOnDisconnect(
       v8_context_set_.GetAll(),
       port_id, error_message,
       NULL);  // All render views.
@@ -804,8 +804,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
                                         ChromeV8Context* context) {
   module_system->RegisterNativeHandler("event_natives",
       scoped_ptr<NativeHandler>(EventBindings::Create(this, context)));
-  module_system->RegisterNativeHandler("miscellaneous_bindings_natives",
-      scoped_ptr<NativeHandler>(MiscellaneousBindings::Get(this, context)));
+  module_system->RegisterNativeHandler("messaging_natives",
+      scoped_ptr<NativeHandler>(MessagingBindings::Get(this, context)));
   module_system->RegisterNativeHandler("apiDefinitions",
       scoped_ptr<NativeHandler>(new ApiDefinitionsNatives(this, context)));
   module_system->RegisterNativeHandler("sendRequest",
@@ -886,8 +886,7 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("imageUtil", IDR_IMAGE_UTIL_JS);
   source_map_.RegisterSource("json_schema", IDR_JSON_SCHEMA_JS);
   source_map_.RegisterSource("lastError", IDR_LAST_ERROR_JS);
-  source_map_.RegisterSource("miscellaneous_bindings",
-                             IDR_MISCELLANEOUS_BINDINGS_JS);
+  source_map_.RegisterSource("messaging", IDR_MESSAGING_JS);
   source_map_.RegisterSource("schemaUtils", IDR_SCHEMA_UTILS_JS);
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
   source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);

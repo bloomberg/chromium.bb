@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/miscellaneous_bindings.h"
+#include "chrome/renderer/extensions/messaging_bindings.h"
 
 #include <map>
 #include <string>
@@ -218,14 +218,14 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
 namespace extensions {
 
-ChromeV8Extension* MiscellaneousBindings::Get(
+ChromeV8Extension* MessagingBindings::Get(
     Dispatcher* dispatcher,
     ChromeV8Context* context) {
   return new ExtensionImpl(dispatcher, context);
 }
 
 // static
-void MiscellaneousBindings::DispatchOnConnect(
+void MessagingBindings::DispatchOnConnect(
     const ChromeV8ContextSet::ContextSet& contexts,
     int target_port_id,
     const std::string& channel_name,
@@ -267,7 +267,7 @@ void MiscellaneousBindings::DispatchOnConnect(
     };
 
     v8::Handle<v8::Value> retval = (*it)->module_system()->CallModuleMethod(
-        "miscellaneous_bindings",
+        "messaging",
         "dispatchOnConnect",
         arraysize(arguments), arguments);
 
@@ -290,7 +290,7 @@ void MiscellaneousBindings::DispatchOnConnect(
 }
 
 // static
-void MiscellaneousBindings::DeliverMessage(
+void MessagingBindings::DeliverMessage(
     const ChromeV8ContextSet::ContextSet& contexts,
     int target_port_id,
     const std::string& message,
@@ -313,7 +313,7 @@ void MiscellaneousBindings::DeliverMessage(
     // the message.
     v8::Handle<v8::Value> port_id_handle = v8::Integer::New(target_port_id);
     v8::Handle<v8::Value> has_port = (*it)->module_system()->CallModuleMethod(
-        "miscellaneous_bindings",
+        "messaging",
         "hasPort",
         1, &port_id_handle);
 
@@ -324,14 +324,14 @@ void MiscellaneousBindings::DeliverMessage(
     std::vector<v8::Handle<v8::Value> > arguments;
     arguments.push_back(v8::String::New(message.c_str(), message.size()));
     arguments.push_back(port_id_handle);
-    (*it)->module_system()->CallModuleMethod("miscellaneous_bindings",
+    (*it)->module_system()->CallModuleMethod("messaging",
                                              "dispatchOnMessage",
                                              &arguments);
   }
 }
 
 // static
-void MiscellaneousBindings::DispatchOnDisconnect(
+void MessagingBindings::DispatchOnDisconnect(
     const ChromeV8ContextSet::ContextSet& contexts,
     int port_id,
     const std::string& error_message,
@@ -357,7 +357,7 @@ void MiscellaneousBindings::DispatchOnDisconnect(
     } else {
       arguments.push_back(v8::Null());
     }
-    (*it)->module_system()->CallModuleMethod("miscellaneous_bindings",
+    (*it)->module_system()->CallModuleMethod("messaging",
                                              "dispatchOnDisconnect",
                                              &arguments);
   }

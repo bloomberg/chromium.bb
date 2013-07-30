@@ -8,7 +8,7 @@ var binding = require('binding').Binding.create('extension');
 
 var extensionNatives = requireNative('extension');
 var GetExtensionViews = extensionNatives.GetExtensionViews;
-var miscBindings = require('miscellaneous_bindings');
+var messaging = require('messaging');
 var runtimeNatives = requireNative('runtime');
 var OpenChannelToExtension = runtimeNatives.OpenChannelToExtension;
 var OpenChannelToNativeApp = runtimeNatives.OpenChannelToNativeApp;
@@ -87,16 +87,16 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   });
 
   apiFunctions.setUpdateArgumentsPreValidate('sendRequest',
-      $Function.bind(miscBindings.sendMessageUpdateArguments,
-                      null, 'sendRequest'));
+      $Function.bind(messaging.sendMessageUpdateArguments,
+                     null, 'sendRequest'));
 
   apiFunctions.setHandleRequest('sendRequest',
                                 function(targetId, request, responseCallback) {
     if (sendRequestIsDisabled)
       throw new Error(sendRequestIsDisabled);
     var port = chrome.runtime.connect(targetId || extensionId,
-                                      {name: miscBindings.kRequestChannel});
-    miscBindings.sendMessageImpl(port, request, responseCallback);
+                                      {name: messaging.kRequestChannel});
+    messaging.sendMessageImpl(port, request, responseCallback);
   });
 
   if (sendRequestIsDisabled) {
