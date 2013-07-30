@@ -1096,10 +1096,17 @@ TEST_F(RenderViewHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
       NOTIFICATION_RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(rvh1->GetProcess()),
       Details<RenderProcessHost::RendererClosedDetails>(&details));
+  rvh1->set_render_view_created(false);
 
   // Ensure that the swapped out RenderViewHost has been deleted.
   EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(
       rvh1->GetSiteInstance()));
+
+  // Reload the initial tab. This should recreate the opener.
+  contents()->GetController().Reload(true);
+
+  EXPECT_EQ(opener1_manager->current_host()->GetRoutingID(),
+            test_rvh()->opener_route_id());
 }
 
 // Test that RenderViewHosts created for WebUI navigations are properly

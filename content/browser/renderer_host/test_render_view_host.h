@@ -308,6 +308,9 @@ class TestRenderViewHost
   // False by default.
   void set_simulate_history_list_was_cleared(bool cleared);
 
+  // The opener route id passed to CreateRenderView().
+  int opener_route_id() const { return opener_route_id_; }
+
   // RenderViewHost overrides --------------------------------------------------
 
   virtual bool CreateRenderView(const string16& frame_name,
@@ -349,6 +352,9 @@ class TestRenderViewHost
 
   // See SetContentsMimeType() above.
   std::string contents_mime_type_;
+
+  // See opener_route_id() above.
+  int opener_route_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };

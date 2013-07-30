@@ -252,7 +252,8 @@ TestRenderViewHost::TestRenderViewHost(
       delete_counter_(NULL),
       simulate_fetch_via_proxy_(false),
       simulate_history_list_was_cleared_(false),
-      contents_mime_type_("text/html") {
+      contents_mime_type_("text/html"),
+      opener_route_id_(MSG_ROUTING_NONE) {
   // TestRenderWidgetHostView installs itself into this->view_ in its
   // constructor, and deletes itself when TestRenderWidgetHostView::Destroy() is
   // called.
@@ -272,6 +273,7 @@ bool TestRenderViewHost::CreateRenderView(
     int32 max_page_id) {
   DCHECK(!render_view_created_);
   render_view_created_ = true;
+  opener_route_id_ = opener_route_id;
   return true;
 }
 

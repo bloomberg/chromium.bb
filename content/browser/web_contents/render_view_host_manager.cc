@@ -149,7 +149,10 @@ RenderViewHostImpl* RenderViewHostManager::Navigate(
   // If the renderer crashed, then try to create a new one to satisfy this
   // navigation request.
   if (!dest_render_view_host->IsRenderViewLive()) {
-    if (!InitRenderView(dest_render_view_host, MSG_ROUTING_NONE))
+    // Recreate the opener chain.
+    int opener_route_id = delegate_->CreateOpenerRenderViewsForRenderManager(
+        dest_render_view_host->GetSiteInstance());
+    if (!InitRenderView(dest_render_view_host, opener_route_id))
       return NULL;
 
     // Now that we've created a new renderer, be sure to hide it if it isn't
