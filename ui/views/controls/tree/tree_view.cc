@@ -18,10 +18,10 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/prefix_selector.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
-#include "ui/views/controls/tree/tree_view_selector.h"
 #include "ui/views/ime/input_method.h"
 
 using ui::TreeModel;
@@ -315,13 +315,6 @@ void TreeView::SetRootShown(bool root_shown) {
   DrawnNodesChanged();
 }
 
-int TreeView::GetRowCount() {
-  int row_count = root_.NumExpandedNodes();
-  if (!root_shown_)
-    row_count--;
-  return row_count;
-}
-
 ui::TreeModelNode* TreeView::GetNodeForRow(int row) {
   int depth = 0;
   InternalNode* node = GetNodeByRow(row, &depth);
@@ -369,7 +362,7 @@ bool TreeView::OnMousePressed(const ui::MouseEvent& event) {
 
 ui::TextInputClient* TreeView::GetTextInputClient() {
   if (!selector_)
-    selector_.reset(new TreeViewSelector(this));
+    selector_.reset(new PrefixSelector(this));
   return selector_.get();
 }
 
@@ -497,6 +490,26 @@ void TreeView::OnDidChangeFocus(View* focused_before, View* focused_now) {
   CommitEdit();
 }
 
+int TreeView::GetRowCount() {
+  int row_count = root_.NumExpandedNodes();
+  if (!root_shown_)
+    row_count--;
+  return row_count;
+}
+
+int TreeView::GetSelectedRow() {
+  ui::TreeModelNode* model_node = GetSelectedNode();
+  return model_node ? GetRowForNode(model_node) : -1;
+}
+
+void TreeView::SetSelectedRow(int row) {
+  SetSelectedNode(GetNodeForRow(row));
+}
+
+string16 TreeView::GetTextForRow(int row) {
+  return GetNodeForRow(row)->GetTitle();
+}
+
 gfx::Point TreeView::GetKeyboardContextMenuLocation() {
   int y = height() / 2;
   if (selected_node_) {
@@ -596,7 +609,7 @@ void TreeView::OnFocus() {
 void TreeView::OnBlur() {
   SchedulePaintForNode(selected_node_);
   if (selector_)
-    selector_->OnTreeViewBlur();
+    selector_->OnViewBlur();
 }
 
 bool TreeView::OnClickOrTap(const ui::LocatedEvent& event) {
@@ -985,7 +998,7 @@ void TreeView::InternalNode::Reset(ui::TreeModelNode* node) {
   text_width_ = 0;
 }
 
-int TreeView::InternalNode::NumExpandedNodes() {
+int TreeView::InternalNode::NumExpandedNodes() const {
   int result = 1;  // For this.
   if (!is_expanded_)
     return result;

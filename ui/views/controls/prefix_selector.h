@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTROLS_TREE_TREE_VIEW_SELECTOR_H_
-#define UI_VIEWS_CONTROLS_TREE_TREE_VIEW_SELECTOR_H_
+#ifndef UI_VIEWS_CONTROLS_PREFIX_SELECTOR_H_
+#define UI_VIEWS_CONTROLS_PREFIX_SELECTOR_H_
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -12,17 +12,17 @@
 
 namespace views {
 
-class TreeView;
+class PrefixDelegate;
 
-// TreeViewSelector is used to change the selection in the tree as the user
+// PrefixSelector is used to change the selection in a view as the user
 // types characters.
-class VIEWS_EXPORT TreeViewSelector : public ui::TextInputClient {
+class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
  public:
-  explicit TreeViewSelector(TreeView* tree);
-  virtual ~TreeViewSelector();
+  explicit PrefixSelector(PrefixDelegate* delegate);
+  virtual ~PrefixSelector();
 
-  // Invoked from the tree when it loses focus.
-  void OnTreeViewBlur();
+  // Invoked from the view when it loses focus.
+  void OnViewBlur();
 
   // ui::TextInputClient:
   virtual void SetCompositionText(
@@ -61,16 +61,16 @@ class VIEWS_EXPORT TreeViewSelector : public ui::TextInputClient {
   // Clears |current_text_| and resets |time_of_last_key_|.
   void ClearText();
 
-  TreeView* tree_;
+  PrefixDelegate* prefix_delegate_;
 
   // Time OnTextInput() was last invoked.
   base::TimeTicks time_of_last_key_;
 
   string16 current_text_;
 
-  DISALLOW_COPY_AND_ASSIGN(TreeViewSelector);
+  DISALLOW_COPY_AND_ASSIGN(PrefixSelector);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_CONTROLS_TREE_TREE_VIEW_SELECTOR_H_
+#endif  // UI_VIEWS_CONTROLS_PREFIX_SELECTOR_H_

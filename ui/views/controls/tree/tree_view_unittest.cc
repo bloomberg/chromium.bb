@@ -9,8 +9,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/tree_node_model.h"
+#include "ui/views/controls/prefix_selector.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/controls/tree/tree_view_selector.h"
 #include "ui/views/test/views_test_base.h"
 
 using ui::TreeModel;
@@ -60,7 +60,7 @@ class TreeViewTest : public ViewsTestBase {
   void CollapseOrSelectParent();
   void ExpandOrSelectChild();
   int GetRowCount();
-  TreeViewSelector* selector() { return tree_.selector_.get(); }
+  PrefixSelector* selector() { return tree_.selector_.get(); }
 
   ui::TreeNodeModel<TestNode > model_;
   TreeView tree_;
@@ -394,12 +394,12 @@ TEST_F(TreeViewTest, SelectOnKeyStroke) {
   selector()->InsertText(ASCIIToUTF16("1"));
   EXPECT_EQ("b1", GetSelectedNodeTitle());
 
-  // Invoke OnTreeViewBlur() to reset time.
-  selector()->OnTreeViewBlur();
+  // Invoke OnViewBlur() to reset time.
+  selector()->OnViewBlur();
   selector()->InsertText(ASCIIToUTF16("z"));
   EXPECT_EQ("b1", GetSelectedNodeTitle());
 
-  selector()->OnTreeViewBlur();
+  selector()->OnViewBlur();
   selector()->InsertText(ASCIIToUTF16("a"));
   EXPECT_EQ("a", GetSelectedNodeTitle());
 }

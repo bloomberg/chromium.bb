@@ -9,6 +9,7 @@
 
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/combobox/native_combobox_wrapper.h"
+#include "ui/views/controls/prefix_delegate.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -22,9 +23,10 @@ class ComboboxModel;
 namespace views {
 
 class ComboboxListener;
+class PrefixSelector;
 
 // A non-editable combobox (aka a drop-down list).
-class VIEWS_EXPORT Combobox : public View {
+class VIEWS_EXPORT Combobox : public PrefixDelegate {
  public:
   // The combobox's class name.
   static const char kViewClassName[];
@@ -82,6 +84,13 @@ class VIEWS_EXPORT Combobox : public View {
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
+
+  // Overridden from PrefixDelegate:
+  virtual int GetRowCount() OVERRIDE;
+  virtual int GetSelectedRow() OVERRIDE;
+  virtual void SetSelectedRow(int row) OVERRIDE;
+  virtual string16 GetTextForRow(int row) OVERRIDE;
 
  protected:
   // Overridden from View:
@@ -107,6 +116,8 @@ class VIEWS_EXPORT Combobox : public View {
 
   // The accessible name of this combobox.
   string16 accessible_name_;
+
+  scoped_ptr<PrefixSelector> selector_;
 
   DISALLOW_COPY_AND_ASSIGN(Combobox);
 };

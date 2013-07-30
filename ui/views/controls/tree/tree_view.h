@@ -13,6 +13,7 @@
 #include "ui/base/models/tree_node_model.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/controls/prefix_delegate.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
@@ -21,7 +22,7 @@ namespace views {
 
 class Textfield;
 class TreeViewController;
-class TreeViewSelector;
+class PrefixSelector;
 
 // TreeView displays hierarchical data as returned from a TreeModel. The user
 // can expand, collapse and edit the items. A Controller may be attached to
@@ -30,10 +31,10 @@ class TreeViewSelector;
 // Note on implementation. This implementation doesn't scale well. In particular
 // it does not store any row information, but instead calculates it as
 // necessary. But it's more than adequate for current uses.
-class VIEWS_EXPORT TreeView : public View,
-                              public ui::TreeModelObserver,
+class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
                               public TextfieldController,
-                              public FocusChangeListener {
+                              public FocusChangeListener,
+                              public PrefixDelegate {
  public:
   TreeView();
   virtual ~TreeView();
@@ -103,9 +104,6 @@ class VIEWS_EXPORT TreeView : public View,
     controller_ = controller;
   }
 
-  // Returns the number of rows.
-  int GetRowCount();
-
   // Returns the node for the specified row, or NULL for an invalid row index.
   ui::TreeModelNode* GetNodeForRow(int row);
 
@@ -149,6 +147,12 @@ class VIEWS_EXPORT TreeView : public View,
   virtual void OnDidChangeFocus(View* focused_before,
                                 View* focused_now) OVERRIDE;
 
+  // PrefixDelegate overrides:
+  virtual int GetRowCount() OVERRIDE;
+  virtual int GetSelectedRow() OVERRIDE;
+  virtual void SetSelectedRow(int row) OVERRIDE;
+  virtual string16 GetTextForRow(int row) OVERRIDE;
+
  protected:
   // View overrides:
   virtual gfx::Point GetKeyboardContextMenuLocation() OVERRIDE;
@@ -190,7 +194,7 @@ class VIEWS_EXPORT TreeView : public View,
     int text_width() const { return text_width_; }
 
     // Returns the total number of descendants (including this node).
-    int NumExpandedNodes();
+    int NumExpandedNodes() const;
 
     // Returns the max width of all descendants (including this node). |indent|
     // is how many pixels each child is indented and |depth| is the depth of
@@ -378,7 +382,7 @@ class VIEWS_EXPORT TreeView : public View,
   // control, icon and offsets.
   int text_offset_;
 
-  scoped_ptr<TreeViewSelector> selector_;
+  scoped_ptr<PrefixSelector> selector_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeView);
 };
