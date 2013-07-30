@@ -224,7 +224,8 @@ void EdgeEffect::Release(base::TimeTicks current_time) {
 
 void EdgeEffect::Absorb(base::TimeTicks current_time, float velocity) {
   state_ = STATE_ABSORB;
-  velocity = dpi_scale_ * std::max(kMinVelocity, std::abs(velocity));
+  float scaled_velocity =
+      dpi_scale_ * std::max(kMinVelocity, std::abs(velocity));
 
   start_time_ = current_time;
   // This should never be less than 1 millisecond.
@@ -241,21 +242,21 @@ void EdgeEffect::Absorb(base::TimeTicks current_time, float velocity) {
 
   // Factor the velocity by 8. Testing on device shows this works best to
   // reflect the strength of the user's scrolling.
-  edge_alpha_finish_ = Clamp(velocity * kVelocityEdgeFactor, 0.f, 1.f);
+  edge_alpha_finish_ = Clamp(scaled_velocity * kVelocityEdgeFactor, 0.f, 1.f);
   // Edge should never get larger than the size of its asset.
-  edge_scale_y_finish_ = Clamp(velocity * kVelocityEdgeFactor,
+  edge_scale_y_finish_ = Clamp(scaled_velocity * kVelocityEdgeFactor,
                                kHeldEdgeScaleY, 1.f);
 
   // Growth for the size of the glow should be quadratic to properly
   // respond
   // to a user's scrolling speed. The faster the scrolling speed, the more
   // intense the effect should be for both the size and the saturation.
-  glow_scale_y_finish_ =
-      std::min(0.025f + (velocity * (velocity / 100) * 0.00015f), 1.75f);
+  glow_scale_y_finish_ = std::min(
+      0.025f + (scaled_velocity * (scaled_velocity / 100) * 0.00015f), 1.75f);
   // Alpha should change for the glow as well as size.
-  glow_alpha_finish_ =
-      Clamp(glow_alpha_start_,
-            velocity * kVelocityGlowFactor * .00001f, kMaxAlpha);
+  glow_alpha_finish_ = Clamp(glow_alpha_start_,
+                             scaled_velocity * kVelocityGlowFactor * .00001f,
+                             kMaxAlpha);
 }
 
 bool EdgeEffect::Update(base::TimeTicks current_time) {
