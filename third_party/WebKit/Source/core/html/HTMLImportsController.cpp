@@ -208,7 +208,7 @@ HTMLImportLoader::State HTMLImportLoader::finishParsing()
 
 Document* HTMLImportLoader::importedDocument() const
 {
-    if (m_state != StateReady)
+    if (m_state == StateError)
         return 0;
     return m_importedDocument.get();
 }

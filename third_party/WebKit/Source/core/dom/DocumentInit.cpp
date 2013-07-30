@@ -37,7 +37,8 @@ namespace WebCore {
 
 bool DocumentInit::shouldSetURL() const
 {
-    return (m_frame && m_frame->ownerElement()) || !m_url.isEmpty();
+    Frame* frame = frameForSecurityContext();
+    return (frame && frame->ownerElement()) || !m_url.isEmpty();
 }
 
 bool DocumentInit::shouldTreatURLAsSrcdocDocument() const

@@ -33,6 +33,7 @@
 
 namespace WebCore {
 
+class Frame;
 class Document;
 class Frame;
 class HTMLImportsController;

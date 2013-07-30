@@ -27,9 +27,9 @@
 #include "core/html/parser/HTMLResourcePreloader.h"
 
 #include "core/dom/Document.h"
+#include "core/html/HTMLImport.h"
 #include "core/loader/cache/FetchInitiatorInfo.h"
 #include "core/loader/cache/ResourceFetcher.h"
-
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/rendering/RenderObject.h"
@@ -82,14 +82,17 @@ static bool mediaAttributeMatches(Frame* frame, RenderStyle* renderStyle, const 
 
 void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
 {
-    ASSERT(m_document->frame());
-    ASSERT(m_document->renderer());
-    ASSERT(m_document->renderer()->style());
-    if (!preload->media().isEmpty() && !mediaAttributeMatches(m_document->frame(), m_document->renderer()->style(), preload->media()))
+    Document* executingDocument = m_document->import() ? m_document->import()->master() : m_document;
+    Document* loadingDocument = m_document;
+
+    ASSERT(executingDocument->frame());
+    ASSERT(executingDocument->renderer());
+    ASSERT(executingDocument->renderer()->style());
+    if (!preload->media().isEmpty() && !mediaAttributeMatches(executingDocument->frame(), executingDocument->renderer()->style(), preload->media()))
         return;
 
     FetchRequest request = preload->resourceRequest(m_document);
-    m_document->fetcher()->preload(preload->resourceType(), request, preload->charset());
+    loadingDocument->fetcher()->preload(preload->resourceType(), request, preload->charset());
 }
 
 

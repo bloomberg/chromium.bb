@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+</script>
+<link id="target" rel="import" href="resources/having-self-policy.html">
+<script src="/js-test-resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+shouldBe("document.inlineScriptHasRun", "undefined");
+shouldBeTrue("document.externalScriptHasRun");
+shouldBe("document.corsExternalScriptHasRun", "undefined");
+shouldBe("document.evalFromInlineHasRun", "undefined");
+shouldBe("document.evalFromExternalHasRun", "undefined");
+shouldBe("document.evalFromCorsExternalHasRun", "undefined");
+</script>
+<script src="/js-test-resources/js-test-post.js"></script>
+</body>
+</html>

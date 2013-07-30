@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+</script>
+<link id="target" rel="import" href="resources/having-nonce-policy.html">
+<script src="/js-test-resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+shouldBe("document.inlineScriptHasRun", "undefined");
+shouldBe("document.externalScriptHasRun", "undefined");
+shouldBeTrue("document.externalScriptWithNonceHasRun");
+shouldBeTrue("document.inlineScriptWithNonceHasRun");
+shouldBe("document.evalFromInlineHasRun", "undefined");
+shouldBe("document.evalFromExternalHasRun", "undefined");
+shouldBe("document.evalFromInlineWithNonceHasRun", "undefined");
+shouldBe("document.evalFromExternalWithNonceHasRun", "undefined");
+</script>
+<script src="/js-test-resources/js-test-post.js"></script>
+</body>
+</html>

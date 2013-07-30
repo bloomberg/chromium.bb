@@ -207,7 +207,9 @@ bool HTMLDocumentParser::processingData() const
 
 void HTMLDocumentParser::pumpTokenizerIfPossible(SynchronousMode mode)
 {
-    if (isStopped() || isWaitingForScripts())
+    if (isStopped())
+        return;
+    if (isWaitingForScripts())
         return;
 
     // Once a resume is scheduled, HTMLParserScheduler controls when we next pump.
@@ -271,7 +273,9 @@ bool HTMLDocumentParser::canTakeNextToken(SynchronousMode mode, PumpSession& ses
 
         // If we're paused waiting for a script, we try to execute scripts before continuing.
         runScriptsForPausedTreeBuilder();
-        if (isWaitingForScripts() || isStopped())
+        if (isStopped())
+            return false;
+        if (isWaitingForScripts())
             return false;
     }
 
@@ -461,7 +465,11 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     while (!m_speculations.isEmpty()) {
         processParsedChunkFromBackgroundParser(m_speculations.takeFirst());
 
-        if (isWaitingForScripts() || isStopped())
+        // The order matters! If this isStopped(), isWaitingForScripts() can hit and ASSERT since
+        // m_document can be null which is used to decide the readiness.
+        if (isStopped())
+            break;
+        if (isWaitingForScripts())
             break;
 
         if (currentTime() - startTime > parserTimeLimit && !m_speculations.isEmpty()) {

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Security-Policy" content="script-src 'nonce-hello'">
+<script src="external-script.js"></script>
+<script nonce="hello" src="external-script-with-nonce.js"></script>
+<script>
+document.inlineScriptHasRun = true;
+eval("document.evalFromInlineHasRun = true;");
+</script>
+
+<script nonce="hello">
+document.inlineScriptWithNonceHasRun = true;
+eval("document.evalFromInlineWithNonceHasRun = true;");
+</script>
+</head>
+</html>

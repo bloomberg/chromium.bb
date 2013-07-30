@@ -1,0 +1,10 @@
+PASS document.inlineScriptHasRun is undefined
+PASS document.externalScriptHasRun is true
+PASS document.corsExternalScriptHasRun is undefined
+PASS document.evalFromInlineHasRun is undefined
+FAIL document.evalFromExternalHasRun should be undefined (of type undefined). Was true (of type boolean).
+PASS document.evalFromCorsExternalHasRun is undefined
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

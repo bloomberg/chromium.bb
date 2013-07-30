@@ -1,0 +1,12 @@
+PASS document.inlineScriptHasRun is undefined
+PASS document.externalScriptHasRun is undefined
+PASS document.externalScriptWithNonceHasRun is true
+PASS document.inlineScriptWithNonceHasRun is true
+PASS document.evalFromInlineHasRun is undefined
+PASS document.evalFromExternalHasRun is undefined
+FAIL document.evalFromInlineWithNonceHasRun should be undefined (of type undefined). Was true (of type boolean).
+FAIL document.evalFromExternalWithNonceHasRun should be undefined (of type undefined). Was true (of type boolean).
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

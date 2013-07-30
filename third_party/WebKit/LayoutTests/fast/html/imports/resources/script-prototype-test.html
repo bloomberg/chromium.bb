@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("This test ensures each import and master is in same JS context.");
+
+var stringInImport = "Import";
+shouldBe("stringInMaster.__proto__", "stringInImport.__proto__");
+
+var thisDocument = document.currentScript.ownerDocument;
+shouldBeTrue("thisDocument !== document");
+shouldBe("thisDocument.__proto__", "document.__proto__");
+shouldBe("thisDocument.head.__proto__", "document.head.__proto__");
+
+// The import doesn't have its own window.
+shouldBeNull("thisDocument.defaultView");
+
+// Since the construcdtor belongs to master's window, its owner document is the master
+shouldBe("(new Image()).ownerDocument", "document");
+
+// With createElement(), we know who is the owner.
+shouldBe("thisDocument.createElement('div').ownerDocument", "thisDocument");
+shouldBe("document.createElement('div').ownerDocument", "document");
+
+</script>
+<script src="../../../js/resources/js-test-post.js"></script>
+</body>
+</html>

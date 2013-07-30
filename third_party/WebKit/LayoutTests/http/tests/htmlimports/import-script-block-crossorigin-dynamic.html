@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="/js-test-resources/js-test-pre.js"></script>
+<link id="target" rel="import" href="http://localhost:8000/htmlimports/resources/cors-having-crossorigin-scripts.cgi">
+</head>
+<body>
+<script>
+description("This test ensures that crossorigin-marked script elements are blocked properly");
+window.jsTestIsAsync = true;
+
+function testAndDone()
+{
+    shouldBe("document.externalScriptHasRun", "undefined");
+    shouldBe("document.corsExternalScriptHasRun", "undefined");
+    shouldBeTrue("document.corsExternalScriptForLocalhostHasRun");
+    finishJSTest();
+}
+
+var retryCount = 0;
+
+// This should be called run-check.js
+function check()
+{
+    if (!document.corsExternalScriptForLocalhostHasRun) {
+         retryCount++;
+         if (10 < retryCount) {
+             console.log("FAIL: Retried too many times.");
+             return finishJSTest();
+         }
+
+         return setTimeout(check, 100);
+    }
+
+    testAndDone();
+}
+
+</script>
+<script src="/js-test-resources/js-test-post.js"></script>
+</body>
+</html>
