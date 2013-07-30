@@ -10,18 +10,38 @@
  * @constructor
  */
 function FileCopyManagerWrapper() {
-  this.running_ = false;
+  this.fileCopyManager_ = null;
 
-  var onEventBound = this.onEvent_.bind(this);
+  /**
+   * In the constructor, it tries to start loading the background page, and
+   * its FileCopyManager instance, asynchronously. Even during the
+   * initialization, there may be some method invocation. In such a case,
+   * FileCopyManagerWrapper keeps it as a pending task in pendingTasks_,
+   * and once FileCopyManager is obtained, run the pending tasks in the order.
+   *
+   * @private {Array.<function(FileCopyManager)>}
+   */
+  this.pendingTasks_ = [];
+
+  // Keep the instance for unloading.
+  var onEventBound = this.onEventBound_ = this.onEvent_.bind(this);
+  this.pendingTasks_.push(
+      function(fileCopyManager) {
+        fileCopyManager.addListener(onEventBound);
+      });
+
   chrome.runtime.getBackgroundPage(function(backgroundPage) {
     var fileCopyManager = backgroundPage.FileCopyManager.getInstance();
-    fileCopyManager.addListener(onEventBound);
-
-    // Register removing the listener when the window is closed.
-    chrome.app.window.current().onClosed.addListener(function() {
-      fileCopyManager.removeListener(onEventBound);
-    });
-  });
+    fileCopyManager.initialize(function() {
+      // Here the fileCopyManager is initialized. Keep the instance, and run
+      // pending tasks.
+      this.fileCopyManager_ = fileCopyManager;
+      for (var i = 0; i < this.pendingTasks_.length; i++) {
+        this.pendingTasks_[i](fileCopyManager);
+      }
+      this.pendingTasks_ = [];
+    }.bind(this));
+  }.bind(this));
 }
 
 /**
@@ -41,14 +61,25 @@ FileCopyManagerWrapper.getInstance = function() {
 };
 
 /**
+ * Disposes the instance. No methods should be called after this method's
+ * invocation.
+ */
+FileCopyManagerWrapper.prototype.dispose = function() {
+  // Cancel all pending tasks.
+  this.pendingTasks_ = [];
+
+  // Unregister the listener to avoid resource leaking.
+  if (this.fileCopyManager_)
+    this.fileCopyManager_.removeListener(this.onEventBound_);
+};
+
+/**
  * Called be FileCopyManager to raise an event in this instance of FileManager.
  * @param {string} eventName Event name.
  * @param {Object} eventArgs Arbitratry field written to event object.
  * @private
  */
 FileCopyManagerWrapper.prototype.onEvent_ = function(eventName, eventArgs) {
-  this.running_ = eventArgs.status.totalFiles > 0;
-
   var event = new cr.Event(eventName);
   for (var arg in eventArgs)
     if (eventArgs.hasOwnProperty(arg))
@@ -61,19 +92,13 @@ FileCopyManagerWrapper.prototype.onEvent_ = function(eventName, eventArgs) {
  * @return {boolean} True if there is a running task.
  */
 FileCopyManagerWrapper.prototype.isRunning = function() {
-  return this.running_;
-};
-
-/**
- * Load background page and call callback with copy manager as an argument.
- * @param {function} callback Function with FileCopyManager as a parameter.
- * @private
- */
-FileCopyManagerWrapper.prototype.getCopyManagerAsync_ = function(callback) {
-  chrome.runtime.getBackgroundPage(function(backgroundPage) {
-    var fileCopyManager = backgroundPage.FileCopyManager.getInstance();
-    fileCopyManager.initialize(callback.bind(this, fileCopyManager));
-  });
+  // Note: until the background page is loaded, this method returns false
+  // even if there is a running task in FileCopyManager. (Though the period
+  // should be very short).
+  // TODO(hidehiko): Fix the race condition. It is necessary to change the
+  // FileCopyManager implementation as well as the clients (FileManager/
+  // ButterBar) implementation.
+  return this.fileCopyManager_ && this.fileCopyManager_.hasQueuedTasks();
 };
 
 /**
@@ -84,10 +109,14 @@ FileCopyManagerWrapper.prototype.getCopyManagerAsync_ = function(callback) {
 FileCopyManagerWrapper.decorateAsyncMethod = function(method) {
   FileCopyManagerWrapper.prototype[method] = function() {
     var args = Array.prototype.slice.call(arguments);
-    this.getCopyManagerAsync_(function(cm) {
-      cm.willRunNewMethod();
-      cm[method].apply(cm, args);
-    });
+    var operation = function(fileCopyManager) {
+      fileCopyManager.willRunNewMethod();
+      fileCopyManager[method].apply(fileCopyManager, args);
+    };
+    if (this.fileCopyManager_)
+      operation(this.fileCopyManager_);
+    else
+      this.pendingTasks_.push(operation);
   };
 };
 

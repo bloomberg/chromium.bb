@@ -2460,6 +2460,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.filePopup_.contentWindow.unload) {
       this.filePopup_.contentWindow.unload(true /* exiting */);
     }
+    if (this.copyManager_)
+      this.copyManager_.dispose();
   };
 
   FileManager.prototype.initiateRename = function() {
