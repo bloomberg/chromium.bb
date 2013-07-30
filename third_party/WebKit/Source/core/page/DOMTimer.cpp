@@ -170,8 +170,29 @@ double DOMTimer::alignedFireTime(double fireTime) const
         if (fireTime <= currentTime)
             return fireTime;
 
-        double alignedTime = ceil(fireTime / alignmentInterval) * alignmentInterval;
-        return alignedTime;
+        // When a repeating timer is scheduled for exactly the
+        // background page alignment interval, because it's impossible
+        // for the timer to be rescheduled instantaneously, it misses
+        // every other fire time. Avoid this by looking at the next
+        // fire time rounded both down and up.
+
+        double alignedTimeRoundedDown = floor(fireTime / alignmentInterval) * alignmentInterval;
+        double alignedTimeRoundedUp = ceil(fireTime / alignmentInterval) * alignmentInterval;
+
+        // If the version rounded down is in the past, discard it
+        // immediately.
+
+        if (alignedTimeRoundedDown <= currentTime)
+            return alignedTimeRoundedUp;
+
+        // Only use the rounded-down time if it's within a certain
+        // tolerance of the fire time. This avoids speeding up timers
+        // on background pages in the common case.
+
+        if (fireTime - alignedTimeRoundedDown < minimumInterval)
+            return alignedTimeRoundedDown;
+
+        return alignedTimeRoundedUp;
     }
 
     return fireTime;
