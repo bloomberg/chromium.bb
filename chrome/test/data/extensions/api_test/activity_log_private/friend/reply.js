@@ -324,6 +324,27 @@ function executeDOMChangesOnTabUpdated() {
           'request.send(); ' +
           'document.write("sent an XHR");';
 
+  // This function is used as a handler for hooking mouse and keyboard events.
+  code += 'function handlerHook(event) { };';
+
+  hookNames = ['onclick', 'ondblclick', 'ondrag', 'ondragend', 'ondragenter',
+               'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'oninput',
+               'onkeydown', 'onkeypress', 'onkeyup', 'onmousedown',
+               'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout',
+               'onmouseover', 'onmouseup', 'onmousewheel'];
+
+  // Access to each hook can be monitored for Element, Document, and Window.
+  for (var i = 0; i < hookNames.length; i++) {
+    // handler on Element
+    code += 'document.body.' + hookNames[i] + ' = handlerHook;';
+
+    // handler on a Document
+    code += 'document.' + hookNames[i] + ' = handlerHook;';
+
+    // handler on a Window
+    code += 'window.' + hookNames[i] + ' = handlerHook;';
+  }
+
   chrome.tabs.onUpdated.addListener(
     function callback(tabId, changeInfo, tab) {
       if (changeInfo['status'] === 'complete' &&

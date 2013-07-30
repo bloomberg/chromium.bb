@@ -204,12 +204,9 @@ testCases.push({
     'tabs.remove'
   ]
 });
-testCases.push({
-  func: function triggerDOMChangesOnTabsUpdated() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'dom_tab_updated', function response() { });
-  },
-  expected_activity: [
+
+
+domExpectedActivity = [
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
@@ -263,11 +260,38 @@ testCases.push({
     // XHR from content script.
     'XMLHttpRequest.open',
     'XMLHttpRequest.setRequestHeader',
-    'HTMLDocument.write',
-    // Close the tab.
-    'tabs.remove'
-  ]
+    'HTMLDocument.write'
+];
+
+// add the hook activity
+hookNames = ['onclick', 'ondblclick', 'ondrag', 'ondragend', 'ondragenter',
+             'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'oninput',
+             'onkeydown', 'onkeypress', 'onkeyup', 'onmousedown',
+             'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout',
+             'onmouseover', 'onmouseup', 'onmousewheel'];
+
+for (var i = 0; i < hookNames.length; i++) {
+  domExpectedActivity.push('Element.' + hookNames[i]);
+  domExpectedActivity.push('Document.' + hookNames[i]);
+  domExpectedActivity.push('Window.' + hookNames[i]);
+}
+
+// Close the tab.
+domExpectedActivity.push('tabs.remove');
+
+testCases.push({
+  func: function triggerDOMChangesOnTabsUpdated() {
+    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
+                               'dom_tab_updated', function response() { });
+  },
+  expected_activity: domExpectedActivity
 });
+
+// copy the array for the next test so we can modify it
+var domExpectedActivityIncognito = domExpectedActivity.slice(0);
+
+// put windows.create at the front of the expected values for the next test
+domExpectedActivityIncognito.unshift('windows.create');
 
 testCases.push({
   func: function triggerDOMChangesOnTabsUpdated() {
@@ -278,65 +302,7 @@ testCases.push({
   // TODO(mvrable): set this back to true to test the URL values when incognito
   // cleaning is working correctly for DOM logging (crbug.com/253368).
   is_incognito: false,
-  expected_activity: [
-    'windows.create',
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-     // Location access
-    'Window.location',
-    'Document.location',
-    'Window.location',
-    'Location.assign',
-    'Location.replace',
-     // Dom mutations
-    'Document.createElement',
-    'Document.createElement',
-    'Document.location',
-    'Node.appendChild',
-    'Document.location',
-    'Document.location',
-    'Node.insertBefore',
-    'Document.location',
-    'Document.location',
-    'Node.replaceChild',
-    //'Document.location',
-    'HTMLDocument.write',
-    'HTMLDocument.writeln',
-    'HTMLElement.innerHTML',
-    // Navigator access
-    'Window.navigator',
-    'Geolocation.getCurrentPosition',
-    'Geolocation.watchPosition',
-    // Web store access - session storage
-    'Window.sessionStorage',
-    'Storage.setItem',
-    'Storage.getItem',
-    'Storage.removeItem',
-    'Storage.clear',
-    // Web store access - local storage
-    'Window.localStorage',
-    'Storage.setItem',
-    'Storage.getItem',
-    'Storage.removeItem',
-    'Storage.clear',
-    // Notification access
-    'Window.webkitNotifications',
-    'NotificationCenter.createNotification',
-    // Cache access
-    'Window.applicationCache',
-    // Web database access
-    'Window.openDatabase',
-    // Canvas access
-    'Document.createElement',
-    'HTMLCanvasElement.getContext',
-    // XHR from content script.
-    'XMLHttpRequest.open',
-    'XMLHttpRequest.setRequestHeader',
-    'HTMLDocument.write',
-    // Close the tab.
-    'tabs.remove'
-  ]
+  expected_activity: domExpectedActivityIncognito
 });
 
 // Listener to check the expected logging is done in the test cases.
