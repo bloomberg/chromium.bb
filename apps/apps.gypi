@@ -20,6 +20,7 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
+        '<(grit_out_dir)',
       ],
       'sources': [
         'app_launch_for_metro_restart_win.cc',

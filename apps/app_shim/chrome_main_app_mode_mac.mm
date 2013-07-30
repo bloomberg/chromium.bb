@@ -13,6 +13,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/launch_services_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
@@ -22,13 +23,17 @@
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
+#include "grit/generated_resources.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -64,6 +69,9 @@ class AppShimController : public IPC::Listener {
   // Connects to Chrome and sends a LaunchApp message.
   void Init();
 
+  // Builds main menu bar items.
+  void SetUpMenu();
+
   void SendSetAppHidden(bool hidden);
 
   void SendQuitApp();
@@ -81,7 +89,6 @@ class AppShimController : public IPC::Listener {
   // shim process should die.
   void OnLaunchAppDone(apps::AppShimLaunchResult result);
 
-
   // Terminates the app shim process.
   void Close();
 
@@ -97,6 +104,10 @@ AppShimController::AppShimController() : channel_(NULL),
 
 void AppShimController::Init() {
   DCHECK(g_io_thread);
+
+  SetUpMenu();
+
+  // Open an IPC channel to Chrome and send the initial app launch message.
   NSString* chrome_bundle_path =
       base::SysUTF8ToNSString(g_info->chrome_outer_bundle_path.value());
   NSBundle* chrome_bundle = [NSBundle bundleWithPath:chrome_bundle_path];
@@ -121,6 +132,40 @@ void AppShimController::Init() {
   nsapp_delegate_.reset([[AppShimDelegate alloc] initWithController:this]);
   DCHECK(![NSApp delegate]);
   [NSApp setDelegate:nsapp_delegate_];
+}
+
+void AppShimController::SetUpMenu() {
+  NSString* title = base::SysUTF16ToNSString(g_info->app_mode_name);
+
+  // Create a main menu since [NSApp mainMenu] is nil.
+  base::scoped_nsobject<NSMenu> main_menu([[NSMenu alloc] initWithTitle:title]);
+
+  // The title of the first item is replaced by OSX with the name of the app and
+  // bold styling. Create a dummy item for this and make it hidden.
+  NSMenuItem* dummy_item = [main_menu addItemWithTitle:title
+                                                action:nil
+                                         keyEquivalent:@""];
+  base::scoped_nsobject<NSMenu> dummy_submenu(
+      [[NSMenu alloc] initWithTitle:title]);
+  [dummy_item setSubmenu:dummy_submenu];
+  [dummy_item setHidden:YES];
+
+  // Construct an unbolded app menu, to match how it appears in the Chrome menu
+  // bar when the app is focused.
+  NSMenuItem* item = [main_menu addItemWithTitle:title
+                                          action:nil
+                                   keyEquivalent:@""];
+  base::scoped_nsobject<NSMenu> submenu([[NSMenu alloc] initWithTitle:title]);
+  [item setSubmenu:submenu];
+
+  // Add a quit entry.
+  NSString* quit_localized_string =
+      l10n_util::GetNSStringF(IDS_EXIT_MAC, g_info->app_mode_name);
+  [submenu addItemWithTitle:quit_localized_string
+                     action:@selector(terminate:)
+              keyEquivalent:@"q"];
+
+  [NSApp setMainMenu:main_menu];
 }
 
 void AppShimController::SendQuitApp() {
@@ -359,6 +404,32 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
 
   g_info = info;
 
+  // Set bundle paths. This loads the bundles.
+  base::mac::SetOverrideOuterBundlePath(g_info->chrome_outer_bundle_path);
+  base::mac::SetOverrideFrameworkBundlePath(
+      g_info->chrome_versioned_path.Append(chrome::kFrameworkName));
+
+  // Calculate the preferred locale used by Chrome.
+  // We can't use l10n_util::OverrideLocaleWithCocoaLocale() because it calls
+  // [base::mac::OuterBundle() preferredLocalizations] which gets localizations
+  // from the bundle of the running app (i.e. it is equivalent to
+  // [[NSBundle mainBundle] preferredLocalizations]) instead of the target
+  // bundle.
+  NSArray* preferred_languages = [NSLocale preferredLanguages];
+  NSArray* supported_languages = [base::mac::OuterBundle() localizations];
+  std::string preferred_localization;
+  for (NSString* language in preferred_languages) {
+    if ([supported_languages containsObject:language]) {
+      preferred_localization = base::SysNSStringToUTF8(language);
+      break;
+    }
+  }
+  std::string locale = l10n_util::NormalizeLocale(
+      l10n_util::GetApplicationLocale(preferred_localization));
+
+  // Load localized strings.
+  ResourceBundle::InitSharedInstanceLocaleOnly(locale, NULL);
+
   // Launch the IO thread.
   base::Thread::Options io_thread_options;
   io_thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -367,11 +438,9 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
   g_io_thread = io_thread;
 
   // Find already running instances of Chrome.
-  NSString* chrome_bundle_path =
-      base::SysUTF8ToNSString(g_info->chrome_outer_bundle_path.value());
-  NSBundle* chrome_bundle = [NSBundle bundleWithPath:chrome_bundle_path];
+  NSString* chrome_bundle_id = [base::mac::OuterBundle() bundleIdentifier];
   NSArray* existing_chrome = [NSRunningApplication
-      runningApplicationsWithBundleIdentifier:[chrome_bundle bundleIdentifier]];
+      runningApplicationsWithBundleIdentifier:chrome_bundle_id];
 
   // Launch Chrome if it isn't already running.
   ProcessSerialNumber psn;
@@ -387,7 +456,7 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
     command_line.AppendSwitchPath(switches::kProfileDirectory,
                                   info->profile_dir);
     bool success =
-        base::mac::OpenApplicationWithPath(info->chrome_outer_bundle_path,
+        base::mac::OpenApplicationWithPath(base::mac::OuterBundlePath(),
                                            command_line,
                                            kLSLaunchDefaults,
                                            &psn);

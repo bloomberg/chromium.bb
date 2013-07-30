@@ -24,6 +24,7 @@ include_rules = [
   "+chrome/browser/ui/web_applications/web_app_ui.h",
   "+chrome/browser/web_applications/web_app.h",
   "+chrome/browser/web_applications/web_app_mac.h",
+  "+chrome/common/chrome_constants.h",
   "+chrome/common/chrome_paths.h",
   "+chrome/common/chrome_paths_internal.h",
   "+chrome/common/chrome_switches.h",
@@ -31,4 +32,5 @@ include_rules = [
   "+chrome/common/mac/app_mode_common.h",
   "+chrome/installer",
   "+chrome/test/base/testing_profile.h",
+  "+grit/generated_resources.h",
 ]
