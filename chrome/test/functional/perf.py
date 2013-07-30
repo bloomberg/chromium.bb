@@ -184,8 +184,14 @@ class BasePerfTest(pyauto.PyUITest):
     if self._IsPGOMode():
       browser_info = self.GetBrowserInfo()
       pid = browser_info['browser_pid']
+      # session_manager kills chrome without waiting for it to cleanly exit.
+      # Until that behavior is changed, we stop it and wait for Chrome to exit
+      # cleanly before restarting it. See:
+      # crbug.com/264717
+      subprocess.call(['sudo', 'pkill', '-STOP', 'session_manager'])
       os.kill(pid, signal.SIGINT)
       self._WaitForChromeExit(browser_info, 120)
+      subprocess.call(['sudo', 'pkill', '-CONT', 'session_manager'])
 
     pyauto.PyUITest.tearDown(self)
 
