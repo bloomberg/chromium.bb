@@ -247,7 +247,8 @@ bool WebKitTestController::PrepareForLayoutTest(
     current_pid_ = base::kNullProcessId;
     main_window_->LoadURL(test_url);
   } else {
-#if (defined(OS_WIN) && !defined(USE_AURA)) || defined(TOOLKIT_GTK)
+#if (defined(OS_WIN) && !defined(USE_AURA)) || \
+    defined(TOOLKIT_GTK) || defined(OS_MACOSX)
     // Shell::SizeTo is not implemented on all platforms.
     main_window_->SizeTo(initial_size_.width(), initial_size_.height());
 #endif

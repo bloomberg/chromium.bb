@@ -65,7 +65,8 @@ class Shell : public WebContentsDelegate,
   void Close();
   void ShowDevTools();
   void CloseDevTools();
-#if (defined(OS_WIN) && !defined(USE_AURA)) || defined(TOOLKIT_GTK)
+#if (defined(OS_WIN) && !defined(USE_AURA)) || \
+    defined(TOOLKIT_GTK) || defined(OS_MACOSX)
   // Resizes the main window to the given dimensions.
   void SizeTo(int width, int height);
 #endif
@@ -262,6 +263,9 @@ class Shell : public WebContentsDelegate,
   static views::ViewsDelegate* views_delegate_;
 
   views::Widget* window_widget_;
+#elif defined(OS_MACOSX)
+  int content_width_;
+  int content_height_;
 #endif
 
   bool headless_;
