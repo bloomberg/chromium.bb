@@ -67,8 +67,8 @@
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/template_util.h"
-#include "base/threading/thread_checker.h"
 
 namespace base {
 
@@ -91,14 +91,14 @@ class BASE_EXPORT WeakReference {
     bool IsValid() const;
 
     // Remove this when crbug.com/234964 is addressed.
-    void DetachFromThreadHack() { thread_checker_.DetachFromThread(); }
+    void DetachFromThreadHack() { sequence_checker_.DetachFromSequence(); }
 
    private:
     friend class base::RefCountedThreadSafe<Flag>;
 
     ~Flag();
 
-    ThreadChecker thread_checker_;
+    SequenceChecker sequence_checker_;
     bool is_valid_;
   };
 

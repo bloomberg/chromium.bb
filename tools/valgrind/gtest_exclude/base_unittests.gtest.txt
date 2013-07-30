@@ -24,7 +24,3 @@ ConditionVariableTest.LargeFastTaskTest
 
 # Flaky under Valgrind, see http://crbug.com/55517
 PlatformFile.TouchGetInfoPlatformFile
-
-# Death test crashes with NULL deref, probably not intended.
-# http://crbug.com/261141
-SequenceCheckerTest.*DeathTest*

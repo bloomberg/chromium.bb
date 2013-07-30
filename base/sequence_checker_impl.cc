@@ -4,28 +4,43 @@
 
 #include "base/sequence_checker_impl.h"
 
-#include "base/sequenced_task_runner.h"
-
 namespace base {
 
-SequenceCheckerImpl::SequenceCheckerImpl(
-    const scoped_refptr<SequencedTaskRunner>& sequenced_task_runner)
-    : sequenced_task_runner_(sequenced_task_runner) {}
+SequenceCheckerImpl::SequenceCheckerImpl()
+    : sequence_token_assigned_(false) {
+  AutoLock auto_lock(lock_);
+  EnsureSequenceTokenAssigned();
+}
 
 SequenceCheckerImpl::~SequenceCheckerImpl() {}
 
-bool SequenceCheckerImpl::CalledOnValidSequence() const {
+bool SequenceCheckerImpl::CalledOnValidSequencedThread() const {
   AutoLock auto_lock(lock_);
-  return sequenced_task_runner_.get() ?
-      sequenced_task_runner_->RunsTasksOnCurrentThread() :
-      thread_checker_.CalledOnValidThread();
+  EnsureSequenceTokenAssigned();
+
+  // If this thread is not associated with a SequencedWorkerPool,
+  // SequenceChecker behaves as a ThreadChecker. See header for details.
+  if (!sequence_token_.IsValid())
+    return thread_checker_.CalledOnValidThread();
+
+  return sequence_token_.Equals(
+      SequencedWorkerPool::GetSequenceTokenForCurrentThread());
 }
 
-void SequenceCheckerImpl::ChangeSequence(
-    const scoped_refptr<SequencedTaskRunner>& sequenced_task_runner) {
+void SequenceCheckerImpl::DetachFromSequence() {
   AutoLock auto_lock(lock_);
-  sequenced_task_runner_ = sequenced_task_runner;
   thread_checker_.DetachFromThread();
+  sequence_token_assigned_ = false;
+  sequence_token_ = SequencedWorkerPool::SequenceToken();
+}
+
+void SequenceCheckerImpl::EnsureSequenceTokenAssigned() const {
+  lock_.AssertAcquired();
+  if (sequence_token_assigned_)
+    return;
+
+  sequence_token_assigned_ = true;
+  sequence_token_ = SequencedWorkerPool::GetSequenceTokenForCurrentThread();
 }
 
 }  // namespace base
