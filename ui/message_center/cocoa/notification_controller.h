@@ -49,6 +49,9 @@ MESSAGE_CENTER_EXPORT
   // Container for optional list item views.
   base::scoped_nsobject<NSView> listItemView_;
 
+  // Container for optional progress bar view.
+  base::scoped_nsobject<NSProgressIndicator> progressBarView_;
+
   // Container for optional items at the bottom of the notification.
   base::scoped_nsobject<NSView> bottomView_;
 }

@@ -19,6 +19,40 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 
+const CGFloat kProgressBarThickness = 8;
+const CGFloat kProgressBarTopPadding = 12;
+const SkColor kProgressBarBackgroundColor = SkColorSetRGB(230, 230, 230);
+const SkColor kProgressBarBackgroundBorderColor = SkColorSetRGB(208, 208, 208);
+const SkColor kProgressBarSliceColor = SkColorSetRGB(78, 156, 245);
+const SkColor kProgressBarSliceBorderColor = SkColorSetRGB(110, 188, 249);
+
+@interface MCNotificationProgressBar : NSProgressIndicator
+@end
+
+@implementation MCNotificationProgressBar
+- (void)drawRect:(NSRect)dirtyRect {
+  NSRect sliceRect, remainderRect;
+  double progressFraction = ([self doubleValue] - [self minValue]) /
+      ([self maxValue] - [self minValue]);
+  NSDivideRect(dirtyRect, &sliceRect, &remainderRect,
+               NSWidth(dirtyRect) * progressFraction, NSMinXEdge);
+
+  // For slice part.
+  [gfx::SkColorToCalibratedNSColor(kProgressBarSliceBorderColor)
+      drawSwatchInRect:sliceRect];
+  [gfx::SkColorToCalibratedNSColor(kProgressBarSliceColor)
+      drawSwatchInRect:NSInsetRect(sliceRect, 1.0, 1.0)];
+
+  // For remainder part.
+  [gfx::SkColorToCalibratedNSColor(kProgressBarBackgroundBorderColor)
+      drawSwatchInRect:remainderRect];
+  [gfx::SkColorToCalibratedNSColor(kProgressBarBackgroundColor)
+      drawSwatchInRect:NSInsetRect(remainderRect, 1.0, 1.0)];
+}
+@end
+
+////////////////////////////////////////////////////////////////////////////////
+
 @interface MCNotificationButtonCell : NSButtonCell {
   BOOL hovered_;
 }
@@ -318,17 +352,37 @@
     [[self view] addSubview:listItemView_];
   }
 
+  // Create the progress bar view if needed.
+  [progressBarView_ removeFromSuperview];
+  NSRect progressBarFrame = NSZeroRect;
+  if (notification->type() == message_center::NOTIFICATION_TYPE_PROGRESS) {
+    progressBarFrame = [self currentContentRect];
+    progressBarFrame.origin.y = NSMinY(messageFrame) -
+        kProgressBarTopPadding - kProgressBarThickness;
+    progressBarFrame.size.height = kProgressBarThickness;
+    progressBarView_.reset(
+        [[MCNotificationProgressBar alloc] initWithFrame:progressBarFrame]);
+    // Setting indeterminate to NO does not work with custom drawRect.
+    [progressBarView_ setIndeterminate:YES];
+    [progressBarView_ setStyle:NSProgressIndicatorBarStyle];
+    [progressBarView_ setDoubleValue:notification->progress()];
+    [[self view] addSubview:progressBarView_];
+  }
+
   // If the bottom-most element so far is out of the rootView's bounds, resize
   // the view.
   CGFloat minY = NSMinY(messageFrame);
   if (listItemView_ && NSMinY(listFrame) < minY)
     minY = NSMinY(listFrame);
+  if (progressBarView_ && NSMinY(progressBarFrame) < minY)
+    minY = NSMinY(progressBarFrame);
   if (minY < messagePadding) {
     CGFloat delta = messagePadding - minY;
     rootFrame.size.height += delta;
     titleFrame.origin.y += delta;
     messageFrame.origin.y += delta;
     listFrame.origin.y += delta;
+    progressBarFrame.origin.y += delta;
   }
 
   // Add the bottom container view.
@@ -398,11 +452,13 @@
   titleFrame.origin.y += NSHeight(frame);
   messageFrame.origin.y += NSHeight(frame);
   listFrame.origin.y += NSHeight(frame);
+  progressBarFrame.origin.y += NSHeight(frame);
 
   [[self view] setFrame:rootFrame];
   [title_ setFrame:titleFrame];
   [message_ setFrame:messageFrame];
   [listItemView_ setFrame:listFrame];
+  [progressBarView_ setFrame:progressBarFrame];
 
   return rootFrame;
 }
