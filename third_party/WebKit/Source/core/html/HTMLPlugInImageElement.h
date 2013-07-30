@@ -74,9 +74,6 @@ public:
     bool needsWidgetUpdate() const { return m_needsWidgetUpdate; }
     void setNeedsWidgetUpdate(bool needsWidgetUpdate) { m_needsWidgetUpdate = needsWidgetUpdate; }
 
-    // Plug-in URL might not be the same as url() with overriding parameters.
-    void subframeLoaderWillCreatePlugIn(const KURL& plugInURL);
-
 protected:
     HTMLPlugInImageElement(const QualifiedName& tagName, Document*, bool createdByParser, PreferPlugInsForImagesOption);
 
@@ -96,6 +93,9 @@ protected:
 
     virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
 
+    bool requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues);
+    bool shouldUsePlugin(const KURL&, const String& mimeType, bool hasFallback, bool& useFallback);
+
 private:
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual void willRecalcStyle(StyleChange) OVERRIDE FINAL;
@@ -107,6 +107,9 @@ private:
     void swapRendererTimerFired(Timer<HTMLPlugInImageElement>*);
 
     void restartSimilarPlugIns();
+
+    bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
+    bool pluginIsLoadable(const KURL&, const String& mimeType);
 
     virtual bool isPlugInImageElement() const OVERRIDE { return true; }
 

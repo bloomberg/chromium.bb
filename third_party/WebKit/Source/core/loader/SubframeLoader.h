@@ -55,26 +55,13 @@ class SubframeLoader {
 public:
     explicit SubframeLoader(Frame*);
 
-    void clear();
-
     bool loadOrRedirectSubframe(HTMLFrameOwnerElement*, const KURL&, const AtomicString& frameName, bool lockBackForwardList);
-    bool requestObject(HTMLPlugInImageElement*, const String& url, const AtomicString& frameName,
-        const String& serviceType, const Vector<String>& paramNames, const Vector<String>& paramValues);
-
-    bool resourceWillUsePlugin(const String& url, const String& mimeType, bool shouldPreferPlugInsForImages);
 
 private:
-    bool requestPlugin(HTMLPlugInImageElement*, const KURL&, const String& serviceType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
     bool loadSubframe(HTMLFrameOwnerElement*, const KURL&, const String& name, const String& referrer);
-    bool loadPlugin(HTMLPlugInImageElement*, const KURL&, const String& mimeType,
-        const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
-
-    bool shouldUsePlugin(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages, bool hasFallback, bool& useFallback);
-    bool pluginIsLoadable(HTMLPlugInImageElement*, const KURL&, const String& mimeType);
 
     Document* document() const;
 
-    bool m_containsPlugins;
     Frame* m_frame;
 
     KURL completeURL(const String&) const;
