@@ -29,8 +29,14 @@ void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleReso
 void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
 {%- endmacro %}
 
-{%- macro set_value(property) -%}
+// FIXME: This is duplicated in StyleBuilder.cpp.tmpl, but we'll move the
+// function definitions there over to here later.
+{%- macro set_value(property) %}
+{%- if property.svg -%}
+    state.style()->accessSVGStyle()->{{property.setter}}
+{%- else -%}
     state.style()->{{property.setter}}
+{%- endif -%}
 {%- endmacro %}
 
 namespace WebCore {

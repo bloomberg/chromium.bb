@@ -246,3 +246,19 @@ z-index type_name=int, custom_all
 -webkit-user-select
 -webkit-wrap-flow type_name=WrapFlow
 -webkit-wrap-through type_name=WrapThrough
+
+alignment-baseline svg
+buffered-rendering svg
+clip-rule svg, type_name=WindRule
+color-interpolation svg
+color-interpolation-filters svg, type_name=EColorInterpolation
+color-rendering svg
+dominant-baseline svg
+fill-rule svg, type_name=WindRule
+mask-type svg
+shape-rendering svg
+stroke-linecap svg, type_name=LineCap, name_for_methods=CapStyle
+stroke-linejoin svg, type_name=LineJoin, name_for_methods=JoinStyle
+text-anchor svg
+vector-effect svg
+writing-mode svg, type_name=SVGWritingMode

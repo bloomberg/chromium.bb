@@ -1834,23 +1834,33 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
     case CSSPropertyWordWrap:
     case CSSPropertyZIndex:
     case CSSPropertyZoom:
+    case CSSPropertyFontFamily:
+    case CSSPropertyGridAutoFlow:
+    case CSSPropertyMarker:
+    case CSSPropertyAlignmentBaseline:
+    case CSSPropertyBufferedRendering:
+    case CSSPropertyClipRule:
+    case CSSPropertyColorInterpolation:
+    case CSSPropertyColorInterpolationFilters:
+    case CSSPropertyColorRendering:
+    case CSSPropertyDominantBaseline:
+    case CSSPropertyFillRule:
+    case CSSPropertyMaskType:
+    case CSSPropertyShapeRendering:
+    case CSSPropertyStrokeLinecap:
+    case CSSPropertyStrokeLinejoin:
+    case CSSPropertyTextAnchor:
+    case CSSPropertyVectorEffect:
+    case CSSPropertyWritingMode:
+        ASSERT_NOT_REACHED();
+        return;
+    // Only used in @viewport rules
     case CSSPropertyMaxZoom:
     case CSSPropertyMinZoom:
     case CSSPropertyOrientation:
     case CSSPropertyUserZoom:
-    case CSSPropertyFontFamily:
-    case CSSPropertyGridAutoFlow:
-    case CSSPropertyMarker:
-        ASSERT_NOT_REACHED();
         return;
 
-    case CSSPropertyAlignmentBaseline:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(alignmentBaseline, AlignmentBaseline)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setAlignmentBaseline(*primitiveValue);
-        break;
-    }
     case CSSPropertyBaselineShift:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(baselineShift, BaselineShift);
@@ -1886,65 +1896,9 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
             state.style()->accessSVGStyle()->setKerning(SVGLength::fromCSSPrimitiveValue(primitiveValue));
         break;
     }
-    case CSSPropertyDominantBaseline:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(dominantBaseline, DominantBaseline)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setDominantBaseline(*primitiveValue);
-        break;
-    }
-    case CSSPropertyColorInterpolation:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(colorInterpolation, ColorInterpolation)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setColorInterpolation(*primitiveValue);
-        break;
-    }
-    case CSSPropertyColorInterpolationFilters:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(colorInterpolationFilters, ColorInterpolationFilters)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setColorInterpolationFilters(*primitiveValue);
-        break;
-    }
     case CSSPropertyColorProfile:
     {
         // Not implemented.
-        break;
-    }
-    case CSSPropertyColorRendering:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(colorRendering, ColorRendering)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setColorRendering(*primitiveValue);
-        break;
-    }
-    case CSSPropertyClipRule:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(clipRule, ClipRule)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setClipRule(*primitiveValue);
-        break;
-    }
-    case CSSPropertyFillRule:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(fillRule, FillRule)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setFillRule(*primitiveValue);
-        break;
-    }
-    case CSSPropertyStrokeLinejoin:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(joinStyle, JoinStyle)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setJoinStyle(*primitiveValue);
-        break;
-    }
-    case CSSPropertyShapeRendering:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(shapeRendering, ShapeRendering)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setShapeRendering(*primitiveValue);
         break;
     }
     // end of ident only properties
@@ -2067,13 +2021,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
             state.style()->accessSVGStyle()->setMarkerEndResource(fragmentIdentifier(primitiveValue, state.document()));
         break;
     }
-    case CSSPropertyStrokeLinecap:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(capStyle, CapStyle)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setCapStyle(*primitiveValue);
-        break;
-    }
     case CSSPropertyStrokeMiterlimit:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(strokeMiterLimit, StrokeMiterLimit)
@@ -2101,20 +2048,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
         HANDLE_SVG_INHERIT_AND_INITIAL(clipperResource, ClipperResource)
         if (primitiveValue)
             state.style()->accessSVGStyle()->setClipperResource(fragmentIdentifier(primitiveValue, state.document()));
-        break;
-    }
-    case CSSPropertyTextAnchor:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(textAnchor, TextAnchor)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setTextAnchor(*primitiveValue);
-        break;
-    }
-    case CSSPropertyWritingMode:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(writingMode, WritingMode)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setWritingMode(*primitiveValue);
         break;
     }
     case CSSPropertyStopColor:
@@ -2170,24 +2103,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
         // Silently ignoring this property for now
         // http://bugs.webkit.org/show_bug.cgi?id=6022
         break;
-    case CSSPropertyVectorEffect: {
-        HANDLE_SVG_INHERIT_AND_INITIAL(vectorEffect, VectorEffect)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setVectorEffect(*primitiveValue);
-        break;
-    }
-    case CSSPropertyBufferedRendering: {
-        HANDLE_SVG_INHERIT_AND_INITIAL(bufferedRendering, BufferedRendering)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setBufferedRendering(*primitiveValue);
-        break;
-    }
-    case CSSPropertyMaskType: {
-        HANDLE_SVG_INHERIT_AND_INITIAL(maskType, MaskType)
-        if (primitiveValue)
-            state.style()->accessSVGStyle()->setMaskType(*primitiveValue);
-        break;
-    }
     }
 }
 

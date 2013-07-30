@@ -11,8 +11,12 @@
 // FIXME: currently we're just generating a switch statement, but we should
 //   test other variations for performance once we have more properties here.
 
-{%- macro set_value(property) -%}
+{%- macro set_value(property) %}
+{%- if property.svg -%}
+    state.style()->accessSVGStyle()->{{property.setter}}
+{%- else -%}
     state.style()->{{property.setter}}
+{%- endif %}
 {%- endmacro %}
 
 namespace WebCore {
@@ -74,14 +78,22 @@ namespace WebCore {
 {%- if not property.custom_initial %}
 void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state)
 {
+{%- if property.svg %}
+    {{ set_value(property) }}(SVGRenderStyle::{{property.initial}}());
+{%- else %}
     {{ set_value(property) }}(RenderStyle::{{property.initial}}());
+{%- endif %}
 }
 {% endif %}
 
 {%- if not property.custom_inherit %}
 void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state)
 {
+{%- if property.svg %}
+    {{ set_value(property) }}(state.parentStyle()->svgStyle()->{{property.getter}}());
+{%- else %}
     {{ set_value(property) }}(state.parentStyle()->{{property.getter}}());
+{%- endif %}
 }
 {% endif %}
 
