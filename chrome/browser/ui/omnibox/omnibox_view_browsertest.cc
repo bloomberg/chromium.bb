@@ -1846,3 +1846,35 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BeginningShownAfterBlur) {
   ASSERT_EQ(0U, end);
 }
 #endif  // !defined(TOOLKIT_GTK)
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CtrlArrowAfterArrowSuggestions) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+  OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
+  ASSERT_TRUE(popup_model);
+
+  // Input something to trigger results.
+  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kDesiredTLDKeys));
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+  ASSERT_TRUE(popup_model->IsOpen());
+
+  ASSERT_EQ(ASCIIToUTF16("bar.com/1"), omnibox_view->GetText());
+
+  // Arrow down on a suggestion, and omnibox text should be the suggestion.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DOWN, 0));
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+  ASSERT_EQ(ASCIIToUTF16("www.bar.com/2"), omnibox_view->GetText());
+
+  // Highlight the last 2 words and the omnibox text should not change.
+  // Simulating Ctrl-shift-left only once does not seem to highlight anything
+  // on Linux.
+#if defined(OS_MACOSX)
+  // Mac uses alt-left/right to select a word.
+  const int modifiers = ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN;
+#else
+  const int modifiers = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN;
+#endif
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, modifiers));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, modifiers));
+  ASSERT_EQ(ASCIIToUTF16("www.bar.com/2"), omnibox_view->GetText());
+}

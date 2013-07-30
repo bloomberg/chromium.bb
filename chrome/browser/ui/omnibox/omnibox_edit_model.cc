@@ -1026,37 +1026,32 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
       text_differs || (selection_differs && !inline_autocomplete_text_.empty());
 
   // If something has changed while the control key is down, prevent
-  // "ctrl-enter" until the control key is released.  When we do this, we need
-  // to update the popup if it's open, since the desired_tld will have changed.
+  // "ctrl-enter" until the control key is released.
   if ((text_differs || selection_differs) &&
-      (control_key_state_ == DOWN_WITHOUT_CHANGE)) {
+      (control_key_state_ == DOWN_WITHOUT_CHANGE))
     control_key_state_ = DOWN_WITH_CHANGE;
-    if (!text_differs && !popup_model()->IsOpen())
-      return false;  // Don't open the popup for no reason.
-  } else if (!user_text_changed) {
+
+  if (!user_text_changed)
     return false;
-  }
 
   // If the user text has not changed, we do not want to change the model's
   // state associated with the text.  Otherwise, we can get surprising behavior
   // where the autocompleted text unexpectedly reappears, e.g. crbug.com/55983
-  if (user_text_changed) {
-    InternalSetUserText(UserTextFromDisplayText(new_text));
-    has_temporary_text_ = false;
+  InternalSetUserText(UserTextFromDisplayText(new_text));
+  has_temporary_text_ = false;
 
-    // Track when the user has deleted text so we won't allow inline
-    // autocomplete.
-    just_deleted_text_ = just_deleted_text;
+  // Track when the user has deleted text so we won't allow inline
+  // autocomplete.
+  just_deleted_text_ = just_deleted_text;
 
-    if (user_input_in_progress_ && user_text_.empty()) {
-      // Log cases where the user started editing and then subsequently cleared
-      // all the text.  Note that this explicitly doesn't catch cases like
-      // "hit ctrl-l to select whole edit contents, then hit backspace", because
-      // in such cases, |user_input_in_progress| won't be true here.
-      UMA_HISTOGRAM_ENUMERATION(kOmniboxUserTextClearedHistogram,
-                                OMNIBOX_USER_TEXT_CLEARED_BY_EDITING,
-                                OMNIBOX_USER_TEXT_CLEARED_NUM_OF_ITEMS);
-    }
+  if (user_input_in_progress_ && user_text_.empty()) {
+    // Log cases where the user started editing and then subsequently cleared
+    // all the text.  Note that this explicitly doesn't catch cases like
+    // "hit ctrl-l to select whole edit contents, then hit backspace", because
+    // in such cases, |user_input_in_progress| won't be true here.
+    UMA_HISTOGRAM_ENUMERATION(kOmniboxUserTextClearedHistogram,
+                              OMNIBOX_USER_TEXT_CLEARED_BY_EDITING,
+                              OMNIBOX_USER_TEXT_CLEARED_NUM_OF_ITEMS);
   }
 
   const bool no_selection = selection_start == selection_end;
