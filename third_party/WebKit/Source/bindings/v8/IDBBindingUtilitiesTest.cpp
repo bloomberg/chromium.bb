@@ -140,7 +140,7 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, SubProperty)
 class InjectIDBKeyTest : public IDBKeyFromValueAndKeyPathTest {
 };
 
-TEST_F(InjectIDBKeyTest, DISABLED_TopLevelPropertyStringValue)
+TEST_F(InjectIDBKeyTest, TopLevelPropertyStringValue)
 {
     v8::Local<v8::Object> object = v8::Object::New();
     object->Set(v8::String::New("foo"), v8::String::New("zoo"));
@@ -152,7 +152,7 @@ TEST_F(InjectIDBKeyTest, DISABLED_TopLevelPropertyStringValue)
     checkInjectionFails(IDBKey::createString("key"), foozoo, "foo.bar");
 }
 
-TEST_F(InjectIDBKeyTest, DISABLED_SubProperty)
+TEST_F(InjectIDBKeyTest, SubProperty)
 {
     v8::Local<v8::Object> object = v8::Object::New();
     v8::Local<v8::Object> subProperty = v8::Object::New();
