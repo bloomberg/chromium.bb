@@ -542,6 +542,7 @@ static void
 launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 {
 	char *child_argv[MAX_ARGV_SIZE];
+	sigset_t allsigs;
 	int i;
 
 	if (wl->verbose)
@@ -555,6 +556,13 @@ launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 	setenv_fd("WESTON_LAUNCHER_SOCK", wl->sock[1]);
 
 	unsetenv("DISPLAY");
+
+	/* Do not give our signal mask to the new process. */
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGTERM);
+	sigaddset(&mask, SIGCHLD);
+	sigaddset(&mask, SIGINT);
+	sigprocmask(SIG_UNBLOCK, &mask, NULL);
 
 	child_argv[0] = wl->pw->pw_shell;
 	child_argv[1] = "-l";
