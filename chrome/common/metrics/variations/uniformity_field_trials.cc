@@ -84,6 +84,12 @@ void SetupNewInstallUniformityTrial(const base::Time install_date) {
 }  // namespace
 
 void SetupUniformityFieldTrials(const base::Time install_date) {
+  // The 100 percent field trial in which everyone is a member is a special
+  // case. It is useful to create as it permits viewing all UMA data in UIs
+  // and tools that require a field trial.
+  base::FieldTrialList::CreateFieldTrial("UMA-Uniformity-Trial-100-Percent",
+                                         "group_01");
+
   // One field trial will be created for each entry in this array. The i'th
   // field trial will have |trial_sizes[i]| groups in it, including the default
   // group. Each group will have a probability of 1/|trial_sizes[i]|.
