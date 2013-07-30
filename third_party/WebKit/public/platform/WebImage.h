@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebVector.h"
 
-#include <SkBitmap.h>
+#include "third_party/skia/include/core/SkBitmap.h"
 
 #if WEBKIT_IMPLEMENTATION
 namespace WebCore { class Image; }

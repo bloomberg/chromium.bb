@@ -266,6 +266,7 @@
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
             ],
             'export_dependent_settings': [
+              '<(DEPTH)/skia/skia.gyp:skia',
               '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
             ],
             'defines': [

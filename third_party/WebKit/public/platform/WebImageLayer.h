@@ -26,9 +26,9 @@
 #ifndef WebImageLayer_h
 #define WebImageLayer_h
 
-#include "SkBitmap.h"
 #include "WebCommon.h"
 #include "WebLayer.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace WebKit {
 
