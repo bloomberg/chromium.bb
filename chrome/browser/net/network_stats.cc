@@ -761,10 +761,6 @@ void ProxyDetector::OnResolveProxyComplete(int result) {
 
 void CollectNetworkStats(const std::string& network_stats_server,
                          IOThread* io_thread) {
-  // TODO(honghaiz): The echotest is temporarily stopped and will be replaced
-  // with a new test.
-  return;
-  // Below is the original code.
   if (network_stats_server.empty())
     return;
 
