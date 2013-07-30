@@ -76,7 +76,7 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEventWindowsKeyCode) {
   }
 #elif defined(OS_WIN)
   // TODO(yusukes): Add tests for win_aura once keyboardEvent() in
-  // WebKit/Source/WebKit/chromium/src/win/WebInputEventFactory.cpp is modified
+  // third_party/WebKit/Source/web/win/WebInputEventFactory.cpp is modified
   // to return VKEY_[LR]XXX instead of VKEY_XXX.
   // https://bugs.webkit.org/show_bug.cgi?id=86694
 #endif

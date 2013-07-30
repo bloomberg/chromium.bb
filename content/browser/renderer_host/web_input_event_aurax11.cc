@@ -87,8 +87,7 @@ int XKeyEventToWindowsKeyCode(XKeyEvent* event) {
   return windows_key_code;
 }
 
-// From
-// third_party/WebKit/Source/WebKit/chromium/src/gtk/WebInputEventFactory.cpp:
+// From third_party/WebKit/Source/web/gtk/WebInputEventFactory.cpp:
 WebKit::WebUChar GetControlCharacter(int windows_key_code, bool shift) {
   if (windows_key_code >= ui::VKEY_A &&
     windows_key_code <= ui::VKEY_Z) {
