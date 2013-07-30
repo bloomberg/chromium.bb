@@ -55,7 +55,7 @@ void OpaqueRectTrackingContentLayerDelegate::paintContents(SkCanvas* canvas, con
     context.setCertainlyOpaque(m_opaque);
     context.setShouldSmoothFonts(canPaintLCDText);
 
-    if (*EventTracer::getTraceCategoryEnabledFlag("blink.graphics_context_annotations"))
+    if (*EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations")))
         context.setAnnotationMode(AnnotateAll);
 
     // Record transform prior to painting, as all opaque tracking will be

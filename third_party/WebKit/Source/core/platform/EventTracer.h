@@ -31,6 +31,10 @@
 #ifndef EventTracer_h
 #define EventTracer_h
 
+// This will mark the trace event as disabled by default. The user will need
+// to explicitly enable the event.
+#define TRACE_DISABLED_BY_DEFAULT(name) "disabled-by-default-" name
+
 namespace WebCore {
 
 // FIXME: Make these global variables thread-safe. Make a value update atomic.
