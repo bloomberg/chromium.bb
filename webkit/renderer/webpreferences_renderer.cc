@@ -322,7 +322,7 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setAllowCustomScrollbarInMainFrame(false);
   settings->setTextAutosizingEnabled(prefs.text_autosizing_enabled);
   settings->setTextAutosizingFontScaleFactor(prefs.font_scale_factor);
-  web_view->setIgnoreViewportTagMaximumScale(prefs.force_enable_zoom);
+  web_view->setIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
   settings->setAutoZoomFocusedNodeToLegibleScale(true);
   settings->setDoubleTapToZoomEnabled(prefs.double_tap_to_zoom_enabled);
   settings->setMediaPlaybackRequiresUserGesture(
