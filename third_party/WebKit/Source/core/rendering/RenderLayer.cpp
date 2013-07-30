@@ -3598,9 +3598,9 @@ void RenderLayer::paintLayerContentsAndReflection(GraphicsContext* context, cons
 void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
+    ASSERT(!(paintFlags & PaintLayerAppliedTransform));
 
-    PaintLayerFlags localPaintFlags = paintFlags & ~(PaintLayerAppliedTransform);
-    bool haveTransparency = localPaintFlags & PaintLayerHaveTransparency;
+    bool haveTransparency = paintFlags & PaintLayerHaveTransparency;
     bool isSelfPaintingLayer = this->isSelfPaintingLayer();
     bool isPaintingOverlayScrollbars = paintFlags & PaintLayerPaintingOverlayScrollbars;
     bool isPaintingScrollingContent = paintFlags & PaintLayerPaintingCompositingScrollingPhase;
@@ -3623,7 +3623,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
     GraphicsContext* transparencyLayerContext = context;
 
-    if (localPaintFlags & PaintLayerPaintingRootBackgroundOnly && !renderer()->isRenderView() && !renderer()->isRoot())
+    if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !renderer()->isRenderView() && !renderer()->isRoot())
         return;
 
     // Ensure our lists are up-to-date.
@@ -3726,12 +3726,12 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     bool shouldPaintOwnContents = isPaintingCompositedForeground && shouldPaintContent;
     bool shouldPaintNormalFlowAndPosZOrderLists = isPaintingCompositedForeground;
     bool shouldPaintOverlayScrollbars = isPaintingOverlayScrollbars;
-    bool shouldPaintMask = (localPaintFlags & PaintLayerPaintingCompositingMaskPhase) && shouldPaintContent && renderer()->hasMask() && !selectionOnly;
+    bool shouldPaintMask = (paintFlags & PaintLayerPaintingCompositingMaskPhase) && shouldPaintContent && renderer()->hasMask() && !selectionOnly;
 
     PaintBehavior paintBehavior = PaintBehaviorNormal;
-    if (localPaintFlags & PaintLayerPaintingSkipRootBackground)
+    if (paintFlags & PaintLayerPaintingSkipRootBackground)
         paintBehavior |= PaintBehaviorSkipRootBackground;
-    else if (localPaintFlags & PaintLayerPaintingRootBackgroundOnly)
+    else if (paintFlags & PaintLayerPaintingRootBackgroundOnly)
         paintBehavior |= PaintBehaviorRootBackgroundOnly;
 
     LayerFragments layerFragments;
@@ -3739,9 +3739,9 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
         // Collect the fragments. This will compute the clip rectangles and paint offsets for each layer fragment, as well as whether or not the content of each
         // fragment should paint.
         collectFragments(layerFragments, localPaintingInfo.rootLayer, localPaintingInfo.region, localPaintingInfo.paintDirtyRect,
-            (localPaintFlags & PaintLayerTemporaryClipRects) ? TemporaryClipRects : PaintingClipRects, IgnoreOverlayScrollbarSize,
+            (paintFlags & PaintLayerTemporaryClipRects) ? TemporaryClipRects : PaintingClipRects, IgnoreOverlayScrollbarSize,
             (isPaintingOverflowContents) ? IgnoreOverflowClip : RespectOverflowClip, &offsetFromRoot);
-        updatePaintingInfoForFragments(layerFragments, localPaintingInfo, localPaintFlags, shouldPaintContent, &offsetFromRoot);
+        updatePaintingInfoForFragments(layerFragments, localPaintingInfo, paintFlags, shouldPaintContent, &offsetFromRoot);
     }
 
     if (shouldPaintBackground)
@@ -3749,7 +3749,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
                 localPaintingInfo, paintBehavior, paintingRootForRenderer);
 
     if (shouldPaintNegZOrderList)
-        paintList(negZOrderList(), context, localPaintingInfo, localPaintFlags);
+        paintList(negZOrderList(), context, localPaintingInfo, paintFlags);
 
     if (shouldPaintOwnContents)
         paintForegroundForFragments(layerFragments, context, transparencyLayerContext, paintingInfo.paintDirtyRect, haveTransparency,
@@ -3759,10 +3759,10 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
         paintOutlineForFragments(layerFragments, context, localPaintingInfo, paintBehavior, paintingRootForRenderer);
 
     if (shouldPaintNormalFlowAndPosZOrderLists)
-        paintList(m_normalFlowList.get(), context, localPaintingInfo, localPaintFlags);
+        paintList(m_normalFlowList.get(), context, localPaintingInfo, paintFlags);
 
     if (shouldPaintNormalFlowAndPosZOrderLists)
-        paintList(posZOrderList(), context, localPaintingInfo, localPaintFlags);
+        paintList(posZOrderList(), context, localPaintingInfo, paintFlags);
 
     if (shouldPaintOverlayScrollbars)
         paintOverflowControlsForFragments(layerFragments, context, localPaintingInfo);
