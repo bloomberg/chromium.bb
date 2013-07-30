@@ -170,8 +170,6 @@ public class AwContents {
     private Callable<Picture> mPictureListenerContentProvider;
 
     private final Rect mLastGlobalVisibleBounds = new Rect();
-    private int mLastGlobalVisibleWidth;
-    private int mLastGlobalVisibleHeight;
 
     private boolean mContainerViewFocused;
     private boolean mWindowFocused;
@@ -565,8 +563,6 @@ public class AwContents {
         // Finally refresh all view state for mContentViewCore and mNativeAwContents.
         if (!wasPaused) onResume();
         if (wasAttached) onAttachedToWindow();
-        mLastGlobalVisibleWidth = 0;
-        mLastGlobalVisibleHeight = 0;
         onSizeChanged(mContainerView.getWidth(), mContainerView.getHeight(), 0, 0);
         if (wasVisible) setVisibilityInternal(true);
         if (wasFocused) onWindowFocusChanged(true);

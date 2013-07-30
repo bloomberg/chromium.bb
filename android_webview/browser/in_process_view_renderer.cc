@@ -651,6 +651,10 @@ std::string InProcessViewRenderer::ToString(AwDrawGLInfo* draw_info) const {
   base::StringAppendF(&str, "attached_to_window: %d ", attached_to_window_);
   base::StringAppendF(&str, "hardware_initialized: %d ", hardware_initialized_);
   base::StringAppendF(&str, "hardware_failed: %d ", hardware_failed_);
+  base::StringAppendF(
+      &str,
+      "global visible rect: %s ",
+      global_visible_rect_at_start_of_frame_.ToString().c_str());
   base::StringAppendF(&str,
                       "scroll_at_start_of_frame: %s ",
                       scroll_at_start_of_frame_.ToString().c_str());
