@@ -127,6 +127,21 @@ class NaClDomHandler : public WebUIMessageHandler {
   // Factory for the creating refs in callbacks.
   base::WeakPtrFactory<NaClDomHandler> weak_ptr_factory_;
 
+  // Returns whether the specified plugin is enabled.
+  bool isPluginEnabled(size_t plugin_index);
+
+  // Adds information regarding the operating system and chrome version to list.
+  void AddOperatingSystemInfo(ListValue* list);
+
+  // Adds the list of plugins for NaCl to list.
+  void AddPluginList(ListValue* list);
+
+  // Adds the information relevant to PNaCl (e.g., enablement, paths) to list.
+  void AddPnaclInfo(ListValue* list);
+
+  // Adds the information relevant to NaCl to list.
+  void AddNaClInfo(ListValue* list);
+
   // Whether the page has requested data.
   bool page_has_requested_data_;
 
@@ -217,38 +232,20 @@ void AddLineBreak(ListValue* list) {
   AddPair(list, ASCIIToUTF16(""), ASCIIToUTF16(""));
 }
 
-// Check whether a commandline switch is turned on or off.
-void ListFlagStatus(ListValue* list, const std::string& flag_label,
-                    const std::string& flag_name) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(flag_name))
-    AddPair(list, ASCIIToUTF16(flag_label), ASCIIToUTF16("On"));
-  else
-    AddPair(list, ASCIIToUTF16(flag_label), ASCIIToUTF16("Off"));
+bool NaClDomHandler::isPluginEnabled(size_t plugin_index) {
+  std::vector<content::WebPluginInfo> info_array;
+  PluginService::GetInstance()->GetPluginInfoArray(
+      GURL(), "application/x-nacl", false, &info_array, NULL);
+  PluginPrefs* plugin_prefs =
+      PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui())).get();
+  return (!info_array.empty() &&
+          plugin_prefs->IsPluginEnabled(info_array[plugin_index]));
 }
 
-void NaClDomHandler::HandleRequestNaClInfo(const ListValue* args) {
-  page_has_requested_data_ = true;
-  // Force re-validation of pnacl's path in the next call to
-  // MaybeRespondToPage(), in case PNaCl went from not-installed
-  // to installed since the request.
-  pnacl_path_validated_ = false;
-  MaybeRespondToPage();
-}
-
-void NaClDomHandler::OnGotPlugins(
-    const std::vector<content::WebPluginInfo>& plugins) {
-  has_plugin_info_ = true;
-  MaybeRespondToPage();
-}
-
-void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
-  DCHECK(pnacl_path_validated_);
-  // Store Key-Value pairs of about-information.
-  scoped_ptr<ListValue> list(new ListValue());
-
+void NaClDomHandler::AddOperatingSystemInfo(ListValue* list) {
   // Obtain the Chrome version info.
   chrome::VersionInfo version_info;
-  AddPair(list.get(),
+  AddPair(list,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
           ASCIIToUTF16(version_info.Version() + " (" +
                        chrome::VersionInfo::GetVersionStringModifier() + ")"));
@@ -275,12 +272,13 @@ void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
   if (os->architecture() == base::win::OSInfo::X64_ARCHITECTURE)
     os_label += " 64 bit";
 #endif
-  AddPair(list.get(),
+  AddPair(list,
           l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OS),
           ASCIIToUTF16(os_label));
+  AddLineBreak(list);
+}
 
-  AddLineBreak(list.get());
-
+void NaClDomHandler::AddPluginList(ListValue* list) {
   // Obtain the version of the NaCl plugin.
   std::vector<content::WebPluginInfo> info_array;
   PluginService::GetInstance()->GetPluginInfoArray(
@@ -288,57 +286,104 @@ void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
   string16 nacl_version;
   string16 nacl_key = ASCIIToUTF16("NaCl plugin");
   if (info_array.empty()) {
-    AddPair(list.get(), nacl_key, ASCIIToUTF16("Disabled"));
+    AddPair(list, nacl_key, ASCIIToUTF16("Disabled"));
   } else {
-    PluginPrefs* plugin_prefs =
-        PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui())).get();
-
     // Only the 0th plugin is used.
     nacl_version = info_array[0].version + ASCIIToUTF16(" ") +
         info_array[0].path.LossyDisplayName();
-    if (!plugin_prefs->IsPluginEnabled(info_array[0])) {
+    if (!isPluginEnabled(0)) {
       nacl_version += ASCIIToUTF16(" (Disabled in profile prefs)");
-      AddPair(list.get(), nacl_key, nacl_version);
     }
 
-    AddPair(list.get(), nacl_key, nacl_version);
+    AddPair(list, nacl_key, nacl_version);
 
     // Mark the rest as not used.
     for (size_t i = 1; i < info_array.size(); ++i) {
       nacl_version = info_array[i].version + ASCIIToUTF16(" ") +
           info_array[i].path.LossyDisplayName();
       nacl_version += ASCIIToUTF16(" (not used)");
-      if (!plugin_prefs->IsPluginEnabled(info_array[i]))
+      if (!isPluginEnabled(i)) {
         nacl_version += ASCIIToUTF16(" (Disabled in profile prefs)");
-      AddPair(list.get(), nacl_key, nacl_version);
+      }
+      AddPair(list, nacl_key, nacl_version);
     }
   }
+  AddLineBreak(list);
+}
 
-  // Check that commandline flags are enabled.
-  ListFlagStatus(list.get(), "Flag '--enable-nacl'", switches::kEnableNaCl);
-
-  AddLineBreak(list.get());
+void NaClDomHandler::AddPnaclInfo(ListValue* list) {
+  // Display whether PNaCl is enabled.
+  string16 pnacl_enabled_string = ASCIIToUTF16("Enabled");
+  if (!isPluginEnabled(0)) {
+    pnacl_enabled_string = ASCIIToUTF16("Disabled in profile prefs");
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kDisablePnacl)) {
+    pnacl_enabled_string = ASCIIToUTF16("Disabled by flag '--disable-pnacl'");
+  }
+  AddPair(list,
+          ASCIIToUTF16("Portable Native Client (PNaCl)"),
+          pnacl_enabled_string);
 
   // Obtain the version of the PNaCl translator.
   base::FilePath pnacl_path;
   bool got_path = PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_path);
   if (!got_path || pnacl_path.empty() || !pnacl_path_exists_) {
-    AddPair(list.get(),
+    AddPair(list,
             ASCIIToUTF16("PNaCl translator"),
             ASCIIToUTF16("Not installed"));
   } else {
-    AddPair(list.get(),
+    AddPair(list,
             ASCIIToUTF16("PNaCl translator path"),
             pnacl_path.LossyDisplayName());
     // Version string is part of the directory name:
     // pnacl/<version>/_platform_specific/<arch>/[files]
     // Keep in sync with pnacl_component_installer.cc.
-    AddPair(list.get(),
+    AddPair(list,
             ASCIIToUTF16("PNaCl translator version"),
             pnacl_path.DirName().DirName().BaseName().LossyDisplayName());
   }
+  AddLineBreak(list);
+}
 
-  ListFlagStatus(list.get(), "Flag '--disable-pnacl'", switches::kDisablePnacl);
+void NaClDomHandler::AddNaClInfo(ListValue* list) {
+  string16 nacl_enabled_string = ASCIIToUTF16("Disabled");
+  if (isPluginEnabled(0) &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)) {
+    nacl_enabled_string = ASCIIToUTF16("Enabled by flag '--enable-nacl'");
+  }
+  AddPair(list,
+          ASCIIToUTF16("Native Client (non-portable, outside web store)"),
+          nacl_enabled_string);
+  AddLineBreak(list);
+}
+
+void NaClDomHandler::HandleRequestNaClInfo(const ListValue* args) {
+  page_has_requested_data_ = true;
+  // Force re-validation of pnacl's path in the next call to
+  // MaybeRespondToPage(), in case PNaCl went from not-installed
+  // to installed since the request.
+  pnacl_path_validated_ = false;
+  MaybeRespondToPage();
+}
+
+void NaClDomHandler::OnGotPlugins(
+    const std::vector<content::WebPluginInfo>& plugins) {
+  has_plugin_info_ = true;
+  MaybeRespondToPage();
+}
+
+void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
+  DCHECK(pnacl_path_validated_);
+  // Store Key-Value pairs of about-information.
+  scoped_ptr<ListValue> list(new ListValue());
+  // Display the operating system and chrome version information.
+  AddOperatingSystemInfo(list.get());
+  // Display the list of plugins serving NaCl.
+  AddPluginList(list.get());
+  // Display information relevant to PNaCl.
+  AddPnaclInfo(list.get());
+  // Display information relevant to NaCl (non-portable.
+  AddNaClInfo(list.get());
   // naclInfo will take ownership of list, and clean it up on destruction.
   naclInfo->Set("naclInfo", list.release());
 }
