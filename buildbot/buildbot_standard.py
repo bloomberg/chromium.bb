@@ -271,26 +271,6 @@ def BuildScript(status, context):
     with Step('build ncval-x86-64', status):
       SCons(context, platform='x86-64', parallel=True, args=['ncval'])
 
-    with Step('clobber dfa_validator', status):
-      Command(context, cmd=['rm', '-rf', 'dfa_validator'])
-    with Step('clone dfa_validator', status):
-      Command(context, cmd=[
-          'git', 'clone',
-          'git://github.com/mseaborn/x86-decoder.git', 'dfa_validator32'])
-      Command(context, cmd=[
-          'git', 'checkout', '1a5963fa48739c586d5bbd3d46d0a8a7f25112f2'],
-          cwd='dfa_validator32')
-      Command(context, cmd=[
-          'git', 'clone',
-          'git://github.com/mseaborn/x86-decoder.git', 'dfa_validator64'])
-      Command(context, cmd=[
-          'git', 'checkout', '6ffa36f44cafd2cdad37e1e27254c498030ff712'],
-          cwd='dfa_validator64')
-    with Step('build dfa_validator_32', status):
-      Command(context, cmd=['make'], cwd='dfa_validator32')
-    with Step('build dfa_validator_64', status):
-      Command(context, cmd=['make'], cwd='dfa_validator64')
-
     with Step('build ragel_validator-32', status):
       SCons(context, platform='x86-32', parallel=True, args=['ncval_new'])
     with Step('build ragel_validator-64', status):
@@ -310,15 +290,6 @@ def BuildScript(status, context):
         halt_on_fail=False):
       ValidatorTest(
           context, 'x86-64', 'scons-out/opt-linux-x86-64/staging/ncval')
-
-    with Step('validator_regression_test dfa x86-32', status,
-        halt_on_fail=False):
-      ValidatorTest(
-          context, 'x86-32', 'dfa_validator32/dfa_ncval', warn_only=True)
-    with Step('validator_regression_test dfa x86-64', status,
-        halt_on_fail=False):
-      ValidatorTest(
-          context, 'x86-64', 'dfa_validator64/dfa_ncval', warn_only=True)
 
     with Step('validator_regression_test ragel x86-32', status,
         halt_on_fail=False):
