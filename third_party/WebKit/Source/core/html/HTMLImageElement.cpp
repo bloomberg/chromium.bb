@@ -357,4 +357,12 @@ bool HTMLImageElement::isServerMap() const
     return document()->completeURL(stripLeadingAndTrailingHTMLSpaces(usemap)).isEmpty();
 }
 
+Image* HTMLImageElement::imageContents()
+{
+    if (!m_imageLoader.imageComplete())
+        return 0;
+
+    return m_imageLoader.image()->image();
+}
+
 }

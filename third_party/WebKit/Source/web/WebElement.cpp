@@ -152,6 +152,22 @@ WebRect WebElement::boundsInViewportSpace()
     return unwrap<Element>()->boundsInRootViewSpace();
 }
 
+WebImage WebElement::imageContents()
+{
+    if (isNull())
+        return WebImage();
+
+    WebCore::Image* image = unwrap<Element>()->imageContents();
+    if (!image)
+        return WebImage();
+
+    RefPtr<NativeImageSkia> bitmap = image->nativeImageForCurrentFrame();
+    if (!bitmap)
+        return WebImage();
+
+    return bitmap->bitmap();
+}
+
 WebElement::WebElement(const PassRefPtr<Element>& elem)
     : WebNode(elem)
 {

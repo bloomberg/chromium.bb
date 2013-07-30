@@ -84,6 +84,10 @@ struct WebRect;
         // This function will update the layout if required.
         WEBKIT_EXPORT WebRect boundsInViewportSpace();
 
+        // Returns the image contents of this element or a null WebImage
+        // if there isn't any.
+        WEBKIT_EXPORT WebImage imageContents();
+
 #if WEBKIT_IMPLEMENTATION
         WebElement(const WTF::PassRefPtr<WebCore::Element>&);
         WebElement& operator=(const WTF::PassRefPtr<WebCore::Element>&);

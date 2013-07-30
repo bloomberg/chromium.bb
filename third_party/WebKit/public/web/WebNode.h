@@ -32,6 +32,7 @@
 #define WebNode_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebImage.h"
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebString.h"
 #include "WebExceptionCode.h"

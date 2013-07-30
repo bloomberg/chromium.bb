@@ -242,8 +242,9 @@
                 }, {
                     'type': 'static_library',
                     'dependencies': [
-                        '../../wtf/wtf.gyp:wtf',
                         '../../core/core.gyp:webcore_test_support',
+                        '../../wtf/wtf.gyp:wtf',
+                        '<(DEPTH)/skia/skia.gyp:skia',
                     ],
                     'include_dirs': [
                         '../../../public/web',

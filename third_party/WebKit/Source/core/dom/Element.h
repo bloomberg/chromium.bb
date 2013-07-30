@@ -48,6 +48,7 @@ class DOMTokenList;
 class Element;
 class ElementRareData;
 class ElementShadow;
+class Image;
 class InputMethodContext;
 class IntSize;
 class Locale;
@@ -504,6 +505,7 @@ public:
 
     virtual const AtomicString& imageSourceURL() const;
     virtual String target() const { return String(); }
+    virtual Image* imageContents() { return 0; }
 
     virtual void focus(bool restorePreviousSelection = true, FocusDirection = FocusDirectionNone);
     virtual void updateFocusAppearance(bool restorePreviousSelection);

@@ -3466,5 +3466,28 @@ TEST_F(WebFrameTest, NavigateToSame)
     m_webView = 0;
 }
 
+TEST_F(WebFrameTest, WebNodeImageContents)
+{
+    m_webView = FrameTestHelpers::createWebViewAndLoad("about:blank", true);
+    WebFrame* frame = m_webView->mainFrame();
+
+    static const char bluePNG[] = "<img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAGElEQVQYV2NkYPj/n4EIwDiqEF8oUT94AFIQE/cCn90IAAAAAElFTkSuQmCC\">";
+
+    // Load up the image and test that we can extract the contents.
+    WebCore::KURL testURL = toKURL("about:blank");
+    frame->loadHTMLString(bluePNG, testURL);
+    runPendingTasks();
+
+    WebNode node = frame->document().body().firstChild();
+    EXPECT_TRUE(node.isElementNode());
+    WebElement element = node.to<WebElement>();
+    WebImage image = element.imageContents();
+    ASSERT_FALSE(image.isNull());
+    EXPECT_EQ(image.size().width, 10);
+    EXPECT_EQ(image.size().height, 10);
+    SkBitmap bitmap = image.getSkBitmap();
+    SkAutoLockPixels locker(bitmap);
+    EXPECT_EQ(bitmap.getColor(0, 0), SK_ColorBLUE);
+}
 
 } // namespace
