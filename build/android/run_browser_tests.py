@@ -16,7 +16,7 @@ from pylib import cmd_helper
 if __name__ == '__main__':
   args = ['python',
           os.path.join(os.path.dirname(__file__), 'test_runner.py'),
-          'content_browsertests'] + sys.argv[1:]
+          'gtest', '-s', 'content_browsertests'] + sys.argv[1:]
   logging.warning('*' * 80)
   logging.warning('This script is deprecated and will be removed soon.')
   logging.warning('Use the following instead: %s', ' '.join(args))

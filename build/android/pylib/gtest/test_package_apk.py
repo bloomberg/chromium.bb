@@ -12,6 +12,7 @@ import tempfile
 import time
 
 from pylib import android_commands
+from pylib import cmd_helper
 from pylib import constants
 from pylib import pexpect
 from pylib.android_commands import errors
@@ -22,40 +23,35 @@ from test_package import TestPackage
 class TestPackageApk(TestPackage):
   """A helper class for running APK-based native tests."""
 
-  def __init__(self, adb, device, suite_path_full, tool, test_apk_package_name,
-               test_activity_name, command_line_file):
+  def __init__(self, suite_name, build_type):
     """
     Args:
-      adb: ADB interface the tests are using.
-      device: Device to run the tests.
-      suite_path_full: Absolute path to a specific test suite to run,
-          empty to run all.
-          Ex: '/foo/bar/base_unittests-debug.apk', for which
-            self.suite_path_full = '/foo/bar/base_unittests-debug.apk'
-            self.suite_path = '/foo/bar/base_unittests-debug'
-            self.suite_basename = 'base_unittests'
-            self.suite_dirname = '/foo/bar'
-      tool: Name of the Valgrind tool.
-      test_apk_package_name: Apk package name for tests running in APKs.
-      test_activity_name: Test activity to invoke for APK tests.
-      command_line_file: Filename to use to pass arguments to tests.
+      suite_name: Name of the test suite (e.g. base_unittests).
+      build_type: 'Release' or 'Debug'.
     """
-    TestPackage.__init__(self, adb, device, suite_path_full, tool)
-    self._test_apk_package_name = test_apk_package_name
-    self._test_activity_name = test_activity_name
-    self._command_line_file = command_line_file
+    TestPackage.__init__(self, suite_name)
+    product_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
+    if suite_name == 'content_browsertests':
+      self.suite_path = os.path.join(
+          product_dir, 'apks', '%s.apk' % suite_name)
+      self._test_apk_package_name = constants.BROWSERTEST_TEST_PACKAGE_NAME
+      self._test_activity_name = constants.BROWSERTEST_TEST_ACTIVITY_NAME
+      self._command_line_file = constants.BROWSERTEST_COMMAND_LINE_FILE
+    else:
+      self.suite_path = os.path.join(
+          product_dir, '%s_apk' % suite_name, '%s-debug.apk' % suite_name)
+      self._test_apk_package_name = constants.GTEST_TEST_PACKAGE_NAME
+      self._test_activity_name = constants.GTEST_TEST_ACTIVITY_NAME
+      self._command_line_file = constants.GTEST_COMMAND_LINE_FILE
 
-  def _CreateCommandLineFileOnDevice(self, options):
+  def _CreateCommandLineFileOnDevice(self, adb, options):
     command_line_file = tempfile.NamedTemporaryFile()
     # GTest expects argv[0] to be the executable path.
-    command_line_file.write(self.suite_basename + ' ' + options)
+    command_line_file.write(self.suite_name + ' ' + options)
     command_line_file.flush()
-    self.adb.PushIfNeeded(command_line_file.name,
+    adb.PushIfNeeded(command_line_file.name,
                           constants.TEST_EXECUTABLE_DIR + '/' +
                           self._command_line_file)
-
-  def _GetGTestReturnCode(self):
-    return None
 
   def _GetFifo(self):
     # The test.fifo path is determined by:
@@ -64,54 +60,49 @@ class TestPackageApk(TestPackage):
     # testing/android/native_test_launcher.cc
     return '/data/data/' + self._test_apk_package_name + '/files/test.fifo'
 
-  def _ClearFifo(self):
-    self.adb.RunShellCommand('rm -f ' + self._GetFifo())
+  def _ClearFifo(self, adb):
+    adb.RunShellCommand('rm -f ' + self._GetFifo())
 
-  def _WatchFifo(self, timeout, logfile=None):
+  def _WatchFifo(self, adb, timeout, logfile=None):
     for i in range(10):
-      if self.adb.FileExistsOnDevice(self._GetFifo()):
+      if adb.FileExistsOnDevice(self._GetFifo()):
         logging.info('Fifo created.')
         break
       time.sleep(i)
     else:
       raise errors.DeviceUnresponsiveError(
           'Unable to find fifo on device %s ' % self._GetFifo())
-    args = shlex.split(self.adb.Adb()._target_arg)
+    args = shlex.split(adb.Adb()._target_arg)
     args += ['shell', 'cat', self._GetFifo()]
     return pexpect.spawn('adb', args, timeout=timeout, logfile=logfile)
 
-  def _StartActivity(self):
-    self.adb.StartActivity(
+  def _StartActivity(self, adb):
+    adb.StartActivity(
         self._test_apk_package_name,
         self._test_activity_name,
         wait_for_completion=True,
         action='android.intent.action.MAIN',
         force_stop=True)
 
-  def _GetTestSuiteBaseName(self):
-    """Returns the  base name of the test suite."""
-    # APK test suite names end with '-debug.apk'
-    return os.path.basename(self.suite_path).rsplit('-debug', 1)[0]
+  #override
+  def ClearApplicationState(self, adb):
+    adb.ClearApplicationState(self._test_apk_package_name)
 
   #override
-  def ClearApplicationState(self):
-    self.adb.ClearApplicationState(self._test_apk_package_name)
-
-  #override
-  def CreateCommandLineFileOnDevice(self, test_filter, test_arguments):
+  def CreateCommandLineFileOnDevice(self, adb, test_filter, test_arguments):
     self._CreateCommandLineFileOnDevice(
-        '--gtest_filter=%s %s' % (test_filter, test_arguments))
+        adb, '--gtest_filter=%s %s' % (test_filter, test_arguments))
 
   #override
-  def GetAllTests(self):
-    self._CreateCommandLineFileOnDevice('--gtest_list_tests')
+  def GetAllTests(self, adb):
+    self._CreateCommandLineFileOnDevice(adb, '--gtest_list_tests')
     try:
       self.tool.SetupEnvironment()
       # Clear and start monitoring logcat.
-      self._ClearFifo()
-      self._StartActivity()
+      self._ClearFifo(adb)
+      self._StartActivity(adb)
       # Wait for native test to complete.
-      p = self._WatchFifo(timeout=30 * self.tool.GetTimeoutScale())
+      p = self._WatchFifo(adb, timeout=30 * self.tool.GetTimeoutScale())
       p.expect('<<ScopedMainEntryLogger')
       p.close()
     finally:
@@ -121,19 +112,18 @@ class TestPackageApk(TestPackage):
     return self._ParseGTestListTests(content)
 
   #override
-  def SpawnTestProcess(self):
+  def SpawnTestProcess(self, adb):
     try:
       self.tool.SetupEnvironment()
-      self._ClearFifo()
-      self._StartActivity()
+      self._ClearFifo(adb)
+      self._StartActivity(adb)
     finally:
       self.tool.CleanUpEnvironment()
     logfile = android_commands.NewLineNormalizer(sys.stdout)
-    return self._WatchFifo(timeout=10, logfile=logfile)
+    return self._WatchFifo(adb, timeout=10, logfile=logfile)
 
   #override
-  def Install(self):
+  def Install(self, adb):
     self.tool.CopyFiles()
-    self.adb.ManagedInstall(self.suite_path_full, False,
+    adb.ManagedInstall(self.suite_path, False,
                             package_name=self._test_apk_package_name)
-

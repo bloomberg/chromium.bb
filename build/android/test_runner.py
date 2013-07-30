@@ -21,7 +21,6 @@ from pylib import constants
 from pylib import ports
 from pylib.base import base_test_result
 from pylib.base import test_dispatcher
-from pylib.browsertests import setup as browsertests_setup
 from pylib.gtest import setup as gtest_setup
 from pylib.gtest import gtest_config
 from pylib.host_driven import run_python_tests as python_dispatch
@@ -97,35 +96,6 @@ def ProcessCommonOptions(options):
   run_tests_helper.SetLogLevel(options.verbose_count)
 
 
-def AddCoreGTestOptions(option_parser):
-  """Add options specific to the gtest framework to |option_parser|."""
-
-  # TODO(gkanwar): Consolidate and clean up test filtering for gtests and
-  # content_browsertests.
-  option_parser.add_option('-f', '--gtest_filter', dest='test_filter',
-                           help='googletest-style filter string.')
-  option_parser.add_option('-a', '--test_arguments', dest='test_arguments',
-                           help='Additional arguments to pass to the test.')
-  option_parser.add_option('--exe', action='store_true',
-                           help='If set, use the exe test runner instead of '
-                           'the APK.')
-  option_parser.add_option('-t', dest='timeout',
-                           help='Timeout to wait for each test',
-                           type='int',
-                           default=60)
-
-
-def AddContentBrowserTestOptions(option_parser):
-  """Adds Content Browser test options to |option_parser|."""
-
-  option_parser.usage = '%prog content_browsertests [options]'
-  option_parser.command_list = []
-  option_parser.example = '%prog content_browsertests'
-
-  AddCoreGTestOptions(option_parser)
-  AddCommonOptions(option_parser)
-
-
 def AddGTestOptions(option_parser):
   """Adds gtest options to |option_parser|."""
 
@@ -137,7 +107,14 @@ def AddGTestOptions(option_parser):
   option_parser.add_option('-s', '--suite', dest='suite_name',
                            help=('Executable name of the test suite to run '
                                  '(use -s help to list them).'))
-  AddCoreGTestOptions(option_parser)
+  option_parser.add_option('-f', '--gtest_filter', dest='test_filter',
+                           help='googletest-style filter string.')
+  option_parser.add_option('-a', '--test_arguments', dest='test_arguments',
+                           help='Additional arguments to pass to the test.')
+  option_parser.add_option('-t', dest='timeout',
+                           help='Timeout to wait for each test',
+                           type='int',
+                           default=60)
   # TODO(gkanwar): Move these to Common Options once we have the plumbing
   # in our other test types to handle these commands
   AddCommonOptions(option_parser)
@@ -154,8 +131,9 @@ def ProcessGTestOptions(options):
   """
   if options.suite_name == 'help':
     print 'Available test suites are:'
-    for test_suite in gtest_config.STABLE_TEST_SUITES:
-      print test_suite.name
+    for test_suite in (gtest_config.STABLE_TEST_SUITES +
+                       gtest_config.EXPERIMENTAL_TEST_SUITES):
+      print test_suite
     return False
 
   # Convert to a list, assuming all test suites if nothing was specified.
@@ -163,8 +141,7 @@ def ProcessGTestOptions(options):
   if options.suite_name:
     options.suite_name = [options.suite_name]
   else:
-    options.suite_name = [suite.name
-                          for suite in gtest_config.STABLE_TEST_SUITES]
+    options.suite_name = [s for s in gtest_config.STABLE_TEST_SUITES]
   return True
 
 
@@ -350,7 +327,7 @@ def _RunGTests(options, error_func):
   exit_code = 0
   for suite_name in options.suite_name:
     runner_factory, tests = gtest_setup.Setup(
-        options.exe, suite_name, options.test_arguments,
+        suite_name, options.test_arguments,
         options.timeout, options.cleanup_test_files, options.tool,
         options.build_type, options.push_deps, options.test_filter)
 
@@ -370,37 +347,6 @@ def _RunGTests(options, error_func):
         test_package=suite_name,
         build_type=options.build_type,
         flakiness_server=options.flakiness_dashboard_server)
-
-  if os.path.isdir(constants.ISOLATE_DEPS_DIR):
-    shutil.rmtree(constants.ISOLATE_DEPS_DIR)
-
-  return exit_code
-
-
-def _RunContentBrowserTests(options, error_func):
-  """Subcommand of RunTestsCommands which runs content_browsertests."""
-  runner_factory, tests = browsertests_setup.Setup(
-      options.test_arguments, options.timeout, options.cleanup_test_files,
-      options.tool, options.build_type, options.push_deps,
-      options.test_filter)
-
-  # TODO(nileshagrawal): remove this abnormally long setup timeout once fewer
-  # files are pushed to the devices for content_browsertests: crbug.com/138275
-  setup_timeout = 20 * 60  # 20 minutes
-  results, exit_code = test_dispatcher.RunTests(
-      tests, runner_factory, False, options.test_device,
-      shard=True,
-      build_type=options.build_type,
-      test_timeout=None,
-      setup_timeout=setup_timeout,
-      num_retries=options.num_retries)
-
-  report_results.LogFull(
-      results=results,
-      test_type='Unit test',
-      test_package=constants.BROWSERTEST_SUITE_NAME,
-      build_type=options.build_type,
-      flakiness_server=options.flakiness_dashboard_server)
 
   if os.path.isdir(constants.ISOLATE_DEPS_DIR):
     shutil.rmtree(constants.ISOLATE_DEPS_DIR)
@@ -527,8 +473,6 @@ def RunTestsCommand(command, options, args, option_parser):
 
   if command == 'gtest':
     return _RunGTests(options, option_parser.error)
-  elif command == 'content_browsertests':
-    return _RunContentBrowserTests(options, option_parser.error)
   elif command == 'instrumentation':
     return _RunInstrumentationTests(options, option_parser.error)
   elif command == 'uiautomator':
@@ -587,8 +531,6 @@ CommandFunctionTuple = collections.namedtuple(
     'CommandFunctionTuple', ['add_options_func', 'run_command_func'])
 VALID_COMMANDS = {
     'gtest': CommandFunctionTuple(AddGTestOptions, RunTestsCommand),
-    'content_browsertests': CommandFunctionTuple(
-        AddContentBrowserTestOptions, RunTestsCommand),
     'instrumentation': CommandFunctionTuple(
         AddInstrumentationTestOptions, RunTestsCommand),
     'uiautomator': CommandFunctionTuple(

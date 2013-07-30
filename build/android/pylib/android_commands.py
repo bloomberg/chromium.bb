@@ -262,6 +262,10 @@ class AndroidCommands(object):
     """Returns our AdbInterface to avoid us wrapping all its methods."""
     return self._adb
 
+  def GetDevice(self):
+    """Returns the device serial."""
+    return self._device
+
   def IsOnline(self):
     """Checks whether the device is online.
 

@@ -11,76 +11,52 @@ from pylib import constants
 from pylib import pexpect
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
-from pylib.utils import run_tests_helper
-
-import test_package_apk
-import test_package_exe
 
 
-def _TestSuiteRequiresMockTestServer(suite_basename):
+def _TestSuiteRequiresMockTestServer(suite_name):
   """Returns True if the test suite requires mock test server."""
   tests_require_net_test_server = ['unit_tests', 'net_unittests',
                                    'content_unittests',
                                    'content_browsertests']
-  return (suite_basename in
+  return (suite_name in
           tests_require_net_test_server)
 
 
 class TestRunner(base_test_runner.BaseTestRunner):
-  def __init__(self, device, suite_name, test_arguments, timeout,
-               cleanup_test_files, tool_name, build_type,
-               push_deps, test_apk_package_name=None,
-               test_activity_name=None, command_line_file=None):
+  def __init__(self, device, test_package, test_arguments, timeout,
+               cleanup_test_files, tool_name, build_type, push_deps):
     """Single test suite attached to a single device.
 
     Args:
       device: Device to run the tests.
-      suite_name: A specific test suite to run, empty to run all.
+      test_package: An instance of TestPackage class.
       test_arguments: Additional arguments to pass to the test binary.
       timeout: Timeout for each test.
       cleanup_test_files: Whether or not to cleanup test files on device.
       tool_name: Name of the Valgrind tool.
       build_type: 'Release' or 'Debug'.
       push_deps: If True, push all dependencies to the device.
-      test_apk_package_name: Apk package name for tests running in APKs.
-      test_activity_name: Test activity to invoke for APK tests.
-      command_line_file: Filename to use to pass arguments to tests.
     """
     super(TestRunner, self).__init__(device, tool_name, build_type, push_deps,
                                      cleanup_test_files)
+    self.test_package = test_package
+    self.test_package.tool = self.tool
     self._test_arguments = test_arguments
     if timeout == 0:
       timeout = 60
     # On a VM (e.g. chromium buildbots), this timeout is way too small.
     if os.environ.get('BUILDBOT_SLAVENAME'):
       timeout = timeout * 2
-    self.timeout = timeout * self.tool.GetTimeoutScale()
-
-    logging.warning('Test suite: ' + str(suite_name))
-    if os.path.splitext(suite_name)[1] == '.apk':
-      self.test_package = test_package_apk.TestPackageApk(
-          self.adb,
-          device,
-          suite_name,
-          self.tool,
-          test_apk_package_name,
-          test_activity_name,
-          command_line_file)
-    else:
-      # Put a copy into the android out/target directory, to allow stack trace
-      # generation.
-      symbols_dir = os.path.join(constants.DIR_SOURCE_ROOT, 'out', build_type,
-                                 'lib.target')
-      self.test_package = test_package_exe.TestPackageExecutable(
-          self.adb,
-          device,
-          suite_name,
-          self.tool,
-          symbols_dir)
+    self._timeout = timeout * self.tool.GetTimeoutScale()
 
   #override
   def InstallTestPackage(self):
-    self.test_package.Install()
+    self.test_package.Install(self.adb)
+
+  def GetAllTests(self):
+    """Install test package and get a list of all tests."""
+    self.test_package.Install(self.adb)
+    return self.test_package.GetAllTests(self.adb)
 
   #override
   def PushDataDeps(self):
@@ -90,7 +66,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       device_dir = self.adb.GetExternalStorage()
       # TODO(frankf): linux_dumper_unittest_helper needs to be in the same dir
       # as breakpad_unittests exe. Find a better way to do this.
-      if self.test_package.suite_basename == 'breakpad_unittests':
+      if self.test_package.suite_name == 'breakpad_unittests':
         device_dir = constants.TEST_EXECUTABLE_DIR
       for p in os.listdir(constants.ISOLATE_DEPS_DIR):
         self.adb.PushIfNeeded(
@@ -125,14 +101,14 @@ class TestRunner(base_test_runner.BaseTestRunner):
       while True:
         full_test_name = None
         found = p.expect([re_run, re_passed, re_runner_fail],
-                         timeout=self.timeout)
+                         timeout=self._timeout)
         if found == 1:  # re_passed
           break
         elif found == 2:  # re_runner_fail
           break
         else:  # re_run
           full_test_name = p.match.group(1).replace('\r', '')
-          found = p.expect([re_ok, re_fail, re_crash], timeout=self.timeout)
+          found = p.expect([re_ok, re_fail, re_crash], timeout=self._timeout)
           log = p.before.replace('\r', '')
           if found == 0:  # re_ok
             if full_test_name == p.match.group(1).replace('\r', ''):
@@ -160,7 +136,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
             log=p.before.replace('\r', '')))
     except pexpect.TIMEOUT:
       logging.error('Test terminated after %d second timeout.',
-                    self.timeout)
+                    self._timeout)
       if full_test_name:
         results.AddResult(base_test_result.BaseTestResult(
             full_test_name, base_test_result.ResultType.TIMEOUT,
@@ -168,7 +144,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     finally:
       p.close()
 
-    ret_code = self.test_package.GetGTestReturnCode()
+    ret_code = self.test_package.GetGTestReturnCode(self.adb)
     if ret_code:
       logging.critical(
           'gtest exit code: %d\npexpect.before: %s\npexpect.after: %s',
@@ -183,10 +159,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return test_results, None
 
     try:
-      self.test_package.ClearApplicationState()
+      self.test_package.ClearApplicationState(self.adb)
       self.test_package.CreateCommandLineFileOnDevice(
-          test, self._test_arguments)
-      test_results = self._ParseTestOutput(self.test_package.SpawnTestProcess())
+          self.adb, test, self._test_arguments)
+      test_results = self._ParseTestOutput(
+          self.test_package.SpawnTestProcess(self.adb))
     finally:
       self.CleanupSpawningServerState()
     # Calculate unknown test results.
@@ -203,7 +180,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
   def SetUp(self):
     """Sets up necessary test enviroment for the test suite."""
     super(TestRunner, self).SetUp()
-    if _TestSuiteRequiresMockTestServer(self.test_package.suite_basename):
+    if _TestSuiteRequiresMockTestServer(self.test_package.suite_name):
       self.LaunchChromeTestServerSpawner()
     self.tool.SetupEnvironment()
 

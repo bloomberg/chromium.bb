@@ -18,6 +18,8 @@ from pylib import ports
 from pylib.base import base_test_result
 
 import gtest_config
+import test_package_apk
+import test_package_exe
 import test_runner
 
 sys.path.insert(0,
@@ -148,38 +150,6 @@ def _GenerateDepsDirUsingIsolate(suite_name, build_type):
     os.rmdir(os.path.join(constants.ISOLATE_DEPS_DIR, 'out'))
 
 
-def _GetSuitePath(use_exe_test_runner, suite_name, build_type):
-  """Get the absolute path to the test suite.
-
-  Args:
-    use_exe_test_runner: If True, use the executable-based test runner.
-    suite_name: The suite name specified on the command line.
-    build_type: 'Release' or 'Debug'.
-
-  Returns:
-    The absolute path of the given suite.
-    Ex. '/tmp/chrome/src/out/Debug/content_unittests_apk/'
-        'content_unittests-debug.apk'
-
-  Raises:
-    Exception: If test suite not found.
-  """
-  if use_exe_test_runner:
-    relpath = suite_name
-  else:
-    relpath = os.path.join(suite_name + '_apk', suite_name + '-debug.apk')
-  suite_path = os.path.join(cmd_helper.OutDirectory.get(), build_type, relpath)
-
-  if not os.path.exists(suite_path):
-    raise Exception('Test suite %s not found in %s.\n'
-                    'Supported test suites:\n %s\n'
-                    'Ensure it has been built.\n' %
-                    (suite_name, suite_path,
-                     [s.name for s in gtest_config.STABLE_TEST_SUITES]))
-
-  return suite_path
-
-
 def _GetDisabledTestsFilterFromFile(suite_name):
   """Returns a gtest filter based on the *_disabled file.
 
@@ -220,9 +190,7 @@ def _GetTestsFromDevice(runner_factory, devices):
   for device in devices:
     try:
       logging.info('Obtaining tests from %s', device)
-      runner = runner_factory(device, 0)
-      runner.test_package.Install()
-      return runner.test_package.GetAllTests()
+      return runner_factory(device, 0).GetAllTests()
     except (android_commands.errors.WaitForResponseTimedOutError,
             android_commands.errors.DeviceUnresponsiveError), e:
       logging.warning('Failed obtaining tests from %s with exception: %s',
@@ -235,8 +203,8 @@ def _FilterTestsUsingPrefixes(all_tests, pre=False, manual=False):
 
   Args:
     all_tests: List of tests to filter.
-    pre: If True, include tests with _PRE prefix.
-    manual: If True, include tests with _MANUAL prefix.
+    pre: If True, include tests with PRE_ prefix.
+    manual: If True, include tests with MANUAL_ prefix.
 
   Returns:
     List of tests remaining.
@@ -258,7 +226,7 @@ def _FilterTestsUsingPrefixes(all_tests, pre=False, manual=False):
   return filtered_tests
 
 
-def GetTestsFiltered(suite_name, gtest_filter, runner_factory, devices):
+def _GetTestsFiltered(suite_name, gtest_filter, runner_factory, devices):
   """Get all tests in the suite and filter them.
 
   Obtains a list of tests from the test package on the device, and
@@ -289,13 +257,12 @@ def GetTestsFiltered(suite_name, gtest_filter, runner_factory, devices):
   return tests
 
 
-def Setup(use_exe_test_runner, suite_name, test_arguments, timeout,
+def Setup(suite_name, test_arguments, timeout,
           cleanup_test_files, tool, build_type, push_deps,
           gtest_filter):
   """Create the test runner factory and tests.
 
   Args:
-    use_exe_test_runner: If True, use the executable-based test runner.
     suite_name: The suite name specified on the command line.
     test_arguments: Additional arguments to pass to the test binary.
     timeout: Timeout for each test.
@@ -312,33 +279,36 @@ def Setup(use_exe_test_runner, suite_name, test_arguments, timeout,
   if not ports.ResetTestServerPortAllocation():
     raise Exception('Failed to reset test server port.')
 
-  suite_path = _GetSuitePath(use_exe_test_runner, suite_name, build_type)
+  test_package = test_package_apk.TestPackageApk(suite_name, build_type)
+  if not os.path.exists(test_package.suite_path):
+    test_package = test_package_exe.TestPackageExecutable(
+        suite_name, build_type)
+    if not os.path.exists(test_package.suite_path):
+      raise Exception(
+          'Did not find %s target. Ensure it has been built.' % suite_name)
+  logging.warning('Found target %s', test_package.suite_path)
 
-  # TODO(gkanwar): This breaks the abstraction of having test_dispatcher.py deal
-  # entirely with the devices. Can we do this another way?
-  attached_devices = android_commands.GetAttachedDevices()
+  _GenerateDepsDirUsingIsolate(suite_name, build_type)
 
-  deps_dir = _GenerateDepsDirUsingIsolate(suite_name, build_type)
   # Constructs a new TestRunner with the current options.
   def TestRunnerFactory(device, shard_index):
     return test_runner.TestRunner(
         device,
-        suite_path,
+        test_package,
         test_arguments,
         timeout,
         cleanup_test_files,
         tool,
         build_type,
-        push_deps,
-        constants.GTEST_TEST_PACKAGE_NAME,
-        constants.GTEST_TEST_ACTIVITY_NAME,
-        constants.GTEST_COMMAND_LINE_FILE)
+        push_deps)
 
-  # Get tests and split them up based on the number of devices.
-  tests = GetTestsFiltered(suite_name, gtest_filter,
-                           TestRunnerFactory, attached_devices)
-  num_devices = len(attached_devices)
-  tests = [':'.join(tests[i::num_devices]) for i in xrange(num_devices)]
-  tests = [t for t in tests if t]
+  attached_devices = android_commands.GetAttachedDevices()
+  tests = _GetTestsFiltered(suite_name, gtest_filter,
+                            TestRunnerFactory, attached_devices)
+  # Coalesce unit tests into a single test per device
+  if suite_name != 'content_browsertests':
+    num_devices = len(attached_devices)
+    tests = [':'.join(tests[i::num_devices]) for i in xrange(num_devices)]
+    tests = [t for t in tests if t]
 
   return (TestRunnerFactory, tests)

@@ -4,67 +4,65 @@
 
 """Base class representing GTest test packages."""
 
-import os
-
-from pylib import constants
+import logging
 
 
 class TestPackage(object):
+
   """A helper base class for both APK and stand-alone executables.
 
   Args:
-    adb: ADB interface the tests are using.
-    device: Device to run the tests.
-    suite_path_full: Absolute path to a specific test suite to run,
-        empty to run all.
-        Ex: '/foo/bar/base_unittests-debug.apk', for which
-          self.suite_path_full = '/foo/bar/base_unittests-debug.apk'
-          self.suite_path = '/foo/bar/base_unittests-debug'
-          self.suite_basename = 'base_unittests'
-          self.suite_dirname = '/foo/bar'
-    tool: Name of the Valgrind tool.
+    suite_name: Name of the test suite (e.g. base_unittests).
   """
+  def __init__(self, suite_name):
+    self.suite_name = suite_name
 
-  def __init__(self, adb, device, suite_path_full, tool):
-    self.adb = adb
-    self.device = device
-    self.suite_path_full = suite_path_full
-    self.suite_path = os.path.splitext(suite_path_full)[0]
-    self.suite_basename = self._GetTestSuiteBaseName()
-    self.suite_dirname = os.path.dirname(
-        self.suite_path.split(self.suite_basename)[0])
-    self.tool = tool
+  def ClearApplicationState(self, adb):
+    """Clears the application state.
 
-  def ClearApplicationState(self):
-    """Clears the application state."""
+    Args:
+      adb: Instance of AndroidCommands.
+    """
     raise NotImplementedError('Method must be overriden.')
 
-  def CreateCommandLineFileOnDevice(self, test_filter, test_arguments):
+  def CreateCommandLineFileOnDevice(self, adb, test_filter, test_arguments):
     """Creates a test runner script and pushes to the device.
 
     Args:
+      adb: Instance of AndroidCommands.
       test_filter: A test_filter flag.
       test_arguments: Additional arguments to pass to the test binary.
     """
     raise NotImplementedError('Method must be overriden.')
 
-  def GetAllTests(self):
-    """Returns a list of all tests available in the test suite."""
+  def GetAllTests(self, adb):
+    """Returns a list of all tests available in the test suite.
+
+    Args:
+      adb: Instance of AndroidCommands.
+    """
     raise NotImplementedError('Method must be overriden.')
 
-  def GetGTestReturnCode(self):
+  def GetGTestReturnCode(self, adb):
     return None
 
-  def SpawnTestProcess(self):
+  def SpawnTestProcess(self, adb):
     """Spawn the test process.
+
+    Args:
+      adb: Instance of AndroidCommands.
 
     Returns:
       An instance of pexpect spawn class.
     """
     raise NotImplementedError('Method must be overriden.')
 
-  def Install(self):
-    """Install the test package to the device."""
+  def Install(self, adb):
+    """Install the test package to the device.
+
+    Args:
+      adb: Instance of AndroidCommands.
+    """
     raise NotImplementedError('Method must be overriden.')
 
   def _ParseGTestListTests(self, raw_list):

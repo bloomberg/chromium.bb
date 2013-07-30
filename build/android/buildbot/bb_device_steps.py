@@ -105,7 +105,7 @@ def RunTestSuites(options, suites):
 
   Args:
     options: options object.
-    suites: List of suites to run.
+    suites: List of suite names to run.
   """
   args = ['--verbose']
   if options.target == 'Release':
@@ -113,25 +113,11 @@ def RunTestSuites(options, suites):
   if options.asan:
     args.append('--tool=asan')
   for suite in suites:
-    bb_annotations.PrintNamedStep(suite.name)
-    cmd = ['build/android/test_runner.py', 'gtest', '-s', suite.name] + args
-    if suite.is_suite_exe:
-      cmd.append('--exe')
+    bb_annotations.PrintNamedStep(suite)
+    cmd = ['build/android/test_runner.py', 'gtest', '-s', suite] + args
+    if suite == 'content_browsertests':
+      cmd.append('--num_retries=1')
     RunCmd(cmd)
-
-def RunBrowserTestSuite(options):
-  """Manages an invocation of test_runner.py for content_browsertests.
-
-  Args:
-    options: options object.
-  """
-  args = ['--verbose', '--num_retries=1']
-  if options.target == 'Release':
-    args.append('--release')
-  if options.asan:
-    args.append('--tool=asan')
-  bb_annotations.PrintNamedStep(constants.BROWSERTEST_SUITE_NAME)
-  RunCmd(['build/android/test_runner.py', 'content_browsertests'] + args)
 
 def RunChromeDriverTests(_):
   """Run all the steps for running chromedriver tests."""
@@ -287,7 +273,7 @@ def RunInstrumentationTests(options):
 
 
 def RunWebkitTests(options):
-  RunTestSuites(options, [gtest_config.Apk('webkit_unit_tests')])
+  RunTestSuites(options, ['webkit_unit_tests'])
   RunWebkitLint(options.target)
 
 
@@ -344,7 +330,6 @@ def MainTestWrapper(options):
 
   if options.experimental:
     RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
-    RunBrowserTestSuite(options)
 
   # Run all post test steps
   for _, cmd in GetPostTestStepCmds():
