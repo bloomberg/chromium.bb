@@ -33,7 +33,7 @@
 #   'type': 'none',
 #   'variables': {
 #     'input_file_path': 'inspector/InjectedScriptSource.js'',
-#     'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/InjectedScriptSource.h',
+#     'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/InjectedScriptSource.h',
 #     'character_array_name': 'InjectedScriptSource_js',
 #   },
 #   'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],

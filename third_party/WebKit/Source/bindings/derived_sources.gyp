@@ -60,12 +60,12 @@
         'templates/callback.cpp',
     ],
 
-    'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
+    'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',
     'generated_global_constructors_idl_files': [
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/WindowConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/WorkerGlobalScopeConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/SharedWorkerGlobalScopeConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/DedicatedWorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
     ],
 
     'conditions': [
@@ -133,9 +133,9 @@
         '<!@(cat <(idl_files_list))',
        ],
        'outputs': [
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/InterfaceDependencies.txt',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
          '<@(generated_global_constructors_idl_files)',
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/EventInterfaces.in',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
        ],
        'msvs_cygwin_shell': 0,
        'action': [
@@ -144,17 +144,17 @@
          '--idl-files-list',
          '<(idl_files_list)',
          '--interface-dependencies-file',
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/InterfaceDependencies.txt',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
          '--window-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/WindowConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
          '--workerglobalscope-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/WorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
          '--sharedworkerglobalscope-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/SharedWorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
          '--dedicatedworkerglobalscope-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/DedicatedWorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
          '--event-names-file',
-         '<(SHARED_INTERMEDIATE_DIR)/webkit/EventInterfaces.in',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
          '<@(write_file_only_if_changed)',
        ],
        'message': 'Resolving partial interfaces dependencies in all IDL files',
@@ -187,7 +187,7 @@
           'scripts/IDLAttributes.txt',
           # FIXME: If the dependency structure changes, we rebuild all files,
           # since we're not computing dependencies file-by-file in the build.
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/InterfaceDependencies.txt',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
           # FIXME: Similarly, if any partial interface changes, rebuild
           # everything, since every IDL potentially depends on them, because
           # we're not computing dependencies file-by-file.
@@ -209,7 +209,7 @@
           'generator_include_dirs': [
             '--include', '../core',
             '--include', '../modules',
-            '--include', '<(SHARED_INTERMEDIATE_DIR)/webkit',
+            '--include', '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
           # Hook for embedders to specify extra directories to find IDL files.
           'extra_blink_generator_include_dirs%': [],
@@ -232,7 +232,7 @@
           '<@(generator_include_dirs)',
           '<@(extra_blink_generator_include_dirs)',
           '--interfaceDependenciesFile',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/InterfaceDependencies.txt',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
           '--additionalIdlFiles',
           '<(deprecated_perl_webcore_test_support_idl_files)',
           '<@(preprocessor)',
@@ -279,7 +279,7 @@
           '<@(code_generator_template_files)',
           # FIXME: If the dependency structure changes, we rebuild all files,
           # since we're not computing dependencies file-by-file in the build.
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/InterfaceDependencies.txt',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
           # FIXME: Similarly, if any partial interface changes, rebuild
           # everything, since every IDL potentially depends on them, because
           # we're not computing dependencies file-by-file.
@@ -298,7 +298,7 @@
           'generator_include_dirs': [
             '--include', '../core',
             '--include', '../modules',
-            '--include', '<(SHARED_INTERMEDIATE_DIR)/webkit',
+            '--include', '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
           # Hook for embedders to specify extra directories to find IDL files.
           'extra_blink_generator_include_dirs%': [],
@@ -317,7 +317,7 @@
           '<@(generator_include_dirs)',
           '<@(extra_blink_generator_include_dirs)',
           '--interface-dependencies-file',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/InterfaceDependencies.txt',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
           '--additional-idl-files',
           '<(webcore_test_support_idl_files)',
           '<@(write_file_only_if_changed)',
@@ -338,7 +338,7 @@
         'action_name': 'derived_sources_all_in_one',
         'inputs': [
           '../core/scripts/action_derivedsourcesallinone.py',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/InterfaceDependencies.txt',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
         ],
         'outputs': [
           '<@(derived_sources_aggregate_files)',
@@ -346,7 +346,7 @@
         'action': [
           'python',
           '../core/scripts/action_derivedsourcesallinone.py',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/InterfaceDependencies.txt',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
           '--',
           '<@(derived_sources_aggregate_files)',
         ],

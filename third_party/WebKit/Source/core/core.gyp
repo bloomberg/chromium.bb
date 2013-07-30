@@ -46,8 +46,8 @@
     'webcore_include_dirs': [
       '../..',
       '..',
-      '<(SHARED_INTERMEDIATE_DIR)/webkit',
-      '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
+      '<(SHARED_INTERMEDIATE_DIR)/blink',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',
     ],
 
     'conditions': [
@@ -84,12 +84,12 @@
             '../devtools/protocol.json',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorBackendDispatcher.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorBackendDispatcher.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorFrontend.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorFrontend.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorTypeBuilder.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorTypeBuilder.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendDispatcher.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendDispatcher.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorFrontend.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorFrontend.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorTypeBuilder.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorTypeBuilder.h',
           ],
           'variables': {
             'generator_include_dirs': [
@@ -99,7 +99,7 @@
             'python',
             'inspector/CodeGeneratorInspector.py',
             '../devtools/protocol.json',
-            '--output_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
+            '--output_dir', '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
           'message': 'Generating Inspector protocol backend sources from protocol.json',
           'msvs_cygwin_shell': 1,
@@ -120,19 +120,19 @@
             'inspector/InspectorInstrumentation.idl',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorCanvasInstrumentationInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorConsoleInstrumentationInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorDatabaseInstrumentationInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorOverridesInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InstrumentingAgentsInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationImpl.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorCanvasInstrumentationInl.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorConsoleInstrumentationInl.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorDatabaseInstrumentationInl.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationInl.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorOverridesInl.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InstrumentingAgentsInl.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationImpl.cpp',
           ],
           'action': [
             'python',
             'inspector/CodeGeneratorInstrumentation.py',
             'inspector/InspectorInstrumentation.idl',
-            '--output_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
+            '--output_dir', '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
           'message': 'Generating Inspector instrumentation code from InspectorInstrumentation.idl',
           'msvs_cygwin_shell': 1,
@@ -150,7 +150,7 @@
             '../devtools/protocol.json',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorProtocolVersion.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorProtocolVersion.h',
           ],
           'variables': {
             'generator_include_dirs': [
@@ -172,7 +172,7 @@
       'type': 'none',
       'variables': {
         'input_file_path': 'inspector/InspectorOverlayPage.html',
-        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorOverlayPage.h',
+        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorOverlayPage.h',
         'character_array_name': 'InspectorOverlayPage_html',
       },
       'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
@@ -182,7 +182,7 @@
       'type': 'none',
       'variables': {
         'input_file_path': 'inspector/InjectedScriptCanvasModuleSource.js',
-        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/InjectedScriptCanvasModuleSource.h',
+        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/InjectedScriptCanvasModuleSource.h',
         'character_array_name': 'InjectedScriptCanvasModuleSource_js',
       },
       'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
@@ -192,7 +192,7 @@
       'type': 'none',
       'variables': {
         'input_file_path': 'inspector/InjectedScriptSource.js',
-        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/InjectedScriptSource.h',
+        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/InjectedScriptSource.h',
         'character_array_name': 'InjectedScriptSource_js',
       },
       'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
@@ -202,7 +202,7 @@
       'type': 'none',
       'variables': {
         'input_file_path': '<(bindings_dir)/v8/DebuggerScript.js',
-        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/DebuggerScriptSource.h',
+        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/DebuggerScriptSource.h',
         'character_array_name': 'DebuggerScriptSource_js',
       },
       'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
@@ -236,8 +236,8 @@
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/webkit',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
+        '<(SHARED_INTERMEDIATE_DIR)/blink',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',
         '<@(webcore_include_dirs)',
 
         # FIXME: Remove these once the bindings script generates qualified
@@ -259,68 +259,68 @@
         '<@(bindings_files)',
 
         # Additional .cpp files for HashTools.h
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/ColorData.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSPropertyNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/ColorData.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSPropertyNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSValueKeywords.cpp',
 
         # Additional .cpp files from make_derived_sources actions.
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLElementFactory.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/FetchInitiatorTypeNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/Event.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/EventHeaders.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/EventInterfaces.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/EventTargetHeaders.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/EventTargetInterfaces.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/UserAgentStyleSheetsData.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/V8HTMLElementWrapperFactory.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/XLinkNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNSNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/FontFamilyNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/FetchInitiatorTypeNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/Event.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventHeaders.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetHeaders.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetInterfaces.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/UserAgentStyleSheetsData.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/XLinkNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/XMLNSNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/XMLNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/SVGNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/MathMLNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
 
         # Generated from HTMLEntityNames.in
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLEntityTable.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLEntityTable.cpp',
 
         # Generated from RuntimeEnabledFeatures.in
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/RuntimeEnabledFeatures.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.cpp',
 
         # Generated from CSSParser-in.cpp
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSParser.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSParser.cpp',
 
         # Additional .cpp files from the make_derived_sources rules.
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/XPathGrammar.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSGrammar.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/XPathGrammar.cpp',
 
         # Additional .cpp files from the inspector_protocol_sources list.
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorFrontend.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorBackendDispatcher.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorTypeBuilder.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorFrontend.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendDispatcher.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorTypeBuilder.cpp',
 
         # Additional .cpp files from the inspector_instrumentation_sources list.
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorCanvasInstrumentationInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorConsoleInstrumentationInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorDatabaseInstrumentationInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorOverridesInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InstrumentingAgentsInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationImpl.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorCanvasInstrumentationInl.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorConsoleInstrumentationInl.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorDatabaseInstrumentationInl.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationInl.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorOverridesInl.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InstrumentingAgentsInl.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationImpl.cpp',
 
         # Additional .cpp files for SVG.
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGElementFactory.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/V8SVGElementWrapperFactory.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/SVGElementFactory.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/V8SVGElementWrapperFactory.cpp',
 
         # Generated from make_style_shorthands.py
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/StylePropertyShorthand.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/StylePropertyShorthand.cpp',
 
         # Generated from make_style_builder.py
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilder.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilderFunctions.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/StyleBuilder.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/StyleBuilderFunctions.cpp',
       ],
       'conditions': [
         ['v8_enable_i18n_support==0', {
@@ -1116,24 +1116,24 @@
       ],
       'sources': [
         '<@(webcore_test_support_files)',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8MallocStatistics.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8MallocStatistics.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8TypeConversions.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8TypeConversions.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8Internals.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8Internals.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalProfilers.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalProfilers.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettings.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettings.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettingsGenerated.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettingsGenerated.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalRuntimeFlags.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalRuntimeFlags.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8LayerRect.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8LayerRect.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8LayerRectList.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8LayerRectList.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8MallocStatistics.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8MallocStatistics.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8TypeConversions.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8TypeConversions.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8Internals.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8Internals.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8InternalProfilers.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8InternalProfilers.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8InternalSettings.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8InternalSettings.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8InternalSettingsGenerated.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8InternalSettingsGenerated.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8InternalRuntimeFlags.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8InternalRuntimeFlags.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8LayerRect.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8LayerRect.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8LayerRectList.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8LayerRectList.h',
       ],
       'sources/': [
         ['exclude', 'testing/js'],

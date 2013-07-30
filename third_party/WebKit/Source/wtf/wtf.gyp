@@ -127,7 +127,7 @@
             ['exclude', 'ThreadingPthreads\\.cpp$'],
           ],
           'include_dirs!': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
           'conditions': [
             ['component=="shared_library"', {

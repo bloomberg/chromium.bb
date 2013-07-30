@@ -3657,8 +3657,8 @@
           'testing/LayerRectList.idl',
           'testing/MallocStatistics.idl',
           'testing/TypeConversions.idl',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.idl',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalRuntimeFlags.idl',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.idl',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/InternalRuntimeFlags.idl',
         ],
         'python_webcore_test_support_idl_files': [
         ],
@@ -3680,8 +3680,8 @@
             'testing/MockPagePopupDriver.cpp',
             'testing/MockPagePopupDriver.h',
             'testing/TypeConversions.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.h',
         ],
         'webcore_platform_support_files': [
             'platform/chromium/support/Platform.cpp',

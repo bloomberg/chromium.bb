@@ -47,10 +47,10 @@
             'page/Settings.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SettingsMacros.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.idl',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/SettingsMacros.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.idl',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.h',
           ],
           'action': [
             'python',
@@ -71,15 +71,15 @@
             'scripts/templates/InternalRuntimeFlags.idl.tmpl',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalRuntimeFlags.idl',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalRuntimeFlags.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InternalRuntimeFlags.idl',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InternalRuntimeFlags.h',
           ],
           'action': [
             'python',
             'scripts/make_internal_runtime_flags.py',
             'page/RuntimeEnabledFeatures.in',
             '--output_dir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
       ]
@@ -93,7 +93,7 @@
       ],
       'sources': [
         # bison rule
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.y',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSGrammar.y',
         'xml/XPathGrammar.y',
 
         # gperf rule
@@ -106,7 +106,7 @@
             '<(bindings_dir)/v8/custom/V8ArrayBufferViewCustomScript.js',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8ArrayBufferViewCustomScript.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/V8ArrayBufferViewCustomScript.h',
           ],
           'msvs_cygwin_shell': 0,
           'action': [
@@ -124,7 +124,7 @@
             'xml/XMLViewer.css',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLViewerCSS.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/XMLViewerCSS.h',
           ],
           'msvs_cygwin_shell': 0,
           'action': [
@@ -141,7 +141,7 @@
             'xml/XMLViewer.js',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLViewerJS.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/XMLViewerJS.h',
           ],
           'msvs_cygwin_shell': 0,
           'action': [
@@ -159,7 +159,7 @@
             'html/parser/HTMLEntityNames.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLEntityTable.cpp'
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLEntityTable.cpp'
           ],
           'action': [
             'python',
@@ -179,15 +179,15 @@
             'scripts/templates/RuntimeEnabledFeatures.h.tmpl',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/RuntimeEnabledFeatures.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/RuntimeEnabledFeatures.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.h',
           ],
           'action': [
             'python',
             'scripts/make_runtime_features.py',
             'page/RuntimeEnabledFeatures.in',
             '--output_dir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
         {
@@ -204,15 +204,15 @@
             '<@(in_files)'
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSPropertyNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSPropertyNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSPropertyNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSPropertyNames.h',
           ],
           'action': [
             'python',
             'scripts/make_css_property_names.py',
             '<@(in_files)',
             '--output_dir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
             '--defines', '<(feature_defines)',
           ],
           'msvs_cygwin_shell': 1,
@@ -227,15 +227,15 @@
             'scripts/templates/StylePropertyShorthand.cpp.tmpl',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/StylePropertyShorthand.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/StylePropertyShorthand.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/StylePropertyShorthand.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/StylePropertyShorthand.h',
           ],
           'action': [
             'python',
             'scripts/make_style_shorthands.py',
             'css/CSSShorthands.in',
             '--output_dir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
         {
@@ -249,16 +249,16 @@
             'scripts/templates/StyleBuilderFunctions.cpp.tmpl',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilder.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilderFunctions.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilderFunctions.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/StyleBuilder.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/StyleBuilderFunctions.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/StyleBuilderFunctions.cpp',
           ],
           'action': [
             'python',
             'scripts/make_style_builder.py',
             'css/CSSProperties.in',
             '--output_dir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
         {
@@ -275,14 +275,14 @@
             '<@(in_files)'
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSValueKeywords.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSValueKeywords.h',
           ],
           'action': [
              'scripts/make_css_value_keywords.py',
              '<@(in_files)',
              '--output_dir',
-             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+             '<(SHARED_INTERMEDIATE_DIR)/blink',
             '--defines', '<(feature_defines)',
           ],
           'msvs_cygwin_shell': 1,
@@ -297,11 +297,11 @@
             'html/HTMLAttributeNames.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLNames.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLElementFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8HTMLElementWrapperFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8HTMLElementWrapperFactory.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.h',
           ],
           'action': [
             'python',
@@ -324,8 +324,8 @@
             'css/FontFamilyNames.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/FontFamilyNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/FontFamilyNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.h',
           ],
           'action': [
             'python',
@@ -348,12 +348,12 @@
             'svg/svgattrs.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGNames.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGElementFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGElementFactory.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8SVGElementWrapperFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8SVGElementWrapperFactory.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/SVGNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/SVGNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/SVGElementFactory.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/SVGElementFactory.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/V8SVGElementWrapperFactory.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/V8SVGElementWrapperFactory.h',
           ],
           'action': [
             'python',
@@ -372,21 +372,21 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             'scripts/make_event_factory.py',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventInterfaces.in',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
             'dom/EventAliases.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/Event.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventHeaders.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventInterfaces.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/Event.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventHeaders.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.h',
           ],
           'action': [
             'python',
             'scripts/make_event_factory.py',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventInterfaces.in',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
             'dom/EventAliases.in',
             '--output_dir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
         {
@@ -397,15 +397,15 @@
             'dom/EventTargetFactory.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventTargetHeaders.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventTargetInterfaces.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetHeaders.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetInterfaces.h',
           ],
           'action': [
             'python',
             'scripts/make_event_factory.py',
             'dom/EventTargetFactory.in',
             '--output_dir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
         {
@@ -418,8 +418,8 @@
             'mathml/mathattrs.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/MathMLNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/MathMLNames.h',
           ],
           'action': [
             'python',
@@ -460,8 +460,8 @@
             '<@(stylesheets)'
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/UserAgentStyleSheets.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/UserAgentStyleSheetsData.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/UserAgentStyleSheets.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/UserAgentStyleSheetsData.cpp',
           ],
           'action': [
             'python',
@@ -484,8 +484,8 @@
             'loader/cache/FetchInitiatorTypeNames.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/FetchInitiatorTypeNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/FetchInitiatorTypeNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/FetchInitiatorTypeNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/FetchInitiatorTypeNames.h',
           ],
           'action': [
             'python',
@@ -505,14 +505,14 @@
             'Resources/pagepopups/pickerCommon.js',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
           ],
           'action': [
             'python',
             'scripts/make-file-arrays.py',
-            '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.h',
-            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.cpp',
+            '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
+            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
             '<@(_inputs)',
           ],
         },
@@ -527,15 +527,15 @@
             'Resources/pagepopups/suggestionPicker.js',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
           ],
           'action': [
             'python',
             'scripts/make-file-arrays.py',
             '--condition=ENABLE(CALENDAR_PICKER)',
-            '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.h',
-            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.cpp',
+            '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
+            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
             '<@(_inputs)',
           ],
         },
@@ -546,14 +546,14 @@
             'Resources/pagepopups/colorSuggestionPicker.js',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
           ],
           'action': [
             'python',
             'scripts/make-file-arrays.py',
-            '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.h',
-            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.cpp',
+            '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
+            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
             '<@(_inputs)',
           ],
         },
@@ -566,8 +566,8 @@
             'svg/xlinkattrs.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XLinkNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XLinkNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/XLinkNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/XLinkNames.h',
           ],
           'action': [
             'python',
@@ -589,8 +589,8 @@
             'xml/xmlnsattrs.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNSNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNSNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/XMLNSNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/XMLNSNames.h',
           ],
           'action': [
             'python',
@@ -612,8 +612,8 @@
             'xml/xmlattrs.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/XMLNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/XMLNames.h',
           ],
           'action': [
             'python',
@@ -633,14 +633,14 @@
             'css/CSSGrammar.y.includes',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.y',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSGrammar.y',
           ],
           'action': [
             '<(perl_exe)',
             '-Iscripts',
             'css/makegrammar.pl',
             '--outputDir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
             '<@(_inputs)',
           ],
         },
@@ -652,13 +652,13 @@
             '../core/css/CSSParser-in.cpp',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSParser.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSParser.cpp',
           ],
           'action': [
             'python',
             '../core/scripts/make_token_matcher.py',
             '../core/css/CSSParser-in.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSParser.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSParser.cpp',
           ],
         },
       ],
@@ -667,14 +667,14 @@
           'rule_name': 'bison',
           'extension': 'y',
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).h'
+            '<(SHARED_INTERMEDIATE_DIR)/blink/<(RULE_INPUT_ROOT).cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/<(RULE_INPUT_ROOT).h'
           ],
           'action': [
             'python',
             'scripts/rule_bison.py',
             '<(RULE_INPUT_PATH)',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
             '<(bison_exe)',
           ],
           'msvs_cygwin_shell': 1,
@@ -683,7 +683,7 @@
           'rule_name': 'gperf',
           'extension': 'gperf',
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/<(RULE_INPUT_ROOT).cpp',
           ],
           'inputs': [
             'scripts/make-hash-tools.pl',
@@ -692,7 +692,7 @@
           'action': [
             '<(perl_exe)',
             'scripts/make-hash-tools.pl',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
             '<(RULE_INPUT_PATH)',
             '<(gperf_exe)',
           ],
