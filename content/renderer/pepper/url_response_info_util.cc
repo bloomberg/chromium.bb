@@ -4,9 +4,7 @@
 
 #include "content/renderer/pepper/url_response_info_util.h"
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -45,9 +43,9 @@ bool IsRedirect(int32_t status) {
 
 }  // namespace
 
-void DataFromWebURLResponse(PP_Instance pp_instance,
-                            const WebURLResponse& response,
-                            const DataFromWebURLResponseCallback& callback) {
+ppapi::URLResponseInfoData DataFromWebURLResponse(
+    PP_Instance pp_instance,
+    const WebURLResponse& response) {
   ppapi::URLResponseInfoData data;
 
   data.url = response.url().spec();
@@ -72,10 +70,7 @@ void DataFromWebURLResponse(PP_Instance pp_instance,
     data.body_as_file_ref = file_ref->GetCreateInfo();
     file_ref->GetReference();  // The returned data has one ref for the plugin.
   }
-
-  // We post data to a callback instead of returning it here because the new
-  // implementation for FileRef is asynchronous when creating the resource.
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, data));
+  return data;
 }
 
 }  // namespace content

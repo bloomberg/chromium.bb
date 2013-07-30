@@ -25,7 +25,6 @@
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
-#include "ppapi/shared_impl/url_response_info_data.h"
 #include "ui/base/ime/text_input_type.h"
 
 namespace base {
@@ -244,11 +243,6 @@ class PepperPluginDelegateImpl
       base::ProcessId plugin_pid,
       int plugin_child_id,
       bool is_external);
-
-  void DidDataFromWebURLResponse(
-      PP_Instance pp_instance,
-      const WebKit::WebURLResponse& response,
-      const ppapi::URLResponseInfoData& data);
 
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;
