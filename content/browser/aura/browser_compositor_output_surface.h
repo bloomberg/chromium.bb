@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_AURA_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 #define CONTENT_BROWSER_AURA_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 
+#include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "cc/output/output_surface.h"
-#include "content/browser/aura/refcounted_id_map.h"
 
 namespace base { class MessageLoopProxy; }
 
@@ -27,8 +27,7 @@ class BrowserCompositorOutputSurface
   BrowserCompositorOutputSurface(
       scoped_ptr<WebKit::WebGraphicsContext3D> context,
       int surface_id,
-      const scoped_refptr<RefCountedIDMap<BrowserCompositorOutputSurface> >&
-          output_surface_map,
+      IDMap<BrowserCompositorOutputSurface>* output_surface_map,
       base::MessageLoopProxy* compositor_message_loop,
       base::WeakPtr<ui::Compositor> compositor);
 
@@ -46,8 +45,7 @@ class BrowserCompositorOutputSurface
 
  private:
   int surface_id_;
-  scoped_refptr<RefCountedIDMap<BrowserCompositorOutputSurface> >
-      output_surface_map_;
+  IDMap<BrowserCompositorOutputSurface>* output_surface_map_;
 
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_;
   base::WeakPtr<ui::Compositor> compositor_;

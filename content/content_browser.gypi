@@ -298,7 +298,6 @@
     'browser/aura/image_transport_factory.h',
     'browser/aura/no_transport_image_transport_factory.cc',
     'browser/aura/no_transport_image_transport_factory.h',
-    'browser/aura/refcounted_id_map.h',
     'browser/aura/reflector_impl.cc',
     'browser/aura/reflector_impl.h',
     'browser/browser_child_process_host_impl.cc',

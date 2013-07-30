@@ -215,9 +215,8 @@ scoped_ptr<cc::OutputSurface> CreateSoftwareOutputSurface(
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
     : callback_factory_(this) {
-  output_surface_map_ = new RefCountedIDMap<BrowserCompositorOutputSurface>;
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
-      output_surface_map_.get());
+      &output_surface_map_);
 }
 
 GpuProcessTransportFactory::~GpuProcessTransportFactory() {
@@ -265,7 +264,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
       new BrowserCompositorOutputSurface(
           context.PassAs<WebKit::WebGraphicsContext3D>(),
           per_compositor_data_[compositor]->surface_id,
-          output_surface_map_,
+          &output_surface_map_,
           base::MessageLoopProxy::current().get(),
           compositor->AsWeakPtr()));
   if (data->reflector.get()) {
@@ -286,7 +285,7 @@ scoped_refptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
     RemoveObserver(data->reflector.get());
 
   data->reflector = new ReflectorImpl(
-      source, target, output_surface_map_, data->surface_id);
+      source, target, &output_surface_map_, data->surface_id);
   AddObserver(data->reflector.get());
   return data->reflector;
 }

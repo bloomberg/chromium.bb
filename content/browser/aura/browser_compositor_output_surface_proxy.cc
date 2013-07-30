@@ -12,7 +12,7 @@
 namespace content {
 
 BrowserCompositorOutputSurfaceProxy::BrowserCompositorOutputSurfaceProxy(
-    RefCountedIDMap<BrowserCompositorOutputSurface>* surface_map)
+    IDMap<BrowserCompositorOutputSurface>* surface_map)
     : surface_map_(surface_map),
       connected_to_gpu_process_host_(false) {}
 

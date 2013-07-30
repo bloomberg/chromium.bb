@@ -15,8 +15,7 @@ namespace content {
 ReflectorImpl::ReflectorImpl(
     ui::Compositor* mirrored_compositor,
     ui::Layer* mirroring_layer,
-    scoped_refptr<RefCountedIDMap<BrowserCompositorOutputSurface> >
-    output_surface_map,
+    IDMap<BrowserCompositorOutputSurface>* output_surface_map,
     int surface_id)
     : texture_id_(0),
       texture_size_(mirrored_compositor->size()),

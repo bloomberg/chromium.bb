@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_AURA_REFLECTOR_IMPL_H_
 #define CONTENT_BROWSER_AURA_REFLECTOR_IMPL_H_
 
+#include "base/id_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/aura/image_transport_factory.h"
-#include "content/browser/aura/refcounted_id_map.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gfx/size.h"
 
@@ -33,8 +34,7 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
   ReflectorImpl(
       ui::Compositor* mirrored_compositor,
       ui::Layer* mirroring_layer,
-      scoped_refptr<RefCountedIDMap<BrowserCompositorOutputSurface> >
-          output_surface_map,
+      IDMap<BrowserCompositorOutputSurface>* output_surface_map,
       int surface_id);
 
   ui::Compositor* mirrored_compositor() {
@@ -104,8 +104,7 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
   gfx::Size texture_size_;
 
   // Must be accessed only on ImplThread.
-  scoped_refptr<RefCountedIDMap<BrowserCompositorOutputSurface> >
-      output_surface_map_;
+  IDMap<BrowserCompositorOutputSurface>* output_surface_map_;
   scoped_ptr<GLHelper> gl_helper_;
 
   // Must be accessed only on MainThread.

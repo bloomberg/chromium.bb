@@ -7,12 +7,12 @@
 
 #include <map>
 
+#include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/browser/aura/image_transport_factory.h"
-#include "content/browser/aura/refcounted_id_map.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "ui/compositor/compositor.h"
 
@@ -130,8 +130,7 @@ class GpuProcessTransportFactory
 
   // The contents of this map and its methods may only be used on the compositor
   // thread.
-  scoped_refptr<RefCountedIDMap<BrowserCompositorOutputSurface> >
-      output_surface_map_;
+  IDMap<BrowserCompositorOutputSurface> output_surface_map_;
 
   scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
 

@@ -20,8 +20,7 @@ namespace content {
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     scoped_ptr<WebKit::WebGraphicsContext3D> context,
     int surface_id,
-    const scoped_refptr<RefCountedIDMap<BrowserCompositorOutputSurface> >&
-        output_surface_map,
+    IDMap<BrowserCompositorOutputSurface>* output_surface_map,
     base::MessageLoopProxy* compositor_message_loop,
     base::WeakPtr<ui::Compositor> compositor)
     : OutputSurface(context.Pass()),
