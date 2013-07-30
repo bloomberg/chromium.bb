@@ -219,10 +219,33 @@ Status ParseAndroidChromeCapabilities(const base::DictionaryValue& desired_caps,
       const base::Value* device_serial_value;
       if (chrome_options_dict->Get("androidDeviceSerial",
                                    &device_serial_value)) {
-        if (!device_serial_value->GetAsString(&capabilities->device_serial) ||
-            capabilities->device_serial.empty()) {
+        if (!device_serial_value->GetAsString(
+            &capabilities->android_device_serial) ||
+            capabilities->android_device_serial.empty()) {
           return Status(kUnknownError,
                         "'androidDeviceSerial' must be a non-empty string");
+        }
+      }
+
+      const base::Value* activity_value;
+      if (chrome_options_dict->Get("androidActivity",
+                                   &activity_value)) {
+        if (!activity_value->GetAsString(
+            &capabilities->android_activity) ||
+            capabilities->android_activity.empty()) {
+          return Status(kUnknownError,
+                        "'androidActivity' must be a non-empty string");
+        }
+      }
+
+      const base::Value* process_value;
+      if (chrome_options_dict->Get("androidProcess",
+                                   &process_value)) {
+        if (!process_value->GetAsString(
+            &capabilities->android_process) ||
+            capabilities->android_process.empty()) {
+          return Status(kUnknownError,
+                        "'androidProcess' must be a non-empty string");
         }
       }
 

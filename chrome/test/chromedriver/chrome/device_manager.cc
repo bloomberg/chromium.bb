@@ -11,24 +11,10 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/test/chromedriver/chrome/adb.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-
-namespace {
-
-std::string GetActivityForPackage(const std::string& package) {
-  if (package == "org.chromium.chrome.testshell")
-    return ".ChromiumTestShellActivity";
-  return "com.google.android.apps.chrome.Main";
-}
-
-std::string GetDevtoolsSocket(const std::string& package) {
-  if (package == "org.chromium.chrome.testshell")
-    return "chromium_testshell_devtools_remote";
-  return "chrome_devtools_remote";
-}
-
-}  // namespace
 
 Device::Device(
     const std::string& device_serial, Adb* adb,
@@ -41,36 +27,90 @@ Device::~Device() {
   release_callback_.Run();
 }
 
-Status Device::StartChrome(const std::string& package,
-                           int port,
-                           const std::string& args) {
+Status Device::StartApp(const std::string& package,
+                        const std::string& activity,
+                        const std::string& process,
+                        const std::string& args,
+                        int port) {
   if (!active_package_.empty())
     return Status(kUnknownError,
         active_package_ + " was launched and has not been quit");
+
   Status status = adb_->CheckAppInstalled(serial_, package);
   if (!status.IsOk())
     return status;
+
   status = adb_->ClearAppData(serial_, package);
   if (!status.IsOk())
     return status;
-  status = adb_->SetChromeArgs(serial_, args);
-  if (!status.IsOk())
-    return status;
-  status = adb_->Launch(serial_, package, GetActivityForPackage(package));
+
+  std::string known_activity;
+  std::string device_socket;
+  std::string command_line_file;
+  std::string exec_name;
+  if (package.compare("org.chromium.content_shell_apk") == 0) {
+    known_activity = ".ContentShellActivity";
+    device_socket = "content_shell_devtools_remote";
+    command_line_file = "/data/local/tmp/content-shell-command-line";
+    exec_name = "content_shell";
+  } else if (package.compare("org.chromium.chrome.testshell") == 0) {
+    known_activity = ".ChromiumTestShellActivity";
+    device_socket = "chromium_testshell_devtools_remote";
+    command_line_file = "/data/local/tmp/chromium-testshell-command-line";
+    exec_name = "chromium_testshell";
+  } else if (package.find("chrome") != std::string::npos) {
+    known_activity = "com.google.android.apps.chrome.Main";
+    device_socket = "chrome_devtools_remote";
+    command_line_file = "/data/local/chrome-command-line";
+    exec_name = "chrome";
+  }
+
+  if (!known_activity.empty()) {
+    if (!activity.empty() || !process.empty())
+      return Status(kUnknownError, "known package " + package +
+                    " does not accept activity/process");
+  } else if (activity.empty()) {
+    return Status(kUnknownError, "WebView apps require activity name");
+  }
+
+  if (!command_line_file.empty()) {
+    status = adb_->SetCommandLineFile(serial_, command_line_file, exec_name,
+                                      args);
+    if (!status.IsOk())
+      return status;
+  }
+
+  status = adb_->Launch(serial_, package,
+                        known_activity.empty() ? activity : known_activity);
   if (!status.IsOk())
     return status;
   active_package_ = package;
-  return adb_->ForwardPort(serial_, port, GetDevtoolsSocket(package));
+
+  if (device_socket.empty()) {
+    // Assume this is a WebView app.
+    int pid;
+    status = adb_->GetPidByName(serial_, process.empty() ? package : process,
+                                &pid);
+    if (!status.IsOk()) {
+      if (process.empty())
+        status.AddDetails(
+            "process name must be specified if not equal to package name");
+      return status;
+    }
+    device_socket = base::StringPrintf("webview_devtools_remote_%d", pid);
+  }
+
+  return adb_->ForwardPort(serial_, port, device_socket);
 }
 
-Status Device::StopChrome() {
-  if (active_package_.empty())
-    return Status(kUnknownError, "No package has been launched");
-  std::string response;
-  Status status = adb_->ForceStop(serial_, active_package_);
-  if (!status.IsOk())
-    return status;
-  active_package_ = "";
+Status Device::StopApp() {
+  if (!active_package_.empty()) {
+    std::string response;
+    Status status = adb_->ForceStop(serial_, active_package_);
+    if (!status.IsOk())
+      return status;
+    active_package_ = "";
+  }
   return Status(kOk);
 }
 

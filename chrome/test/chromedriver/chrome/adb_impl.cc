@@ -112,21 +112,24 @@ Status AdbImpl::ForwardPort(
                 device_serial + ": " + response);
 }
 
-Status AdbImpl::SetChromeArgs(const std::string& device_serial,
-                              const std::string& args) {
+Status AdbImpl::SetCommandLineFile(const std::string& device_serial,
+                                   const std::string& command_line_file,
+                                   const std::string& exec_name,
+                                   const std::string& args) {
   std::string response;
   if (args.find("'") != std::string::npos)
     return Status(kUnknownError,
         "Chrome command line arguments must not contain single quotes");
   Status status = ExecuteHostShellCommand(
       device_serial,
-      "echo 'chrome " + args + "'> /data/local/chrome-command-line; echo $?",
+      "echo '" + exec_name +
+      " " + args + "'> " + command_line_file + "; echo $?",
       &response);
   if (!status.IsOk())
     return status;
   if (response.find("0") == std::string::npos)
-    return Status(kUnknownError, "Failed to set Chrome flags on device " +
-                  device_serial);
+    return Status(kUnknownError, "Failed to set command line file " +
+                  command_line_file + " on device " + device_serial);
   return Status(kOk);
 }
 
@@ -162,8 +165,8 @@ Status AdbImpl::Launch(
   std::string response;
   Status status = ExecuteHostShellCommand(
       device_serial,
-      "am start -a android.intent.action.VIEW -S -W -n " +
-          package + "/" + activity + " -d \"data:text/html;charset=utf-8,\"",
+      "am start -W -n " + package + "/" + activity +
+      " -d \"data:text/html;charset=utf-8,\"",
       &response);
   if (!status.IsOk())
     return status;
@@ -179,6 +182,37 @@ Status AdbImpl::ForceStop(
   std::string response;
   return ExecuteHostShellCommand(
       device_serial, "am force-stop " + package, &response);
+}
+
+Status AdbImpl::GetPidByName(const std::string& device_serial,
+                             const std::string& process_name,
+                             int* pid) {
+  std::string response;
+  Status status = ExecuteHostShellCommand(device_serial, "ps", &response);
+  if (!status.IsOk())
+    return status;
+
+  std::vector<std::string> lines;
+  base::SplitString(response, '\n', &lines);
+  for (size_t i = 0; i < lines.size(); ++i) {
+    std::string line = lines[i];
+    if (line.empty())
+      continue;
+    std::vector<std::string> tokens;
+    base::SplitStringAlongWhitespace(line, &tokens);
+    if (tokens.size() != 9)
+      continue;
+    if (tokens[8].compare(process_name) == 0) {
+      if (base::StringToInt(tokens[1], pid)) {
+        return Status(kOk);
+      } else {
+        break;
+      }
+    }
+  }
+
+  return Status(kUnknownError,
+                "Failed to get PID for the following process: " + process_name);
 }
 
 Status AdbImpl::ExecuteCommand(

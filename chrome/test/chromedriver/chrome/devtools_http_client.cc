@@ -90,11 +90,17 @@ Status DevToolsHttpClient::Init(const base::TimeDelta& timeout) {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
 
+  int kToTBuildNo = 9999;
   if (devtools_version.empty()) {
     // Content Shell has an empty product version and a fake user agent.
     // There's no way to detect the actual version, so assume it is tip of tree.
     version_ = "content shell";
-    build_no_ = 9999;
+    build_no_ = kToTBuildNo;
+    return Status(kOk);
+  }
+  if (devtools_version.find("Version/") == 0u) {
+    version_ = "webview";
+    build_no_ = kToTBuildNo;
     return Status(kOk);
   }
   std::string prefix = "Chrome/";

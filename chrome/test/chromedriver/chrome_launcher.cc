@@ -240,11 +240,11 @@ Status LaunchAndroidChrome(
     scoped_ptr<Chrome>* chrome) {
   Status status(kOk);
   scoped_ptr<Device> device;
-  if (capabilities.device_serial.empty()) {
+  if (capabilities.android_device_serial.empty()) {
     status = device_manager->AcquireDevice(&device);
   } else {
     status = device_manager->AcquireSpecificDevice(
-        capabilities.device_serial, &device);
+        capabilities.android_device_serial, &device);
   }
   if (!status.IsOk())
     return status;
@@ -254,9 +254,14 @@ Status LaunchAndroidChrome(
     args += "--" + std::string(kCommonSwitches[i]) + " ";
   args += "--disable-fre --enable-remote-debugging";
 
-  status = device->StartChrome(capabilities.android_package, port, args);
-  if (!status.IsOk())
+  status = device->StartApp(capabilities.android_package,
+                            capabilities.android_activity,
+                            capabilities.android_process,
+                            args, port);
+  if (!status.IsOk()) {
+    device->StopApp();
     return status;
+  }
 
   scoped_ptr<DevToolsHttpClient> devtools_client;
   status = WaitForDevToolsAndCheckVersion(port,

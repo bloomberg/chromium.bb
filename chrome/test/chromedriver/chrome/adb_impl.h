@@ -31,8 +31,10 @@ class AdbImpl : public Adb {
   virtual Status ForwardPort(const std::string& device_serial,
                              int local_port,
                              const std::string& remote_abstract) OVERRIDE;
-  virtual Status SetChromeArgs(const std::string& device_serial,
-                               const std::string& args) OVERRIDE;
+  virtual Status SetCommandLineFile(const std::string& device_serial,
+                                    const std::string& command_line_file,
+                                    const std::string& exec_name,
+                                    const std::string& args) OVERRIDE;
   virtual Status CheckAppInstalled(const std::string& device_serial,
                                    const std::string& package) OVERRIDE;
   virtual Status ClearAppData(const std::string& device_serial,
@@ -42,6 +44,9 @@ class AdbImpl : public Adb {
                         const std::string& activity) OVERRIDE;
   virtual Status ForceStop(const std::string& device_serial,
                            const std::string& package) OVERRIDE;
+  virtual Status GetPidByName(const std::string& device_serial,
+                              const std::string& process_name,
+                              int* pid) OVERRIDE;
 
  private:
   Status ExecuteCommand(const std::string& command,

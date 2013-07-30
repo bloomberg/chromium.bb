@@ -31,8 +31,10 @@ class FakeAdb : public Adb {
     return Status(kOk);
   }
 
-  virtual Status SetChromeArgs(const std::string& device_serial,
-                               const std::string& args) OVERRIDE {
+  virtual Status SetCommandLineFile(const std::string& device_serial,
+                                    const std::string& command_line_file,
+                                    const std::string& exec_name,
+                                    const std::string& args) OVERRIDE {
     return Status(kOk);
   }
 
@@ -54,6 +56,12 @@ class FakeAdb : public Adb {
 
   virtual Status ForceStop(const std::string& device_serial,
                            const std::string& package) OVERRIDE {
+    return Status(kOk);
+  }
+
+  virtual Status GetPidByName(const std::string& device_serial,
+                              const std::string& process_name,
+                              int* pid) OVERRIDE {
     return Status(kOk);
   }
 };
@@ -89,13 +97,22 @@ TEST(DeviceManager, AcquireSpecificDevice) {
   ASSERT_FALSE(device_manager.AcquireSpecificDevice("b", &device1).IsOk());
 }
 
-TEST(Device, LaunchChrome) {
+TEST(Device, StartStopApp) {
   FakeAdb adb;
   DeviceManager device_manager(&adb);
   scoped_ptr<Device> device1;
   ASSERT_TRUE(device_manager.AcquireDevice(&device1).IsOk());
-  ASSERT_FALSE(device1->StopChrome().IsOk());
-  ASSERT_TRUE(device1->StartChrome("p", 0, std::string()).IsOk());
-  ASSERT_FALSE(device1->StartChrome("p", 0, std::string()).IsOk());
-  ASSERT_TRUE(device1->StopChrome().IsOk());
+  ASSERT_TRUE(device1->StopApp().IsOk());
+  ASSERT_TRUE(device1->StartApp("a.chrome.package", "", "", "", 0).IsOk());
+  ASSERT_FALSE(device1->StartApp("a.chrome.package", "", "", "", 0).IsOk());
+  ASSERT_TRUE(device1->StopApp().IsOk());
+  ASSERT_FALSE(device1->StartApp(
+      "a.chrome.package", "an.activity", "", "", 0).IsOk());
+  ASSERT_FALSE(device1->StartApp("a.package", "", "", "", 0).IsOk());
+  ASSERT_TRUE(device1->StartApp("a.package", "an.activity", "", "", 0).IsOk());
+  ASSERT_TRUE(device1->StopApp().IsOk());
+  ASSERT_TRUE(device1->StopApp().IsOk());
+  ASSERT_TRUE(device1->StartApp(
+      "a.package", "an.activity", "a.process", "", 0).IsOk());
+  ASSERT_TRUE(device1->StopApp().IsOk());
 }

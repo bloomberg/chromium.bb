@@ -33,7 +33,9 @@ struct Capabilities {
   bool detach;
 
   std::string android_package;
-  std::string device_serial;
+  std::string android_activity;
+  std::string android_process;
+  std::string android_device_serial;
   std::string android_args;
 
   std::string log_path;

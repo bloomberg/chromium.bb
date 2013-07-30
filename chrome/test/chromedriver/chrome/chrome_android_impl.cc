@@ -23,6 +23,6 @@ std::string ChromeAndroidImpl::GetOperatingSystemName() {
 }
 
 Status ChromeAndroidImpl::Quit() {
-  return device_->StopChrome();
+  return device_->StopApp();
 }
 

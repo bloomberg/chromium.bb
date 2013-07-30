@@ -22,10 +22,12 @@ class Device {
  public:
   ~Device();
 
-  Status StartChrome(const std::string& package,
-                     int port,
-                     const std::string& args);
-  Status StopChrome();
+  Status StartApp(const std::string& package,
+                  const std::string& activity,
+                  const std::string& process,
+                  const std::string& args,
+                  int port);
+  Status StopApp();
 
  private:
   friend class DeviceManager;
