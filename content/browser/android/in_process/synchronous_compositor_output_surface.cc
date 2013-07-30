@@ -93,6 +93,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       did_swap_buffer_(false),
       current_sw_canvas_(NULL) {
   capabilities_.deferred_gl_initialization = true;
+  capabilities_.draw_and_swap_full_viewport_every_frame = true;
   capabilities_.adjust_deadline_for_parent = false;
   // Cannot call out to GetDelegate() here as the output surface is not
   // constructed on the correct thread.

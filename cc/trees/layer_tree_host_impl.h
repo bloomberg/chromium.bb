@@ -213,7 +213,7 @@ class CC_EXPORT LayerTreeHostImpl
   void OnCanDrawStateChangedForTree();
 
   // Implementation
-  bool CanDraw();
+  bool CanDraw() const;
   OutputSurface* output_surface() const { return output_surface_.get(); }
 
   std::string LayerTreeAsJson() const;

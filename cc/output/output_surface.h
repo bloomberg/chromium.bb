@@ -60,10 +60,12 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
         : delegated_rendering(false),
           max_frames_pending(0),
           deferred_gl_initialization(false),
+          draw_and_swap_full_viewport_every_frame(false),
           adjust_deadline_for_parent(true) {}
     bool delegated_rendering;
     int max_frames_pending;
     bool deferred_gl_initialization;
+    bool draw_and_swap_full_viewport_every_frame;
     // This doesn't handle the <webview> case, but once BeginFrame is
     // supported natively, we shouldn't need adjust_deadline_for_parent.
     bool adjust_deadline_for_parent;

@@ -105,11 +105,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.force_direct_layer_drawing =
       cmd->HasSwitch(cc::switches::kForceDirectLayerDrawing);
 
-  // Android WebView does not support forced draw and this is to prevent
-  // crashes. Adding support for forced draw is tracked in crbug.com/250909.
-  settings.timeout_and_draw_when_animation_checkerboards =
-      !widget->UsingSynchronousRendererCompositor();
-
   int default_tile_width = settings.default_tile_size.width();
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {
     GetSwitchValueAsInt(*cmd, switches::kDefaultTileWidth, 1,

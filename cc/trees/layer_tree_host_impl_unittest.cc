@@ -265,6 +265,72 @@ class LayerTreeHostImplTest : public testing::Test,
   void pinch_zoom_pan_viewport_and_scroll_boundary_test(
       float device_scale_factor);
 
+  void CheckNotifyCalledIfCanDrawChanged(bool always_draw) {
+    // Note: It is not possible to disable the renderer once it has been set,
+    // so we do not need to test that disabling the renderer notifies us
+    // that can_draw changed.
+    EXPECT_FALSE(host_impl_->CanDraw());
+    on_can_draw_state_changed_called_ = false;
+
+    // Set up the root layer, which allows us to draw.
+    SetupScrollAndContentsLayers(gfx::Size(100, 100));
+    EXPECT_TRUE(host_impl_->CanDraw());
+    EXPECT_TRUE(on_can_draw_state_changed_called_);
+    on_can_draw_state_changed_called_ = false;
+
+    // Toggle the root layer to make sure it toggles can_draw
+    host_impl_->active_tree()->SetRootLayer(scoped_ptr<LayerImpl>());
+    EXPECT_FALSE(host_impl_->CanDraw());
+    EXPECT_TRUE(on_can_draw_state_changed_called_);
+    on_can_draw_state_changed_called_ = false;
+
+    SetupScrollAndContentsLayers(gfx::Size(100, 100));
+    EXPECT_TRUE(host_impl_->CanDraw());
+    EXPECT_TRUE(on_can_draw_state_changed_called_);
+    on_can_draw_state_changed_called_ = false;
+
+    // Toggle the device viewport size to make sure it toggles can_draw.
+    host_impl_->SetViewportSize(gfx::Size());
+    if (always_draw) {
+      EXPECT_TRUE(host_impl_->CanDraw());
+    } else {
+      EXPECT_FALSE(host_impl_->CanDraw());
+    }
+    EXPECT_TRUE(on_can_draw_state_changed_called_);
+    on_can_draw_state_changed_called_ = false;
+
+    host_impl_->SetViewportSize(gfx::Size(100, 100));
+    EXPECT_TRUE(host_impl_->CanDraw());
+    EXPECT_TRUE(on_can_draw_state_changed_called_);
+    on_can_draw_state_changed_called_ = false;
+
+    // Toggle contents textures purged without causing any evictions,
+    // and make sure that it does not change can_draw.
+    set_reduce_memory_result(false);
+    host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
+        host_impl_->memory_allocation_limit_bytes() - 1), true);
+    EXPECT_TRUE(host_impl_->CanDraw());
+    EXPECT_FALSE(on_can_draw_state_changed_called_);
+    on_can_draw_state_changed_called_ = false;
+
+    // Toggle contents textures purged to make sure it toggles can_draw.
+    set_reduce_memory_result(true);
+    host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
+        host_impl_->memory_allocation_limit_bytes() - 1), true);
+    if (always_draw) {
+      EXPECT_TRUE(host_impl_->CanDraw());
+    } else {
+      EXPECT_FALSE(host_impl_->CanDraw());
+    }
+    EXPECT_TRUE(on_can_draw_state_changed_called_);
+    on_can_draw_state_changed_called_ = false;
+
+    host_impl_->active_tree()->ResetContentsTexturesPurged();
+    EXPECT_TRUE(host_impl_->CanDraw());
+    EXPECT_TRUE(on_can_draw_state_changed_called_);
+    on_can_draw_state_changed_called_ = false;
+  }
+
  protected:
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() {
     return CreateFakeOutputSurface();
@@ -294,68 +360,29 @@ class LayerTreeHostImplTest : public testing::Test,
   int current_priority_cutoff_value_;
 };
 
+TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
+  bool always_draw = false;
+  CheckNotifyCalledIfCanDrawChanged(always_draw);
+}
+
+TEST_F(LayerTreeHostImplTest, CanDrawIncompleteFrames) {
+  LayerTreeSettings settings;
+  settings.impl_side_painting = true;
+  host_impl_ = LayerTreeHostImpl::Create(
+      settings, this, &proxy_, &stats_instrumentation_);
+  host_impl_->InitializeRenderer(
+      FakeOutputSurface::CreateAlwaysDrawAndSwap3d().PassAs<OutputSurface>());
+  host_impl_->SetViewportSize(gfx::Size(10, 10));
+
+  bool always_draw = true;
+  CheckNotifyCalledIfCanDrawChanged(always_draw);
+}
+
 class TestWebGraphicsContext3DMakeCurrentFails
     : public TestWebGraphicsContext3D {
  public:
   virtual bool makeContextCurrent() OVERRIDE { return false; }
 };
-
-TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
-  // Note: It is not possible to disable the renderer once it has been set,
-  // so we do not need to test that disabling the renderer notifies us
-  // that can_draw changed.
-  EXPECT_FALSE(host_impl_->CanDraw());
-  on_can_draw_state_changed_called_ = false;
-
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  EXPECT_TRUE(host_impl_->CanDraw());
-  EXPECT_TRUE(on_can_draw_state_changed_called_);
-  on_can_draw_state_changed_called_ = false;
-
-  // Toggle the root layer to make sure it toggles can_draw
-  host_impl_->active_tree()->SetRootLayer(scoped_ptr<LayerImpl>());
-  EXPECT_FALSE(host_impl_->CanDraw());
-  EXPECT_TRUE(on_can_draw_state_changed_called_);
-  on_can_draw_state_changed_called_ = false;
-
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  EXPECT_TRUE(host_impl_->CanDraw());
-  EXPECT_TRUE(on_can_draw_state_changed_called_);
-  on_can_draw_state_changed_called_ = false;
-
-  // Toggle the device viewport size to make sure it toggles can_draw.
-  host_impl_->SetViewportSize(gfx::Size());
-  EXPECT_FALSE(host_impl_->CanDraw());
-  EXPECT_TRUE(on_can_draw_state_changed_called_);
-  on_can_draw_state_changed_called_ = false;
-
-  host_impl_->SetViewportSize(gfx::Size(100, 100));
-  EXPECT_TRUE(host_impl_->CanDraw());
-  EXPECT_TRUE(on_can_draw_state_changed_called_);
-  on_can_draw_state_changed_called_ = false;
-
-  // Toggle contents textures purged without causing any evictions,
-  // and make sure that it does not change can_draw.
-  set_reduce_memory_result(false);
-  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes() - 1), true);
-  EXPECT_TRUE(host_impl_->CanDraw());
-  EXPECT_FALSE(on_can_draw_state_changed_called_);
-  on_can_draw_state_changed_called_ = false;
-
-  // Toggle contents textures purged to make sure it toggles can_draw.
-  set_reduce_memory_result(true);
-  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes() - 1), true);
-  EXPECT_FALSE(host_impl_->CanDraw());
-  EXPECT_TRUE(on_can_draw_state_changed_called_);
-  on_can_draw_state_changed_called_ = false;
-
-  host_impl_->active_tree()->ResetContentsTexturesPurged();
-  EXPECT_TRUE(host_impl_->CanDraw());
-  EXPECT_TRUE(on_can_draw_state_changed_called_);
-  on_can_draw_state_changed_called_ = false;
-}
 
 TEST_F(LayerTreeHostImplTest, ScrollDeltaNoLayers) {
   ASSERT_FALSE(host_impl_->active_tree()->root_layer());
@@ -2771,32 +2798,47 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->DidDrawAllLayers(frame);
 }
 
-TEST_F(LayerTreeHostImplTest, ViewportCovered) {
-  host_impl_->InitializeRenderer(CreateOutputSurface());
-  host_impl_->active_tree()->set_background_color(SK_ColorGRAY);
+class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
+ public:
+  void CreateLayerTreeHostImpl(bool always_draw) {
+    LayerTreeSettings settings;
+    settings.minimum_occlusion_tracking_size = gfx::Size();
+    settings.impl_side_painting = true;
+    host_impl_ = LayerTreeHostImpl::Create(
+        settings, this, &proxy_, &stats_instrumentation_);
+    scoped_ptr<OutputSurface> output_surface;
+    if (always_draw) {
+      output_surface = FakeOutputSurface::CreateAlwaysDrawAndSwap3d()
+          .PassAs<OutputSurface>();
+    } else {
+      output_surface = CreateFakeOutputSurface();
+    }
+    host_impl_->InitializeRenderer(output_surface.Pass());
+    viewport_size_ = gfx::Size(1000, 1000);
+  }
 
-  gfx::Size viewport_size(1000, 1000);
-  host_impl_->SetViewportSize(viewport_size);
+  void SetupActiveTreeLayers() {
+    host_impl_->active_tree()->set_background_color(SK_ColorGRAY);
+    host_impl_->active_tree()->SetRootLayer(
+        LayerImpl::Create(host_impl_->active_tree(), 1));
+    host_impl_->active_tree()->root_layer()->AddChild(
+        BlendStateCheckLayer::Create(host_impl_->active_tree(),
+                                     2,
+                                     host_impl_->resource_provider()));
+    child_ = static_cast<BlendStateCheckLayer*>(
+        host_impl_->active_tree()->root_layer()->children()[0]);
+    child_->SetExpectation(false, false);
+    child_->SetContentsOpaque(true);
+  }
 
-  host_impl_->active_tree()->SetRootLayer(
-      LayerImpl::Create(host_impl_->active_tree(), 1));
-  host_impl_->active_tree()->root_layer()->AddChild(
-      BlendStateCheckLayer::Create(host_impl_->active_tree(),
-                                   2,
-                                   host_impl_->resource_provider()));
-  BlendStateCheckLayer* child = static_cast<BlendStateCheckLayer*>(
-      host_impl_->active_tree()->root_layer()->children()[0]);
-  child->SetExpectation(false, false);
-  child->SetContentsOpaque(true);
-
-  // No gutter rects
-  {
-    gfx::Rect layer_rect(0, 0, 1000, 1000);
-    child->SetPosition(layer_rect.origin());
-    child->SetBounds(layer_rect.size());
-    child->SetContentBounds(layer_rect.size());
-    child->SetQuadRect(gfx::Rect(layer_rect.size()));
-    child->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
+  // Expect no gutter rects.
+  void TestLayerCoversFullViewport() {
+    gfx::Rect layer_rect(viewport_size_);
+    child_->SetPosition(layer_rect.origin());
+    child_->SetBounds(layer_rect.size());
+    child_->SetContentBounds(layer_rect.size());
+    child_->SetQuadRect(gfx::Rect(layer_rect.size()));
+    child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
 
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
@@ -2810,18 +2852,18 @@ TEST_F(LayerTreeHostImplTest, ViewportCovered) {
     EXPECT_EQ(1u, frame.render_passes[0]->quad_list.size());
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(
-        frame.render_passes[0]->quad_list, gfx::Rect(viewport_size));
+        frame.render_passes[0]->quad_list, gfx::Rect(viewport_size_));
     host_impl_->DidDrawAllLayers(frame);
   }
 
-  // Empty visible content area (fullscreen gutter rect)
-  {
+  // Expect fullscreen gutter rect.
+  void TestEmptyLayer() {
     gfx::Rect layer_rect(0, 0, 0, 0);
-    child->SetPosition(layer_rect.origin());
-    child->SetBounds(layer_rect.size());
-    child->SetContentBounds(layer_rect.size());
-    child->SetQuadRect(gfx::Rect(layer_rect.size()));
-    child->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
+    child_->SetPosition(layer_rect.origin());
+    child_->SetBounds(layer_rect.size());
+    child_->SetContentBounds(layer_rect.size());
+    child_->SetQuadRect(gfx::Rect(layer_rect.size()));
+    child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
 
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
@@ -2835,18 +2877,18 @@ TEST_F(LayerTreeHostImplTest, ViewportCovered) {
     EXPECT_EQ(1u, frame.render_passes[0]->quad_list.size());
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(
-        frame.render_passes[0]->quad_list, gfx::Rect(viewport_size));
+        frame.render_passes[0]->quad_list, gfx::Rect(viewport_size_));
     host_impl_->DidDrawAllLayers(frame);
   }
 
-  // Content area in middle of clip rect (four surrounding gutter rects)
-  {
+  // Expect four surrounding gutter rects.
+  void TestLayerInMiddleOfViewport() {
     gfx::Rect layer_rect(500, 500, 200, 200);
-    child->SetPosition(layer_rect.origin());
-    child->SetBounds(layer_rect.size());
-    child->SetContentBounds(layer_rect.size());
-    child->SetQuadRect(gfx::Rect(layer_rect.size()));
-    child->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
+    child_->SetPosition(layer_rect.origin());
+    child_->SetBounds(layer_rect.size());
+    child_->SetContentBounds(layer_rect.size());
+    child_->SetQuadRect(gfx::Rect(layer_rect.size()));
+    child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
 
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
@@ -2860,11 +2902,96 @@ TEST_F(LayerTreeHostImplTest, ViewportCovered) {
     EXPECT_EQ(5u, frame.render_passes[0]->quad_list.size());
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(
-        frame.render_passes[0]->quad_list, gfx::Rect(viewport_size));
+        frame.render_passes[0]->quad_list, gfx::Rect(viewport_size_));
     host_impl_->DidDrawAllLayers(frame);
   }
+
+  // Expect no gutter rects.
+  void TestLayerIsLargerThanViewport() {
+    gfx::Rect layer_rect(viewport_size_.width() + 10,
+                         viewport_size_.height() + 10);
+    child_->SetPosition(layer_rect.origin());
+    child_->SetBounds(layer_rect.size());
+    child_->SetContentBounds(layer_rect.size());
+    child_->SetQuadRect(gfx::Rect(layer_rect.size()));
+    child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
+
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+    ASSERT_EQ(1u, frame.render_passes.size());
+
+    size_t num_gutter_quads = 0;
+    for (size_t i = 0; i < frame.render_passes[0]->quad_list.size(); ++i)
+      num_gutter_quads += (frame.render_passes[0]->quad_list[i]->material ==
+                           DrawQuad::SOLID_COLOR) ? 1 : 0;
+    EXPECT_EQ(0u, num_gutter_quads);
+    EXPECT_EQ(1u, frame.render_passes[0]->quad_list.size());
+
+    host_impl_->DidDrawAllLayers(frame);
+  }
+
+  virtual void DidActivatePendingTree() OVERRIDE {
+    did_activate_pending_tree_ = true;
+  }
+
+ protected:
+  gfx::Size viewport_size_;
+  BlendStateCheckLayer* child_;
+  bool did_activate_pending_tree_;
+};
+
+TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCovered) {
+  bool always_draw = false;
+  CreateLayerTreeHostImpl(always_draw);
+
+  host_impl_->SetViewportSize(viewport_size_);
+  SetupActiveTreeLayers();
+  TestLayerCoversFullViewport();
+  TestEmptyLayer();
+  TestLayerInMiddleOfViewport();
+  TestLayerIsLargerThanViewport();
 }
 
+TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeGrowViewportInvalid) {
+  bool always_draw = true;
+  CreateLayerTreeHostImpl(always_draw);
+
+  // Pending tree to force active_tree size invalid. Not used otherwise.
+  host_impl_->CreatePendingTree();
+  host_impl_->SetViewportSize(viewport_size_);
+  EXPECT_TRUE(host_impl_->active_tree()->ViewportSizeInvalid());
+
+  SetupActiveTreeLayers();
+  TestEmptyLayer();
+  TestLayerInMiddleOfViewport();
+  TestLayerIsLargerThanViewport();
+}
+
+TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeShrinkViewportInvalid) {
+  bool always_draw = true;
+  CreateLayerTreeHostImpl(always_draw);
+
+  // Set larger viewport and activate it to active tree.
+  host_impl_->CreatePendingTree();
+  gfx::Size larger_viewport(viewport_size_.width() + 100,
+                            viewport_size_.height() + 100);
+  host_impl_->SetViewportSize(larger_viewport);
+  EXPECT_TRUE(host_impl_->active_tree()->ViewportSizeInvalid());
+  did_activate_pending_tree_ = false;
+  host_impl_->ActivatePendingTreeIfNeeded();
+  EXPECT_TRUE(did_activate_pending_tree_);
+  EXPECT_FALSE(host_impl_->active_tree()->ViewportSizeInvalid());
+
+  // Shrink pending tree viewport without activating.
+  host_impl_->CreatePendingTree();
+  host_impl_->SetViewportSize(viewport_size_);
+  EXPECT_TRUE(host_impl_->active_tree()->ViewportSizeInvalid());
+
+  SetupActiveTreeLayers();
+  TestEmptyLayer();
+  TestLayerInMiddleOfViewport();
+  TestLayerIsLargerThanViewport();
+}
 
 class ReshapeTrackerContext: public TestWebGraphicsContext3D {
  public:

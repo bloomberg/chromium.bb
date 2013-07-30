@@ -56,11 +56,18 @@ class FakeOutputSurface : public OutputSurface {
         new FakeOutputSurface(software_device.Pass(), true));
   }
 
+  // TODO(boliu): Use a general factory that takes Capabilities arg.
   static scoped_ptr<FakeOutputSurface> CreateDeferredGL(
       scoped_ptr<SoftwareOutputDevice> software_device) {
     scoped_ptr<FakeOutputSurface> result(
         new FakeOutputSurface(software_device.Pass(), false));
     result->capabilities_.deferred_gl_initialization = true;
+    return result.Pass();
+  }
+
+  static scoped_ptr<FakeOutputSurface> CreateAlwaysDrawAndSwap3d() {
+    scoped_ptr<FakeOutputSurface> result(Create3d());
+    result->capabilities_.draw_and_swap_full_viewport_every_frame = true;
     return result.Pass();
   }
 
