@@ -187,8 +187,9 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
                     break;
             }
         }
-    } else
-        traitsMask |= FontVariantMask;
+    } else {
+        traitsMask |= FontVariantNormalMask;
+    }
 
     // Each item in the src property's list is a single CSSFontFaceSource. Put them all into a CSSFontFace.
     RefPtr<CSSFontFace> fontFace;
