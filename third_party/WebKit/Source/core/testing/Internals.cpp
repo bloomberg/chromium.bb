@@ -39,6 +39,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "TypeConversions.h"
 #include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/V8ThrowException.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -92,6 +93,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
+#include "core/page/PagePopupController.h"
 #include "core/page/PrintContext.h"
 #include "core/page/Settings.h"
 #include "core/page/animation/AnimationController.h"
@@ -99,26 +101,25 @@
 #include "core/platform/ColorChooser.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/Language.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/filters/FilterOperation.h"
+#include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
+#include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
+#include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/RenderView.h"
+#include "core/testing/GCObservation.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/speech/DOMWindowSpeechSynthesis.h"
+#include "modules/speech/SpeechSynthesis.h"
 #include "weborigin/SchemeRegistry.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
-
-#include "core/page/PagePopupController.h"
-#include "core/platform/graphics/GraphicsLayer.h"
-#include "core/platform/graphics/filters/FilterOperation.h"
-#include "core/platform/graphics/filters/FilterOperations.h"
-#include "core/rendering/RenderLayerBacking.h"
-
-#include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
-#include "modules/speech/DOMWindowSpeechSynthesis.h"
-#include "modules/speech/SpeechSynthesis.h"
+#include <v8.h>
 
 namespace WebCore {
 
@@ -260,6 +261,18 @@ String Internals::address(Node* node)
     sprintf(buf, "%p", node);
 
     return String(buf);
+}
+
+PassRefPtr<GCObservation> Internals::observeGC(ScriptValue scriptValue)
+{
+    v8::Handle<v8::Value> observedValue = scriptValue.v8Value();
+    ASSERT(!observedValue.IsEmpty());
+    if (observedValue->IsNull() || observedValue->IsUndefined()) {
+        V8ThrowException::throwTypeError("value to observe is null or undefined", v8::Isolate::GetCurrent());
+        return 0;
+    }
+
+    return GCObservation::create(observedValue);
 }
 
 bool Internals::isPreloaded(const String& url)

@@ -1116,6 +1116,8 @@
       ],
       'sources': [
         '<@(webcore_test_support_files)',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GCObservation.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GCObservation.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8MallocStatistics.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8MallocStatistics.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8TypeConversions.cpp',

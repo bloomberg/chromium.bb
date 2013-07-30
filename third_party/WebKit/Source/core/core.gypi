@@ -3648,6 +3648,7 @@
             'svg/properties/SVGPathSegListPropertyTearOff.cpp',
         ],
         'deprecated_perl_webcore_test_support_idl_files': [
+          'testing/GCObservation.idl',
           'testing/Internals.idl',
           'testing/InternalProfilers.idl',
           'testing/InternalSettings.idl',
@@ -3663,6 +3664,8 @@
         'webcore_test_support_files': [
             'testing/v8/WebCoreTestSupport.cpp',
             'testing/v8/WebCoreTestSupport.h',
+            'testing/GCObservation.cpp',
+            'testing/GCObservation.h',
             'testing/InspectorFrontendClientLocal.cpp',
             'testing/InspectorFrontendClientLocal.h',
             'testing/Internals.cpp',

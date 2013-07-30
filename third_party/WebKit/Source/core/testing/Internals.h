@@ -27,6 +27,7 @@
 #ifndef Internals_h
 #define Internals_h
 
+#include "bindings/v8/ScriptValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
@@ -48,6 +49,7 @@ class Document;
 class DocumentMarker;
 class Element;
 class Frame;
+class GCObservation;
 class InspectorFrontendChannelDummy;
 class InternalRuntimeFlags;
 class InternalProfilers;
@@ -77,6 +79,8 @@ public:
     String elementRenderTreeAsText(Element*, ExceptionCode&);
 
     String address(Node*);
+
+    PassRefPtr<GCObservation> observeGC(ScriptValue);
 
     bool isPreloaded(const String& url);
     bool isLoadingFromMemoryCache(const String& url);
