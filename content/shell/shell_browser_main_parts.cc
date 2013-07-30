@@ -11,6 +11,8 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
@@ -24,6 +26,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "content/public/browser/plugin_service.h"
@@ -43,7 +46,10 @@ namespace content {
 
 namespace {
 
-static GURL GetStartupURL() {
+// Default quota for each origin is 5MB.
+const int kDefaultLayoutTestQuotaBytes = 5 * 1024 * 1024;
+
+GURL GetStartupURL() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kContentBrowserTest))
     return GURL();
@@ -126,13 +132,24 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                            gfx::Size());
   }
 
-#if defined(ENABLE_PLUGINS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    quota::QuotaManager* quota_manager =
+        BrowserContext::GetDefaultStoragePartition(browser_context())
+            ->GetQuotaManager();
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&quota::QuotaManager::SetTemporaryGlobalOverrideQuota,
+                   quota_manager,
+                   kDefaultLayoutTestQuotaBytes *
+                       quota::QuotaManager::kPerHostTemporaryPortion,
+                   quota::QuotaCallback()));
+#if defined(ENABLE_PLUGINS)
     PluginService* plugin_service = PluginService::GetInstance();
     plugin_service_filter_.reset(new ShellPluginServiceFilter);
     plugin_service->SetFilter(plugin_service_filter_.get());
-  }
 #endif
+  }
 
   if (parameters_.ui_task) {
     parameters_.ui_task->Run();
