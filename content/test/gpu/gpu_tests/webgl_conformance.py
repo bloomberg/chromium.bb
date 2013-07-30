@@ -5,6 +5,8 @@ import json
 import os
 import sys
 
+import webgl_conformance_expectations
+
 from telemetry import test as test_module
 from telemetry.core import util
 from telemetry.page import page_set
@@ -54,7 +56,7 @@ class WebglConformanceValidator(page_test.PageTest):
 
   def ValidatePage(self, page, tab, results):
     if not _DidWebGLTestSucceed(tab):
-      results.AddFailureMessage(page, _WebGLTestMessages(tab))
+      raise page_test.Failure(_WebGLTestMessages(tab))
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--enable-webgl')
@@ -87,6 +89,9 @@ class WebglConformance(test_module.Test):
       })
 
     return page_set.PageSet.FromDict(page_set_dict, conformance_path)
+
+  def CreateExpectations(self, page_set):
+    return webgl_conformance_expectations.WebGLConformanceExpectations()
 
   @staticmethod
   def _ParseTests(path, version=None):
