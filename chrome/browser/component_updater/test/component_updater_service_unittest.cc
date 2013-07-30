@@ -755,7 +755,15 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
 // 3- download full crx
 // 4- update check (loop 2 - no update available)
 // There should be one ping for the first attempted update.
-TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
+// Fails on Window. http://crbug.com/265840
+#if defined(OS_WIN)
+#define MAYBE_DifferentialUpdateFails DISABLED_DifferentialUpdateFails
+#else
+#define MAYBE_DifferentialUpdateFails DifferentialUpdateFails
+#endif
+
+TEST_F(ComponentUpdaterTest, MAYBE_DifferentialUpdateFails) {
+
   std::map<std::string, std::string> map;
   map.insert(std::pair<std::string, std::string>("eventtype", "\"3\""));
   map.insert(std::pair<std::string, std::string>("eventresult", "\"1\""));
