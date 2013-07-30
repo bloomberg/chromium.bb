@@ -1231,7 +1231,9 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
           AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
           target,
           callback));
-  request->set_area(src_subrect);
+  gfx::Rect src_subrect_in_pixel =
+      ConvertRectToPixel(current_device_scale_factor_, src_subrect);
+  request->set_area(src_subrect_in_pixel);
   window_->layer()->RequestCopyOfOutput(request.Pass());
 }
 

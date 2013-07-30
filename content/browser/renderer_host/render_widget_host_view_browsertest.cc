@@ -670,9 +670,9 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
 
       scoped_refptr<media::VideoFrame> video_frame =
           media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
-                                         output_size,
-                                         gfx::Rect(output_size),
-                                         output_size,
+                                         expected_bitmap_size,
+                                         gfx::Rect(expected_bitmap_size),
+                                         expected_bitmap_size,
                                          base::TimeDelta());
 
       base::Callback<void(bool success)> callback =
@@ -865,15 +865,41 @@ class CompositingRenderWidgetHostViewTabCaptureHighDPI
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewTabCaptureHighDPI,
                        MAYBE_CopyFromCompositingSurface) {
   gfx::Rect copy_rect(200, 150);
-  gfx::Size out_size = copy_rect.size();
-  gfx::Size expected_bitmap_size = gfx::ToFlooredSize(gfx::ScaleSize(out_size,
-                                                                     scale(),
-                                                                     scale()));
+  gfx::Size output_size = copy_rect.size();
+  gfx::Size expected_bitmap_size =
+      gfx::ToFlooredSize(gfx::ScaleSize(output_size, scale(), scale()));
   gfx::Size html_rect_size(200, 150);
   bool video_frame = false;
   PerformTestWithLeftRightRects(html_rect_size,
                                 copy_rect,
-                                out_size,
+                                output_size,
+                                expected_bitmap_size,
+                                video_frame);
+}
+
+// High-DPI doesn't work right with content-shell on linux-aura.
+// http://crbug.com/265028
+#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_CopyFromCompositingSurfaceVideoFrame \
+    DISABLED_CopyFromCompositingSurfaceVideoFrame
+#else
+#define MAYBE_CopyFromCompositingSurfaceVideoFrame \
+    CopyFromCompositingSurfaceVideoFrame
+#endif
+IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewTabCaptureHighDPI,
+                       MAYBE_CopyFromCompositingSurfaceVideoFrame) {
+  gfx::Size html_rect_size(200, 150);
+  // Grab 90x60 pixels from the center of the tab contents.
+  gfx::Rect copy_rect =
+      gfx::Rect(gfx::Rect(html_rect_size).CenterPoint() - gfx::Vector2d(45, 30),
+                gfx::Size(90, 60));
+  gfx::Size output_size = copy_rect.size();
+  gfx::Size expected_bitmap_size =
+      gfx::ToFlooredSize(gfx::ScaleSize(output_size, scale(), scale()));
+  bool video_frame = true;
+  PerformTestWithLeftRightRects(html_rect_size,
+                                copy_rect,
+                                output_size,
                                 expected_bitmap_size,
                                 video_frame);
 }
