@@ -12828,6 +12828,17 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.StartupPageLoadSettings" enum="SessionStartupPref">
+  <summary>The startup page settings when a profile is loaded.</summary>
+</histogram>
+
+<histogram name="Settings.StartupPageLoadURLs">
+  <summary>
+    The number of URLs to be loaded on startup when a profile is loaded, if the
+    startup page setting is set to load URLs.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.CheckCRCResult" enum="CheckCRCResult">
   <summary>
     Whether or not the CRC was checked at the moment when the last reference to
@@ -20511,6 +20522,13 @@ other types of suffix sets.
 <enum name="ScrollThread" type="int">
   <int value="0" label="Scroll on impl-thread"/>
   <int value="1" label="Scroll on main-thread"/>
+</enum>
+
+<enum name="SessionStartupPref" type="int">
+  <int value="0" label="Open home page (unused)"/>
+  <int value="1" label="Continue from last opened pages"/>
+  <int value="4" label="Open URLs"/>
+  <int value="5" label="Open new tab page"/>
 </enum>
 
 <enum name="ShillTerminationActionResult" type="int">
