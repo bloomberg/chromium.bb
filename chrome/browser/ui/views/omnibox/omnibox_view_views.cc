@@ -88,6 +88,11 @@ void DoCopyURL(const GURL& url, const string16& text) {
   data.WriteToClipboard();
 }
 
+bool IsOmniboxAutoCompletionForImeEnabled() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableOmniboxAutoCompletionForIme);
+}
+
 }  // namespace
 
 // static
@@ -468,8 +473,7 @@ void OmniboxViewViews::UpdatePopup() {
   model()->StartAutocomplete(
       !sel.is_empty(),
       sel.GetMax() < text().length() ||
-      (IsIMEComposing() && !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOmniboxAutoCompletionForIme)));
+      (IsIMEComposing() && !IsOmniboxAutoCompletionForImeEnabled()));
 }
 
 void OmniboxViewViews::SetFocus() {

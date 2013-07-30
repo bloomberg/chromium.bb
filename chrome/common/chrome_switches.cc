@@ -354,6 +354,10 @@ const char kDisableMinimizeOnSecondLauncherItemClick[] =
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
+// Disables omnibox auto-completion when IME is active.
+const char kDisableOmniboxAutoCompletionForIme[] =
+    "disable-omnibox-auto-completion-for-ime";
+
 // Disable using a public suffix based domain matching for autofill of
 // passwords.
 const char kDisablePasswordAutofillPublicSuffixDomainMatching[] =

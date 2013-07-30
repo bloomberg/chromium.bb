@@ -1544,11 +1544,12 @@ const Experiment kExperiments[] = {
 #endif
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
   {
-    "enable-omnibox-auto-completion-for-ime",
+    "omnibox-auto-completion-for-ime",
     IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_NAME,
     IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableOmniboxAutoCompletionForIme)
+    kOsCrOS | kOsWin,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOmniboxAutoCompletionForIme,
+                              switches::kDisableOmniboxAutoCompletionForIme)
   },
 #endif
 #if defined(USE_AURA)
