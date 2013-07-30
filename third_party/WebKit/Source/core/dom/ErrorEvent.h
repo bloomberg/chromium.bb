@@ -42,7 +42,7 @@ struct ErrorEventInit : public EventInit {
     String message;
     String filename;
     unsigned lineno;
-    unsigned column;
+    unsigned colno;
 };
 
 class ErrorEvent : public Event {
@@ -64,7 +64,7 @@ public:
     const String& message() const { return m_message; }
     const String& filename() const { return m_fileName; }
     unsigned lineno() const { return m_lineNumber; }
-    unsigned column() const { return m_columnNumber; }
+    unsigned colno() const { return m_columnNumber; }
 
     virtual const AtomicString& interfaceName() const;
 

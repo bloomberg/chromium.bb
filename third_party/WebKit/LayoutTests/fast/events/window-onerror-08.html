@@ -18,9 +18,7 @@
             shouldBe('onerrorMessage', 'window.event.message');
             shouldBe('stripURL(onerrorURL)', 'stripURL(window.event.filename)');
             shouldBe('onerrorLine', 'window.event.lineno');
-
-            // FIXME: Update this once the event interface has columns.
-            shouldBeUndefined('window.event.column');
+            shouldBe('onerrorColumn', 'window.event.colno');
             return true;
         };
     </script>

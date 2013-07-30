@@ -56,7 +56,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptExecutionContext
     if (!listener.IsEmpty() && listener->IsFunction()) {
         v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);
         v8::Local<v8::Object> thisValue = v8::Context::GetCurrent()->Global();
-        v8::Handle<v8::Value> parameters[4] = { v8String(errorEvent->message(), isolate), v8String(errorEvent->filename(), isolate), v8::Integer::New(errorEvent->lineno(), isolate), v8::Integer::New(errorEvent->column(), isolate) };
+        v8::Handle<v8::Value> parameters[4] = { v8String(errorEvent->message(), isolate), v8String(errorEvent->filename(), isolate), v8::Integer::New(errorEvent->lineno(), isolate), v8::Integer::New(errorEvent->colno(), isolate) };
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
         if (worldType(isolate) == WorkerWorld)
