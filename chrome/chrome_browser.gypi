@@ -2280,6 +2280,8 @@
         'browser/translate/translate_url_util.h',
         'browser/undo/undo_manager.cc',
         'browser/undo/undo_manager.h',
+        'browser/undo/undo_manager_utils.cc',
+        'browser/undo/undo_manager_utils.h',
         'browser/undo/undo_operation.h',
         'browser/upgrade_detector.cc',
         'browser/upgrade_detector.h',
