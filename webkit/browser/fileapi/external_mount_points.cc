@@ -9,7 +9,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/remote_file_system_proxy.h"
 
 namespace {
 
@@ -58,38 +57,19 @@ namespace fileapi {
 
 class ExternalMountPoints::Instance {
  public:
-  Instance(FileSystemType type,
-           const base::FilePath& path,
-           RemoteFileSystemProxyInterface* remote_proxy);
-
-  ~Instance();
+  Instance(FileSystemType type, const base::FilePath& path)
+      : type_(type), path_(path.StripTrailingSeparators()) {}
+  ~Instance() {}
 
   FileSystemType type() const { return type_; }
   const base::FilePath& path() const { return path_; }
-  RemoteFileSystemProxyInterface* remote_proxy() const {
-    return remote_proxy_.get();
-  }
 
  private:
   const FileSystemType type_;
   const base::FilePath path_;
 
-  // For file systems that have a remote file system proxy.
-  scoped_refptr<RemoteFileSystemProxyInterface> remote_proxy_;
-
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };
-
-ExternalMountPoints::Instance::Instance(FileSystemType type,
-                                        const base::FilePath& path,
-                                        RemoteFileSystemProxyInterface* proxy)
-    : type_(type),
-      path_(path.StripTrailingSeparators()),
-      remote_proxy_(proxy) {
-  DCHECK(!proxy || (kFileSystemTypeDrive == type_));
-}
-
-ExternalMountPoints::Instance::~Instance() {}
 
 //--------------------------------------------------------------------------
 
@@ -106,14 +86,6 @@ scoped_refptr<ExternalMountPoints> ExternalMountPoints::CreateRefCounted() {
 bool ExternalMountPoints::RegisterFileSystem(
     const std::string& mount_name,
     FileSystemType type,
-    const base::FilePath& path) {
-  return RegisterRemoteFileSystem(mount_name, type, NULL, path);
-}
-
-bool ExternalMountPoints::RegisterRemoteFileSystem(
-    const std::string& mount_name,
-    FileSystemType type,
-    RemoteFileSystemProxyInterface* remote_proxy,
     const base::FilePath& path_in) {
   base::AutoLock locker(lock_);
 
@@ -121,7 +93,7 @@ bool ExternalMountPoints::RegisterRemoteFileSystem(
   if (!ValidateNewMountPoint(mount_name, path))
     return false;
 
-  instance_map_[mount_name] = new Instance(type, path, remote_proxy);
+  instance_map_[mount_name] = new Instance(type, path);
   if (!path.empty())
     path_to_name_map_.insert(std::make_pair(path, mount_name));
   return true;
@@ -213,15 +185,6 @@ FileSystemURL ExternalMountPoints::CreateCrackedFileSystemURL(
     FileSystemType type,
     const base::FilePath& path) const {
   return CrackFileSystemURL(FileSystemURL(origin, type, path));
-}
-
-RemoteFileSystemProxyInterface* ExternalMountPoints::GetRemoteFileSystemProxy(
-    const std::string& mount_name) const {
-  base::AutoLock locker(lock_);
-  NameToInstance::const_iterator found = instance_map_.find(mount_name);
-  if (found == instance_map_.end())
-    return NULL;
-  return found->second->remote_proxy();
 }
 
 void ExternalMountPoints::AddMountPointInfosTo(

@@ -175,7 +175,6 @@
         'browser/fileapi/open_file_system_mode.h',
         'browser/fileapi/recursive_operation_delegate.cc',
         'browser/fileapi/recursive_operation_delegate.h',
-        'browser/fileapi/remote_file_system_proxy.h',
         'browser/fileapi/remove_operation_delegate.cc',
         'browser/fileapi/remove_operation_delegate.h',
         'browser/fileapi/sandbox_context.cc',

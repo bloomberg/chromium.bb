@@ -13,7 +13,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "webkit/browser/fileapi/local_file_stream_writer.h"
-#include "webkit/browser/fileapi/remote_file_system_proxy.h"
 
 using content::BrowserThread;
 

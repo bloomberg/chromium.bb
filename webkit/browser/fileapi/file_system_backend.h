@@ -33,7 +33,6 @@ class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperation;
 class FileSystemQuotaUtil;
-class RemoteFileSystemProxyInterface;
 
 // An interface for defining a file system backend.
 //

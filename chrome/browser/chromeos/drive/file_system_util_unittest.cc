@@ -110,10 +110,9 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   // Type:"external" + virtual_path:"drive/foo/bar" resolves to "drive/foo/bar".
   const std::string& drive_mount_name =
       GetDriveMountPointPath().BaseName().AsUTF8Unsafe();
-  mount_points->RegisterRemoteFileSystem(
+  mount_points->RegisterFileSystem(
       drive_mount_name,
       fileapi::kFileSystemTypeDrive,
-      NULL,  // RemoteFileSystemProxyInterface
       GetDriveMountPointPath());
   EXPECT_EQ(
       base::FilePath::FromUTF8Unsafe(drive_mount_name + "/foo/bar"),
@@ -123,10 +122,9 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
 
   // Virtual mount name should not affect the extracted path.
   mount_points->RevokeFileSystem(drive_mount_name);
-  mount_points->RegisterRemoteFileSystem(
+  mount_points->RegisterFileSystem(
       "drive2",
       fileapi::kFileSystemTypeDrive,
-      NULL,  // RemoteFileSystemProxyInterface
       GetDriveMountPointPath());
   EXPECT_EQ(
       base::FilePath::FromUTF8Unsafe(drive_mount_name + "/foo/bar"),

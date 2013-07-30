@@ -21,7 +21,6 @@ class FilePath;
 
 namespace fileapi {
 class FileSystemURL;
-class RemoteFileSystemProxyInterface;
 }
 
 namespace fileapi {
@@ -64,13 +63,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
                           FileSystemType type,
                           const base::FilePath& path);
 
-  // Same as |RegisterExternalFileSystem|, but also registers a remote file
-  // system proxy for the file system.
-  bool RegisterRemoteFileSystem(const std::string& mount_name,
-                                FileSystemType type,
-                                RemoteFileSystemProxyInterface* remote_proxy,
-                                const base::FilePath& path);
-
   // MountPoints overrides.
   virtual bool HandlesFileSystemMountType(FileSystemType type) const OVERRIDE;
   virtual bool RevokeFileSystem(const std::string& mount_name) OVERRIDE;
@@ -85,12 +77,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
       const GURL& origin,
       FileSystemType type,
       const base::FilePath& path) const OVERRIDE;
-
-  // Retrieves the remote file system proxy for the registered file system.
-  // Returns NULL if there is no file system with the given name, or if the file
-  // system does not have a remote file system proxy.
-  RemoteFileSystemProxyInterface* GetRemoteFileSystemProxy(
-      const std::string& mount_name) const;
 
   // Returns a list of registered MountPointInfos (of <mount_name, path>).
   void AddMountPointInfosTo(std::vector<MountPointInfo>* mount_points) const;
