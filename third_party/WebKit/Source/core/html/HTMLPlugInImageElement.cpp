@@ -181,7 +181,7 @@ void HTMLPlugInImageElement::detach(const AttachContext& context)
 
 void HTMLPlugInImageElement::updateWidgetIfNecessary()
 {
-    document()->updateStyleForNodeIfNeeded(this);
+    document()->updateStyleIfNeeded();
 
     if (!needsWidgetUpdate() || useFallbackContent() || isImageType())
         return;
