@@ -44,8 +44,7 @@ base::TimeDelta GetNextRequestDelayMs(base::TimeDelta last_delay) {
 }
 
 void LoadNSSCertificates(net::CertificateList* cert_list) {
-  if (base::chromeos::IsRunningOnChromeOS())
-    net::NSSCertDatabase::GetInstance()->ListCerts(cert_list);
+  net::NSSCertDatabase::GetInstance()->ListCerts(cert_list);
 }
 
 void CallOpenPersistentNSSDB() {
@@ -345,8 +344,9 @@ void CertLoader::UpdateCertificates(net::CertificateList* cert_list) {
   // Ignore any existing certificates.
   cert_list_.swap(*cert_list);
 
-  NotifyCertificatesLoaded(!certificates_loaded_);
+  bool initial_load = !certificates_loaded_;
   certificates_loaded_ = true;
+  NotifyCertificatesLoaded(initial_load);
 
   certificates_update_running_ = false;
   if (certificates_update_required_)
