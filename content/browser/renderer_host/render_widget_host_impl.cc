@@ -972,6 +972,9 @@ void RenderWidgetHostImpl::SimulateTouchGestureWithMouse(
         startX = x;
         startY = y;
         ForwardGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureScrollBegin, mouse_event.timeStampSeconds,
+            x, y, 0));
+        ForwardGestureEvent(MakeGestureEvent(
             WebInputEvent::GesturePinchBegin, mouse_event.timeStampSeconds,
             x, y, 0));
       }
@@ -986,6 +989,9 @@ void RenderWidgetHostImpl::SimulateTouchGestureWithMouse(
       if (mouse_event.type == WebInputEvent::MouseUp) {
         ForwardGestureEvent(MakeGestureEvent(
             WebInputEvent::GesturePinchEnd, mouse_event.timeStampSeconds,
+            x, y, 0));
+        ForwardGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureScrollEnd, mouse_event.timeStampSeconds,
             x, y, 0));
       }
       break;
