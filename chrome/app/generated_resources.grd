@@ -5552,6 +5552,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_APPS_DEVTOOL_UNPACKED_INSTALLED" desc="Text for the word 'Unpacked' (unpacked app or extension).">
         Unpacked
       </message>
+      <message name="IDS_APPS_DEVTOOL_INSTALLED" desc="Text for the word 'Installed' (installed app or extension).">
+        Installed
+      </message>
       <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
         Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> instead?
       </message>

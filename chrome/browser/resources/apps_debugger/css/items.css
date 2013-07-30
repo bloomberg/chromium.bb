@@ -16,10 +16,6 @@ html {
 }
 
 body {
-  overflow: scroll;
-}
-
-body {
   overflow-y: scroll;
 }
 
@@ -109,7 +105,7 @@ tabpanel {
   background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0));
   height: 30px;
   position: fixed;
-  top: 79px;
+  top: 80px;
   width: 100%;
 }
 
@@ -156,11 +152,18 @@ html[dir='rtl'] #search {
 
 .loading #no-extensions,
 .loading #no-apps,
-.loading #no-unpacked,
-#packed-extension-list:not(.empty-item-list) ~ #no-extensions,
-#packed-app-list:not(.empty-item-list) ~ #no-apps,
-#unpacked-list:not(.empty-item-list) ~ #no-unpacked,
-.empty-item-list {
+#apps-tab:not(.empty-item-list) #no-apps,
+#extensions-tab:not(.empty-item-list) #no-extensions {
+  display: none;
+}
+
+.list-header {
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+#packed-list.empty-item-list .list-header,
+#unpacked-list.empty-item-list .list-header {
   display: none;
 }
 

@@ -11,11 +11,14 @@ cr.define('apps_dev_tool', function() {
   // The list of all packed apps.
   var packedAppList = [];
 
+  // The list of all unpacked apps.
+  var unpackedAppList = [];
+
   // The list of all packed extensions.
   var packedExtensionList = [];
 
-  // The list of all unpacked apps or extensions.
-  var unpackedList = [];
+  // The list of all unpacked extensions.
+  var unpackedExtensionList = [];
 
   /** const*/ var AppsDevTool = apps_dev_tool.AppsDevTool;
 
@@ -55,13 +58,11 @@ cr.define('apps_dev_tool', function() {
    * Refreshes the app.
    */
   function reloadAppDisplay() {
-    var extensions = new ItemsList($('packed-extension-list'),
-                                   packedExtensionList);
-    var apps = new ItemsList($('packed-app-list'), packedAppList);
-    var unpacked = new ItemsList($('unpacked-list'), unpackedList);
+    var extensions = new ItemsList($('extensions-tab'), packedExtensionList,
+                                   unpackedExtensionList);
+    var apps = new ItemsList($('apps-tab'), packedAppList, unpackedAppList);
     extensions.showItemNodes();
     apps.showItemNodes();
-    unpacked.showItemNodes();
   }
 
   /**
@@ -70,19 +71,25 @@ cr.define('apps_dev_tool', function() {
    */
   function rebuildAppList(filter) {
     packedAppList = [];
+    unpackedAppList = [];
     packedExtensionList = [];
-    unpackedList = [];
+    unpackedExtensionList = [];
 
     for (var i = 0; i < completeList.length; i++) {
       var item = completeList[i];
       if (filter && item.name.toLowerCase().search(filter.toLowerCase()) < 0)
         continue;
-      if (item.is_unpacked)
-        unpackedList.push(item);
-      else if (item.isApp)
-        packedAppList.push(item);
-      else
-        packedExtensionList.push(item);
+      if (item.isApp) {
+        if (item.is_unpacked)
+          unpackedAppList.push(item);
+        else
+          packedAppList.push(item);
+      } else {
+        if (item.is_unpacked)
+          unpackedExtensionList.push(item);
+        else
+          packedExtensionList.push(item);
+      }
     }
   }
 
@@ -90,38 +97,66 @@ cr.define('apps_dev_tool', function() {
    * Create item nodes from the metadata.
    * @constructor
    */
-  function ItemsList(itemsTabNode, items) {
-    this.items_ = items;
-    this.itemsTabNode_ = itemsTabNode;
-    assert(this.itemsTabNode_);
+  function ItemsList(tabNode, packedItems, unpackedItems) {
+    this.packedItems_ = packedItems;
+    this.unpackedItems_ = unpackedItems;
+    this.tabNode_ = tabNode;
+    assert(this.tabNode_);
   }
 
   ItemsList.prototype = {
 
     /**
-     * |items_| holds the metadata of all apps / extensions.
+     * |packedItems_| holds the metadata of packed apps or extensions.
      * @type {!Array.<!Object>}
      * @private
      */
-    items_: [],
+    packedItems_: [],
 
     /**
-     * |itemsTabNode_| html element holding the items tab.
+     * |unpackedItems_| holds the metadata of unpacked apps or extensions.
+     * @type {!Array.<!Object>}
+     * @private
+     */
+    unpackedItems_: [],
+
+    /**
+     * |tabNode_| html element holding the tab containing the list of packed
+     * and unpacked items.
      * @type {!HTMLElement}
      * @private
      */
-    itemsTabNode_: null,
+    tabNode_: null,
 
     /**
      * Creates all items from scratch.
      */
     showItemNodes: function() {
-      this.itemsTabNode_.textContent = '';
+      var packedItemsList = this.tabNode_.querySelector('#packed-list .items');
+      var unpackedItemsList = this.tabNode_.querySelector(
+          '#unpacked-list .items');
+      packedItemsList.innerHTML = '';
+      unpackedItemsList.innerHTML = '';
+
       // Iterate over the items and add each item to the list.
-      this.itemsTabNode_.classList.toggle('empty-item-list',
-                                          this.items_.length == 0);
-      for (var i = 0; i < this.items_.length; ++i) {
-        this.createNode_(this.items_[i]);
+      this.tabNode_.classList.toggle('empty-item-list',
+                                     this.packedItems_.length == 0 &&
+                                     this.unpackedItems_.length == 0);
+
+      // Iterate over the items in the packed items and add each item to the
+      // list.
+      this.tabNode_.querySelector('#packed-list').classList.toggle(
+          'empty-item-list', this.packedItems_.length == 0);
+      for (var i = 0; i < this.packedItems_.length; ++i) {
+        packedItemsList.appendChild(this.createNode_(this.packedItems_[i]));
+      }
+
+      // Iterate over the items in the unpacked items and add each item to the
+      // list.
+      this.tabNode_.querySelector('#unpacked-list').classList.toggle(
+          'empty-item-list', this.unpackedItems_.length == 0);
+      for (var i = 0; i < this.unpackedItems_.length; ++i) {
+        unpackedItemsList.appendChild(this.createNode_(this.unpackedItems_[i]));
       }
     },
 
@@ -129,6 +164,7 @@ cr.define('apps_dev_tool', function() {
      * Synthesizes and initializes an HTML element for the item metadata
      * given in |item|.
      * @param {!Object} item A dictionary of item metadata.
+     * @return {!Node} The newly created node.
      * @private
      */
     createNode_: function(item) {
@@ -270,7 +306,7 @@ cr.define('apps_dev_tool', function() {
         this.toggleExtensionDetails_(item, node);
       }.bind(this));
 
-      this.itemsTabNode_.appendChild(node);
+      return node;
     },
 
     /**
