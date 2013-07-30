@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
+#include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -613,8 +614,55 @@ TEST_F(ConfigParserTest, ParseConfig) {
     EXPECT_TRUE((*i)->GetAsString(&url));
     startup_pages.push_back(url);
   }
+  ASSERT_EQ(2u, startup_pages.size());
   EXPECT_EQ("http://goo.gl", startup_pages[0]);
   EXPECT_EQ("http://foo.de", startup_pages[1]);
+}
+
+TEST_F(ProfileResetterTest, CheckSnapshots) {
+  ResettableSettingsSnapshot empty_snap(profile());
+  EXPECT_EQ(0, empty_snap.FindDifferentFields(empty_snap));
+
+  // Reset to non organic defaults.
+  ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
+               ProfileResetter::HOMEPAGE |
+               ProfileResetter::STARTUP_PAGES, kDistributionConfig);
+
+  ResettableSettingsSnapshot nonorganic_snap(profile());
+  EXPECT_EQ(ResettableSettingsSnapshot::STARTUP_URLS |
+            ResettableSettingsSnapshot::STARTUP_TYPE |
+            ResettableSettingsSnapshot::HOMEPAGE |
+            ResettableSettingsSnapshot::HOMEPAGE_IS_NTP |
+            ResettableSettingsSnapshot::DSE_URL,
+            empty_snap.FindDifferentFields(nonorganic_snap));
+  empty_snap.SubtractStartupURLs(nonorganic_snap);
+  EXPECT_TRUE(empty_snap.startup_urls().empty());
+  EXPECT_EQ(SessionStartupPref::GetDefaultStartupType(),
+            empty_snap.startup_type());
+  EXPECT_TRUE(empty_snap.homepage().empty());
+  EXPECT_TRUE(empty_snap.homepage_is_ntp());
+  EXPECT_NE(std::string::npos, empty_snap.dse_url().find("{google:baseURL}"));
+
+  // Reset to organic defaults.
+  ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
+               ProfileResetter::HOMEPAGE |
+               ProfileResetter::STARTUP_PAGES);
+
+  ResettableSettingsSnapshot organic_snap(profile());
+  EXPECT_EQ(ResettableSettingsSnapshot::STARTUP_URLS |
+            ResettableSettingsSnapshot::STARTUP_TYPE |
+            ResettableSettingsSnapshot::HOMEPAGE |
+            ResettableSettingsSnapshot::HOMEPAGE_IS_NTP |
+            ResettableSettingsSnapshot::DSE_URL,
+            nonorganic_snap.FindDifferentFields(organic_snap));
+  nonorganic_snap.SubtractStartupURLs(organic_snap);
+  const GURL urls[] = {GURL("http://foo.de"), GURL("http://goo.gl")};
+  EXPECT_EQ(std::vector<GURL>(urls, urls + arraysize(urls)),
+            nonorganic_snap.startup_urls());
+  EXPECT_EQ(SessionStartupPref::URLS, nonorganic_snap.startup_type());
+  EXPECT_EQ("http://www.foo.com", nonorganic_snap.homepage());
+  EXPECT_FALSE(nonorganic_snap.homepage_is_ntp());
+  EXPECT_EQ("http://www.foo.com/s?q={searchTerms}", nonorganic_snap.dse_url());
 }
 
 }  // namespace

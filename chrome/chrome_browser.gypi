@@ -1573,6 +1573,8 @@
         'browser/profile_resetter/brandcode_config_fetcher.cc',
         'browser/profile_resetter/profile_resetter.h',
         'browser/profile_resetter/profile_resetter.cc',
+        'browser/profile_resetter/resettable_settings_snapshot.h',
+        'browser/profile_resetter/resettable_settings_snapshot.cc',
         'browser/profiles/avatar_menu_model.cc',
         'browser/profiles/avatar_menu_model.h',
         'browser/profiles/avatar_menu_model_observer.h',

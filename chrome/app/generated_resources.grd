@@ -15730,6 +15730,9 @@ Do you accept?
     <message name="IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON" desc="Reset button of the Reset Profile Settings dialog">
       Reset
     </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_FEEDBACK" desc="Feedback label in the Reset Profile Settings dialog">
+      Help protect Chrome users by sharing current settings with Google
+    </message>
 
     <!-- Identity internals strings -->
     <message name="IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT" desc="The title of the token cache of the Identity API.">

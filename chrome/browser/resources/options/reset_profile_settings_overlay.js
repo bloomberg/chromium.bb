@@ -34,7 +34,8 @@ cr.define('options', function() {
       };
       $('reset-profile-settings-commit').onclick = function(event) {
         ResetProfileSettingsOverlay.setResettingState(true);
-        chrome.send('performResetProfileSettings');
+        chrome.send('performResetProfileSettings',
+                    [$('send-settings').checked]);
       };
     },
 

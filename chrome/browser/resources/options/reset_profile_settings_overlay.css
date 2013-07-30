@@ -11,3 +11,13 @@
   vertical-align: middle;
   visibility: hidden;
 }
+
+.feedback-area {
+  background-color: #f5f5f5;
+  border-color: #e7e7e7;
+  border-top-style: solid;
+  border-width: 1px;
+  color: #888;
+  display: -webkit-box;
+  padding: 14px 17px;
+}

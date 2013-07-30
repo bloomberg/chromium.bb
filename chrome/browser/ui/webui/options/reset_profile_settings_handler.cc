@@ -13,6 +13,7 @@
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
+#include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
@@ -45,7 +46,9 @@ void ResetProfileSettingsHandler::GetLocalizedValues(
 
   static OptionsStringResource resources[] = {
     { "resetProfileSettingsCommit", IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON },
-    { "resetProfileSettingsExplanation", IDS_RESET_PROFILE_SETTINGS_EXPLANATION}
+    { "resetProfileSettingsExplanation",
+        IDS_RESET_PROFILE_SETTINGS_EXPLANATION},
+    { "resetProfileSettingsFeedback", IDS_RESET_PROFILE_SETTINGS_FEEDBACK }
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -68,20 +71,34 @@ void ResetProfileSettingsHandler::RegisterMessages() {
 }
 
 void ResetProfileSettingsHandler::HandleResetProfileSettings(
-    const ListValue* /*value*/) {
+    const ListValue* value) {
+  bool send_settings = false;
+  if (!value->GetBoolean(0, &send_settings))
+    NOTREACHED();
+
   DCHECK(brandcode_.empty() || config_fetcher_);
   if (config_fetcher_ && config_fetcher_->IsActive()) {
     // Reset once the prefs are fetched.
     config_fetcher_->SetCallback(
         base::Bind(&ResetProfileSettingsHandler::ResetProfile,
-                   Unretained(this)));
+                   Unretained(this),
+                   send_settings));
   } else {
-    ResetProfile();
+    ResetProfile(send_settings);
   }
 }
 
 void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
   web_ui()->CallJavascriptFunction("ResetProfileSettingsOverlay.doneResetting");
+  if (setting_snapshot_) {
+    ResettableSettingsSnapshot current_snapshot(Profile::FromWebUI(web_ui()));
+    int difference = setting_snapshot_->FindDifferentFields(current_snapshot);
+    if (difference) {
+      setting_snapshot_->SubtractStartupURLs(current_snapshot);
+      // TODO(vasilii): do something with that invaluable information.
+    }
+    setting_snapshot_.reset();
+  }
 }
 
 void ResetProfileSettingsHandler::OnShowResetProfileDialog(const ListValue*) {
@@ -100,7 +117,7 @@ void ResetProfileSettingsHandler::OnSettingsFetched() {
   // The master prefs is fetched. We are waiting for user pressing 'Reset'.
 }
 
-void ResetProfileSettingsHandler::ResetProfile() {
+void ResetProfileSettingsHandler::ResetProfile(bool send_settings) {
   DCHECK(resetter_);
   DCHECK(!resetter_->IsActive());
 
@@ -117,6 +134,9 @@ void ResetProfileSettingsHandler::ResetProfile() {
   // installation, use default settings.
   if (!default_settings)
     default_settings.reset(new BrandcodedDefaultSettings);
+  // Save current settings if required.
+  setting_snapshot_.reset(send_settings ?
+      new ResettableSettingsSnapshot(Profile::FromWebUI(web_ui())) : NULL);
   resetter_->Reset(
       ProfileResetter::ALL,
       default_settings.Pass(),

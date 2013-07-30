@@ -16,6 +16,7 @@ class ListValue;
 
 class BrandcodeConfigFetcher;
 class ProfileResetter;
+class ResettableSettingsSnapshot;
 
 namespace options {
 
@@ -48,11 +49,16 @@ class ResetProfileSettingsHandler
   // Called when BrandcodeConfigFetcher completed fetching settings.
   void OnSettingsFetched();
 
-  void ResetProfile();
+  // Resets profile settings to default values. |send_settings| is true if user
+  // gave his consent to upload broken settings to Google for analysis.
+  void ResetProfile(bool send_settings);
 
   scoped_ptr<ProfileResetter> resetter_;
 
   scoped_ptr<BrandcodeConfigFetcher> config_fetcher_;
+
+  // Snapshot of settings before profile was reseted.
+  scoped_ptr<ResettableSettingsSnapshot> setting_snapshot_;
 
   // Contains Chrome brand code; empty for organic Chrome.
   std::string brandcode_;
