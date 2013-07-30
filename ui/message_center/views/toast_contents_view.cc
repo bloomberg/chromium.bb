@@ -241,13 +241,27 @@ bool ToastContentsView::CanActivate() const {
 }
 
 void ToastContentsView::OnDisplayChanged() {
-  gfx::NativeView native_view = GetWidget()->GetNativeView();
+  views::Widget* widget = GetWidget();
+  if (!widget)
+    return;
+
+  gfx::NativeView native_view = widget->GetNativeView();
+  if (!native_view || !collection_)
+    return;
+
   collection_->OnDisplayBoundsChanged(gfx::Screen::GetScreenFor(
       native_view)->GetDisplayNearestWindow(native_view));
 }
 
 void ToastContentsView::OnWorkAreaChanged() {
-  gfx::NativeView native_view = GetWidget()->GetNativeView();
+  views::Widget* widget = GetWidget();
+  if (!widget)
+    return;
+
+  gfx::NativeView native_view = widget->GetNativeView();
+  if (!native_view || !collection_)
+    return;
+
   collection_->OnDisplayBoundsChanged(gfx::Screen::GetScreenFor(
       native_view)->GetDisplayNearestWindow(native_view));
 }
