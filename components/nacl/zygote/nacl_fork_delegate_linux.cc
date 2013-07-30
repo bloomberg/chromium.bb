@@ -24,6 +24,7 @@
 #include "components/nacl/common/nacl_helper_linux.h"
 #include "components/nacl/common/nacl_paths.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "content/public/common/content_switches.h"
 
 namespace {
 
@@ -62,7 +63,7 @@ bool NonZeroSegmentBaseIsSlow() {
 }
 #endif
 
-}
+}  // namespace.
 
 NaClForkDelegate::NaClForkDelegate()
     : status_(kNaClHelperUnused),
@@ -112,14 +113,38 @@ void NaClForkDelegate::Init(const int sandboxdesc) {
   } else if (RunningOnValgrind()) {
     status_ = kNaClHelperValgrind;
   } else {
-    CommandLine cmd_line(CommandLine::NO_PROGRAM);
+    CommandLine::StringVector argv_to_launch;
+    {
+      CommandLine cmd_line(CommandLine::NO_PROGRAM);
+      if (kUseNaClBootstrap)
+        cmd_line.SetProgram(helper_bootstrap_exe);
+      else
+        cmd_line.SetProgram(helper_exe);
+
+      // Append any switches that need to be forwarded to the NaCl helper.
+      static const char* kForwardSwitches[] = {
+        switches::kDisableSeccompFilterSandbox,
+        switches::kNoSandbox,
+      };
+      const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
+      cmd_line.CopySwitchesFrom(current_cmd_line, kForwardSwitches,
+                                arraysize(kForwardSwitches));
+
+      // The command line needs to be tightly controlled to use
+      // |helper_bootstrap_exe|. So from now on, argv_to_launch should be
+      // modified directly.
+      argv_to_launch = cmd_line.argv();
+    }
     if (kUseNaClBootstrap) {
-      cmd_line.SetProgram(helper_bootstrap_exe);
-      cmd_line.AppendArgPath(helper_exe);
-      cmd_line.AppendArgNative(kNaClHelperReservedAtZero);
-      cmd_line.AppendArgNative(kNaClHelperRDebug);
-    } else {
-      cmd_line.SetProgram(helper_exe);
+      // Arguments to the bootstrap helper which need to be at the start
+      // of the command line, right after the helper's path.
+      CommandLine::StringVector bootstrap_prepend;
+      bootstrap_prepend.push_back(helper_exe.value());
+      bootstrap_prepend.push_back(kNaClHelperReservedAtZero);
+      bootstrap_prepend.push_back(kNaClHelperRDebug);
+      argv_to_launch.insert(argv_to_launch.begin() + 1,
+                            bootstrap_prepend.begin(),
+                            bootstrap_prepend.end());
     }
     base::LaunchOptions options;
     options.fds_to_remap = &fds_to_map;
@@ -135,7 +160,7 @@ void NaClForkDelegate::Init(const int sandboxdesc) {
     max_these_limits.insert(RLIMIT_AS);
     options.maximize_rlimits = &max_these_limits;
 
-    if (!base::LaunchProcess(cmd_line.argv(), options, NULL))
+    if (!base::LaunchProcess(argv_to_launch, options, NULL))
       status_ = kNaClHelperLaunchFailed;
     // parent and error cases are handled below
   }
