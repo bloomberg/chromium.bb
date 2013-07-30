@@ -124,10 +124,10 @@ public:
     void willAffectSelector(Element* host);
     void setNeedsStyleRecalcIfDistributedTo(InsertionPoint*);
 
-    static void ensureDistribution(Element*);
+    bool needsDistribution() const;
+    void distribute(Element* host);
 
 private:
-    void distribute(Element* host);
     bool invalidate(Element* host, Vector<Node*, 8>& nodesNeedingReattach);
     void populate(Node*, Vector<Node*>&);
 
@@ -137,7 +137,6 @@ private:
 
     void setValidity(Validity validity) { m_validity = validity; }
     bool isValid() const { return m_validity == Valid; }
-    bool needsDistribution() const;
     bool needsInvalidation() const { return m_validity != Invalidated; }
 
     typedef HashMap<const Node*, RefPtr<InsertionPoint> > NodeInsertionPointMap;

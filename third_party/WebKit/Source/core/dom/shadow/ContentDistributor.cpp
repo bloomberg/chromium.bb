@@ -305,22 +305,6 @@ void ContentDistributor::distributeNodeChildrenTo(InsertionPoint* insertionPoint
     insertionPoint->setDistribution(distribution);
 }
 
-void ContentDistributor::ensureDistribution(Element* host)
-{
-    Vector<ElementShadow*, 8> elementShadows;
-    for (Element* current = host; current; current = current->shadowHost()) {
-        ElementShadow* elementShadow = current->shadow();
-        if (!elementShadow->distributor().needsDistribution())
-            break;
-
-        elementShadows.append(elementShadow);
-    }
-
-    for (size_t i = elementShadows.size(); i > 0; --i)
-        elementShadows[i - 1]->distributor().distribute(elementShadows[i - 1]->host());
-}
-
-
 void ContentDistributor::invalidateDistribution(Element* host)
 {
     Vector<Node*, 8> nodesNeedingReattach;

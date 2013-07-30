@@ -74,7 +74,7 @@ void ElementShadow::removeAllShadowRoots()
 
 void ElementShadow::attach(const Node::AttachContext& context)
 {
-    ContentDistributor::ensureDistribution(host());
+    host()->ensureDistribution();
 
     Node::AttachContext childrenContext(context);
     childrenContext.resolvedStyle = 0;

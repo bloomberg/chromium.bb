@@ -69,6 +69,9 @@ public:
     ContentDistributor& distributor() { return m_distributor; }
     const ContentDistributor& distributor() const { return m_distributor; }
 
+    bool needsDistribution() const { return m_distributor.needsDistribution(); }
+    void distribute() { m_distributor.distribute(host()); }
+
 private:
     ElementShadow() { }
 
@@ -95,7 +98,14 @@ inline ShadowRoot* Node::youngestShadowRoot() const
 
 inline void Element::ensureDistribution()
 {
-    ContentDistributor::ensureDistribution(this);
+    // FIXME: This is effectively a walk down the tree, we should switch it to
+    // be a top down operation like recalcStyle.
+    ElementShadow* shadow = this->shadow();
+    if (!shadow || !shadow->needsDistribution())
+        return;
+    if (Element* host = shadowHost())
+        host->ensureDistribution();
+    shadow->distribute();
 }
 
 inline ElementShadow* ElementShadow::containingShadow() const
