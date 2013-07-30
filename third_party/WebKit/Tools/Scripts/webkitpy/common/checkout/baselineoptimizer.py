@@ -74,10 +74,7 @@ class BaselineOptimizer(object):
         relative_paths = [self._filesystem.relpath(path, port.webkit_base()) for path in self._baseline_search_path(port, baseline_name)]
         return relative_paths + [self._baseline_root(port, baseline_name)]
 
-    def read_results_by_directory(self, baseline_name):
-        results_by_directory = {}
-        directories = reduce(set.union, map(set, [self._relative_baseline_search_paths(port_name, baseline_name) for port_name in self._port_names]))
-
+    def _join_directory(self, directory, baseline_name):
         # This code is complicated because both the directory name and the baseline_name have the virtual
         # test suite in the name and the virtual baseline name is not a strict superset of the non-virtual name.
         # For example, virtual/softwarecompositing/foo-expected.png corresponds to compostiting/foo-expected.png and
@@ -88,9 +85,14 @@ class BaselineOptimizer(object):
             baseline_name_without_virtual = baseline_name[len(virtual_suite.name) + 1:]
         else:
             baseline_name_without_virtual = baseline_name
+        return self._filesystem.join(self._scm.checkout_root, directory, baseline_name_without_virtual)
+
+    def read_results_by_directory(self, baseline_name):
+        results_by_directory = {}
+        directories = reduce(set.union, map(set, [self._relative_baseline_search_paths(port_name, baseline_name) for port_name in self._port_names]))
 
         for directory in directories:
-            path = self._filesystem.join(self._scm.checkout_root, directory, baseline_name_without_virtual)
+            path = self._join_directory(directory, baseline_name)
             if self._filesystem.exists(path):
                 results_by_directory[directory] = self._filesystem.sha1(path)
         return results_by_directory
@@ -204,13 +206,13 @@ class BaselineOptimizer(object):
         data_for_result = {}
         for directory, result in results_by_directory.items():
             if not result in data_for_result:
-                source = self._filesystem.join(self._scm.checkout_root, directory, baseline_name)
+                source = self._join_directory(directory, baseline_name)
                 data_for_result[result] = self._filesystem.read_binary_file(source)
 
         file_names = []
         for directory, result in results_by_directory.items():
             if new_results_by_directory.get(directory) != result:
-                file_names.append(self._filesystem.join(self._scm.checkout_root, directory, baseline_name))
+                file_names.append(self._join_directory(directory, baseline_name))
         if file_names:
             _log.debug("    Deleting:")
             for platform_dir in sorted(self._platform(filename) for filename in file_names):
@@ -222,10 +224,11 @@ class BaselineOptimizer(object):
         file_names = []
         for directory, result in new_results_by_directory.items():
             if results_by_directory.get(directory) != result:
-                destination = self._filesystem.join(self._scm.checkout_root, directory, baseline_name)
+                destination = self._join_directory(directory, baseline_name)
                 self._filesystem.maybe_make_directory(self._filesystem.split(destination)[0])
                 self._filesystem.write_binary_file(destination, data_for_result[result])
                 file_names.append(destination)
+
         if file_names:
             _log.debug("    Adding:")
             for platform_dir in sorted(self._platform(filename) for filename in file_names):
@@ -278,7 +281,7 @@ class BaselineOptimizer(object):
         results_by_directory = self.read_results_by_directory(non_virtual_baseline_name)
         # See if all the immediate predecessors of the virtual root have the same expected result.
         for port_name in self._port_names:
-            directories = self._relative_baseline_search_paths(port_name, baseline_name)
+            directories = self._relative_baseline_search_paths(port_name, non_virtual_baseline_name)
             for directory in directories:
                 if directory not in results_by_directory:
                     continue
@@ -286,7 +289,7 @@ class BaselineOptimizer(object):
                     return
                 break
 
-        _log.debug("Deleting redundant firtual root expected result.")
+        _log.debug("Deleting redundant virtual root expected result.")
         self._scm.delete(virtual_root_expected_baseline_path)
 
     def optimize(self, baseline_name):
