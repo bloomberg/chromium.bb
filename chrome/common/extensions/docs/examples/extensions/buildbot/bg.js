@@ -176,17 +176,18 @@ function fetchPatches(issue, updatedCallback) {
 
       issue.full_patchsets[patch.patchset] = patch;
 
-      patch.try_job_results.forEach(function(results) {
-        if (results.buildnumber) {
-          tryJobResultsOutstanding++;
+      // TODO(wittman): Revise to reduce load on the try servers.
+      // patch.try_job_results.forEach(function(results) {
+      //   if (results.buildnumber) {
+      //     tryJobResultsOutstanding++;
 
-          fetchTryJobResults(patch, results.builder, results.buildnumber,
-                             function() {
-            if (--tryJobResultsOutstanding == 0)
-              updatedCallback(TRY_JOBS_COMPLETE);
-          });
-        }
-      });
+      //     fetchTryJobResults(patch, results.builder, results.buildnumber,
+      //                        function() {
+      //       if (--tryJobResultsOutstanding == 0)
+      //         updatedCallback(TRY_JOBS_COMPLETE);
+      //     });
+      //   }
+      // });
 
       if (++patchsetsRetrieved == issue.patchsets.length)
         updatedCallback(PATCHES_COMPLETE);
