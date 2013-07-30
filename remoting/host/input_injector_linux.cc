@@ -34,7 +34,7 @@ using protocol::MouseEvent;
 #undef USB_KEYMAP
 
 // Pixel-to-wheel-ticks conversion ratio used by GTK.
-// From Source/WebKit/chromium/src/gtk/WebInputFactory.cc.
+// From third_party/WebKit/Source/web/gtk/WebInputEventFactory.cpp .
 const float kWheelTicksPerPixel = 3.0f / 160.0f;
 
 // A class to generate events on Linux.
