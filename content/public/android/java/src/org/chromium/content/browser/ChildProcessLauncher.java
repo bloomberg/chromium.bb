@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.Surface;
 
 import java.util.ArrayList;
@@ -174,6 +175,11 @@ public class ChildProcessLauncher {
     private static Map<Integer, ChildProcessConnection> mServiceMap =
             new ConcurrentHashMap<Integer, ChildProcessConnection>();
 
+    // Map from pid to the count of oom bindings. "Oom binding" is a binding that raises the process
+    // oom priority so that it shouldn't be killed by the OS out-of-memory killer under normal
+    // conditions (it can still be killed under drastic memory pressure).
+    private static SparseIntArray sOomBindingCount = new SparseIntArray();
+
     // A pre-allocated and pre-bound connection ready for connection setup, or null.
     static ChildProcessConnection mSpareSandboxedConnection = null;
 
@@ -280,25 +286,45 @@ public class ChildProcessLauncher {
         }
         final ChildProcessConnection connection = allocatedConnection;
         Log.d(TAG, "Setting up connection to process: slot=" + connection.getServiceNumber());
-        // Note: This runnable will be executed when the child connection is setup.
-        final Runnable onConnect = new Runnable() {
-            @Override
-            public void run() {
-                final int pid = connection.getPid();
+
+        ChildProcessConnection.ConnectionCallbacks connectionCallbacks =
+                new ChildProcessConnection.ConnectionCallbacks() {
+            public void onConnected(int pid, int oomBindingCount) {
                 Log.d(TAG, "on connect callback, pid=" + pid + " context=" + clientContext);
                 if (pid != NULL_PROCESS_HANDLE) {
+                    sOomBindingCount.put(pid, oomBindingCount);
                     mServiceMap.put(pid, connection);
                 } else {
                     freeConnection(connection);
                 }
                 nativeOnChildProcessStarted(clientContext, pid);
             }
+
+            public void onOomBindingAdded(int pid) {
+                if (pid != NULL_PROCESS_HANDLE) {
+                    sOomBindingCount.put(pid, sOomBindingCount.get(pid) + 1);
+                }
+            }
+
+            public void onOomBindingRemoved(int pid) {
+                if (pid != NULL_PROCESS_HANDLE) {
+                    int count = sOomBindingCount.get(pid, -1);
+                    assert count > 0;
+                    count--;
+                    if (count > 0) {
+                        sOomBindingCount.put(pid, count);
+                    } else {
+                        sOomBindingCount.delete(pid);
+                    }
+                }
+            }
         };
+
         // TODO(sievers): Revisit this as it doesn't correctly handle the utility process
         // assert callbackType != CALLBACK_FOR_UNKNOWN_PROCESS;
 
-        connection.setupConnection(
-                commandLine, filesToBeMapped, createCallback(callbackType), onConnect);
+        connection.setupConnection(commandLine, filesToBeMapped, createCallback(callbackType),
+                connectionCallbacks);
     }
 
     /**
@@ -360,6 +386,14 @@ public class ChildProcessLauncher {
             return;
         }
         connection.detachAsActive();
+    }
+
+    /**
+     * @return True iff the given service process is protected from the out-of-memory killing, or it
+     * was protected from it when it died.
+     */
+    public static boolean isOomProtected(int pid) {
+        return sOomBindingCount.get(pid) > 0;
     }
 
     /**

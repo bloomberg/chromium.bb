@@ -116,7 +116,7 @@ public abstract class AwContentsClient {
         }
 
         @Override
-        public void onTabCrash() {
+        public void onRendererCrash(boolean crashedWhileOomProtected) {
             // This is not possible so long as the webview is run single process!
             throw new RuntimeException("Renderer crash reported.");
         }

@@ -331,6 +331,9 @@ import java.util.Map;
 
     private boolean mAttachedToWindow = false;
 
+    // Pid of the renderer process backing this ContentViewCore.
+    private int mPid = 0;
+
     private ContentViewGestureHandler mContentViewGestureHandler;
     private PinchGestureStateListener mPinchGestureStateListener;
     private UpdateFrameInfoListener mUpdateFrameInfoListener;
@@ -700,6 +703,8 @@ import java.util.Map;
                 resetGestureDetectors();
             }
         };
+
+        mPid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
     }
 
     @CalledByNative
@@ -1412,13 +1417,13 @@ import java.util.Map;
     public void onAttachedToWindow() {
         mAttachedToWindow = true;
         if (mNativeContentViewCore != 0) {
-            int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
-            ChildProcessLauncher.bindAsHighPriority(pid);
-            // Normally the initial binding is removed in onRenderProcessSwap(), but it is
-            // possible to construct WebContents and spawn the renderer before passing it to
-            // ContentViewCore. In this case there will be no onRendererSwap() call and the
-            // initial binding will be removed here.
-            ChildProcessLauncher.removeInitialBinding(pid);
+            assert mPid == nativeGetCurrentRenderProcessId(mNativeContentViewCore);
+            ChildProcessLauncher.bindAsHighPriority(mPid);
+            // Normally the initial binding is removed in onRenderProcessSwap(), but it is possible
+            // to construct WebContents and spawn the renderer before passing it to ContentViewCore.
+            // In this case there will be no onRenderProcessSwap() call and the initial binding will
+            // be removed here.
+            ChildProcessLauncher.removeInitialBinding(mPid);
         }
         setAccessibilityState(mAccessibilityManager.isEnabled());
     }
@@ -1430,8 +1435,8 @@ import java.util.Map;
     public void onDetachedFromWindow() {
         mAttachedToWindow = false;
         if (mNativeContentViewCore != 0) {
-            int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
-            ChildProcessLauncher.unbindAsHighPriority(pid);
+            assert mPid == nativeGetCurrentRenderProcessId(mNativeContentViewCore);
+            ChildProcessLauncher.unbindAsHighPriority(mPid);
         }
         setInjectedAccessibility(false);
         hidePopupDialog();
@@ -1443,9 +1448,9 @@ import java.util.Map;
      * @see View#onVisibilityChanged(android.view.View, int)
      */
     public void onVisibilityChanged(View changedView, int visibility) {
-      if (visibility != View.VISIBLE) {
-          mZoomControlsDelegate.dismissZoomPicker();
-      }
+        if (visibility != View.VISIBLE) {
+            mZoomControlsDelegate.dismissZoomPicker();
+        }
     }
 
     /**
@@ -1813,6 +1818,11 @@ import java.util.Map;
     @SuppressWarnings("unused")
     @CalledByNative
     private void onTabCrash() {
+        assert mPid != 0;
+        getContentViewClient().onRendererCrash(ChildProcessLauncher.isOomProtected(mPid));
+        mPid = 0;
+
+        // Legacy method, to be dropped once all clients switch to onRendererCrash().
         getContentViewClient().onTabCrash();
     }
 
@@ -2388,6 +2398,7 @@ import java.util.Map;
     @SuppressWarnings("unused")
     @CalledByNative
     private void onRenderProcessSwap(int oldPid, int newPid) {
+        assert mPid == oldPid || mPid == newPid;
         if (mAttachedToWindow && oldPid != newPid) {
             ChildProcessLauncher.unbindAsHighPriority(oldPid);
             ChildProcessLauncher.bindAsHighPriority(newPid);
@@ -2396,6 +2407,7 @@ import java.util.Map;
         // We want to remove the initial binding even if the ContentView is not attached, so that
         // renderers for ContentViews loading in background do not retain the high priority.
         ChildProcessLauncher.removeInitialBinding(newPid);
+        mPid = newPid;
     }
 
     @SuppressWarnings("unused")

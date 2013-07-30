@@ -59,7 +59,21 @@ public class ContentViewClient {
             float topControlsOffsetYPix, float contentOffsetYPix, float overdrawBottomHeightPix) {
     }
 
+    /**
+     * Notifies the client that the renderer backing the ContentView has crashed. This is a legacy
+     * method to be dropped when all clients switch to onRendererCrash().
+     */
+    @Deprecated
     public void onTabCrash() {
+    }
+
+    /**
+     * Notifies the client that the renderer backing the ContentView has crashed.
+     * @param crashedWhileOomProtected True iff the renderer died while being bound with a high
+     * priority binding, which indicates that it was probably an actual crash (as opposed to the
+     * renderer being killed by the OS out-of-memory killer).
+     */
+    public void onRendererCrash(boolean processWasOomProtected) {
     }
 
     public boolean shouldOverrideKeyEvent(KeyEvent event) {

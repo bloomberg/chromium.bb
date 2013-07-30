@@ -47,6 +47,12 @@ public class TestContentViewClientWrapper extends TestContentViewClient {
     }
 
     @Override
+    public void onRendererCrash(boolean processWasOomProtected) {
+        super.onRendererCrash(processWasOomProtected);
+        mWrappedClient.onRendererCrash(processWasOomProtected);
+    }
+
+    @Override
     public boolean shouldOverrideKeyEvent(KeyEvent event) {
         return mWrappedClient.shouldOverrideKeyEvent(event);
     }
