@@ -549,13 +549,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var doc = this.document_;
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'newfolder',
+    CommandUtil.registerCommand(doc, 'newfolder',
         Commands.newFolderCommand, this, this.directoryModel_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'newwindow',
+    CommandUtil.registerCommand(doc, 'newwindow',
         Commands.newWindowCommand, this, this.directoryModel_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'change-default-app',
+    CommandUtil.registerCommand(doc, 'change-default-app',
         Commands.changeDefaultAppCommand, this);
 
     CommandUtil.registerCommand(this.volumeList_, 'unmount',
@@ -564,58 +564,53 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     CommandUtil.registerCommand(this.volumeList_, 'import-photos',
         Commands.importCommand, this.volumeList_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'format',
+    CommandUtil.registerCommand(doc, 'format',
         Commands.formatCommand, this.volumeList_, this,
         this.directoryModel_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'delete',
+    CommandUtil.registerCommand(doc, 'delete',
         Commands.deleteFileCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'rename',
+    CommandUtil.registerCommand(doc, 'rename',
         Commands.renameFileCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'volume-help',
+    CommandUtil.registerCommand(doc, 'volume-help',
         Commands.volumeHelpCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'drive-buy-more-space',
+    CommandUtil.registerCommand(doc, 'drive-buy-more-space',
         Commands.driveBuySpaceCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_,
-        'drive-clear-local-cache', Commands.driveClearCacheCommand, this);
+    CommandUtil.registerCommand(doc, 'drive-clear-local-cache',
+        Commands.driveClearCacheCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'drive-go-to-drive',
+    CommandUtil.registerCommand(doc, 'drive-go-to-drive',
         Commands.driveGoToDriveCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'paste',
+    CommandUtil.registerCommand(doc, 'paste',
         Commands.pasteFileCommand, doc, this.fileTransferController_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'open-with',
+    CommandUtil.registerCommand(doc, 'open-with',
         Commands.openWithCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'toggle-pinned',
+    CommandUtil.registerCommand(doc, 'toggle-pinned',
         Commands.togglePinnedCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'zip-selection',
+    CommandUtil.registerCommand(doc, 'zip-selection',
         Commands.zipSelectionCommand, this, this.directoryModel_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'share',
-        Commands.shareCommand, this);
+    CommandUtil.registerCommand(doc, 'share', Commands.shareCommand, this);
+    CommandUtil.registerCommand(doc, 'create-folder-shortcut',
+        Commands.createFolderShortcutCommand, this);
+    CommandUtil.registerCommand(doc, 'remove-folder-shortcut',
+        Commands.removeFolderShortcutCommand, this, this.volumeList_);
 
-    CommandUtil.registerCommand(this.dialogContainer_,
-        'create-folder-shortcut', Commands.createFolderShortcutCommand, this);
-
-    CommandUtil.registerCommand(this.dialogContainer_,
-        'remove-folder-shortcut', Commands.removeFolderShortcutCommand, this,
-        this.volumeList_);
-
-    CommandUtil.registerCommand(this.dialogContainer_, 'search',
-        Commands.searchCommand, this,
+    CommandUtil.registerCommand(doc, 'search', Commands.searchCommand, this,
         this.dialogDom_.querySelector('#search-box'));
 
     // Register commands with CTRL-1..9 shortcuts for switching between
     // volumes.
     for (var i = 1; i <= 9; i++) {
-      CommandUtil.registerCommand(this.dialogContainer_,
+      CommandUtil.registerCommand(doc,
                                   'volume-switch-' + i,
                                   Commands.volumeSwitchCommand,
                                   this.volumeList_,
