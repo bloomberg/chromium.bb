@@ -280,7 +280,7 @@ class Port(object):
         """This routine is used to check whether image_diff binary exists."""
         image_diff_path = self._path_to_image_diff()
         if not self._filesystem.exists(image_diff_path):
-            _log.error("ImageDiff was not found at %s" % image_diff_path)
+            _log.error("image_diff was not found at %s" % image_diff_path)
             return False
         return True
 
@@ -350,7 +350,7 @@ class Port(object):
     def diff_image(self, expected_contents, actual_contents):
         """Compare two images and return a tuple of an image diff, and an error string.
 
-        If an error occurs (like ImageDiff isn't found, or crashes, we log an error and return True (for a diff).
+        If an error occurs (like image_diff isn't found, or crashes, we log an error and return True (for a diff).
         """
         # If only one of them exists, return that one.
         if not actual_contents and not expected_contents:
@@ -370,7 +370,7 @@ class Port(object):
 
         diff_filename = self._filesystem.join(str(tempdir), "diff.png")
 
-        # ImageDiff needs native win paths as arguments, so we need to convert them if running under cygwin.
+        # image_diff needs native win paths as arguments, so we need to convert them if running under cygwin.
         native_expected_filename = self._convert_path(expected_filename)
         native_actual_filename = self._convert_path(actual_filename)
         native_diff_filename = self._convert_path(diff_filename)
@@ -1275,7 +1275,7 @@ class Port(object):
         """Returns the full path to the image_diff binary, or None if it is not available.
 
         This is likely used only by diff_image()"""
-        return self._build_path('ImageDiff')
+        return self._build_path('image_diff')
 
     def _path_to_lighttpd(self):
         """Returns the path to the LigHTTPd binary.

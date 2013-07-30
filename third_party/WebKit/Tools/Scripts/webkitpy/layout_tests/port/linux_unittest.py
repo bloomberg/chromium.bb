@@ -108,4 +108,4 @@ class LinuxPortTest(chromium_port_testcase.ChromiumPortTestCase):
         self.assertTrue(self.make_port(options=MockOptions(driver_name='OtherDriver'))._path_to_driver().endswith('OtherDriver'))
 
     def test_path_to_image_diff(self):
-        self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/ImageDiff')
+        self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff')

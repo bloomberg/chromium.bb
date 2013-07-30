@@ -140,7 +140,7 @@ class WinPort(chromium.ChromiumPort):
         return self._build_path(binary_name)
 
     def _path_to_image_diff(self):
-        binary_name = 'ImageDiff.exe'
+        binary_name = 'image_diff.exe'
         return self._build_path(binary_name)
 
     def _path_to_wdiff(self):

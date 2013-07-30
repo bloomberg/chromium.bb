@@ -388,7 +388,7 @@ class ChromiumPort(Port):
             self.path_from_chromium_base(), self.path_from_webkit_base(), configuration, comps)
 
     def _path_to_image_diff(self):
-        binary_name = 'ImageDiff'
+        binary_name = 'image_diff'
         return self._build_path(binary_name)
 
     def _check_driver_build_up_to_date(self, configuration):

@@ -47,29 +47,6 @@
     ],
     'targets': [
         {
-            'target_name': 'ImageDiff',
-            'type': 'executable',
-            'dependencies': [
-                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support_gfx',
-            ],
-            'include_dirs': [
-                '<(DEPTH)',
-            ],
-            'sources': [
-                '<(tools_dir)/DumpRenderTree/chromium/ImageDiff.cpp',
-            ],
-            'conditions': [
-                ['OS=="android" and android_webview_build==0', {
-                    # The Chromium Android port will compare images on host rather
-                    # than target (a device or emulator) for performance reasons.
-                    'toolsets': ['host'],
-                }],
-                ['OS=="android" and android_webview_build==1', {
-                    'type': 'none',
-                }],
-            ],
-        },
-        {
             'target_name': 'TestRunner',
             'type': '<(component)',
             'defines': [
@@ -188,7 +165,6 @@
             'target_name': 'TestRunner_resources',
             'type': 'none',
             'dependencies': [
-                'ImageDiff',
                 'copy_TestNetscapePlugIn',
             ],
             'conditions': [
@@ -242,7 +218,6 @@
                 }],
                 ['OS=="android"', {
                     'dependencies!': [
-                        'ImageDiff',
                         'copy_TestNetscapePlugIn',
                     ],
                     'copies': [{
@@ -253,11 +228,6 @@
                             '<(source_dir)/testing/data/fonts/android_fallback_fonts.xml',
                         ]
                     }],
-                }],
-                ['OS=="android" and android_webview_build==0', {
-                    'dependencies': [
-                        'ImageDiff#host',
-                    ],
                 }],
             ],
         },
