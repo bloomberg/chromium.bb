@@ -490,6 +490,7 @@ void OmniboxEditModel::StartAutocomplete(
       user_text_,
       cursor_position,
       current_url,
+      ClassifyPage(),
       prevent_inline_autocomplete || just_deleted_text_ ||
       (has_selected_text && inline_autocomplete_text_.empty()) ||
       (paste_state_ != NONE),
@@ -550,9 +551,9 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     const AutocompleteInput& old_input = autocomplete_controller()->input();
     AutocompleteInput input(
       old_input.text(), old_input.cursor_position(), ASCIIToUTF16("com"),
-      GURL(), old_input.prevent_inline_autocomplete(),
-      old_input.prefer_keyword(), old_input.allow_exact_keyword_match(),
-      old_input.matches_requested());
+      GURL(), old_input.current_page_classification(),
+      old_input.prevent_inline_autocomplete(), old_input.prefer_keyword(),
+      old_input.allow_exact_keyword_match(), old_input.matches_requested());
     AutocompleteMatch url_match = HistoryURLProvider::SuggestExactInput(
         autocomplete_controller()->history_url_provider(), input, true);
 
@@ -809,6 +810,7 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     // the actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
     autocomplete_controller()->StartZeroSuggest(delegate_->GetURL(),
+                                                ClassifyPage(),
                                                 permanent_text_);
   }
 

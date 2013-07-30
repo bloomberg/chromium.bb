@@ -242,7 +242,8 @@ void SearchProviderTest::RunTest(TestData* cases,
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
     AutocompleteInput input(cases[i].input, string16::npos, string16(), GURL(),
-                            false, prefer_keyword, true,
+                            AutocompleteInput::INVALID_SPEC, false,
+                            prefer_keyword, true,
                             AutocompleteInput::ALL_MATCHES);
     provider_->Start(input, false);
     matches = provider_->matches();
@@ -285,8 +286,9 @@ void SearchProviderTest::QueryForInput(const string16& text,
                                        bool prefer_keyword) {
   // Start a query.
   AutocompleteInput input(text, string16::npos, string16(), GURL(),
-                          prevent_inline_autocomplete,
-                          prefer_keyword, true, AutocompleteInput::ALL_MATCHES);
+                          AutocompleteInput::INVALID_SPEC,
+                          prevent_inline_autocomplete, prefer_keyword, true,
+                          AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);
 
   // RunUntilIdle so that the task scheduled by SearchProvider to create the
@@ -660,8 +662,9 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   AutocompleteController controller(&profile_, NULL,
       AutocompleteProvider::TYPE_SEARCH);
   controller.Start(AutocompleteInput(
-      ASCIIToUTF16("k t"), string16::npos, string16(), GURL(), false, false,
-      true, AutocompleteInput::ALL_MATCHES));
+      ASCIIToUTF16("k t"), string16::npos, string16(), GURL(),
+      AutocompleteInput::INVALID_SPEC, false, false, true,
+      AutocompleteInput::ALL_MATCHES));
   const AutocompleteResult& result = controller.result();
 
   // There should be three matches, one for the keyword history, one for
@@ -2132,7 +2135,8 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
 
     provider_->input_ = AutocompleteInput(
         ASCIIToUTF16(cases[i].omnibox_input), string16::npos, string16(),
-        GURL(), false, false, true, AutocompleteInput::ALL_MATCHES);
+        GURL(), AutocompleteInput::INVALID_SPEC, false, false, true,
+        AutocompleteInput::ALL_MATCHES);
     provider_->RemoveAllStaleResults();
 
     // Check cached results.

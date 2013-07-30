@@ -87,8 +87,8 @@ void ExtensionAppProviderTest::RunTest(
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
     AutocompleteInput input(keyword_cases[i].input, string16::npos, string16(),
-                            GURL(), true, false, true,
-                            AutocompleteInput::ALL_MATCHES);
+                            GURL(), AutocompleteInput::INVALID_SPEC, true,
+                            false, true, AutocompleteInput::ALL_MATCHES);
     app_provider_->Start(input, false);
     EXPECT_TRUE(app_provider_->done());
     matches = app_provider_->matches();
@@ -137,8 +137,8 @@ TEST_F(ExtensionAppProviderTest, CreateMatchSanitize) {
   };
 
   AutocompleteInput input(ASCIIToUTF16("Test"), string16::npos, string16(),
-                          GURL(), true, true, true,
-                          AutocompleteInput::BEST_MATCH);
+                          GURL(), AutocompleteInput::INVALID_SPEC, true, true,
+                          true, AutocompleteInput::BEST_MATCH);
   string16 url(ASCIIToUTF16("http://example.com"));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     ExtensionAppProvider::ExtensionApp extension_app =

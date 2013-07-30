@@ -196,6 +196,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
       cursor_position,
       string16(),  // user's desired tld (top-level domain)
       GURL(),
+      AutocompleteInput::INVALID_SPEC,
       prevent_inline_autocomplete,
       prefer_keyword,
       true,  // allow exact keyword matches

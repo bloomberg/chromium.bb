@@ -82,6 +82,11 @@ class AutocompleteInput {
   // Query refinement is only used by mobile ports, so only these set
   // |current_url| to a non-empty string.
   //
+  // |current_page_classification| represents the type of page the user is
+  // viewing and manner in which the user is accessing the omnibox; it's
+  // more than simply the URL.  It includes, for example, whether the page
+  // is a search result page doing search term replacement or not.
+  //
   // |prevent_inline_autocomplete| is true if the generated result set should
   // not require inline autocomplete for the default match.  This is difficult
   // to explain in the abstract; the practical use case is that after the user
@@ -96,7 +101,7 @@ class AutocompleteInput {
   // the input string would be surprising or wrong, e.g. when highlighting text
   // in a page and telling the browser to search for it or navigate to it. This
   // parameter only applies to substituting keywords.
-
+  //
   // If |matches_requested| is BEST_MATCH or SYNCHRONOUS_MATCHES the controller
   // asks the providers to only return matches which are synchronously
   // available, which should mean that all providers will be done immediately.
@@ -104,6 +109,7 @@ class AutocompleteInput {
                     size_t cursor_position,
                     const string16& desired_tld,
                     const GURL& current_url,
+                    PageClassification current_page_classification,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
                     bool allow_exact_keyword_match,
@@ -166,6 +172,12 @@ class AutocompleteInput {
   // The current URL, or an invalid GURL if query refinement is not desired.
   const GURL& current_url() const { return current_url_; }
 
+  // The type of page that is currently behind displayed and how it is
+  // displayed (e.g., with search term replacement or without).
+  AutocompleteInput::PageClassification current_page_classification() const {
+    return current_page_classification_;
+  }
+
   // The type of input supplied.
   Type type() const { return type_; }
 
@@ -205,6 +217,7 @@ class AutocompleteInput {
   string16 text_;
   size_t cursor_position_;
   GURL current_url_;
+  AutocompleteInput::PageClassification current_page_classification_;
   Type type_;
   url_parse::Parsed parts_;
   string16 scheme_;

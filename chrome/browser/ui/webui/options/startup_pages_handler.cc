@@ -225,7 +225,8 @@ void StartupPagesHandler::RequestAutocompleteSuggestions(
   CHECK(args->GetString(0, &input));
 
   autocomplete_controller_->Start(AutocompleteInput(
-      input, string16::npos, string16(), GURL(), true,
+      input, string16::npos, string16(), GURL(),
+      AutocompleteInput::INVALID_SPEC, true,
       false, false, AutocompleteInput::ALL_MATCHES));
 }
 

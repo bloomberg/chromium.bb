@@ -70,14 +70,13 @@ class ZeroSuggestProvider : public AutocompleteProvider,
   // net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // Initiates a new fetch for the given |url|. |user_text| is the user input
-  // and may be non-empty if the user previously interacted with
-  // zero-suggest suggestions and then unfocused the omnibox. |permanent_text|
-  // is the omnibox text for the current page.
-  // TODO(jered): Rip out |user_text| once the first match is decoupled from
-  // the current typing in the omnibox.
-  void StartZeroSuggest(const GURL& url,
-                        const string16& permanent_text);
+  // Initiates a new fetch for the given |url| of classification
+  // |page_classification|. |permanent_text| is the omnibox text
+  // for the current page.
+  void StartZeroSuggest(
+      const GURL& url,
+      AutocompleteInput::PageClassification page_classification,
+      const string16& permanent_text);
 
  private:
   ZeroSuggestProvider(AutocompleteProviderListener* listener,
@@ -145,6 +144,10 @@ class ZeroSuggestProvider : public AutocompleteProvider,
 
   // The URL for which a suggestion fetch is pending.
   std::string current_query_;
+
+  // The type of page the user is viewing (a search results page doing search
+  // term replacement, an arbitrary URL, etc.).
+  AutocompleteInput::PageClassification current_page_classification_;
 
   // Copy of OmniboxEditModel::permanent_text_.
   string16 permanent_text_;

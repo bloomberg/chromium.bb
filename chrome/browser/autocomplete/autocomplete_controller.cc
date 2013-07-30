@@ -303,12 +303,15 @@ void AutocompleteController::Stop(bool clear_result) {
   }
 }
 
-void AutocompleteController::StartZeroSuggest(const GURL& url,
-                                              const string16& permanent_text) {
+void AutocompleteController::StartZeroSuggest(
+    const GURL& url,
+    AutocompleteInput::PageClassification page_classification,
+    const string16& permanent_text) {
   if (zero_suggest_provider_ != NULL) {
     DCHECK(!in_start_);  // We should not be already running a query.
     in_zero_suggest_ = true;
-    zero_suggest_provider_->StartZeroSuggest(url, permanent_text);
+    zero_suggest_provider_->StartZeroSuggest(
+        url, page_classification, permanent_text);
   }
 }
 

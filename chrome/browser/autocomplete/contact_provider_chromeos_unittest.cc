@@ -66,12 +66,13 @@ class ContactProviderTest : public testing::Test {
   void StartQuery(const std::string& utf8_text) {
     contact_provider_->Start(
         AutocompleteInput(UTF8ToUTF16(utf8_text),
-                          string16::npos,  // cursor_position
-                          string16(),      // desired_tld
-                          GURL(),          // current_url
-                          false,           // prevent_inline_autocomplete
-                          false,           // prefer_keyword
-                          false,           // allow_exact_keyword_match
+                          string16::npos,
+                          string16(),
+                          GURL(),
+                          AutocompleteInput::INVALID_SPEC,
+                          false,
+                          false,
+                          false,
                           AutocompleteInput::ALL_MATCHES),
         false);  // minimal_changes
   }

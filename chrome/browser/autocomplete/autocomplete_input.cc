@@ -30,6 +30,7 @@ void AdjustCursorPositionIfNecessary(size_t num_leading_chars_removed,
 
 AutocompleteInput::AutocompleteInput()
     : cursor_position_(string16::npos),
+      current_page_classification_(AutocompleteInput::INVALID_SPEC),
       type_(INVALID),
       prevent_inline_autocomplete_(false),
       prefer_keyword_(false),
@@ -37,16 +38,19 @@ AutocompleteInput::AutocompleteInput()
       matches_requested_(ALL_MATCHES) {
 }
 
-AutocompleteInput::AutocompleteInput(const string16& text,
-                                     size_t cursor_position,
-                                     const string16& desired_tld,
-                                     const GURL& current_url,
-                                     bool prevent_inline_autocomplete,
-                                     bool prefer_keyword,
-                                     bool allow_exact_keyword_match,
-                                     MatchesRequested matches_requested)
+AutocompleteInput::AutocompleteInput(
+    const string16& text,
+    size_t cursor_position,
+    const string16& desired_tld,
+    const GURL& current_url,
+    AutocompleteInput::PageClassification current_page_classification,
+    bool prevent_inline_autocomplete,
+    bool prefer_keyword,
+    bool allow_exact_keyword_match,
+    MatchesRequested matches_requested)
     : cursor_position_(cursor_position),
       current_url_(current_url),
+      current_page_classification_(current_page_classification),
       prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prefer_keyword_(prefer_keyword),
       allow_exact_keyword_match_(allow_exact_keyword_match),
@@ -507,6 +511,7 @@ void AutocompleteInput::Clear() {
   text_.clear();
   cursor_position_ = string16::npos;
   current_url_ = GURL();
+  current_page_classification_ = AutocompleteInput::INVALID_SPEC;
   type_ = INVALID;
   parts_ = url_parse::Parsed();
   scheme_.clear();

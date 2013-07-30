@@ -243,7 +243,8 @@ TEST_F(BookmarkProviderTest, Positions) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
     AutocompleteInput input(ASCIIToUTF16(query_data[i].query),
-                            string16::npos, string16(), GURL(), false, false,
+                            string16::npos, string16(), GURL(),
+                            AutocompleteInput::INVALID_SPEC, false, false,
                             false, AutocompleteInput::ALL_MATCHES);
     provider_->Start(input, false);
     const ACMatches& matches(provider_->matches());
@@ -316,7 +317,8 @@ TEST_F(BookmarkProviderTest, Rankings) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
     AutocompleteInput input(ASCIIToUTF16(query_data[i].query),
-                            string16::npos, string16(), GURL(), false, false,
+                            string16::npos, string16(), GURL(),
+                            AutocompleteInput::INVALID_SPEC, false, false,
                             false, AutocompleteInput::ALL_MATCHES);
     provider_->Start(input, false);
     const ACMatches& matches(provider_->matches());

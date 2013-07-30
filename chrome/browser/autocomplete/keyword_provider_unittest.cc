@@ -70,8 +70,8 @@ void KeywordProviderTest::RunTest(
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
     AutocompleteInput input(keyword_cases[i].input, string16::npos, string16(),
-                            GURL(), true, false, true,
-                            AutocompleteInput::ALL_MATCHES);
+                            GURL(), AutocompleteInput::INVALID_SPEC, true,
+                            false, true, AutocompleteInput::ALL_MATCHES);
     kw_provider_->Start(input, false);
     EXPECT_TRUE(kw_provider_->done());
     matches = kw_provider_->matches();
@@ -265,7 +265,8 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     AutocompleteInput input(ASCIIToUTF16(cases[i].text),
                             cases[i].cursor_position, string16(), GURL(),
-                            false, false, cases[i].allow_exact_keyword_match,
+                            AutocompleteInput::INVALID_SPEC, false, false,
+                            cases[i].allow_exact_keyword_match,
                             AutocompleteInput::ALL_MATCHES);
     const TemplateURL* url =
         KeywordProvider::GetSubstitutingTemplateURLForInput(model_.get(),

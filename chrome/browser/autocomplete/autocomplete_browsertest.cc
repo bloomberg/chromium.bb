@@ -139,8 +139,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
     OmniboxView* location_entry = location_bar->GetLocationEntry();
     location_entry->model()->SetInputInProgress(true);
     autocomplete_controller->Start(AutocompleteInput(
-        ASCIIToUTF16("chrome"), string16::npos, string16(), GURL(), true, false,
-        true, AutocompleteInput::SYNCHRONOUS_MATCHES));
+        ASCIIToUTF16("chrome"), string16::npos, string16(), GURL(),
+        AutocompleteInput::NEW_TAB_PAGE, true, false, true,
+        AutocompleteInput::SYNCHRONOUS_MATCHES));
 
     EXPECT_TRUE(autocomplete_controller->done());
     EXPECT_TRUE(location_bar->GetInputString().empty());

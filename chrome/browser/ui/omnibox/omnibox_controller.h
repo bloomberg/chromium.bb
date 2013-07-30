@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 
 struct AutocompleteMatch;
@@ -40,13 +41,15 @@ class OmniboxController : public AutocompleteControllerDelegate {
   virtual ~OmniboxController();
 
   // |current_url| is only set for mobile ports.
-  void StartAutocomplete(string16 user_text,
-                         size_t cursor_position,
-                         const GURL& current_url,
-                         bool prevent_inline_autocomplete,
-                         bool prefer_keyword,
-                         bool allow_exact_keyword_match,
-                         int omnibox_start_margin) const;
+  void StartAutocomplete(
+      string16 user_text,
+      size_t cursor_position,
+      const GURL& current_url,
+      AutocompleteInput::PageClassification current_page_classification,
+      bool prevent_inline_autocomplete,
+      bool prefer_keyword,
+      bool allow_exact_keyword_match,
+      int omnibox_start_margin) const;
 
   // AutocompleteControllerDelegate:
   virtual void OnResultChanged(bool default_match_changed) OVERRIDE;

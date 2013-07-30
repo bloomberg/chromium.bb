@@ -261,6 +261,7 @@ void HistoryURLProviderTest::RunTest(
     size_t num_results,
     AutocompleteInput::Type* identified_input_type) {
   AutocompleteInput input(text, string16::npos, desired_tld, GURL(),
+                          AutocompleteInput::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true,
                           AutocompleteInput::ALL_MATCHES);
   *identified_input_type = input.type();
@@ -518,7 +519,8 @@ TEST_F(HistoryURLProviderTest, EmptyVisits) {
   profile_->BlockUntilHistoryProcessesPendingRequests();
 
   AutocompleteInput input(ASCIIToUTF16("p"), string16::npos, string16(), GURL(),
-                          false, false, true, AutocompleteInput::ALL_MATCHES);
+                          AutocompleteInput::INVALID_SPEC, false, false, true,
+                          AutocompleteInput::ALL_MATCHES);
   autocomplete_->Start(input, false);
   // HistoryURLProvider shouldn't be done (waiting on async results).
   EXPECT_FALSE(autocomplete_->done());
@@ -554,8 +556,8 @@ TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {
 
 TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
   AutocompleteInput input(ASCIIToUTF16("slash "), string16::npos, string16(),
-                          GURL(), false, false, true,
-                          AutocompleteInput::ALL_MATCHES);
+                          GURL(), AutocompleteInput::INVALID_SPEC, false, false,
+                          true, AutocompleteInput::ALL_MATCHES);
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
     base::MessageLoop::current()->Run();
@@ -722,8 +724,8 @@ TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     AutocompleteInput input(ASCIIToUTF16(test_cases[i]), string16::npos,
-                            string16(), GURL(), false, false, true,
-                            AutocompleteInput::ALL_MATCHES);
+                            string16(), GURL(), AutocompleteInput::INVALID_SPEC,
+                            false, false, true, AutocompleteInput::ALL_MATCHES);
     autocomplete_->Start(input, false);
     if (!autocomplete_->done())
       base::MessageLoop::current()->Run();
@@ -837,7 +839,8 @@ TEST_F(HistoryURLProviderTest, SuggestExactInput) {
 
     AutocompleteInput input(ASCIIToUTF16(test_cases[i].input), string16::npos,
                             string16(), GURL("about:blank"),
-                            false, false, true, AutocompleteInput::ALL_MATCHES);
+                            AutocompleteInput::INVALID_SPEC, false, false, true,
+                            AutocompleteInput::ALL_MATCHES);
     AutocompleteMatch match = HistoryURLProvider::SuggestExactInput(
         autocomplete_.get(), input, test_cases[i].trim_http);
     EXPECT_EQ(ASCIIToUTF16(test_cases[i].contents), match.contents);

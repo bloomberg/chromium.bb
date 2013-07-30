@@ -149,8 +149,10 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 }
 
-void ZeroSuggestProvider::StartZeroSuggest(const GURL& url,
-                                           const string16& permanent_text) {
+void ZeroSuggestProvider::StartZeroSuggest(
+    const GURL& url,
+    AutocompleteInput::PageClassification page_classification,
+    const string16& permanent_text) {
   Stop(true);
   field_trial_triggered_ = false;
   field_trial_triggered_in_session_ = false;
@@ -160,6 +162,7 @@ void ZeroSuggestProvider::StartZeroSuggest(const GURL& url,
   done_ = false;
   permanent_text_ = permanent_text;
   current_query_ = url.spec();
+  current_page_classification_ = page_classification;
   current_url_match_ = MatchForCurrentURL();
   // TODO(jered): Consider adding locally-sourced zero-suggestions here too.
   // These may be useful on the NTP or more relevant to the user than server
@@ -449,8 +452,8 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
 }
 
 AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
-  AutocompleteInput input(permanent_text_, string16::npos,
-                          string16(), GURL(current_query_),
+  AutocompleteInput input(permanent_text_, string16::npos, string16(),
+                          GURL(current_query_), current_page_classification_,
                           false, false, true, AutocompleteInput::ALL_MATCHES);
 
   AutocompleteMatch match(
