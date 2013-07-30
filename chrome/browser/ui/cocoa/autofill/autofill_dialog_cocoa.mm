@@ -6,6 +6,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/chrome_style.h"
@@ -95,6 +96,7 @@ void AutofillDialogCocoa::UpdateSection(DialogSection section) {
 
 void AutofillDialogCocoa::FillSection(DialogSection section,
                                       const DetailInput& originating_input) {
+  [sheet_controller_ fillSection:section forInput:originating_input];
 }
 
 void AutofillDialogCocoa::GetUserInput(DialogSection section,
@@ -156,7 +158,8 @@ string16 AutofillDialogCocoa::GetTextContentsOfInput(const DetailInput& input) {
 
 void AutofillDialogCocoa::SetTextContentsOfInput(const DetailInput& input,
                                                  const string16& contents) {
-  // TODO(groby): Implement Mac support for this: http://crbug.com/256864
+  [sheet_controller_ setTextContents:base::SysUTF16ToNSString(contents)
+                            forInput:input];
 }
 
 void AutofillDialogCocoa::SetTextContentsOfSuggestionInput(
@@ -166,7 +169,7 @@ void AutofillDialogCocoa::SetTextContentsOfSuggestionInput(
 }
 
 void AutofillDialogCocoa::ActivateInput(const DetailInput& input) {
-  // TODO(groby): Implement Mac support for this: http://crbug.com/256864
+  [sheet_controller_ activateFieldForInput:input];
 }
 
 gfx::Size AutofillDialogCocoa::GetSize() const {
@@ -355,6 +358,11 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   [[mainContainer_ sectionForId:section] update];
 }
 
+- (void)fillSection:(autofill::DialogSection)section
+           forInput:(const autofill::DetailInput&)input {
+  [[mainContainer_ sectionForId:section] fillForInput:input];
+}
+
 - (content::NavigationController*)showSignIn {
   [signInContainer_ loadSignInPage];
   [[mainContainer_ view] setHidden:YES];
@@ -381,6 +389,27 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 - (void)modelChanged {
   [mainContainer_ modelChanged];
+}
+
+@end
+
+
+@implementation AutofillDialogWindowController (TestableAutofillDialogView)
+
+- (void)setTextContents:(NSString*)text
+               forInput:(const autofill::DetailInput&)input {
+  for (size_t i = autofill::SECTION_MIN; i <= autofill::SECTION_MAX; ++i) {
+    autofill::DialogSection section = static_cast<autofill::DialogSection>(i);
+    // TODO(groby): Need to find the section for an input directly - wasteful.
+    [[mainContainer_ sectionForId:section] setFieldValue:text forInput:input];
+  }
+}
+
+- (void)activateFieldForInput:(const autofill::DetailInput&)input {
+  for (size_t i = autofill::SECTION_MIN; i <= autofill::SECTION_MAX; ++i) {
+    autofill::DialogSection section = static_cast<autofill::DialogSection>(i);
+    [[mainContainer_ sectionForId:section] activateFieldForInput:input];
+  }
 }
 
 @end

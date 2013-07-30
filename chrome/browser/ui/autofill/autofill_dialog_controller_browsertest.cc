@@ -437,15 +437,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutCancelled) {
   EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
 }
 
-#if defined(OS_MACOSX)
-// TODO(groby): Implement the necessary functionality and enable this test:
-// http://crbug.com/256864
-#define MAYBE_FillInputFromAutofill DISABLED_FillInputFromAutofill
-#else
-#define MAYBE_FillInputFromAutofill FillInputFromAutofill
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       MAYBE_FillInputFromAutofill) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
 
   AutofillProfile full_profile(test::GetFullProfile());

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/cocoa/autofill/simple_grid_layout.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -66,14 +67,40 @@ void BreakSuggestionText(const string16& text,
   }
 }
 
+// If the Autofill data comes from a credit card, make sure to overwrite the
+// CC comboboxes (even if they already have something in them). If the
+// Autofill data comes from an AutofillProfile, leave the comboboxes alone.
+// TODO(groby): This kind of logic should _really_ live on the controller.
+bool ShouldOverwriteComboboxes(autofill::DialogSection section,
+                               autofill::AutofillFieldType type) {
+  using autofill::AutofillType;
+  if (AutofillType(type).group() != AutofillType::CREDIT_CARD) {
+    return false;
+  }
+
+  if (section == autofill::SECTION_CC) {
+    return true;
+  }
+
+  return section == autofill::SECTION_CC_BILLING;
+}
+
 bool CompareInputRows(const autofill::DetailInput* input1,
                       const autofill::DetailInput* input2) {
+  // Row ID -1 is sorted to the end of rows.
+  if (input2->row_id == -1)
+    return false;
   return input2->row_id < input1->row_id;
 }
 
 }
 
 @interface AutofillSectionContainer ()
+
+// A text field has been edited or activated - inform the controller that it's
+// time to show a suggestion popup & possibly reset the validity of the input.
+- (void)textfieldEditedOrActivated:(NSControl<AutofillInputField>*)field
+                            edited:(BOOL)edited;
 
 // Convenience method to retrieve a field type via the control's tag.
 - (autofill::AutofillFieldType)fieldTypeForControl:(NSControl*)control;
@@ -87,6 +114,10 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 // All controls must inherit from NSControl and conform to AutofillInputView.
 - (void)fillDetailOutputs:(autofill::DetailOutputMap*)outputs
              fromControls:(NSArray*)controls;
+
+// Updates input fields based on controller status. If |shouldClobber| is YES,
+// will clobber existing data and reset fields to the initial values.
+- (void)updateAndClobber:(BOOL)shouldClobber;
 
 // Create properly styled label for section. Autoreleased.
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText;
@@ -117,6 +148,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   [self fillDetailOutputs:output fromControls:[inputs_ subviews]];
 }
 
+// Note: This corresponds to Views' "UpdateDetailsGroupState".
 - (void)modelChanged {
   ui::MenuModel* suggestionModel = controller_->MenuModelForSection(section_);
   menuController_.reset([[MenuController alloc] initWithModel:suggestionModel
@@ -236,42 +268,13 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   [view_ setFrameSize:viewFrame.size];
 }
 
-
 - (void)fieldBecameFirstResponder:(NSControl<AutofillInputField>*)field {
+  [self textfieldEditedOrActivated:field edited:NO];
   [validationDelegate_ updateMessageForField:field];
 }
 
 - (void)didChange:(id)sender {
-  // TODO(groby): This is part of TextfieldEditedOrActivated. Combine once that
-  // is implemented.
-  AutofillTextField* textfield =
-      base::mac::ObjCCastStrict<AutofillTextField>(sender);
-  autofill::AutofillFieldType type = [self fieldTypeForControl:textfield];
-  string16 fieldValue = base::SysNSStringToUTF16([textfield fieldValue]);
-
-  // If the field is marked as invalid, check if the text is now valid.
-  // Many fields (i.e. CC#) are invalid for most of the duration of editing,
-  // so flagging them as invalid prematurely is not helpful. However,
-  // correcting a minor mistake (i.e. a wrong CC digit) should immediately
-  // result in validation - positive user feedback.
-  if ([textfield invalid]) {
-    string16 message = controller_->InputValidityMessage(section_,
-                                                         type,
-                                                         fieldValue);
-    [textfield setValidityMessage:base::SysUTF16ToNSString(message)];
-    [validationDelegate_ updateMessageForField:textfield];
-
-    // If the field transitioned from invalid to valid, re-validate the group,
-    // since inter-field checks become meaningful with valid fields.
-    if (![textfield invalid])
-      [self validateFor:autofill::VALIDATE_EDIT];
-  }
-
-  // Update the icon for the textfield.
-  gfx::Image icon = controller_->IconForField(type, fieldValue);
-  if (!icon.IsEmpty()) {
-    [[textfield cell] setIcon:icon.ToNSImage()];
-  }
+  [self textfieldEditedOrActivated:sender edited:YES];
 }
 
 - (void)didEndEditing:(id)sender {
@@ -307,9 +310,34 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 }
 
 - (void)update {
-  // TODO(groby): Will need to update input fields/support clobbering.
-  // cf. AutofillDialogViews::UpdateSectionImpl.
-  [self modelChanged];
+  [self updateAndClobber:YES];
+}
+
+- (void)fillForInput:(const autofill::DetailInput&)input {
+  // Make sure to overwrite the originating input if it is a text field.
+  AutofillTextField* field =
+      base::mac::ObjCCast<AutofillTextField>([inputs_ viewWithTag:input.type]);
+  [field setFieldValue:@""];
+
+  if (ShouldOverwriteComboboxes(section_, input.type)) {
+    for (NSControl* control in [inputs_ subviews]) {
+      AutofillPopUpButton* popup =
+          base::mac::ObjCCast<AutofillPopUpButton>(control);
+      if (popup) {
+        autofill::AutofillFieldType fieldType =
+            [self fieldTypeForControl:popup];
+        if (autofill::AutofillType(fieldType).group() ==
+                autofill::AutofillType::CREDIT_CARD) {
+          ui::ComboboxModel* model =
+              controller_->ComboboxModelForAutofillType(fieldType);
+          DCHECK(model);
+          [popup selectItemAtIndex:model->GetDefaultIndex()];
+        }
+      }
+    }
+  }
+
+  [self updateAndClobber:NO];
 }
 
 - (void)editLinkClicked {
@@ -349,6 +377,61 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
 #pragma mark Internal API for AutofillSectionContainer.
 
+- (void)textfieldEditedOrActivated:(NSControl<AutofillInputField>*)field
+                            edited:(BOOL)edited {
+  AutofillTextField* textfield =
+      base::mac::ObjCCastStrict<AutofillTextField>(field);
+
+  // This only applies to textfields.
+  if (!textfield)
+    return;
+
+  autofill::AutofillFieldType type = [self fieldTypeForControl:field];
+  string16 fieldValue = base::SysNSStringToUTF16([textfield fieldValue]);
+
+  // Get the frame rectangle for the designated field, in screen coordinates.
+  NSRect textFrameInScreen = [field convertRect:[field frame] toView:nil];
+  textFrameInScreen.origin =
+      [[field window] convertBaseToScreen:textFrameInScreen.origin];
+
+  // And adjust for gfx::Rect being flipped compared to OSX coordinates.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  textFrameInScreen.origin.y =
+      NSMaxY([screen frame]) - NSMaxY(textFrameInScreen);
+  gfx::Rect textFrameRect(NSRectToCGRect(textFrameInScreen));
+
+  controller_->UserEditedOrActivatedInput(section_,
+                                          [self detailInputForType:type],
+                                          [self view],
+                                          textFrameRect,
+                                          fieldValue,
+                                          edited);
+
+  // If the field is marked as invalid, check if the text is now valid.
+  // Many fields (i.e. CC#) are invalid for most of the duration of editing,
+  // so flagging them as invalid prematurely is not helpful. However,
+  // correcting a minor mistake (i.e. a wrong CC digit) should immediately
+  // result in validation - positive user feedback.
+  if ([textfield invalid]) {
+    string16 message = controller_->InputValidityMessage(section_,
+                                                         type,
+                                                         fieldValue);
+    [textfield setValidityMessage:base::SysUTF16ToNSString(message)];
+    [validationDelegate_ updateMessageForField:textfield];
+
+    // If the field transitioned from invalid to valid, re-validate the group,
+    // since inter-field checks become meaningful with valid fields.
+    if (![textfield invalid])
+      [self validateFor:autofill::VALIDATE_EDIT];
+  }
+
+  // Update the icon for the textfield.
+  gfx::Image icon = controller_->IconForField(type, fieldValue);
+  if (!icon.IsEmpty()) {
+    [[textfield cell] setIcon:icon.ToNSImage()];
+  }
+}
+
 - (autofill::AutofillFieldType)fieldTypeForControl:(NSControl*)control {
   DCHECK([control tag]);
   return static_cast<autofill::AutofillFieldType>([control tag]);
@@ -360,7 +443,8 @@ bool CompareInputRows(const autofill::DetailInput* input1,
     if (detailInputs_[i]->type == type)
       return detailInputs_[i];
   }
-  NOTREACHED();
+  // TODO(groby): Needs to be NOTREACHED. Can't, due to the fact that tests
+  // blindly call setFieldValue:forInput:, even for non-existing inputs.
   return NULL;
 }
 
@@ -387,6 +471,35 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   [label setBordered:NO];
   [label sizeToFit];
   return label.autorelease();
+}
+
+- (void)updateAndClobber:(BOOL)shouldClobber {
+  const autofill::DetailInputs& updatedInputs =
+      controller_->RequestedFieldsForSection(section_);
+
+  for (autofill::DetailInputs::const_iterator iter = updatedInputs.begin();
+       iter != updatedInputs.end();
+       ++iter) {
+    NSControl<AutofillInputField>* field = [inputs_ viewWithTag:iter->type];
+    DCHECK(field);
+
+    [field setEnabled:iter->editable];
+
+    // TODO(groby): For comboboxes, "empty" means "set to default index"
+    if (shouldClobber || [[field fieldValue] length] == 0) {
+      [field setFieldValue:base::SysUTF16ToNSString(iter->initial_value)];
+      AutofillTextField* textField =
+          base::mac::ObjCCast<AutofillTextField>(field);
+      if (textField) {
+        gfx::Image icon =
+            controller_->IconForField(iter->type, iter->initial_value);
+        if (!icon.IsEmpty()) {
+          [[textField cell] setIcon:icon.ToNSImage()];
+        }
+      }
+    }
+  }
+  [self modelChanged];
 }
 
 - (MenuButton*)makeSuggestionButton {
@@ -434,13 +547,11 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   for (size_t i = 0; i < detailInputs_.size(); ++i) {
     const autofill::DetailInput& input = *detailInputs_[i];
     int kColumnSetId = input.row_id;
-    if (kColumnSetId < 0)
-      continue;
     ColumnSet* column_set = layout->GetColumnSet(kColumnSetId);
     if (!column_set) {
       // Create a new column set and row.
       column_set = layout->AddColumnSet(kColumnSetId);
-      if (i != 0)
+      if (i != 0 && kColumnSetId != -1)
         layout->AddPaddingRow(kRelatedControlVerticalSpacing);
       layout->StartRow(0, kColumnSetId);
     } else {
@@ -478,6 +589,11 @@ bool CompareInputRows(const autofill::DetailInput* input1,
     [control sizeToFit];
     [control setTag:input.type];
     [control setDelegate:self];
+    // Hide away fields that cannot be edited.
+    if (kColumnSetId == -1) {
+      [control setFrame:NSZeroRect];
+      [control setHidden:YES];
+    }
     layout->AddView(control);
   }
 
@@ -491,6 +607,23 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
 - (NSControl*)getField:(autofill::AutofillFieldType)type {
   return [inputs_ viewWithTag:type];
+}
+
+- (void)setFieldValue:(NSString*)text
+             forInput:(const autofill::DetailInput&)input {
+  if ([self detailInputForType:input.type] != &input)
+    return;
+
+  NSControl<AutofillInputField>* field = [inputs_ viewWithTag:input.type];
+  [field setFieldValue:text];
+}
+
+- (void)activateFieldForInput:(const autofill::DetailInput&)input {
+  if ([self detailInputForType:input.type] != &input)
+    return;
+
+  NSControl<AutofillInputField>* field = [inputs_ viewWithTag:input.type];
+  [[field window] makeFirstResponder:field];
 }
 
 @end
