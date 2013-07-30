@@ -1,0 +1,7 @@
+static_library("dynamic_annotations") {
+  sources = [
+    "dynamic_annotations.c",
+    "dynamic_annotations.h",
+    "../valgrind/valgrind.h",
+  ]
+}

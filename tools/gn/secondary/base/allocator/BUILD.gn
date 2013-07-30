@@ -1,0 +1,6 @@
+static_library("allocator_extension_thunks") {
+  sources = [
+    "allocator_extension_thunks.cc",
+    "allocator_extension_thunks.h",
+  ]
+}
