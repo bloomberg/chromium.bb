@@ -186,6 +186,10 @@ def _FindThirdPartyDirs():
     os.path.join('third_party', 'llvm-build'),
     # Binaries doesn't apply to android
     os.path.join('third_party', 'widevine'),
+    # third_party directories in this tree aren't actually third party, but
+    # provide a way to shadow experimental buildfiles into those directories.
+    # Files in here are Copyright Google.
+    os.path.join('tools', 'gn', 'secondary'),
   ]
   third_party_dirs = licenses.FindThirdPartyDirs(prune_paths, REPOSITORY_ROOT)
   return licenses.FilterDirsWithFiles(third_party_dirs, REPOSITORY_ROOT)
