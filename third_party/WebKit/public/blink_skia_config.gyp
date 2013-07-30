@@ -28,17 +28,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-# This skia_webkit target is a dependency of Chromium's skia/skia.gyp.
+# This target is a dependency of Chromium's skia/skia_library.gyp.
 # It only contains code suppressions which keep Webkit tests from failing.
 {
   'targets': [
     {
-      'target_name': 'skia_webkit',
+      'target_name': 'blink_skia_config',
       'type': 'none',
       'direct_dependent_settings': {
         'defines': [
-          # Place defines here that require significant WebKit rebaselining, or that
-          # are otherwise best removed in WebKit and then rolled into Chromium.
+          # Place defines here that require significant Blink rebaselining, or that
+          # are otherwise best removed in Blink and then rolled into Chromium.
           # Defines should be in single quotes and a comma must appear after every one.
           # DO NOT remove the define until you are ready to rebaseline, and
           # AFTER the flag has been removed from skia.gyp in Chromium.
