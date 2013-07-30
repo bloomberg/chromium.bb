@@ -270,7 +270,8 @@ def SetupGitDepot(opts, reset):
       os.chdir(cwd)
 
     if passed_deps_check:
-      if not RunGClient(['revert']) and not RunGClientAndSync(reset):
+      RunGClient(['revert'])
+      if not RunGClientAndSync(reset):
         passed = True
 
   if opts.output_buildbot_annotations:
