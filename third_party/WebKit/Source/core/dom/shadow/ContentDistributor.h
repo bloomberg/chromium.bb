@@ -115,7 +115,7 @@ public:
     InsertionPoint* findInsertionPointFor(const Node* key) const;
     const SelectRuleFeatureSet& ensureSelectFeatureSet(ElementShadow*);
 
-    void distributeSelectionsTo(InsertionPoint*, const ContentDistribution& pool, Vector<bool>& distributed);
+    void distributeSelectionsTo(InsertionPoint*, const Vector<Node*>& pool, Vector<bool>& distributed);
     void distributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
 
     void invalidateDistribution(Element* host);
@@ -129,7 +129,7 @@ public:
 private:
     void distribute(Element* host);
     bool invalidate(Element* host, Vector<Node*, 8>& nodesNeedingReattach);
-    void populate(Node*, ContentDistribution&);
+    void populate(Node*, Vector<Node*>&);
 
     void collectSelectFeatureSetFrom(ShadowRoot*);
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }

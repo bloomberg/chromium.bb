@@ -34,9 +34,9 @@
 
 namespace WebCore {
 
-bool ContentSelectorDataList::checkContentSelector(const CSSSelector* selector, const Vector<RefPtr<Node> >& siblings, int nth)
+bool ContentSelectorDataList::checkContentSelector(const CSSSelector* selector, const Vector<Node*>& siblings, int nth)
 {
-    Element* element = toElement(siblings[nth].get());
+    Element* element = toElement(siblings[nth]);
     SelectorChecker selectorChecker(element->document(), SelectorChecker::CollectingRules);
     SelectorChecker::SelectorCheckingContext context(selector, element, SelectorChecker::VisitedMatchEnabled);
     ShadowDOMSiblingTraversalStrategy strategy(siblings, nth);
@@ -50,7 +50,7 @@ void ContentSelectorDataList::initialize(const CSSSelectorList& selectors)
         m_selectors.append(selector);
 }
 
-bool ContentSelectorDataList::matches(const Vector<RefPtr<Node> >& siblings, int nth) const
+bool ContentSelectorDataList::matches(const Vector<Node*>& siblings, int nth) const
 {
     unsigned selectorCount = m_selectors.size();
     for (unsigned i = 0; i < selectorCount; ++i) {
@@ -66,9 +66,9 @@ ContentSelectorQuery::ContentSelectorQuery(InsertionPoint* insertionPoint)
     m_selectors.initialize(insertionPoint->selectorList());
 }
 
-bool ContentSelectorQuery::matches(const Vector<RefPtr<Node> >& siblings, int nth) const
+bool ContentSelectorQuery::matches(const Vector<Node*>& siblings, int nth) const
 {
-    Node* node = siblings[nth].get();
+    Node* node = siblings[nth];
     ASSERT(node);
 
     switch (m_insertionPoint->matchTypeFor(node)) {

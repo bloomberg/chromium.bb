@@ -44,10 +44,10 @@ class InsertionPoint;
 class ContentSelectorDataList {
 public:
     void initialize(const CSSSelectorList&);
-    bool matches(const Vector<RefPtr<Node> >& siblings, int nthNode) const;
+    bool matches(const Vector<Node*>& siblings, int nthNode) const;
 
 private:
-    static bool checkContentSelector(const CSSSelector*, const Vector<RefPtr<Node> >& siblings, int nthNode);
+    static bool checkContentSelector(const CSSSelector*, const Vector<Node*>& siblings, int nthNode);
 
     Vector<const CSSSelector*> m_selectors;
 };
@@ -57,7 +57,7 @@ class ContentSelectorQuery {
 public:
     explicit ContentSelectorQuery(InsertionPoint*);
 
-    bool matches(const Vector<RefPtr<Node> >& siblings, int nthNode) const;
+    bool matches(const Vector<Node*>& siblings, int nthNode) const;
 
 private:
     InsertionPoint* m_insertionPoint;

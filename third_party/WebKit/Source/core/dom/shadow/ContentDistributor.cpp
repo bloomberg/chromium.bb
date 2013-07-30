@@ -152,7 +152,7 @@ InsertionPoint* ContentDistributor::findInsertionPointFor(const Node* key) const
     return m_nodeToInsertionPoint.get(key);
 }
 
-void ContentDistributor::populate(Node* node, ContentDistribution& pool)
+void ContentDistributor::populate(Node* node, Vector<Node*>& pool)
 {
     if (!isActiveInsertionPoint(node)) {
         pool.append(node);
@@ -177,7 +177,7 @@ void ContentDistributor::distribute(Element* host)
 
     m_validity = Valid;
 
-    ContentDistribution pool;
+    Vector<Node*> pool;
     for (Node* node = host->firstChild(); node; node = node->nextSibling())
         populate(node, pool);
 
@@ -258,7 +258,7 @@ bool ContentDistributor::invalidate(Element* host, Vector<Node*, 8>& nodesNeedin
     return needsReattach;
 }
 
-void ContentDistributor::distributeSelectionsTo(InsertionPoint* insertionPoint, const ContentDistribution& pool, Vector<bool>& distributed)
+void ContentDistributor::distributeSelectionsTo(InsertionPoint* insertionPoint, const Vector<Node*>& pool, Vector<bool>& distributed)
 {
     ContentDistribution distribution;
     ContentSelectorQuery query(insertionPoint);
@@ -267,10 +267,10 @@ void ContentDistributor::distributeSelectionsTo(InsertionPoint* insertionPoint, 
         if (distributed[i])
             continue;
 
-        if (!query.matches(pool.nodes(), i))
+        if (!query.matches(pool, i))
             continue;
 
-        Node* child = pool.at(i).get();
+        Node* child = pool[i];
         distribution.append(child);
         m_nodeToInsertionPoint.add(child, insertionPoint);
         distributed[i] = true;
