@@ -1,0 +1,136 @@
+
+Tests KeyboardEvent.getModifierState()
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS lastKeyboardEvent.type is "keydown"
+PASS lastKeyboardEvent.keyCode is 33
+PASS typeof lastKeyboardEvent.getModifierState('Control') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Control') is true
+PASS typeof lastKeyboardEvent.ctrlKey is 'boolean'
+PASS lastKeyboardEvent.ctrlKey is true
+PASS typeof lastKeyboardEvent.getModifierState('Shift') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Shift') is false
+PASS typeof lastKeyboardEvent.shiftKey is 'boolean'
+PASS lastKeyboardEvent.shiftKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Meta') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Meta') is false
+PASS typeof lastKeyboardEvent.metaKey is 'boolean'
+PASS lastKeyboardEvent.metaKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Alt') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Alt') is false
+PASS typeof lastKeyboardEvent.altKey is 'boolean'
+PASS lastKeyboardEvent.altKey is false
+PASS lastKeyboardEvent.type is "keydown"
+PASS lastKeyboardEvent.keyCode is 34
+PASS typeof lastKeyboardEvent.getModifierState('Control') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Control') is false
+PASS typeof lastKeyboardEvent.ctrlKey is 'boolean'
+PASS lastKeyboardEvent.ctrlKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Shift') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Shift') is true
+PASS typeof lastKeyboardEvent.shiftKey is 'boolean'
+PASS lastKeyboardEvent.shiftKey is true
+PASS typeof lastKeyboardEvent.getModifierState('Meta') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Meta') is false
+PASS typeof lastKeyboardEvent.metaKey is 'boolean'
+PASS lastKeyboardEvent.metaKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Alt') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Alt') is false
+PASS typeof lastKeyboardEvent.altKey is 'boolean'
+PASS lastKeyboardEvent.altKey is false
+PASS lastKeyboardEvent.type is "keydown"
+PASS lastKeyboardEvent.keyCode is 36
+PASS typeof lastKeyboardEvent.getModifierState('Control') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Control') is false
+PASS typeof lastKeyboardEvent.ctrlKey is 'boolean'
+PASS lastKeyboardEvent.ctrlKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Shift') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Shift') is false
+PASS typeof lastKeyboardEvent.shiftKey is 'boolean'
+PASS lastKeyboardEvent.shiftKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Meta') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Meta') is false
+PASS typeof lastKeyboardEvent.metaKey is 'boolean'
+PASS lastKeyboardEvent.metaKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Alt') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Alt') is true
+PASS typeof lastKeyboardEvent.altKey is 'boolean'
+PASS lastKeyboardEvent.altKey is true
+PASS lastKeyboardEvent.type is "keydown"
+PASS lastKeyboardEvent.keyCode is 35
+PASS typeof lastKeyboardEvent.getModifierState('Control') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Control') is false
+PASS typeof lastKeyboardEvent.ctrlKey is 'boolean'
+PASS lastKeyboardEvent.ctrlKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Shift') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Shift') is false
+PASS typeof lastKeyboardEvent.shiftKey is 'boolean'
+PASS lastKeyboardEvent.shiftKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Meta') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Meta') is true
+PASS typeof lastKeyboardEvent.metaKey is 'boolean'
+PASS lastKeyboardEvent.metaKey is true
+PASS typeof lastKeyboardEvent.getModifierState('Alt') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Alt') is false
+PASS typeof lastKeyboardEvent.altKey is 'boolean'
+PASS lastKeyboardEvent.altKey is false
+PASS lastKeyboardEvent.type is "keydown"
+PASS lastKeyboardEvent.keyCode is 37
+PASS typeof lastKeyboardEvent.getModifierState('Control') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Control') is true
+PASS typeof lastKeyboardEvent.ctrlKey is 'boolean'
+PASS lastKeyboardEvent.ctrlKey is true
+PASS typeof lastKeyboardEvent.getModifierState('Shift') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Shift') is true
+PASS typeof lastKeyboardEvent.shiftKey is 'boolean'
+PASS lastKeyboardEvent.shiftKey is true
+PASS typeof lastKeyboardEvent.getModifierState('Meta') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Meta') is false
+PASS typeof lastKeyboardEvent.metaKey is 'boolean'
+PASS lastKeyboardEvent.metaKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Alt') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Alt') is false
+PASS typeof lastKeyboardEvent.altKey is 'boolean'
+PASS lastKeyboardEvent.altKey is false
+PASS lastKeyboardEvent.type is "keydown"
+PASS lastKeyboardEvent.keyCode is 39
+PASS typeof lastKeyboardEvent.getModifierState('Control') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Control') is true
+PASS typeof lastKeyboardEvent.ctrlKey is 'boolean'
+PASS lastKeyboardEvent.ctrlKey is true
+PASS typeof lastKeyboardEvent.getModifierState('Shift') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Shift') is true
+PASS typeof lastKeyboardEvent.shiftKey is 'boolean'
+PASS lastKeyboardEvent.shiftKey is true
+PASS typeof lastKeyboardEvent.getModifierState('Meta') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Meta') is false
+PASS typeof lastKeyboardEvent.metaKey is 'boolean'
+PASS lastKeyboardEvent.metaKey is false
+PASS typeof lastKeyboardEvent.getModifierState('Alt') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Alt') is true
+PASS typeof lastKeyboardEvent.altKey is 'boolean'
+PASS lastKeyboardEvent.altKey is true
+PASS lastKeyboardEvent.type is "keydown"
+PASS lastKeyboardEvent.keyCode is 38
+PASS typeof lastKeyboardEvent.getModifierState('Control') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Control') is true
+PASS typeof lastKeyboardEvent.ctrlKey is 'boolean'
+PASS lastKeyboardEvent.ctrlKey is true
+PASS typeof lastKeyboardEvent.getModifierState('Shift') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Shift') is true
+PASS typeof lastKeyboardEvent.shiftKey is 'boolean'
+PASS lastKeyboardEvent.shiftKey is true
+PASS typeof lastKeyboardEvent.getModifierState('Meta') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Meta') is true
+PASS typeof lastKeyboardEvent.metaKey is 'boolean'
+PASS lastKeyboardEvent.metaKey is true
+PASS typeof lastKeyboardEvent.getModifierState('Alt') is 'boolean'
+PASS lastKeyboardEvent.getModifierState('Alt') is true
+PASS typeof lastKeyboardEvent.altKey is 'boolean'
+PASS lastKeyboardEvent.altKey is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

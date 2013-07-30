@@ -157,6 +157,8 @@ void KeyboardEvent::initKeyboardEvent(const AtomicString& type, bool canBubble, 
 
 bool KeyboardEvent::getModifierState(const String& keyIdentifier) const
 {
+    // FIXME: The following keyIdentifiers are not supported yet (crbug.com/265458):
+    // "AltGraph", "CapsLock", "Fn", "NumLock", "ScrollLock", "SymbolLock", "OS".
     if (keyIdentifier == "Control")
         return ctrlKey();
     if (keyIdentifier == "Shift")

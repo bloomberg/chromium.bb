@@ -30,6 +30,8 @@
     [InitializedByEventConstructor] readonly attribute boolean          metaKey;
     readonly attribute boolean          altGraphKey;
 
+    boolean getModifierState(DOMString keyArgument);
+
     // FIXME: this does not match the version in the DOM spec.
     void initKeyboardEvent([Default=Undefined] optional DOMString type,
                            [Default=Undefined] optional boolean canBubble,
