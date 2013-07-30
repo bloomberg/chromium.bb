@@ -26,15 +26,21 @@ BOT_ASSIGNMENT = {
 
     'lucid-64-validator-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
+    'precise-64-validator-opt':
+        python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
 
     # Clang.
     'lucid_64-newlib-dbg-clang':
+      python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
+    'precise_64-newlib-dbg-clang':
       python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     'mac10.6-newlib-dbg-clang':
       python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
 
     # ASan.
     'lucid_64-newlib-dbg-asan':
+      python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
+    'precise_64-newlib-dbg-asan':
       python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
     'mac10.6-newlib-dbg-asan':
       python + ' buildbot/buildbot_standard.py opt 32 newlib --asan',
@@ -54,8 +60,16 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
     'lucid_64-newlib-mips-pnacl':
         'echo "TODO(mseaborn): add mips"',
+    'precise_64-newlib-arm_qemu-pnacl-dbg':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-dbg',
+    'precise_64-newlib-arm_qemu-pnacl-opt':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-opt',
+    'precise_64-newlib-x86_32-pnacl':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 32',
     'precise_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
+    'precise_64-newlib-mips-pnacl':
+        'echo "TODO(mseaborn): add mips"',
     # PNaCl Spec
     'lucid_64-newlib-arm_qemu-pnacl-buildonly-spec':
       'bash buildbot/buildbot_spec2k.sh pnacl-arm-buildonly',
@@ -65,6 +79,8 @@ BOT_ASSIGNMENT = {
       'bash buildbot/buildbot_spec2k.sh pnacl-x8632',
     'lucid_64-newlib-x86_64-pnacl-spec':
       'bash buildbot/buildbot_spec2k.sh pnacl-x8664',
+    'precise_64-newlib-arm_qemu-pnacl-buildonly-spec':
+      'bash buildbot/buildbot_spec2k.sh pnacl-arm-buildonly',
     # NaCl Spec
     'lucid_64-newlib-x86_32-spec':
       'bash buildbot/buildbot_spec2k.sh nacl-x8632',
@@ -74,6 +90,10 @@ BOT_ASSIGNMENT = {
     # Valgrind bots.
     'lucid-64-newlib-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh newlib',
     'lucid-64-glibc-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh glibc',
+    'precise-64-newlib-dbg-valgrind':
+        'bash buildbot/buildbot_valgrind.sh newlib',
+    'precise-64-glibc-dbg-valgrind':
+        'bash buildbot/buildbot_valgrind.sh glibc',
     # Coverage.
     'mac10.6-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
@@ -82,6 +102,12 @@ BOT_ASSIGNMENT = {
          python + (' buildbot/buildbot_standard.py '
                    'coverage 32 newlib --coverage'),
     'lucid-64-64-newlib-coverage':
+         python + (' buildbot/buildbot_standard.py '
+                   'coverage 64 newlib --coverage'),
+    'precise-64-32-newlib-coverage':
+         python + (' buildbot/buildbot_standard.py '
+                   'coverage 32 newlib --coverage'),
+    'precise-64-64-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
                    'coverage 64 newlib --coverage'),
     'xp-newlib-coverage':
@@ -226,7 +252,14 @@ BOT_ASSIGNMENT = {
 
 }
 
-special_for_arm = ['win7_64', 'win7-64', 'lucid-64', 'lucid64']
+special_for_arm = [
+    'win7_64',
+    'win7-64',
+    'lucid-64',
+    'lucid64',
+    'precise-64',
+    'precise64'
+]
 for platform in [
     'vista', 'win7', 'win8', 'win',
     'mac10.6', 'mac10.7', 'mac10.8',
