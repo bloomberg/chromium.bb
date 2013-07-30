@@ -243,7 +243,11 @@ RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_) << "Leaking our WebWidget!";
   STLDeleteElements(&updates_pending_swap_);
   if (current_paint_buf_) {
-    RenderProcess::current()->ReleaseTransportDIB(current_paint_buf_);
+    if (RenderProcess::current()) {
+      // If the RenderProcess is already gone, it will have released all DIBs
+      // in its destructor anyway.
+      RenderProcess::current()->ReleaseTransportDIB(current_paint_buf_);
+    }
     current_paint_buf_ = NULL;
   }
   // If we are swapped out, we have released already.
