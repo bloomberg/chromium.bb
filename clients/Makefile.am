@@ -51,8 +51,8 @@ weston_simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
 endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
-weston_simple_egl_clients_programs =		\
-	simple-egl
+simple_egl_clients_programs =			\
+	weston-simple-egl
 
 weston_simple_egl_SOURCES = simple-egl.c
 weston_simple_egl_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
