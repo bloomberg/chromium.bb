@@ -21,7 +21,8 @@ class MockTabModalConfirmDialogDelegate : public TabModalConfirmDialogDelegate {
     virtual ~Delegate() {}
   };
 
-  MockTabModalConfirmDialogDelegate(Delegate* delegate);
+  MockTabModalConfirmDialogDelegate(content::WebContents* web_contents,
+                                    Delegate* delegate);
   virtual ~MockTabModalConfirmDialogDelegate();
 
   virtual string16 GetTitle() OVERRIDE;

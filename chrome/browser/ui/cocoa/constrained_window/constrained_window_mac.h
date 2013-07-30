@@ -56,9 +56,6 @@ class ConstrainedWindowMac {
 
   // This is true if the constrained window has been shown.
   bool shown_;
-
-  // This is true while the constrained window is closing.
-  bool closing_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_MAC_

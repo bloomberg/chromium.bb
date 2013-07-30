@@ -22,7 +22,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, DisableFind) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   MockTabModalConfirmDialogDelegate* delegate =
-      new MockTabModalConfirmDialogDelegate(NULL);
+      new MockTabModalConfirmDialogDelegate(web_contents, NULL);
   TabModalConfirmDialog::Create(delegate, web_contents);
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FIND));
 

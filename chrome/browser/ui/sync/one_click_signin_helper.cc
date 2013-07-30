@@ -423,7 +423,8 @@ ConfirmEmailDialogDelegate::ConfirmEmailDialogDelegate(
     const std::string& last_email,
     const std::string& email,
     Callback callback)
-  : last_email_(last_email),
+  : TabModalConfirmDialogDelegate(contents),
+    last_email_(last_email),
     email_(email),
     callback_(callback) {
 }

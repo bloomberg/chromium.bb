@@ -82,7 +82,8 @@ ConfirmInstallDialogDelegate::ConfirmInstallDialogDelegate(
     content::WebContents* web_contents,
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata)
-    : WeakPluginInstallerObserver(installer),
+    : TabModalConfirmDialogDelegate(web_contents),
+      WeakPluginInstallerObserver(installer),
       web_contents_(web_contents),
       plugin_metadata_(plugin_metadata.Pass()) {
 }

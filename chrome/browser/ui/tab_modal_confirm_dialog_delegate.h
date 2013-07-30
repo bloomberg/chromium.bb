@@ -8,6 +8,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace content {
@@ -34,9 +36,9 @@ class TabModalConfirmDialogOperationsDelegate {
 
 // This class acts as the delegate for a simple tab-modal dialog confirming
 // whether the user wants to execute a certain action.
-class TabModalConfirmDialogDelegate {
+class TabModalConfirmDialogDelegate : public content::NotificationObserver {
  public:
-  TabModalConfirmDialogDelegate();
+  explicit TabModalConfirmDialogDelegate(content::WebContents* web_contents);
   virtual ~TabModalConfirmDialogDelegate();
 
   void set_operations_delegate(
@@ -86,6 +88,14 @@ class TabModalConfirmDialogDelegate {
   TabModalConfirmDialogOperationsDelegate* operations_delegate() {
     return operations_delegate_;
   }
+
+  // content::NotificationObserver implementation.
+  // Watch for a closed tab and dismiss the dialog if it occurs.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  content::NotificationRegistrar registrar_;
 
  private:
   // It is guaranteed that exactly one of |OnAccepted|, |OnCanceled| or

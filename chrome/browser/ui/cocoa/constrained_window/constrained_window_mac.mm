@@ -25,8 +25,7 @@ ConstrainedWindowMac::ConstrainedWindowMac(
     : delegate_(delegate),
       web_contents_(web_contents),
       sheet_([sheet retain]),
-      shown_(false),
-      closing_(false) {
+      shown_(false) {
   DCHECK(web_contents);
   DCHECK(sheet_.get());
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
@@ -55,10 +54,6 @@ void ConstrainedWindowMac::ShowWebContentsModalDialog() {
 }
 
 void ConstrainedWindowMac::CloseWebContentsModalDialog() {
-  if (closing_)
-    return;
-
-  closing_ = true;
   [[ConstrainedWindowSheetController controllerForSheet:sheet_]
       closeSheet:sheet_];
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =

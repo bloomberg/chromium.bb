@@ -23,6 +23,7 @@ class DownloadDangerPromptImpl
     public TabModalConfirmDialogDelegate {
  public:
   DownloadDangerPromptImpl(content::DownloadItem* item,
+                           content::WebContents* web_contents,
                            bool show_context,
                            const OnDone& done);
   virtual ~DownloadDangerPromptImpl();
@@ -52,9 +53,11 @@ class DownloadDangerPromptImpl
 
 DownloadDangerPromptImpl::DownloadDangerPromptImpl(
     content::DownloadItem* download,
+    content::WebContents* web_contents,
     bool show_context,
     const OnDone& done)
-    : download_(download),
+    : TabModalConfirmDialogDelegate(web_contents),
+      download_(download),
       show_context_(show_context),
       done_(done) {
   DCHECK(!done_.is_null());
@@ -162,7 +165,7 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
     bool show_context,
     const OnDone& done) {
   DownloadDangerPromptImpl* prompt = new DownloadDangerPromptImpl(
-      item, show_context, done);
+      item, web_contents, show_context, done);
   // |prompt| will be deleted when the dialog is done.
   TabModalConfirmDialog::Create(prompt, web_contents);
   return prompt;

@@ -4,14 +4,23 @@
 
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 
+#include "chrome/browser/chrome_notification_types.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::NavigationController;
 using content::WebContents;
 
-TabModalConfirmDialogDelegate::TabModalConfirmDialogDelegate()
+TabModalConfirmDialogDelegate::TabModalConfirmDialogDelegate(
+    WebContents* web_contents)
     : operations_delegate_(NULL),
       closing_(false) {
+  NavigationController* controller = &web_contents->GetController();
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
+                 content::Source<NavigationController>(controller));
 }
 
 TabModalConfirmDialogDelegate::~TabModalConfirmDialogDelegate() {
@@ -50,6 +59,18 @@ void TabModalConfirmDialogDelegate::LinkClicked(
   closing_ = true;
   OnLinkClicked(disposition);
   CloseDialog();
+}
+
+void TabModalConfirmDialogDelegate::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  // Close the dialog if the tab is closed.
+  if (type == chrome::NOTIFICATION_TAB_CLOSING) {
+    Cancel();
+  } else {
+    NOTREACHED();
+  }
 }
 
 gfx::Image* TabModalConfirmDialogDelegate::GetIcon() {
