@@ -110,8 +110,14 @@ bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
   } else if (input.is_folder()) {
     file_info->set_is_directory(true);
   } else {
-    // Some resource entries don't map into files (i.e. sites).
-    return false;
+    // There are two cases to reach here.
+    // * The entry is something that doesn't map into files (i.e. sites).
+    //   We don't handle these kind of entries hence return false.
+    // * The entry is un-shared to you by other owner. In that case, we
+    //   get an entry with only deleted() and resource_id() fields are
+    //   filled. Since we want to delete such entries locally as well,
+    //   in that case we need to return true to proceed.
+    return input.deleted();
   }
 
   return true;
