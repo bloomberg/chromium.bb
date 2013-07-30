@@ -98,8 +98,7 @@ unsigned CharacterData::parserAppendData(const String& string, unsigned offset, 
         toText(this)->updateTextRenderer(oldLength, 0);
 
     document()->incDOMTreeVersion();
-    // We don't call dispatchModifiedEvent here because we don't want the
-    // parser to dispatch DOM mutation events.
+
     if (parentNode())
         parentNode()->childrenChanged();
 
@@ -212,16 +211,12 @@ void CharacterData::didModifyData(const String& oldData)
     if (parentNode())
         parentNode()->childrenChanged();
 
-    if (!isInShadowTree())
-        dispatchModifiedEvent(oldData);
+    if (!isInShadowTree()) {
+        if (document()->hasListenerType(Document::DOMCHARACTERDATAMODIFIED_LISTENER))
+            dispatchScopedEvent(MutationEvent::create(eventNames().DOMCharacterDataModifiedEvent, true, 0, oldData, m_data));
+        dispatchSubtreeModifiedEvent();
+    }
     InspectorInstrumentation::characterDataModified(document(), this);
-}
-
-void CharacterData::dispatchModifiedEvent(const String& oldData)
-{
-    if (document()->hasListenerType(Document::DOMCHARACTERDATAMODIFIED_LISTENER))
-        dispatchScopedEvent(MutationEvent::create(eventNames().DOMCharacterDataModifiedEvent, true, 0, oldData, m_data));
-    dispatchSubtreeModifiedEvent();
 }
 
 void CharacterData::checkCharDataOperation(unsigned offset, ExceptionCode& ec)
