@@ -108,10 +108,11 @@ void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
   if (requests->empty())
     return;
 
+  bool was_empty = copy_requests_.empty();
   copy_requests_.insert_and_take(copy_requests_.end(), *requests);
   requests->clear();
 
-  if (layer_tree_impl()->IsActiveTree())
+  if (was_empty && layer_tree_impl()->IsActiveTree())
     layer_tree_impl()->AddLayerWithCopyOutputRequest(this);
   NoteLayerPropertyChangedForSubtree();
 }
