@@ -26,7 +26,8 @@ class It2MeDesktopEnvironment : public BasicDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      base::WeakPtr<ClientSessionControl> client_session_control,
+      const UiStrings& ui_strings);
 
  private:
   // Presents the continue window to the local user.
@@ -47,7 +48,8 @@ class It2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
   It2MeDesktopEnvironmentFactory(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const UiStrings& ui_strings);
   virtual ~It2MeDesktopEnvironmentFactory();
 
   // DesktopEnvironmentFactory interface.

@@ -25,6 +25,7 @@
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/setup/daemon_controller.h"
+#include "remoting/host/ui_strings.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "third_party/npapi/bindings/npapi.h"
@@ -300,6 +301,9 @@ class HostNPScriptObject {
   std::string access_code_;
   base::TimeDelta access_code_lifetime_;
   std::string client_username_;
+
+  // Localized strings for use by the |it2me_impl_| UI.
+  UiStrings ui_strings_;
 
   // IT2Me Talk server configuration used by |it2me_impl_| to connect.
   XmppSignalStrategy::XmppServerConfig xmpp_server_config_;

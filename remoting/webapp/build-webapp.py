@@ -124,23 +124,21 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   # Copy all the locales, preserving directory structure
   destination_locales = os.path.join(destination, "_locales")
   os.mkdir(destination_locales , 0775)
-  remoting_locales = os.path.join(destination, "remoting_locales")
-  os.mkdir(remoting_locales , 0775)
+  locale_dir = "/_locales/"
   for current_locale in locales:
-    extension = os.path.splitext(current_locale)[1]
-    if extension == '.json':
-      locale_id = os.path.split(os.path.split(current_locale)[0])[1]
-      destination_dir = os.path.join(destination_locales, locale_id)
-      destination_file = os.path.join(destination_dir,
-                                      os.path.split(current_locale)[1])
-      os.mkdir(destination_dir, 0775)
-      shutil.copy2(current_locale, destination_file)
-    elif extension == '.pak':
-      destination_file = os.path.join(remoting_locales,
-                                      os.path.split(current_locale)[1])
-      shutil.copy2(current_locale, destination_file)
-    else:
-      raise Exception("Unknown extension: " + current_locale);
+    pos = current_locale.find(locale_dir)
+    if (pos == -1):
+      raise Exception("Missing locales directory in " + current_locale)
+    subtree = current_locale[pos + len(locale_dir):]
+    pos = subtree.find("/")
+    if (pos == -1):
+      raise Exception("Malformed locale: " + current_locale)
+    locale_id = subtree[:pos]
+    messages = subtree[pos+1:]
+    destination_dir = os.path.join(destination_locales, locale_id)
+    destination_file = os.path.join(destination_dir, messages)
+    os.mkdir(destination_dir, 0775)
+    shutil.copy2(current_locale, destination_file)
 
   # Create fake plugin files to appease the manifest checker.
   # It requires that if there is a plugin listed in the manifest that

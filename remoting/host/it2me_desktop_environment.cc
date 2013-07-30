@@ -26,7 +26,8 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const UiStrings& ui_strings)
     : BasicDesktopEnvironment(caller_task_runner,
                               input_task_runner,
                               ui_task_runner) {
@@ -53,14 +54,14 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
 
   // Create the continue and disconnect windows.
   if (want_user_interface) {
-    continue_window_ = HostWindow::CreateContinueWindow();
+    continue_window_ = HostWindow::CreateContinueWindow(ui_strings);
     continue_window_.reset(new HostWindowProxy(
         caller_task_runner,
         ui_task_runner,
         continue_window_.Pass()));
     continue_window_->Start(client_session_control);
 
-    disconnect_window_ = HostWindow::CreateDisconnectWindow();
+    disconnect_window_ = HostWindow::CreateDisconnectWindow(ui_strings);
     disconnect_window_.reset(new HostWindowProxy(
         caller_task_runner,
         ui_task_runner,
@@ -72,10 +73,12 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
 It2MeDesktopEnvironmentFactory::It2MeDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const UiStrings& ui_strings)
     : BasicDesktopEnvironmentFactory(caller_task_runner,
                                      input_task_runner,
-                                     ui_task_runner) {
+                                     ui_task_runner,
+                                     ui_strings) {
 }
 
 It2MeDesktopEnvironmentFactory::~It2MeDesktopEnvironmentFactory() {
@@ -89,7 +92,8 @@ scoped_ptr<DesktopEnvironment> It2MeDesktopEnvironmentFactory::Create(
       new It2MeDesktopEnvironment(caller_task_runner(),
                                   input_task_runner(),
                                   ui_task_runner(),
-                                  client_session_control));
+                                  client_session_control,
+                                  ui_strings()));
 }
 
 }  // namespace remoting

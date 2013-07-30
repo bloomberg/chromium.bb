@@ -35,6 +35,7 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
   // and in-session UI).
   bool InitializeSecurity(
       base::WeakPtr<ClientSessionControl> client_session_control,
+      const UiStrings& ui_strings,
       bool curtain_enabled);
 
  private:
@@ -57,7 +58,8 @@ class Me2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
   Me2MeDesktopEnvironmentFactory(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const UiStrings& ui_strings);
   virtual ~Me2MeDesktopEnvironmentFactory();
 
   // DesktopEnvironmentFactory interface.
