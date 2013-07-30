@@ -3300,20 +3300,6 @@
    fun:_ZN19URLRequestChromeJob10StartAsyncEv
 }
 {
-   bug_92389
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net11AddressList27CreateByCopyingFirstAddressEPK8addrinfo
-   fun:_ZNK3net23TCPClientSocketLibevent14GetPeerAddressEPNS_11AddressListE
-   ...
-   fun:_ZN3net22HttpNetworkTransaction13DoSendRequestEv
-   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
-   fun:_ZN3net22HttpNetworkTransaction12OnIOCompleteEi
-   fun:_ZN3net22HttpNetworkTransaction13OnStreamReadyERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
-   fun:_ZN3net21HttpStreamFactoryImpl7Request*
-   fun:_ZN3net21HttpStreamFactoryImpl3Job*
-}
-{
    bug_92571
    Memcheck:Leak
    fun:_Znw*
