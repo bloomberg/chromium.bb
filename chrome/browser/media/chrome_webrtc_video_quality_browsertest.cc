@@ -422,11 +422,15 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
   scoped_ptr<base::Environment> environment_;
 };
 
+#if defined(OS_WIN)
 // Broken on Win: failing to start pywebsocket_server. http://crbug.com/255499.
 #define MAYBE_MANUAL_TestVGAVideoQuality DISABLED_MANUAL_TestVGAVideoQuality
+#else
+#define MAYBE_MANUAL_TestVGAVideoQuality MANUAL_TestVGAVideoQuality
+#endif
 
 IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
-                       MANUAL_TestVGAVideoQuality) {
+                       MAYBE_MANUAL_TestVGAVideoQuality) {
   // TODO(phoglund): de-dupe from chrome_webrtc_browsertest.cc.
   StartPyWebSocketServer();
 
