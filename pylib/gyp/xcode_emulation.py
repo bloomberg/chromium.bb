@@ -366,7 +366,10 @@ class XcodeSettings(object):
     """Returns flags that need to be added to .c, and .m compilations."""
     self.configname = configname
     cflags_c = []
-    self._Appendf(cflags_c, 'GCC_C_LANGUAGE_STANDARD', '-std=%s')
+    if self._Settings().get('GCC_C_LANGUAGE_STANDARD', '') == 'ansi':
+      cflags_c.append('-ansi')
+    else:
+      self._Appendf(cflags_c, 'GCC_C_LANGUAGE_STANDARD', '-std=%s')
     cflags_c += self._Settings().get('OTHER_CFLAGS', [])
     self.configname = None
     return cflags_c
