@@ -268,12 +268,12 @@ static inline void dumpTextBoxes(Vector<SVGInlineTextBox*>& boxes)
         fprintf(stderr, "        textBox properties, start=%i, len=%i, box direction=%i\n", textBox->start(), textBox->len(), textBox->direction());
         fprintf(stderr, "   textRenderer properties, textLength=%i\n", textBox->textRenderer()->textLength());
 
-        const UChar* characters = textBox->textRenderer()->characters();
+        String characters = textBox->textRenderer()->text();
 
         unsigned fragmentCount = fragments.size();
         for (unsigned i = 0; i < fragmentCount; ++i) {
             SVGTextFragment& fragment = fragments.at(i);
-            String fragmentString(characters + fragment.characterOffset, fragment.length);
+            String fragmentString = characters.substring(fragment.characterOffset, fragment.length);
             fprintf(stderr, "    -> Fragment %i, x=%lf, y=%lf, width=%lf, height=%lf, characterOffset=%i, length=%i, characters='%s'\n"
                           , i, fragment.x, fragment.y, fragment.width, fragment.height, fragment.characterOffset, fragment.length, fragmentString.utf8().data());
         }
