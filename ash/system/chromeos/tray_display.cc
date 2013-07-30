@@ -99,11 +99,6 @@ base::string16 GetAllDisplayInfo() {
     lines.push_back(GetDisplayInfoLine(id));
   }
 
-  if (display_manager->IsMirrored()) {
-    lines.push_back(GetDisplayInfoLine(
-        display_manager->mirrored_display().id()));
-  }
-
   return JoinString(lines, '\n');
 }
 

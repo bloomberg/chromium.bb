@@ -39,6 +39,12 @@ base::string16 GetTooltipText(const base::string16& headline,
   return JoinString(lines, '\n');
 }
 
+base::string16 GetMirroredTooltipText(const base::string16& headline,
+                                      const base::string16& name,
+                                      const std::string& data) {
+  return GetTooltipText(headline, name, data, base::string16(), "");
+}
+
 base::string16 GetFirstDisplayName() {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   return UTF8ToUTF16(display_manager->GetDisplayNameForId(
@@ -149,8 +155,7 @@ TEST_F(TrayDisplayTest, NoInternalDisplay) {
   expected = l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING_NO_INTERNAL);
   EXPECT_EQ(expected, GetTrayDisplayText());
-  EXPECT_EQ(GetTooltipText(expected, GetFirstDisplayName(), "400x400",
-                           GetMirroredDisplayName(), "200x200"),
+  EXPECT_EQ(GetMirroredTooltipText(expected, GetFirstDisplayName(), "400x400"),
             GetTrayDisplayTooltipText());
 }
 
@@ -182,8 +187,7 @@ TEST_F(TrayDisplayTest, InternalDisplay) {
   expected = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING, GetMirroredDisplayName());
   EXPECT_EQ(expected, GetTrayDisplayText());
-  EXPECT_EQ(GetTooltipText(expected, GetFirstDisplayName(), "400x400",
-                           GetMirroredDisplayName(), "200x200"),
+  EXPECT_EQ(GetMirroredTooltipText(expected, GetFirstDisplayName(), "400x400"),
             GetTrayDisplayTooltipText());
 
   // TODO(mukai): add test case for docked mode here.
@@ -224,8 +228,7 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
   expected = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING, GetMirroredDisplayName());
   EXPECT_EQ(expected, GetTrayDisplayText());
-  EXPECT_EQ(GetTooltipText(expected, GetFirstDisplayName(), "600x600",
-                           GetMirroredDisplayName(), "200x200"),
+  EXPECT_EQ(GetMirroredTooltipText(expected, GetFirstDisplayName(), "600x600"),
             GetTrayDisplayTooltipText());
 }
 
@@ -255,7 +258,7 @@ TEST_F(TrayDisplayTest, ExternalDisplayResized) {
                            GetSecondDisplayName(), "300x300"),
             GetTrayDisplayTooltipText());
 
-  // Mirroring: in mirroring, it's not possible to lookup the DisplayInfo.
+  // Mirroring
   display_manager->SetSoftwareMirroring(true);
   UpdateDisplay("400x400,200x200@1.5");
   base::string16 mirror_name = l10n_util::GetStringFUTF16(
@@ -266,8 +269,7 @@ TEST_F(TrayDisplayTest, ExternalDisplayResized) {
   expected = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING, mirror_name);
   EXPECT_EQ(expected, GetTrayDisplayText());
-  EXPECT_EQ(GetTooltipText(expected, GetFirstDisplayName(), "400x400",
-                           GetMirroredDisplayName(), "300x300"),
+  EXPECT_EQ(GetMirroredTooltipText(expected, GetFirstDisplayName(), "400x400"),
             GetTrayDisplayTooltipText());
 }
 
