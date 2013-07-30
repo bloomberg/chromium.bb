@@ -27,6 +27,7 @@ include_rules = [
   "-cc/base/scoped_ptr_vector.h",
 
   "+crypto",
+  "+grit/blink_resources.h",
   "+grit/content_resources.h",
   "+grit/ui_resources.h",
   "+grit/ui_strings.h",
