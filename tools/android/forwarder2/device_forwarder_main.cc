@@ -48,6 +48,25 @@ class ServerDelegate : public Daemon::ServerDelegate {
  public:
   ServerDelegate() : initialized_(false) {}
 
+  virtual ~ServerDelegate() {
+    if (!controller_thread_.get())
+      return;
+    // The DeviceController instance, if any, is constructed on the controller
+    // thread. Make sure that it gets deleted on that same thread. Note that
+    // DeleteSoon() is not used here since it would imply reading |controller_|
+    // from the main thread while it's set on the internal thread.
+    controller_thread_->message_loop_proxy()->PostTask(
+        FROM_HERE,
+        base::Bind(&ServerDelegate::DeleteControllerOnInternalThread,
+                   base::Unretained(this)));
+  }
+
+  void DeleteControllerOnInternalThread() {
+    DCHECK(
+        controller_thread_->message_loop_proxy()->RunsTasksOnCurrentThread());
+    controller_.reset();
+  }
+
   // Daemon::ServerDelegate:
   virtual void Init() OVERRIDE {
     DCHECK(!g_notifier);
@@ -65,31 +84,30 @@ class ServerDelegate : public Daemon::ServerDelegate {
     }
     controller_thread_->message_loop()->PostTask(
         FROM_HERE,
-        base::Bind(&ServerDelegate::StartController, GetExitNotifierFD(),
-                   base::Passed(&client_socket)));
+        base::Bind(&ServerDelegate::StartController, base::Unretained(this),
+                   GetExitNotifierFD(), base::Passed(&client_socket)));
     initialized_ = true;
   }
 
  private:
-  static void StartController(int exit_notifier_fd,
-                              scoped_ptr<Socket> client_socket) {
-    forwarder2::DeviceController controller(exit_notifier_fd);
-    if (!controller.Init(kUnixDomainSocketPath)) {
+  void StartController(int exit_notifier_fd, scoped_ptr<Socket> client_socket) {
+    DCHECK(!controller_.get());
+    scoped_ptr<DeviceController> controller(
+        DeviceController::Create(kUnixDomainSocketPath, exit_notifier_fd));
+    if (!controller.get()) {
       client_socket->WriteString(
           base::StringPrintf("ERROR: Could not initialize device controller "
                              "with ADB socket path: %s",
                              kUnixDomainSocketPath));
       return;
     }
+    controller_.swap(controller);
+    controller_->Start();
     client_socket->WriteString("OK");
     client_socket->Close();
-    // Note that the following call is blocking which explains why the device
-    // controller has to live on a separate thread (so that the daemon command
-    // server is not blocked).
-    controller.Start();
   }
 
-  base::AtExitManager at_exit_manager_;  // Used by base::Thread.
+  scoped_ptr<DeviceController> controller_;
   scoped_ptr<base::Thread> controller_thread_;
   bool initialized_;
 };
@@ -128,6 +146,7 @@ int RunDeviceForwarder(int argc, char** argv) {
     std::cerr << "Usage: device_forwarder [--kill-server]" << std::endl;
     return 1;
   }
+  base::AtExitManager at_exit_manager;  // Used by base::Thread.
   ClientDelegate client_delegate;
   ServerDelegate daemon_delegate;
   const char kLogFilePath[] = "";  // Log to logcat.

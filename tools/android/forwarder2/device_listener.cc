@@ -4,185 +4,145 @@
 
 #include "tools/android/forwarder2/device_listener.h"
 
-#include <errno.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <string>
-
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "tools/android/forwarder2/command.h"
 #include "tools/android/forwarder2/forwarder.h"
 #include "tools/android/forwarder2/socket.h"
 
-namespace {
-// Timeout for the Listener to be waiting for a new Adb Data Connection.
-const int kDeviceListenerTimeoutSeconds = 10;
-}
-
 namespace forwarder2 {
 
-DeviceListener::DeviceListener(scoped_ptr<Socket> adb_control_socket, int port)
-    : adb_control_socket_(adb_control_socket.Pass()),
-      listener_port_(port),
-      is_alive_(false),
-      must_exit_(false) {
-  CHECK(adb_control_socket_.get());
-  adb_control_socket_->AddEventFd(exit_notifier_.receiver_fd());
-  listener_socket_.AddEventFd(exit_notifier_.receiver_fd());
-  pthread_mutex_init(&adb_data_socket_mutex_, NULL);
-  pthread_cond_init(&adb_data_socket_cond_, NULL);
+// static
+scoped_ptr<DeviceListener> DeviceListener::Create(
+    scoped_ptr<Socket> host_socket,
+    int listener_port,
+    const DeleteCallback& delete_callback) {
+  scoped_ptr<Socket> listener_socket(new Socket());
+  scoped_ptr<DeviceListener> device_listener;
+  if (!listener_socket->BindTcp("", listener_port)) {
+    LOG(ERROR) << "Device could not bind and listen to local port "
+               << listener_port;
+    SendCommand(command::BIND_ERROR, listener_port, host_socket.get());
+    return device_listener.Pass();
+  }
+  // In case the |listener_port_| was zero, GetPort() will return the
+  // currently (non-zero) allocated port for this socket.
+  listener_port = listener_socket->GetPort();
+  SendCommand(command::BIND_SUCCESS, listener_port, host_socket.get());
+  device_listener.reset(
+      new DeviceListener(
+          scoped_ptr<PipeNotifier>(new PipeNotifier()), listener_socket.Pass(),
+          host_socket.Pass(), listener_port, delete_callback));
+  return device_listener.Pass();
 }
 
 DeviceListener::~DeviceListener() {
-  CHECK(!is_alive());
-  adb_control_socket_->Close();
-  listener_socket_.Close();
+  DCHECK(deletion_task_runner_->RunsTasksOnCurrentThread());
+  exit_notifier_->Notify();
 }
 
-void DeviceListener::SetMustExitLocked() {
-  must_exit_ = true;
-  exit_notifier_.Notify();
+void DeviceListener::Start() {
+  thread_.Start();
+  AcceptNextClientSoon();
 }
 
-void DeviceListener::ForceExit() {
-  // Set must_exit and wake up the threads waiting.
-  pthread_mutex_lock(&adb_data_socket_mutex_);
-  SetMustExitLocked();
-  pthread_cond_broadcast(&adb_data_socket_cond_);
-  pthread_mutex_unlock(&adb_data_socket_mutex_);
+void DeviceListener::SetAdbDataSocket(scoped_ptr<Socket> adb_data_socket) {
+  thread_.message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&DeviceListener::OnAdbDataSocketReceivedOnInternalThread,
+                 base::Unretained(this), base::Passed(&adb_data_socket)));
 }
 
-bool DeviceListener::WaitForAdbDataSocket() {
-  timespec time_to_wait = {};
-  time_to_wait.tv_sec = time(NULL) + kDeviceListenerTimeoutSeconds;
+DeviceListener::DeviceListener(scoped_ptr<PipeNotifier> pipe_notifier,
+                               scoped_ptr<Socket> listener_socket,
+                               scoped_ptr<Socket> host_socket,
+                               int port,
+                               const DeleteCallback& delete_callback)
+    : exit_notifier_(pipe_notifier.Pass()),
+      listener_socket_(listener_socket.Pass()),
+      host_socket_(host_socket.Pass()),
+      listener_port_(port),
+      delete_callback_(delete_callback),
+      deletion_task_runner_(base::MessageLoopProxy::current()),
+      thread_("DeviceListener") {
+  CHECK(host_socket_.get());
+  DCHECK(deletion_task_runner_.get());
+  DCHECK(exit_notifier_.get());
+  host_socket_->AddEventFd(exit_notifier_->receiver_fd());
+  listener_socket_->AddEventFd(exit_notifier_->receiver_fd());
+}
 
-  pthread_mutex_lock(&adb_data_socket_mutex_);
-  int ret = 0;
-  while (!must_exit_ && adb_data_socket_.get() == NULL && ret == 0) {
-    ret = pthread_cond_timedwait(&adb_data_socket_cond_,
-                                 &adb_data_socket_mutex_,
-                                 &time_to_wait);
-    if (ret != 0) {
-      if (adb_data_socket_.get()) {
-        adb_data_socket_->Close();
-        adb_data_socket_.reset();
-      }
-      LOG(ERROR) << "Error while waiting for Adb Data Socket.";
-      SetMustExitLocked();
+void DeviceListener::AcceptNextClientSoon() {
+  thread_.message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&DeviceListener::AcceptClientOnInternalThread,
+                 base::Unretained(this)));
+}
+
+void DeviceListener::AcceptClientOnInternalThread() {
+  device_data_socket_.reset(new Socket());
+  if (!listener_socket_->Accept(device_data_socket_.get())) {
+    if (listener_socket_->DidReceiveEvent()) {
+      LOG(INFO) << "Received exit notification, stopped accepting clients.";
+      SelfDelete();
+      return;
     }
+    LOG(WARNING) << "Could not Accept in ListenerSocket.";
+    SendCommand(command::ACCEPT_ERROR, listener_port_, host_socket_.get());
+    SelfDelete();
+    return;
   }
-  pthread_mutex_unlock(&adb_data_socket_mutex_);
-  if (ret == ETIMEDOUT) {
-    LOG(ERROR) << "DeviceListener timeout while waiting for "
-               << "the Adb Data Socket for port: " << listener_port_;
+  SendCommand(command::ACCEPT_SUCCESS, listener_port_, host_socket_.get());
+  if (!ReceivedCommand(command::HOST_SERVER_SUCCESS,
+                       host_socket_.get())) {
+    SendCommand(command::ACK, listener_port_, host_socket_.get());
+    LOG(ERROR) << "Host could not connect to server.";
+    device_data_socket_->Close();
+    if (host_socket_->has_error()) {
+      LOG(ERROR) << "Adb Control connection lost. "
+                 << "Listener port: " << listener_port_;
+      SelfDelete();
+      return;
+    }
+    // It can continue if the host forwarder could not connect to the host
+    // server but the control connection is still alive (no errors). The device
+    // acknowledged that (above), and it can re-try later.
+    AcceptNextClientSoon();
+    return;
   }
-  // Check both return value and also if set_must_exit() was called.
-  return ret == 0 && !must_exit_ && adb_data_socket_.get();
 }
 
-bool DeviceListener::SetAdbDataSocket(scoped_ptr<Socket> adb_data_socket) {
-  CHECK(adb_data_socket.get());
-  pthread_mutex_lock(&adb_data_socket_mutex_);
+void DeviceListener::OnAdbDataSocketReceivedOnInternalThread(
+    scoped_ptr<Socket> adb_data_socket) {
   adb_data_socket_.swap(adb_data_socket);
-  int ret = pthread_cond_broadcast(&adb_data_socket_cond_);
-  if (ret != 0)
-    SetMustExitLocked();
-
-  // We must check |must_exit_| while still in the lock, since the ownership of
-  // the adb_data_socket_ must be transactionally transferred to the other
-  // thread.
-  if (must_exit_ && adb_data_socket_.get()) {
-    adb_data_socket_->Close();
-    adb_data_socket_.reset();
-  }
-  pthread_mutex_unlock(&adb_data_socket_mutex_);
-  return ret == 0;
+  SendCommand(command::ADB_DATA_SOCKET_SUCCESS, listener_port_,
+              host_socket_.get());
+  CHECK(adb_data_socket_.get());
+  StartForwarder(device_data_socket_.Pass(), adb_data_socket_.Pass());
+  AcceptNextClientSoon();
 }
 
-void DeviceListener::RunInternal() {
-  while (!must_exit_) {
-    scoped_ptr<Socket> device_data_socket(new Socket);
-    if (!listener_socket_.Accept(device_data_socket.get())) {
-      if (listener_socket_.DidReceiveEvent()) {
-        LOG(INFO) << "Received exit notification, stopped accepting clients.";
-        break;
-      }
-      LOG(WARNING) << "Could not Accept in ListenerSocket.";
-      SendCommand(command::ACCEPT_ERROR,
-                  listener_port_,
-                  adb_control_socket_.get());
-      break;
-    }
-    SendCommand(command::ACCEPT_SUCCESS,
-                listener_port_,
-                adb_control_socket_.get());
-    if (!ReceivedCommand(command::HOST_SERVER_SUCCESS,
-                         adb_control_socket_.get())) {
-      SendCommand(command::ACK, listener_port_, adb_control_socket_.get());
-      LOG(ERROR) << "Host could not connect to server.";
-      device_data_socket->Close();
-      if (adb_control_socket_->has_error()) {
-        LOG(ERROR) << "Adb Control connection lost. "
-                   << "Listener port: " << listener_port_;
-        break;
-      }
-      // It can continue if the host forwarder could not connect to the host
-      // server but the control connection is still alive (no errors). The
-      // device acknowledged that (above), and it can re-try later.
-      continue;
-    }
-    if (!WaitForAdbDataSocket()) {
-      LOG(ERROR) << "Device could not receive an Adb Data connection.";
-      SendCommand(command::ADB_DATA_SOCKET_ERROR,
-                  listener_port_,
-                  adb_control_socket_.get());
-      device_data_socket->Close();
-      continue;
-    }
-    SendCommand(command::ADB_DATA_SOCKET_SUCCESS,
-                listener_port_,
-                adb_control_socket_.get());
-    CHECK(adb_data_socket_.get());
-    // Forwarder object will self delete after returning from the Run() call.
-    Forwarder* forwarder = new Forwarder(device_data_socket.Pass(),
-                                         adb_data_socket_.Pass());
-    forwarder->Start();
+void DeviceListener::SelfDelete() {
+  if (!deletion_task_runner_->RunsTasksOnCurrentThread()) {
+    deletion_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DeviceListener::SelfDeleteOnDeletionTaskRunner,
+                   delete_callback_, listener_port_));
+    return;
   }
+  SelfDeleteOnDeletionTaskRunner(delete_callback_, listener_port_);
 }
 
-bool DeviceListener::BindListenerSocket() {
-  bool success = listener_socket_.BindTcp("", listener_port_);
-  if (success) {
-    // In case the |listener_port_| was zero, GetPort() will return the
-    // currently (non-zero) allocated port for this socket.
-    listener_port_ = listener_socket_.GetPort();
-    SendCommand(command::BIND_SUCCESS,
-                listener_port_,
-                adb_control_socket_.get());
-    is_alive_ = true;
-  } else {
-    LOG(ERROR) << "Device could not bind and listen to local port "
-               << listener_port_;
-    SendCommand(command::BIND_ERROR,
-                listener_port_,
-                adb_control_socket_.get());
-    adb_control_socket_->Close();
-  }
-  return success;
-}
-
-void DeviceListener::Run() {
-  if (is_alive_)
-    RunInternal();
-  adb_control_socket_->Close();
-  listener_socket_.Close();
-  // This must be the last statement of the Run() method of the DeviceListener
-  // class, since the main thread checks if this thread is dead and deletes
-  // the object. It will be a race condition otherwise.
-  is_alive_ = false;
+// static
+void DeviceListener::SelfDeleteOnDeletionTaskRunner(
+    const DeleteCallback& delete_callback,
+    int listener_port) {
+  delete_callback.Run(listener_port);
 }
 
 }  // namespace forwarder

@@ -5,39 +5,58 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_DEVICE_CONTROLLER_H_
 #define TOOLS_ANDROID_FORWARDER2_DEVICE_CONTROLLER_H_
 
-#include <hash_map>
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/id_map.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "tools/android/forwarder2/socket.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace forwarder2 {
 
 class DeviceListener;
 
+// There is a single DeviceController per device_forwarder process, and it is in
+// charge of managing all active redirections on the device side (one
+// DeviceListener each).
 class DeviceController {
  public:
-  explicit DeviceController(int exit_notifier_fd);
+  static scoped_ptr<DeviceController> Create(const std::string& adb_unix_socket,
+                                             int exit_notifier_fd);
   ~DeviceController();
-
-  bool Init(const std::string& adb_unix_socket);
 
   void Start();
 
  private:
-  void KillAllListeners();
-  void CleanUpDeadListeners();
+  typedef base::hash_map<
+      int /* port */, linked_ptr<DeviceListener> > ListenersMap;
 
-  // Map from Port to DeviceListener objects (owns the pointer).
-  typedef IDMap<DeviceListener, IDMapOwnPointer> ListenersMap;
+  DeviceController(scoped_ptr<Socket> host_socket, int exit_notifier_fd);
 
-  ListenersMap listeners_;
-  Socket kickstart_adb_socket_;
+  void AcceptHostCommandSoon();
+  void AcceptHostCommandInternal();
 
+  // Note that this can end up being called after the DeviceController is
+  // destroyed which is why a weak pointer is used.
+  static void DeleteListener(
+      const base::WeakPtr<DeviceController>& device_controller_ptr,
+      int listener_port);
+
+  const scoped_ptr<Socket> host_socket_;
   // Used to notify the controller to exit.
   const int exit_notifier_fd_;
+  // Lets ensure DeviceListener instances are deleted on the thread they were
+  // created on.
+  const scoped_refptr<base::SingleThreadTaskRunner> construction_task_runner_;
+  base::WeakPtrFactory<DeviceController> weak_ptr_factory_;
+  ListenersMap listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceController);
 };

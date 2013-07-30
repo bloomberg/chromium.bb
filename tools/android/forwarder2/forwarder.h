@@ -5,35 +5,15 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_FORWARDER_H_
 #define TOOLS_ANDROID_FORWARDER2_FORWARDER_H_
 
-#include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "tools/android/forwarder2/socket.h"
-#include "tools/android/forwarder2/thread.h"
+#include "base/threading/thread.h"
 
 namespace forwarder2 {
 
-class Forwarder : public Thread {
- public:
-  Forwarder(scoped_ptr<Socket> socket1, scoped_ptr<Socket> socket2);
-  virtual ~Forwarder();
+class Socket;
 
-  // This object self deletes after running, so one cannot join.
-  // Thread:
-  virtual void Join() OVERRIDE;
+void StartForwarder(scoped_ptr<Socket> socket1, scoped_ptr<Socket> socket2);
 
- protected:
-  // Thread:
-  // This object self deletes after running.
-  virtual void Run() OVERRIDE;
-
- private:
-  scoped_ptr<Socket> socket1_;
-  scoped_ptr<Socket> socket2_;
-
-  DISALLOW_COPY_AND_ASSIGN(Forwarder);
-};
-
-}  // namespace forwarder
+}  // namespace forwarder2
 
 #endif  // TOOLS_ANDROID_FORWARDER2_FORWARDER_H_

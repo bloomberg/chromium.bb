@@ -5,76 +5,106 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_DEVICE_LISTENER_H_
 #define TOOLS_ANDROID_FORWARDER2_DEVICE_LISTENER_H_
 
-#include <pthread.h>
-
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread.h"
 #include "tools/android/forwarder2/pipe_notifier.h"
 #include "tools/android/forwarder2/socket.h"
-#include "tools/android/forwarder2/thread.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace forwarder2 {
 
 class Forwarder;
 
-class DeviceListener : public Thread {
+// A DeviceListener instance is used in the device_forwarder program to bind to
+// a specific device-side |port| and wait for client connections. When a
+// connection happens, it informs the corresponding HostController instance
+// running on the host, through |host_socket|. Then the class expects a call to
+// its SetAdbDataSocket() method (performed by the device controller) once the
+// host opened a new connection to the device. When this happens, a new internal
+// Forwarder instance is started.
+// Note that instances of this class are owned by the device controller which
+// creates and destroys them on the same thread. In case an internal error
+// happens on the DeviceListener's internal thread, the DeviceListener
+// can also self-delete by executing the user-provided callback on the thread
+// the DeviceListener was created on.
+// Note that the DeviceListener's destructor joins its internal thread (i.e.
+// waits for its completion) which means that the internal thread is guaranteed
+// not to be running anymore once the object is deleted.
+class DeviceListener {
  public:
-  DeviceListener(scoped_ptr<Socket> adb_control_socket, int port);
-  virtual ~DeviceListener();
+  // Callback that is used for self-deletion as a way to let the device
+  // controller perform some additional cleanup work (e.g. removing the device
+  // listener instance from its internal map before deleting it).
+  typedef base::Callback<void (int /* listener port */)> DeleteCallback;
 
-  bool WaitForAdbDataSocket();
+  static scoped_ptr<DeviceListener> Create(
+      scoped_ptr<Socket> host_socket,
+      int port,
+      const DeleteCallback& delete_callback);
 
-  bool SetAdbDataSocket(scoped_ptr<Socket> adb_data_socket);
+  ~DeviceListener();
 
-  bool BindListenerSocket();
+  void Start();
 
-  // |is_alive_| is set only on BindAndListenSocket and written once when Run()
-  // terminates.  So even in case of a race condition, the worst that could
-  // happen is for the main thread to see the listener alive when it isn't. And
-  // also, this is not a problem since the main thread checks the liveliness of
-  // the listeners in a loop.
-  bool is_alive() const { return is_alive_; }
-  void ForceExit();
+  void SetAdbDataSocket(scoped_ptr<Socket> adb_data_socket);
 
   int listener_port() const { return listener_port_; }
 
- protected:
-  // Thread:
-  virtual void Run() OVERRIDE;
-
  private:
-  void RunInternal();
+  DeviceListener(scoped_ptr<PipeNotifier> pipe_notifier,
+                 scoped_ptr<Socket> listener_socket,
+                 scoped_ptr<Socket> host_socket,
+                 int port,
+                 const DeleteCallback& delete_callback);
 
-  // Must be called after successfully acquired mutex.
-  void SetMustExitLocked();
+  // Pushes an AcceptClientOnInternalThread() task to the internal thread's
+  // message queue in order to wait for a new client soon.
+  void AcceptNextClientSoon();
 
-  // The listener socket for sending control commands.
-  scoped_ptr<Socket> adb_control_socket_;
+  void AcceptClientOnInternalThread();
 
+  void OnAdbDataSocketReceivedOnInternalThread(
+      scoped_ptr<Socket> adb_data_socket);
+
+  void SelfDelete();
+
+  // Note that this can be called after the DeviceListener instance gets deleted
+  // which is why this method is static.
+  static void SelfDeleteOnDeletionTaskRunner(
+      const DeleteCallback& delete_callback,
+      int listener_port);
+
+  // Used for the listener thread to be notified on destruction. We have one
+  // notifier per Listener thread since each Listener thread may be requested to
+  // exit for different reasons independently from each other and independent
+  // from the main program, ex. when the host requests to forward/listen the
+  // same port again.  Both the |host_socket_| and |listener_socket_|
+  // must share the same receiver file descriptor from |exit_notifier_| and it
+  // is set in the constructor.
+  const scoped_ptr<PipeNotifier> exit_notifier_;
   // The local device listener socket for accepting connections from the local
   // port (listener_port_).
-  Socket listener_socket_;
-
+  const scoped_ptr<Socket> listener_socket_;
+  // The listener socket for sending control commands.
+  const scoped_ptr<Socket> host_socket_;
+  scoped_ptr<Socket> device_data_socket_;
   // This is the adb connection to transport the actual data, used for creating
   // the forwarder. Ownership transferred to the Forwarder.
   scoped_ptr<Socket> adb_data_socket_;
-
-  int listener_port_;
-  pthread_mutex_t adb_data_socket_mutex_;
-  pthread_cond_t adb_data_socket_cond_;
-  bool is_alive_;
-  bool must_exit_;
-
-  // Used for the listener thread to be notified from ForceExit() which is
-  // called from the main thread. We have one notifier per Listener thread since
-  // each Listener thread may be requested to exit for different reasons
-  // independently from each other and independent from the main program,
-  // ex. when the host requests to forward/listen the same port again.  Both the
-  // |adb_control_socket_| and |listener_socket_| must share the same receiver
-  // file descriptor from |exit_notifier_| and it is set in the constructor.
-  PipeNotifier exit_notifier_;
+  const int listener_port_;
+  const DeleteCallback delete_callback_;
+  // Task runner used for deletion set at construction time (i.e. the object is
+  // deleted on the same thread it is created on).
+  scoped_refptr<base::SingleThreadTaskRunner> deletion_task_runner_;
+  base::Thread thread_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceListener);
 };

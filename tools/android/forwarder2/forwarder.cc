@@ -4,18 +4,15 @@
 
 #include "tools/android/forwarder2/forwarder.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/safe_strerror_posix.h"
+#include "base/single_thread_task_runner.h"
 #include "tools/android/forwarder2/socket.h"
 
 namespace forwarder2 {
-
 namespace {
 
 // Helper class to buffer reads and writes from one socket to another.
@@ -87,62 +84,88 @@ class BufferedCopier {
   DISALLOW_COPY_AND_ASSIGN(BufferedCopier);
 };
 
-}  // namespace
-
-Forwarder::Forwarder(scoped_ptr<Socket> socket1, scoped_ptr<Socket> socket2)
-    : socket1_(socket1.Pass()),
-      socket2_(socket2.Pass()) {
-  DCHECK(socket1_.get());
-  DCHECK(socket2_.get());
-}
-
-Forwarder::~Forwarder() {
-  Detach();
-}
-
-void Forwarder::Run() {
-  const int nfds = Socket::GetHighestFileDescriptor(*socket1_, *socket2_) + 1;
-  fd_set read_fds;
-  fd_set write_fds;
-
-  // Copy from socket1 to socket2
-  BufferedCopier buffer1(socket1_.get(), socket2_.get());
-
-  // Copy from socket2 to socket1
-  BufferedCopier buffer2(socket2_.get(), socket1_.get());
-
-  bool run = true;
-  while (run) {
-    FD_ZERO(&read_fds);
-    FD_ZERO(&write_fds);
-
-    buffer1.AddToReadSet(&read_fds);
-    buffer2.AddToReadSet(&read_fds);
-    buffer1.AddToWriteSet(&write_fds);
-    buffer2.AddToWriteSet(&write_fds);
-
-    if (HANDLE_EINTR(select(nfds, &read_fds, &write_fds, NULL, NULL)) <= 0) {
-      LOG(ERROR) << "Select error: " << safe_strerror(errno);
-      break;
-    }
-    // When a socket in the read set closes the connection, select() returns
-    // with that socket descriptor set as "ready to read".  When we call
-    // TryRead() below, it will return false, but the while loop will continue
-    // to run until all the write operations are finished, to make sure the
-    // buffers are completely flushed out.
-
-    // Keep running while we have some operation to do.
-    run = buffer1.TryRead(read_fds);
-    run = run || buffer2.TryRead(read_fds);
-    run = run || buffer1.TryWrite(write_fds);
-    run = run || buffer2.TryWrite(write_fds);
+// Internal class that wraps a helper thread to forward traffic between
+// |socket1| and |socket2|. After creating a new instance, call its Start()
+// method to launch operations. Thread stops automatically if one of the socket
+// disconnects, but ensures that all buffered writes to the other, still alive,
+// socket, are written first. When this happens, the instance will delete itself
+// automatically.
+// Note that the instance will always be destroyed on the same thread that
+// created it.
+class Forwarder {
+ public:
+  Forwarder(scoped_ptr<Socket> socket1, scoped_ptr<Socket> socket2)
+      : socket1_(socket1.Pass()),
+        socket2_(socket2.Pass()),
+        destructor_runner_(base::MessageLoopProxy::current()),
+        thread_("ForwarderThread") {
   }
 
-  delete this;
+  void Start() {
+    thread_.Start();
+    thread_.message_loop_proxy()->PostTask(
+        FROM_HERE,
+        base::Bind(&Forwarder::ThreadHandler, base::Unretained(this)));
+  }
+
+ private:
+  void ThreadHandler() {
+    const int nfds = Socket::GetHighestFileDescriptor(*socket1_, *socket2_) + 1;
+    fd_set read_fds;
+    fd_set write_fds;
+
+    // Copy from socket1 to socket2
+    BufferedCopier buffer1(socket1_.get(), socket2_.get());
+    // Copy from socket2 to socket1
+    BufferedCopier buffer2(socket2_.get(), socket1_.get());
+
+    bool run = true;
+    while (run) {
+      FD_ZERO(&read_fds);
+      FD_ZERO(&write_fds);
+
+      buffer1.AddToReadSet(&read_fds);
+      buffer2.AddToReadSet(&read_fds);
+      buffer1.AddToWriteSet(&write_fds);
+      buffer2.AddToWriteSet(&write_fds);
+
+      if (HANDLE_EINTR(select(nfds, &read_fds, &write_fds, NULL, NULL)) <= 0) {
+        PLOG(ERROR) << "select";
+        break;
+      }
+      // When a socket in the read set closes the connection, select() returns
+      // with that socket descriptor set as "ready to read".  When we call
+      // TryRead() below, it will return false, but the while loop will continue
+      // to run until all the write operations are finished, to make sure the
+      // buffers are completely flushed out.
+
+      // Keep running while we have some operation to do.
+      run = buffer1.TryRead(read_fds);
+      run = run || buffer2.TryRead(read_fds);
+      run = run || buffer1.TryWrite(write_fds);
+      run = run || buffer2.TryWrite(write_fds);
+    }
+
+    // Note that the thread that |destruction_runner_| runs tasks on could be
+    // temporarily blocked on I/O (e.g. select()) therefore it is safer to close
+    // the sockets now rather than relying on the destructor.
+    socket1_.reset();
+    socket2_.reset();
+
+    // Note that base::Thread must be destroyed on the thread it was created on.
+    destructor_runner_->DeleteSoon(FROM_HERE, this);
+  }
+
+  scoped_ptr<Socket> socket1_;
+  scoped_ptr<Socket> socket2_;
+  scoped_refptr<base::SingleThreadTaskRunner> destructor_runner_;
+  base::Thread thread_;
+};
+
+}  // namespace
+
+void StartForwarder(scoped_ptr<Socket> socket1, scoped_ptr<Socket> socket2) {
+  (new Forwarder(socket1.Pass(), socket2.Pass()))->Start();
 }
 
-void Forwarder::Join() {
-  NOTREACHED() << "Can't Join a Forwarder thread.";
-}
-
-}  // namespace forwarder
+}  // namespace forwarder2

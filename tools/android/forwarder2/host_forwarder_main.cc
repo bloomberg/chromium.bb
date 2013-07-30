@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -25,6 +26,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/safe_strerror_posix.h"
@@ -80,9 +82,24 @@ void KillHandler(int signal_number) {
     exit(1);
 }
 
+// Manages HostController instances. There is one HostController instance for
+// each connection being forwarded. Note that forwarding can happen with many
+// devices (identified with a serial id).
 class HostControllersManager {
  public:
-  HostControllersManager() : has_failed_(false) {}
+  HostControllersManager()
+      : weak_ptr_factory_(this),
+        controllers_(new HostControllerMap()),
+        has_failed_(false) {
+  }
+
+  ~HostControllersManager() {
+    if (!thread_.get())
+      return;
+    // Delete the controllers on the thread they were created on.
+    thread_->message_loop_proxy()->DeleteSoon(
+        FROM_HERE, controllers_.release());
+  }
 
   void HandleRequest(const std::string& device_serial,
                      int device_port,
@@ -117,25 +134,24 @@ class HostControllersManager {
   }
 
   // Invoked when a HostController instance reports an error (e.g. due to a
-  // device connectivity issue).
-  void DeleteHostController(HostController* host_controller) {
-    if (!thread_->message_loop_proxy()->RunsTasksOnCurrentThread()) {
-      // This can be invoked from the host controller internal thread.
-      thread_->message_loop_proxy()->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &HostControllersManager::DeleteHostControllerOnInternalThread,
-              base::Unretained(this), host_controller));
+  // device connectivity issue). Note that this could be called after the
+  // controller manager was destroyed which is why a weak pointer is used.
+  static void DeleteHostController(
+      const base::WeakPtr<HostControllersManager>& manager_ptr,
+      scoped_ptr<HostController> host_controller) {
+    HostController* const controller = host_controller.release();
+    HostControllersManager* const manager = manager_ptr.get();
+    if (!manager) {
+      // Note that |controller| is not leaked in this case since the host
+      // controllers manager owns the controllers. If the manager was deleted
+      // then all the controllers (including |controller|) were also deleted.
       return;
     }
-    DeleteHostControllerOnInternalThread(host_controller);
-  }
-
-  void DeleteHostControllerOnInternalThread(HostController* host_controller) {
-    // Note that this will delete |host_controller| which is owned by the map.
-    controllers_.erase(
-        MakeHostControllerMapKey(host_controller->adb_port(),
-                                 host_controller->device_port()));
+    DCHECK(manager->thread_->message_loop_proxy()->RunsTasksOnCurrentThread());
+    // Note that this will delete |controller| which is owned by the map.
+    manager->controllers_->erase(
+        MakeHostControllerMapKey(controller->adb_port(),
+                                 controller->device_port()));
   }
 
   void HandleRequestOnInternalThread(const std::string& device_serial,
@@ -154,7 +170,7 @@ class HostControllersManager {
       // Remove the previously created host controller.
       const std::string controller_key = MakeHostControllerMapKey(
           adb_port, -device_port);
-      const HostControllerMap::size_type removed_elements = controllers_.erase(
+      const HostControllerMap::size_type removed_elements = controllers_->erase(
           controller_key);
       SendMessage(
           !removed_elements ? "ERROR: could not unmap port" : "OK",
@@ -169,7 +185,7 @@ class HostControllersManager {
     if (!use_dynamic_port_allocation) {
       const std::string controller_key = MakeHostControllerMapKey(
           adb_port, device_port);
-      if (controllers_.find(controller_key) != controllers_.end()) {
+      if (controllers_->find(controller_key) != controllers_->end()) {
         LOG(INFO) << "Already forwarding device port " << device_port
                   << " to host port " << host_port;
         SendMessage(base::StringPrintf("%d:%d", device_port, host_port),
@@ -179,11 +195,11 @@ class HostControllersManager {
     }
     // Create a new host controller.
     scoped_ptr<HostController> host_controller(
-        new HostController(
-            device_port, "127.0.0.1", host_port, adb_port, GetExitNotifierFD(),
+        HostController::Create(
+            device_port, host_port, adb_port, GetExitNotifierFD(),
             base::Bind(&HostControllersManager::DeleteHostController,
-                       base::Unretained(this))));
-    if (!host_controller->Connect()) {
+                       weak_ptr_factory_.GetWeakPtr())));
+    if (!host_controller.get()) {
       has_failed_ = true;
       SendMessage("ERROR: Connection to device failed.", client_socket.get());
       return;
@@ -196,7 +212,7 @@ class HostControllersManager {
     if (!SendMessage(msg, client_socket.get()))
       return;
     host_controller->Start();
-    controllers_.insert(
+    controllers_->insert(
         std::make_pair(MakeHostControllerMapKey(adb_port, device_port),
                        linked_ptr<HostController>(host_controller.release())));
   }
@@ -232,8 +248,9 @@ class HostControllersManager {
     return result;
   }
 
+  base::WeakPtrFactory<HostControllersManager> weak_ptr_factory_;
   base::hash_map<std::string, int> device_serial_to_adb_port_map_;
-  HostControllerMap controllers_;
+  scoped_ptr<HostControllerMap> controllers_;
   bool has_failed_;
   scoped_ptr<base::AtExitManager> at_exit_manager_;  // Needed by base::Thread.
   scoped_ptr<base::Thread> thread_;

@@ -53,7 +53,6 @@
         'forwarder.cc',
         'pipe_notifier.cc',
         'socket.cc',
-        'thread.cc',
       ],
     },
     {
@@ -76,7 +75,6 @@
         'host_forwarder_main.cc',
         'pipe_notifier.cc',
         'socket.cc',
-        'thread.cc',
         # TODO(pliard): Remove this. This is needed to avoid undefined
         # references at link time.
         '../../../base/message_loop/message_pump_glib.cc',
