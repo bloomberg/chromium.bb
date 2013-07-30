@@ -36,11 +36,11 @@
             'target_name': 'blink',
             'type': 'none',
             'dependencies': [
-                '../Source/web/web.gyp:webkit',
+                '../Source/WebKit/chromium/WebKit.gyp:webkit',
                 'blink_minimal',
             ],
             'export_dependent_settings': [
-                '../Source/web/web.gyp:webkit',
+                '../Source/WebKit/chromium/WebKit.gyp:webkit',
                 'blink_minimal',
             ]
         },
@@ -52,10 +52,10 @@
             'target_name': 'blink_minimal',
             'type': 'none',
             'dependencies': [
-                '../Source/web/web.gyp:blink_common',
+                '../Source/WebKit/chromium/WebKit.gyp:blink_common',
             ],
             'export_dependent_settings': [
-                '../Source/web/web.gyp:blink_common',
+                '../Source/WebKit/chromium/WebKit.gyp:blink_common',
             ],
         },
     ],

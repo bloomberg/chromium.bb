@@ -55,7 +55,7 @@
             'dependencies': [
                 'TestRunner_resources',
                 '../../../public/blink.gyp:blink',
-                '<(source_dir)/web/web.gyp:webkit_test_support',
+                '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit_test_support',
             ],
             'include_dirs': [
                 '<(DEPTH)',
