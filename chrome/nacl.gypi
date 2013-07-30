@@ -52,10 +52,10 @@
               '__STDC_LIMIT_MACROS=1',
             ],
             'sources': [
-              'app/nacl_fork_delegate_linux.cc',
-              'app/nacl_fork_delegate_linux.h',
               '../components/nacl/common/nacl_paths.cc',
               '../components/nacl/common/nacl_paths.h',
+              '../components/nacl/zygote/nacl_fork_delegate_linux.cc',
+              '../components/nacl/zygote/nacl_fork_delegate_linux.h',
             ],
           },],
         ],

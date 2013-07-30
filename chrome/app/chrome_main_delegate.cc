@@ -66,8 +66,8 @@
 #endif
 
 #if !defined(DISABLE_NACL) && defined(OS_LINUX)
-#include "chrome/app/nacl_fork_delegate_linux.h"
 #include "components/nacl/common/nacl_paths.h"
+#include "components/nacl/zygote/nacl_fork_delegate_linux.h"
 #endif
 
 #if defined(OS_CHROMEOS)

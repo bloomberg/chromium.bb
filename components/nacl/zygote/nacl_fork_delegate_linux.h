@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_APP_NACL_FORK_DELEGATE_LINUX_H_
-#define CHROME_APP_NACL_FORK_DELEGATE_LINUX_H_
+#ifndef COMPONENTS_NACL_ZYGOTE_NACL_FORK_DELEGATE_LINUX_H_
+#define COMPONENTS_NACL_ZYGOTE_NACL_FORK_DELEGATE_LINUX_H_
 
 #include <string>
 #include <vector>
@@ -50,4 +50,4 @@ class NaClForkDelegate : public content::ZygoteForkDelegate {
   int fd_;
 };
 
-#endif  // CHROME_APP_NACL_FORK_DELEGATE_LINUX_H_
+#endif  // COMPONENTS_NACL_ZYGOTE_NACL_FORK_DELEGATE_LINUX_H_
