@@ -26,10 +26,12 @@
 #include <math.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include <linux/input.h>
 
 #include "filter.h"
 #include "evdev.h"
+#include "../shared/config-parser.h"
 
 /* Default values */
 #define DEFAULT_CONSTANT_ACCEL_NUMERATOR 50
@@ -670,6 +672,38 @@ struct evdev_dispatch_interface touchpad_interface = {
 	touchpad_destroy
 };
 
+static void
+touchpad_parse_config(struct touchpad_dispatch *touchpad, double diagonal)
+{
+	struct weston_config *config;
+	struct weston_config_section *s;
+	int config_fd;
+
+	double constant_accel_factor;
+	double min_accel_factor;
+	double max_accel_factor;
+
+	config_fd = open_config_file("weston.ini");
+	config = weston_config_parse(config_fd);
+	close(config_fd);
+
+	s = weston_config_get_section(config, "touchpad", NULL, NULL);
+	weston_config_section_get_double(s, "constant_accel_factor",
+					 &constant_accel_factor,
+					 DEFAULT_CONSTANT_ACCEL_NUMERATOR);
+	weston_config_section_get_double(s, "min_accel_factor",
+					 &min_accel_factor,
+					 DEFAULT_MIN_ACCEL_FACTOR);
+	weston_config_section_get_double(s, "max_accel_factor",
+					 &max_accel_factor,
+					 DEFAULT_MAX_ACCEL_FACTOR);
+
+	touchpad->constant_accel_factor =
+		constant_accel_factor / diagonal;
+	touchpad->min_accel_factor = min_accel_factor;
+	touchpad->max_accel_factor = max_accel_factor;
+}
+
 static int
 touchpad_init(struct touchpad_dispatch *touchpad,
 	      struct evdev_device *device)
@@ -710,11 +744,7 @@ touchpad_init(struct touchpad_dispatch *touchpad,
 	height = abs(device->abs.max_y - device->abs.min_y);
 	diagonal = sqrt(width*width + height*height);
 
-	touchpad->constant_accel_factor =
-		DEFAULT_CONSTANT_ACCEL_NUMERATOR / diagonal;
-
-	touchpad->min_accel_factor = DEFAULT_MIN_ACCEL_FACTOR;
-	touchpad->max_accel_factor = DEFAULT_MAX_ACCEL_FACTOR;
+	touchpad_parse_config(touchpad, diagonal);
 
 	touchpad->hysteresis.margin_x =
 		diagonal / DEFAULT_HYSTERESIS_MARGIN_DENOMINATOR;
