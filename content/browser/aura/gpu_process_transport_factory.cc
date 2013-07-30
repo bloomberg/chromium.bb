@@ -311,10 +311,8 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   GpuSurfaceTracker::Get()->RemoveSurface(data->surface_id);
   delete data;
   per_compositor_data_.erase(it);
-  if (per_compositor_data_.empty()) {
+  if (per_compositor_data_.empty())
     gl_helper_.reset();
-    callback_factory_.InvalidateWeakPtrs();
-  }
 }
 
 ui::ContextFactory* GpuProcessTransportFactory::AsContextFactory() {
