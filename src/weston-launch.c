@@ -542,7 +542,7 @@ static void
 launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 {
 	char *child_argv[MAX_ARGV_SIZE];
-	sigset_t allsigs;
+	sigset_t mask;
 	int i;
 
 	if (wl->verbose)
