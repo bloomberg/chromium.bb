@@ -442,7 +442,7 @@ bool StyleResolver::styleSharingCandidateMatchesRuleSet(const ElementResolveCont
     if (!ruleSet)
         return false;
 
-    ElementRuleCollector collector(context, m_selectorFilter, style, m_inspectorCSSOMWrappers);
+    ElementRuleCollector collector(context, m_selectorFilter, style);
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
@@ -597,7 +597,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     }
 
     {
-        ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style(), m_inspectorCSSOMWrappers);
+        ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
         collector.setRegionForStyling(regionForStyling);
 
         if (matchingBehavior == MatchOnlyUserAgentRules)
@@ -786,7 +786,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
     {
         // Check UA, user and author rules.
-    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style(), m_inspectorCSSOMWrappers);
+    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
         collector.setPseudoStyleRequest(pseudoStyleRequest);
 
         matchUARules(collector);
@@ -949,7 +949,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
         resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), e);
 
-    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style(), m_inspectorCSSOMWrappers);
+    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
     collector.setMode(SelectorChecker::CollectingRules);
     collector.setPseudoStyleRequest(PseudoStyleRequest(pseudoId));
 
@@ -1122,7 +1122,6 @@ template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyProperties(StyleResolverState& state, const StylePropertySet* properties, StyleRule* rule, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
     ASSERT((propertyWhitelistType != PropertyWhitelistRegion) || state.regionForStyling());
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willProcessRule(document(), rule, this);
 
     unsigned propertyCount = properties->propertyCount();
     for (unsigned i = 0; i < propertyCount; ++i) {
@@ -1149,7 +1148,6 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
         else
             applyProperty(state, current.id(), current.value());
     }
-    InspectorInstrumentation::didProcessRule(cookie);
 }
 
 template <StyleResolver::StyleApplicationPass pass>

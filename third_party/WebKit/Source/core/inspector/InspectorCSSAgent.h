@@ -58,7 +58,6 @@ class MediaList;
 class NameNodeMap;
 class Node;
 class NodeList;
-class SelectorProfile;
 class StyleResolver;
 class StyleRule;
 class StyleSheetVisitor;
@@ -148,14 +147,6 @@ public:
     virtual void forcePseudoState(ErrorString*, int nodeId, const RefPtr<JSONArray>& forcedPseudoClasses);
     virtual void getNamedFlowCollection(ErrorString*, int documentNodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::NamedFlow> >& result);
 
-    virtual void startSelectorProfiler(ErrorString*);
-    virtual void stopSelectorProfiler(ErrorString*, RefPtr<TypeBuilder::CSS::SelectorProfile>&);
-
-    PassRefPtr<TypeBuilder::CSS::SelectorProfile> stopSelectorProfilerImpl(ErrorString*, bool needProfile);
-    void willMatchRule(StyleRule*, InspectorCSSOMWrappers&, DocumentStyleSheetCollection*);
-    void didMatchRule(bool);
-    void willProcessRule(StyleRule*, StyleResolver*);
-    void didProcessRule();
     PassRefPtr<TypeBuilder::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&, CSSStyleSheet*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > buildMediaListChain(CSSRule*);
 
@@ -223,8 +214,6 @@ private:
     int m_lastStyleSheetId;
     bool m_creatingViaInspectorStyleSheet;
     bool m_isSettingStyleSheetText;
-
-    OwnPtr<SelectorProfile> m_currentSelectorProfile;
 
     friend class ChangeRegionOversetTask;
     friend class StyleSheetBinder;

@@ -40,10 +40,9 @@
 namespace WebCore {
 
 ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
-    const SelectorFilter& filter, RenderStyle* style, InspectorCSSOMWrappers& inspectorWrappers)
+    const SelectorFilter& filter, RenderStyle* style)
     : m_context(context)
     , m_selectorFilter(filter)
-    , m_inspectorCSSOMWrappers(inspectorWrappers)
     , m_style(style)
     , m_regionForStyling(0)
     , m_pseudoStyleRequest(NOPSEUDO)
@@ -223,27 +222,20 @@ void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, const 
         return;
 
     StyleRule* rule = ruleData.rule();
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willMatchRule(document(), rule, m_inspectorCSSOMWrappers, document()->styleSheetCollection());
     PseudoId dynamicPseudo = NOPSEUDO;
     if (ruleMatches(ruleData, matchRequest.scope, dynamicPseudo)) {
         // If the rule has no properties to apply, then ignore it in the non-debug mode.
         const StylePropertySet* properties = rule->properties();
-        if (!properties || (properties->isEmpty() && !matchRequest.includeEmptyRules)) {
-            InspectorInstrumentation::didMatchRule(cookie, false);
+        if (!properties || (properties->isEmpty() && !matchRequest.includeEmptyRules))
             return;
-        }
         // FIXME: Exposing the non-standard getMatchedCSSRules API to web is the only reason this is needed.
-        if (m_sameOriginOnly && !ruleData.hasDocumentSecurityOrigin()) {
-            InspectorInstrumentation::didMatchRule(cookie, false);
+        if (m_sameOriginOnly && !ruleData.hasDocumentSecurityOrigin())
             return;
-        }
         // If we're matching normal rules, set a pseudo bit if
         // we really just matched a pseudo-element.
         if (dynamicPseudo != NOPSEUDO && m_pseudoStyleRequest.pseudoId == NOPSEUDO) {
-            if (m_mode == SelectorChecker::CollectingRules) {
-                InspectorInstrumentation::didMatchRule(cookie, false);
+            if (m_mode == SelectorChecker::CollectingRules)
                 return;
-            }
             // FIXME: Matching should not modify the style directly.
             if (dynamicPseudo < FIRST_INTERNAL_PSEUDOID)
                 m_style->setHasPseudoStyle(dynamicPseudo);
@@ -255,11 +247,9 @@ void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, const 
 
             // Add this rule to our list of matched rules.
             addMatchedRule(&ruleData);
-            InspectorInstrumentation::didMatchRule(cookie, true);
             return;
         }
     }
-    InspectorInstrumentation::didMatchRule(cookie, false);
 }
 
 void ElementRuleCollector::collectMatchingRulesForList(const RuleData* rules, const MatchRequest& matchRequest, RuleRange& ruleRange)

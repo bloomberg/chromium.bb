@@ -66,7 +66,6 @@
 
 namespace CSSAgentState {
 static const char cssAgentEnabled[] = "cssAgentEnabled";
-static const char isSelectorProfiling[] = "isSelectorProfiling";
 }
 
 namespace WebCore {
@@ -77,60 +76,6 @@ enum ForcePseudoClassFlags {
     PseudoFocus = 1 << 1,
     PseudoActive = 1 << 2,
     PseudoVisited = 1 << 3
-};
-
-struct RuleMatchData {
-    String selector;
-    String url;
-    unsigned lineNumber;
-    double startTime;
-};
-
-struct RuleMatchingStats {
-    RuleMatchingStats()
-        : lineNumber(0), totalTime(0.0), hits(0), matches(0)
-    {
-    }
-    RuleMatchingStats(const RuleMatchData& data, double totalTime, unsigned hits, unsigned matches)
-        : selector(data.selector), url(data.url), lineNumber(data.lineNumber), totalTime(totalTime), hits(hits), matches(matches)
-    {
-    }
-
-    String selector;
-    String url;
-    unsigned lineNumber;
-    double totalTime;
-    unsigned hits;
-    unsigned matches;
-};
-
-class SelectorProfile {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    SelectorProfile()
-        : m_totalMatchingTimeMs(0.0)
-    {
-    }
-    virtual ~SelectorProfile()
-    {
-    }
-
-    double totalMatchingTimeMs() const { return m_totalMatchingTimeMs; }
-
-    String makeKey();
-    void startSelector(const CSSStyleRule*);
-    void commitSelector(bool);
-    void commitSelectorTime();
-    PassRefPtr<TypeBuilder::CSS::SelectorProfile> toInspectorObject() const;
-
-private:
-
-    // Key is "selector?url:line".
-    typedef HashMap<String, RuleMatchingStats> RuleMatchingStatsMap;
-
-    double m_totalMatchingTimeMs;
-    RuleMatchingStatsMap m_ruleMatchingStats;
-    RuleMatchData m_currentMatchData;
 };
 
 class StyleSheetAppender {
@@ -190,72 +135,6 @@ static unsigned computePseudoClassMask(JSONArray* pseudoClassArray)
     }
 
     return result;
-}
-
-inline String SelectorProfile::makeKey()
-{
-    return m_currentMatchData.selector + "?" + m_currentMatchData.url + ":" + String::number(m_currentMatchData.lineNumber);
-}
-
-inline void SelectorProfile::startSelector(const CSSStyleRule* rule)
-{
-    m_currentMatchData.selector = rule->selectorText();
-    CSSStyleSheet* styleSheet = rule->parentStyleSheet();
-    String url = emptyString();
-    if (styleSheet) {
-        url = InspectorStyleSheet::styleSheetURL(styleSheet);
-        if (url.isEmpty())
-            url = InspectorDOMAgent::documentURLString(styleSheet->ownerDocument());
-    }
-    m_currentMatchData.url = url;
-    m_currentMatchData.lineNumber = rule->styleRule()->sourceLine();
-    m_currentMatchData.startTime = WTF::currentTimeMS();
-}
-
-inline void SelectorProfile::commitSelector(bool matched)
-{
-    double matchTimeMs = WTF::currentTimeMS() - m_currentMatchData.startTime;
-    m_totalMatchingTimeMs += matchTimeMs;
-
-    RuleMatchingStatsMap::AddResult result = m_ruleMatchingStats.add(makeKey(), RuleMatchingStats(m_currentMatchData, matchTimeMs, 1, matched ? 1 : 0));
-    if (!result.isNewEntry) {
-        result.iterator->value.totalTime += matchTimeMs;
-        result.iterator->value.hits += 1;
-        if (matched)
-            result.iterator->value.matches += 1;
-    }
-}
-
-inline void SelectorProfile::commitSelectorTime()
-{
-    double processingTimeMs = WTF::currentTimeMS() - m_currentMatchData.startTime;
-    m_totalMatchingTimeMs += processingTimeMs;
-
-    RuleMatchingStatsMap::iterator it = m_ruleMatchingStats.find(makeKey());
-    if (it == m_ruleMatchingStats.end())
-        return;
-
-    it->value.totalTime += processingTimeMs;
-}
-
-PassRefPtr<TypeBuilder::CSS::SelectorProfile> SelectorProfile::toInspectorObject() const
-{
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::SelectorProfileEntry> > selectorProfileData = TypeBuilder::Array<TypeBuilder::CSS::SelectorProfileEntry>::create();
-    for (RuleMatchingStatsMap::const_iterator it = m_ruleMatchingStats.begin(); it != m_ruleMatchingStats.end(); ++it) {
-        RefPtr<TypeBuilder::CSS::SelectorProfileEntry> entry = TypeBuilder::CSS::SelectorProfileEntry::create()
-            .setSelector(it->value.selector)
-            .setUrl(it->value.url)
-            .setLineNumber(it->value.lineNumber)
-            .setTime(it->value.totalTime)
-            .setHitCount(it->value.hits)
-            .setMatchCount(it->value.matches);
-        selectorProfileData->addItem(entry.release());
-    }
-
-    RefPtr<TypeBuilder::CSS::SelectorProfile> result = TypeBuilder::CSS::SelectorProfile::create()
-        .setTotalTime(totalMatchingTimeMs())
-        .setData(selectorProfileData);
-    return result.release();
 }
 
 class UpdateRegionLayoutTask {
@@ -865,7 +744,6 @@ void InspectorCSSAgent::clearFrontend()
     ASSERT(m_frontend);
     m_frontend = 0;
     resetNonPersistentData();
-    stopSelectorProfilerImpl(0, false);
 }
 
 void InspectorCSSAgent::discardAgent()
@@ -879,10 +757,6 @@ void InspectorCSSAgent::restore()
     if (m_state->getBoolean(CSSAgentState::cssAgentEnabled)) {
         ErrorString error;
         enable(&error);
-    }
-    if (m_state->getBoolean(CSSAgentState::isSelectorProfiling)) {
-        String errorString;
-        startSelectorProfiler(&errorString);
     }
 }
 
@@ -1470,53 +1344,6 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::b
         }
     }
     return hasItems ? mediaArray : 0;
-}
-
-void InspectorCSSAgent::startSelectorProfiler(ErrorString*)
-{
-    m_currentSelectorProfile = adoptPtr(new SelectorProfile());
-    m_state->setBoolean(CSSAgentState::isSelectorProfiling, true);
-}
-
-void InspectorCSSAgent::stopSelectorProfiler(ErrorString* errorString, RefPtr<TypeBuilder::CSS::SelectorProfile>& result)
-{
-    result = stopSelectorProfilerImpl(errorString, true);
-}
-
-PassRefPtr<TypeBuilder::CSS::SelectorProfile> InspectorCSSAgent::stopSelectorProfilerImpl(ErrorString*, bool needProfile)
-{
-    if (!m_state->getBoolean(CSSAgentState::isSelectorProfiling))
-        return 0;
-    m_state->setBoolean(CSSAgentState::isSelectorProfiling, false);
-    RefPtr<TypeBuilder::CSS::SelectorProfile> result;
-    if (m_frontend && needProfile)
-        result = m_currentSelectorProfile->toInspectorObject();
-    m_currentSelectorProfile.clear();
-    return result.release();
-}
-
-void InspectorCSSAgent::willMatchRule(StyleRule* rule, InspectorCSSOMWrappers& inspectorCSSOMWrappers, DocumentStyleSheetCollection* styleSheetCollection)
-{
-    if (m_currentSelectorProfile)
-        m_currentSelectorProfile->startSelector(inspectorCSSOMWrappers.getWrapperForRuleInSheets(rule, styleSheetCollection));
-}
-
-void InspectorCSSAgent::didMatchRule(bool matched)
-{
-    if (m_currentSelectorProfile)
-        m_currentSelectorProfile->commitSelector(matched);
-}
-
-void InspectorCSSAgent::willProcessRule(StyleRule* rule, StyleResolver* styleResolver)
-{
-    if (m_currentSelectorProfile)
-        m_currentSelectorProfile->startSelector(styleResolver->inspectorCSSOMWrappers().getWrapperForRuleInSheets(rule, styleResolver->document()->styleSheetCollection()));
-}
-
-void InspectorCSSAgent::didProcessRule()
-{
-    if (m_currentSelectorProfile)
-        m_currentSelectorProfile->commitSelectorTime();
 }
 
 InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(Element* element)

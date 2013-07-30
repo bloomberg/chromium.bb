@@ -48,8 +48,7 @@ class StaticCSSRuleList;
 class ElementRuleCollector {
     WTF_MAKE_NONCOPYABLE(ElementRuleCollector);
 public:
-    // FIXME: This should not need an InspectorCSSOMWrappers parameter.
-    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle*, InspectorCSSOMWrappers&);
+    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle*);
 
     void setBehaviorAtBoundary(SelectorChecker::BehaviorAtBoundary boundary) { m_behaviorAtBoundary = boundary; }
     SelectorChecker::BehaviorAtBoundary behaviorAtBoundary() const { return m_behaviorAtBoundary; }
@@ -90,7 +89,6 @@ private:
 private:
     const ElementResolveContext& m_context;
     const SelectorFilter& m_selectorFilter;
-    InspectorCSSOMWrappers& m_inspectorCSSOMWrappers; // This should not be needed.
     RefPtr<RenderStyle> m_style; // FIXME: This can be mutated during matching!
 
     const RenderRegion* m_regionForStyling;
