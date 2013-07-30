@@ -9,6 +9,7 @@
 //
 
 // properties that generate animations must be listed first
+display
 -webkit-animation
 -webkit-animation-delay
 -webkit-animation-direction
@@ -33,7 +34,6 @@ transition-timing-function
 // must be listed
 color
 direction
-display
 font
 font-family
 font-size
