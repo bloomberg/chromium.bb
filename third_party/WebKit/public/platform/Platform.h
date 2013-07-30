@@ -300,9 +300,6 @@ public:
     // Returns a new WebURLLoader instance.
     virtual WebURLLoader* createURLLoader() { return 0; }
 
-    // A suggestion to prefetch IP information for the given hostname.
-    virtual void prefetchHostName(const WebString&) { }
-
     // May return null.
     virtual WebPrescientNetworking* prescientNetworking() { return 0; }
 
