@@ -130,8 +130,7 @@ class SpdyHttpStreamTest : public testing::Test,
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     SpdyHttpStreamTest,
-    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
-                    kProtoHTTP2Draft04));
+    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
 
 // SpdyHttpStream::GetUploadProgress() should still work even before the
 // stream is initialized.

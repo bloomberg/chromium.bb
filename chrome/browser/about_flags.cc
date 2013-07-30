@@ -726,13 +726,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSpdy4a2)
   },
   {
-    "enable-http2-draft-04",
-    IDS_FLAGS_ENABLE_HTTP2_DRAFT_04_NAME,
-    IDS_FLAGS_ENABLE_HTTP2_DRAFT_04_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableHttp2Draft04)
-  },
-  {
     "enable-async-dns",
     IDS_FLAGS_ENABLE_ASYNC_DNS_NAME,
     IDS_FLAGS_ENABLE_ASYNC_DNS_DESCRIPTION,

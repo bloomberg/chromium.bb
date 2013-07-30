@@ -60,11 +60,6 @@ SpdySessionPool::SpdySessionPool(
       time_func_(time_func),
       trusted_spdy_proxy_(
           HostPortPair::FromString(trusted_spdy_proxy)) {
-  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
-  // stop supporting SPDY/1.
-  DCHECK(default_protocol_ == kProtoUnknown ||
-         (default_protocol_ >= kProtoSPDY2 &&
-          default_protocol_ <= kProtoSPDYMaximumVersion));
   NetworkChangeNotifier::AddIPAddressObserver(this);
   if (ssl_config_service_.get())
     ssl_config_service_->AddObserver(this);
@@ -87,11 +82,6 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
     int certificate_error_code,
     base::WeakPtr<SpdySession>* available_session,
     bool is_secure) {
-  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
-  // stop supporting SPDY/1.
-  DCHECK_GE(default_protocol_, kProtoSPDY2);
-  DCHECK_LE(default_protocol_, kProtoSPDYMaximumVersion);
-
   UMA_HISTOGRAM_ENUMERATION(
       "Net.SpdySessionGet", IMPORTED_FROM_SOCKET, SPDY_SESSION_GET_MAX);
 

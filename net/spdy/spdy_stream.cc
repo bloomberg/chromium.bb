@@ -630,10 +630,6 @@ bool SpdyStream::IsIdle() const {
   return io_state_ == STATE_IDLE;
 }
 
-NextProto SpdyStream::GetProtocol() const {
-  return session_->protocol();
-}
-
 bool SpdyStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   if (stream_id_ == 0)
     return false;

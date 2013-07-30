@@ -43,9 +43,6 @@ class NET_EXPORT SpdySessionPool
  public:
   typedef base::TimeTicks (*TimeFunc)(void);
 
-  // |default_protocol| may be kProtoUnknown (e.g., if SPDY is
-  // disabled), but in that case, CreateAvailableSessionFromSocket()
-  // must not be called. Otherwise, it must be a SPDY protocol.
   SpdySessionPool(
       HostResolver* host_resolver,
       SSLConfigService* ssl_config_service,
@@ -72,8 +69,7 @@ class NET_EXPORT SpdySessionPool
   // processing existing streams.
 
   // Create a new SPDY session from an existing socket.  There must
-  // not already be a session for the given key. This pool must have
-  // been constructed with a valid |default_protocol| value.
+  // not already be a session for the given key.
   //
   // |is_secure| can be false for testing or when SPDY is configured
   // to work with non-secure sockets. If |is_secure| is true,
@@ -217,7 +213,7 @@ class NET_EXPORT SpdySessionPool
   bool enable_credential_frames_;
   bool enable_compression_;
   bool enable_ping_based_connection_checking_;
-  const NextProto default_protocol_;
+  NextProto default_protocol_;
   size_t stream_initial_recv_window_size_;
   size_t initial_max_concurrent_streams_;
   size_t max_concurrent_streams_limit_;

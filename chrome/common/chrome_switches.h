@@ -168,7 +168,6 @@ extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];
 extern const char kEnableFileCookies[];
 extern const char kEnableGoogleNowIntegration[];
-extern const char kEnableHttp2Draft04[];
 extern const char kEnableInstantExtendedAPI[];
 extern const char kEnableIPCFuzzing[];
 extern const char kEnableIPPooling[];

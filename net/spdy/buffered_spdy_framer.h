@@ -11,17 +11,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
-#include "net/socket/next_proto.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
 
 namespace net {
-
-// Returns the SPDY major version corresponding to the given NextProto
-// value, which must represent a SPDY-like protocol.
-NET_EXPORT_PRIVATE SpdyMajorVersion NextProtoToSpdyMajorVersion(
-    NextProto next_proto);
 
 class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
  public:
