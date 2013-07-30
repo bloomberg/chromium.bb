@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
 #include "webkit/common/gpu/webkit_gpu_export.h"
 
@@ -35,6 +36,8 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   virtual class GrContext* GrContext() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
+  virtual void SetLostContextCallback(
+      const LostContextCallback& lost_context_callback) OVERRIDE;
 
  protected:
   ContextProviderInProcess();
@@ -42,13 +45,17 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
 
   bool InitializeOnMainThread();
 
-  void OnLostContextInternal();
-  virtual void OnLostContext() {}
-  virtual void OnMemoryAllocationChanged(bool nonzero_allocation);
+  void OnLostContext();
+  void OnMemoryAllocationChanged(bool nonzero_allocation);
 
  private:
+  base::ThreadChecker main_thread_checker_;
+  base::ThreadChecker context_thread_checker_;
+
   scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
+
+  LostContextCallback lost_context_callback_;
 
   base::Lock destroyed_lock_;
   bool destroyed_;

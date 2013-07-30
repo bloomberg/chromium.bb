@@ -13,13 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/browser/aura/image_transport_factory.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "ui/compositor/compositor.h"
 
 namespace content {
 class BrowserCompositorOutputSurface;
 class BrowserCompositorOutputSurfaceProxy;
 class CompositorSwapClient;
+class ContextProviderCommandBuffer;
 class ReflectorImpl;
 class WebGraphicsContext3DCommandBufferImpl;
 class WebGraphicsContext3DSwapBuffersClient;
@@ -79,50 +79,15 @@ class GpuProcessTransportFactory
       const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client,
       int surface_id);
 
-  class MainThreadContextProvider : public ContextProviderCommandBuffer {
-   public:
-    static scoped_refptr<MainThreadContextProvider> Create(
-        GpuProcessTransportFactory* factory);
-
-   protected:
-    explicit MainThreadContextProvider(GpuProcessTransportFactory* factory);
-    virtual ~MainThreadContextProvider();
-
-    // ContextProviderCommandBuffer implementation.
-    virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-        CreateOffscreenContext3d() OVERRIDE;
-    virtual void OnLostContext() OVERRIDE;
-
-   private:
-    GpuProcessTransportFactory* factory_;
-  };
-
-  class CompositorThreadContextProvider : public ContextProviderCommandBuffer {
-   public:
-    static scoped_refptr<CompositorThreadContextProvider> Create(
-        GpuProcessTransportFactory* factory);
-
-   protected:
-    explicit CompositorThreadContextProvider(
-        GpuProcessTransportFactory* factory);
-    virtual ~CompositorThreadContextProvider();
-
-    // ContextProviderCommandBuffer implementation.
-    virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-        CreateOffscreenContext3d() OVERRIDE;
-
-   private:
-    GpuProcessTransportFactory* factory_;
-  };
-
   void CreateSharedContextLazy();
 
+  void OnLostMainThreadSharedContextInsideCallback();
   void OnLostMainThreadSharedContext();
 
   typedef std::map<ui::Compositor*, PerCompositorData*> PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
-  scoped_refptr<MainThreadContextProvider> shared_contexts_main_thread_;
-  scoped_refptr<CompositorThreadContextProvider>
+  scoped_refptr<ContextProviderCommandBuffer> shared_contexts_main_thread_;
+  scoped_refptr<ContextProviderCommandBuffer>
       shared_contexts_compositor_thread_;
   scoped_ptr<GLHelper> gl_helper_;
   ObserverList<ImageTransportFactoryObserver> observer_list_;

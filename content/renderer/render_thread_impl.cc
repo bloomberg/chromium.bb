@@ -250,28 +250,6 @@ class RenderThreadImpl::GpuVDAContextLostCallback
   scoped_refptr<base::MessageLoopProxy> main_message_loop_;
 };
 
-class RenderThreadImpl::RendererContextProviderCommandBuffer
-    : public ContextProviderCommandBuffer {
- public:
-  static scoped_refptr<RendererContextProviderCommandBuffer> Create() {
-    scoped_refptr<RendererContextProviderCommandBuffer> provider =
-        new RendererContextProviderCommandBuffer();
-    if (!provider->InitializeOnMainThread())
-      return NULL;
-    return provider;
-  }
-
- protected:
-  virtual ~RendererContextProviderCommandBuffer() {}
-
-  virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-  CreateOffscreenContext3d() OVERRIDE {
-    RenderThreadImpl* self = RenderThreadImpl::current();
-    DCHECK(self);
-    return self->CreateOffscreenContext3d().Pass();
-  }
-};
-
 RenderThreadImpl::HistogramCustomizer::HistogramCustomizer() {
   custom_histograms_.insert("V8.MemoryExternalFragmentationTotal");
   custom_histograms_.insert("V8.MemoryHeapSampleTotalCommitted");
@@ -977,7 +955,9 @@ RenderThreadImpl::OffscreenContextProviderForMainThread() {
   if (!shared_contexts_main_thread_.get() ||
       shared_contexts_main_thread_->DestroyedOnMainThread()) {
     shared_contexts_main_thread_ =
-        RendererContextProviderCommandBuffer::Create();
+        ContextProviderCommandBuffer::Create(
+            base::Bind(&RenderThreadImpl::CreateOffscreenContext3d,
+                       base::Unretained(this)));
     if (shared_contexts_main_thread_.get() &&
         !shared_contexts_main_thread_->BindToCurrentThread())
       shared_contexts_main_thread_ = NULL;
@@ -999,7 +979,9 @@ RenderThreadImpl::OffscreenContextProviderForCompositorThread() {
   if (!shared_contexts_compositor_thread_.get() ||
       shared_contexts_compositor_thread_->DestroyedOnMainThread()) {
     shared_contexts_compositor_thread_ =
-        RendererContextProviderCommandBuffer::Create();
+        ContextProviderCommandBuffer::Create(
+            base::Bind(&RenderThreadImpl::CreateOffscreenContext3d,
+                       base::Unretained(this)));
   }
   return shared_contexts_compositor_thread_;
 }

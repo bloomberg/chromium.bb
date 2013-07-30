@@ -4,6 +4,7 @@
 
 #include "webkit/common/gpu/context_provider_in_process.h"
 
+#include "base/callback_helpers.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
@@ -23,7 +24,7 @@ class ContextProviderInProcess::LostContextCallbackProxy
   }
 
   virtual void onContextLost() {
-    provider_->OnLostContextInternal();
+    provider_->OnLostContext();
   }
 
  private:
@@ -54,12 +55,18 @@ class ContextProviderInProcess::MemoryAllocationCallbackProxy
 
 ContextProviderInProcess::ContextProviderInProcess()
     : destroyed_(false) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  context_thread_checker_.DetachFromThread();
 }
 
-ContextProviderInProcess::~ContextProviderInProcess() {}
+ContextProviderInProcess::~ContextProviderInProcess() {
+  DCHECK(main_thread_checker_.CalledOnValidThread() ||
+         context_thread_checker_.CalledOnValidThread());
+}
 
 bool ContextProviderInProcess::InitializeOnMainThread() {
   DCHECK(!context3d_);
+  DCHECK(main_thread_checker_.CalledOnValidThread());
 
   WebKit::WebGraphicsContext3D::Attributes attributes;
   attributes.depth = false;
@@ -79,6 +86,9 @@ bool ContextProviderInProcess::InitializeOnMainThread() {
 bool ContextProviderInProcess::BindToCurrentThread() {
   DCHECK(context3d_);
 
+  // This is called on the thread the context will be used.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
   if (lost_context_callback_proxy_)
     return true;
 
@@ -92,6 +102,7 @@ bool ContextProviderInProcess::BindToCurrentThread() {
 WebKit::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {
   DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
 
   return context3d_.get();
 }
@@ -99,6 +110,7 @@ WebKit::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {
 class GrContext* ContextProviderInProcess::GrContext() {
   DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
     return gr_context_->get();
@@ -113,28 +125,41 @@ class GrContext* ContextProviderInProcess::GrContext() {
 void ContextProviderInProcess::VerifyContexts() {
   DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (context3d_->isContextLost())
-    OnLostContextInternal();
+    OnLostContext();
 }
 
-void ContextProviderInProcess::OnLostContextInternal() {
+void ContextProviderInProcess::OnLostContext() {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(destroyed_lock_);
     if (destroyed_)
       return;
     destroyed_ = true;
   }
-  OnLostContext();
+  if (!lost_context_callback_.is_null())
+    base::ResetAndReturn(&lost_context_callback_).Run();
 }
 
 bool ContextProviderInProcess::DestroyedOnMainThread() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
   base::AutoLock lock(destroyed_lock_);
   return destroyed_;
 }
 
+void ContextProviderInProcess::SetLostContextCallback(
+    const LostContextCallback& lost_context_callback) {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+  DCHECK(lost_context_callback_.is_null());
+  lost_context_callback_ = lost_context_callback;
+}
+
 void ContextProviderInProcess::OnMemoryAllocationChanged(
     bool nonzero_allocation) {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
   if (gr_context_)
     gr_context_->SetMemoryLimit(nonzero_allocation);
 }

@@ -24,6 +24,7 @@ class ContextProviderFromContextFactory
   virtual class GrContext* GrContext() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
+  virtual void SetLostContextCallback(const LostContextCallback& cb) OVERRIDE;
 
  protected:
   ContextProviderFromContextFactory(ContextFactory* factory);

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
 
 namespace cc {
@@ -19,17 +20,13 @@ class FakeContextProvider : public cc::ContextProvider {
     CreateCallback;
 
   static scoped_refptr<FakeContextProvider> Create() {
-    scoped_refptr<FakeContextProvider> provider = new FakeContextProvider();
-    if (!provider->InitializeOnMainThread())
-      return NULL;
-    return provider;
+    return Create(CreateCallback());
   }
 
   static scoped_refptr<FakeContextProvider> Create(
       const CreateCallback& create_callback) {
-    scoped_refptr<FakeContextProvider> provider =
-        new FakeContextProvider(create_callback);
-    if (!provider->InitializeOnMainThread())
+    scoped_refptr<FakeContextProvider> provider = new FakeContextProvider;
+    if (!provider->InitializeOnMainThread(create_callback))
       return NULL;
     return provider;
   }
@@ -39,17 +36,19 @@ class FakeContextProvider : public cc::ContextProvider {
   virtual class GrContext* GrContext() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
+  virtual void SetLostContextCallback(const LostContextCallback& cb) OVERRIDE;
 
  protected:
   FakeContextProvider();
-  explicit FakeContextProvider(const CreateCallback& create_callback);
   virtual ~FakeContextProvider();
 
-  bool InitializeOnMainThread();
+  bool InitializeOnMainThread(const CreateCallback& create_callback);
 
-  CreateCallback create_callback_;
   scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
   bool bound_;
+
+  base::ThreadChecker main_thread_checker_;
+  base::ThreadChecker context_thread_checker_;
 
   base::Lock destroyed_lock_;
   bool destroyed_;

@@ -61,6 +61,11 @@ bool ContextProviderFromContextFactory::DestroyedOnMainThread() {
   return destroyed_;
 }
 
+void ContextProviderFromContextFactory::SetLostContextCallback(
+    const LostContextCallback& cb) {
+  NOTIMPLEMENTED();
+}
+
 bool ContextProviderFromContextFactory::InitializeOnMainThread() {
   if (context3d_)
     return true;

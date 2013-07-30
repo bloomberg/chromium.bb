@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_CONTEXT_PROVIDER_H_
 #define CC_OUTPUT_CONTEXT_PROVIDER_H_
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 
 class GrContext;
@@ -31,6 +32,14 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   // A method to be called from the main thread that should return true if
   // the context inside the provider is no longer valid.
   virtual bool DestroyedOnMainThread() = 0;
+
+  // Sets a callback to be called when the context is lost. This should be
+  // called from the same thread that the context is bound to. To avoid races,
+  // it should be called before BindToCurrentThread(), or VerifyContexts()
+  // should be called after setting the callback.
+  typedef base::Closure LostContextCallback;
+  virtual void SetLostContextCallback(
+      const LostContextCallback& lost_context_callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<ContextProvider>;

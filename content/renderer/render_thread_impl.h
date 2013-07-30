@@ -467,10 +467,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<InputHandlerManager> input_handler_manager_;
   scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
 
-  class RendererContextProviderCommandBuffer;
-  scoped_refptr<RendererContextProviderCommandBuffer>
-      shared_contexts_main_thread_;
-  scoped_refptr<RendererContextProviderCommandBuffer>
+  scoped_refptr<ContextProviderCommandBuffer> shared_contexts_main_thread_;
+  scoped_refptr<ContextProviderCommandBuffer>
       shared_contexts_compositor_thread_;
 
   ObserverList<RenderProcessObserver> observers_;
