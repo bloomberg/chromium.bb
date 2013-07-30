@@ -70,25 +70,28 @@ def callback_argument_declaration(operation):
 
 
 class CodeGeneratorV8:
-    def __init__(self, definitions, interface_name, output_directory, idl_directories, verbose=False):
+    def __init__(self, definitions, interface_name, output_directory, relative_dir_posix, idl_directories, verbose=False):
         self.idl_definitions = definitions
         self.interface_name = interface_name
         self.idl_directories = idl_directories
         self.output_directory = output_directory
+        self.relative_dir_posix = relative_dir_posix
         self.verbose = verbose
         self.interface = None
+        if definitions:  # FIXME: remove check when remove write_dummy_header_and_cpp
+            try:
+                self.interface = definitions.interfaces[interface_name]
+            except KeyError:
+                raise Exception('%s not in IDL definitions' % interface_name)
 
     def cpp_class_header_filename(self):
-        """Returns relative path from bindings/ of webcore header of the interface"""
-        # FIXME: parser will prepare posix form relative path from Source/bindings in IdlInterface.rel_path_posix
-        idl_filename = self.idl_definitions.file_name
-        idl_rel_path_local = os.path.relpath(idl_filename)
-        idl_rel_path_posix = idl_rel_path_local.replace(os.path.sep, posixpath.sep)
-
-        idl_dir_posix = posixpath.join('bindings', posixpath.dirname(idl_rel_path_posix))
-        return posixpath.join(idl_dir_posix, self.interface.name + '.h')
+        """Returns relative path (starting with bindings/) of webcore header of the interface"""
+        # FIXME: Support ImplementedAs
+        header_basename = self.interface_name + '.h'
+        return posixpath.join('bindings', self.relative_dir_posix, header_basename)
 
     def write_dummy_header_and_cpp(self):
+        # FIXME: fix GYP so these files aren't needed and remove this method
         target_interface_name = self.interface_name
         header_basename = 'V8%s.h' % target_interface_name
         cpp_basename = 'V8%s.cpp' % target_interface_name
@@ -105,9 +108,6 @@ class CodeGeneratorV8:
         self.write_cpp_code(cpp_basename, contents)
 
     def write_header_and_cpp(self):
-        if self.interface_name not in self.idl_definitions.interfaces:
-            raise Exception('%s not in IDL definitions' % self.interface_name)
-        self.interface = self.idl_definitions.interfaces[self.interface_name]
         header_basename = v8_class_name(self.interface) + '.h'
         cpp_basename = v8_class_name(self.interface) + '.cpp'
         if self.interface.is_callback:

@@ -41,7 +41,6 @@ compatibility functions and hacks once Perl compiler gone.
 
 import abc
 import json
-import os.path
 import re
 
 
@@ -97,8 +96,7 @@ class IdlDefinitions(BaseIdl):
         self.callback_functions = callback_functions or {}
         self.enumerations = enumerations or {}
         self.exceptions = exceptions or {}
-        if file_name:
-            self.file_name = os.path.abspath(file_name)
+        self.file_name = file_name or None
         self.interfaces = interfaces or {}
         # Typedefs are not exposed by bindings; resolve Typedefs with the
         # actual Types and then discard the Typedefs.
