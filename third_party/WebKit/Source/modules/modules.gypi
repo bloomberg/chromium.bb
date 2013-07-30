@@ -745,6 +745,8 @@
     'modules_unittest_files': [
       'indexeddb/IDBDatabaseTest.cpp',
       'indexeddb/IDBKeyPathTest.cpp',
+      'indexeddb/IDBRequestTest.cpp',
+      'indexeddb/IDBTransactionTest.cpp',
       'websockets/WebSocketDeflaterTest.cpp',
       'websockets/WebSocketExtensionDispatcherTest.cpp',
       'websockets/WebSocketExtensionParserTest.cpp',

@@ -301,8 +301,6 @@
       'tests/FrameTestHelpers.cpp',
       'tests/FrameTestHelpers.h',
       'tests/GraphicsLayerTest.cpp',
-      'tests/IDBRequestTest.cpp',
-      'tests/IDBTransactionTest.cpp',
       'tests/ImageFilterBuilderTest.cpp',
       'tests/ImageLayerChromiumTest.cpp',
       'tests/KeyboardTest.cpp',

@@ -26,16 +26,8 @@
 #include "config.h"
 #include "modules/indexeddb/IDBRequest.h"
 
-#include "FrameTestHelpers.h"
-#include "WebFrame.h"
-#include "WebFrameImpl.h"
-#include "WebView.h"
-#include "bindings/v8/ScriptController.h"
 #include "core/dom/DOMError.h"
-#include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/page/Frame.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
@@ -45,47 +37,31 @@
 #include <gtest/gtest.h>
 
 using namespace WebCore;
-using namespace WebKit;
 
 namespace {
 
 class IDBRequestTest : public testing::Test {
 public:
     IDBRequestTest()
-        : m_webView(0)
+        : m_handleScope(v8::Isolate::GetCurrent())
+        , m_scope(v8::Context::New(v8::Isolate::GetCurrent()))
+        , m_document(Document::create())
     {
-    }
-
-    void SetUp() OVERRIDE
-    {
-        m_webView = FrameTestHelpers::createWebViewAndLoad("about:blank");
-        m_webView->setFocus(true);
-    }
-
-    void TearDown() OVERRIDE
-    {
-        m_webView->close();
-    }
-
-    v8::Handle<v8::Context> context()
-    {
-        return static_cast<WebFrameImpl*>(m_webView->mainFrame())->frame()->script()->mainWorldContext();
     }
 
     ScriptExecutionContext* scriptExecutionContext()
     {
-        return static_cast<WebFrameImpl*>(m_webView->mainFrame())->frame()->document();
+        return m_document.get();
     }
 
 private:
-    WebView* m_webView;
+    v8::HandleScope m_handleScope;
+    v8::Context::Scope m_scope;
+    RefPtr<Document> m_document;
 };
 
 TEST_F(IDBRequestTest, EventsAfterStopping)
 {
-    v8::HandleScope handleScope;
-    v8::Context::Scope scope(context());
-
     IDBTransaction* transaction = 0;
     RefPtr<IDBRequest> request = IDBRequest::create(scriptExecutionContext(), IDBAny::createInvalid(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
@@ -105,9 +81,6 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
 
 TEST_F(IDBRequestTest, AbortErrorAfterAbort)
 {
-    v8::HandleScope handleScope;
-    v8::Context::Scope scope(context());
-
     IDBTransaction* transaction = 0;
     RefPtr<IDBRequest> request = IDBRequest::create(scriptExecutionContext(), IDBAny::createInvalid(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
@@ -165,9 +138,6 @@ private:
 
 TEST_F(IDBRequestTest, ConnectionsAfterStopping)
 {
-    v8::HandleScope handleScope;
-    v8::Context::Scope scope(context());
-
     const int64_t transactionId = 1234;
     const int64_t version = 1;
     const int64_t oldVersion = 0;
@@ -189,7 +159,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
         EXPECT_EQ(request->readyState(), "pending");
 
         scriptExecutionContext()->stopActiveDOMObjects();
-        request->onSuccess(interface, metadata);;
+        request->onSuccess(interface, metadata);
     }
 }
 

@@ -31,56 +31,36 @@
 #include "config.h"
 #include "modules/indexeddb/IDBTransaction.h"
 
-#include "FrameTestHelpers.h"
-#include "WebFrame.h"
-#include "WebFrameImpl.h"
-#include "WebView.h"
-#include "bindings/v8/ScriptController.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
-#include "modules/indexeddb/IDBTransaction.h"
 
 #include <gtest/gtest.h>
 
 using namespace WebCore;
-using namespace WebKit;
 
 namespace {
 
 class IDBTransactionTest : public testing::Test {
 public:
     IDBTransactionTest()
-        : m_webView(0)
+        : m_handleScope(v8::Isolate::GetCurrent())
+        , m_scope(v8::Context::New(v8::Isolate::GetCurrent()))
+        , m_document(Document::create())
     {
-    }
-
-    void SetUp() OVERRIDE
-    {
-        m_webView = FrameTestHelpers::createWebViewAndLoad("about:blank");
-        m_webView->setFocus(true);
-    }
-
-    void TearDown() OVERRIDE
-    {
-        m_webView->close();
-    }
-
-    v8::Handle<v8::Context> context()
-    {
-        return static_cast<WebFrameImpl*>(m_webView->mainFrame())->frame()->script()->mainWorldContext();
     }
 
     ScriptExecutionContext* scriptExecutionContext()
     {
-        return static_cast<WebFrameImpl*>(m_webView->mainFrame())->frame()->document();
+        return m_document.get();
     }
 
 private:
-    WebView* m_webView;
+    v8::HandleScope m_handleScope;
+    v8::Context::Scope m_scope;
+    RefPtr<Document> m_document;
 };
 
 class FakeIDBDatabaseBackendProxy : public IDBDatabaseBackendInterface {
@@ -124,9 +104,6 @@ private:
 
 TEST_F(IDBTransactionTest, EnsureLifetime)
 {
-    v8::HandleScope handleScope;
-    v8::Context::Scope scope(context());
-
     RefPtr<FakeIDBDatabaseBackendProxy> proxy = FakeIDBDatabaseBackendProxy::create();
     RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
     RefPtr<IDBDatabase> db = IDBDatabase::create(scriptExecutionContext(), proxy, connection);
