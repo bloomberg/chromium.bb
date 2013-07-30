@@ -34,20 +34,11 @@ const char* kModulesField = "modules";
 //  - Whether it's valid.
 //  - The extension ID, if one exists.
 //
-// This will crash web pages, but only in dev channel. It will always crash
-// extension processes. It will always crash in single process mode (since
-// typically it's used to debug renderer crashes).
+// This will only actual be fatal in in dev/canary, since in too many cases
+// we're at the mercy of the extension or web page's environment. They can mess
+// up our JS in unexpected ways. Hopefully dev/canary channel will pick up such
+// problems, but given the wider variety on stable/beta it's impossible to know.
 void Fatal(ChromeV8Context* context, const std::string& message) {
-  bool is_fatal = false;
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kExtensionProcess) ||
-      command_line->HasSwitch(switches::kSingleProcess)) {
-    is_fatal = true;
-  } else {
-    // <= dev means dev, canary, and trunk.
-    is_fatal = Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV;
-  }
-
   // Prepend some context metadata.
   std::string full_message = "(";
   if (!context->is_valid())
@@ -61,7 +52,8 @@ void Fatal(ChromeV8Context* context, const std::string& message) {
   full_message += ") ";
   full_message += message;
 
-  if (is_fatal)
+  // <= dev means dev, canary, and trunk.
+  if (Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV)
     console::Fatal(v8::Context::GetCalling(), full_message);
   else
     console::Error(v8::Context::GetCalling(), full_message);
