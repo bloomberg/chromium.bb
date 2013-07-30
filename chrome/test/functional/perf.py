@@ -158,6 +158,13 @@ class BasePerfTest(pyauto.PyUITest):
     except OSError, err:
       if err.errno == errno.ESRCH:
         return False
+
+    try:
+      with open('/proc/%s/status' % pid) as proc_file:
+        if 'zombie' in proc_file.read():
+          return False
+    except IOError:
+      return False
     return True
 
   def _WaitForChromeExit(self, browser_info, timeout):
