@@ -269,7 +269,9 @@ function WallpaperManager(dialogDom) {
         $('wallpaper-grid').classList.remove('image-picker-offline');
       });
     }
-    $('close').addEventListener('click', function() {window.close()});
+    $('window-close-button').addEventListener('click', function() {
+      window.close();
+    });
     this.document_.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
     $('learn-more').href = LearnMoreURL;

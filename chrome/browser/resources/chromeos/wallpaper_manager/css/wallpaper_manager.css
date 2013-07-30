@@ -21,7 +21,7 @@ body {
  * TODO(bshe): Remove this when http://crbug.com/142275 fixed.
  */
 .dialog-topbar #navstrip,
-.dialog-topbar #close,
+.dialog-topbar #window-close-button,
 .image-picker,
 .overlay-container .page,
 #surprise-me {
@@ -84,16 +84,22 @@ body {
   color: #eee;
 }
 
-#close {
-  background-image: url('../images/ui/close-white.png');
+.close {
+  background-position: center;
+  background-repeat: no-repeat;
   height: 14px;
+  padding: 10px;
   position: absolute;
-  right: 10px;
-  top: 10px;
-  width: 14px
+  right: 0;
+  top: 0;
+  width: 14px;
 }
 
-#close:hover {
+#window-close-button {
+  background-image: url('../images/ui/close-white.png');
+}
+
+#window-close-button:hover {
   background-image: url('../images/ui/close-white-hover.png');
 }
 
@@ -282,16 +288,11 @@ body:not([custom]) [visibleif~='custom'] {
   z-index: 5;
 }
 
-.close-overlay {
+.overlay-container .close {
   background-image: url('../images/ui/close-overlay.png');
-  height: 14px;
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  width: 14px
 }
 
-.close-overlay:hover {
+.overlay-container .close:hover {
   background-image: url('../images/ui/close-overlay-hover.png');
 }
 
