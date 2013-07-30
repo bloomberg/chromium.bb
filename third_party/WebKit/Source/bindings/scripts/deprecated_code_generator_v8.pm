@@ -2702,7 +2702,15 @@ END
         if ($attribute->extendedAttributes->{"InitializedByEventConstructor"}) {
             if ($attribute->type ne "any") {
                 my $attributeName = $attribute->name;
-                $code .= "    options.get(\"$attributeName\", eventInit.$attributeName);\n";
+                my $attributeImplName = GetImplName($attribute);
+                my $deprecation = $attribute->extendedAttributes->{"DeprecateAs"};
+                my $dictionaryGetter = "options.get(\"$attributeName\", eventInit.$attributeImplName)";
+                if ($attribute->extendedAttributes->{"DeprecateAs"}) {
+                    $code .= "    if ($dictionaryGetter)\n";
+                    $code .= "    " . GenerateDeprecationNotification($attribute->extendedAttributes->{"DeprecateAs"});
+                } else {
+                    $code .= "    $dictionaryGetter;\n";
+                }
             }
         }
     }

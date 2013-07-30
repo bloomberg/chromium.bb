@@ -23,7 +23,8 @@
 ] interface KeyboardEvent : UIEvent {
 
     [InitializedByEventConstructor] readonly attribute DOMString        keyIdentifier;
-    [InitializedByEventConstructor] readonly attribute unsigned long    keyLocation;
+    [InitializedByEventConstructor] readonly attribute unsigned long    location;
+    [ImplementedAs=location, DeprecateAs=KeyboardEventKeyLocation, InitializedByEventConstructor] readonly attribute unsigned long keyLocation; // Deprecated.
     [InitializedByEventConstructor] readonly attribute boolean          ctrlKey;
     [InitializedByEventConstructor] readonly attribute boolean          shiftKey;
     [InitializedByEventConstructor] readonly attribute boolean          altKey;
@@ -38,7 +39,7 @@
                            [Default=Undefined] optional boolean cancelable,
                            [Default=Undefined] optional Window view,
                            [Default=Undefined] optional DOMString keyIdentifier,
-                           [Default=Undefined] optional unsigned long keyLocation,
+                           [Default=Undefined] optional unsigned long location,
                            [Default=Undefined] optional boolean ctrlKey,
                            [Default=Undefined] optional boolean altKey,
                            [Default=Undefined] optional boolean shiftKey,

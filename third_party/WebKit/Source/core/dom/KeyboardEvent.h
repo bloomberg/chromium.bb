@@ -37,7 +37,7 @@ struct KeyboardEventInit : public UIEventInit {
     KeyboardEventInit();
 
     String keyIdentifier;
-    unsigned keyLocation;
+    unsigned location;
     bool ctrlKey;
     bool altKey;
     bool shiftKey;
@@ -69,21 +69,21 @@ public:
     }
 
     static PassRefPtr<KeyboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
-        const String& keyIdentifier, unsigned keyLocation,
+        const String& keyIdentifier, unsigned location,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey)
     {
-        return adoptRef(new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, keyLocation,
+        return adoptRef(new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, location,
         ctrlKey, altKey, shiftKey, metaKey, altGraphKey));
     }
 
     virtual ~KeyboardEvent();
 
     void initKeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
-        const String& keyIdentifier, unsigned keyLocation,
+        const String& keyIdentifier, unsigned location,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey = false);
 
     const String& keyIdentifier() const { return m_keyIdentifier; }
-    unsigned keyLocation() const { return m_keyLocation; }
+    unsigned location() const { return m_location; }
 
     bool getModifierState(const String& keyIdentifier) const;
 
@@ -103,12 +103,12 @@ private:
     KeyboardEvent(const PlatformKeyboardEvent&, AbstractView*);
     KeyboardEvent(const AtomicString&, const KeyboardEventInit&);
     KeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
-        const String& keyIdentifier, unsigned keyLocation,
+        const String& keyIdentifier, unsigned location,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey);
 
     OwnPtr<PlatformKeyboardEvent> m_keyEvent;
     String m_keyIdentifier;
-    unsigned m_keyLocation;
+    unsigned m_location;
     bool m_altGraphKey : 1;
 };
 

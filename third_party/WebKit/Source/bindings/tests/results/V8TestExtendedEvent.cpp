@@ -24,13 +24,17 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8TestEvent.h"
+#include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
+#include "core/page/PageConsole.h"
+#include "core/page/UseCounter.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "wtf/UnusedParam.h"
 
@@ -62,7 +66,90 @@ namespace EventV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
+static void locationAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    Event* imp = V8TestExtendedEvent::toNative(info.Holder());
+    v8SetReturnValueUnsigned(info, imp->location());
+    return;
+}
+
+static void locationAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    EventV8Internal::locationAttrGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void keyLocationAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    Event* imp = V8TestExtendedEvent::toNative(info.Holder());
+    v8SetReturnValueUnsigned(info, imp->location());
+    return;
+}
+
+static void keyLocationAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    UseCounter::countDeprecation(activeDOMWindow(), UseCounter::KeyboardEventKeyLocation);
+    EventV8Internal::keyLocationAttrGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
+
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
+    EventInit eventInit;
+    if (args.Length() >= 2) {
+        V8TRYCATCH_VOID(Dictionary, options, Dictionary(args[1], args.GetIsolate()));
+        if (!fillEventInit(eventInit, options))
+            return;
+    }
+
+    RefPtr<Event> event = Event::create(type, eventInit);
+    v8::Handle<v8::Object> wrapper = args.Holder();
+    V8DOMWrapper::associateObjectWithWrapper<V8TestExtendedEvent>(event.release(), &V8TestExtendedEvent::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    v8SetReturnValue(args, wrapper);
+}
 } // namespace EventV8Internal
+
+static const V8DOMConfiguration::BatchedAttribute V8TestExtendedEventAttrs[] = {
+    // Attribute 'location'
+    {"location", EventV8Internal::locationAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    // Attribute 'keyLocation'
+    {"keyLocation", EventV8Internal::keyLocationAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+};
+
+bool fillEventInit(EventInit& eventInit, const Dictionary& options)
+{
+    if (!fillTestEventInit(eventInit, options))
+        return false;
+
+    options.get("location", eventInit.location);
+    if (options.get("keyLocation", eventInit.location))
+        UseCounter::countDeprecation(activeDOMWindow(), UseCounter::KeyboardEventKeyLocation);
+    return true;
+}
+
+void V8TestExtendedEvent::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
+    if (!args.IsConstructCall()) {
+        throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+        return;
+    }
+
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        args.GetReturnValue().Set(args.Holder());
+        return;
+    }
+
+    EventV8Internal::constructor(args);
+}
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExtendedEventTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
@@ -73,9 +160,11 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExtendedEventTemplate(v8:
         defaultSignature = V8DOMConfiguration::configureTemplate(desc, "", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
     else
     defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestExtendedEvent", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount,
-        0, 0,
+        V8TestExtendedEventAttrs, WTF_ARRAY_LENGTH(V8TestExtendedEventAttrs),
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    desc->SetCallHandler(V8TestExtendedEvent::constructorCallback);
+    desc->SetLength(1);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

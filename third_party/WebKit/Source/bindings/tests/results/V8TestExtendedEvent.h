@@ -30,6 +30,7 @@
 
 namespace WebCore {
 
+class Dictionary;
 class V8TestExtendedEvent {
 public:
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
@@ -41,6 +42,7 @@ public:
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
+    static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer(Event* impl)
     {
@@ -120,6 +122,8 @@ inline v8::Handle<v8::Value> toV8(PassRefPtr< Event > impl, v8::Handle<v8::Objec
 {
     return toV8(impl.get(), creationContext, isolate);
 }
+
+bool fillEventInit(EventInit&, const Dictionary&);
 
 }
 
