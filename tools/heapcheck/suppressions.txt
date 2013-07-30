@@ -614,12 +614,10 @@
    ...
    fun:v8::internal::Heap::DoScavenge*
    fun:v8::internal::Heap::Scavenge*
+   ...
    fun:v8::internal::Heap::PerformGarbageCollection
    fun:v8::internal::Heap::CollectGarbage
    fun:v8::internal::Heap::CollectGarbage
-   fun:v8::internal::Factory::NewStringFromUtf8
-   ...
-   fun:v8::String::NewFromUtf8
 }
 {
    bug_171547_b
