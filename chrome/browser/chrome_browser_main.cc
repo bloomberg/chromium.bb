@@ -62,6 +62,7 @@
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/language_usage_metrics.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -141,9 +142,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#else
+#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/active_tab_tracker.h"
 #endif
 
@@ -821,15 +820,15 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     user_data_dir_ = chrome::GetUserDataDir(parameters());
   }
 
+  // Force MediaCaptureDevicesDispatcher to be created on UI thread.
+  MediaCaptureDevicesDispatcher::GetInstance();
+
   // Whether this is First Run. |do_first_run_tasks_| should be prefered to this
   // unless the desire is actually to know whether this is really First Run
   // (i.e., even if --no-first-run is passed).
   bool is_first_run = false;
   // Android's first run is done in Java instead of native.
-#if defined(OS_ANDROID)
-  // Force MediaCaptureDevicesDispatcher created on UI thread.
-  MediaCaptureDevicesDispatcher::GetInstance();
-#else
+#if !defined(OS_ANDROID)
   process_singleton_.reset(new ChromeProcessSingleton(
       user_data_dir_, base::Bind(&ProcessSingletonNotificationCallback)));
 
