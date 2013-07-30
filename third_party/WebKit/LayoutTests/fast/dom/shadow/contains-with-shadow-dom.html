@@ -22,9 +22,9 @@ document.getElementById('sandbox').appendChild(
 
 
 // Comparing a document with a node in a shadow tree.
-shouldBeFalse('document.contains(getNodeInShadowTreeStack("shadowHostA/"))');
+shouldBeTrue('document.contains(getNodeInShadowTreeStack("shadowHostA/"))');
 shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/").contains(document)');
-shouldBeFalse('document.contains(getNodeInShadowTreeStack("shadowHostA/divA"))');
+shouldBeTrue('document.contains(getNodeInShadowTreeStack("shadowHostA/divA"))');
 shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/divA").contains(document)');
 
 // Comparing a node in document with a node in a shadow tree.
@@ -32,7 +32,7 @@ shouldBeTrue('getNodeInShadowTreeStack("shadowHostA/").contains(getNodeInShadowT
 shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/divA").contains(getNodeInShadowTreeStack("shadowHostA/"))');
 
 // Comparing a node in a shadow tree with a node in a shadow tree enclosing the first tree.
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/"))');
+shouldBeTrue('getNodeInShadowTreeStack("shadowHostA/").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/"))');
 shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostB/").contains(getNodeInShadowTreeStack("shadowHostA/"))');
 shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/divA").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/divB"))');
 shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostB/divB").contains(getNodeInShadowTreeStack("shadowHostA/divA"))');

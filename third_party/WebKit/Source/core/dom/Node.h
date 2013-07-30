@@ -517,6 +517,9 @@ public:
     bool containsIncludingShadowDOM(const Node*) const;
     bool containsIncludingHostElements(const Node*) const;
 
+    // FIXME: Remove this when crbug.com/265716 cleans up contains semantics.
+    bool bindingsContains(const Node* node) const { return containsIncludingShadowDOM(node); }
+
     // Used to determine whether range offsets use characters or node indices.
     virtual bool offsetInCharacters() const;
     // Number of DOM 16-bit units contained in node. Note that rendered text length can be different - e.g. because of

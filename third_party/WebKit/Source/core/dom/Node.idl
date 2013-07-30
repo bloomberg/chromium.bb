@@ -91,7 +91,7 @@
     unsigned short     compareDocumentPosition([Default=Undefined] optional Node other);
 
     // Introduced in DOM4
-    boolean contains([Default=Undefined] optional Node other);
+    [ImplementedAs=bindingsContains] boolean contains([Default=Undefined] optional Node other);
 
     // IE extensions
     [PerWorldBindings] readonly attribute Element          parentElement;

@@ -982,10 +982,28 @@ bool Node::contains(const Node* node) const
 
 bool Node::containsIncludingShadowDOM(const Node* node) const
 {
-    for (; node; node = node->parentOrShadowHostNode()) {
-        if (node == this)
-            return true;
+    if (!node)
+        return false;
+
+    if (this == node)
+        return true;
+
+    if (document() != node->document())
+        return false;
+
+    if (inDocument() != node->inDocument())
+        return false;
+
+    bool hasChildren = isContainerNode() && toContainerNode(this)->hasChildNodes();
+    bool hasShadow = isElementNode() && toElement(this)->shadow();
+    if (!hasChildren && !hasShadow)
+        return false;
+
+    for (; node; node = node->shadowHost()) {
+        if (treeScope() == node->treeScope())
+            return contains(node);
     }
+
     return false;
 }
 
