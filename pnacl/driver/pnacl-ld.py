@@ -21,7 +21,6 @@ EXTRA_ENV = {
                        # -arch to produce a .nexe.
   'USE_IRT': '1',  # Use stable IRT interfaces.
 
-
   'INPUTS'   : '',
   'OUTPUT'   : '',
 
@@ -160,6 +159,11 @@ def AddAllowCXXExceptions(*args):
   env.set('ALLOW_CXX_EXCEPTIONS', '1')
   env.append('TRANSLATE_FLAGS', *args)
 
+def SetLibTarget(*args):
+  arch = ParseTriple(args[0])
+  if arch != 'le32':
+    env.set('BCLIB_ARCH', arch)
+
 LDPatterns = [
   ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
   ( '--noirt',              "env.set('USE_IRT', '0')"),
@@ -172,6 +176,8 @@ LDPatterns = [
   # toolchain is used for producing native nexes.
   ( '--pnacl-disable-pass=(.+)', "env.append('LLVM_PASSES_TO_DISABLE', $0)"),
   ( '--pnacl-allow-dev-intrinsics', "env.set('ALLOW_DEV_INTRINSICS', '1')"),
+  ( ('-target', '(.+)'), SetLibTarget),
+  ( ('--target=(.+)'), SetLibTarget),
 
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -299,6 +305,13 @@ def main(argv):
       Log.Fatal("--pnacl-allow-native given, but translation "
                 "is not happening (missing -arch?)")
 
+  # Overriding the lib target uses native-flavored bitcode libs rather than the
+  # portable bitcode libs. It is currently only tested/supported for
+  # building the IRT.
+  if env.getone('BCLIB_ARCH') != '':
+    env.set('BASE_USR', "${BASE_USR_ARCH}")
+    env.set('BASE_LIB', "${BASE_LIB_ARCH}")
+
   if env.getbool('RELOCATABLE'):
     if env.getbool('SHARED'):
       Log.Fatal("-r and -shared may not be used together")
@@ -378,7 +391,8 @@ def main(argv):
     abi_simplify = (env.getbool('STATIC') and
                     len(native_objects) == 0 and
                     not env.getbool('ALLOW_CXX_EXCEPTIONS') and
-                    not env.getbool('ALLOW_NEXE_BUILD_ID'))
+                    not env.getbool('ALLOW_NEXE_BUILD_ID') and
+                    env.getone('BCLIB_ARCH') == '')
 
     preopt_passes = []
     if abi_simplify:

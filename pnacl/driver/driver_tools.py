@@ -66,6 +66,24 @@ def FilterOutArchArgs(args):
     args = args[:i] + args[i+2:]
   return args
 
+# Parse and validate the target triple and return the architecture.
+# We don't attempt to recognize all possible targets here, just the ones we
+# support.
+def ParseTriple(triple):
+  tokens = triple.split('-')
+  arch = tokens[0]
+  if arch != 'le32':
+    arch = FixArch(arch)
+  os = tokens[1]
+  # The machine/vendor field could be present or not.
+  if os != 'nacl' and len(tokens) >= 3:
+    os = tokens[2]
+  # Just check that the os is nacl.
+  if os == 'nacl':
+    return arch
+
+  Log.Fatal('machine/os ' + '-'.join(tokens[1:]) + ' not supported.')
+
 
 def RunDriver(invocation, args, suppress_inherited_arch_args=False):
   """
