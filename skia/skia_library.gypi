@@ -150,6 +150,7 @@
     '../third_party/skia/include/utils/SkNWayCanvas.h',
     '../third_party/skia/src/utils/SkNWayCanvas.cpp',
     '../third_party/skia/src/utils/SkPictureUtils.cpp',
+    '../third_party/skia/src/utils/SkProxyCanvas.cpp',
     '../third_party/skia/src/utils/SkRTConf.cpp',
     '../third_party/skia/include/utils/SkRTConf.h',
     '../third_party/skia/include/pdf/SkPDFDevice.h',
@@ -164,6 +165,7 @@
 
     '../third_party/skia/include/utils/SkNullCanvas.h',
     '../third_party/skia/include/utils/SkPictureUtils.h',
+    '../third_party/skia/include/utils/SkProxyCanvas.h',
   ],
   'include_dirs': [
     '..',

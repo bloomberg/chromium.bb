@@ -4,14 +4,17 @@
 
 #include "content/renderer/skia_benchmarking_extension.h"
 
+#include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/resources/picture.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "skia/ext/benchmarking_canvas.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/src/utils/debugger/SkDebugCanvas.h"
 #include "third_party/skia/src/utils/debugger/SkDrawCommand.h"
@@ -79,6 +82,17 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
         "  native function GetOps();"
         "  return GetOps(picture);"
         "};"
+        "chrome.skiaBenchmarking.getOpTimings = function(picture) {"
+        "  /* "
+        "     Returns timing information for the given picture."
+        "     @param {Object} picture A json-encoded cc::Picture."
+        "     @returns { 'total_time': {Number}, 'cmd_times': [Number, ...] }"
+        "     @returns undefined if the arguments are invalid or the picture"
+        "                        version is not supported."
+        "   */"
+        "  native function GetOpTimings();"
+        "  return GetOpTimings(picture);"
+        "};"
         ) {
       content::SkiaBenchmarkingExtension::InitSkGraphics();
   }
@@ -89,6 +103,8 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(Rasterize);
     if (name->Equals(v8::String::New("GetOps")))
       return v8::FunctionTemplate::New(GetOps);
+    if (name->Equals(v8::String::New("GetOpTimings")))
+      return v8::FunctionTemplate::New(GetOpTimings);
 
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -215,6 +231,43 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
 
       result->Set(i, cmd);
     }
+
+    args.GetReturnValue().Set(result);
+  }
+
+  static void GetOpTimings(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    if (args.Length() != 1)
+      return;
+
+    scoped_refptr<cc::Picture> picture = ParsePictureArg(args[0]);
+    if (!picture.get())
+      return;
+
+    gfx::Rect bounds = picture->LayerRect();
+
+    // Measure the total time by drawing straight into a bitmap-backed canvas.
+    skia::RefPtr<SkDevice> device = skia::AdoptRef(SkNEW_ARGS(SkDevice,
+        (SkBitmap::kARGB_8888_Config, bounds.width(), bounds.height())));
+    SkCanvas bitmap_canvas(device.get());
+    bitmap_canvas.clear(SK_ColorTRANSPARENT);
+    base::TimeTicks t0 = base::TimeTicks::HighResNow();
+    picture->Replay(&bitmap_canvas);
+    base::TimeDelta total_time = base::TimeTicks::HighResNow() - t0;
+
+    // Gather per-op timing info by drawing into a BenchmarkingCanvas.
+    skia::BenchmarkingCanvas benchmarking_canvas(bounds.width(),
+                                                 bounds.height());
+    picture->Replay(&benchmarking_canvas);
+
+    v8::Local<v8::Array> op_times =
+            v8::Array::New(benchmarking_canvas.CommandCount());
+    for (size_t i = 0; i < benchmarking_canvas.CommandCount(); ++i)
+        op_times->Set(i, v8::Number::New(benchmarking_canvas.GetTime(i)));
+
+    v8::Handle<v8::Object> result = v8::Object::New();
+    result->Set(v8::String::New("total_time"),
+                v8::Number::New(total_time.InMillisecondsF()));
+    result->Set(v8::String::New("cmd_times"), op_times);
 
     args.GetReturnValue().Set(result);
   }

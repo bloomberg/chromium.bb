@@ -27,6 +27,8 @@
   'sources': [
     'ext/analysis_canvas.cc',
     'ext/analysis_canvas.h',
+    'ext/benchmarking_canvas.cc',
+    'ext/benchmarking_canvas.h',
     'ext/bitmap_platform_device.h',
     'ext/bitmap_platform_device_android.cc',
     'ext/bitmap_platform_device_android.h',
