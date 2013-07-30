@@ -524,6 +524,7 @@ void DownloadManagerImpl::OnSavePackageSuccessfullyFinished(
 void DownloadManagerImpl::ResumeInterruptedDownload(
     scoped_ptr<content::DownloadUrlParameters> params,
     uint32 id) {
+  RecordDownloadSource(INITIATED_BY_RESUMPTION);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,

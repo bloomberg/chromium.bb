@@ -171,11 +171,10 @@ bool DownloadResourceHandler::OnResponseStarted(
   const net::HttpResponseHeaders* headers = request_->response_headers();
   if (headers) {
     std::string last_modified_hdr;
-    std::string etag;
     if (headers->EnumerateHeader(NULL, "Last-Modified", &last_modified_hdr))
       info->last_modified = last_modified_hdr;
-    if (headers->EnumerateHeader(NULL, "ETag", &etag))
-      info->etag = etag;
+    if (headers->EnumerateHeader(NULL, "ETag", &etag_))
+      info->etag = etag_;
 
     int status = headers->response_code();
     if (2 == status / 100  && status != net::HTTP_PARTIAL_CONTENT) {
@@ -373,7 +372,7 @@ bool DownloadResourceHandler::OnResponseCompleted(
     }
   }
 
-  RecordAcceptsRanges(accept_ranges_, bytes_read_);
+  RecordAcceptsRanges(accept_ranges_, bytes_read_, etag_);
   RecordNetworkBlockage(
       base::TimeTicks::Now() - download_start_time_, total_pause_time_);
 

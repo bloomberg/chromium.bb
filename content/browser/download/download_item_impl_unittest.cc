@@ -496,7 +496,7 @@ TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
     // to be callled, so we simply verify that GetWebContents() is called.
     if (i < (DownloadItemImpl::kMaxAutoResumeAttempts - 1)) {
       EXPECT_CALL(*mock_request_handle, GetWebContents())
-          .WillOnce(Return(static_cast<WebContents*>(NULL)));
+          .WillRepeatedly(Return(static_cast<WebContents*>(NULL)));
     }
 
     // Copied key parts of DoIntermediateRename & AddDownloadFileToDownloadItem

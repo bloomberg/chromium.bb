@@ -179,7 +179,8 @@ void RecordDownloadWriteLoopCount(int count) {
 }
 
 void RecordAcceptsRanges(const std::string& accepts_ranges,
-                         int64 download_len) {
+                         int64 download_len,
+                         const std::string& etag) {
   int64 max = 1024 * 1024 * 1024;  // One Terabyte.
   download_len /= 1024;  // In Kilobytes
   static const int kBuckets = 50;
@@ -196,6 +197,10 @@ void RecordAcceptsRanges(const std::string& accepts_ranges,
                                 1,
                                 max,
                                 kBuckets);
+    // ETags that start with "W/" are considered weak ETags which don't imply
+    // byte-wise equality.
+    if (!StartsWithASCII(etag, "w/", false))
+      RecordDownloadCount(STRONG_ETAG_AND_ACCEPTS_RANGES);
   } else {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Download.AcceptRangesMissingOrInvalid.KBytes",
                                 download_len,

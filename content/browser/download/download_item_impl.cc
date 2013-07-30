@@ -1398,6 +1398,8 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
 
   TransitionTo(INTERRUPTED_INTERNAL, DONT_UPDATE_OBSERVERS);
   RecordDownloadInterrupted(reason, received_bytes_, total_bytes_);
+  if (!GetWebContents())
+    RecordDownloadCount(INTERRUPTED_WITHOUT_WEBCONTENTS);
 
   AutoResumeIfValid();
   UpdateObservers();

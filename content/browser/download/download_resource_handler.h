@@ -126,6 +126,7 @@ class CONTENT_EXPORT DownloadResourceHandler
   size_t last_buffer_size_;
   int64 bytes_read_;
   std::string accept_ranges_;
+  std::string etag_;
 
   int pause_count_;
   bool was_deferred_;

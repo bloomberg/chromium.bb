@@ -15622,6 +15622,9 @@ other types of suffix sets.
   <int value="11" label="Calls to AppendDataToFile (Count)"/>
   <int value="12" label="Interrupted at End of Download"/>
   <int value="13" label="Attempt to Append to Detached File"/>
+  <int value="14" label="File Missing After Successful Scan"/>
+  <int value="15" label="Supports ranges and strong validation"/>
+  <int value="16" label="No WebContents at interruption"/>
 </enum>
 
 <enum name="DownloadDatabaseRecordDroppedType" type="int">
@@ -15704,6 +15707,7 @@ other types of suffix sets.
   <int value="1" label="Initiated by Drag-and-drop"/>
   <int value="2" label="Initiated by RPC from Renderer"/>
   <int value="3" label="Initiated by Save from Pepper"/>
+  <int value="4" label="Initiated by Resumption"/>
 </enum>
 
 <enum name="DriveCacheDBOpenStatus" type="int">
@@ -17857,6 +17861,7 @@ other types of suffix sets.
   <int value="10" label="FILE_TRANSIENT_ERROR"/>
   <int value="11" label="FILE_BLOCKED"/>
   <int value="12" label="FILE_SECURITY_CHECK_FAILED"/>
+  <int value="13" label="FILE_TOO_SHORT"/>
   <int value="20" label="NETWORK_FAILED"/>
   <int value="21" label="NETWORK_TIMEOUT"/>
   <int value="22" label="NETWORK_DISCONNECTED"/>
