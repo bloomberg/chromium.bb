@@ -500,9 +500,9 @@ uint64 QuicCryptoClientConfig::CachedState::generation_counter() const {
   return generation_counter_;
 }
 
-const CertVerifyResult*
-QuicCryptoClientConfig::CachedState::cert_verify_result() const {
-  return &cert_verify_result_;
+const ProofVerifyDetails*
+QuicCryptoClientConfig::CachedState::proof_verify_details() const {
+  return proof_verify_details_.get();
 }
 
 void QuicCryptoClientConfig::CachedState::set_source_address_token(
@@ -510,9 +510,9 @@ void QuicCryptoClientConfig::CachedState::set_source_address_token(
   source_address_token_ = token.as_string();
 }
 
-void QuicCryptoClientConfig::CachedState::SetCertVerifyResult(
-    const CertVerifyResult& cert_verify_result) {
-  cert_verify_result_.CopyFrom(cert_verify_result);
+void QuicCryptoClientConfig::CachedState::SetProofVerifyDetails(
+    ProofVerifyDetails* details) {
+  proof_verify_details_.reset(details);
 }
 
 void QuicCryptoClientConfig::SetDefaults() {

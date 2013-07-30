@@ -89,6 +89,68 @@ TEST(Proof, Verify) {
 #endif  // 0
 }
 
+// TestProofVerifierCallback is a simple callback for a ProofVerifier that
+// signals a TestCompletionCallback when called and stores the results from the
+// ProofVerifier in pointers passed to the constructor.
+class TestProofVerifierCallback : public ProofVerifierCallback {
+ public:
+  TestProofVerifierCallback(TestCompletionCallback* comp_callback,
+                            bool* ok,
+                            std::string* error_details)
+      : comp_callback_(comp_callback),
+        ok_(ok),
+        error_details_(error_details) {}
+
+  virtual void Run(bool ok,
+                   const std::string& error_details,
+                   scoped_ptr<ProofVerifyDetails>* details) OVERRIDE {
+    *ok_ = ok;
+    *error_details_ = error_details;
+
+    comp_callback_->callback().Run(0);
+  }
+
+ private:
+  TestCompletionCallback* const comp_callback_;
+  bool* const ok_;
+  std::string* const error_details_;
+};
+
+// RunVerification runs |verifier->VerifyProof| and asserts that the result
+// matches |expected_ok|.
+static void RunVerification(ProofVerifier* verifier,
+                            const std::string& hostname,
+                            const std::string& server_config,
+                            const vector<std::string>& certs,
+                            const std::string& proof,
+                            bool expected_ok) {
+  scoped_ptr<ProofVerifyDetails> details;
+  TestCompletionCallback comp_callback;
+  bool ok;
+  std::string error_details;
+  TestProofVerifierCallback* callback =
+      new TestProofVerifierCallback(&comp_callback, &ok, &error_details);
+
+  ProofVerifier::Status status = verifier->VerifyProof(
+      hostname, server_config, certs, proof, &error_details, &details,
+      callback);
+
+  switch (status) {
+    case ProofVerifier::FAILURE:
+      ASSERT_FALSE(expected_ok);
+      ASSERT_NE("", error_details);
+      return;
+    case ProofVerifier::SUCCESS:
+      ASSERT_TRUE(expected_ok);
+      ASSERT_EQ("", error_details);
+      return;
+    case ProofVerifier::PENDING:
+      comp_callback.WaitForResult();
+      ASSERT_EQ(expected_ok, ok);
+      break;
+  }
+}
+
 static string PEMCertFileToDER(const string& file_name) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert =
@@ -227,48 +289,26 @@ TEST(Proof, VerifyRSAKnownAnswerTest) {
 
   for (size_t i = 0; i < signatures.size(); i++) {
     const string& signature = signatures[i];
-    int rv;
-    TestCompletionCallback callback;
-    rv = verifier->VerifyProof(hostname, server_config, certs, signature,
-                               &error_details, &cert_verify_result,
-                               callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(OK, rv);
-    ASSERT_EQ("", error_details);
-    ASSERT_FALSE(IsCertStatusError(cert_verify_result.cert_status));
 
-    rv = verifier->VerifyProof("foo.com", server_config, certs, signature,
-                               &error_details, &cert_verify_result,
-                               callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(ERR_FAILED, rv);
-    ASSERT_NE("", error_details);
-
-    rv = verifier->VerifyProof(hostname, server_config.substr(1, string::npos),
-                               certs, signature, &error_details,
-                               &cert_verify_result, callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(ERR_FAILED, rv);
-    ASSERT_NE("", error_details);
+    RunVerification(
+        verifier.get(), hostname, server_config, certs, signature, true);
+    RunVerification(
+        verifier.get(), "foo.com", server_config, certs, signature, false);
+    RunVerification(
+        verifier.get(), hostname, server_config.substr(1, string::npos),
+        certs, signature, false);
 
     const string corrupt_signature = "1" + signature;
-    rv = verifier->VerifyProof(hostname, server_config, certs,
-                               corrupt_signature, &error_details,
-                               &cert_verify_result, callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(ERR_FAILED, rv);
-    ASSERT_NE("", error_details);
+    RunVerification(
+        verifier.get(), hostname, server_config, certs, corrupt_signature,
+        false);
 
     vector<string> wrong_certs;
     for (size_t i = 1; i < certs.size(); i++) {
       wrong_certs.push_back(certs[i]);
     }
-    rv = verifier->VerifyProof("foo.com", server_config, wrong_certs, signature,
-                               &error_details, &cert_verify_result,
-                               callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(ERR_FAILED, rv);
-    ASSERT_NE("", error_details);
+    RunVerification(verifier.get(), hostname, server_config, wrong_certs,
+                    signature, false);
   }
 }
 
@@ -340,60 +380,35 @@ TEST(Proof, MAYBE_VerifyECDSAKnownAnswerTest) {
 
   for (size_t i = 0; i < signatures.size(); i++) {
     const string& signature = signatures[i];
-    int rv;
-    TestCompletionCallback callback;
-    rv = verifier->VerifyProof(hostname, server_config, certs, signature,
-                               &error_details, &cert_verify_result,
-                               callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(OK, rv);
-    ASSERT_EQ("", error_details);
-    ASSERT_FALSE(IsCertStatusError(cert_verify_result.cert_status));
 
-    rv = verifier->VerifyProof("foo.com", server_config, certs, signature,
-                               &error_details, &cert_verify_result,
-                               callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(ERR_FAILED, rv);
-    ASSERT_NE("", error_details);
-
-    rv = verifier->VerifyProof(hostname, server_config.substr(1, string::npos),
-                               certs, signature, &error_details,
-                               &cert_verify_result, callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(ERR_FAILED, rv);
-    ASSERT_NE("", error_details);
+    RunVerification(
+        verifier.get(), hostname, server_config, certs, signature, true);
+    RunVerification(
+        verifier.get(), "foo.com", server_config, certs, signature, false);
+    RunVerification(
+        verifier.get(), hostname, server_config.substr(1, string::npos),
+        certs, signature, false);
 
     // An ECDSA signature is DER-encoded. Corrupt the last byte so that the
     // signature can still be DER-decoded correctly.
     string corrupt_signature = signature;
     corrupt_signature[corrupt_signature.size() - 1] += 1;
-    rv = verifier->VerifyProof(hostname, server_config, certs,
-                               corrupt_signature, &error_details,
-                               &cert_verify_result, callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(ERR_FAILED, rv);
-    ASSERT_NE("", error_details);
+    RunVerification(
+        verifier.get(), hostname, server_config, certs, corrupt_signature,
+        false);
 
     // Prepending a "1" makes the DER invalid.
     const string bad_der_signature1 = "1" + signature;
-    rv = verifier->VerifyProof(hostname, server_config, certs,
-                               bad_der_signature1, &error_details,
-                               &cert_verify_result, callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(ERR_FAILED, rv);
-    ASSERT_NE("", error_details);
+    RunVerification(
+        verifier.get(), hostname, server_config, certs, bad_der_signature1,
+        false);
 
     vector<string> wrong_certs;
     for (size_t i = 1; i < certs.size(); i++) {
       wrong_certs.push_back(certs[i]);
     }
-    rv = verifier->VerifyProof("foo.com", server_config, wrong_certs, signature,
-                               &error_details, &cert_verify_result,
-                               callback.callback());
-    rv = callback.GetResult(rv);
-    ASSERT_EQ(ERR_FAILED, rv);
-    ASSERT_NE("", error_details);
+    RunVerification(
+        verifier.get(), hostname, server_config, wrong_certs, signature, false);
   }
 }
 
