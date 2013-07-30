@@ -32,7 +32,6 @@ class ScriptExecutionContext;
 class Comment FINAL : public CharacterData {
 public:
     static PassRefPtr<Comment> create(Document*, const String&);
-    static PassRefPtr<Comment> create(ScriptExecutionContext*, const String&);
 
 private:
     Comment(Document*, const String&);

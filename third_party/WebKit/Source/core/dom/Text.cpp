@@ -45,11 +45,6 @@ PassRefPtr<Text> Text::create(Document* document, const String& data)
     return adoptRef(new Text(document, data, CreateText));
 }
 
-PassRefPtr<Text> Text::create(ScriptExecutionContext* context, const String& data)
-{
-    return adoptRef(new Text(toDocument(context), data, CreateText));
-}
-
 PassRefPtr<Text> Text::createEditingText(Document* document, const String& data)
 {
     return adoptRef(new Text(document, data, CreateEditingText));

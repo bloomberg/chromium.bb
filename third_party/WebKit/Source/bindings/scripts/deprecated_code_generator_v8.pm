@@ -2501,12 +2501,16 @@ END
     my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, "");
     $code .= $parameterCheckString;
 
-    if ($interface->extendedAttributes->{"ConstructorCallWith"} && $interface->extendedAttributes->{"ConstructorCallWith"} eq "ScriptExecutionContext") {
-        push(@beforeArgumentList, "context");
-        $code .= <<END;
-
-    ScriptExecutionContext* context = getScriptExecutionContext();
-END
+    if ($interface->extendedAttributes->{"ConstructorCallWith"}) {
+        if ($interface->extendedAttributes->{"ConstructorCallWith"} eq "ScriptExecutionContext") {
+            push(@beforeArgumentList, "context");
+            $code .= "\n";
+            $code .= "ScriptExecutionContext* context = getScriptExecutionContext();";
+        } elsif ($interface->extendedAttributes->{"ConstructorCallWith"} eq "Document") {
+            push(@beforeArgumentList, "document");
+            $code .= "\n";
+            $code .= "Document* document = toDocument(getScriptExecutionContext());";
+        }
     }
 
     if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
