@@ -328,6 +328,32 @@ void HttpResponseInfo::Persist(Pickle* pickle,
     pickle->WriteInt(static_cast<int>(connection_info));
 }
 
+HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
+    NextProto next_proto) {
+  switch (next_proto) {
+    case kProtoSPDY2:
+      return CONNECTION_INFO_SPDY2;
+    case kProtoSPDY3:
+    case kProtoSPDY31:
+      return CONNECTION_INFO_SPDY3;
+    case kProtoSPDY4a2:
+      return CONNECTION_INFO_SPDY4A2;
+    case kProtoHTTP2Draft04:
+      return CONNECTION_INFO_HTTP2_DRAFT_04;
+    case kProtoQUIC1SPDY3:
+      return CONNECTION_INFO_QUIC1_SPDY3;
+
+    case kProtoUnknown:
+    case kProtoHTTP11:
+    case kProtoSPDY1:
+    case kProtoSPDY21:
+      break;
+  }
+
+  NOTREACHED();
+  return CONNECTION_INFO_UNKNOWN;
+}
+
 // static
 std::string HttpResponseInfo::ConnectionInfoToString(
     ConnectionInfo connection_info) {
@@ -340,8 +366,10 @@ std::string HttpResponseInfo::ConnectionInfoToString(
       return "spdy/2";
     case CONNECTION_INFO_SPDY3:
       return "spdy/3";
-    case CONNECTION_INFO_SPDY4:
-      return "spdy/4";
+    case CONNECTION_INFO_SPDY4A2:
+      return "spdy/4a2";
+    case CONNECTION_INFO_HTTP2_DRAFT_04:
+      return "HTTP-draft-04/2.0";
     case CONNECTION_INFO_QUIC1_SPDY3:
       return "quic/1+spdy/3";
     case NUM_OF_CONNECTION_INFOS:

@@ -11,6 +11,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/http/http_vary_data.h"
+#include "net/socket/next_proto.h"
 #include "net/ssl/ssl_info.h"
 
 class Pickle;
@@ -25,13 +26,20 @@ class SSLCertRequestInfo;
 class NET_EXPORT HttpResponseInfo {
  public:
   // Describes the kind of connection used to fetch this response.
+  //
+  // NOTE: This is persisted to the cache, so make sure not to reorder
+  // these values.
+  //
+  // TODO(akalin): Better yet, just use a string instead of an enum,
+  // like |npn_negotiated_protocol|.
   enum ConnectionInfo {
     CONNECTION_INFO_UNKNOWN = 0,
     CONNECTION_INFO_HTTP1 = 1,
     CONNECTION_INFO_SPDY2 = 2,
     CONNECTION_INFO_SPDY3 = 3,
-    CONNECTION_INFO_SPDY4 = 4,
+    CONNECTION_INFO_SPDY4A2 = 4,
     CONNECTION_INFO_QUIC1_SPDY3 = 5,
+    CONNECTION_INFO_HTTP2_DRAFT_04 = 6,
     NUM_OF_CONNECTION_INFOS,
   };
 
@@ -126,6 +134,8 @@ class NET_EXPORT HttpResponseInfo {
 
   // Any metadata asociated with this resource's cached data.
   scoped_refptr<IOBufferWithSize> metadata;
+
+  static ConnectionInfo ConnectionInfoFromNextProto(NextProto next_proto);
 
   static std::string ConnectionInfoToString(ConnectionInfo connection_info);
 };

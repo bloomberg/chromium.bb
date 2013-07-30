@@ -10,6 +10,9 @@
 namespace net {
 
 const char kAlternateProtocolHeader[] = "Alternate-Protocol";
+
+namespace {
+
 // The order of these strings much match the order of the enum definition
 // for AlternateProtocol.
 const char* const kAlternateProtocolStrings[] = {
@@ -18,9 +21,15 @@ const char* const kAlternateProtocolStrings[] = {
   "npn-spdy/3",
   "npn-spdy/3.1",
   "npn-spdy/4a2",
+  "npn-HTTP-draft-04/2.0",
   "quic"
 };
 const char kBrokenAlternateProtocol[] = "Broken";
+
+COMPILE_ASSERT(arraysize(kAlternateProtocolStrings) == NUM_ALTERNATE_PROTOCOLS,
+               kAlternateProtocolStringsSize_NUM_ALTERNATE_PROTOCOLS_nut_equal);
+
+}  // namespace
 
 const char* AlternateProtocolToString(AlternateProtocol protocol) {
   switch (protocol) {
@@ -29,18 +38,20 @@ const char* AlternateProtocolToString(AlternateProtocol protocol) {
     case NPN_SPDY_3:
     case NPN_SPDY_3_1:
     case NPN_SPDY_4A2:
+    case NPN_HTTP2_DRAFT_04:
     case QUIC:
       DCHECK_LT(static_cast<size_t>(protocol),
                 arraysize(kAlternateProtocolStrings));
       return kAlternateProtocolStrings[protocol];
+    case NUM_ALTERNATE_PROTOCOLS:
+      break;
     case ALTERNATE_PROTOCOL_BROKEN:
       return kBrokenAlternateProtocol;
     case UNINITIALIZED_ALTERNATE_PROTOCOL:
       return "Uninitialized";
-    default:
-      NOTREACHED();
-      return "";
   }
+  NOTREACHED();
+  return "";
 }
 
 AlternateProtocol AlternateProtocolFromString(const std::string& protocol) {
@@ -62,6 +73,8 @@ AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
       return NPN_SPDY_3_1;
     case kProtoSPDY4a2:
       return NPN_SPDY_4A2;
+    case kProtoHTTP2Draft04:
+      return NPN_HTTP2_DRAFT_04;
     case kProtoQUIC1SPDY3:
       return QUIC;
 

@@ -597,7 +597,8 @@ void WebSocketJobTest::TestSlowHandshake() {
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     WebSocketJobTest,
-    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
+    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
+                    kProtoHTTP2Draft04));
 
 TEST_P(WebSocketJobTest, DelayedCookies) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);

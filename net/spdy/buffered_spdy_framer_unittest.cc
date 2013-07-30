@@ -180,14 +180,15 @@ class BufferedSpdyFramerTest
   }
 
   SpdyMajorVersion spdy_version() {
-    return SpdyVersionFromNextProto(GetParam());
+    return NextProtoToSpdyMajorVersion(GetParam());
   }
 };
 
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     BufferedSpdyFramerTest,
-    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
+    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
+                    kProtoHTTP2Draft04));
 
 TEST_P(BufferedSpdyFramerTest, OnSetting) {
   SpdyFramer framer(spdy_version());

@@ -8,6 +8,28 @@
 
 namespace net {
 
+SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
+  switch (next_proto) {
+    case kProtoSPDY2:
+    case kProtoSPDY21:
+      return SPDY2;
+    case kProtoSPDY3:
+    case kProtoSPDY31:
+      return SPDY3;
+    // SPDY/4 and HTTP/2 share the same framing for now.
+    case kProtoSPDY4a2:
+    case kProtoHTTP2Draft04:
+      return SPDY4;
+    case kProtoUnknown:
+    case kProtoHTTP11:
+    case kProtoSPDY1:
+    case kProtoQUIC1SPDY3:
+      break;
+  }
+  NOTREACHED();
+  return SPDY2;
+}
+
 BufferedSpdyFramer::BufferedSpdyFramer(SpdyMajorVersion version,
                                        bool enable_compression)
     : spdy_framer_(version),

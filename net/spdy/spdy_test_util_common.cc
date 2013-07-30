@@ -690,39 +690,9 @@ void SpdySessionPoolPeer::EnableSendingInitialSettings(bool enabled) {
   pool_->enable_sending_initial_settings_ = enabled;
 }
 
-NextProto NextProtoFromSpdyVersion(SpdyMajorVersion spdy_version) {
-  switch (spdy_version) {
-  case SPDY2:
-    return kProtoSPDY2;
-  case SPDY3:
-    return kProtoSPDY3;
-  case SPDY4:
-    return kProtoSPDY4a2;
-  default:
-    NOTREACHED();
-    return kProtoUnknown;
-  }
-}
-
-SpdyMajorVersion SpdyVersionFromNextProto(NextProto next_proto) {
-  switch (next_proto) {
-  case kProtoSPDY2:
-  case kProtoSPDY21:
-    return SPDY2;
-  case kProtoSPDY3:
-  case kProtoSPDY31:
-    return SPDY3;
-  case kProtoSPDY4a2:
-    return SPDY4;
-  default:
-    NOTREACHED();
-    return SPDY2;
-  }
-}
-
 SpdyTestUtil::SpdyTestUtil(NextProto protocol)
     : protocol_(protocol),
-      spdy_version_(SpdyVersionFromNextProto(protocol)) {
+      spdy_version_(NextProtoToSpdyMajorVersion(protocol)) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 }
 

@@ -24,7 +24,9 @@ enum AlternateProtocol {
   NPN_SPDY_3,
   NPN_SPDY_3_1,
   NPN_SPDY_4A2,
-  NPN_SPDY_MAXIMUM_VERSION = NPN_SPDY_4A2,
+  // We lump in HTTP/2 with the SPDY protocols for now.
+  NPN_HTTP2_DRAFT_04,
+  NPN_SPDY_MAXIMUM_VERSION = NPN_HTTP2_DRAFT_04,
   QUIC,
   NUM_ALTERNATE_PROTOCOLS,
   ALTERNATE_PROTOCOL_BROKEN,  // The alternate protocol is known to be broken.
@@ -54,7 +56,6 @@ typedef std::map<HostPortPair,
         HttpPipelinedHostCapability> PipelineCapabilityMap;
 
 extern const char kAlternateProtocolHeader[];
-extern const char* const kAlternateProtocolStrings[NUM_ALTERNATE_PROTOCOLS];
 
 // The interface for setting/retrieving the HTTP server properties.
 // Currently, this class manages servers':

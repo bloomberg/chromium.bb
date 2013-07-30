@@ -24,6 +24,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_histograms.h"
+#include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -72,7 +73,9 @@ void TestLoadTimingInfoNoDns(const ClientSocketHandle& handle) {
   ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
 }
 
-class SSLClientSocketPoolTest : public testing::Test {
+class SSLClientSocketPoolTest
+    : public testing::Test,
+      public ::testing::WithParamInterface<NextProto> {
  protected:
   SSLClientSocketPoolTest()
       : proxy_service_(ProxyService::CreateDirect()),
@@ -188,6 +191,7 @@ class SSLClientSocketPoolTest : public testing::Test {
     params.http_server_properties =
         http_server_properties_.GetWeakPtr();
     params.enable_spdy_compression = false;
+    params.spdy_default_protocol = GetParam();
     return new HttpNetworkSession(params);
   }
 
@@ -222,7 +226,13 @@ class SSLClientSocketPoolTest : public testing::Test {
   scoped_ptr<SSLClientSocketPool> pool_;
 };
 
-TEST_F(SSLClientSocketPoolTest, TCPFail) {
+INSTANTIATE_TEST_CASE_P(
+    NextProto,
+    SSLClientSocketPoolTest,
+    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
+                    kProtoHTTP2Draft04));
+
+TEST_P(SSLClientSocketPoolTest, TCPFail) {
   StaticSocketDataProvider data;
   data.set_connect_data(MockConnect(SYNCHRONOUS, ERR_CONNECTION_FAILED));
   socket_factory_.AddSocketDataProvider(&data);
@@ -240,7 +250,7 @@ TEST_F(SSLClientSocketPoolTest, TCPFail) {
   EXPECT_FALSE(handle.is_ssl_error());
 }
 
-TEST_F(SSLClientSocketPoolTest, TCPFailAsync) {
+TEST_P(SSLClientSocketPoolTest, TCPFailAsync) {
   StaticSocketDataProvider data;
   data.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_FAILED));
   socket_factory_.AddSocketDataProvider(&data);
@@ -263,7 +273,7 @@ TEST_F(SSLClientSocketPoolTest, TCPFailAsync) {
   EXPECT_FALSE(handle.is_ssl_error());
 }
 
-TEST_F(SSLClientSocketPoolTest, BasicDirect) {
+TEST_P(SSLClientSocketPoolTest, BasicDirect) {
   StaticSocketDataProvider data;
   data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
   socket_factory_.AddSocketDataProvider(&data);
@@ -284,7 +294,7 @@ TEST_F(SSLClientSocketPoolTest, BasicDirect) {
   TestLoadTimingInfo(handle);
 }
 
-TEST_F(SSLClientSocketPoolTest, BasicDirectAsync) {
+TEST_P(SSLClientSocketPoolTest, BasicDirectAsync) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -308,7 +318,7 @@ TEST_F(SSLClientSocketPoolTest, BasicDirectAsync) {
   TestLoadTimingInfo(handle);
 }
 
-TEST_F(SSLClientSocketPoolTest, DirectCertError) {
+TEST_P(SSLClientSocketPoolTest, DirectCertError) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, ERR_CERT_COMMON_NAME_INVALID);
@@ -332,7 +342,7 @@ TEST_F(SSLClientSocketPoolTest, DirectCertError) {
   TestLoadTimingInfo(handle);
 }
 
-TEST_F(SSLClientSocketPoolTest, DirectSSLError) {
+TEST_P(SSLClientSocketPoolTest, DirectSSLError) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, ERR_SSL_PROTOCOL_ERROR);
@@ -356,7 +366,7 @@ TEST_F(SSLClientSocketPoolTest, DirectSSLError) {
   EXPECT_TRUE(handle.is_ssl_error());
 }
 
-TEST_F(SSLClientSocketPoolTest, DirectWithNPN) {
+TEST_P(SSLClientSocketPoolTest, DirectWithNPN) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -383,7 +393,7 @@ TEST_F(SSLClientSocketPoolTest, DirectWithNPN) {
   EXPECT_TRUE(ssl_socket->WasNpnNegotiated());
 }
 
-TEST_F(SSLClientSocketPoolTest, DirectNoSPDY) {
+TEST_P(SSLClientSocketPoolTest, DirectNoSPDY) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -408,11 +418,11 @@ TEST_F(SSLClientSocketPoolTest, DirectNoSPDY) {
   EXPECT_TRUE(handle.is_ssl_error());
 }
 
-TEST_F(SSLClientSocketPoolTest, DirectGotSPDY) {
+TEST_P(SSLClientSocketPoolTest, DirectGotSPDY) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoSPDY2);
+  ssl.SetNextProto(GetParam());
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   CreatePool(true /* tcp pool */, false, false);
@@ -437,15 +447,14 @@ TEST_F(SSLClientSocketPoolTest, DirectGotSPDY) {
   std::string proto;
   std::string server_protos;
   ssl_socket->GetNextProto(&proto, &server_protos);
-  EXPECT_EQ(SSLClientSocket::NextProtoFromString(proto),
-            kProtoSPDY2);
+  EXPECT_EQ(GetParam(), SSLClientSocket::NextProtoFromString(proto));
 }
 
-TEST_F(SSLClientSocketPoolTest, DirectGotBonusSPDY) {
+TEST_P(SSLClientSocketPoolTest, DirectGotBonusSPDY) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(kProtoSPDY2);
+  ssl.SetNextProto(GetParam());
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   CreatePool(true /* tcp pool */, false, false);
@@ -470,11 +479,10 @@ TEST_F(SSLClientSocketPoolTest, DirectGotBonusSPDY) {
   std::string proto;
   std::string server_protos;
   ssl_socket->GetNextProto(&proto, &server_protos);
-  EXPECT_EQ(SSLClientSocket::NextProtoFromString(proto),
-            kProtoSPDY2);
+  EXPECT_EQ(GetParam(), SSLClientSocket::NextProtoFromString(proto));
 }
 
-TEST_F(SSLClientSocketPoolTest, SOCKSFail) {
+TEST_P(SSLClientSocketPoolTest, SOCKSFail) {
   StaticSocketDataProvider data;
   data.set_connect_data(MockConnect(SYNCHRONOUS, ERR_CONNECTION_FAILED));
   socket_factory_.AddSocketDataProvider(&data);
@@ -493,7 +501,7 @@ TEST_F(SSLClientSocketPoolTest, SOCKSFail) {
   EXPECT_FALSE(handle.is_ssl_error());
 }
 
-TEST_F(SSLClientSocketPoolTest, SOCKSFailAsync) {
+TEST_P(SSLClientSocketPoolTest, SOCKSFailAsync) {
   StaticSocketDataProvider data;
   data.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_FAILED));
   socket_factory_.AddSocketDataProvider(&data);
@@ -516,7 +524,7 @@ TEST_F(SSLClientSocketPoolTest, SOCKSFailAsync) {
   EXPECT_FALSE(handle.is_ssl_error());
 }
 
-TEST_F(SSLClientSocketPoolTest, SOCKSBasic) {
+TEST_P(SSLClientSocketPoolTest, SOCKSBasic) {
   StaticSocketDataProvider data;
   data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
   socket_factory_.AddSocketDataProvider(&data);
@@ -539,7 +547,7 @@ TEST_F(SSLClientSocketPoolTest, SOCKSBasic) {
   TestLoadTimingInfo(handle);
 }
 
-TEST_F(SSLClientSocketPoolTest, SOCKSBasicAsync) {
+TEST_P(SSLClientSocketPoolTest, SOCKSBasicAsync) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -565,7 +573,7 @@ TEST_F(SSLClientSocketPoolTest, SOCKSBasicAsync) {
   TestLoadTimingInfo(handle);
 }
 
-TEST_F(SSLClientSocketPoolTest, HttpProxyFail) {
+TEST_P(SSLClientSocketPoolTest, HttpProxyFail) {
   StaticSocketDataProvider data;
   data.set_connect_data(MockConnect(SYNCHRONOUS, ERR_CONNECTION_FAILED));
   socket_factory_.AddSocketDataProvider(&data);
@@ -584,7 +592,7 @@ TEST_F(SSLClientSocketPoolTest, HttpProxyFail) {
   EXPECT_FALSE(handle.is_ssl_error());
 }
 
-TEST_F(SSLClientSocketPoolTest, HttpProxyFailAsync) {
+TEST_P(SSLClientSocketPoolTest, HttpProxyFailAsync) {
   StaticSocketDataProvider data;
   data.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_FAILED));
   socket_factory_.AddSocketDataProvider(&data);
@@ -607,7 +615,7 @@ TEST_F(SSLClientSocketPoolTest, HttpProxyFailAsync) {
   EXPECT_FALSE(handle.is_ssl_error());
 }
 
-TEST_F(SSLClientSocketPoolTest, HttpProxyBasic) {
+TEST_P(SSLClientSocketPoolTest, HttpProxyBasic) {
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS,
                 "CONNECT host:80 HTTP/1.1\r\n"
@@ -640,7 +648,7 @@ TEST_F(SSLClientSocketPoolTest, HttpProxyBasic) {
   TestLoadTimingInfoNoDns(handle);
 }
 
-TEST_F(SSLClientSocketPoolTest, HttpProxyBasicAsync) {
+TEST_P(SSLClientSocketPoolTest, HttpProxyBasicAsync) {
   MockWrite writes[] = {
       MockWrite("CONNECT host:80 HTTP/1.1\r\n"
                 "Host: host\r\n"
@@ -675,7 +683,7 @@ TEST_F(SSLClientSocketPoolTest, HttpProxyBasicAsync) {
   TestLoadTimingInfoNoDns(handle);
 }
 
-TEST_F(SSLClientSocketPoolTest, NeedProxyAuth) {
+TEST_P(SSLClientSocketPoolTest, NeedProxyAuth) {
   MockWrite writes[] = {
       MockWrite("CONNECT host:80 HTTP/1.1\r\n"
                 "Host: host\r\n"
@@ -717,7 +725,7 @@ TEST_F(SSLClientSocketPoolTest, NeedProxyAuth) {
   EXPECT_FALSE(tunnel_handle->socket()->IsConnected());
 }
 
-TEST_F(SSLClientSocketPoolTest, IPPooling) {
+TEST_P(SSLClientSocketPoolTest, IPPooling) {
   const int kTestPort = 80;
   struct TestHosts {
     std::string name;
@@ -755,7 +763,7 @@ TEST_F(SSLClientSocketPoolTest, IPPooling) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.cert = X509Certificate::CreateFromBytes(
       reinterpret_cast<const char*>(webkit_der), sizeof(webkit_der));
-  ssl.SetNextProto(kProtoSPDY2);
+  ssl.SetNextProto(GetParam());
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   CreatePool(true /* tcp pool */, false, false);
@@ -825,20 +833,20 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
 
 // Verifies that an SSL connection with client authentication disables SPDY IP
 // pooling.
-TEST_F(SSLClientSocketPoolTest, IPPoolingClientCert) {
+TEST_P(SSLClientSocketPoolTest, IPPoolingClientCert) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.cert = X509Certificate::CreateFromBytes(
       reinterpret_cast<const char*>(webkit_der), sizeof(webkit_der));
   ssl.client_cert_sent = true;
-  ssl.SetNextProto(kProtoSPDY2);
+  ssl.SetNextProto(GetParam());
   TestIPPoolingDisabled(&ssl);
 }
 
 // Verifies that an SSL connection with channel ID disables SPDY IP pooling.
-TEST_F(SSLClientSocketPoolTest, IPPoolingChannelID) {
+TEST_P(SSLClientSocketPoolTest, IPPoolingChannelID) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.channel_id_sent = true;
-  ssl.SetNextProto(kProtoSPDY2);
+  ssl.SetNextProto(GetParam());
   TestIPPoolingDisabled(&ssl);
 }
 
