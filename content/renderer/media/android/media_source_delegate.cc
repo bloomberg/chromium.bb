@@ -259,10 +259,7 @@ void MediaSourceDelegate::OnBufferReady(
     size_t index,
     DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
-  DVLOG(1) << "OnBufferReady(" << index << ", " << status << ", "
-           << ((!buffer || buffer->end_of_stream()) ?
-               -1 : buffer->timestamp().InMilliseconds())
-           << ") : " << player_id_;
+  DVLOG(1) << "OnBufferReady() : " << player_id_;
   DCHECK(demuxer_);
 
   // No new OnReadFromDemuxer() will be called during seeking. So this callback
@@ -402,7 +399,7 @@ void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {
 }
 
 void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
-  DVLOG(1) << "InitAudioDecryptingDemuxerStream() : " << player_id_;
+  DVLOG(1) << "InitAudioDecryptingDemuxerStream()";
   DCHECK(!set_decryptor_ready_cb_.is_null());
 
   audio_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
@@ -414,7 +411,7 @@ void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
 }
 
 void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
-  DVLOG(1) << "InitVideoDecryptingDemuxerStream() : " << player_id_;
+  DVLOG(1) << "InitVideoDecryptingDemuxerStream()";
   DCHECK(!set_decryptor_ready_cb_.is_null());
 
   video_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
@@ -427,8 +424,7 @@ void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
 
 void MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone(
     media::PipelineStatus status) {
-  DVLOG(1) << "OnAudioDecryptingDemuxerStreamInitDone(" << status
-           << ") : " << player_id_;
+  DVLOG(1) << "OnAudioDecryptingDemuxerStreamInitDone() : " << status;
   DCHECK(demuxer_);
 
   if (status != media::PIPELINE_OK)
@@ -450,8 +446,7 @@ void MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone(
 
 void MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone(
     media::PipelineStatus status) {
-  DVLOG(1) << "OnVideoDecryptingDemuxerStreamInitDone(" << status
-           << ") : " << player_id_;
+  DVLOG(1) << "OnVideoDecryptingDemuxerStreamInitDone() : " << status;
   DCHECK(demuxer_);
 
   if (status != media::PIPELINE_OK)
@@ -490,7 +485,7 @@ void MediaSourceDelegate::OnDemuxerSeekDone(unsigned seek_request_id,
 }
 
 void MediaSourceDelegate::ResetAudioDecryptingDemuxerStream() {
-  DVLOG(1) << "ResetAudioDecryptingDemuxerStream() : " << player_id_;
+  DVLOG(1) << "ResetAudioDecryptingDemuxerStream()";
   if (audio_decrypting_demuxer_stream_) {
     audio_decrypting_demuxer_stream_->Reset(
         base::Bind(&MediaSourceDelegate::ResetVideoDecryptingDemuxerStream,
@@ -512,7 +507,7 @@ void MediaSourceDelegate::ResetVideoDecryptingDemuxerStream() {
 }
 
 void MediaSourceDelegate::SendSeekRequestAck() {
-  DVLOG(1) << "SendSeekRequestAck() : " << player_id_;
+  DVLOG(1) << "SendSeekRequestAck()";
   seeking_ = false;
   proxy_->SeekRequestAck(player_id_, last_seek_request_id_);
   last_seek_request_id_ = 0;
