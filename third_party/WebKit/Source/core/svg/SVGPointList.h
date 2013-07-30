@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGPoint.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

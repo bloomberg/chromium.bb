@@ -19,14 +19,13 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGTransformList.h"
 
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/SVGTransformable.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

@@ -22,7 +22,7 @@
 
 #include "core/platform/graphics/FloatRect.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

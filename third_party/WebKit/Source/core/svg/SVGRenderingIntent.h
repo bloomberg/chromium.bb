@@ -20,8 +20,7 @@
 #ifndef SVGRenderingIntent_h
 #define SVGRenderingIntent_h
 
-
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

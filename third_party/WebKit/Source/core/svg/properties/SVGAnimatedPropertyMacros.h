@@ -26,7 +26,7 @@
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "core/svg/properties/SVGAttributeToPropertyMap.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

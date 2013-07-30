@@ -20,14 +20,13 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPreserveAspectRatio.h"
 
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/SVGParserUtilities.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

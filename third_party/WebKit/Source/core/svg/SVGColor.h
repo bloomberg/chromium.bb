@@ -24,7 +24,7 @@
 
 #include "core/css/CSSValue.h"
 #include "core/platform/graphics/Color.h"
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

@@ -33,9 +33,9 @@
 #include "core/svg/SVGFontElement.h"
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGGlyphElement.h"
-#include <wtf/text/StringBuilder.h>
-#include <wtf/unicode/CharacterNames.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/text/StringBuilder.h"
+#include "wtf/unicode/CharacterNames.h"
+#include "wtf/unicode/Unicode.h"
 
 using namespace WTF;
 using namespace Unicode;

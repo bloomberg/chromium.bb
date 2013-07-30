@@ -25,8 +25,8 @@
 #define SVGPathConsumer_h
 
 #include "core/platform/graphics/FloatPoint.h"
-#include <wtf/FastAllocBase.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

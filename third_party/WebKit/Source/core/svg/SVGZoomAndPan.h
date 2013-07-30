@@ -23,7 +23,7 @@
 
 #include "SVGNames.h"
 #include "core/dom/QualifiedName.h"
-#include <wtf/HashSet.h>
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 

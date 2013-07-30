@@ -22,12 +22,11 @@
 #define SVGFilterBuilder_h
 
 #include "core/platform/graphics/filters/FilterEffect.h"
-
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/AtomicStringHash.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/AtomicStringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

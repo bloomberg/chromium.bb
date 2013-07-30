@@ -23,7 +23,7 @@
 
 #include "core/svg/properties/SVGAnimatedPropertyDescription.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

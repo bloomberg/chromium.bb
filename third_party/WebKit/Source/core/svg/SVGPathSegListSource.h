@@ -24,8 +24,8 @@
 #include "core/svg/SVGPathSeg.h"
 #include "core/svg/SVGPathSegList.h"
 #include "core/svg/SVGPathSource.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

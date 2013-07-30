@@ -20,7 +20,7 @@
 #ifndef SVGProperty_h
 #define SVGProperty_h
 
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

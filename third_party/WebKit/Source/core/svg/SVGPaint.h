@@ -24,7 +24,7 @@
 #define SVGPaint_h
 
 #include "core/svg/SVGColor.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -26,8 +26,8 @@
 
 #include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPathSeg.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

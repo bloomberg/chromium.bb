@@ -19,7 +19,6 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGForeignObjectElement.h"
 
 #include "SVGNames.h"
@@ -29,7 +28,7 @@
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGLength.h"
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

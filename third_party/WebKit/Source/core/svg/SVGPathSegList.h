@@ -23,9 +23,8 @@
 #include "core/svg/SVGPathSeg.h"
 #include "core/svg/properties/SVGListProperty.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
-
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

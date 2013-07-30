@@ -25,7 +25,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
-#include <wtf/HashSet.h>
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 

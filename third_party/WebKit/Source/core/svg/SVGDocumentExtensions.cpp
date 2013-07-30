@@ -20,7 +20,6 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGDocumentExtensions.h"
 
 #include "XLinkNames.h"
@@ -29,7 +28,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SMILTimeContainer.h"
-#include <wtf/text/AtomicString.h>
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

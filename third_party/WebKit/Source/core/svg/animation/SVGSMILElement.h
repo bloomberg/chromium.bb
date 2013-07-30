@@ -28,8 +28,7 @@
 
 #include "core/svg/SVGElement.h"
 #include "core/svg/animation/SMILTime.h"
-
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

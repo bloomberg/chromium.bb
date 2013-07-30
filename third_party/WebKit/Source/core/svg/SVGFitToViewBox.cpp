@@ -30,7 +30,7 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
-#include <wtf/text/StringImpl.h>
+#include "wtf/text/StringImpl.h"
 
 namespace WebCore {
 

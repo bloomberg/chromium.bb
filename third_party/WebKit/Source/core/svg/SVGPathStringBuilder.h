@@ -22,7 +22,7 @@
 
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGPathConsumer.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

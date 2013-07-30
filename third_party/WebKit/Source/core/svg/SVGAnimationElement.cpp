@@ -35,7 +35,7 @@
 #include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGStyledElement.h"
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 

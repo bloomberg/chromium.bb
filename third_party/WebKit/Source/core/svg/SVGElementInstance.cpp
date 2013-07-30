@@ -31,7 +31,7 @@
 #include "core/svg/SVGElementInstanceList.h"
 #include "core/svg/SVGUseElement.h"
 
-#include <wtf/RefCountedLeakCounter.h>
+#include "wtf/RefCountedLeakCounter.h"
 
 namespace WebCore {
 

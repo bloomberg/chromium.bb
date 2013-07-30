@@ -29,7 +29,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
 
 using namespace std;
 

@@ -21,10 +21,10 @@
 #ifndef SVGDocumentExtensions_h
 #define SVGDocumentExtensions_h
 
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 

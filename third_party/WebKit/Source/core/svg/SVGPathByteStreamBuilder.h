@@ -23,8 +23,8 @@
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathConsumer.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

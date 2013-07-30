@@ -21,7 +21,7 @@
 #ifndef SVGPropertyTraits_h
 #define SVGPropertyTraits_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

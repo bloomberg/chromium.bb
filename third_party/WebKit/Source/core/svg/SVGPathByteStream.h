@@ -20,9 +20,9 @@
 #ifndef SVGPathByteStream_h
 #define SVGPathByteStream_h
 
-#include <wtf/Noncopyable.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

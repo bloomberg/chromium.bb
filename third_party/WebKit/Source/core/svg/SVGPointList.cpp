@@ -19,12 +19,11 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPointList.h"
 
 #include "core/platform/graphics/FloatPoint.h"
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

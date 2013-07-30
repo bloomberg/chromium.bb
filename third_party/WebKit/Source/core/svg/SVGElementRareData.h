@@ -22,9 +22,9 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

@@ -18,11 +18,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/ColorDistance.h"
 
 #include "core/platform/graphics/Color.h"
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 

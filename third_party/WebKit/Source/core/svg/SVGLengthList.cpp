@@ -19,11 +19,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGLengthList.h"
 
 #include "core/svg/SVGParserUtilities.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

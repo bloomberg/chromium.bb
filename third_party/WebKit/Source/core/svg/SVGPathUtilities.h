@@ -22,8 +22,8 @@
 
 #include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPoint.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

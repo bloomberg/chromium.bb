@@ -19,11 +19,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGLangSpace.h"
 
 #include "XMLNames.h"
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

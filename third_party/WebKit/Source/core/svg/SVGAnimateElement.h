@@ -24,7 +24,7 @@
 #define SVGAnimateElement_h
 
 #include "core/svg/SVGAnimationElement.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

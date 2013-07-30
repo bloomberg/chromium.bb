@@ -33,8 +33,8 @@
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGPathUtilities.h"
-#include <wtf/MathExtras.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/MathExtras.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGLocatable.h"
 #include "core/svg/SVGTransform.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
