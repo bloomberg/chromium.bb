@@ -247,7 +247,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif  // defined(ENABLE_EXTENSIONS)
   FaviconServiceFactory::GetInstance();
 #if defined(OS_CHROMEOS) && defined(FILE_MANAGER_EXTENSION)
-  FileBrowserPrivateAPIFactory::GetInstance();
+  file_manager::FileBrowserPrivateAPIFactory::GetInstance();
 #endif
   FindBarStateFactory::GetInstance();
   GAIAInfoUpdateServiceFactory::GetInstance();

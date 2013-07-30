@@ -11,6 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
+namespace file_manager {
+
 // static
 FileBrowserPrivateAPI*
 FileBrowserPrivateAPIFactory::GetForProfile(Profile* profile) {
@@ -54,3 +56,5 @@ bool FileBrowserPrivateAPIFactory::ServiceIsCreatedWithBrowserContext() const {
 bool FileBrowserPrivateAPIFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
+
+}  // namespace file_manager

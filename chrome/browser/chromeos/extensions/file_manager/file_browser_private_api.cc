@@ -88,6 +88,7 @@ using extensions::ZipFileCreator;
 using fileapi::FileSystemURL;
 using google_apis::InstalledApp;
 
+namespace file_manager {
 namespace {
 
 // Default icon path for drive docs.
@@ -3268,3 +3269,5 @@ void GetShareUrlFunction::OnGetShareUrl(drive::FileError error,
   SetResult(new base::StringValue(share_url.spec()));
   SendResponse(true);
 }
+
+}  // namespace file_manager

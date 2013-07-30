@@ -8,8 +8,11 @@
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
-class FileBrowserPrivateAPI;
 class Profile;
+
+namespace file_manager {
+
+class FileBrowserPrivateAPI;
 
 class FileBrowserPrivateAPIFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -37,5 +40,7 @@ class FileBrowserPrivateAPIFactory : public BrowserContextKeyedServiceFactory {
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
+
+}  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_PRIVATE_API_FACTORY_H_

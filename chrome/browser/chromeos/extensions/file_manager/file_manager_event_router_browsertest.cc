@@ -15,16 +15,16 @@
 #include "chromeos/disks/mock_disk_mount_manager.h"
 
 using testing::_;
+using chromeos::disks::DiskMountManager;
+using chromeos::disks::MockDiskMountManager;
 
-namespace chromeos {
-namespace disks {
-namespace {
+namespace file_manager {
 
 class FileManagerEventRouterBrowserTest : public InProcessBrowserTest {
  public:
   // ExtensionApiTest override
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
     disk_mount_manager_mock_ = new MockDiskMountManager;
     chromeos::disks::DiskMountManager::InitializeForTesting(
@@ -69,6 +69,4 @@ IN_PROC_BROWSER_TEST_F(FileManagerEventRouterBrowserTest,
   event_router->OnDiskEvent(event, &disk);
 }
 
-}  // namespace
-}  // namespace disks
-}  // namespace chromeos
+}  // namespace file_manager
