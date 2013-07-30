@@ -117,17 +117,14 @@ void MockWebCrypto::importKey(WebKit::WebCryptoKeyFormat, const unsigned char* k
 {
     std::string keyDataString(reinterpret_cast<const char*>(keyData), keyDataSize);
 
-    WebKit::WebCryptoKeyType type;
     if (keyDataString == "reject") {
         result.completeWithError();
     } else if (keyDataString == "throw") {
         result.initializationFailed();
     } else {
-        if (keyDataString == "public") {
+        WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePrivate;
+        if (keyDataString == "public")
             type = WebKit::WebCryptoKeyTypePublic;
-        } else if (keyDataString == "private") {
-            type = WebKit::WebCryptoKeyTypePrivate;
-        }
         result.completeWithKey(WebKit::WebCryptoKey::create(0, type, extractable, algorithm, usages));
     }
 }
