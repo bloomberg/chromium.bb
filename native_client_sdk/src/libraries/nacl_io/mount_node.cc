@@ -48,6 +48,13 @@ void MountNode::Destroy() {
   }
 }
 
+// Declared in EventEmitter, default to regular files which always return
+// a ready of TRUE.
+uint32_t MountNode::GetEventStatus() {
+  return KE_READ_READY | KE_WRITE_READY | KE_SHUTDOWN;
+}
+
+
 Error MountNode::FSync() { return 0; }
 
 Error MountNode::FTruncate(off_t length) { return EINVAL; }

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "nacl_io/error.h"
+#include "nacl_io/event_listener.h"
 #include "nacl_io/osdirent.h"
 #include "nacl_io/osstat.h"
 
@@ -24,7 +25,7 @@ typedef sdk_util::ScopedRef<MountNode> ScopedMountNode;
 
 // NOTE: The KernelProxy is the only class that should be setting errno. All
 // other classes should return Error (as defined by nacl_io/error.h).
-class MountNode : public sdk_util::RefObject {
+class MountNode : public EventListener {
  protected:
   explicit MountNode(Mount* mount);
   virtual ~MountNode();
@@ -35,6 +36,9 @@ class MountNode : public sdk_util::RefObject {
   virtual void Destroy();
 
  public:
+   // Declared in EventEmitter. defaults to signalled.
+   virtual uint32_t GetEventStatus();
+
   // Normal OS operations on a node (file), can be called by the kernel
   // directly so it must lock and unlock appropriately.  These functions
   // must not be called by the mount.
