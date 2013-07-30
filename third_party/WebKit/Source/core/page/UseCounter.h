@@ -70,7 +70,7 @@ public:
         PrefixedContentSecurityPolicy,
         UnprefixedIndexedDB,
         OpenWebDatabase,
-        LegacyHTMLNotifications,
+        UnusedSlot01, // Prior to 7/2013, we used this slot for LegacyHTMLNotifications.
         LegacyTextNotifications,
         UnprefixedRequestAnimationFrame,
         PrefixedRequestAnimationFrame,
@@ -81,7 +81,7 @@ public:
         UnprefixedTransitionEndEvent,
         PrefixedAndUnprefixedTransitionEndEvent,
         AutoFocusAttribute,
-        UnusedSlot01, // Prior to 4/2013, we used this slot for AutoSaveAttribute.
+        UnusedSlot02, // Prior to 4/2013, we used this slot for AutoSaveAttribute.
         DataListElement,
         FormAttribute,
         IncrementalAttribute,
@@ -113,7 +113,7 @@ public:
         StepAttribute,
         PageVisits,
         HTMLMarqueeElement,
-        UnusedSlot02, // Removed, was tracking overflow: -webkit-marquee.
+        UnusedSlot03, // Removed, was tracking overflow: -webkit-marquee.
         Reflection,
         CursorVisibility, // Removed, was -webkit-cursor-visibility.
         StorageInfo,

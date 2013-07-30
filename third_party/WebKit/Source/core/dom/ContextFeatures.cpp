@@ -71,18 +71,6 @@ bool ContextFeatures::pagePopupEnabled(Document* document)
     return document->contextFeatures()->isEnabled(document, PagePopup, false);
 }
 
-bool ContextFeatures::htmlNotificationsEnabled(Document* document)
-{
-#if ENABLE(LEGACY_NOTIFICATIONS)
-    if (!document)
-        return false;
-    return document->contextFeatures()->isEnabled(document, HTMLNotifications, false);
-#else
-    UNUSED_PARAM(document);
-    return false;
-#endif
-}
-
 bool ContextFeatures::mutationEventsEnabled(Document* document)
 {
     ASSERT(document);

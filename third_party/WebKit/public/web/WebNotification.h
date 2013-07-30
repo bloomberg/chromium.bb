@@ -70,10 +70,10 @@ public:
     bool equals(const WebNotification& other) const { return m_private == other.m_private; }
     WEBKIT_EXPORT bool lessThan(const WebNotification& other) const;
 
-    // Is the notification HTML vs. icon-title-text?
+    // DEPRECATED: Always returns false.
     WEBKIT_EXPORT bool isHTML() const;
 
-    // If HTML, the URL which contains the contents of the notification.
+    // DEPRECATED: Always returns an invalid URL.
     WEBKIT_EXPORT WebURL url() const;
 
     WEBKIT_EXPORT WebURL iconURL() const;

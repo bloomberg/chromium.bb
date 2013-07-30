@@ -41,7 +41,6 @@ public:
         DialogElement = 0,
         StyleScoped,
         PagePopup,
-        HTMLNotifications,
         MutationEvents,
         PushState,
         FeatureTypeSize // Should be the last entry.
@@ -54,7 +53,6 @@ public:
     static bool dialogElementEnabled(Document*);
     static bool styleScopedEnabled(Document*);
     static bool pagePopupEnabled(Document*);
-    static bool htmlNotificationsEnabled(Document*);
     static bool mutationEventsEnabled(Document*);
     static bool pushStateEnabled(Document*);
 
