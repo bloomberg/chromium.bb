@@ -169,6 +169,8 @@ bool TrackedCallback::IsPending(
     const scoped_refptr<TrackedCallback>& callback) {
   if (!callback.get())
     return false;
+  if (callback->aborted())
+    return false;
   return !callback->completed();
 }
 

@@ -98,11 +98,14 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   // completion.
   bool aborted() const { return aborted_; }
 
-  // Helper to determine if the given callback is set and not yet completed.
-  // The normal pattern is to use a scoped_refptr to hold a callback. This
-  // function tells you if the operation is currently in progress by checking
-  // both the null-ness of the scoped_refptr, as well as the completion state
-  // of the callback (which may still be out-standing via a PostAbort).
+  // Determines if the given callback is pending. A callback is pending if it
+  // has not completed and has not been aborted. When receiving a plugin call,
+  // use this to detect if |callback| represents an operation in progress. When
+  // finishing a plugin call, use this to determine whether to write 'out'
+  // params and Run |callback|.
+  // NOTE: an aborted callback has not necessarily completed, so a false result
+  // doesn't imply that the callback has completed.
+  // As a convenience, if |callback| is null, this returns false.
   static bool IsPending(const scoped_refptr<TrackedCallback>& callback);
 
   // Helper to determine if the given callback is scheduled to run on another
