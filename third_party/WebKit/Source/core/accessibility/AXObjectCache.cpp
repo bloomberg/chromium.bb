@@ -740,20 +740,6 @@ void AXObjectCache::nodeTextChangeNotification(Node* node, AXTextChange textChan
     nodeTextChangePlatformNotification(obj, textChange, offset, text);
 }
 
-void AXObjectCache::frameLoadingEventNotification(Frame* frame, AXLoadingEvent loadingEvent)
-{
-    if (!frame)
-        return;
-
-    // Delegate on the right platform
-    RenderView* contentRenderer = frame->contentRenderer();
-    if (!contentRenderer)
-        return;
-
-    AccessibilityObject* obj = getOrCreate(contentRenderer);
-    frameLoadingEventPlatformNotification(obj, loadingEvent);
-}
-
 void AXObjectCache::handleScrollbarUpdate(ScrollView* view)
 {
     if (!view)
@@ -996,10 +982,6 @@ void AXObjectCache::postPlatformNotification(AccessibilityObject* obj, AXNotific
 }
 
 void AXObjectCache::nodeTextChangePlatformNotification(AccessibilityObject*, AXTextChange, unsigned, const String&)
-{
-}
-
-void AXObjectCache::frameLoadingEventPlatformNotification(AccessibilityObject*, AXLoadingEvent)
 {
 }
 

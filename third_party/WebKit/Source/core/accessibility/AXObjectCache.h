@@ -181,16 +181,6 @@ public:
     };
 
     void nodeTextChangeNotification(Node*, AXTextChange, unsigned offset, const String&);
-
-    enum AXLoadingEvent {
-        AXLoadingStarted,
-        AXLoadingReloaded,
-        AXLoadingFailed,
-        AXLoadingFinished
-    };
-
-    void frameLoadingEventNotification(Frame*, AXLoadingEvent);
-
     bool nodeHasRole(Node*, const AtomicString& role);
 
     void startCachingComputedObjectAttributesUntilTreeMutates();
@@ -201,7 +191,6 @@ public:
 protected:
     void postPlatformNotification(AccessibilityObject*, AXNotification);
     void nodeTextChangePlatformNotification(AccessibilityObject*, AXTextChange, unsigned offset, const String&);
-    void frameLoadingEventPlatformNotification(AccessibilityObject*, AXLoadingEvent);
     void textChanged(AccessibilityObject*);
     void labelChanged(Element*);
 
@@ -265,8 +254,6 @@ inline void AXObjectCache::textChanged(Node*) { }
 inline void AXObjectCache::textChanged(AccessibilityObject*) { }
 inline void AXObjectCache::updateCacheAfterNodeIsAttached(Node*) { }
 inline void AXObjectCache::detachWrapper(AccessibilityObject*) { }
-inline void AXObjectCache::frameLoadingEventNotification(Frame*, AXLoadingEvent) { }
-inline void AXObjectCache::frameLoadingEventPlatformNotification(AccessibilityObject*, AXLoadingEvent) { }
 inline void AXObjectCache::handleActiveDescendantChanged(Node*) { }
 inline void AXObjectCache::handleAriaExpandedChange(Node*) { }
 inline void AXObjectCache::handleAriaRoleChanged(Node*) { }

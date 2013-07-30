@@ -39,7 +39,6 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/BeforeUnloadEvent.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -1417,20 +1416,10 @@ void FrameLoader::checkLoadCompleteForThisFrame()
             }
 
             const ResourceError& error = dl->mainDocumentError();
-
-            AXObjectCache::AXLoadingEvent loadingEvent;
-            if (!error.isNull()) {
+            if (!error.isNull())
                 m_client->dispatchDidFailLoad(error);
-                loadingEvent = AXObjectCache::AXLoadingFailed;
-            } else {
+            else
                 m_client->dispatchDidFinishLoad();
-                loadingEvent = AXObjectCache::AXLoadingFinished;
-            }
-
-            // Notify accessibility.
-            if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
-                cache->frameLoadingEventNotification(m_frame, loadingEvent);
-
             return;
         }
 
@@ -1883,12 +1872,6 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
     if (m_provisionalDocumentLoader->isClientRedirect())
         m_client->dispatchDidCompleteClientRedirect(m_frame->document()->url());
     ASSERT(m_provisionalDocumentLoader);
-
-    if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache()) {
-        AXObjectCache::AXLoadingEvent loadingEvent = loadType() == FrameLoadTypeReload ? AXObjectCache::AXLoadingReloaded : AXObjectCache::AXLoadingStarted;
-        cache->frameLoadingEventNotification(m_frame, loadingEvent);
-    }
-
     m_provisionalDocumentLoader->startLoadingMainResource();
 }
 
