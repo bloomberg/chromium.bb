@@ -44,11 +44,6 @@
         ],
       }],
       ['OS=="win"', {
-        'nacl_defines': [
-          'NACL_WINDOWS=1',
-          'NACL_LINUX=0',
-          'NACL_OSX=0',
-        ],
         'platform_locale_settings_grd':
             'app/resources/locale_settings_win.grd',
       },],
@@ -59,11 +54,6 @@
         ],
       }],
       ['OS=="linux"', {
-        'nacl_defines': [
-          'NACL_WINDOWS=0',
-          'NACL_LINUX=1',
-          'NACL_OSX=0',
-        ],
         'conditions': [
           ['chromeos==1', {
             'conditions': [
@@ -87,11 +77,6 @@
       },],
       ['OS=="mac"', {
         'tweak_info_plist_path': '../build/mac/tweak_info_plist.py',
-        'nacl_defines': [
-          'NACL_WINDOWS=0',
-          'NACL_LINUX=0',
-          'NACL_OSX=1',
-        ],
         'platform_locale_settings_grd':
             'app/resources/locale_settings_mac.grd',
         'conditions': [
@@ -108,36 +93,6 @@
           }],  # branding
         ],  # conditions
       }],  # OS=="mac"
-      # TODO(mcgrathr): This duplicates native_client/build/common.gypi;
-      # we should figure out a way to unify the settings.
-      ['target_arch=="ia32"', {
-        'nacl_defines': [
-          'NACL_TARGET_SUBARCH=32',
-          'NACL_TARGET_ARCH=x86',
-          'NACL_BUILD_SUBARCH=32',
-          'NACL_BUILD_ARCH=x86',
-        ],
-      }],
-      ['target_arch=="x64"', {
-        'nacl_defines': [
-          'NACL_TARGET_SUBARCH=64',
-          'NACL_TARGET_ARCH=x86',
-          'NACL_BUILD_SUBARCH=64',
-          'NACL_BUILD_ARCH=x86',
-        ],
-      }],
-      ['target_arch=="arm"', {
-        'nacl_defines': [
-          'NACL_BUILD_ARCH=arm',
-          'NACL_BUILD_SUBARCH=32',
-          'NACL_TARGET_ARCH=arm',
-          'NACL_TARGET_SUBARCH=32',
-        ],
-      }],
-      ['target_arch=="mipsel"', {
-        'nacl_defines': [
-        ],
-      }],
     ],  # conditions
   },  # variables
   'includes': [
@@ -154,6 +109,7 @@
     'chrome_installer_util.gypi',
     'chrome_tests_unit.gypi',
     'version.gypi',
+    '../components/nacl/nacl_defines.gypi',
   ],
   'conditions': [
     ['OS!="ios"', {
