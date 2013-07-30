@@ -12,6 +12,7 @@
 #include "cc/layers/layer_impl.h"
 
 namespace cc {
+class ScopedResource;
 
 class CC_EXPORT TextureLayerImpl : public LayerImpl {
  public:
@@ -76,10 +77,13 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   gfx::PointF uv_top_left_;
   gfx::PointF uv_bottom_right_;
   float vertex_opacity_[4];
+  // This is a resource that's a GL copy of a software texture mailbox.
+  scoped_ptr<ScopedResource> texture_copy_;
 
   TextureMailbox texture_mailbox_;
   bool uses_mailbox_;
   bool own_mailbox_;
+  bool valid_texture_copy_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureLayerImpl);
 };

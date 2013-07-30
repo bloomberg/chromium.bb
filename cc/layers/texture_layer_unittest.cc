@@ -584,7 +584,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1, true);
     impl_layer->SetTextureMailbox(test_data_.mailbox3_);
-    EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
+    EXPECT_TRUE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
   }
 
   {

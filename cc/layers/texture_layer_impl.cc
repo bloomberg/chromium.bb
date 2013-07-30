@@ -8,6 +8,8 @@
 #include "cc/layers/quad_sink.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/platform_color.h"
+#include "cc/resources/scoped_resource.h"
 #include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
@@ -24,7 +26,8 @@ TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* tree_impl,
       uv_top_left_(0.f, 0.f),
       uv_bottom_right_(1.f, 1.f),
       uses_mailbox_(uses_mailbox),
-      own_mailbox_(false) {
+      own_mailbox_(false),
+      valid_texture_copy_(false) {
   vertex_opacity_[0] = 1.0f;
   vertex_opacity_[1] = 1.0f;
   vertex_opacity_[2] = 1.0f;
@@ -38,6 +41,7 @@ void TextureLayerImpl::SetTextureMailbox(const TextureMailbox& mailbox) {
   FreeTextureMailbox();
   texture_mailbox_ = mailbox;
   own_mailbox_ = true;
+  valid_texture_copy_ = false;
 }
 
 scoped_ptr<LayerImpl> TextureLayerImpl::CreateLayerImpl(
@@ -74,15 +78,61 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
       if ((draw_mode == DRAW_MODE_HARDWARE && texture_mailbox_.IsTexture()) ||
           (draw_mode == DRAW_MODE_SOFTWARE &&
            texture_mailbox_.IsSharedMemory())) {
-        // TODO(piman): for shm mailboxes in HW mode, we could upload into a
-        // resource here.
         external_texture_resource_ =
             resource_provider->CreateResourceFromTextureMailbox(
                 texture_mailbox_);
         DCHECK(external_texture_resource_);
+        texture_copy_.reset();
+        valid_texture_copy_ = false;
       }
       if (external_texture_resource_)
         own_mailbox_ = false;
+    }
+
+    if (!valid_texture_copy_ && draw_mode == DRAW_MODE_HARDWARE &&
+        texture_mailbox_.IsSharedMemory()) {
+      DCHECK(!external_texture_resource_);
+      // Have to upload a copy to a texture for it to be used in a
+      // hardware draw.
+      if (!texture_copy_)
+        texture_copy_ = ScopedResource::create(resource_provider);
+      if (texture_copy_->size() != texture_mailbox_.shared_memory_size() ||
+          resource_provider->InUseByConsumer(texture_copy_->id()))
+        texture_copy_->Free();
+
+      if (!texture_copy_->id()) {
+        texture_copy_->Allocate(texture_mailbox_.shared_memory_size(),
+                                resource_provider->best_texture_format(),
+                                ResourceProvider::TextureUsageAny);
+      }
+
+      if (texture_copy_->id()) {
+        std::vector<uint8> swizzled;
+        uint8* pixels =
+            static_cast<uint8*>(texture_mailbox_.shared_memory()->memory());
+
+        if (!PlatformColor::SameComponentOrder(texture_copy_->format())) {
+          // Swizzle colors. This is slow, but should be really uncommon.
+          swizzled.resize(texture_mailbox_.shared_memory_size_in_bytes());
+          for (size_t i = 0; i < texture_mailbox_.shared_memory_size_in_bytes();
+               i += 4) {
+            swizzled[i] = pixels[i + 2];
+            swizzled[i + 1] = pixels[i + 1];
+            swizzled[i + 2] = pixels[i];
+            swizzled[i + 3] = pixels[i + 3];
+          }
+          pixels = &swizzled[0];
+        }
+
+        resource_provider->SetPixels(
+            texture_copy_->id(),
+            pixels,
+            gfx::Rect(texture_mailbox_.shared_memory_size()),
+            gfx::Rect(texture_mailbox_.shared_memory_size()),
+            gfx::Vector2d());
+
+        valid_texture_copy_ = true;
+      }
     }
   } else if (texture_id_) {
     DCHECK(!external_texture_resource_);
@@ -93,13 +143,13 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
               texture_id_);
     }
   }
-  return external_texture_resource_ &&
+  return (external_texture_resource_ || valid_texture_copy_) &&
          LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
 void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                    AppendQuadsData* append_quads_data) {
-  DCHECK(external_texture_resource_);
+  DCHECK(external_texture_resource_ || valid_texture_copy_);
 
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
@@ -112,10 +162,12 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect = opaque ? quad_rect : gfx::Rect();
   scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
+  ResourceProvider::ResourceId id =
+      valid_texture_copy_ ? texture_copy_->id() : external_texture_resource_;
   quad->SetNew(shared_quad_state,
                quad_rect,
                opaque_rect,
-               external_texture_resource_,
+               id,
                premultiplied_alpha_,
                uv_top_left_,
                uv_bottom_right_,
@@ -148,8 +200,10 @@ void TextureLayerImpl::DidLoseOutputSurface() {
         layer_tree_impl()->resource_provider();
     resource_provider->DeleteResource(external_texture_resource_);
   }
+  texture_copy_.reset();
   texture_id_ = 0;
   external_texture_resource_ = 0;
+  valid_texture_copy_ = false;
 }
 
 const char* TextureLayerImpl::LayerTypeAsString() const {
