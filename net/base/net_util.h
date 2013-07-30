@@ -204,12 +204,12 @@ NET_EXPORT std::string CanonicalizeHost(const std::string& host,
 //   * Each component begins with an alphanumeric character or '-'
 //   * Each component contains only alphanumeric characters and '-' or '_'
 //   * Each component ends with an alphanumeric character or '-'
-//   * The last component begins with an alphabetic character
+//   * The last component begins with an alphanumeric character
 //   * Optional trailing dot after last component (means "treat as FQDN")
 // If |desired_tld| is non-NULL, the host will only be considered invalid if
 // appending it as a trailing component still results in an invalid host.  This
-// helps us avoid marking as "invalid" user attempts to open "www.401k.com" by
-// typing 4-0-1-k-<ctrl>+<enter>.
+// helps us avoid marking as "invalid" user attempts to open, say, "www.-9.com"
+// by typing -, 9, <ctrl>+<enter>.
 //
 // NOTE: You should only pass in hosts that have been returned from
 // CanonicalizeHost(), or you may not get accurate results.

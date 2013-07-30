@@ -54,7 +54,7 @@ bool CryptoUtils::IsValidSNI(StringPiece sni) {
   url_canon::CanonHostInfo host_info;
   string canonicalized_host(CanonicalizeHost(sni.as_string(), &host_info));
   return !host_info.IsIPAddress() &&
-      IsCanonicalizedHostCompliant(canonicalized_host, "") &&
+      IsCanonicalizedHostCompliant(canonicalized_host, std::string()) &&
       sni.find_last_of('.') != string::npos;
 }
 

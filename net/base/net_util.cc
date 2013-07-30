@@ -1024,14 +1024,10 @@ std::string GetDirectoryListingHeader(const base::string16& title) {
   return result;
 }
 
-inline bool IsHostCharAlpha(char c) {
+inline bool IsHostCharAlphanumeric(char c) {
   // We can just check lowercase because uppercase characters have already been
   // normalized.
-  return (c >= 'a') && (c <= 'z');
-}
-
-inline bool IsHostCharDigit(char c) {
-  return (c >= '0') && (c <= '9');
+  return ((c >= 'a') && (c <= 'z')) || ((c >= '0') && (c <= '9'));
 }
 
 bool IsCanonicalizedHostCompliant(const std::string& host,
@@ -1040,15 +1036,14 @@ bool IsCanonicalizedHostCompliant(const std::string& host,
     return false;
 
   bool in_component = false;
-  bool most_recent_component_started_alpha = false;
+  bool most_recent_component_started_alphanumeric = false;
   bool last_char_was_underscore = false;
 
   for (std::string::const_iterator i(host.begin()); i != host.end(); ++i) {
     const char c = *i;
     if (!in_component) {
-      most_recent_component_started_alpha = IsHostCharAlpha(c);
-      if (!most_recent_component_started_alpha && !IsHostCharDigit(c) &&
-          (c != '-'))
+      most_recent_component_started_alphanumeric = IsHostCharAlphanumeric(c);
+      if (!most_recent_component_started_alphanumeric && (c != '-'))
         return false;
       in_component = true;
     } else {
@@ -1056,7 +1051,7 @@ bool IsCanonicalizedHostCompliant(const std::string& host,
         if (last_char_was_underscore)
           return false;
         in_component = false;
-      } else if (IsHostCharAlpha(c) || IsHostCharDigit(c) || (c == '-')) {
+      } else if (IsHostCharAlphanumeric(c) || (c == '-')) {
         last_char_was_underscore = false;
       } else if (c == '_') {
         last_char_was_underscore = true;
@@ -1066,8 +1061,8 @@ bool IsCanonicalizedHostCompliant(const std::string& host,
     }
   }
 
-  return most_recent_component_started_alpha ||
-      (!desired_tld.empty() && IsHostCharAlpha(desired_tld[0]));
+  return most_recent_component_started_alphanumeric ||
+      (!desired_tld.empty() && IsHostCharAlphanumeric(desired_tld[0]));
 }
 
 std::string GetDirectoryListingEntry(const base::string16& name,
