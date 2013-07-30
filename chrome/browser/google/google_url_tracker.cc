@@ -239,8 +239,13 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   if (in_startup_sleep_ || already_fetched_ || !need_to_fetch_)
     return;
 
+  // Some switches should disable the Google URL tracker entirely.  If we can't
+  // do background networking, we can't do the necessary fetch, and if the user
+  // specified a Google base URL manually, we shouldn't bother to look up any
+  // alternatives or offer to switch to them.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBackgroundNetworking))
+      switches::kDisableBackgroundNetworking) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kGoogleBaseURL))
     return;
 
   std::string fetch_url = CommandLine::ForCurrentProcess()->
