@@ -183,6 +183,7 @@ private:
     void init(const KURL& base, const String& relative, const WTF::TextEncoding* queryEncoding);
 
     String componentString(const url_parse::Component&) const;
+    String stringForInvalidComponent() const;
 
     template<typename CHAR>
     void replaceComponents(const url_canon::Replacements<CHAR>&);

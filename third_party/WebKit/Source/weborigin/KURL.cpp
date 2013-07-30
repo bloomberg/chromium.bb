@@ -54,6 +54,7 @@ static void assertProtocolIsGood(const char* protocol)
 #endif
 }
 
+// Note: You must ensure that |spec| is a valid canonicalized URL before calling this function.
 static const char* asURLChar8Subtle(const String& spec)
 {
     ASSERT(spec.is8Bit());
@@ -294,6 +295,9 @@ bool KURL::hasPath() const
 // which can lead to different results in some cases.
 String KURL::lastPathComponent() const
 {
+    if (!m_isValid)
+        return stringForInvalidComponent();
+
     // When the output ends in a slash, WebCore has different expectations than
     // the GoogleURL library. For "/foo/bar/" the library will return the empty
     // string, but WebCore wants "bar".
@@ -680,8 +684,7 @@ unsigned KURL::pathEnd() const
 
 unsigned KURL::pathAfterLastSlash() const
 {
-    // When there's no path, ask for what would be the beginning of it.
-    if (!m_parsed.path.is_valid())
+    if (!m_isValid || !m_parsed.path.is_valid())
         return m_parsed.CountCharactersBefore(url_parse::Parsed::PATH, false);
 
     url_parse::Component filename;
@@ -804,15 +807,17 @@ bool KURL::protocolIs(const char* protocol) const
     return internalProtocolIs(m_parsed.scheme, m_string.characters16(), protocol);
 }
 
+String KURL::stringForInvalidComponent() const
+{
+    if (m_string.isNull())
+        return String();
+    return emptyString();
+}
+
 String KURL::componentString(const url_parse::Component& component) const
 {
-    if (!m_isValid || component.len <= 0) {
-        // KURL returns a null string if the URL is itself a null string, and an
-        // empty string for other nonexistent entities.
-        if (m_string.isNull())
-            return String();
-        return emptyString();
-    }
+    if (!m_isValid || component.len <= 0)
+        return stringForInvalidComponent();
     // begin and len are in terms of bytes which do not match
     // if string() is UTF-16 and input contains non-ASCII characters.
     // However, the only part in urlString that can contain non-ASCII
