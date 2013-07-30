@@ -52,6 +52,7 @@ PRUNE_PATHS = set([
     os.path.join('third_party','python_26'),
     os.path.join('third_party','pywebsocket'),
     os.path.join('third_party','syzygy'),
+    os.path.join('tools','gn'),
 
     # Chromium code in third_party.
     os.path.join('third_party','fuzzymatch'),
