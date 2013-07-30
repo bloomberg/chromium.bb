@@ -106,7 +106,6 @@ class TestExpectationParser(object):
         expectation_line.original_string = test_name
         expectation_line.name = test_name
         expectation_line.filename = file_name
-        expectation_line.line_numbers = "0"
         expectation_line.expectations = expectations
         return expectation_line
 
@@ -366,7 +365,7 @@ class TestExpectationLine(object):
         """Initializes a blank-line equivalent of an expectation."""
         self.original_string = None
         self.filename = None  # this is the path to the expectations file for this line
-        self.line_numbers = None
+        self.line_numbers = "0"
         self.name = None  # this is the path in the line itself
         self.path = None  # this is the normpath of self.name
         self.bugs = []
@@ -541,6 +540,29 @@ class TestExpectationsModel(object):
 
         self._shorten_filename = shorten_filename or (lambda x: x)
 
+    def _merge_test_map(self, self_map, other_map):
+        for test in other_map:
+            new_expectations = set(other_map[test])
+            if test in self_map:
+                new_expectations |= set(self_map[test])
+            self_map[test] = list(new_expectations) if isinstance(other_map[test], list) else new_expectations
+
+    def _merge_dict_of_sets(self, self_dict, other_dict):
+        for key in other_dict:
+            self_dict[key] |= other_dict[key]
+
+    def merge_model(self, other):
+        self._merge_test_map(self._test_to_expectations, other._test_to_expectations)
+
+        for test, line in other._test_to_expectation_line.items():
+            if test in self._test_to_expectation_line:
+                line = TestExpectationLine.merge_expectation_lines(self._test_to_expectation_line[test], line, model_all_expectations=False)
+            self._test_to_expectation_line[test] = line
+
+        self._merge_dict_of_sets(self._expectation_to_tests, other._expectation_to_tests)
+        self._merge_dict_of_sets(self._timeline_to_tests, other._timeline_to_tests)
+        self._merge_dict_of_sets(self._result_type_to_tests, other._result_type_to_tests)
+
     def _dict_of_sets(self, strings_to_constants):
         """Takes a dict of strings->constants and returns a dict mapping
         each constant to an empty set."""
@@ -613,8 +635,6 @@ class TestExpectationsModel(object):
         del self._test_to_expectation_line[test]
 
     def add_expectation_line(self, expectation_line,
-                             override_existing_matches=False,
-                             merge_existing_matches=False,
                              model_all_expectations=False):
         """Returns a list of warnings encountered while matching specifiers."""
 
@@ -622,11 +642,10 @@ class TestExpectationsModel(object):
             return
 
         for test in expectation_line.matching_tests:
-            if (not (override_existing_matches or merge_existing_matches)
-                    and self._already_seen_better_match(test, expectation_line)):
+            if self._already_seen_better_match(test, expectation_line):
                 continue
 
-            if merge_existing_matches or model_all_expectations:
+            if model_all_expectations:
                 expectation_line = TestExpectationLine.merge_expectation_lines(self.get_expectation_line(test), expectation_line, model_all_expectations)
 
             self._clear_expectations_for_test(test)
@@ -908,16 +927,18 @@ class TestExpectations(object):
         # Populate generic expectations (always enabled).
         if port.path_to_generic_test_expectations_file() in expectations_dict:
             expectations = self._parser.parse(expectations_dict.keys()[expectations_dict_index], expectations_dict.values()[expectations_dict_index])
-            self._add_expectations(expectations)
+            self._add_expectations(expectations, self._model)
             self._expectations += expectations
             expectations_dict_index += 1
 
         # Populate override expectations (if enabled by include_overrides).
         while len(expectations_dict) > expectations_dict_index and include_overrides:
             expectations = self._parser.parse(expectations_dict.keys()[expectations_dict_index], expectations_dict.values()[expectations_dict_index])
-            self._add_expectations(expectations)
+            model = TestExpectationsModel(self._shorten_filename)
+            self._add_expectations(expectations, model)
             self._expectations += expectations
             expectations_dict_index += 1
+            self._model.merge_model(model)
 
         # FIXME: move ignore_tests into port.skipped_layout_tests()
         self.add_extra_skipped_tests(port.skipped_layout_tests(tests).union(set(port.get_option('ignore_tests', []))))
@@ -1026,13 +1047,13 @@ class TestExpectations(object):
 
         return self.list_to_string(self._expectations, self._parser._test_configuration_converter, modified_expectations)
 
-    def _add_expectations(self, expectation_list):
+    def _add_expectations(self, expectation_list, model):
         for expectation_line in expectation_list:
             if not expectation_line.expectations:
                 continue
 
             if self._model_all_expectations or self._test_config in expectation_line.matching_configurations:
-                self._model.add_expectation_line(expectation_line, model_all_expectations=self._model_all_expectations)
+                model.add_expectation_line(expectation_line, model_all_expectations=self._model_all_expectations)
 
     def add_extra_skipped_tests(self, tests_to_skip):
         if not tests_to_skip:
@@ -1041,20 +1062,24 @@ class TestExpectations(object):
             if test.name and test.name in tests_to_skip:
                 test.warnings.append('%s:%s %s is also in a Skipped file.' % (test.filename, test.line_numbers, test.name))
 
+        model = TestExpectationsModel(self._shorten_filename)
         for test_name in tests_to_skip:
             expectation_line = self._parser.expectation_for_skipped_test(test_name)
-            self._model.add_expectation_line(expectation_line, override_existing_matches=True)
+            model.add_expectation_line(expectation_line)
+        self._model.merge_model(model)
 
     def add_expectations_from_bot(self):
         # FIXME: With mode 'very-flaky' and 'maybe-flaky', this will show the expectations entry in the flakiness
         # dashboard rows for each test to be whatever the bot thinks they should be. Is this a good thing?
         bot_expectations = self._port.bot_expectations()
+        model = TestExpectationsModel(self._shorten_filename)
         for test_name in bot_expectations:
             expectation_line = self._parser.expectation_line_for_test(test_name, bot_expectations[test_name])
 
             # Unexpected results are merged into existing expectations.
             merge = self._port.get_option('ignore_flaky_tests') == 'unexpected'
-            self._model.add_expectation_line(expectation_line, override_existing_matches=True, merge_existing_matches=merge)
+            model.add_expectation_line(expectation_line)
+        self._model.merge_model(model)
 
     def add_expectation_line(self, expectation_line):
         self._model.add_expectation_line(expectation_line)

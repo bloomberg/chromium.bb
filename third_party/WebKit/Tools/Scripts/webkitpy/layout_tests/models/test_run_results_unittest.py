@@ -148,7 +148,6 @@ class SummarizedResultsTest(unittest.TestCase):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False, extra_skipped_tests=['passes/text.html'])
         self.assertEquals(summary['tests']['passes']['text.html']['expected'], 'NOTRUN')
-        self.assertNotIn('bugs', summary['tests']['passes']['text.html'])
 
     def test_summarized_results_wontfix(self):
         self.port._options.builder_name = 'dummy builder'

@@ -215,13 +215,13 @@ class MiscTests(Base):
     def test_overrides(self):
         self.parse_exp("Bug(exp) failures/expected/text.html [ Failure ]",
                        "Bug(override) failures/expected/text.html [ ImageOnlyFailure ]")
-        self.assert_exp('failures/expected/text.html', IMAGE)
+        self.assert_exp_list('failures/expected/text.html', [FAIL, IMAGE])
 
     def test_overrides__directory(self):
         self.parse_exp("Bug(exp) failures/expected/text.html [ Failure ]",
                        "Bug(override) failures/expected [ Crash ]")
-        self.assert_exp('failures/expected/text.html', CRASH)
-        self.assert_exp('failures/expected/image.html', CRASH)
+        self.assert_exp_list('failures/expected/text.html', [FAIL, CRASH])
+        self.assert_exp_list('failures/expected/image.html', [CRASH])
 
     def test_overrides__duplicate(self):
         self.assert_bad_expectations("Bug(exp) failures/expected/text.html [ Failure ]",
@@ -256,24 +256,6 @@ class MiscTests(Base):
                          self._exp.get_tests_with_result_type(SKIP))
 
     def test_bot_test_expectations(self):
-        test_name = 'failures/expected/text.html'
-
-        expectations_dict = OrderedDict()
-        expectations_dict['expectations'] = "Bug(x) %s [ ImageOnlyFailure ]\n" % test_name
-        self._port.expectations_dict = lambda: expectations_dict
-
-        expectations = TestExpectations(self._port, self.get_basic_tests())
-        self.assertEqual(expectations.get_expectations(self.get_test(test_name)), set([IMAGE]))
-
-        def bot_expectations():
-            return {test_name: ['PASS', 'IMAGE']}
-        self._port.bot_expectations = bot_expectations
-        self._port._options.ignore_flaky_tests = 'very-flaky'
-
-        expectations = TestExpectations(self._port, self.get_basic_tests())
-        self.assertEqual(expectations.get_expectations(self.get_test(test_name)), set([PASS, IMAGE]))
-
-    def test_bot_test_expectations_merge(self):
         """Test that expectations are merged rather than overridden when using flaky option 'unexpected'."""
         test_name1 = 'failures/expected/text.html'
         test_name2 = 'passes/text.html'
@@ -296,7 +278,7 @@ class MiscTests(Base):
         self.assertEqual(expectations.get_expectations(self.get_test(test_name2)), set([CRASH, SLOW]))
 
 class SkippedTests(Base):
-    def check(self, expectations, overrides, skips, lint=False):
+    def check(self, expectations, overrides, skips, lint=False, expected_results=[WONTFIX, SKIP, FAIL]):
         port = MockHost().port_factory.get('test-win-xp')
         port._filesystem.write_text_file(port._filesystem.join(port.layout_tests_dir(), 'failures/expected/text.html'), 'foo')
         expectations_dict = OrderedDict()
@@ -307,13 +289,14 @@ class SkippedTests(Base):
         port.skipped_layout_tests = lambda tests: set(skips)
         expectations_to_lint = expectations_dict if lint else None
         exp = TestExpectations(port, ['failures/expected/text.html'], expectations_dict=expectations_to_lint, is_lint_mode=lint)
-        self.assertEqual(exp.get_expectations('failures/expected/text.html'), set([WONTFIX, SKIP]))
+        self.assertEqual(exp.get_expectations('failures/expected/text.html'), set(expected_results))
 
     def test_skipped_tests_work(self):
-        self.check(expectations='', overrides=None, skips=['failures/expected/text.html'])
+        self.check(expectations='', overrides=None, skips=['failures/expected/text.html'], expected_results=[WONTFIX, SKIP])
 
     def test_duplicate_skipped_test_fails_lint(self):
-        self.assertRaises(ParseError, self.check, expectations='Bug(x) failures/expected/text.html [ Failure ]\n', overrides=None, skips=['failures/expected/text.html'], lint=True)
+        self.assertRaises(ParseError, self.check, expectations='Bug(x) failures/expected/text.html [ Failure ]\n',
+            overrides=None, skips=['failures/expected/text.html'], lint=True)
 
     def test_skipped_file_overrides_expectations(self):
         self.check(expectations='Bug(x) failures/expected/text.html [ Failure ]\n', overrides=None,
