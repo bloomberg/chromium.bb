@@ -65,7 +65,11 @@ class TestRunResults(object):
         self.run_time = 0  # The wall clock time spent running the tests (layout_test_runner.run()).
 
     def add(self, test_result, expected, test_is_slow):
-        self.tests_by_expectation[test_result.type].add(test_result.test_name)
+        result_type_for_stats = test_result.type
+        if test_expectations.WONTFIX in self.expectations.model().get_expectations(test_result.test_name):
+            result_type_for_stats = test_expectations.WONTFIX
+        self.tests_by_expectation[result_type_for_stats].add(test_result.test_name)
+
         self.results_by_name[test_result.test_name] = test_result
         if test_result.type != test_expectations.SKIP:
             self.all_results.append(test_result)
@@ -149,7 +153,10 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
 
     num_failures_by_type = {}
     for expectation in initial_results.tests_by_expectation:
-        num_failures_by_type[keywords[expectation]] = len(initial_results.tests_by_expectation[expectation] & tbt[test_expectations.NOW])
+        tests = initial_results.tests_by_expectation[expectation]
+        if expectation != test_expectations.WONTFIX:
+            tests &= tbt[test_expectations.NOW]
+        num_failures_by_type[keywords[expectation]] = len(tests)
     # The number of failures by type.
     results['num_failures_by_type'] = num_failures_by_type
 
