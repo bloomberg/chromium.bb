@@ -11,6 +11,9 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/favicon/favicon_url_parser.h"
 #include "chrome/common/url_constants.h"
 #include "grit/locale_settings.h"
@@ -137,8 +140,19 @@ bool FaviconSource::ShouldServiceRequest(const net::URLRequest* request) const {
 }
 
 bool FaviconSource::HandleMissingResource(const IconRequest& request) {
-  // No additional checks to locate the favicon resource in the base
-  // implementation.
+  // If the favicon is not available, try to use the synced favicon.
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  browser_sync::SessionModelAssociator* associator = sync_service ?
+      sync_service->GetSessionModelAssociator() : NULL;
+
+  scoped_refptr<base::RefCountedMemory> response;
+  if (associator &&
+      associator->GetSyncedFaviconForPageURL(request.request_path.spec(),
+                                             &response)) {
+    request.callback.Run(response.get());
+    return true;
+  }
   return false;
 }
 

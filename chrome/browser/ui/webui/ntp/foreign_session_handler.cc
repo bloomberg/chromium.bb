@@ -24,7 +24,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/browser/ui/webui/session_favicon_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
@@ -187,9 +186,6 @@ void ForeignSessionHandler::Init() {
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
                  content::Source<Profile>(profile));
-
-  // Add the data source for synced favicons.
-  content::URLDataSource::Add(profile, new SessionFaviconSource(profile));
 }
 
 void ForeignSessionHandler::Observe(

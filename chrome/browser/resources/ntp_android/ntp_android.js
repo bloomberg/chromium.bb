@@ -1826,8 +1826,7 @@ cr.define('ntp', function() {
           // use a section divider.
           var needSectionDivider =
               (tabNum + 1 == tabs.length) && (winNum + 1 < windows.length);
-          tab.icon = tab.icon ||
-            'chrome://session-favicon/size/16@1x/' + tab.url;
+          tab.icon = tab.icon || 'chrome://favicon/size/16@1x/' + tab.url;
 
           openTabsList.push({
             timestamp: tab.timestamp,
