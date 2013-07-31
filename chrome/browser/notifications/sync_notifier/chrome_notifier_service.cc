@@ -16,6 +16,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "sync/api/sync_change.h"
@@ -56,8 +57,7 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) {
-  // TODO(petewil): After I add the infrastructure for the test, add a check
-  // that we are currently on the UI thread here.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(syncer::SYNCED_NOTIFICATIONS, type);
   syncer::SyncMergeResult merge_result(syncer::SYNCED_NOTIFICATIONS);
   // A list of local changes to send up to the sync server.
@@ -159,7 +159,7 @@ syncer::SyncDataList ChromeNotifierService::GetAllSyncData(
 syncer::SyncError ChromeNotifierService::ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) {
-  // TODO(petewil): Add a check that we are called on the thread we expect.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   syncer::SyncError error;
 
   for (syncer::SyncChangeList::const_iterator it = change_list.begin();
@@ -305,6 +305,7 @@ void ChromeNotifierService::GetSyncedNotificationServices(
 
 void ChromeNotifierService::MarkNotificationAsDismissed(
     const std::string& key) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   SyncedNotification* notification = FindNotificationById(key);
   CHECK(notification != NULL);
 

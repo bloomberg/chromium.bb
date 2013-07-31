@@ -14,6 +14,7 @@
 #include "chrome/browser/notifications/sync_notifier/sync_notifier_test_utils.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
@@ -195,7 +196,7 @@ class ChromeNotifierServiceTest : public testing::Test {
 
   TestChangeProcessor* processor() {
     return static_cast<TestChangeProcessor*>(sync_processor_.get());
-}
+  }
 
   scoped_ptr<syncer::SyncChangeProcessor> PassProcessor() {
     return sync_processor_delegate_.Pass();
@@ -232,6 +233,7 @@ class ChromeNotifierServiceTest : public testing::Test {
  private:
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_delegate_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNotifierServiceTest);
 };
