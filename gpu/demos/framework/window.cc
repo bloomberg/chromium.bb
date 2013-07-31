@@ -132,7 +132,6 @@ bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
       gles2_cmd_helper_.get(),
       NULL,
       transfer_buffer_.get(),
-      false,
       true,
       NULL));
 

@@ -23,10 +23,7 @@ int g_numTextures = 1;
 GLuint g_textures[5];
 int g_textureLoc = -1;
 GLuint g_programObject = 0;
-GLuint g_worldMatrixLoc = 0;
 GLuint g_vbo = 0;
-GLsizei g_texCoordOffset = 0;
-int g_angle = 0;
 
 void CheckGLError(const char* func_name, int line_no) {
 #ifndef NDEBUG
@@ -65,15 +62,12 @@ GLuint LoadShader(GLenum type, const char* shaderSrc) {
 
 void InitShaders() {
   static const char* vShaderStr =
-    "uniform mat4 worldMatrix;\n"
-    "attribute vec3 g_Position;\n"
-    "attribute vec2 g_TexCoord0;\n"
+    "attribute vec2 g_Position;\n"
     "varying vec2 texCoord;\n"
     "void main()\n"
     "{\n"
-    "   gl_Position = worldMatrix *\n"
-    "                 vec4(g_Position.x, g_Position.y, g_Position.z, 1.0);\n"
-    "   texCoord = g_TexCoord0;\n"
+    "   gl_Position = vec4(g_Position.x, g_Position.y, 0.0, 1.0);\n"
+    "   texCoord = g_Position * vec2(0.5) + vec2(0.5);\n"
     "}\n";
   static const char* fShaderStr =
     "precision mediump float;"
@@ -96,9 +90,7 @@ void InitShaders() {
   glAttachShader(programObject, vertexShader);
   glAttachShader(programObject, fragmentShader);
   // Bind g_Position to attribute 0
-  // Bind g_TexCoord0 to attribute 1
   glBindAttribLocation(programObject, 0, "g_Position");
-  glBindAttribLocation(programObject, 1, "g_TexCoord0");
   // Link the program
   glLinkProgram(programObject);
   // Check the link status
@@ -114,34 +106,21 @@ void InitShaders() {
     return;
   }
   g_programObject = programObject;
-  g_worldMatrixLoc = glGetUniformLocation(g_programObject, "worldMatrix");
   g_textureLoc = glGetUniformLocation(g_programObject, "tex");
   glGenBuffers(1, &g_vbo);
   glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
   static float vertices[] = {
-      0.25,  0.75, 0.0,
-     -0.75,  0.75, 0.0,
-     -0.75, -0.25, 0.0,
-      0.25,  0.75, 0.0,
-     -0.75, -0.25, 0.0,
-      0.25, -0.25, 0.0,
+      1.0f,  1.0f,
+     -1.0f,  1.0f,
+     -1.0f, -1.0f,
+      1.0f,  1.0f,
+     -1.0f, -1.0f,
+      1.0f, -1.0f
   };
-  static float texCoords[] = {
-    1.0, 1.0,
-    0.0, 1.0,
-    0.0, 0.0,
-    1.0, 1.0,
-    0.0, 0.0,
-    1.0, 0.0,
-  };
-  g_texCoordOffset = sizeof(vertices);
   glBufferData(GL_ARRAY_BUFFER,
-               sizeof(vertices) + sizeof(texCoords),
-               NULL,
+               sizeof(vertices),
+               vertices,
                GL_STATIC_DRAW);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-  glBufferSubData(GL_ARRAY_BUFFER, g_texCoordOffset,
-                  sizeof(texCoords), texCoords);
   CheckGLError("InitShaders", __LINE__);
 }
 
@@ -334,35 +313,7 @@ static int stInit(ESContext *esContext) {
 }
 
 static void stDraw (ESContext *esContext) {
-  const float kPi = 3.1415926535897932384626433832795f;
-
   CheckGLError("GLFromCPPDraw", __LINE__);
-  // TODO(kbr): base the angle on time rather than on ticks
-  g_angle = (g_angle + 1) % 360;
-  // Rotate about the Z axis
-  GLfloat rot_matrix[16];
-  GLfloat cos_angle = cosf(static_cast<GLfloat>(g_angle) * kPi / 180.0f);
-  GLfloat sin_angle = sinf(static_cast<GLfloat>(g_angle) * kPi / 180.0f);
-  // OpenGL matrices are column-major
-  rot_matrix[0] = cos_angle;
-  rot_matrix[1] = sin_angle;
-  rot_matrix[2] = 0.0f;
-  rot_matrix[3] = 0.0f;
-
-  rot_matrix[4] = -sin_angle;
-  rot_matrix[5] = cos_angle;
-  rot_matrix[6] = 0.0f;
-  rot_matrix[7] = 0.0f;
-
-  rot_matrix[8] = 0.0f;
-  rot_matrix[9] = 0.0f;
-  rot_matrix[10] = 1.0f;
-  rot_matrix[11] = 0.0f;
-
-  rot_matrix[12] = 0.0f;
-  rot_matrix[13] = 0.0f;
-  rot_matrix[14] = 0.0f;
-  rot_matrix[15] = 1.0f;
 
   g_frameCount++;
   if (g_frameCount > 60)
@@ -371,7 +322,7 @@ static void stDraw (ESContext *esContext) {
     g_textureIndex = (g_textureIndex + 1) % g_numTextures;
   }
 
-  // Note: the viewport is automatically set up to cover the entire Canvas.
+  glViewport(0, 0, esContext->width, esContext->height);
   // Clear the color buffer
   glClear(GL_COLOR_BUFFER_BIT);
   glEnable(GL_BLEND);
@@ -380,16 +331,11 @@ static void stDraw (ESContext *esContext) {
   // Use the program object
   glUseProgram(g_programObject);
   CheckGLError("GLFromCPPDraw", __LINE__);
-  // Set up the model matrix
-  glUniformMatrix4fv(g_worldMatrixLoc, 1, GL_FALSE, rot_matrix);
 
   // Load the vertex data
   glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0,
-                        reinterpret_cast<const void*>(g_texCoordOffset));
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
   CheckGLError("GLFromCPPDraw", __LINE__);
   // Bind the texture to texture unit 0
   glBindTexture(GL_TEXTURE_2D, g_textures[g_textureIndex]);
