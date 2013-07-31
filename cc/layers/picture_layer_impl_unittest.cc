@@ -69,7 +69,6 @@ class PictureLayerImplTest : public testing::Test {
         host_impl_.active_tree()->LayerById(id_));
 
     SetupPendingTree(pending_pile);
-    pending_layer_->UpdateTwinLayer();
   }
 
   void AddDefaultTilingsWithInvalidation(const Region& invalidation) {
@@ -79,7 +78,6 @@ class PictureLayerImplTest : public testing::Test {
     for (size_t i = 0; i < active_layer_->tilings()->num_tilings(); ++i)
       active_layer_->tilings()->tiling_at(i)->CreateAllTilesForTesting();
     pending_layer_->set_invalidation(invalidation);
-    pending_layer_->SyncFromActiveLayer();
     for (size_t i = 0; i < pending_layer_->tilings()->num_tilings(); ++i)
       pending_layer_->tilings()->tiling_at(i)->CreateAllTilesForTesting();
   }
@@ -98,6 +96,7 @@ class PictureLayerImplTest : public testing::Test {
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
+    pending_layer_->DoPostCommitInitializationIfNeeded();
   }
 
   static void VerifyAllTilesExistAndHavePile(

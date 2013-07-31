@@ -32,6 +32,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
   using PictureLayerImpl::CanHaveTilings;
   using PictureLayerImpl::MarkVisibleResourcesAsRequired;
+  using PictureLayerImpl::DoPostCommitInitializationIfNeeded;
 
   PictureLayerTiling* HighResTiling() const;
   PictureLayerTiling* LowResTiling() const;
