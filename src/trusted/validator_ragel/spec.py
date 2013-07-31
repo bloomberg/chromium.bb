@@ -40,16 +40,14 @@ class SandboxingError(Exception):
 BUNDLE_SIZE = 32
 
 
-def _ValidateNop(instruction):
-  # TODO(shcherbina): whitelist nops by bytes, not only by disasm.
-  # Example:
-  #   66 66 0f 1f 84 00 00 00 00 00
-  # is decoded as
-  #   nopw   0x0(%rax,%rax,1)
-  # and so seems valid, but we should only allow
-  #   66 0f 1f 84 00 00 00 00 00
+def _ValidateLongNop(instruction):
+  # Short nops do not require special exceptions (such as allowing repeated
+  # prefixes and segment access), so they are handled as regular instructions.
+  if re.match(r'nopw 0x0\(%[er]ax,%[er]ax,1\)$',
+      instruction.disasm):
+    return
   if re.match(
-      r'(data32 )*nopw (%cs:)?0x0\(%[er]ax,%[er]ax,1\)$',
+      r'(data32 )*nopw %cs:0x0\(%[er]ax,%[er]ax,1\)$',
       instruction.disasm):
     return
   raise DoNotMatchError(instruction)
@@ -1044,7 +1042,7 @@ def ValidateRegularInstruction(instruction, bitness):
     raise SandboxingError('objdump failed to decode', instruction)
 
   try:
-    _ValidateNop(instruction)
+    _ValidateLongNop(instruction)
     return Condition(), Condition()
   except DoNotMatchError:
     pass

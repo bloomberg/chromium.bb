@@ -106,8 +106,6 @@
   0: ('segments in memory references are not allowed', Instruction(0x0: 66 3e 0f 1f 84 00 00 00 00 00  nopw %ds:0x0(%rax,%rax,1)))
 ----------------------------------------------------------------------
 @hex:
-  # TODO(shcherbina): whitelist nops by bytes, not by disasm
-  # (see _ValidateNop in spec.py)
   66 66 0F 1F 84 00 00 00 00 00
 @dis:
      0:	66 66 0f 1f 84 00 00 00 00 00                	data32 nopw 0x0(%rax,%rax,1)
@@ -115,4 +113,4 @@
   0: unrecognized instruction
   return code: 1
 @spec:
-  SAFE
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 0f 1f 84 00 00 00 00 00  data32 nopw 0x0(%rax,%rax,1)))
