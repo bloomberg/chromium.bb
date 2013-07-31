@@ -1149,3 +1149,12 @@ util.FileOperationErrorType = {
   TARGET_EXISTS: 1,
   FILESYSTEM_ERROR: 2,
 };
+
+/**
+ * The type of an entry changed event.
+ * @enum {number}
+ */
+util.EntryChangedType = {
+  CREATED: 0,
+  DELETED: 1,
+};

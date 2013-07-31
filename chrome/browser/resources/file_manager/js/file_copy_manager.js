@@ -70,18 +70,16 @@ FileCopyManager.EventRouter.prototype.sendProgressEvent = function(
 };
 
 /**
- * Dispatches an event to notify that the entries in affectedEntries are
- * changed (created or deleted) by operation reason.
- *
- * @param {string} reason Completed file operation. One of "moved", "copied"
- *     or "deleted". TODO(hidehiko): Use enum.
- * @param {Array.<Entry>} affectedEntries Entries which are created or deleted.
+ * Dispatches an event to notify that an entry is changed (created or deleted).
+ * @param {util.EntryChangedType} type The enum to represent if the entry
+ *     is created or deleted.
+ * @param {Entry} entry The changed entry.
  */
-FileCopyManager.EventRouter.prototype.sendOperationEvent = function(
-    reason, affectedEntries) {
-  var event = new cr.Event('copy-operation-complete');
-  event.reason = reason;
-  event.affectedEntries = affectedEntries;
+FileCopyManager.EventRouter.prototype.sendEntryChangedEvent = function(
+    type, entry) {
+  var event = new cr.Event('entry-changed');
+  event.type = type;
+  event.entry = entry;
   this.dispatchEvent(event);
 };
 
@@ -757,7 +755,8 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
     var count = task.originalEntries.length;
 
     var onEntryDeleted = function(entry) {
-      self.eventRouter_.sendOperationEvent('deleted', [entry]);
+      self.eventRouter_.sendEntryChangedEvent(
+          util.EntryChangedType.DELETED, entry);
       count--;
       if (!count)
         successCallback();
@@ -838,7 +837,8 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
   };
 
   var onCopyComplete = function(entry, size) {
-    self.eventRouter_.sendOperationEvent('copied', [entry]);
+    self.eventRouter_.sendEntryChangedEvent(
+        util.EntryChangedType.CREATED, entry);
     onCopyCompleteBase(entry, size);
   };
 
@@ -847,12 +847,13 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
     self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
   };
 
-  var onFilesystemCopyComplete = function(sourceEntry, targetEntry) {
+  var onFilesystemCopyComplete = function(targetEntry) {
     // TODO(benchan): We currently do not know the size of data being
     // copied by FileEntry.copyTo(), so task.completedBytes will not be
     // increased. We will address this issue once we need to use
     // task.completedBytes to track the progress.
-    self.eventRouter_.sendOperationEvent('copied', [sourceEntry, targetEntry]);
+    self.eventRouter_.sendEntryChangedEvent(
+        util.EntryChangedType.CREATED, targetEntry);
     onCopyCompleteBase(targetEntry, 0);
   };
 
@@ -893,7 +894,7 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
         targetEntry.getMetadata(function(metadata) {
           if (metadata.size > transferedBytes)
             onCopyProgress(sourceEntry, metadata.size - transferedBytes);
-          onFilesystemCopyComplete(sourceEntry, targetEntry);
+          onFilesystemCopyComplete(targetEntry);
         });
       };
 
@@ -1095,8 +1096,10 @@ FileCopyManager.prototype.serviceNextMoveTaskEntry_ = function(
               sourceEntry.moveTo(
                   dirEntry, PathUtil.basename(targetRelativePath),
                   function(targetEntry) {
-                    self.eventRouter_.sendOperationEvent(
-                        'moved', [sourceEntry, targetEntry]);
+                    self.eventRouter_.sendEntryChangedEvent(
+                        util.EntryChangedType.CREATED, targetEntry);
+                    self.eventRouter_.sendEntryChangedEvent(
+                        util.EntryChangedType.DELETED, sourceEntry);
                     task.markEntryComplete(targetEntry, 0);
                     successCallback();
                   },
@@ -1249,7 +1252,8 @@ FileCopyManager.prototype.deleteEntries = function(entries) {
 FileCopyManager.prototype.serviceAllDeleteTasks_ = function() {
   var self = this;
 
-  var onTaskSuccess = function(task) {
+  var onTaskSuccess = function() {
+    var task = self.deleteTasks_[0];
     self.deleteTasks_.shift();
     if (!self.deleteTasks_.length) {
       // All tasks have been serviced, clean up and exit.
@@ -1298,35 +1302,46 @@ FileCopyManager.prototype.serviceAllDeleteTasks_ = function() {
  * Performs the deletion.
  *
  * @param {Object} task The delete task (see deleteEntries function).
- * @param {function(Object)} onComplete Completion callback with the task
- *     as an argument.
- * @param {function(Object)} onFailure Failure callback with the task as an
- *     argument.
+ * @param {function()} successCallback Callback run on success.
+ * @param {function(FileCopyManager.Error)} errorCallback Callback run on error.
  * @private
  */
 FileCopyManager.prototype.serviceDeleteTask_ = function(
-    task, onComplete, onFailure) {
+    task, successCallback, errorCallback) {
   var downcount = task.entries.length;
+  if (downcount == 0) {
+    successCallback();
+    return;
+  }
 
-  var onEntryComplete = function() {
-    if (--downcount == 0)
-      onComplete(task);
-  }.bind(this);
+  var filesystemError = null;
+  var onComplete = function() {
+    if (--downcount > 0)
+      return;
 
-  var onEntryFailure = function() {
-    if (--downcount == 0)
-      onFailure(task);
-  }.bind(this);
-
-  if (downcount == 0)
-    onComplete(task);
+    // All remove operations are processed. Run callback.
+    if (filesystemError) {
+      errorCallback(new FileCopyManager.Error(
+          util.FileOperationErrorType.FILESYSTEM_ERROR, filesystemError));
+    } else {
+      successCallback();
+    }
+  };
 
   for (var i = 0; i < task.entries.length; i++) {
     var entry = task.entries[i];
     util.removeFileOrDirectory(
         entry,
-        onEntryComplete,
-        onEntryFailure);
+        function(currentEntry) {
+          this.eventRouter_.sendEntryChangedEvent(
+              util.EntryChangedType.DELETED, currentEntry);
+          onComplete();
+        }.bind(this, entry),
+        function(error) {
+          if (!filesystemError)
+            filesystemError = error;
+          onComplete();
+        });
   }
 };
 

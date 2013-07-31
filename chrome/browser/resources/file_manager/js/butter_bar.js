@@ -9,15 +9,13 @@
  * progress and other messages.
  * @param {HTMLElement} dialogDom FileManager top-level div.
  * @param {FileCopyManagerWrapper} copyManager The copy manager.
- * @param {MetadataCache} metadataCache The metadata cache.
  * @constructor
  */
-function ButterBar(dialogDom, copyManager, metadataCache) {
+function ButterBar(dialogDom, copyManager) {
   this.dialogDom_ = dialogDom;
   this.butter_ = this.dialogDom_.querySelector('#butter-bar');
   this.document_ = this.butter_.ownerDocument;
   this.copyManager_ = copyManager;
-  this.metadataCache_ = metadataCache;
   this.hideTimeout_ = null;
   this.showTimeout_ = null;
   this.lastShowTime_ = 0;
@@ -345,23 +343,16 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
  * @private
  */
 ButterBar.prototype.onDelete_ = function(event) {
-  var urls = Array.prototype.slice.call(event.urls);
   switch (event.reason) {
     case 'BEGIN':
       if (this.currentMode_ != ButterBar.Mode.DELETE)
         this.totalDeleted_ = 0;
 
     case 'PROGRESS':
-      var props = [];
-      for (var i = 0; i < urls.length; i++) {
-        props[i] = {deleted: true};
-      }
-      this.metadataCache_.set(urls, 'internal', props);
-
-      this.totalDeleted_ += urls.length;
+      this.totalDeleted_ += event.urls.length;
       var title = strf('DELETED_MESSAGE_PLURAL', this.totalDeleted_);
       if (this.totalDeleted_ == 1) {
-        var fullPath = util.extractFilePath(urls[0]);
+        var fullPath = util.extractFilePath(event.urls[0]);
         var fileName = PathUtil.split(fullPath).pop();
         title = strf('DELETED_MESSAGE', fileName);
       }
@@ -376,12 +367,6 @@ ButterBar.prototype.onDelete_ = function(event) {
       break;
 
     case 'ERROR':
-      var props = [];
-      for (var i = 0; i < urls.length; i++) {
-        props[i] = {deleted: false};
-      }
-      this.metadataCache_.set(urls, 'internal', props);
-
       this.showError_(str('DELETE_ERROR'));
       break;
 

@@ -675,45 +675,50 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
 };
 
 /**
- * @param {string} name Filename.
+ * Callback when an entry is changed.
+ * @param {util.EntryChangedType} type How the entry is changed.
+ * @param {Entry} entry The changed entry.
  */
-DirectoryModel.prototype.onEntryChanged = function(name) {
-  var currentEntry = this.getCurrentDirEntry();
-  var fileList = this.getFileList();
-  var self = this;
+DirectoryModel.prototype.onEntryChanged = function(type, entry) {
+  // TODO(hidehiko): We should update directory model even the search result
+  // is shown.
+  var rootType = this.getCurrentRootType();
+  if ((rootType === RootType.DRIVE ||
+       rootType === RootType.DRIVE_SHARED_WITH_ME ||
+       rootType === RootType.DRIVE_RECENT ||
+       rootType === RootType.DRIVE_OFFLINE) &&
+      this.isSearching())
+    return;
 
-  var onEntryFound = function(entry) {
-    // Do nothing if current directory changed during async operations.
-    if (self.getCurrentDirEntry() != currentEntry)
-      return;
-    self.currentDirContents_.prefetchMetadata([entry], function() {
-      // Do nothing if current directory changed during async operations.
-      if (self.getCurrentDirEntry() != currentEntry)
+  if (type == util.EntryChangedType.CREATED) {
+    entry.getParent(function(parentEntry) {
+      if (this.getCurrentDirEntry().fullPath != parentEntry.fullPath) {
+        // Do nothing if current directory changed during async operations.
         return;
+      }
+      this.currentDirContents_.prefetchMetadata([entry], function() {
+        if (this.getCurrentDirEntry().fullPath != parentEntry.fullPath) {
+          // Do nothing if current directory changed during async operations.
+          return;
+        }
 
-      var index = self.findIndexByName_(name);
-      if (index >= 0)
-        fileList.splice(index, 1, entry);
-      else
-        fileList.splice(fileList.length, 0, entry);
-    });
-  };
-
-  var onError = function(err) {
-    if (err.code != FileError.NOT_FOUND_ERR) {
-      self.rescanLater();
-      return;
-    }
-
-    var index = self.findIndexByName_(name);
+        var index = this.findIndexByEntry_(entry);
+        if (index >= 0)
+          fileList.splice(index, 1, entry);
+        else
+          fileList.push(entry);
+      }.bind(this));
+    }.bind(this));
+  } else {
+    // This is the delete event.
+    var index = this.findIndexByEntry_(entry);
     if (index >= 0)
-      fileList.splice(index, 1);
-  };
-
-  util.resolvePath(currentEntry, name, onEntryFound, onError);
+      this.getFileList().splice(index, 1);
+  }
 };
 
 /**
+ * TODO(hidehiko): Migrate this method into findIndexByEntry_ defined below.
  * @param {string} name Filename.
  * @return {number} The index in the fileList.
  * @private
@@ -722,6 +727,19 @@ DirectoryModel.prototype.findIndexByName_ = function(name) {
   var fileList = this.getFileList();
   for (var i = 0; i < fileList.length; i++)
     if (fileList.item(i).name == name)
+      return i;
+  return -1;
+};
+
+/**
+ * @param {Entry} entry The entry to be searched.
+ * @return {number} The index in the fileList, or -1 if not found.
+ * @private
+ */
+DirectoryModel.prototype.findIndexByEntry_ = function(entry) {
+  var fileList = this.getFileList();
+  for (var i = 0; i < fileList.length; i++)
+    if (fileList.item(i).fullPath == entry.fullPath)
       return i;
   return -1;
 };

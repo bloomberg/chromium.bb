@@ -428,8 +428,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.initDataTransferOperations_ = function() {
     this.copyManager_ = new FileCopyManagerWrapper.getInstance();
 
-    this.butterBar_ = new ButterBar(this.dialogDom_, this.copyManager_,
-        this.metadataCache_);
+    this.butterBar_ = new ButterBar(this.dialogDom_, this.copyManager_);
 
     // CopyManager and ButterBar are required for 'Delete' operation in
     // Open and Save dialogs. But drag-n-drop and copy-paste are not needed.
@@ -441,11 +440,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.copyManager_.addEventListener(
         'copy-progress', this.onCopyProgressBound_);
 
-    this.onCopyManagerOperationCompleteBound_ =
-        this.onCopyManagerOperationComplete_.bind(this);
+    this.onCopyManagerEntryChangedBound_ =
+        this.onCopyManagerEntryChanged_.bind(this);
     this.copyManager_.addEventListener(
-        'copy-operation-complete',
-        this.onCopyManagerOperationCompleteBound_);
+        'entry-changed', this.onCopyManagerEntryChangedBound_);
 
     var controller = this.fileTransferController_ =
         new FileTransferController(this.document_,
@@ -1386,44 +1384,36 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Handler of file manager operations. Update directory model
-   * to reflect operation result immediatelly (not waiting directory
-   * update event). Also, preloads thumbnails for the copied images.
+   * Handler of file manager operations. Called when an entry has been
+   * changed.
+   * This updates directory model to reflect operation result immediately (not
+   * waiting for directory update event). Also, preloads thumbnails for the
+   * images of new entries.
+   * See also FileCopyManager.EventRouter.
    *
-   * @param {Event} Operation completion event.
+   * @param {cr.Event} event An event for the entry change.
    * @private
    */
-  FileManager.prototype.onCopyManagerOperationComplete_ = function(event) {
-    var currentPath = this.directoryModel_.getCurrentDirPath();
-    if (this.isOnDrive() && this.directoryModel_.isSearching())
-      return;
+  FileManager.prototype.onCopyManagerEntryChanged_ = function(event) {
+    var type = event.type;
+    var entry = event.entry;
+    this.directoryModel_.onEntryChanged(type, entry);
 
-    var inCurrentDirectory = function(entry) {
-      var fullPath = entry.fullPath;
-      var dirPath = fullPath.substr(0, fullPath.length -
-                                       entry.name.length - 1);
-      return dirPath == currentPath;
-    };
-    for (var i = 0; i < event.affectedEntries.length; i++) {
-      var entry = event.affectedEntries[i];
-      if (inCurrentDirectory(entry)) {
-        this.directoryModel_.onEntryChanged(entry.name);
-      } else if (event.reason == 'copied' && FileType.isImage(entry)) {
-        // Preload a thumbnail if the new copied entry an image.
-        var metadata = entry.getMetadata(function(metadata) {
-          var url = entry.toURL();
-          var thumbnailLoader_ = new ThumbnailLoader(
-              url,
-              ThumbnailLoader.LoaderType.CANVAS,
-              metadata,
-              undefined,  // Media type.
-              FileType.isOnDrive(url) ?
-                  ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-                  ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
-              10);  // Very low priority.
-              thumbnailLoader_.loadDetachedImage(function(success) {});
-        });
-      }
+    if (type == util.EntryChangedType.CREATE && FileType.isImage(entry)) {
+      // Preload a thumbnail if the new copied entry an image.
+      var metadata = entry.getMetadata(function(metadata) {
+        var url = entry.toURL();
+        var thumbnailLoader_ = new ThumbnailLoader(
+            url,
+            ThumbnailLoader.LoaderType.CANVAS,
+            metadata,
+            undefined,  // Media type.
+            FileType.isOnDrive(url) ?
+                ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
+                ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
+            10);  // Very low priority.
+        thumbnailLoader_.loadDetachedImage(function(success) {});
+      });
     }
   };
 
@@ -2492,10 +2482,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.copyManager_.removeEventListener(
             'copy-progress', this.onCopyProgressBound_);
       }
-      if (this.onCopyManagerOperationCompleteBound_) {
+      if (this.onCopyManagerEntryChangedBound_) {
         this.copyManager_.removeEventListener(
-            'copy-operation-complete',
-            this.onCopyManagerOperationCompleteBound_);
+            'entry-changed', this.onCopyManagerEntryChangedBound_);
       }
     }
   };
