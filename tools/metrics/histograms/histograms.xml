@@ -12814,6 +12814,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.DefaultSearchProvider" enum="OmniboxSearchEngine">
+  <summary>
+    The id of the default search engine domain that is specified in user
+    preferences when a profile is loaded.
+  </summary>
+</histogram>
+
+<histogram name="Settings.HomePageDomain" enum="OmniboxSearchEngine">
+  <summary>
+    The id of the home page domain that is specified in user preferences when a
+    profile is loaded.
+  </summary>
+</histogram>
+
 <histogram name="Settings.HomePageIsNewTabPage" enum="Boolean">
   <summary>
     Whether or not the home page user preference is set to the default NTP value
@@ -12825,6 +12839,13 @@ other types of suffix sets.
   <summary>
     Whether or not the Home button is enabled in user preferences when a profile
     is loaded.
+  </summary>
+</histogram>
+
+<histogram name="Settings.StartupPageDomains" enum="OmniboxSearchEngine">
+  <summary>
+    The ids of startup page domains that are specified in user preferences when
+    a profile is loaded.
   </summary>
 </histogram>
 
@@ -19614,6 +19635,7 @@ other types of suffix sets.
   <int value="32" label="diri"/>
   <int value="33" label="Custom"/>
   <int value="35" label="AOL"/>
+  <int value="36" label="Conduit"/>
   <int value="37" label="Rediff"/>
   <int value="38" label="guruji"/>
   <int value="40" label="GO.com"/>
@@ -19621,6 +19643,7 @@ other types of suffix sets.
   <int value="44" label="NETI"/>
   <int value="45" label="DELFI"/>
   <int value="46" label="Fonecta 02.fi"/>
+  <int value="50" label="AVG"/>
   <int value="51" label="search.ch"/>
   <int value="54" label="in.gr"/>
   <int value="55" label="Walla!"/>
@@ -19645,6 +19668,19 @@ other types of suffix sets.
   <int value="99" label="Spray"/>
   <int value="100" label="Sanook!"/>
   <int value="101" label="MYNET"/>
+  <int value="102" label="searchnu.com"/>
+  <int value="103" label="babylon.com"/>
+  <int value="104" label="delta-search.com"/>
+  <int value="105" label="iminent.com"/>
+  <int value="106" label="hao123.com"/>
+  <int value="107" label="sweetim.com"/>
+  <int value="108" label="snap.do"/>
+  <int value="109" label="snapdo.com"/>
+  <int value="110" label="softonic.com"/>
+  <int value="111" label="searchfunmoods.com"/>
+  <int value="112" label="incredibar.com"/>
+  <int value="113" label="sweetpacks.com"/>
+  <int value="114" label="imesh.net"/>
 </enum>
 
 <enum name="OmniboxSuggestRequests" type="int">

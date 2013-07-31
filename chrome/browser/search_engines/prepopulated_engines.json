@@ -10,7 +10,7 @@
 
 // The following unique IDs are available:
 //    53, 56, 58, 60, 61, 64, 65, 66, 70, 74, 78, 79, 80, 81, 84, 86, 88, 91,
-//    92, 93, 94, 95, 96, 97, 98, 99, 102+
+//    92, 93, 94, 95, 96, 97, 98, 99, 115+
 //
 // IDs > 1000 are reserved for distribution custom engines.
 //
@@ -22,7 +22,7 @@
   "int_variables": {
     // The following id is for UMA stats only. Please update it if you add new
     // engines outside the current range or it will not be counted in stats.
-    "kMaxPrepopulatedEngineID": 101,
+    "kMaxPrepopulatedEngineID": 114,
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
