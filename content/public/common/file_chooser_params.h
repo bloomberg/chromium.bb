@@ -25,8 +25,8 @@ struct CONTENT_EXPORT FileChooserParams {
     // Like Open, but allows picking multiple files to open.
     OpenMultiple,
 
-    // Like Open, but selects a folder.
-    OpenFolder,
+    // Like Open, but selects a folder for upload.
+    UploadFolder,
 
     // Allows picking a nonexistent file, and prompts to overwrite if the file
     // already exists.

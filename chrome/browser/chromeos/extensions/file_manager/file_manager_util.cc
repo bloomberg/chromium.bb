@@ -179,6 +179,10 @@ std::string GetDialogTypeAsString(
       type_str = "folder";
       break;
 
+    case ui::SelectFileDialog::SELECT_UPLOAD_FOLDER:
+      type_str = "upload-folder";
+      break;
+
     case ui::SelectFileDialog::SELECT_SAVEAS_FILE:
       type_str = "saveas-file";
       break;
@@ -650,6 +654,11 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
     case ui::SelectFileDialog::SELECT_FOLDER:
       title = l10n_util::GetStringUTF16(
           IDS_FILE_BROWSER_SELECT_FOLDER_TITLE);
+      break;
+
+    case ui::SelectFileDialog::SELECT_UPLOAD_FOLDER:
+      title = l10n_util::GetStringUTF16(
+          IDS_FILE_BROWSER_SELECT_UPLOAD_FOLDER_TITLE);
       break;
 
     case ui::SelectFileDialog::SELECT_SAVEAS_FILE:

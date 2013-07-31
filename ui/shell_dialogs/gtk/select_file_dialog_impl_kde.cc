@@ -120,7 +120,8 @@ class SelectFileDialogImplKDE : public ui::SelectFileDialogImpl {
   // us when we were told to show the dialog.
   void FileNotSelected(void *params);
 
-  void CreateSelectFolderDialog(const std::string& title,
+  void CreateSelectFolderDialog(Type type,
+                                const std::string& title,
                                 const base::FilePath& default_path,
                                 gfx::NativeWindow parent, void* params);
 
@@ -194,7 +195,8 @@ void SelectFileDialogImplKDE::SelectFileImpl(
 
   switch (type) {
     case SELECT_FOLDER:
-      CreateSelectFolderDialog(title_string, default_path,
+    case SELECT_UPLOAD_FOLDER:
+      CreateSelectFolderDialog(type, title_string, default_path,
                                owning_window, params);
       return;
     case SELECT_OPEN_FILE:
@@ -331,15 +333,18 @@ void SelectFileDialogImplKDE::FileNotSelected(void* params) {
 }
 
 void SelectFileDialogImplKDE::CreateSelectFolderDialog(
-    const std::string& title, const base::FilePath& default_path,
+    Type type, const std::string& title, const base::FilePath& default_path,
     gfx::NativeWindow parent, void *params) {
+  int title_message_id = (type == SELECT_UPLOAD_FOLDER) ?
+      IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE :
+      IDS_SELECT_FOLDER_DIALOG_TITLE;
   base::WorkerPool::PostTask(FROM_HERE,
       base::Bind(
           &SelectFileDialogImplKDE::CallKDialogOutput,
           this,
           KDialogParams(
               "--getexistingdirectory",
-              GetTitle(title, IDS_SELECT_FOLDER_DIALOG_TITLE),
+              GetTitle(title, title_message_id),
               default_path.empty() ? *last_opened_path_ : default_path,
               parent, false, false, params,
               &SelectFileDialogImplKDE::OnSelectSingleFolderDialogResponse)),
@@ -478,4 +483,3 @@ SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplKDE(
 }
 
 }  // namespace ui
-

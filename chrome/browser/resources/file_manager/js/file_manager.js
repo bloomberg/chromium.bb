@@ -62,6 +62,7 @@ function unload() {
  */
 var DialogType = {
   SELECT_FOLDER: 'folder',
+  SELECT_UPLOAD_FOLDER: 'upload-folder',
   SELECT_SAVEAS_FILE: 'saveas-file',
   SELECT_OPEN_FILE: 'open-file',
   SELECT_OPEN_MULTI_FILE: 'open-multi-file',
@@ -118,6 +119,7 @@ TextMeasure.prototype.getWidth = function(text) {
  */
 DialogType.isModal = function(type) {
   return type == DialogType.SELECT_FOLDER ||
+      type == DialogType.SELECT_UPLOAD_FOLDER ||
       type == DialogType.SELECT_SAVEAS_FILE ||
       type == DialogType.SELECT_OPEN_FILE ||
       type == DialogType.SELECT_OPEN_MULTI_FILE;
@@ -775,6 +777,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.fileTypes_ = this.params_.typeList || [];
     metrics.recordEnum('Create', this.dialogType,
         [DialogType.SELECT_FOLDER,
+         DialogType.SELECT_UPLOAD_FOLDER,
          DialogType.SELECT_SAVEAS_FILE,
          DialogType.SELECT_OPEN_FILE,
          DialogType.SELECT_OPEN_MULTI_FILE,
@@ -1063,6 +1066,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var singleSelection =
         this.dialogType == DialogType.SELECT_OPEN_FILE ||
         this.dialogType == DialogType.SELECT_FOLDER ||
+        this.dialogType == DialogType.SELECT_UPLOAD_FOLDER ||
         this.dialogType == DialogType.SELECT_SAVEAS_FILE;
 
     var showSpecialSearchRoots =
@@ -1719,6 +1723,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     switch (this.dialogType) {
       case DialogType.SELECT_FOLDER:
         defaultTitle = str('SELECT_FOLDER_TITLE');
+        break;
+
+      case DialogType.SELECT_UPLOAD_FOLDER:
+        defaultTitle = str('SELECT_UPLOAD_FOLDER_TITLE');
+        okLabel = str('UPLOAD_LABEL');
         break;
 
       case DialogType.SELECT_OPEN_FILE:
@@ -2965,7 +2974,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         var selection = this.getSelection();
         if (selection.totalCount == 1 &&
             selection.entries[0].isDirectory &&
-            this.dialogType != DialogType.SELECT_FOLDER) {
+            this.dialogType != DialogType.SELECT_FOLDER &&
+            this.dialogType != DialogType.SELECT_UPLOAD_FOLDER) {
           event.preventDefault();
           this.onDirectoryAction(selection.entries[0]);
         } else if (this.dispatchSelectionAction_()) {
@@ -3284,7 +3294,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var files = [];
     var selectedIndexes = this.currentList_.selectionModel.selectedIndexes;
 
-    if (this.dialogType == DialogType.SELECT_FOLDER &&
+    if ((this.dialogType == DialogType.SELECT_FOLDER ||
+         this.dialogType == DialogType.SELECT_UPLOAD_FOLDER) &&
         selectedIndexes.length == 0) {
       var url = this.getCurrentDirectoryURL();
       var singleSelection = {
@@ -3329,7 +3340,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var selectedEntry = dm.item(selectedIndexes[0]);
 
-    if (this.dialogType == DialogType.SELECT_FOLDER) {
+    if (this.dialogType == DialogType.SELECT_FOLDER ||
+        this.dialogType == DialogType.SELECT_UPLOAD_FOLDER) {
       if (!selectedEntry.isDirectory)
         throw new Error('Selected entry is not a folder!');
     } else if (this.dialogType == DialogType.SELECT_OPEN_FILE) {

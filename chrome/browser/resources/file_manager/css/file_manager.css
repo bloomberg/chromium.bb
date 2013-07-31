@@ -4,12 +4,14 @@
 
 /* Special attribute used in HTML to hide elements. */
 body[type='folder'] [invisibleif~='folder'],
+body[type='upload-folder'] [invisibleif~='upload-folder'],
 body[type='saveas-file'] [invisibleif~='saveas-file'],
 body[type='open-file'] [invisibleif~='open-file'],
 body[type='open-multi-file'] [invisibleif~='open-multi-file'],
 body[type='full-page'] [invisibleif~='full-page'],
 
 body[type='folder'] [visibleif]:not([visibleif~='folder']),
+body[type='upload-folder'] [visibleif]:not([visibleif~='upload-folder']),
 body[type='saveas-file'] [visibleif]:not([visibleif~='saveas-file']),
 body[type='open-file'] [visibleif]:not([visibleif~='open-file']),
 body[type='open-multi-file'] [visibleif]:not([visibleif~='open-multi-file']),
@@ -1462,6 +1464,7 @@ body:not([type='saveas-file']) #filename-input-box {
 /* Dimmed items */
 
 body[type='folder'] .file,
+body[type='upload-folder'] .file,
 body[drive] .dialog-container[connection='offline'] .dim-offline {
   opacity: 0.4;
 }

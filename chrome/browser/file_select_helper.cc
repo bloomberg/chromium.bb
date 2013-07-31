@@ -123,7 +123,7 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
   profile_->set_last_selected_directory(file.file_path.DirName());
 
   const base::FilePath& path = file.local_path;
-  if (dialog_type_ == ui::SelectFileDialog::SELECT_FOLDER) {
+  if (dialog_type_ == ui::SelectFileDialog::SELECT_UPLOAD_FOLDER) {
     StartNewEnumeration(path, kFileSelectEnumerationId, render_view_host_);
     return;
   }
@@ -377,8 +377,8 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     case FileChooserParams::OpenMultiple:
       dialog_type_ = ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE;
       break;
-    case FileChooserParams::OpenFolder:
-      dialog_type_ = ui::SelectFileDialog::SELECT_FOLDER;
+    case FileChooserParams::UploadFolder:
+      dialog_type_ = ui::SelectFileDialog::SELECT_UPLOAD_FOLDER;
       break;
     case FileChooserParams::Save:
       dialog_type_ = ui::SelectFileDialog::SELECT_SAVEAS_FILE;

@@ -13145,6 +13145,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_OK_LABEL" desc="OK label.">
         OK
       </message>
+      <message name="IDS_FILE_BROWSER_UPLOAD_LABEL" desc="Upload label.">
+        Upload
+      </message>
       <message name="IDS_FILE_BROWSER_SEARCH_TEXT_LABEL" desc="Search text field label.">
         Search
       </message>
@@ -13178,6 +13181,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <message name="IDS_FILE_BROWSER_SELECT_FOLDER_TITLE" desc="Select folder title.">
         Select a folder to open
+      </message>
+      <message name="IDS_FILE_BROWSER_SELECT_UPLOAD_FOLDER_TITLE" desc="Select folder title for upload.">
+        Select a folder to upload
       </message>
       <message name="IDS_FILE_BROWSER_SELECT_OPEN_FILE_TITLE" desc="Select open file title.">
         Select a file to open

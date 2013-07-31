@@ -2416,7 +2416,7 @@ bool RenderViewImpl::runFileChooser(
     return false;
   FileChooserParams ipc_params;
   if (params.directory)
-    ipc_params.mode = FileChooserParams::OpenFolder;
+    ipc_params.mode = FileChooserParams::UploadFolder;
   else if (params.multiSelect)
     ipc_params.mode = FileChooserParams::OpenMultiple;
   else if (params.saveAs)

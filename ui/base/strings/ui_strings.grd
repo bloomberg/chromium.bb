@@ -221,10 +221,16 @@ need to be translated for each locale.-->
       <message name="IDS_APP_SAVEAS_EXTENSION_FORMAT" desc="Save As dialog box extension format text">
         <ph name="SAVEAS_EXTENSION_TYPE">$1<ex>EXE</ex></ph> File (.<ph name="SAVEAS_EXTENSION_NAME">$2<ex>exe</ex></ph>)
       </message>
+      <message name="IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE" desc="The default title for the Select Upload Folder dialog.">
+        Select Folder to Upload
+      </message>
 
       <if expr="is_macosx">
         <message name="IDS_SELECT_FOLDER_BUTTON_TITLE" desc="The name of the Select button in the folder selection dialog.">
           Select
+        </message>
+        <message name="IDS_SELECT_UPLOAD_FOLDER_BUTTON_TITLE" desc="The name of the Select button in the folder selection dialog for uploading.">
+          Upload
         </message>
       </if>
 
@@ -243,6 +249,9 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_SAVEAS_ALL_FILES" desc="Save As dialog box default text">
         All Files
+      </message>
+      <message name="IDS_SELECT_UPLOAD_FOLDER_DIALOG_UPLOAD_BUTTON" desc="Button label text for Upload Folder dialog">
+        Upload
       </message>
 
       <!--Accessible name/action strings-->

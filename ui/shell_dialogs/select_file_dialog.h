@@ -31,9 +31,21 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
  public:
   enum Type {
     SELECT_NONE,
+
+    // For opening a folder.
     SELECT_FOLDER,
+
+    // Like SELECT_FOLDER, but the dialog UI should explicitly show it's
+    // specifically for "upload".
+    SELECT_UPLOAD_FOLDER,
+
+    // For saving into a file, allowing a nonexistent file to be selected.
     SELECT_SAVEAS_FILE,
+
+    // For opening a file.
     SELECT_OPEN_FILE,
+
+    // Like SELECT_OPEN_FILE, but allowing multiple files to open.
     SELECT_OPEN_MULTI_FILE
   };
 

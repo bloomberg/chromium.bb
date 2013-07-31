@@ -108,8 +108,11 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
   // us when we were told to show the dialog.
   void FileNotSelected(GtkWidget* dialog);
 
-  GtkWidget* CreateSelectFolderDialog(const std::string& title,
-      const base::FilePath& default_path, gfx::NativeWindow parent);
+  GtkWidget* CreateSelectFolderDialog(
+      Type type,
+      const std::string& title,
+      const base::FilePath& default_path,
+      gfx::NativeWindow parent);
 
   GtkWidget* CreateFileOpenDialog(const std::string& title,
       const base::FilePath& default_path, gfx::NativeWindow parent);
@@ -237,7 +240,8 @@ void SelectFileDialogImplGTK::SelectFileImpl(
   GtkWidget* dialog = NULL;
   switch (type) {
     case SELECT_FOLDER:
-      dialog = CreateSelectFolderDialog(title_string, default_path,
+    case SELECT_UPLOAD_FOLDER:
+      dialog = CreateSelectFolderDialog(type, title_string, default_path,
                                         owning_window);
       break;
     case SELECT_OPEN_FILE:
@@ -396,17 +400,26 @@ GtkWidget* SelectFileDialogImplGTK::CreateFileOpenHelper(
 }
 
 GtkWidget* SelectFileDialogImplGTK::CreateSelectFolderDialog(
+    Type type,
     const std::string& title,
     const base::FilePath& default_path,
     gfx::NativeWindow parent) {
-  std::string title_string = !title.empty() ? title :
+  std::string title_string = title;
+  if (title_string.empty()) {
+    title_string = (type == SELECT_UPLOAD_FOLDER) ?
+        l10n_util::GetStringUTF8(IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE) :
         l10n_util::GetStringUTF8(IDS_SELECT_FOLDER_DIALOG_TITLE);
+  }
+  std::string accept_button_label = (type == SELECT_UPLOAD_FOLDER) ?
+      l10n_util::GetStringUTF8(IDS_SELECT_UPLOAD_FOLDER_DIALOG_UPLOAD_BUTTON) :
+      GTK_STOCK_OPEN;
 
   GtkWidget* dialog =
       gtk_file_chooser_dialog_new(title_string.c_str(), NULL,
                                   GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
                                   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                  GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                  accept_button_label.c_str(),
+                                  GTK_RESPONSE_ACCEPT,
                                   NULL);
   SetGtkTransientForAura(dialog, parent);
 
