@@ -109,7 +109,7 @@ bool HandleCloserAgent::CloseHandles() {
           &(type_info_buffer[0]));
       rc = QueryObjectTypeInformation(handle, type_info, &size);
       // Leave padding for the nul terminator.
-      if (NT_SUCCESS(0) && size == type_info_buffer.size())
+      if (NT_SUCCESS(rc) && size == type_info_buffer.size())
         rc = STATUS_INFO_LENGTH_MISMATCH;
     }
     if (!NT_SUCCESS(rc) || !type_info->Name.Buffer) {
