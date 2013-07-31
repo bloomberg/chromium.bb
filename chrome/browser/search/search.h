@@ -122,7 +122,7 @@ bool ShouldShowRecentTabsOnNTP();
 // Returns true if |my_url| matches |other_url|.
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
 
-// Transforms the input |url| into its "privileged URL". The returned URL
+// Transforms the input |url| into its "effective URL". The returned URL
 // facilitates grouping process-per-site. The |url| is transformed, for
 // example, from
 //
@@ -139,10 +139,7 @@ bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
 // If |url| is that of the online NTP, its host is replaced with "online-ntp".
 // This forces the NTP and search results pages to have different SiteIntances,
 // and hence different processes.
-GURL GetPrivilegedURLForInstant(const GURL& url, Profile* profile);
-
-// Returns true if the input |url| is a privileged Instant URL.
-bool IsPrivilegedURLForInstant(const GURL& url);
+GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile);
 
 // Returns the staleness timeout (in seconds) that should be used to refresh the
 // InstantLoader.

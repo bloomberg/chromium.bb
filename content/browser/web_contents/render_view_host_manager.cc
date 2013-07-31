@@ -490,14 +490,10 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     SiteInstance* curr_instance) {
   // NOTE: This is only called when ShouldTransitionCrossSite is true.
 
+  const GURL& dest_url = entry.GetURL();
   NavigationControllerImpl& controller =
       delegate_->GetControllerForRenderManager();
   BrowserContext* browser_context = controller.GetBrowserContext();
-  const GURL& dest_url = GetContentClient()->browser()->
-      GetPossiblyPrivilegedURL(browser_context,
-                               entry.GetURL(),
-                               entry.is_renderer_initiated(),
-                               curr_instance);
 
   // If the entry has an instance already we should use it.
   if (entry.site_instance())

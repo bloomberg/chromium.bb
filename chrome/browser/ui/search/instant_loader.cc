@@ -47,7 +47,7 @@ void InstantLoader::Init(const GURL& instant_url,
                          const base::Closure& on_stale_callback) {
   content::WebContents::CreateParams create_params(profile);
   create_params.site_instance = content::SiteInstance::CreateForURL(
-      profile, chrome::GetPrivilegedURLForInstant(instant_url, profile));
+      profile, instant_url);
   SetContents(scoped_ptr<content::WebContents>(
       content::WebContents::Create(create_params)));
   instant_url_ = instant_url;

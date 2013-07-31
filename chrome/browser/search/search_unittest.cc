@@ -8,6 +8,8 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences.h"
 
 namespace chrome {
 
@@ -224,6 +227,13 @@ class SearchTest : public BrowserWithTestWindowTest {
     template_url_service->SetDefaultSearchProvider(template_url);
   }
 
+  bool InInstantProcess(const content::WebContents* contents) {
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(profile());
+    return instant_service->IsInstantProcess(
+        contents->GetRenderProcessHost()->GetID());
+  }
+
   scoped_ptr<base::FieldTrialList> field_trial_list_;
 };
 
@@ -319,109 +329,123 @@ TEST_F(SearchTest, ShouldUseProcessPerSiteForInstantURL) {
   }
 }
 
-struct PrivilegedURLTestCase {
-  bool add_as_alternate_url;
-  const char* input_url;
-  const char* privileged_url;
-  bool different_site_instance;
-  const char* comment;
+// Each test case represents a navigation to |start_url| followed by a
+// navigation to |end_url|. We will check whether each navigation lands in an
+// Instant process, and also whether the navigation from start to end re-uses
+// the same SiteInstance (and hence the same RenderViewHost, etc.).
+const struct ProcessIsolationTestCase {
+  const char* description;
+  const char* start_url;
+  bool start_in_instant_process;
+  const char* end_url;
+  bool end_in_instant_process;
+  bool same_site_instance;
+} kProcessIsolationTestCases[] = {
+  {"Local NTP -> SRP",
+   "chrome-search://local-ntp",       true,
+   "https://foo.com/url?strk",        true,   false },
+  {"Local NTP -> Regular",
+   "chrome-search://local-ntp",       true,
+   "https://foo.com/other",           false,  false },
+  {"Remote NTP -> SRP",
+   "https://foo.com/instant?strk",    true,
+   "https://foo.com/url?strk",        true,   false },
+  {"Remote NTP -> Regular",
+   "https://foo.com/instant?strk",    true,
+   "https://foo.com/other",           false,  false },
+  {"SRP -> SRP",
+   "https://foo.com/url?strk",        true,
+   "https://foo.com/url?strk",        true,   true  },
+  {"SRP -> Regular",
+   "https://foo.com/url?strk",        true,
+   "https://foo.com/other",           false,  false },
+  {"Regular -> SRP",
+   "https://foo.com/other",           false,
+   "https://foo.com/url?strk",        true,   false },
 };
 
-TEST_F(SearchTest, GetPrivilegedURLForInstant) {
+TEST_F(SearchTest, ProcessIsolation) {
   EnableInstantExtendedAPIForTesting();
 
-  const PrivilegedURLTestCase kTestCases[] = {
-    { false,  // don't append input_url as alternate URL.
-      chrome::kChromeSearchLocalNtpUrl,  // input URL.
-      chrome::kChromeSearchLocalNtpUrl,  // expected privileged URL.
-      true,  // expected different SiteInstance.
-      "local NTP" },
-    { false,  // don't append input_url as alternate URL.
-      "https://foo.com/instant?strk",
-      "chrome-search://online-ntp/instant?strk",
-      true,  // expected different SiteInstance.
-      "Valid Instant NTP" },
-    { false,  // don't append input_url as alternate URL.
-      "https://foo.com/instant?strk&more=junk",
-      "chrome-search://online-ntp/instant?strk&more=junk",
-      true,  // expected different SiteInstance.
-      "Valid Instant NTP with extra query" },
-    { false,  // don't append input_url as alternate URL.
-      "https://foo.com/url?strk",
-      "chrome-search://foo.com/url?strk",
-      false,  // expected same SiteInstance.
-      "Search URL" },
-    { true,  // append input_url as alternate URL.
-      "https://notfoo.com/instant?strk",
-      "chrome-search://notfoo.com/instant?strk",
-      true,  // expected different SiteInstance.
-      "Invalid host in URL" },
-    { true,  // append input_url as alternate URL.
-      "https://foo.com/webhp?strk",
-      "chrome-search://foo.com/webhp?strk",
-      false,  // expected same SiteInstance.
-      "Invalid path in URL" },
-    { true,  // append input_url as alternate URL.
-      "https://foo.com/search?strk",
-      "chrome-search://foo.com/search?strk",
-      false,  // expected same SiteInstance.
-      "Invalid path in URL" },
-  };
+  for (size_t i = 0; i < arraysize(kProcessIsolationTestCases); ++i) {
+    const ProcessIsolationTestCase& test = kProcessIsolationTestCases[i];
+    AddTab(browser(), GURL("chrome://blank"));
+    const content::WebContents* contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
 
-  // GetPrivilegedURLForInstant expects ShouldAssignURLToInstantRenderer to
-  // be true, and the latter expects chrome-search: scheme or IsInstantURL to be
-  // true.  To force IsInstantURL to return true, add the input_url of each
-  // PrivilegedURLTestCase as the alternate URL for the default template URL.
-  const char* kSearchURL = "https://foo.com/url?strk";
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile());
-  TemplateURLData data;
-  data.SetURL(kSearchURL);
-  data.instant_url = "http://foo.com/instant?strk";
-  data.search_terms_replacement_key = "strk";
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    const PrivilegedURLTestCase& test = kTestCases[i];
-    if (test.add_as_alternate_url)
-      data.alternate_urls.push_back(test.input_url);
-  }
-  TemplateURL* template_url = new TemplateURL(profile(), data);
-  // Takes ownership of |template_url|.
-  template_url_service->Add(template_url);
-  template_url_service->SetDefaultSearchProvider(template_url);
+    // Navigate to start URL.
+    NavigateAndCommitActiveTab(GURL(test.start_url));
+    EXPECT_EQ(test.start_in_instant_process, InInstantProcess(contents))
+        << test.description;
 
-  AddTab(browser(), GURL("chrome://blank"));
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    const PrivilegedURLTestCase& test = kTestCases[i];
-
-    // Verify GetPrivilegedURLForInstant.
-    EXPECT_EQ(GURL(test.privileged_url),
-              GetPrivilegedURLForInstant(GURL(test.input_url), profile()))
-        << test.input_url << " " << test.comment;
-
-    // Verify that navigating from input_url to search URL results in same or
-    // different SiteInstance.
-    // First, navigate to input_url.
-    NavigateAndCommitActiveTab(GURL(test.input_url));
-    content::WebContents* contents =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-    // Cache the SiteInstance, RenderViewHost and RenderProcessHost for
-    // input_url.
-    const scoped_refptr<content::SiteInstance> prev_site_instance =
+    // Save state.
+    const scoped_refptr<content::SiteInstance> start_site_instance =
         contents->GetSiteInstance();
-    const content::RenderViewHost* prev_rvh = contents->GetRenderViewHost();
-    const content::RenderProcessHost* prev_rph =
+    const content::RenderProcessHost* start_rph =
         contents->GetRenderProcessHost();
-    // Then, navigate to search URL.
-    NavigateAndCommitActiveTab(GURL(kSearchURL));
-    EXPECT_EQ(test.different_site_instance,
-              contents->GetSiteInstance() != prev_site_instance)
-        << test.input_url << " " << test.comment;
-    EXPECT_EQ(test.different_site_instance,
-              contents->GetRenderViewHost() != prev_rvh)
-        << test.input_url << " " << test.comment;
-    EXPECT_EQ(test.different_site_instance,
-              contents->GetRenderProcessHost() != prev_rph)
-        << test.input_url << " " << test.comment;
+    const content::RenderViewHost* start_rvh =
+        contents->GetRenderViewHost();
+
+    // Navigate to end URL.
+    NavigateAndCommitActiveTab(GURL(test.end_url));
+    EXPECT_EQ(test.end_in_instant_process, InInstantProcess(contents))
+        << test.description;
+
+    EXPECT_EQ(test.same_site_instance,
+              start_site_instance == contents->GetSiteInstance())
+        << test.description;
+    EXPECT_EQ(test.same_site_instance,
+              start_rvh == contents->GetRenderViewHost())
+        << test.description;
+    EXPECT_EQ(test.same_site_instance,
+              start_rph == contents->GetRenderProcessHost())
+        << test.description;
+  }
+}
+
+TEST_F(SearchTest, ProcessIsolation_RendererInitiated) {
+  EnableInstantExtendedAPIForTesting();
+
+  for (size_t i = 0; i < arraysize(kProcessIsolationTestCases); ++i) {
+    const ProcessIsolationTestCase& test = kProcessIsolationTestCases[i];
+    AddTab(browser(), GURL("chrome://blank"));
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    // Navigate to start URL.
+    NavigateAndCommitActiveTab(GURL(test.start_url));
+    EXPECT_EQ(test.start_in_instant_process, InInstantProcess(contents))
+        << test.description;
+
+    // Save state.
+    const scoped_refptr<content::SiteInstance> start_site_instance =
+        contents->GetSiteInstance();
+    const content::RenderProcessHost* start_rph =
+        contents->GetRenderProcessHost();
+    const content::RenderViewHost* start_rvh =
+        contents->GetRenderViewHost();
+
+    // Navigate to end URL via a renderer-initiated navigation.
+    content::NavigationController* controller = &contents->GetController();
+    content::NavigationController::LoadURLParams load_params(
+        GURL(test.end_url));
+    load_params.is_renderer_initiated = true;
+    load_params.transition_type = content::PAGE_TRANSITION_LINK;
+
+    controller->LoadURLWithParams(load_params);
+    CommitPendingLoad(controller);
+    EXPECT_EQ(test.end_in_instant_process, InInstantProcess(contents))
+        << test.description;
+
+    EXPECT_EQ(test.same_site_instance,
+              start_site_instance == contents->GetSiteInstance())
+        << test.description;
+    EXPECT_EQ(test.same_site_instance,
+              start_rvh == contents->GetRenderViewHost())
+        << test.description;
+    EXPECT_EQ(test.same_site_instance,
+              start_rph == contents->GetRenderProcessHost())
+        << test.description;
   }
 }
 

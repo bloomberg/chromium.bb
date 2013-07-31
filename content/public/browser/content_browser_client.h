@@ -174,22 +174,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Notifies that a BrowserChildProcessHost has been created.
   virtual void BrowserChildProcessHostCreated(BrowserChildProcessHost* host) {}
 
-  // Determines whether a navigation from |current_instance| to |url| would be a
-  // valid entry point to a "privileged site," based on whether it
-  // |is_renderer_initiated|. A privileged site requires careful process
-  // isolation to ensure its privileges do not leak, and it can only be entered
-  // via known navigation paths.
-  //
-  // If this is a valid entry to a privileged site, this function should rewrite
-  // the origin of |url| with a non-http(s) origin that represents the
-  // privileged site. This will distinguish the resulting SiteInstance from
-  // other SiteInstances in the process model.
-  virtual GURL GetPossiblyPrivilegedURL(
-      content::BrowserContext* browser_context,
-      const GURL& url,
-      bool is_renderer_initiated,
-      SiteInstance* current_instance);
-
   // Get the effective URL for the given actual URL, to allow an embedder to
   // group different url schemes in the same SiteInstance.
   virtual GURL GetEffectiveURL(BrowserContext* browser_context,

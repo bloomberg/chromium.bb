@@ -73,11 +73,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderProcessHost* host) OVERRIDE;
   virtual bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                        const GURL& effective_url) OVERRIDE;
-  virtual GURL GetPossiblyPrivilegedURL(
-      content::BrowserContext* browser_context,
-      const GURL& url,
-      bool is_renderer_initiated,
-      content::SiteInstance* current_instance) OVERRIDE;
   virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
                                const GURL& url) OVERRIDE;
   virtual void GetAdditionalWebUISchemes(
