@@ -120,9 +120,6 @@ const char kEnterpriseEnrollmentModulusLimit[] =
 // Shows the selecting checkboxes in the Files.app.
 const char kFileManagerShowCheckboxes[]     = "file-manager-show-checkboxes";
 
-// Enables the sharing feature in the Files.app.
-const char kFileManagerEnableSharing[]      = "file-manager-enable-sharing";
-
 // Enables folder shortcuts feature in the Files.app.
 const char kFileManagerEnableFolderShortcuts[] =
     "file-manager-enable-folder-shortcuts";

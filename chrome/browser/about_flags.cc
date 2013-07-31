@@ -1100,13 +1100,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerShowCheckboxes)
   },
   {
-    "file-manager-enable-sharing",
-    IDS_FLAGS_FILE_MANAGER_ENABLE_SHARING_NAME,
-    IDS_FLAGS_FILE_MANAGER_ENABLE_SHARING_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerEnableSharing)
-  },
-  {
     "file-manager-enable-folder-shortcuts",
     IDS_FLAGS_FILE_MANAGER_ENABLE_FOLDER_SHORTCUTS,
     IDS_FLAGS_FILE_MANAGER_ENABLE_FOLDER_SHORTCUTS_DESCRIPTION,
