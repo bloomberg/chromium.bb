@@ -12,7 +12,6 @@
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/favicon_helper.h"
 #include "chrome/browser/android/field_trial_helper.h"
-#include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
@@ -69,8 +68,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "DevToolsServer", RegisterDevToolsServer },
   { "FaviconHelper", FaviconHelper::RegisterFaviconHelper },
   { "FieldTrialHelper", RegisterFieldTrialHelper },
-  { "ForeignSessionHelper",
-    ForeignSessionHelper::RegisterForeignSessionHelper },
   { "IntentHelper", RegisterIntentHelper },
   { "JavascriptAppModalDialog",
     JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog },
