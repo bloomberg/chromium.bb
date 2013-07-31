@@ -173,10 +173,16 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
    * We query for "fdio" early on so that write() can produce a useful
    * debugging message if any other IRT queries fail.
    */
-  __libnacl_irt_query(NACL_IRT_FDIO_v0_1, &__libnacl_irt_fdio,
-                      sizeof(__libnacl_irt_fdio));
-  __libnacl_irt_query(NACL_IRT_FILENAME_v0_1, &__libnacl_irt_filename,
-                      sizeof(__libnacl_irt_filename));
+  if (!__libnacl_irt_query(NACL_IRT_FDIO_v0_1, &__libnacl_irt_fdio,
+                           sizeof(__libnacl_irt_fdio))) {
+    __libnacl_irt_query(NACL_IRT_DEV_FDIO_v0_1, &__libnacl_irt_fdio,
+                        sizeof(__libnacl_irt_fdio));
+  }
+  if (!__libnacl_irt_query(NACL_IRT_FILENAME_v0_1, &__libnacl_irt_filename,
+                           sizeof(__libnacl_irt_filename))) {
+    __libnacl_irt_query(NACL_IRT_DEV_FILENAME_v0_1, &__libnacl_irt_filename,
+                        sizeof(__libnacl_irt_filename));
+  }
 
   DO_QUERY(NACL_IRT_BASIC_v0_1, basic);
 

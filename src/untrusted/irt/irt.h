@@ -64,6 +64,10 @@ size_t nacl_interface_query(const char *interface_ident,
  * they are deprecated or not portable.  The list of IRT interfaces
  * that are allowed under PNaCl can be found in the Chromium repo in
  * ppapi/native_client/src/untrusted/pnacl_irt_shim/shim_ppapi.c.
+ *
+ * Interfaces with "-dev" in the query string are not
+ * permanently-supported stable interfaces.  They might be removed in
+ * future versions of Chromium.
  */
 
 #define NACL_IRT_BASIC_v0_1     "nacl-irt-basic-0.1"
@@ -76,7 +80,29 @@ struct nacl_irt_basic {
   int (*sysconf)(int name, int *value);
 };
 
+/*
+ * "irt-fdio" provides IO operations on file descriptors (FDs).  There
+ * are three cases where this interface is useful under Chromium:
+ *
+ * 1) With the read-only FDs returned by open_resource().  This use
+ *    case does not apply to PNaCl, where open_resource() is disabled.
+ * 2) write() on stdout or stderr can be useful for writing debugging
+ *    output, but it does not produce any effects observable to a web
+ *    app.  In Chromium, whether write() returns an error is not
+ *    defined (see
+ *    https://code.google.com/p/nativeclient/issues/detail?id=3529).
+ * 3) With FDs returned by open().  In Chromium, this only applies when
+ *    NACL_DANGEROUS_ENABLE_FILE_ACCESS is set, which enables an
+ *    unsafe debugging mode.
+ *
+ * There are two query strings for this interface.  Under PNaCl, this
+ * interface is only available via the "-dev" query string, because
+ * the only uses cases for it under PNaCl are for debugging -- (2) and
+ * (3).  However, as with all "-dev" interfaces, the "-dev" variant
+ * might be removed in future.
+ */
 #define NACL_IRT_FDIO_v0_1      "nacl-irt-fdio-0.1"
+#define NACL_IRT_DEV_FDIO_v0_1  "nacl-irt-dev-fdio-0.1"
 struct nacl_irt_fdio {
   int (*close)(int fd);
   int (*dup)(int fd, int *newfd);
@@ -88,7 +114,21 @@ struct nacl_irt_fdio {
   int (*getdents)(int fd, struct dirent *, size_t count, size_t *nread);
 };
 
+/*
+ * The "irt-filename" interface provides filename-based filesystem
+ * operations.  In Chromium, this is only useful when
+ * NACL_DANGEROUS_ENABLE_FILE_ACCESS is set, which enables an unsafe
+ * debugging mode.
+ *
+ * As with "irt-fdio", there are two query strings for the
+ * "irt-filename" interface.  Under PNaCl, this interface is only
+ * available via the "-dev" query string.  The non-"dev" query string
+ * is made available to non-PNaCl NaCl apps only for compatibility,
+ * because existing nexes abort on startup if "irt-filename" is not
+ * available.
+ */
 #define NACL_IRT_FILENAME_v0_1      "nacl-irt-filename-0.1"
+#define NACL_IRT_DEV_FILENAME_v0_1  "nacl-irt-dev-filename-0.1"
 struct nacl_irt_filename {
   int (*open)(const char *pathname, int oflag, mode_t cmode, int *newfd);
   int (*stat)(const char *pathname, struct stat *);
