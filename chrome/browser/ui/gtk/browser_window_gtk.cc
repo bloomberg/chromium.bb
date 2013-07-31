@@ -708,7 +708,7 @@ bool BrowserWindowGtk::IsActive() const {
     return is_active_;
 
   // This still works even though we don't get the activation notification.
-  return gtk_window_is_active(window_);
+  return window_ && gtk_window_is_active(window_);
 }
 
 void BrowserWindowGtk::FlashFrame(bool flash) {
