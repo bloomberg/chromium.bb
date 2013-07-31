@@ -11,6 +11,7 @@
   },
   'sources': [
     '<@(ime_test_files)',
+    'win/imm32_manager_unittest.cc',
     'win/tsf_text_store_unittest.cc',
   ],
   'conditions': [
@@ -21,6 +22,7 @@
     }],
     ['OS!="win"', {
       'sources!': [
+        'win/imm32_manager_unittest.cc',
         'win/tsf_text_store_unittest.cc',
       ],
     }],

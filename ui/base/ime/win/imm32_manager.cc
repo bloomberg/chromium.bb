@@ -507,6 +507,32 @@ base::i18n::TextDirection IMM32Manager::GetTextDirection() const {
       base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
 }
 
+void IMM32Manager::SetTextInputMode(HWND window_handle,
+                                    TextInputMode input_mode) {
+  if (input_mode == ui::TEXT_INPUT_MODE_DEFAULT)
+    return;
+
+  const HIMC imm_context = ::ImmGetContext(window_handle);
+  if (!imm_context)
+    return;
+
+  DWORD conversion_mode = 0;
+  DWORD sentence_mode = 0;
+  if (::ImmGetConversionStatus(imm_context, &conversion_mode, &sentence_mode)
+      == FALSE) {
+    return;
+  }
+
+  BOOL open = FALSE;
+  ConvertInputModeToImmFlags(input_mode, conversion_mode, &open,
+                             &conversion_mode),
+
+  ::ImmSetOpenStatus(imm_context, open);
+  if (open)
+    ::ImmSetConversionStatus(imm_context, conversion_mode, sentence_mode);
+  ::ImmReleaseContext(window_handle, imm_context);
+}
+
 // static
 bool IMM32Manager::IsRTLKeyboardLayoutInstalled() {
   static enum {
@@ -584,6 +610,34 @@ bool IMM32Manager::IsCtrlShiftPressed(base::i18n::TextDirection* direction) {
       return false;
   }
   return true;
+}
+
+void IMM32Manager::ConvertInputModeToImmFlags(TextInputMode input_mode,
+                                              DWORD initial_conversion_mode,
+                                              BOOL* open,
+                                              DWORD* new_conversion_mode) {
+  *open = TRUE;
+  *new_conversion_mode = initial_conversion_mode;
+  switch (input_mode) {
+    case ui::TEXT_INPUT_MODE_FULL_WIDTH_LATIN:
+      *new_conversion_mode |= IME_CMODE_FULLSHAPE;
+      *new_conversion_mode &= ~(IME_CMODE_NATIVE
+                              | IME_CMODE_KATAKANA);
+      break;
+    case ui::TEXT_INPUT_MODE_KANA:
+      *new_conversion_mode |= (IME_CMODE_NATIVE
+                             | IME_CMODE_FULLSHAPE);
+      *new_conversion_mode &= ~IME_CMODE_KATAKANA;
+      break;
+    case ui::TEXT_INPUT_MODE_KATAKANA:
+      *new_conversion_mode |= (IME_CMODE_NATIVE
+                             | IME_CMODE_KATAKANA
+                             | IME_CMODE_FULLSHAPE);
+      break;
+    default:
+      *open = FALSE;
+      break;
+  }
 }
 
 }  // namespace ui

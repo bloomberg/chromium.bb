@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/rect.h"
 
@@ -239,6 +240,8 @@ class UI_EXPORT IMM32Manager {
   // Returns the text direction of the current input language.
   base::i18n::TextDirection GetTextDirection() const;
 
+  // Sets conversion status corresponding to |input_mode|.
+  void SetTextInputMode(HWND window_handle, TextInputMode input_mode);
 
   // Helper functions ----------------------------------------------------------
 
@@ -250,6 +253,14 @@ class UI_EXPORT IMM32Manager {
   // Returns true if only a Ctrl key and a Shift key are down. The desired text
   // direction will be stored in |*direction|.
   static bool IsCtrlShiftPressed(base::i18n::TextDirection* direction);
+
+  // Gets parameters for ::ImmSetOpenStatus and ::ImmSetConversionStatus from
+  // |input_mode|.
+  static void ConvertInputModeToImmFlags(TextInputMode input_mode,
+                                         DWORD initial_conversion_mode,
+                                         BOOL* open,
+                                         DWORD* new_conversion_mode);
+
 
  protected:
   // Retrieves the composition information.
