@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {
   'includes': [
-    '../build/win/precompile.gypi',
+    '../WebKit/chromium/WinPrecompile.gypi',
     'wtf.gypi',
   ],
   'targets': [

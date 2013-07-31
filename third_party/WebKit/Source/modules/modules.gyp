@@ -29,7 +29,7 @@
 #
 {
   'includes': [
-    '../build/win/precompile.gypi',
+    '../WebKit/chromium/WinPrecompile.gypi',
     'modules.gypi',
   ],
   'targets': [{
