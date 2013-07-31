@@ -854,6 +854,8 @@
             'browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h',
             'browser/chromeos/extensions/file_manager/private_api_base.cc',
             'browser/chromeos/extensions/file_manager/private_api_base.h',
+            'browser/chromeos/extensions/file_manager/private_api_drive.cc',
+            'browser/chromeos/extensions/file_manager/private_api_drive.h',
             'browser/chromeos/extensions/file_manager/private_api_tasks.cc',
             'browser/chromeos/extensions/file_manager/private_api_tasks.h',
             'browser/chromeos/extensions/file_manager/private_api_util.cc',

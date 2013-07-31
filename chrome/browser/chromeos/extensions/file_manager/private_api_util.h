@@ -11,6 +11,11 @@
 #include "url/gurl.h"
 
 class ExtensionFunctionDispatcher;
+class Profile;
+
+namespace content {
+class RenderViewHost;
+}
 
 namespace file_manager {
 
@@ -28,6 +33,18 @@ GURL FindPreferredIcon(const google_apis::InstalledApp::IconList& icons,
 
 // The preferred icon size, which should usually be used for FindPreferredIcon;
 const int kPreferredIconSize = 16;
+
+// Returns the local FilePath associated with |url|. If the file isn't of the
+// type FileSystemBackend handles, returns an empty
+// FilePath. |render_view_host| and |profile| are needed to obtain the
+// FileSystemContext currently in use.
+//
+// Local paths will look like "/home/chronos/user/Downloads/foo/bar.txt" or
+// "/special/drive/foo/bar.txt".
+base::FilePath GetLocalPathFromURL(
+    content::RenderViewHost* render_view_host,
+    Profile* profile,
+    const GURL& url);
 
 }  // namespace file_manager
 
