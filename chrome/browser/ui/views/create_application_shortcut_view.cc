@@ -234,11 +234,13 @@ void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
       parent_window)->Show();
 }
 
-void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                        Profile* profile,
-                                        const extensions::Extension* app) {
+void ShowCreateChromeAppShortcutsDialog(
+    gfx::NativeWindow parent_window,
+    Profile* profile,
+    const extensions::Extension* app,
+    const base::Closure& close_callback) {
   CreateBrowserModalDialogViews(
-      new CreateChromeApplicationShortcutView(profile, app),
+      new CreateChromeApplicationShortcutView(profile, app, close_callback),
       parent_window)->Show();
 }
 
@@ -504,10 +506,12 @@ void CreateUrlApplicationShortcutView::DidDownloadFavicon(
 
 CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     Profile* profile,
-    const extensions::Extension* app) :
-      CreateApplicationShortcutView(profile),
-      app_(app),
-      weak_ptr_factory_(this) {
+    const extensions::Extension* app,
+    const base::Closure& close_callback)
+        : CreateApplicationShortcutView(profile),
+          app_(app),
+          close_callback_(close_callback),
+          weak_ptr_factory_(this) {
   // Required by InitControls().
   shortcut_info_.title = UTF8ToUTF16(app->name());
   shortcut_info_.description = UTF8ToUTF16(app->description());
@@ -525,6 +529,16 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
 }
 
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
+
+bool CreateChromeApplicationShortcutView::Accept() {
+  close_callback_.Run();
+  return CreateApplicationShortcutView::Accept();
+}
+
+bool CreateChromeApplicationShortcutView::Cancel() {
+  close_callback_.Run();
+  return CreateApplicationShortcutView::Cancel();
+}
 
 // Called when the app's ShortcutInfo (with icon) is loaded.
 void CreateChromeApplicationShortcutView::OnShortcutInfoLoaded(

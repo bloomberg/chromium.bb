@@ -118,15 +118,20 @@ class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
 class CreateChromeApplicationShortcutView
     : public CreateApplicationShortcutView {
  public:
-  CreateChromeApplicationShortcutView(Profile* profile,
-                                      const extensions::Extension* app);
+  CreateChromeApplicationShortcutView(
+      Profile* profile,
+      const extensions::Extension* app,
+      const base::Closure& close_callback);
   virtual ~CreateChromeApplicationShortcutView();
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
  private:
   void OnShortcutInfoLoaded(
       const ShellIntegration::ShortcutInfo& shortcut_info);
 
   const extensions::Extension* app_;
+  base::Closure close_callback_;
 
   base::WeakPtrFactory<CreateChromeApplicationShortcutView> weak_ptr_factory_;
 

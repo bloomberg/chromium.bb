@@ -1147,7 +1147,8 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
 void BrowserView::ShowCreateChromeAppShortcutsDialog(
     Profile* profile,
     const extensions::Extension* app) {
-  chrome::ShowCreateChromeAppShortcutsDialog(GetNativeWindow(), profile, app);
+  chrome::ShowCreateChromeAppShortcutsDialog(
+      GetNativeWindow(), profile, app, base::Closure());
 }
 
 void BrowserView::UserChangedTheme() {

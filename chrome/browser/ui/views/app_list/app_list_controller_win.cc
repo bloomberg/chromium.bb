@@ -454,7 +454,11 @@ void AppListControllerDelegateWin::DoCreateShortcutsFlow(
 
   gfx::NativeWindow parent_hwnd =
       view->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-  chrome::ShowCreateChromeAppShortcutsDialog(parent_hwnd, profile, extension);
+  OnShowExtensionPrompt();
+  chrome::ShowCreateChromeAppShortcutsDialog(
+      parent_hwnd, profile, extension,
+      base::Bind(&AppListControllerDelegateWin::OnCloseExtensionPrompt,
+                 base::Unretained(this)));
 }
 
 void AppListControllerDelegateWin::CreateNewWindow(Profile* profile,

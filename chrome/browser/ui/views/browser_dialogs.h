@@ -59,9 +59,11 @@ void EditSearchEngine(gfx::NativeWindow parent,
                       Profile* profile);
 
 // Shows the create chrome app shortcut dialog box.
-void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                        Profile* profile,
-                                        const extensions::Extension* app);
+void ShowCreateChromeAppShortcutsDialog(
+    gfx::NativeWindow parent_window,
+    Profile* profile,
+    const extensions::Extension* app,
+    const base::Closure& close_callback);
 
 }  // namespace chrome
 
