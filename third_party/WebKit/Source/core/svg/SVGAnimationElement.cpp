@@ -33,8 +33,8 @@
 #include "core/page/UseCounter.h"
 #include "core/platform/FloatConversion.h"
 #include "core/svg/SVGAnimateElement.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "core/svg/SVGStyledElement.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {
@@ -362,10 +362,8 @@ bool SVGAnimationElement::isAccumulated() const
 bool SVGAnimationElement::isTargetAttributeCSSProperty(SVGElement* targetElement, const QualifiedName& attributeName)
 {
     ASSERT(targetElement);
-    if (!targetElement->isSVGStyledElement())
-        return false;
 
-    return SVGStyledElement::isAnimatableCSSProperty(attributeName);
+    return SVGElement::isAnimatableCSSProperty(attributeName);
 }
 
 SVGAnimationElement::ShouldApplyAnimation SVGAnimationElement::shouldApplyAnimation(SVGElement* targetElement, const QualifiedName& attributeName)
@@ -643,7 +641,6 @@ void SVGAnimationElement::updateAnimation(float percent, unsigned repeatCount, S
 void SVGAnimationElement::computeCSSPropertyValue(SVGElement* element, CSSPropertyID id, String& value)
 {
     ASSERT(element);
-    ASSERT(element->isSVGStyledElement());
 
     // Don't include any properties resulting from CSS Transitions/Animations or SMIL animations, as we want to retrieve the "base value".
     element->setUseOverrideComputedStyle(true);
@@ -662,8 +659,6 @@ void SVGAnimationElement::adjustForInheritance(SVGElement* targetElement, const 
         return;
 
     SVGElement* svgParent = toSVGElement(parent);
-    if (!svgParent->isSVGStyledElement())
-        return;
     computeCSSPropertyValue(svgParent, cssPropertyID(attributeName.localName()), value);
 }
 
@@ -672,9 +667,9 @@ static bool inheritsFromProperty(SVGElement* targetElement, const QualifiedName&
     ASSERT(targetElement);
     DEFINE_STATIC_LOCAL(const AtomicString, inherit, ("inherit", AtomicString::ConstructFromLiteral));
 
-    if (value.isEmpty() || value != inherit || !targetElement->isSVGStyledElement())
+    if (value.isEmpty() || value != inherit)
         return false;
-    return SVGStyledElement::isAnimatableCSSProperty(attributeName);
+    return SVGElement::isAnimatableCSSProperty(attributeName);
 }
 
 void SVGAnimationElement::determinePropertyValueTypes(const String& from, const String& to)

@@ -28,9 +28,9 @@
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGAnimatedTransformList.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGStyledElement.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/SVGUnitTypes.h"
@@ -39,7 +39,7 @@ namespace WebCore {
 
 struct PatternAttributes;
 
-class SVGPatternElement FINAL : public SVGStyledElement,
+class SVGPatternElement FINAL : public SVGElement,
                                 public SVGURIReference,
                                 public SVGTests,
                                 public SVGExternalResourcesRequired,
@@ -62,6 +62,7 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&);
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
 
+    virtual bool rendererIsNeeded(const NodeRenderingContext& context) OVERRIDE { return rendererIsNeededInternal(context); }
     virtual RenderObject* createRenderer(RenderStyle*);
 
     virtual bool selfHasRelativeLengths() const;

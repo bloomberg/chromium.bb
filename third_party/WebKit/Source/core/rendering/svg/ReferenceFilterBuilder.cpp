@@ -44,13 +44,13 @@
 
 namespace WebCore {
 
-// Returns whether or not the SVGStyledElement object contains a valid color-interpolation-filters attribute
-static bool getSVGStyledElementColorSpace(SVGStyledElement* svgStyledElement, ColorSpace& cs)
+// Returns whether or not the SVGElement object contains a valid color-interpolation-filters attribute
+static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
 {
-    if (!svgStyledElement)
+    if (!svgElement)
         return false;
 
-    const RenderObject* renderer = svgStyledElement->renderer();
+    const RenderObject* renderer = svgElement->renderer();
     const RenderStyle* style = renderer ? renderer->style() : 0;
     const SVGRenderStyle* svgStyle = style ? style->svgStyle() : 0;
     EColorInterpolation eColorInterpolation = CI_AUTO;
@@ -59,7 +59,7 @@ static bool getSVGStyledElementColorSpace(SVGStyledElement* svgStyledElement, Co
         eColorInterpolation = svgStyle->colorInterpolationFilters();
     } else {
         // Otherwise, use the slow path by using string comparison (used by external svg files)
-        RefPtr<CSSValue> cssValue = svgStyledElement->getPresentationAttribute(
+        RefPtr<CSSValue> cssValue = svgElement->getPresentationAttribute(
             SVGNames::color_interpolation_filtersAttr.toString());
         if (cssValue.get() && cssValue->isPrimitiveValue()) {
             const CSSPrimitiveValue& primitiveValue = *((CSSPrimitiveValue*)cssValue.get());
@@ -125,7 +125,7 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
     RefPtr<SVGFilterBuilder> builder = SVGFilterBuilder::create(previousEffect, SourceAlpha::create(parentFilter));
 
     ColorSpace filterColorSpace = ColorSpaceDeviceRGB;
-    bool useFilterColorSpace = getSVGStyledElementColorSpace(filterElement, filterColorSpace);
+    bool useFilterColorSpace = getSVGElementColorSpace(filterElement, filterColorSpace);
 
     for (Node* node = filterElement->firstChild(); node; node = node->nextSibling()) {
         if (!node->isSVGElement())
@@ -144,7 +144,7 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
         effectElement->setStandardAttributes(effect.get());
         effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement->primitiveUnitsCurrentValue(), parentFilter->sourceImageRect()));
         ColorSpace colorSpace = filterColorSpace;
-        if (useFilterColorSpace || getSVGStyledElementColorSpace(effectElement, colorSpace))
+        if (useFilterColorSpace || getSVGElementColorSpace(effectElement, colorSpace))
             effect->setOperatingColorSpace(colorSpace);
         builder->add(effectElement->resultCurrentValue(), effect);
     }

@@ -25,7 +25,7 @@
 
 [
     DoNotCheckConstants
-] interface SVGFETurbulenceElement : SVGStyledElement {
+] interface SVGFETurbulenceElement : SVGElement {
     // Turbulence Types
     const unsigned short SVG_TURBULENCE_TYPE_UNKNOWN      = 0;
     const unsigned short SVG_TURBULENCE_TYPE_FRACTALNOISE = 1;

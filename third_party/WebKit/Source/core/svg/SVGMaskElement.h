@@ -23,14 +23,14 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
-#include "core/svg/SVGStyledElement.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 
-class SVGMaskElement FINAL : public SVGStyledElement,
+class SVGMaskElement FINAL : public SVGElement,
                              public SVGTests,
                              public SVGExternalResourcesRequired {
 public:
@@ -47,6 +47,7 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&);
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
 
+    virtual bool rendererIsNeeded(const NodeRenderingContext& context) OVERRIDE { return rendererIsNeededInternal(context); }
     virtual RenderObject* createRenderer(RenderStyle*);
 
     virtual bool selfHasRelativeLengths() const;

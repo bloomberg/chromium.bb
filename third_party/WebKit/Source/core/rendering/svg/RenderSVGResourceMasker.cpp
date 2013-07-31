@@ -131,7 +131,7 @@ bool RenderSVGResourceMasker::drawContentIntoMaskImage(MaskerData* maskerData, C
     // Draw the content into the ImageBuffer.
     for (Node* node = maskElement->firstChild(); node; node = node->nextSibling()) {
         RenderObject* renderer = node->renderer();
-        if (!node->isSVGElement() || !toSVGElement(node)->isSVGStyledElement() || !renderer)
+        if (!node->isSVGElement() || !renderer)
             continue;
         if (renderer->needsLayout())
             return false;
@@ -156,7 +156,7 @@ void RenderSVGResourceMasker::calculateMaskContentRepaintRect()
 {
     for (Node* childNode = node()->firstChild(); childNode; childNode = childNode->nextSibling()) {
         RenderObject* renderer = childNode->renderer();
-        if (!childNode->isSVGElement() || !toSVGElement(childNode)->isSVGStyledElement() || !renderer)
+        if (!childNode->isSVGElement() || !renderer)
             continue;
         RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)

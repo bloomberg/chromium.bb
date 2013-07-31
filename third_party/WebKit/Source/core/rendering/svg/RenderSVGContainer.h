@@ -31,7 +31,7 @@ class SVGElement;
 
 class RenderSVGContainer : public RenderSVGModelObject {
 public:
-    explicit RenderSVGContainer(SVGStyledElement*);
+    explicit RenderSVGContainer(SVGElement*);
     virtual ~RenderSVGContainer();
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }

@@ -29,7 +29,6 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGMarkerElement.h"
-#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

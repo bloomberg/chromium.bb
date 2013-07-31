@@ -928,10 +928,10 @@ bool SVGUseElement::selfHasRelativeLengths() const
         return false;
 
     SVGElement* element = m_targetElementInstance->correspondingElement();
-    if (!element || !element->isSVGStyledElement())
+    if (!element)
         return false;
 
-    return toSVGStyledElement(element)->hasRelativeLengths();
+    return toSVGElement(element)->hasRelativeLengths();
 }
 
 void SVGUseElement::notifyFinished(Resource* resource)

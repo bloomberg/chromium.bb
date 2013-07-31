@@ -163,7 +163,7 @@ void OwnerType::synchronize##UpperProperty(SVGElement* maskedOwnerType) \
 #define BEGIN_DECLARE_ANIMATED_PROPERTIES(OwnerType) \
 public: \
     static SVGAttributeToPropertyMap& attributeToPropertyMap(); \
-    virtual SVGAttributeToPropertyMap& localAttributeToPropertyMap() const OVERRIDE; \
+    virtual SVGAttributeToPropertyMap& localAttributeToPropertyMap() const; \
     typedef OwnerType UseOwnerType;
 
 #define DECLARE_ANIMATED_PROPERTY(TearOffType, PropertyType, UpperProperty, LowerProperty) \

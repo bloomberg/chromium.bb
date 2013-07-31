@@ -35,11 +35,11 @@
 #include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
-#include "core/svg/SVGStyledElement.h"
+#include "core/svg/SVGElement.h"
 
 namespace WebCore {
 
-RenderSVGModelObject::RenderSVGModelObject(SVGStyledElement* node)
+RenderSVGModelObject::RenderSVGModelObject(SVGElement* node)
     : RenderObject(node)
 {
 }
@@ -140,10 +140,8 @@ static void getElementCTM(SVGElement* element, AffineTransform& transform)
 
     while (current && current->isSVGElement()) {
         SVGElement* currentElement = toSVGElement(current);
-        if (currentElement->isSVGStyledElement()) {
-            localTransform = currentElement->renderer()->localToParentTransform();
-            transform = localTransform.multiply(transform);
-        }
+        localTransform = currentElement->renderer()->localToParentTransform();
+        transform = localTransform.multiply(transform);
         // For getCTM() computation, stop at the nearest viewport element
         if (currentElement == stopAtElement)
             break;

@@ -25,10 +25,10 @@
 #if ENABLE(SVG_FONTS)
 #include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGGlyphMap.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 
@@ -52,7 +52,7 @@ typedef Vector<SVGKerningPair> KerningPairVector;
 
 class SVGMissingGlyphElement;
 
-class SVGFontElement FINAL : public SVGStyledElement
+class SVGFontElement FINAL : public SVGElement
                            , public SVGExternalResourcesRequired {
 public:
     static PassRefPtr<SVGFontElement> create(const QualifiedName&, Document*);

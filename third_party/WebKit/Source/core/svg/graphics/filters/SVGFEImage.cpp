@@ -33,8 +33,8 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
-#include "core/svg/SVGStyledElement.h"
 #include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
@@ -120,7 +120,7 @@ void FEImage::applySoftware()
 
     if (renderer) {
         SVGElement* contextNode = toSVGElement(renderer->node());
-        if (contextNode->isSVGStyledElement() && toSVGStyledElement(contextNode)->hasRelativeLengths()) {
+        if (contextNode->hasRelativeLengths()) {
             SVGLengthContext lengthContext(contextNode);
             float width = 0;
             float height = 0;

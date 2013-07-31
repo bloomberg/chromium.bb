@@ -24,23 +24,23 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGStringList.h"
-#include "core/svg/SVGStyledElement.h"
 #include "core/svg/SVGZoomAndPan.h"
 
 namespace WebCore {
 
-class SVGViewElement FINAL : public SVGStyledElement,
+class SVGViewElement FINAL : public SVGElement,
                              public SVGExternalResourcesRequired,
                              public SVGFitToViewBox,
                              public SVGZoomAndPan {
 public:
     static PassRefPtr<SVGViewElement> create(const QualifiedName&, Document*);
 
-    using SVGStyledElement::ref;
-    using SVGStyledElement::deref;
+    using SVGElement::ref;
+    using SVGElement::deref;
 
     SVGStringList& viewTarget() { return m_viewTarget; }
     SVGZoomAndPanType zoomAndPan() const { return m_zoomAndPan; }

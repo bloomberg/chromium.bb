@@ -22,11 +22,11 @@
 #define SVGStopElement_h
 
 #include "core/svg/SVGAnimatedNumber.h"
-#include "core/svg/SVGStyledElement.h"
+#include "core/svg/SVGElement.h"
 
 namespace WebCore {
 
-class SVGStopElement FINAL : public SVGStyledElement {
+class SVGStopElement FINAL : public SVGElement {
 public:
     static PassRefPtr<SVGStopElement> create(const QualifiedName&, Document*);
 

@@ -24,13 +24,13 @@
 
 #if ENABLE(SVG_FONTS)
 #include "core/platform/graphics/SVGGlyph.h"
-#include "core/svg/SVGStyledElement.h"
+#include "core/svg/SVGElement.h"
 
 namespace WebCore {
 
 class SVGFontData;
 
-class SVGGlyphElement FINAL : public SVGStyledElement {
+class SVGGlyphElement FINAL : public SVGElement {
 public:
     static PassRefPtr<SVGGlyphElement> create(const QualifiedName&, Document*);
 

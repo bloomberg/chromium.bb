@@ -22,7 +22,7 @@
 #define SVGGraphicsElement_h
 
 #include "core/svg/SVGAnimatedTransformList.h"
-#include "core/svg/SVGStyledElement.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGTransformable.h"
 
@@ -31,7 +31,7 @@ namespace WebCore {
 class AffineTransform;
 class Path;
 
-class SVGGraphicsElement : public SVGStyledElement, public SVGTransformable, public SVGTests {
+class SVGGraphicsElement : public SVGElement, public SVGTransformable, public SVGTests {
 public:
     virtual ~SVGGraphicsElement();
 
@@ -56,6 +56,8 @@ protected:
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&);
+
+    virtual bool rendererIsNeeded(const NodeRenderingContext& context) OVERRIDE { return rendererIsNeededInternal(context); }
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGraphicsElement)
         DECLARE_ANIMATED_TRANSFORM_LIST(Transform, transform)

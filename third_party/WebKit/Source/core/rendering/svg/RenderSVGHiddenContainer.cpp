@@ -23,7 +23,7 @@
 
 namespace WebCore {
 
-RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGStyledElement* element)
+RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGElement* element)
     : RenderSVGContainer(element)
 {
 }

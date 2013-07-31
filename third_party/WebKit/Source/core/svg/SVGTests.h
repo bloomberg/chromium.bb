@@ -23,6 +23,7 @@
 
 #include "core/svg/SVGStringList.h"
 #include "core/svg/properties/SVGAnimatedPropertyMacros.h"
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 
