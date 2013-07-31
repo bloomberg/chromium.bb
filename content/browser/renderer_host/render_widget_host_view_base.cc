@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/basic_mouse_wheel_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -265,15 +266,17 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
       flags |= SWP_HIDEWINDOW;
 
 #if defined(USE_AURA)
-    // Without this flag, Windows repaints the parent area uncovered by this
-    // move. However it only looks at the plugin rectangle and ignores the
-    // clipping region. In Aura, the browser chrome could be under the plugin,
-    // and if Windows tries to paint it synchronously inside EndDeferWindowsPos
-    // then it won't have the data and it will flash white. So instead we
-    // manually redraw the plugin.
-    // Why not do this for native Windows? Not sure if there are any performance
-    // issues with this.
-    flags |= SWP_NOREDRAW;
+    if (GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
+      // Without this flag, Windows repaints the parent area uncovered by this
+      // move. However when software compositing is used the clipping region is
+      // ignored. Since in Aura the browser chrome could be under the plugin, if
+      // if Windows tries to paint it synchronously inside EndDeferWindowsPos
+      // then it won't have the data and it will flash white. So instead we
+      // manually redraw the plugin.
+      // Why not do this for native Windows? Not sure if there are any
+      // performance issues with this.
+      flags |= SWP_NOREDRAW;
+    }
 #endif
 
     if (move.rects_valid) {
@@ -311,12 +314,14 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
   ::EndDeferWindowPos(defer_window_pos_info);
 
 #if defined(USE_AURA)
-  for (size_t i = 0; i < moves.size(); ++i) {
-    const WebPluginGeometry& move = moves[i];
-    RECT r;
-    GetWindowRect(move.window, &r);
-    gfx::Rect gr(r);
-    PaintEnumChildProc(move.window, reinterpret_cast<LPARAM>(&gr));
+  if (GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
+    for (size_t i = 0; i < moves.size(); ++i) {
+      const WebPluginGeometry& move = moves[i];
+      RECT r;
+      GetWindowRect(move.window, &r);
+      gfx::Rect gr(r);
+      PaintEnumChildProc(move.window, reinterpret_cast<LPARAM>(&gr));
+    }
   }
 #endif
 }
