@@ -59,6 +59,11 @@
 
     [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
+    // DOM4
+    // iht.com relies on id returning the empty string when no id is present.
+    // Other browsers do this as well. So we don't convert null to JS null.
+    [Reflect] attribute DOMString id;
+
     // Common extensions
 
     [PerWorldBindings] readonly attribute long offsetLeft;
