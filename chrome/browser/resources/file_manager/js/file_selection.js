@@ -533,11 +533,8 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
   }
 
   // Sync the commands availability.
-  if (selection.totalCount != 0) {
-    var commands = this.fileManager_.dialogDom_.querySelectorAll('command');
-    for (var i = 0; i < commands.length; i++)
-      commands[i].canExecuteChange();
-  }
+  if (selection.totalCount != 0)
+    this.fileManager_.updateCommands();
 
   // Update context menu.
   this.fileManager_.updateContextMenuActionItems(null, false);

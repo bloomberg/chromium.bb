@@ -1027,9 +1027,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.driveBuyMoreStorageCommand_ =
         this.dialogDom_.querySelector('#drive-buy-more-space');
 
-    this.newFolderCommand_ =
-        this.dialogDom_.querySelector('command#newfolder');
-
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
 
@@ -1993,6 +1990,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   FileManager.prototype.onDriveConnectionChanged_ = function() {
     var connection = this.volumeManager_.getDriveConnectionState();
+    this.updateCommands();
     if (this.dialogContainer_)
       this.dialogContainer_.setAttribute('connection', connection.type);
   };
@@ -2419,11 +2417,24 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.closeOnUnmount_ = false;
     }
 
-    this.newFolderCommand_.canExecuteChange();
-
+    this.updateCommands();
     this.updateUnformattedDriveStatus_();
     this.updateTitle_();
     this.updateGearMenu_();
+  };
+
+  /**
+   * Updates commands' states by emiting canExecute events. Should be used
+   * only if there is need to reevaluate states without an user action, eg.
+   * external events.
+   */
+  FileManager.prototype.updateCommands = function() {
+    var commands = this.dialogDom_.querySelectorAll('command');
+    for (var i = 0; i < commands.length; i++) {
+      // Commands may not have been decorated yet.
+      if (commands[i].canExecuteChange)
+        commands[i].canExecuteChange();
+    }
   };
 
   // TODO(haruki): Rename this method. "Drive" here does not refer
@@ -2444,8 +2455,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
       // Update 'canExecute' for format command so the format button's disabled
       // property is properly set.
-      var formatCommand = this.dialogDom_.querySelector('command#format');
-      formatCommand.canExecuteChange(errorNode);
+      this.updateCommands();
     } else {
       this.dialogDom_.removeAttribute('unformatted');
     }
@@ -2659,8 +2669,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.grid_.endBatchUpdates();
     }
 
-    this.newFolderCommand_.canExecuteChange();
-
+    this.updateCommands();
     this.table_.list.startBatchUpdates();
     this.grid_.startBatchUpdates();
     this.scanInProgress_ = true;
@@ -2693,8 +2702,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    this.newFolderCommand_.canExecuteChange();
-
+    this.updateCommands();
     this.hideSpinnerLater_();
     this.refreshCurrentDirectoryMetadata_();
 
@@ -2759,8 +2767,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    this.newFolderCommand_.canExecuteChange();
-
+    this.updateCommands();
     this.hideSpinnerLater_();
     if (this.scanCompletedTimer_) {
       clearTimeout(this.scanCompletedTimer_);
@@ -3789,7 +3796,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.dialogDom_.querySelector('#default-action-separator');
 
     this.openWithCommand_.canExecuteChange();
-
     this.openWithCommand_.setHidden(!(defaultItem && isMultiple));
     this.defaultActionMenuItem_.hidden = !defaultItem;
     defaultActionSeparator.hidden = !defaultItem;
