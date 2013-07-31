@@ -92,8 +92,7 @@ public:
     // Construct a string with UTF-16 data.
     String(const UChar* characters, unsigned length);
 
-    // Construct a string by copying the contents of a vector.  To avoid
-    // copying, consider using String::adopt instead.
+    // Construct a string by copying the contents of a vector.
     // This method will never create a null string. Vectors with size() == 0
     // will return the empty string.
     // NOTE: This is different from String(vector.data(), vector.size())
@@ -149,9 +148,6 @@ public:
             return StringImpl::empty();
         return String(buffer.release());
     }
-
-    template<typename CharType, size_t inlineCapacity>
-    static String adopt(Vector<CharType, inlineCapacity>& vector) { return StringImpl::adopt(vector); }
 
     bool isNull() const { return !m_impl; }
     bool isEmpty() const { return !m_impl || !m_impl->length(); }

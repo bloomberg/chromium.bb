@@ -40,6 +40,8 @@ template <typename CharType>
 class StringBuffer {
     WTF_MAKE_NONCOPYABLE(StringBuffer);
 public:
+    StringBuffer() { }
+
     explicit StringBuffer(unsigned length)
     {
         RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max() / sizeof(CharType));
@@ -60,8 +62,13 @@ public:
 
     void resize(unsigned newLength)
     {
+        RELEASE_ASSERT(newLength <= std::numeric_limits<unsigned>::max() / sizeof(CharType));
+        if (!m_data) {
+            CharType* characters;
+            m_data = StringImpl::createUninitialized(newLength, characters);
+            return;
+        }
         if (newLength > m_data->length()) {
-            RELEASE_ASSERT(newLength <= std::numeric_limits<unsigned>::max() / sizeof(UChar));
             CharType* characters;
             m_data = StringImpl::reallocate(m_data.release(), newLength, characters);
             return;

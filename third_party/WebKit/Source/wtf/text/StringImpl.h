@@ -114,38 +114,15 @@ class WTF_EXPORT StringImpl {
     friend struct WTF::UCharBufferTranslator;
 
 private:
-    enum BufferOwnership {
-        BufferInternal,
-        BufferOwned,
-        // NOTE: Adding more ownership types needs to extend m_hashAndFlags as we're at capacity
-    };
-
     // Used to construct static strings, which have an special refCount that can never hit zero.
     // This means that the static string will never be destroyed, which is important because
     // static strings will be shared across threads & ref-counted in a non-threadsafe manner.
     enum ConstructStaticStringTag { ConstructStaticString };
-    StringImpl(const UChar* characters, unsigned length, ConstructStaticStringTag)
-        : m_data16(characters)
-        , m_refCount(s_refCountFlagIsStaticString)
-        , m_length(length)
-        , m_hashAndFlags(BufferOwned)
-    {
-        // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
-        // with impunity. The empty string is special because it is never entered into
-        // AtomicString's HashKey, but still needs to compare correctly.
-        STRING_STATS_ADD_16BIT_STRING(m_length);
-
-        hash();
-    }
-
-    // Used to construct static strings, which have an special refCount that can never hit zero.
-    // This means that the static string will never be destroyed, which is important because
-    // static strings will be shared across threads & ref-counted in a non-threadsafe manner.
     StringImpl(const LChar* characters, unsigned length, ConstructStaticStringTag)
         : m_data8(characters)
         , m_refCount(s_refCountFlagIsStaticString)
         , m_length(length)
-        , m_hashAndFlags(s_hashFlag8BitBuffer | BufferOwned)
+        , m_hashAndFlags(s_hashFlag8BitBuffer)
     {
         // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
         // with impunity. The empty string is special because it is never entered into
@@ -157,12 +134,11 @@ private:
 
     // FIXME: there has to be a less hacky way to do this.
     enum Force8Bit { Force8BitConstructor };
-    // Create a normal 8-bit string with internal storage (BufferInternal)
     StringImpl(unsigned length, Force8Bit)
         : m_data8(reinterpret_cast<const LChar*>(this + 1))
         , m_refCount(s_refCountIncrement)
         , m_length(length)
-        , m_hashAndFlags(s_hashFlag8BitBuffer | BufferInternal)
+        , m_hashAndFlags(s_hashFlag8BitBuffer)
     {
         ASSERT(m_data8);
         ASSERT(m_length);
@@ -170,12 +146,11 @@ private:
         STRING_STATS_ADD_8BIT_STRING(m_length);
     }
 
-    // Create a normal 16-bit string with internal storage (BufferInternal)
     StringImpl(unsigned length)
         : m_data16(reinterpret_cast<const UChar*>(this + 1))
         , m_refCount(s_refCountIncrement)
         , m_length(length)
-        , m_hashAndFlags(BufferInternal)
+        , m_hashAndFlags(0)
     {
         ASSERT(m_data16);
         ASSERT(m_length);
@@ -183,25 +158,12 @@ private:
         STRING_STATS_ADD_16BIT_STRING(m_length);
     }
 
-    // Create a StringImpl adopting ownership of the provided buffer (BufferOwned)
-    StringImpl(const LChar* characters, unsigned length)
-        : m_data8(characters)
-        , m_refCount(s_refCountIncrement)
-        , m_length(length)
-        , m_hashAndFlags(s_hashFlag8BitBuffer | BufferOwned)
-    {
-        ASSERT(m_data8);
-        ASSERT(m_length);
-
-        STRING_STATS_ADD_8BIT_STRING(m_length);
-    }
-
     enum ConstructFromLiteralTag { ConstructFromLiteral };
     StringImpl(const char* characters, unsigned length, ConstructFromLiteralTag)
         : m_data8(reinterpret_cast<const LChar*>(characters))
         , m_refCount(s_refCountIncrement)
         , m_length(length)
-        , m_hashAndFlags(s_hashFlag8BitBuffer | BufferInternal)
+        , m_hashAndFlags(s_hashFlag8BitBuffer)
     {
         ASSERT(m_data8);
         ASSERT(m_length);
@@ -210,39 +172,6 @@ private:
         STRING_STATS_ADD_8BIT_STRING(0);
     }
 
-    // Create a StringImpl adopting ownership of the provided buffer (BufferOwned)
-    StringImpl(const UChar* characters, unsigned length)
-        : m_data16(characters)
-        , m_refCount(s_refCountIncrement)
-        , m_length(length)
-        , m_hashAndFlags(BufferOwned)
-    {
-        ASSERT(m_data16);
-        ASSERT(m_length);
-
-        STRING_STATS_ADD_16BIT_STRING(m_length);
-    }
-
-    enum CreateEmptyUnique_T { CreateEmptyUnique };
-    StringImpl(CreateEmptyUnique_T)
-        : m_data16(reinterpret_cast<const UChar*>(1))
-        , m_refCount(s_refCountIncrement)
-        , m_length(0)
-    {
-        ASSERT(m_data16);
-        // Set the hash early, so that all empty unique StringImpls have a hash,
-        // and don't use the normal hashing algorithm - the unique nature of these
-        // keys means that we don't need them to match any other string (in fact,
-        // that's exactly the oposite of what we want!), and teh normal hash would
-        // lead to lots of conflicts.
-        unsigned hash = reinterpret_cast<uintptr_t>(this);
-        hash <<= s_flagCount;
-        if (!hash)
-            hash = 1 << s_flagCount;
-        m_hashAndFlags = hash | BufferInternal;
-
-        STRING_STATS_ADD_16BIT_STRING(m_length);
-    }
 public:
     ~StringImpl();
 
@@ -296,14 +225,8 @@ public:
         return adoptRef(new (NotNull, resultImpl) StringImpl(length));
     }
 
-    static PassRefPtr<StringImpl> createEmptyUnique()
-    {
-        return adoptRef(new StringImpl(CreateEmptyUnique));
-    }
-
-    // Reallocate the StringImpl. The originalString must be only owned by the PassRefPtr,
-    // and the buffer ownership must be BufferInternal. Just like the input pointer of realloc(),
-    // the originalString can't be used after this function.
+    // Reallocate the StringImpl. The originalString must be only owned by the PassRefPtr.
+    // Just like the input pointer of realloc(), the originalString can't be used after this function.
     static PassRefPtr<StringImpl> reallocate(PassRefPtr<StringImpl> originalString, unsigned length, LChar*& data);
     static PassRefPtr<StringImpl> reallocate(PassRefPtr<StringImpl> originalString, unsigned length, UChar*& data);
 
@@ -312,30 +235,13 @@ public:
     void truncateAssumingIsolated(unsigned length)
     {
         ASSERT(hasOneRef());
+        ASSERT(!isASCIILiteral());
         ASSERT(length <= m_length);
-        ASSERT(bufferOwnership() == BufferInternal);
         m_length = length;
-    }
-
-    static unsigned flagsOffset() { return OBJECT_OFFSETOF(StringImpl, m_hashAndFlags); }
-    static unsigned flagIs8Bit() { return s_hashFlag8BitBuffer; }
-    static unsigned dataOffset() { return OBJECT_OFFSETOF(StringImpl, m_data8); }
-
-    template<typename CharType, size_t inlineCapacity>
-    static PassRefPtr<StringImpl> adopt(Vector<CharType, inlineCapacity>& vector)
-    {
-        if (size_t size = vector.size()) {
-            ASSERT(vector.data());
-            RELEASE_ASSERT(size <= std::numeric_limits<unsigned>::max());
-            return adoptRef(new StringImpl(vector.releaseBuffer(), size));
-        }
-        return empty();
     }
 
     unsigned length() const { return m_length; }
     bool is8Bit() const { return m_hashAndFlags & s_hashFlag8BitBuffer; }
-    bool hasInternalBuffer() const { return bufferOwnership() == BufferInternal; }
-    bool hasOwnedBuffer() const { return bufferOwnership() == BufferOwned; }
 
     ALWAYS_INLINE const LChar* characters8() const { ASSERT(is8Bit()); return m_data8; }
     ALWAYS_INLINE const UChar* characters16() const { ASSERT(!is8Bit()); return m_data16; }
@@ -353,11 +259,6 @@ public:
     }
 
     size_t sizeInBytes() const;
-
-    bool isEmptyUnique() const
-    {
-        return !length() && !isStatic();
-    }
 
     bool isAtomic() const { return m_hashAndFlags & s_hashFlagIsAtomic; }
     void setIsAtomic(bool isAtomic)
@@ -575,16 +476,14 @@ public:
 #endif
 
 private:
-
     bool isASCIILiteral() const
     {
-        return is8Bit() && hasInternalBuffer() && reinterpret_cast<const void*>(m_data8) != reinterpret_cast<const void*>(this + 1);
+        return is8Bit() && length() && reinterpret_cast<const void*>(m_data8) != reinterpret_cast<const void*>(this + 1);
     }
 
     // This number must be at least 2 to avoid sharing empty, null as well as 1 character strings from SmallStrings.
     static const unsigned s_copyCharsInlineCutOff = 20;
 
-    BufferOwnership bufferOwnership() const { return static_cast<BufferOwnership>(m_hashAndFlags & s_hashMaskBufferOwnership); }
     template <class UCharPredicate> PassRefPtr<StringImpl> stripMatchedCharacters(UCharPredicate);
     template <typename CharType, class UCharPredicate> PassRefPtr<StringImpl> simplifyMatchedCharactersToSpace(UCharPredicate);
     NEVER_INLINE unsigned hashSlowCase() const;
@@ -593,15 +492,14 @@ private:
     static const unsigned s_refCountFlagIsStaticString = 0x1;
     static const unsigned s_refCountIncrement = 0x2; // This allows us to ref / deref without disturbing the static string flag.
 
-    // The bottom 8 bits in the hash are flags, of which only 4 are currently in use.
+    // The bottom 8 bits in the hash are flags, of which only 3 are currently in use.
     static const unsigned s_flagCount = 8;
     static const unsigned s_flagMask = (1u << s_flagCount) - 1;
     COMPILE_ASSERT(s_flagCount == StringHasher::flagCount, StringHasher_reserves_enough_bits_for_StringImpl_flags);
 
-    static const unsigned s_hashFlagDidReportCost = 1u << 3;
-    static const unsigned s_hashFlagIsAtomic = 1u << 2;
-    static const unsigned s_hashFlag8BitBuffer = 1u << 1;
-    static const unsigned s_hashMaskBufferOwnership = 1u;
+    static const unsigned s_hashFlagDidReportCost = 1u << 2;
+    static const unsigned s_hashFlagIsAtomic = 1u << 1;
+    static const unsigned s_hashFlag8BitBuffer = 1u << 0;
 
 #ifdef STRING_STATS
     static StringStats m_stringStats;
@@ -616,7 +514,7 @@ public:
         unsigned m_hashAndFlags;
 
         static const unsigned s_initialRefCount = s_refCountFlagIsStaticString;
-        static const unsigned s_initialFlags = s_hashFlag8BitBuffer | BufferInternal;
+        static const unsigned s_initialFlags = s_hashFlag8BitBuffer;
         static const unsigned s_hashShift = s_flagCount;
     };
 

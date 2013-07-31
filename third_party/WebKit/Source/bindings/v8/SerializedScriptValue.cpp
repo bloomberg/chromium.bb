@@ -280,7 +280,7 @@ private:
 class Writer {
     WTF_MAKE_NONCOPYABLE(Writer);
 public:
-    Writer(v8::Isolate* isolate)
+    explicit Writer(v8::Isolate* isolate)
         : m_position(0)
         , m_isolate(isolate)
     {
@@ -532,7 +532,7 @@ public:
         doWriteUint32(length);
     }
 
-    Vector<BufferValueType>& data()
+    StringBuffer<BufferValueType>& data()
     {
         fillHole();
         return m_buffer;
@@ -646,7 +646,7 @@ private:
     void ensureSpace(int extra)
     {
         COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
-        m_buffer.grow((m_position + extra + 1) / 2); // "+ 1" to round up.
+        m_buffer.resize((m_position + extra + 1) / 2); // "+ 1" to round up.
     }
 
     void fillHole()
@@ -660,7 +660,7 @@ private:
 
     uint8_t* byteAt(int position)
     {
-        return reinterpret_cast<uint8_t*>(m_buffer.data()) + position;
+        return reinterpret_cast<uint8_t*>(m_buffer.characters()) + position;
     }
 
     int v8StringWriteOptions()
@@ -668,7 +668,7 @@ private:
         return v8::String::NO_NULL_TERMINATION;
     }
 
-    Vector<BufferValueType> m_buffer;
+    StringBuffer<BufferValueType> m_buffer;
     unsigned m_position;
     v8::Isolate* m_isolate;
 };
@@ -2269,7 +2269,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const String& da
 {
     Writer writer(isolate);
     writer.writeWebCoreString(data);
-    String wireData = StringImpl::adopt(writer.data());
+    String wireData = String::adopt(writer.data());
     return adoptRef(new SerializedScriptValue(wireData));
 }
 
@@ -2287,7 +2287,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::nullValue(v8::Isolate* 
 {
     Writer writer(isolate);
     writer.writeNull();
-    String wireData = StringImpl::adopt(writer.data());
+    String wireData = String::adopt(writer.data());
     return adoptRef(new SerializedScriptValue(wireData));
 }
 
@@ -2300,7 +2300,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::undefinedValue(v8::Isol
 {
     Writer writer(isolate);
     writer.writeUndefined();
-    String wireData = StringImpl::adopt(writer.data());
+    String wireData = String::adopt(writer.data());
     return adoptRef(new SerializedScriptValue(wireData));
 }
 
@@ -2316,7 +2316,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::booleanValue(bool value
         writer.writeTrue();
     else
         writer.writeFalse();
-    String wireData = StringImpl::adopt(writer.data());
+    String wireData = String::adopt(writer.data());
     return adoptRef(new SerializedScriptValue(wireData));
 }
 
@@ -2329,7 +2329,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::numberValue(double valu
 {
     Writer writer(isolate);
     writer.writeNumber(value);
-    String wireData = StringImpl::adopt(writer.data());
+    String wireData = String::adopt(writer.data());
     return adoptRef(new SerializedScriptValue(wireData));
 }
 
@@ -2461,7 +2461,8 @@ SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, Messag
         didThrow = true;
         return;
     case Serializer::Success:
-        m_data = String(StringImpl::adopt(writer.data())).isolatedCopy();
+        // FIXME: This call to isolatedCopy should be redundant.
+        m_data = String(String::adopt(writer.data())).isolatedCopy();
         if (arrayBuffers && arrayBuffers->size())
             m_arrayBufferContentsArray = transferArrayBuffers(*arrayBuffers, didThrow, isolate);
         return;

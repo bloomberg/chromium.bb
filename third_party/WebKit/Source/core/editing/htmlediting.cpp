@@ -52,6 +52,7 @@
 #include "core/rendering/RenderObject.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
 
 using namespace std;
@@ -355,27 +356,32 @@ int lastOffsetForEditing(const Node* node)
 
 String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfParagraph, bool endIsEndOfParagraph)
 {
-    Vector<UChar> rebalancedString;
-    append(rebalancedString, string);
+    unsigned length = string.length();
+
+    StringBuilder rebalancedString;
+    rebalancedString.reserveCapacity(length);
 
     bool previousCharacterWasSpace = false;
-    for (size_t i = 0; i < rebalancedString.size(); i++) {
-        if (!isWhitespace(rebalancedString[i])) {
+    for (size_t i = 0; i < length; i++) {
+        UChar c = string[i];
+        if (!isWhitespace(c)) {
+            rebalancedString.append(c);
             previousCharacterWasSpace = false;
             continue;
         }
 
-        if (previousCharacterWasSpace || (!i && startIsStartOfParagraph) || (i + 1 == rebalancedString.size() && endIsEndOfParagraph)) {
-            rebalancedString[i] = noBreakSpace;
+        if (previousCharacterWasSpace || (!i && startIsStartOfParagraph) || (i + 1 == length && endIsEndOfParagraph)) {
+            rebalancedString.append(noBreakSpace);
             previousCharacterWasSpace = false;
         } else {
-            rebalancedString[i] = ' ';
+            rebalancedString.append(' ');
             previousCharacterWasSpace = true;
         }
-
     }
 
-    return String::adopt(rebalancedString);
+    ASSERT(rebalancedString.length() == length);
+
+    return rebalancedString.toString();
 }
 
 bool isTableStructureNode(const Node *node)

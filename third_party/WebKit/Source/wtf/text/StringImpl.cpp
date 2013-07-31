@@ -258,18 +258,6 @@ StringImpl::~StringImpl()
 
     if (isAtomic())
         AtomicString::remove(this);
-
-    BufferOwnership ownership = bufferOwnership();
-
-    if (ownership == BufferInternal)
-        return;
-    if (ownership == BufferOwned) {
-        // We use m_data8, but since it is a union with m_data16 this works either way.
-        ASSERT(m_data8);
-        fastFree(const_cast<LChar*>(m_data8));
-        return;
-    }
-    ASSERT_NOT_REACHED();
 }
 
 PassRefPtr<StringImpl> StringImpl::createFromLiteral(const char* characters, unsigned length)
@@ -326,8 +314,8 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& 
 PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalString, unsigned length, LChar*& data)
 {
     ASSERT(originalString->is8Bit());
+    ASSERT(!originalString->isASCIILiteral());
     ASSERT(originalString->hasOneRef());
-    ASSERT(originalString->bufferOwnership() == BufferInternal);
 
     if (!length) {
         data = 0;
@@ -347,8 +335,8 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
 PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalString, unsigned length, UChar*& data)
 {
     ASSERT(!originalString->is8Bit());
+    ASSERT(!originalString->isASCIILiteral());
     ASSERT(originalString->hasOneRef());
-    ASSERT(originalString->bufferOwnership() == BufferInternal);
 
     if (!length) {
         data = 0;
