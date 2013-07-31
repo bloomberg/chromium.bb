@@ -361,31 +361,6 @@ void EnsureDirectoryExists(Profile* profile,
   }
 }
 
-void ConvertResourceEntryToPlatformFileInfo(
-    const PlatformFileInfoProto& entry,
-    base::PlatformFileInfo* file_info) {
-  file_info->size = entry.size();
-  file_info->is_directory = entry.is_directory();
-  file_info->is_symbolic_link = entry.is_symbolic_link();
-  file_info->last_modified = base::Time::FromInternalValue(
-      entry.last_modified());
-  file_info->last_accessed = base::Time::FromInternalValue(
-      entry.last_accessed());
-  file_info->creation_time = base::Time::FromInternalValue(
-      entry.creation_time());
-}
-
-void ConvertPlatformFileInfoToResourceEntry(
-    const base::PlatformFileInfo& file_info,
-    PlatformFileInfoProto* entry) {
-  entry->set_size(file_info.size);
-  entry->set_is_directory(file_info.is_directory);
-  entry->set_is_symbolic_link(file_info.is_symbolic_link);
-  entry->set_last_modified(file_info.last_modified.ToInternalValue());
-  entry->set_last_accessed(file_info.last_accessed.ToInternalValue());
-  entry->set_creation_time(file_info.creation_time.ToInternalValue());
-}
-
 void EmptyFileOperationCallback(FileError error) {
 }
 

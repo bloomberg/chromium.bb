@@ -15,7 +15,6 @@ class Profile;
 
 namespace base {
 class FilePath;
-struct PlatformFileInfo;
 }
 
 namespace fileapi {
@@ -25,7 +24,6 @@ class FileSystemURL;
 namespace drive {
 
 class FileSystemInterface;
-class PlatformFileInfoProto;
 class ResourceEntry;
 
 namespace util {
@@ -180,16 +178,6 @@ void PrepareWritableFileAndRun(Profile* profile,
 void EnsureDirectoryExists(Profile* profile,
                            const base::FilePath& directory,
                            const FileOperationCallback& callback);
-
-// Converts the resource entry to the platform file.
-void ConvertResourceEntryToPlatformFileInfo(
-    const PlatformFileInfoProto& entry,
-    base::PlatformFileInfo* file_info);
-
-// Converts the platform file info to the resource entry.
-void ConvertPlatformFileInfoToResourceEntry(
-    const base::PlatformFileInfo& file_info,
-    PlatformFileInfoProto* entry);
 
 // Does nothing with |error|. Used with functions taking FileOperationCallback.
 void EmptyFileOperationCallback(FileError error);

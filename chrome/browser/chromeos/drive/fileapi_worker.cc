@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/common/fileapi/directory_entry.h"
 
@@ -60,7 +61,7 @@ void RunGetFileInfoCallback(const GetFileInfoCallback& callback,
 
   DCHECK(entry);
   base::PlatformFileInfo file_info;
-  util::ConvertResourceEntryToPlatformFileInfo(entry->file_info(), &file_info);
+  ConvertResourceEntryToPlatformFileInfo(*entry, &file_info);
   callback.Run(base::PLATFORM_FILE_OK, file_info);
 }
 
@@ -118,7 +119,7 @@ void RunCreateSnapshotFileCallback(const CreateSnapshotFileCallback& callback,
   // we have to opt out from this check. We do this by unsetting last_modified
   // value in the file info passed to the CreateSnapshot caller.
   base::PlatformFileInfo file_info;
-  util::ConvertResourceEntryToPlatformFileInfo(entry->file_info(), &file_info);
+  ConvertResourceEntryToPlatformFileInfo(*entry, &file_info);
   file_info.last_modified = base::Time();
 
   // If the file is a hosted document, a temporary JSON file is created to

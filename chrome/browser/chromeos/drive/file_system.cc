@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/drive/drive_api_util.h"
@@ -78,8 +79,7 @@ FileError GetLocallyStoredResourceEntry(
   if (!file_util::GetFileInfo(local_cache_path, &file_info))
     return FILE_ERROR_NOT_FOUND;
 
-  util::ConvertPlatformFileInfoToResourceEntry(file_info,
-                                               entry->mutable_file_info());
+  SetPlatformFileInfoToResourceEntry(file_info, entry);
   return FILE_ERROR_OK;
 }
 

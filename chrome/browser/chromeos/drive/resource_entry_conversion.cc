@@ -8,14 +8,12 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/platform_file.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
-#include "net/base/escape.h"
-#include "url/gurl.h"
 
 namespace drive {
 
@@ -121,6 +119,30 @@ bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
   }
 
   return true;
+}
+
+void ConvertResourceEntryToPlatformFileInfo(const ResourceEntry& entry,
+                                            base::PlatformFileInfo* file_info) {
+  file_info->size = entry.file_info().size();
+  file_info->is_directory = entry.file_info().is_directory();
+  file_info->is_symbolic_link = entry.file_info().is_symbolic_link();
+  file_info->last_modified = base::Time::FromInternalValue(
+      entry.file_info().last_modified());
+  file_info->last_accessed = base::Time::FromInternalValue(
+      entry.file_info().last_accessed());
+  file_info->creation_time = base::Time::FromInternalValue(
+      entry.file_info().creation_time());
+}
+
+void SetPlatformFileInfoToResourceEntry(const base::PlatformFileInfo& file_info,
+                                        ResourceEntry* entry) {
+  PlatformFileInfoProto* entry_file_info = entry->mutable_file_info();
+  entry_file_info->set_size(file_info.size);
+  entry_file_info->set_is_directory(file_info.is_directory);
+  entry_file_info->set_is_symbolic_link(file_info.is_symbolic_link);
+  entry_file_info->set_last_modified(file_info.last_modified.ToInternalValue());
+  entry_file_info->set_last_accessed(file_info.last_accessed.ToInternalValue());
+  entry_file_info->set_creation_time(file_info.creation_time.ToInternalValue());
 }
 
 }  // namespace drive

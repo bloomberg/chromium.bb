@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/browser_thread.h"
@@ -65,9 +66,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
       return FILE_ERROR_FAILED;
 
     *cache_file_path = gdoc_file_path;
-    PlatformFileInfoProto entry_file_info;
-    util::ConvertPlatformFileInfoToResourceEntry(file_info,
-                                                 entry->mutable_file_info());
+    SetPlatformFileInfoToResourceEntry(file_info, entry);
     return FILE_ERROR_OK;
   }
 
@@ -94,12 +93,8 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   // the drive::FS side is also converted to run fully on blocking pool.
   if (cache_entry.is_dirty()) {
     base::PlatformFileInfo file_info;
-    if (file_util::GetFileInfo(*cache_file_path, &file_info)) {
-      PlatformFileInfoProto entry_file_info;
-      util::ConvertPlatformFileInfoToResourceEntry(file_info,
-                                                   &entry_file_info);
-      *entry->mutable_file_info() = entry_file_info;
-    }
+    if (file_util::GetFileInfo(*cache_file_path, &file_info))
+      SetPlatformFileInfoToResourceEntry(file_info, entry);
   }
 
   return FILE_ERROR_OK;
