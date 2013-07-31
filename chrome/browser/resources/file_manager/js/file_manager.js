@@ -1994,6 +1994,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.updateCommands();
     if (this.dialogContainer_)
       this.dialogContainer_.setAttribute('connection', connection.type);
+    if (this.shareDialog_.isShowing()) {
+      this.shareDialog_.hide();
+      this.error.show(str('SHARE_ERROR'));
+    }
   };
 
   /**

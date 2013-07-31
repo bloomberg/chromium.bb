@@ -199,6 +199,9 @@ ShareDialog.prototype.show = function(entry, onFailure) {
     this.webViewWrapper_.style.height = '';
 
     var onError = function() {
+      // Already closed, therefore ignore.
+      if (!this.onQueueTaskFinished_)
+        return;
       onFailure();
       this.hide();
     }.bind(this);
@@ -250,10 +253,21 @@ ShareDialog.prototype.show = function(entry, onFailure) {
         onError();
         return;
       }
+      // Already closed, therefore ignore.
+      if (!this.onQueueTaskFinished_)
+        return;
       this.shareClient_ = new ShareClient(this.webView_,
                                           shareUrl,
                                           this);
       this.shareClient_.load();
     }.bind(this));
   }.bind(this));
+};
+
+/**
+ * Tells whether the share dialog is being shown or not.
+ * @return {boolean} True if shown, false otherwise.
+ */
+ShareDialog.prototype.isShowing = function() {
+  return this.container_.classList.contains('shown');
 };
