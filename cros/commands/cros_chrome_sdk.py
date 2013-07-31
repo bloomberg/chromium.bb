@@ -59,12 +59,15 @@ class SDKFetcher(object):
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
 
-  def __init__(self, cache_dir, board, silent=False):
+  def __init__(self, cache_dir, board, chrome_src=None, silent=False):
     """Initialize the class.
 
     Arguments:
       cache_dir: The toplevel cache dir to use.
       board: The board to manage the SDK for.
+      chrome_src: The location of the chrome checkout.  If unspecified, the
+        cwd is presumed to be within a chrome checkout.
+      silent: If set, the fetcher prints less output.
     """
     self.gs_ctx = gs.GSContext.Cached(cache_dir, init_boto=True)
     self.cache_base = os.path.join(cache_dir, COMMAND_NAME)
@@ -76,6 +79,7 @@ class SDKFetcher(object):
     self.config = cbuildbot_config.FindCanonicalConfigForBoard(board)
     self.gs_base = '%s/%s' % (constants.DEFAULT_ARCHIVE_BUCKET,
                               self.config['name'])
+    self.chrome_src = chrome_src
     self.silent = silent
 
   def _UpdateTarball(self, url, ref):
@@ -172,7 +176,8 @@ class SDKFetcher(object):
       version number in the format '3929.0.0', and |updated| indicates
       whether the version was indeed updated.
     """
-    checkout = commandline.DetermineCheckout(os.getcwd())
+    checkout_dir = self.chrome_src if self.chrome_src else os.getcwd()
+    checkout = commandline.DetermineCheckout(checkout_dir)
     current = self.GetDefaultVersion() or '0'
     if checkout.chrome_src_dir:
       target = self._GetChromeLKGM(checkout.chrome_src_dir)
@@ -391,6 +396,10 @@ class ChromeSDKCommand(cros.CrosCommand):
         '--clang', action='store_true', default=False,
         help='Sets up the environment for building with clang.  Due to a bug '
              'with ninja, requires --make and possibly --chrome-src to be set.')
+    parser.add_argument(
+        '--cwd', type=osutils.ExpandPath,
+        help='Specifies a directory to switch to after setting up the SDK '
+             'shell.  Defaults to the current directory.')
     parser.add_argument(
         '--internal', action='store_true', default=False,
         help='Sets up SDK for building official (internal) Chrome '
@@ -747,6 +756,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     # Lazy initialize because SDKFetcher creates a GSContext() object in its
     # constructor, which may block on user input.
     self.sdk = SDKFetcher(self.options.cache_dir, self.options.board,
+                          chrome_src=self.options.chrome_src,
                           silent=self.silent)
 
     if not self.sdk.config['internal']:
@@ -792,4 +802,4 @@ class ChromeSDKCommand(cros.CrosCommand):
 
         cros_build_lib.RunCommand(
             bash_cmd, print_cmd=False, debug_level=logging.CRITICAL,
-            error_code_ok=True, extra_env=extra_env)
+            error_code_ok=True, extra_env=extra_env, cwd=self.options.cwd)
