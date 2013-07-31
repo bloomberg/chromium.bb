@@ -1370,6 +1370,42 @@ TEST_F(RenderTextTest, CaretWidth) {
   EXPECT_GE(render_text->GetUpdatedCursorBounds().width(), 1);
 }
 
+TEST_F(RenderTextTest, SelectWord) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetText(ASCIIToUTF16(" foo  a.bc.d bar"));
+
+  struct {
+    size_t cursor;
+    size_t selection_start;
+    size_t selection_end;
+  } cases[] = {
+    { 0,   0,  1 },
+    { 1,   1,  4 },
+    { 2,   1,  4 },
+    { 3,   1,  4 },
+    { 4,   4,  6 },
+    { 5,   4,  6 },
+    { 6,   6,  7 },
+    { 7,   7,  8 },
+    { 8,   8, 10 },
+    { 9,   8, 10 },
+    { 10, 10, 11 },
+    { 11, 11, 12 },
+    { 12, 12, 13 },
+    { 13, 13, 16 },
+    { 14, 13, 16 },
+    { 15, 13, 16 },
+    { 16, 13, 16 },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    render_text->SetCursorPosition(cases[i].cursor);
+    render_text->SelectWord();
+    EXPECT_EQ(ui::Range(cases[i].selection_start, cases[i].selection_end),
+              render_text->selection());
+  }
+}
+
 // Make sure the last word is selected when the cursor is at text.length().
 TEST_F(RenderTextTest, LastWordSelected) {
   const std::string kTestURL1 = "http://www.google.com";
