@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -15,12 +16,9 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
-#endif
 
 namespace {
 
@@ -191,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
                        SwitchToProfile) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 

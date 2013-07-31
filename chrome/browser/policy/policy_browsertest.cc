@@ -76,6 +76,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_context.h"
@@ -129,10 +130,6 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chromeos/audio/audio_pref_handler.h"
-#endif
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
 #endif
 
 using content::BrowserThread;
@@ -662,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(LocalePolicyTest, ApplicationLocaleValue) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
@@ -1200,7 +1197,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, WebStoreIconHidden) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
@@ -1489,7 +1486,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallSources) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
@@ -1811,7 +1808,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_DisableScreenshotsFeedback) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
@@ -2186,7 +2183,7 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
 IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, RunTest) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 

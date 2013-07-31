@@ -8,6 +8,7 @@
 // they work.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -34,10 +36,6 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
-#endif
 
 using content::BrowserThread;
 using content::InterstitialPage;
@@ -622,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareDontProceed) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
@@ -673,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
                        MalwareIframeDontProceed) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
@@ -735,7 +733,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ProceedDisabled) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
@@ -768,7 +766,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ProceedDisabled) {
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ReportingDisabled) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
@@ -801,7 +799,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ReportingDisabled) {
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingDontProceed) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 

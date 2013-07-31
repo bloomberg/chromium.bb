@@ -41,6 +41,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -63,10 +64,6 @@
 #include "net/url_request/url_request_job.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
-#endif
 
 using content::BrowserThread;
 using content::DevToolsAgentHost;
@@ -2701,7 +2698,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
                        PrerenderNaClPluginEnabled) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 

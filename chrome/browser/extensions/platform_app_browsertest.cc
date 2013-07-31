@@ -4,6 +4,7 @@
 
 #include "apps/shell_window.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/prefs/pref_service.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -44,10 +46,6 @@
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
-#endif
 
 using apps::ShellWindow;
 using content::WebContents;
@@ -797,8 +795,8 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
 #endif
 IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, MAYBE_ReOpenedWithID) {
 #if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/179830).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
   RunTestWithDevTools("minimal_id", RELAUNCH | HAS_ID);

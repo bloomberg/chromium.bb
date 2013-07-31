@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
-#endif
+#include "chrome/test/base/test_switches.h"
 
 // Flaky on ChromeOS, times out on OSX Debug http://crbug.com/251199
 #if defined(OS_CHROMEOS) || (defined(OS_MACOSX) && !defined(NDEBUG))
@@ -17,7 +15,7 @@
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_SessionRestoreApis) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 

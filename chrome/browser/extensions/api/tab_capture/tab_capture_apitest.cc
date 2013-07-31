@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
@@ -21,13 +22,10 @@
 #include "chrome/common/extensions/features/complex_feature.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/features/simple_feature.h"
+#include "chrome/test/base/test_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
-#endif
 
 namespace chrome {
 
@@ -56,7 +54,7 @@ class TabCaptureApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 

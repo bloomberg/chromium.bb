@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/avatar_menu_model.h"
 
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -12,12 +13,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_utils.h"
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
-#endif
 
 namespace {
 
@@ -61,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SignOut) {
 IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SwitchToProfile) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 

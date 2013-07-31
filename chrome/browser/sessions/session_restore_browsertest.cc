@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "content/public/browser/navigation_controller.h"
@@ -49,10 +50,6 @@ using sessions::SerializedNavigationEntryTestHelper;
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#endif
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
 #endif
 
 class SessionRestoreTest : public InProcessBrowserTest {
@@ -858,7 +855,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
                        RestoreAfterClosingTabbedBrowserWithAppAndLaunching) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 

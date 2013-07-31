@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -18,15 +19,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
-#endif
 
 static const char kMainWebrtcTestHtmlPage[] =
     "files/webrtc/webrtc_jsep01_test.html";
@@ -69,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
                        TestAcceptThenDenyWhichShouldBeSticky) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
