@@ -1593,6 +1593,7 @@
         'browser/ui/panels/panel_extension_browsertest.cc',
         'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
+        'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',
         'browser/ui/sync/profile_signin_confirmation_helper_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.h',
@@ -1606,7 +1607,6 @@
         'browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc',
         'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
-        'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
         'browser/ui/views/toolbar_view_browsertest.cc',
         'browser/ui/views/web_dialog_view_browsertest.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.cc',
@@ -1761,7 +1761,7 @@
         ['enable_one_click_signin==0', {
           'sources!': [
             'browser/ui/gtk/one_click_signin_bubble_gtk_browsertest.cc',
-            'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
+            'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',
           ]
         }],
         ['disable_nacl==0', {

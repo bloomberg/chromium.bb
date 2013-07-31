@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -71,6 +72,7 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
@@ -112,6 +114,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/single_split_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
@@ -149,6 +152,8 @@
 #endif
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
+#include "chrome/browser/ui/sync/one_click_signin_bubble_delegate.h"
+#include "chrome/browser/ui/sync/one_click_signin_bubble_links_delegate.h"
 #include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 #endif
 
@@ -1102,8 +1107,18 @@ void BrowserView::ShowOneClickSigninBubble(
     const string16& email,
     const string16& error_message,
     const StartSyncCallback& start_sync_callback) {
+  scoped_ptr<OneClickSigninBubbleDelegate> delegate;
+  delegate.reset(new OneClickSigninBubbleLinksDelegate(browser()));
+
+  views::View* anchor_view;
+  if (type == BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE)
+    anchor_view = toolbar_->app_menu();
+  else
+    anchor_view = toolbar_->location_bar();
+
   OneClickSigninBubbleView::ShowBubble(type, email, error_message,
-                                       toolbar_, start_sync_callback);
+                                       delegate.Pass(), anchor_view,
+                                       start_sync_callback);
 }
 #endif
 

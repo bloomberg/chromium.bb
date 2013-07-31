@@ -9,9 +9,10 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/browser/ui/sync/one_click_signin_bubble_delegate.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -22,7 +23,9 @@ class MessageLoop;
 
 namespace views {
 class GridLayout;
+class ImageButton;
 class LabelButton;
+class View;
 }
 
 // OneClickSigninBubbleView is a view intended to be used as the content of an
@@ -38,7 +41,8 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   static void ShowBubble(BrowserWindow::OneClickSigninBubbleType type,
                          const string16& email,
                          const string16& error_message,
-                         ToolbarView* toolbar_view,
+                         scoped_ptr<OneClickSigninBubbleDelegate> delegate,
+                         views::View* anchor_view,
                          const BrowserWindow::StartSyncCallback& start_sync);
 
   static bool IsShowing();
@@ -52,32 +56,25 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
  protected:
   // Creates a OneClickSigninBubbleView.
   OneClickSigninBubbleView(
-      content::WebContents* web_contents,
-      views::View* anchor_view,
       const string16& error_message,
       const string16& email,
+      scoped_ptr<OneClickSigninBubbleDelegate> delegate,
+      views::View* anchor_view,
       const BrowserWindow::StartSyncCallback& start_sync_callback,
       bool is_sync_dialog);
 
   virtual ~OneClickSigninBubbleView();
 
  private:
-  friend class OneClickSigninBubbleViewBrowserTest;
+  friend class OneClickSigninBubbleViewTest;
 
-  FRIEND_TEST_ALL_PREFIXES(
-    OneClickSigninBubbleViewBrowserTest, BubbleOkButton);
-  FRIEND_TEST_ALL_PREFIXES(
-    OneClickSigninBubbleViewBrowserTest, DialogOkButton);
-  FRIEND_TEST_ALL_PREFIXES(
-    OneClickSigninBubbleViewBrowserTest, DialogUndoButton);
-  FRIEND_TEST_ALL_PREFIXES(
-    OneClickSigninBubbleViewBrowserTest, BubbleAdvancedLink);
-  FRIEND_TEST_ALL_PREFIXES(
-    OneClickSigninBubbleViewBrowserTest, DialogAdvancedLink);
-  FRIEND_TEST_ALL_PREFIXES(
-    OneClickSigninBubbleViewBrowserTest, BubbleLearnMoreLink);
-  FRIEND_TEST_ALL_PREFIXES(
-    OneClickSigninBubbleViewBrowserTest, DialogLearnMoreLink);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewTest, BubbleOkButton);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewTest, DialogOkButton);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewTest, DialogUndoButton);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewTest, BubbleAdvancedLink);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewTest, DialogAdvancedLink);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewTest, BubbleLearnMoreLink);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewTest, DialogLearnMoreLink);
 
   // Overridden from views::BubbleDelegateView:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
@@ -114,8 +111,8 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // Creates advanced link to be used at the bottom of the bubble.
   void InitAdvancedLink();
 
-  // The bubble/dialog will always outlive the web_content, so this is ok.
-  content::WebContents* web_contents_;
+  // Delegate to handle clicking on links in the bubble.
+  scoped_ptr<OneClickSigninBubbleDelegate> delegate_;
 
   // Alternate error message to be displayed.
   const string16 error_message_;

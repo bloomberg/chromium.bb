@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -53,7 +52,8 @@ void OneClickSigninBubbleView::ShowBubble(
     BrowserWindow::OneClickSigninBubbleType type,
     const string16& email,
     const string16& error_message,
-    ToolbarView* toolbar_view,
+    scoped_ptr<OneClickSigninBubbleDelegate> delegate,
+    views::View* anchor_view,
     const BrowserWindow::StartSyncCallback& start_sync) {
   if (IsShowing())
     return;
@@ -61,18 +61,18 @@ void OneClickSigninBubbleView::ShowBubble(
   switch (type) {
     case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE:
       bubble_view_ = new OneClickSigninBubbleView(
-          toolbar_view->GetWebContents(), toolbar_view->app_menu(),
-          error_message, string16(), start_sync, false);
+          error_message, string16(), delegate.Pass(),
+          anchor_view, start_sync, false);
       break;
     case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG:
       bubble_view_ = new OneClickSigninBubbleView(
-          toolbar_view->GetWebContents(), toolbar_view->location_bar(),
-          string16(), string16(), start_sync, true);
+          string16(), string16(), delegate.Pass(),
+          anchor_view, start_sync, true);
       break;
     case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG:
       bubble_view_ = new OneClickSigninBubbleView(
-          toolbar_view->GetWebContents(), toolbar_view->location_bar(),
-          string16(), email, start_sync, true);
+          string16(), email, delegate.Pass(),
+          anchor_view, start_sync, true);
       break;
   }
 
@@ -91,14 +91,14 @@ void OneClickSigninBubbleView::Hide() {
 }
 
 OneClickSigninBubbleView::OneClickSigninBubbleView(
-    content::WebContents* web_contents,
-    views::View* anchor_view,
     const string16& error_message,
     const string16& email,
+    scoped_ptr<OneClickSigninBubbleDelegate> delegate,
+    views::View* anchor_view,
     const BrowserWindow::StartSyncCallback& start_sync_callback,
     bool is_sync_dialog)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      web_contents_(web_contents),
+      delegate_(delegate.Pass()),
       error_message_(error_message),
       email_(email),
       start_sync_callback_(start_sync_callback),
@@ -342,14 +342,7 @@ void OneClickSigninBubbleView::LinkClicked(views::Link* source,
           one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE);
       clicked_learn_more_ = true;
     }
-
-    WindowOpenDisposition location =
-      is_sync_dialog_ ? NEW_WINDOW : NEW_FOREGROUND_TAB;
-
-    content::OpenURLParams params(
-        GURL(chrome::kChromeSyncLearnMoreURL), content::Referrer(),
-        location, content::PAGE_TRANSITION_LINK, false);
-    web_contents_->OpenURL(params);
+    delegate_->OnLearnMoreLinkClicked(is_sync_dialog_);
 
     // don't hide the modal dialog, as this is an informational link
     if (is_sync_dialog_)
@@ -364,10 +357,7 @@ void OneClickSigninBubbleView::LinkClicked(views::Link* source,
       base::ResetAndReturn(&start_sync_callback_).Run(
       OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
     } else {
-      content::OpenURLParams params(
-          GURL(chrome::kChromeUISettingsURL), content::Referrer(),
-          CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
-      web_contents_->OpenURL(params);
+      delegate_->OnAdvancedLinkClicked();
     }
   }
 

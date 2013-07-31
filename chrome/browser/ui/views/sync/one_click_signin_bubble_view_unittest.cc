@@ -1,32 +1,63 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 
 #include "base/bind.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/sync/one_click_signin_bubble_delegate.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget.h"
 
-class OneClickSigninBubbleViewBrowserTest : public InProcessBrowserTest {
+class OneClickSigninBubbleViewTest : public views::ViewsTestBase {
  public:
-  OneClickSigninBubbleViewBrowserTest()
+  OneClickSigninBubbleViewTest()
       : on_start_sync_called_(false),
-        mode_(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST) {
+        mode_(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST),
+        bubble_learn_more_click_count_(0),
+        dialog_learn_more_click_count_(0),
+        advanced_click_count_(0),
+        anchor_widget_(NULL) {
   }
 
+  virtual void SetUp() OVERRIDE {
+    views::ViewsTestBase::SetUp();
+
+    // Create a widget to host the anchor view.
+    anchor_widget_ = new views::Widget;
+    views::Widget::InitParams widget_params = CreateParams(
+        views::Widget::InitParams::TYPE_WINDOW);
+    anchor_widget_->Init(widget_params);
+    anchor_widget_->Show();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    OneClickSigninBubbleView::Hide();
+    anchor_widget_->Close();
+    anchor_widget_ = NULL;
+    views::ViewsTestBase::TearDown();
+  }
+
+ protected:
   OneClickSigninBubbleView* ShowOneClickSigninBubble(
     BrowserWindow::OneClickSigninBubbleType bubble_type) {
-    browser()->window()->ShowOneClickSigninBubble(
+
+    scoped_ptr<OneClickSigninBubbleDelegate> delegate;
+    delegate.reset(new OneClickSigninBubbleTestDelegate(this));
+
+    OneClickSigninBubbleView::ShowBubble(
         bubble_type,
         string16(),
         string16(),
-        base::Bind(&OneClickSigninBubbleViewBrowserTest::OnStartSync, this));
+        delegate.Pass(),
+        anchor_widget_->GetContentsView(),
+        base::Bind(&OneClickSigninBubbleViewTest::OnStartSync,
+                   base::Unretained(this)));
 
     OneClickSigninBubbleView* view =
         OneClickSigninBubbleView::view_for_testing();
@@ -40,28 +71,59 @@ class OneClickSigninBubbleViewBrowserTest : public InProcessBrowserTest {
     mode_ = mode;
   }
 
- protected:
   bool on_start_sync_called_;
   OneClickSigninSyncStarter::StartSyncMode mode_;
+  int bubble_learn_more_click_count_;
+  int dialog_learn_more_click_count_;
+  int advanced_click_count_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OneClickSigninBubbleViewBrowserTest);
+  friend class OneClickSigninBubbleTestDelegate;
+
+  class OneClickSigninBubbleTestDelegate
+      : public OneClickSigninBubbleDelegate {
+   public:
+    // |test| is not owned by this object.
+    explicit OneClickSigninBubbleTestDelegate(
+        OneClickSigninBubbleViewTest* test) : test_(test) {}
+
+    // OneClickSigninBubbleDelegate:
+    virtual void OnLearnMoreLinkClicked(bool is_dialog) OVERRIDE {
+      if (is_dialog)
+        ++test_->dialog_learn_more_click_count_;
+      else
+        ++test_->bubble_learn_more_click_count_;
+    }
+    virtual void OnAdvancedLinkClicked() OVERRIDE {
+      ++test_->advanced_click_count_;
+    }
+
+   private:
+    OneClickSigninBubbleViewTest* test_;
+
+    DISALLOW_COPY_AND_ASSIGN(OneClickSigninBubbleTestDelegate);
+  };
+
+  // Widget to host the anchor view of the bubble. Destroys itself when closed.
+  views::Widget* anchor_widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(OneClickSigninBubbleViewTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, ShowBubble) {
+TEST_F(OneClickSigninBubbleViewTest, ShowBubble) {
   ShowOneClickSigninBubble(BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, ShowDialog) {
+TEST_F(OneClickSigninBubbleViewTest, ShowDialog) {
   ShowOneClickSigninBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, HideBubble) {
+TEST_F(OneClickSigninBubbleViewTest, HideBubble) {
   ShowOneClickSigninBubble(BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE);
 
   OneClickSigninBubbleView::Hide();
@@ -69,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, HideBubble) {
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, HideDialog) {
+TEST_F(OneClickSigninBubbleViewTest, HideDialog) {
   ShowOneClickSigninBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG);
 
@@ -80,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, HideDialog) {
   EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, BubbleOkButton) {
+TEST_F(OneClickSigninBubbleViewTest, BubbleOkButton) {
   OneClickSigninBubbleView* view =
     ShowOneClickSigninBubble(
       BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE);
@@ -99,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, BubbleOkButton) {
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, DialogOkButton) {
+TEST_F(OneClickSigninBubbleViewTest, DialogOkButton) {
   OneClickSigninBubbleView* view = ShowOneClickSigninBubble(
       BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG);
 
@@ -119,8 +181,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, DialogOkButton) {
   EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
-                       DialogUndoButton) {
+TEST_F(OneClickSigninBubbleViewTest, DialogUndoButton) {
   OneClickSigninBubbleView* view = ShowOneClickSigninBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG);
 
@@ -140,63 +201,69 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
   EXPECT_EQ(OneClickSigninSyncStarter::UNDO_SYNC, mode_);
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
-                       BubbleAdvancedLink) {
-  int starting_tab_count = browser()->tab_strip_model()->count();
-
+TEST_F(OneClickSigninBubbleViewTest, BubbleAdvancedLink) {
   OneClickSigninBubbleView* view = ShowOneClickSigninBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE);
 
-  // Simulate pressing a link in the bubble.This should replace the current tab.
+  // Simulate pressing a link in the bubble.
   views::LinkListener* listener = view;
   listener->LinkClicked(view->advanced_link_, 0);
 
-  // View should no longer be showing and the current tab should be replaced.
+  // View should no longer be showing and the OnAdvancedLinkClicked method
+  // of the delegate should have been called.
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
-  int tab_count = browser()->tab_strip_model()->count();
-  EXPECT_EQ(starting_tab_count, tab_count);
+  EXPECT_EQ(1, advanced_click_count_);
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
-                       DialogAdvancedLink) {
-  int starting_tab_count = browser()->tab_strip_model()->count();
-
+TEST_F(OneClickSigninBubbleViewTest, DialogAdvancedLink) {
   OneClickSigninBubbleView* view = ShowOneClickSigninBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG);
 
-  // Simulate pressing a link in the bubble.  This should open a new tab.
+  // Simulate pressing a link in the bubble.
   views::LinkListener* listener = view;
   listener->LinkClicked(view->advanced_link_, 0);
 
-  // View should no longer be showing and a new tab should be opened.
+  // View should no longer be showing. No delegate method should have been
+  // called: the callback is responsible to open the settings page.
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(on_start_sync_called_);
   EXPECT_EQ(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST, mode_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
-  int tab_count = browser()->tab_strip_model()->count();
-  EXPECT_EQ(starting_tab_count, tab_count);
+  EXPECT_EQ(0, advanced_click_count_);
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
-                       BubbleLearnMoreLink) {
-  int starting_tab_count = browser()->tab_strip_model()->count();
-
+TEST_F(OneClickSigninBubbleViewTest, BubbleLearnMoreLink) {
   OneClickSigninBubbleView* view = ShowOneClickSigninBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE);
 
-  // View should no longer be showing and a new tab should be added.
   views::LinkListener* listener = view;
   listener->LinkClicked(view->learn_more_link_, 0);
 
+  // View should no longer be showing and the OnLearnMoreLinkClicked method
+  // of the delegate should have been called with |is_dialog| == false.
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
-  int tab_count = browser()->tab_strip_model()->count();
-  EXPECT_EQ(starting_tab_count + 1, tab_count);
+  EXPECT_EQ(1, bubble_learn_more_click_count_);
+  EXPECT_EQ(0, dialog_learn_more_click_count_);
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
-                       BubblePressEnterKey) {
+TEST_F(OneClickSigninBubbleViewTest, DialogLearnMoreLink) {
+  OneClickSigninBubbleView* view = ShowOneClickSigninBubble(
+      BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG);
+
+  views::LinkListener* listener = view;
+  listener->LinkClicked(view->learn_more_link_, 0);
+
+  // View should still be showing and the OnLearnMoreLinkClicked method
+  // of the delegate should have been called with |is_dialog| == true.
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
+  EXPECT_EQ(0, bubble_learn_more_click_count_);
+  EXPECT_EQ(1, dialog_learn_more_click_count_);
+}
+
+TEST_F(OneClickSigninBubbleViewTest, BubblePressEnterKey) {
   OneClickSigninBubbleView* one_click_view = ShowOneClickSigninBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE);
 
@@ -211,8 +278,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
-                       DialogPressEnterKey) {
+TEST_F(OneClickSigninBubbleViewTest, DialogPressEnterKey) {
   OneClickSigninBubbleView* one_click_view = ShowOneClickSigninBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG);
 
@@ -229,8 +295,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
   EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
-                       BubblePressEscapeKey) {
+TEST_F(OneClickSigninBubbleViewTest, BubblePressEscapeKey) {
   OneClickSigninBubbleView* one_click_view = ShowOneClickSigninBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE);
 
@@ -245,8 +310,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
-                       DialogPressEscapeKey) {
+TEST_F(OneClickSigninBubbleViewTest, DialogPressEscapeKey) {
   OneClickSigninBubbleView* one_click_view = ShowOneClickSigninBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG);
 
