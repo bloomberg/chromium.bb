@@ -2145,6 +2145,20 @@
    fun:_ZN8SkCanvas*draw*TextE*
 }
 {
+   bug_107541_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZL14NewFromFontRefPK8__CTFontPKc
+   fun:_ZL11NewFromNamePKcN10SkTypeface5StyleE
+   fun:_ZL15create_typefacePK10SkTypefacePKcNS_5StyleE
+   fun:_ZN10SkFontHost14CreateTypefaceEPK10SkTypefacePKcNS0_5StyleE
+   fun:_ZN10SkTypeface14CreateFromNameEPKcNS_5StyleE
+   fun:_ZN3gfx8internal16SkiaTextRenderer22SetFontFamilyWithStyleERKSsi
+   fun:_ZN3gfx13RenderTextMac14DrawVisualTextEPNS_6CanvasE
+   fun:_ZN3gfx10RenderText4DrawEPNS_6CanvasE
+   fun:_ZN3gfx43RenderTextTest_SelectionKeepsLigatures_Test8TestBodyEv
+}
+{
    bug_109994
    Memcheck:Leak
    ...
