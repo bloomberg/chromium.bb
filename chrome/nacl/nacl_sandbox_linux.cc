@@ -20,14 +20,6 @@ using playground2::Sandbox;
 
 namespace {
 
-inline bool IsPlatformX86() {
-#if defined(__x86_64__) || defined(__i386__)
-  return true;
-#else
-  return false;
-#endif
-}
-
 // On ARM and x86_64, System V shared memory calls have each their own system
 // call, while on i386 they are multiplexed.
 #if defined(__x86_64__) || defined(__arm__)
@@ -139,9 +131,6 @@ void RunSandboxSanityChecks() {
 }  // namespace
 
 bool InitializeBpfSandbox() {
-  // TODO(jln): enable the sandbox on ARM as well.
-  if (!IsPlatformX86())
-    return false;
   bool sandbox_is_initialized =
       content::InitializeSandbox(NaClBpfSandboxPolicy);
   if (sandbox_is_initialized) {
