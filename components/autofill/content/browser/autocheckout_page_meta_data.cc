@@ -9,7 +9,7 @@ namespace autofill {
 AutocheckoutPageMetaData::AutocheckoutPageMetaData()
     : current_page_number(-1),
       total_pages(-1),
-      ignore_ajax(false) {}
+      ignore_ajax(true) {}
 
 AutocheckoutPageMetaData::~AutocheckoutPageMetaData() {}
 

@@ -193,7 +193,7 @@ TEST_F(AutofillQueryXmlParserTest, MAYBE_ParseAutofillFlow) {
   EXPECT_EQ(1U, field_infos_.size());
   EXPECT_EQ(1, page_meta_data_.current_page_number);
   EXPECT_EQ(10, page_meta_data_.total_pages);
-  EXPECT_FALSE(page_meta_data_.ignore_ajax);
+  EXPECT_TRUE(page_meta_data_.ignore_ajax);
   EXPECT_EQ("foo", page_meta_data_.proceed_element_descriptor.descriptor);
   EXPECT_EQ(autofill::WebElementDescriptor::ID,
             page_meta_data_.proceed_element_descriptor.retrieval_method);

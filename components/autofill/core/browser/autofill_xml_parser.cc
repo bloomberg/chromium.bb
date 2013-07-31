@@ -123,7 +123,7 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
       else if (attribute_name.compare("total_pages") == 0)
         page_meta_data_->total_pages = GetIntValue(context, *attrs);
       else if (attribute_name.compare("ignore_ajax") == 0)
-        page_meta_data_->ignore_ajax = strcmp(*attrs, "true") == 0;
+        page_meta_data_->ignore_ajax = strcmp(*attrs, "false") != 0;
       ++attrs;
     }
   } else if (element.compare("page_advance_button") == 0) {
