@@ -914,7 +914,8 @@ bool GpuDataManagerImplPrivate::IsUsingAcceleratedSurface() const {
 #endif
 
 bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
-  return !IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
+  return !ShouldUseSwiftShader() &&
+         !IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
 }
 
 void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIs(
