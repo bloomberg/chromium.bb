@@ -20,6 +20,8 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -28,9 +30,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
 
@@ -150,23 +150,30 @@ void StartupAppLauncher::InitializeNetwork() {
 void StartupAppLauncher::InitializeTokenService() {
   chromeos::UpdateAppLaunchSplashScreenState(
       chromeos::APP_LAUNCH_STATE_LOADING_TOKEN_SERVICE);
-  TokenService* token_service =
-      TokenServiceFactory::GetForProfile(profile_);
-  if (token_service->HasOAuthLoginToken()) {
+  ProfileOAuth2TokenService* profile_token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  if (profile_token_service->RefreshTokenIsAvailable()) {
     InitializeNetwork();
     return;
   }
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
-                 content::Source<TokenService>(token_service));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 content::Source<TokenService>(token_service));
+  // At the end of this method, the execution will be put on hold until
+  // ProfileOAuth2TokenService triggers either OnRefreshTokenAvailable or
+  // OnRefreshTokensLoaded. Given that we want to handle exactly one event,
+  // whichever comes first, both handlers call RemoveObserver on PO2TS. Handling
+  // any of the two events is the only way to resume the execution and enable
+  // Cleanup method to be called, self-invoking a destructor. In destructor
+  // StartupAppLauncher is no longer an observer of PO2TS and there is no need
+  // to call RemoveObserver again.
+  profile_token_service->AddObserver(this);
 
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   token_service->Initialize(GaiaConstants::kChromeSource, profile_);
+
   // Pass oauth2 refresh token from the auth file.
   // TODO(zelidrag): We should probably remove this option after M27.
+  // TODO(fgorski): This can go when we have persistence implemented on PO2TS.
+  // Unless the code is no longer needed.
   if (!auth_params_.refresh_token.empty()) {
     token_service->UpdateCredentialsWithOAuth2(
         GaiaAuthConsumer::ClientOAuthResult(
@@ -179,31 +186,17 @@ void StartupAppLauncher::InitializeTokenService() {
   }
 }
 
-void StartupAppLauncher::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED: {
-      registrar_.RemoveAll();
-      InitializeNetwork();
-      break;
-    }
-    case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
-      TokenService::TokenAvailableDetails* token_details =
-          content::Details<TokenService::TokenAvailableDetails>(
-              details).ptr();
-      if (token_details->service() ==
-              GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
-        registrar_.RemoveAll();
-        InitializeNetwork();
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
+void StartupAppLauncher::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
+      ->RemoveObserver(this);
+  InitializeNetwork();
+}
+
+void StartupAppLauncher::OnRefreshTokensLoaded() {
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
+      ->RemoveObserver(this);
+  InitializeNetwork();
 }
 
 void StartupAppLauncher::Cleanup() {

@@ -12,8 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/events/event_handler.h"
 
@@ -36,7 +35,7 @@ namespace chromeos {
 // If anything goes wrong, it exits app mode and goes back to login screen.
 class StartupAppLauncher
     : public base::SupportsWeakPtr<StartupAppLauncher>,
-      public content::NotificationObserver,
+      public OAuth2TokenService::Observer,
       public net::NetworkChangeNotifier::NetworkChangeObserver,
       public ui::EventHandler {
  public:
@@ -75,10 +74,9 @@ class StartupAppLauncher
   static void LoadOAuthFileOnBlockingPool(KioskOAuthParams* auth_params);
   void OnOAuthFileLoaded(KioskOAuthParams* auth_params);
 
-  // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // OAuth2TokenService::Observer overrides.
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokensLoaded() OVERRIDE;
 
   // net::NetworkChangeNotifier::NetworkChangeObserver overrides:
   virtual void OnNetworkChanged(
@@ -93,7 +91,6 @@ class StartupAppLauncher
   int64 launch_splash_start_time_;
 
   scoped_refptr<extensions::WebstoreStandaloneInstaller> installer_;
-  content::NotificationRegistrar registrar_;
   base::OneShotTimer<StartupAppLauncher> network_wait_timer_;
   KioskOAuthParams auth_params_;
 
