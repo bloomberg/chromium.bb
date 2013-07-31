@@ -150,6 +150,7 @@ private:
 
 RenderGrid::RenderGrid(Element* element)
     : RenderBlock(element)
+    , m_gridIsDirty(true)
     , m_orderIterator(this)
 {
     // All of our children must be block level.
@@ -158,6 +159,70 @@ RenderGrid::RenderGrid(Element* element)
 
 RenderGrid::~RenderGrid()
 {
+}
+
+void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
+{
+    RenderBlock::addChild(newChild, beforeChild);
+
+    if (gridIsDirty())
+        return;
+
+    RenderBox* newChildBox = toRenderBox(newChild);
+    OwnPtr<GridSpan> rowPositions = resolveGridPositionsFromStyle(newChildBox, ForRows);
+    OwnPtr<GridSpan> columnPositions = resolveGridPositionsFromStyle(newChildBox, ForColumns);
+    if (!rowPositions || !columnPositions) {
+        // The new child requires the auto-placement algorithm to run so we need to recompute the grid fully.
+        dirtyGrid();
+    } else {
+        if (gridRowCount() <= rowPositions->finalPositionIndex || gridColumnCount() <= columnPositions->finalPositionIndex) {
+            // FIXME: We could just insert the new child provided we had a primitive to arbitrarily grow the grid.
+            dirtyGrid();
+        } else {
+            insertItemIntoGrid(newChildBox, GridCoordinate(*rowPositions, *columnPositions));
+        }
+    }
+}
+
+void RenderGrid::removeChild(RenderObject* child)
+{
+    RenderBlock::removeChild(child);
+
+    if (gridIsDirty())
+        return;
+
+    ASSERT(child->isBox());
+    // FIXME: We could avoid dirtying the grid in some cases (e.g. if it's an explicitly positioned element).
+    dirtyGrid();
+}
+
+void RenderGrid::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+{
+    RenderBlock::styleDidChange(diff, oldStyle);
+    if (!oldStyle)
+        return;
+
+    // FIXME: The following checks could be narrowed down if we kept track of which type of grid items we have:
+    // - explicit grid size changes impact negative explicitely positioned and auto-placed grid items.
+    // - named grid lines only impact grid items with named grid lines.
+    // - auto-flow changes only impacts auto-placed children.
+
+    if (explicitGridDidResize(oldStyle)
+        || namedGridLinesDefinitionDidChange(oldStyle)
+        || oldStyle->gridAutoFlow() != style()->gridAutoFlow())
+        dirtyGrid();
+}
+
+bool RenderGrid::explicitGridDidResize(const RenderStyle* oldStyle) const
+{
+    return oldStyle->gridDefinitionColumns().size() != style()->gridDefinitionColumns().size()
+        || oldStyle->gridDefinitionRows().size() != style()->gridDefinitionRows().size();
+}
+
+bool RenderGrid::namedGridLinesDefinitionDidChange(const RenderStyle* oldStyle) const
+{
+    return oldStyle->namedGridRowLines() != style()->namedGridRowLines()
+        || oldStyle->namedGridColumnLines() != style()->namedGridColumnLines();
 }
 
 void RenderGrid::layoutBlock(bool relayoutChildren, LayoutUnit)
@@ -229,8 +294,6 @@ void RenderGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
 
         // FIXME: This should add in the scrollbarWidth (e.g. see RenderFlexibleBox).
     }
-
-    const_cast<RenderGrid*>(this)->clearGrid();
 }
 
 void RenderGrid::computePreferredLogicalWidths()
@@ -621,10 +684,16 @@ void RenderGrid::insertItemIntoGrid(RenderBox* child, size_t rowTrack, size_t co
 
 void RenderGrid::placeItemsOnGrid()
 {
-    ASSERT(!gridWasPopulated());
+    if (!gridIsDirty())
+        return;
+
     ASSERT(m_gridItemCoordinate.isEmpty());
 
     populateExplicitGridAndOrderIterator();
+
+    // We clear the dirty bit here as the grid sizes have been updated, this means
+    // that we can safely call gridRowCount() / gridColumnCount().
+    m_gridIsDirty = false;
 
     Vector<RenderBox*> autoMajorAxisAutoGridItems;
     Vector<RenderBox*> specifiedMajorAxisAutoGridItems;
@@ -657,6 +726,8 @@ void RenderGrid::placeItemsOnGrid()
 
     placeSpecifiedMajorAxisItemsOnGrid(specifiedMajorAxisAutoGridItems);
     placeAutoMajorAxisItemsOnGrid(autoMajorAxisAutoGridItems);
+
+    m_grid.shrinkToFit();
 }
 
 void RenderGrid::populateExplicitGridAndOrderIterator()
@@ -753,10 +824,11 @@ RenderGrid::TrackSizingDirection RenderGrid::autoPlacementMinorAxisDirection() c
     return (flow == AutoFlowColumn) ? ForRows : ForColumns;
 }
 
-void RenderGrid::clearGrid()
+void RenderGrid::dirtyGrid()
 {
-    m_grid.clear();
+    m_grid.resize(0);
     m_gridItemCoordinate.clear();
+    m_gridIsDirty = true;
 }
 
 void RenderGrid::layoutGridItems()
@@ -811,7 +883,6 @@ void RenderGrid::layoutGridItems()
     // FIXME: We should handle min / max logical height.
 
     setLogicalHeight(logicalHeight() + borderAndPaddingLogicalHeight());
-    clearGrid();
 }
 
 GridCoordinate RenderGrid::cachedGridCoordinate(const RenderBox* gridItem) const

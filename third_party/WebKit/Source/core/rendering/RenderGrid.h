@@ -54,10 +54,20 @@ public:
     virtual bool avoidsFloats() const OVERRIDE { return true; }
     virtual bool canCollapseAnonymousBlockChild() const OVERRIDE { return false; }
 
+    void dirtyGrid();
+
 private:
     virtual bool isRenderGrid() const OVERRIDE { return true; }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
     virtual void computePreferredLogicalWidths() OVERRIDE;
+
+    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE;
+    virtual void removeChild(RenderObject*) OVERRIDE;
+
+    virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
+
+    bool explicitGridDidResize(const RenderStyle*) const;
+    bool namedGridLinesDefinitionDidChange(const RenderStyle*) const;
 
     LayoutUnit computePreferredTrackWidth(const GridLength&, size_t) const;
 
@@ -81,7 +91,6 @@ private:
     TrackSizingDirection autoPlacementMinorAxisDirection() const;
 
     void layoutGridItems();
-    void clearGrid();
 
     typedef LayoutUnit (RenderGrid::* SizingFunction)(RenderBox*, TrackSizingDirection, Vector<GridTrack>&);
     typedef LayoutUnit (GridTrack::* AccumulatorGetter)() const;
@@ -116,26 +125,43 @@ private:
 
     virtual void paintChildren(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
 
+    bool gridIsDirty() const { return m_gridIsDirty; }
+
 #ifndef NDEBUG
     bool tracksAreWiderThanMinTrackBreadth(TrackSizingDirection, const Vector<GridTrack>&);
-    bool gridWasPopulated() const { return !m_grid.isEmpty() && !m_grid[0].isEmpty(); }
 #endif
 
     size_t gridColumnCount() const
     {
-        ASSERT(gridWasPopulated());
+        ASSERT(!gridIsDirty());
         return m_grid[0].size();
     }
     size_t gridRowCount() const
     {
-        ASSERT(gridWasPopulated());
+        ASSERT(!gridIsDirty());
         return m_grid.size();
     }
 
     Vector<Vector<Vector<RenderBox*, 1> > > m_grid;
+    bool m_gridIsDirty;
     HashMap<const RenderBox*, GridCoordinate> m_gridItemCoordinate;
     OrderIterator m_orderIterator;
 };
+
+inline RenderGrid* toRenderGrid(RenderObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderGrid());
+    return static_cast<RenderGrid*>(object);
+}
+
+inline const RenderGrid* toRenderGrid(const RenderObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderGrid());
+    return static_cast<const RenderGrid*>(object);
+}
+
+// Catch unneeded cast.
+void toRenderGrid(const RenderGrid*);
 
 } // namespace WebCore
 

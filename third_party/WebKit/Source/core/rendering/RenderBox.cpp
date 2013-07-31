@@ -47,6 +47,7 @@
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
+#include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
@@ -305,6 +306,7 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
     }
 
     updateShapeOutsideInfoAfterStyleChange(style()->shapeOutside(), oldStyle ? oldStyle->shapeOutside() : 0);
+    updateGridPositionAfterStyleChange(oldStyle);
 }
 
 void RenderBox::updateShapeOutsideInfoAfterStyleChange(const ShapeValue* shapeOutside, const ShapeValue* oldShapeOutside)
@@ -319,6 +321,23 @@ void RenderBox::updateShapeOutsideInfoAfterStyleChange(const ShapeValue* shapeOu
     } else {
         ShapeOutsideInfo::removeInfo(this);
     }
+}
+
+void RenderBox::updateGridPositionAfterStyleChange(const RenderStyle* oldStyle)
+{
+    if (!oldStyle || !parent() || !parent()->isRenderGrid())
+        return;
+
+    if (oldStyle->gridColumnStart() == style()->gridColumnStart()
+        && oldStyle->gridColumnEnd() == style()->gridColumnEnd()
+        && oldStyle->gridRowStart() == style()->gridRowStart()
+        && oldStyle->gridRowEnd() == style()->gridRowEnd()
+        && oldStyle->order() == style()->order())
+        return;
+
+    // It should be possible to not dirty the grid in some cases (like moving an explicitly placed grid item).
+    // For now, it's more simple to just always recompute the grid.
+    toRenderGrid(parent())->dirtyGrid();
 }
 
 void RenderBox::updateFromStyle()

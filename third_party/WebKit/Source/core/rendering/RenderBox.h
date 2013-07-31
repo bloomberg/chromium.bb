@@ -622,6 +622,7 @@ protected:
 
 private:
     void updateShapeOutsideInfoAfterStyleChange(const ShapeValue* shapeOutside, const ShapeValue* oldShapeOutside);
+    void updateGridPositionAfterStyleChange(const RenderStyle*);
 
     bool includeVerticalScrollbarSize() const;
     bool includeHorizontalScrollbarSize() const;
