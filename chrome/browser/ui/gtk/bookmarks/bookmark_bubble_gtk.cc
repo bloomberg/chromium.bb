@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
@@ -215,9 +213,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
 
   gtk_box_pack_start(GTK_BOX(bubble_container), content, TRUE, TRUE, 0);
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableBookmarkSyncPromo) &&
-      SyncPromoUI::ShouldShowSyncPromo(profile_)) {
+  if (SyncPromoUI::ShouldShowSyncPromo(profile_)) {
     std::string link_text =
         l10n_util::GetStringUTF8(IDS_BOOKMARK_SYNC_PROMO_LINK);
     char* link_markup = g_markup_printf_escaped(kPromoLinkMarkup,

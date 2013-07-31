@@ -5,7 +5,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -73,12 +71,6 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
 
   BookmarkBubbleControllerTest() : controller_(nil) {
     edits_ = 0;
-  }
-
-  virtual void SetUp() OVERRIDE {
-    CocoaProfileTest::SetUp();
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(switches::kEnableBookmarkSyncPromo);
   }
 
   virtual void TearDown() OVERRIDE {

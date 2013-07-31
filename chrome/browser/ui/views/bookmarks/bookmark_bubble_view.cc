@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 
-#include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_sync_promo_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -249,9 +247,7 @@ void BookmarkBubbleView::Init() {
       0,
       views::kUnrelatedControlVerticalSpacing - kControlBorderWidth);
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableBookmarkSyncPromo) &&
-      SyncPromoUI::ShouldShowSyncPromo(profile_)) {
+  if (SyncPromoUI::ShouldShowSyncPromo(profile_)) {
     // The column layout used for the sync promo.
     cs = layout->AddColumnSet(SYNC_PROMO_COLUMN_SET_ID);
     cs->AddColumn(GridLayout::FILL,

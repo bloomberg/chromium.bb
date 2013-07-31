@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 
@@ -29,9 +27,6 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   // testing::Test:
   virtual void SetUp() OVERRIDE {
     BrowserWithTestWindowTest::SetUp();
-
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(switches::kEnableBookmarkSyncPromo);
 
     profile()->CreateBookmarkModel(true);
     ui_test_utils::WaitForBookmarkModelToLoad(profile());

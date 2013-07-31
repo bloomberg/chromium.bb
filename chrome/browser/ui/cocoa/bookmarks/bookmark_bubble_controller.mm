@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 
-#include "base/command_line.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -17,7 +16,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -75,9 +73,7 @@ using content::UserMetricsAction;
   [[nameTextField_ cell] setUsesSingleLineMode:YES];
 
   Browser* browser = chrome::FindBrowserWithWindow(self.parentWindow);
-  if (SyncPromoUI::ShouldShowSyncPromo(browser->profile()) &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBookmarkSyncPromo)) {
+  if (SyncPromoUI::ShouldShowSyncPromo(browser->profile())) {
     syncPromoController_.reset(
         [[BookmarkSyncPromoController alloc] initWithBrowser:browser]);
     [syncPromoPlaceholder_ addSubview:[syncPromoController_ view]];

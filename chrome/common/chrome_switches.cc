@@ -524,9 +524,6 @@ const char kEnableAutologin[]               = "enable-autologin";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
-// Enables a sync promo that is displayed in the bookmark bubble.
-const char kEnableBookmarkSyncPromo[]       = "enable-bookmark-sync-promo";
-
 // Enables pushing cloud policy to Chrome using an invalidation service.
 const char kEnableCloudPolicyPush[]         = "enable-cloud-policy-push";
 
