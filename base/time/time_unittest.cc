@@ -7,7 +7,6 @@
 #include <time.h>
 
 #include "base/compiler_specific.h"
-#include "base/rand_util.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -616,10 +615,6 @@ TEST(TimeTicks, ThreadNow) {
   if (TimeTicks::IsThreadNowSupported()) {
     TimeTicks begin = TimeTicks::Now();
     TimeTicks begin_thread = TimeTicks::ThreadNow();
-    // Do some arbitrary work
-    double accu = 0.0f;
-    for (double i = 0; i < 1e4f; i++)
-      accu += base::RandDouble();
     // Sleep for 10 milliseconds to get the thread de-scheduled
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
     TimeTicks end_thread = TimeTicks::ThreadNow();
@@ -627,9 +622,6 @@ TEST(TimeTicks, ThreadNow) {
     TimeDelta delta = end - begin;
     TimeDelta delta_thread = end_thread - begin_thread;
     TimeDelta difference = delta - delta_thread;
-    // Make a decision based on accu's value to prevent the compiler from
-    // optimizing away its computation (we don't care what the actual value is)
-    EXPECT_GE(accu, 0.0f);
     EXPECT_GE(difference.InMicroseconds(), 9000);
   }
 }
