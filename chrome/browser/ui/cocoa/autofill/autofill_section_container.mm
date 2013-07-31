@@ -618,6 +618,10 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   [field setFieldValue:text];
 }
 
+- (void)setSuggestionFieldValue:(NSString*)text {
+  [[suggestContainer_ inputField] setFieldValue:text];
+}
+
 - (void)activateFieldForInput:(const autofill::DetailInput&)input {
   if ([self detailInputForType:input.type] != &input)
     return;

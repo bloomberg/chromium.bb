@@ -202,6 +202,19 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   AutofillDialogControllerTest() {}
   virtual ~AutofillDialogControllerTest() {}
 
+  virtual void SetUpOnMainThread() OVERRIDE {
+    autofill::test::DisableSystemServices(browser()->profile());
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+#if defined(OS_MACOSX)
+    // OSX support for requestAutocomplete is still hidden behind a switch.
+    // Pending resolution of http://crbug.com/157274
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableInteractiveAutocomplete);
+#endif
+  }
+
   void InitializeControllerOfType(DialogType dialog_type) {
     FormData form;
     form.name = ASCIIToUTF16("TestForm");
@@ -702,14 +715,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
             controller()->GetTestableView()->GetSize().width());
 }
 
-#if defined(OS_MACOSX)
-// TODO(groby): Implement the necessary functionality and enable this test:
-// http://crbug.com/256864
-#define MAYBE_AutocompleteEvent DISABLED_AutocompleteEvent
-#else
-#define MAYBE_AutocompleteEvent AutocompleteEvent
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_AutocompleteEvent) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocompleteEvent) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
 
@@ -723,17 +729,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_AutocompleteEvent) {
   ExpectDomMessage("success");
 }
 
-#if defined(OS_MACOSX)
-// TODO(groby): Implement the necessary functionality and enable this test:
-// http://crbug.com/256864
-#define MAYBE_AutocompleteErrorEventReasonInvalid \
-    DISABLED_AutocompleteErrorEventReasonInvalid
-#else
-#define MAYBE_AutocompleteErrorEventReasonInvalid \
-    AutocompleteErrorEventReasonInvalid
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       MAYBE_AutocompleteErrorEventReasonInvalid) {
+                       AutocompleteErrorEventReasonInvalid) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name' pattern='.*zebra.*'>");
 
@@ -751,17 +748,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   ExpectDomMessage("error: invalid");
 }
 
-#if defined(OS_MACOSX)
-// TODO(groby): Implement the necessary functionality and enable this test:
-// http://crbug.com/256864
-#define MAYBE_AutocompleteErrorEventReasonCancel \
-    DISABLED_AutocompleteErrorEventReasonCancel
-#else
-#define MAYBE_AutocompleteErrorEventReasonCancel \
-    AutocompleteErrorEventReasonCancel
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       MAYBE_AutocompleteErrorEventReasonCancel) {
+                       AutocompleteErrorEventReasonCancel) {
   SetUpHtmlAndInvoke("<input autocomplete='cc-name'>")->GetTestableView()->
       CancelForTesting();
   ExpectDomMessage("error: cancel");

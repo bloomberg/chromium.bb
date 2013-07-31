@@ -165,7 +165,8 @@ void AutofillDialogCocoa::SetTextContentsOfInput(const DetailInput& input,
 void AutofillDialogCocoa::SetTextContentsOfSuggestionInput(
     DialogSection section,
     const base::string16& text) {
-  // TODO(groby): Implement Mac support for this: http://crbug.com/256864
+  [sheet_controller_ setTextContents:base::SysUTF16ToNSString(text)
+              ofSuggestionForSection:section];
 }
 
 void AutofillDialogCocoa::ActivateInput(const DetailInput& input) {
@@ -403,6 +404,11 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     // TODO(groby): Need to find the section for an input directly - wasteful.
     [[mainContainer_ sectionForId:section] setFieldValue:text forInput:input];
   }
+}
+
+- (void)setTextContents:(NSString*)text
+ ofSuggestionForSection:(autofill::DialogSection)section {
+  [[mainContainer_ sectionForId:section] setSuggestionFieldValue:text];
 }
 
 - (void)activateFieldForInput:(const autofill::DetailInput&)input {

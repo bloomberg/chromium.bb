@@ -93,6 +93,9 @@ namespace autofill {
 - (void)setFieldValue:(NSString*)text
               forInput:(const autofill::DetailInput&)input;
 
+// Sets the value for the suggestion text field.
+- (void)setSuggestionFieldValue:(NSString*)text;
+
 // Activates a given input field, determined by |input|. Does nothing if the
 // field is not part of this section.
 - (void)activateFieldForInput:(const autofill::DetailInput&)input;
