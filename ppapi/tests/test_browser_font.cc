@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_browser_font.h"
 
+#include <string.h>
+
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 #include "ppapi/cpp/image_data.h"
@@ -160,28 +162,40 @@ std::string TestBrowserFont::TestCharPosRTL() {
 // Tests that drawing some text produces "some" output.
 std::string TestBrowserFont::TestDraw() {
   pp::BrowserFontDescription desc;
-  desc.set_size(100);
+  desc.set_family(PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE);
+  desc.set_size(10);
   pp::BrowserFont_Trusted font(instance_, desc);
 
-  const int kSize = 256;
-  pp::ImageData image(instance_, pp::ImageData::GetNativeImageDataFormat(),
-                      pp::Size(kSize, kSize), true);
-  ASSERT_TRUE(!image.is_null());
+  const pp::Size kSize(30, 10);
+  pp::ImageData image(instance_,
+                      PP_IMAGEDATAFORMAT_BGRA_PREMUL,  // 0xAARRGGBB
+                      kSize,
+                      false);  // init_to_zero
+  ASSERT_FALSE(image.is_null());
 
-  const uint32_t kColor = 0xFFFFFFFF;
-  font.DrawSimpleText(&image, "Hello", pp::Point(0, 0), kColor, false);
+  // Draw black text on white canvas.
+  memset(image.data(), 0xFF, 4 * kSize.GetArea());
+  font.DrawSimpleText(&image,
+                      "Hello",
+                      pp::Point(0, 10),  // Baseline position.
+                      0xFF000000,  // Black text.
+                      true);  // image_data_is_opaque.
 
-  // Expect that some pixel is nonzero. Due to blending, there may be rounding
-  // errors and checking for exact white may not be correct.
-  bool found = false;
-  for (int y = 0; y < kSize; y++) {
-    for (int x = 0; x < kSize; x++) {
-      if (*image.GetAddr32(pp::Point(x, y)) != 0) {
-        found = true;
-        break;
-      }
-    }
+  // Expect that at least a few pixels are non-white (text).
+  // Due to blending, there may be rounding errors and
+  // checking for exact black may not be correct.
+  // Also expect that all pixels are opaque.
+  const uint32_t kRGBMask = 0x00FFFFFF;
+  const uint32_t kAlphaMask = 0xFF000000;
+  int text_pixels = 0, opaque_pixels = 0;
+  const uint32_t* pixels = static_cast<const uint32_t*>(image.data());
+  for (int i = 0; i < kSize.GetArea(); ++i) {
+    if ((pixels[i] & kRGBMask) != kRGBMask)
+      ++text_pixels;
+    if ((pixels[i] & kAlphaMask) == kAlphaMask)
+      ++opaque_pixels;
   }
-  ASSERT_TRUE(found);
+  ASSERT_GT(text_pixels, 0);
+  ASSERT_EQ(opaque_pixels, kSize.GetArea());
   PASS();
 }
