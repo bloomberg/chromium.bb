@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -106,13 +107,24 @@ ExtensionAction* GetOrCreateOrNull(
     std::map<std::string, linked_ptr<ExtensionAction> >* map,
     const std::string& extension_id,
     ActionInfo::Type action_type,
-    const ActionInfo* action_info) {
+    const ActionInfo* action_info,
+    Profile* profile) {
   std::map<std::string, linked_ptr<ExtensionAction> >::const_iterator it =
       map->find(extension_id);
   if (it != map->end())
     return it->second.get();
   if (!action_info)
     return NULL;
+
+  // Only create action info for enabled extensions.
+  // This avoids bugs where actions are recreated just after being removed
+  // in response to NOTIFICATION_EXTENSION_UNLOADED in
+  // ExtensionActionManager::Observe()
+  ExtensionService* service =
+      ExtensionSystem::Get(profile)->extension_service();
+  if (!service->GetExtensionById(extension_id, false))
+    return NULL;
+
   linked_ptr<ExtensionAction> action(new ExtensionAction(
       extension_id, action_type, *action_info));
   (*map)[extension_id] = action;
@@ -129,7 +141,8 @@ ExtensionAction* ExtensionActionManager::GetPageAction(
     return NULL;
   return GetOrCreateOrNull(&page_actions_, extension.id(),
                            ActionInfo::TYPE_PAGE,
-                           ActionInfo::GetPageActionInfo(&extension));
+                           ActionInfo::GetPageActionInfo(&extension),
+                           profile_);
 }
 
 ExtensionAction* ExtensionActionManager::GetBrowserAction(
@@ -144,7 +157,7 @@ ExtensionAction* ExtensionActionManager::GetBrowserAction(
     action_type = ActionInfo::TYPE_PAGE;
   }
   return GetOrCreateOrNull(&browser_actions_, extension.id(),
-                           action_type, action_info);
+                           action_type, action_info, profile_);
 }
 
 ExtensionAction* ExtensionActionManager::GetSystemIndicator(
@@ -158,14 +171,16 @@ ExtensionAction* ExtensionActionManager::GetSystemIndicator(
 
   return GetOrCreateOrNull(&system_indicators_, extension.id(),
                            ActionInfo::TYPE_SYSTEM_INDICATOR,
-                           ActionInfo::GetSystemIndicatorInfo(&extension));
+                           ActionInfo::GetSystemIndicatorInfo(&extension),
+                           profile_);
 }
 
 ExtensionAction* ExtensionActionManager::GetScriptBadge(
     const extensions::Extension& extension) const {
   return GetOrCreateOrNull(&script_badges_, extension.id(),
                            ActionInfo::TYPE_SCRIPT_BADGE,
-                           ActionInfo::GetScriptBadgeInfo(&extension));
+                           ActionInfo::GetScriptBadgeInfo(&extension),
+                           profile_);
 }
 
 }  // namespace extensions
