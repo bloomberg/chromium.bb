@@ -22,6 +22,17 @@ class IOBuffer;
 
 namespace disk_cache {
 
+struct SimpleEntryStat {
+  SimpleEntryStat();
+  SimpleEntryStat(base::Time last_used_p,
+                  base::Time last_modified_p,
+                  const int32 data_size_p[]);
+
+  base::Time last_used;
+  base::Time last_modified;
+  int32 data_size[kSimpleEntryFileCount];
+};
+
 // Worker thread interface to the very simple cache. This interface is not
 // thread safe, and callers must ensure that it is only ever accessed from
 // a single thread between synchronization points.
@@ -36,18 +47,31 @@ class SimpleSynchronousEntry {
     uint32 data_crc32;
   };
 
-  static void OpenEntry(
-      const base::FilePath& path,
-      uint64 entry_hash,
-      SimpleSynchronousEntry** out_entry,
-      int* out_result);
+  struct EntryOperationData {
+    EntryOperationData(int index_p, int offset_p, int buf_len_p);
+    EntryOperationData(int index_p,
+                       int offset_p,
+                       int buf_len_p,
+                       bool truncate_p);
 
-  static void CreateEntry(
-      const base::FilePath& path,
-      const std::string& key,
-      uint64 entry_hash,
-      SimpleSynchronousEntry** out_entry,
-      int* out_result);
+    int index;
+    int offset;
+    int buf_len;
+    bool truncate;
+  };
+
+  static void OpenEntry(const base::FilePath& path,
+                        uint64 entry_hash,
+                        SimpleSynchronousEntry** out_entry,
+                        SimpleEntryStat* out_entry_stat,
+                        int* out_result);
+
+  static void CreateEntry(const base::FilePath& path,
+                          const std::string& key,
+                          uint64 entry_hash,
+                          SimpleSynchronousEntry** out_entry,
+                          SimpleEntryStat* out_entry_stat,
+                          int* out_result);
 
   // Deletes an entry without first Opening it. Does not check if there is
   // already an Entry object in memory holding the open files. Be careful! This
@@ -65,33 +89,27 @@ class SimpleSynchronousEntry {
                            int* out_result);
 
   // N.B. ReadData(), WriteData(), CheckEOFRecord() and Close() may block on IO.
-  void ReadData(int index,
-                int offset,
-                net::IOBuffer* buf,
-                int buf_len,
+  void ReadData(const EntryOperationData& in_entry_op,
+                net::IOBuffer* out_buf,
                 uint32* out_crc32,
-                int* out_result);
-  void WriteData(int index,
-                 int offset,
-                 net::IOBuffer* buf,
-                 int buf_len,
-                 bool truncate,
-                 int* out_result);
+                base::Time* out_last_used,
+                int* out_result) const;
+  void WriteData(const EntryOperationData& in_entry_op,
+                 net::IOBuffer* in_buf,
+                 SimpleEntryStat* out_entry_stat,
+                 int* out_result) const;
   void CheckEOFRecord(int index,
+                      int data_size,
                       uint32 expected_crc32,
-                      int* out_result);
+                      int* out_result) const;
 
   // Close all streams, and add write EOF records to streams indicated by the
   // CRCRecord entries in |crc32s_to_write|.
-  void Close(scoped_ptr<std::vector<CRCRecord> > crc32s_to_write);
+  void Close(const SimpleEntryStat& entry_stat,
+             scoped_ptr<std::vector<CRCRecord> > crc32s_to_write);
 
   const base::FilePath& path() const { return path_; }
   std::string key() const { return key_; }
-  base::Time last_used() const { return last_used_; }
-  base::Time last_modified() const { return last_modified_; }
-  int32 data_size(int index) const { return data_size_[index]; }
-
-  int64 GetFileSize() const;
 
  private:
   SimpleSynchronousEntry(
@@ -103,17 +121,17 @@ class SimpleSynchronousEntry {
   // called.
   ~SimpleSynchronousEntry();
 
-  bool OpenOrCreateFiles(bool create);
+  bool OpenOrCreateFiles(bool create, SimpleEntryStat* out_entry_stat);
   void CloseFiles();
 
   // Returns a net::Error, i.e. net::OK on success.
-  int InitializeForOpen();
+  int InitializeForOpen(SimpleEntryStat* out_entry_stat);
 
   // Returns a net::Error, including net::OK on success and net::FILE_EXISTS
   // when the entry already exists.
-  int InitializeForCreate();
+  int InitializeForCreate(SimpleEntryStat* out_entry_stat);
 
-  void Doom();
+  void Doom() const;
 
   static bool DeleteFilesForEntryHash(const base::FilePath& path,
                                       uint64 entry_hash);
@@ -124,10 +142,6 @@ class SimpleSynchronousEntry {
 
   bool have_open_files_;
   bool initialized_;
-
-  base::Time last_used_;
-  base::Time last_modified_;
-  int32 data_size_[kSimpleEntryFileCount];
 
   base::PlatformFile files_[kSimpleEntryFileCount];
 };

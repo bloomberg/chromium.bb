@@ -29,6 +29,7 @@ namespace disk_cache {
 
 class SimpleBackendImpl;
 class SimpleSynchronousEntry;
+struct SimpleEntryStat;
 
 // SimpleEntryImpl is the IO thread interface to an entry in the very simple
 // disk cache. It proxies for the SimpleSynchronousEntry, which performs IO
@@ -213,6 +214,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
       const CompletionCallback& completion_callback,
       const base::TimeTicks& start_time,
       scoped_ptr<SimpleSynchronousEntry*> in_sync_entry,
+      scoped_ptr<SimpleEntryStat> in_entry_stat,
       scoped_ptr<int> in_result,
       Entry** out_entry);
 
@@ -223,24 +225,24 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
 
   // Internal utility method used by other completion methods. Calls
   // |completion_callback| after updating state and dooming on errors.
-  void EntryOperationComplete(
-      int stream_index,
-      const CompletionCallback& completion_callback,
-      scoped_ptr<int> result);
+  void EntryOperationComplete(int stream_index,
+                              const CompletionCallback& completion_callback,
+                              const SimpleEntryStat& entry_stat,
+                              scoped_ptr<int> result);
 
   // Called after an asynchronous read. Updates |crc32s_| if possible.
-  void ReadOperationComplete(
-      int stream_index,
-      int offset,
-      const CompletionCallback& completion_callback,
-      scoped_ptr<uint32> read_crc32,
-      scoped_ptr<int> result);
+  void ReadOperationComplete(int stream_index,
+                             int offset,
+                             const CompletionCallback& completion_callback,
+                             scoped_ptr<uint32> read_crc32,
+                             scoped_ptr<base::Time> last_used,
+                             scoped_ptr<int> result);
 
   // Called after an asynchronous write completes.
-  void WriteOperationComplete(
-      int stream_index,
-      const CompletionCallback& completion_callback,
-      scoped_ptr<int> result);
+  void WriteOperationComplete(int stream_index,
+                              const CompletionCallback& completion_callback,
+                              scoped_ptr<SimpleEntryStat> entry_stat,
+                              scoped_ptr<int> result);
 
   // Called after validating the checksums on an entry. Passes through the
   // original result if successful, propogates the error if the checksum does
@@ -251,11 +253,12 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
       const CompletionCallback& completion_callback,
       scoped_ptr<int> result);
 
-  // Called on initialization and also after the completion of asynchronous IO
-  // to initialize the IO thread copies of data returned by synchronous accessor
-  // functions. Copies data from |synchronous_entry_| into |this|, so that
-  // values can be returned during our next IO operation.
-  void SetSynchronousData();
+  // Called after completion of asynchronous IO and receiving file metadata for
+  // the entry in |entry_stat|. Updates the metadata in the entry and in the
+  // index to make them available on next IO operations.
+  void UpdateDataFromEntryStat(const SimpleEntryStat& entry_stat);
+
+  int64 GetDiskUsage() const;
 
   // All nonstatic SimpleEntryImpl methods should always be called on the IO
   // thread, in all cases. |io_thread_checker_| documents and enforces this.
@@ -270,6 +273,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
 
   // |last_used_|, |last_modified_| and |data_size_| are copied from the
   // synchronous entry at the completion of each item of asynchronous IO.
+  // TODO(clamy): Unify last_used_ with data in the index.
   base::Time last_used_;
   base::Time last_modified_;
   int32 data_size_[kSimpleEntryFileCount];

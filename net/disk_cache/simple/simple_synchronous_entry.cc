@@ -125,6 +125,16 @@ using simple_util::GetDataSizeFromKeyAndFileSize;
 using simple_util::GetFileSizeFromKeyAndDataSize;
 using simple_util::GetFileOffsetFromKeyAndDataOffset;
 
+SimpleEntryStat::SimpleEntryStat() {}
+
+SimpleEntryStat::SimpleEntryStat(base::Time last_used_p,
+                                 base::Time last_modified_p,
+                                 const int32 data_size_p[])
+    : last_used(last_used_p),
+      last_modified(last_modified_p) {
+  memcpy(data_size, data_size_p, sizeof(data_size));
+}
+
 SimpleSynchronousEntry::CRCRecord::CRCRecord() : index(-1),
                                                  has_crc32(false),
                                                  data_crc32(0) {
@@ -133,20 +143,35 @@ SimpleSynchronousEntry::CRCRecord::CRCRecord() : index(-1),
 SimpleSynchronousEntry::CRCRecord::CRCRecord(int index_p,
                                              bool has_crc32_p,
                                              uint32 data_crc32_p)
-  : index(index_p),
-    has_crc32(has_crc32_p),
-    data_crc32(data_crc32_p) {
-}
+    : index(index_p),
+      has_crc32(has_crc32_p),
+      data_crc32(data_crc32_p) {}
+
+SimpleSynchronousEntry::EntryOperationData::EntryOperationData(int index_p,
+                                                               int offset_p,
+                                                               int buf_len_p)
+    : index(index_p),
+      offset(offset_p),
+      buf_len(buf_len_p) {}
+
+SimpleSynchronousEntry::EntryOperationData::EntryOperationData(int index_p,
+                                                               int offset_p,
+                                                               int buf_len_p,
+                                                               bool truncate_p)
+    : index(index_p),
+      offset(offset_p),
+      buf_len(buf_len_p),
+      truncate(truncate_p) {}
 
 // static
-void SimpleSynchronousEntry::OpenEntry(
-    const FilePath& path,
-    const uint64 entry_hash,
-    SimpleSynchronousEntry** out_entry,
-    int* out_result) {
+void SimpleSynchronousEntry::OpenEntry(const FilePath& path,
+                                       const uint64 entry_hash,
+                                       SimpleSynchronousEntry** out_entry,
+                                       SimpleEntryStat* out_entry_stat,
+                                       int* out_result) {
   SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, "",
                                                                   entry_hash);
-  *out_result = sync_entry->InitializeForOpen();
+  *out_result = sync_entry->InitializeForOpen(out_entry_stat);
   if (*out_result != net::OK) {
     sync_entry->Doom();
     delete sync_entry;
@@ -157,16 +182,16 @@ void SimpleSynchronousEntry::OpenEntry(
 }
 
 // static
-void SimpleSynchronousEntry::CreateEntry(
-    const FilePath& path,
-    const std::string& key,
-    const uint64 entry_hash,
-    SimpleSynchronousEntry** out_entry,
-    int* out_result) {
+void SimpleSynchronousEntry::CreateEntry(const FilePath& path,
+                                         const std::string& key,
+                                         const uint64 entry_hash,
+                                         SimpleSynchronousEntry** out_entry,
+                                         SimpleEntryStat* out_entry_stat,
+                                         int* out_result) {
   DCHECK_EQ(entry_hash, GetEntryHashKey(key));
   SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key,
                                                                   entry_hash);
-  *out_result = sync_entry->InitializeForCreate();
+  *out_result = sync_entry->InitializeForCreate(out_entry_stat);
   if (*out_result != net::OK) {
     if (*out_result != net::ERR_FILE_EXISTS)
       sync_entry->Doom();
@@ -216,21 +241,23 @@ void SimpleSynchronousEntry::DoomEntrySet(
                                                          : net::ERR_FAILED;
 }
 
-void SimpleSynchronousEntry::ReadData(
-    int index,
-    int offset,
-    net::IOBuffer* buf,
-    int buf_len,
-    uint32* out_crc32,
-    int* out_result) {
+void SimpleSynchronousEntry::ReadData(const EntryOperationData& in_entry_op,
+                                      net::IOBuffer* out_buf,
+                                      uint32* out_crc32,
+                                      base::Time* out_last_used,
+                                      int* out_result) const {
   DCHECK(initialized_);
-  int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, offset);
-  int bytes_read = ReadPlatformFile(files_[index], file_offset,
-                                    buf->data(), buf_len);
+  int64 file_offset =
+      GetFileOffsetFromKeyAndDataOffset(key_, in_entry_op.offset);
+  int bytes_read = ReadPlatformFile(files_[in_entry_op.index],
+                                    file_offset,
+                                    out_buf->data(),
+                                    in_entry_op.buf_len);
   if (bytes_read > 0) {
-    last_used_ = Time::Now();
+    *out_last_used = Time::Now();
     *out_crc32 = crc32(crc32(0L, Z_NULL, 0),
-                       reinterpret_cast<const Bytef*>(buf->data()), bytes_read);
+                       reinterpret_cast<const Bytef*>(out_buf->data()),
+                       bytes_read);
   }
   if (bytes_read >= 0) {
     *out_result = bytes_read;
@@ -240,20 +267,21 @@ void SimpleSynchronousEntry::ReadData(
   }
 }
 
-void SimpleSynchronousEntry::WriteData(
-    int index,
-    int offset,
-    net::IOBuffer* buf,
-    int buf_len,
-    bool truncate,
-    int* out_result) {
+void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
+                                       net::IOBuffer* in_buf,
+                                       SimpleEntryStat* out_entry_stat,
+                                       int* out_result) const {
   DCHECK(initialized_);
+  int index = in_entry_op.index;
+  int offset = in_entry_op.offset;
+  int buf_len = in_entry_op.buf_len;
+  int truncate = in_entry_op.truncate;
 
-  bool extending_by_write = offset + buf_len > data_size_[index];
+  bool extending_by_write = offset + buf_len > out_entry_stat->data_size[index];
   if (extending_by_write) {
     // We are extending the file, and need to insure the EOF record is zeroed.
-    const int64 file_eof_offset =
-        GetFileOffsetFromKeyAndDataOffset(key_, data_size_[index]);
+    const int64 file_eof_offset = GetFileOffsetFromKeyAndDataOffset(
+        key_, out_entry_stat->data_size[index]);
     if (!TruncatePlatformFile(files_[index], file_eof_offset)) {
       RecordWriteResult(WRITE_RESULT_PRETRUNCATE_FAILURE);
       Doom();
@@ -263,8 +291,8 @@ void SimpleSynchronousEntry::WriteData(
   }
   const int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, offset);
   if (buf_len > 0) {
-    if (WritePlatformFile(files_[index], file_offset, buf->data(), buf_len) !=
-        buf_len) {
+    if (WritePlatformFile(
+            files_[index], file_offset, in_buf->data(), buf_len) != buf_len) {
       RecordWriteResult(WRITE_RESULT_WRITE_FAILURE);
       Doom();
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
@@ -272,7 +300,8 @@ void SimpleSynchronousEntry::WriteData(
     }
   }
   if (!truncate && (buf_len > 0 || !extending_by_write)) {
-    data_size_[index] = std::max(data_size_[index], offset + buf_len);
+    out_entry_stat->data_size[index] =
+        std::max(out_entry_stat->data_size[index], offset + buf_len);
   } else {
     if (!TruncatePlatformFile(files_[index], file_offset + buf_len)) {
       RecordWriteResult(WRITE_RESULT_TRUNCATE_FAILURE);
@@ -280,24 +309,24 @@ void SimpleSynchronousEntry::WriteData(
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
       return;
     }
-    data_size_[index] = offset + buf_len;
+    out_entry_stat->data_size[index] = offset + buf_len;
   }
 
   RecordWriteResult(WRITE_RESULT_SUCCESS);
-  last_used_ = last_modified_ = Time::Now();
+  out_entry_stat->last_used = out_entry_stat->last_modified = Time::Now();
   *out_result = buf_len;
 }
 
-void SimpleSynchronousEntry::CheckEOFRecord(
-    int index,
-    uint32 expected_crc32,
-    int* out_result) {
+void SimpleSynchronousEntry::CheckEOFRecord(int index,
+                                            int32 data_size,
+                                            uint32 expected_crc32,
+                                            int* out_result) const {
   DCHECK(initialized_);
 
   SimpleFileEOF eof_record;
-  int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_,
-                                                        data_size_[index]);
-  if (ReadPlatformFile(files_[index], file_offset,
+  int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, data_size);
+  if (ReadPlatformFile(files_[index],
+                       file_offset,
                        reinterpret_cast<char*>(&eof_record),
                        sizeof(eof_record)) != sizeof(eof_record)) {
     RecordCheckEOFResult(CHECK_EOF_RESULT_READ_FAILURE);
@@ -330,6 +359,7 @@ void SimpleSynchronousEntry::CheckEOFRecord(
 }
 
 void SimpleSynchronousEntry::Close(
+    const SimpleEntryStat& entry_stat,
     scoped_ptr<std::vector<CRCRecord> > crc32s_to_write) {
   for (std::vector<CRCRecord>::const_iterator it = crc32s_to_write->begin();
        it != crc32s_to_write->end(); ++it) {
@@ -339,9 +369,10 @@ void SimpleSynchronousEntry::Close(
     if (it->has_crc32)
       eof_record.flags |= SimpleFileEOF::FLAG_HAS_CRC32;
     eof_record.data_crc32 = it->data_crc32;
-    int64 file_offset =
-        GetFileOffsetFromKeyAndDataOffset(key_, data_size_[it->index]);
-    if (WritePlatformFile(files_[it->index], file_offset,
+    int64 file_offset = GetFileOffsetFromKeyAndDataOffset(
+        key_, entry_stat.data_size[it->index]);
+    if (WritePlatformFile(files_[it->index],
+                          file_offset,
                           reinterpret_cast<const char*>(&eof_record),
                           sizeof(eof_record)) != sizeof(eof_record)) {
       RecordCloseResult(CLOSE_RESULT_WRITE_FAILURE);
@@ -366,25 +397,14 @@ void SimpleSynchronousEntry::Close(
   delete this;
 }
 
-int64 SimpleSynchronousEntry::GetFileSize() const {
-  int64 file_size = 0;
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    file_size += GetFileSizeFromKeyAndDataSize(key_, data_size_[i]);
-  }
-  return file_size;
-}
-
-SimpleSynchronousEntry::SimpleSynchronousEntry(
-    const FilePath& path,
-    const std::string& key,
-    const uint64 entry_hash)
+SimpleSynchronousEntry::SimpleSynchronousEntry(const FilePath& path,
+                                               const std::string& key,
+                                               const uint64 entry_hash)
     : path_(path),
       entry_hash_(entry_hash),
       key_(key),
       have_open_files_(false),
       initialized_(false) {
-  COMPILE_ASSERT(arraysize(data_size_) == arraysize(files_),
-                 array_sizes_must_be_equal);
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     files_[i] = kInvalidPlatformFileValue;
   }
@@ -396,7 +416,9 @@ SimpleSynchronousEntry::~SimpleSynchronousEntry() {
     CloseFiles();
 }
 
-bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
+bool SimpleSynchronousEntry::OpenOrCreateFiles(
+    bool create,
+    SimpleEntryStat* out_entry_stat) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     FilePath filename = path_.AppendASCII(
         GetFilenameFromEntryHashAndIndex(entry_hash_, i));
@@ -428,9 +450,9 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
 
   have_open_files_ = true;
   if (create) {
-    last_modified_ = last_used_ = Time::Now();
+    out_entry_stat->last_modified = out_entry_stat->last_used = Time::Now();
     for (int i = 0; i < kSimpleEntryFileCount; ++i)
-      data_size_[i] = 0;
+      out_entry_stat->data_size[i] = 0;
   } else {
     for (int i = 0; i < kSimpleEntryFileCount; ++i) {
       PlatformFileInfo file_info;
@@ -440,15 +462,15 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
         DLOG(WARNING) << "Could not get platform file info.";
         continue;
       }
-      last_used_ = std::max(last_used_, file_info.last_accessed);
+      out_entry_stat->last_used = file_info.last_accessed;
       if (simple_util::GetMTime(path_, &file_last_modified))
-        last_modified_ = std::max(last_modified_, file_last_modified);
+        out_entry_stat->last_modified = file_last_modified;
       else
-        last_modified_ = std::max(last_modified_, file_info.last_modified);
+        out_entry_stat->last_modified = file_info.last_modified;
 
       // Keep the file size in |data size_| briefly until the key is initialized
       // properly.
-      data_size_[i] = file_info.size;
+      out_entry_stat->data_size[i] = file_info.size;
     }
   }
 
@@ -463,9 +485,9 @@ void SimpleSynchronousEntry::CloseFiles() {
   }
 }
 
-int SimpleSynchronousEntry::InitializeForOpen() {
+int SimpleSynchronousEntry::InitializeForOpen(SimpleEntryStat* out_entry_stat) {
   DCHECK(!initialized_);
-  if (!OpenOrCreateFiles(false))
+  if (!OpenOrCreateFiles(false, out_entry_stat))
     return net::ERR_FAILED;
 
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
@@ -504,8 +526,9 @@ int SimpleSynchronousEntry::InitializeForOpen() {
     }
 
     key_ = std::string(key.get(), header.key_length);
-    data_size_[i] = GetDataSizeFromKeyAndFileSize(key_, data_size_[i]);
-    if (data_size_[i] < 0) {
+    out_entry_stat->data_size[i] =
+        GetDataSizeFromKeyAndFileSize(key_, out_entry_stat->data_size[i]);
+    if (out_entry_stat->data_size[i] < 0) {
       // This entry can't possibly be valid, as it does not have enough space to
       // store a valid SimpleFileEOF record.
       return net::ERR_FAILED;
@@ -522,9 +545,10 @@ int SimpleSynchronousEntry::InitializeForOpen() {
   return net::OK;
 }
 
-int SimpleSynchronousEntry::InitializeForCreate() {
+int SimpleSynchronousEntry::InitializeForCreate(
+    SimpleEntryStat* out_entry_stat) {
   DCHECK(!initialized_);
-  if (!OpenOrCreateFiles(true)) {
+  if (!OpenOrCreateFiles(true, out_entry_stat)) {
     DLOG(WARNING) << "Could not create platform files.";
     return net::ERR_FILE_EXISTS;
   }
@@ -555,7 +579,7 @@ int SimpleSynchronousEntry::InitializeForCreate() {
   return net::OK;
 }
 
-void SimpleSynchronousEntry::Doom() {
+void SimpleSynchronousEntry::Doom() const {
   // TODO(gavinp): Consider if we should guard against redundant Doom() calls.
   DeleteFilesForEntryHash(path_, entry_hash_);
 }

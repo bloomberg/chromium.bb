@@ -560,11 +560,22 @@ void SimpleEntryImpl::OpenEntryInternal(const CompletionCallback& callback,
   scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
       new PointerToSimpleSynchronousEntry());
   scoped_ptr<int> result(new int());
-  Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry, path_,
-                            entry_hash_, sync_entry.get(), result.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
-                             callback, start_time, base::Passed(&sync_entry),
-                             base::Passed(&result), out_entry);
+  scoped_ptr<SimpleEntryStat> entry_stat(
+      new SimpleEntryStat(last_used_, last_modified_, data_size_));
+  Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry,
+                            path_,
+                            entry_hash_,
+                            sync_entry.get(),
+                            entry_stat.get(),
+                            result.get());
+  Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete,
+                             this,
+                             callback,
+                             start_time,
+                             base::Passed(&sync_entry),
+                             base::Passed(&entry_stat),
+                             base::Passed(&result),
+                             out_entry);
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
@@ -597,11 +608,23 @@ void SimpleEntryImpl::CreateEntryInternal(const CompletionCallback& callback,
   scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
       new PointerToSimpleSynchronousEntry());
   scoped_ptr<int> result(new int());
-  Closure task = base::Bind(&SimpleSynchronousEntry::CreateEntry, path_, key_,
-                            entry_hash_, sync_entry.get(), result.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
-                             callback, start_time, base::Passed(&sync_entry),
-                             base::Passed(&result), out_entry);
+  scoped_ptr<SimpleEntryStat> entry_stat(
+      new SimpleEntryStat(last_used_, last_modified_, data_size_));
+  Closure task = base::Bind(&SimpleSynchronousEntry::CreateEntry,
+                            path_,
+                            key_,
+                            entry_hash_,
+                            sync_entry.get(),
+                            entry_stat.get(),
+                            result.get());
+  Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete,
+                             this,
+                             callback,
+                             start_time,
+                             base::Passed(&sync_entry),
+                             base::Passed(&entry_stat),
+                             base::Passed(&result),
+                             out_entry);
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
@@ -631,9 +654,11 @@ void SimpleEntryImpl::CloseInternal() {
   }
 
   if (synchronous_entry_) {
-    Closure task = base::Bind(&SimpleSynchronousEntry::Close,
-                              base::Unretained(synchronous_entry_),
-                              base::Passed(&crc32s_to_write));
+    Closure task =
+        base::Bind(&SimpleSynchronousEntry::Close,
+                   base::Unretained(synchronous_entry_),
+                   SimpleEntryStat(last_used_, last_modified_, data_size_),
+                   base::Passed(&crc32s_to_write));
     Closure reply = base::Bind(&SimpleEntryImpl::CloseOperationComplete, this);
     synchronous_entry_ = NULL;
     worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
@@ -692,13 +717,23 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
 
   scoped_ptr<uint32> read_crc32(new uint32());
   scoped_ptr<int> result(new int());
-  Closure task = base::Bind(&SimpleSynchronousEntry::ReadData,
-                            base::Unretained(synchronous_entry_),
-                            stream_index, offset, make_scoped_refptr(buf),
-                            buf_len, read_crc32.get(), result.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::ReadOperationComplete, this,
-                             stream_index, offset, callback,
-                             base::Passed(&read_crc32), base::Passed(&result));
+  scoped_ptr<base::Time> last_used(new base::Time());
+  Closure task = base::Bind(
+      &SimpleSynchronousEntry::ReadData,
+      base::Unretained(synchronous_entry_),
+      SimpleSynchronousEntry::EntryOperationData(stream_index, offset, buf_len),
+      make_scoped_refptr(buf),
+      read_crc32.get(),
+      last_used.get(),
+      result.get());
+  Closure reply = base::Bind(&SimpleEntryImpl::ReadOperationComplete,
+                             this,
+                             stream_index,
+                             offset,
+                             callback,
+                             base::Passed(&read_crc32),
+                             base::Passed(&last_used),
+                             base::Passed(&result));
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
@@ -749,6 +784,9 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
     crc32s_end_offset_[stream_index] = offset + buf_len;
   }
 
+  // |entry_stat| needs to be initialized before modifying |data_size_|.
+  scoped_ptr<SimpleEntryStat> entry_stat(
+      new SimpleEntryStat(last_used_, last_modified_, data_size_));
   if (truncate) {
     data_size_[stream_index] = offset + buf_len;
   } else {
@@ -765,10 +803,17 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   scoped_ptr<int> result(new int());
   Closure task = base::Bind(&SimpleSynchronousEntry::WriteData,
                             base::Unretained(synchronous_entry_),
-                            stream_index, offset, make_scoped_refptr(buf),
-                            buf_len, truncate, result.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::WriteOperationComplete, this,
-                             stream_index, callback, base::Passed(&result));
+                            SimpleSynchronousEntry::EntryOperationData(
+                                stream_index, offset, buf_len, truncate),
+                            make_scoped_refptr(buf),
+                            entry_stat.get(),
+                            result.get());
+  Closure reply = base::Bind(&SimpleEntryImpl::WriteOperationComplete,
+                             this,
+                             stream_index,
+                             callback,
+                             base::Passed(&entry_stat),
+                             base::Passed(&result));
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
@@ -776,6 +821,7 @@ void SimpleEntryImpl::CreationOperationComplete(
     const CompletionCallback& completion_callback,
     const base::TimeTicks& start_time,
     scoped_ptr<SimpleSynchronousEntry*> in_sync_entry,
+    scoped_ptr<SimpleEntryStat> in_entry_stat,
     scoped_ptr<int> in_result,
     Entry** out_entry) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -809,7 +855,7 @@ void SimpleEntryImpl::CreationOperationComplete(
     // the open case is handled in SimpleBackendImpl.
     DCHECK_EQ(key_, synchronous_entry_->key());
   }
-  SetSynchronousData();
+  UpdateDataFromEntryStat(*in_entry_stat);
   UMA_HISTOGRAM_TIMES("SimpleCache.EntryCreationTime",
                       (base::TimeTicks::Now() - start_time));
   AdjustOpenEntryCountBy(1);
@@ -823,6 +869,7 @@ void SimpleEntryImpl::CreationOperationComplete(
 void SimpleEntryImpl::EntryOperationComplete(
     int stream_index,
     const CompletionCallback& completion_callback,
+    const SimpleEntryStat& entry_stat,
     scoped_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
@@ -834,7 +881,7 @@ void SimpleEntryImpl::EntryOperationComplete(
     state_ = STATE_FAILURE;
     crc32s_end_offset_[stream_index] = 0;
   } else {
-    SetSynchronousData();
+    UpdateDataFromEntryStat(entry_stat);
   }
 
   if (!completion_callback.is_null()) {
@@ -849,6 +896,7 @@ void SimpleEntryImpl::ReadOperationComplete(
     int offset,
     const CompletionCallback& completion_callback,
     scoped_ptr<uint32> read_crc32,
+    scoped_ptr<base::Time> last_used,
     scoped_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
@@ -881,7 +929,9 @@ void SimpleEntryImpl::ReadOperationComplete(
       scoped_ptr<int> new_result(new int());
       Closure task = base::Bind(&SimpleSynchronousEntry::CheckEOFRecord,
                                 base::Unretained(synchronous_entry_),
-                                stream_index, crc32s_[stream_index],
+                                stream_index,
+                                data_size_[stream_index],
+                                crc32s_[stream_index],
                                 new_result.get());
       Closure reply = base::Bind(&SimpleEntryImpl::ChecksumOperationComplete,
                                  this, *result, stream_index,
@@ -908,12 +958,17 @@ void SimpleEntryImpl::ReadOperationComplete(
       crc_check_state_[stream_index] = CRC_CHECK_NOT_DONE;
     }
   }
-  EntryOperationComplete(stream_index, completion_callback, result.Pass());
+  EntryOperationComplete(
+      stream_index,
+      completion_callback,
+      SimpleEntryStat(*last_used, last_modified_, data_size_),
+      result.Pass());
 }
 
 void SimpleEntryImpl::WriteOperationComplete(
     int stream_index,
     const CompletionCallback& completion_callback,
+    scoped_ptr<SimpleEntryStat> entry_stat,
     scoped_ptr<int> result) {
   if (net_log_.IsLoggingAllEvents()) {
     net_log_.EndEvent(
@@ -925,7 +980,8 @@ void SimpleEntryImpl::WriteOperationComplete(
     RecordWriteResult(WRITE_RESULT_SUCCESS);
   else
     RecordWriteResult(WRITE_RESULT_SYNC_WRITE_FAILURE);
-  EntryOperationComplete(stream_index, completion_callback, result.Pass());
+  EntryOperationComplete(
+      stream_index, completion_callback, *entry_stat, result.Pass());
 }
 
 void SimpleEntryImpl::ChecksumOperationComplete(
@@ -953,7 +1009,11 @@ void SimpleEntryImpl::ChecksumOperationComplete(
   } else {
     RecordReadResult(READ_RESULT_SYNC_CHECKSUM_FAILURE);
   }
-  EntryOperationComplete(stream_index, completion_callback, result.Pass());
+  EntryOperationComplete(
+      stream_index,
+      completion_callback,
+      SimpleEntryStat(last_used_, last_modified_, data_size_),
+      result.Pass());
 }
 
 void SimpleEntryImpl::CloseOperationComplete() {
@@ -967,20 +1027,28 @@ void SimpleEntryImpl::CloseOperationComplete() {
   RunNextOperationIfNeeded();
 }
 
-void SimpleEntryImpl::SetSynchronousData() {
+void SimpleEntryImpl::UpdateDataFromEntryStat(
+    const SimpleEntryStat& entry_stat) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_READY, state_);
-  // TODO(felipeg): These copies to avoid data races are not optimal. While
-  // adding an IO thread index (for fast misses etc...), we can store this data
-  // in that structure. This also solves problems with last_used() on ext4
-  // filesystems not being accurate.
-  last_used_ = synchronous_entry_->last_used();
-  last_modified_ = synchronous_entry_->last_modified();
-  for (int i = 0; i < kSimpleEntryFileCount; ++i)
-    data_size_[i] = synchronous_entry_->data_size(i);
+
+  last_used_ = entry_stat.last_used;
+  last_modified_ = entry_stat.last_modified;
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    data_size_[i] = entry_stat.data_size[i];
+  }
   if (backend_.get())
-    backend_->index()->UpdateEntrySize(key_, synchronous_entry_->GetFileSize());
+    backend_->index()->UpdateEntrySize(key_, GetDiskUsage());
+}
+
+int64 SimpleEntryImpl::GetDiskUsage() const {
+  int64 file_size = 0;
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    file_size +=
+        simple_util::GetFileSizeFromKeyAndDataSize(key_, data_size_[i]);
+  }
+  return file_size;
 }
 
 }  // namespace disk_cache
