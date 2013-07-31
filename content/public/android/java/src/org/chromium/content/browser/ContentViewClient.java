@@ -60,14 +60,6 @@ public class ContentViewClient {
     }
 
     /**
-     * Notifies the client that the renderer backing the ContentView has crashed. This is a legacy
-     * method to be dropped when all clients switch to onRendererCrash().
-     */
-    @Deprecated
-    public void onTabCrash() {
-    }
-
-    /**
      * Notifies the client that the renderer backing the ContentView has crashed.
      * @param crashedWhileOomProtected True iff the renderer died while being bound with a high
      * priority binding, which indicates that it was probably an actual crash (as opposed to the

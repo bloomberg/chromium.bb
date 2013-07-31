@@ -1816,9 +1816,6 @@ import java.util.Map;
         assert mPid != 0;
         getContentViewClient().onRendererCrash(ChildProcessLauncher.isOomProtected(mPid));
         mPid = 0;
-
-        // Legacy method, to be dropped once all clients switch to onRendererCrash().
-        getContentViewClient().onTabCrash();
     }
 
     private void handleTapOrPress(
