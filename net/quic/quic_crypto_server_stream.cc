@@ -109,6 +109,17 @@ bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
 
   base::Base64Encode(string(
       reinterpret_cast<const char*>(digest), sizeof(digest)), output);
+  // Remove padding.
+  size_t len = output->size();
+  if (len >= 2) {
+    if ((*output)[len - 1] == '=') {
+      len--;
+      if ((*output)[len - 1] == '=') {
+        len--;
+      }
+      output->resize(len);
+    }
+  }
   return true;
 }
 
