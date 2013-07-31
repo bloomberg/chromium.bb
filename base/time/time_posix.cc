@@ -9,7 +9,6 @@
 #if defined(OS_ANDROID)
 #include <time64.h>
 #endif
-#include <unistd.h>
 
 #include <limits>
 
@@ -61,6 +60,33 @@ void SysTimeToTimeStruct(SysTime t, struct tm* timestruct, bool is_local) {
     gmtime_r(&t, timestruct);
 }
 #endif  // OS_ANDROID
+
+#if !defined(OS_MACOSX)
+// Helper function to get results from clock_gettime() as TimeTicks object.
+// Minimum requirement is MONOTONIC_CLOCK to be supported on the system.
+// FreeBSD 6 has CLOCK_MONOTONIC but defines _POSIX_MONOTONIC_CLOCK to -1.
+#if (defined(OS_POSIX) &&                                               \
+     defined(_POSIX_MONOTONIC_CLOCK) && _POSIX_MONOTONIC_CLOCK >= 0) || \
+    defined(OS_BSD) || defined(OS_ANDROID)
+base::TimeTicks ClockNow(clockid_t clk_id) {
+  uint64_t absolute_micro;
+
+  struct timespec ts;
+  if (clock_gettime(clk_id, &ts) != 0) {
+    NOTREACHED() << "clock_gettime(" << clk_id << ") failed.";
+    return base::TimeTicks();
+  }
+
+  absolute_micro =
+      (static_cast<int64>(ts.tv_sec) * base::Time::kMicrosecondsPerSecond) +
+      (static_cast<int64>(ts.tv_nsec) / base::Time::kNanosecondsPerMicrosecond);
+
+  return base::TimeTicks::FromInternalValue(absolute_micro);
+}
+#else  // _POSIX_MONOTONIC_CLOCK
+#error No usable tick clock function on this platform.
+#endif  // _POSIX_MONOTONIC_CLOCK
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace
 
@@ -228,34 +254,24 @@ Time Time::FromExploded(bool is_local, const Exploded& exploded) {
 }
 
 // TimeTicks ------------------------------------------------------------------
-// FreeBSD 6 has CLOCK_MONOLITHIC but defines _POSIX_MONOTONIC_CLOCK to -1.
-#if (defined(OS_POSIX) &&                          \
-     defined(_POSIX_MONOTONIC_CLOCK) && _POSIX_MONOTONIC_CLOCK >= 0) || \
-     defined(OS_BSD) || defined(OS_ANDROID)
-
 // static
 TimeTicks TimeTicks::Now() {
-  uint64_t absolute_micro;
-
-  struct timespec ts;
-  if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
-    NOTREACHED() << "clock_gettime(CLOCK_MONOTONIC) failed.";
-    return TimeTicks();
-  }
-
-  absolute_micro =
-      (static_cast<int64>(ts.tv_sec) * Time::kMicrosecondsPerSecond) +
-      (static_cast<int64>(ts.tv_nsec) / Time::kNanosecondsPerMicrosecond);
-
-  return TimeTicks(absolute_micro);
+  return ClockNow(CLOCK_MONOTONIC);
 }
-#else  // _POSIX_MONOTONIC_CLOCK
-#error No usable tick clock function on this platform.
-#endif  // _POSIX_MONOTONIC_CLOCK
 
 // static
 TimeTicks TimeTicks::HighResNow() {
   return Now();
+}
+
+// static
+TimeTicks TimeTicks::ThreadNow() {
+#if defined(_POSIX_THREAD_CPUTIME) && (_POSIX_THREAD_CPUTIME >= 0)
+  return ClockNow(CLOCK_THREAD_CPUTIME_ID);
+#else
+  NOTREACHED();
+  return TimeTicks();
+#endif
 }
 
 #if defined(OS_CHROMEOS)

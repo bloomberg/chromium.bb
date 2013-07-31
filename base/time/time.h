@@ -36,7 +36,7 @@
 #endif
 
 #if defined(OS_POSIX)
-// For struct timeval.
+#include <unistd.h>
 #include <sys/time.h>
 #endif
 
@@ -539,6 +539,22 @@ class BASE_EXPORT TimeTicks {
   // resolution.  THIS CALL IS GENERALLY MUCH MORE EXPENSIVE THAN Now() AND
   // SHOULD ONLY BE USED WHEN IT IS REALLY NEEDED.
   static TimeTicks HighResNow();
+
+  // Returns true if ThreadNow() is supported on this system.
+  static bool IsThreadNowSupported() {
+#if defined(_POSIX_THREAD_CPUTIME) && (_POSIX_THREAD_CPUTIME >= 0)
+    return true;
+#else
+    return false;
+#endif
+  }
+
+  // Returns thread-specific CPU-time on systems that support this feature.
+  // Needs to be guarded with a call to IsThreadNowSupported(). Use this timer
+  // to (approximately) measure how much time the calling thread spent doing
+  // actual work vs. being de-scheduled. May return bogus results if the thread
+  // migrates to another CPU between two calls.
+  static TimeTicks ThreadNow();
 
   // Returns the current system trace time or, if none is defined, the current
   // high-res time (i.e. HighResNow()). On systems where a global trace clock

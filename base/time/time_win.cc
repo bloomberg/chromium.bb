@@ -457,6 +457,12 @@ TimeTicks TimeTicks::HighResNow() {
 }
 
 // static
+TimeTicks TimeTicks::ThreadNow() {
+  NOTREACHED();
+  return TimeTicks();
+}
+
+// static
 TimeTicks TimeTicks::NowFromSystemTraceTime() {
   return HighResNow();
 }
