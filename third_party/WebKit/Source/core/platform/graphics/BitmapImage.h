@@ -29,6 +29,7 @@
 #define BitmapImage_h
 
 #include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/FrameData.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/ImageSource.h"
@@ -36,59 +37,9 @@
 #include "wtf/Forward.h"
 
 namespace WebCore {
-struct FrameData;
-}
-
-namespace WTF {
-template<> struct VectorTraits<WebCore::FrameData> : public SimpleClassVectorTraits {
-    static const bool canInitializeWithMemset = false; // Not all FrameData members initialize to 0.
-};
-}
-
-namespace WebCore {
 
 class NativeImageSkia;
 template <typename T> class Timer;
-
-// ================================================
-// FrameData Class
-// ================================================
-
-struct FrameData {
-    WTF_MAKE_NONCOPYABLE(FrameData);
-public:
-    FrameData()
-        : m_frame(0)
-        , m_orientation(DefaultImageOrientation)
-        , m_duration(0)
-        , m_haveMetadata(false)
-        , m_isComplete(false)
-        , m_hasAlpha(true)
-        , m_frameBytes(0)
-    {
-    }
-
-    ~FrameData()
-    {
-        clear(true);
-    }
-
-    // Clear the cached image data on the frame, and (optionally) the metadata.
-    // Returns whether there was cached image data to clear.
-    bool clear(bool clearMetadata);
-
-    RefPtr<NativeImageSkia> m_frame;
-    ImageOrientation m_orientation;
-    float m_duration;
-    bool m_haveMetadata : 1;
-    bool m_isComplete : 1;
-    bool m_hasAlpha : 1;
-    unsigned m_frameBytes;
-};
-
-// =================================================
-// BitmapImage Class
-// =================================================
 
 class BitmapImage : public Image {
     friend class GeneratedImage;

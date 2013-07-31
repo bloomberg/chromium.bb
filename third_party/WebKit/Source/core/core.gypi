@@ -2771,6 +2771,8 @@
             'platform/graphics/FontFastPath.cpp',
             'platform/graphics/FontPlatformData.cpp',
             'platform/graphics/FontPlatformData.h',
+            'platform/graphics/FrameData.cpp',
+            'platform/graphics/FrameData.h',
             'platform/graphics/LayoutBoxExtent.cpp',
             'platform/graphics/GeneratorGeneratedImage.cpp',
             'platform/graphics/GeneratedImage.cpp',
