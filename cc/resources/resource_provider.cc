@@ -507,6 +507,8 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
   // Uninitialized! Call SetPixels or LockForWrite first.
   DCHECK(resource->allocated);
 
+  LazyCreate(resource);
+
   if (resource->external) {
     if (!resource->gl_id && resource->mailbox.IsTexture()) {
       WebGraphicsContext3D* context3d = output_surface_->context3d();
@@ -599,8 +601,26 @@ ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
     ResourceProvider::ResourceId resource_id,
     GLenum target,
     GLenum filter)
-    : ScopedReadLockGL(resource_provider, resource_id) {
-  resource_provider->BindForSampling(resource_id, target, filter);
+    : ScopedReadLockGL(resource_provider, resource_id),
+      target_(target),
+      unit_(GL_TEXTURE0) {
+  resource_provider->BindForSampling(resource_id, target, unit_, filter);
+}
+
+ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
+    ResourceProvider* resource_provider,
+    ResourceProvider::ResourceId resource_id,
+    GLenum target,
+    GLenum unit,
+    GLenum filter)
+    : ScopedReadLockGL(resource_provider, resource_id),
+      target_(target),
+      unit_(unit) {
+  resource_provider->BindForSampling(resource_id, target, unit, filter);
+}
+
+ResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() {
+  resource_provider_->UnbindForSampling(resource_id_, target_, unit_);
 }
 
 ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
@@ -1073,7 +1093,9 @@ void ResourceProvider::UnmapPixelBuffer(ResourceId id) {
 }
 
 void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
-                                       GLenum target, GLenum filter) {
+                                       GLenum target,
+                                       GLenum unit,
+                                       GLenum filter) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   ResourceMap::iterator it = resources_.find(resource_id);
@@ -1081,7 +1103,10 @@ void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
   Resource* resource = &it->second;
   DCHECK(resource->lock_for_read_count);
   DCHECK(!resource->locked_for_write || resource->set_pixels_completion_forced);
+  DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(context3d));
 
+  if (unit != GL_TEXTURE0)
+    GLC(context3d, context3d->activeTexture(unit));
   GLC(context3d, context3d->bindTexture(target, resource->gl_id));
   if (filter != resource->filter) {
     GLC(context3d, context3d->texParameteri(target,
@@ -1092,6 +1117,33 @@ void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
                                             filter));
     resource->filter = filter;
   }
+
+  if (resource->image_id)
+    context3d->bindTexImage2DCHROMIUM(target, resource->image_id);
+
+  // Active unit being GL_TEXTURE0 is effectively the ground state.
+  if (unit != GL_TEXTURE0)
+    GLC(context3d, context3d->activeTexture(GL_TEXTURE0));
+}
+
+void ResourceProvider::UnbindForSampling(
+    ResourceProvider::ResourceId resource_id, GLenum target, GLenum unit) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ResourceMap::iterator it = resources_.find(resource_id);
+  DCHECK(it != resources_.end());
+  Resource* resource = &it->second;
+
+  if (!resource->image_id)
+    return;
+
+  WebGraphicsContext3D* context3d = output_surface_->context3d();
+  DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(context3d));
+  if (unit != GL_TEXTURE0)
+    GLC(context3d, context3d->activeTexture(unit));
+  context3d->releaseTexImage2DCHROMIUM(target, resource->image_id);
+  // Active unit being GL_TEXTURE0 is effectively the ground state.
+  if (unit != GL_TEXTURE0)
+    GLC(context3d, context3d->activeTexture(GL_TEXTURE0));
 }
 
 void ResourceProvider::BeginSetPixels(ResourceId id) {
@@ -1297,15 +1349,10 @@ void ResourceProvider::AcquireImage(ResourceId id) {
   if (resource->type != GLTexture)
     return;
 
-  if (resource->image_id != 0) {
-    // If we had previously allocated an image for this resource,
-    // release it first, before acquiring the new image.
-    // TODO(kaanb): This is a temporary workaround. We must return here
-    // immediately. Platform specific code needs to deal with this
-    // situation appropriately.
-    ReleaseImage(id);
-  }
+  if (resource->image_id)
+    return;
 
+  resource->allocated = true;
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   DCHECK(context3d);
   resource->image_id = context3d->createImageCHROMIUM(
@@ -1322,12 +1369,14 @@ void ResourceProvider::ReleaseImage(ResourceId id) {
   DCHECK(!resource->external);
   DCHECK(!resource->exported);
 
-  if (resource->image_id) {
-    WebGraphicsContext3D* context3d = output_surface_->context3d();
-    DCHECK(context3d);
-    context3d->destroyImageCHROMIUM(resource->image_id);
-    resource->image_id = 0;
-  }
+  if (!resource->image_id)
+    return;
+
+  WebGraphicsContext3D* context3d = output_surface_->context3d();
+  DCHECK(context3d);
+  context3d->destroyImageCHROMIUM(resource->image_id);
+  resource->image_id = 0;
+  resource->allocated = false;
 }
 
 uint8_t* ResourceProvider::MapImage(ResourceId id) {
@@ -1369,26 +1418,6 @@ void ResourceProvider::UnmapImage(ResourceId id) {
   }
 }
 
-void ResourceProvider::BindImage(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
-
-  DCHECK(!resource->external);
-  DCHECK(!resource->exported);
-
-  LazyCreate(resource);
-  resource->allocated = true;
-
-  if (resource->image_id) {
-    WebGraphicsContext3D* context3d = output_surface_->context3d();
-    DCHECK(context3d);
-    context3d->bindTexture(GL_TEXTURE_2D, resource->gl_id);
-    context3d->bindTexImage2DCHROMIUM(GL_TEXTURE_2D, resource->image_id);
-  }
-}
-
 int ResourceProvider::GetImageStride(ResourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ResourceMap::iterator it = resources_.find(id);
@@ -1408,6 +1437,12 @@ int ResourceProvider::GetImageStride(ResourceId id) {
   }
 
   return stride;
+}
+
+GLint ResourceProvider::GetActiveTextureUnit(WebGraphicsContext3D* context) {
+  GLint active_unit = 0;
+  context->getIntegerv(GL_ACTIVE_TEXTURE, &active_unit);
+  return active_unit;
 }
 
 }  // namespace cc

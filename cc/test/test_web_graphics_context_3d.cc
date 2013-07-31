@@ -365,6 +365,8 @@ void TestWebGraphicsContext3D::getIntegerv(
     WebKit::WGC3Dint* value) {
   if (pname == GL_MAX_TEXTURE_SIZE)
     *value = max_texture_size_;
+  else if (pname == GL_ACTIVE_TEXTURE)
+    *value = GL_TEXTURE0;
 }
 
 void TestWebGraphicsContext3D::genMailboxCHROMIUM(WebKit::WGC3Dbyte* mailbox) {

@@ -85,8 +85,8 @@ TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
   EXPECT_EQ(kImageId, image_id);
 
   gfx::Size size(kImageWidth, kImageHeight);
-  scoped_refptr<gfx::GLImageMock> gl_image(
-      new gfx::GLImageMock(gpu_memory_buffer, size));
+  scoped_refptr<StrictMock<gfx::GLImageMock> > gl_image(
+      new StrictMock<gfx::GLImageMock>(gpu_memory_buffer, size));
   image_manager_->AddImage(gl_image.get(), image_id);
 
   EXPECT_CALL(*gpu_memory_buffer, IsMapped())
@@ -100,8 +100,7 @@ TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
       .Times(1)
       .WillOnce(SetArgPointee<1>(buffer_pixels.get()))
       .RetiresOnSaturation();
-  void* mapped_buffer =
-      glMapImageCHROMIUM(image_id, GL_WRITE_ONLY);
+  void* mapped_buffer = glMapImageCHROMIUM(image_id, GL_WRITE_ONLY);
   EXPECT_EQ(buffer_pixels.get(), mapped_buffer);
 
   EXPECT_CALL(*gpu_memory_buffer, IsMapped())
@@ -116,11 +115,21 @@ TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
 
   // Bind the texture and the image.
   glBindTexture(GL_TEXTURE_2D, texture_id);
-  EXPECT_CALL(*gl_image.get(), BindTexImage()).Times(1).WillOnce(Return(true))
+  EXPECT_CALL(*gl_image.get(), BindTexImage())
+      .Times(1)
+      .WillOnce(Return(true))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_image.get(), GetSize()).Times(1).WillOnce(Return(size))
+  EXPECT_CALL(*gl_image.get(), GetSize())
+      .Times(1)
+      .WillOnce(Return(size))
       .RetiresOnSaturation();
   glBindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
+
+  // Unbind the image.
+  EXPECT_CALL(*gl_image.get(), ReleaseTexImage())
+      .Times(1)
+      .RetiresOnSaturation();
+  glReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
 
   // Destroy the image.
   EXPECT_CALL(*gpu_memory_buffer, Die())

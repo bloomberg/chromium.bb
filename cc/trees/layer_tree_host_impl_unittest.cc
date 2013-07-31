@@ -3461,6 +3461,8 @@ class PartialSwapContext : public TestWebGraphicsContext3D {
       OVERRIDE {
     if (pname == GL_MAX_TEXTURE_SIZE)
       *value = 8192;
+    else if (pname == GL_ACTIVE_TEXTURE)
+      *value = GL_TEXTURE0;
   }
 };
 

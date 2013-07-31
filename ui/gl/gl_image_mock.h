@@ -20,8 +20,11 @@ class GLImageMock : public GLImage {
   MOCK_METHOD0(Destroy, void());
   MOCK_METHOD0(GetSize, gfx::Size());
   MOCK_METHOD0(ReleaseTexImage, void());
- private:
+
+ protected:
   virtual ~GLImageMock();
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(GLImageMock);
 };
 

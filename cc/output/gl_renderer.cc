@@ -843,6 +843,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   if (filter_bitmap.getTexture()) {
     GrTexture* texture =
         reinterpret_cast<GrTexture*>(filter_bitmap.getTexture());
+    DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(Context()));
     Context()->bindTexture(GL_TEXTURE_2D, texture->getTextureHandle());
   } else {
     contents_resource_lock = make_scoped_ptr(
@@ -1026,10 +1027,10 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                       tex_scale_x,
                                       -tex_scale_y));
 
+  scoped_ptr<ResourceProvider::ScopedReadLockGL> shader_mask_sampler_lock;
   if (shader_mask_sampler_location != -1) {
     DCHECK_NE(shader_mask_tex_coord_scale_location, 1);
     DCHECK_NE(shader_mask_tex_coord_offset_location, 1);
-    GLC(Context(), Context()->activeTexture(GL_TEXTURE1));
     GLC(Context(), Context()->uniform1i(shader_mask_sampler_location, 1));
 
     float mask_tex_scale_x = quad->mask_uv_rect.width() / tex_scale_x;
@@ -1046,9 +1047,12 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         Context()->uniform2f(shader_mask_tex_coord_scale_location,
                              mask_tex_scale_x,
                              -mask_tex_scale_y));
-    resource_provider_->BindForSampling(
-        quad->mask_resource_id, GL_TEXTURE_2D, GL_LINEAR);
-    GLC(Context(), Context()->activeTexture(GL_TEXTURE0));
+    shader_mask_sampler_lock = make_scoped_ptr(
+        new ResourceProvider::ScopedSamplerGL(resource_provider_,
+                                              quad->mask_resource_id,
+                                              GL_TEXTURE_2D,
+                                              GL_TEXTURE1,
+                                              GL_LINEAR));
   }
 
   if (shader_edge_location != -1) {
@@ -1496,22 +1500,31 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   bool use_alpha_plane = quad->a_plane_resource_id != 0;
 
-  GLC(Context(), Context()->activeTexture(GL_TEXTURE1));
   ResourceProvider::ScopedSamplerGL y_plane_lock(
-      resource_provider_, quad->y_plane_resource_id, GL_TEXTURE_2D, GL_LINEAR);
-  GLC(Context(), Context()->activeTexture(GL_TEXTURE2));
+      resource_provider_,
+      quad->y_plane_resource_id,
+      GL_TEXTURE_2D,
+      GL_TEXTURE1,
+      GL_LINEAR);
   ResourceProvider::ScopedSamplerGL u_plane_lock(
-      resource_provider_, quad->u_plane_resource_id, GL_TEXTURE_2D, GL_LINEAR);
-  GLC(Context(), Context()->activeTexture(GL_TEXTURE3));
+      resource_provider_,
+      quad->u_plane_resource_id,
+      GL_TEXTURE_2D,
+      GL_TEXTURE2,
+      GL_LINEAR);
   ResourceProvider::ScopedSamplerGL v_plane_lock(
-      resource_provider_, quad->v_plane_resource_id, GL_TEXTURE_2D, GL_LINEAR);
+      resource_provider_,
+      quad->v_plane_resource_id,
+      GL_TEXTURE_2D,
+      GL_TEXTURE3,
+      GL_LINEAR);
   scoped_ptr<ResourceProvider::ScopedSamplerGL> a_plane_lock;
   if (use_alpha_plane) {
-    GLC(Context(), Context()->activeTexture(GL_TEXTURE4));
     a_plane_lock.reset(new ResourceProvider::ScopedSamplerGL(
         resource_provider_,
         quad->a_plane_resource_id,
         GL_TEXTURE_2D,
+        GL_TEXTURE4,
         GL_LINEAR));
   }
 
@@ -1584,9 +1597,6 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   SetShaderOpacity(quad->opacity(), alpha_location);
   DrawQuadGeometry(frame, quad->quadTransform(), quad->rect, matrix_location);
-
-  // Reset active texture back to texture 0.
-  GLC(Context(), Context()->activeTexture(GL_TEXTURE0));
 }
 
 void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
@@ -1612,6 +1622,7 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           quad->resource_id);
+  DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(Context()));
   GLC(Context(),
       Context()->bindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id()));
 
@@ -1756,6 +1767,7 @@ void GLRenderer::FlushTextureQuadCache() {
   // Assume the current active textures is 0.
   ResourceProvider::ScopedReadLockGL locked_quad(resource_provider_,
                                                  draw_cache_.resource_id);
+  DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(Context()));
   GLC(Context(),
       Context()->bindTexture(GL_TEXTURE_2D, locked_quad.texture_id()));
 
@@ -1908,6 +1920,7 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           quad->io_surface_resource_id);
+  DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(Context()));
   GLC(Context(),
       Context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB,
                              lock.texture_id()));
@@ -2060,7 +2073,7 @@ void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame* frame,
   }
 
   SetShaderOpacity(1.f, program->fragment_shader().alpha_location());
-
+  DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(Context()));
   GLC(Context(), Context()->bindTexture(GL_TEXTURE_2D, texture_id));
   DrawQuadGeometry(
       frame, draw_matrix, rect, program->vertex_shader().matrix_location());

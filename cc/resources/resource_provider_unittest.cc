@@ -1352,6 +1352,7 @@ class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
                                                  GLint*));
   MOCK_METHOD1(unmapImageCHROMIUM, void(WGC3Duint));
   MOCK_METHOD2(bindTexImage2DCHROMIUM, void(WGC3Denum, WGC3Dint));
+  MOCK_METHOD2(releaseTexImage2DCHROMIUM, void(WGC3Denum, WGC3Dint));
 };
 
 TEST_P(ResourceProviderTest, TextureAllocation) {
@@ -1608,16 +1609,6 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
       .RetiresOnSaturation();
   resource_provider->AcquireImage(id);
 
-  EXPECT_CALL(*context, createTexture())
-      .WillOnce(Return(kTextureId))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(2)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
-      .Times(1)
-      .RetiresOnSaturation();
-  resource_provider->BindImage(id);
-
   void* dummy_mapped_buffer_address = NULL;
   EXPECT_CALL(*context, mapImageCHROMIUM(kImageId, GL_READ_WRITE))
       .WillOnce(Return(dummy_mapped_buffer_address))
@@ -1638,16 +1629,31 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
       .RetiresOnSaturation();
   resource_provider->UnmapImage(id);
 
+  EXPECT_CALL(*context, createTexture())
+      .WillOnce(Return(kTextureId))
+      .RetiresOnSaturation();
+  // Once in CreateTextureId and once in BindForSampling
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(2)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, releaseTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, deleteTexture(kTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+  {
+    ResourceProvider::ScopedSamplerGL lock_gl(
+        resource_provider.get(), id, GL_TEXTURE_2D, GL_LINEAR);
+    EXPECT_EQ(kTextureId, lock_gl.texture_id());
+  }
+
   EXPECT_CALL(*context, destroyImageCHROMIUM(kImageId))
       .Times(1)
       .RetiresOnSaturation();
   resource_provider->ReleaseImage(id);
-
-  // Texture will be deleted when ResourceProvider destructor is
-  // called when it goes out of scope when this method returns.
-  EXPECT_CALL(*context, deleteTexture(kTextureId))
-      .Times(1)
-      .RetiresOnSaturation();
 }
 
 TEST_P(ResourceProviderTest, Image_Bitmap) {
@@ -1677,8 +1683,6 @@ TEST_P(ResourceProviderTest, Image_Bitmap) {
   ASSERT_TRUE(!!data);
   memcpy(data, &kBadBeef, sizeof(kBadBeef));
   resource_provider->UnmapImage(id);
-
-  resource_provider->BindImage(id);
 
   {
     ResourceProvider::ScopedReadLockSoftware lock(resource_provider.get(), id);

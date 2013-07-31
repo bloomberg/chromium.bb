@@ -172,13 +172,6 @@ class CC_EXPORT ResourceProvider {
   void ReceiveFromParent(
       const TransferableResourceArray& transferable_resources);
 
-  // Bind the given GL resource to a texture target for sampling using the
-  // specified filter for both minification and magnification. The resource
-  // must be locked for reading.
-  void BindForSampling(ResourceProvider::ResourceId resource_id,
-                       GLenum target,
-                       GLenum filter);
-
   // The following lock classes are part of the ResourceProvider API and are
   // needed to read and write the resource contents. The user must ensure
   // that they only use GL locks on GL resources, etc, and this is enforced
@@ -187,13 +180,15 @@ class CC_EXPORT ResourceProvider {
    public:
     ScopedReadLockGL(ResourceProvider* resource_provider,
                      ResourceProvider::ResourceId resource_id);
-    ~ScopedReadLockGL();
+    virtual ~ScopedReadLockGL();
 
     unsigned texture_id() const { return texture_id_; }
 
-   private:
+   protected:
     ResourceProvider* resource_provider_;
     ResourceProvider::ResourceId resource_id_;
+
+   private:
     unsigned texture_id_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
@@ -205,8 +200,17 @@ class CC_EXPORT ResourceProvider {
                     ResourceProvider::ResourceId resource_id,
                     GLenum target,
                     GLenum filter);
+    ScopedSamplerGL(ResourceProvider* resource_provider,
+                    ResourceProvider::ResourceId resource_id,
+                    GLenum target,
+                    GLenum unit,
+                    GLenum filter);
+    virtual ~ScopedSamplerGL();
 
    private:
+    GLenum target_;
+    GLenum unit_;
+
     DISALLOW_COPY_AND_ASSIGN(ScopedSamplerGL);
   };
 
@@ -296,9 +300,6 @@ class CC_EXPORT ResourceProvider {
   uint8_t* MapImage(ResourceId id);
   void UnmapImage(ResourceId id);
 
-  // Binds the image to a texture.
-  void BindImage(ResourceId id);
-
   // Returns the stride for the image.
   int GetImageStride(ResourceId id);
 
@@ -330,6 +331,7 @@ class CC_EXPORT ResourceProvider {
       scoped_refptr<cc::ContextProvider> offscreen_context_provider) {
     offscreen_context_provider_ = offscreen_context_provider;
   }
+  static GLint GetActiveTextureUnit(WebKit::WebGraphicsContext3D* context);
 
  private:
   struct Resource {
@@ -407,6 +409,17 @@ class CC_EXPORT ResourceProvider {
   void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
   void LazyCreate(Resource* resource);
   void LazyAllocate(Resource* resource);
+
+  // Binds the given GL resource to a texture target for sampling using the
+  // specified filter for both minification and magnification. The resource
+  // must be locked for reading.
+  void BindForSampling(ResourceProvider::ResourceId resource_id,
+                       GLenum target,
+                       GLenum unit,
+                       GLenum filter);
+  void UnbindForSampling(ResourceProvider::ResourceId resource_id,
+                         GLenum target,
+                         GLenum unit);
 
   OutputSurface* output_surface_;
   bool lost_output_surface_;

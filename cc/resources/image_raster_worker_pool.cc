@@ -183,9 +183,6 @@ void ImageRasterWorkerPool::OnRasterTaskCompleted(
   // Balanced with MapImage() call in ScheduleTasks().
   resource_provider()->UnmapImage(task->resource()->id());
 
-  // Bind image to resource.
-  resource_provider()->BindImage(task->resource()->id());
-
   task->DidRun(was_canceled);
   task->WillComplete();
   task->CompleteOnOriginThread();

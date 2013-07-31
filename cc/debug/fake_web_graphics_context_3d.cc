@@ -116,6 +116,8 @@ void FakeWebGraphicsContext3D::getIntegerv(
     WebKit::WGC3Dint* value) {
   if (pname == GL_MAX_TEXTURE_SIZE)
     *value = 1024;
+  else if (pname == GL_ACTIVE_TEXTURE)
+    *value = GL_TEXTURE0;
 }
 
 void FakeWebGraphicsContext3D::getProgramiv(
