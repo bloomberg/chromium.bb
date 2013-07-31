@@ -12,9 +12,9 @@
 #include "remoting/protocol/libjingle_transport_factory.h"
 
 // TODO(solb) Move into location shared with client plugin.
-const char* const CHAT_SERVER = "talk.google.com";
-const int CHAT_PORT = 5222;
-const bool CHAT_USE_TLS = true;
+const char* const kXmppServer = "talk.google.com";
+const int kXmppPort = 5222;
+const bool kXmppUseTls = true;
 
 namespace remoting {
 
@@ -83,7 +83,7 @@ void ChromotingJniInstance::PerformMouseAction(
     int x,
     int y,
     protocol::MouseEvent_MouseButton button,
-    bool buttonDown) {
+    bool button_down) {
   if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
     jni_runtime_->network_task_runner()->PostTask(
         FROM_HERE,
@@ -92,7 +92,7 @@ void ChromotingJniInstance::PerformMouseAction(
                    x,
                    y,
                    button,
-                   buttonDown));
+                   button_down));
     return;
   }
 
@@ -101,31 +101,32 @@ void ChromotingJniInstance::PerformMouseAction(
   action.set_y(y);
   action.set_button(button);
   if (button != protocol::MouseEvent::BUTTON_UNDEFINED)
-    action.set_button_down(buttonDown);
+    action.set_button_down(button_down);
 
   connection_->input_stub()->InjectMouseEvent(action);
 }
 
-void ChromotingJniInstance::PerformKeyboardAction(int keyCode, bool keyDown) {
+void ChromotingJniInstance::PerformKeyboardAction(int key_code, bool key_down) {
   if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
     jni_runtime_->network_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&ChromotingJniInstance::PerformKeyboardAction,
                    this,
-                   keyCode,
-                   keyDown));
+                   key_code,
+                   key_down));
     return;
   }
 
-  uint32 usbCode = AndroidKeycodeToUsbKeycode(keyCode);
-  if (usbCode) {
+  uint32 usb_code = AndroidKeycodeToUsbKeycode(key_code);
+  if (usb_code) {
     protocol::KeyEvent action;
-    action.set_usb_keycode(usbCode);
-    action.set_pressed(keyDown);
+    action.set_usb_keycode(usb_code);
+    action.set_pressed(key_down);
     connection_->input_stub()->InjectKeyEvent(action);
   }
-  else
-    LOG(WARNING) << "Ignoring unknown keycode: " << keyCode;
+  else {
+    LOG(WARNING) << "Ignoring unknown keycode: " << key_code;
+  }
 }
 
 void ChromotingJniInstance::OnConnectionState(
@@ -227,9 +228,9 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   view_->set_frame_producer(client_->GetFrameProducer());
 
   signaling_config_.reset(new XmppSignalStrategy::XmppServerConfig());
-  signaling_config_->host = CHAT_SERVER;
-  signaling_config_->port = CHAT_PORT;
-  signaling_config_->use_tls = CHAT_USE_TLS;
+  signaling_config_->host = kXmppServer;
+  signaling_config_->port = kXmppPort;
+  signaling_config_->use_tls = kXmppUseTls;
 
   signaling_.reset(new XmppSignalStrategy(jni_runtime_->url_requester(),
                                           username_,

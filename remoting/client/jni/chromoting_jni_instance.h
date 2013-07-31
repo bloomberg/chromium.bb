@@ -62,10 +62,10 @@ class ChromotingJniInstance
   void PerformMouseAction(int x,
                           int y,
                           protocol::MouseEvent_MouseButton button,
-                          bool buttonDown);
+                          bool button_down);
 
   // Sends the provided keyboard scan code to the host.
-  void PerformKeyboardAction(int keyCode, bool keyDown);
+  void PerformKeyboardAction(int key_code, bool key_down);
 
   // ClientUserInterface implementation.
   virtual void OnConnectionState(

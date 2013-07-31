@@ -67,14 +67,41 @@ public class Desktop extends Activity {
         }
     }
 
-    /** Called when a hardware key is pressed, and usually when a software key is pressed. */
+    /**
+     * Called once when a keyboard key is pressed, then again when that same key is released. This
+     * is not guaranteed to be notified of all soft keyboard events: certian keyboards might not
+     * call it at all, while others might skip it in certain situations (e.g. swipe input).
+     */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        JniInterface.keyboardAction(event.getKeyCode(), event.getAction() == KeyEvent.ACTION_DOWN);
+        boolean depressed = event.getAction() == KeyEvent.ACTION_DOWN;
 
-        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-            // We stop this event from propagating further to prevent the keyboard from closing.
-            return true;
+        switch (event.getKeyCode()) {
+            case KeyEvent.KEYCODE_AT:
+                JniInterface.keyboardAction(KeyEvent.KEYCODE_SHIFT_LEFT, depressed);
+                JniInterface.keyboardAction(KeyEvent.KEYCODE_2, depressed);
+                break;
+            case KeyEvent.KEYCODE_POUND:
+                JniInterface.keyboardAction(KeyEvent.KEYCODE_SHIFT_LEFT, depressed);
+                JniInterface.keyboardAction(KeyEvent.KEYCODE_3, depressed);
+                break;
+            case KeyEvent.KEYCODE_STAR:
+                JniInterface.keyboardAction(KeyEvent.KEYCODE_SHIFT_LEFT, depressed);
+                JniInterface.keyboardAction(KeyEvent.KEYCODE_8, depressed);
+                break;
+            case KeyEvent.KEYCODE_PLUS:
+                JniInterface.keyboardAction(KeyEvent.KEYCODE_SHIFT_LEFT, depressed);
+                JniInterface.keyboardAction(KeyEvent.KEYCODE_EQUALS, depressed);
+                break;
+            default:
+                // We try to send all other key codes to the host directly.
+                JniInterface.keyboardAction(event.getKeyCode(), depressed);
+
+                if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER ||
+                        event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_ENTER) {
+                    // We stop this key from propagating to prevent the keyboard from closing.
+                    return true;
+                }
         }
 
         return super.dispatchKeyEvent(event);

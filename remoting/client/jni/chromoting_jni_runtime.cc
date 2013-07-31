@@ -12,7 +12,7 @@
 #include "remoting/base/url_request_context.h"
 
 // Class and package name of the Java class supporting the methods we call.
-const char* const JAVA_CLASS = "org/chromium/chromoting/jni/JniInterface";
+const char* const kJavaClass = "org/chromium/chromoting/jni/JniInterface";
 
 namespace remoting {
 
@@ -55,7 +55,7 @@ ChromotingJniRuntime::ChromotingJniRuntime() {
   // Allows later decoding of video frames.
   media::InitializeCPUSpecificYUVConversions();
 
-  class_ = static_cast<jclass>(env->NewGlobalRef(env->FindClass(JAVA_CLASS)));
+  class_ = static_cast<jclass>(env->NewGlobalRef(env->FindClass(kJavaClass)));
 }
 
 ChromotingJniRuntime::~ChromotingJniRuntime() {
@@ -68,7 +68,8 @@ ChromotingJniRuntime::~ChromotingJniRuntime() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   env->DeleteGlobalRef(class_);
-  // TODO(solb): crbug.com/259594 Detach all threads from JVM here.
+  // TODO(solb): Detach all threads from JVM here.
+  // crbug.com/259594
 }
 
 void ChromotingJniRuntime::ConnectToHost(const char* username,

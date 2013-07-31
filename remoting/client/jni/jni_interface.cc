@@ -120,6 +120,9 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(mouseActionNative)(
     jint y,
     jint which_button,
     jboolean button_down) {
+  // Button must be within the bounds of the MouseEvent_MouseButton enum.
+  DCHECK(which_button >= 0 && which_button < 5);
+
   remoting::ChromotingJniRuntime::GetInstance()->session()->PerformMouseAction(
       x,
       y,

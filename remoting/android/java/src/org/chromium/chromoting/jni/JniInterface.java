@@ -198,7 +198,7 @@ public class JniInterface {
      */
     public static Bitmap retrieveVideoFrame() {
         if (Looper.myLooper() == Looper.getMainLooper()) {
-            Log.w("deskview", "Canvas being redrawn on UI thread");
+            Log.w("jniiface", "Canvas being redrawn on UI thread");
         }
 
         if (!sConnected) {
@@ -213,7 +213,7 @@ public class JniInterface {
         return Bitmap.createBitmap(frame, 0, sWidth, sWidth, sHeight, Bitmap.Config.ARGB_8888);
     }
 
-    /** Moves the mouse cursor, possibly while clicking. */
+    /** Moves the mouse cursor, possibly while clicking the specified (nonnegative) button. */
     public static void mouseAction(int x, int y, int whichButton, boolean buttonDown) {
         if (!sConnected) {
             return;
@@ -222,7 +222,7 @@ public class JniInterface {
         mouseActionNative(x, y, whichButton, buttonDown);
     }
 
-    /** Presses and releases the specified key. */
+    /** Presses and releases the specified (nonnegative) key. */
     public static void keyboardAction(int keyCode, boolean keyDown) {
         if (!sConnected) {
             return;

@@ -85,7 +85,7 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
 
         getHolder().addCallback(this);
         DesktopListener listener = new DesktopListener();
-        mScroller = new GestureDetector(context, listener);
+        mScroller = new GestureDetector(context, listener, null, false);
         mZoomer = new ScaleGestureDetector(context, listener);
 
         mTransform = new Matrix();
@@ -179,8 +179,7 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
                         // Make the right edge of the image flush with the right screen edge.
                         values[Matrix.MTRANS_X] += mScreenWidth - bottomright[0];
                     }
-                }
-                else {
+                } else {
                     // The else prevents this from being updated during the repositioning process,
                     // in which case the view would begin to oscillate.
                     mRightUsedToBeOut = rightEdgeOutOfBounds;
@@ -191,8 +190,7 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
                     if (topEdgeOutOfBounds != mBottomUsedToBeOut) {
                         // Make the top edge of the image flush with the top screen edge.
                         values[Matrix.MTRANS_Y] = 0;
-                    }
-                    else {
+                    } else {
                         // Make the bottom edge of the image flush with the bottom screen edge.
                         values[Matrix.MTRANS_Y] += mScreenHeight - bottomright[1];
                     }
@@ -314,7 +312,8 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
                     if (mMouseButton == BUTTON_UNDEFINED) {
                         // The user pressed and released without moving: do left click and release.
                         Log.i("mouse", "\tStarting and finishing left click");
-                        handleMouseMovement(coordinates, BUTTON_LEFT, true);
+                        handleMouseMovement(new float[] {coordinates[0], coordinates[1]},
+                                BUTTON_LEFT, true);
                         mMouseButton = BUTTON_LEFT;
                         mMousePressed = false;
                     }

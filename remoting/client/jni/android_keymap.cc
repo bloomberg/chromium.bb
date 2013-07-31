@@ -4,6 +4,8 @@
 
 #include "remoting/client/jni/android_keymap.h"
 
+#include "base/logging.h"
+
 namespace {
 
 // These must be defined in the same order as the Android keycodes in
@@ -201,7 +203,9 @@ const uint32 usb_keycodes[] = {
 
 namespace remoting {
 
-uint32 AndroidKeycodeToUsbKeycode(int android) {
+uint32 AndroidKeycodeToUsbKeycode(size_t android) {
+  DCHECK_LT(android, sizeof (usb_keycodes) / sizeof (uint32));
+
   return usb_keycodes[android];
 }
 
