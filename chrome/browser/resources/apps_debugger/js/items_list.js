@@ -238,39 +238,7 @@ cr.define('apps_dev_tool', function() {
           });
         });
         restart.hidden = false;
-
-        var launchButton = node.querySelector('.extension-run-button');
-        launchButton.addEventListener('click', function(e) {
-          ItemsList.launchApp(item.id);
-        });
-
-        var restartButton = node.querySelector('.extension-restart-button');
-        restartButton.addEventListener('click', function(e) {
-          chrome.developerPrivate.restart(item.id, function() {
-            ItemsList.loadItemsInfo();
-          });
-        });
-
-        var showLogs = node.querySelector('.extension-show-logs-button');
-        showLogs.addEventListener('click', function(e) {
-          if (!item.views.length)
-            return;
-          var view = item.views[0];
-
-          // Opens the devtools inspect window for the page.
-          chrome.developerPrivate.inspect({
-            extension_id: String(item.id),
-            render_process_id: String(view.render_process_id),
-            render_view_id: String(view.render_view_id),
-            incognito: view.incognito,
-          });
-        });
-      } else {
-        node.querySelector('.extension-run-button').hidden = true;
-        node.querySelector('.extension-restart-button').hidden = true;
-        node.querySelector('.extension-show-logs-button').hidden = true;
       }
-
       // The terminated reload link.
       if (!item.terminated)
         this.setEnabledCheckbox_(item, node);
@@ -299,12 +267,6 @@ cr.define('apps_dev_tool', function() {
         node.querySelector('.managed-message').hidden = false;
 
       this.setActiveViews_(item, node);
-
-      var moreDetailsLink =
-          node.querySelector('.extension-more-details-button');
-      moreDetailsLink.addEventListener('click', function(e) {
-        this.toggleExtensionDetails_(item, node);
-      }.bind(this));
 
       return node;
     },
@@ -494,53 +456,6 @@ cr.define('apps_dev_tool', function() {
         }
       });
     },
-
-    /**
-     * If the details of an app / extension is expanded, this function will
-     * collapse it, else it will expand this them.
-     * @param {!Object} item A dictionary of item metadata.
-     * @param {!HTMLElement} node HTML element containing all items.
-     * @private
-     */
-    toggleExtensionDetails_: function(item, node)  {
-      var itemNode = node.querySelector('.extension-details');
-      if (itemNode.classList.contains('expanded'))
-        this.setExtensionDetailsVisible_(node, false);
-      else
-        this.setExtensionDetailsVisible_(node, true);
-    },
-
-    /**
-     * If visible is true, this function will expand the details of an
-     * app/extension, else it will collapse them.
-     * @param {!HTMLElement} node HTML element containing all items.
-     * @param {boolean} visible Visiblity of the details.
-     * @private
-     */
-    setExtensionDetailsVisible_: function(node, visible) {
-      var itemNode = node.querySelector('.extension-details');
-      var details = node.querySelector('.extension-details-all');
-      if (visible) {
-        // Hide other details.
-        var otherNodeList =
-            document.querySelectorAll('extension-list-item-wrapper');
-        for (var i = 0; i < otherNodeList.length; i++) {
-          if (otherNodeList[i] != node)
-            this.setExtensionDetailsVisible_(otherNodeList[i], false);
-        }
-
-        var container =
-            details.querySelector('.extension-details-all-container');
-        // Adds 10 pixels to height because .extension-details-all-bubble has
-        // a 10px top margin.
-        var height = container.clientHeight + 10;
-        details.style.height = height + 'px';
-        itemNode.classList.add('expanded');
-      } else {
-        details.style.height = 0;
-        itemNode.classList.remove('expanded');
-      }
-    }
   };
 
   /**
@@ -572,10 +487,7 @@ cr.define('apps_dev_tool', function() {
    */
   ItemsList.launchApp = function(id) {
     chrome.management.launchApp(id, function() {
-      ItemsList.loadItemsInfo(function() {
-        var unpacked = new ItemsList($('unpacked-list'), unpackedList);
-        unpacked.setExtensionDetailsVisible_($(id), true);
-      });
+      ItemsList.loadItemsInfo();
     });
   };
 
@@ -596,8 +508,6 @@ cr.define('apps_dev_tool', function() {
     // Scroll relatively to the position of the first item.
     var node = $(id);
     document.body.scrollTop = node.offsetTop - firstItem.offsetTop;
-    var unpacked = new ItemsList($('unpacked-list'), unpackedList);
-    unpacked.setExtensionDetailsVisible_(node, true);
   };
 
   return {

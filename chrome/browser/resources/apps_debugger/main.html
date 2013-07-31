@@ -98,117 +98,96 @@ found in the LICENSE file.
                     i18n-content="extensionDisabled"></span>
               </div>
               <p class="extension-description"><span></span></p>
-              <div class="extension-buttons-container">
-                <div class="extension-run-button"></div>
-                <div class="extension-restart-button"></div>
-                <div class="extension-show-logs-button"
-                    i18n-content="extensionSettingsShowLogsButton"></div>
-                <div class="extension-more-details-button"
-                    i18n-content="extensionSettingsMoreDetailsButton"></div>
-              </div>
             </div>
             <div class="extension-details-all">
-              <div class="extension-details-all-container">
-                <div class="extension-details-all-arrow-border"></div>
-                <div class="extension-details-all-arrow"></div>
-                <div class="extension-details-all-bubble">
-                  <div>
-                    <div>
-                      <span i18n-content="extensionSettingsVersion"></span>
-                      <span class="extension-version"></span>
-                    </div>
-                    <div class="item-id">
-                      <span i18n-content="extensionSettingsExtensionId"></span>
-                      <span class="extension-id"></span>
-                    </div>
-                    <div class="load-path" hidden>
-                      <span i18n-content="extensionSettingsExtensionPath">
+              <div>
+                <div>
+                  <span i18n-content="extensionSettingsVersion"></span>
+                  <span class="extension-version"></span>
+                </div>
+                <div class="item-id">
+                  <span i18n-content="extensionSettingsExtensionId"></span>
+                  <span class="extension-id"></span>
+                </div>
+                <div class="load-path" hidden>
+                  <span i18n-content="extensionSettingsExtensionPath"></span>
+                  <span></span>
+                </div>
+              </div>
+              <div>
+                <span class="extension-disable-reason"></span>
+              </div>
+              <div class="managed-message"
+                  i18n-content="extensionSettingsPolicyControlled" hidden>
+              </div>
+              <div class="extension-warnings" hidden>
+                <span i18n-content="extensionSettingsInstallWarnings"></span>
+              </div>
+              <div class="install-warnings" hidden>
+                <span i18n-content="extensionSettingsWarningsTitle"></span>
+                <ul></ul>
+              </div>
+              <div>
+                <div class="optional-controls">
+                  <button class="show-button"
+                      i18n-content="extensionSettingsShowButton" hidden>
+                  </button>
+                  <span class="optional-control-disableable">
+                    <label class="incognito-control" hidden>
+                      <input type="checkbox">
+                      <span i18n-content="extensionSettingsEnableIncognito">
                       </span>
-                      <span></span>
-                    </div>
-                  </div>
-                  <div>
-                    <span class="extension-disable-reason"></span>
-                  </div>
-                  <div class="managed-message"
-                      i18n-content="extensionSettingsPolicyControlled" hidden>
-                  </div>
-                  <div class="extension-warnings" hidden>
-                    <span i18n-content="extensionSettingsInstallWarnings">
-                    </span>
-                  </div>
-                  <div class="install-warnings" hidden>
-                    <span i18n-content="extensionSettingsWarningsTitle"></span>
-                    <ul></ul>
-                  </div>
-                  <div>
-                    <div class="optional-controls">
-                      <button class="show-button"
-                          i18n-content="extensionSettingsShowButton" hidden>
-                      </button>
-                      <span class="optional-control-disableable">
-                        <label class="incognito-control" hidden>
-                          <input type="checkbox">
-                          <span
-                              i18n-content="extensionSettingsEnableIncognito">
-                          </span>
-                        </label>
-                        <label class="file-access-control" hidden>
-                          <input type="checkbox">
-                          <span i18n-content="extensionSettingsAllowFileAccess">
-                          </span>
-                        </label>
+                    </label>
+                    <label class="file-access-control" hidden>
+                      <input type="checkbox">
+                      <span i18n-content="extensionSettingsAllowFileAccess">
                       </span>
-                    </div>
-                    <div class="enable-controls">
-                      <a class="terminated-reload-link" href="#"
-                          i18n-content="extensionSettingsReloadTerminated"
-                          hidden></a>
-                      <div class="checkbox enable-checkbox" hidden>
-                        <label>
-                          <input type="checkbox">
-                          <span class="enable-checkbox-text">
-                            <span class="enabled-text"
-                                i18n-content="extensionSettingsEnabled"></span>
-                            <span class="enable-text"
-                                i18n-content="extensionSettingsEnable"></span>
-                          </span>
-                        </label>
-                        <span class="location-text"></span>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <div class="active-views" hidden>
-                      <span i18n-content="extensionSettingsInspectViews"></span>
-                      <a href="#"></a>
-                    </div>
-                  </div>
-                  <div>
-                    <a class="reload-link" href="#"
-                        i18n-content="extensionSettingsReloadUnpacked" hidden>
-                    </a>
-                    <a class="launch-link"
-                        i18n-content="extensionSettingsLaunch"
-                        href="#" hidden></a>
-                    <a class="restart-link"
-                        i18n-content="extensionSettingsRestart"
-                        href="#" hidden></a>
-                  </div>
-                  <div>
-                    <a class="permissions-link"
-                        i18n-content="extensionSettingsPermissions"
-                        href="#"></a>
-                    <a class="site-link" target="_blank"></a>
-                    <a class="options-link"
-                        i18n-content="extensionSettingsOptions"
-                        href="#" target="_blank" hidden></a>
-                    <a class="pack-link" i18n-content="extensionSettingsPack"
-                        href="#" hidden></a>
-                    <a class="delete-link"
-                        i18n-content="extensionSettingsDelete" href="#"></a>
+                    </label>
+                  </span>
+                </div>
+                <div class="enable-controls">
+                  <a class="terminated-reload-link" href="#"
+                      i18n-content="extensionSettingsReloadTerminated" hidden>
+                  </a>
+                  <div class="checkbox enable-checkbox" hidden>
+                    <label>
+                      <input type="checkbox">
+                      <span class="enable-checkbox-text">
+                        <span class="enabled-text"
+                            i18n-content="extensionSettingsEnabled"></span>
+                        <span class="enable-text"
+                            i18n-content="extensionSettingsEnable"></span>
+                      </span>
+                    </label>
+                    <span class="location-text"></span>
                   </div>
                 </div>
+              </div>
+              <div>
+                <div class="active-views" hidden>
+                  <span i18n-content="extensionSettingsInspectViews"></span>
+                  <a href="#"></a>
+                </div>
+              </div>
+              <div>
+                <a class="reload-link" href="#"
+                    i18n-content="extensionSettingsReloadUnpacked" hidden>
+                </a>
+                <a class="launch-link" i18n-content="extensionSettingsLaunch"
+                    href="#" hidden></a>
+                <a class="restart-link" i18n-content="extensionSettingsRestart"
+                    href="#" hidden></a>
+              </div>
+              <div>
+                <a class="permissions-link"
+                    i18n-content="extensionSettingsPermissions" href="#"></a>
+                <a class="site-link" target="_blank"></a>
+                <a class="options-link" i18n-content="extensionSettingsOptions"
+                    href="#" target="_blank" hidden></a>
+                <a class="pack-link" i18n-content="extensionSettingsPack"
+                    href="#" hidden></a>
+                <a class="delete-link" i18n-content="extensionSettingsDelete"
+                    href="#"></a>
               </div>
             </div>
           </div>
