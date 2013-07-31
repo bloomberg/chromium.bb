@@ -131,11 +131,7 @@ void ShillServiceClientStub::ClearProperty(
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
-  dict->Remove(name, NULL);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ShillServiceClientStub::NotifyObserversPropertyChanged,
-                 weak_ptr_factory_.GetWeakPtr(), service_path, name));
+  dict->RemoveWithoutPathExpansion(name, NULL);
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
