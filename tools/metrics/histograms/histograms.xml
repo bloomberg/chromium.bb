@@ -16919,6 +16919,7 @@ other types of suffix sets.
   <int value="513" label="SYSTEM_STORAGE_REMOVEAVAILABLECAPACITYWATCH"/>
   <int value="514" label="SYSTEM_STORAGE_GETALLAVAILABLECAPACITYWATCHES"/>
   <int value="515" label="SYSTEM_STORAGE_REMOVEALLAVAILABLECAPACITYWATCHES"/>
+  <int value="516" label="INFOBARS_SHOW"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

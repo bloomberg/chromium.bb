@@ -11,7 +11,7 @@ function waitForInfobar(callback) {
 }
 
 chrome.tabs.getSelected(null, function(tab) {
-  chrome.experimental.infobars.show(
+  chrome.infobars.show(
       {'tabId': tab.id, 'path': 'view_checks.html'}, function() {
     g_infobarReady = true;
     if (g_callback)

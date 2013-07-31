@@ -185,10 +185,6 @@
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
   },
-  "experimental.infobars": {
-    "dependencies": ["permission:experimental"],
-    "contexts": ["blessed_extension"]
-  },
   "experimental.input.virtualKeyboard": {
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
@@ -280,6 +276,10 @@
   },
   "idle": {
     "dependencies": ["permission:idle"],
+    "contexts": ["blessed_extension"]
+  },
+  "infobars": {
+    "dependencies": ["permission:infobars"],
     "contexts": ["blessed_extension"]
   },
   "input.ime": {

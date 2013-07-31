@@ -1029,16 +1029,16 @@ The json schema stuff alrea...</td>
 <tr class="vc_row_odd">
 <td colspan="2">
 
-<a name="experimental_infobars.json" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/experimental_infobars.json?view=log" title="View file revision log">
+<a name="infobars.json" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/infobars.json?view=log" title="View file revision log">
 
 <img src="/viewvc/*docroot*/images/text.png" alt="" width="16" height="16" />
-experimental_infobars.json</a>
+infobars.json</a>
 
 </td>
 
 
 
-<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/experimental_infobars.json?revision=136747&amp;view=markup" title="View file contents"><strong>136747</strong></a></td>
+<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/infobars.json?revision=136747&amp;view=markup" title="View file contents"><strong>136747</strong></a></td>
 
 <td>&nbsp;2 months</td>
 <td>&nbsp;cduvall@chromium.org</td>

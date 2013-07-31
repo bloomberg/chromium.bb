@@ -5,7 +5,7 @@
   "background" : {
     "scripts": ["background.js"]
   },
-  "permissions" : [ "experimental" ],
+  "permissions" : [ "infobars" ],
   "icons" : {
     "16" : "sandwich-16.png",
     "48" : "sandwich-48.png",

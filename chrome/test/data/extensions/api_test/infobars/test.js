@@ -29,8 +29,7 @@ var tests = [
         console.log('windowB: ' + windowB);
 
         // Show infobarA in window A (tab A) (and specify no callback).
-        chrome.experimental.infobars.show({"path": "infobarA.html",
-                                           "tabId": tabA});
+        chrome.infobars.show({"path": "infobarA.html", "tabId": tabA});
         // Flow continues in infobarCallbackA.
       });
     });
@@ -53,9 +52,8 @@ function infobarCallbackA() {
     tabB = tabs[0].id;
 
     // Show infobarB in (current) window B (with callback).
-    chrome.experimental.infobars.show({"path": "infobarB.html",
-                                       "tabId": tabB},
-                                      function(window) {
+    chrome.infobars.show({"path": "infobarB.html", "tabId": tabB},
+                          function(window) {
       assertEq(window.id, windowB);
       // This infobar will call back to us through infobarCallbackB (below).
     });

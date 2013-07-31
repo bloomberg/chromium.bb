@@ -67,7 +67,7 @@ const char* const kNames[] = {
     "experimental.discovery.removeSuggestion",
     "experimental.discovery.suggest", "experimental.history.getMostVisited",
     "experimental.identity.getAuthToken",
-    "experimental.identity.launchWebAuthFlow", "experimental.infobars.show",
+    "experimental.identity.launchWebAuthFlow", "infobars.show",
     "experimental.mediaGalleries.assembleMediaFile",
     "experimental.mediaGalleries.extractEmbeddedThumbnails",
     "experimental.processes.getProcessIdForTab",

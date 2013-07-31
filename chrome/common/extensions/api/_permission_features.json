@@ -293,6 +293,10 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
+  "infobars": {
+    "channel": "dev",
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
   "input": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],
