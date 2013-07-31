@@ -259,8 +259,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   }
 
 #if !defined(OS_ANDROID)
-  // Synced Notifications sync datatype is disabled by default.
-  // TODO(petewil): Switch to enabled by default once datatype support is done.
   if (notifier::ChromeNotifierServiceFactory::UseSyncedNotifications(
           command_line_)) {
     pss->RegisterDataTypeController(

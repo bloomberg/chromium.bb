@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,6 +55,14 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     datatypes.push_back(syncer::TYPED_URLS);
     datatypes.push_back(syncer::FAVICON_TRACKING);
     datatypes.push_back(syncer::FAVICON_IMAGES);
+
+    // If SyncedNotifications are enabled, count them too.
+    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+    if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
+        channel == chrome::VersionInfo::CHANNEL_DEV ||
+        channel == chrome::VersionInfo::CHANNEL_CANARY)
+      datatypes.push_back(syncer::SYNCED_NOTIFICATIONS);
+
     return datatypes;
   }
 
