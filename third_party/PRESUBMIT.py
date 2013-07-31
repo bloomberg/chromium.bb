@@ -11,9 +11,12 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
   files = []
   errors = []
   for f in input_api.AffectedFiles():
-    if f.LocalPath().startswith('third_party' + input_api.os_path.sep):
+    local_path = f.LocalPath()
+    if input_api.os_path.dirname(local_path) == 'third_party':
+      continue
+    if local_path.startswith('third_party' + input_api.os_path.sep):
       files.append(f)
-      if f.LocalPath().endswith("README.chromium"):
+      if local_path.endswith("README.chromium"):
         readmes.append(f)
   if files and not readmes:
     errors.append(output_api.PresubmitPromptWarning(
@@ -40,6 +43,10 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
 
   for f in readmes:
+    if 'D' in f.Action():
+      _IgnoreIfDeleting(input_api, output_api, f, errors)
+      continue
+
     contents = input_api.ReadFile(f)
     if (not shortname_pattern.search(contents)
         and not name_pattern.search(contents)):
@@ -68,6 +75,16 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
         'README.chromium.template for details.',
         [f]))
   return errors
+
+
+def _IgnoreIfDeleting(input_api, output_api, affected_file, errors):
+  third_party_dir = input_api.os_path.dirname(affected_file.LocalPath())
+  for f in input_api.AffectedFiles():
+    if f.LocalPath().startswith(third_party_dir):
+      if 'D' not in f.Action():
+        errors.append(output_api.PresubmitError(
+          'Third party README should only be removed when the whole\n'
+          'directory is being removed.\n', [f, affected_file]))
 
 
 def CheckChangeOnUpload(input_api, output_api):
