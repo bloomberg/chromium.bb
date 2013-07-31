@@ -262,7 +262,8 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     // TextureImageTransportSurface above).
     const char* extensions = eglQueryString(
         gfx::GLSurfaceEGL::GetHardwareDisplay(), EGL_EXTENSIONS);
-    if (strstr(extensions, "EGL_ANGLE_query_surface_pointer") &&
+    if (extensions &&
+        strstr(extensions, "EGL_ANGLE_query_surface_pointer") &&
         strstr(extensions, "EGL_ANGLE_surface_d3d_texture_2d_share_handle")) {
       return scoped_refptr<gfx::GLSurface>(
           new PbufferImageTransportSurface(manager, stub));
