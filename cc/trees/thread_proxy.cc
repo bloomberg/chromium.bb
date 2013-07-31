@@ -92,6 +92,7 @@ ThreadProxy::ThreadProxy(
       inside_draw_(false),
       can_cancel_commit_(true),
       defer_commits_(false),
+      input_throttled_until_commit_(false),
       renew_tree_priority_on_impl_thread_pending_(false),
       draw_duration_history_(kDurationHistorySize),
       begin_frame_to_commit_duration_history_(kDurationHistorySize),
@@ -555,6 +556,24 @@ void ThreadProxy::MainThreadHasStoppedFlingingOnImplThread() {
   layer_tree_host_impl_->MainThreadHasStoppedFlinging();
 }
 
+void ThreadProxy::NotifyInputThrottledUntilCommit() {
+  DCHECK(IsMainThread());
+  Proxy::ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ThreadProxy::SetInputThrottledUntilCommitOnImplThread,
+                 impl_thread_weak_ptr_,
+                 true));
+}
+
+void ThreadProxy::SetInputThrottledUntilCommitOnImplThread(
+    bool is_throttled) {
+  DCHECK(IsImplThread());
+  if (is_throttled == input_throttled_until_commit_)
+    return;
+  input_throttled_until_commit_ = is_throttled;
+  RenewTreePriority();
+}
+
 void ThreadProxy::Start(scoped_ptr<OutputSurface> first_output_surface) {
   DCHECK(IsMainThread());
   DCHECK(Proxy::HasImplThread());
@@ -876,8 +895,10 @@ void ThreadProxy::BeginFrameAbortedByMainThreadOnImplThread(bool did_handle) {
   // If the begin frame data was handled, then scroll and scale set was applied
   // by the main thread, so the active tree needs to be updated as if these sent
   // values were applied and committed.
-  if (did_handle)
+  if (did_handle) {
     layer_tree_host_impl_->active_tree()->ApplySentScrollAndScaleDeltas();
+    SetInputThrottledUntilCommitOnImplThread(false);
+  }
   scheduler_on_impl_thread_->BeginFrameAbortedByMainThread(did_handle);
 }
 
@@ -895,6 +916,8 @@ void ThreadProxy::ScheduledActionCommit() {
   layer_tree_host_->BeginCommitOnImplThread(layer_tree_host_impl_.get());
   layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_impl_.get());
   layer_tree_host_impl_->CommitComplete();
+
+  SetInputThrottledUntilCommitOnImplThread(false);
 
   layer_tree_host_impl_->UpdateBackgroundAnimateTicking(
       !scheduler_on_impl_thread_->WillDrawIfNeeded());
@@ -1393,6 +1416,7 @@ void ThreadProxy::SchedulerStateAsStringOnImplThreadForTesting(
 }
 
 void ThreadProxy::RenewTreePriority() {
+  DCHECK(IsImplThread());
   bool smoothness_takes_priority =
       layer_tree_host_impl_->pinch_gesture_active() ||
       layer_tree_host_impl_->CurrentlyScrollingLayer() ||
@@ -1417,7 +1441,8 @@ void ThreadProxy::RenewTreePriority() {
   // New content always takes priority when the active tree has
   // evicted resources or there is an invalid viewport size.
   if (layer_tree_host_impl_->active_tree()->ContentsTexturesPurged() ||
-      layer_tree_host_impl_->active_tree()->ViewportSizeInvalid())
+      layer_tree_host_impl_->active_tree()->ViewportSizeInvalid() ||
+      input_throttled_until_commit_)
     priority = NEW_CONTENT_TAKES_PRIORITY;
 
   layer_tree_host_impl_->SetTreePriority(priority);

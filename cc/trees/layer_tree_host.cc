@@ -628,6 +628,10 @@ void LayerTreeHost::StartPageScaleAnimation(gfx::Vector2d target_offset,
   SetNeedsCommit();
 }
 
+void LayerTreeHost::NotifyInputThrottledUntilCommit() {
+  proxy_->NotifyInputThrottledUntilCommit();
+}
+
 void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
   if (!proxy_->HasImplThread())
     static_cast<SingleThreadProxy*>(proxy_.get())->CompositeImmediately(

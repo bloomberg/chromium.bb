@@ -35,6 +35,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void SetNeedsUpdateLayers() OVERRIDE;
   virtual void SetNeedsCommit() OVERRIDE;
   virtual void SetNeedsRedraw(gfx::Rect damage_rect) OVERRIDE;
+  virtual void NotifyInputThrottledUntilCommit() OVERRIDE {}
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE;
   virtual bool CommitRequested() const OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE {}

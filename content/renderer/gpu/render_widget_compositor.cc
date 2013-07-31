@@ -358,6 +358,10 @@ int RenderWidgetCompositor::GetLayerTreeId() const {
   return layer_tree_host_->id();
 }
 
+void RenderWidgetCompositor::NotifyInputThrottledUntilCommit() {
+  layer_tree_host_->NotifyInputThrottledUntilCommit();
+}
+
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =
       RenderThreadImpl::current()->compositor_message_loop_proxy();

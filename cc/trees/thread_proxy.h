@@ -52,6 +52,7 @@ class ThreadProxy : public Proxy,
   virtual void SetNeedsUpdateLayers() OVERRIDE;
   virtual void SetNeedsCommit() OVERRIDE;
   virtual void SetNeedsRedraw(gfx::Rect damage_rect) OVERRIDE;
+  virtual void NotifyInputThrottledUntilCommit() OVERRIDE;
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE;
   virtual bool CommitRequested() const OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE;
@@ -180,6 +181,7 @@ class ThreadProxy : public Proxy,
   void DidSwapUseIncompleteTileOnImplThread();
   void StartScrollbarAnimationOnImplThread();
   void MainThreadHasStoppedFlingingOnImplThread();
+  void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);
 
   // Accessed on main thread only.
 
@@ -246,6 +248,7 @@ class ThreadProxy : public Proxy,
   bool can_cancel_commit_;
 
   bool defer_commits_;
+  bool input_throttled_until_commit_;
   scoped_ptr<BeginFrameAndCommitState> pending_deferred_commit_;
 
   base::TimeTicks smoothness_takes_priority_expiration_time_;

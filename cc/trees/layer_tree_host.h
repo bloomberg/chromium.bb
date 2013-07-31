@@ -135,6 +135,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
     return input_handler_weak_ptr_;
   }
 
+  void NotifyInputThrottledUntilCommit();
+
   void Composite(base::TimeTicks frame_begin_time);
 
   // Only used when compositing on the main thread.

@@ -883,6 +883,8 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
       Send(pending_input_event_ack_.release());
     }
     pending_input_event_ack_.reset(response);
+    if (compositor_)
+      compositor_->NotifyInputThrottledUntilCommit();
   } else {
     Send(response);
   }

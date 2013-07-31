@@ -50,6 +50,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
   void SetLatencyInfo(const ui::LatencyInfo& latency_info);
   int GetLayerTreeId() const;
+  void NotifyInputThrottledUntilCommit();
 
   // WebLayerTreeView implementation.
   virtual void setSurfaceReady();
