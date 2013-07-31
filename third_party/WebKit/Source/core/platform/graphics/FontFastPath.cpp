@@ -455,7 +455,6 @@ void Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& run
 {
     // Draw each contiguous run of glyphs that use the same font data.
     const SimpleFontData* fontData = glyphBuffer.fontDataAt(0);
-    FloatSize offset = glyphBuffer.offsetAt(0);
     FloatPoint startPoint(point);
     float nextX = startPoint.x() + glyphBuffer.advanceAt(0);
     int lastFrom = 0;
@@ -465,9 +464,8 @@ void Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& run
 #endif
     while (nextGlyph < glyphBuffer.size()) {
         const SimpleFontData* nextFontData = glyphBuffer.fontDataAt(nextGlyph);
-        FloatSize nextOffset = glyphBuffer.offsetAt(nextGlyph);
 
-        if (nextFontData != fontData || nextOffset != offset) {
+        if (nextFontData != fontData) {
 #if ENABLE(SVG_FONTS)
             if (renderingContext && fontData->isSVGFont())
                 renderingContext->drawSVGGlyphs(context, runInfo.run, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint);
@@ -477,7 +475,6 @@ void Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& run
 
             lastFrom = nextGlyph;
             fontData = nextFontData;
-            offset = nextOffset;
             startPoint.setX(nextX);
         }
         nextX += glyphBuffer.advanceAt(nextGlyph);

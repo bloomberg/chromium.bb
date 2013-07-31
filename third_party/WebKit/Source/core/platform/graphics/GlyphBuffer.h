@@ -91,14 +91,7 @@ public:
         return m_advances[index].width();
     }
 
-    FloatSize offsetAt(int index) const
-    {
-        // FIXME: Remove this function, it was only used in PLATFORM(WIN).
-        UNUSED_PARAM(index);
-        return FloatSize();
-    }
-
-    void add(Glyph glyph, const SimpleFontData* font, float width, const FloatSize* offset = 0)
+    void add(Glyph glyph, const SimpleFontData* font, float width)
     {
         m_fontData.append(font);
         m_glyphs.append(glyph);
@@ -109,8 +102,6 @@ public:
 #else
         m_advances.append(FloatSize(width, 0));
 #endif
-
-        UNUSED_PARAM(offset);
     }
 
     void add(Glyph glyph, const SimpleFontData* font, GlyphBufferAdvance advance)
