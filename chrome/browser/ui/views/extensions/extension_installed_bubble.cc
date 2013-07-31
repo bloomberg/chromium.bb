@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -261,8 +262,8 @@ class InstalledBubbleContent : public views::View,
       configure_url = chrome::kChromeUIExtensionsURL;
       configure_url += chrome::kExtensionConfigureCommandsSubPage;
     } else if (source == sign_in_link_) {
-      configure_url = SyncPromoUI::GetSyncPromoURL(
-          SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE, false).spec();
+      configure_url = signin::GetPromoURL(
+          signin::SOURCE_EXTENSION_INSTALL_BUBBLE, false).spec();
     } else {
       NOTREACHED();
       return;

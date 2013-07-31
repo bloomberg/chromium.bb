@@ -16,6 +16,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
@@ -240,13 +241,13 @@ OneClickSigninHelperTest::OneClickSigninHelperTest()
 }
 
 void OneClickSigninHelperTest::SetUp() {
-  SyncPromoUI::ForceWebBasedSigninFlowForTesting(true);
+  signin::ForceWebBasedSigninFlowForTesting(true);
   content::RenderViewHostTestHarness::SetUp();
   SetTrustedSigninProcessID(process()->GetID());
 }
 
 void OneClickSigninHelperTest::TearDown() {
-  SyncPromoUI::ForceWebBasedSigninFlowForTesting(false);
+  signin::ForceWebBasedSigninFlowForTesting(false);
   content::RenderViewHostTestHarness::TearDown();
 }
 
@@ -631,7 +632,7 @@ TEST_F(OneClickSigninHelperTest, ShowInfoBarUIThreadIncognito) {
 
   OneClickSigninHelper::ShowInfoBarUIThread(
       "session_index", "email", OneClickSigninHelper::AUTO_ACCEPT_ACCEPTED,
-      SyncPromoUI::SOURCE_UNKNOWN, GURL(), process()->GetID(),
+      signin::SOURCE_UNKNOWN, GURL(), process()->GetID(),
       rvh()->GetRoutingID());
 }
 
@@ -656,7 +657,7 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
   OneClickSigninHelper::ShowInfoBarUIThread(
       "session_index", "user@gmail.com",
       OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
-      SyncPromoUI::SOURCE_WEBSTORE_INSTALL,
+      signin::SOURCE_WEBSTORE_INSTALL,
       continueUrl, process()->GetID(), rvh()->GetRoutingID());
 
   SubmitGAIAPassword(helper);
@@ -707,8 +708,8 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadBadURL) {
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadReferrer) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
-  std::string continue_url(SyncPromoUI::GetSyncPromoURL(
-      SyncPromoUI::SOURCE_START_PAGE, false).spec());
+  std::string continue_url(signin::GetPromoURL(
+      signin::SOURCE_START_PAGE, false).spec());
 
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(

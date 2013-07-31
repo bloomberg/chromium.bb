@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_MAC_H_
 #define CHROME_BROWSER_UI_BROWSER_MAC_H_
 
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 
 class Profile;
 
@@ -19,7 +19,7 @@ void OpenHistoryWindow(Profile* profile);
 void OpenDownloadsWindow(Profile* profile);
 void OpenHelpWindow(Profile* profile, HelpSource source);
 void OpenOptionsWindow(Profile* profile);
-void OpenSyncSetupWindow(Profile* profile, SyncPromoUI::Source source);
+void OpenSyncSetupWindow(Profile* profile, signin::Source source);
 void OpenClearBrowsingDataDialogWindow(Profile* profile);
 void OpenImportSettingsDialogWindow(Profile* profile);
 void OpenBookmarkManagerWindow(Profile* profile);

@@ -204,7 +204,7 @@ void ShowSearchEngineSettings(Browser* browser) {
   ShowSettingsSubPage(browser, kSearchEnginesSubPage);
 }
 
-void ShowBrowserSignin(Browser* browser, SyncPromoUI::Source source) {
+void ShowBrowserSignin(Browser* browser, signin::Source source) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
   SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(original_profile);
@@ -223,8 +223,7 @@ void ShowBrowserSignin(Browser* browser, SyncPromoUI::Source source) {
     }
 
     NavigateToSingletonTab(browser,
-                            GURL(SyncPromoUI::GetSyncPromoURL(source,
-                                                              false)));
+                           GURL(signin::GetPromoURL(source, false)));
     DCHECK_GT(browser->tab_strip_model()->count(), 0);
   }
 }

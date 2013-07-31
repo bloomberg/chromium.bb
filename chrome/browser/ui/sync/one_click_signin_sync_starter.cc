@@ -50,7 +50,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     StartSyncMode start_mode,
     bool force_same_tab_navigation,
     ConfirmationRequired confirmation_required,
-    SyncPromoUI::Source source)
+    signin::Source source)
     : start_mode_(start_mode),
       force_same_tab_navigation_(force_same_tab_navigation),
       confirmation_required_(confirmation_required),
@@ -316,7 +316,7 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
   if (response == UNDO_SYNC) {
     // If this was not an interstitial signin, (i.e. it was a SAML signin)
     // then the browser page is now blank and should redirect to the NTP.
-    if (source_ != SyncPromoUI::SOURCE_UNKNOWN) {
+    if (source_ != signin::SOURCE_UNKNOWN) {
       EnsureBrowser();
       chrome::NavigateParams params(browser_, GURL(chrome::kChromeUINewTabURL),
                                     content::PAGE_TRANSITION_AUTO_TOPLEVEL);

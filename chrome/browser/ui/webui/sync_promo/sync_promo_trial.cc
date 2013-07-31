@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
@@ -41,45 +41,45 @@ enum {
 namespace sync_promo_trial {
 
 void RecordUserShownPromo(content::WebUI* web_ui) {
-  SyncPromoUI::Source source = SyncPromoUI::GetSourceForSyncPromoURL(
-        web_ui->GetWebContents()->GetURL());
+  signin::Source source =
+      signin::GetSourceForPromoURL(web_ui->GetWebContents()->GetURL());
   int uma = 0;
   switch (source) {
-    case SyncPromoUI::SOURCE_START_PAGE:
+    case signin::SOURCE_START_PAGE:
       uma = UMA_START_PAGE_SHOWN;
       break;
-    case SyncPromoUI::SOURCE_NTP_LINK:
+    case signin::SOURCE_NTP_LINK:
       uma = UMA_NTP_LINK_SHOWN;
       break;
-    case SyncPromoUI::SOURCE_MENU:
+    case signin::SOURCE_MENU:
       uma = UMA_MENU_SHOWN;
       break;
-    case SyncPromoUI::SOURCE_SETTINGS:
+    case signin::SOURCE_SETTINGS:
       uma = UMA_SETTINGS_SHOWN;
       break;
-    case SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE:
+    case signin::SOURCE_EXTENSION_INSTALL_BUBBLE:
       uma = UMA_EXTENSION_INSTALL_BUBBLE_SHOWN;
       break;
-    case SyncPromoUI::SOURCE_WEBSTORE_INSTALL:
+    case signin::SOURCE_WEBSTORE_INSTALL:
       uma = UMA_WEBSTORE_INSTALL_SHOWN;
       break;
-    case SyncPromoUI::SOURCE_APP_LAUNCHER:
+    case signin::SOURCE_APP_LAUNCHER:
       uma = UMA_APP_LAUNCHER_SHOWN;
       break;
-    case SyncPromoUI::SOURCE_APPS_PAGE_LINK:
+    case signin::SOURCE_APPS_PAGE_LINK:
       uma = UMA_APPS_PAGE_LINK_SHOWN;
       break;
-    case SyncPromoUI::SOURCE_BOOKMARK_BUBBLE:
+    case signin::SOURCE_BOOKMARK_BUBBLE:
       uma = UMA_BOOKMARK_BUBBLE_SHOWN;
       break;
-    case SyncPromoUI::SOURCE_UNKNOWN:
+    case signin::SOURCE_UNKNOWN:
       uma = UMA_UNKNOWN_SHOWN;
       break;
     default:
-      // If this assert hits, then the SyncPromoUI::Source enum has changed and
-      // the UMA enum above, this switch statement and histograms.xml all need
-      // to be updated to reflect that.
-      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 9,
+      // If this assert hits, then the signin::Source enum has
+      // changed and the UMA enum above, this switch statement and
+      // histograms.xml all need to be updated to reflect that.
+      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 9,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
       NOTREACHED();
       break;
@@ -88,43 +88,43 @@ void RecordUserShownPromo(content::WebUI* web_ui) {
 }
 
 void RecordUserSignedIn(content::WebUI* web_ui) {
-  SyncPromoUI::Source source = SyncPromoUI::GetSourceForSyncPromoURL(
-        web_ui->GetWebContents()->GetURL());
+  signin::Source source =
+      signin::GetSourceForPromoURL(web_ui->GetWebContents()->GetURL());
   int uma = 0;
   switch (source) {
-    case SyncPromoUI::SOURCE_START_PAGE:
+    case signin::SOURCE_START_PAGE:
       uma = UMA_START_PAGE_SIGNED_IN;
       break;
-    case SyncPromoUI::SOURCE_NTP_LINK:
+    case signin::SOURCE_NTP_LINK:
       uma = UMA_NTP_LINK_SIGNED_IN;
       break;
-    case SyncPromoUI::SOURCE_MENU:
+    case signin::SOURCE_MENU:
       uma = UMA_MENU_SIGNED_IN;
       break;
-    case SyncPromoUI::SOURCE_SETTINGS:
+    case signin::SOURCE_SETTINGS:
       uma = UMA_SETTINGS_SIGNED_IN;
       break;
-    case SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE:
+    case signin::SOURCE_EXTENSION_INSTALL_BUBBLE:
       uma = UMA_EXTENSION_INSTALL_BUBBLE_SIGNED_IN;
       break;
-    case SyncPromoUI::SOURCE_WEBSTORE_INSTALL:
+    case signin::SOURCE_WEBSTORE_INSTALL:
       uma = UMA_WEBSTORE_INSTALL_SIGNED_IN;
       break;
-    case SyncPromoUI::SOURCE_APP_LAUNCHER:
+    case signin::SOURCE_APP_LAUNCHER:
       uma = UMA_APP_LAUNCHER_SIGNED_IN;
       break;
-    case SyncPromoUI::SOURCE_APPS_PAGE_LINK:
+    case signin::SOURCE_APPS_PAGE_LINK:
       uma = UMA_APPS_PAGE_LINK_SIGNED_IN;
       break;
-    case SyncPromoUI::SOURCE_BOOKMARK_BUBBLE:
+    case signin::SOURCE_BOOKMARK_BUBBLE:
       uma = UMA_BOOKMARK_BUBBLE_SIGNED_IN;
       break;
-    case SyncPromoUI::SOURCE_UNKNOWN:
+    case signin::SOURCE_UNKNOWN:
       uma = UMA_UNKNOWN_SIGNED_IN;
       break;
     default:
       // This switch statement needs to be updated when the enum Source changes.
-      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 9,
+      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 9,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
       NOTREACHED();
       break;

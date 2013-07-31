@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -201,8 +202,7 @@ class ExtensionLoadedNotificationObserver
          atIndex:(NSUInteger)charIndex {
   DCHECK_EQ(promo_.get(), aTextView);
   GURL promo_url =
-      SyncPromoUI::GetSyncPromoURL(
-          SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE, false);
+      signin::GetPromoURL(signin::SOURCE_EXTENSION_INSTALL_BUBBLE, false);
   chrome::NavigateParams params(
       chrome::GetSingletonTabNavigateParams(browser_, promo_url));
   chrome::Navigate(&params);

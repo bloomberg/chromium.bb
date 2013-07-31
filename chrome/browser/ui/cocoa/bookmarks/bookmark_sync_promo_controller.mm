@@ -5,10 +5,10 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_sync_promo_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -108,7 +108,7 @@ const int kFontSize = 11;
 - (BOOL)textView:(NSTextView *)textView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
-  chrome::ShowBrowserSignin(browser_, SyncPromoUI::SOURCE_BOOKMARK_BUBBLE);
+  chrome::ShowBrowserSignin(browser_, signin::SOURCE_BOOKMARK_BUBBLE);
   return YES;
 }
 

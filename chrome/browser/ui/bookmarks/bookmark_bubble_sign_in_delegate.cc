@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 BookmarkBubbleSignInDelegate::BookmarkBubbleSignInDelegate(Browser* browser)
@@ -25,7 +25,7 @@ BookmarkBubbleSignInDelegate::~BookmarkBubbleSignInDelegate() {
 
 void BookmarkBubbleSignInDelegate::OnSignInLinkClicked() {
   EnsureBrowser();
-  chrome::ShowBrowserSignin(browser_, SyncPromoUI::SOURCE_BOOKMARK_BUBBLE);
+  chrome::ShowBrowserSignin(browser_, signin::SOURCE_BOOKMARK_BUBBLE);
   DCHECK(!browser_->tab_strip_model()->empty());
   browser_->window()->Show();
 }

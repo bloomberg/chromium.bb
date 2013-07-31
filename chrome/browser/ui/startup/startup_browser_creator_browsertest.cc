@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_restore.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -463,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoNoWelcomePage) {
   // Trick this test into thinking the promo has been shown for this profile; so
   // that it will show it again (otherwise it skips showing it since
   // --no-first-run is specified in browser tests).
-  SyncPromoUI::DidShowSyncPromoAtStartup(browser()->profile());
+  signin::DidShowPromoAtStartup(browser()->profile());
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoNoWelcomePage) {
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   EXPECT_EQ(1, tab_strip->count());
 
-  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(browser()->profile(), true)) {
+  if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
     EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
   } else {
     EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
@@ -497,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
   // Trick this test into thinking the promo has been shown for this profile; so
   // that it will show it again (otherwise it skips showing it since
   // --no-first-run is specified in browser tests).
-  SyncPromoUI::DidShowSyncPromoAtStartup(browser()->profile());
+  signin::DidShowPromoAtStartup(browser()->profile());
   first_run::SetShouldShowWelcomePage();
 
   // Do a simple non-process-startup browser launch.
@@ -514,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   EXPECT_EQ(2, tab_strip->count());
 
-  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(browser()->profile(), true)) {
+  if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
     EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
   } else {
     EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
@@ -537,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
   // Trick this test into thinking the promo has been shown for this profile; so
   // that it will show it again (otherwise it skips showing it since
   // --no-first-run is specified in browser tests).
-  SyncPromoUI::DidShowSyncPromoAtStartup(browser()->profile());
+  signin::DidShowPromoAtStartup(browser()->profile());
 
   // The welcome page should not be shown, even if
   // first_run::ShouldShowWelcomePage() says so, when there are already
@@ -556,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
   ASSERT_TRUE(new_browser);
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(browser()->profile(), true)) {
+  if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
     EXPECT_EQ(2, tab_strip->count());
     EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
     EXPECT_EQ("title1.html",
@@ -585,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   // Trick this test into thinking the promo has been shown for this profile; so
   // that it will show it again (otherwise it skips showing it since
   // --no-first-run is specified in browser tests).
-  SyncPromoUI::DidShowSyncPromoAtStartup(browser()->profile());
+  signin::DidShowPromoAtStartup(browser()->profile());
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -599,7 +599,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_TRUE(new_browser);
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(browser()->profile(), true)) {
+  if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
     EXPECT_EQ(3, tab_strip->count());
     EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
     EXPECT_EQ("title1.html",
@@ -1207,9 +1207,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // }
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
-  browser_creator.AddFirstRunTab(SyncPromoUI::GetSyncPromoURL(
-      SyncPromoUI::SOURCE_START_PAGE,
-      false));
+  browser_creator.AddFirstRunTab(signin::GetPromoURL(signin::SOURCE_START_PAGE,
+                                                     false));
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSyncPromoShowOnFirstRunAllowed, true);
 

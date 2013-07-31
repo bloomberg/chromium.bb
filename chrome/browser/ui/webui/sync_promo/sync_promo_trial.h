@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_TRIAL_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 
 class Profile;
 namespace content {
 class WebUI;
 }
 
+// TODO(fdoray): This file should be moved to chrome/browser/signin.
 namespace sync_promo_trial {
 
 // Records that the user was shown the sync promo for any currently running sync

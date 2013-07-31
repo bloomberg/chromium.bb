@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/inline_login_dialog.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
 
@@ -54,6 +54,6 @@ void LoginUIService::ShowLoginPopup() {
 #else
   Browser* browser = FindOrCreateTabbedBrowser(profile_,
                                                chrome::GetActiveDesktop());
-  chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_APP_LAUNCHER);
+  chrome::ShowBrowserSignin(browser, signin::SOURCE_APP_LAUNCHER);
 #endif
 }

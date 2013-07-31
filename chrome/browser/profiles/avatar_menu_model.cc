@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -344,7 +345,7 @@ content::WebContents* AvatarMenuModel::BeginSignOut() {
   size_t index = cache.GetIndexOfProfileWithPath(current_profile->GetPath());
   cache.SetProfileSigninRequiredAtIndex(index, true);
 
-  std::string landing_url = SyncPromoUI::GetSyncLandingURL("close", 1);
+  std::string landing_url = signin::GetLandingURL("close", 1).spec();
   GURL logout_url(GaiaUrls::GetInstance()->service_logout_url() +
                   "?continue=" + landing_url);
   if (!logout_override_.empty()) {

@@ -42,6 +42,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -1000,10 +1001,11 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
         chrome::OpenHelpWindow(lastProfile, chrome::HELP_SOURCE_MENU);
       break;
     case IDC_SHOW_SYNC_SETUP:
-      if (Browser* browser = ActivateBrowser(lastProfile))
-        chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_MENU);
-      else
-        chrome::OpenSyncSetupWindow(lastProfile, SyncPromoUI::SOURCE_MENU);
+      if (Browser* browser = ActivateBrowser(lastProfile)) {
+        chrome::ShowBrowserSignin(browser, signin::SOURCE_MENU);
+      } else {
+        chrome::OpenSyncSetupWindow(lastProfile, signin::SOURCE_MENU);
+      }
       break;
     case IDC_TASK_MANAGER:
       content::RecordAction(UserMetricsAction("TaskManager"));

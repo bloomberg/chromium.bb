@@ -9,11 +9,11 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 
 class Browser;
 class ProfileSyncService;
@@ -72,7 +72,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             StartSyncMode start_mode,
                             bool force_same_tab_navigation,
                             ConfirmationRequired display_confirmation,
-                            SyncPromoUI::Source source);
+                            signin::Source source);
 
   // chrome::BrowserListObserver override.
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
@@ -175,7 +175,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   chrome::HostDesktopType desktop_type_;
   bool force_same_tab_navigation_;
   ConfirmationRequired confirmation_required_;
-  SyncPromoUI::Source source_;
+  signin::Source source_;
   base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

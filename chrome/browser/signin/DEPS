@@ -53,8 +53,9 @@ specific_include_rules = {
 
   # These files are staying in //chrome so no need to limit.
   r"(chrome_signin_manager_delegate|"
-  r"signin_names_io_thread.*|"
-  r"signin_manager_factory)"
+  r"signin_names_io_thread|"
+  r"signin_manager_factory|"
+  r"signin_promo)"
   r"\.(h|cc)": [
     "+chrome/browser",
     "+chrome/common",

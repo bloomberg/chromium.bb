@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -137,7 +138,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (!browser || browser->IsAttemptingToCloseBrowser())
     return;
-  chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_NTP_LINK);
+  chrome::ShowBrowserSignin(browser, signin::SOURCE_NTP_LINK);
 
   if (sync_service_->HasSyncSetupCompleted()) {
     string16 user = UTF8ToUTF16(SigninManagerFactory::GetForProfile(

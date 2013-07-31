@@ -8,9 +8,9 @@
 #include "base/command_line.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -104,16 +104,16 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
       browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
 
-  ui_test_utils::NavigateToURL(browser(), SyncPromoUI::GetSyncPromoURL(
-      SyncPromoUI::SOURCE_NTP_LINK, true));
+  ui_test_utils::NavigateToURL(browser(), signin::GetPromoURL(
+      signin::SOURCE_NTP_LINK, true));
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
   // Navigating away should change the process.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_FALSE(signin->HasSigninProcess());
 
-  ui_test_utils::NavigateToURL(browser(), SyncPromoUI::GetSyncPromoURL(
-      SyncPromoUI::SOURCE_NTP_LINK, true));
+  ui_test_utils::NavigateToURL(browser(), signin::GetPromoURL(
+      signin::SOURCE_NTP_LINK, true));
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
   content::WebContents* active_tab =
@@ -128,8 +128,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
   // shouldn't change anything.
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
       browser(),
-      GURL(SyncPromoUI::GetSyncPromoURL(SyncPromoUI::SOURCE_NTP_LINK,
-                                        false))));
+      GURL(signin::GetPromoURL(signin::SOURCE_NTP_LINK, false))));
   params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser(), params);
   EXPECT_EQ(active_tab, browser()->tab_strip_model()->GetActiveWebContents());
@@ -147,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, NotTrustedAfterRedirect) {
       browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
 
-  GURL url = SyncPromoUI::GetSyncPromoURL(SyncPromoUI::SOURCE_NTP_LINK, true);
+  GURL url = signin::GetPromoURL(signin::SOURCE_NTP_LINK, true);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
@@ -195,9 +194,8 @@ class BackOnNTPCommitObserver : public content::WebContentsObserver {
 // DidStopLoading of the NTP.
 IN_PROC_BROWSER_TEST_F(SigninBrowserTest, SigninSkipForNowAndGoBack) {
   GURL ntp_url(chrome::kChromeUINewTabURL);
-  GURL start_url =
-      SyncPromoUI::GetSyncPromoURL(SyncPromoUI::SOURCE_START_PAGE, true);
-  GURL skip_url(SyncPromoUI::GetSyncLandingURL("ntp", 1));
+  GURL start_url = signin::GetPromoURL(signin::SOURCE_START_PAGE, true);
+  GURL skip_url = signin::GetLandingURL("ntp", 1);
 
   SigninManager* signin = SigninManagerFactory::GetForProfile(
       browser()->profile());

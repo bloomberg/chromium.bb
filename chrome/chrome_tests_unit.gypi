@@ -1537,6 +1537,7 @@
         'browser/ui/startup/session_crashed_infobar_delegate_unittest.cc',
         'browser/ui/sync/one_click_signin_helper_unittest.cc',
         'browser/ui/sync/profile_signin_confirmation_helper_unittest.cc',
+        'browser/ui/sync/sync_promo_ui_unittest.cc',
         'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',
         'browser/ui/tabs/pinned_tab_codec_unittest.cc',

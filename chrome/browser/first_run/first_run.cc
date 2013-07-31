@@ -35,12 +35,12 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_paths.h"
@@ -605,7 +605,7 @@ void FirstRunBubbleLauncher::Observe(
   // URL for the sign in page is showing.
   if (contents &&
       (gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
-       SyncPromoUI::IsContinueUrlForWebBasedSigninFlow(contents->GetURL()))) {
+       signin::IsContinueUrlForWebBasedSigninFlow(contents->GetURL()))) {
     return;
   }
 

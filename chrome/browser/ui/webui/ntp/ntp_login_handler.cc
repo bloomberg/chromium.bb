@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
@@ -139,11 +139,12 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
 
   if (username.empty()) {
 #if !defined(OS_ANDROID)
-    // The user isn't signed in, show the sync promo.
-    if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
-      SyncPromoUI::Source source =
+    // The user isn't signed in, show the sign in promo.
+    if (signin::ShouldShowPromo(profile)) {
+      signin::Source source =
           (web_contents->GetURL().spec() == chrome::kChromeUIAppsURL) ?
-              SyncPromoUI::SOURCE_APPS_PAGE_LINK : SyncPromoUI::SOURCE_NTP_LINK;
+              signin::SOURCE_APPS_PAGE_LINK :
+              signin::SOURCE_NTP_LINK;
       chrome::ShowBrowserSignin(browser, source);
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
@@ -196,7 +197,7 @@ void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (browser)
-    chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_NTP_LINK);
+    chrome::ShowBrowserSignin(browser, signin::SOURCE_NTP_LINK);
 }
 
 void NTPLoginHandler::UpdateLogin() {
@@ -228,8 +229,8 @@ void NTPLoginHandler::UpdateLogin() {
     }
   } else {
 #if !defined(OS_ANDROID)
-    // Android uses a custom sync promo
-    if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
+    // Android uses a custom sign in promo.
+    if (signin::ShouldShowPromo(profile)) {
       string16 signed_in_link = l10n_util::GetStringUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
       signed_in_link = CreateSpanWithClass(signed_in_link, "link-span");

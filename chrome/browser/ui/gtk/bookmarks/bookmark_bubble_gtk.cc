@@ -19,6 +19,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
@@ -350,7 +351,7 @@ void BookmarkBubbleGtk::OnRemoveClicked(GtkWidget* widget) {
 gboolean BookmarkBubbleGtk::OnSignInClicked(GtkWidget* widget, gchar* uri) {
   GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(anchor_));
   Browser* browser = chrome::FindBrowserWithWindow(window);
-  chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_BOOKMARK_BUBBLE);
+  chrome::ShowBrowserSignin(browser, signin::SOURCE_BOOKMARK_BUBBLE);
   bubble_->Close();
   return TRUE;
 }

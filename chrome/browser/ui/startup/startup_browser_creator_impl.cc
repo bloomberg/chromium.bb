@@ -48,6 +48,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -65,7 +66,6 @@
 #include "chrome/browser/ui/startup/obsolete_os_infobar_delegate.h"
 #include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
@@ -933,11 +933,11 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
       startup_urls->push_back(internals::GetWelcomePageURL());
   }
 
-  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
-    SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
+  if (signin::ShouldShowPromoAtStartup(profile_, is_first_run_)) {
+    signin::DidShowPromoAtStartup(profile_);
 
-    const GURL sync_promo_url = SyncPromoUI::GetSyncPromoURL(
-        SyncPromoUI::SOURCE_START_PAGE, false);
+    const GURL sync_promo_url = signin::GetPromoURL(signin::SOURCE_START_PAGE,
+                                                    false);
 
     // No need to add if the sync promo is already in the startup list.
     bool add_promo = true;

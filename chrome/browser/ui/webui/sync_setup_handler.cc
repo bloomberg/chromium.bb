@@ -25,12 +25,12 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/sync/signin_histogram.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -418,9 +418,9 @@ void SyncSetupHandler::ConfigureSyncDone() {
   web_ui()->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page);
 
-  // Suppress the sync promo once the user signs into sync. This way the user
-  // doesn't see the sync promo even if they sign out of sync later on.
-  SyncPromoUI::SetUserSkippedSyncPromo(GetProfile());
+  // Suppress the sign in promo once the user starts sync. This way the user
+  // doesn't see the sign in promo even if they sign out later on.
+  signin::SetUserSkippedPromo(GetProfile());
 
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
@@ -485,8 +485,8 @@ void SyncSetupHandler::DisplayGaiaLogin() {
 }
 
 void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
-  GURL url(SyncPromoUI::GetSyncPromoURL(SyncPromoUI::SOURCE_SETTINGS,
-                                        true));  // auto close after success.
+  GURL url(signin::GetPromoURL(signin::SOURCE_SETTINGS,
+                               true));  // auto close after success.
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   if (!browser) {
