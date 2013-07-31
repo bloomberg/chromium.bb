@@ -31,10 +31,12 @@ class MockBus : public Bus {
   MOCK_METHOD0(ShutdownAndBlock, void());
   MOCK_METHOD0(ShutdownOnDBusThreadAndBlock, void());
   MOCK_METHOD0(Connect, bool());
-  MOCK_METHOD2(RequestOwnership, void(
+  MOCK_METHOD3(RequestOwnership, void(
       const std::string& service_name,
+      ServiceOwnershipOptions options,
       OnOwnershipCallback on_ownership_callback));
-  MOCK_METHOD1(RequestOwnershipAndBlock, bool(const std::string& service_name));
+  MOCK_METHOD2(RequestOwnershipAndBlock, bool(const std::string& service_name,
+                                              ServiceOwnershipOptions options));
   MOCK_METHOD1(ReleaseOwnership, bool(const std::string& service_name));
   MOCK_METHOD0(SetUpAsyncOperations, bool());
   MOCK_METHOD3(SendWithReplyAndBlock, DBusMessage*(DBusMessage* request,

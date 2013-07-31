@@ -168,6 +168,22 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
     SUPPRESS_ERRORS,
   };
 
+  // Specifies service ownership options.
+  //
+  // REQUIRE_PRIMARY indicates that you require primary ownership of the
+  // service name.
+  //
+  // ALLOW_REPLACEMENT indicates that you'll allow another connection to
+  // steal ownership of this service name from you.
+  //
+  // REQUIRE_PRIMARY_ALLOW_REPLACEMENT does the obvious.
+  enum ServiceOwnershipOptions {
+    REQUIRE_PRIMARY = (DBUS_NAME_FLAG_DO_NOT_QUEUE |
+                       DBUS_NAME_FLAG_REPLACE_EXISTING),
+    REQUIRE_PRIMARY_ALLOW_REPLACEMENT = (REQUIRE_PRIMARY |
+                                         DBUS_NAME_FLAG_ALLOW_REPLACEMENT),
+  };
+
   // Options used to create a Bus object.
   struct CHROME_DBUS_EXPORT Options {
     Options();
@@ -398,13 +414,15 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   //
   // Must be called in the origin thread.
   virtual void RequestOwnership(const std::string& service_name,
+                                ServiceOwnershipOptions options,
                                 OnOwnershipCallback on_ownership_callback);
 
   // Requests the ownership of the given service name.
   // Returns true on success, or the the service name is already obtained.
   //
   // BLOCKING CALL.
-  virtual bool RequestOwnershipAndBlock(const std::string& service_name);
+  virtual bool RequestOwnershipAndBlock(const std::string& service_name,
+                                        ServiceOwnershipOptions options);
 
   // Releases the ownership of the given service name.
   // Returns true on success.
@@ -608,6 +626,7 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
 
   // Helper function used for RequestOwnership().
   void RequestOwnershipInternal(const std::string& service_name,
+                                ServiceOwnershipOptions options,
                                 OnOwnershipCallback on_ownership_callback);
 
   // Helper function used for GetServiceOwner().

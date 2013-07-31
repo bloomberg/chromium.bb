@@ -124,6 +124,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
     // Request well known name to ibus-daemon.
     bus->RequestOwnership(
         ibus::panel::kServiceName,
+        dbus::Bus::REQUIRE_PRIMARY,
         base::Bind(&IBusPanelServiceImpl::OnRequestOwnership,
                    weak_ptr_factory_.GetWeakPtr()));
 

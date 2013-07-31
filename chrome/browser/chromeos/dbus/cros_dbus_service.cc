@@ -49,7 +49,16 @@ class CrosDBusServiceImpl : public CrosDBusService {
     if (service_started_)
       return;
 
+    // There are some situations, described in http://crbug.com/234382#c27,
+    // where processes on Linux can wind up stuck in an uninterruptible state
+    // for tens of seconds. If this happens when Chrome is trying to exit,
+    // this unkillable process can wind up clinging to ownership of
+    // kLibCrosServiceName while the system is trying to restart the browser.
+    // This leads to a fatal situation if we don't allow the new browser
+    // instance to replace the old as the owner of kLibCrosServiceName as seen
+    // in http://crbug.com/234382. Hence, REQUIRE_PRIMARY_ALLOW_REPLACEMENT.
     bus_->RequestOwnership(kLibCrosServiceName,
+                           dbus::Bus::REQUIRE_PRIMARY_ALLOW_REPLACEMENT,
                            base::Bind(&CrosDBusServiceImpl::OnOwnership,
                                       base::Unretained(this)));
 

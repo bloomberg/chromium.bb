@@ -27,7 +27,8 @@ namespace dbus {
 // GetManagedObjects.
 const int TestService::kNumMethodsToExport = 9;
 
-TestService::Options::Options() {
+TestService::Options::Options()
+    : request_ownership_options(Bus::REQUIRE_PRIMARY) {
 }
 
 TestService::Options::~Options() {
@@ -35,6 +36,7 @@ TestService::Options::~Options() {
 
 TestService::TestService(const Options& options)
     : base::Thread("TestService"),
+      request_ownership_options_(options.request_ownership_options),
       dbus_task_runner_(options.dbus_task_runner),
       on_all_methods_exported_(false, false),
       num_exported_methods_(0) {
@@ -103,6 +105,7 @@ void TestService::SendTestSignalFromRootInternal(const std::string& message) {
   writer.AppendString(message);
 
   bus_->RequestOwnership("org.chromium.TestService",
+                         request_ownership_options_,
                          base::Bind(&TestService::OnOwnership,
                                     base::Unretained(this),
                                     base::Bind(&EmptyCallback)));
@@ -123,6 +126,7 @@ void TestService::RequestOwnership(base::Callback<void(bool)> callback) {
 void TestService::RequestOwnershipInternal(
     base::Callback<void(bool)> callback) {
   bus_->RequestOwnership("org.chromium.TestService",
+                         request_ownership_options_,
                          base::Bind(&TestService::OnOwnership,
                                     base::Unretained(this),
                                     callback));
@@ -160,6 +164,7 @@ void TestService::Run(base::MessageLoop* message_loop) {
   bus_ = new Bus(bus_options);
 
   bus_->RequestOwnership("org.chromium.TestService",
+                         request_ownership_options_,
                          base::Bind(&TestService::OnOwnership,
                                     base::Unretained(this),
                                     base::Bind(&EmptyCallback)));

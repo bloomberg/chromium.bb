@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
+#include "dbus/bus.h"
 #include "dbus/exported_object.h"
 
 namespace base {
@@ -17,7 +18,6 @@ class SequencedTaskRunner;
 
 namespace dbus {
 
-class Bus;
 class MethodCall;
 class MessageWriter;
 class Response;
@@ -37,6 +37,9 @@ class TestService : public base::Thread {
 
     // NULL by default (i.e. don't use the D-Bus thread).
     scoped_refptr<base::SequencedTaskRunner> dbus_task_runner;
+
+    // Flags governing parameters of service ownership request.
+    Bus::ServiceOwnershipOptions request_ownership_options;
   };
 
   // The number of methods we'll export.
@@ -162,6 +165,9 @@ class TestService : public base::Thread {
 
   // Helper function for RequestOwnership().
   void RequestOwnershipInternal(base::Callback<void(bool)> callback);
+
+  // Options to use when requesting service ownership.
+  Bus::ServiceOwnershipOptions request_ownership_options_;
 
   scoped_refptr<base::SequencedTaskRunner> dbus_task_runner_;
   base::WaitableEvent on_all_methods_exported_;

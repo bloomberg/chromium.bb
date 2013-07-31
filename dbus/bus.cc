@@ -501,21 +501,23 @@ void Bus::ShutdownOnDBusThreadAndBlock() {
 }
 
 void Bus::RequestOwnership(const std::string& service_name,
+                           ServiceOwnershipOptions options,
                            OnOwnershipCallback on_ownership_callback) {
   AssertOnOriginThread();
 
   PostTaskToDBusThread(FROM_HERE, base::Bind(
       &Bus::RequestOwnershipInternal,
-      this, service_name, on_ownership_callback));
+      this, service_name, options, on_ownership_callback));
 }
 
 void Bus::RequestOwnershipInternal(const std::string& service_name,
+                                   ServiceOwnershipOptions options,
                                    OnOwnershipCallback on_ownership_callback) {
   AssertOnDBusThread();
 
   bool success = Connect();
   if (success)
-    success = RequestOwnershipAndBlock(service_name);
+    success = RequestOwnershipAndBlock(service_name, options);
 
   PostTaskToOriginThread(FROM_HERE,
                          base::Bind(on_ownership_callback,
@@ -523,7 +525,8 @@ void Bus::RequestOwnershipInternal(const std::string& service_name,
                                     success));
 }
 
-bool Bus::RequestOwnershipAndBlock(const std::string& service_name) {
+bool Bus::RequestOwnershipAndBlock(const std::string& service_name,
+                                   ServiceOwnershipOptions options) {
   DCHECK(connection_);
   // dbus_bus_request_name() is a blocking call.
   AssertOnDBusThread();
@@ -536,7 +539,7 @@ bool Bus::RequestOwnershipAndBlock(const std::string& service_name) {
   ScopedDBusError error;
   const int result = dbus_bus_request_name(connection_,
                                            service_name.c_str(),
-                                           DBUS_NAME_FLAG_DO_NOT_QUEUE,
+                                           options,
                                            error.get());
   if (result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
     LOG(ERROR) << "Failed to get the ownership of " << service_name << ": "
@@ -568,7 +571,8 @@ bool Bus::ReleaseOwnership(const std::string& service_name) {
     return true;
   } else {
     LOG(ERROR) << "Failed to release the ownership of " << service_name << ": "
-               << (error.is_set() ? error.message() : "");
+               << (error.is_set() ? error.message() : "")
+               << ", result code: " << result;
     return false;
   }
 }

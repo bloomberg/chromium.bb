@@ -372,7 +372,8 @@ TEST(BusTest, ListenForServiceOwnerChange) {
   EXPECT_EQ(0, num_of_owner_changes1);
 
   // Make an ownership change.
-  ASSERT_TRUE(bus->RequestOwnershipAndBlock("org.chromium.TestService"));
+  ASSERT_TRUE(bus->RequestOwnershipAndBlock("org.chromium.TestService",
+                                            Bus::REQUIRE_PRIMARY));
   run_loop_state.Run(1);
 
   {

@@ -154,6 +154,14 @@ class SignalSenderVerificationTest : public testing::Test {
     message_loop_.Run();
   }
 
+  // Stopping a thread is considered an IO operation, so we need to fiddle with
+  // thread restrictions before and after calling Stop() on a TestService.
+  void SafeServiceStop(TestService* test_service) {
+    base::ThreadRestrictions::SetIOAllowed(true);
+    test_service->Stop();
+    base::ThreadRestrictions::SetIOAllowed(false);
+  }
+
   base::MessageLoop message_loop_;
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<Bus> bus_;
@@ -224,6 +232,7 @@ TEST_F(SignalSenderVerificationTest, TestOwnerChanged) {
 
   // Reset the flag as NameOwnerChanged is already received in setup.
   on_name_owner_changed_called_ = false;
+  on_ownership_called_ = false;
   test_service2_->RequestOwnership(
       base::Bind(&SignalSenderVerificationTest::OnOwnership,
                  base::Unretained(this), true));
@@ -244,6 +253,64 @@ TEST_F(SignalSenderVerificationTest, TestOwnerChanged) {
   test_service2_->SendTestSignal(kNewMessage);
   WaitForTestSignal();
   ASSERT_EQ(kNewMessage, test_signal_string_);
+}
+
+TEST_F(SignalSenderVerificationTest, TestOwnerStealing) {
+  // Release and acquire the name ownership.
+  // latest_name_owner_ should be non empty as |test_service_| owns the name.
+  ASSERT_FALSE(latest_name_owner_.empty());
+  test_service_->ShutdownAndBlock();
+  // OnNameOwnerChanged will PostTask to quit the message loop.
+  message_loop_.Run();
+  // latest_name_owner_ should be empty as the owner is gone.
+  ASSERT_TRUE(latest_name_owner_.empty());
+  // Reset the flag as NameOwnerChanged is already received in setup.
+  on_name_owner_changed_called_ = false;
+
+  // Start a test service that allows theft, using the D-Bus thread.
+  TestService::Options options;
+  options.dbus_task_runner = dbus_thread_->message_loop_proxy();
+  options.request_ownership_options = Bus::REQUIRE_PRIMARY_ALLOW_REPLACEMENT;
+  TestService stealable_test_service(options);
+  ASSERT_TRUE(stealable_test_service.StartService());
+  ASSERT_TRUE(stealable_test_service.WaitUntilServiceIsStarted());
+  ASSERT_TRUE(stealable_test_service.HasDBusThread());
+  ASSERT_TRUE(stealable_test_service.has_ownership());
+
+  // OnNameOwnerChanged will PostTask to quit the message loop.
+  message_loop_.Run();
+
+  // Send a signal to check that the service is correctly owned.
+  const char kMessage[] = "hello, world";
+
+  // Send the test signal from the exported object.
+  stealable_test_service.SendTestSignal(kMessage);
+  // Receive the signal with the object proxy. The signal is handled in
+  // SignalSenderVerificationTest::OnTestSignal() in the main thread.
+  WaitForTestSignal();
+  ASSERT_EQ(kMessage, test_signal_string_);
+
+  // Reset the flag as NameOwnerChanged was called above.
+  on_name_owner_changed_called_ = false;
+  test_service2_->RequestOwnership(
+      base::Bind(&SignalSenderVerificationTest::OnOwnership,
+                 base::Unretained(this), true));
+  // Both of OnNameOwnerChanged() and OnOwnership() should quit the MessageLoop,
+  // but there's no expected order of those 2 event.
+  message_loop_.Run();
+  if (!on_name_owner_changed_called_ || !on_ownership_called_)
+    message_loop_.Run();
+  ASSERT_TRUE(on_name_owner_changed_called_);
+  ASSERT_TRUE(on_ownership_called_);
+
+  // Now the second service owns the name.
+  const char kNewMessage[] = "hello, new world";
+
+  test_service2_->SendTestSignal(kNewMessage);
+  WaitForTestSignal();
+  ASSERT_EQ(kNewMessage, test_signal_string_);
+
+  SafeServiceStop(&stealable_test_service);
 }
 
 // Fails on Linux ChromiumOS Tests
