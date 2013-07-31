@@ -8,6 +8,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "ipc/ipc_message.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -196,7 +197,7 @@ void PepperFlashMenuHost::OnMenuClosed(int request_id) {
 void PepperFlashMenuHost::SendMenuReply(int32_t result, int action) {
   ppapi::host::ReplyMessageContext reply_context(
       ppapi::proxy::ResourceMessageReplyParams(pp_resource(), 0),
-      NULL);
+      NULL, MSG_ROUTING_NONE);
   reply_context.params.set_result(result);
   host()->SendReply(reply_context,
                     PpapiPluginMsg_FlashMenu_ShowReply(action));

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ipc/ipc_message.h"
@@ -13,6 +14,8 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource_tracker.h"
+
+using ppapi::UnpackMessage;
 
 namespace content {
 
@@ -37,8 +40,8 @@ PepperInProcessRouter::PepperInProcessRouter(
       pending_message_id_(0),
       reply_result_(false),
       weak_factory_(this) {
-  dummy_browser_channel_.reset(
-      new Channel(base::Bind(&PepperInProcessRouter::DummySendTo,
+  browser_channel_.reset(
+      new Channel(base::Bind(&PepperInProcessRouter::SendToBrowser,
                              base::Unretained(this))));
   host_to_plugin_router_.reset(
       new Channel(base::Bind(&PepperInProcessRouter::SendToPlugin,
@@ -65,9 +68,42 @@ ppapi::proxy::Connection PepperInProcessRouter::GetPluginConnection(
   RenderView* view = host_impl_->GetRenderViewForInstance(instance);
   if (view)
     routing_id = view->GetRoutingID();
-  return ppapi::proxy::Connection(dummy_browser_channel_.get(),
+  return ppapi::proxy::Connection(browser_channel_.get(),
                                   plugin_to_host_router_.get(),
                                   routing_id);
+}
+
+// static
+bool PepperInProcessRouter::OnPluginMsgReceived(const IPC::Message& msg) {
+  // Emulate the proxy by dispatching the relevant message here.
+  ppapi::proxy::ResourceMessageReplyParams reply_params;
+  IPC::Message nested_msg;
+
+  if (msg.type() == PpapiPluginMsg_ResourceReply::ID) {
+    // Resource reply from the renderer (no routing id).
+    if (!UnpackMessage<PpapiPluginMsg_ResourceReply>(msg, &reply_params,
+                                                     &nested_msg)) {
+      NOTREACHED();
+      return false;
+    }
+  } else if (msg.type() == PpapiHostMsg_InProcessResourceReply::ID) {
+    // Resource reply from the browser (has a routing id).
+    if (!UnpackMessage<PpapiHostMsg_InProcessResourceReply>(msg, &reply_params,
+                                                            &nested_msg)) {
+      NOTREACHED();
+      return false;
+    }
+  } else {
+    return false;
+  }
+  ppapi::Resource* resource =
+      ppapi::PpapiGlobals::Get()->GetResourceTracker()->GetResource(
+          reply_params.pp_resource());
+  // If the resource doesn't exist, it may have been destroyed so just ignore
+  // the message.
+  if (resource)
+    resource->OnReplyReceived(reply_params, nested_msg);
+  return true;
 }
 
 bool PepperInProcessRouter::SendToHost(IPC::Message* msg) {
@@ -111,33 +147,12 @@ bool PepperInProcessRouter::SendToPlugin(IPC::Message* msg) {
 }
 
 void PepperInProcessRouter::DispatchPluginMsg(IPC::Message* msg) {
-  // Emulate the proxy by dispatching the relevant message here.
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PepperInProcessRouter, *msg)
-    IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnResourceReply)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  DCHECK(handled) << "The message wasn't handled by the plugin.";
+  bool handled = OnPluginMsgReceived(*msg);
+  DCHECK(handled);
 }
 
-bool PepperInProcessRouter::DummySendTo(IPC::Message *msg) {
-  NOTREACHED();
-  delete msg;
-  return false;
-}
-
-void PepperInProcessRouter::OnResourceReply(
-    const ppapi::proxy::ResourceMessageReplyParams& reply_params,
-    const IPC::Message& nested_msg) {
-  ppapi::Resource* resource =
-      ppapi::PpapiGlobals::Get()->GetResourceTracker()->GetResource(
-          reply_params.pp_resource());
-  if (!resource) {
-    // The resource could have been destroyed while the async processing was
-    // pending. Just drop the message.
-    return;
-  }
-  resource->OnReplyReceived(reply_params, nested_msg);
+bool PepperInProcessRouter::SendToBrowser(IPC::Message *msg) {
+  return RenderThread::Get()->Send(msg);
 }
 
 }  // namespace content

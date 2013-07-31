@@ -7,7 +7,9 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/pepper/pepper_helper_impl.h"
+#include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -24,6 +26,10 @@ PepperBrowserConnection::~PepperBrowserConnection() {
 }
 
 bool PepperBrowserConnection::OnMessageReceived(const IPC::Message& msg) {
+  // Check if the message is an in-process reply.
+  if (PepperInProcessRouter::OnPluginMsgReceived(msg))
+    return true;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PepperBrowserConnection, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostFromHostReply,
@@ -32,6 +38,26 @@ bool PepperBrowserConnection::OnMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+void PepperBrowserConnection::DidCreateInProcessInstance(
+    PP_Instance instance,
+    int render_view_id,
+    const GURL& document_url,
+    const GURL& plugin_url) {
+  helper_->render_view()->Send(
+      new ViewHostMsg_DidCreateInProcessInstance(
+          instance,
+          // Browser provides the render process id.
+          PepperRendererInstanceData(0,
+                                     render_view_id,
+                                     document_url,
+                                     plugin_url)));
+}
+
+void PepperBrowserConnection::DidDeleteInProcessInstance(PP_Instance instance) {
+  helper_->render_view()->Send(
+      new ViewHostMsg_DidDeleteInProcessInstance(instance));
 }
 
 void PepperBrowserConnection::SendBrowserCreate(

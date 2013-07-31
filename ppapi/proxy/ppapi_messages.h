@@ -1286,6 +1286,10 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_AttachToPendingHost,
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_ResourceCall,
                      ppapi::proxy::ResourceMessageCallParams /* call_params */,
                      IPC::Message /* nested_msg */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_InProcessResourceCall,
+                     int /* routing_id */,
+                     ppapi::proxy::ResourceMessageCallParams /* call_params */,
+                     IPC::Message /* nested_msg */)
 
 // A resource reply is a response to a ResourceCall from a host to the
 // plugin. The resource ID + sequence number in the params will correspond to
@@ -1294,6 +1298,11 @@ IPC_MESSAGE_CONTROL2(
     PpapiPluginMsg_ResourceReply,
     ppapi::proxy::ResourceMessageReplyParams /* reply_params */,
     IPC::Message /* nested_msg */)
+IPC_MESSAGE_ROUTED2(
+    PpapiHostMsg_InProcessResourceReply,
+    ppapi::proxy::ResourceMessageReplyParams /* reply_params */,
+    IPC::Message /* nested_msg */)
+
 
 IPC_SYNC_MESSAGE_CONTROL2_2(PpapiHostMsg_ResourceSyncCall,
     ppapi::proxy::ResourceMessageCallParams /* call_params */,

@@ -18,7 +18,8 @@ struct PPAPI_HOST_EXPORT ReplyMessageContext {
   ReplyMessageContext();
   ReplyMessageContext(
       const ppapi::proxy::ResourceMessageReplyParams& cp,
-      IPC::Message* sync_reply_msg);
+      IPC::Message* sync_reply_msg,
+      int routing_id);
   ~ReplyMessageContext();
 
   // The "reply params" struct with the same resource and sequence number
@@ -30,12 +31,20 @@ struct PPAPI_HOST_EXPORT ReplyMessageContext {
   // whether or not the resource call is synchronous or asynchronous so a
   // ResoureHost cannot make any assumptions about whether or not this is NULL.
   IPC::Message* sync_reply_msg;
+
+  // Routing ID to be used when sending a reply message. This is only useful
+  // when the plugin is in-process. Otherwise, the value will be
+  // MSG_ROUTING_NONE.
+  int routing_id;
 };
 
 // This context structure provides information about incoming resource message
 // call requests when passed to resources.
 struct PPAPI_HOST_EXPORT HostMessageContext {
   explicit HostMessageContext(
+      const ppapi::proxy::ResourceMessageCallParams& cp);
+  HostMessageContext(
+      int routing_id,
       const ppapi::proxy::ResourceMessageCallParams& cp);
   HostMessageContext(
       const ppapi::proxy::ResourceMessageCallParams& cp,
@@ -58,6 +67,11 @@ struct PPAPI_HOST_EXPORT HostMessageContext {
   // If this context is generated from a sync message, this will be set to the
   // incoming sync message. Otherwise, it will be NULL.
   IPC::Message* sync_reply_msg;
+
+  // Routing ID to be used when sending a reply message. This is only useful
+  // when the plugin is in-process. Otherwise, the value will be
+  // MSG_ROUTING_NONE.
+  int routing_id;
 };
 
 }  // namespace host

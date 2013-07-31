@@ -65,21 +65,19 @@ class PepperInProcessRouter {
   // process. See the class comment above about the dummy sender.
   ppapi::proxy::Connection GetPluginConnection(PP_Instance instance);
 
+  // Handles resource reply messages from the host.
+  static bool OnPluginMsgReceived(const IPC::Message& msg);
+
  private:
   bool SendToHost(IPC::Message *msg);
   bool SendToPlugin(IPC::Message *msg);
   void DispatchPluginMsg(IPC::Message* msg);
-  bool DummySendTo(IPC::Message *msg);
-
-  // Handles resource reply messages from the host.
-  void OnResourceReply(
-      const ppapi::proxy::ResourceMessageReplyParams& reply_params,
-      const IPC::Message& nested_msg);
+  bool SendToBrowser(IPC::Message *msg);
 
   RendererPpapiHostImpl* host_impl_;
 
   class Channel;
-  scoped_ptr<Channel> dummy_browser_channel_;
+  scoped_ptr<Channel> browser_channel_;
 
   // Renderer -> plugin channel.
   scoped_ptr<Channel> host_to_plugin_router_;

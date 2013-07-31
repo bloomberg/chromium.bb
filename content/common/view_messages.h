@@ -1882,6 +1882,17 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_DidDeleteOutOfProcessPepperInstance,
                      int32 /* pp_instance */,
                      bool /* is_external */)
 
+// Message from the renderer to the browser indicating the in-process instance
+// has been created.
+IPC_MESSAGE_CONTROL2(ViewHostMsg_DidCreateInProcessInstance,
+                     int32 /* instance */,
+                     content::PepperRendererInstanceData /* instance_data */)
+
+// Message from the renderer to the browser indicating the in-process instance
+// has been destroyed.
+IPC_MESSAGE_CONTROL1(ViewHostMsg_DidDeleteInProcessInstance,
+                     int32 /* instance */)
+
 // A renderer sends this to the browser process when it wants to
 // create a ppapi broker.  The browser will create the broker process
 // if necessary, and will return a handle to the channel on success.

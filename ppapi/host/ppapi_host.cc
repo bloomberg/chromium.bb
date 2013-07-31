@@ -52,6 +52,8 @@ bool PpapiHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiHost, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ResourceCall,
                         OnHostMsgResourceCall)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_InProcessResourceCall,
+                        OnHostMsgInProcessResourceCall)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiHostMsg_ResourceSyncCall,
                                     OnHostMsgResourceSyncCall)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ResourceCreated,
@@ -85,7 +87,13 @@ void PpapiHost::SendReply(const ReplyMessageContext& context,
                                                     context.params, msg);
     Send(context.sync_reply_msg);
   } else {
-    Send(new PpapiPluginMsg_ResourceReply(context.params, msg));
+    if (context.routing_id != MSG_ROUTING_NONE) {
+      Send(new PpapiHostMsg_InProcessResourceReply(context.routing_id,
+                                                   context.params,
+                                                   msg));
+    } else {
+      Send(new PpapiPluginMsg_ResourceReply(context.params, msg));
+    }
   }
 }
 
@@ -148,6 +156,17 @@ void PpapiHost::OnHostMsgResourceCall(
                "Class", IPC_MESSAGE_ID_CLASS(nested_msg.type()),
                "Line", IPC_MESSAGE_ID_LINE(nested_msg.type()));
   HostMessageContext context(params);
+  HandleResourceCall(params, nested_msg, &context);
+}
+
+void PpapiHost::OnHostMsgInProcessResourceCall(
+    int routing_id,
+    const proxy::ResourceMessageCallParams& params,
+    const IPC::Message& nested_msg) {
+  TRACE_EVENT2("ppapi proxy", "PpapiHost::OnHostMsgInProcessResourceCall",
+               "Class", IPC_MESSAGE_ID_CLASS(nested_msg.type()),
+               "Line", IPC_MESSAGE_ID_LINE(nested_msg.type()));
+  HostMessageContext context(routing_id, params);
   HandleResourceCall(params, nested_msg, &context);
 }
 

@@ -53,6 +53,15 @@ class PepperBrowserConnection {
                                  PP_Resource resource,
                                  const FileRefGetInfoCallback& callback);
 
+  // Called when the renderer creates an in-process instance.
+  void DidCreateInProcessInstance(PP_Instance instance,
+                                  int render_view_id,
+                                  const GURL& document_url,
+                                  const GURL& plugin_url);
+
+  // Called when the renderer deletes an in-process instance.
+  void DidDeleteInProcessInstance(PP_Instance instance);
+
  private:
   // Message handlers.
   void OnMsgCreateResourceHostFromHostReply(int32_t sequence_number,

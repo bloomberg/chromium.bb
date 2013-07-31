@@ -80,8 +80,11 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_tcp_server_socket_private_api.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/size.h"
@@ -491,6 +494,14 @@ void PepperHelperImpl::InstanceCreated(
 
   // Set the initial focus.
   instance->SetContentAreaFocus(render_view_->has_focus());
+
+  if (!instance->module()->IsProxied()) {
+    pepper_browser_connection_.DidCreateInProcessInstance(
+        instance->pp_instance(),
+        render_view_->GetRoutingID(),
+        instance->container()->element().document().url(),
+        instance->GetPluginURL());
+  }
 }
 
 void PepperHelperImpl::InstanceDeleted(
@@ -501,6 +512,11 @@ void PepperHelperImpl::InstanceDeleted(
     last_mouse_event_target_ = NULL;
   if (focused_plugin_ == instance)
     PluginFocusChanged(instance, false);
+
+  if (!instance->module()->IsProxied()) {
+    pepper_browser_connection_.DidDeleteInProcessInstance(
+        instance->pp_instance());
+  }
 }
 
 // If a broker has not already been created for this plugin, creates one.
