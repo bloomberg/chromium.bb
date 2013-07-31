@@ -134,6 +134,12 @@ public:
   virtual bool Write(scoped_refptr<net::IOBuffer> buffer,
                      size_t byte_count) = 0;
 
+  // Flushes contents buffered in this writer to the corresponding reader
+  // regardless if buffer filling rate is greater than
+  // kFractionBufferBeforeSending or not. Does nothing if there's no contents
+  // buffered.
+  virtual void Flush() = 0;
+
   // Signal that all data that is going to be sent, has been sent,
   // and provide a status.  |DOWNLOAD_INTERRUPT_REASON_NONE| should be
   // passed for successful completion.

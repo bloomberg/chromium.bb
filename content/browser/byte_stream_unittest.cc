@@ -146,6 +146,45 @@ TEST_F(ByteStreamTest, ByteStream_PushBack) {
             byte_stream_output->Read(&output_io_buffer, &output_length));
 }
 
+// Confirm that Flush() method makes the writer to send written contents to
+// the reader.
+TEST_F(ByteStreamTest, ByteStream_Flush) {
+  scoped_ptr<ByteStreamWriter> byte_stream_input;
+  scoped_ptr<ByteStreamReader> byte_stream_output;
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      1024, &byte_stream_input, &byte_stream_output);
+
+  EXPECT_TRUE(Write(byte_stream_input.get(), 1));
+  message_loop_.RunUntilIdle();
+
+  scoped_refptr<net::IOBuffer> output_io_buffer;
+  size_t output_length = 0;
+  // Check that data is not sent to the reader yet.
+  EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
+            byte_stream_output->Read(&output_io_buffer, &output_length));
+
+  byte_stream_input->Flush();
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
+            byte_stream_output->Read(&output_io_buffer, &output_length));
+  EXPECT_TRUE(ValidateIOBuffer(output_io_buffer, output_length));
+
+  // Check that it's ok to Flush() an empty writer.
+  byte_stream_input->Flush();
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
+            byte_stream_output->Read(&output_io_buffer, &output_length));
+
+  byte_stream_input->Close(DOWNLOAD_INTERRUPT_REASON_NONE);
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(ByteStreamReader::STREAM_COMPLETE,
+            byte_stream_output->Read(&output_io_buffer, &output_length));
+}
+
 // Same as above, only use knowledge of the internals to confirm
 // that we're getting pushback even when data's split across the two
 // objects

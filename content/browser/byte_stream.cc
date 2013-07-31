@@ -55,6 +55,7 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
   // Overridden from ByteStreamWriter.
   virtual bool Write(scoped_refptr<net::IOBuffer> buffer,
                      size_t byte_count) OVERRIDE;
+  virtual void Flush() OVERRIDE;
   virtual void Close(DownloadInterruptReason status) OVERRIDE;
   virtual void RegisterCallback(const base::Closure& source_callback) OVERRIDE;
 
@@ -213,6 +214,12 @@ bool ByteStreamWriterImpl::Write(
     PostToPeer(false, DOWNLOAD_INTERRUPT_REASON_NONE);
 
   return (input_contents_size_ + output_size_used_ <= total_buffer_size_);
+}
+
+void ByteStreamWriterImpl::Flush() {
+  DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
+  if (input_contents_size_ > 0)
+    PostToPeer(false, DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 void ByteStreamWriterImpl::Close(
