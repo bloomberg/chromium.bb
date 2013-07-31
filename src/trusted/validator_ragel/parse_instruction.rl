@@ -399,8 +399,8 @@
   action operands_count_is_4 { SET_OPERANDS_COUNT(4); }
   action operands_count_is_5 { SET_OPERANDS_COUNT(5); }
 
-  action operand0_16bit      { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
   action operand0_8bit       { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_8_BIT); }
+  action operand0_16bit      { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT); }
   action operand0_32bit      { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT); }
   action operand0_64bit      { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT); }
   action operand0_memory     { SET_OPERAND_FORMAT(0, OPERAND_FORMAT_MEMORY); }
@@ -459,43 +459,22 @@
   # instruction encoding. Some 'source' actions assign operand fixed 'name'
   # (so, technically, they extract zero bits from instruction encoding).
 
-  action operand0_ds_rbx           { SET_OPERAND_NAME(0, REG_DS_RBX); }
-  action operand0_ds_rsi           { SET_OPERAND_NAME(0, REG_DS_RSI); }
-  action operand0_es_rdi           { SET_OPERAND_NAME(0, REG_ES_RDI); }
-  action operand0_immediate        { SET_OPERAND_NAME(0, REG_IMM); }
-  action operand0_jmp_to           { SET_OPERAND_NAME(0, JMP_TO); }
-  action operand0_port_dx          { SET_OPERAND_NAME(0, REG_PORT_DX); }
+  # Note: operand_source_actions_XXX_common machines only work with operands
+  # that are registers (REG_RAX to REG_R15), operand_source_actions_XXX_decoder
+  # machines deal with "special" operand names (such as JMP_TO or REG_IMM).
+
   action operand0_rax              { SET_OPERAND_NAME(0, REG_RAX); }
   action operand0_rcx              { SET_OPERAND_NAME(0, REG_RCX); }
   action operand0_rdx              { SET_OPERAND_NAME(0, REG_RDX); }
   action operand0_rbx              { SET_OPERAND_NAME(0, REG_RBX); }
   action operand0_rsp              { SET_OPERAND_NAME(0, REG_RSP); }
   action operand0_rbp              { SET_OPERAND_NAME(0, REG_RBP); }
-  action operand0_rm               { SET_OPERAND_NAME(0, REG_RM); }
-  action operand0_second_immediate { SET_OPERAND_NAME(0, REG_IMM2); }
-  action operand0_st               { SET_OPERAND_NAME(0, REG_ST); }
 
-  action operand1_ds_rsi           { SET_OPERAND_NAME(1, REG_DS_RSI); }
-  action operand1_es_rdi           { SET_OPERAND_NAME(1, REG_ES_RDI); }
-  action operand1_immediate        { SET_OPERAND_NAME(1, REG_IMM); }
-  action operand1_port_dx          { SET_OPERAND_NAME(1, REG_PORT_DX); }
   action operand1_rax              { SET_OPERAND_NAME(1, REG_RAX); }
   action operand1_rcx              { SET_OPERAND_NAME(1, REG_RCX); }
-  action operand1_rm               { SET_OPERAND_NAME(1, REG_RM); }
-  action operand1_second_immediate { SET_OPERAND_NAME(1, REG_IMM2); }
-  action operand1_st               { SET_OPERAND_NAME(1, REG_ST); }
 
-  action operand2_immediate        { SET_OPERAND_NAME(2, REG_IMM); }
   action operand2_rax              { SET_OPERAND_NAME(2, REG_RAX); }
   action operand2_rcx              { SET_OPERAND_NAME(2, REG_RCX); }
-  action operand2_rm               { SET_OPERAND_NAME(2, REG_RM); }
-  action operand2_second_immediate { SET_OPERAND_NAME(2, REG_IMM2); }
-
-  action operand3_immediate        { SET_OPERAND_NAME(3, REG_IMM); }
-  action operand3_rm               { SET_OPERAND_NAME(3, REG_RM); }
-  action operand3_second_immediate { SET_OPERAND_NAME(3, REG_IMM2); }
-
-  action operand4_immediate        { SET_OPERAND_NAME(4, REG_IMM); }
 
   action operand0_from_modrm_reg_norex {
     SET_OPERAND_NAME(0, RegFromModRM(*current_position));
@@ -527,16 +506,42 @@
 }%%
 
 %%{
-  machine operand_source_actions_ia32;
+  machine operand_source_actions_decoder;
+
+  action operand0_ds_rbx           { SET_OPERAND_NAME(0, REG_DS_RBX); }
+  action operand0_ds_rsi           { SET_OPERAND_NAME(0, REG_DS_RSI); }
+  action operand0_es_rdi           { SET_OPERAND_NAME(0, REG_ES_RDI); }
+  action operand0_immediate        { SET_OPERAND_NAME(0, REG_IMM); }
+  action operand0_jmp_to           { SET_OPERAND_NAME(0, JMP_TO); }
+  action operand0_port_dx          { SET_OPERAND_NAME(0, REG_PORT_DX); }
+  action operand0_rm               { SET_OPERAND_NAME(0, REG_RM); }
+  action operand0_second_immediate { SET_OPERAND_NAME(0, REG_IMM2); }
+  action operand0_st               { SET_OPERAND_NAME(0, REG_ST); }
+
+  action operand1_ds_rsi           { SET_OPERAND_NAME(1, REG_DS_RSI); }
+  action operand1_es_rdi           { SET_OPERAND_NAME(1, REG_ES_RDI); }
+  action operand1_immediate        { SET_OPERAND_NAME(1, REG_IMM); }
+  action operand1_port_dx          { SET_OPERAND_NAME(1, REG_PORT_DX); }
+  action operand1_rm               { SET_OPERAND_NAME(1, REG_RM); }
+  action operand1_second_immediate { SET_OPERAND_NAME(1, REG_IMM2); }
+  action operand1_st               { SET_OPERAND_NAME(1, REG_ST); }
+
+  action operand2_immediate        { SET_OPERAND_NAME(2, REG_IMM); }
+  action operand2_rm               { SET_OPERAND_NAME(2, REG_RM); }
+  action operand2_second_immediate { SET_OPERAND_NAME(2, REG_IMM2); }
+
+  action operand3_immediate        { SET_OPERAND_NAME(3, REG_IMM); }
+  action operand3_rm               { SET_OPERAND_NAME(3, REG_RM); }
+  action operand3_second_immediate { SET_OPERAND_NAME(3, REG_IMM2); }
+
+  action operand4_immediate        { SET_OPERAND_NAME(4, REG_IMM); }
+}%%
+
+%%{
+  machine operand_source_actions_ia32_common;
 
   include operand_source_actions_common;
 
-  action operand0_absolute_disp {
-    SET_OPERAND_NAME(0, REG_RM);
-    SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-  }
   action operand0_from_modrm_reg {
     SET_OPERAND_NAME(0, RegFromModRM(*current_position));
   }
@@ -550,12 +555,6 @@
     SET_OPERAND_NAME(0, RegFromOpcode(*current_position));
   }
 
-  action operand1_absolute_disp {
-    SET_OPERAND_NAME(1, REG_RM);
-    SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-  }
   action operand1_from_modrm_reg {
     SET_OPERAND_NAME(1, RegFromModRM(*current_position));
   }
@@ -582,16 +581,32 @@
 }%%
 
 %%{
-  machine operand_source_actions_amd64;
+  machine operand_source_actions_ia32_decoder;
 
-  include operand_source_actions_common;
+  include operand_source_actions_decoder;
+
+  include operand_source_actions_ia32_common;
 
   action operand0_absolute_disp {
     SET_OPERAND_NAME(0, REG_RM);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(REG_RIZ);
+    SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
+
+  action operand1_absolute_disp {
+    SET_OPERAND_NAME(1, REG_RM);
+    SET_MODRM_BASE(NO_REG);
+    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_SCALE(0);
+  }
+}%%
+
+%%{
+  machine operand_source_actions_amd64_common;
+
+  include operand_source_actions_common;
+
   action operand0_from_modrm_reg {
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -611,12 +626,6 @@
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 
-  action operand1_absolute_disp {
-    SET_OPERAND_NAME(1, REG_RM);
-    SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(REG_RIZ);
-    SET_MODRM_SCALE(0);
-  }
   action operand1_from_modrm_reg {
     SET_OPERAND_NAME(1, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -649,6 +658,28 @@
     SET_OPERAND_NAME(3, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+  }
+}%%
+
+%%{
+  machine operand_source_actions_amd64_decoder;
+
+  include operand_source_actions_decoder;
+
+  include operand_source_actions_amd64_common;
+
+  action operand0_absolute_disp {
+    SET_OPERAND_NAME(0, REG_RM);
+    SET_MODRM_BASE(NO_REG);
+    SET_MODRM_INDEX(REG_RIZ);
+    SET_MODRM_SCALE(0);
+  }
+
+  action operand1_absolute_disp {
+    SET_OPERAND_NAME(1, REG_RM);
+    SET_MODRM_BASE(NO_REG);
+    SET_MODRM_INDEX(REG_RIZ);
+    SET_MODRM_SCALE(0);
   }
 }%%
 
