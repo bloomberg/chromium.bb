@@ -119,7 +119,7 @@ class PepperHelperImpl : public PepperHelper,
   typedef base::Callback<void (base::PlatformFileError, base::PassPlatformFile)>
       AsyncOpenFileCallback;
   bool AsyncOpenFile(const base::FilePath& path,
-                     int flags,
+                     int pp_open_flags,
                      const AsyncOpenFileCallback& callback);
 
   // Retrieve current gamepad data.

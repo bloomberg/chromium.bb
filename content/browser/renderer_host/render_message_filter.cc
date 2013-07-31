@@ -25,6 +25,7 @@
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/ppapi_plugin_process_host.h"
+#include "content/browser/renderer_host/pepper/pepper_security_helper.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -61,6 +62,7 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ppapi/shared_impl/file_type_conversion.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "ui/gfx/color_profile.h"
 #include "webkit/plugins/plugin_constants.h"
@@ -393,6 +395,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnDidDeleteOutOfProcessPepperInstance)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToPpapiBroker,
                         OnOpenChannelToPpapiBroker)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenPepperFile, OnAsyncOpenPepperFile)
 #endif
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
         render_widget_helper_->DidReceiveBackingStoreMsg(message))
@@ -408,7 +411,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetCPUUsage, OnGetCPUUsage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioHardwareConfig,
                         OnGetAudioHardwareConfig)
@@ -987,15 +989,19 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
   Send(reply_msg);
 }
 
-void RenderMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
-                                          const base::FilePath& path,
-                                          int flags,
-                                          int message_id) {
+void RenderMessageFilter::OnAsyncOpenPepperFile(const IPC::Message& msg,
+                                                const base::FilePath& path,
+                                                int pp_open_flags,
+                                                int message_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
-          render_process_id_, path, flags)) {
-    DLOG(ERROR) << "Bad flags in ViewMsgHost_AsyncOpenFile message: " << flags;
+  int platform_file_flags = 0;
+  if (!CanOpenWithPepperFlags(pp_open_flags, render_process_id_, path) ||
+      !ppapi::PepperFileOpenFlagsToPlatformFileFlags(
+          pp_open_flags, &platform_file_flags)) {
+    DLOG(ERROR) <<
+        "Bad pp_open_flags in ViewMsgHost_AsyncOpenPepperFile message: " <<
+        pp_open_flags;
     RecordAction(UserMetricsAction("BadMessageTerminate_AOF"));
     BadMessageReceived();
     return;
@@ -1003,25 +1009,29 @@ void RenderMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE, base::Bind(
-          &RenderMessageFilter::AsyncOpenFileOnFileThread, this,
-          path, flags, message_id, msg.routing_id()));
+          &RenderMessageFilter::AsyncOpenPepperFileOnFileThread, this,
+          path, platform_file_flags, message_id, msg.routing_id()));
 }
 
-void RenderMessageFilter::AsyncOpenFileOnFileThread(const base::FilePath& path,
-                                                    int flags,
-                                                    int message_id,
-                                                    int routing_id) {
+void RenderMessageFilter::AsyncOpenPepperFileOnFileThread(
+    const base::FilePath& path,
+    int platform_file_flags,
+    int message_id,
+    int routing_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
   base::PlatformFile file = base::CreatePlatformFile(
-      path, flags, NULL, &error_code);
+      path, platform_file_flags, NULL, &error_code);
   IPC::PlatformFileForTransit file_for_transit =
       file != base::kInvalidPlatformFileValue ?
           IPC::GetFileHandleForProcess(file, PeerHandle(), true) :
           IPC::InvalidPlatformFileForTransit();
 
-  IPC::Message* reply = new ViewMsg_AsyncOpenFile_ACK(
-      routing_id, error_code, file_for_transit, message_id);
+  IPC::Message* reply = new ViewMsg_AsyncOpenPepperFile_ACK(
+      routing_id,
+      error_code,
+      file_for_transit,
+      message_id);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(base::IgnoreResult(&RenderMessageFilter::Send), this, reply));

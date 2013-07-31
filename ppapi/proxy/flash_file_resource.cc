@@ -176,9 +176,8 @@ int32_t FlashFileResource::OpenFileHelper(const std::string& path,
                                           PepperFilePath::Domain domain_type,
                                           int32_t mode,
                                           PP_FileHandle* file) {
-  int flags = 0;
   if (path.empty() ||
-      !ppapi::PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) ||
+      !ppapi::PepperFileOpenFlagsToPlatformFileFlags(mode, NULL) ||
       !file)
     return PP_ERROR_BADARGUMENT;
 
@@ -187,7 +186,7 @@ int32_t FlashFileResource::OpenFileHelper(const std::string& path,
   IPC::Message unused;
   ResourceMessageReplyParams reply_params;
   int32_t error = GenericSyncCall(BROWSER,
-      PpapiHostMsg_FlashFile_OpenFile(pepper_path, flags), &unused,
+      PpapiHostMsg_FlashFile_OpenFile(pepper_path, mode), &unused,
       &reply_params);
   if (error != PP_OK)
     return error;

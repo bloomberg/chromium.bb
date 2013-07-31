@@ -19,6 +19,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "net/base/escape.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_io.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
@@ -468,7 +469,7 @@ int32_t PPB_FileRef_Impl::QueryInHost(
         RenderThreadImpl::current()->GetFileThreadMessageLoopProxy();
     if (!plugin_instance->helper()->AsyncOpenFile(
             GetSystemPath(),
-            base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+            PP_FILEOPENFLAG_READ,
             base::Bind(&QueryCallback, task_runner, info, callback)))
       return PP_ERROR_FAILED;
   } else {

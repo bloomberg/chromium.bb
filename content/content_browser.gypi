@@ -904,6 +904,8 @@
     'browser/renderer_host/pepper/pepper_printing_host.h',
     'browser/renderer_host/pepper/pepper_renderer_connection.cc',
     'browser/renderer_host/pepper/pepper_renderer_connection.h',
+    'browser/renderer_host/pepper/pepper_security_helper.cc',
+    'browser/renderer_host/pepper/pepper_security_helper.h',
     'browser/renderer_host/pepper/pepper_socket_utils.cc',
     'browser/renderer_host/pepper/pepper_socket_utils.h',
     'browser/renderer_host/pepper/pepper_tcp_server_socket.cc',

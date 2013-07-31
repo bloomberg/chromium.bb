@@ -69,6 +69,7 @@
 #include "ppapi/proxy/url_loader_resource.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/file_path.h"
+#include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
@@ -550,12 +551,12 @@ void PepperHelperImpl::OnPpapiBrokerPermissionResult(int request_id,
 }
 
 bool PepperHelperImpl::AsyncOpenFile(const base::FilePath& path,
-                                     int flags,
+                                     int pp_open_flags,
                                      const AsyncOpenFileCallback& callback) {
   int message_id = pending_async_open_files_.Add(
       new AsyncOpenFileCallback(callback));
-  return Send(new ViewHostMsg_AsyncOpenFile(
-      routing_id(), path, flags, message_id));
+  return Send(new ViewHostMsg_AsyncOpenPepperFile(
+      routing_id(), path, pp_open_flags, message_id));
 }
 
 void PepperHelperImpl::OnAsyncFileOpened(
@@ -743,7 +744,7 @@ bool PepperHelperImpl::OnMessageReceived(const IPC::Message& message) {
                         OnTCPServerSocketAcceptACK)
     IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
                         OnPpapiBrokerChannelCreated)
-    IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
+    IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenPepperFile_ACK, OnAsyncFileOpened)
     IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerPermissionResult,
                         OnPpapiBrokerPermissionResult)
     IPC_MESSAGE_UNHANDLED(handled = false)

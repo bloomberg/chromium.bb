@@ -37,9 +37,6 @@ int PlatformFileErrorToPepperError(base::PlatformFileError error_code) {
 
 bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
                                             int* flags_out) {
-  if (!flags_out)
-    return false;
-
   bool pp_read = !!(pp_open_flags & PP_FILEOPENFLAG_READ);
   bool pp_write = !!(pp_open_flags & PP_FILEOPENFLAG_WRITE);
   bool pp_create = !!(pp_open_flags & PP_FILEOPENFLAG_CREATE);
@@ -77,7 +74,8 @@ bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
     flags |= base::PLATFORM_FILE_OPEN;
   }
 
-  *flags_out = flags;
+  if (flags_out)
+    *flags_out = flags;
   return true;
 }
 

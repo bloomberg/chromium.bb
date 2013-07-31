@@ -194,10 +194,14 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
   if (rv != PP_OK)
     return rv;
 
-  int flags = 0;
+  // TODO(tommycli): Eventually just pass the Pepper flags straight to the
+  // FileSystemDispatcher so it can handle doing the security check.
+  int platform_file_flags = 0;
   open_flags_ = open_flags;
-  if (!::ppapi::PepperFileOpenFlagsToPlatformFileFlags(open_flags, &flags))
+  if (!::ppapi::PepperFileOpenFlagsToPlatformFileFlags(open_flags,
+                                                       &platform_file_flags)) {
     return PP_ERROR_BADARGUMENT;
+  }
 
   EnterResourceNoLock<PPB_FileRef_API> enter(file_ref_resource, true);
   if (enter.failed())
@@ -223,7 +227,7 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
         weak_factory_.GetWeakPtr(),
         context->MakeReplyMessageContext());
     file_system_dispatcher->OpenFile(
-      file_system_url_, flags,
+      file_system_url_, platform_file_flags,
       base::Bind(&DidOpenFileSystemURL, callback),
       base::Bind(&DidFailOpenFileSystemURL, callback));
   } else {
@@ -232,7 +236,7 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
     if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL || !helper)
       return PP_ERROR_FAILED;
     if (!helper->AsyncOpenFile(
-            file_ref->GetSystemPath(), flags,
+            file_ref->GetSystemPath(), open_flags,
             base::Bind(&PepperFileIOHost::ExecutePlatformOpenFileCallback,
                        weak_factory_.GetWeakPtr(),
                        context->MakeReplyMessageContext())))

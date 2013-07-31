@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_FILE_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_FILE_MESSAGE_FILTER_H_
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -40,6 +41,9 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
   static base::FilePath GetDataDirName(const base::FilePath& profile_path);
 
  private:
+  typedef base::Callback<bool(int, const base::FilePath&)>
+      CheckPermissionsCallback;
+
   virtual ~PepperFlashFileMessageFilter();
 
   // ppapi::host::ResourceMessageFilter overrides.
@@ -51,7 +55,7 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
 
   int32_t OnOpenFile(ppapi::host::HostMessageContext* context,
                      const ppapi::PepperFilePath& path,
-                     int flags);
+                     int pp_open_flags);
   int32_t OnRenameFile(ppapi::host::HostMessageContext* context,
                        const ppapi::PepperFilePath& from_path,
                        const ppapi::PepperFilePath& to_path);
@@ -68,7 +72,7 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
 
   base::FilePath ValidateAndConvertPepperFilePath(
       const ppapi::PepperFilePath& pepper_path,
-      int flags);
+      const CheckPermissionsCallback& check_permissions_callback) const;
 
   base::FilePath plugin_data_directory_;
   int render_process_id_;

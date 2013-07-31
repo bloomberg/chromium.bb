@@ -1198,8 +1198,8 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
 // Sent when the worker has started.
 IPC_MESSAGE_ROUTED0(ViewMsg_WorkerCreated)
 
-// The response to ViewHostMsg_AsyncOpenFile.
-IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
+// The response to ViewHostMsg_AsyncOpenPepperFile.
+IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenPepperFile_ACK,
                     base::PlatformFileError /* error_code */,
                     IPC::PlatformFileForTransit /* file descriptor */,
                     int /* message_id */)
@@ -1892,6 +1892,13 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_OpenChannelToPpapiBroker,
                      int /* request_id */,
                      base::FilePath /* path */)
 
+// Opens a Pepper file asynchronously. The response returns a file descriptor
+// and an error code from base/platform_file.h.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_AsyncOpenPepperFile,
+                    base::FilePath /* file path */,
+                    int /* pp_open_flags */,
+                    int /* message_id */)
+
 // A renderer sends this to the browser process when it wants to access a PPAPI
 // broker. In contrast to ViewHostMsg_OpenChannelToPpapiBroker, this is called
 // for every connection.
@@ -2071,13 +2078,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_SwapCompositorFrame,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidOverscroll,
                     gfx::Vector2dF /* accumulated_overscroll */,
                     gfx::Vector2dF /* current_fling_velocity */)
-
-// Opens a file asynchronously. The response returns a file descriptor
-// and an error code from base/platform_file.h.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_AsyncOpenFile,
-                    base::FilePath /* file path */,
-                    int /* flags */,
-                    int /* message_id */)
 
 // Reply to a snapshot request containing whether snapshotting succeeded and the
 // SkBitmap if it succeeded.

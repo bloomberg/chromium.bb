@@ -1930,7 +1930,7 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_FlashClipboard_WriteData,
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashFile_Create)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashFile_OpenFile,
                      ppapi::PepperFilePath /* path */,
-                     int /* flags */)
+                     int /* pp_open_flags */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashFile_RenameFile,
                      ppapi::PepperFilePath /* from_path */,
                      ppapi::PepperFilePath /* to_path */)

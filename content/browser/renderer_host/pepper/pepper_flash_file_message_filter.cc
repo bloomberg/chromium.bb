@@ -9,6 +9,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/renderer_host/pepper/pepper_security_helper.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
@@ -24,19 +25,24 @@
 namespace content {
 
 namespace {
-// Used to check if the renderer has permission for the requested operation.
-// TODO(viettrungluu): Verify these. They don't necessarily quite make sense,
-// but it seems to be approximately what the file system code does.
-const int kReadPermissions = base::PLATFORM_FILE_OPEN |
-                             base::PLATFORM_FILE_READ |
-                             base::PLATFORM_FILE_EXCLUSIVE_READ;
-const int kWritePermissions = base::PLATFORM_FILE_OPEN |
-                              base::PLATFORM_FILE_CREATE |
-                              base::PLATFORM_FILE_CREATE_ALWAYS |
-                              base::PLATFORM_FILE_OPEN_TRUNCATED |
-                              base::PLATFORM_FILE_WRITE |
-                              base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-                              base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+
+bool CanRead(int process_id, const base::FilePath& path) {
+  return ChildProcessSecurityPolicyImpl::GetInstance()->
+      CanReadFile(process_id, path);
+}
+
+bool CanWrite(int process_id, const base::FilePath& path) {
+  return ChildProcessSecurityPolicyImpl::GetInstance()->
+      CanWriteFile(process_id, path);
+}
+
+bool CanReadWrite(int process_id, const base::FilePath& path) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  return policy->CanReadFile(process_id, path) &&
+      policy->CanWriteFile(process_id, path);
+}
+
 }  // namespace
 
 PepperFlashFileMessageFilter::PepperFlashFileMessageFilter(
@@ -109,16 +115,24 @@ int32_t PepperFlashFileMessageFilter::OnResourceMessageReceived(
 int32_t PepperFlashFileMessageFilter::OnOpenFile(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path,
-    int flags) {
-  base::FilePath full_path = ValidateAndConvertPepperFilePath(path, flags);
+    int pp_open_flags) {
+  base::FilePath full_path = ValidateAndConvertPepperFilePath(
+      path,
+      base::Bind(&CanOpenWithPepperFlags, pp_open_flags));
   if (full_path.empty()) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
   }
 
+  int platform_file_flags = 0;
+  if (!ppapi::PepperFileOpenFlagsToPlatformFileFlags(
+          pp_open_flags, &platform_file_flags)) {
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+
   base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
   base::PlatformFile file_handle = base::CreatePlatformFile(
-      full_path, flags, NULL, &error);
+      full_path, platform_file_flags, NULL, &error);
   if (error != base::PLATFORM_FILE_OK) {
     DCHECK_EQ(file_handle, base::kInvalidPlatformFileValue);
     return ppapi::PlatformFileErrorToPepperError(error);
@@ -149,9 +163,9 @@ int32_t PepperFlashFileMessageFilter::OnRenameFile(
     const ppapi::PepperFilePath& from_path,
     const ppapi::PepperFilePath& to_path) {
   base::FilePath from_full_path = ValidateAndConvertPepperFilePath(
-      from_path, kWritePermissions);
+      from_path, base::Bind(&CanWrite));
   base::FilePath to_full_path = ValidateAndConvertPepperFilePath(
-      to_path, kWritePermissions);
+      to_path, base::Bind(&CanWrite));
   if (from_full_path.empty() || to_full_path.empty()) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
@@ -167,7 +181,7 @@ int32_t PepperFlashFileMessageFilter::OnDeleteFileOrDir(
     const ppapi::PepperFilePath& path,
     bool recursive) {
   base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path, kWritePermissions);
+      path, base::Bind(&CanWrite));
   if (full_path.empty()) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
@@ -181,7 +195,7 @@ int32_t PepperFlashFileMessageFilter::OnCreateDir(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path) {
   base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path, kWritePermissions);
+      path, base::Bind(&CanWrite));
   if (full_path.empty()) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
@@ -196,7 +210,7 @@ int32_t PepperFlashFileMessageFilter::OnQueryFile(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path) {
   base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path, kReadPermissions);
+      path, base::Bind(&CanRead));
   if (full_path.empty()) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
@@ -213,7 +227,7 @@ int32_t PepperFlashFileMessageFilter::OnGetDirContents(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path) {
   base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path, kReadPermissions);
+      path, base::Bind(&CanRead));
   if (full_path.empty()) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
@@ -243,7 +257,7 @@ int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
   ppapi::PepperFilePath dir_path(
       ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL, base::FilePath());
   base::FilePath validated_dir_path = ValidateAndConvertPepperFilePath(
-      dir_path, kReadPermissions | kWritePermissions);
+      dir_path, base::Bind(&CanReadWrite));
   if (validated_dir_path.empty() ||
       (!base::DirectoryExists(validated_dir_path) &&
        !file_util::CreateDirectory(validated_dir_path))) {
@@ -282,13 +296,13 @@ int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
 
 base::FilePath PepperFlashFileMessageFilter::ValidateAndConvertPepperFilePath(
     const ppapi::PepperFilePath& pepper_path,
-    int flags) {
+    const CheckPermissionsCallback& check_permissions_callback) const {
   base::FilePath file_path;  // Empty path returned on error.
   switch (pepper_path.domain()) {
     case ppapi::PepperFilePath::DOMAIN_ABSOLUTE:
       if (pepper_path.path().IsAbsolute() &&
-          ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
-              render_process_id_, pepper_path.path(), flags))
+          check_permissions_callback.Run(render_process_id_,
+                                         pepper_path.path()))
         file_path = pepper_path.path();
       break;
     case ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
