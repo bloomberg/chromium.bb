@@ -303,6 +303,13 @@ env.AddNodeToTestSuite(node,
                        ['toolchain_tests', 'small_tests'],
                        'run_posix_memalign_test')
 
+getpagesize_test_nexe = env.ComponentProgram(
+    'getpagesize_test', 'getpagesize_test.c',
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('getpagesize_test.out', getpagesize_test_nexe)
+env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                       'run_getpagesize_test')
+
 
 # Test that local variable dwarf info is preserved with linking and LTO.
 # Force '-g' on in case it was not turned on for some reason, and lower

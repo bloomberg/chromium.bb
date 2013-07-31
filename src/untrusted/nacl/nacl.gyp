@@ -16,6 +16,7 @@
       '_exit.c',
       'fstat.c',
       'getdents.c',
+      'getpagesize.c',
       'getpid.c',
       'gettimeofday.c',
       'lock.c',
