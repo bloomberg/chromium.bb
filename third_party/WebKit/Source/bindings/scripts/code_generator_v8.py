@@ -37,13 +37,56 @@ import posixpath
 import re
 import sys
 
-import idl_definitions
-
 # jinja2 is in chromium's third_party directory.
 module_path, module_name = os.path.split(__file__)
 third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir)
 sys.path.append(third_party)
 import jinja2
+
+
+CALLBACK_INTERFACE_CPP_INCLUDES = set([
+    'core/dom/ScriptExecutionContext.h',
+    'bindings/v8/V8Binding.h',
+    'bindings/v8/V8Callback.h',
+    'wtf/Assertions.h',
+])
+
+
+CALLBACK_INTERFACE_H_INCLUDES = set([
+    'bindings/v8/ActiveDOMCallback.h',
+    'bindings/v8/DOMWrapperWorld.h',
+    'bindings/v8/ScopedPersistent.h',
+])
+
+
+CPP_TYPE_SPECIAL_CONVERSION_RULES = {
+    'float': 'float',
+    'double': 'double',
+    'long long': 'long long',
+    'unsigned long long': 'unsigned long long',
+    'long': 'int',
+    'short': 'int',
+    'byte': 'int',
+    'boolean': 'bool',
+    'DOMString': 'const String&',
+}
+
+
+PRIMITIVE_TYPES = set([
+    'boolean',
+    'void',
+    'Date',
+    'byte',
+    'octet',
+    'short',
+    'long',
+    'long long',
+    'unsigned short',
+    'unsigned long',
+    'unsigned long long',
+    'float',
+    'double',
+])
 
 
 def apply_template(path_to_template, contents):
@@ -53,20 +96,83 @@ def apply_template(path_to_template, contents):
     return template.render(contents)
 
 
+def cpp_type(data_type, pointer_type):
+    """Returns the C++ type corresponding to the IDL type.
+
+    Args:
+        pointer_type:
+            'raw': return raw pointer form (e.g. Foo*)
+            'RefPtr': return RefPtr form (e.g. RefPtr<Foo>)
+    """
+    if data_type in CPP_TYPE_SPECIAL_CONVERSION_RULES:
+        return CPP_TYPE_SPECIAL_CONVERSION_RULES[data_type]
+    if sequence_type(data_type):
+        return 'Vector<%s >' % cpp_type(sequence_type(data_type), 'RefPtr')
+    if pointer_type == 'raw':
+        return data_type + '*'
+    if pointer_type == 'RefPtr':
+        return 'RefPtr<%s>' % data_type
+    return ''
+
+
+def cpp_value_to_js_value(data_type, cpp_value, isolate, creation_context=''):
+    """Returns a expression that represent JS value corresponding to a C++ value."""
+    if data_type == 'boolean':
+        return 'v8Boolean(%s, %s)' % (cpp_value, isolate)
+    if data_type in ['long long', 'unsigned long long', 'DOMTimeStamp']:
+        # long long and unsigned long long are not representable in ECMAScript.
+        return 'v8::Number::New(static_cast<double>(%s))' % cpp_value
+    if primitive_type(data_type):
+        if data_type not in ['float', 'double']:
+            raise Exception('unexpected data_type %s' % data_type)
+        return 'v8::Number::New(%s)' % cpp_value
+    if data_type == 'DOMString':
+        return 'v8String(%s, %s)' % (cpp_value, isolate)
+    if sequence_type(data_type):
+        return 'v8Array(%s, %s)' % (cpp_value, isolate)
+    return 'toV8(%s, %s, %s)' % (cpp_value, creation_context, isolate)
+
+
+def generate_conditional_string(interface_or_attribute_or_operation):
+    if 'Conditional' not in interface_or_attribute_or_operation.extended_attributes:
+        return ''
+    conditional = interface_or_attribute_or_operation.extended_attributes['Conditional']
+    for operator in ['&', '|']:
+        if operator in conditional:
+            conditions = set(conditional.split(operator))
+            operator_separator = ' %s%s ' % (operator, operator)
+            return operator_separator.join(['ENABLE(%s)' % expression for expression in sorted(conditions)])
+    return 'ENABLE(%s)' % conditional
+
+
+def includes_for_type(data_type):
+    if primitive_type(data_type) or data_type == 'DOMString':
+        return set()
+    if sequence_type(data_type):
+        return includes_for_type(sequence_type(data_type))
+    return set(['V8%s.h' % data_type])
+
+
+def includes_for_operation(operation):
+    includes = includes_for_type(operation.data_type)
+    for parameter in operation.arguments:
+        includes |= includes_for_type(parameter.data_type)
+    return includes
+
+
+def primitive_type(data_type):
+    return data_type in PRIMITIVE_TYPES
+
+
+def sequence_type(data_type):
+    matched = re.match(r'sequence<([\w\d_\s]+)>', data_type)
+    if not matched:
+        return None
+    return matched.group(1)
+
+
 def v8_class_name(interface):
     return 'V8' + interface.name
-
-
-def cpp_type(data_type):
-    """Returns the C++ type corresponding to the IDL type."""
-    if data_type == 'boolean':
-        return 'bool'
-    raise Exception('Not supported')
-
-
-def callback_argument_declaration(operation):
-    arguments = ['%s %s' % (cpp_type(argument.data_type), argument.name) for argument in operation.arguments]
-    return ', '.join(arguments)
 
 
 class CodeGeneratorV8:
@@ -78,6 +184,8 @@ class CodeGeneratorV8:
         self.relative_dir_posix = relative_dir_posix
         self.verbose = verbose
         self.interface = None
+        self.header_includes = set()
+        self.cpp_includes = set()
         if definitions:  # FIXME: remove check when remove write_dummy_header_and_cpp
             try:
                 self.interface = definitions.interfaces[interface_name]
@@ -90,13 +198,20 @@ class CodeGeneratorV8:
         header_basename = self.interface_name + '.h'
         return posixpath.join('bindings', self.relative_dir_posix, header_basename)
 
+    def generate_cpp_to_js_conversion(self, data_type, cpp_value, format_string, isolate, creation_context=''):
+        """Returns a statement that converts a C++ value to a JS value.
+
+        Also add necessary includes to self.cpp_includes.
+        """
+        self.cpp_includes |= includes_for_type(data_type)
+        js_value = cpp_value_to_js_value(data_type, cpp_value, isolate, creation_context)
+        return format_string % js_value
+
     def write_dummy_header_and_cpp(self):
         # FIXME: fix GYP so these files aren't needed and remove this method
         target_interface_name = self.interface_name
         header_basename = 'V8%s.h' % target_interface_name
         cpp_basename = 'V8%s.cpp' % target_interface_name
-        header_fullname = os.path.join(self.output_directory, header_basename)
-        cpp_fullname = os.path.join(self.output_directory, cpp_basename)
         contents = """/*
     This file is generated just to tell build scripts that {header_basename} and
     {cpp_basename} are created for {target_interface_name}.idl, and thus
@@ -110,14 +225,17 @@ class CodeGeneratorV8:
     def write_header_and_cpp(self):
         header_basename = v8_class_name(self.interface) + '.h'
         cpp_basename = v8_class_name(self.interface) + '.cpp'
+        template_contents = {
+            'conditional_string': generate_conditional_string(self.interface),
+        }
         if self.interface.is_callback:
-            template_contents = self.generate_callback_interface()
+            template_contents.update(self.generate_callback_interface())
             header_file_text = apply_template('templates/callback.h', template_contents)
             cpp_file_text = apply_template('templates/callback.cpp', template_contents)
         else:
             # FIXME: Implement.
-            header_file_text = ""
-            cpp_file_text = ""
+            header_file_text = ''
+            cpp_file_text = ''
         self.write_header_code(header_basename, header_file_text)
         self.write_cpp_code(cpp_basename, cpp_file_text)
 
@@ -132,41 +250,45 @@ class CodeGeneratorV8:
             cpp_file.write(cpp_file_text)
 
     def generate_callback_interface(self):
-        cpp_includes = set([
-            'core/dom/ScriptExecutionContext.h',
-            'bindings/v8/V8Binding.h',
-            'bindings/v8/V8Callback.h',
-            'wtf/Assertions.h',
-        ])
-        header_includes = set([
-            'bindings/v8/ActiveDOMCallback.h',
-            'bindings/v8/DOMWrapperWorld.h',
-            'bindings/v8/ScopedPersistent.h',
-        ])
-        header_includes.add(self.cpp_class_header_filename())
+        self.cpp_includes = CALLBACK_INTERFACE_CPP_INCLUDES
+        self.header_includes = CALLBACK_INTERFACE_H_INCLUDES
+        self.header_includes.add(self.cpp_class_header_filename())
 
-        def operation_to_method(operation):
-            method = {}
-            if 'Custom' not in operation.extended_attributes:
+        def generate_argument(argument):
+            receiver = 'v8::Handle<v8::Value> %sHandle = %%s;' % argument.name
+            cpp_to_js_conversion = self.generate_cpp_to_js_conversion(argument.data_type, argument.name, receiver, 'isolate', creation_context='v8::Handle<v8::Object>()')
+            return {
+                'name': argument.name,
+                'cpp_to_js_conversion': cpp_to_js_conversion,
+            }
+
+        def generate_method(operation):
+            def argument_declaration(argument):
+                return '%s %s' % (cpp_type(argument.data_type, 'raw'), argument.name)
+
+            arguments = []
+            custom = 'Custom' in operation.extended_attributes
+            if not custom:
+                self.cpp_includes |= includes_for_operation(operation)
                 if operation.data_type != 'boolean':
                     raise Exception("We don't yet support callbacks that return non-boolean values.")
-                if len(operation.arguments):
-                    raise Exception('Not supported')
-                method = {
-                    'return_type': cpp_type(operation.data_type),
-                    'name': operation.name,
-                    'arguments': [],
-                    'argument_declaration': callback_argument_declaration(operation),
-                    'custom': None,
-                }
+                arguments = [generate_argument(argument) for argument in operation.arguments]
+            method = {
+                'return_type': cpp_type(operation.data_type, 'RefPtr'),
+                'name': operation.name,
+                'arguments': arguments,
+                'argument_declaration': ', '.join([argument_declaration(argument) for argument in operation.arguments]),
+                'handles': ', '.join(['%sHandle' % argument.name for argument in operation.arguments]),
+                'custom': custom,
+            }
             return method
 
-        methods = [operation_to_method(operation) for operation in self.interface.operations]
+        methods = [generate_method(operation) for operation in self.interface.operations]
         template_contents = {
             'cpp_class_name': self.interface.name,
             'v8_class_name': v8_class_name(self.interface),
-            'cpp_includes': sorted(list(cpp_includes)),
-            'header_includes': sorted(list(header_includes)),
+            'cpp_includes': sorted(list(self.cpp_includes)),
+            'header_includes': sorted(list(self.header_includes)),
             'methods': methods,
         }
         return template_contents
