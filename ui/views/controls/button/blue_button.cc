@@ -12,16 +12,9 @@
 
 namespace {
 
-const int kBlueNormalImages[] = IMAGE_GRID(IDR_BLUE_BUTTON_NORMAL);
-const int kBlueHoveredImages[] = IMAGE_GRID(IDR_BLUE_BUTTON_HOVER);
-const int kBluePressedImages[] = IMAGE_GRID(IDR_BLUE_BUTTON_PRESSED);
-const int kBlueDisabledImages[] = IMAGE_GRID(IDR_BLUE_BUTTON_DISABLED);
-const int kBlueFocusedNormalImages[] = IMAGE_GRID(
-    IDR_BLUE_BUTTON_FOCUSED_NORMAL);
-const int kBlueFocusedHoveredImages[] = IMAGE_GRID(
-    IDR_BLUE_BUTTON_FOCUSED_HOVER);
-const int kBlueFocusedPressedImages[] = IMAGE_GRID(
-    IDR_BLUE_BUTTON_FOCUSED_PRESSED);
+// Insets for the unified blue_button images. This assumes that the images
+// are of a 9 grid, of 5x5 size each.
+const int kBlueButtonInsets = 5;
 
 // Default text and shadow colors for the blue button.
 const SkColor kBlueButtonTextColor = SK_ColorWHITE;
@@ -39,23 +32,37 @@ BlueButton::BlueButton(ButtonListener* listener, const string16& text)
   // Inherit STYLE_BUTTON insets, minimum size, alignment, etc.
   SetStyle(STYLE_BUTTON);
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::Insets insets(kBlueButtonInsets,
+                           kBlueButtonInsets,
+                           kBlueButtonInsets,
+                           kBlueButtonInsets);
+
   LabelButtonBorder* button_border = static_cast<LabelButtonBorder*>(border());
   button_border->SetPainter(false, STATE_NORMAL,
-      Painter::CreateImageGridPainter(kBlueNormalImages));
+      Painter::CreateImagePainter(
+          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_NORMAL), insets));
   button_border->SetPainter(false, STATE_HOVERED,
-      Painter::CreateImageGridPainter(kBlueHoveredImages));
+      Painter::CreateImagePainter(
+          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_HOVER), insets));
   button_border->SetPainter(false, STATE_PRESSED,
-      Painter::CreateImageGridPainter(kBluePressedImages));
+      Painter::CreateImagePainter(
+          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_PRESSED), insets));
   button_border->SetPainter(false, STATE_DISABLED,
-      Painter::CreateImageGridPainter(kBlueDisabledImages));
+      Painter::CreateImagePainter(
+          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_DISABLED), insets));
   button_border->SetPainter(true, STATE_NORMAL,
-      Painter::CreateImageGridPainter(kBlueFocusedNormalImages));
+      Painter::CreateImagePainter(
+          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_NORMAL), insets));
   button_border->SetPainter(true, STATE_HOVERED,
-      Painter::CreateImageGridPainter(kBlueFocusedHoveredImages));
+      Painter::CreateImagePainter(
+          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_HOVER), insets));
   button_border->SetPainter(true, STATE_PRESSED,
-      Painter::CreateImageGridPainter(kBlueFocusedPressedImages));
+      Painter::CreateImagePainter(
+          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_PRESSED), insets));
   button_border->SetPainter(true, STATE_DISABLED,
-      Painter::CreateImageGridPainter(kBlueDisabledImages));
+      Painter::CreateImagePainter(
+          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_DISABLED), insets));
 
   if (!gfx::IsInvertedColorScheme()) {
     for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state)

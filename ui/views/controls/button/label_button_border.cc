@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "grit/ui_resources.h"
 #include "ui/base/animation/animation.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/sys_color_change_listener.h"
@@ -18,14 +19,9 @@ namespace views {
 
 namespace {
 
-// The button image IDs and focused images IDs used in lieu of a focus border.
-const int kNormalImages[] = IMAGE_GRID(IDR_BUTTON_NORMAL);
-const int kHoveredImages[] = IMAGE_GRID(IDR_BUTTON_HOVER);
-const int kPressedImages[] = IMAGE_GRID(IDR_BUTTON_PRESSED);
-const int kDisabledImages[] = IMAGE_GRID(IDR_BUTTON_DISABLED);
-const int kFocusedNormalImages[] = IMAGE_GRID(IDR_BUTTON_FOCUSED_NORMAL);
-const int kFocusedHoveredImages[] = IMAGE_GRID(IDR_BUTTON_FOCUSED_HOVER);
-const int kFocusedPressedImages[] = IMAGE_GRID(IDR_BUTTON_FOCUSED_PRESSED);
+// Insets for the unified button images. This assumes that the images
+// are of a 9 grid, of 5x5 size each.
+const int kButtonInsets = 5;
 
 // The text-button hot and pushed image IDs; normal is unadorned by default.
 const int kTextHoveredImages[] = IMAGE_GRID(IDR_TEXTBUTTON_HOVER);
@@ -67,24 +63,38 @@ void PaintHelper(LabelButtonBorder* border,
 
 LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style)
     : style_(style) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::Insets insets(kButtonInsets,
+                           kButtonInsets,
+                           kButtonInsets,
+                           kButtonInsets);
+
   if (style == Button::STYLE_BUTTON) {
     set_insets(gfx::Insets(8, 13, 8, 13));
     SetPainter(false, Button::STATE_NORMAL,
-               Painter::CreateImageGridPainter(kNormalImages));
+               Painter::CreateImagePainter(
+                   *rb.GetImageSkiaNamed(IDR_BUTTON_NORMAL), insets));
     SetPainter(false, Button::STATE_HOVERED,
-               Painter::CreateImageGridPainter(kHoveredImages));
+               Painter::CreateImagePainter(
+                   *rb.GetImageSkiaNamed(IDR_BUTTON_HOVER), insets));
     SetPainter(false, Button::STATE_PRESSED,
-               Painter::CreateImageGridPainter(kPressedImages));
+               Painter::CreateImagePainter(
+                   *rb.GetImageSkiaNamed(IDR_BUTTON_PRESSED), insets));
     SetPainter(false, Button::STATE_DISABLED,
-               Painter::CreateImageGridPainter(kDisabledImages));
+               Painter::CreateImagePainter(
+                   *rb.GetImageSkiaNamed(IDR_BUTTON_DISABLED), insets));
     SetPainter(true, Button::STATE_NORMAL,
-               Painter::CreateImageGridPainter(kFocusedNormalImages));
+               Painter::CreateImagePainter(
+                   *rb.GetImageSkiaNamed(IDR_BUTTON_FOCUSED_NORMAL), insets));
     SetPainter(true, Button::STATE_HOVERED,
-               Painter::CreateImageGridPainter(kFocusedHoveredImages));
+               Painter::CreateImagePainter(
+                   *rb.GetImageSkiaNamed(IDR_BUTTON_FOCUSED_HOVER), insets));
     SetPainter(true, Button::STATE_PRESSED,
-               Painter::CreateImageGridPainter(kFocusedPressedImages));
+               Painter::CreateImagePainter(
+                   *rb.GetImageSkiaNamed(IDR_BUTTON_FOCUSED_PRESSED), insets));
     SetPainter(true, Button::STATE_DISABLED,
-               Painter::CreateImageGridPainter(kDisabledImages));
+               Painter::CreateImagePainter(
+                   *rb.GetImageSkiaNamed(IDR_BUTTON_DISABLED), insets));
   } else if (style == Button::STYLE_TEXTBUTTON) {
     set_insets(gfx::Insets(5, 6, 5, 6));
     SetPainter(false, Button::STATE_HOVERED,
