@@ -14,7 +14,6 @@
 #include "ash/system/date/tray_date.h"
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
-#include "ash/system/locale/tray_locale.h"
 #include "ash/system/logout_button/tray_logout_button.h"
 #include "ash/system/monitor/tray_monitor.h"
 #include "ash/system/session_length_limit/tray_session_length_limit.h"
@@ -179,7 +178,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new internal::TrayBluetooth(this));
 #endif
   AddTrayItem(new internal::TrayDrive(this));
-  AddTrayItem(new internal::TrayLocale(this));
 #if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayDisplay(this));
   AddTrayItem(new internal::ScreenCaptureTrayItem(this));

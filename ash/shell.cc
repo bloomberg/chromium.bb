@@ -34,6 +34,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/locale/locale_notification_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -278,6 +279,8 @@ Shell::~Shell() {
   // Destroy SystemTrayDelegate before destroying the status area(s).
   system_tray_delegate_->Shutdown();
   system_tray_delegate_.reset();
+
+  locale_notification_controller_.reset();
 
   // Destroy all child windows including widgets.
   display_controller_->CloseChildWindows();
@@ -606,6 +609,9 @@ void Shell::Init() {
       new internal::RootWindowController(root_window);
   InitRootWindowController(root_window_controller,
                            delegate_->IsFirstRunAfterBoot());
+
+  locale_notification_controller_.reset(
+      new internal::LocaleNotificationController);
 
   // Initialize system_tray_delegate_ after StatusAreaWidget is created.
   system_tray_delegate_->Initialize();

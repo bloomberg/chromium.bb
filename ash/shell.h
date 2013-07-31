@@ -111,6 +111,7 @@ class EventClientImpl;
 class EventRewriterEventFilter;
 class EventTransformationHandler;
 class FocusCycler;
+class LocaleNotificationController;
 class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
 class OverlayEventFilter;
@@ -582,6 +583,9 @@ class ASH_EXPORT Shell
   scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
 
   scoped_ptr<internal::DisplayManager> display_manager_;
+
+  scoped_ptr<internal::LocaleNotificationController>
+      locale_notification_controller_;
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   // Controls video output device state.
