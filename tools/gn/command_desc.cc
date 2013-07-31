@@ -103,7 +103,7 @@ int RunDescCommand(const std::vector<std::string>& args) {
   if (args.size() != 1) {
     Err(Location(), "You're holding it wrong.",
         "Usage: \"gn desc <target_name>\"").PrintToStdout();
-    return NULL;
+    return 1;
   }
 
   const Target* target = GetTargetForDesc(args);
@@ -158,7 +158,7 @@ int RunDepsCommand(const std::vector<std::string>& args) {
   if (args.size() != 1) {
     Err(Location(), "You're holding it wrong.",
         "Usage: \"gn deps <target_name>\"").PrintToStdout();
-    return NULL;
+    return 1;
   }
 
   const Target* target = GetTargetForDesc(args);
@@ -187,7 +187,7 @@ int RunTreeCommand(const std::vector<std::string>& args) {
   if (args.size() != 1) {
     Err(Location(), "You're holding it wrong.",
         "Usage: \"gn tree <target_name>\"").PrintToStdout();
-    return NULL;
+    return 1;
   }
 
   const Target* target = GetTargetForDesc(args);
