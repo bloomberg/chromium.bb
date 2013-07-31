@@ -259,7 +259,7 @@ void NewTabUI::OnShowBookmarkBarChanged() {
 void NewTabUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if !defined(OS_ANDROID)
-  AppLauncherHandler::RegisterProfilePrefs(registry);
+  CoreAppLauncherHandler::RegisterProfilePrefs(registry);
   NewTabPageHandler::RegisterProfilePrefs(registry);
   if (NewTabUI::IsDiscoveryInNTPEnabled())
     SuggestionsHandler::RegisterProfilePrefs(registry);

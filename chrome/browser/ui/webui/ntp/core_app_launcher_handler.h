@@ -14,6 +14,14 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+namespace extensions {
+class Extension;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 class Profile;
 
 class CoreAppLauncherHandler : public content::WebUIMessageHandler {
@@ -24,6 +32,18 @@ class CoreAppLauncherHandler : public content::WebUIMessageHandler {
   // Records the given type of app launch for UMA.
   static void RecordAppLaunchType(extension_misc::AppLaunchBucket bucket,
                                   extensions::Manifest::Type app_type);
+
+  // Register app launcher preferences.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Records an app launch from the search view of the app list.
+  static void RecordAppListSearchLaunch(const extensions::Extension* extension);
+
+  // Records an app launch from the main view of the app list.
+  static void RecordAppListMainLaunch(const extensions::Extension* extension);
+
+  // Records a web store launch in the appropriate histograms.
+  static void RecordWebStoreLaunch();
 
  private:
   // Callback for the "recordAppLaunchByUrl" message. Takes an escaped URL and

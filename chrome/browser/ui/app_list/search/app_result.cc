@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
@@ -66,7 +66,7 @@ void AppResult::Open(int event_flags) {
   if (!extension)
     return;
 
-  AppLauncherHandler::RecordAppListSearchLaunch(extension);
+  CoreAppLauncherHandler::RecordAppListSearchLaunch(extension);
   content::RecordAction(
       content::UserMetricsAction("AppList_ClickOnAppFromSearch"));
 

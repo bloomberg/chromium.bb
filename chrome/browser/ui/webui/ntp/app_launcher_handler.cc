@@ -47,7 +47,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_application_info.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/favicon_url.h"
@@ -491,7 +490,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     CoreAppLauncherHandler::RecordAppLaunchType(launch_bucket,
                                                 extension->GetType());
   } else {
-    RecordWebStoreLaunch();
+    CoreAppLauncherHandler::RecordWebStoreLaunch();
   }
 
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB ||
@@ -749,44 +748,8 @@ void AppLauncherHandler::OnLocalStatePreferenceChanged() {
           apps::prefs::kShowAppLauncherPromo)));
 }
 
-// static
-void AppLauncherHandler::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kNtpAppPageNames,
-                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-}
-
 void AppLauncherHandler::CleanupAfterUninstall() {
   extension_id_prompting_.clear();
-}
-
-// static
-void AppLauncherHandler::RecordAppListSearchLaunch(const Extension* extension) {
-  extension_misc::AppLaunchBucket bucket =
-      extension_misc::APP_LAUNCH_APP_LIST_SEARCH;
-  if (extension->id() == extension_misc::kWebStoreAppId)
-    bucket = extension_misc::APP_LAUNCH_APP_LIST_SEARCH_WEBSTORE;
-  else if (extension->id() == extension_misc::kChromeAppId)
-    bucket = extension_misc::APP_LAUNCH_APP_LIST_SEARCH_CHROME;
-  CoreAppLauncherHandler::RecordAppLaunchType(bucket, extension->GetType());
-}
-
-// static
-void AppLauncherHandler::RecordAppListMainLaunch(const Extension* extension) {
-  extension_misc::AppLaunchBucket bucket =
-      extension_misc::APP_LAUNCH_APP_LIST_MAIN;
-  if (extension->id() == extension_misc::kWebStoreAppId)
-    bucket = extension_misc::APP_LAUNCH_APP_LIST_MAIN_WEBSTORE;
-  else if (extension->id() == extension_misc::kChromeAppId)
-    bucket = extension_misc::APP_LAUNCH_APP_LIST_MAIN_CHROME;
-  CoreAppLauncherHandler::RecordAppLaunchType(bucket, extension->GetType());
-}
-
-// static
-void AppLauncherHandler::RecordWebStoreLaunch() {
-  CoreAppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_NTP_WEBSTORE,
-      extensions::Manifest::TYPE_HOSTED_APP);
 }
 
 void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {

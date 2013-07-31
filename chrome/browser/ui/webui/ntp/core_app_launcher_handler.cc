@@ -9,6 +9,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/web_ui.h"
 #include "net/base/escape.h"
 
@@ -35,6 +38,43 @@ void CoreAppLauncherHandler::RecordAppLaunchType(
                               bucket,
                               extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
   }
+}
+
+// static
+void CoreAppLauncherHandler::RecordAppListSearchLaunch(
+    const extensions::Extension* extension) {
+  extension_misc::AppLaunchBucket bucket =
+      extension_misc::APP_LAUNCH_APP_LIST_SEARCH;
+  if (extension->id() == extension_misc::kWebStoreAppId)
+    bucket = extension_misc::APP_LAUNCH_APP_LIST_SEARCH_WEBSTORE;
+  else if (extension->id() == extension_misc::kChromeAppId)
+    bucket = extension_misc::APP_LAUNCH_APP_LIST_SEARCH_CHROME;
+  RecordAppLaunchType(bucket, extension->GetType());
+}
+
+// static
+void CoreAppLauncherHandler::RecordAppListMainLaunch(
+    const extensions::Extension* extension) {
+  extension_misc::AppLaunchBucket bucket =
+      extension_misc::APP_LAUNCH_APP_LIST_MAIN;
+  if (extension->id() == extension_misc::kWebStoreAppId)
+    bucket = extension_misc::APP_LAUNCH_APP_LIST_MAIN_WEBSTORE;
+  else if (extension->id() == extension_misc::kChromeAppId)
+    bucket = extension_misc::APP_LAUNCH_APP_LIST_MAIN_CHROME;
+  RecordAppLaunchType(bucket, extension->GetType());
+}
+
+// static
+void CoreAppLauncherHandler::RecordWebStoreLaunch() {
+  RecordAppLaunchType(extension_misc::APP_LAUNCH_NTP_WEBSTORE,
+                      extensions::Manifest::TYPE_HOSTED_APP);
+}
+
+// static
+void CoreAppLauncherHandler::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kNtpAppPageNames,
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void CoreAppLauncherHandler::HandleRecordAppLaunchByUrl(

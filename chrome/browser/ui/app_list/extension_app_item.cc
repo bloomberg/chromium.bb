@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -258,7 +258,7 @@ void ExtensionAppItem::Activate(int event_flags) {
   if (RunExtensionEnableFlow())
     return;
 
-  AppLauncherHandler::RecordAppListMainLaunch(extension);
+  CoreAppLauncherHandler::RecordAppListMainLaunch(extension);
   controller_->ActivateApp(profile_, extension, event_flags);
 }
 

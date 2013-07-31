@@ -31,10 +31,6 @@ namespace chrome {
 struct FaviconImageResult;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler : public content::WebUIMessageHandler,
                            public ExtensionUninstallDialog::Delegate,
@@ -110,15 +106,6 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   void StopShowingAppLauncherPromo(const base::ListValue* args);
   void OnLearnMore(const base::ListValue* args);
 
-  // Register app launcher preferences.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  // Records an app launch from the search view of the app list.
-  static void RecordAppListSearchLaunch(const extensions::Extension* extension);
-
-  // Records an app launch from the main view of the app list.
-  static void RecordAppListMainLaunch(const extensions::Extension* extension);
-
  private:
   struct AppInstallInfo {
     AppInstallInfo();
@@ -132,9 +119,6 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
 
   // Reset some instance flags we use to track the currently uninstalling app.
   void CleanupAfterUninstall();
-
-  // Records a web store launch in the appropriate histograms.
-  static void RecordWebStoreLaunch();
 
   // Prompts the user to re-enable the app for |extension_id|.
   void PromptToEnableApp(const std::string& extension_id);
