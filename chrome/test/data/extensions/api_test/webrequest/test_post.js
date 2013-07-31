@@ -93,7 +93,7 @@ function sendPost(formFile, parseableForm) {
             requestBody: parseableForm ? {
               formData: formData
             } : {
-              raw: [{bytes: {byteLength: 158}}]
+              raw: [{bytes: {}}] // ArrayBuffer
             }
           }
         },
