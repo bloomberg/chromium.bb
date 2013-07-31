@@ -168,7 +168,7 @@ void MoveOperation::RenameLocally(const base::FilePath& src_path,
                                   google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const FileError error = util::GDataToFileError(status);
+  const FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
     callback.Run(error, base::FilePath());
     return;
@@ -198,7 +198,7 @@ void MoveOperation::AddToDirectoryLocally(const base::FilePath& src_path,
                                           google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const FileError error = util::GDataToFileError(status);
+  const FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
     callback.Run(error, base::FilePath());
     return;
@@ -231,7 +231,7 @@ void MoveOperation::RemoveFromDirectoryCompleted(
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  callback.Run(util::GDataToFileError(status));
+  callback.Run(GDataToFileError(status));
 }
 
 }  // namespace file_system

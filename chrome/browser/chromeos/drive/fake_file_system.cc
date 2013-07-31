@@ -271,7 +271,7 @@ void FakeFileSystem::GetFileContentByPathAfterGetWapiResourceEntry(
     scoped_ptr<google_apis::ResourceEntry> gdata_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FileError error = util::GDataToFileError(gdata_error);
+  FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
     completion_callback.Run(error);
     return;
@@ -309,7 +309,7 @@ void FakeFileSystem::GetFileContentByPathAfterDownloadFile(
     google_apis::GDataErrorCode gdata_error,
     const base::FilePath& temp_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback.Run(util::GDataToFileError(gdata_error));
+  completion_callback.Run(GDataToFileError(gdata_error));
 }
 
 // Implementation of GetResourceEntryByPath.
@@ -319,7 +319,7 @@ void FakeFileSystem::GetResourceEntryByPathAfterGetAboutResource(
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FileError error = util::GDataToFileError(gdata_error);
+  FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
     callback.Run(error, scoped_ptr<ResourceEntry>());
     return;
@@ -360,7 +360,7 @@ void FakeFileSystem::GetResourceEntryByPathAfterGetResourceList(
     scoped_ptr<google_apis::ResourceList> resource_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FileError error = util::GDataToFileError(gdata_error);
+  FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
     callback.Run(error, scoped_ptr<ResourceEntry>());
     return;

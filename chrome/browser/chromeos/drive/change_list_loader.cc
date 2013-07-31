@@ -249,10 +249,10 @@ void ChangeListLoader::LoadFromServerIfNeededAfterGetAbout(
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(util::GDataToFileError(status) == FILE_ERROR_OK,
+  DCHECK_EQ(GDataToFileError(status) == FILE_ERROR_OK,
             about_resource.get() != NULL);
 
-  if (util::GDataToFileError(status) == FILE_ERROR_OK) {
+  if (GDataToFileError(status) == FILE_ERROR_OK) {
     DCHECK(about_resource);
     last_known_remote_changestamp_ = about_resource->largest_change_id();
   }
@@ -364,7 +364,7 @@ void ChangeListLoader::OnGetChangeList(
                         base::TimeTicks::Now() - start_time);
   }
 
-  FileError error = util::GDataToFileError(status);
+  FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
     callback.Run(ScopedVector<ChangeList>(), error);
     return;
@@ -548,7 +548,7 @@ void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
   DCHECK_EQ(directory_fetch_info.resource_id(),
             util::kDriveGrandRootSpecialResourceId);
 
-  FileError error = util::GDataToFileError(status);
+  FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;

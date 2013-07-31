@@ -164,7 +164,7 @@ void UpdateOperation::UpdateFileAfterUpload(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  FileError drive_error = util::GDataToFileError(error);
+  FileError drive_error = GDataToFileError(error);
   if (drive_error != FILE_ERROR_OK) {
     callback.Run(drive_error);
     return;

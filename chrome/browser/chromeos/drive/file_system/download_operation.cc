@@ -190,7 +190,7 @@ FileError UpdateLocalStateForDownloadFile(
     base::FilePath* cache_file_path) {
   DCHECK(cache);
 
-  FileError error = util::GDataToFileError(gdata_error);
+  FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
     base::DeleteFile(downloaded_file_path, false /* recursive */);
     return error;

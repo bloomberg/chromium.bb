@@ -1038,7 +1038,7 @@ void JobScheduler::NotifyJobDone(const JobInfo& job_info,
                                  google_apis::GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(JobListObserver, observer_list_,
-                    OnJobDone(job_info, util::GDataToFileError(error)));
+                    OnJobDone(job_info, GDataToFileError(error)));
 }
 
 void JobScheduler::NotifyJobUpdated(const JobInfo& job_info) {

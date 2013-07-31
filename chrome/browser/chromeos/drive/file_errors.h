@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/platform_file.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace drive {
 
@@ -38,6 +39,9 @@ std::string FileErrorToString(FileError error);
 
 // Returns a PlatformFileError that corresponds to the FileError provided.
 base::PlatformFileError FileErrorToPlatformError(FileError error);
+
+// Converts GData error code into Drive file error code.
+FileError GDataToFileError(google_apis::GDataErrorCode status);
 
 }  // namespace drive
 

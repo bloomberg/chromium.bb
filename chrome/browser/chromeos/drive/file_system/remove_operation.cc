@@ -122,7 +122,7 @@ void RemoveOperation::RemoveAfterDeleteResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  FileError error = util::GDataToFileError(status);
+  FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;

@@ -115,7 +115,7 @@ void SearchOperation::SearchAfterGetResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  FileError error = util::GDataToFileError(gdata_error);
+  FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
     callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
     return;

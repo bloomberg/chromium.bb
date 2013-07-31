@@ -361,28 +361,6 @@ void EnsureDirectoryExists(Profile* profile,
   }
 }
 
-FileError GDataToFileError(google_apis::GDataErrorCode status) {
-  switch (status) {
-    case google_apis::HTTP_SUCCESS:
-    case google_apis::HTTP_CREATED:
-    case google_apis::HTTP_NO_CONTENT:
-      return FILE_ERROR_OK;
-    case google_apis::HTTP_UNAUTHORIZED:
-    case google_apis::HTTP_FORBIDDEN:
-      return FILE_ERROR_ACCESS_DENIED;
-    case google_apis::HTTP_NOT_FOUND:
-      return FILE_ERROR_NOT_FOUND;
-    case google_apis::HTTP_NOT_IMPLEMENTED:
-      return FILE_ERROR_INVALID_OPERATION;
-    case google_apis::GDATA_CANCELLED:
-      return FILE_ERROR_ABORT;
-    case google_apis::GDATA_NO_CONNECTION:
-      return FILE_ERROR_NO_CONNECTION;
-    default:
-      return FILE_ERROR_FAILED;
-  }
-}
-
 void ConvertResourceEntryToPlatformFileInfo(
     const PlatformFileInfoProto& entry,
     base::PlatformFileInfo* file_info) {

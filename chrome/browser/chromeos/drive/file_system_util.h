@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -181,9 +180,6 @@ void PrepareWritableFileAndRun(Profile* profile,
 void EnsureDirectoryExists(Profile* profile,
                            const base::FilePath& directory,
                            const FileOperationCallback& callback);
-
-// Converts GData error code into file platform error code.
-FileError GDataToFileError(google_apis::GDataErrorCode status);
 
 // Converts the resource entry to the platform file.
 void ConvertResourceEntryToPlatformFileInfo(

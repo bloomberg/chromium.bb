@@ -147,7 +147,7 @@ void DriveAppRegistry::UpdateAfterGetAppList(
     scoped_ptr<google_apis::AppList> app_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FileError error = util::GDataToFileError(gdata_error);
+  FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
     // Failed to fetch the data from the server. We can do nothing here.
     return;
