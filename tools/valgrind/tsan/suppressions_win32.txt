@@ -35,22 +35,6 @@
 }
 
 {
-  bug_146724_benign_a
-  ThreadSanitizer:Race
-  fun:_flsbuf
-  fun:write_char
-  fun:_output_l
-  fun:vprintf_helper
-  fun:vprintf
-}
-{
-  bug_146724_benign_b
-  ThreadSanitizer:Race
-  fun:_getstream
-  fun:_wfsopen
-}
-
-{
   bug_158099_mmdevice_endpoint_shutdown_too_fast
   ThreadSanitizer:Race
   fun:GetLocalIdFromEndpointId
