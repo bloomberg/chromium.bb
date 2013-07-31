@@ -284,6 +284,22 @@ void NaClProcessHost::Launch(
   reply_msg_ = reply_msg;
   manifest_path_ = manifest_path;
 
+  const CommandLine* cmd = CommandLine::ForCurrentProcess();
+#if defined(OS_WIN)
+  if (cmd->HasSwitch(switches::kEnableNaClDebug) &&
+      !cmd->HasSwitch(switches::kNoSandbox)) {
+    // We don't switch off sandbox automatically for security reasons.
+    SendErrorToRenderer("NaCl's GDB debug stub requires --no-sandbox flag"
+                        " on Windows. See crbug.com/265624.");
+    delete this;
+    return;
+  }
+#endif
+  if (cmd->HasSwitch(switches::kNaClGdb) &&
+      !cmd->HasSwitch(switches::kEnableNaClDebug)) {
+    LOG(WARNING) << "--nacl-gdb flag requires --enable-nacl-debug flag";
+  }
+
   // Start getting the IRT open asynchronously while we launch the NaCl process.
   // We'll make sure this actually finished in StartWithLaunchedProcess, below.
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
