@@ -25,7 +25,7 @@ class XPrivetToken {
   std::string GenerateXToken();
 
   // Checks
-  bool CheckValidXToken(const std::string& token_encoded) const;
+  bool CheckValidXToken(const std::string& token) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(XPrivetTokenTest, Generation);

@@ -23,16 +23,17 @@ TEST(XPrivetTokenTest, Generation) {
 
   XPrivetToken xtoken(secret, base::Time::FromTimeT(gen_time));
 
-  std::string issue_time_str = base::StringPrintf("%"PRIu64, issue_time);
+  std::string issue_time_str = base::StringPrintf("%" PRIu64, issue_time);
   std::string sha1_val = base::SHA1HashString(secret + ":" + issue_time_str);
 
-  EXPECT_STRCASEEQ("2216828f9eefc3931c1b9a110dcca3dbec23571d",
+  ASSERT_STRCASEEQ("2216828f9eefc3931c1b9a110dcca3dbec23571d",
                    base::HexEncode(sha1_val.data(), sha1_val.size()).c_str());
 
   std::string base64_val;
-  base::Base64Encode(sha1_val + ":" + issue_time_str, &base64_val);
+  base::Base64Encode(sha1_val, &base64_val);
+  std::string token = base64_val + ":" + issue_time_str;
 
-  EXPECT_EQ(base64_val, xtoken.GenerateXTokenWithTime(issue_time));
+  ASSERT_EQ(token, xtoken.GenerateXTokenWithTime(issue_time));
 
   EXPECT_NE(xtoken.GenerateXTokenWithTime(issue_time),
             xtoken.GenerateXTokenWithTime(issue_time + 1));

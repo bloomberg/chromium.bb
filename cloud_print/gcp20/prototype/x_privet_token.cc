@@ -16,6 +16,7 @@ namespace {
 
 const char kXPrivetTokenDelimeter = ':';
 const uint64 kTimeExpiration = 24*60*60;  // in seconds
+const uint64 kTimeSecretRefresh = 24*60*60;  // in seconds
 
 }  // namespace
 
@@ -33,17 +34,13 @@ XPrivetToken::XPrivetToken(const std::string& secret,
 }
 
 std::string XPrivetToken::GenerateXToken() {
-  if (Time::Now() > last_gen_time_ + TimeDelta::FromSeconds(kTimeExpiration))
+  if (Time::Now() > last_gen_time_ + TimeDelta::FromSeconds(kTimeSecretRefresh))
     UpdateSecret();
 
   return GenerateXTokenWithTime(static_cast<uint64>(Time::Now().ToTimeT()));
 }
 
-bool XPrivetToken::CheckValidXToken(const std::string& token_encoded) const {
-  std::string token;
-  if (!base::Base64Decode(token_encoded, &token))
-    return false;
-
+bool XPrivetToken::CheckValidXToken(const std::string& token) const {
   size_t delimeter_pos = token.find(kXPrivetTokenDelimeter);
   if (delimeter_pos == std::string::npos)
     return false;
@@ -53,7 +50,7 @@ bool XPrivetToken::CheckValidXToken(const std::string& token_encoded) const {
   if (!base::StringToUint64(issue_time_str, &issue_time))
     return false;
 
-  if (GenerateXTokenWithTime(issue_time) != token_encoded)
+  if (GenerateXTokenWithTime(issue_time) != token)
     return false;
 
   return Time::FromTimeT(issue_time) - last_gen_time_ <
@@ -66,8 +63,8 @@ std::string XPrivetToken::GenerateXTokenWithTime(uint64 issue_time) const {
   std::string hash = base::SHA1HashString(secret_ +
                                           kXPrivetTokenDelimeter +
                                           issue_time_str);
-  base::Base64Encode(hash + kXPrivetTokenDelimeter + issue_time_str, &result);
-  return result;
+  base::Base64Encode(hash, &result);
+  return result + kXPrivetTokenDelimeter + issue_time_str;
 }
 
 void XPrivetToken::UpdateSecret() {
