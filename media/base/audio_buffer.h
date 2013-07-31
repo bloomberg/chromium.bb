@@ -37,6 +37,12 @@ class MEDIA_EXPORT AudioBuffer
                                              const base::TimeDelta timestamp,
                                              const base::TimeDelta duration);
 
+  // Create an AudioBuffer with |frame_count| frames. Buffer is allocated, but
+  // not initialized. Timestamp and duration are set to kNoTimestamp().
+  static scoped_refptr<AudioBuffer> CreateBuffer(SampleFormat sample_format,
+                                                 int channel_count,
+                                                 int frame_count);
+
   // Create an empty AudioBuffer with |frame_count| frames.
   static scoped_refptr<AudioBuffer> CreateEmptyBuffer(
       int channel_count,
@@ -60,9 +66,14 @@ class MEDIA_EXPORT AudioBuffer
                   AudioBus* dest);
 
   // Trim an AudioBuffer by removing |frames_to_trim| frames from the start.
+  // Timestamp and duration are adjusted to reflect the fewer frames.
   // Note that repeated calls to TrimStart() may result in timestamp() and
   // duration() being off by a few microseconds due to rounding issues.
   void TrimStart(int frames_to_trim);
+
+  // Trim an AudioBuffer by removing |frames_to_trim| frames from the end.
+  // Duration is adjusted to reflect the fewer frames.
+  void TrimEnd(int frames_to_trim);
 
   // Return the number of channels.
   int channel_count() const { return channel_count_; }
@@ -83,16 +94,22 @@ class MEDIA_EXPORT AudioBuffer
   // If there's no data in this buffer, it represents end of stream.
   bool end_of_stream() const { return end_of_stream_; }
 
+  // Access to the raw buffer for ffmpeg to write directly to. Data for planar
+  // data is grouped by channel.
+  uint8* writable_data() { return data_.get(); }
+
  private:
   friend class base::RefCountedThreadSafe<AudioBuffer>;
 
   // Allocates aligned contiguous buffer to hold all channel data (1 block for
   // interleaved data, |channel_count| blocks for planar data), copies
-  // [data,data+data_size) to the allocated buffer(s). If |data| is null an end
-  // of stream buffer is created.
+  // [data,data+data_size) to the allocated buffer(s). If |data| is null, no
+  // data is copied. If |create_buffer| is false, no data buffer is created (or
+  // copied to).
   AudioBuffer(SampleFormat sample_format,
               int channel_count,
               int frame_count,
+              bool create_buffer,
               const uint8* const* data,
               const base::TimeDelta timestamp,
               const base::TimeDelta duration);
@@ -101,7 +118,6 @@ class MEDIA_EXPORT AudioBuffer
 
   const SampleFormat sample_format_;
   const int channel_count_;
-  const int frame_count_;
   int adjusted_frame_count_;
   int trim_start_;
   const bool end_of_stream_;

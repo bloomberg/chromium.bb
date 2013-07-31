@@ -43,6 +43,11 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   virtual int samples_per_second() OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
 
+  // Callback called from within FFmpeg to allocate a buffer based on
+  // the dimensions of |codec_context|. See AVCodecContext.get_buffer2
+  // documentation inside FFmpeg.
+  int GetAudioBuffer(AVCodecContext* codec, AVFrame* frame, int flags);
+
  private:
   // Reads from the demuxer stream with corresponding callback method.
   void ReadFromDemuxerStream();
@@ -64,7 +69,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   AVCodecContext* codec_context_;
 
   // Decoded audio format.
-  int bits_per_channel_;
+  int bytes_per_channel_;
   ChannelLayout channel_layout_;
   int channels_;
   int samples_per_second_;

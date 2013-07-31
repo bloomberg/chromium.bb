@@ -256,7 +256,7 @@ TEST(AudioBufferTest, Trim) {
   buffer->ReadFrames(20, 0, 0, bus.get());
   VerifyResult(bus->channel(0), 20, 1.0f, 1.0f);
 
-  // Trim off 10 frames.
+  // Trim off 10 frames from the start.
   buffer->TrimStart(10);
   EXPECT_EQ(buffer->frame_count(), frames - 10);
   EXPECT_EQ(buffer->timestamp(), start_time + base::TimeDelta::FromSeconds(10));
@@ -264,13 +264,27 @@ TEST(AudioBufferTest, Trim) {
   buffer->ReadFrames(20, 0, 0, bus.get());
   VerifyResult(bus->channel(0), 20, 11.0f, 1.0f);
 
-  // Trim off 80 more.
-  buffer->TrimStart(80);
-  EXPECT_EQ(buffer->frame_count(), frames - 90);
-  EXPECT_EQ(buffer->timestamp(), start_time + base::TimeDelta::FromSeconds(90));
-  EXPECT_EQ(buffer->duration(), base::TimeDelta::FromSeconds(10));
+  // Trim off 10 frames from the end.
+  buffer->TrimEnd(10);
+  EXPECT_EQ(buffer->frame_count(), frames - 20);
+  EXPECT_EQ(buffer->timestamp(), start_time + base::TimeDelta::FromSeconds(10));
+  EXPECT_EQ(buffer->duration(), base::TimeDelta::FromSeconds(80));
+  buffer->ReadFrames(20, 0, 0, bus.get());
+  VerifyResult(bus->channel(0), 20, 11.0f, 1.0f);
+
+  // Trim off 50 more from the start.
+  buffer->TrimStart(50);
+  EXPECT_EQ(buffer->frame_count(), frames - 70);
+  EXPECT_EQ(buffer->timestamp(), start_time + base::TimeDelta::FromSeconds(60));
+  EXPECT_EQ(buffer->duration(), base::TimeDelta::FromSeconds(30));
   buffer->ReadFrames(10, 0, 0, bus.get());
-  VerifyResult(bus->channel(0), 10, 91.0f, 1.0f);
+  VerifyResult(bus->channel(0), 10, 61.0f, 1.0f);
+
+  // Trim off the last 30 frames.
+  buffer->TrimEnd(30);
+  EXPECT_EQ(buffer->frame_count(), 0);
+  EXPECT_EQ(buffer->timestamp(), start_time + base::TimeDelta::FromSeconds(60));
+  EXPECT_EQ(buffer->duration(), base::TimeDelta::FromSeconds(0));
 }
 
 }  // namespace media
