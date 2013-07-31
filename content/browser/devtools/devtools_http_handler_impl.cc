@@ -542,7 +542,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     std::sort(page_list.begin(), page_list.end(), TimeComparator);
 
     base::ListValue* target_list = new base::ListValue();
-    std::string host = info.headers["Host"];
+    std::string host = info.headers["host"];
     for (PageList::iterator i = page_list.begin(); i != page_list.end(); ++i)
       target_list->Append(SerializePageInfo(i->first, host));
 
@@ -570,7 +570,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
                "Could not create new page");
       return;
     }
-    std::string host = info.headers["Host"];
+    std::string host = info.headers["host"];
     scoped_ptr<base::DictionaryValue> dictionary(SerializePageInfo(rvh, host));
     SendJson(connection_id, net::HTTP_OK, dictionary.get(), std::string());
     return;

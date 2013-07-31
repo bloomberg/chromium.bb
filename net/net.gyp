@@ -1753,6 +1753,7 @@
         'quic/quic_utils_test.cc',
         'quic/reliable_quic_stream_test.cc',
         'server/http_server_response_info_unittest.cc',
+        'server/http_server_unittest.cc',
         'socket/buffered_write_stream_socket_unittest.cc',
         'socket/client_socket_pool_base_unittest.cc',
         'socket/deterministic_socket_data_unittest.cc',

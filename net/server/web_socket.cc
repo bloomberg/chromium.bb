@@ -52,8 +52,8 @@ class WebSocketHixie76 : public net::WebSocket {
   }
 
   virtual void Accept(const HttpServerRequestInfo& request) OVERRIDE {
-    std::string key1 = request.GetHeaderValue("Sec-WebSocket-Key1");
-    std::string key2 = request.GetHeaderValue("Sec-WebSocket-Key2");
+    std::string key1 = request.GetHeaderValue("sec-websocket-key1");
+    std::string key2 = request.GetHeaderValue("sec-websocket-key2");
 
     uint32 fp1 = WebSocketKeyFingerprint(key1);
     uint32 fp2 = WebSocketKeyFingerprint(key2);
@@ -66,8 +66,8 @@ class WebSocketHixie76 : public net::WebSocket {
     base::MD5Digest digest;
     base::MD5Sum(data, 16, &digest);
 
-    std::string origin = request.GetHeaderValue("Origin");
-    std::string host = request.GetHeaderValue("Host");
+    std::string origin = request.GetHeaderValue("origin");
+    std::string host = request.GetHeaderValue("host");
     std::string location = "ws://" + host + request.path;
     connection_->Send(base::StringPrintf(
         "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
@@ -112,8 +112,8 @@ class WebSocketHixie76 : public net::WebSocket {
   WebSocketHixie76(HttpConnection* connection,
                    const HttpServerRequestInfo& request,
                    size_t* pos) : WebSocket(connection) {
-    std::string key1 = request.GetHeaderValue("Sec-WebSocket-Key1");
-    std::string key2 = request.GetHeaderValue("Sec-WebSocket-Key2");
+    std::string key1 = request.GetHeaderValue("sec-websocket-key1");
+    std::string key2 = request.GetHeaderValue("sec-websocket-key2");
 
     if (key1.empty()) {
       connection->Send(HttpServerResponseInfo::CreateFor500(
@@ -172,11 +172,11 @@ class WebSocketHybi17 : public WebSocket {
   static WebSocket* Create(HttpConnection* connection,
                            const HttpServerRequestInfo& request,
                            size_t* pos) {
-    std::string version = request.GetHeaderValue("Sec-WebSocket-Version");
+    std::string version = request.GetHeaderValue("sec-websocket-version");
     if (version != "8" && version != "13")
       return NULL;
 
-    std::string key = request.GetHeaderValue("Sec-WebSocket-Key");
+    std::string key = request.GetHeaderValue("sec-websocket-key");
     if (key.empty()) {
       connection->Send(HttpServerResponseInfo::CreateFor500(
           "Invalid request format. Sec-WebSocket-Key is empty or isn't "
@@ -189,7 +189,7 @@ class WebSocketHybi17 : public WebSocket {
   virtual void Accept(const HttpServerRequestInfo& request) OVERRIDE {
     static const char* const kWebSocketGuid =
         "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-    std::string key = request.GetHeaderValue("Sec-WebSocket-Key");
+    std::string key = request.GetHeaderValue("sec-websocket-key");
     std::string data = base::StringPrintf("%s%s", key.c_str(), kWebSocketGuid);
     std::string encoded_hash;
     base::Base64Encode(base::SHA1HashString(data), &encoded_hash);

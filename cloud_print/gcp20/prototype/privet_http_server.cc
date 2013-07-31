@@ -106,7 +106,7 @@ void PrivetHttpServer::OnHttpRequest(int connection_id,
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch("disable-x-token")) {
     net::HttpServerRequestInfo::HeadersMap::const_iterator iter =
-        info.headers.find("X-Privet-Token");
+        info.headers.find("x-privet-token");
     if (iter == info.headers.end()) {
       server_->Send(connection_id, net::HTTP_BAD_REQUEST,
                     "Missing X-Privet-Token header.\n"

@@ -4,6 +4,8 @@
 
 #include "net/server/http_server_request_info.h"
 
+#include "base/strings/string_util.h"
+
 namespace net {
 
 HttpServerRequestInfo::HttpServerRequestInfo() {}
@@ -12,6 +14,7 @@ HttpServerRequestInfo::~HttpServerRequestInfo() {}
 
 std::string HttpServerRequestInfo::GetHeaderValue(
     const std::string& header_name) const {
+  DCHECK_EQ(StringToLowerASCII(header_name), header_name);
   HttpServerRequestInfo::HeadersMap::const_iterator it =
       headers.find(header_name);
   if (it != headers.end())
