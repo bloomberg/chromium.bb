@@ -211,7 +211,8 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
 void ChromeBrowserMainPartsWin::PostMainMessageLoopRun() {
   // Log the search engine chosen on first run. Do this at shutdown, after any
   // changes are made from the first run bubble link, etc.
-  if (do_first_run_tasks() && profile() && !profile()->IsOffTheRecord()) {
+  if (first_run::IsChromeFirstRun() && profile() &&
+      !profile()->IsOffTheRecord()) {
     TemplateURLService* url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
     const TemplateURL* default_search_engine =

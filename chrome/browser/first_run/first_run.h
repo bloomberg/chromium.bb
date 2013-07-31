@@ -62,9 +62,8 @@ enum FirstRunBubbleOptions {
 };
 
 enum ProcessMasterPreferencesResult {
-  DO_FIRST_RUN_TASKS = 0,       // Should do the first run tasks.
-  SKIP_FIRST_RUN_TASKS,         // Should skip the first run tasks.
-  EULA_EXIT_NOW,                // Should immediately exit due to EULA flow.
+  FIRST_RUN_PROCEED = 0,  // Proceed with first run.
+  EULA_EXIT_NOW,          // Should immediately exit due to EULA flow.
 };
 
 // See ProcessMasterPreferences for more info about this structure.

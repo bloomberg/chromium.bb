@@ -469,14 +469,35 @@ bool IsChromeFirstRun() {
   if (internal::first_run_ != internal::FIRST_RUN_UNKNOWN)
     return internal::first_run_ == internal::FIRST_RUN_TRUE;
 
+  enum FirstRunState {
+    CANCEL_FIRST_RUN,
+    NOT_FIRST_RUN,
+    IS_FIRST_RUN,
+  };
+
+  FirstRunState first_run_state = NOT_FIRST_RUN;
+
   base::FilePath first_run_sentinel;
-  if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel) ||
-      base::PathExists(first_run_sentinel)) {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceFirstRun)) {
+    first_run_state = IS_FIRST_RUN;
+  } else if (command_line->HasSwitch(switches::kNoFirstRun)) {
+    first_run_state = CANCEL_FIRST_RUN;
+  } else if (internal::GetFirstRunSentinelFilePath(&first_run_sentinel) &&
+             !base::PathExists(first_run_sentinel)) {
+    first_run_state = IS_FIRST_RUN;
+  }
+
+  if (first_run_state == IS_FIRST_RUN || first_run_state == CANCEL_FIRST_RUN)
+    CreateSentinel();
+
+  if (first_run_state == IS_FIRST_RUN) {
+    internal::first_run_ = internal::FIRST_RUN_TRUE;
+    return true;
+  } else {
     internal::first_run_ = internal::FIRST_RUN_FALSE;
     return false;
   }
-  internal::first_run_ = internal::FIRST_RUN_TRUE;
-  return true;
 }
 
 bool CreateSentinel() {
@@ -636,13 +657,6 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
-#if defined(OS_CHROMEOS)
-  // Chrome OS has its own out-of-box-experience code.  Create the sentinel to
-  // mark the fact that we've run once but skip the full first-run flow.
-  CreateSentinel();
-  return SKIP_FIRST_RUN_TASKS;
-#endif
-
   base::FilePath master_prefs_path;
   scoped_ptr<installer::MasterPreferences>
       install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
@@ -664,7 +678,7 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     internal::SetDefaultBrowser(install_prefs.get());
   }
 
-  return DO_FIRST_RUN_TASKS;
+  return FIRST_RUN_PROCEED;
 }
 
 void AutoImport(
