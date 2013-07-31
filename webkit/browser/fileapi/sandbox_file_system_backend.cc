@@ -142,13 +142,11 @@ bool SandboxFileSystemBackend::CanHandleType(FileSystemType type) const {
 
 void SandboxFileSystemBackend::Initialize(FileSystemContext* context) {
   // Set quota observers.
-  if (sandbox_context_->is_usage_tracking_enabled()) {
-    update_observers_ = update_observers_.AddObserver(
-        sandbox_context_->quota_observer(),
-        sandbox_context_->file_task_runner());
-    access_observers_ = access_observers_.AddObserver(
-        sandbox_context_->quota_observer(), NULL);
-  }
+  update_observers_ = update_observers_.AddObserver(
+      sandbox_context_->quota_observer(),
+      sandbox_context_->file_task_runner());
+  access_observers_ = access_observers_.AddObserver(
+      sandbox_context_->quota_observer(), NULL);
 
   syncable_update_observers_ = update_observers_;
 
@@ -198,16 +196,6 @@ void SandboxFileSystemBackend::OpenFileSystem(
                  weak_factory_.GetWeakPtr(),
                  base::Bind(callback, root_url, name),
                  base::Owned(error_ptr)));
-
-  if (sandbox_context_->is_usage_tracking_enabled())
-    return;
-
-  // Schedule full usage recalculation on the next launch without
-  // --disable-file-system-usage-tracking.
-  sandbox_context_->file_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SandboxFileSystemBackend::InvalidateUsageCacheOnFileThread,
-                 sandbox_sync_file_util(), origin_url, type, usage_cache()));
 };
 
 FileSystemFileUtil* SandboxFileSystemBackend::GetFileUtil(
@@ -373,8 +361,6 @@ int64 SandboxFileSystemBackend::GetOriginUsageOnFileThread(
     const GURL& origin_url,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
-  if (!sandbox_context_->is_usage_tracking_enabled())
-    return 0;
 
   // Don't use usage cache and return recalculated usage for sticky invalidated
   // origins.
@@ -607,19 +593,6 @@ ObfuscatedFileUtil* SandboxFileSystemBackend::sandbox_sync_file_util() {
 FileSystemUsageCache* SandboxFileSystemBackend::usage_cache() {
   DCHECK(sandbox_context_);
   return sandbox_context_->usage_cache();
-}
-
-// static
-void SandboxFileSystemBackend::InvalidateUsageCacheOnFileThread(
-    ObfuscatedFileUtil* file_util,
-    const GURL& origin,
-    FileSystemType type,
-    FileSystemUsageCache* usage_cache) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  base::FilePath usage_cache_path = GetUsageCachePathForOriginAndType(
-      file_util, origin, type, &error);
-  if (error == base::PLATFORM_FILE_OK)
-    usage_cache->IncrementDirty(usage_cache_path);
 }
 
 int64 SandboxFileSystemBackend::RecalculateUsage(FileSystemContext* context,

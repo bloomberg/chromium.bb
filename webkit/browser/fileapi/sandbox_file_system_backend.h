@@ -191,12 +191,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
   ObfuscatedFileUtil* sandbox_sync_file_util();
   FileSystemUsageCache* usage_cache();
 
-  static void InvalidateUsageCacheOnFileThread(
-      ObfuscatedFileUtil* file_util,
-      const GURL& origin,
-      FileSystemType type,
-      FileSystemUsageCache* usage_cache);
-
   int64 RecalculateUsage(FileSystemContext* context,
                          const GURL& origin,
                          FileSystemType type);

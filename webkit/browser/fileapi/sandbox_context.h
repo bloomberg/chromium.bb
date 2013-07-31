@@ -6,7 +6,6 @@
 #define WEBKIT_BROWSER_FILEAPI_SANDBOX_CONTEXT_H_
 
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
@@ -59,8 +58,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
 
   ObfuscatedFileUtil* sync_file_util();
 
-  bool is_usage_tracking_enabled() { return is_usage_tracking_enabled_; }
-
  private:
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
@@ -69,11 +66,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
   scoped_ptr<SandboxQuotaObserver> quota_observer_;
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
-
-  // Indicates if the usage tracking for FileSystem is enabled or not.
-  // The usage tracking is enabled by default and can be disabled by
-  // a command-line switch (--disable-file-system-usage-tracking).
-  bool is_usage_tracking_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxContext);
 };
