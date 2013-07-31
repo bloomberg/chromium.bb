@@ -154,10 +154,11 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
   // The global menu bar should never actually be shown in the app; it should
   // instead remain in our widget hierarchy simply to be noticed by third party
   // components.
-  gtk_widget_set_no_show_all(menu_bar_.get(), TRUE);
+  g_object_ref_sink(menu_bar_);
+  gtk_widget_set_no_show_all(menu_bar_, TRUE);
 
   // Set a nice name so it shows up in gtkparasite and others.
-  gtk_widget_set_name(menu_bar_.get(), "chrome-hidden-global-menubar");
+  gtk_widget_set_name(menu_bar_, "chrome-hidden-global-menubar");
 
   BuildGtkMenuFrom(IDS_FILE_MENU_LINUX, &id_to_menu_item_, file_menu, NULL);
   BuildGtkMenuFrom(IDS_EDIT_MENU_LINUX, &id_to_menu_item_, edit_menu, NULL);
@@ -201,6 +202,8 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
 GlobalMenuBar::~GlobalMenuBar() {
   Disable();
   g_object_unref(dummy_accel_group_);
+  gtk_widget_destroy(menu_bar_);
+  g_object_unref(menu_bar_);
 }
 
 void GlobalMenuBar::Disable() {
@@ -239,7 +242,7 @@ void GlobalMenuBar::BuildGtkMenuFrom(
 
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
   gtk_widget_show(menu_item);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar_.get()), menu_item);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar_), menu_item);
 }
 
 GtkWidget* GlobalMenuBar::BuildMenuItem(

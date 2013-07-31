@@ -16,7 +16,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
 
 class Browser;
 class Profile;
@@ -107,7 +106,7 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
 
   // The history menu. We keep this since we need to rewrite parts of it
   // periodically.
-  ui::OwnedWidgetGtk history_menu_;
+  GtkWidget* history_menu_;
 
   history::TopSites* top_sites_;
 

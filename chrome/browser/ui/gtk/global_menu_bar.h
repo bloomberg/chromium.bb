@@ -12,7 +12,6 @@
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/gtk/global_history_menu.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
 
 class Browser;
 struct GlobalMenuBarCommand;
@@ -45,7 +44,7 @@ class GlobalMenuBar : public CommandObserver {
   // and command updates but not destroy the widgets.
   virtual void Disable();
 
-  GtkWidget* widget() { return menu_bar_.get(); }
+  GtkWidget* widget() { return menu_bar_; }
 
  private:
   typedef std::map<int, GtkWidget*> CommandIDMenuItemMap;
@@ -77,7 +76,7 @@ class GlobalMenuBar : public CommandObserver {
   PrefChangeRegistrar pref_change_registrar_;
 
   // Our menu bar widget.
-  ui::OwnedWidgetGtk menu_bar_;
+  GtkWidget* menu_bar_;
 
   // Listens to the TabRestoreService and the HistoryService and keeps the
   // history menu fresh.

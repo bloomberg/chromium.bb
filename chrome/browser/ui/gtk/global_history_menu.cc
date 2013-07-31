@@ -95,6 +95,7 @@ class GlobalHistoryMenu::HistoryItem {
 GlobalHistoryMenu::GlobalHistoryMenu(Browser* browser)
     : browser_(browser),
       profile_(browser_->profile()),
+      history_menu_(NULL),
       top_sites_(NULL),
       weak_ptr_factory_(this),
       tab_restore_service_(NULL) {
@@ -107,11 +108,17 @@ GlobalHistoryMenu::~GlobalHistoryMenu() {
   STLDeleteContainerPairSecondPointers(menu_item_history_map_.begin(),
                                        menu_item_history_map_.end());
   menu_item_history_map_.clear();
+
+  if (history_menu_) {
+    gtk_widget_destroy(history_menu_);
+    g_object_unref(history_menu_);
+  }
 }
 
 void GlobalHistoryMenu::Init(GtkWidget* history_menu,
                              GtkWidget* history_menu_item) {
-  history_menu_.Own(history_menu);
+  history_menu_ = history_menu;
+  g_object_ref_sink(history_menu_);
 
   // We have to connect to |history_menu_item|'s "activate" signal instead of
   // |history_menu|'s "show" signal because we are not supposed to modify the
@@ -142,10 +149,10 @@ void GlobalHistoryMenu::GetTopSitesData() {
 
 void GlobalHistoryMenu::OnTopSitesReceived(
     const history::MostVisitedURLList& visited_list) {
-  ClearMenuSection(history_menu_.get(), GlobalMenuBar::TAG_MOST_VISITED);
+  ClearMenuSection(history_menu_, GlobalMenuBar::TAG_MOST_VISITED);
 
   int index = GetIndexOfMenuItemWithTag(
-      history_menu_.get(),
+      history_menu_,
       GlobalMenuBar::TAG_MOST_VISITED_HEADER) + 1;
 
   for (size_t i = 0; i < visited_list.size() && i < kMostVisitedCount; ++i) {
@@ -158,7 +165,7 @@ void GlobalHistoryMenu::OnTopSitesReceived(
     item->url = visited.url;
 
     AddHistoryItemToMenu(item,
-                         history_menu_.get(),
+                         history_menu_,
                          GlobalMenuBar::TAG_MOST_VISITED,
                          index++);
   }
@@ -283,12 +290,12 @@ void GlobalHistoryMenu::Observe(int type,
 void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {
   const TabRestoreService::Entries& entries = service->entries();
 
-  ClearMenuSection(history_menu_.get(), GlobalMenuBar::TAG_RECENTLY_CLOSED);
+  ClearMenuSection(history_menu_, GlobalMenuBar::TAG_RECENTLY_CLOSED);
 
   // We'll get the index the "Recently Closed" header. (This can vary depending
   // on the number of "Most Visited" items.
   int index = GetIndexOfMenuItemWithTag(
-      history_menu_.get(),
+      history_menu_,
       GlobalMenuBar::TAG_RECENTLY_CLOSED_HEADER) + 1;
 
   unsigned int added_count = 0;
@@ -355,14 +362,14 @@ void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {
                         GINT_TO_POINTER(GlobalMenuBar::TAG_RECENTLY_CLOSED));
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(parent_item), submenu);
 
-      gtk_menu_shell_insert(GTK_MENU_SHELL(history_menu_.get()), parent_item,
+      gtk_menu_shell_insert(GTK_MENU_SHELL(history_menu_), parent_item,
                             index++);
       ++added_count;
     } else if (entry->type == TabRestoreService::TAB) {
       TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
       HistoryItem* item = HistoryItemForTab(*tab);
       AddHistoryItemToMenu(item,
-                           history_menu_.get(),
+                           history_menu_,
                            GlobalMenuBar::TAG_RECENTLY_CLOSED,
                            index++);
       ++added_count;
