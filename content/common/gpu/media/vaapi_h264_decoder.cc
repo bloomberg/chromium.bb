@@ -107,7 +107,9 @@ void VaapiH264Decoder::Reset() {
   parser_.Reset();
   last_output_poc_ = 0;
 
-  state_ = kAfterReset;
+  // If we are in kDecoding, we can resume without processing an SPS.
+  if (state_ == kDecoding)
+    state_ = kAfterReset;
 }
 
 void VaapiH264Decoder::ReuseSurface(

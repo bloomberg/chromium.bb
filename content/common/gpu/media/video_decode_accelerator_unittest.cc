@@ -93,6 +93,7 @@ const base::FilePath::CharType* frame_delivery_log = NULL;
 // Magic constants for differentiating the reasons for NotifyResetDone being
 // called.
 enum ResetPoint {
+  START_OF_STREAM_RESET = -3,
   MID_STREAM_RESET = -2,
   END_OF_STREAM_RESET = -1
 };
@@ -163,6 +164,8 @@ void ParseAndReadTestVideoData(base::FilePath::StringType data,
         if (video_file->num_frames <= kMaxResetAfterFrameNum)
           video_file->reset_after_frame_num = 1;
         video_file->num_frames += video_file->reset_after_frame_num;
+      } else {
+        video_file->reset_after_frame_num = reset_point;
       }
     }
     if (!fields[4].empty())
@@ -528,6 +531,12 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
 void GLRenderingVDAClient::NotifyInitializeDone() {
   SetState(CS_INITIALIZED);
   initialize_done_ticks_ = base::TimeTicks::Now();
+
+  if (reset_after_frame_num_ == START_OF_STREAM_RESET) {
+    decoder_->Reset();
+    return;
+  }
+
   for (int i = 0; i < num_in_flight_decodes_; ++i)
     DecodeNextFragments();
   DCHECK_EQ(outstanding_decodes_, num_in_flight_decodes_);
@@ -563,6 +572,11 @@ void GLRenderingVDAClient::NotifyResetDone() {
   if (reset_after_frame_num_ == MID_STREAM_RESET) {
     reset_after_frame_num_ = END_OF_STREAM_RESET;
     DecodeNextFragments();
+    return;
+  } else if (reset_after_frame_num_ == START_OF_STREAM_RESET) {
+    reset_after_frame_num_ = END_OF_STREAM_RESET;
+    for (int i = 0; i < num_in_flight_decodes_; ++i)
+      DecodeNextFragments();
     return;
   }
 
@@ -1035,6 +1049,12 @@ INSTANTIATE_TEST_CASE_P(
     ReplayAfterEOS, VideoDecodeAcceleratorTest,
     ::testing::Values(
         MakeTuple(1, 1, 1, 4, END_OF_STREAM_RESET, CS_RESET, false, false)));
+
+// Test that Reset() before the first Decode() works fine.
+INSTANTIATE_TEST_CASE_P(
+    ResetBeforeDecode, VideoDecodeAcceleratorTest,
+    ::testing::Values(
+        MakeTuple(1, 1, 1, 1, START_OF_STREAM_RESET, CS_RESET, false, false)));
 
 // Test that Reset() mid-stream works fine and doesn't affect decoding even when
 // Decode() calls are made during the reset.
