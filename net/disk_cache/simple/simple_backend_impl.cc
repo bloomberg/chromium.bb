@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
+#include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
@@ -150,12 +151,6 @@ void CallCompletionCallback(const net::CompletionCallback& callback,
   callback.Run(error_code);
 }
 
-void CallCompletionCallbackFromPointer(const net::CompletionCallback& callback,
-                                       scoped_ptr<int> result) {
-  DCHECK(result);
-  CallCompletionCallback(callback, *result);
-}
-
 void RecordIndexLoad(base::TimeTicks constructed_since, int result) {
   const base::TimeDelta creation_to_index = base::TimeTicks::Now() -
                                             constructed_since;
@@ -202,21 +197,13 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
   index_->ExecuteWhenReady(base::Bind(&RecordIndexLoad,
                                       base::TimeTicks::Now()));
 
-  scoped_ptr<base::Time> cache_dir_mtime(new base::Time());
-  scoped_ptr<uint64> max_size(new uint64());
-  scoped_ptr<int> result(new int());
-  Closure task =
-      base::Bind(&SimpleBackendImpl::ProvideDirectorySuggestBetterCacheSize,
-      path_, orig_max_size_,
-      cache_dir_mtime.get(), max_size.get(),
-      result.get());
-  Closure reply = base::Bind(&SimpleBackendImpl::InitializeIndex,
-                             AsWeakPtr(),
-                             base::Passed(&max_size),
-                             base::Passed(&cache_dir_mtime),
-                             base::Passed(&result),
-                             completion_callback);
-  cache_thread_->PostTaskAndReply(FROM_HERE, task, reply);
+  PostTaskAndReplyWithResult(
+      cache_thread_,
+      FROM_HERE,
+      base::Bind(&SimpleBackendImpl::InitCacheStructureOnDisk, path_,
+                 orig_max_size_),
+      base::Bind(&SimpleBackendImpl::InitializeIndex, AsWeakPtr(),
+                 completion_callback));
   return net::ERR_IO_PENDING;
 }
 
@@ -300,13 +287,11 @@ void SimpleBackendImpl::IndexReadyForDoom(Time initial_time,
     removed_key_hashes->resize(removed_key_hashes->size() - 1);
   }
 
-  scoped_ptr<int> new_result(new int());
-  Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
-                            base::Passed(&removed_key_hashes), path_,
-                            new_result.get());
-  Closure reply = base::Bind(&CallCompletionCallbackFromPointer,
-                             callback, base::Passed(&new_result));
-  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+  PostTaskAndReplyWithResult(
+      worker_pool_, FROM_HERE,
+      base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
+                 base::Passed(&removed_key_hashes), path_),
+      base::Bind(&CallCompletionCallback, callback));
 }
 
 int SimpleBackendImpl::DoomEntriesBetween(
@@ -352,46 +337,41 @@ void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
   index_->UseIfExists(key);
 }
 
-void SimpleBackendImpl::InitializeIndex(scoped_ptr<uint64> suggested_max_size,
-                                        scoped_ptr<base::Time> cache_dir_mtime,
-                                        scoped_ptr<int> dir_sanity_check_result,
-                                        const CompletionCallback& callback) {
-  if (*dir_sanity_check_result == net::OK) {
-    index_->SetMaxSize(*suggested_max_size);
-    index_->Initialize(*cache_dir_mtime);
+void SimpleBackendImpl::InitializeIndex(const CompletionCallback& callback,
+                                        const DiskStatResult& result) {
+  if (result.net_error == net::OK) {
+    index_->SetMaxSize(result.max_size);
+    index_->Initialize(result.cache_dir_mtime);
   }
-  callback.Run(*dir_sanity_check_result);
+  callback.Run(result.net_error);
 }
 
-// static
-void SimpleBackendImpl::ProvideDirectorySuggestBetterCacheSize(
+SimpleBackendImpl::DiskStatResult SimpleBackendImpl::InitCacheStructureOnDisk(
     const base::FilePath& path,
-    uint64 suggested_max_size,
-    base::Time* out_mtime,
-    uint64* out_max_size,
-    int* out_result) {
-  int rv = net::OK;
-  uint64 max_size = suggested_max_size;
+    uint64 suggested_max_size) {
+  DiskStatResult result;
+  result.max_size = suggested_max_size;
+  result.net_error = net::OK;
   if (!FileStructureConsistent(path)) {
     LOG(ERROR) << "Simple Cache Backend: wrong file structure on disk: "
                << path.LossyDisplayName();
-    rv = net::ERR_FAILED;
+    result.net_error = net::ERR_FAILED;
   } else {
-    bool mtime_result = simple_util::GetMTime(path, out_mtime);
+    bool mtime_result =
+        disk_cache::simple_util::GetMTime(path, &result.cache_dir_mtime);
     DCHECK(mtime_result);
-    if (!max_size) {
+    if (!result.max_size) {
       int64 available = base::SysInfo::AmountOfFreeDiskSpace(path);
       if (available < 0)
-        max_size = kDefaultCacheSize;
+        result.max_size = kDefaultCacheSize;
       else
         // TODO(pasko): Move PreferedCacheSize() to cache_util.h. Also fix the
         // spelling.
-        max_size = PreferedCacheSize(available);
+        result.max_size = disk_cache::PreferedCacheSize(available);
     }
-    DCHECK(max_size);
+    DCHECK(result.max_size);
   }
-  *out_max_size = max_size;
-  *out_result = rv;
+  return result;
 }
 
 scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(

@@ -83,10 +83,10 @@ class SimpleSynchronousEntry {
                         int* out_result);
 
   // Like |DoomEntry()| above. Deletes all entries corresponding to the
-  // |key_hashes|. Succeeds only when all entries are deleted.
-  static void DoomEntrySet(scoped_ptr<std::vector<uint64> > key_hashes,
-                           const base::FilePath& path,
-                           int* out_result);
+  // |key_hashes|. Succeeds only when all entries are deleted. Returns a net
+  // error code.
+  static int DoomEntrySet(scoped_ptr<std::vector<uint64> > key_hashes,
+                          const base::FilePath& path);
 
   // N.B. ReadData(), WriteData(), CheckEOFRecord() and Close() may block on IO.
   void ReadData(const EntryOperationData& in_entry_op,

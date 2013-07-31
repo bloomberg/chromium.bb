@@ -30,11 +30,10 @@ namespace disk_cache {
 
 // SimpleBackendImpl is a new cache backend that stores entries in individual
 // files.
-
-// It is currently a work in progress, missing many features of a real cache,
-// such as eviction.
-
 // See http://www.chromium.org/developers/design-documents/network-stack/disk-cache/very-simple-backend
+//
+// The non-static functions below must be called on the IO thread unless
+// otherwise stated.
 
 class SimpleEntryImpl;
 class SimpleIndex;
@@ -53,7 +52,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   base::TaskRunner* worker_pool() { return worker_pool_.get(); }
 
-  // Must run on IO Thread.
   int Init(const CompletionCallback& completion_callback);
 
   // Sets the maximum size for the total amount of data stored by this instance.
@@ -66,7 +64,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // operations to construct a new object.
   void OnDeactivated(const SimpleEntryImpl* entry);
 
-  // From Backend:
+  // Backend:
   virtual net::CacheType GetCacheType() const OVERRIDE;
   virtual int32 GetEntryCount() const OVERRIDE;
   virtual int OpenEntry(const std::string& key, Entry** entry,
@@ -94,11 +92,16 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   typedef base::Callback<void(base::Time mtime, uint64 max_size, int result)>
       InitializeIndexCallback;
 
-  // Must run on IO Thread.
-  void InitializeIndex(scoped_ptr<uint64> suggested_max_size,
-                       scoped_ptr<base::Time> cache_dir_mtime,
-                       scoped_ptr<int> dir_sanity_check_result,
-                       const CompletionCallback& callback);
+  // Return value of InitCacheStructureOnDisk().
+  struct DiskStatResult {
+    base::Time cache_dir_mtime;
+    uint64 max_size;
+    bool detected_magic_number_mismatch;
+    int net_error;
+  };
+
+  void InitializeIndex(const CompletionCallback& callback,
+                       const DiskStatResult& result);
 
   // Dooms all entries previously accessed between |initial_time| and
   // |end_time|. Invoked when the index is ready.
@@ -107,13 +110,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                          const CompletionCallback& callback,
                          int result);
 
-  // Try to create the directory if it doesn't exist. Replies with maximum cache
-  // size adjustment. Must run on Cache Thread.
-  static void ProvideDirectorySuggestBetterCacheSize(const base::FilePath& path,
-                                                     uint64 suggested_max_size,
-                                                     base::Time* out_mtime,
-                                                     uint64* out_max_size,
-                                                     int* out_result);
+  // Try to create the directory if it doesn't exist. This must run on the IO
+  // thread.
+  static DiskStatResult InitCacheStructureOnDisk(const base::FilePath& path,
+                                                 uint64 suggested_max_size);
 
   // Searches |active_entries_| for the entry corresponding to |key|. If found,
   // returns the found entry. Otherwise, creates a new entry and returns that.

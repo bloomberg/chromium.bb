@@ -230,15 +230,13 @@ void SimpleSynchronousEntry::DoomEntry(
 }
 
 // static
-void SimpleSynchronousEntry::DoomEntrySet(
+int SimpleSynchronousEntry::DoomEntrySet(
     scoped_ptr<std::vector<uint64> > key_hashes,
-    const FilePath& path,
-    int* out_result) {
+    const FilePath& path) {
   const size_t did_delete_count = std::count_if(
       key_hashes->begin(), key_hashes->end(), std::bind1st(
           std::ptr_fun(SimpleSynchronousEntry::DeleteFilesForEntryHash), path));
-  *out_result = (did_delete_count == key_hashes->size()) ? net::OK
-                                                         : net::ERR_FAILED;
+  return (did_delete_count == key_hashes->size()) ? net::OK : net::ERR_FAILED;
 }
 
 void SimpleSynchronousEntry::ReadData(const EntryOperationData& in_entry_op,

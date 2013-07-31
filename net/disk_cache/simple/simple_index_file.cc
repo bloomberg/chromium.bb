@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_index.h"
@@ -31,9 +32,9 @@ uint32 CalculatePickleCRC(const Pickle& pickle) {
                pickle.payload_size());
 }
 
-void DoomEntrySetReply(scoped_ptr<int> result,
-                       const base::Callback<void(int)>& reply_callback) {
-  reply_callback.Run(*result.get());
+void DoomEntrySetReply(const net::CompletionCallback& reply_callback,
+                       int result) {
+  reply_callback.Run(result);
 }
 
 void WriteToDiskInternal(const base::FilePath& index_filename,
@@ -161,17 +162,13 @@ void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
 
 void SimpleIndexFile::DoomEntrySet(
     scoped_ptr<std::vector<uint64> > entry_hashes,
-    const base::Callback<void(int)>& reply_callback) {
-  scoped_ptr<int> result(new int());
-  int* result_p(result.get());
-
-  worker_pool_->PostTaskAndReply(
+    const net::CompletionCallback& reply_callback) {
+  PostTaskAndReplyWithResult(
+      worker_pool_,
       FROM_HERE,
       base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
-                 base::Passed(entry_hashes.Pass()), cache_directory_,
-                 result_p),
-      base::Bind(&DoomEntrySetReply, base::Passed(result.Pass()),
-                 reply_callback));
+                 base::Passed(entry_hashes.Pass()), cache_directory_),
+      base::Bind(&DoomEntrySetReply, reply_callback));
 }
 
 // static
