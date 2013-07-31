@@ -581,7 +581,7 @@ bool ResourceMetadataStorage::CheckValidity() {
     return false;
   }
 
-  // Check all entires.
+  // Check all entries.
   size_t num_entries_with_parent = 0;
   size_t num_child_entries = 0;
   ResourceEntry entry;

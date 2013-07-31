@@ -24,13 +24,6 @@ namespace google_apis {
 
 namespace {
 
-const char kUploadContentRange[] = "Content-Range: bytes ";
-
-const char kFeedField[] = "feed";
-
-// Templates for file uploading.
-const char kUploadResponseRange[] = "range";
-
 // Parses the JSON value to ResourceList.
 scoped_ptr<ResourceList> ParseResourceListOnBlockingPool(
     scoped_ptr<base::Value> value) {
@@ -39,8 +32,8 @@ scoped_ptr<ResourceList> ParseResourceListOnBlockingPool(
   return ResourceList::ExtractAndParse(*value);
 }
 
-// Runs |callback| with |error| and |value|, but replace the error code with
-// GDATA_PARSE_ERROR, if there was a parsing error.
+// Runs |callback| with |error| and |resource_list|, but replace the error code
+// with GDATA_PARSE_ERROR, if there was a parsing error.
 void DidParseResourceListOnBlockingPool(
     const GetResourceListCallback& callback,
     GDataErrorCode error,

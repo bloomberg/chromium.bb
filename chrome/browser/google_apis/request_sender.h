@@ -17,8 +17,6 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
-class Profile;
-
 namespace base {
 class TaskRunner;
 }
@@ -44,8 +42,6 @@ class RequestSender {
   //
   // |blocking_task_runner| is used for running blocking operation, e.g.,
   // parsing JSON response from the server.
-  //
-  // |scopes| specifies OAuth2 scopes.
   //
   // |custom_user_agent| will be used for the User-Agent header in HTTP
   // requests issued through the request sender if the value is not empty.

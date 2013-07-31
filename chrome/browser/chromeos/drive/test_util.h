@@ -95,7 +95,7 @@ bool PrepareTestCacheResources(
 
 // Registers Drive related preferences in |pref_registry|. Drive related
 // preferences should be registered as TestingPrefServiceSimple will crash if
-// unregistered prefrence is referenced.
+// unregistered preference is referenced.
 void RegisterDrivePrefs(PrefRegistrySimple* pref_registry);
 
 // Fake NetworkChangeNotifier implementation.

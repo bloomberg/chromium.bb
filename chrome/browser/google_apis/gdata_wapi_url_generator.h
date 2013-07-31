@@ -47,9 +47,6 @@ class GDataWapiUrlGenerator {
   // |override_url| is empty, others are not used. Besides, |search_string|
   // cannot be set together with |start_changestamp|.
   //
-  // TODO(kinaba,haruki): http://crbug.com/160932
-  // This is really hard to follow. We should split to multiple functions.
-  //
   // override_url:
   //   By default, a hard-coded base URL of the WAPI server is used.
   //   The base URL can be overridden by |override_url|.

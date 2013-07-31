@@ -10,8 +10,6 @@
 #include "base/callback_forward.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
-class Profile;
-
 namespace google_apis {
 
 class AuthServiceObserver;
@@ -28,8 +26,7 @@ class AuthServiceInterface {
  public:
   virtual ~AuthServiceInterface() {}
 
-  // Adds and removes the observer. AddObserver() should be called before
-  // Initialize() as it can change the refresh token.
+  // Adds and removes the observer.
   virtual void AddObserver(AuthServiceObserver* observer) = 0;
   virtual void RemoveObserver(AuthServiceObserver* observer) = 0;
 

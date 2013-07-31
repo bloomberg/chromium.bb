@@ -69,7 +69,7 @@ void RunCreateOrOpenFileCallbackOnError(
     const AsyncFileUtil::CreateOrOpenCallback& callback,
     base::PlatformFileError error) {
   // Because the |callback| takes PassPlatformFile as its argument, and
-  // it is necessary to garantee the pointer passed to PassPlatformFile is
+  // it is necessary to guarantee the pointer passed to PassPlatformFile is
   // alive during the |callback| invocation, here we prepare a thin adapter
   // to have PlatformFile on stack frame.
   base::PlatformFile file = base::kInvalidPlatformFileValue;

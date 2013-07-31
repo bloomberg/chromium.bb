@@ -174,7 +174,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
 
 //============================ EntryActionRequest ============================
 
-// Callback type for Delete/Move DocumentServiceInterface calls.
+// Callback type for requests that return only error status, like: Delete/Move.
 typedef base::Callback<void(GDataErrorCode error)> EntryActionCallback;
 
 // This class performs a simple action over a given entry (document/file).
@@ -200,9 +200,7 @@ class EntryActionRequest : public UrlFetchRequestBase {
 
 //============================== GetDataRequest ==============================
 
-// Callback type for DocumentServiceInterface::GetResourceList.
-// Note: json_data argument should be passed using base::Passed(&json_data), not
-// json_data.Pass().
+// Callback type for requests that returns JSON data.
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<base::Value> json_data)> GetDataCallback;
 
@@ -246,7 +244,7 @@ class GetDataRequest : public UrlFetchRequestBase {
 
 //=========================== InitiateUploadRequestBase=======================
 
-// Callback type for DocumentServiceInterface::InitiateUpload.
+// Callback type for DriveServiceInterface::InitiateUpload.
 typedef base::Callback<void(GDataErrorCode error,
                             const GURL& upload_url)> InitiateUploadCallback;
 
@@ -257,7 +255,7 @@ typedef base::Callback<void(GDataErrorCode error,
 //
 // Here's the flow of uploading:
 // 1) Get the upload URL with a class inheriting InitiateUploadRequestBase.
-// 2) Upload the first 512KB (see kUploadChunkSize in drive_uploader.cc)
+// 2) Upload the first 1GB (see kUploadChunkSize in drive_uploader.cc)
 //    of the target file to the upload URL
 // 3) If there is more data to upload, go to 2).
 //
@@ -312,7 +310,7 @@ struct UploadRangeResponse {
 // "Range" header and invoke OnRangeRequestComplete.
 class UploadRangeRequestBase : public UrlFetchRequestBase {
  protected:
-  // |upload_location| is the URL of where to upload the file to.
+  // |upload_url| is the URL of where to upload the file to.
   UploadRangeRequestBase(RequestSender* sender, const GURL& upload_url);
   virtual ~UploadRangeRequestBase();
 

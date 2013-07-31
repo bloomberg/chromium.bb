@@ -15,7 +15,7 @@ class FileSystemInterface;
 
 namespace internal {
 
-// The implementation of fileapis::AsyncFileUtil for Drive File System.
+// The implementation of fileapi::AsyncFileUtil for Drive File System.
 class AsyncFileUtil : public fileapi::AsyncFileUtil {
  public:
   // Callback to return the FileSystemInterface instance. This is an

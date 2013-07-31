@@ -11,7 +11,7 @@ namespace google_apis {
 // All events are notified on UI thread.
 class AuthServiceObserver {
  public:
-  // Triggered when a new OAuth2 refresh token is received from TokenService.
+  // Triggered when a new OAuth2 refresh token is received from AuthService.
   virtual void OnOAuth2RefreshTokenChanged() = 0;
 
  protected:
