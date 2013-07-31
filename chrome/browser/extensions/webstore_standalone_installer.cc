@@ -24,6 +24,7 @@ const char kIconUrlKey[] = "icon_url";
 const char kLocalizedNameKey[] = "localized_name";
 const char kLocalizedDescriptionKey[] = "localized_description";
 const char kUsersKey[] = "users";
+const char kShowUserCountKey[] = "show_user_count";
 const char kAverageRatingKey[] = "average_rating";
 const char kRatingCountKey[] = "rating_count";
 const char kRedirectUrlKey[] = "redirect_url";
@@ -43,6 +44,7 @@ WebstoreStandaloneInstaller::WebstoreStandaloneInstaller(
     : id_(webstore_item_id),
       callback_(callback),
       profile_(profile),
+      show_user_count_(true),
       average_rating_(0.0),
       rating_count_(0) {
   CHECK(!callback_.is_null());
@@ -110,6 +112,10 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
     CompleteInstall(kInvalidWebstoreResponseError);
     return;
   }
+
+  // Optional.
+  show_user_count_ = true;
+  webstore_data->GetBoolean(kShowUserCountKey, &show_user_count_);
 
   if (average_rating_ < ExtensionInstallPrompt::kMinExtensionRating ||
       average_rating_ > ExtensionInstallPrompt::kMaxExtensionRating) {

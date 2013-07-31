@@ -32,9 +32,9 @@ class WebstoreInlineInstaller
   typedef WebstoreStandaloneInstaller::Callback Callback;
 
   WebstoreInlineInstaller(content::WebContents* web_contents,
-                         const std::string& webstore_item_id,
-                         const GURL& requestor_url,
-                         const Callback& callback);
+                          const std::string& webstore_item_id,
+                          const GURL& requestor_url,
+                          const Callback& callback);
 
  protected:
   friend class base::RefCountedThreadSafe<WebstoreInlineInstaller>;

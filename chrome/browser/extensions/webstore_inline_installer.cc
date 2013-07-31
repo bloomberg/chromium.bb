@@ -57,9 +57,14 @@ WebstoreInlineInstaller::CreateInstallPrompt() const {
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
+
+  // crbug.com/260742: Don't display the user count if it's zero. The reason
+  // it's zero is very often that the number isn't actually being counted
+  // (intentionally), which means that it's unlikely to be correct.
   prompt->SetInlineInstallWebstoreData(localized_user_count(),
-                                      average_rating(),
-                                      rating_count());
+                                       show_user_count(),
+                                       average_rating(),
+                                       rating_count());
   return prompt.Pass();
 }
 

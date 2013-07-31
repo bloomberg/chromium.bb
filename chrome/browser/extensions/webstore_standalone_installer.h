@@ -112,6 +112,7 @@ class WebstoreStandaloneInstaller
   virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI();
 
   // Accessors to be used by subclasses.
+  bool show_user_count() const { return show_user_count_; }
   const std::string& localized_user_count() const {
     return localized_user_count_;
   }
@@ -182,6 +183,7 @@ class WebstoreStandaloneInstaller
   // Extracted from the webstore JSON data response.
   std::string localized_name_;
   std::string localized_description_;
+  bool show_user_count_;
   std::string localized_user_count_;
   double average_rating_;
   int rating_count_;

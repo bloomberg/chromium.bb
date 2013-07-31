@@ -191,7 +191,8 @@ ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
       extension_(NULL),
       bundle_(NULL),
       average_rating_(0.0),
-      rating_count_(0) {
+      rating_count_(0),
+      show_user_count_(false) {
 }
 
 ExtensionInstallPrompt::Prompt::~Prompt() {
@@ -224,10 +225,12 @@ void ExtensionInstallPrompt::Prompt::SetUserNameFromProfile(Profile* profile) {
 
 void ExtensionInstallPrompt::Prompt::SetInlineInstallWebstoreData(
     const std::string& localized_user_count,
+    bool show_user_count,
     double average_rating,
     int rating_count) {
   CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
   localized_user_count_ = localized_user_count;
+  show_user_count_ = show_user_count;
   average_rating_ = average_rating;
   rating_count_ = rating_count;
 }
@@ -375,9 +378,14 @@ string16 ExtensionInstallPrompt::Prompt::GetRatingCount() const {
 
 string16 ExtensionInstallPrompt::Prompt::GetUserCount() const {
   CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
-  return l10n_util::GetStringFUTF16(
-      IDS_EXTENSION_USER_COUNT,
-      UTF8ToUTF16(localized_user_count_));
+
+  if (show_user_count_) {
+    return l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_USER_COUNT,
+        UTF8ToUTF16(localized_user_count_));
+  } else {
+    return string16();
+  }
 }
 
 size_t ExtensionInstallPrompt::Prompt::GetPermissionCount() const {

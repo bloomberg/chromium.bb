@@ -77,6 +77,7 @@ class ExtensionInstallPrompt
     // Sets the permission list details for this prompt.
     void SetPermissionsDetails(const std::vector<string16>& details);
     void SetInlineInstallWebstoreData(const std::string& localized_user_count,
+                                      bool show_user_count,
                                       double average_rating,
                                       int rating_count);
     void SetOAuthIssueAdvice(const IssueAdviceInfo& issue_advice);
@@ -171,6 +172,10 @@ class ExtensionInstallPrompt
     // Range is kMinExtensionRating to kMaxExtensionRating
     double average_rating_;
     int rating_count_;
+
+    // Whether we should display the user count (we anticipate this will be
+    // false if localized_user_count_ represents the number zero).
+    bool show_user_count_;
 
     std::vector<base::FilePath> retained_files_;
   };
