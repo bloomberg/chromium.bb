@@ -59,9 +59,10 @@ class LinkErrorDetectorTest(unittest.TestCase):
 
   def testGetBrokenLinks(self):
     expected_broken_links = set([
-      (404, 'apps/crx.html', 'apps/broken.html', ''),
-      (404, 'apps/index.html', 'apps/broken.json', ''),
-      (404, 'apps/unreachable.html', 'apps/invalid.html', ''),
+      (404, 'apps/crx.html', 'apps/broken.html', 'target page not found'),
+      (404, 'apps/index.html', 'apps/broken.json', 'target page not found'),
+      (404, 'apps/unreachable.html', 'apps/invalid.html',
+          'target page not found'),
       (404, 'apps/devtools_events.html', 'apps/fake.html#invalid',
           'target page not found'),
       (200, 'apps/devtools_events.html', 'apps/index.html#invalid',

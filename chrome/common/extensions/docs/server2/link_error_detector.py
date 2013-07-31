@@ -202,13 +202,9 @@ class LinkErrorDetector(object):
                 url,
                 link,
                 'redirects to %s' % relink))
-
-          # target page with fragment is broken
-          elif fragment:
+          else:
             broken_links.append((
                 target_page.status, url, link, 'target page not found'))
-          else:
-            broken_links.append((target_page.status, url, link, ''))
 
         elif fragment:
           if not fragment in target_page.anchors:
