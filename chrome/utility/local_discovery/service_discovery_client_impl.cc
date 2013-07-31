@@ -406,14 +406,10 @@ void LocalDomainResolverImpl::Start() {
     transaction_a_->Start();
   }
 
-  // Callback may have finished syncrhonously during |transaction_a_->Start()|,
-  // check to make sure it hasn't before starting |transaction_aaaa_|.
-  if (!callback_.is_null()) {
-    if (address_family_ == net::ADDRESS_FAMILY_IPV6 ||
-        address_family_ == net::ADDRESS_FAMILY_UNSPECIFIED) {
-      transaction_aaaa_ = CreateTransaction(net::dns_protocol::kTypeAAAA);
-      transaction_aaaa_->Start();
-    }
+  if (address_family_ == net::ADDRESS_FAMILY_IPV6 ||
+      address_family_ == net::ADDRESS_FAMILY_UNSPECIFIED) {
+    transaction_aaaa_ = CreateTransaction(net::dns_protocol::kTypeAAAA);
+    transaction_aaaa_->Start();
   }
 }
 
@@ -453,10 +449,7 @@ void LocalDomainResolverImpl::OnTransactionComplete(
     }
   }
 
-  if (!callback_.is_null()) {
-    callback_.Run(result == net::MDnsTransaction::RESULT_RECORD, address);
-    callback_.Reset();
-  }
+  callback_.Run(result == net::MDnsTransaction::RESULT_RECORD, address);
 }
 
 }  // namespace local_discovery
