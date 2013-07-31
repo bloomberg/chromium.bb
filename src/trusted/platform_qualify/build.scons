@@ -47,7 +47,6 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
     vcpuid_env.Append(CCFLAGS = ['-msse3'])
   nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'arch/x86/vcpuid.c')
   extra_libs += ['platform_qual_lib',
-                 TargetLib(env, 'ncval_base'),
                  'platform',
                  'gio',
                  'vcpuid']

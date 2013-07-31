@@ -34,7 +34,6 @@ if env.Bit('target_x86'):
       'cpu_x86_test',
       ['arch/x86/cpu_x86_test.c'],
       EXTRA_LIBS=[
-        test_env.NaClTargetArchSuffix('ncval_base'),
         'cpu_features',
         'platform'
       ])

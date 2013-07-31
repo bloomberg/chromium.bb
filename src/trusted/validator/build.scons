@@ -28,7 +28,7 @@ if env.Bit('target_x86'):
   validation_cache_test_exe = gtest_env.ComponentProgram(
       'validation_cache_test',
       ['validation_cache_test.cc'],
-      EXTRA_LIBS=['validators', 'nrd_xfer'])
+      EXTRA_LIBS=['validators', 'nrd_xfer', 'validation_cache'])
 
   node = gtest_env.CommandTest(
       'validation_cache_test.out',

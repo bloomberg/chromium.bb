@@ -35,6 +35,9 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'imc',
         'platform',
         ],
+    'platform_qual_lib': [
+        'cpu_features',
+        ],
     'reverse_service': [
         'validation_cache',
         ],
@@ -156,7 +159,8 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             #'nc_opcode_modeling_verbose_x86_32',
             ],
         'dfa_validate_caller_x86_32': [
-            'ncval_base_x86_32',
+            'cpu_features',
+            'validation_cache',
             'nccopy_x86_32',
             ],
         },
@@ -215,7 +219,8 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             'ncval_base_x86_64',
             ],
         'dfa_validate_caller_x86_64': [
-            'ncval_base_x86_64',
+            'cpu_features',
+            'validation_cache',
             'nccopy_x86_64',
             ],
         },
