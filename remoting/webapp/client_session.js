@@ -458,12 +458,17 @@ remoting.ClientSession.prototype.removePlugin = function() {
     this.plugin.cleanup();
     this.plugin = null;
   }
+
+  // Delete event handlers that aren't relevent when not connected.
   this.resizeToClientButton_.removeEventListener(
       'click', this.callSetScreenMode_, false);
   this.shrinkToFitButton_.removeEventListener(
       'click', this.callSetScreenMode_, false);
   this.fullScreenButton_.removeEventListener(
       'click', this.callToggleFullScreen_, false);
+
+  // In case the user had selected full-screen mode, cancel it now.
+  document.webkitCancelFullScreen();
 };
 
 /**
