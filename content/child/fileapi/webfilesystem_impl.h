@@ -7,12 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
-
-namespace base {
-class MessageLoopProxy;
-}
 
 namespace WebKit {
 class WebURL;
@@ -24,8 +19,8 @@ namespace content {
 
 class WebFileSystemImpl : public WebKit::WebFileSystem {
  public:
-  explicit WebFileSystemImpl(base::MessageLoopProxy* main_thread_loop);
-  virtual ~WebFileSystemImpl();
+  WebFileSystemImpl();
+  virtual ~WebFileSystemImpl() { }
 
   // WebFileSystem implementation.
   virtual void move(
@@ -71,9 +66,6 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
   virtual void createSnapshotFileAndReadMetadata(
       const WebKit::WebURL& path,
       WebKit::WebFileSystemCallbacks*);
-
- private:
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_;
 };
 
 }  // namespace content

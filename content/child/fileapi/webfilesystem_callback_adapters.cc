@@ -35,6 +35,37 @@ void FileStatusCallbackAdapter(
     callbacks->didFail(::fileapi::PlatformFileErrorToWebFileError(error));
 }
 
+void ReadMetadataCallbackAdapter(
+    WebKit::WebFileSystemCallbacks* callbacks,
+    const base::PlatformFileInfo& file_info) {
+  WebFileInfo web_file_info;
+  webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
+  callbacks->didReadMetadata(web_file_info);
+}
+
+void CreateSnapshotFileCallbackAdapter(
+    WebKit::WebFileSystemCallbacks* callbacks,
+    const base::PlatformFileInfo& file_info,
+    const base::FilePath& platform_path) {
+  WebFileInfo web_file_info;
+  webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
+  web_file_info.platformPath = platform_path.AsUTF16Unsafe();
+  callbacks->didCreateSnapshotFile(web_file_info);
+}
+
+void ReadDirectoryCallbackAdapater(
+    WebKit::WebFileSystemCallbacks* callbacks,
+    const std::vector<fileapi::DirectoryEntry>& entries,
+    bool has_more) {
+  WebVector<WebFileSystemEntry> file_system_entries(entries.size());
+  for (size_t i = 0; i < entries.size(); i++) {
+    file_system_entries[i].name =
+        base::FilePath(entries[i].name).AsUTF16Unsafe();
+    file_system_entries[i].isDirectory = entries[i].is_directory;
+  }
+  callbacks->didReadDirectory(file_system_entries, has_more);
+}
+
 void OpenFileSystemCallbackAdapter(
     WebKit::WebFileSystemCallbacks* callbacks,
     const std::string& name, const GURL& root) {

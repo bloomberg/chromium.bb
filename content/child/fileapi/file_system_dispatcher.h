@@ -40,8 +40,7 @@ class FileSystemDispatcher : public IPC::Listener {
       const base::PlatformFileInfo& file_info)> MetadataCallback;
   typedef base::Callback<void(
       const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path,
-      int request_id)> CreateSnapshotFileCallback;
+      const base::FilePath& platform_path)> CreateSnapshotFileCallback;
   typedef base::Callback<void(
       const std::vector<fileapi::DirectoryEntry>& entries,
       bool has_more)> ReadDirectoryCallback;
@@ -123,9 +122,6 @@ class FileSystemDispatcher : public IPC::Listener {
   // raw PlatformFile returned from OpenFile.
   void NotifyCloseFile(int file_open_id);
 
-  // The caller must send FileSystemHostMsg_DidReceiveSnapshot message
-  // with |request_id| passed to |success_callback| after the snapshot file
-  // is successfully received.
   void CreateSnapshotFile(const GURL& file_path,
                           const CreateSnapshotFileCallback& success_callback,
                           const StatusCallback& error_callback);

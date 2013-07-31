@@ -407,7 +407,7 @@ WebIDBFactory* RendererWebKitPlatformSupportImpl::idbFactory() {
 
 WebFileSystem* RendererWebKitPlatformSupportImpl::fileSystem() {
   if (!web_file_system_)
-    web_file_system_.reset(new WebFileSystemImpl(child_thread_loop_.get()));
+    web_file_system_.reset(new WebFileSystemImpl());
   return web_file_system_.get();
 }
 
