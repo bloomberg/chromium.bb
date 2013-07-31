@@ -58,8 +58,9 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
   // |wait_for_username| should reflect the |wait_for_username_before_autofill|
   // argument of InitPasswordFormFillData which in this case is true.
   EXPECT_TRUE(result.wait_for_username);
-  // The preferred realm should match the signon realm from the preferred match.
-  EXPECT_EQ(result.preferred_realm, preferred_match.signon_realm);
+  // The preferred realm should be empty since it's the same as the realm of
+  // the form.
+  EXPECT_EQ(result.preferred_realm, "");
 
   PasswordFormFillData result2;
   InitPasswordFormFillData(form_on_page,
@@ -132,6 +133,7 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   public_suffix_match.password_element = ASCIIToUTF16("password");
   public_suffix_match.password_value = ASCIIToUTF16("test");
   public_suffix_match.submit_element = ASCIIToUTF16("");
+  public_suffix_match.original_signon_realm = "https://subdomain.foo.com/";
   public_suffix_match.signon_realm = "https://foo.com/";
   public_suffix_match.ssl_valid = true;
   public_suffix_match.preferred = false;
@@ -155,16 +157,15 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   EXPECT_EQ(result.preferred_realm,
             preferred_match.original_signon_realm);
 
-  // The realm of the exact match should be the same as the realm from the
-  // match.
+  // The realm of the exact match should be empty.
   PasswordFormFillData::LoginCollection::const_iterator iter =
       result.additional_logins.find(exact_match.username_value);
-  EXPECT_EQ(iter->second.realm, exact_match.signon_realm);
+  EXPECT_EQ(iter->second.realm, "");
 
   // The realm of the public suffix match should be set to the original signon
   // realm so the user can see where the result came from.
   iter = result.additional_logins.find(public_suffix_match.username_value);
-  EXPECT_EQ(iter->second.realm, public_suffix_match.signon_realm);
+  EXPECT_EQ(iter->second.realm, public_suffix_match.original_signon_realm);
 }
 
 }  // namespace autofill

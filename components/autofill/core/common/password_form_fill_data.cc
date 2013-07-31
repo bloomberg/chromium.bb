@@ -8,17 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_field_data.h"
 
-namespace {
-
-std::string GetPreferredSignonRealm(const content::PasswordForm& form) {
-  if (form.IsPublicSuffixMatch())
-    return form.original_signon_realm;
-  else
-    return form.signon_realm;
-}
-
-}  // namespace
-
 namespace autofill {
 
 UsernamesCollectionKey::UsernamesCollectionKey() {}
@@ -65,7 +54,7 @@ void InitPasswordFormFillData(
   result->basic_data.fields.push_back(password_field);
   result->wait_for_username = wait_for_username_before_autofill;
 
-  result->preferred_realm = GetPreferredSignonRealm(*preferred_match);
+  result->preferred_realm = preferred_match->original_signon_realm;
 
   // Copy additional username/value pairs.
   content::PasswordFormMap::const_iterator iter;
@@ -73,7 +62,7 @@ void InitPasswordFormFillData(
     if (iter->second != preferred_match) {
       PasswordAndRealm value;
       value.password = iter->second->password_value;
-      value.realm = GetPreferredSignonRealm(*iter->second);
+      value.realm = iter->second->original_signon_realm;
       result->additional_logins[iter->first] = value;
     }
     if (enable_other_possible_usernames &&
@@ -85,7 +74,7 @@ void InitPasswordFormFillData(
       UsernamesCollectionKey key;
       key.username = iter->first;
       key.password = iter->second->password_value;
-      key.realm = GetPreferredSignonRealm(*iter->second);
+      key.realm = iter->second->original_signon_realm;
       result->other_possible_usernames[key] =
           iter->second->other_possible_usernames;
     }

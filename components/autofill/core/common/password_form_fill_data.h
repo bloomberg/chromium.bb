@@ -31,7 +31,9 @@ struct PasswordAndRealm {
   std::string realm;
 };
 
-// Structure used for autofilling password forms.
+// Structure used for autofilling password forms. Note that the realms in this
+// struct are only set when the password's realm differs from the realm of the
+// form that we are filling.
 struct PasswordFormFillData {
   typedef std::map<base::string16, PasswordAndRealm> LoginCollection;
   typedef std::map<UsernamesCollectionKey,
