@@ -58,4 +58,13 @@ crbug.com/265448 [ Win ] svg/transforms/animated-path-inside-transformed-html.xh
 crbug.com/265448 [ Win ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ ImageOnlyFailure ]
 crbug.com/265448 [ Win ] svg/transforms/text-with-pattern-with-svg-transform.svg [ ImageOnlyFailure ]
 
+# With skia r10444 some imperceptible differences on the edges of blurs were caused
+crbug.com/266315 fast/box-shadow/box-shadow-clipped-slices.html [ ImageOnlyFailure ]
+crbug.com/266315 fast/repaint/box-shadow-h.html [ ImageOnlyFailure ]
+crbug.com/266315 fast/repaint/box-shadow-v.html [ ImageOnlyFailure ]
+crbug.com/266315 fast/repaint/shadow-multiple-horizontal.html [ ImageOnlyFailure ]
+crbug.com/266315 fast/repaint/shadow-multiple-strict-horizontal.html [ ImageOnlyFailure ]
+crbug.com/266315 fast/repaint/shadow-multiple-strict-vertical.html [ ImageOnlyFailure ]
+crbug.com/266315 fast/repaint/shadow-multiple-vertical.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
