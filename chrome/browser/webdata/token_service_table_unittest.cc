@@ -40,9 +40,11 @@ class TokenServiceTableTest : public testing::Test {
 #if defined(OS_MACOSX)
 #define MAYBE_TokenServiceGetAllRemoveAll DISABLED_TokenServiceGetAllRemoveAll
 #define MAYBE_TokenServiceGetSet DISABLED_TokenServiceGetSet
+#define MAYBE_TokenServiceRemove DISABLED_TokenServiceRemove
 #else
 #define MAYBE_TokenServiceGetAllRemoveAll TokenServiceGetAllRemoveAll
 #define MAYBE_TokenServiceGetSet TokenServiceGetSet
+#define MAYBE_TokenServiceRemove TokenServiceRemove
 #endif
 
 TEST_F(TokenServiceTableTest, MAYBE_TokenServiceGetAllRemoveAll) {
@@ -59,8 +61,8 @@ TEST_F(TokenServiceTableTest, MAYBE_TokenServiceGetAllRemoveAll) {
   EXPECT_TRUE(table_->SetTokenForService(service, "pepperoni"));
   EXPECT_TRUE(table_->SetTokenForService(service2, "steak"));
   EXPECT_TRUE(table_->GetAllTokens(&out_map));
-  EXPECT_EQ(out_map.find(service)->second, "pepperoni");
-  EXPECT_EQ(out_map.find(service2)->second, "steak");
+  EXPECT_EQ("pepperoni", out_map.find(service)->second);
+  EXPECT_EQ("steak", out_map.find(service2)->second);
   out_map.clear();
 
   // Purge
@@ -71,7 +73,7 @@ TEST_F(TokenServiceTableTest, MAYBE_TokenServiceGetAllRemoveAll) {
   // Check that you can still add it back in
   EXPECT_TRUE(table_->SetTokenForService(service, "cheese"));
   EXPECT_TRUE(table_->GetAllTokens(&out_map));
-  EXPECT_EQ(out_map.find(service)->second, "cheese");
+  EXPECT_EQ("cheese", out_map.find(service)->second);
 }
 
 TEST_F(TokenServiceTableTest, MAYBE_TokenServiceGetSet) {
@@ -84,17 +86,32 @@ TEST_F(TokenServiceTableTest, MAYBE_TokenServiceGetSet) {
 
   EXPECT_TRUE(table_->SetTokenForService(service, "pepperoni"));
   EXPECT_TRUE(table_->GetAllTokens(&out_map));
-  EXPECT_EQ(out_map.find(service)->second, "pepperoni");
+  EXPECT_EQ("pepperoni", out_map.find(service)->second);
   out_map.clear();
 
   // try blanking it - won't remove it from the db though!
   EXPECT_TRUE(table_->SetTokenForService(service, std::string()));
   EXPECT_TRUE(table_->GetAllTokens(&out_map));
-  EXPECT_EQ(out_map.find(service)->second, "");
+  EXPECT_EQ("", out_map.find(service)->second);
   out_map.clear();
 
   // try mutating it
   EXPECT_TRUE(table_->SetTokenForService(service, "ham"));
   EXPECT_TRUE(table_->GetAllTokens(&out_map));
-  EXPECT_EQ(out_map.find(service)->second, "ham");
+  EXPECT_EQ("ham", out_map.find(service)->second);
+}
+
+TEST_F(TokenServiceTableTest, MAYBE_TokenServiceRemove) {
+  std::map<std::string, std::string> out_map;
+  std::string service;
+  std::string service2;
+  service = "testservice";
+  service2 = "othertestservice";
+
+  EXPECT_TRUE(table_->SetTokenForService(service, "pepperoni"));
+  EXPECT_TRUE(table_->SetTokenForService(service2, "steak"));
+  EXPECT_TRUE(table_->RemoveTokenForService(service));
+  EXPECT_TRUE(table_->GetAllTokens(&out_map));
+  EXPECT_EQ(0u, out_map.count(service));
+  EXPECT_EQ("steak", out_map.find(service2)->second);
 }

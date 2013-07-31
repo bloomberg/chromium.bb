@@ -61,6 +61,14 @@ bool TokenServiceTable::RemoveAllTokens() {
   return s.Run();
 }
 
+bool TokenServiceTable::RemoveTokenForService(const std::string& service) {
+  sql::Statement s(db_->GetUniqueStatement(
+      "DELETE FROM token_service WHERE service = ?"));
+  s.BindString(0, service);
+
+  return s.Run();
+}
+
 bool TokenServiceTable::SetTokenForService(const std::string& service,
                                            const std::string& token) {
   std::string encrypted_token;

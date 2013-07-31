@@ -48,6 +48,9 @@ class TokenWebData : public WebDataServiceBase {
   // Remove all tokens stored in the web database.
   void RemoveAllTokens();
 
+  // Removes a token related to |service| from the web database.
+  void RemoveTokenForService(const std::string& service);
+
   // Null on failure. Success is WDResult<std::vector<std::string> >
   virtual Handle GetAllTokens(WebDataServiceConsumer* consumer);
 

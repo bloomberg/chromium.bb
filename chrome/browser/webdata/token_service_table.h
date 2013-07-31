@@ -30,6 +30,9 @@ class TokenServiceTable : public WebDatabaseTable {
   // Remove all tokens previously set with SetTokenForService.
   bool RemoveAllTokens();
 
+  // Removes a token related to the service from the token_service table.
+  bool RemoveTokenForService(const std::string& service);
+
   // Retrieves all tokens previously set with SetTokenForService.
   // Returns true if there were tokens and we decrypted them,
   // false if there was a failure somehow
