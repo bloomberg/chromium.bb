@@ -42,7 +42,7 @@ class IDLPPAPILexer(IDLLexer):
   def __init__(self):
     IDLLexer.__init__(self)
     self._AddTokens(['INLINE', 'LSHIFT', 'RSHIFT'])
-    self._AddKeywords(['label'])
+    self._AddKeywords(['label', 'struct'])
 
     # Add number types
     self._AddKeywords(['char', 'int8_t', 'int16_t', 'int32_t', 'int64_t']);

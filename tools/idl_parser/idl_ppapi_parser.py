@@ -65,6 +65,7 @@ class IDLPPAPIParser(IDLParser):
       # [2] Add INLINE definition
   def p_Definition(self, p):
     """Definition : CallbackOrInterface
+                  | Struct
                   | Partial
                   | Dictionary
                   | Exception
@@ -108,6 +109,32 @@ class IDLPPAPIParser(IDLParser):
   def p_LabelContError(self, p):
     """LabelCont : error LabelCont"""
     p[0] = p[2]
+
+  # [5.1] Add "struct" style interface
+  def p_Struct(self, p):
+    """Struct : STRUCT identifier Inheritance '{' StructMembers '}' ';'"""
+    p[0] = self.BuildNamed('Struct', p, 2, ListFromConcat(p[3], p[5]))
+
+  def p_StructMembers(self, p):
+    """StructMembers : StructMember StructMembers
+                     |"""
+    if len(p) > 1:
+      p[0] = ListFromConcat(p[1], p[2])
+
+  def p_StructMember(self, p):
+    """StructMember : ExtendedAttributeList Type identifier ';'"""
+    p[0] = self.BuildNamed('Member', p, 3, ListFromConcat(p[1], p[2]))
+
+  # [24]
+  def p_Typedef(self, p):
+    """Typedef : TYPEDEF ExtendedAttributeListNoComments Type identifier ';'"""
+    p[0] = self.BuildNamed('Typedef', p, 4, ListFromConcat(p[2], p[3]))
+
+  # [24.1]
+  def p_TypedefFunc(self, p):
+    """Typedef : TYPEDEF ExtendedAttributeListNoComments ReturnType identifier '(' ArgumentList ')' ';'"""
+    args = self.BuildProduction('Arguments', p, 5, p[6])
+    p[0] = self.BuildNamed('Callback', p, 4, ListFromConcat(p[2], p[3], args))
 
   # [27]
   def p_ConstValue(self, p):
@@ -210,6 +237,43 @@ class IDLPPAPIParser(IDLParser):
   def p_null(self, p):
     """ """
     pass
+
+  # We only support:
+  #    [ identifier ]
+  #    [ identifier = identifier ]
+  #    [ identifier ( ArgumentList )]
+  #    [ identifier ( ValueList )]
+  #    [ identifier = identifier ( ArgumentList )]
+  # [51] map directly to 74-77
+  # [52-54, 56] are unsupported
+  def p_ExtendedAttribute(self, p):
+    """ExtendedAttribute : ExtendedAttributeNoArgs
+                         | ExtendedAttributeArgList
+                         | ExtendedAttributeValList
+                         | ExtendedAttributeIdent
+                         | ExtendedAttributeIdentConst
+                         | ExtendedAttributeNamedArgList"""
+    p[0] = p[1]
+
+  def p_ExtendedAttributeValList(self, p):
+    """ExtendedAttributeValList : identifier '(' ValueList ')'"""
+    arguments = self.BuildProduction('Values', p, 2, p[3])
+    p[0] = self.BuildNamed('ExtAttribute', p, 1, arguments)
+
+  # [76]
+  def p_ExtendedAttributeIdentConst(self, p):
+    """ExtendedAttributeIdentConst : identifier '=' ConstValue"""
+    p[0] = self.BuildNamed('ExtAttribute', p, 1, p[3])
+
+  def p_ValueListCont(self, p):
+    """ValueListCont : ConstValue ValueListCont
+                     |"""
+    if len(p) > 1:
+      p[0] = ListFromConcat(p[1], p[2])
+
+  def p_ValueList(self, p):
+    """ValueList : ConstValue ValueListCont"""
+    values = self.BuildProduction('Values', p, 2, ListFromConcat(p[1], p[2]))
 
   def __init__(self, lexer, verbose=False, debug=False, mute_error=False):
     IDLParser.__init__(self, lexer, verbose, debug, mute_error)

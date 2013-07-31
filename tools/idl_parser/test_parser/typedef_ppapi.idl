@@ -41,6 +41,17 @@ symatics should exist.  This is an exact match.
 callback foo = void (int32_t x);
 
 /* TREE
+ *Callback(foo)
+ *  Type()
+ *    PrimitiveType(void)
+ *  Arguments()
+ *    Argument(x)
+ *      Type()
+ *        PrimitiveType(int32_t)
+ */
+typedef void foo(int32_t x);
+
+/* TREE
  *Typedef(MyLong)
  *  Type()
  *    PrimitiveType(int32_t)

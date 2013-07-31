@@ -359,7 +359,7 @@ class IDLParser(object):
 
   # [24]
   def p_Typedef(self, p):
-    """Typedef : TYPEDEF ExtendedAttributeList Type identifier ';'"""
+    """Typedef : TYPEDEF ExtendedAttributeListNoComments Type identifier ';'"""
     p[0] = self.BuildNamed('Typedef', p, 4, ListFromConcat(p[2], p[3]))
 
   # [24.1] Error recovery for Typedefs
@@ -571,7 +571,15 @@ class IDLParser(object):
     """ExceptionField : error"""
     p[0] = self.BuildError(p, 'ExceptionField')
 
-  # [49] Add optional comment field
+  # [49] No comment version for mid statement attributes.
+  def p_ExtendedAttributeListNoComments(self, p):
+    """ExtendedAttributeListNoComments : '[' ExtendedAttribute ExtendedAttributes ']'
+                                       | """
+    if len(p) > 2:
+      items = ListFromConcat(p[2], p[3])
+      p[0] = self.BuildProduction('ExtAttributes', p, 1, items)
+
+  # [49.1] Add optional comment field for start of statements.
   def p_ExtendedAttributeList(self, p):
     """ExtendedAttributeList : Comments '[' ExtendedAttribute ExtendedAttributes ']'
                              | Comments """

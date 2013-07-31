@@ -63,29 +63,32 @@ class PepperIDLParser(unittest.TestCase):
     self.parser = IDLPPAPIParser(IDLPPAPILexer(), mute_error=True)
     self.filenames = glob.glob('test_parser/*_ppapi.idl')
 
-  def _TestNode(self, node):
+  def _TestNode(self, filename, node):
     comments = node.GetListOf('Comment')
     for comment in comments:
       check, value = ParseCommentTest(comment.GetName())
       if check == 'BUILD':
-        msg = 'Expecting %s, but found %s.\n' % (value, str(node))
+        msg = '%s - Expecting %s, but found %s.\n' % (
+            filename, value, str(node))
         self.assertEqual(value, str(node), msg)
 
       if check == 'ERROR':
-        msg = node.GetLogLine('Expecting\n\t%s\nbut found \n\t%s\n' % (
-                              value, str(node)))
+        msg = node.GetLogLine('%s - Expecting\n\t%s\nbut found \n\t%s\n' % (
+                              filename, value, str(node)))
         self.assertEqual(value, node.GetName(), msg)
 
       if check == 'PROP':
         key, expect = value.split('=')
         actual = str(node.GetProperty(key))
-        msg = 'Mismatched property %s: %s vs %s.\n' % (key, expect, actual)
+        msg = '%s - Mismatched property %s: %s vs %s.\n' % (
+                              filename, key, expect, actual)
         self.assertEqual(expect, actual, msg)
 
       if check == 'TREE':
         quick = '\n'.join(node.Tree())
         lineno = node.GetProperty('LINENO')
-        msg = 'Mismatched tree at line %d:\n%sVS\n%s' % (lineno, value, quick)
+        msg = '%s - Mismatched tree at line %d:\n%sVS\n%s' % (
+                              filename, lineno, value, quick)
         self.assertEqual(value, quick, msg)
 
   def testExpectedNodes(self):
@@ -96,7 +99,7 @@ class PepperIDLParser(unittest.TestCase):
                       filename)
 
       for node in filenode.GetChildren()[2:]:
-        self._TestNode(node)
+        self._TestNode(filename, node)
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)
