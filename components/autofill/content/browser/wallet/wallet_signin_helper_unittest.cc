@@ -8,9 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
-#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -150,13 +150,12 @@ class WalletSigninHelperTest : public testing::Test {
     return signin_helper_->state();
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<WalletSigninHelperForTesting> signin_helper_;
   MockWalletSigninHelperDelegate mock_delegate_;
-  content::TestBrowserContext browser_context_;
+  TestingProfile browser_context_;
 
  private:
-  // The profile's request context must be released on the IO thread.
-  content::TestBrowserThreadBundle thread_bundle_;
   net::TestURLFetcherFactory factory_;
 };
 

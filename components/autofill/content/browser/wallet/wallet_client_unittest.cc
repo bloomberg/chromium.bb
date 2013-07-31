@@ -10,6 +10,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/autocheckout_steps.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
@@ -19,7 +20,6 @@
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autocheckout_status.h"
-#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -790,8 +790,9 @@ class WalletClientTest : public testing::Test {
   }
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<WalletClient> wallet_client_;
-  content::TestBrowserContext browser_context_;
+  TestingProfile browser_context_;
   MockWalletClientDelegate delegate_;
 
  private:
@@ -809,9 +810,6 @@ class WalletClientTest : public testing::Test {
     base::JSONWriter::Write(dict, &clean_upload_data);
     return clean_upload_data;
   }
-
-  // The profile's request context must be released on the IO thread.
-  content::TestBrowserThreadBundle thread_bundle_;
 
   net::TestURLFetcherFactory factory_;
 };
