@@ -45,10 +45,9 @@ def ValidateInstallAPKOption(option_parser, options):
 
 def _InstallApk(args):
   apk_path, apk_package, keep_data, device = args
-  result = android_commands.AndroidCommands(device=device).ManagedInstall(
+  android_commands.AndroidCommands(device=device).ManagedInstall(
       apk_path, keep_data, apk_package)
   print '-----  Installed on %s  -----' % device
-  print result
 
 
 def main(argv):
