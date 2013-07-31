@@ -668,6 +668,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     fetcher_->SetRequestContext(service_->request_context_getter_.get());
     fetcher_->SetUploadData("application/octet-stream",
                             client_download_request_data_);
+    UMA_HISTOGRAM_COUNTS("SBClientDownload.DownloadRequestPayloadSize",
+                         client_download_request_data_.size());
     fetcher_->Start();
   }
 

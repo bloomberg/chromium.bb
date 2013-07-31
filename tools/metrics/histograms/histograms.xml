@@ -12561,6 +12561,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.DownloadRequestPayloadSize" units="bytes">
+  <summary>
+    The size of the upload data for CheckClientDownloadRequest URLFetchers.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.DownloadRequestResponseCode">
   <summary>
     For CheckClientDownloadRequest URLFetchers with successful status, the HTTP
