@@ -376,6 +376,7 @@ bool DocumentLoader::isPostOrRedirectAfterPost(const ResourceRequest& newRequest
 
 void DocumentLoader::handleSubstituteDataLoadNow(DocumentLoaderTimer*)
 {
+    RefPtr<DocumentLoader> protect(this);
     KURL url = m_substituteData.responseURL();
     if (url.isEmpty())
         url = m_request.url();
