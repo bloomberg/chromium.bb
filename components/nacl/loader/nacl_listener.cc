@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/nacl/nacl_listener.h"
+#include "components/nacl/loader/nacl_listener.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -16,10 +16,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
-#include "chrome/nacl/nacl_ipc_adapter.h"
-#include "chrome/nacl/nacl_validation_db.h"
-#include "chrome/nacl/nacl_validation_query.h"
 #include "components/nacl/common/nacl_messages.h"
+#include "components/nacl/loader/nacl_ipc_adapter.h"
+#include "components/nacl/loader/nacl_validation_db.h"
+#include "components/nacl/loader/nacl_validation_query.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"

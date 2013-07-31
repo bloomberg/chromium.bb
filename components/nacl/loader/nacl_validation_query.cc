@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/nacl/nacl_validation_query.h"
+#include "components/nacl/loader/nacl_validation_query.h"
 
 #include "base/logging.h"
+#include "components/nacl/loader/nacl_validation_db.h"
 #include "crypto/nss_util.h"
-#include "chrome/nacl/nacl_validation_db.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator/nacl_file_info.h"
 #include "native_client/src/trusted/validator/validation_cache.h"

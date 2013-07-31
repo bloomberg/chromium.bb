@@ -1,0 +1,17 @@
+include_rules = [
+  "+components/nacl",
+  "+content/public/app/startup_helper_win.h",
+  "+crypto",
+  "+sandbox/linux/seccomp-bpf",
+  "+sandbox/linux/services",
+  "+sandbox/win/src",
+  "+native_client/src",
+  "+ppapi/c",  # header files only
+
+  # For handle conversion in nacl_ipc_adapter.cc:
+  "+ppapi/proxy/handle_converter.h",
+  "+ppapi/proxy/serialized_handle.h",
+
+  # For sending PpapiHostMsg_ChannelCreated in nacl_ipc_adapter.cc:
+  "+ppapi/proxy/ppapi_messages.h"
+]

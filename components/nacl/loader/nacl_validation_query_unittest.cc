@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/nacl/nacl_validation_db.h"
-#include "chrome/nacl/nacl_validation_query.h"
+#include "components/nacl/loader/nacl_validation_db.h"
+#include "components/nacl/loader/nacl_validation_query.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This test makes sure that validation signature generation is performed

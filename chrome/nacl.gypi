@@ -24,18 +24,18 @@
           # .cc, .h, and .mm files under nacl that are used on all
           # platforms, including both 32-bit and 64-bit Windows.
           # Test files are also not included.
-          'nacl/nacl_ipc_adapter.cc',
-          'nacl/nacl_ipc_adapter.h',
-          'nacl/nacl_main.cc',
-          'nacl/nacl_main_platform_delegate.h',
-          'nacl/nacl_main_platform_delegate_linux.cc',
-          'nacl/nacl_main_platform_delegate_mac.mm',
-          'nacl/nacl_main_platform_delegate_win.cc',
-          'nacl/nacl_listener.cc',
-          'nacl/nacl_listener.h',
-          'nacl/nacl_validation_db.h',
-          'nacl/nacl_validation_query.cc',
-          'nacl/nacl_validation_query.h',
+          '../components/nacl/loader/nacl_ipc_adapter.cc',
+          '../components/nacl/loader/nacl_ipc_adapter.h',
+          '../components/nacl/loader/nacl_main.cc',
+          '../components/nacl/loader/nacl_main_platform_delegate.h',
+          '../components/nacl/loader/nacl_main_platform_delegate_linux.cc',
+          '../components/nacl/loader/nacl_main_platform_delegate_mac.mm',
+          '../components/nacl/loader/nacl_main_platform_delegate_win.cc',
+          '../components/nacl/loader/nacl_listener.cc',
+          '../components/nacl/loader/nacl_listener.h',
+          '../components/nacl/loader/nacl_validation_db.h',
+          '../components/nacl/loader/nacl_validation_query.cc',
+          '../components/nacl/loader/nacl_validation_query.h',
         ],
         # TODO(gregoryd): consider switching NaCl to use Chrome OS defines
         'conditions': [
@@ -155,8 +155,8 @@
               ],
               'sources': [
                 'nacl/nacl_helper_linux.cc',
-                'nacl/nacl_sandbox_linux.cc',
                 '../base/posix/unix_domain_socket_linux.cc',
+                '../components/nacl/loader/nacl_sandbox_linux.cc',
                 '../content/common/child_process_sandbox_support_impl_shm_linux.cc',
                 '../content/common/sandbox_init_linux.cc',
                 '../content/common/sandbox_seccomp_bpf_linux.cc',

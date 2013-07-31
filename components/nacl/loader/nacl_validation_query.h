@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_NACL_NACL_VALIDATION_QUERY_H_
-#define CHROME_NACL_NACL_VALIDATION_QUERY_H_
+#ifndef COMPONENTS_NACL_LOADER_NACL_VALIDATION_QUERY_H_
+#define COMPONENTS_NACL_LOADER_NACL_VALIDATION_QUERY_H_
 
 #include <string>
 
@@ -91,4 +91,4 @@ struct NaClValidationCache* CreateValidationCache(
     NaClValidationDB* db, const std::string& profile_key,
     const std::string& nacl_version);
 
-#endif  // CHROME_NACL_NACL_VALIDATION_QUERY_H_
+#endif  // COMPONENTS_NACL_LOADER_NACL_VALIDATION_QUERY_H_

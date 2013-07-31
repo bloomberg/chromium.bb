@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/timer/hi_res_timer_manager.h"
-#include "chrome/common/chrome_result_codes.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/logging_chrome.h"
-#include "chrome/nacl/nacl_listener.h"
-#include "chrome/nacl/nacl_main_platform_delegate.h"
+#include "components/nacl/loader/nacl_listener.h"
+#include "components/nacl/loader/nacl_main_platform_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 

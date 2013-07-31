@@ -1732,8 +1732,6 @@
         'common/translate/translate_common_metrics_unittest.cc',
         'common/translate/translate_util_unittest.cc',
         'common/worker_thread_ticker_unittest.cc',
-        'nacl/nacl_ipc_adapter_unittest.cc',
-        'nacl/nacl_validation_query_unittest.cc',
         'renderer/chrome_content_renderer_client_unittest.cc',
         'renderer/content_settings_observer_unittest.cc',
         'renderer/extensions/chrome_v8_context_set_unittest.cc',
@@ -1845,6 +1843,12 @@
         '../components/autofill/core/browser/webdata/autofill_table_unittest.cc',
         '../components/autofill/core/browser/webdata/web_data_service_unittest.cc',
         '../components/autofill/core/common/password_form_fill_data_unittest.cc',
+
+        # TODO(yael): Move to //components/components_tests.gypi once
+        # nacl_defines is moved out of chrome.gyp into a common place.
+        '../components/nacl/loader/nacl_ipc_adapter_unittest.cc',
+        '../components/nacl/loader/nacl_validation_query_unittest.cc',
+
         '../components/webdata/common/web_database_migration_unittest.cc',
         '../components/webdata/common/web_data_service_test_util.cc',
         '../components/webdata/common/web_data_service_test_util.h',
@@ -1980,8 +1984,10 @@
             'browser/nacl_host/nacl_validation_cache_unittest.cc',
             'browser/nacl_host/pnacl_host_unittest.cc',
             'browser/nacl_host/pnacl_translation_cache_unittest.cc',
-            'nacl/nacl_ipc_adapter_unittest.cc',
-            'nacl/nacl_validation_query_unittest.cc',
+            # TODO(yael): Move to //components/components_tests.gypi once
+            # nacl_defines is moved out of chrome.gyp into a common place.
+            '../components/nacl/loader/nacl_ipc_adapter_unittest.cc',
+            '../components/nacl/loader/nacl_validation_query_unittest.cc',
           ],
         }],
         ['enable_extensions==0', {
