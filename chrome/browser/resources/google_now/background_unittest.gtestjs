@@ -30,14 +30,22 @@ TEST_F('GoogleNowBackgroundUnitTest', 'AreTasksConflicting', function() {
   testTaskPair(UPDATE_CARDS_TASK_NAME, UPDATE_CARDS_TASK_NAME, true);
   testTaskPair(UPDATE_CARDS_TASK_NAME, DISMISS_CARD_TASK_NAME, false);
   testTaskPair(UPDATE_CARDS_TASK_NAME, RETRY_DISMISS_TASK_NAME, false);
+  testTaskPair(UPDATE_CARDS_TASK_NAME, STATE_CHANGED_TASK_NAME, false);
 
   testTaskPair(DISMISS_CARD_TASK_NAME, UPDATE_CARDS_TASK_NAME, false);
   testTaskPair(DISMISS_CARD_TASK_NAME, DISMISS_CARD_TASK_NAME, false);
   testTaskPair(DISMISS_CARD_TASK_NAME, RETRY_DISMISS_TASK_NAME, false);
+  testTaskPair(DISMISS_CARD_TASK_NAME, STATE_CHANGED_TASK_NAME, false);
 
   testTaskPair(RETRY_DISMISS_TASK_NAME, UPDATE_CARDS_TASK_NAME, true);
   testTaskPair(RETRY_DISMISS_TASK_NAME, DISMISS_CARD_TASK_NAME, true);
   testTaskPair(RETRY_DISMISS_TASK_NAME, RETRY_DISMISS_TASK_NAME, true);
+  testTaskPair(RETRY_DISMISS_TASK_NAME, STATE_CHANGED_TASK_NAME, false);
+
+  testTaskPair(STATE_CHANGED_TASK_NAME, UPDATE_CARDS_TASK_NAME, false);
+  testTaskPair(STATE_CHANGED_TASK_NAME, DISMISS_CARD_TASK_NAME, false);
+  testTaskPair(STATE_CHANGED_TASK_NAME, RETRY_DISMISS_TASK_NAME, false);
+  testTaskPair(STATE_CHANGED_TASK_NAME, STATE_CHANGED_TASK_NAME, false);
 });
 
 /**
@@ -46,35 +54,130 @@ TEST_F('GoogleNowBackgroundUnitTest', 'AreTasksConflicting', function() {
  */
 function mockInitializeDependencies(fixture) {
   fixture.makeAndRegisterMockGlobals([
-      'recordEvent',
-      'showWelcomeToast',
-      'startPollingCards']);
-  fixture.makeAndRegisterMockApis(
-      ['storage.get', 'chrome.identity.getAuthToken']);
+    'recordEvent',
+    'showWelcomeToast',
+    'startPollingCards'
+  ]);
+  fixture.makeAndRegisterMockApis([
+    'chrome.identity.getAuthToken',
+    'chrome.location.clearWatch',
+    'chrome.notifications.getAll',
+    'chrome.preferencesPrivate.googleGeolocationAccessEnabled.get',
+    'storage.get',
+    'storage.set',
+    'tasks.add',
+    'updateCardsAttempts.isRunning',
+    'updateCardsAttempts.stop'
+  ]);
+}
+
+/**
+ * Sets up the test to expect the state machine calls and send
+ * the specified state machine state. Currently used to test initialize().
+ * Note that this CAN NOT be used if any of the methods below are called
+ * outside of this context with the same argument matchers.
+ * expects() calls cannot be chained with the same argument matchers.
+ * @param {object} mockApisObj Mock APIs Object.
+ * @param {string} testIdentityToken getAuthToken callback token.
+ * @param {boolean} testGeolocationPref Geolocation Preference callback value.
+ * @param {boolean} testUserRespondedToToast User Response to toast
+ &     callback value.
+ */
+function expectStateMachineCalls(
+    mockApisObj,
+    testIdentityToken,
+    testGeolocationPref,
+    testUserRespondedToToast) {
+  var chromeIdentityGetAuthTokenSavedArgs = new SaveMockArguments();
+  mockApisObj.expects(once()).
+      chrome_identity_getAuthToken(
+          chromeIdentityGetAuthTokenSavedArgs.match(
+              eqJSON({interactive: false})),
+          chromeIdentityGetAuthTokenSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          chromeIdentityGetAuthTokenSavedArgs, 1, testIdentityToken));
+
+  var googleGeolocationPrefGetSavedArgs = new SaveMockArguments();
+  mockApisObj.expects(once()).
+      chrome_preferencesPrivate_googleGeolocationAccessEnabled_get(
+          googleGeolocationPrefGetSavedArgs.match(eqJSON({})),
+          googleGeolocationPrefGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          googleGeolocationPrefGetSavedArgs, 1, {value: testGeolocationPref}));
+
+  var storageGetSavedArgs = new SaveMockArguments();
+  mockApisObj.expects(once()).
+      storage_get(
+          storageGetSavedArgs.match(eq('userRespondedToToast')),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(storageGetSavedArgs, 1, testUserRespondedToToast));
+}
+
+/**
+ * Sets up the test to expect the initialization calls that
+ * initialize() invokes.
+ * Note that this CAN NOT be used if any of the methods below are called
+ * outside of this context with the same argument matchers.
+ * expects() calls cannot be chained with the same argument matchers.
+ */
+function expectInitialization(mockApisObj) {
+  mockApisObj.expects(once()).
+      chrome_location_clearWatch(ANYTHING);
+  mockApisObj.expects(once()).
+      updateCardsAttempts_stop();
+  mockApisObj.expects(once()).
+      storage_set(eqJSON({notificationsData: {}}));
+  var tasksAddSavedArgs = new SaveMockArguments();
+  mockApisObj.expects(once()).
+      tasks_add(
+          tasksAddSavedArgs.match(ANYTHING),
+          tasksAddSavedArgs.match(ANYTHING)).
+      will(invokeCallback(tasksAddSavedArgs, 1, function() {}));
+  var updateCardsAttemptsIsRunningSavedArgs = new SaveMockArguments();
+  mockApisObj.expects(once()).
+      updateCardsAttempts_isRunning(
+          updateCardsAttemptsIsRunningSavedArgs.match(ANYTHING)).
+      will(
+          invokeCallback(
+             updateCardsAttemptsIsRunningSavedArgs, 0, false));
 }
 
 TEST_F(
     'GoogleNowBackgroundUnitTest',
     'Initialize_ToastStateEmpty1',
     function() {
-      // Tests the case when toast state is empty and NOTIFICATION_CARDS_URL is
-      // not set. In this case, the function should quietly exit after finding
-      // out that NOTIFICATION_CARDS_URL is empty.
+      // Tests the case when the user isn't signed in and NOTIFICATION_CARDS_URL
+      // is not set. Since NOTIFICATION_CARDS_URL is empty,
+      // nothing should start.
 
       // Setup and expectations.
-      var testToastState = {};
       NOTIFICATION_CARDS_URL = undefined;
+      var testIdentityToken = undefined;
+      var testGeolocationPref = false;
+      var testUserRespondedToToast = {};
 
       mockInitializeDependencies(this);
 
       this.mockGlobals.expects(once()).recordEvent(
           DiagnosticEvent.EXTENSION_START);
-      var storageGetSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          storage_get(
-              storageGetSavedArgs.match(eq('toastState')),
-              storageGetSavedArgs.match(ANYTHING)).
-          will(invokeCallback(storageGetSavedArgs, 1, testToastState));
+
+      expectInitialization(this.mockApis);
+
+      expectStateMachineCalls(
+          this.mockApis,
+          testIdentityToken,
+          testGeolocationPref,
+          testUserRespondedToToast);
+
+      var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(exactly(2)).
+          chrome_notifications_getAll(
+              chromeNotificationGetAllSavedArgs.match(ANYTHING)).
+          will(
+              invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
+              invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
+
+      // TODO(robliao,vadimt): Determine the granularity of testing to perform.
 
       // Invoking the tested function.
       initialize();
@@ -84,34 +187,36 @@ TEST_F(
     'GoogleNowBackgroundUnitTest',
     'Initialize_ToastStateEmpty2',
     function() {
-      // Tests the case when toast state is empty and NOTIFICATION_CARDS_URL is
-      // set, but getAuthToken fails most likely because the user is not signed
-      // in. In this case, the function should quietly exit after finding out
-      // that getAuthToken fails.
+      // Tests the case when NOTIFICATION_CARDS_URL is but getAuthToken fails
+      // most likely because the user is not signed in. In this case, the
+      // function should quietly exit after finding out that getAuthToken fails.
 
       // Setup and expectations.
-      var testToastState = {};
       NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
       var testIdentityToken = undefined;
+      var testGeolocationPref = false;
+      var testUserRespondedToToast = {};
 
       mockInitializeDependencies(this);
 
       this.mockGlobals.expects(once()).recordEvent(
           DiagnosticEvent.EXTENSION_START);
-      var storageGetSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          storage_get(
-              storageGetSavedArgs.match(eq('toastState')),
-              storageGetSavedArgs.match(ANYTHING)).
-          will(invokeCallback(storageGetSavedArgs, 1, testToastState));
-      var chromeIdentityGetAuthTokenSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          chrome_identity_getAuthToken(
-              chromeIdentityGetAuthTokenSavedArgs.match(
-                  eqJSON({interactive: false})),
-              chromeIdentityGetAuthTokenSavedArgs.match(ANYTHING)).
-          will(invokeCallback(
-              chromeIdentityGetAuthTokenSavedArgs, 1, testIdentityToken));
+
+      expectInitialization(this.mockApis);
+
+      expectStateMachineCalls(
+          this.mockApis,
+          testIdentityToken,
+          testGeolocationPref,
+          testUserRespondedToToast);
+
+      var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(exactly(2)).
+          chrome_notifications_getAll(
+              chromeNotificationGetAllSavedArgs.match(ANYTHING)).
+          will(
+              invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
+              invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
 
       // Invoking the tested function.
       initialize();
@@ -121,77 +226,110 @@ TEST_F(
     'GoogleNowBackgroundUnitTest',
     'Initialize_ToastStateEmpty3',
     function() {
-      // Tests the case when toast state is empty and NOTIFICATION_CARDS_URL is
-      // set, and getAuthToken succeeds. In this case, the function should
-      // invoke showWelcomeToast().
+      // Tests the case when NOTIFICATION_CARDS_URL is set, getAuthToken
+      // succeeds, and the user has never responded to the toast.
+      // In this case, the function should invoke showWelcomeToast().
 
       // Setup and expectations.
-      var testToastState = {};
       NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
       var testIdentityToken = 'some identity token';
+      var testGeolocationPref = false;
+      var testUserRespondedToToast = {};
 
       mockInitializeDependencies(this);
 
       this.mockGlobals.expects(once()).recordEvent(
           DiagnosticEvent.EXTENSION_START);
-      var storageGetSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          storage_get(
-              storageGetSavedArgs.match(eq('toastState')),
-              storageGetSavedArgs.match(ANYTHING)).
-          will(invokeCallback(storageGetSavedArgs, 1, testToastState));
-      var chromeIdentityGetAuthTokenSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          chrome_identity_getAuthToken(
-              chromeIdentityGetAuthTokenSavedArgs.match(
-                  eqJSON({interactive: false})),
-              chromeIdentityGetAuthTokenSavedArgs.match(ANYTHING)).
-          will(invokeCallback(
-              chromeIdentityGetAuthTokenSavedArgs, 1, testIdentityToken));
+
+      expectInitialization(this.mockApis);
+
+      expectStateMachineCalls(
+          this.mockApis,
+          testIdentityToken,
+          testGeolocationPref,
+          testUserRespondedToToast);
+
+      var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(exactly(2)).
+          chrome_notifications_getAll(
+              chromeNotificationGetAllSavedArgs.match(ANYTHING)).
+          will(
+              invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
+              invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
+
       this.mockGlobals.expects(once()).showWelcomeToast();
 
       // Invoking the tested function.
       initialize();
     });
 
-TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_ToastStateYes', function() {
-  // Tests the case when the user has answered "yes" to the toast in the past.
-  // In this case, the function should invoke startPollingCards().
+TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
+  // Tests if Google Now will invoke startPollingCards when all
+  // of the required state is fulfilled.
 
   // Setup and expectations.
-  var testToastState = {toastState: ToastOptionResponse.CHOSE_YES};
+  NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
+  var testIdentityToken = 'some identity token';
+  var testGeolocationPref = true;
+  var testUserRespondedToToast = {userRespondedToToast: true};
 
   mockInitializeDependencies(this);
 
-  this.mockGlobals.expects(once()).recordEvent(DiagnosticEvent.EXTENSION_START);
-  var storageGetSavedArgs = new SaveMockArguments();
-  this.mockApis.expects(once()).
-      storage_get(
-          storageGetSavedArgs.match(eq('toastState')),
-          storageGetSavedArgs.match(ANYTHING)).
-      will(invokeCallback(storageGetSavedArgs, 1, testToastState));
+  this.mockGlobals.expects(once()).recordEvent(
+        DiagnosticEvent.EXTENSION_START);
+
+  expectInitialization(this.mockApis);
+
+  expectStateMachineCalls(
+      this.mockApis,
+      testIdentityToken,
+      testGeolocationPref,
+      testUserRespondedToToast);
+
+  var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(exactly(2)).
+      chrome_notifications_getAll(
+          chromeNotificationGetAllSavedArgs.match(ANYTHING)).
+      will(
+          invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
+          invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
+
   this.mockGlobals.expects(once()).startPollingCards();
 
   // Invoking the tested function.
   initialize();
 });
 
-TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_ToastStateNo', function() {
-  // Tests the case when the user has answered "no" to the toast in the past.
-  // In this case, the function should do nothing.
+TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_NoGeolocation', function() {
+  // Tests the case where everything is in place except for the
+  // Geolocation Preference after the user responded to the toast.
 
   // Setup and expectations.
-  var testToastState = {toastState: ToastOptionResponse.CHOSE_NO};
+  NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
+  var testIdentityToken = 'some identity token';
+  var testGeolocationPref = false;
+  var testUserRespondedToToast = {userRespondedToToast: true};
 
   mockInitializeDependencies(this);
 
-  this.mockGlobals.expects(once()).recordEvent(DiagnosticEvent.EXTENSION_START);
-  var storageGetSavedArgs = new SaveMockArguments();
-  this.mockApis.expects(once()).
-      storage_get(
-          storageGetSavedArgs.match(eq('toastState')),
-          storageGetSavedArgs.match(ANYTHING)).
-      will(invokeCallback(storageGetSavedArgs, 1, testToastState));
+  this.mockGlobals.expects(once()).recordEvent(
+        DiagnosticEvent.EXTENSION_START);
+
+  expectInitialization(this.mockApis);
+
+  expectStateMachineCalls(
+      this.mockApis,
+      testIdentityToken,
+      testGeolocationPref,
+      testUserRespondedToToast);
+
+  var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(exactly(2)).
+      chrome_notifications_getAll(
+          chromeNotificationGetAllSavedArgs.match(ANYTHING)).
+      will(
+          invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
+          invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
 
   // Invoking the tested function.
   initialize();

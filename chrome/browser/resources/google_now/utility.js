@@ -130,7 +130,7 @@ function buildTaskManager(areConflicting) {
    * task. Otherwise, stores the task for future execution.
    * @param {string} taskName Name of the task.
    * @param {function(function())} task Function to run. Takes a callback
-   *     parameter.
+   *     parameter. Call this callback on completion.
    */
   function add(taskName, task) {
     console.log('Adding task ' + taskName);
@@ -332,6 +332,17 @@ function buildAttemptManager(
   }
 
   /**
+   * Indicates if this attempt manager has started.
+   * @param {function(boolean)} callback The function's boolean parameter is
+   *     true if the attempt manager has started, false otherwise.
+   */
+  function isRunning(callback) {
+    chrome.alarms.get(alarmName, function(alarmInfo) {
+      callback(!!alarmInfo);
+    });
+  }
+
+  /**
    * Schedules next attempt.
    * @param {number=} opt_previousDelaySeconds Previous delay in a sequence of
    *     retry attempts, if specified. Not specified for scheduling first retry
@@ -388,12 +399,17 @@ function buildAttemptManager(
 
   chrome.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name == alarmName)
-      attempt();
+      isRunning(function(running) {
+        if (running)
+          attempt();
+      });
   });
 
   return {
     start: start,
     planForNext: planForNext,
-    stop: stop
+    stop: stop,
+    isRunning: isRunning
   };
 }
+

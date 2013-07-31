@@ -1600,6 +1600,11 @@ var testing = {};
     var callbackArguments = Array.prototype.slice.call(arguments, 2);
     return callFunction(function() {
       savedArgs.arguments[callbackParameter].apply(null, callbackArguments);
+
+      // Mock4JS does not clear the saved args after invocation.
+      // To allow reuse of the same SaveMockArguments for multiple
+      // invocations with similar arguments, clear them here.
+      savedArgs.arguments.splice(0, savedArgs.arguments.length);
     });
   }
 

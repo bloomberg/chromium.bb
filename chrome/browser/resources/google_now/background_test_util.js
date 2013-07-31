@@ -6,7 +6,10 @@
 
 function emptyMock() {}
 function buildTaskManager() {
-  return {instrumentApiFunction: emptyMock};
+  return {
+    debugSetStepName: emptyMock,
+    instrumentApiFunction: emptyMock,
+  };
 }
 var instrumentApiFunction = emptyMock;
 var buildAttemptManager = emptyMock;
@@ -19,6 +22,11 @@ chrome['notifications'] = {
   onClosed: emptyListener
 };
 chrome['omnibox'] = {onInputEntered: emptyListener};
+chrome['preferencesPrivate'] = {
+  googleGeolocationAccessEnabled: {
+    onChange: emptyListener
+  }
+};
 chrome['runtime'] = {
   onInstalled: emptyListener,
   onStartup: emptyListener
