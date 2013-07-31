@@ -15716,25 +15716,25 @@ Do you accept?
 
     <!-- Reset Profile Settings strings -->
     <message name="IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE" desc="The title of the section in chrome://settings that allows resetting some settings in a profile">
-      Reset
+      Reset browser settings
     </message>
     <message name="IDS_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="A label describing the purpose of the 'reset profile settings' feature">
-      Things got out of control? Revert your Chrome profile to a clean, post install state.
+      Restore browser settings to their original defaults.
     </message>
     <message name="IDS_RESET_PROFILE_SETTINGS_EXPLANATION" desc="A label describing the consequences of the 'reset profile settings' feature">
-      Your browser settings will be restored to their original defaults. This will reset your homepage, new tab page, and search engine, disable your extensions and clear your cookies, content settings and site data.
+      Your browser settings will be restored to their original defaults. This will reset your homepage, new tab page and search engine, disable your extensions and unpin all tabs. It will also clear other temporary and cached data, such as cookies, content and site data.
     </message>
     <message name="IDS_RESET_PROFILE_SETTINGS_BUTTON" desc="The text on the button in chrome://settings that allows resetting some settings in a profile">
-      Reset profile settings...
+      Reset browser settings
     </message>
     <message name="IDS_RESET_PROFILE_SETTINGS_TITLE" desc="Dialog title">
-      Reset profile settings
+      Reset browser settings
     </message>
     <message name="IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON" desc="Reset button of the Reset Profile Settings dialog">
       Reset
     </message>
     <message name="IDS_RESET_PROFILE_SETTINGS_FEEDBACK" desc="Feedback label in the Reset Profile Settings dialog">
-      Help protect Chrome users by sharing current settings with Google
+      Help make Google Chrome better by reporting the current settings
     </message>
 
     <!-- Identity internals strings -->
