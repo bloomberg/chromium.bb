@@ -57,6 +57,7 @@ private:
 MockWebRTCDataChannelHandler::MockWebRTCDataChannelHandler(WebString label, const WebRTCDataChannelInit& init, WebTestDelegate* delegate)
     : m_client(0)
     , m_label(label)
+    , m_init(init)
     , m_delegate(delegate)
 {
     m_reliable = (init.ordered && init.maxRetransmits == -1 && init.maxRetransmitTime == -1);
@@ -67,6 +68,36 @@ void MockWebRTCDataChannelHandler::setClient(WebRTCDataChannelHandlerClient* cli
     m_client = client;
     if (m_client)
         m_delegate->postTask(new DataChannelReadyStateTask(this, m_client, WebRTCDataChannelHandlerClient::ReadyStateOpen));
+}
+
+bool MockWebRTCDataChannelHandler::ordered() const
+{
+    return m_init.ordered;
+}
+
+unsigned short MockWebRTCDataChannelHandler::maxRetransmitTime() const
+{
+    return m_init.maxRetransmitTime;
+}
+
+unsigned short MockWebRTCDataChannelHandler::maxRetransmits() const
+{
+    return m_init.maxRetransmits;
+}
+
+WebString MockWebRTCDataChannelHandler::protocol() const
+{
+    return m_init.protocol;
+}
+
+bool MockWebRTCDataChannelHandler::negotiated() const
+{
+    return m_init.negotiated;
+}
+
+unsigned short MockWebRTCDataChannelHandler::id() const
+{
+    return m_init.id;
 }
 
 unsigned long MockWebRTCDataChannelHandler::bufferedAmount()

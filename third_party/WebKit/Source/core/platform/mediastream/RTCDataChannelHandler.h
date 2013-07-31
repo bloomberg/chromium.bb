@@ -43,8 +43,18 @@ public:
 
     void setClient(RTCDataChannelHandlerClient*);
 
-    String label();
-    bool isReliable();
+    String label() const;
+
+    // DEPRECATED
+    bool isReliable() const;
+
+    bool ordered() const;
+    unsigned short maxRetransmitTime() const;
+    unsigned short maxRetransmits() const;
+    String protocol() const;
+    bool negotiated() const;
+    unsigned short id() const;
+
     unsigned long bufferedAmount();
     bool sendStringData(const String&);
     bool sendRawData(const char*, size_t);

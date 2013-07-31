@@ -53,14 +53,44 @@ void RTCDataChannelHandler::setClient(RTCDataChannelHandlerClient* client)
     m_webHandler->setClient(m_client ? this : 0);
 }
 
-String RTCDataChannelHandler::label()
+String RTCDataChannelHandler::label() const
 {
     return m_webHandler->label();
 }
 
-bool RTCDataChannelHandler::isReliable()
+bool RTCDataChannelHandler::isReliable() const
 {
     return m_webHandler->isReliable();
+}
+
+bool RTCDataChannelHandler::ordered() const
+{
+    return m_webHandler->ordered();
+}
+
+unsigned short RTCDataChannelHandler::maxRetransmitTime() const
+{
+    return m_webHandler->maxRetransmitTime();
+}
+
+unsigned short RTCDataChannelHandler::maxRetransmits() const
+{
+    return m_webHandler->maxRetransmits();
+}
+
+String RTCDataChannelHandler::protocol() const
+{
+    return m_webHandler->protocol();
+}
+
+bool RTCDataChannelHandler::negotiated() const
+{
+    return m_webHandler->negotiated();
+}
+
+unsigned short RTCDataChannelHandler::id() const
+{
+    return m_webHandler->id();
 }
 
 unsigned long RTCDataChannelHandler::bufferedAmount()

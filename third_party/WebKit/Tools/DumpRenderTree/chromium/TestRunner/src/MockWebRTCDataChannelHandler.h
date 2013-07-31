@@ -27,12 +27,9 @@
 
 #include "TestCommon.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
+#include "public/platform/WebRTCDataChannelInit.h"
 #include "public/platform/WebString.h"
 #include "public/testing/WebTask.h"
-
-namespace WebKit {
-struct WebRTCDataChannelInit;
-}
 
 namespace WebTestRunner {
 
@@ -45,6 +42,12 @@ public:
     virtual void setClient(WebKit::WebRTCDataChannelHandlerClient*) OVERRIDE;
     virtual WebKit::WebString label() OVERRIDE { return m_label; }
     virtual bool isReliable() OVERRIDE { return m_reliable; }
+    virtual bool ordered() const OVERRIDE;
+    virtual unsigned short maxRetransmitTime() const OVERRIDE;
+    virtual unsigned short maxRetransmits() const OVERRIDE;
+    virtual WebKit::WebString protocol() const OVERRIDE;
+    virtual bool negotiated() const OVERRIDE;
+    virtual unsigned short id() const OVERRIDE;
     virtual unsigned long bufferedAmount() OVERRIDE;
     virtual bool sendStringData(const WebKit::WebString&) OVERRIDE;
     virtual bool sendRawData(const char*, size_t) OVERRIDE;
@@ -58,6 +61,7 @@ private:
 
     WebKit::WebRTCDataChannelHandlerClient* m_client;
     WebKit::WebString m_label;
+    WebKit::WebRTCDataChannelInit m_init;
     bool m_reliable;
     WebTaskList m_taskList;
     WebTestDelegate* m_delegate;

@@ -49,7 +49,16 @@ public:
     ~RTCDataChannel();
 
     String label() const;
+
+    // DEPRECATED
     bool reliable() const;
+
+    bool ordered() const;
+    unsigned short maxRetransmitTime() const;
+    unsigned short maxRetransmits() const;
+    String protocol() const;
+    bool negotiated() const;
+    unsigned short id() const;
     String readyState() const;
     unsigned long bufferedAmount() const;
 
