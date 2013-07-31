@@ -23,6 +23,8 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
   virtual std::string GetVersionString() const OVERRIDE;
   virtual ppapi::host::HostFactory* CreatePpapiHostFactory(
       content::BrowserPpapiHost* ppapi_host) OVERRIDE;
+  virtual void TryInstallPnacl(
+      const base::Callback<void(bool)>& installed) OVERRIDE;
 };
 
 

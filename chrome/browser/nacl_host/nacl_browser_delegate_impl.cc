@@ -5,6 +5,8 @@
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 
 #include "base/path_service.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -55,4 +57,12 @@ std::string NaClBrowserDelegateImpl::GetVersionString() const {
 ppapi::host::HostFactory* NaClBrowserDelegateImpl::CreatePpapiHostFactory(
     content::BrowserPpapiHost* ppapi_host) {
   return new chrome::ChromeBrowserPepperHostFactory(ppapi_host);
+}
+
+void NaClBrowserDelegateImpl::TryInstallPnacl(
+    const base::Callback<void(bool)>& installed) {
+  ComponentUpdateService* cus = g_browser_process->component_updater();
+  PnaclComponentInstaller* pci =
+      g_browser_process->pnacl_component_installer();
+  RequestFirstInstall(cus, pci, installed);
 }

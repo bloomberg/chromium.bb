@@ -11,8 +11,6 @@
 #include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
@@ -87,15 +85,11 @@ void TryInstallPnacl(
     const std::string& filename,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ComponentUpdateService* cus = g_browser_process->component_updater();
-  PnaclComponentInstaller* pci =
-      g_browser_process->pnacl_component_installer();
-  RequestFirstInstall(cus,
-                      pci,
-                      base::Bind(&PnaclCheckDone,
-                                 nacl_host_message_filter,
-                                 filename,
-                                 reply_msg));
+  NaClBrowser::GetDelegate()->TryInstallPnacl(
+      base::Bind(&PnaclCheckDone,
+                 nacl_host_message_filter,
+                 filename,
+                 reply_msg));
 }
 
 void DoOpenPnaclFile(

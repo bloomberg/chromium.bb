@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
+
 namespace base {
 class FilePath;
 }
@@ -53,6 +55,11 @@ class NaClBrowserDelegate {
   // Returns a HostFactory that hides the details of its embedder.
   virtual ppapi::host::HostFactory* CreatePpapiHostFactory(
       content::BrowserPpapiHost* ppapi_host) = 0;
+  // Install PNaCl if this operation is supported. On success, the |installed|
+  // callback should be called with true, and on failure (or not supported),
+  // the |installed| callback should be called with false.
+  virtual void TryInstallPnacl(
+      const base::Callback<void(bool)>& installed) = 0;
 };
 
 #endif  // COMPONENTS_NACL_COMMON_NACL_BROWSER_DELEGATE_H_

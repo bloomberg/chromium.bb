@@ -52,6 +52,11 @@ class DummyNaClBrowserDelegate : public NaClBrowserDelegate {
     return NULL;
   }
 
+  virtual void TryInstallPnacl(
+      const base::Callback<void(bool)>& installed) OVERRIDE {
+    NOTREACHED();
+  }
+
   void SetPnaclDirectory(const base::FilePath& pnacl_dir) {
     pnacl_path_ = pnacl_dir;
   }
