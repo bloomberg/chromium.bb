@@ -32,6 +32,9 @@ const char kCloseInfobar[] = "Translate.DeclineTranslateCloseInfobar";
 const char kRevertTranslation[] = "Translate.RevertTranslation";
 const char kShowErrorInfobar[] = "Translate.ShowErrorInfobar";
 const char kPerformTranslate[] = "Translate.Translate";
+const char kNeverTranslateLang[] = "Translate.NeverTranslateLang";
+const char kNeverTranslateSite[] = "Translate.NeverTranslateSite";
+const char kAlwaysTranslateLang[] = "Translate.AlwaysTranslateLang";
 
 }  // namespace
 
@@ -158,6 +161,8 @@ void TranslateInfoBarDelegate::ToggleTranslatableLanguageByPrefs() {
     prefs_.BlockLanguage(original_lang);
     RemoveSelf();
   }
+
+  UMA_HISTOGRAM_BOOLEAN(kNeverTranslateLang, true);
 }
 
 bool TranslateInfoBarDelegate::IsSiteBlacklisted() {
@@ -176,6 +181,8 @@ void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
     prefs_.BlacklistSite(host);
     RemoveSelf();
   }
+
+  UMA_HISTOGRAM_BOOLEAN(kNeverTranslateSite, true);
 }
 
 bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() {
@@ -190,6 +197,8 @@ void TranslateInfoBarDelegate::ToggleAlwaysTranslate() {
     prefs_.RemoveLanguagePairFromWhitelist(original_lang, target_lang);
   else
     prefs_.WhitelistLanguagePair(original_lang, target_lang);
+
+  UMA_HISTOGRAM_BOOLEAN(kAlwaysTranslateLang, true);
 }
 
 void TranslateInfoBarDelegate::AlwaysTranslatePageLanguage() {

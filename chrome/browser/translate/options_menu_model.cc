@@ -106,17 +106,14 @@ bool OptionsMenuModel::GetAcceleratorForCommandId(
 void OptionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG:
-      UMA_HISTOGRAM_BOOLEAN("Translate.NeverTranslateLang", true);
       translate_infobar_delegate_->ToggleTranslatableLanguageByPrefs();
       break;
 
     case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE:
-      UMA_HISTOGRAM_BOOLEAN("Translate.NeverTranslateSite", true);
       translate_infobar_delegate_->ToggleSiteBlacklist();
       break;
 
     case IDC_TRANSLATE_OPTIONS_ALWAYS:
-      UMA_HISTOGRAM_BOOLEAN("Translate.AlwaysTranslateLang", true);
       translate_infobar_delegate_->ToggleAlwaysTranslate();
       break;
 
