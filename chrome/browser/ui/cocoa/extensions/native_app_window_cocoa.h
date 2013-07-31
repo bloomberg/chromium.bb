@@ -138,7 +138,12 @@ class NativeAppWindowCocoa : public NativeAppWindow {
     return shell_window_->extension();
   }
 
+  // Returns the WindowStyleMask based on the type of window frame.
+  // Specifically, this includes NSResizableWindowMask if the window is
+  // resizable, and does not include NSTexturedBackgroundWindowMask when a
+  // native frame is used.
   NSUInteger GetWindowStyleMask() const;
+
   void InstallView();
   void UninstallView();
   void InstallDraggableRegionViews();
