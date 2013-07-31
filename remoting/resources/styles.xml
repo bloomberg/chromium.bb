@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Activity styles for the Android app-->
+<resources>
+    <style name="Theme_ElusiveActionBar">
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:actionBarStyle">@android:style/Widget.DeviceDefault.ActionBar.Solid</item>
+    </style>
+</resources>

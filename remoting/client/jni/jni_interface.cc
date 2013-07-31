@@ -127,4 +127,13 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(mouseActionNative)(
       button_down);
 }
 
+JNIEXPORT void JNICALL JNI_IMPLEMENTATION(keyboardActionNative)(
+    JNIEnv* env,
+    jobject that,
+    jint key_code,
+    jboolean key_down) {
+  remoting::ChromotingJniRuntime::GetInstance()->session()->
+      PerformKeyboardAction(key_code, key_down);
+}
+
 }  // extern "C"

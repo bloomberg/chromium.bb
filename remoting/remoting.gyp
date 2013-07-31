@@ -1694,6 +1694,8 @@
             '../google_apis/google_apis.gyp:google_apis',
           ],
           'sources': [
+            'client/jni/android_keymap.cc',
+            'client/jni/android_keymap.h',
             'client/jni/chromoting_jni_instance.cc',
             'client/jni/chromoting_jni_instance.h',
             'client/jni/chromoting_jni_runtime.cc',
@@ -1722,9 +1724,16 @@
               ],
             },
             {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/menu',
+              'files': [
+                'resources/actionbar.xml',
+              ],
+            },
+            {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/values',
               'files': [
                 'resources/strings.xml',
+                'resources/styles.xml',
               ],
             },
           ],

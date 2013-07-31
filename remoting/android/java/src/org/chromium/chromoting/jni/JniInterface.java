@@ -179,7 +179,7 @@ public class JniInterface {
     /** Forces the native graphics thread to redraw to the canvas. */
     public static boolean redrawGraphics() {
         synchronized(JniInterface.class) {
-            if (!sConnected) return false;
+            if (!sConnected || sRedrawCallback == null) return false;
         }
 
         scheduleRedrawNative();
@@ -222,6 +222,15 @@ public class JniInterface {
         mouseActionNative(x, y, whichButton, buttonDown);
     }
 
+    /** Presses and releases the specified key. */
+    public static void keyboardAction(int keyCode, boolean keyDown) {
+        if (!sConnected) {
+            return;
+        }
+
+        keyboardActionNative(keyCode, keyDown);
+    }
+
     /** Performs the native response to the user's PIN. */
     private static native void authenticationResponse(String pin);
 
@@ -230,4 +239,7 @@ public class JniInterface {
 
     /** Passes mouse information to the native handling code. */
     private static native void mouseActionNative(int x, int y, int whichButton, boolean buttonDown);
+
+    /** Passes key press information to the native handling code. */
+    private static native void keyboardActionNative(int keyCode, boolean keyDown);
 }

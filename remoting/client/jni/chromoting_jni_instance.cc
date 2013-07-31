@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "remoting/client/audio_player.h"
+#include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 
@@ -103,6 +104,28 @@ void ChromotingJniInstance::PerformMouseAction(
     action.set_button_down(buttonDown);
 
   connection_->input_stub()->InjectMouseEvent(action);
+}
+
+void ChromotingJniInstance::PerformKeyboardAction(int keyCode, bool keyDown) {
+  if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
+    jni_runtime_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromotingJniInstance::PerformKeyboardAction,
+                   this,
+                   keyCode,
+                   keyDown));
+    return;
+  }
+
+  uint32 usbCode = AndroidKeycodeToUsbKeycode(keyCode);
+  if (usbCode) {
+    protocol::KeyEvent action;
+    action.set_usb_keycode(usbCode);
+    action.set_pressed(keyDown);
+    connection_->input_stub()->InjectKeyEvent(action);
+  }
+  else
+    LOG(WARNING) << "Ignoring unknown keycode: " << keyCode;
 }
 
 void ChromotingJniInstance::OnConnectionState(
