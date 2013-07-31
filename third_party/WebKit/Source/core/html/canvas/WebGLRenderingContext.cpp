@@ -2843,6 +2843,10 @@ long long WebGLRenderingContext::getVertexAttribOffset(GC3Duint index, GC3Denum 
 {
     if (isContextLost())
         return 0;
+    if (pname != GraphicsContext3D::VERTEX_ATTRIB_ARRAY_POINTER) {
+        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "getVertexAttribOffset", "invalid parameter name");
+        return 0;
+    }
     GC3Dsizeiptr result = m_context->getVertexAttribOffset(index, pname);
     return static_cast<long long>(result);
 }
