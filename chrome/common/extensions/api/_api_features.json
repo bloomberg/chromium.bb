@@ -346,10 +346,6 @@
     "dependencies": ["permission:pageCapture"],
     "contexts": ["blessed_extension"]
   },
-  "pageLauncher": {
-    "dependencies": ["manifest:page_launcher"],
-    "contexts": ["blessed_extension"]
-  },
   "permissions": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],

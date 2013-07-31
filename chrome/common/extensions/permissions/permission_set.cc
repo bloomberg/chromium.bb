@@ -49,7 +49,6 @@ const char* kNonPermissionModuleNames[] = {
   "omnibox",
   "pageAction",
   "pageActions",
-  "pageLauncher",
   "permissions",
   "runtime",
   "scriptBadge",
