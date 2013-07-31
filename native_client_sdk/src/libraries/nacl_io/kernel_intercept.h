@@ -7,6 +7,8 @@
 
 #include <ppapi/c/ppb.h>
 #include <ppapi/c/pp_instance.h>
+
+#include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
 #include "sdk_util/macros.h"
@@ -62,6 +64,30 @@ int ki_chown(const char* path, uid_t owner, gid_t group);
 int ki_fchown(int fd, uid_t owner, gid_t group);
 int ki_lchown(const char* path, uid_t owner, gid_t group);
 int ki_utime(const char* filename, const struct utimbuf* times);
+
+#ifdef PROVIDES_SOCKET_API
+// Socket Functions
+int ki_accept(int fd, struct sockaddr* addr, socklen_t* len);
+int ki_bind(int fd, const struct sockaddr* addr, socklen_t len);
+int ki_connect(int fd, const struct sockaddr* addr, socklen_t len);
+int ki_getpeername(int fd, struct sockaddr* addr, socklen_t* len);
+int ki_getsockname(int fd, struct sockaddr* addr, socklen_t* len);
+int ki_getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len);
+int ki_listen(int fd, int backlog);
+ssize_t ki_recv(int fd, void* buf, size_t len, int flags);
+ssize_t ki_recvfrom(int fd, void* buf, size_t len, int flags,
+                    struct sockaddr* addr, socklen_t* addrlen);
+ssize_t ki_recvmsg(int fd, struct msghdr* msg, int flags);
+ssize_t ki_send(int fd, const void* buf, size_t len, int flags);
+ssize_t ki_sendto(int fd, const void* buf, size_t len, int flags,
+                  const struct sockaddr* addr, socklen_t addrlen);
+ssize_t ki_sendmsg(int fd, const struct msghdr* msg, int flags);
+int ki_setsockopt(int fd, int lvl, int optname, const void* optval,
+                  socklen_t len);
+int ki_shutdown(int fd, int how);
+int ki_socket(int domain, int type, int protocol);
+int ki_socketpair(int domain, int type, int protocl, int* sv);
+#endif // PROVIDES_SOCKET_API
 
 EXTERN_C_END
 

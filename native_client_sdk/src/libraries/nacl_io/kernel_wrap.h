@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
 #include "sdk_util/macros.h"
@@ -92,10 +93,33 @@ int stat(const char* path, struct stat* buf) NOTHROW;
 int symlink(const char* oldpath, const char* newpath) NOTHROW;
 int umount(const char* path) NOTHROW;
 int NAME(unlink)(const char* path) NOTHROW;
+uint64_t usec_since_epoch();
 int utime(const char* filename, const struct utimbuf* times);
 read_ssize_t NAME(write)(int fd, const void* buf, size_t nbyte);
 
-uint64_t usec_since_epoch();
+#ifdef PROVIDES_SOCKET_API
+// Socket Functions
+int accept(int fd, struct sockaddr* addr, socklen_t* len);
+int bind(int fd, const struct sockaddr* addr, socklen_t len);
+int connect(int fd, const struct sockaddr* addr, socklen_t len);
+int getpeername(int fd, struct sockaddr* addr, socklen_t* len);
+int getsockname(int fd, struct sockaddr* addr, socklen_t* len);
+int getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len);
+int listen(int fd, int backlog);
+ssize_t recv(int fd, void* buf, size_t len, int flags);
+ssize_t recvfrom(int fd, void* buf, size_t len, int flags,
+                 struct sockaddr* addr, socklen_t* addrlen);
+ssize_t recvmsg(int fd, struct msghdr* msg, int flags);
+ssize_t send(int fd, const void* buf, size_t len, int flags);
+ssize_t sendto(int fd, const void* buf, size_t len, int flags,
+               const struct sockaddr* addr, socklen_t addrlen);
+ssize_t sendmsg(int fd, const struct msghdr* msg, int flags);
+int setsockopt(int fd, int lvl, int optname, const void* optval,
+               socklen_t len);
+int shutdown(int fd, int how);
+int socket(int domain, int type, int protocol);
+int socketpair(int domain, int type, int protocl, int* sv);
+#endif // PROVIDES_SOCKET_API
 
 EXTERN_C_END
 

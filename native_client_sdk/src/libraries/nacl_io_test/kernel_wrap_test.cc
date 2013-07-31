@@ -4,11 +4,13 @@
 
 #include <string>
 #include <vector>
+
 #include "gtest/gtest.h"
+#include "kernel_proxy_mock.h"
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
-#include "kernel_proxy_mock.h"
+#include "nacl_io/ossocket.h"
 
 using namespace nacl_io;
 
@@ -284,3 +286,92 @@ TEST_F(KernelWrapTest, write) {
   write(6789, NULL, 7891);
 }
 
+#ifdef PROVIDES_SOCKET_API
+// Socket Functions
+
+TEST_F(KernelWrapTest, accept) {
+  EXPECT_CALL(mock, accept(123, NULL, NULL)).Times(1);
+  accept(123, NULL, NULL);
+}
+
+TEST_F(KernelWrapTest, bind) {
+  EXPECT_CALL(mock, bind(123, NULL, 456)).Times(1);
+  bind(123, NULL, 456);
+}
+
+TEST_F(KernelWrapTest, connect) {
+  EXPECT_CALL(mock, connect(123, NULL, 456)).Times(1);
+  connect(123, NULL, 456);
+}
+
+TEST_F(KernelWrapTest, getpeername) {
+  EXPECT_CALL(mock, getpeername(123, NULL, NULL)).Times(1);
+  getpeername(123, NULL, NULL);
+}
+
+TEST_F(KernelWrapTest, getsockname) {
+  EXPECT_CALL(mock, getsockname(123, NULL, NULL)).Times(1);
+  getsockname(123, NULL, NULL);
+}
+
+TEST_F(KernelWrapTest, getsockopt) {
+  EXPECT_CALL(mock, getsockopt(123, 456, 789, NULL, NULL)).Times(1);
+  getsockopt(123, 456, 789, NULL, NULL);
+}
+
+TEST_F(KernelWrapTest, listen) {
+  EXPECT_CALL(mock, listen(123, 456)).Times(1);
+  listen(123, 456);
+}
+
+TEST_F(KernelWrapTest, recv) {
+  EXPECT_CALL(mock, recv(123, NULL, 456, 789)).Times(1);
+  recv(123, NULL, 456, 789);
+}
+
+TEST_F(KernelWrapTest, recvfrom) {
+  EXPECT_CALL(mock, recvfrom(123, NULL, 456, 789, NULL, NULL)).Times(1);
+  recvfrom(123, NULL, 456, 789, NULL, NULL);
+}
+
+TEST_F(KernelWrapTest, recvmsg) {
+  EXPECT_CALL(mock, recvmsg(123, NULL, 456)).Times(1);
+  recvmsg(123, NULL, 456);
+}
+
+TEST_F(KernelWrapTest, send) {
+  EXPECT_CALL(mock, send(123, NULL, 456, 789)).Times(1);
+  send(123, NULL, 456, 789);
+}
+
+TEST_F(KernelWrapTest, sendto) {
+  EXPECT_CALL(mock, sendto(123, NULL, 456, 789, NULL, 314)).Times(1);
+  sendto(123, NULL, 456, 789, NULL, 314);
+}
+
+TEST_F(KernelWrapTest, sendmsg) {
+  EXPECT_CALL(mock, sendmsg(123, NULL, 456)).Times(1);
+  sendmsg(123, NULL, 456);
+}
+
+TEST_F(KernelWrapTest, setsockopt) {
+  EXPECT_CALL(mock, setsockopt(123, 456, 789, NULL, 314)).Times(1);
+  setsockopt(123, 456, 789, NULL, 314);
+}
+
+TEST_F(KernelWrapTest, shutdown) {
+  EXPECT_CALL(mock, shutdown(123, 456)).Times(1);
+  shutdown(123, 456);
+}
+
+TEST_F(KernelWrapTest, socket) {
+  EXPECT_CALL(mock, socket(123, 456, 789)).Times(1);
+  socket(123, 456, 789);
+}
+
+TEST_F(KernelWrapTest, socketpair) {
+  EXPECT_CALL(mock, socketpair(123,456, 789, NULL)).Times(1);
+  socketpair(123,456, 789, NULL);
+}
+
+#endif // PROVIDES_SOCKET_API

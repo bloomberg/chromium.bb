@@ -66,6 +66,7 @@
         "osdirent.h",
         "osinttypes.h",
         "osmman.h",
+        "ossocket.h",
         "osstat.h",
         "ostime.h",
         "ostypes.h",

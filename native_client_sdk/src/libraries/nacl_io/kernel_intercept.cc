@@ -8,6 +8,7 @@
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/kernel_wrap.h"
 #include "nacl_io/osmman.h"
+#include "nacl_io/ossocket.h"
 #include "nacl_io/pepper_interface.h"
 #include "nacl_io/pepper_interface.h"
 #include "nacl_io/real_pepper_interface.h"
@@ -231,3 +232,76 @@ int ki_utime(const char* filename, const struct utimbuf* times) {
   ON_NOSYS_RETURN(-1);
   return s_kp->utime(filename, times);
 }
+
+#ifdef PROVIDES_SOCKET_API
+// Socket Functions
+int ki_accept(int fd, struct sockaddr* addr, socklen_t* len) {
+  return s_kp->accept(fd, addr, len);
+}
+
+int ki_bind(int fd, const struct sockaddr* addr, socklen_t len) {
+  return s_kp->bind(fd, addr, len);
+}
+
+int ki_connect(int fd, const struct sockaddr* addr, socklen_t len) {
+  return s_kp->connect(fd, addr, len);
+}
+
+int ki_getpeername(int fd, struct sockaddr* addr, socklen_t* len) {
+  return s_kp->getpeername(fd, addr, len);
+}
+
+int ki_getsockname(int fd, struct sockaddr* addr, socklen_t* len) {
+  return s_kp->getsockname(fd, addr, len);
+}
+int ki_getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len) {
+  return s_kp->getsockopt(fd, lvl, optname, optval, len);
+}
+
+int ki_listen(int fd, int backlog) {
+  return s_kp->listen(fd, backlog);
+}
+
+ssize_t ki_recv(int fd, void* buf, size_t len, int flags) {
+  return s_kp->recv(fd, buf, len, flags);
+}
+
+ssize_t ki_recvfrom(int fd, void* buf, size_t len, int flags,
+                 struct sockaddr* addr, socklen_t* addrlen) {
+  return s_kp->recvfrom(fd, buf, len, flags, addr, addrlen);
+}
+
+ssize_t ki_recvmsg(int fd, struct msghdr* msg, int flags) {
+  return s_kp->recvmsg(fd, msg, flags);
+}
+
+ssize_t ki_send(int fd, const void* buf, size_t len, int flags) {
+  return s_kp->send(fd, buf, len, flags);
+}
+
+ssize_t ki_sendto(int fd, const void* buf, size_t len, int flags,
+               const struct sockaddr* addr, socklen_t addrlen) {
+  return s_kp->sendto(fd, buf, len, flags, addr, addrlen);
+}
+
+ssize_t ki_sendmsg(int fd, const struct msghdr* msg, int flags) {
+  return s_kp->sendmsg(fd, msg, flags);
+}
+
+int ki_setsockopt(int fd, int lvl, int optname, const void* optval,
+                  socklen_t len) {
+  return s_kp->setsockopt(fd, lvl, optname, optval, len);
+}
+
+int ki_shutdown(int fd, int how) {
+  return s_kp->shutdown(fd, how);
+}
+
+int ki_socket(int domain, int type, int protocol) {
+  return s_kp->socket(domain, type, protocol);
+}
+
+int ki_socketpair(int domain, int type, int protocol, int* sv) {
+  return s_kp->socketpair(domain, type, protocol, sv);
+}
+#endif // PROVIDES_SOCKET_API

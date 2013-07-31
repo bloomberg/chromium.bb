@@ -10,6 +10,7 @@
 #include "gmock/gmock.h"
 
 #include "nacl_io/kernel_proxy.h"
+#include "nacl_io/ossocket.h"
 
 class KernelProxyMock : public nacl_io::KernelProxy {
  public:
@@ -50,6 +51,30 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD2(symlink, int(const char*, const char*));
   MOCK_METHOD6(mmap, void*(void*, size_t, int, int, int, size_t));
   MOCK_METHOD1(open_resource, int(const char*));
+
+#ifdef PROVIDES_SOCKET_API
+  // Socket support functions
+  MOCK_METHOD3(accept, int(int, struct sockaddr*, socklen_t*));
+  MOCK_METHOD3(bind, int(int, const struct sockaddr*, socklen_t));
+  MOCK_METHOD3(connect, int(int, const struct sockaddr*, socklen_t));
+  MOCK_METHOD3(getpeername, int(int, struct sockaddr*, socklen_t*));
+  MOCK_METHOD3(getsockname, int(int, struct sockaddr*, socklen_t*));
+  MOCK_METHOD5(getsockopt, int(int, int, int, void*, socklen_t*));
+  MOCK_METHOD2(listen, int(int, int));
+  MOCK_METHOD4(recv, ssize_t(int, void*, size_t, int));
+  MOCK_METHOD6(recvfrom, ssize_t(int, void*, size_t, int,
+                                 struct sockaddr*, socklen_t*));
+  MOCK_METHOD3(recvmsg, ssize_t(int, struct msghdr*, int));
+  MOCK_METHOD4(send, ssize_t(int, const void*, size_t, int));
+  MOCK_METHOD6(sendto, ssize_t(int, const void*, size_t, int,
+                               const struct sockaddr*, socklen_t));
+  MOCK_METHOD3(sendmsg, ssize_t(int, const struct msghdr*, int));
+  MOCK_METHOD5(setsockopt, int(int, int, int, const void*, socklen_t));
+  MOCK_METHOD2(shutdown, int(int, int));
+  MOCK_METHOD3(socket, int(int, int, int));
+  MOCK_METHOD4(socketpair, int(int, int, int, int*));
+#endif // PROVIDES_SOCKET_API
+
 };
 
 #endif  // LIBRARIES_NACL_IO_TEST_KERNEL_PROXY_MOCK_H_

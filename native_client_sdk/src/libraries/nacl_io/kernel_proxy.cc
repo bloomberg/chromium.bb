@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <stdio.h>
 #include <string.h>
 #include <iterator>
 #include <string>
@@ -22,6 +23,7 @@
 #include "nacl_io/mount_node.h"
 #include "nacl_io/mount_passthrough.h"
 #include "nacl_io/osmman.h"
+#include "nacl_io/ossocket.h"
 #include "nacl_io/osstat.h"
 #include "nacl_io/path.h"
 #include "nacl_io/pepper_interface.h"
@@ -640,5 +642,294 @@ int KernelProxy::munmap(void* addr, size_t length) {
   return 0;
 }
 
-}  // namespace nacl_io
+#ifdef PROVIDES_SOCKET_API
 
+// Socket Functions
+int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
+  if (NULL == addr || NULL == len) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+int KernelProxy::bind(int fd, const struct sockaddr* addr, socklen_t len) {
+  if (NULL == addr) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+int KernelProxy::connect(int fd, const struct sockaddr* addr, socklen_t len) {
+  if (NULL == addr) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EACCES;
+  return -1;
+}
+
+int KernelProxy::getpeername(int fd, struct sockaddr* addr, socklen_t* len) {
+  if (NULL == addr || NULL == len) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+int KernelProxy::getsockname(int fd, struct sockaddr* addr, socklen_t* len) {
+  if (NULL == addr || NULL == len) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+int KernelProxy::getsockopt(int fd,
+                         int lvl,
+                         int optname,
+                         void* optval,
+                         socklen_t* len) {
+  if (NULL == optval || NULL == len) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+int KernelProxy::listen(int fd, int backlog) {
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EOPNOTSUPP;
+  return -1;
+}
+
+ssize_t KernelProxy::recv(int fd,
+                          void* buf,
+                          size_t len,
+                          int flags) {
+  if (NULL == buf) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+ssize_t KernelProxy::recvfrom(int fd,
+                              void* buf,
+                              size_t len,
+                              int flags,
+                              struct sockaddr* addr,
+                              socklen_t* addrlen) {
+  // According to the manpage, recvfrom with a null addr is identical to recv.
+  if (NULL == addr) {
+    return recv(fd, buf, len, flags);
+  }
+
+  if (NULL == buf || NULL == addrlen) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+ssize_t KernelProxy::recvmsg(int fd, struct msghdr* msg, int flags) {
+  if (NULL == msg ) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EOPNOTSUPP;
+  return -1;
+}
+
+ssize_t KernelProxy::send(int fd, const void* buf, size_t len, int flags) {
+  if (NULL == buf) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+ssize_t KernelProxy::sendto(int fd,
+                            const void* buf,
+                            size_t len,
+                            int flags,
+                            const struct sockaddr* addr,
+                            socklen_t addrlen) {
+  // According to the manpage, sendto with a null addr is identical to send.
+  if (NULL == addr) {
+    return send(fd, buf, len, flags);
+  }
+
+  if (NULL == buf) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+ssize_t KernelProxy::sendmsg(int fd, const struct msghdr* msg, int flags) {
+  if (NULL == msg) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EOPNOTSUPP;
+  return -1;
+}
+
+int KernelProxy::setsockopt(int fd,
+                            int lvl,
+                            int optname,
+                            const void* optval,
+                            socklen_t len) {
+  if (NULL == optval) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+int KernelProxy::shutdown(int fd, int how) {
+  ScopedKernelHandle handle;
+  if (AcquireSocketHandle(fd, &handle) == -1)
+    return -1;
+
+  errno = EINVAL;
+  return -1;
+}
+
+int KernelProxy::socket(int domain, int type, int protocol) {
+  if (AF_INET != domain && AF_INET6 != domain) {
+    errno = EAFNOSUPPORT;
+    return -1;
+  }
+
+  if (SOCK_STREAM != type && SOCK_DGRAM != type) {
+    errno = EPROTONOSUPPORT;
+    return -1;
+  }
+
+  errno = EACCES;
+  return -1;
+}
+
+int KernelProxy::socketpair(int domain, int type, int protocol, int* sv) {
+  if (NULL == sv) {
+    errno = EFAULT;
+    return -1;
+  }
+
+  // Catch-22: We don't support AF_UNIX, but any other AF doesn't support
+  // socket pairs. Thus, this function always fails.
+  if (AF_UNIX != domain) {
+    errno = EPROTONOSUPPORT;
+    return -1;
+  }
+
+  if (AF_INET != domain && AF_INET6 != domain) {
+    errno = EAFNOSUPPORT;
+    return -1;
+  }
+
+  // We cannot reach this point.
+  errno = ENOSYS;
+  return -1;
+}
+
+int KernelProxy::AcquireSocketHandle(int fd, ScopedKernelHandle* handle) {
+  Error error = AcquireHandle(fd, handle);
+
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  if ((handle->get()->node_->GetType() & S_IFSOCK) == 0) {
+    errno = ENOTSOCK;
+    return -1;
+  }
+
+  return 0;
+}
+
+#endif // PROVIDES_SOCKET_API
+
+} // namespace_nacl_io

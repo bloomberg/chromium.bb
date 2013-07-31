@@ -10,6 +10,7 @@
 
 #include "nacl_io/kernel_object.h"
 #include "nacl_io/mount_factory.h"
+#include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
 
@@ -116,12 +117,57 @@ class KernelProxy : protected KernelObject {
                      size_t offset);
   virtual int munmap(void* addr, size_t length);
 
-protected:
-  MountFactoryMap_t factories_;
+#ifdef PROVIDES_SOCKET_API
+  // Socket support functions
+  virtual int accept(int fd, struct sockaddr* addr, socklen_t* len);
+  virtual int bind(int fd, const struct sockaddr* addr, socklen_t len);
+  virtual int connect(int fd, const struct sockaddr* addr, socklen_t len);
+  virtual int getpeername(int fd, struct sockaddr* addr, socklen_t* len);
+  virtual int getsockname(int fd, struct sockaddr* addr, socklen_t* len);
+  virtual int getsockopt(int fd,
+                         int lvl,
+                         int optname,
+                         void* optval,
+                         socklen_t* len);
+  virtual int listen(int fd, int backlog);
+  virtual ssize_t recv(int fd,
+                       void* buf,
+                       size_t len,
+                       int flags);
+  virtual ssize_t recvfrom(int fd,
+                           void* buf,
+                           size_t len,
+                           int flags,
+                           struct sockaddr* addr,
+                           socklen_t* addrlen);
+  virtual ssize_t recvmsg(int fd, struct msghdr* msg, int flags);
+  virtual ssize_t send(int fd, const void* buf, size_t len, int flags);
+  virtual ssize_t sendto(int fd,
+                         const void* buf,
+                         size_t len,
+                         int flags,
+                         const struct sockaddr* addr,
+                         socklen_t addrlen);
+  virtual ssize_t sendmsg(int fd, const struct msghdr* msg, int flags);
+  virtual int setsockopt(int fd,
+                         int lvl,
+                         int optname,
+                         const void* optval,
+                         socklen_t len);
+  virtual int shutdown(int fd, int how);
+  virtual int socket(int domain, int type, int protocol);
+  virtual int socketpair(int domain, int type, int protocol, int* sv);
+#endif // PROVIDES_SOCKET_API
 
+ protected:
+  MountFactoryMap_t factories_;
   int dev_;
   PepperInterface* ppapi_;
   static KernelProxy *s_instance_;
+
+#ifdef PROVIDES_SOCKET_API
+  virtual int AcquireSocketHandle(int fd, ScopedKernelHandle* handle);
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(KernelProxy);
 };
