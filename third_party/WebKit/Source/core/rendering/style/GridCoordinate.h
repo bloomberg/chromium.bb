@@ -31,7 +31,9 @@
 #ifndef GridCoordinate_h
 #define GridCoordinate_h
 
+#include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -49,6 +51,11 @@ struct GridSpan {
         , finalPositionIndex(finalPosition)
     {
         ASSERT(initialPositionIndex <= finalPositionIndex);
+    }
+
+    bool operator==(const GridSpan& o) const
+    {
+        return initialPositionIndex == o.initialPositionIndex && finalPositionIndex == o.finalPositionIndex;
     }
 
     size_t initialPositionIndex;
@@ -70,9 +77,21 @@ struct GridCoordinate {
     {
     }
 
+    bool operator==(const GridCoordinate& o) const
+    {
+        return columns == o.columns && rows == o.rows;
+    }
+
+    bool operator!=(const GridCoordinate& o) const
+    {
+        return !(*this == o);
+    }
+
     GridSpan columns;
     GridSpan rows;
 };
+
+typedef HashMap<String, GridCoordinate> NamedGridAreaMap;
 
 } // namespace WebCore
 

@@ -484,6 +484,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyMixBlendMode: return 420;
     case CSSPropertyTouchAction: return 421;
     case CSSPropertyGridArea: return 422;
+    case CSSPropertyGridTemplate: return 423;
 
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.
@@ -498,7 +499,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 422; }
+static int maximumCSSSampleId() { return 423; }
 
 UseCounter::UseCounter()
 {

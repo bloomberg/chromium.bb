@@ -111,6 +111,7 @@ gridDefinitionRows
 gridRow
 gridRowEnd
 gridRowStart
+gridTemplate
 height
 imageRendering
 justifyContent

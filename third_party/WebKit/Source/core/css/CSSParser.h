@@ -180,6 +180,7 @@ public:
     bool parseGridTrackRepeatFunction(CSSValueList&);
     PassRefPtr<CSSPrimitiveValue> parseGridTrackSize(CSSParserValueList& inputList);
     PassRefPtr<CSSPrimitiveValue> parseGridBreadth(CSSParserValue*);
+    PassRefPtr<CSSValue> parseGridTemplate();
 
     bool parseClipShape(CSSPropertyID, bool important);
 

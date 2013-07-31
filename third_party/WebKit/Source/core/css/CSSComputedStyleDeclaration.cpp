@@ -34,6 +34,7 @@
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSFilterValue.h"
 #include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSGridTemplateValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSMixFunctionValue.h"
 #include "core/css/CSSParser.h"
@@ -1975,6 +1976,14 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return getCSSPropertyValuesForGridShorthand(gridRowShorthand());
         case CSSPropertyGridArea:
             return getCSSPropertyValuesForGridShorthand(gridAreaShorthand());
+
+        case CSSPropertyGridTemplate:
+            if (!style->namedGridAreaRowCount()) {
+                ASSERT(!style->namedGridAreaColumnCount());
+                return cssValuePool().createIdentifierValue(CSSValueNone);
+            }
+
+            return CSSGridTemplateValue::create(style->namedGridArea(), style->namedGridAreaRowCount(), style->namedGridAreaColumnCount());
 
         case CSSPropertyHeight:
             if (renderer) {

@@ -597,6 +597,8 @@
             'css/CSSFunctionValue.h',
             'css/CSSGradientValue.cpp',
             'css/CSSGradientValue.h',
+            'css/CSSGridTemplateValue.cpp',
+            'css/CSSGridTemplateValue.h',
             'css/CSSGroupingRule.cpp',
             'css/CSSGroupingRule.h',
             'css/CSSHostRule.cpp',

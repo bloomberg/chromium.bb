@@ -39,6 +39,7 @@
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSGradientValue.h"
+#include "core/css/CSSGridTemplateValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
@@ -2456,6 +2457,12 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         return parseGridItemPositionShorthand(propId, important);
 
+    case CSSPropertyGridTemplate:
+        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
+            return false;
+        parsedValue = parseGridTemplate();
+        break;
+
     case CSSPropertyWebkitMarginCollapse: {
         if (num == 1) {
             ShorthandScope scope(this, CSSPropertyWebkitMarginCollapse);
@@ -4785,6 +4792,79 @@ PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridBreadth(CSSParserValue* curren
         return 0;
 
     return createPrimitiveNumericValue(currentValue);
+}
+
+PassRefPtr<CSSValue> CSSParser::parseGridTemplate()
+{
+    NamedGridAreaMap gridAreaMap;
+    size_t rowCount = 0;
+    size_t columnCount = 0;
+
+    while (CSSParserValue* currentValue = m_valueList->current()) {
+        if (currentValue->unit != CSSPrimitiveValue::CSS_STRING)
+            return 0;
+
+        String gridRowNames = currentValue->string;
+        if (!gridRowNames.length())
+            return 0;
+
+        Vector<String> columnNames;
+        gridRowNames.split(' ', columnNames);
+
+        if (!columnCount) {
+            columnCount = columnNames.size();
+            ASSERT(columnCount);
+        } else if (columnCount != columnNames.size()) {
+            // The declaration is invalid is all the rows don't have the number of columns.
+            return 0;
+        }
+
+        for (size_t currentCol = 0; currentCol < columnCount; ++currentCol) {
+            const String& gridAreaName = columnNames[currentCol];
+
+            // Unamed areas are always valid (we consider them to be 1x1).
+            if (gridAreaName == ".")
+                continue;
+
+            // We handle several grid areas with the same name at once to simplify the validation code.
+            size_t lookAheadCol;
+            for (lookAheadCol = currentCol; lookAheadCol < (columnCount - 1); ++lookAheadCol) {
+                if (columnNames[lookAheadCol + 1] != gridAreaName)
+                    break;
+            }
+
+            NamedGridAreaMap::iterator gridAreaIt = gridAreaMap.find(gridAreaName);
+            if (gridAreaIt == gridAreaMap.end()) {
+                gridAreaMap.add(gridAreaName, GridCoordinate(GridSpan(rowCount, rowCount), GridSpan(currentCol, lookAheadCol)));
+            } else {
+                GridCoordinate& gridCoordinate = gridAreaIt->value;
+
+                // The following checks test that the grid area is a single filled-in rectangle.
+                // 1. The new row is adjacent to the previously parsed row.
+                if (rowCount != gridCoordinate.rows.initialPositionIndex + 1)
+                    return 0;
+
+                // 2. The new area starts at the same position as the previously parsed area.
+                if (currentCol != gridCoordinate.columns.initialPositionIndex)
+                    return 0;
+
+                // 3. The new area ends at the same position as the previously parsed area.
+                if (lookAheadCol != gridCoordinate.columns.finalPositionIndex)
+                    return 0;
+
+                ++gridCoordinate.rows.finalPositionIndex;
+            }
+            currentCol = lookAheadCol;
+        }
+
+        ++rowCount;
+        m_valueList->next();
+    }
+
+    if (!rowCount || !columnCount)
+        return 0;
+
+    return CSSGridTemplateValue::create(gridAreaMap, rowCount, columnCount);
 }
 
 PassRefPtr<CSSValue> CSSParser::parseCounterContent(CSSParserValueList* args, bool counters)

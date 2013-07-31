@@ -93,6 +93,7 @@ public:
     bool isCSSMixFunctionValue() const { return m_classType == CSSMixFunctionValueClass; }
     bool isCSSShaderValue() const { return m_classType == CSSShaderClass; }
     bool isVariableValue() const { return m_classType == VariableClass; }
+    bool isGridTemplateValue() const { return m_classType == GridTemplateClass; }
     bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }
     bool isSVGPaint() const { return m_classType == SVGPaintClass; }
     bool isCSSSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
@@ -150,6 +151,7 @@ protected:
         CalculationClass,
         CSSShaderClass,
         VariableClass,
+        GridTemplateClass,
 
         // SVG classes.
         SVGColorClass,
