@@ -31,7 +31,6 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderView.h"
@@ -65,18 +64,18 @@ RootInlineBox::RootInlineBox(RenderBlock* block)
 }
 
 
-void RootInlineBox::destroy(RenderArena* arena)
+void RootInlineBox::destroy()
 {
-    detachEllipsisBox(arena);
-    InlineFlowBox::destroy(arena);
+    detachEllipsisBox();
+    InlineFlowBox::destroy();
 }
 
-void RootInlineBox::detachEllipsisBox(RenderArena* arena)
+void RootInlineBox::detachEllipsisBox()
 {
     if (hasEllipsisBox()) {
         EllipsisBox* box = gEllipsisBoxMap->take(this);
         box->setParent(0);
-        box->destroy(arena);
+        box->destroy();
         setHasEllipsisBox(false);
     }
 }
@@ -89,7 +88,7 @@ RenderLineBoxList* RootInlineBox::rendererLineBoxes() const
 void RootInlineBox::clearTruncation()
 {
     if (hasEllipsisBox()) {
-        detachEllipsisBox(renderer()->renderArena());
+        detachEllipsisBox();
         InlineFlowBox::clearTruncation();
     }
 }
@@ -132,9 +131,9 @@ float RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool ltr, f
                                   InlineBox* markupBox)
 {
     // Create an ellipsis box.
-    EllipsisBox* ellipsisBox = new (renderer()->renderArena()) EllipsisBox(renderer(), ellipsisStr, this,
-                                                              ellipsisWidth - (markupBox ? markupBox->logicalWidth() : 0), logicalHeight(),
-                                                              y(), !prevRootBox(), isHorizontal(), markupBox);
+    EllipsisBox* ellipsisBox = new EllipsisBox(renderer(), ellipsisStr, this,
+        ellipsisWidth - (markupBox ? markupBox->logicalWidth() : 0), logicalHeight(),
+        y(), !prevRootBox(), isHorizontal(), markupBox);
 
     if (!gEllipsisBoxMap)
         gEllipsisBoxMap = new EllipsisBoxMap();

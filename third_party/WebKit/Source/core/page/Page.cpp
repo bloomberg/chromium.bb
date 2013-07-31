@@ -50,7 +50,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/network/NetworkStateNotifier.h"
 #include "core/plugins/PluginData.h"
-#include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/storage/StorageNamespace.h"
@@ -162,20 +161,6 @@ Page::~Page()
 #ifndef NDEBUG
     pageCounter.decrement();
 #endif
-}
-
-ArenaSize Page::renderTreeSize() const
-{
-    ArenaSize total(0, 0);
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (!frame->document())
-            continue;
-        if (RenderArena* arena = frame->document()->renderArena()) {
-            total.treeSize += arena->totalRenderArenaSize();
-            total.allocated += arena->totalRenderArenaAllocatedBytes();
-        }
-    }
-    return total;
 }
 
 ViewportArguments Page::viewportArguments() const

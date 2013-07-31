@@ -59,7 +59,6 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/text/TextStream.h"
-#include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
@@ -2158,8 +2157,6 @@ bool FrameView::updateWidgets()
 
     Vector<RenderObject*> objects;
     objects.reserveInitialCapacity(size);
-    // Protect RendereArena from getting wiped out, when Document is detached during updateWidget().
-    RefPtr<RenderArena> protectedArena = m_frame->document()->renderArena();
 
     RenderObjectSet::const_iterator end = m_widgetUpdateSet->end();
     for (RenderObjectSet::const_iterator it = m_widgetUpdateSet->begin(); it != end; ++it) {
@@ -2181,7 +2178,7 @@ bool FrameView::updateWidgets()
         RenderObject* object = objects[i];
         if (object->isEmbeddedObject()) {
             RenderEmbeddedObject* embeddedObject = static_cast<RenderEmbeddedObject*>(object);
-            embeddedObject->deref(protectedArena.get());
+            embeddedObject->deref();
         }
     }
 

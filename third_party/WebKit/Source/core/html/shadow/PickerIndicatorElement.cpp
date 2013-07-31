@@ -66,7 +66,7 @@ PickerIndicatorElement::~PickerIndicatorElement()
 
 RenderObject* PickerIndicatorElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderDetailsMarker(this);
+    return new RenderDetailsMarker(this);
 }
 
 void PickerIndicatorElement::defaultEventHandler(Event* event)

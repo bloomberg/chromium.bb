@@ -131,7 +131,7 @@ PassRefPtr<RenderStyle> PasswordGeneratorButtonElement::customStyleForRenderer()
 
 RenderObject* PasswordGeneratorButtonElement::createRenderer(RenderStyle*)
 {
-    RenderImage* image = new (document()->renderArena()) RenderImage(this);
+    RenderImage* image = new RenderImage(this);
     image->setImageResource(RenderImageResource::create());
     return image;
 }

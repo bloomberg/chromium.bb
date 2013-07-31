@@ -80,16 +80,6 @@ typedef uint64_t LinkHash;
 
 float deviceScaleFactor(Frame*);
 
-struct ArenaSize {
-    ArenaSize(size_t treeSize, size_t allocated)
-        : treeSize(treeSize)
-        , allocated(allocated)
-    {
-    }
-    size_t treeSize;
-    size_t allocated;
-};
-
 class Page : public Supplementable<Page>, public LifecycleContext {
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
@@ -113,8 +103,6 @@ public:
 
     explicit Page(PageClients&);
     ~Page();
-
-    ArenaSize renderTreeSize() const;
 
     void setNeedsRecalcStyleInAllFrames();
 

@@ -33,7 +33,6 @@
 
 namespace WebCore {
 
-class RenderArena;
 class RenderBlock;
 class RenderBox;
 class RenderObject;
@@ -65,13 +64,9 @@ public:
     LayoutState(LayoutState*, RenderBox*, const LayoutSize& offset, LayoutUnit pageHeight, bool pageHeightChanged, ColumnInfo*);
     LayoutState(RenderObject*);
 
-    void destroy(RenderArena*);
-
-    // Overloaded new operator.
-    void* operator new(size_t, RenderArena*);
-
-    // Overridden to prevent the normal delete from being called.
-    void operator delete(void*, size_t);
+    // LayoutState is allocated out of the rendering partition.
+    void* operator new(size_t);
+    void operator delete(void*);
 
     void clearPaginationInformation();
     bool isPaginatingColumns() const { return m_columnInfo && m_columnInfo->paginationUnit() == ColumnInfo::Column; }
@@ -96,9 +91,6 @@ public:
 
     ShapeInsideInfo* shapeInsideInfo() const { return m_shapeInsideInfo; }
 private:
-    // The normal operator new is disallowed.
-    void* operator new(size_t) throw();
-
     void propagateLineGridInfo(RenderBox*);
     void establishLineGrid(RenderBlock*);
 

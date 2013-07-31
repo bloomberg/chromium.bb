@@ -44,20 +44,12 @@ struct BidiRun : BidiCharacterRun {
         m_startsSegment = false;
     }
 
-    void destroy();
-
-    // Overloaded new operator.
-    void* operator new(size_t, RenderArena*);
-
-    // Overridden to prevent the normal delete from being called.
-    void operator delete(void*, size_t);
+    // BidiRuns are allocated out of the rendering partition.
+    void* operator new(size_t);
+    void operator delete(void*);
 
     BidiRun* next() { return static_cast<BidiRun*>(m_next); }
     RenderObject* object() { return m_object; }
-
-private:
-    // The normal operator new is disallowed.
-    void* operator new(size_t) throw();
 
 public:
     RenderObject* m_object;

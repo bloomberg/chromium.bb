@@ -130,7 +130,7 @@ void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
 
 RenderObject* SVGTextPathElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGTextPath(this);
+    return new RenderSVGTextPath(this);
 }
 
 bool SVGTextPathElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

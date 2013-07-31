@@ -211,7 +211,7 @@ bool TextFieldInputType::shouldSubmitImplicitly(Event* event)
 
 RenderObject* TextFieldInputType::createRenderer(RenderStyle*) const
 {
-    return new (element()->document()->renderArena()) RenderTextControlSingleLine(element());
+    return new RenderTextControlSingleLine(element());
 }
 
 bool TextFieldInputType::needsContainer() const

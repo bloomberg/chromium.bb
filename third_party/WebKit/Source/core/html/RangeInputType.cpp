@@ -256,7 +256,7 @@ void RangeInputType::createShadowSubtree()
 
 RenderObject* RangeInputType::createRenderer(RenderStyle*) const
 {
-    return new (element()->document()->renderArena()) RenderSlider(element());
+    return new RenderSlider(element());
 }
 
 Decimal RangeInputType::parseToNumber(const String& src, const Decimal& defaultValue) const

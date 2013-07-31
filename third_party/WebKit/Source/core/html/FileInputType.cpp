@@ -159,7 +159,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
 
 RenderObject* FileInputType::createRenderer(RenderStyle*) const
 {
-    return new (element()->document()->renderArena()) RenderFileUploadControl(element());
+    return new RenderFileUploadControl(element());
 }
 
 bool FileInputType::canSetStringValue() const

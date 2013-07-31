@@ -20,10 +20,10 @@
 #include "config.h"
 #include "core/rendering/InlineBox.h"
 
+#include "core/platform/Partitions.h"
 #include "core/platform/graphics/FontMetrics.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
 
@@ -68,31 +68,14 @@ void InlineBox::remove()
         parent()->removeChild(this);
 }
 
-void InlineBox::destroy(RenderArena* renderArena)
+void* InlineBox::operator new(size_t sz)
 {
-#ifndef NDEBUG
-    inInlineBoxDetach = true;
-#endif
-    delete this;
-#ifndef NDEBUG
-    inInlineBoxDetach = false;
-#endif
-
-    // Recover the size left there for us by operator delete and free the memory.
-    renderArena->free(*(size_t *)this, this);
+    return partitionAlloc(Partitions::getRenderingPartition(), sz);
 }
 
-void* InlineBox::operator new(size_t sz, RenderArena* renderArena)
+void InlineBox::operator delete(void* ptr)
 {
-    return renderArena->allocate(sz);
-}
-
-void InlineBox::operator delete(void* ptr, size_t sz)
-{
-    ASSERT(inInlineBoxDetach);
-
-    // Stash size where destroy can find it.
-    *(size_t *)ptr = sz;
+    partitionFree(ptr);
 }
 
 #ifndef NDEBUG
@@ -183,11 +166,11 @@ void InlineBox::dirtyLineBoxes()
         curr->markDirty();
 }
 
-void InlineBox::deleteLine(RenderArena* arena)
+void InlineBox::deleteLine()
 {
     if (!m_bitfields.extracted() && m_renderer->isBox())
         toRenderBox(m_renderer)->setInlineBoxWrapper(0);
-    destroy(arena);
+    destroy();
 }
 
 void InlineBox::extractLine()

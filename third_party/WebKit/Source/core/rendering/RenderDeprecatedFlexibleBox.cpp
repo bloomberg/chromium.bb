@@ -142,7 +142,7 @@ RenderDeprecatedFlexibleBox::~RenderDeprecatedFlexibleBox()
 
 RenderDeprecatedFlexibleBox* RenderDeprecatedFlexibleBox::createAnonymous(Document* document)
 {
-    RenderDeprecatedFlexibleBox* renderer = new (document->renderArena()) RenderDeprecatedFlexibleBox(0);
+    RenderDeprecatedFlexibleBox* renderer = new RenderDeprecatedFlexibleBox(0);
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }

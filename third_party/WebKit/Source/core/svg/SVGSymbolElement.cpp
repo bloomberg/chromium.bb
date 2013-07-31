@@ -100,7 +100,7 @@ bool SVGSymbolElement::selfHasRelativeLengths() const
 
 RenderObject* SVGSymbolElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGHiddenContainer(this);
+    return new RenderSVGHiddenContainer(this);
 }
 
 }

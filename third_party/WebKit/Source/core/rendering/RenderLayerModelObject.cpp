@@ -54,7 +54,7 @@ void RenderLayerModelObject::destroyLayer()
 {
     ASSERT(!hasLayer()); // Callers should have already called setHasLayer(false)
     ASSERT(m_layer);
-    m_layer->destroy(renderArena());
+    delete m_layer;
     m_layer = 0;
 }
 
@@ -63,7 +63,7 @@ void RenderLayerModelObject::ensureLayer()
     if (m_layer)
         return;
 
-    m_layer = new (renderArena()) RenderLayer(this);
+    m_layer = new RenderLayer(this);
     setHasLayer(true);
     m_layer->insertOnlyThisLayer();
 }

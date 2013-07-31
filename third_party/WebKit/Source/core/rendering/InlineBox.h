@@ -63,9 +63,9 @@ public:
 
     virtual ~InlineBox();
 
-    virtual void destroy(RenderArena*);
+    virtual void destroy() { delete this; }
 
-    virtual void deleteLine(RenderArena*);
+    virtual void deleteLine();
     virtual void extractLine();
     virtual void attachLine();
 
@@ -97,15 +97,9 @@ public:
     virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom);
 
-    // Overloaded new operator.
-    void* operator new(size_t, RenderArena*);
-
-    // Overridden to prevent the normal delete from being called.
-    void operator delete(void*, size_t);
-
-private:
-    // The normal operator new is disallowed.
-    void* operator new(size_t) throw();
+    // InlineBoxes are allocated out of the rendering partition.
+    void* operator new(size_t);
+    void operator delete(void*);
 
 public:
 #ifndef NDEBUG

@@ -139,7 +139,7 @@ void SVGFilterPrimitiveStandardAttributes::setStandardAttributes(FilterEffect* f
 
 RenderObject* SVGFilterPrimitiveStandardAttributes::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGResourceFilterPrimitive(this);
+    return new RenderSVGResourceFilterPrimitive(this);
 }
 
 bool SVGFilterPrimitiveStandardAttributes::rendererIsNeeded(const NodeRenderingContext& context)

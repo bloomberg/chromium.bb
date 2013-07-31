@@ -1071,7 +1071,7 @@ RenderListMarker::~RenderListMarker()
 RenderListMarker* RenderListMarker::createAnonymous(RenderListItem* item)
 {
     Document* document = item->document();
-    RenderListMarker* renderer = new (document->renderArena()) RenderListMarker(item);
+    RenderListMarker* renderer = new RenderListMarker(item);
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }

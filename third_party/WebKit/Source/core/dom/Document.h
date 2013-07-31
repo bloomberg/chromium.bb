@@ -130,7 +130,6 @@ class Prerenderer;
 class ProcessingInstruction;
 class Range;
 class RegisteredEventListener;
-class RenderArena;
 class RenderView;
 class RequestAnimationFrameCallback;
 class SVGDocumentExtensions;
@@ -508,8 +507,6 @@ public:
     // Override ScriptExecutionContext methods to do additional work
     virtual void suspendActiveDOMObjects(ActiveDOMObject::ReasonForSuspension) OVERRIDE;
     virtual void resumeActiveDOMObjects() OVERRIDE;
-
-    RenderArena* renderArena() { return m_renderArena.get(); }
 
     // Implemented in RenderView.h to avoid a cyclic header dependency this just
     // returns renderer so callers can avoid verbose casts.
@@ -1215,8 +1212,6 @@ private:
     StringWithDirection m_rawTitle;
     bool m_titleSetExplicitly;
     RefPtr<Element> m_titleElement;
-
-    RefPtr<RenderArena> m_renderArena;
 
     OwnPtr<AXObjectCache> m_axObjectCache;
     OwnPtr<DocumentMarkerController> m_markers;

@@ -65,7 +65,7 @@ bool HTMLVideoElement::rendererIsNeeded(const NodeRenderingContext& context)
 
 RenderObject* HTMLVideoElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderVideo(this);
+    return new RenderVideo(this);
 }
 
 void HTMLVideoElement::attach(const AttachContext& context)

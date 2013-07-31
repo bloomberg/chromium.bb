@@ -109,7 +109,7 @@ void SVGClipPathElement::childrenChanged(bool changedByParser, Node* beforeChang
 
 RenderObject* SVGClipPathElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGResourceClipper(this);
+    return new RenderSVGResourceClipper(this);
 }
 
 }

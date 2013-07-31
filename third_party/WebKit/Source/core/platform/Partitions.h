@@ -41,9 +41,11 @@ public:
     static void shutdown();
 
     ALWAYS_INLINE static PartitionRoot* getObjectModelPartition() { return &m_objectModelRoot; }
+    ALWAYS_INLINE static PartitionRoot* getRenderingPartition() { return &m_renderingRoot; }
 
 private:
     static PartitionRoot m_objectModelRoot;
+    static PartitionRoot m_renderingRoot;
 };
 
 } // namespace WebCore

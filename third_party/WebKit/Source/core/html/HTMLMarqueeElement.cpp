@@ -191,7 +191,7 @@ RenderMarquee* HTMLMarqueeElement::renderMarquee() const
 
 RenderObject* HTMLMarqueeElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderMarquee(this);
+    return new RenderMarquee(this);
 }
 
 } // namespace WebCore

@@ -729,12 +729,9 @@ public:
 
     bool hasBlendMode() const;
 
-    // Overloaded new operator. Derived classes must override operator new
-    // in order to allocate out of the RenderArena.
-    void* operator new(size_t, RenderArena*);
-
-    // Overridden to prevent the normal delete from being called.
-    void operator delete(void*, size_t);
+    void* operator new(size_t);
+    // Only safe to call from RenderLayerModelObject::destroyLayer()
+    void operator delete(void*);
 
     bool isComposited() const { return m_backing != 0; }
     bool hasCompositedMask() const;
@@ -902,9 +899,6 @@ private:
     IntSize scrolledContentOffset() const { return m_scrollOffset; }
 
     IntSize clampScrollOffset(const IntSize&) const;
-
-    // The normal operator new is disallowed on all render objects.
-    void* operator new(size_t) throw();
 
     void setNextSibling(RenderLayer* next) { m_next = next; }
     void setPreviousSibling(RenderLayer* prev) { m_previous = prev; }
@@ -1099,9 +1093,6 @@ private:
     friend class RenderLayerBacking;
     friend class RenderLayerCompositor;
     friend class RenderLayerModelObject;
-
-    // Only safe to call from RenderLayerModelObject::destroyLayer(RenderArena*)
-    void destroy(RenderArena*);
 
     LayoutUnit overflowTop() const;
     LayoutUnit overflowBottom() const;

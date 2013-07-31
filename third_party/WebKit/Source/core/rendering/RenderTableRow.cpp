@@ -267,7 +267,7 @@ void RenderTableRow::imageChanged(WrappedImagePtr, const IntRect*)
 
 RenderTableRow* RenderTableRow::createAnonymous(Document* document)
 {
-    RenderTableRow* renderer = new (document->renderArena()) RenderTableRow(0);
+    RenderTableRow* renderer = new RenderTableRow(0);
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }

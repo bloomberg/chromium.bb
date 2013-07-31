@@ -33,7 +33,6 @@
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
-#include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderFullScreen.h"
@@ -56,7 +55,7 @@ RenderInline::RenderInline(Element* element)
 
 RenderInline* RenderInline::createAnonymous(Document* document)
 {
-    RenderInline* renderer = new (document->renderArena()) RenderInline(0);
+    RenderInline* renderer = new RenderInline(0);
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }
@@ -111,7 +110,7 @@ void RenderInline::willBeDestroyed()
             parent()->dirtyLinesFromChangedChild(this);
     }
 
-    m_lineBoxes.deleteLineBoxes(renderArena());
+    m_lineBoxes.deleteLineBoxes();
 
     RenderBoxModelObject::willBeDestroyed();
 }
@@ -332,7 +331,7 @@ void RenderInline::addChildIgnoringContinuation(RenderObject* newChild, RenderOb
 
 RenderInline* RenderInline::clone() const
 {
-    RenderInline* cloneInline = new (renderArena()) RenderInline(node());
+    RenderInline* cloneInline = new RenderInline(node());
     cloneInline->setStyle(style());
     cloneInline->setFlowThreadState(flowThreadState());
     return cloneInline;
@@ -475,9 +474,6 @@ void RenderInline::splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox
     // time in makeChildrenNonInline by just setting this explicitly up front.
     newBlockBox->setChildrenInline(false);
 
-    // We delayed adding the newChild until now so that the |newBlockBox| would be fully
-    // connected, thus allowing newChild access to a renderArena should it need
-    // to wrap itself in additional boxes (e.g., table construction).
     newBlockBox->addChild(newChild);
 
     // Always just do a full layout in order to ensure that line boxes (especially wrappers for images)
@@ -1244,7 +1240,7 @@ void RenderInline::updateHitTestResult(HitTestResult& result, const LayoutPoint&
 void RenderInline::dirtyLineBoxes(bool fullLayout)
 {
     if (fullLayout) {
-        m_lineBoxes.deleteLineBoxes(renderArena());
+        m_lineBoxes.deleteLineBoxes();
         return;
     }
 
@@ -1275,12 +1271,12 @@ void RenderInline::dirtyLineBoxes(bool fullLayout)
 
 void RenderInline::deleteLineBoxTree()
 {
-    m_lineBoxes.deleteLineBoxTree(renderArena());
+    m_lineBoxes.deleteLineBoxTree();
 }
 
 InlineFlowBox* RenderInline::createInlineFlowBox()
 {
-    return new (renderArena()) InlineFlowBox(this);
+    return new InlineFlowBox(this);
 }
 
 InlineFlowBox* RenderInline::createAndAppendInlineFlowBox()

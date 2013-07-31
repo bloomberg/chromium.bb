@@ -80,7 +80,7 @@ RenderObject* HTMLAppletElement::createRenderer(RenderStyle* style)
     if (!canEmbedJava())
         return RenderObject::createObject(this, style);
 
-    return new (document()->renderArena()) RenderApplet(this);
+    return new RenderApplet(this);
 }
 
 RenderWidget* HTMLAppletElement::renderWidgetForJSBindings() const

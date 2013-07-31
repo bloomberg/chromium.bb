@@ -61,7 +61,7 @@ RenderObject* HTMLProgressElement::createRenderer(RenderStyle* style)
     if (!style->hasAppearance() || hasAuthorShadowRoot())
         return RenderObject::createObject(this, style);
 
-    return new (document()->renderArena()) RenderProgress(this);
+    return new RenderProgress(this);
 }
 
 RenderProgress* HTMLProgressElement::renderProgress() const

@@ -59,7 +59,7 @@ RenderObject* HTMLMeterElement::createRenderer(RenderStyle* style)
     if (hasAuthorShadowRoot() || !document()->page()->theme()->supportsMeter(style->appearance()))
         return RenderObject::createObject(this, style);
 
-    return new (document()->renderArena()) RenderMeter(this);
+    return new RenderMeter(this);
 }
 
 void HTMLMeterElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

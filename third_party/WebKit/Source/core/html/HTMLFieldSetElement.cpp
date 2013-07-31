@@ -87,7 +87,7 @@ const AtomicString& HTMLFieldSetElement::formControlType() const
 
 RenderObject* HTMLFieldSetElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderFieldset(this);
+    return new RenderFieldset(this);
 }
 
 HTMLLegendElement* HTMLFieldSetElement::legend() const

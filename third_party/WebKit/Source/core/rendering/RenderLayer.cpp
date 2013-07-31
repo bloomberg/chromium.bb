@@ -66,6 +66,7 @@
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/HistogramSupport.h"
+#include "core/platform/Partitions.h"
 #include "core/platform/PlatformGestureEvent.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollAnimator.h"
@@ -90,7 +91,6 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/HitTestingTransformState.h"
 #include "core/rendering/OverlapTestRequestClient.h"
-#include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
@@ -1616,23 +1616,14 @@ void RenderLayer::beginTransparencyLayers(GraphicsContext* context, const Render
     }
 }
 
-void* RenderLayer::operator new(size_t sz, RenderArena* renderArena)
+void* RenderLayer::operator new(size_t sz)
 {
-    return renderArena->allocate(sz);
+    return partitionAlloc(Partitions::getRenderingPartition(), sz);
 }
 
-void RenderLayer::operator delete(void* ptr, size_t sz)
+void RenderLayer::operator delete(void* ptr)
 {
-    // Stash size where destroy can find it.
-    *(size_t *)ptr = sz;
-}
-
-void RenderLayer::destroy(RenderArena* renderArena)
-{
-    delete this;
-
-    // Recover the size left there for us by operator delete and free the memory.
-    renderArena->free(*(size_t *)this, this);
+    partitionFree(ptr);
 }
 
 void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)

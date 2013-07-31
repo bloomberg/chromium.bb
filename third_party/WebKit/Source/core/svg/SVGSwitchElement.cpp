@@ -72,7 +72,7 @@ bool SVGSwitchElement::childShouldCreateRenderer(const NodeRenderingContext& chi
 
 RenderObject* SVGSwitchElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGTransformableContainer(this);
+    return new RenderSVGTransformableContainer(this);
 }
 
 }

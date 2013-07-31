@@ -259,12 +259,12 @@ void Text::createTextRendererIfNeeded()
 RenderText* Text::createTextRenderer(RenderStyle* style)
 {
     if (isSVGText(this) || isSVGShadowText(this))
-        return new (document()->renderArena()) RenderSVGInlineText(this, dataImpl());
+        return new RenderSVGInlineText(this, dataImpl());
 
     if (style->hasTextCombine())
-        return new (document()->renderArena()) RenderCombineText(this, dataImpl());
+        return new RenderCombineText(this, dataImpl());
 
-    return new (document()->renderArena()) RenderText(this, dataImpl());
+    return new RenderText(this, dataImpl());
 }
 
 void Text::attach(const AttachContext& context)

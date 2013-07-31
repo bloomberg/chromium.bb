@@ -331,8 +331,8 @@ bool HTMLSelectElement::canSelectAll() const
 RenderObject* HTMLSelectElement::createRenderer(RenderStyle*)
 {
     if (usesMenuList())
-        return new (document()->renderArena()) RenderMenuList(this);
-    return new (document()->renderArena()) RenderListBox(this);
+        return new RenderMenuList(this);
+    return new RenderListBox(this);
 }
 
 bool HTMLSelectElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

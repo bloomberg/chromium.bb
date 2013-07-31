@@ -301,20 +301,11 @@ public:
 
     static RenderObject* createObject(Element*, RenderStyle*);
 
-    // Overloaded new operator.  Derived classes must override operator new
-    // in order to allocate out of the RenderArena.
-    void* operator new(size_t, RenderArena*);
-
-    // Overridden to prevent the normal delete from being called.
-    void operator delete(void*, size_t);
-
-private:
-    // The normal operator new is disallowed on all render objects.
-    void* operator new(size_t) throw();
+    // RenderObjects are allocated out of the rendering partition.
+    void* operator new(size_t);
+    void operator delete(void*);
 
 public:
-    RenderArena* renderArena() const { return document()->renderArena(); }
-
     bool isPseudoElement() const { return node() && node()->isPseudoElement(); }
 
     virtual bool isBR() const { return false; }
@@ -1019,7 +1010,7 @@ protected:
 
     void clearLayoutRootIfNeeded() const;
     virtual void willBeDestroyed();
-    void arenaDelete(RenderArena*, void* objectBase);
+    void postDestroy();
 
     virtual bool canBeReplacedWithInlineRunIn() const;
 

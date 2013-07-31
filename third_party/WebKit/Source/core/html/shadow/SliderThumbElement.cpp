@@ -221,7 +221,7 @@ void SliderThumbElement::setPositionFromValue()
 
 RenderObject* SliderThumbElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSliderThumb(this);
+    return new RenderSliderThumb(this);
 }
 
 bool SliderThumbElement::isDisabledFormControl() const
@@ -449,7 +449,7 @@ PassRefPtr<SliderContainerElement> SliderContainerElement::create(Document* docu
 
 RenderObject* SliderContainerElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSliderContainer(this);
+    return new RenderSliderContainer(this);
 }
 
 const AtomicString& SliderContainerElement::shadowPseudoId() const

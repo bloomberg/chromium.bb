@@ -893,7 +893,7 @@ void RenderView::releaseWidgets(Vector<RenderWidget*>& renderWidgets)
     size_t size = renderWidgets.size();
 
     for (size_t i = 0; i < size; ++i)
-        renderWidgets[i]->deref(renderArena());
+        renderWidgets[i]->deref();
 }
 
 void RenderView::updateWidgetPositions()
@@ -1015,7 +1015,7 @@ void RenderView::pushLayoutState(RenderObject* root)
     ASSERT(m_layoutStateDisableCount == 0);
     ASSERT(m_layoutState == 0);
 
-    m_layoutState = new (renderArena()) LayoutState(root);
+    m_layoutState = new LayoutState(root);
 }
 
 bool RenderView::shouldDisableLayoutStateForSubtree(RenderObject* renderer) const

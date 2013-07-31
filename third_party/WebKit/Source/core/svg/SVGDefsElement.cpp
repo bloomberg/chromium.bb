@@ -55,7 +55,7 @@ bool SVGDefsElement::isValid() const
 
 RenderObject* SVGDefsElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGHiddenContainer(this);
+    return new RenderSVGHiddenContainer(this);
 }
 
 }

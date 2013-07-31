@@ -49,7 +49,7 @@ HTMLSummaryElement::HTMLSummaryElement(const QualifiedName& tagName, Document* d
 
 RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderBlock(this);
+    return new RenderBlock(this);
 }
 
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot* root)

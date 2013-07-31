@@ -104,7 +104,7 @@ bool HTMLIFrameElement::rendererIsNeeded(const NodeRenderingContext& context)
 
 RenderObject* HTMLIFrameElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderIFrame(this);
+    return new RenderIFrame(this);
 }
 
 Node::InsertionNotificationRequest HTMLIFrameElement::insertedInto(ContainerNode* insertionPoint)

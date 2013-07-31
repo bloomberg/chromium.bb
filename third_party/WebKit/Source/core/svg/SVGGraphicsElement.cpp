@@ -163,7 +163,7 @@ SVGRect SVGGraphicsElement::getBBox(StyleUpdateStrategy styleUpdateStrategy)
 RenderObject* SVGGraphicsElement::createRenderer(RenderStyle*)
 {
     // By default, any subclass is expected to do path-based drawing
-    return new (document()->renderArena()) RenderSVGPath(this);
+    return new RenderSVGPath(this);
 }
 
 void SVGGraphicsElement::toClipPath(Path& path)

@@ -770,7 +770,7 @@ bool HTMLElement::rendererIsNeeded(const NodeRenderingContext& context)
 RenderObject* HTMLElement::createRenderer(RenderStyle* style)
 {
     if (hasLocalName(wbrTag))
-        return new (document()->renderArena()) RenderWordBreak(this);
+        return new RenderWordBreak(this);
     return RenderObject::createObject(this, style);
 }
 

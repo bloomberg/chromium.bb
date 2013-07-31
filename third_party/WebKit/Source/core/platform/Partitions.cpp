@@ -35,10 +35,12 @@
 namespace WebCore {
 
 PartitionRoot Partitions::m_objectModelRoot;
+PartitionRoot Partitions::m_renderingRoot;
 
 void Partitions::init()
 {
     partitionAllocInit(&m_objectModelRoot);
+    partitionAllocInit(&m_renderingRoot);
 }
 
 void Partitions::shutdown()
@@ -47,6 +49,7 @@ void Partitions::shutdown()
     // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
     // the valgrind and heapcheck bots, which run without partitions.
     (void) partitionAllocShutdown(&m_objectModelRoot);
+    (void) partitionAllocShutdown(&m_renderingRoot);
 }
 
 } // namespace WebCore

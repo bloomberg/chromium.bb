@@ -92,9 +92,9 @@ RenderObject* SVGGElement::createRenderer(RenderStyle* style)
     // subtree may be hidden - we only want the resource renderers to exist so they can be
     // referenced from somewhere else.
     if (style->display() == NONE)
-        return new (document()->renderArena()) RenderSVGHiddenContainer(this);
+        return new RenderSVGHiddenContainer(this);
 
-    return new (document()->renderArena()) RenderSVGTransformableContainer(this);
+    return new RenderSVGTransformableContainer(this);
 }
 
 bool SVGGElement::rendererIsNeeded(const NodeRenderingContext&)

@@ -81,7 +81,7 @@ bool MeterInnerElement::rendererIsNeeded(const NodeRenderingContext& context)
 
 RenderObject* MeterInnerElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderMeter(this);
+    return new RenderMeter(this);
 }
 
 inline MeterBarElement::MeterBarElement(Document* document)

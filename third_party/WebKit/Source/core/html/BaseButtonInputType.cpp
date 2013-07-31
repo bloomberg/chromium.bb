@@ -51,7 +51,7 @@ class NonSelectableText : public Text {
 
     virtual RenderText* createTextRenderer(RenderStyle*) OVERRIDE
     {
-        return new (document()->renderArena()) RenderTextFragment(this, dataImpl());
+        return new RenderTextFragment(this, dataImpl());
     }
 
 public:
@@ -88,7 +88,7 @@ bool BaseButtonInputType::appendFormData(FormDataList&, bool) const
 
 RenderObject* BaseButtonInputType::createRenderer(RenderStyle*) const
 {
-    return new (element()->document()->renderArena()) RenderButton(element());
+    return new RenderButton(element());
 }
 
 bool BaseButtonInputType::storesValueSeparateFromAttribute()

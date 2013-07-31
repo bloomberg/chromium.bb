@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/rendering/LayoutState.h"
 
+#include "core/platform/Partitions.h"
 #include "core/rendering/ColumnInfo.h"
-#include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -161,31 +161,14 @@ LayoutState::LayoutState(RenderObject* root)
     }
 }
 
-#ifndef NDEBUG
-static bool inLayoutStateDestroy;
-#endif
-
-void LayoutState::destroy(RenderArena* renderArena)
+void* LayoutState::operator new(size_t sz)
 {
-#ifndef NDEBUG
-    inLayoutStateDestroy = true;
-#endif
-    delete this;
-#ifndef NDEBUG
-    inLayoutStateDestroy = false;
-#endif
-    renderArena->free(*(size_t*)this, this);
+    return partitionAlloc(Partitions::getRenderingPartition(), sz);
 }
 
-void* LayoutState::operator new(size_t sz, RenderArena* renderArena)
+void LayoutState::operator delete(void* ptr)
 {
-    return renderArena->allocate(sz);
-}
-
-void LayoutState::operator delete(void* ptr, size_t sz)
-{
-    ASSERT(inLayoutStateDestroy);
-    *(size_t*)ptr = sz;
+    partitionFree(ptr);
 }
 
 void LayoutState::clearPaginationInformation()

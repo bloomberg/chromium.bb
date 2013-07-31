@@ -64,7 +64,7 @@ void SearchInputType::attach()
 
 RenderObject* SearchInputType::createRenderer(RenderStyle*) const
 {
-    return new (element()->document()->renderArena()) RenderSearchField(element());
+    return new RenderSearchField(element());
 }
 
 const AtomicString& SearchInputType::formControlType() const

@@ -183,7 +183,7 @@ bool SVGImageElement::selfHasRelativeLengths() const
 
 RenderObject* SVGImageElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGImage(this);
+    return new RenderSVGImage(this);
 }
 
 bool SVGImageElement::haveLoadedRequiredResources()

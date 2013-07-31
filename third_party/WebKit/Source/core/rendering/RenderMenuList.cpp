@@ -236,7 +236,7 @@ void RenderMenuList::setText(const String& s)
         if (!m_buttonText || !m_buttonText->isBR()) {
             if (m_buttonText)
                 m_buttonText->destroy();
-            m_buttonText = new (renderArena()) RenderBR(document());
+            m_buttonText = new RenderBR(document());
             m_buttonText->setStyle(style());
             addChild(m_buttonText);
         }
@@ -246,7 +246,7 @@ void RenderMenuList::setText(const String& s)
         else {
             if (m_buttonText)
                 m_buttonText->destroy();
-            m_buttonText = new (renderArena()) RenderText(document(), s.impl());
+            m_buttonText = new RenderText(document(), s.impl());
             m_buttonText->setStyle(style());
             // We need to set the text explicitly though it was specified in the
             // constructor because RenderText doesn't refer to the text

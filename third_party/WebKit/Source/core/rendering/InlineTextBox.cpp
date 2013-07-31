@@ -65,11 +65,11 @@ static InlineTextBoxOverflowMap* gTextBoxesWithOverflow;
 
 static const int misspellingLineThickness = 3;
 
-void InlineTextBox::destroy(RenderArena* arena)
+void InlineTextBox::destroy()
 {
     if (!knownToHaveNoOverflow() && gTextBoxesWithOverflow)
         gTextBoxesWithOverflow->remove(this);
-    InlineBox::destroy(arena);
+    InlineBox::destroy();
 }
 
 void InlineTextBox::markDirty(bool dirty)
@@ -238,10 +238,10 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
     return LayoutRect(topPoint, LayoutSize(width, height));
 }
 
-void InlineTextBox::deleteLine(RenderArena* arena)
+void InlineTextBox::deleteLine()
 {
     toRenderText(renderer())->removeTextBox(this);
-    destroy(arena);
+    destroy();
 }
 
 void InlineTextBox::extractLine()

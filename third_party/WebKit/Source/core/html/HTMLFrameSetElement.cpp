@@ -159,7 +159,7 @@ RenderObject* HTMLFrameSetElement::createRenderer(RenderStyle *style)
     if (style->hasContent())
         return RenderObject::createObject(this, style);
 
-    return new (document()->renderArena()) RenderFrameSet(this);
+    return new RenderFrameSet(this);
 }
 
 void HTMLFrameSetElement::attach(const AttachContext& context)

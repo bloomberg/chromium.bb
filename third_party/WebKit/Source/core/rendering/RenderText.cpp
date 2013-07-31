@@ -297,11 +297,10 @@ void RenderText::removeTextBox(InlineTextBox* box)
 void RenderText::deleteTextBoxes()
 {
     if (firstTextBox()) {
-        RenderArena* arena = renderArena();
         InlineTextBox* next;
         for (InlineTextBox* curr = firstTextBox(); curr; curr = next) {
             next = curr->nextTextBox();
-            curr->destroy(arena);
+            curr->destroy();
         }
         m_firstTextBox = m_lastTextBox = 0;
     }
@@ -1421,7 +1420,7 @@ void RenderText::dirtyLineBoxes(bool fullLayout)
 
 InlineTextBox* RenderText::createTextBox()
 {
-    return new (renderArena()) InlineTextBox(this);
+    return new InlineTextBox(this);
 }
 
 InlineTextBox* RenderText::createInlineTextBox()
@@ -1454,7 +1453,7 @@ void RenderText::positionLineBox(InlineBox* box)
             m_lastTextBox = s->prevTextBox();
         else
             s->nextTextBox()->setPreviousTextBox(s->prevTextBox());
-        s->destroy(renderArena());
+        s->destroy();
         return;
     }
 

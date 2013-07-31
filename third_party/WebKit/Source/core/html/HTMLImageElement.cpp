@@ -143,7 +143,7 @@ RenderObject* HTMLImageElement::createRenderer(RenderStyle* style)
     if (style->hasContent())
         return RenderObject::createObject(this, style);
 
-    RenderImage* image = new (document()->renderArena()) RenderImage(this);
+    RenderImage* image = new RenderImage(this);
     image->setImageResource(RenderImageResource::create());
     return image;
 }

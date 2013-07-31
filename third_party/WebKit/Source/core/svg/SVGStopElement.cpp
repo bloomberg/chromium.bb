@@ -99,7 +99,7 @@ void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName)
 
 RenderObject* SVGStopElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGGradientStop(this);
+    return new RenderSVGGradientStop(this);
 }
 
 bool SVGStopElement::rendererIsNeeded(const NodeRenderingContext&)

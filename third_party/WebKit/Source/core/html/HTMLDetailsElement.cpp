@@ -57,7 +57,7 @@ HTMLDetailsElement::HTMLDetailsElement(const QualifiedName& tagName, Document* d
 
 RenderObject* HTMLDetailsElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderBlock(this);
+    return new RenderBlock(this);
 }
 
 void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)

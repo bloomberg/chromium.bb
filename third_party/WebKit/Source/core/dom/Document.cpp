@@ -153,7 +153,6 @@
 #include "core/platform/text/SegmentedString.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
@@ -527,8 +526,6 @@ Document::~Document()
     // if the DocumentParser outlives the Document it won't cause badness.
     ASSERT(!m_parser || m_parser->refCount() == 1);
     detachParser();
-
-    m_renderArena.clear();
 
     if (this == topDocument())
         clearAXObjectCache();
@@ -1606,8 +1603,7 @@ void Document::recalcStyle(StyleChange change)
             frameView->beginDeferredRepaints();
         }
 
-        ASSERT(!renderer() || renderArena());
-        if (!renderer() || !renderArena())
+        if (!renderer())
             goto bailOut;
 
         if (styleChangeType() == SubtreeStyleChange)
@@ -1847,11 +1843,8 @@ void Document::attach(const AttachContext& context)
     ASSERT(!attached());
     ASSERT(!m_axObjectCache || this != topDocument());
 
-    if (!m_renderArena)
-        m_renderArena = RenderArena::create();
-
     // Create the rendering tree
-    setRenderer(new (m_renderArena.get()) RenderView(this));
+    setRenderer(new RenderView(this));
     renderView()->setIsInWindow(true);
 
     recalcStyle(Force);
@@ -1918,7 +1911,6 @@ void Document::detach(const AttachContext& context)
     // or this setting of the frame to 0 could be made explicit in each of the
     // callers of Document::detach().
     m_frame = 0;
-    m_renderArena.clear();
 
     if (m_mediaQueryMatcher)
         m_mediaQueryMatcher->documentDestroyed();

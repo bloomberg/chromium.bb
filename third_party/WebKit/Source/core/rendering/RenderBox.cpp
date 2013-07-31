@@ -1814,14 +1814,14 @@ LayoutSize RenderBox::offsetFromContainer(RenderObject* o, const LayoutPoint& po
 
 InlineBox* RenderBox::createInlineBox()
 {
-    return new (renderArena()) InlineBox(this);
+    return new InlineBox(this);
 }
 
 void RenderBox::dirtyLineBoxes(bool fullLayout)
 {
     if (m_inlineBoxWrapper) {
         if (fullLayout) {
-            m_inlineBoxWrapper->destroy(renderArena());
+            m_inlineBoxWrapper->destroy();
             m_inlineBoxWrapper = 0;
         } else
             m_inlineBoxWrapper->dirtyLineBoxes();
@@ -1853,7 +1853,7 @@ void RenderBox::positionLineBox(InlineBox* box)
 
         // Nuke the box.
         box->remove();
-        box->destroy(renderArena());
+        box->destroy();
     } else if (isReplaced()) {
         setLocation(roundedLayoutPoint(box->topLeft()));
         setInlineBoxWrapper(box);
@@ -1865,7 +1865,7 @@ void RenderBox::deleteLineBoxWrapper()
     if (m_inlineBoxWrapper) {
         if (!documentBeingDestroyed())
             m_inlineBoxWrapper->remove();
-        m_inlineBoxWrapper->destroy(renderArena());
+        m_inlineBoxWrapper->destroy();
         m_inlineBoxWrapper = 0;
     }
 }

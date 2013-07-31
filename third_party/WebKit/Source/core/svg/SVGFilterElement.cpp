@@ -186,7 +186,7 @@ void SVGFilterElement::childrenChanged(bool changedByParser, Node* beforeChange,
 
 RenderObject* SVGFilterElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGResourceFilter(this);
+    return new RenderSVGResourceFilter(this);
 }
 
 bool SVGFilterElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

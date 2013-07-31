@@ -80,7 +80,7 @@ RenderFlexibleBox::~RenderFlexibleBox()
 
 RenderFlexibleBox* RenderFlexibleBox::createAnonymous(Document* document)
 {
-    RenderFlexibleBox* renderer = new (document->renderArena()) RenderFlexibleBox(0);
+    RenderFlexibleBox* renderer = new RenderFlexibleBox(0);
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }

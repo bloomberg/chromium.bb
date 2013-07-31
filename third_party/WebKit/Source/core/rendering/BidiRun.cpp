@@ -23,7 +23,7 @@
 
 #include "config.h"
 #include "core/rendering/BidiRun.h"
-#include "core/rendering/RenderArena.h"
+#include "core/platform/Partitions.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 
@@ -33,42 +33,20 @@ namespace WebCore {
 
 DEFINE_DEBUG_ONLY_GLOBAL(RefCountedLeakCounter, bidiRunCounter, ("BidiRun"));
 
-#ifndef NDEBUG
-static bool inBidiRunDestroy;
-#endif
-
-void BidiRun::destroy()
-{
-#ifndef NDEBUG
-    inBidiRunDestroy = true;
-#endif
-    RenderArena* renderArena = m_object->renderArena();
-    delete this;
-#ifndef NDEBUG
-    inBidiRunDestroy = false;
-#endif
-
-    // Recover the size left there for us by operator delete and free the memory.
-    renderArena->free(*reinterpret_cast<size_t*>(this), this);
-}
-
-void* BidiRun::operator new(size_t sz, RenderArena* renderArena)
+void* BidiRun::operator new(size_t sz)
 {
 #ifndef NDEBUG
     bidiRunCounter.increment();
 #endif
-    return renderArena->allocate(sz);
+    return partitionAlloc(Partitions::getRenderingPartition(), sz);
 }
 
-void BidiRun::operator delete(void* ptr, size_t sz)
+void BidiRun::operator delete(void* ptr)
 {
 #ifndef NDEBUG
     bidiRunCounter.decrement();
 #endif
-    ASSERT(inBidiRunDestroy);
-
-    // Stash size where destroy() can find it.
-    *(size_t*)ptr = sz;
+    partitionFree(ptr);
 }
 
 }

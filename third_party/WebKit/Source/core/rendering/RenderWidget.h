@@ -67,8 +67,8 @@ public:
     void widgetPositionsUpdated();
     IntRect windowClipRect() const;
 
-    RenderArena* ref() { ++m_refCount; return renderArena(); }
-    void deref(RenderArena*);
+    void ref() { ++m_refCount; }
+    void deref();
 
 protected:
     RenderWidget(Element*);

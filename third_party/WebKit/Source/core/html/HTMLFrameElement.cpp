@@ -54,7 +54,7 @@ bool HTMLFrameElement::rendererIsNeeded(const NodeRenderingContext&)
 
 RenderObject* HTMLFrameElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderFrame(this);
+    return new RenderFrame(this);
 }
 
 static inline HTMLFrameSetElement* containingFrameSetElement(Node* node)

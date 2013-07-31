@@ -269,7 +269,7 @@ RenderBlock::~RenderBlock()
 
 RenderBlock* RenderBlock::createAnonymous(Document* document)
 {
-    RenderBlock* renderer = new (document->renderArena()) RenderBlock(0);
+    RenderBlock* renderer = new RenderBlock(0);
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }
@@ -314,10 +314,10 @@ void RenderBlock::willBeDestroyed()
             parent()->dirtyLinesFromChangedChild(this);
     }
 
-    m_lineBoxes.deleteLineBoxes(renderArena());
+    m_lineBoxes.deleteLineBoxes();
 
     if (lineGridBox())
-        lineGridBox()->destroy(renderArena());
+        lineGridBox()->destroy();
 
     if (UNLIKELY(gDelayedUpdateScrollInfoSet != 0))
         gDelayedUpdateScrollInfoSet->remove(this);
@@ -724,9 +724,6 @@ void RenderBlock::splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox,
     // time in makeChildrenNonInline by just setting this explicitly up front.
     newBlockBox->setChildrenInline(false);
 
-    // We delayed adding the newChild until now so that the |newBlockBox| would be fully
-    // connected, thus allowing newChild access to a renderArena should it need
-    // to wrap itself in additional boxes (e.g., table construction).
     newBlockBox->addChild(newChild);
 
     // Always just do a full layout in order to ensure that line boxes (especially wrappers for images)
@@ -776,9 +773,6 @@ void RenderBlock::makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, R
     // time in makeChildrenNonInline by just setting this explicitly up front.
     newBlockBox->setChildrenInline(false);
 
-    // We delayed adding the newChild until now so that the |newBlockBox| would be fully
-    // connected, thus allowing newChild access to a renderArena should it need
-    // to wrap itself in additional boxes (e.g., table construction).
     newBlockBox->addChild(newChild);
 
     // Always just do a full layout in order to ensure that line boxes (especially wrappers for images)
@@ -1016,7 +1010,7 @@ void RenderBlock::deleteLineBoxTree()
             (*it)->m_originatingLine = 0;
         }
     }
-    m_lineBoxes.deleteLineBoxTree(renderArena());
+    m_lineBoxes.deleteLineBoxTree();
 
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->recomputeIsIgnored(this);
@@ -1024,7 +1018,7 @@ void RenderBlock::deleteLineBoxTree()
 
 RootInlineBox* RenderBlock::createRootInlineBox()
 {
-    return new (renderArena()) RootInlineBox(this);
+    return new RootInlineBox(this);
 }
 
 RootInlineBox* RenderBlock::createAndAppendRootInlineBox()
@@ -1942,9 +1936,9 @@ RenderBoxModelObject* RenderBlock::createReplacementRunIn(RenderBoxModelObject* 
 
     RenderBoxModelObject* newRunIn = 0;
     if (!runIn->isRenderBlock())
-        newRunIn = new (renderArena()) RenderBlock(runIn->node());
+        newRunIn = new RenderBlock(runIn->node());
     else
-        newRunIn = new (renderArena()) RenderInline(toElement(runIn->node()));
+        newRunIn = new RenderInline(toElement(runIn->node()));
 
     runIn->node()->setRenderer(newRunIn);
     newRunIn->setStyle(runIn->style());
@@ -6778,7 +6772,7 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
         // Construct a text fragment for the text after the first letter.
         // This text fragment might be empty.
         RenderTextFragment* remainingText =
-            new (renderArena()) RenderTextFragment(textObj->node() ? textObj->node() : textObj->document(), oldText.get(), length, oldText->length() - length);
+            new RenderTextFragment(textObj->node() ? textObj->node() : textObj->document(), oldText.get(), length, oldText->length() - length);
         remainingText->setStyle(textObj->style());
         if (remainingText->node())
             remainingText->node()->setRenderer(remainingText);
@@ -6790,7 +6784,7 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
 
         // construct text fragment for the first letter
         RenderTextFragment* letter =
-            new (renderArena()) RenderTextFragment(remainingText->node() ? remainingText->node() : remainingText->document(), oldText.get(), 0, length);
+            new RenderTextFragment(remainingText->node() ? remainingText->node() : remainingText->document(), oldText.get(), 0, length);
         letter->setStyle(pseudoStyle);
         firstLetter->addChild(letter);
 

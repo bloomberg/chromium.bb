@@ -69,7 +69,7 @@ AffineTransform SVGTextElement::animatedLocalTransform() const
 
 RenderObject* SVGTextElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGText(this);
+    return new RenderSVGText(this);
 }
 
 bool SVGTextElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

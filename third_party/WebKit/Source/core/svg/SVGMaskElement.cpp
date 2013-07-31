@@ -154,7 +154,7 @@ void SVGMaskElement::childrenChanged(bool changedByParser, Node* beforeChange, N
 
 RenderObject* SVGMaskElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGResourceMasker(this);
+    return new RenderSVGResourceMasker(this);
 }
 
 bool SVGMaskElement::selfHasRelativeLengths() const

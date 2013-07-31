@@ -180,7 +180,7 @@ const AtomicString& TextTrackCueBox::textTrackCueBoxShadowPseudoId()
 
 RenderObject* TextTrackCueBox::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderTextTrackCue(this);
+    return new RenderTextTrackCue(this);
 }
 
 // ----------------------------

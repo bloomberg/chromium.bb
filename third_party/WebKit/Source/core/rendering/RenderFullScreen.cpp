@@ -58,7 +58,7 @@ RenderFullScreen::RenderFullScreen()
 
 RenderFullScreen* RenderFullScreen::createAnonymous(Document* document)
 {
-    RenderFullScreen* renderer = new (document->renderArena()) RenderFullScreen();
+    RenderFullScreen* renderer = new RenderFullScreen();
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }
@@ -178,7 +178,7 @@ void RenderFullScreen::createPlaceholder(PassRefPtr<RenderStyle> style, const La
         style->setHeight(Length(frameRect.height(), Fixed));
 
     if (!m_placeholder) {
-        m_placeholder = new (document()->renderArena()) RenderFullScreenPlaceholder(this);
+        m_placeholder = new RenderFullScreenPlaceholder(this);
         m_placeholder->setStyle(style);
         if (parent()) {
             parent()->addChild(m_placeholder, this);

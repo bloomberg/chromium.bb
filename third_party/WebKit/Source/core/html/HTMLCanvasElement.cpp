@@ -113,7 +113,7 @@ RenderObject* HTMLCanvasElement::createRenderer(RenderStyle* style)
     Frame* frame = document()->frame();
     if (frame && frame->script()->canExecuteScripts(NotAboutToExecuteScript)) {
         m_rendererIsCanvas = true;
-        return new (document()->renderArena()) RenderHTMLCanvas(this);
+        return new RenderHTMLCanvas(this);
     }
 
     m_rendererIsCanvas = false;

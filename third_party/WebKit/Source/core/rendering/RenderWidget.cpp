@@ -31,7 +31,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidgetProtector.h"
 
 using namespace std;
 
@@ -111,12 +110,8 @@ void RenderWidget::willBeDestroyed()
 void RenderWidget::destroy()
 {
     willBeDestroyed();
-
-    // Grab the arena from node()->document()->renderArena() before clearing the node pointer.
-    // Clear the node before deref-ing, as this may be deleted when deref is called.
-    RenderArena* arena = renderArena();
     clearNode();
-    deref(arena);
+    deref();
 }
 
 RenderWidget::~RenderWidget()
@@ -148,7 +143,7 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
 
     m_clipRect = clipRect;
 
-    RenderWidgetProtector protector(this);
+    RefPtr<RenderWidget> protector(this);
     RefPtr<Node> protectedNode(node());
     m_widget->setFrameRect(newFrame);
 
@@ -318,10 +313,10 @@ void RenderWidget::setOverlapTestResult(bool isOverlapped)
     toFrameView(m_widget.get())->setIsOverlapped(isOverlapped);
 }
 
-void RenderWidget::deref(RenderArena *arena)
+void RenderWidget::deref()
 {
     if (--m_refCount <= 0)
-        arenaDelete(arena, this);
+        postDestroy();
 }
 
 void RenderWidget::updateWidgetPosition()

@@ -172,7 +172,7 @@ void SVGPatternElement::childrenChanged(bool changedByParser, Node* beforeChange
 
 RenderObject* SVGPatternElement::createRenderer(RenderStyle*)
 {
-    return new (document()->renderArena()) RenderSVGResourcePattern(this);
+    return new RenderSVGResourcePattern(this);
 }
 
 void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) const

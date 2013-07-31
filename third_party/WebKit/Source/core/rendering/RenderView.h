@@ -225,7 +225,7 @@ private:
             || (renderer->isRenderBlock() && toRenderBlock(renderer)->shapeInsideInfo())
             || (m_layoutState->shapeInsideInfo() && renderer->isRenderBlock() && !toRenderBlock(renderer)->allowsShapeInsideInfoSharing())
             ) {
-            m_layoutState = new (renderArena()) LayoutState(m_layoutState, renderer, offset, pageHeight, pageHeightChanged, colInfo);
+            m_layoutState = new LayoutState(m_layoutState, renderer, offset, pageHeight, pageHeightChanged, colInfo);
             return true;
         }
         return false;
@@ -235,7 +235,7 @@ private:
     {
         LayoutState* state = m_layoutState;
         m_layoutState = state->m_next;
-        state->destroy(renderArena());
+        delete state;
     }
 
     // Suspends the LayoutState optimization. Used under transforms that cannot be represented by

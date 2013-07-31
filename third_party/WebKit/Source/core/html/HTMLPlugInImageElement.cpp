@@ -135,12 +135,12 @@ RenderObject* HTMLPlugInImageElement::createRenderer(RenderStyle* style)
         return RenderObject::createObject(this, style);
 
     if (isImageType()) {
-        RenderImage* image = new (document()->renderArena()) RenderImage(this);
+        RenderImage* image = new RenderImage(this);
         image->setImageResource(RenderImageResource::create());
         return image;
     }
 
-    return new (document()->renderArena()) RenderEmbeddedObject(this);
+    return new RenderEmbeddedObject(this);
 }
 
 void HTMLPlugInImageElement::willRecalcStyle(StyleChange)
