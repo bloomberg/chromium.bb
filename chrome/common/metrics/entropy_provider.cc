@@ -109,22 +109,23 @@ double PermutedEntropyProvider::GetEntropyForTrial(
   if (randomization_seed == 0)
     randomization_seed = HashName(trial_name);
 
+  return GetPermutedValue(randomization_seed) /
+         static_cast<double>(low_entropy_source_max_);
+}
+
+uint16 PermutedEntropyProvider::GetPermutedValue(
+    uint32 randomization_seed) const {
   std::vector<uint16> mapping(low_entropy_source_max_);
   internal::PermuteMappingUsingRandomizationSeed(randomization_seed, &mapping);
-
-  return mapping[low_entropy_source_] /
-         static_cast<double>(low_entropy_source_max_);
+  return mapping[low_entropy_source_];
 }
 
 CachingPermutedEntropyProvider::CachingPermutedEntropyProvider(
     PrefService* local_state,
     uint16 low_entropy_source,
     size_t low_entropy_source_max)
-    : local_state_(local_state),
-      low_entropy_source_(low_entropy_source),
-      low_entropy_source_max_(low_entropy_source_max) {
-  DCHECK_LT(low_entropy_source, low_entropy_source_max);
-  DCHECK_LE(low_entropy_source_max, std::numeric_limits<uint16>::max());
+    : PermutedEntropyProvider(low_entropy_source, low_entropy_source_max),
+      local_state_(local_state) {
   ReadFromLocalState();
 }
 
@@ -143,24 +144,16 @@ void CachingPermutedEntropyProvider::ClearCache(PrefService* local_state) {
   local_state->ClearPref(prefs::kMetricsPermutedEntropyCache);
 }
 
-double CachingPermutedEntropyProvider::GetEntropyForTrial(
-    const std::string& trial_name,
+uint16 CachingPermutedEntropyProvider::GetPermutedValue(
     uint32 randomization_seed) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (randomization_seed == 0)
-    randomization_seed = HashName(trial_name);
-
   uint16 value = 0;
   if (!FindValue(randomization_seed, &value)) {
-    std::vector<uint16> mapping(low_entropy_source_max_);
-    internal::PermuteMappingUsingRandomizationSeed(randomization_seed,
-                                                   &mapping);
-    value = mapping[low_entropy_source_];
+    value = PermutedEntropyProvider::GetPermutedValue(randomization_seed);
     AddToCache(randomization_seed, value);
   }
-
-  return value / static_cast<double>(low_entropy_source_max_);
+  return value;
 }
 
 void CachingPermutedEntropyProvider::ReadFromLocalState() const {

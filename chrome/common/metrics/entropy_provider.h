@@ -83,6 +83,11 @@ class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
   virtual double GetEntropyForTrial(const std::string& trial_name,
                                     uint32 randomization_seed) const OVERRIDE;
 
+ protected:
+  // Performs the permutation algorithm and returns the permuted value that
+  // corresponds to |low_entropy_source_|.
+  virtual uint16 GetPermutedValue(uint32 randomization_seed) const;
+
  private:
   uint16 low_entropy_source_;
   size_t low_entropy_source_max_;
@@ -93,8 +98,7 @@ class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
 // CachingPermutedEntropyProvider is an entropy provider that uses the same
 // algorithm as the PermutedEntropyProvider, but caches the results in Local
 // State between runs.
-class CachingPermutedEntropyProvider
-    : public base::FieldTrial::EntropyProvider {
+class CachingPermutedEntropyProvider : public PermutedEntropyProvider {
  public:
   // Creates a CachingPermutedEntropyProvider using the given |local_state|
   // prefs service with the specified |low_entropy_source|, which should have a
@@ -111,11 +115,10 @@ class CachingPermutedEntropyProvider
   // source value gets reset.
   static void ClearCache(PrefService* local_state);
 
-  // base::FieldTrial::EntropyProvider implementation:
-  virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const OVERRIDE;
-
  private:
+  // PermutedEntropyProvider overrides:
+  virtual uint16 GetPermutedValue(uint32 randomization_seed) const OVERRIDE;
+
   // Reads the cache from local state.
   void ReadFromLocalState() const;
 
@@ -131,8 +134,6 @@ class CachingPermutedEntropyProvider
 
   base::ThreadChecker thread_checker_;
   PrefService* local_state_;
-  uint16 low_entropy_source_;
-  size_t low_entropy_source_max_;
   mutable PermutedEntropyCache cache_;
 
   DISALLOW_COPY_AND_ASSIGN(CachingPermutedEntropyProvider);
