@@ -2,26 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#extension-view {
-  border-spacing: 2px;
-  width: 100%;
-}
-
-#extension-view tr:nth-child(odd):not([class='header']) {
-  background: rgb(239, 243, 255);
-}
-
-#extension-view td {
-  padding: 0.35em 0.5em 0;
-  vertical-align: top;
-}
-
-#extension-view .header th {
-  border-bottom: 1px solid rgb(181, 198, 222);
-  padding: 0.35em 0.5em 0;
-  vertical-align: bottom;
-}
-
 #extension-view .extension-id {
   text-align: right;
   width: 4em;
@@ -37,6 +17,6 @@
   width: 7em;
 }
 
-#extension-view #extension-template {
+#extension-template {
   display: none;
 }

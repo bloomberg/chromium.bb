@@ -2,29 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#snapshot-view {
-  border-spacing: 2px;
-  width: 100%;
-}
-
-#snapshot-view tr:nth-child(odd):not([class='header']) {
-  background: rgb(239, 243, 255);
-}
-
-#snapshot-view td {
-  padding: 0.35em 0.5em 0;
-  vertical-align: top;
-}
-
-#snapshot-view .header th {
-  padding: 0.35em 0.5em 0;
-  vertical-align: bottom;
-}
-
-#snapshot-view .bottom th {
-  border-bottom: 1px solid rgb(181, 198, 222);
-}
-
 #snapshot-view .process-id {
   text-align: right;
   width: 4em;
@@ -32,6 +9,15 @@
 
 #snapshot-view .process-info {
   text-align: left;
+}
+
+#snapshot-view dl {
+  margin: 0;
+  padding: 0;
+}
+
+#snapshot-view dl dd {
+  margin-left: 1em;
 }
 
 #snapshot-view .process-memory {
@@ -50,6 +36,6 @@
   width: 7em;
 }
 
-#snapshot-view #process-template {
+#process-template {
   display: none;
 }

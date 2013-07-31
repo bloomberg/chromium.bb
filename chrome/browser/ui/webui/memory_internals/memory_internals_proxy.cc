@@ -15,22 +15,35 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/memory_details.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_handler.h"
 #include "chrome/common/render_messages.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
 using content::BrowserThread;
+
+class Profile;
 
 namespace {
 
@@ -53,6 +66,65 @@ class ProcessDetails : public MemoryDetails {
 
   DISALLOW_COPY_AND_ASSIGN(ProcessDetails);
 };
+
+base::DictionaryValue* FindProcessFromPid(base::ListValue* processes,
+                                          base::ProcessId pid) {
+  const size_t n = processes->GetSize();
+  for (size_t i = 0; i < n; ++i) {
+    base::DictionaryValue* process;
+    if (!processes->GetDictionary(i, &process))
+      return NULL;
+    int id;
+    if (process->GetInteger("pid", &id) && id == static_cast<int>(pid))
+      return process;
+  }
+  return NULL;
+}
+
+void GetAllWebContents(std::set<content::WebContents*>* web_contents) {
+  // Add all the existing WebContentses.
+#if defined(OS_ANDROID)
+  for (TabModelList::const_iterator iter = TabModelList::begin();
+       iter != TabModelList::end(); ++iter) {
+    TabModel* model = *iter;
+    for (int i = 0; i < model->GetTabCount(); ++i)
+      web_contents->insert(model->GetWebContentsAt(i));
+  }
+#else
+  for (TabContentsIterator iter; !iter.done(); iter.Next())
+    web_contents->insert(*iter);
+#endif
+  // Add all the prerender pages.
+  std::vector<Profile*> profiles(
+      g_browser_process->profile_manager()->GetLoadedProfiles());
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    prerender::PrerenderManager* prerender_manager =
+        prerender::PrerenderManagerFactory::GetForProfile(profiles[i]);
+    if (!prerender_manager)
+      continue;
+    const std::vector<content::WebContents*> contentses =
+        prerender_manager->GetAllPrerenderingContents();
+    for (size_t j = 0; j < contentses.size(); ++j)
+      web_contents->insert(contentses[j]);
+  }
+  // Add all the Instant Extended prerendered NTPs.
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    const InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(profiles[i]);
+    if (instant_service && instant_service->GetNTPContents())
+      web_contents->insert(instant_service->GetNTPContents());
+  }
+#if !defined(OS_ANDROID)
+  // Add all the pages being background printed.
+  printing::BackgroundPrintingManager* printing_manager =
+      g_browser_process->background_printing_manager();
+  for (printing::BackgroundPrintingManager::WebContentsSet::const_iterator
+           iter = printing_manager->begin();
+       iter != printing_manager->end(); ++iter) {
+    web_contents->insert(*iter);
+  }
+#endif
+}
 
 }  // namespace
 
@@ -173,19 +245,22 @@ void MemoryInternalsProxy::OnProcessAvailable(const ProcessData& browser) {
     else
       process_info->Append(process);
 
-    // Information from MemoryDetails.
+    // From MemoryDetails.
     process->SetInteger("pid", iter->pid);
     process->SetString("type",
                        ProcessMemoryInformation::GetFullTypeNameInEnglish(
                            iter->process_type, iter->renderer_type));
     process->SetInteger("memory_private", iter->working_set.priv);
 
-    // TODO(peria): Replace |titles| with navigation histories.
     base::ListValue* titles = new ListValue();
     process->Set("titles", titles);
     for (size_t i = 0; i < iter->titles.size(); ++i)
       titles->AppendString(iter->titles[i]);
   }
+
+  std::set<content::WebContents*> web_contents;
+  GetAllWebContents(&web_contents);
+  ConvertTabsInformation(web_contents, process_info);
 
   RequestRendererDetails();
 }
@@ -219,8 +294,49 @@ void MemoryInternalsProxy::OnRendererAvailable(const base::ProcessId pid,
     FinishCollection();
 }
 
+void MemoryInternalsProxy::ConvertTabsInformation(
+    const std::set<content::WebContents*>& web_contents,
+    base::ListValue* processes) {
+  for (std::set<content::WebContents*>::const_iterator
+           iter = web_contents.begin(); iter != web_contents.end(); ++iter) {
+    content::WebContents* web = *iter;
+    const base::ProcessId pid = base::GetProcId(
+        web->GetRenderProcessHost()->GetHandle());
+
+    // Find which process renders the web contents.
+    base::DictionaryValue* process = FindProcessFromPid(processes, pid);
+    if (!process)
+      continue;
+
+    // Prepare storage to register navigation histories.
+    base::ListValue* tabs;
+    if (!process->GetList("history", &tabs)) {
+      tabs = new base::ListValue();
+      process->Set("history", tabs);
+    }
+
+    base::DictionaryValue* tab = new base::DictionaryValue();
+    tabs->Append(tab);
+
+    base::ListValue* histories = new base::ListValue();
+    tab->Set("history", histories);
+
+    const content::NavigationController& controller = web->GetController();
+    const int entry_size = controller.GetEntryCount();
+    for (int i = 0; i < entry_size; ++i) {
+      content::NavigationEntry *entry = controller.GetEntryAtIndex(i);
+      base::DictionaryValue* history = new base::DictionaryValue();
+      histories->Append(history);
+      history->SetString("url", entry->GetURL().spec());
+      history->SetString("title", entry->GetTitle());
+      history->SetInteger("time", (base::Time::Now() -
+                                   entry->GetTimestamp()).InSeconds());
+    }
+    tab->SetInteger("index", controller.GetCurrentEntryIndex());
+  }
+}
+
 void MemoryInternalsProxy::FinishCollection() {
-  // System information, which is independent from processes.
   information_->SetInteger("uptime", base::SysInfo::Uptime());
   information_->SetString("os", base::SysInfo::OperatingSystemName());
   information_->SetString("os_version",

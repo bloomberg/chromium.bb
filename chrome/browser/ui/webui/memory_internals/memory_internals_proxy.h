@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MEMORY_INTERNALS_MEMORY_INTERNALS_PROXY_H_
 #define CHROME_BROWSER_UI_WEBUI_MEMORY_INTERNALS_MEMORY_INTERNALS_PROXY_H_
 
+#include <set>
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -17,13 +18,18 @@ class MemoryInternalsHandler;
 class RendererDetails;
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 class Value;
 }
 
+namespace content {
+class WebContents;
+}
+
 class MemoryInternalsProxy
     : public base::RefCountedThreadSafe<
-          MemoryInternalsProxy, content::BrowserThread::DeleteOnUIThread> {
+        MemoryInternalsProxy, content::BrowserThread::DeleteOnUIThread> {
  public:
   MemoryInternalsProxy();
 
@@ -33,8 +39,7 @@ class MemoryInternalsProxy
   // Unregisters a handler.
   void Detach();
 
-  // Sends a message to an internal client to send all process information it
-  // knows.
+  // Starts fetching memory usages of all processes.
   void StartFetch(const base::ListValue* list);
 
  private:
@@ -46,13 +51,20 @@ class MemoryInternalsProxy
 
   virtual ~MemoryInternalsProxy();
 
-  // Enumerates all processes information, appending a few common information.
+  // Enumerates all processes information.
   void OnProcessAvailable(const ProcessData& browser);
 
   // Measures memory usage of V8.
   void OnRendererAvailable(const base::ProcessId pid,
                            const size_t v8_allocated,
                            const size_t v8_used);
+
+  // Converts information related to each WebContents, which represents contents
+  // in a tab, into Value format and appends it to information of the process
+  // which each tab belongs to.
+  void ConvertTabsInformation(
+      const std::set<content::WebContents*>& web_contents,
+      base::ListValue* processes);
 
   // Requests all renderer processes to get detailed memory information.
   void RequestRendererDetails();
