@@ -9,6 +9,8 @@
 #include "base/debug/alias.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -1099,7 +1101,19 @@ void Dispatcher::DidCreateScriptContext(
     // The API will be automatically set up when first used.
     if (extension->HasAPIPermission(APIPermission::kWebView)) {
       module_system->Require("webView");
-      if (Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV)
+      bool includeExperimental =
+          Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV;
+      if (!includeExperimental) {
+        // TODO(asargent) We need a whitelist for webview experimental.
+        // crbug.com/264852
+        std::string id_hash = base::SHA1HashString(extension->id());
+        std::string hexencoded_id_hash = base::HexEncode(id_hash.c_str(),
+                                                         id_hash.length());
+        if (hexencoded_id_hash == "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578" ||
+            hexencoded_id_hash == "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB")
+          includeExperimental = true;
+      }
+      if (includeExperimental)
         module_system->Require("webViewExperimental");
     } else {
       module_system->Require("denyWebView");
