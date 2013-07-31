@@ -33,7 +33,6 @@
     ['OS=="android"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '../../../hyphen/hyph_en_US.dic',
         ],
         'isolate_dependency_untracked': [
           'tests/data/',
