@@ -1137,7 +1137,10 @@ def GetValidator(env, validator):
     elif env.Bit('build_mips32'):
       validator = 'mips-ncval-core'
     else:
-      validator = 'ncval'
+      if env.Bit('validator_ragel'):
+        validator = 'ncval_new'
+      else:
+        validator = 'ncval'
 
   trusted_env = env['TRUSTED_ENV']
   return trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
