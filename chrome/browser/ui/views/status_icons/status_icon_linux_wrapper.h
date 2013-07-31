@@ -21,15 +21,17 @@ class StatusIconLinuxWrapper : public StatusIcon,
   virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetPressedImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
-  virtual void SetClickActionLabel(const string16& label) OVERRIDE;
   virtual void DisplayBalloon(const gfx::ImageSkia& icon,
                               const string16& title,
                               const string16& contents) OVERRIDE;
 
   // StatusIconLinux::Delegate overrides:
   virtual void OnClick() OVERRIDE;
+  virtual bool HasClickAction() OVERRIDE;
 
-  static StatusIconLinuxWrapper* CreateWrappedStatusIcon();
+  static StatusIconLinuxWrapper* CreateWrappedStatusIcon(
+      const gfx::ImageSkia& image,
+      const string16& tool_tip);
 
  protected:
   // StatusIcon overrides:

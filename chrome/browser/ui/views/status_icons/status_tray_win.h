@@ -23,7 +23,10 @@ class StatusTrayWin : public StatusTray {
 
  protected:
   // Overriden from StatusTray:
-  virtual StatusIcon* CreatePlatformStatusIcon(StatusIconType type) OVERRIDE;
+  virtual StatusIcon* CreatePlatformStatusIcon(
+      StatusIconType type,
+      const gfx::ImageSkia& image,
+      const string16& tool_tip) OVERRIDE;
 
  private:
   // Static callback invoked when a message comes in to our messaging window.

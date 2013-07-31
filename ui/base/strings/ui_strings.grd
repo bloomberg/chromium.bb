@@ -501,12 +501,6 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the expand button in a notification. Usually 'button' is suffixed to this text automatically.">
 	Notification expand
       </message>
-      <message name="IDS_MESSAGE_CENTER_TOOLTIP" desc="Tooltip for notification tray icon without unread notifications">
-        <ph name="product">$1<ex>Chrome</ex></ph> - Notifications
-      </message>
-      <message name="IDS_MESSAGE_CENTER_TOOLTIP_UNREAD" desc="Tooltip for notification tray icon with unread notifications">
-        <ph name="product">$1<ex>Chrome</ex></ph> - Notifications (<ph name="QUANTITY">$2<ex>3</ex></ph> unread)
-      </message>
       <message name="IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME" desc="The name of screenshot notifier that is a system componet">
         Screenshot
       </message>

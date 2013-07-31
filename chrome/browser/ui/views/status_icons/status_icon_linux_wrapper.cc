@@ -23,10 +23,6 @@ void StatusIconLinuxWrapper::SetToolTip(const string16& tool_tip) {
   status_icon_->SetToolTip(tool_tip);
 }
 
-void StatusIconLinuxWrapper::SetClickActionLabel(const string16& label) {
-  status_icon_->SetClickActionLabel(label);
-}
-
 void StatusIconLinuxWrapper::DisplayBalloon(const gfx::ImageSkia& icon,
                                             const string16& title,
                                             const string16& contents) {
@@ -37,10 +33,17 @@ void StatusIconLinuxWrapper::OnClick() {
   DispatchClickEvent();
 }
 
-StatusIconLinuxWrapper* StatusIconLinuxWrapper::CreateWrappedStatusIcon() {
+bool StatusIconLinuxWrapper::HasClickAction() {
+  return HasObservers();
+}
+
+StatusIconLinuxWrapper* StatusIconLinuxWrapper::CreateWrappedStatusIcon(
+    const gfx::ImageSkia& image,
+    const string16& tool_tip) {
   const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
   if (linux_ui) {
-    scoped_ptr<StatusIconLinux> status_icon = linux_ui->CreateLinuxStatusIcon();
+    scoped_ptr<StatusIconLinux> status_icon =
+        linux_ui->CreateLinuxStatusIcon(image, tool_tip);
     if (status_icon.get())
       return new StatusIconLinuxWrapper(status_icon.release());
   }

@@ -84,7 +84,7 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
 
   PositionInfo GetPositionInfo();
 
-  StatusIcon* GetStatusIcon();
+  void CreateStatusIcon(const gfx::ImageSkia& image, const string16& tool_tip);
   void DestroyStatusIcon();
   void AddQuietModeMenu(StatusIcon* status_icon);
   MessageCenterWidgetDelegate* GetMessageCenterWidgetDelegateForTest();

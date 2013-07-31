@@ -366,7 +366,8 @@ void MediaStreamCaptureIndicator::UnregisterWebContents(
   UpdateNotificationUserInterface();
 }
 
-void MediaStreamCaptureIndicator::MaybeCreateStatusTrayIcon() {
+void MediaStreamCaptureIndicator::MaybeCreateStatusTrayIcon(bool audio,
+                                                            bool video) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (status_icon_)
     return;
@@ -379,10 +380,16 @@ void MediaStreamCaptureIndicator::MaybeCreateStatusTrayIcon() {
   if (!status_tray)
     return;
 
-  status_icon_ =
-      status_tray->CreateStatusIcon(StatusTray::MEDIA_STREAM_CAPTURE_ICON);
-
   EnsureStatusTrayIconResources();
+
+  gfx::ImageSkia image;
+  string16 tool_tip;
+  GetStatusTrayIconInfo(audio, video, &image, &tool_tip);
+  DCHECK(!image.isNull());
+  DCHECK(!tool_tip.empty());
+
+  status_icon_ = status_tray->CreateStatusIcon(
+      StatusTray::MEDIA_STREAM_CAPTURE_ICON, image, tool_tip);
 }
 
 void MediaStreamCaptureIndicator::EnsureStatusTrayIconResources() {
@@ -481,32 +488,32 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
   }
 
   // The icon will take the ownership of the passed context menu.
-  MaybeCreateStatusTrayIcon();
+  MaybeCreateStatusTrayIcon(audio, video);
   if (status_icon_) {
     status_icon_->SetContextMenu(menu.release());
-    UpdateStatusTrayIconDisplay(audio, video);
   }
 }
 
-void MediaStreamCaptureIndicator::UpdateStatusTrayIconDisplay(
-    bool audio, bool video) {
+void MediaStreamCaptureIndicator::GetStatusTrayIconInfo(bool audio,
+                                                        bool video,
+                                                        gfx::ImageSkia* image,
+                                                        string16* tool_tip) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(audio || video);
-  DCHECK(status_icon_);
+
   int message_id = 0;
   if (audio && video) {
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO;
-    status_icon_->SetImage(*camera_image_);
+    *image = *camera_image_;
   } else if (audio && !video) {
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_ONLY;
-    status_icon_->SetImage(*mic_image_);
+    *image = *mic_image_;
   } else if (!audio && video) {
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_VIDEO_ONLY;
-    status_icon_->SetImage(*camera_image_);
+    *image = *camera_image_;
   }
 
-  status_icon_->SetToolTip(l10n_util::GetStringFUTF16(
-      message_id, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  *tool_tip = l10n_util::GetStringUTF16(message_id);
 }
 
 void MediaStreamCaptureIndicator::OnStopScreenCapture(

@@ -7,10 +7,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "grit/chrome_unscaled_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using testing::Return;
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 class MockStatusIcon : public StatusIcon {
   virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE {}
@@ -24,9 +24,12 @@ class MockStatusIcon : public StatusIcon {
 
 class TestStatusTray : public StatusTray {
  public:
-  MOCK_METHOD1(CreatePlatformStatusIcon,
-               StatusIcon*(StatusTray::StatusIconType type));
-  MOCK_METHOD1(UpdatePlatformContextMenu, void(ui::MenuModel*));
+  virtual StatusIcon* CreatePlatformStatusIcon(
+      StatusIconType type,
+      const gfx::ImageSkia& image,
+      const string16& tool_tip) OVERRIDE {
+    return new MockStatusIcon();
+  }
 
   const StatusIcons& GetStatusIconsForTest() const { return status_icons(); }
 };
@@ -34,17 +37,20 @@ class TestStatusTray : public StatusTray {
 TEST(StatusTrayTest, Create) {
   // Check for creation and leaks.
   TestStatusTray tray;
-  EXPECT_CALL(tray, CreatePlatformStatusIcon(StatusTray::OTHER_ICON)).WillOnce(
-      Return(new MockStatusIcon()));
-  tray.CreateStatusIcon(StatusTray::OTHER_ICON);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
+  tray.CreateStatusIcon(
+      StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip"));
+  EXPECT_EQ(1U, tray.GetStatusIconsForTest().size());
 }
 
 // Make sure that removing an icon removes it from the list.
 TEST(StatusTrayTest, CreateRemove) {
   TestStatusTray tray;
-  EXPECT_CALL(tray, CreatePlatformStatusIcon(StatusTray::OTHER_ICON)).WillOnce(
-      Return(new MockStatusIcon()));
-  StatusIcon* icon = tray.CreateStatusIcon(StatusTray::OTHER_ICON);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
+  StatusIcon* icon = tray.CreateStatusIcon(
+      StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip"));
   EXPECT_EQ(1U, tray.GetStatusIconsForTest().size());
   tray.RemoveStatusIcon(icon);
   EXPECT_EQ(0U, tray.GetStatusIconsForTest().size());

@@ -14,8 +14,11 @@ StatusTrayLinux::StatusTrayLinux() {
 StatusTrayLinux::~StatusTrayLinux() {
 }
 
-StatusIcon* StatusTrayLinux::CreatePlatformStatusIcon(StatusIconType type) {
-  return StatusIconLinuxWrapper::CreateWrappedStatusIcon();
+StatusIcon* StatusTrayLinux::CreatePlatformStatusIcon(
+    StatusIconType type,
+    const gfx::ImageSkia& image,
+    const string16& tool_tip) {
+  return StatusIconLinuxWrapper::CreateWrappedStatusIcon(image, tool_tip);
 }
 
 StatusTray* StatusTray::Create() {

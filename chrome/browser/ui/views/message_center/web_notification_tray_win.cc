@@ -30,9 +30,9 @@ void WebNotificationTray::OnBalloonClicked() {
 }
 
 void WebNotificationTray::DisplayFirstRunBalloon() {
-  StatusIcon* status_icon = GetStatusIcon();
-  if (!status_icon)
-    return;
+  // We should never be calling DisplayFirstRunBalloon without a status icon.
+  // The status icon must have been created before this call.
+  DCHECK(status_icon_);
 
   base::win::Version win_version = base::win::GetVersion();
   if (win_version == base::win::VERSION_PRE_XP)
@@ -52,8 +52,7 @@ void WebNotificationTray::DisplayFirstRunBalloon() {
   scoped_ptr<SkBitmap> sized_app_icon_bitmap = GetAppIconForSize(icon_size);
   gfx::ImageSkia sized_app_icon_skia =
       gfx::ImageSkia::CreateFrom1xBitmap(*sized_app_icon_bitmap);
-  string16 product_name(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
-  GetStatusIcon()->DisplayBalloon(
+  status_icon_->DisplayBalloon(
       sized_app_icon_skia,
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_BALLOON_TITLE),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_BALLOON_TEXT));

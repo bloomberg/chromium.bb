@@ -84,9 +84,14 @@ class MediaStreamCaptureIndicator
   // Helpers to create and destroy status tray icon. Called from
   // UpdateNotificationUserInterface().
   void EnsureStatusTrayIconResources();
-  void MaybeCreateStatusTrayIcon();
+  void MaybeCreateStatusTrayIcon(bool audio, bool video);
   void MaybeDestroyStatusTrayIcon();
-  void UpdateStatusTrayIconDisplay(bool audio, bool video);
+
+  // Gets the status icon image and the string to use as the tooltip.
+  void GetStatusTrayIconInfo(bool audio,
+                             bool video,
+                             gfx::ImageSkia* image,
+                             string16* tool_tip);
 
   // Callback for ScreenCaptureNotificationUI.
   void OnStopScreenCapture(const base::Closure& stop);

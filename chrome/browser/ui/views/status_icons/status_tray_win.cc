@@ -120,16 +120,24 @@ StatusTrayWin::~StatusTrayWin() {
 }
 
 StatusIcon* StatusTrayWin::CreatePlatformStatusIcon(
-    StatusTray::StatusIconType type) {
+    StatusTray::StatusIconType type,
+    const gfx::ImageSkia& image,
+    const string16& tool_tip) {
   UINT next_icon_id;
   if (type == StatusTray::OTHER_ICON)
     next_icon_id = NextIconId();
   else
     next_icon_id = ReservedIconId(type);
 
+  StatusIcon* icon = NULL;
   if (win8::IsSingleWindowMetroMode())
-    return new StatusIconMetro(next_icon_id);
-  return new StatusIconWin(next_icon_id, window_, kStatusIconMessage);
+    icon = new StatusIconMetro(next_icon_id);
+  else
+    icon = new StatusIconWin(next_icon_id, window_, kStatusIconMessage);
+
+  icon->SetImage(image);
+  icon->SetToolTip(tool_tip);
+  return icon;
 }
 
 UINT StatusTrayWin::NextIconId() {

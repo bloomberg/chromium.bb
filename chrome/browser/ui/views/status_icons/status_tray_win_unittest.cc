@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 class FakeStatusIconObserver : public StatusIconObserver {
  public:
@@ -43,12 +44,11 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
   // Create an icon, set the images, tooltip, and context menu, then shut it
   // down.
   StatusTrayWin tray;
-  StatusIcon* icon = tray.CreateStatusIcon(StatusTray::OTHER_ICON);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-  icon->SetImage(*image);
+  StatusIcon* icon = tray.CreateStatusIcon(
+      StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip"));
   icon->SetPressedImage(*image);
-  icon->SetToolTip(ASCIIToUTF16("tool tip"));
   ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(NULL);
   menu->AddItem(0, L"foo");
   icon->SetContextMenu(menu);
@@ -58,8 +58,11 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
 TEST(StatusTrayWinTest, ClickOnIcon) {
   // Create an icon, send a fake click event, make sure observer is called.
   StatusTrayWin tray;
-  StatusIconWin* icon = static_cast<StatusIconWin*>(
-      tray.CreateStatusIcon(StatusTray::OTHER_ICON));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
+
+  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon(
+      StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip")));
   FakeStatusIconObserver observer;
   icon->AddObserver(&observer);
   // Mimic a click.
@@ -73,8 +76,11 @@ TEST(StatusTrayWinTest, ClickOnIcon) {
 TEST(StatusTrayWinTest, ClickOnBalloon) {
   // Create an icon, send a fake click event, make sure observer is called.
   StatusTrayWin tray;
-  StatusIconWin* icon = static_cast<StatusIconWin*>(
-      tray.CreateStatusIcon(StatusTray::OTHER_ICON));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
+
+  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon(
+      StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip")));
   FakeStatusIconObserver observer;
   icon->AddObserver(&observer);
   // Mimic a click.

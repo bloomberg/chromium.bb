@@ -25,6 +25,7 @@ class LINUX_UI_EXPORT StatusIconLinux {
   class Delegate {
    public:
     virtual void OnClick() = 0;
+    virtual bool HasClickAction() = 0;
 
    protected:
     virtual ~Delegate();
@@ -36,7 +37,6 @@ class LINUX_UI_EXPORT StatusIconLinux {
   virtual void SetImage(const gfx::ImageSkia& image) = 0;
   virtual void SetPressedImage(const gfx::ImageSkia& image) = 0;
   virtual void SetToolTip(const string16& tool_tip) = 0;
-  virtual void SetClickActionLabel(const string16& label) = 0;
 
   // Invoked after a call to SetContextMenu() to let the platform-specific
   // subclass update the native context menu based on the new model. The

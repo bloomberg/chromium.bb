@@ -67,7 +67,9 @@ class LINUX_UI_EXPORT LinuxUI : public LinuxShellDialog {
   virtual bool IsStatusIconSupported() const = 0;
 
   // Create a native status icon.
-  virtual scoped_ptr<StatusIconLinux> CreateLinuxStatusIcon() const = 0;
+  virtual scoped_ptr<StatusIconLinux> CreateLinuxStatusIcon(
+      const gfx::ImageSkia& image,
+      const string16& tool_tip) const = 0;
 };
 
 }  // namespace ui

@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace {
 
@@ -29,12 +30,11 @@ TEST(StatusTrayGtkTest, CreateTray) {
 TEST(StatusTrayGtkTest, CreateIcon) {
   // Create an icon, set the images and tooltip, then shut it down.
   StatusTrayGtk tray;
-  StatusIcon* icon = tray.CreateStatusIcon(StatusTray::OTHER_ICON);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-  icon->SetImage(*image);
+  StatusIcon* icon = tray.CreateStatusIcon(
+      StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip"));
   icon->SetPressedImage(*image);
-  icon->SetToolTip(ASCIIToUTF16("tool tip"));
   ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(NULL);
   menu->AddItem(0, ASCIIToUTF16("foo"));
   icon->SetContextMenu(menu);
@@ -43,8 +43,10 @@ TEST(StatusTrayGtkTest, CreateIcon) {
 TEST(StatusTrayGtkTest, ClickOnIcon) {
   // Create an icon, send a fake click event, make sure observer is called.
   StatusTrayGtk tray;
-  StatusIconGtk* icon = static_cast<StatusIconGtk*>(
-      tray.CreateStatusIcon(StatusTray::OTHER_ICON));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
+  StatusIconGtk* icon = static_cast<StatusIconGtk*>(tray.CreateStatusIcon(
+      StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip")));
   MockStatusIconObserver observer;
   icon->AddObserver(&observer);
   EXPECT_CALL(observer, OnStatusIconClicked());

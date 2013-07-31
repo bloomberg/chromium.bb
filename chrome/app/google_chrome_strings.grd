@@ -930,6 +930,23 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
           You can see all your notifications from Chrome apps, extensions, and websites here.
         </message>
       </if>
+      <message name="IDS_MESSAGE_CENTER_TOOLTIP" desc="Tooltip for notification tray icon without unread notifications">
+        Chrome - Notifications
+      </message>
+      <message name="IDS_MESSAGE_CENTER_TOOLTIP_UNREAD" desc="Tooltip for notification tray icon with unread notifications">
+        Chrome - Notifications (<ph name="QUANTITY">$1<ex>3</ex></ph> unread)
+      </message>
+
+      <!-- MediaStream capture status tray icon -->
+      <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO" desc="Tool tip for the capture status tray icon when microphone and camera are being used">
+        Google Chrome is using your camera and microphone.
+      </message>
+      <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_ONLY" desc="Tool tip for the capture status tray icon when microphone is being used">
+        Google Chrome is using your microphone.
+      </message>
+      <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_VIDEO_ONLY" desc="Tool tip for the capture status tray icon when camera is being used">
+        Google Chrome is using your camera.
+      </message>
     </messages>
   </release>
 </grit>

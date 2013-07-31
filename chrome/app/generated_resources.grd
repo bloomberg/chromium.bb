@@ -15094,17 +15094,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Deny
     </message>
 
-    <!-- MediaStream capture status tray icon -->
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO" desc="Tool tip for the capture status tray icon when microphone and camera are being used">
-      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your camera and microphone.
-    </message>
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_ONLY" desc="Tool tip for the capture status tray icon when microphone is being used">
-      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your microphone.
-    </message>
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_VIDEO_ONLY" desc="Tool tip for the capture status tray icon when camera is being used">
-      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your camera.
-    </message>
-
     <!-- Quota messages -->
     <if expr="is_android">
       <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="Mobile: For Android device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the device (e.g. for persistent-type filesystem).">

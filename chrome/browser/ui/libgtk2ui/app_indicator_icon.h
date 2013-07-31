@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_APP_INDICATOR_ICON_H_
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 #include "ui/linux_ui/status_icon_linux.h"
 
@@ -22,7 +23,9 @@ class AppIndicatorIcon : public StatusIconLinux {
  public:
   // The id uniquely identifies the new status icon from other chrome status
   // icons.
-  explicit AppIndicatorIcon(std::string id);
+  explicit AppIndicatorIcon(std::string id,
+                            const gfx::ImageSkia& image,
+                            const string16& tool_tip);
   virtual ~AppIndicatorIcon();
 
   // Indicates whether libappindicator so could be opened.
@@ -32,7 +35,6 @@ class AppIndicatorIcon : public StatusIconLinux {
   virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetPressedImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
-  virtual void SetClickActionLabel(const string16& label) OVERRIDE;
 
  protected:
   // Overridden from StatusIcon.
@@ -49,7 +51,7 @@ class AppIndicatorIcon : public StatusIconLinux {
   void CreateClickActionReplacement();
   void DestroyMenu();
 
-  static base::FilePath CreateTempImageFile(gfx::ImageSkia image,
+  static base::FilePath CreateTempImageFile(gfx::ImageSkia* image,
                                             int icon_change_count,
                                             std::string id);
   static void DeletePath(base::FilePath icon_file_path);
@@ -64,7 +66,7 @@ class AppIndicatorIcon : public StatusIconLinux {
   CHROMEGTK_CALLBACK_0(AppIndicatorIcon, void, OnMenuItemActivated);
 
   std::string id_;
-  std::string click_action_label_;
+  std::string tool_tip_;
 
   // Gtk status icon wrapper
   AppIndicator* icon_;

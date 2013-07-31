@@ -200,20 +200,22 @@ void WebNotificationTray::UpdateStatusIcon() {
   should_update_tray_content_ = false;
 
   int unread_notifications = message_center()->UnreadNotificationCount();
-  StatusIcon* status_icon = GetStatusIcon();
-  if (!status_icon)
-    return;
 
-  status_icon->SetImage(GetIcon(unread_notifications));
-
-  string16 product_name(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  string16 tool_tip;
   if (unread_notifications > 0) {
     string16 str_unread_count = base::FormatNumber(unread_notifications);
-    status_icon->SetToolTip(l10n_util::GetStringFUTF16(
-        IDS_MESSAGE_CENTER_TOOLTIP_UNREAD, product_name, str_unread_count));
+    tool_tip = l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_TOOLTIP_UNREAD,
+                                          str_unread_count);
   } else {
-    status_icon->SetToolTip(
-        l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_TOOLTIP, product_name));
+    tool_tip = l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_TOOLTIP);
+  }
+  gfx::ImageSkia icon_image = GetIcon(unread_notifications);
+
+  if (status_icon_ == NULL) {
+    CreateStatusIcon(icon_image, tool_tip);
+  } else {
+    status_icon_->SetImage(icon_image);
+    status_icon_->SetToolTip(tool_tip);
   }
 }
 
@@ -267,24 +269,22 @@ PositionInfo WebNotificationTray::GetPositionInfo() {
   return pos_info;
 }
 
-StatusIcon* WebNotificationTray::GetStatusIcon() {
+void WebNotificationTray::CreateStatusIcon(const gfx::ImageSkia& image,
+                                           const string16& tool_tip) {
   if (status_icon_)
-    return status_icon_;
+    return;
 
   StatusTray* status_tray = g_browser_process->status_tray();
   if (!status_tray)
-    return NULL;
+    return;
 
-  StatusIcon* status_icon =
-      status_tray->CreateStatusIcon(StatusTray::NOTIFICATION_TRAY_ICON);
-  if (!status_icon)
-    return NULL;
+  status_icon_ = status_tray->CreateStatusIcon(
+      StatusTray::NOTIFICATION_TRAY_ICON, image, tool_tip);
+  if (!status_icon_)
+    return;
 
-  status_icon_ = status_icon;
   status_icon_->AddObserver(this);
   AddQuietModeMenu(status_icon_);
-
-  return status_icon_;
 }
 
 void WebNotificationTray::DestroyStatusIcon() {

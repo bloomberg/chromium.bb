@@ -100,15 +100,14 @@ void MessageCenterTrayBridge::UpdateStatusItem() {
   size_t unread_count = message_center_->UnreadNotificationCount();
   [status_item_view_ setUnreadCount:unread_count];
 
-  string16 product_name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   if (unread_count > 0) {
     string16 unread_count_string = base::FormatNumber(unread_count);
     [status_item_view_ setToolTip:
         l10n_util::GetNSStringF(IDS_MESSAGE_CENTER_TOOLTIP_UNREAD,
-            product_name, unread_count_string)];
+            unread_count_string)];
   } else {
     [status_item_view_ setToolTip:
-        l10n_util::GetNSStringF(IDS_MESSAGE_CENTER_TOOLTIP, product_name)];
+        l10n_util::GetNSString(IDS_MESSAGE_CENTER_TOOLTIP)];
   }
 }
 

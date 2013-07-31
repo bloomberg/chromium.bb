@@ -29,9 +29,6 @@ void StatusIcon::DispatchClickEvent() {
   FOR_EACH_OBSERVER(StatusIconObserver, observers_, OnStatusIconClicked());
 }
 
-void StatusIcon::SetClickActionLabel(const string16& label) {
-}
-
 #if defined(OS_WIN)
 void StatusIcon::DispatchBalloonClickEvent() {
   FOR_EACH_OBSERVER(StatusIconObserver, observers_, OnBalloonClicked());

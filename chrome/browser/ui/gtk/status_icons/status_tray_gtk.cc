@@ -12,8 +12,13 @@ StatusTrayGtk::StatusTrayGtk() {
 StatusTrayGtk::~StatusTrayGtk() {
 }
 
-StatusIcon* StatusTrayGtk::CreatePlatformStatusIcon(StatusIconType type) {
-  return new StatusIconGtk();
+StatusIcon* StatusTrayGtk::CreatePlatformStatusIcon(StatusIconType type,
+                                                    const gfx::ImageSkia& image,
+                                                    const string16& tool_tip) {
+  StatusIcon* icon = new StatusIconGtk();
+  icon->SetImage(image);
+  icon->SetToolTip(tool_tip);
+  return icon;
 }
 
 StatusTray* StatusTray::Create() {
