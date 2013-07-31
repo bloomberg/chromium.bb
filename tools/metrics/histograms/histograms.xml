@@ -9172,6 +9172,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="OutdatedUpgradeBubble.NumLaterPerReinstall">
+  <summary>
+    Counts the number of times the user clicked on the later button of the
+    outdated upgrade bubble, before clicking on the reinstall button in the same
+    Chrome session.
+  </summary>
+</histogram>
+
 <histogram name="Overscroll.Completed" enum="OverscrollMode">
   <summary>Completed overscroll gestures.</summary>
   <details>
