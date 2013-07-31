@@ -50,6 +50,12 @@ class TestOAuth2TokenService : public OAuth2TokenService {
       : request_context_getter_(getter) {
   }
 
+  void CancelAllRequestsForTest() { CancelAllRequests(); }
+
+  void CancelRequestsForTokenForTest(const std::string& refresh_token) {
+    CancelRequestsForToken(refresh_token);
+  }
+
   // For testing: set the refresh token to be used.
   void set_refresh_token(const std::string& refresh_token) {
     refresh_token_ = refresh_token;
@@ -465,4 +471,55 @@ TEST_F(OAuth2TokenServiceTest, InvalidateToken) {
   EXPECT_EQ(3, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token2", consumer_.last_token_);
+}
+
+TEST_F(OAuth2TokenServiceTest, CancelAllRequests) {
+  oauth2_service_->set_refresh_token("refreshToken");
+  scoped_ptr<OAuth2TokenService::Request> request(
+      oauth2_service_->StartRequest(std::set<std::string>(), &consumer_));
+
+  oauth2_service_->set_refresh_token("refreshToken2");
+  scoped_ptr<OAuth2TokenService::Request> request2(
+      oauth2_service_->StartRequest(std::set<std::string>(), &consumer_));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+
+  oauth2_service_->CancelAllRequestsForTest();
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(2, consumer_.number_of_errors_);
+}
+
+TEST_F(OAuth2TokenServiceTest, CancelRequestsForToken) {
+  std::set<std::string> scope_set_1;
+  scope_set_1.insert("scope1");
+  scope_set_1.insert("scope2");
+  std::set<std::string> scope_set_2(scope_set_1.begin(), scope_set_1.end());
+  scope_set_2.insert("scope3");
+
+  oauth2_service_->set_refresh_token("refreshToken");
+  scoped_ptr<OAuth2TokenService::Request> request1(
+      oauth2_service_->StartRequest(scope_set_1, &consumer_));
+  scoped_ptr<OAuth2TokenService::Request> request2(
+      oauth2_service_->StartRequest(scope_set_2, &consumer_));
+
+  oauth2_service_->set_refresh_token("refreshToken2");
+  scoped_ptr<OAuth2TokenService::Request> request3(
+      oauth2_service_->StartRequest(scope_set_1, &consumer_));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+
+  oauth2_service_->CancelRequestsForTokenForTest("refreshToken");
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(2, consumer_.number_of_errors_);
+
+  oauth2_service_->CancelRequestsForTokenForTest("refreshToken2");
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(3, consumer_.number_of_errors_);
 }

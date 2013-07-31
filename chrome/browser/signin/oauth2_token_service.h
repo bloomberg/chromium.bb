@@ -188,6 +188,12 @@ class OAuth2TokenService {
   // Clears the internal token cache.
   void ClearCache();
 
+  // Cancels all requests that are currently in progress.
+  void CancelAllRequests();
+
+  // Cancels all requests related to a given refresh token.
+  void CancelRequestsForToken(const std::string& refresh_token);
+
   // Called by subclasses to notify observers.
   void FireRefreshTokenAvailable(const std::string& account_id);
   void FireRefreshTokenRevoked(const std::string& account_id,
@@ -226,6 +232,9 @@ class OAuth2TokenService {
 
   // Called when |fetcher| finishes fetching.
   void OnFetchComplete(Fetcher* fetcher);
+
+  // Called when a number of fetchers need to be canceled.
+  void CancelFetchers(std::vector<Fetcher*> fetchers_to_cancel);
 
   // The cache of currently valid tokens.
   typedef std::map<ScopeSet, CacheEntry> TokenCache;

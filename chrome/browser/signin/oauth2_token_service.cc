@@ -85,6 +85,8 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   // Add a request that is waiting for the result of this Fetcher.
   void AddWaitingRequest(base::WeakPtr<RequestImpl> waiting_request);
 
+  void Cancel();
+
   const OAuth2TokenService::ScopeSet& GetScopeSet() const;
   const std::string& GetRefreshToken() const;
 
@@ -260,6 +262,13 @@ void OAuth2TokenService::Fetcher::InformWaitingRequestsAndDelete() {
 void OAuth2TokenService::Fetcher::AddWaitingRequest(
     base::WeakPtr<OAuth2TokenService::RequestImpl> waiting_request) {
   waiting_requests_.push_back(waiting_request);
+}
+
+void OAuth2TokenService::Fetcher::Cancel() {
+  fetcher_.reset();
+  retry_timer_.Stop();
+  error_ = GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
+  InformWaitingRequestsAndDelete();
 }
 
 const OAuth2TokenService::ScopeSet& OAuth2TokenService::Fetcher::GetScopeSet()
@@ -467,6 +476,40 @@ void OAuth2TokenService::UpdateAuthError(const GoogleServiceAuthError& error) {
 void OAuth2TokenService::ClearCache() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   token_cache_.clear();
+}
+
+void OAuth2TokenService::CancelAllRequests() {
+  std::vector<Fetcher*> fetchers_to_cancel;
+  for (std::map<FetchParameters, Fetcher*>::iterator iter =
+           pending_fetchers_.begin();
+       iter != pending_fetchers_.end();
+       ++iter) {
+    fetchers_to_cancel.push_back(iter->second);
+  }
+  CancelFetchers(fetchers_to_cancel);
+}
+
+void OAuth2TokenService::CancelRequestsForToken(
+    const std::string& refresh_token) {
+  std::vector<Fetcher*> fetchers_to_cancel;
+  for (std::map<FetchParameters, Fetcher*>::iterator iter =
+           pending_fetchers_.begin();
+       iter != pending_fetchers_.end();
+       ++iter) {
+    if (iter->first.first == refresh_token)
+      fetchers_to_cancel.push_back(iter->second);
+  }
+  CancelFetchers(fetchers_to_cancel);
+}
+
+void OAuth2TokenService::CancelFetchers(
+    std::vector<Fetcher*> fetchers_to_cancel) {
+  for (std::vector<OAuth2TokenService::Fetcher*>::iterator iter =
+           fetchers_to_cancel.begin();
+       iter != fetchers_to_cancel.end();
+       ++iter) {
+    (*iter)->Cancel();
+  }
 }
 
 void OAuth2TokenService::FireRefreshTokenAvailable(

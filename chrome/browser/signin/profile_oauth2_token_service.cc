@@ -75,6 +75,7 @@ void ProfileOAuth2TokenService::Initialize(Profile* profile) {
 }
 
 void ProfileOAuth2TokenService::Shutdown() {
+  CancelAllRequests();
   signin_global_error_->RemoveProvider(this);
   GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
       signin_global_error_.get());
@@ -113,6 +114,12 @@ void ProfileOAuth2TokenService::Observe(
           content::Details<TokenService::TokenAvailableDetails>(details).ptr();
       if (tok_details->service() ==
           GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
+        // TODO(fgorski): Canceling all requests will not be correct in a
+        // multi-login environment. We should cancel only the requests related
+        // to the token being replaced (old token for the same account_id).
+        // Previous refresh token is not available at this point, but since
+        // there are no other refresh tokens, we cancel all active requests.
+        CancelAllRequests();
         ClearCache();
         UpdateAuthError(GoogleServiceAuthError::AuthErrorNone());
         FireRefreshTokenAvailable(GetAccountId(profile_));
@@ -126,6 +133,12 @@ void ProfileOAuth2TokenService::Observe(
       if (tok_details->service() == GaiaConstants::kLSOService ||
           tok_details->service() ==
               GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
+        // TODO(fgorski): Canceling all requests will not be correct in a
+        // multi-login environment. We should cacnel only the requests related
+        // to the failed refresh token.
+        // Failed refresh token is not available at this point, but since
+        // there are no other refresh tokens, we cancel all active requests.
+        CancelAllRequests();
         ClearCache();
         UpdateAuthError(tok_details->error());
         FireRefreshTokenRevoked(GetAccountId(profile_), tok_details->error());
@@ -133,6 +146,7 @@ void ProfileOAuth2TokenService::Observe(
       break;
     }
     case chrome::NOTIFICATION_TOKENS_CLEARED: {
+      CancelAllRequests();
       ClearCache();
       UpdateAuthError(GoogleServiceAuthError::AuthErrorNone());
       FireRefreshTokensCleared();
