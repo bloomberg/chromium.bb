@@ -17,6 +17,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
@@ -32,6 +33,37 @@
 
 namespace content {
 namespace {
+
+
+// Simple screen position client to test coordinate system conversion.
+class TestScreenPositionClient
+    : public aura::client::ScreenPositionClient {
+ public:
+  TestScreenPositionClient() {}
+  virtual ~TestScreenPositionClient() {}
+
+  // aura::client::ScreenPositionClient overrides:
+  virtual void ConvertPointToScreen(const aura::Window* window,
+      gfx::Point* point) OVERRIDE {
+    point->Offset(-1, -1);
+  }
+
+  virtual void ConvertPointFromScreen(const aura::Window* window,
+      gfx::Point* point) OVERRIDE {
+    point->Offset(1, 1);
+  }
+
+  virtual void ConvertHostPointToScreen(aura::RootWindow* window,
+      gfx::Point* point) OVERRIDE {
+    ConvertPointToScreen(window, point);
+  }
+
+  virtual void SetBounds(aura::Window* window,
+      const gfx::Rect& bounds,
+      const gfx::Display& display) OVERRIDE {
+  }
+};
+
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
@@ -187,6 +219,47 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusFullscreen) {
   // Check that we'll also say it's okay to activate the window when there's an
   // ActivationClient defined.
   EXPECT_TRUE(view_->ShouldActivate());
+}
+
+
+// Checks that a popup is positioned correctly relative to its parent using
+// screen coordinates.
+TEST_F(RenderWidgetHostViewAuraTest, PositionChildPopup) {
+  TestScreenPositionClient screen_position_client;
+
+  aura::Window* window = parent_view_->GetNativeView();
+  aura::RootWindow* root = window->GetRootWindow();
+  aura::client::SetScreenPositionClient(root, &screen_position_client);
+
+  parent_view_->SetBounds(gfx::Rect(10, 10, 800, 600));
+  gfx::Rect bounds_in_screen = parent_view_->GetViewBounds();
+  int horiz = bounds_in_screen.width() / 4;
+  int vert = bounds_in_screen.height() / 4;
+  bounds_in_screen.Inset(horiz, vert);
+
+  // Verify that when the popup is initialized for the first time, it correctly
+  // treats the input bounds as screen coordinates.
+  view_->InitAsPopup(parent_view_, bounds_in_screen);
+  gfx::Rect final_bounds_in_screen = view_->GetViewBounds();
+  EXPECT_EQ(final_bounds_in_screen.ToString(), bounds_in_screen.ToString());
+
+  // Verify that directly setting the bounds via SetBounds() treats the input
+  // as screen coordinates.
+  bounds_in_screen = gfx::Rect(60, 60, 100, 100);
+  view_->SetBounds(bounds_in_screen);
+  final_bounds_in_screen = view_->GetViewBounds();
+  EXPECT_EQ(final_bounds_in_screen.ToString(), bounds_in_screen.ToString());
+
+  // Verify that setting the size does not alter the origin.
+  gfx::Point original_origin = window->bounds().origin();
+  view_->SetSize(gfx::Size(120, 120));
+  gfx::Point new_origin = window->bounds().origin();
+  EXPECT_EQ(original_origin.ToString(), new_origin.ToString());
+
+  aura::client::SetScreenPositionClient(root, NULL);
+
+  widget_host_ = NULL;
+  view_ = NULL;
 }
 
 // Checks that a fullscreen view is destroyed when it loses the focus.
