@@ -55,14 +55,19 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   // document.
   if (entry->file_specific_info().is_hosted_document()) {
     base::FilePath gdoc_file_path;
+    base::PlatformFileInfo file_info;
     if (!file_util::CreateTemporaryFileInDir(temporary_file_directory,
                                              &gdoc_file_path) ||
         !util::CreateGDocFile(gdoc_file_path,
                               GURL(entry->file_specific_info().alternate_url()),
-                              entry->resource_id()))
+                              entry->resource_id()) ||
+        !file_util::GetFileInfo(gdoc_file_path, &file_info))
       return FILE_ERROR_FAILED;
 
     *cache_file_path = gdoc_file_path;
+    PlatformFileInfoProto entry_file_info;
+    util::ConvertPlatformFileInfoToResourceEntry(file_info,
+                                                 entry->mutable_file_info());
     return FILE_ERROR_OK;
   }
 
