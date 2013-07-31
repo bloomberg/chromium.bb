@@ -68,7 +68,6 @@ MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
       first_item_has_no_margin_(first_item_has_no_margin) {
   DCHECK(message_center_);
   defer_timer_.reset(new base::OneShotTimer<MessagePopupCollection>);
-  DoUpdateIfPossible();
   message_center_->AddObserver(this);
   gfx::Screen* screen = NULL;
   gfx::Display display;
@@ -82,10 +81,14 @@ MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
     screen = gfx::Screen::GetScreenFor(parent_);
     display = screen->GetDisplayNearestWindow(parent_);
   }
+  screen->AddObserver(this);
+
   display_id_ = display.id();
   work_area_ = display.work_area();
   ComputePopupAlignment(work_area_, display.bounds());
-  screen->AddObserver(this);
+
+  // We should not update before work area and popup alignment are computed.
+  DoUpdateIfPossible();
 }
 
 MessagePopupCollection::~MessagePopupCollection() {
