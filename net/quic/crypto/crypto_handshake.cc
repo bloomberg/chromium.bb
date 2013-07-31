@@ -28,6 +28,10 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using base::StringPiece;
 using base::StringPrintf;
 using std::map;
@@ -563,14 +567,18 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   }
 
   if (proof_verifier_.get()) {
-    // TODO(rtenneti): Enable ECDSA proof verification on Windows. Disabled it
-    // because X509Certificate::GetPublicKeyInfo is not returning the correct
-    // type for ECDSA certificates.
+    // Don't request ECDSA proofs on platforms that do not support ECDSA
+    // certificates.
+    bool disableECDSA = false;
 #if defined(OS_WIN)
-    out->SetTaglist(kPDMD, kX59R, 0);
-#else
-    out->SetTaglist(kPDMD, kX509, 0);
+    if (base::win::GetVersion() < base::win::VERSION_VISTA)
+      disableECDSA = true;
 #endif
+    if (disableECDSA) {
+      out->SetTaglist(kPDMD, kX59R, 0);
+    } else {
+      out->SetTaglist(kPDMD, kX509, 0);
+    }
   }
 
   if (proof_verifier_.get() && !cached->proof_valid()) {

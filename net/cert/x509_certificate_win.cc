@@ -403,6 +403,16 @@ void X509Certificate::GetPublicKeyInfo(OSCertHandle cert_handle,
       X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
       &cert_handle->pCertInfo->SubjectPublicKeyInfo);
 
+  if (IS_SPECIAL_OID_INFO_ALGID(oid_info->Algid)) {
+    // For an EC public key, oid_info->Algid is CALG_OID_INFO_PARAMETERS
+    // (0xFFFFFFFE). Need to handle it as a special case.
+    if (strcmp(oid_info->pszOID, szOID_ECC_PUBLIC_KEY) == 0) {
+      *type = kPublicKeyTypeECDSA;
+    } else {
+      NOTREACHED();
+    }
+    return;
+  }
   switch (oid_info->Algid) {
     case CALG_RSA_SIGN:
     case CALG_RSA_KEYX:
