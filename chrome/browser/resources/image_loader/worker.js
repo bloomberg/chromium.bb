@@ -131,25 +131,19 @@ Worker.prototype.sortPendingRequests_ = function() {
  * @private
  */
 Worker.prototype.continue_ = function() {
-  var index = 0;
-  while (index < this.pendingRequests_.length) {
-    var request = this.pendingRequests_[index];
-
-    // Run only up to MAXIMUM_IN_PARALLEL in the same time.
-    if (this.activeRequests_.length == Worker.MAXIMUM_IN_PARALLEL)
-      return;
-
-    this.pendingRequests_.splice(index, 1);
+  // Run only up to MAXIMUM_IN_PARALLEL in the same time.
+  while (this.pendingRequests_.length &&
+         this.activeRequests_.length < Worker.MAXIMUM_IN_PARALLEL) {
+    var request = this.pendingRequests_.shift();
     this.activeRequests_.push(request);
 
     // Try to load from cache. If doesn't exist, then download.
-    var currentRequest = request;
-    currentRequest.loadFromCacheAndProcess(
-        this.finish_.bind(this, currentRequest),
-        function() {
+    request.loadFromCacheAndProcess(
+        this.finish_.bind(this, request),
+        function(currentRequest) {
           currentRequest.downloadAndProcess(
               this.finish_.bind(this, currentRequest));
-        }.bind(this));
+        }.bind(this, request));
   }
 };
 
