@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_OUTPUT_DEVICE_WIN_H_
-#define CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_OUTPUT_DEVICE_WIN_H_
+#ifndef CONTENT_BROWSER_AURA_SOFTWARE_OUTPUT_DEVICE_WIN_H_
+#define CONTENT_BROWSER_AURA_SOFTWARE_OUTPUT_DEVICE_WIN_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/output/software_output_device.h"
@@ -38,4 +38,4 @@ class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_OUTPUT_DEVICE_WIN_H_
+#endif  // CONTENT_BROWSER_AURA_SOFTWARE_OUTPUT_DEVICE_WIN_H_

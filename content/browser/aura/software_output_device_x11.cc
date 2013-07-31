@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/software_output_device_x11.h"
+#include "content/browser/aura/software_output_device_x11.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
