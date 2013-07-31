@@ -515,19 +515,28 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     PolicyLoadStatusSample status;
     base::DictionaryValue gpo_dict;
 
-    HANDLE policy_lock =
-        EnterCriticalPolicySection(scope == POLICY_SCOPE_MACHINE);
-    if (policy_lock == NULL)
-      PLOG(ERROR) << "EnterCriticalPolicySection";
+    // Note: GPO rules mandate a call to EnterCriticalPolicySection() here, and
+    // a matching LeaveCriticalPolicySection() call below after the
+    // ReadPolicyFromGPO() block. Unfortunately, the policy mutex may be
+    // unavailable for extended periods of time, and there are reports of this
+    // happening in the wild: http://crbug.com/265862.
+    //
+    // Blocking for minutes is neither acceptable for Chrome startup, nor on
+    // the FILE thread on which this code runs in steady state. Given that
+    // there have never been any reports of issues due to partially-applied /
+    // corrupt group policy, this code intentionally omits the
+    // EnterCriticalPolicySection() call.
+    //
+    // If there's ever reason to revisit this decision, one option could be to
+    // make the EnterCriticalPolicySection() call on a dedicated thread and
+    // timeout on it more aggressively. For now, there's no justification for
+    // the additional effort this would introduce.
 
     if (!ReadPolicyFromGPO(scope, &gpo_dict, &status)) {
       VLOG(1) << "Failed to read GPO files for " << scope
               << " falling back to registry.";
       ReadRegistry(kScopes[i].hive, chrome_policy_key_, &gpo_dict);
     }
-
-    if (!LeaveCriticalPolicySection(policy_lock))
-      PLOG(ERROR) << "LeaveCriticalPolicySection";
 
     // Remove special-cased entries from the GPO dictionary.
     base::DictionaryValue* temp_dict = NULL;
