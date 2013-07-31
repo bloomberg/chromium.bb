@@ -12,12 +12,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
-#include "chrome/browser/profiles/profile.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/login/login_state.h"
-#endif  // OS_CHROMEOS
 
 namespace google_apis {
 
@@ -233,22 +228,6 @@ void AuthService::OnHandleRefreshToken(bool has_refresh_token) {
   FOR_EACH_OBSERVER(AuthServiceObserver,
                     observers_,
                     OnOAuth2RefreshTokenChanged());
-}
-
-// static
-bool AuthService::CanAuthenticate(Profile* profile) {
-#if defined(OS_CHROMEOS)
-  if (!chromeos::LoginState::IsInitialized())
-    return false;
-  if (!chromeos::LoginState::Get()->IsUserGaiaAuthenticated())
-    return false;
-#endif  // OS_CHROMEOS
-
-  // Authentication cannot be done with the incognito mode profile.
-  if (profile->IsOffTheRecord())
-    return false;
-
-  return true;
 }
 
 }  // namespace google_apis

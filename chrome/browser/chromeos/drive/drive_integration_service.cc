@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
+#include "chrome/browser/chromeos/profiles/profile_util.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
@@ -52,7 +53,7 @@ namespace {
 bool IsDriveEnabledForProfile(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!google_apis::AuthService::CanAuthenticate(profile))
+  if (!chromeos::IsProfileAssociatedWithGaiaAccount(profile))
     return false;
 
   // Disable Drive if preference is set.  This can happen with commandline flag

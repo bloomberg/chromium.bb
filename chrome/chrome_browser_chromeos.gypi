@@ -726,6 +726,8 @@
         'browser/chromeos/prerender_condition_network.h',
         'browser/chromeos/profiles/profile_helper.cc',
         'browser/chromeos/profiles/profile_helper.h',
+        'browser/chromeos/profiles/profile_util.cc',
+        'browser/chromeos/profiles/profile_util.h',
         'browser/chromeos/proxy_config_service_impl.cc',
         'browser/chromeos/proxy_config_service_impl.h',
         'browser/chromeos/proxy_cros_settings_parser.cc',

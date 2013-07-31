@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/contacts/contact_database.h"
 #include "chrome/browser/chromeos/contacts/contact_store_observer.h"
 #include "chrome/browser/chromeos/contacts/gdata_contacts_service.h"
+#include "chrome/browser/chromeos/profiles/profile_util.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -413,7 +414,7 @@ bool GoogleContactStoreFactory::CanCreateContactStoreForProfile(
     Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
-  return google_apis::AuthService::CanAuthenticate(profile);
+  return chromeos::IsProfileAssociatedWithGaiaAccount(profile);
 }
 
 ContactStore* GoogleContactStoreFactory::CreateContactStore(Profile* profile) {

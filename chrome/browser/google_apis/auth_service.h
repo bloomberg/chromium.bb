@@ -14,8 +14,6 @@
 #include "chrome/browser/google_apis/auth_service_interface.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
 
-class Profile;
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -55,11 +53,6 @@ class AuthService : public AuthServiceInterface,
   virtual void OnRefreshTokenRevoked(
       const std::string& account_id,
       const GoogleServiceAuthError& error) OVERRIDE;
-
-  // Returns true if authentication can be done using the class for the given
-  // profile. For instance, this function returns false if the profile is
-  // used for the incognito mode.
-  static bool CanAuthenticate(Profile* profile);
 
  private:
   // Called when the state of the refresh token changes.
