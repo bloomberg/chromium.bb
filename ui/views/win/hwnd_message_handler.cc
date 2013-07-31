@@ -1086,7 +1086,12 @@ gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
 void HWNDMessageHandler::ResetWindowRegion(bool force) {
   // A native frame uses the native window region, and we don't want to mess
   // with it.
-  if (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow()) {
+  // WS_EX_COMPOSITED is used instead of WS_EX_LAYERED under aura. WS_EX_LAYERED
+  // automatically makes clicks on transparent pixels fall through, that isn't
+  // the case with WS_EX_COMPOSITED. So, we route WS_EX_COMPOSITED through to
+  // the delegate to allow for a custom hit mask.
+  if ((window_ex_style() & WS_EX_COMPOSITED) == 0 &&
+      (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow())) {
     if (force)
       SetWindowRgn(hwnd(), NULL, TRUE);
     return;
