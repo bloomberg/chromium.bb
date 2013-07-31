@@ -830,7 +830,6 @@
         'browser/chromeos/upgrade_detector_chromeos.h',
         'browser/chromeos/version_loader.cc',
         'browser/chromeos/version_loader.h',
-        'browser/chromeos/view_ids.h',
         'browser/chromeos/web_socket_proxy.cc',
         'browser/chromeos/web_socket_proxy.h',
         'browser/chromeos/web_socket_proxy_controller.cc',
