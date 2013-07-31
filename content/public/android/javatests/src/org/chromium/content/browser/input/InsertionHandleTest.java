@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Editable;
 import android.text.Selection;
+import android.view.KeyEvent;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -93,6 +94,18 @@ public class InsertionHandleTest extends ContentShellTestBase {
 
         // Unselecting should cause the handle to disappear.
         getImeAdapter().unselect();
+        assertTrue(waitForHandleShowingEquals(false));
+    }
+
+
+    @MediumTest
+    @Feature({"TextSelection", "TextInput", "Main"})
+    public void testKeyEventHidesHandle() throws Throwable {
+        launchWithUrl(TEXTAREA_DATA_URL);
+        clickNodeToShowInsertionHandle(TEXTAREA_ID);
+
+        getInstrumentation().sendKeySync(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_X));
+        getInstrumentation().sendKeySync(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_X));
         assertTrue(waitForHandleShowingEquals(false));
     }
 

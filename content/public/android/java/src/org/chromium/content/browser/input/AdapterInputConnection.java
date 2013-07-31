@@ -311,7 +311,6 @@ public class AdapterInputConnection extends BaseInputConnection {
     @Override
     public boolean sendKeyEvent(KeyEvent event) {
         if (DEBUG) Log.w(TAG, "sendKeyEvent [" + event.getAction() + "]");
-        mImeAdapter.hideSelectionAndInsertionHandleControllers();
 
         // If this is a key-up, and backspace/del or if the key has a character representation,
         // need to update the underlying Editable (i.e. the local representation of the text

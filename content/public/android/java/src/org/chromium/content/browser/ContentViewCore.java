@@ -539,6 +539,7 @@ import java.util.Map;
                     public void onImeEvent(boolean isFinish) {
                         getContentViewClient().onImeEvent();
                         if (!isFinish) {
+                            hideHandles();
                             undoScrollFocusedEditableNodeIntoViewIfNeeded(false);
                         }
                     }
@@ -581,12 +582,6 @@ import java.util.Map;
                                 }
                             }
                         };
-                    }
-
-                    @Override
-                    public void hideSelectionAndInsertionHandles() {
-                        getInsertionHandleController().hideAndDisallowAutomaticShowing();
-                        getSelectionHandleController().hideAndDisallowAutomaticShowing();
                     }
                 }
         );
