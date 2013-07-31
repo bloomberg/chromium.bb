@@ -32,6 +32,7 @@ static const char kMainWebrtcTestHtmlPage[] =
 // Media stream infobar test for WebRTC.
 class MediaStreamInfobarTest : public WebRtcTestBase {
  public:
+  // InProcessBrowserTest:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // This test expects to run with fake devices but real UI.
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);

@@ -75,6 +75,7 @@ class AutofillManagerTestDelegateImpl
  public:
   AutofillManagerTestDelegateImpl() {}
 
+  // autofill::AutofillManagerTestDelegate:
   virtual void DidPreviewFormData() OVERRIDE {
     LOG(INFO) << "DidPreviewFormData";
     loop_runner_->Quit();
@@ -125,15 +126,6 @@ class WindowedPersonalDataManagerObserver
       infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
   }
 
-  void Wait() {
-    if (!alerted_) {
-      has_run_message_loop_ = true;
-      content::RunMessageLoop();
-    }
-    PersonalDataManagerFactory::GetForProfile(browser_->profile())->
-        RemoveObserver(this);
-  }
-
   // PersonalDataManagerObserver:
   virtual void OnPersonalDataChanged() OVERRIDE {
     if (has_run_message_loop_) {
@@ -161,6 +153,15 @@ class WindowedPersonalDataManagerObserver
     confirm_infobar->Accept();
   }
 
+  void Wait() {
+    if (!alerted_) {
+      has_run_message_loop_ = true;
+      content::RunMessageLoop();
+    }
+    PersonalDataManagerFactory::GetForProfile(browser_->profile())->
+        RemoveObserver(this);
+  }
+
  private:
   bool alerted_;
   bool has_run_message_loop_;
@@ -180,6 +181,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   }
   virtual ~TestAutofillExternalDelegate() {}
 
+  // AutofillExternalDelegate:
   virtual void OnPopupShown(content::KeyboardListener* listener) OVERRIDE {
     AutofillExternalDelegate::OnPopupShown(listener);
     keyboard_listener_ = listener;
@@ -206,6 +208,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
  protected:
   AutofillInteractiveTest() {}
 
+  // InProcessBrowserTest:
   virtual void SetUpOnMainThread() OVERRIDE {
     // Don't want Keychain coming up on Mac.
     test::DisableSystemServices(browser()->profile());
@@ -233,8 +236,22 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     autofill_manager->delegate()->HideAutofillPopup();
   }
 
-  PersonalDataManager* personal_data_manager() {
+  PersonalDataManager* GetPersonalDataManager() {
     return PersonalDataManagerFactory::GetForProfile(browser()->profile());
+  }
+
+  content::RenderViewHost* GetRenderViewHost() {
+    return browser()->tab_strip_model()->GetActiveWebContents()->
+        GetRenderViewHost();
+  }
+
+  TestAutofillExternalDelegate* GetExternalDelegate() {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    AutofillDriverImpl* autofill_driver =
+        AutofillDriverImpl::FromWebContents(web_contents);
+    return static_cast<TestAutofillExternalDelegate*>(
+        autofill_driver->autofill_external_delegate());
   }
 
   void CreateTestProfile() {
@@ -245,7 +262,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
         "Basement", "Austin", "Texas", "78744", "US", "5125551234");
 
     WindowedPersonalDataManagerObserver observer(browser());
-    personal_data_manager()->AddProfile(profile);
+    GetPersonalDataManager()->AddProfile(profile);
 
     // AddProfile is asynchronous. Wait for it to finish before continuing the
     // tests.
@@ -263,11 +280,6 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_value, value);
   }
 
-  RenderViewHost* render_view_host() {
-    return browser()->tab_strip_model()->GetActiveWebContents()->
-        GetRenderViewHost();
-  }
-
   void FocusFirstNameField() {
     LOG(WARNING) << "Clicking on the tab.";
     content::SimulateMouseClick(
@@ -278,7 +290,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     LOG(WARNING) << "Focusing the first name field.";
     bool result = false;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        render_view_host(),
+        GetRenderViewHost(),
         "if (document.readyState === 'complete')"
         "  document.getElementById('firstname').focus();"
         "else"
@@ -315,17 +327,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     content::NativeWebKeyboardEvent event;
     event.windowsKeyCode = key;
     test_delegate_.Reset();
-    external_delegate()->keyboard_listener()->HandleKeyPressEvent(event);
+    GetExternalDelegate()->keyboard_listener()->HandleKeyPressEvent(event);
     test_delegate_.Wait();
-  }
-
-  TestAutofillExternalDelegate* external_delegate() {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    AutofillDriverImpl* autofill_driver =
-        AutofillDriverImpl::FromWebContents(web_contents);
-    return static_cast<TestAutofillExternalDelegate*>(
-        autofill_driver->autofill_external_delegate());
   }
 
   AutofillManagerTestDelegateImpl test_delegate_;

@@ -43,14 +43,6 @@ class NavigationObserver : public content::NotificationObserver,
 
   virtual ~NavigationObserver() {}
 
-  void Wait() {
-    message_loop_runner_->Run();
-  }
-
-  bool InfoBarWasShown() {
-    return info_bar_shown_;
-  }
-
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -63,13 +55,19 @@ class NavigationObserver : public content::NotificationObserver,
     info_bar_shown_ = true;
   }
 
-  // content::WebContentsObserver
+  // content::WebContentsObserver:
   virtual void DidFinishLoad(
       int64 frame_id,
       const GURL& validated_url,
       bool is_main_frame,
       content::RenderViewHost* render_view_host) OVERRIDE {
     message_loop_runner_->Quit();
+  }
+
+  bool infobar_shown() { return info_bar_shown_; }
+
+  void Wait() {
+    message_loop_runner_->Run();
   }
 
  private:
@@ -126,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForXHRSubmit) {
       "document.getElementById('submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.InfoBarWasShown());
+  EXPECT_TRUE(observer.infobar_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptForOtherXHR) {
@@ -147,5 +145,5 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptForOtherXHR) {
       "send_xhr()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
   observer.Wait();
-  EXPECT_FALSE(observer.InfoBarWasShown());
+  EXPECT_FALSE(observer.infobar_shown());
 }
