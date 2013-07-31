@@ -6,5 +6,5 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
   android:shape="rectangle">
   <solid android:color="#00000000"/>
-  <stroke android:width="1px" android:color="#B0B0B0" />
+  <stroke android:width="1px" android:color="@color/color_picker_border_color" />
 </shape>
