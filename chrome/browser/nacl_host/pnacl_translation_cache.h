@@ -20,8 +20,18 @@ namespace disk_cache {
 class Backend;
 }
 
+namespace nacl {
+struct PnaclCacheInfo;
+}
+
+namespace net {
+class DrainableIOBuffer;
+}
+
 namespace pnacl {
 typedef base::Callback<void(int)> CompletionCallback;
+typedef base::Callback<void(int, scoped_refptr<net::DrainableIOBuffer>)>
+    GetNexeCallback;
 class PnaclTranslationCacheEntry;
 extern const int kMaxMemCacheSize;
 
@@ -38,27 +48,32 @@ class PnaclTranslationCache
                 bool in_memory,
                 const CompletionCallback& callback);
 
-  // Store the nexe in the translation cache.
-  void StoreNexe(const std::string& key, const std::string& nexe);
+  // Store the nexe in the translation cache. A reference to |nexe_data| is
+  // held until completion or cancellation.
+  void StoreNexe(const std::string& key, net::DrainableIOBuffer* nexe_data);
 
   // Store the nexe in the translation cache, and call |callback| with
   // the result. The result passed to the callback is 0 on success and
-  // <0 otherwise.
+  // <0 otherwise. A reference to |nexe_data| is held until completion
+  // or cancellation.
   void StoreNexe(const std::string& key,
-                 const std::string& nexe,
+                 net::DrainableIOBuffer* nexe_data,
                  const CompletionCallback& callback);
 
   // Retrieve the nexe from the translation cache. Write the data into |nexe|
-  // and call |callback| with the result (0 on success and <0 otherwise)
-  void GetNexe(const std::string& key,
-               std::string* nexe,
-               const CompletionCallback& callback);
+  // and call |callback|, passing a result code (0 on success and <0 otherwise),
+  // and a DrainableIOBuffer with the data.
+  void GetNexe(const std::string& key, const GetNexeCallback& callback);
 
   // Return the number of entries in the cache backend.
   int Size();
 
+  // Return the cache key for |info|
+  static std::string GetKey(const nacl::PnaclCacheInfo& info);
+
  private:
   friend class PnaclTranslationCacheEntry;
+  friend class PnaclTranslationCacheTest;
   // PnaclTranslationCacheEntry should only use the
   // OpComplete and backend methods on PnaclTranslationCache.
   void OpComplete(PnaclTranslationCacheEntry* entry);
