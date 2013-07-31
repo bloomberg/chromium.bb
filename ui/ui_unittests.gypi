@@ -254,6 +254,7 @@
         }],
         ['use_pango == 1', {
           'dependencies': [
+            '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:pangocairo',
           ],
           'sources': [
