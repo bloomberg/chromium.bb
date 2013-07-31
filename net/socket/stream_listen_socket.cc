@@ -236,6 +236,12 @@ void StreamListenSocket::OnObjectSignaled(HANDLE object) {
     return;
   }
 
+  if (ev.lNetworkEvents & FD_CLOSE) {
+    Close();
+    // Close might have deleted this object. We should return immediately.
+    return;
+  }
+
   // The object was reset by WSAEnumNetworkEvents.  Watch for the next signal.
   watcher_.StartWatching(object, this);
 
@@ -252,10 +258,9 @@ void StreamListenSocket::OnObjectSignaled(HANDLE object) {
       has_pending_reads_ = true;
     } else {
       Read();
+      // Read() might call Close() internally and 'this' can be invalid here
+      return;
     }
-  }
-  if (ev.lNetworkEvents & FD_CLOSE) {
-    Close();
   }
 }
 #elif defined(OS_POSIX)
