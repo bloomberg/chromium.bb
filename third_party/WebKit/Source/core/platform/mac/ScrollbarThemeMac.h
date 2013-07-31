@@ -58,12 +58,11 @@ public:
     void setNewPainterForScrollbar(ScrollbarThemeClient*, ScrollbarPainter);
     ScrollbarPainter painterForScrollbar(ScrollbarThemeClient*);
 
-    static bool isCurrentlyDrawingIntoLayer();
-    static void setIsCurrentlyDrawingIntoLayer(bool);
-
     virtual bool paint(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect);
     virtual void paintOverhangAreas(ScrollView*, GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);
     virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
+    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
 
 protected:
 

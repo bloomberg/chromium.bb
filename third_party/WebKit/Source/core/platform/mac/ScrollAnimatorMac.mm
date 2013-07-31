@@ -1294,4 +1294,8 @@ void ScrollAnimatorMac::setVisibleScrollerThumbRect(const IntRect& scrollerThumb
     m_visibleScrollerThumbRect = rectInViewCoordinates;
 }
 
+bool ScrollAnimatorMac::canUseCoordinatedScrollbar() {
+    return isScrollbarOverlayAPIAvailable();
+}
+
 } // namespace WebCore

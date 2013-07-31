@@ -67,6 +67,8 @@ public:
 
     void setVisibleScrollerThumbRect(const IntRect&);
 
+    static bool canUseCoordinatedScrollbar();
+
 private:
     RetainPtr<id> m_scrollAnimationHelper;
     RetainPtr<WebScrollAnimationHelperDelegate> m_scrollAnimationHelperDelegate;

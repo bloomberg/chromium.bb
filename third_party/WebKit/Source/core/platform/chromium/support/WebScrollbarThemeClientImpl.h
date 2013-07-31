@@ -40,6 +40,7 @@ public:
     // Caller must retain ownership of this pointer and ensure that its lifetime
     // exceeds this instance.
     WebScrollbarThemeClientImpl(WebKit::WebScrollbar*);
+    ~WebScrollbarThemeClientImpl();
 
     // Implement ScrollbarThemeClient interface
     virtual int x() const OVERRIDE;

@@ -211,122 +211,18 @@ ScrollbarPainter ScrollbarThemeMac::painterForScrollbar(ScrollbarThemeClient* sc
     return scrollbarMap()->get(scrollbar).get();
 }
 
-static bool g_isCurrentlyDrawingIntoLayer;
-    
-bool ScrollbarThemeMac::isCurrentlyDrawingIntoLayer()
-{
-    return g_isCurrentlyDrawingIntoLayer;
-}
-
-void ScrollbarThemeMac::setIsCurrentlyDrawingIntoLayer(bool b)
-{
-    g_isCurrentlyDrawingIntoLayer = b;
-}
-
-static void scrollbarPainterPaintTrack(ScrollbarPainter scrollbarPainter, bool enabled, double value, CGFloat proportion, CGRect frameRect)
-{
-    [scrollbarPainter setEnabled:enabled];
-    [scrollbarPainter setBoundsSize: NSSizeFromCGSize(frameRect.size)];
-    [scrollbarPainter setDoubleValue:value];
-    [scrollbarPainter setKnobProportion:proportion];
-
-    // The scrollbar's frameRect includes a side inset for overlay scrollers, so we have to use the
-    // trackWidth for drawKnobSlotInRect
-    NSRect trackRect;
-    if ([scrollbarPainter isHorizontal])
-        trackRect = NSMakeRect(0, 0, frameRect.size.width, [scrollbarPainter trackWidth]);
-    else
-        trackRect = NSMakeRect(0, 0, [scrollbarPainter trackWidth], frameRect.size.height);
-    [scrollbarPainter drawKnobSlotInRect:trackRect highlight:NO];
-}
-
 // Override ScrollbarThemeMac::paint() to add support for the following:
 //     - drawing using WebThemeEngine functions
 //     - drawing tickmarks
 //     - Skia specific changes
 bool ScrollbarThemeMac::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* context, const IntRect& damageRect)
 {
+    if (isScrollbarOverlayAPIAvailable())
+        return ScrollbarThemeComposite::paint(scrollbar, context, damageRect);
+
     // Get the tickmarks for the frameview.
     Vector<IntRect> tickmarks;
     scrollbar->getTickmarks(tickmarks);
-
-    if (isScrollbarOverlayAPIAvailable()) {
-        float value = 0;
-        float overhang = 0;
-
-        if (scrollbar->currentPos() < 0) {
-            // Scrolled past the top.
-            value = 0;
-            overhang = -scrollbar->currentPos();
-        } else if (scrollbar->visibleSize() + scrollbar->currentPos() > scrollbar->totalSize()) {
-            // Scrolled past the bottom.
-            value = 1;
-            overhang = scrollbar->currentPos() + scrollbar->visibleSize() - scrollbar->totalSize();
-        } else {
-            // Within the bounds of the scrollable area.
-            int maximum = scrollbar->maximum();
-            if (maximum > 0)
-                value = scrollbar->currentPos() / maximum;
-            else
-                value = 0;
-        }
-
-        setIsCurrentlyDrawingIntoLayer(false);
-
-        CGFloat oldKnobAlpha = 0;
-        CGFloat oldTrackAlpha = 0;
-        BOOL oldIsExpanded = NO;
-        bool hasTickmarks = tickmarks.size() > 0 && scrollbar->orientation() == VerticalScrollbar;
-        ScrollbarPainter scrollbarPainter = painterForScrollbar(scrollbar);
-        if (hasTickmarks) {
-            scrollbar->setIsAlphaLocked(true);
-            oldKnobAlpha = [scrollbarPainter knobAlpha];
-            [scrollbarPainter setKnobAlpha:1.0];
-            oldTrackAlpha = [scrollbarPainter trackAlpha];
-            [scrollbarPainter setTrackAlpha:1.0];
-            if ([scrollbarPainter respondsToSelector:@selector(setExpanded:)]) {
-              oldIsExpanded = [scrollbarPainter isExpanded];
-              [scrollbarPainter setExpanded:YES];
-            }
-        } else
-            scrollbar->setIsAlphaLocked(false);
-
-        GraphicsContextStateSaver stateSaver(*context);
-        context->clip(damageRect);
-        context->translate(scrollbar->frameRect().x(), scrollbar->frameRect().y());
-        LocalCurrentGraphicsContext localContext(context);
-        scrollbarPainterPaintTrack(scrollbarPainter,
-                                   scrollbar->enabled(),
-                                   value,
-                                   (static_cast<CGFloat>(scrollbar->visibleSize()) - overhang) / scrollbar->totalSize(),
-                                   scrollbar->frameRect());
-
-        IntRect tickmarkTrackRect(IntPoint(), trackRect(scrollbar, false).size());
-        if (tickmarkTrackRect.width() <= 10) {
-            // For narrow scrollbars inset by 1 on the left and 3 on the right.
-            tickmarkTrackRect.setX(tickmarkTrackRect.x() + 1);
-            tickmarkTrackRect.setWidth(tickmarkTrackRect.width() - 4);
-        } else {
-            // For wide scrollbars inset by 2 on the left and 3 on the right.
-            tickmarkTrackRect.setX(tickmarkTrackRect.x() + 2);
-            tickmarkTrackRect.setWidth(tickmarkTrackRect.width() - 5);
-        }
-        paintGivenTickmarks(context, scrollbar, tickmarkTrackRect, tickmarks);
-
-        if (scrollbar->enabled())
-            [scrollbarPainter drawKnob];
-
-        setIsCurrentlyDrawingIntoLayer(false);
-
-        if (hasTickmarks) {
-            [scrollbarPainter setKnobAlpha:oldKnobAlpha];
-            [scrollbarPainter setTrackAlpha:oldTrackAlpha];
-            if ([scrollbarPainter respondsToSelector:@selector(setExpanded:)])
-              [scrollbarPainter setExpanded:oldIsExpanded];
-        }
-
-        return true;
-    }
 
     HIThemeTrackDrawInfo trackInfo;
     trackInfo.version = 0;
@@ -586,6 +482,43 @@ void ScrollbarThemeMac::paintTickmarks(GraphicsContext* context, ScrollbarThemeC
     paintGivenTickmarks(context, scrollbar, tickmarkTrackRect, tickmarks);
 }
 
+void ScrollbarThemeMac::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
+    ASSERT(isScrollbarOverlayAPIAvailable());
+
+    GraphicsContextStateSaver stateSaver(*context);
+    context->translate(rect.x(), rect.y());
+    LocalCurrentGraphicsContext localContext(context);
+
+    CGRect frameRect = scrollbar->frameRect();
+    ScrollbarPainter scrollbarPainter = painterForScrollbar(scrollbar);
+    [scrollbarPainter setEnabled:scrollbar->enabled()];
+    [scrollbarPainter setBoundsSize: NSSizeFromCGSize(frameRect.size)];
+
+    NSRect trackRect = NSMakeRect(0, 0, frameRect.size.width, frameRect.size.height);
+    [scrollbarPainter drawKnobSlotInRect:trackRect highlight:NO];
+}
+
+void ScrollbarThemeMac::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
+    ASSERT(isScrollbarOverlayAPIAvailable());
+
+    GraphicsContextStateSaver stateSaver(*context);
+    context->translate(rect.x(), rect.y());
+    LocalCurrentGraphicsContext localContext(context);
+
+    ScrollbarPainter scrollbarPainter = painterForScrollbar(scrollbar);
+    CGRect frameRect = scrollbar->frameRect();
+    [scrollbarPainter setEnabled:scrollbar->enabled()];
+    [scrollbarPainter setBoundsSize:NSSizeFromCGSize(rect.size())];
+    [scrollbarPainter setDoubleValue:0];
+    [scrollbarPainter setKnobProportion:1];
+    if (scrollbar->enabled())
+        [scrollbarPainter drawKnob];
+
+    // If this state is not set, then moving the cursor over the scrollbar area will only cause the
+    // scrollbar to engorge when moved over the top of the scrollbar area.
+    [scrollbarPainter setBoundsSize: NSSizeFromCGSize(scrollbar->frameRect().size())];
+}
+
 ScrollbarThemeMac::ScrollbarThemeMac()
 {
     static bool initialized;
@@ -677,7 +610,7 @@ bool ScrollbarThemeMac::hasThumb(ScrollbarThemeClient* scrollbar)
 {
     int minLengthForThumb;
     if (isScrollbarOverlayAPIAvailable()) {
-        ScrollbarPainter painter = scrollbarMap()->get(scrollbar).get();
+        ScrollbarPainter painter = painterForScrollbar(scrollbar);
         minLengthForThumb = [painter knobMinLength] + [painter trackOverlapEndInset] + [painter knobOverlapEndInset]
             + 2 * ([painter trackEndInset] + [painter knobEndInset]);
     } else
@@ -818,10 +751,11 @@ IntRect ScrollbarThemeMac::trackRect(ScrollbarThemeClient* scrollbar, bool paint
 
 int ScrollbarThemeMac::minimumThumbLength(ScrollbarThemeClient* scrollbar)
 {
-    if (isScrollbarOverlayAPIAvailable())
-        return [scrollbarMap()->get(scrollbar).get() knobMinLength];
-    else
+    if (isScrollbarOverlayAPIAvailable()) {
+        return [painterForScrollbar(scrollbar) knobMinLength];
+    } else {
         return cThumbMinLength[scrollbar->controlSize()];
+    }
 }
 
 bool ScrollbarThemeMac::shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent& evt)
@@ -859,7 +793,7 @@ int ScrollbarThemeMac::scrollbarPartToHIPressedState(ScrollbarPart part)
 void ScrollbarThemeMac::updateEnabledState(ScrollbarThemeClient* scrollbar)
 {
     if (isScrollbarOverlayAPIAvailable())
-        [scrollbarMap()->get(scrollbar).get() setEnabled:scrollbar->enabled()];
+        [painterForScrollbar(scrollbar) setEnabled:scrollbar->enabled()];
 }
 
 } // namespace WebCore

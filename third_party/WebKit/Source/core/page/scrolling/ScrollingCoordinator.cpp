@@ -44,6 +44,9 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/Region.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#if OS(DARWIN)
+#include "core/platform/mac/ScrollAnimatorMac.h"
+#endif
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
@@ -243,7 +246,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
 {
 // FIXME: Instead of hardcode here, we should make a setting flag.
 #if OS(DARWIN)
-    static const bool platformSupportsCoordinatedScrollbar = false;
+    static const bool platformSupportsCoordinatedScrollbar = ScrollAnimatorMac::canUseCoordinatedScrollbar();
     static const bool platformSupportsMainFrameOnly = false; // Don't care.
 #elif OS(ANDROID)
     static const bool platformSupportsCoordinatedScrollbar = true;
