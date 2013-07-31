@@ -85,6 +85,7 @@ class BrowserAccessibilityGtk : public BrowserAccessibility {
   AtkRole atk_role_;
   std::string atk_acc_name_;
   std::string atk_acc_description_;
+  int interface_mask_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityGtk);
