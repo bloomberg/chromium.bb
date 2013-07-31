@@ -409,8 +409,9 @@ class MessageListView : public views::View,
   bool IsValidChild(views::View* child);
   void DoUpdateIfPossible();
 
-  // Schedules animation for a child to the specified position.
-  void AnimateChild(views::View* child, int top, int height);
+  // Schedules animation for a child to the specified position. Returns false
+  // if |child| will disappear after the animation.
+  bool AnimateChild(views::View* child, int top, int height);
 
   // Animate clearing one notification.
   void AnimateClearingOneNotification();
@@ -677,26 +678,28 @@ void MessageListView::DoUpdateIfPossible() {
     views::View* child = child_at(i);
     if (!IsValidChild(child)) {
       AnimateChild(child, child->y(), child->height());
-    } else if (child->y() < reposition_top_) {
+    } else if (reposition_top_ < 0 || child->y() < reposition_top_) {
       last_index = i;
       break;
     }
   }
   if (last_index > 0) {
-    int bottom = reposition_top_ + child_at(last_index)->height();
+    int bottom = (reposition_top_ > 0) ?
+        reposition_top_ + child_at(last_index)->height() :
+        GetHeightForWidth(width()) - GetInsets().bottom();
     int between_items =
         kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
     for (int i = last_index; i >= 0; --i) {
       views::View* child = child_at(i);
-      AnimateChild(child, bottom - child->height(), child->height());
-      bottom -= child->height() + between_items;
+      if (AnimateChild(child, bottom - child->height(), child->height()))
+        bottom -= child->height() + between_items;
     }
   }
   adding_views_.clear();
   deleting_views_.clear();
 }
 
-void MessageListView::AnimateChild(views::View* child, int top, int height) {
+bool MessageListView::AnimateChild(views::View* child, int top, int height) {
   gfx::Rect child_area = GetContentsBounds();
   if (adding_views_.find(child) != adding_views_.end()) {
     child->SetBounds(child_area.right(), top, child_area.width(), height);
@@ -707,6 +710,7 @@ void MessageListView::AnimateChild(views::View* child, int top, int height) {
     // No moves, but animate to fade-out.
     animator_->AnimateViewTo(child, child->bounds());
     deleted_when_done_.insert(child);
+    return false;
   } else {
     gfx::Rect target(child_area.x(), top, child_area.width(), height);
     if (child->bounds().origin() != target.origin())
@@ -714,6 +718,7 @@ void MessageListView::AnimateChild(views::View* child, int top, int height) {
     else
       child->SetBoundsRect(target);
   }
+  return true;
 }
 
 void MessageListView::AnimateClearingOneNotification() {
