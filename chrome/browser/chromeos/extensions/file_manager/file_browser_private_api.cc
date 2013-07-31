@@ -127,7 +127,8 @@ base::DictionaryValue* CreateValueFromDisk(
   volume_info->SetString("driveLabel", volume->drive_label());
   volume_info->SetString("deviceType",
       DiskMountManager::DeviceTypeToString(volume->device_type()));
-  volume_info->SetInteger("totalSize", volume->total_size_in_bytes());
+  volume_info->SetDouble("totalSize",
+      static_cast<double>(volume->total_size_in_bytes()));
   volume_info->SetBoolean("isParent", volume->is_parent());
   volume_info->SetBoolean("isReadOnly", volume->is_read_only());
   volume_info->SetBoolean("hasMedia", volume->has_media());
@@ -165,20 +166,15 @@ void SetDriveMountPointPermissions(
 
 // Retrieves total and remaining available size on |mount_path|.
 void GetSizeStatsOnBlockingPool(const std::string& mount_path,
-                                size_t* total_size_kb,
-                                size_t* remaining_size_kb) {
-  uint64_t total_size_in_bytes = 0;
-  uint64_t remaining_size_in_bytes = 0;
-
+                                uint64* total_size,
+                                uint64* remaining_size) {
   struct statvfs stat = {};  // Zero-clear
   if (HANDLE_EINTR(statvfs(mount_path.c_str(), &stat)) == 0) {
-    total_size_in_bytes =
-        static_cast<uint64_t>(stat.f_blocks) * stat.f_frsize;
-    remaining_size_in_bytes =
-        static_cast<uint64_t>(stat.f_bfree) * stat.f_frsize;
+    *total_size =
+        static_cast<uint64>(stat.f_blocks) * stat.f_frsize;
+    *remaining_size =
+        static_cast<uint64>(stat.f_bfree) * stat.f_frsize;
   }
-  *total_size_kb = static_cast<size_t>(total_size_in_bytes / 1024);
-  *remaining_size_kb = static_cast<size_t>(remaining_size_in_bytes / 1024);
 }
 
 // Retrieves the maximum file name length of the file system of |path|.
@@ -601,18 +597,18 @@ bool GetSizeStatsFunction::RunImpl() {
                    this));
 
   } else {
-    size_t* total_size_kb = new size_t(0);
-    size_t* remaining_size_kb = new size_t(0);
+    uint64* total_size = new uint64(0);
+    uint64* remaining_size = new uint64(0);
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&GetSizeStatsOnBlockingPool,
                    file_path.value(),
-                   total_size_kb,
-                   remaining_size_kb),
+                   total_size,
+                   remaining_size),
         base::Bind(&GetSizeStatsFunction::GetSizeStatsCallback,
                    this,
-                   base::Owned(total_size_kb),
-                   base::Owned(remaining_size_kb)));
+                   base::Owned(total_size),
+                   base::Owned(remaining_size)));
   }
   return true;
 }
@@ -622,10 +618,10 @@ void GetSizeStatsFunction::GetDriveAvailableSpaceCallback(
     int64 bytes_total,
     int64 bytes_used) {
   if (error == drive::FILE_ERROR_OK) {
-    int64 bytes_remaining = bytes_total - bytes_used;
-    const size_t total_size_kb = static_cast<size_t>(bytes_total/1024);
-    const size_t remaining_size_kb = static_cast<size_t>(bytes_remaining/1024);
-    GetSizeStatsCallback(&total_size_kb, &remaining_size_kb);
+    const uint64 bytes_total_unsigned = bytes_total;
+    const uint64 bytes_remaining_unsigned = bytes_total - bytes_used;
+    GetSizeStatsCallback(&bytes_total_unsigned,
+                         &bytes_remaining_unsigned);
   } else {
     // If stats couldn't be gotten for drive, result should be left undefined.
     SendResponse(true);
@@ -633,13 +629,13 @@ void GetSizeStatsFunction::GetDriveAvailableSpaceCallback(
 }
 
 void GetSizeStatsFunction::GetSizeStatsCallback(
-    const size_t* total_size_kb,
-    const size_t* remaining_size_kb) {
+    const uint64* total_size,
+    const uint64* remaining_size) {
   base::DictionaryValue* sizes = new base::DictionaryValue();
   SetResult(sizes);
 
-  sizes->SetInteger("totalSizeKB", *total_size_kb);
-  sizes->SetInteger("remainingSizeKB", *remaining_size_kb);
+  sizes->SetDouble("totalSize", static_cast<double>(*total_size));
+  sizes->SetDouble("remainingSize", static_cast<double>(*remaining_size));
 
   SendResponse(true);
 }

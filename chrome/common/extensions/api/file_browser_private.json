@@ -45,9 +45,9 @@
             "type": "boolean",
             "description": "Flag that specifies if volume is mounted in read-only mode."
           },
-          "totalSizeKB": {
-            "type": "integer",
-            "description": "Total disk volume size in KBs"
+          "totalSize": {
+            "type": "number",
+            "description": "Approximated total disk volume size in bytes."
           }
         }
       },
@@ -172,13 +172,13 @@
         "type": "object",
         "description": "Information about total and remaining size on the mount point.",
         "properties": {
-          "totalSizeKB": {
-            "type": "integer",
-            "description": "Total available size on the mount point."
+          "totalSize": {
+            "type": "number",
+            "description": "Approximate total available size on the mount point."
           },
-          "remainingSizeKB": {
-            "type": "integer",
-            "description": "Remaining available size on the mount point."
+          "remainingSize": {
+            "type": "number",
+            "description": "Approximate remaining available size on the mount point."
           }
         }
       },

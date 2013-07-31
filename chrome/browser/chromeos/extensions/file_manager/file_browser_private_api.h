@@ -225,8 +225,8 @@ class GetSizeStatsFunction : public LoggedAsyncExtensionFunction {
                                       int64 bytes_total,
                                       int64 bytes_used);
 
-  void GetSizeStatsCallback(const size_t* total_size_kb,
-                            const size_t* remaining_size_kb);
+  void GetSizeStatsCallback(const uint64* total_size,
+                            const uint64* remaining_size);
 };
 
 // Retrieves devices meta-data. Expects volume's device path as an argument.

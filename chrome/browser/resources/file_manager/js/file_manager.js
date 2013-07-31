@@ -187,13 +187,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       sizeStatsResult, spaceInnerBar, spaceInfoLabel, spaceOuterBar) {
     spaceInnerBar.removeAttribute('pending');
     if (sizeStatsResult) {
-      var sizeStr = util.bytesToString(sizeStatsResult.remainingSizeKB * 1024);
+      var sizeStr = util.bytesToString(sizeStatsResult.remainingSize);
       spaceInfoLabel.textContent = strf('SPACE_AVAILABLE', sizeStr);
 
       var usedSpace =
-          sizeStatsResult.totalSizeKB - sizeStatsResult.remainingSizeKB;
+          sizeStatsResult.totalSize - sizeStatsResult.remainingSize;
       spaceInnerBar.style.width =
-          (100 * usedSpace / sizeStatsResult.totalSizeKB) + '%';
+          (100 * usedSpace / sizeStatsResult.totalSize) + '%';
 
       spaceOuterBar.hidden = false;
     } else {
