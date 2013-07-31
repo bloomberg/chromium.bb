@@ -1542,7 +1542,7 @@
           }],
         ],
       }],
-      ['OS=="mac"', {
+      ['OS=="mac" or OS=="ios"', {
         'grit_defines': ['-D', 'scale_factors=2x'],
       }],
       ['OS == "ios"', {
