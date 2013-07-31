@@ -9,8 +9,10 @@
 #include "content/common/media/midi_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebMIDIPermissionRequest.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 using WebKit::WebMIDIPermissionRequest;
+using WebKit::WebSecurityOrigin;
 
 namespace content {
 
@@ -21,17 +23,22 @@ MIDIDispatcher::MIDIDispatcher(RenderViewImpl* render_view)
 MIDIDispatcher::~MIDIDispatcher() {}
 
 bool MIDIDispatcher::OnMessageReceived(const IPC::Message& message) {
-  // TODO(toyoshim): Handle MIDIMsg_SysExPermissionApproved.
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(MIDIDispatcher, message)
+    IPC_MESSAGE_HANDLER(MIDIMsg_SysExPermissionApproved,
+                        OnSysExPermissionApproved)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void MIDIDispatcher::requestSysExPermission(
       const WebMIDIPermissionRequest& request) {
-  // TODO(toyoshim): Send a message to MIDIDispatcherHost to handle correctly.
   int client_id = requests_.Add(new WebMIDIPermissionRequest(request));
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &MIDIDispatcher::OnSysExPermissionApproved,
-      base::Unretained(this), client_id, false));
+  WebSecurityOrigin security_origin = request.securityOrigin();
+  std::string origin = security_origin.toString().utf8();
+  GURL url(origin);
+  Send(new MIDIHostMsg_RequestSysExPermission(routing_id(), client_id, url));
 }
 
 void MIDIDispatcher::cancelSysExPermissionRequest(

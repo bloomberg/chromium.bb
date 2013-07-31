@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/midi/midi_port_info.h"
+#include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -20,6 +21,22 @@ IPC_STRUCT_TRAITS_BEGIN(media::MIDIPortInfo)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(version)
 IPC_STRUCT_TRAITS_END()
+
+// Messages for IPC between MIDIDispatcher and MIDIDispatcherHost.
+
+// Renderer request to browser for using system exclusive messages.
+IPC_MESSAGE_CONTROL3(MIDIHostMsg_RequestSysExPermission,
+                     int /* routing id */,
+                     int /* client id */,
+                     GURL /* origin */)
+
+// Messages sent from the browser to the renderer.
+
+IPC_MESSAGE_ROUTED2(MIDIMsg_SysExPermissionApproved,
+                    int /* client id */,
+                    bool /* success */)
+
+// Messages for IPC between MIDIMessageFilter and MIDIHost.
 
 // Renderer request to browser for access to MIDI services.
 IPC_MESSAGE_CONTROL1(MIDIHostMsg_StartSession,
