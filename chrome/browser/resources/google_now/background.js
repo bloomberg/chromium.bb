@@ -152,10 +152,10 @@ var dismissalAttempts = buildAttemptManager(
 var cardSet = buildCardSet();
 
 /**
- * Diagnostic event identifier.
+ * Google Now UMA event identifier.
  * @enum {number}
  */
-var DiagnosticEvent = {
+var GoogleNowEvent = {
   REQUEST_FOR_CARDS_TOTAL: 0,
   REQUEST_FOR_CARDS_SUCCESS: 1,
   CARDS_PARSE_SUCCESS: 2,
@@ -170,16 +170,16 @@ var DiagnosticEvent = {
 };
 
 /**
- * Records a diagnostic event.
- * @param {DiagnosticEvent} event Event identifier.
+ * Records a Google Now Event.
+ * @param {GoogleNowEvent} event Event identifier.
  */
 function recordEvent(event) {
   var metricDescription = {
     metricName: 'GoogleNow.Event',
     type: 'histogram-linear',
     min: 1,
-    max: DiagnosticEvent.EVENTS_TOTAL,
-    buckets: DiagnosticEvent.EVENTS_TOTAL + 1
+    max: GoogleNowEvent.EVENTS_TOTAL,
+    buckets: GoogleNowEvent.EVENTS_TOTAL + 1
   };
 
   chrome.metricsPrivate.recordValue(metricDescription, event);
@@ -303,7 +303,7 @@ function parseAndShowNotificationCards(response, callback) {
         }
       }
 
-      recordEvent(DiagnosticEvent.CARDS_PARSE_SUCCESS);
+      recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
 
       // Create/update notifications and store their new properties.
       var newNotificationsData = {};
@@ -364,7 +364,7 @@ function requestNotificationCards(position, callback) {
     return;
   }
 
-  recordEvent(DiagnosticEvent.REQUEST_FOR_CARDS_TOTAL);
+  recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_TOTAL);
 
   // TODO(vadimt): Should we use 'q' as the parameter name?
   var requestParameters =
@@ -378,7 +378,7 @@ function requestNotificationCards(position, callback) {
   request.onloadend = function(event) {
     console.log('requestNotificationCards-onloadend ' + request.status);
     if (request.status == HTTP_OK) {
-      recordEvent(DiagnosticEvent.REQUEST_FOR_CARDS_SUCCESS);
+      recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
       parseAndShowNotificationCards(request.response, callback);
     } else {
       callback();
@@ -400,7 +400,7 @@ function requestNotificationCards(position, callback) {
  */
 function requestLocation() {
   console.log('requestLocation');
-  recordEvent(DiagnosticEvent.LOCATION_REQUEST);
+  recordEvent(GoogleNowEvent.LOCATION_REQUEST);
   // TODO(vadimt): Figure out location request options.
   chrome.location.watchLocation(LOCATION_WATCH_NAME, {});
 }
@@ -461,12 +461,12 @@ function requestCardDismissal(
     return;
   }
 
-  recordEvent(DiagnosticEvent.DISMISS_REQUEST_TOTAL);
+  recordEvent(GoogleNowEvent.DISMISS_REQUEST_TOTAL);
   var request = buildServerRequest('dismiss', 'application/json');
   request.onloadend = function(event) {
     console.log('requestDismissingCard-onloadend ' + request.status);
     if (request.status == HTTP_OK)
-      recordEvent(DiagnosticEvent.DISMISS_REQUEST_SUCCESS);
+      recordEvent(GoogleNowEvent.DISMISS_REQUEST_SUCCESS);
 
     // A dismissal doesn't require further retries if it was successful or
     // doesn't have a chance for successful completion.
@@ -684,7 +684,7 @@ function stopPollingCards() {
  * Initializes the event page on install or on browser startup.
  */
 function initialize() {
-  recordEvent(DiagnosticEvent.EXTENSION_START);
+  recordEvent(GoogleNowEvent.EXTENSION_START);
 
   // Alarms persist across chrome restarts. This is undesirable since it
   // prevents us from starting up everything (alarms are a heuristic to
@@ -815,7 +815,7 @@ function onStateChange() {
  * Google Now cards.
  */
 function showWelcomeToast() {
-  recordEvent(DiagnosticEvent.SHOW_WELCOME_TOAST);
+  recordEvent(GoogleNowEvent.SHOW_WELCOME_TOAST);
   // TODO(zturner): Localize this once the component extension localization
   // api is complete.
   // TODO(zturner): Add icons.
@@ -885,7 +885,7 @@ chrome.notifications.onButtonClicked.addListener(
 chrome.notifications.onClosed.addListener(onNotificationClosed);
 
 chrome.location.onLocationUpdate.addListener(function(position) {
-  recordEvent(DiagnosticEvent.LOCATION_UPDATE);
+  recordEvent(GoogleNowEvent.LOCATION_UPDATE);
   updateNotificationsCards(position);
 });
 

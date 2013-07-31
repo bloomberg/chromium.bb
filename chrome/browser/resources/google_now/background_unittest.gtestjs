@@ -159,7 +159,7 @@ TEST_F(
       mockInitializeDependencies(this);
 
       this.mockGlobals.expects(once()).recordEvent(
-          DiagnosticEvent.EXTENSION_START);
+          GoogleNowEvent.EXTENSION_START);
 
       expectInitialization(this.mockApis);
 
@@ -200,7 +200,7 @@ TEST_F(
       mockInitializeDependencies(this);
 
       this.mockGlobals.expects(once()).recordEvent(
-          DiagnosticEvent.EXTENSION_START);
+          GoogleNowEvent.EXTENSION_START);
 
       expectInitialization(this.mockApis);
 
@@ -239,7 +239,7 @@ TEST_F(
       mockInitializeDependencies(this);
 
       this.mockGlobals.expects(once()).recordEvent(
-          DiagnosticEvent.EXTENSION_START);
+          GoogleNowEvent.EXTENSION_START);
 
       expectInitialization(this.mockApis);
 
@@ -276,7 +276,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
   mockInitializeDependencies(this);
 
   this.mockGlobals.expects(once()).recordEvent(
-        DiagnosticEvent.EXTENSION_START);
+        GoogleNowEvent.EXTENSION_START);
 
   expectInitialization(this.mockApis);
 
@@ -313,7 +313,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_NoGeolocation', function() {
   mockInitializeDependencies(this);
 
   this.mockGlobals.expects(once()).recordEvent(
-        DiagnosticEvent.EXTENSION_START);
+        GoogleNowEvent.EXTENSION_START);
 
   expectInitialization(this.mockApis);
 

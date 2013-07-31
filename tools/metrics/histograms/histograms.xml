@@ -17679,7 +17679,8 @@ other types of suffix sets.
 
 <enum name="GoogleNowEvent" type="int">
   <summary>
-    Events in Google Now component extension. See var DiagnosticEvent.
+    Events in Google Now component extension. See GoogleNowEvent in
+    chrome/browser/resources/google_now/background.js.
   </summary>
   <int value="0" label="REQUEST_FOR_CARDS_TOTAL"/>
   <int value="1" label="REQUEST_FOR_CARDS_SUCCESS"/>
