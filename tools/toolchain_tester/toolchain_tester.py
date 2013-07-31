@@ -121,11 +121,13 @@ def RemoveTempFiles():
     os.remove(f)
 
 
-def MakeExecutableCustom(config, test, extra):
+def MakeExecutableCustom(config, test, extra, sequence):
   global TMP_PREFIX
   global SHOW_CONSOLE
   d = extra.copy()
-  d['tmp'] = TMP_PREFIX + '_' + os.path.basename(test)
+  d['tmp'] = (TMP_PREFIX + '_' +
+              os.path.basename(os.path.dirname(test)) + '_' +
+              os.path.basename(test))
   d['src'] = test
   for phase, command in config.GetCommands(d):
     command = shlex.split(command)
@@ -252,7 +254,7 @@ def RunTest(args):
                                     APPEND_PER_TEST.get(base_test_name, {}))
   Print('Running %d/%d: %s' % (num + 1, total, base_test_name))
   try:
-    result = MakeExecutableCustom(config, test, extra_flags)
+    result = MakeExecutableCustom(config, test, extra_flags, num + 1)
   except KeyboardInterrupt:
     # Swallow the keyboard interrupt in the child. Otherwise the parent
     # hangs trying to join it.
@@ -263,7 +265,7 @@ def RunTest(args):
     # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2197
     # try it again, and only fail on consecutive failures
     Print('Retrying ' + base_test_name)
-    result = MakeExecutableCustom(config, test, extra_flags)
+    result = MakeExecutableCustom(config, test, extra_flags, num + 1)
   if result:
     Print('[  FAILED  ] %s: %s' % (result, test))
     ERRORS.put((result, test))
