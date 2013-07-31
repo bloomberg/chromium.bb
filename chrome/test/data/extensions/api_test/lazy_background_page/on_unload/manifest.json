@@ -3,7 +3,7 @@
   "description": "Tests that the onSuspend event works",
   "version": "1",
   "manifest_version": 2,
-  "permissions": ["tabs", "experimental"],
+  "permissions": ["tabs"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

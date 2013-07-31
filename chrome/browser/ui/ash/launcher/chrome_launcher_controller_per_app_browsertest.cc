@@ -45,6 +45,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/aura/test/event_generator.h"
@@ -695,7 +696,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
                        AppPanelClickBehavior) {
   // Enable experimental APIs to allow panel creation.
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+      extensions::switches::kEnableExperimentalExtensionApis);
   // Launch a platform app and create a panel window for it.
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
   ShellWindow::CreateParams params;
@@ -752,7 +753,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, SetIcon) {
 
   // Enable experimental APIs to allow panel creation.
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+      extensions::switches::kEnableExperimentalExtensionApis);
 
   int base_launcher_item_count = launcher_model()->item_count();
   ExtensionTestMessageListener launched_listener("Launched", false);

@@ -164,7 +164,6 @@ extern const char kEnableContacts[];
 extern const char kEnableDeviceDiscovery[];
 extern const char kEnableDevToolsExperiments[];
 extern const char kEnableDnsProbes[];
-extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];

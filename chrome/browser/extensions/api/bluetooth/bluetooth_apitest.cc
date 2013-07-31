@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
@@ -42,11 +41,6 @@ static const char* kName = "whatsinaname";
 class BluetoothApiTest : public ExtensionApiTest {
  public:
   BluetoothApiTest() : empty_extension_(utils::CreateEmptyExtension()) {}
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
 
   virtual void SetUpOnMainThread() OVERRIDE {
     SetUpMockAdapter();

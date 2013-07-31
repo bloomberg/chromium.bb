@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
@@ -60,7 +59,7 @@ bool CanSpecifyExperimentalPermission(const Extension* extension) {
     return true;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableExperimentalExtensionApis)) {
+          switches::kEnableExperimentalExtensionApis)) {
     return true;
   }
 

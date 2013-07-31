@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -90,8 +89,6 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundAllowNoJsAccess) {
 }
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
   Feature::ScopedCurrentChannel current_channel(
       chrome::VersionInfo::CHANNEL_DEV);
 

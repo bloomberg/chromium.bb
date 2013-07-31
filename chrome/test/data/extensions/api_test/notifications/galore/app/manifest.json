@@ -15,7 +15,6 @@
     "128": "images/icon-128x128.png"
   },
   "permissions": [
-    "experimental",
     "notifications",
     "storage",
     "https://calendar.google.com/googlecalendar/images/about-alerts.gif",

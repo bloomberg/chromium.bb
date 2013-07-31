@@ -9,8 +9,8 @@
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_switches.h"
+#include "extensions/common/switches.h"
 
 // Times out on win asan, http://crbug.com/166026
 #if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
@@ -37,6 +37,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_GetAlertsForTab) {
                                      InfoBarDelegate::kNoIconID,
                                      ASCIIToUTF16(kAlertMessage), false);
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+      extensions::switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(RunExtensionTest("accessibility/get_alerts_for_tab")) << message_;
 }

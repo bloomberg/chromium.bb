@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -81,7 +82,7 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   // key in the init_platform_app_csp.json manifest.)
   std::string test_id = "ahplfneplbnjcflhdgkkjeiglkkfeelb";
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kWhitelistedExtensionID, test_id);
+      ::switches::kWhitelistedExtensionID, test_id);
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("init_platform_app_csp.json");
   EXPECT_EQ(0U, extension->install_warnings().size())

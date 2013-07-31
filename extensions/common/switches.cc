@@ -18,6 +18,10 @@ const char kAllowLegacyExtensionManifests[] =
 // automation testing of the gallery.
 const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
 
+// Enables extension APIs that are in development.
+const char kEnableExperimentalExtensionApis[] =
+    "enable-experimental-extension-apis";
+
 // Enables extensions running scripts on chrome:// URLs.
 // Extensions still need to explicitly request access to chrome:// URLs in the
 // manifest.

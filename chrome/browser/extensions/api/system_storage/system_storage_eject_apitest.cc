@@ -16,10 +16,10 @@
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/switches.h"
 
 namespace {
 
@@ -42,7 +42,8 @@ class SystemStorageEjectApiTest : public ExtensionApiTest {
   // ExtensionApiTest overrides.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    command_line->AppendSwitch(
+        extensions::switches::kEnableExperimentalExtensionApis);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

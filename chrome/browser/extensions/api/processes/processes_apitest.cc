@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/chrome_switches.h"
+#include "extensions/common/switches.h"
 
 // Sometimes times out on Mac OS and Windows
 // crbug.com/97499
@@ -21,7 +21,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Processes) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Processes) {
 #endif
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+      extensions::switches::kEnableExperimentalExtensionApis);
 
   ASSERT_TRUE(RunExtensionTest("processes/api")) << message_;
 }
@@ -32,7 +32,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Processes) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+      extensions::switches::kEnableExperimentalExtensionApis);
 
   // Ensure task manager is not yet updating
   TaskManagerModel* model = TaskManager::GetInstance()->model();

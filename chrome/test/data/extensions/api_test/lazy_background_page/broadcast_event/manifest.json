@@ -3,7 +3,7 @@
   "description": "Warn the user when a stegosaurus might be present.",
   "version": "1",
   "manifest_version": 2,
-  "permissions": ["tabs", "experimental"],
+  "permissions": ["tabs"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

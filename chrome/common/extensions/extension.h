@@ -348,8 +348,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The following are helpers for InitFromValue to load various features of the
   // extension from the manifest.
 
-  bool LoadAppIsolation(string16* error);
-
   bool LoadRequiredFeatures(string16* error);
   bool LoadName(string16* error);
   bool LoadVersion(string16* error);

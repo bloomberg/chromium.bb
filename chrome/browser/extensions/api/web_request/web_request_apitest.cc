@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
@@ -59,10 +58,6 @@ class CancelLoginDialog : public content::NotificationObserver {
 class ExtensionWebRequestApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    // TODO(battre): remove this when declarative webRequest API becomes stable.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalExtensionApis);
-
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     host_resolver()->AddRule("*", "127.0.0.1");
   }

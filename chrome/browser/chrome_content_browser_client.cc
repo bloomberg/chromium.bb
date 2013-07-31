@@ -1434,6 +1434,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       autofill::switches::kEnableInteractiveAutocomplete,
       extensions::switches::kAllowLegacyExtensionManifests,
       extensions::switches::kAllowScriptingGallery,
+      extensions::switches::kEnableExperimentalExtensionApis,
       extensions::switches::kExtensionsOnChromeURLs,
       switches::kAllowHTTPBackgroundPage,
       // TODO(victorhsieh): remove the following flag once we move PPAPI FileIO
@@ -1451,7 +1452,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableAdviewSrcAttribute,
       switches::kEnableAppWindowControls,
       switches::kEnableBenchmarking,
-      switches::kEnableExperimentalExtensionApis,
       switches::kEnableIPCFuzzing,
       switches::kEnableNaCl,
       switches::kEnableNetBenchmarking,
@@ -1478,9 +1478,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                    arraysize(kSwitchNames));
   } else if (process_type == switches::kUtilityProcess) {
     static const char* const kSwitchNames[] = {
+      extensions::switches::kEnableExperimentalExtensionApis,
       extensions::switches::kExtensionsOnChromeURLs,
       switches::kAllowHTTPBackgroundPage,
-      switches::kEnableExperimentalExtensionApis,
       switches::kWhitelistedExtensionID,
     };
 

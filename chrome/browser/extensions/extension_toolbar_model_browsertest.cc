@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 using extensions::Extension;
@@ -72,9 +71,6 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, Basic) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   // Load an extension with no browser action.
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
@@ -112,9 +108,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   // Load an extension with a browser action.
   base::FilePath extension_a_path(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")

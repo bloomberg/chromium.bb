@@ -8,9 +8,9 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/app_current_window_internal.h"
 #include "chrome/common/extensions/api/app_window.h"
+#include "extensions/common/switches.h"
 
 using apps::ShellWindow;
 namespace SetBounds = extensions::api::app_current_window_internal::SetBounds;

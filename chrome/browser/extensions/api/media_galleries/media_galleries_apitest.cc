@@ -13,9 +13,9 @@
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/switches.h"
 
 using extensions::PlatformAppBrowserTest;
 
@@ -36,7 +36,8 @@ class MediaGalleriesExperimentalApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    command_line->AppendSwitch(
+        extensions::switches::kEnableExperimentalExtensionApis);
   }
 };
 

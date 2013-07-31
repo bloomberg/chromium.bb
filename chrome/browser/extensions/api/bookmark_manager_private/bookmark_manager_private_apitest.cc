@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/user_prefs/user_prefs.h"
@@ -23,17 +22,11 @@
 #define MAYBE_BookmarkManager BookmarkManager
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_BookmarkManager) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   ASSERT_TRUE(RunComponentExtensionTest("bookmark_manager/standard"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   Profile* profile = browser()->profile();
 
   // Provide some testing data here, since bookmark editing will be disabled

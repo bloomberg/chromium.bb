@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -42,14 +41,6 @@ class SocketApiTest : public ExtensionApiTest {
   SocketApiTest() : resolver_event_(true, false),
                     resolver_creator_(
                         new extensions::MockHostResolverCreator()) {
-  }
-
-  // We need this while the socket.{listen,accept} methods require the
-  // enable-experimental-extension-apis flag. After that we should remove it,
-  // as well as the "experimental" permission in the test apps' manifests.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

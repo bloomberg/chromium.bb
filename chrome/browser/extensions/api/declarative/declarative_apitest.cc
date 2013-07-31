@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,14 +22,6 @@ using extensions::RulesRegistryService;
 using extensions::WebRequestRulesRegistry;
 
 class DeclarativeApiTest : public ExtensionApiTest {
- public:
-  DeclarativeApiTest() {}
-  virtual ~DeclarativeApiTest() {}
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {

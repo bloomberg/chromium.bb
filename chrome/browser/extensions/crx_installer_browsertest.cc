@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/feature_switch.h"
@@ -20,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/download_test_observer.h"
+#include "extensions/common/switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

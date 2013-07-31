@@ -3,7 +3,6 @@
   "description": "Test that message passing starts the background page",
   "version": "1",
   "manifest_version": 2,
-  "permissions": ["experimental"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

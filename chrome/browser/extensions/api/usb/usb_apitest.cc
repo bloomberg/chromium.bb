@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/usb/usb_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -66,11 +65,6 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
 class UsbApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
-
   virtual void SetUpOnMainThread() OVERRIDE {
     mock_device_ = new MockUsbDeviceHandle();
     extensions::UsbFindDevicesFunction::SetDeviceForTest(mock_device_.get());
@@ -146,4 +140,3 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, InvalidLengthTransfer) {
   EXPECT_CALL(*mock_device_.get(), Close()).Times(AnyNumber());
   ASSERT_TRUE(RunExtensionTest("usb/invalid_length_transfer"));
 }
-

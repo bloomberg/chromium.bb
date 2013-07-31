@@ -45,6 +45,7 @@
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/switches.h"
 #include "net/socket/tcp_listen_socket.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
@@ -267,7 +268,8 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
 class DevToolsExperimentalExtensionTest : public DevToolsExtensionTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    command_line->AppendSwitch(
+        extensions::switches::kEnableExperimentalExtensionApis);
   }
 };
 

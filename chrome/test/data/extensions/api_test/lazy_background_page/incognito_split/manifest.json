@@ -3,7 +3,7 @@
   "description": "Test that incognito split mode works correctly",
   "version": "1",
   "manifest_version": 2,
-  "permissions": ["bookmarks", "experimental"],
+  "permissions": ["bookmarks"],
   "incognito": "split",
   "background": {
     "scripts": ["background.js"],

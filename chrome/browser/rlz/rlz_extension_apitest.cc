@@ -9,8 +9,8 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/rlz/rlz_extension_api.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "rlz/lib/rlz_lib.h"
 
@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Rlz) {
   net::ScopedDefaultHostResolverProc scoper(resolver);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+      extensions::switches::kEnableExperimentalExtensionApis);
 
   // Before running the tests, clear the state of the RLZ products used.
   rlz_lib::AccessPoint access_points[] = {

@@ -5,10 +5,10 @@
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
+#include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -24,7 +24,7 @@ TEST_F(IsolatedAppsManifestTest, IsolatedApps) {
                      errors::kExperimentalFlagRequired);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+      extensions::switches::kEnableExperimentalExtensionApis);
   scoped_refptr<Extension> extension2(
       LoadAndExpectSuccess("isolated_app_valid.json"));
   EXPECT_TRUE(AppIsolationInfo::HasIsolatedStorage(extension2.get()));

@@ -555,10 +555,6 @@ const char kEnableDnsProbes[]               = "enable-dns-probes";
 const char kEasyOffStoreExtensionInstall[]  =
     "easy-off-store-extension-install";
 
-// Enables extension APIs that are in development.
-const char kEnableExperimentalExtensionApis[] =
-    "enable-experimental-extension-apis";
-
 // Enables logging for extension activity.
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";

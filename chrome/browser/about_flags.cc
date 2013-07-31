@@ -539,7 +539,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableExperimentalExtensionApis)
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableExperimentalExtensionApis)
   },
   {
     "extensions-on-chrome-urls",

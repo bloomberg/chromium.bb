@@ -11,8 +11,8 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "extensions/common/switches.h"
 
 namespace {
 
@@ -50,7 +50,8 @@ class SystemStorageApiTest : public ExtensionApiTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    command_line->AppendSwitch(
+        extensions::switches::kEnableExperimentalExtensionApis);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

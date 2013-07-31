@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/api/dns/mock_host_resolver_creator.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/common/chrome_switches.h"
+#include "extensions/common/switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -27,7 +27,8 @@ class DnsApiTest : public ExtensionApiTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    command_line->AppendSwitch(
+        extensions::switches::kEnableExperimentalExtensionApis);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

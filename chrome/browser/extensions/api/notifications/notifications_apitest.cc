@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -29,11 +28,6 @@ namespace {
 
 class NotificationsApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
-
   const extensions::Extension* LoadExtensionAndWait(
       const std::string& test_name) {
     base::FilePath extdir = test_data_dir_.AppendASCII(test_name);

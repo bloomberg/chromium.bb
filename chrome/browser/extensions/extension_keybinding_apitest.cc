@@ -41,8 +41,6 @@ class ScriptBadgesCommandsApiTest : public ExtensionApiTest {
     // treated like BrowserActions and the PageAction test starts failing.
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kScriptBadges, "1");
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalExtensionApis);
   }
   virtual ~ScriptBadgesCommandsApiTest() {}
 };
@@ -242,4 +240,4 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
   ASSERT_TRUE(result);
 }
 
-}  // extensions
+}  // namespace extensions

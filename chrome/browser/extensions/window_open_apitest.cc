@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,7 +43,7 @@ using content::WebContents;
 // Disabled, http://crbug.com/64899.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpen) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+      extensions::switches::kEnableExperimentalExtensionApis);
 
   ResultCatcher catcher;
   ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_

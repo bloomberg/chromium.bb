@@ -78,7 +78,6 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
     // Set shorter delays to prevent test timeouts.
     command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
     command_line->AppendSwitchASCII(switches::kEventPageSuspendingTime, "1");

@@ -4,16 +4,10 @@
 
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/common/chrome_switches.h"
 
 namespace {
 
 class UsbManualApiTest : public ExtensionApiTest {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
 };
 
 }  // namespace

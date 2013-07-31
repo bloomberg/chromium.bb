@@ -3,7 +3,7 @@
   "description": "Test that lazy BG stays alive until all extension views are closed",
   "version": "1",
   "manifest_version": 2,
-  "permissions": ["tabs", "experimental"],
+  "permissions": ["tabs"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

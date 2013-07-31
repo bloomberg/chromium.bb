@@ -18,9 +18,6 @@
 namespace extensions {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   EXPECT_TRUE(RunExtensionTest("content_settings/standard")) << message_;
 
   HostContentSettingsMap* map =
@@ -100,7 +97,6 @@ class ContentSettingsGetResourceIdentifiersTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisablePluginsDiscovery);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 };
 

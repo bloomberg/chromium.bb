@@ -5,10 +5,10 @@
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
+#include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -19,6 +19,6 @@ TEST_F(ExtensionManifestTest, ExperimentalPermission) {
   LoadAndExpectSuccess("experimental.json", extensions::Manifest::INTERNAL,
                        extensions::Extension::FROM_WEBSTORE);
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+      extensions::switches::kEnableExperimentalExtensionApis);
   LoadAndExpectSuccess("experimental.json");
 }
