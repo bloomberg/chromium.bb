@@ -77,6 +77,11 @@ class BrowserNonClientFrameViewAsh
   // Returns true if we should use a short header, such as for popup windows.
   bool UseShortHeader() const;
 
+  // Returns true if we should use a super short header with light bars instead
+  // of regular tabs. This header is used in immersive fullscreen when the
+  // top-of-window views are not revealed.
+  bool UseImmersiveLightbarHeaderStyle() const;
+
   // Layout the incognito icon.
   void LayoutAvatar();
 

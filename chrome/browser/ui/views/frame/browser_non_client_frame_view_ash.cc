@@ -123,6 +123,12 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();
+
+  // When the tab strip is painted in the immersive fullscreen light bar style,
+  // the caption buttons and the avatar button are not visible. However, their
+  // bounds are still used to compute the tab strip bounds so that the tabs have
+  // the same horizontal position when the tab strip is painted in the immersive
+  // light bar style as when the top-of-window views are revealed.
   TabStripInsets insets(GetTabStripInsets(false));
   return gfx::Rect(insets.left, insets.top,
                    std::max(0, width() - insets.left - insets.right),
@@ -185,21 +191,12 @@ void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
 }
 
 void BrowserNonClientFrameViewAsh::ResetWindowControls() {
-  if (ImmersiveFullscreenConfiguration::UseImmersiveFullscreen()) {
-    // Hide the caption buttons in immersive mode because it's confusing when
-    // the user hovers or clicks in the top-right of the screen and hits one.
-    // Only show them during a reveal.
-    ImmersiveModeController* controller =
-        browser_view()->immersive_mode_controller();
-    if (controller->IsEnabled()) {
-      bool revealed = controller->IsRevealed();
-      size_button_->SetVisible(revealed);
-      close_button_->SetVisible(revealed);
-    } else {
-      size_button_->SetVisible(true);
-      close_button_->SetVisible(true);
-    }
-  }
+  // Hide the caption buttons in immersive fullscreen when the tab light bar
+  // is visible because it's confusing when the user hovers or clicks in the
+  // top-right of the screen and hits one.
+  bool button_visibility = !UseImmersiveLightbarHeaderStyle();
+  size_button_->SetVisible(button_visibility);
+  close_button_->SetVisible(button_visibility);
 
   size_button_->SetState(views::CustomButton::STATE_NORMAL);
   // The close button isn't affected by this constraint.
@@ -392,7 +389,7 @@ int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
     bool force_restored) const {
   if (force_restored)
     return kTabstripTopSpacingTall;
-  if (frame()->IsFullscreen())
+  if (!ShouldPaint() || UseImmersiveLightbarHeaderStyle())
     return 0;
   // Windows with tab strips need a smaller non-client area.
   if (browser_view()->IsTabStripVisible()) {
@@ -408,7 +405,8 @@ int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
 bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
   // Restored browser -> tall header
   // Maximized browser -> short header
-  // Fullscreen browser (header shows with immersive reveal) -> short header
+  // Fullscreen browser, no immersive reveal -> hidden or super short light bar
+  // Fullscreen browser, immersive reveal -> short header
   // Popup&App window -> tall header
   // Panel -> short header
   // Dialogs use short header and are handled via CustomFrameViewAsh.
@@ -424,22 +422,17 @@ bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
   }
 }
 
+bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
+  ImmersiveModeController* immersive_controller =
+      browser_view()->immersive_mode_controller();
+  return immersive_controller->IsEnabled() &&
+      !immersive_controller->IsRevealed() &&
+      !immersive_controller->ShouldHideTabIndicators();
+}
+
 void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   DCHECK(avatar_button());
   gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
-
-  if (frame()->IsFullscreen()) {
-    ImmersiveModeController* immersive_controller =
-        browser_view()->immersive_mode_controller();
-    // Hide the incognito icon when the top-of-window views are closed in
-    // immersive mode as the tab indicators are too short for the incognito
-    // icon to still be recongizable.
-    if (immersive_controller->IsEnabled() &&
-        !immersive_controller->IsRevealed()) {
-      avatar_button()->SetBoundsRect(gfx::Rect());
-      return;
-    }
-  }
 
   int avatar_bottom = GetTabStripInsets(false).top +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
@@ -447,11 +440,19 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   int avatar_y = (frame()->IsMaximized() || frame()->IsFullscreen()) ?
       NonClientTopBorderHeight(false) + kContentShadowHeight :
       avatar_restored_y;
+
+  // Hide the incognito icon in immersive fullscreen when the tab light bar is
+  // visible because the header is too short for the icognito icon to be
+  // recognizable.
+  bool avatar_visible = !UseImmersiveLightbarHeaderStyle();
+  int avatar_height = avatar_visible ? avatar_bottom - avatar_y : 0;
+
   gfx::Rect avatar_bounds(kAvatarSideSpacing,
                           avatar_y,
                           incognito_icon.width(),
-                          avatar_bottom - avatar_y);
+                          avatar_height);
   avatar_button()->SetBoundsRect(avatar_bounds);
+  avatar_button()->SetVisible(avatar_visible);
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
