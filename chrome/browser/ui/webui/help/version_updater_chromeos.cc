@@ -129,17 +129,12 @@ void VersionUpdaterCros::RelaunchBrowser() const {
 
 void VersionUpdaterCros::SetChannel(const std::string& channel,
                                     bool is_powerwash_allowed) {
-  // On enterprise machines we can only use SetChannel to store the
-  // user choice in the lsb-release file but we can not modify the
-  // policy blob.  Therefore we only call SetString if the device is
-  // locally owned and the currently logged in user is the owner.
-  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
-    DBusThreadManager::Get()->GetUpdateEngineClient()->
-        SetChannel(channel, is_powerwash_allowed);
-  } else if (UserManager::Get()->IsCurrentUserOwner()) {
+  if (UserManager::Get()->IsCurrentUserOwner()) {
     // For local owner set the field in the policy blob.
     CrosSettings::Get()->SetString(chromeos::kReleaseChannel, channel);
   }
+  DBusThreadManager::Get()->GetUpdateEngineClient()->
+      SetChannel(channel, is_powerwash_allowed);
 }
 
 void VersionUpdaterCros::GetChannel(bool get_current_channel,
