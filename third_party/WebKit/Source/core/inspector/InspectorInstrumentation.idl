@@ -318,7 +318,7 @@ interface InspectorInstrumentation {
     [Canvas, Page, CSS]
     void frameDetachedFromParent([Keep] Frame*);
 
-    [Page]
+    [Page, Inline=FastReturn]
     void childDocumentOpened([Keep] Document*);
 
     [Console, Resource, CSS, Database, DOM, LayerTree, Inspector, Canvas, Page]
