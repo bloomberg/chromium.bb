@@ -269,8 +269,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
 
 // Run only when WV CDM is available.
 #if defined(WIDEVINE_CDM_AVAILABLE)
-// See http://crbug.com/237636.
-#if !defined(DISABLE_WIDEVINE_CDM_BROWSERTESTS)
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestMSESimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly,
                         kWidevineKeySystem);
@@ -307,7 +305,6 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_AudioOnly_MP4) {
                         kWidevineKeySystem);
 }
 #endif  // defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-#endif  // !defined(DISABLE_WIDEVINE_CDM_BROWSERTESTS)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 }  // namespace content
