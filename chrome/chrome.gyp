@@ -285,8 +285,8 @@
             'utility/importer/nss_decryptor_win.h',
             'utility/importer/safari_importer.h',
             'utility/importer/safari_importer.mm',
-            'utility/itunes_pref_parser_win.cc',
-            'utility/itunes_pref_parser_win.h',
+            'utility/media_galleries/itunes_pref_parser_win.cc',
+            'utility/media_galleries/itunes_pref_parser_win.h',
             'utility/profile_import_handler.cc',
             'utility/profile_import_handler.h',
             'utility/utility_message_handler.h',
@@ -305,8 +305,8 @@
             }],
             ['OS=="win" or OS=="mac"', {
               'sources': [
-                'utility/itunes_library_parser.cc',
-                'utility/itunes_library_parser.h',
+                'utility/media_galleries/itunes_library_parser.cc',
+                'utility/media_galleries/itunes_library_parser.h',
                 'utility/media_galleries/picasa_album_table_reader.cc',
                 'utility/media_galleries/picasa_album_table_reader.h',
                 'utility/media_galleries/picasa_albums_indexer.cc',

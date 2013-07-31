@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/itunes_library_parser.h"
+#include "chrome/utility/media_galleries/itunes_library_parser.h"
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/itunes_xml_utils.h"
+#include "chrome/common/media_galleries/itunes_xml_utils.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/itunes_library.h"
+#include "chrome/common/media_galleries/itunes_library.h"
 
 namespace itunes {
 namespace parser {

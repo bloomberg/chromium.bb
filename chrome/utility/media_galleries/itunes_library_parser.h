@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_ITUNES_LIBRARY_PARSER_H_
-#define CHROME_UTILITY_ITUNES_LIBRARY_PARSER_H_
+#ifndef CHROME_UTILITY_MEDIA_GALLERIES_ITUNES_LIBRARY_PARSER_H_
+#define CHROME_UTILITY_MEDIA_GALLERIES_ITUNES_LIBRARY_PARSER_H_
 
 #include <string>
 
 #include "base/platform_file.h"
-#include "chrome/common/itunes_library.h"
+#include "chrome/common/media_galleries/itunes_library.h"
 
 namespace itunes {
 
@@ -34,4 +34,4 @@ class ITunesLibraryParser {
 
 }  // namespace itunes
 
-#endif  // CHROME_UTILITY_ITUNES_LIBRARY_PARSER_H_
+#endif  // CHROME_UTILITY_MEDIA_GALLERIES_ITUNES_LIBRARY_PARSER_H_

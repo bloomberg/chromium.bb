@@ -14,7 +14,7 @@
 #include "base/tuple.h"
 #include "base/values.h"
 #include "chrome/common/extensions/update_manifest.h"
-#include "chrome/common/itunes_library.h"
+#include "chrome/common/media_galleries/itunes_library.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "ipc/ipc_message_macros.h"

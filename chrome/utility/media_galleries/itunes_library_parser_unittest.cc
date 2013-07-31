@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "chrome/common/itunes_library.h"
-#include "chrome/utility/itunes_library_parser.h"
+#include "chrome/common/media_galleries/itunes_library.h"
+#include "chrome/utility/media_galleries/itunes_library_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define SIMPLE_HEADER()         \

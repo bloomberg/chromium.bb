@@ -37,13 +37,13 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/utility/itunes_pref_parser_win.h"
+#include "chrome/utility/media_galleries/itunes_pref_parser_win.h"
 #include "printing/emf_win.h"
 #include "ui/gfx/gdi_util.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-#include "chrome/utility/itunes_library_parser.h"
+#include "chrome/utility/media_galleries/itunes_library_parser.h"
 #include "chrome/utility/media_galleries/picasa_album_table_reader.h"
 #include "chrome/utility/media_galleries/picasa_albums_indexer.h"
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)

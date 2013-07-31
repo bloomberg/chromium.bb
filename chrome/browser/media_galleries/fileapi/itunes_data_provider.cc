@@ -15,7 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
-#include "chrome/common/itunes_library.h"
+#include "chrome/common/media_galleries/itunes_library.h"
 #include "content/public/browser/browser_thread.h"
 
 using chrome::MediaFileSystemBackend;

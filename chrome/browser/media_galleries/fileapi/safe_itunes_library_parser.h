@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "chrome/common/itunes_library.h"
+#include "chrome/common/media_galleries/itunes_library.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 

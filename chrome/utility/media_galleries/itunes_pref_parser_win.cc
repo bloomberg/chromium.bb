@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/itunes_pref_parser_win.h"
+#include "chrome/utility/media_galleries/itunes_pref_parser_win.h"
 
 #include "base/base64.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/itunes_xml_utils.h"
+#include "chrome/common/media_galleries/itunes_xml_utils.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace itunes {

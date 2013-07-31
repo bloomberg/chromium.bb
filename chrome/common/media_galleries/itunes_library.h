@@ -5,8 +5,8 @@
 // These data structures can be used to describe the contents of an iTunes
 // library.
 
-#ifndef CHROME_COMMON_ITUNES_LIBRARY_H_
-#define CHROME_COMMON_ITUNES_LIBRARY_H_
+#ifndef CHROME_COMMON_MEDIA_GALLERIES_ITUNES_LIBRARY_H_
+#define CHROME_COMMON_MEDIA_GALLERIES_ITUNES_LIBRARY_H_
 
 #include <map>
 #include <set>
@@ -32,5 +32,5 @@ typedef std::map<std::string /*artist name*/, Albums> Library;
 }  // namespace parser
 }  // namespace itunes
 
-#endif  // CHROME_COMMON_ITUNES_LIBRARY_H_
+#endif  // CHROME_COMMON_MEDIA_GALLERIES_ITUNES_LIBRARY_H_
 
