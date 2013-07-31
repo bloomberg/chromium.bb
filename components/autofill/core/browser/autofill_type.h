@@ -21,6 +21,7 @@ class AutofillType {
   enum FieldTypeGroup {
     NO_GROUP,
     NAME,
+    NAME_BILLING,
     EMAIL,
     COMPANY,
     ADDRESS_HOME,

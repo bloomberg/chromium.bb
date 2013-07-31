@@ -589,21 +589,21 @@ TEST_F(AutofillDialogControllerTest, BillingNameValidation) {
       controller()->RequestedFieldsForSection(SECTION_BILLING);
 
   // Input an empty billing name with VALIDATE_FINAL.
-  SetOutputValue(inputs, &outputs, NAME_FULL, "");
+  SetOutputValue(inputs, &outputs, NAME_BILLING_FULL, "");
   ValidityData validity_data =
       controller()->InputsAreValid(SECTION_BILLING, outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(NAME_FULL));
+  EXPECT_EQ(1U, validity_data.count(NAME_BILLING_FULL));
 
   // Input an empty billing name with VALIDATE_EDIT.
   validity_data =
       controller()->InputsAreValid(SECTION_BILLING, outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
+  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
 
   // Input a non-empty billing name.
-  SetOutputValue(inputs, &outputs, NAME_FULL, "Bob");
+  SetOutputValue(inputs, &outputs, NAME_BILLING_FULL, "Bob");
   validity_data =
       controller()->InputsAreValid(SECTION_BILLING, outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
+  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
 
   // Switch to Wallet which only considers names with with at least two names to
   // be valid.
@@ -619,49 +619,49 @@ TEST_F(AutofillDialogControllerTest, BillingNameValidation) {
 
   // Input an empty billing name with VALIDATE_FINAL. Data source should not
   // change this behavior.
-  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_FULL, "");
+  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_BILLING_FULL, "");
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(NAME_FULL));
+  EXPECT_EQ(1U, validity_data.count(NAME_BILLING_FULL));
 
   // Input an empty billing name with VALIDATE_EDIT. Data source should not
   // change this behavior.
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
+  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
 
   // Input a one name billing name. Wallet does not currently support this.
-  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_FULL, "Bob");
+  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_BILLING_FULL, "Bob");
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(NAME_FULL));
+  EXPECT_EQ(1U, validity_data.count(NAME_BILLING_FULL));
 
   // Input a two name billing name.
-  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_FULL,
+  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_BILLING_FULL,
                  "Bob Barker");
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
+  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
 
   // Input a more than two name billing name.
-  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_FULL,
+  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_BILLING_FULL,
                  "John Jacob Jingleheimer Schmidt");
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
+  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
 
   // Input a billing name with lots of crazy whitespace.
-  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_FULL,
+  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_BILLING_FULL,
                  "     \\n\\r John \\n  Jacob Jingleheimer \\t Schmidt  ");
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
+  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
 }
 
 TEST_F(AutofillDialogControllerTest, CreditCardNumberValidation) {
@@ -945,7 +945,7 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
 
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(1)->type());
   string16 cc_name = form_structure()->field(1)->value;
-  EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(6)->type());
+  EXPECT_EQ(NAME_BILLING_FULL, form_structure()->field(6)->type());
   string16 billing_name = form_structure()->field(6)->value;
   EXPECT_EQ(NAME_FULL, form_structure()->field(13)->type());
   string16 shipping_name = form_structure()->field(13)->value;
@@ -982,7 +982,7 @@ TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
 
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(1)->type());
   string16 cc_name = form_structure()->field(1)->value;
-  EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(6)->type());
+  EXPECT_EQ(NAME_BILLING_FULL, form_structure()->field(6)->type());
   string16 billing_name = form_structure()->field(6)->value;
   EXPECT_EQ(NAME_FULL, form_structure()->field(13)->type());
   string16 shipping_name = form_structure()->field(13)->value;

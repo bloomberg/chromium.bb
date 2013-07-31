@@ -44,6 +44,14 @@ FieldTypeGroup AutofillType::group() const {
     case NAME_SUFFIX:
       return NAME;
 
+    case NAME_BILLING_FIRST:
+    case NAME_BILLING_MIDDLE:
+    case NAME_BILLING_LAST:
+    case NAME_BILLING_MIDDLE_INITIAL:
+    case NAME_BILLING_FULL:
+    case NAME_BILLING_SUFFIX:
+      return NAME_BILLING;
+
     case EMAIL_ADDRESS:
       return EMAIL;
 
@@ -140,6 +148,24 @@ AutofillFieldType AutofillType::GetEquivalentFieldType(
     case PHONE_BILLING_CITY_AND_NUMBER:
       return PHONE_HOME_CITY_AND_NUMBER;
 
+    case NAME_BILLING_FIRST:
+      return NAME_FIRST;
+
+    case NAME_BILLING_MIDDLE:
+      return NAME_MIDDLE;
+
+    case NAME_BILLING_LAST:
+      return NAME_LAST;
+
+    case NAME_BILLING_MIDDLE_INITIAL:
+      return NAME_MIDDLE_INITIAL;
+
+    case NAME_BILLING_FULL:
+      return NAME_FULL;
+
+    case NAME_BILLING_SUFFIX:
+      return NAME_SUFFIX;
+
     default:
       return field_type;
   }
@@ -185,6 +211,24 @@ AutofillFieldType AutofillType::GetEquivalentBillingFieldType(
     case PHONE_HOME_CITY_AND_NUMBER:
       return PHONE_BILLING_CITY_AND_NUMBER;
 
+    case NAME_FIRST:
+      return NAME_BILLING_FIRST;
+
+    case NAME_MIDDLE:
+      return NAME_BILLING_MIDDLE;
+
+    case NAME_LAST:
+      return NAME_BILLING_LAST;
+
+    case NAME_MIDDLE_INITIAL:
+      return NAME_BILLING_MIDDLE_INITIAL;
+
+    case NAME_FULL:
+      return NAME_BILLING_FULL;
+
+    case NAME_SUFFIX:
+      return NAME_BILLING_SUFFIX;
+
     default:
       return field_type;
   }
@@ -211,6 +255,18 @@ std::string AutofillType::FieldTypeToString(AutofillFieldType type) {
       return "NAME_FULL";
     case NAME_SUFFIX:
       return "NAME_SUFFIX";
+    case NAME_BILLING_FIRST:
+      return "NAME_BILLING_FIRST";
+    case NAME_BILLING_MIDDLE:
+      return "NAME_BILLING_MIDDLE";
+    case NAME_BILLING_LAST:
+      return "NAME_BILLING_LAST";
+    case NAME_BILLING_MIDDLE_INITIAL:
+      return "NAME_BILLING_MIDDLE_INITIAL";
+    case NAME_BILLING_FULL:
+      return "NAME_BILLING_FULL";
+    case NAME_BILLING_SUFFIX:
+      return "NAME_BILLING_SUFFIX";
     case EMAIL_ADDRESS:
       return "EMAIL_ADDRESS";
     case PHONE_HOME_NUMBER:
@@ -319,6 +375,18 @@ AutofillFieldType AutofillType::StringToFieldType(const std::string& str) {
     return NAME_FULL;
   if (str == "NAME_SUFFIX")
     return NAME_SUFFIX;
+  if (str == "NAME_BILLING_FIRST")
+    return NAME_BILLING_FIRST;
+  if (str == "NAME_BILLING_MIDDLE")
+    return NAME_BILLING_MIDDLE;
+  if (str == "NAME_BILLING_LAST")
+    return NAME_BILLING_LAST;
+  if (str == "NAME_BILLING_MIDDLE_INITIAL")
+    return NAME_BILLING_MIDDLE_INITIAL;
+  if (str == "NAME_BILLING_FULL")
+    return NAME_BILLING_FULL;
+  if (str == "NAME_BILLING_SUFFIX")
+    return NAME_BILLING_SUFFIX;
   if (str == "EMAIL_ADDRESS")
     return EMAIL_ADDRESS;
   if (str == "PHONE_HOME_NUMBER")

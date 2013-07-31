@@ -89,9 +89,17 @@ enum AutofillFieldType {
   PHONE_BILLING_CITY_AND_NUMBER = 65,
   PHONE_BILLING_WHOLE_NUMBER = 66,
 
-  // No new types can be added.
+  NAME_BILLING_FIRST = 67,
+  NAME_BILLING_MIDDLE = 68,
+  NAME_BILLING_LAST = 69,
+  NAME_BILLING_MIDDLE_INITIAL = 70,
+  NAME_BILLING_FULL = 71,
+  NAME_BILLING_SUFFIX = 72,
 
-  MAX_VALID_FIELD_TYPE = 67,
+  // No new types can be added without a corresponding change to the Autofill
+  // server.
+
+  MAX_VALID_FIELD_TYPE = 73,
 };
 
 typedef std::set<AutofillFieldType> FieldTypeSet;

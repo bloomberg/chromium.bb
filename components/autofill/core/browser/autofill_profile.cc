@@ -317,6 +317,7 @@ void AutofillProfile::SetRawMultiInfo(
     const std::vector<base::string16>& values) {
   switch (AutofillType(type).group()) {
     case AutofillType::NAME:
+    case AutofillType::NAME_BILLING:
       CopyValuesToItems(type, values, &name_, NameInfo());
       break;
     case AutofillType::EMAIL:
@@ -590,6 +591,7 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
 bool AutofillProfile::SupportsMultiValue(AutofillFieldType type) {
   AutofillType::FieldTypeGroup group = AutofillType(type).group();
   return group == AutofillType::NAME ||
+         group == AutofillType::NAME_BILLING ||
          group == AutofillType::EMAIL ||
          group == AutofillType::PHONE_HOME ||
          group == AutofillType::PHONE_BILLING;
@@ -692,6 +694,7 @@ void AutofillProfile::GetMultiInfoImpl(
     std::vector<base::string16>* values) const {
   switch (AutofillType(type).group()) {
     case AutofillType::NAME:
+    case AutofillType::NAME_BILLING:
       CopyItemsToValues(type, name_, app_locale, values);
       break;
     case AutofillType::EMAIL:
@@ -843,6 +846,7 @@ FormGroup* AutofillProfile::MutableFormGroupForType(AutofillFieldType type) {
   FormGroup* form_group = NULL;
   switch (AutofillType(type).group()) {
     case AutofillType::NAME:
+    case AutofillType::NAME_BILLING:
       form_group = &name_[0];
       break;
     case AutofillType::EMAIL:

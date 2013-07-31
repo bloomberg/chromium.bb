@@ -139,7 +139,7 @@ bool DetailInputMatchesField(DialogSection section,
   // The credit card name is filled from the billing section's data.
   if (field.type() == CREDIT_CARD_NAME &&
       (section == SECTION_BILLING || section == SECTION_CC_BILLING)) {
-    return input.type == NAME_FULL;
+    return input.type == NAME_BILLING_FULL;
   }
 
   return InputTypeMatchesFieldType(input, field.type());
@@ -556,7 +556,7 @@ void AutofillDialogControllerImpl::Show() {
   };
 
   const DetailInput kBillingInputs[] = {
-    { 4, NAME_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
+    { 4, NAME_BILLING_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
     { 5, ADDRESS_BILLING_LINE1,
       IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1 },
     { 6, ADDRESS_BILLING_LINE2,

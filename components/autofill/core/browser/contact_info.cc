@@ -53,6 +53,7 @@ void NameInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
 }
 
 base::string16 NameInfo::GetRawInfo(AutofillFieldType type) const {
+  type = AutofillType::GetEquivalentFieldType(type);
   if (type == NAME_FIRST)
     return first();
 
@@ -72,6 +73,7 @@ base::string16 NameInfo::GetRawInfo(AutofillFieldType type) const {
 }
 
 void NameInfo::SetRawInfo(AutofillFieldType type, const base::string16& value) {
+  type = AutofillType::GetEquivalentFieldType(type);
   DCHECK_EQ(AutofillType::NAME, AutofillType(type).group());
   if (type == NAME_FIRST)
     first_ = value;
