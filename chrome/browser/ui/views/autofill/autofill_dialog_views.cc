@@ -954,6 +954,7 @@ AutofillDialogViews::SectionContainer::SectionContainer(
                                               kDetailSectionVerticalPadding,
                                               kDialogEdgePadding));
 
+  // TODO(estade): this label should be semi-bold.
   views::Label* label_view = new views::Label(label);
   label_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
@@ -978,12 +979,8 @@ AutofillDialogViews::SectionContainer::SectionContainer(
   label_bar_layout->StartRow(0, kColumnSetId);
   label_bar_layout->AddView(label_view);
   label_bar_layout->AddView(proxy_button);
-  // TODO(estade): Make this the correct color, also sometimes hide the border.
-  label_bar->set_border(
-      views::Border::CreateSolidSidedBorder(0, 0, 1, 0, SK_ColorLTGRAY));
 
-  // TODO(estade): do something about this '7'.
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 7));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(label_bar);
   AddChildView(controls);
 }
@@ -1073,6 +1070,10 @@ AutofillDialogViews::SuggestionView::SuggestionView(
           new DecoratedTextfield(base::string16(),
                                  base::string16(),
                                  autofill_dialog)) {
+  // TODO(estade): Make this the correct color.
+  set_border(
+      views::Border::CreateSolidSidedBorder(1, 0, 0, 0, SK_ColorLTGRAY));
+
   // Label and icon.
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_container_->AddChildView(icon_);
@@ -1088,7 +1089,8 @@ AutofillDialogViews::SuggestionView::SuggestionView(
   label_line_2_->SetMultiLine(true);
   AddChildView(label_line_2_);
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  // TODO(estade): do something about this '2'.
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 2, 0));
 }
 
 AutofillDialogViews::SuggestionView::~SuggestionView() {}
