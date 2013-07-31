@@ -1009,6 +1009,10 @@ void HostProcess::ShutdownHost(HostExitCodes exit_code) {
 
   switch (state_) {
     case HOST_INITIALIZING:
+      state_ = HOST_STOPPING;
+      ShutdownOnNetworkThread();
+      break;
+
     case HOST_STARTED:
       state_ = HOST_STOPPING;
       host_status_sender_->SendOfflineStatus(exit_code);
