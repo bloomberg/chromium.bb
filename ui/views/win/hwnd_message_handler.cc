@@ -1858,26 +1858,27 @@ LRESULT HWNDMessageHandler::OnNotify(int w_param, NMHDR* l_param) {
 }
 
 void HWNDMessageHandler::OnPaint(HDC dc) {
-  RECT dirty_rect;
+  // Call BeginPaint()/EndPaint() around the paint handling, as that seems
+  // to do more to actually validate the window's drawing region. This only
+  // appears to matter for Windows that have the WS_EX_COMPOSITED style set
+  // but will be valid in general too.
+  PAINTSTRUCT ps;
+  HDC display_dc = BeginPaint(hwnd(), &ps);
+  CHECK(display_dc);
+
   // Try to paint accelerated first.
-  if (GetUpdateRect(hwnd(), &dirty_rect, FALSE) &&
-      !IsRectEmpty(&dirty_rect)) {
-    if (delegate_->HandlePaintAccelerated(gfx::Rect(dirty_rect))) {
-      ValidateRect(hwnd(), NULL);
-    } else {
+  if (!IsRectEmpty(&ps.rcPaint) &&
+      !delegate_->HandlePaintAccelerated(gfx::Rect(ps.rcPaint))) {
 #if defined(USE_AURA)
-      delegate_->HandlePaint(NULL);
+    delegate_->HandlePaint(NULL);
 #else
-      scoped_ptr<gfx::CanvasPaint> canvas(
-          gfx::CanvasPaint::CreateCanvasPaint(hwnd()));
-      delegate_->HandlePaint(canvas->AsCanvas());
+    scoped_ptr<gfx::CanvasSkiaPaint> canvas(
+        new gfx::CanvasSkiaPaint(hwnd(), display_dc, ps));
+    delegate_->HandlePaint(canvas.get());
 #endif
-    }
-  } else {
-    // TODO(msw): Find a better solution for this crbug.com/93530 workaround.
-    // Some scenarios otherwise fail to validate minimized app/popup windows.
-    ValidateRect(hwnd(), NULL);
   }
+
+  EndPaint(hwnd(), &ps);
 }
 
 LRESULT HWNDMessageHandler::OnReflectedMessage(UINT message,

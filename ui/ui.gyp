@@ -415,7 +415,6 @@
         'gfx/canvas.h',
         'gfx/canvas_android.cc',
         'gfx/canvas_mac.mm',
-        'gfx/canvas_paint.h',
         'gfx/canvas_paint_gtk.h',
         'gfx/canvas_paint_mac.h',
         'gfx/canvas_paint_win.h',

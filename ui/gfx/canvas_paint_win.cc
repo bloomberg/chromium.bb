@@ -8,51 +8,65 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/rect.h"
 
-namespace {
-
-#if !defined(USE_AURA)
-class CanvasPaintWin : public gfx::CanvasPaint, public gfx::CanvasSkiaPaint {
- public:
-  explicit CanvasPaintWin(gfx::NativeView view);
-  virtual ~CanvasPaintWin();
-
-  // Overridden from CanvasPaint:
-  virtual bool IsValid() const OVERRIDE;
-  virtual gfx::Rect GetInvalidRect() const OVERRIDE;
-  virtual gfx::Canvas* AsCanvas() OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CanvasPaintWin);
-};
-
-CanvasPaintWin::CanvasPaintWin(gfx::NativeView view)
-    : gfx::CanvasSkiaPaint(view) {}
-
-CanvasPaintWin::~CanvasPaintWin() {}
-
-bool CanvasPaintWin::IsValid() const {
-  return isEmpty();
-}
-
-gfx::Rect CanvasPaintWin::GetInvalidRect() const {
-  return gfx::Rect(paintStruct().rcPaint);
-}
-
-gfx::Canvas* CanvasPaintWin::AsCanvas() {
-  return this;
-}
-#endif
-
-}  // namespace
-
 namespace gfx {
 
-CanvasPaint* CanvasPaint::CreateCanvasPaint(gfx::NativeView view) {
-#if !defined(USE_AURA)
-  return new CanvasPaintWin(view);
-#else
-  return NULL;
-#endif
+CanvasSkiaPaint::CanvasSkiaPaint(HWND hwnd, HDC dc, const PAINTSTRUCT& ps)
+    : hwnd_(hwnd),
+      paint_dc_(dc) {
+  memset(&ps_, 0, sizeof(ps_));
+  ps_.rcPaint.left = ps.rcPaint.left;
+  ps_.rcPaint.right = ps.rcPaint.right;
+  ps_.rcPaint.top = ps.rcPaint.top;
+  ps_.rcPaint.bottom = ps.rcPaint.bottom;
+  Init(true);
+}
+
+CanvasSkiaPaint::CanvasSkiaPaint(HDC dc, bool opaque, int x, int y,
+                                 int w, int h)
+    : hwnd_(NULL),
+      paint_dc_(dc) {
+  memset(&ps_, 0, sizeof(ps_));
+  ps_.rcPaint.left = x;
+  ps_.rcPaint.right = x + w;
+  ps_.rcPaint.top = y;
+  ps_.rcPaint.bottom = y + h;
+  Init(opaque);
+}
+
+CanvasSkiaPaint::~CanvasSkiaPaint() {
+  if (!is_empty()) {
+    skia::PlatformCanvas* canvas = platform_canvas();
+    canvas->restoreToCount(1);
+    // Commit the drawing to the screen
+    skia::DrawToNativeContext(canvas, paint_dc_, ps_.rcPaint.left,
+                              ps_.rcPaint.top, NULL);
+  }
+}
+
+gfx::Rect CanvasSkiaPaint::GetInvalidRect() const {
+  return gfx::Rect(paint_struct().rcPaint);
+}
+
+void CanvasSkiaPaint::Init(bool opaque) {
+  // FIXME(brettw) for ClearType, we probably want to expand the bounds of
+  // painting by one pixel so that the boundaries will be correct (ClearType
+  // text can depend on the adjacent pixel). Then we would paint just the
+  // inset pixels to the screen.
+  const int width = ps_.rcPaint.right - ps_.rcPaint.left;
+  const int height = ps_.rcPaint.bottom - ps_.rcPaint.top;
+
+  RecreateBackingCanvas(gfx::Size(width, height),
+      ui::GetScaleFactorFromScale(ui::win::GetDeviceScaleFactor()),
+      opaque);
+  skia::PlatformCanvas* canvas = platform_canvas();
+
+  canvas->clear(SkColorSetARGB(0, 0, 0, 0));
+
+  // This will bring the canvas into the screen coordinate system for the
+  // dirty rect
+  canvas->translate(
+      -ps_.rcPaint.left / ui::win::GetDeviceScaleFactor(),
+      -ps_.rcPaint.top / ui::win::GetDeviceScaleFactor());
 }
 
 }  // namespace gfx
