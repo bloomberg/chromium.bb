@@ -71,6 +71,7 @@ class PolicyDetails:
     self.desc = '\n'.join(
         map(str.strip, self._RemovePlaceholders(policy['desc']).splitlines()))
     self.caption = self._RemovePlaceholders(policy['caption'])
+    self.items = policy.get('items')
 
   PH_PATTERN = re.compile('<ph[^>]*>([^<]*|[^<]*<ex>([^<]*)</ex>[^<]*)</ph>')
 
@@ -369,6 +370,10 @@ RESERVED_IDS = 2
 
 def _WritePolicyProto(f, policy, fields):
   _OutputComment(f, policy.caption + '\n\n' + policy.desc)
+  if policy.items is not None:
+    _OutputComment(f, '\nValid values:')
+    for item in policy.items:
+      _OutputComment(f, '  %s: %s' % (str(item['value']), item['caption']))
   f.write('message %sProto {\n' % policy.name)
   f.write('  optional PolicyOptions policy_options = 1;\n')
   f.write('  optional %s %s = 2;\n' % (policy.protobuf_type, policy.name))
