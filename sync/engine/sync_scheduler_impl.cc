@@ -174,7 +174,7 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
 
 SyncSchedulerImpl::~SyncSchedulerImpl() {
   DCHECK(CalledOnValidThread());
-  StopImpl(base::Closure());
+  StopImpl();
 }
 
 void SyncSchedulerImpl::OnCredentialsUpdated() {
@@ -656,16 +656,15 @@ void SyncSchedulerImpl::RestartWaiting() {
   }
 }
 
-void SyncSchedulerImpl::RequestStop(const base::Closure& callback) {
+void SyncSchedulerImpl::RequestStop() {
   syncer_->RequestEarlyExit();  // Safe to call from any thread.
   DCHECK(weak_handle_this_.IsInitialized());
   SDVLOG(3) << "Posting StopImpl";
   weak_handle_this_.Call(FROM_HERE,
-                         &SyncSchedulerImpl::StopImpl,
-                         callback);
+                         &SyncSchedulerImpl::StopImpl);
 }
 
-void SyncSchedulerImpl::StopImpl(const base::Closure& callback) {
+void SyncSchedulerImpl::StopImpl() {
   DCHECK(CalledOnValidThread());
   SDVLOG(2) << "StopImpl called";
 
@@ -678,8 +677,6 @@ void SyncSchedulerImpl::StopImpl(const base::Closure& callback) {
   pending_configure_params_.reset();
   if (started_)
     started_ = false;
-  if (!callback.is_null())
-    callback.Run();
 }
 
 // This is the only place where we invoke DoSyncSessionJob with canary

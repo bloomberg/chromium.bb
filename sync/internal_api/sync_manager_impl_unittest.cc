@@ -68,9 +68,8 @@
 #include "sync/test/engine/fake_sync_scheduler.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "sync/test/fake_encryptor.h"
-#include "sync/test/fake_extensions_activity_monitor.h"
 #include "sync/util/cryptographer.h"
-#include "sync/util/extensions_activity_monitor.h"
+#include "sync/util/extensions_activity.h"
 #include "sync/util/test_unrecoverable_error_handler.h"
 #include "sync/util/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -800,6 +799,8 @@ class SyncManagerTest : public testing::Test,
   void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
+    extensions_activity_ = new ExtensionsActivity();
+
     SyncCredentials credentials;
     credentials.email = "foo@bar.com";
     credentials.sync_token = "sometoken";
@@ -823,15 +824,16 @@ class SyncManagerTest : public testing::Test,
         false,
         scoped_ptr<HttpPostProviderFactory>(new TestHttpPostProviderFactory()),
         workers,
-        &extensions_activity_monitor_,
+        extensions_activity_.get(),
         this,
         credentials,
         "fake_invalidator_client_id",
         std::string(),
         std::string(),  // bootstrap tokens
-        scoped_ptr<InternalComponentsFactory>(GetFactory()),
+        scoped_ptr<InternalComponentsFactory>(GetFactory()).get(),
         &encryptor_,
-        &handler_,
+        scoped_ptr<UnrecoverableErrorHandler>(
+            new TestUnrecoverableErrorHandler).Pass(),
         NULL,
         false);
 
@@ -1010,11 +1012,10 @@ class SyncManagerTest : public testing::Test,
   base::ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.
   std::map<ModelType, int64> type_roots_;
-  FakeExtensionsActivityMonitor extensions_activity_monitor_;
+  scoped_refptr<ExtensionsActivity> extensions_activity_;
 
  protected:
   FakeEncryptor encryptor_;
-  TestUnrecoverableErrorHandler handler_;
   SyncManagerImpl sync_manager_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> manager_observer_;

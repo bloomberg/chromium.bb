@@ -32,6 +32,10 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
   virtual void RegisterForLoopDestruction() OVERRIDE;
   virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
+  // Called on history DB thread to register HistoryModelWorker to observe
+  // destruction of history backend loop.
+  void RegisterOnDBThread();
+
  protected:
   virtual syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
       const syncer::WorkCallback& work) OVERRIDE;

@@ -20,6 +20,7 @@
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
+#include "sync/internal_api/public/user_share.h"
 
 using content::BrowserThread;
 
@@ -54,27 +55,43 @@ bool IsOnThreadForGroup(syncer::ModelType type, syncer::ModelSafeGroup group) {
 }  // namespace
 
 SyncBackendRegistrar::SyncBackendRegistrar(
-    const std::string& name, Profile* profile,
-    base::MessageLoop* sync_loop) :
+    const std::string& name,
+    Profile* profile,
+    scoped_ptr<base::Thread> sync_thread) :
     name_(name),
-    profile_(profile),
-    sync_loop_(sync_loop),
-    ui_worker_(new UIModelWorker(this)),
-    stopped_on_ui_thread_(false) {
+    profile_(profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(profile_);
-  DCHECK(sync_loop_);
+
+  sync_thread_ = sync_thread.Pass();
+  if (!sync_thread_) {
+    sync_thread_.reset(new base::Thread("Chrome_SyncThread"));
+    CHECK(sync_thread_->Start());
+  }
+
   workers_[syncer::GROUP_DB] = new DatabaseModelWorker(this);
+  workers_[syncer::GROUP_DB]->RegisterForLoopDestruction();
+
   workers_[syncer::GROUP_FILE] = new FileModelWorker(this);
-  workers_[syncer::GROUP_UI] = ui_worker_;
-  workers_[syncer::GROUP_PASSIVE] = new syncer::PassiveModelWorker(sync_loop_,
-                                                                   this);
+  workers_[syncer::GROUP_FILE]->RegisterForLoopDestruction();
+
+  workers_[syncer::GROUP_UI] = new UIModelWorker(this);
+  workers_[syncer::GROUP_UI]->RegisterForLoopDestruction();
+
+  // GROUP_PASSIVE worker does work on sync_loop_. But sync_loop_ is not
+  // stopped until all workers have stopped. To break the cycle, use UI loop
+  // instead.
+  workers_[syncer::GROUP_PASSIVE] =
+      new syncer::PassiveModelWorker(sync_thread_->message_loop(), this);
+  workers_[syncer::GROUP_PASSIVE]->RegisterForLoopDestruction();
 
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
   if (history_service) {
     workers_[syncer::GROUP_HISTORY] =
         new HistoryModelWorker(history_service->AsWeakPtr(), this);
+    workers_[syncer::GROUP_HISTORY]->RegisterForLoopDestruction();
+
   }
 
   scoped_refptr<PasswordStore> password_store =
@@ -82,20 +99,17 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   if (password_store.get()) {
     workers_[syncer::GROUP_PASSWORD] =
         new PasswordModelWorker(password_store, this);
+    workers_[syncer::GROUP_PASSWORD]->RegisterForLoopDestruction();
   }
-}
-
-SyncBackendRegistrar::~SyncBackendRegistrar() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(stopped_on_ui_thread_);
 }
 
 void SyncBackendRegistrar::SetInitialTypes(syncer::ModelTypeSet initial_types) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lock(lock_);
 
-  // This function should be called only once, shortly after construction.  The
-  // routing info at that point is expected to be emtpy.
+
+  // This function should be called only once, shortly after construction. The
+  // routing info at that point is expected to be empty.
   DCHECK(routing_info_.empty());
 
   // Set our initial state to reflect the current status of the sync directory.
@@ -176,16 +190,13 @@ syncer::ModelTypeSet SyncBackendRegistrar::GetLastConfiguredTypes() const {
   return last_configured_types_;
 }
 
-void SyncBackendRegistrar::StopOnUIThread() {
+void SyncBackendRegistrar::RequestWorkerStopOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!stopped_on_ui_thread_);
-  ui_worker_->Stop();
-  stopped_on_ui_thread_ = true;
-}
-
-void SyncBackendRegistrar::OnSyncerShutdownComplete() {
-  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
-  ui_worker_->OnSyncerShutdownComplete();
+  base::AutoLock lock(lock_);
+  for (WorkerMap::const_iterator it = workers_.begin();
+       it != workers_.end(); ++it) {
+    it->second->RequestStop();
+  }
 }
 
 void SyncBackendRegistrar::ActivateDataType(
@@ -193,6 +204,8 @@ void SyncBackendRegistrar::ActivateDataType(
     syncer::ModelSafeGroup group,
     ChangeProcessor* change_processor,
     syncer::UserShare* user_share) {
+  DVLOG(1) << "Activate: " << syncer::ModelTypeToString(type);
+
   CHECK(IsOnThreadForGroup(type, group));
   base::AutoLock lock(lock_);
   // Ensure that the given data type is in the PASSIVE group.
@@ -213,6 +226,8 @@ void SyncBackendRegistrar::ActivateDataType(
 }
 
 void SyncBackendRegistrar::DeactivateDataType(syncer::ModelType type) {
+  DVLOG(1) << "Deactivate: " << syncer::ModelTypeToString(type);
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) || IsControlType(type));
   base::AutoLock lock(lock_);
 
@@ -282,8 +297,8 @@ ChangeProcessor* SyncBackendRegistrar::GetProcessor(
 ChangeProcessor* SyncBackendRegistrar::GetProcessorUnsafe(
     syncer::ModelType type) const {
   lock_.AssertAcquired();
-  std::map<syncer::ModelType, ChangeProcessor*>::const_iterator it =
-      processors_.find(type);
+  std::map<syncer::ModelType, ChangeProcessor*>::const_iterator
+      it = processors_.find(type);
 
   // Until model association happens for a datatype, it will not
   // appear in the processors list.  During this time, it is OK to
@@ -304,8 +319,60 @@ bool SyncBackendRegistrar::IsCurrentThreadSafeForModel(
                             GetGroupForModelType(model_type, routing_info_));
 }
 
+SyncBackendRegistrar::~SyncBackendRegistrar() {
+  DCHECK(workers_.empty());
+}
+
 void SyncBackendRegistrar::OnWorkerLoopDestroyed(syncer::ModelSafeGroup group) {
-  // Do nothing for now.
+  RemoveWorker(group);
+}
+
+void SyncBackendRegistrar::OnWorkerUnregistrationDone(
+    syncer::ModelSafeGroup group) {
+  RemoveWorker(group);
+}
+
+void SyncBackendRegistrar::RemoveWorker(syncer::ModelSafeGroup group) {
+  DVLOG(1) << "Remove " << ModelSafeGroupToString(group) << " worker.";
+
+  bool last_worker = false;
+  {
+    base::AutoLock al(lock_);
+    WorkerMap::iterator it = workers_.find(group);
+    CHECK(it != workers_.end());
+    stopped_workers_.push_back(it->second);
+    workers_.erase(it);
+    last_worker = workers_.empty();
+  }
+
+  if (last_worker) {
+    // Self-destruction after last worker.
+    DVLOG(1) << "Destroy registrar on loop of "
+        << ModelSafeGroupToString(group);
+    delete this;
+  }
+}
+
+scoped_ptr<base::Thread> SyncBackendRegistrar::ReleaseSyncThread() {
+  return sync_thread_.Pass();
+}
+
+void SyncBackendRegistrar::Shutdown() {
+  // All data types should have been deactivated by now.
+  DCHECK(processors_.empty());
+
+  // Unregister worker from observing loop destruction.
+  base::AutoLock al(lock_);
+  for (WorkerMap::iterator it = workers_.begin();
+      it != workers_.end(); ++it) {
+    it->second->UnregisterForLoopDestruction(
+        base::Bind(&SyncBackendRegistrar::OnWorkerUnregistrationDone,
+                   base::Unretained(this)));
+  }
+}
+
+base::Thread* SyncBackendRegistrar::sync_thread() {
+  return sync_thread_.get();
 }
 
 }  // namespace browser_sync

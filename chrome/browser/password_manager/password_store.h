@@ -21,6 +21,7 @@ class PasswordStoreConsumer;
 class Task;
 
 namespace browser_sync {
+class PasswordChangeProcessor;
 class PasswordDataTypeController;
 class PasswordModelAssociator;
 class PasswordModelWorker;
@@ -132,6 +133,7 @@ class PasswordStore
 
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
+  friend class browser_sync::PasswordChangeProcessor;
   friend class browser_sync::PasswordDataTypeController;
   friend class browser_sync::PasswordModelAssociator;
   friend class browser_sync::PasswordModelWorker;

@@ -82,17 +82,16 @@ class FakeSyncManager : public SyncManager {
       bool use_ssl,
       scoped_ptr<HttpPostProviderFactory> post_factory,
       const std::vector<ModelSafeWorker*>& workers,
-      ExtensionsActivityMonitor* extensions_activity_monitor,
+      ExtensionsActivity* extensions_activity,
       ChangeDelegate* change_delegate,
       const SyncCredentials& credentials,
       const std::string& invalidator_client_id,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
-      scoped_ptr<InternalComponentsFactory> internal_components_factory,
+      InternalComponentsFactory* internal_components_factory,
       Encryptor* encryptor,
-      UnrecoverableErrorHandler* unrecoverable_error_handler,
-      ReportUnrecoverableErrorFunction
-          report_unrecoverable_error_function,
+      scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
+      ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
       bool use_oauth2_token) OVERRIDE;
   virtual void ThrowUnrecoverableError() OVERRIDE;
   virtual ModelTypeSet InitialSyncEndedTypes() OVERRIDE;
@@ -115,7 +114,7 @@ class FakeSyncManager : public SyncManager {
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual SyncStatus GetDetailedStatus() const OVERRIDE;
   virtual void SaveChanges() OVERRIDE;
-  virtual void StopSyncingForShutdown(const base::Closure& callback) OVERRIDE;
+  virtual void StopSyncingForShutdown() OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;
   virtual UserShare* GetUserShare() OVERRIDE;
   virtual const std::string cache_guid() OVERRIDE;

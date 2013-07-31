@@ -169,7 +169,7 @@ NonBlockingInvalidator::~NonBlockingInvalidator() {
           FROM_HERE,
           base::Bind(&NonBlockingInvalidator::Core::Teardown,
                      core_.get()))) {
-    NOTREACHED();
+    DVLOG(1) << "Network thread stopped before invalidator is destroyed.";
   }
 }
 

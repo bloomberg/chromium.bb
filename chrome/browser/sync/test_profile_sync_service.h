@@ -80,7 +80,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   static void SetHistoryServiceExpectations(ProfileMock* profile);
 
  protected:
-  virtual void InitCore(const DoInitializeOptions& options) OVERRIDE;
+  virtual void InitCore(scoped_ptr<DoInitializeOptions> options) OVERRIDE;
 
  private:
   void ContinueInitialization(
@@ -173,6 +173,12 @@ class TestProfileSyncService : public ProfileSyncService {
 
  protected:
   virtual void CreateBackend() OVERRIDE;
+
+  // Return NULL handle to use in backend initialization to avoid receiving
+  // js messages on UI loop when it's being destroyed, which are not deleted
+  // and cause memory leak in test.
+  virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler()
+      OVERRIDE;
 
  private:
   syncer::TestIdFactory id_factory_;

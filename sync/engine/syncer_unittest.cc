@@ -49,9 +49,9 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "sync/test/engine/test_syncable_utils.h"
 #include "sync/test/fake_encryptor.h"
-#include "sync/test/fake_extensions_activity_monitor.h"
 #include "sync/test/fake_sync_encryption_handler.h"
 #include "sync/util/cryptographer.h"
+#include "sync/util/extensions_activity.h"
 #include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -113,7 +113,8 @@ class SyncerTest : public testing::Test,
                    public SyncEngineEventListener {
  protected:
   SyncerTest()
-      : syncer_(NULL),
+      : extensions_activity_(new ExtensionsActivity),
+        syncer_(NULL),
         saw_syncer_event_(false),
         last_client_invalidation_hint_buffer_size_(10),
         traffic_recorder_(0, 0) {
@@ -236,7 +237,7 @@ class SyncerTest : public testing::Test,
     context_.reset(
         new SyncSessionContext(
             mock_server_.get(), directory(), workers,
-            &extensions_activity_monitor_,
+            extensions_activity_,
             listeners, NULL, &traffic_recorder_,
             true,  // enable keystore encryption
             false,  // force enable pre-commit GU avoidance experiment
@@ -563,7 +564,7 @@ class SyncerTest : public testing::Test,
 
   TestDirectorySetterUpper dir_maker_;
   FakeEncryptor encryptor_;
-  FakeExtensionsActivityMonitor extensions_activity_monitor_;
+  scoped_refptr<ExtensionsActivity> extensions_activity_;
   scoped_ptr<MockConnectionManager> mock_server_;
 
   Syncer* syncer_;
@@ -4800,18 +4801,18 @@ TEST_P(MixedResult, ExtensionsActivity) {
 
   // Put some extenions activity records into the monitor.
   {
-    ExtensionsActivityMonitor::Records records;
+    ExtensionsActivity::Records records;
     records["ABC"].extension_id = "ABC";
     records["ABC"].bookmark_write_count = 2049U;
     records["xyz"].extension_id = "xyz";
     records["xyz"].bookmark_write_count = 4U;
-    context_->extensions_monitor()->PutRecords(records);
+    context_->extensions_activity()->PutRecords(records);
   }
 
   SyncShareNudge();
 
-  ExtensionsActivityMonitor::Records final_monitor_records;
-  context_->extensions_monitor()->GetAndClearRecords(&final_monitor_records);
+  ExtensionsActivity::Records final_monitor_records;
+  context_->extensions_activity()->GetAndClearRecords(&final_monitor_records);
   if (ShouldFailBookmarkCommit()) {
     ASSERT_EQ(2U, final_monitor_records.size())
         << "Should restore records after unsuccessful bookmark commit.";

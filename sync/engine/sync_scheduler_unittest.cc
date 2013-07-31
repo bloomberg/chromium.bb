@@ -17,7 +17,7 @@
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_connection_manager.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
-#include "sync/test/fake_extensions_activity_monitor.h"
+#include "sync/util/extensions_activity.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -126,6 +126,7 @@ class SyncSchedulerTest : public testing::Test {
     dir_maker_.SetUp();
     syncer_ = new MockSyncer();
     delay_ = NULL;
+    extensions_activity_ = new ExtensionsActivity();
 
     routing_info_[BOOKMARKS] = GROUP_UI;
     routing_info_[AUTOFILL] = GROUP_DB;
@@ -147,7 +148,7 @@ class SyncSchedulerTest : public testing::Test {
     connection_->SetServerReachable();
     context_.reset(new SyncSessionContext(
             connection_.get(), directory(), workers,
-            &extensions_activity_monitor_,
+            extensions_activity_.get(),
             std::vector<SyncEngineEventListener*>(), NULL, NULL,
             true,  // enable keystore encryption
             false,  // force enable pre-commit GU avoidance
@@ -202,8 +203,10 @@ class SyncSchedulerTest : public testing::Test {
 
   // This stops the scheduler synchronously.
   void StopSyncScheduler() {
-    scheduler()->RequestStop(base::Bind(&SyncSchedulerTest::DoQuitLoopNow,
-                             weak_ptr_factory_.GetWeakPtr()));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&SyncSchedulerTest::DoQuitLoopNow,
+                   weak_ptr_factory_.GetWeakPtr()));
     RunLoop();
   }
 
@@ -233,8 +236,8 @@ class SyncSchedulerTest : public testing::Test {
     return dir_maker_.directory();
   }
 
+  base::MessageLoop loop_;
   base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;
-  base::MessageLoop message_loop_;
   TestDirectorySetterUpper dir_maker_;
   scoped_ptr<MockConnectionManager> connection_;
   scoped_ptr<SyncSessionContext> context_;
@@ -242,7 +245,7 @@ class SyncSchedulerTest : public testing::Test {
   MockSyncer* syncer_;
   MockDelayProvider* delay_;
   std::vector<scoped_refptr<FakeModelWorker> > workers_;
-  FakeExtensionsActivityMonitor extensions_activity_monitor_;
+  scoped_refptr<ExtensionsActivity> extensions_activity_;
   ModelSafeRoutingInfo routing_info_;
 };
 

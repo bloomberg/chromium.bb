@@ -32,7 +32,7 @@
 
 namespace syncer {
 
-class ExtensionsActivityMonitor;
+class ExtensionsActivity;
 class ServerConnectionManager;
 
 namespace syncable {
@@ -50,7 +50,7 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
   SyncSessionContext(ServerConnectionManager* connection_manager,
                      syncable::Directory* directory,
                      const std::vector<ModelSafeWorker*>& workers,
-                     ExtensionsActivityMonitor* extensions_activity_monitor,
+                     ExtensionsActivity* extensions_activity,
                      const std::vector<SyncEngineEventListener*>& listeners,
                      DebugInfoGetter* debug_info_getter,
                      TrafficRecorder* traffic_recorder,
@@ -79,8 +79,8 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
     return workers_;
   }
 
-  ExtensionsActivityMonitor* extensions_monitor() {
-    return extensions_activity_monitor_;
+  ExtensionsActivity* extensions_activity() {
+    return extensions_activity_.get();
   }
 
   DebugInfoGetter* debug_info_getter() {
@@ -159,7 +159,7 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
 
   // We use this to stuff extensions activity into CommitMessages so the server
   // can correlate commit traffic with extension-related bookmark mutations.
-  ExtensionsActivityMonitor* extensions_activity_monitor_;
+  scoped_refptr<ExtensionsActivity> extensions_activity_;
 
   // Kept up to date with talk events to determine whether notifications are
   // enabled. True only if the notification channel is authorized and open.
