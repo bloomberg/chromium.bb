@@ -36,12 +36,15 @@ void SendScrollLatencyUma(const WebInputEvent& event,
   if (it == latency_info.latency_components.end())
     return;
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Event.Latency.RendererImpl.GestureScroll",
-      (base::TimeTicks::HighResNow() - it->second.event_time).InMicroseconds(),
-      0,
-      200000,
-      100);
+  base::TimeDelta delta = base::TimeTicks::HighResNow() - it->second.event_time;
+  for (size_t i = 0; i < it->second.event_count; ++i) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Event.Latency.RendererImpl.GestureScroll",
+        delta.InMicroseconds(),
+        0,
+        200000,
+        100);
+  }
 }  // namespace
 
 }

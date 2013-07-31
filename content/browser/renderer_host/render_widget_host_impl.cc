@@ -2439,12 +2439,14 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
     // results in final frame swap.
     base::TimeDelta delta =
         latency_info.swap_timestamp - original_component.event_time;
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Event.Latency.TouchToScrollUpdateSwap",
-        delta.InMicroseconds(),
-        0,
-        1000000,
-        100);
+    for (size_t i = 0; i < original_component.event_count; i++) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.TouchToScrollUpdateSwap",
+          delta.InMicroseconds(),
+          0,
+          1000000,
+          100);
+    }
     rendering_stats_.scroll_update_count += original_component.event_count;
     rendering_stats_.total_scroll_update_latency +=
         original_component.event_count *

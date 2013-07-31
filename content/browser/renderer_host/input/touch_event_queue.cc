@@ -188,12 +188,13 @@ void TouchEventQueue::PopTouchEventWithAck(InputEventAckState ack_result) {
   // to the renderer, or touch-events being queued.
   base::AutoReset<bool> dispatching_touch_ack(&dispatching_touch_ack_, true);
 
+  base::TimeTicks now = base::TimeTicks::HighResNow();
   for (WebTouchEventWithLatencyList::const_iterator iter = acked_event->begin(),
        end = acked_event->end();
        iter != end; ++iter) {
     ui::LatencyInfo* latency = const_cast<ui::LatencyInfo*>(&(iter->latency));
-    latency->AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT, 0, 0);
+    latency->AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT, 0, 0, now, 1);
     client_->OnTouchEventAck((*iter), ack_result);
   }
 }
