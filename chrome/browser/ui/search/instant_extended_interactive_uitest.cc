@@ -1277,8 +1277,15 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
   EXPECT_EQ(1, on_theme_changed_calls);
 }
 
+
+// Flaky on Linux: http://crbug.com/265971
+#if defined(OS_LINUX)
+#define MAYBE_SendThemeBackgroundChangedEvent DISABLED_SendThemeBackgroundChangedEvent
+#else
+#define MAYBE_SendThemeBackgroundChangedEvent SendThemeBackgroundChangedEvent
+#endif
 IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
-                       SendThemeBackgroundChangedEvent) {
+                       MAYBE_SendThemeBackgroundChangedEvent) {
   InstallThemeSource();
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
