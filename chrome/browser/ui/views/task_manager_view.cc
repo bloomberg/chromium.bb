@@ -46,6 +46,9 @@
 #endif
 
 #if defined(OS_WIN)
+#include "chrome/browser/shell_integration.h"
+#include "ui/base/win/shell.h"
+#include "ui/views/win/hwnd_util.h"
 #include "win8/util/win8_util.h"
 #endif
 
@@ -509,6 +512,17 @@ void TaskManagerView::Show(Browser* browser) {
   DialogDelegate::CreateDialogWidget(instance_, window, NULL);
   instance_->InitAlwaysOnTopState();
   instance_->model_->StartUpdating();
+#if defined(OS_WIN)
+  // Set the app id for the task manager to the app id of its parent browser. If
+  // no parent is specified, the app id will default to that of the initial
+  // process.
+  if (browser) {
+    ui::win::SetAppIdForWindow(
+        ShellIntegration::GetChromiumModelIdForProfile(
+            browser->profile()->GetPath()),
+        views::HWNDForWidget(instance_->GetWidget()));
+  }
+#endif
   instance_->GetWidget()->Show();
 
   // Set the initial focus to the list of tasks.
