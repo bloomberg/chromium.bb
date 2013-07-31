@@ -58,6 +58,11 @@ class UI_EXPORT TouchFactory {
   bool IsMultiTouchDevice(unsigned int deviceid) const;
 
 #if defined(USE_XI2_MT)
+  // Tries to find an existing slot ID mapping to tracking ID. Returns true
+  // if the slot is found and it is saved in |slot|, false if no such slot
+  // can be found.
+  bool QuerySlotForTrackingID(uint32 tracking_id, int* slot);
+
   // Tries to find an existing slot ID mapping to tracking ID. If there
   // isn't one already, allocates a new slot ID and sets up the mapping.
   int GetSlotForTrackingID(uint32 tracking_id);
@@ -74,6 +79,11 @@ class UI_EXPORT TouchFactory {
 
   // Whether any touch device is currently present and enabled.
   bool IsTouchDevicePresent();
+
+  // Sets up the device id in the list |devices| as multi-touch capable
+  // devices and enables touch events processing. This function is only
+  // for test purpose, and it does not query from X server.
+  void SetTouchDeviceForTest(const std::vector<unsigned int>& devices);
 
  private:
   // Requirement for Singleton

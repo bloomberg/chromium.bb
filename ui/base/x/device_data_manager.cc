@@ -13,6 +13,7 @@
 #include "base/message_loop/message_pump_aurax11.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_utils.h"
+#include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/x11_util.h"
 
@@ -182,7 +183,8 @@ void DeviceDataManager::UpdateDeviceList(Display* display) {
     data_type_lookup_[i].clear();
     valuator_min_[i].clear();
     valuator_max_[i].clear();
-    last_seen_valuator_[i].clear();
+    for (int j = 0; j < kMaxSlotNum; j++)
+      last_seen_valuator_[i][j].clear();
   }
 
   // Find all the touchpad devices.
@@ -227,7 +229,8 @@ void DeviceDataManager::UpdateDeviceList(Display* display) {
         valuator_count_[deviceid], DT_LAST_ENTRY);
     valuator_min_[deviceid].resize(DT_LAST_ENTRY, 0);
     valuator_max_[deviceid].resize(DT_LAST_ENTRY, 0);
-    last_seen_valuator_[deviceid].resize(DT_LAST_ENTRY, 0);
+    for (int j = 0; j < kMaxSlotNum; j++)
+      last_seen_valuator_[deviceid][j].resize(DT_LAST_ENTRY, 0);
     for (int j = 0; j < info->num_classes; ++j) {
       if (info->classes[j]->type != XIValuatorClass)
         continue;
@@ -252,6 +255,20 @@ void DeviceDataManager::UpdateDeviceList(Display* display) {
   }
 }
 
+bool DeviceDataManager::GetSlotNumber(const XIDeviceEvent* xiev, int* slot) {
+#if defined(USE_XI2_MT)
+  ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
+  if (!factory->IsMultiTouchDevice(xiev->sourceid)) {
+    *slot = 0;
+    return true;
+  }
+  return factory->QuerySlotForTrackingID(xiev->detail, slot);
+#else
+  *slot = 0;
+  return true;
+#endif
+}
+
 void DeviceDataManager::GetEventRawData(const XEvent& xev, EventData* data) {
   if (xev.type != GenericEvent)
     return;
@@ -267,8 +284,11 @@ void DeviceDataManager::GetEventRawData(const XEvent& xev, EventData* data) {
       int type = data_type_lookup_[sourceid][i];
       if (type != DT_LAST_ENTRY) {
         (*data)[type] = *valuators;
-        if (IsTouchDataType(type))
-          last_seen_valuator_[sourceid][type] = *valuators;
+        if (IsTouchDataType(type)) {
+          int slot = -1;
+          if (GetSlotNumber(xiev, &slot) && slot >= 0 && slot < kMaxSlotNum)
+            last_seen_valuator_[sourceid][slot][type] = *valuators;
+        }
       }
       valuators++;
     }
@@ -287,7 +307,16 @@ bool DeviceDataManager::GetEventData(const XEvent& xev,
   if (valuator_lookup_[sourceid].empty())
     return false;
 
+#if defined(USE_XI2_MT)
+  // With XInput2 MT, Tracking ID is provided in the detail field.
+  if (type == DT_TOUCH_TRACKING_ID) {
+    *value = xiev->detail;
+    return true;
+  }
+#endif
+
   int val_index = valuator_lookup_[sourceid][type];
+  int slot = 0;
   if (val_index >= 0) {
     if (XIMaskIsSet(xiev->valuators.mask, val_index)) {
       double* valuators = xiev->valuators.values;
@@ -296,20 +325,16 @@ bool DeviceDataManager::GetEventData(const XEvent& xev,
           ++valuators;
       }
       *value = *valuators;
-      last_seen_valuator_[sourceid][type] = *value;
+      if (IsTouchDataType(type)) {
+        if (GetSlotNumber(xiev, &slot) && slot >= 0 && slot < kMaxSlotNum)
+          last_seen_valuator_[sourceid][slot][type] = *value;
+      }
       return true;
     } else if (IsTouchDataType(type)) {
-      *value = last_seen_valuator_[sourceid][type];
+      if (GetSlotNumber(xiev, &slot) && slot >= 0 && slot < kMaxSlotNum)
+        *value = last_seen_valuator_[sourceid][slot][type];
     }
   }
-
-#if defined(USE_XI2_MT)
-  // With XInput2 MT, Tracking ID is provided in the detail field.
-  if (type == DT_TOUCH_TRACKING_ID) {
-    *value = xiev->detail;
-    return true;
-  }
-#endif
 
   return false;
 }
@@ -526,4 +551,37 @@ bool DeviceDataManager::GetDataRange(unsigned int deviceid,
   return false;
 }
 
+void DeviceDataManager::SetDeviceListForTest(
+    const std::vector<unsigned int>& devices) {
+  for (int i = 0; i < kMaxDeviceNum; ++i) {
+    valuator_count_[i] = 0;
+    valuator_lookup_[i].clear();
+    data_type_lookup_[i].clear();
+    valuator_min_[i].clear();
+    valuator_max_[i].clear();
+    for (int j = 0; j < kMaxSlotNum; j++)
+      last_seen_valuator_[i][j].clear();
+  }
+
+  for (size_t i = 0; i < devices.size(); i++) {
+    unsigned int deviceid = devices[i];
+    valuator_lookup_[deviceid].resize(DT_LAST_ENTRY, -1);
+    data_type_lookup_[deviceid].resize(DT_LAST_ENTRY, DT_LAST_ENTRY);
+    valuator_min_[deviceid].resize(DT_LAST_ENTRY, 0);
+    valuator_max_[deviceid].resize(DT_LAST_ENTRY, 0);
+    for (int j = 0; j < kMaxSlotNum; j++)
+      last_seen_valuator_[deviceid][j].resize(DT_LAST_ENTRY, 0);
+  }
+}
+
+void DeviceDataManager::SetDeviceValuatorForTest(int deviceid,
+                                                 int val_index,
+                                                 DataType data_type,
+                                                 double min,
+                                                 double max) {
+  valuator_lookup_[deviceid][data_type] = val_index;
+  data_type_lookup_[deviceid][val_index] = data_type;
+  valuator_min_[deviceid][data_type] = min;
+  valuator_max_[deviceid][data_type] = max;
+}
 }  // namespace ui

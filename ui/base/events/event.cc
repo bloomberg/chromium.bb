@@ -491,6 +491,11 @@ TouchEvent::TouchEvent(EventType type,
 }
 
 TouchEvent::~TouchEvent() {
+  // In ctor TouchEvent(native_event) we call GetTouchId() which in X11
+  // platform setups the tracking_id to slot mapping. So in dtor here,
+  // if this touch event is a release event, we clear the mapping accordingly.
+  if (HasNativeEvent())
+    ClearTouchIdIfReleased(native_event());
 }
 
 void TouchEvent::Relocate(const gfx::Point& origin) {

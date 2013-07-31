@@ -125,6 +125,12 @@ class UI_EXPORT DeviceDataManager {
   // Updates the list of devices.
   void UpdateDeviceList(Display* display);
 
+  // For multitouch events we use slot number to distinguish touches from
+  // different fingers. This function returns true if the associated slot
+  // for |xiev| can be found and it is saved in |slot|, returns false if
+  // no slot can be found.
+  bool GetSlotNumber(const XIDeviceEvent* xiev, int* slot);
+
   // Get all event data in one pass. We extract only data types that we know
   // about (defined in enum DataType). The data is not processed (e.g. not
   // filled in by cached values) as in GetEventData.
@@ -208,6 +214,20 @@ class UI_EXPORT DeviceDataManager {
                     double* min,
                     double* max);
 
+  // Setups relevant valuator informations for device ids in the list |devices|.
+  // This function is only for test purpose. It does not query the X server for
+  // the actual device info, but rather inits the relevant valuator structures
+  // to have safe default values for testing.
+  void SetDeviceListForTest(const std::vector<unsigned int>& devices);
+
+  // Setups device with |deviceid| to have valuator with type |data_type|,
+  // at index |val_index|, and with |min|/|max| values. This is only for test
+  // purpose.
+  void SetDeviceValuatorForTest(int deviceid,
+                                int val_index,
+                                DataType data_type,
+                                double min,
+                                double max);
  private:
   // Requirement for Singleton.
   friend struct DefaultSingletonTraits<DeviceDataManager>;
@@ -223,6 +243,7 @@ class UI_EXPORT DeviceDataManager {
 
   static const int kMaxDeviceNum = 128;
   static const int kMaxXIEventType = XI_LASTEVENT + 1;
+  static const int kMaxSlotNum = 10;
   bool natural_scroll_enabled_;
 
   // Major opcode for the XInput extension. Used to identify XInput events.
@@ -253,13 +274,13 @@ class UI_EXPORT DeviceDataManager {
   std::vector<double> valuator_max_[kMaxDeviceNum];
 
   // Table to keep track of the last seen value for the specified valuator for
-  // a device. Defaults to 0 if the valuator was not specified in an earlier
-  // event. With MT-B/XI2.2, valuators in an XEvent are not reported if the
-  // values haven't changed from the previous event. So it is necessary to
-  // remember these valuators so that chrome doesn't think X/device doesn't
-  // know about the valuators. We currently use this only on touchscreen
-  // devices.
-  std::vector<double> last_seen_valuator_[kMaxDeviceNum];
+  // a specified slot of a device. Defaults to 0 if the valuator for that slot
+  // was not specified in an earlier event. With MT-B/XI2.2, valuators in an
+  // XEvent are not reported if the values haven't changed from the previous
+  // event. So it is necessary to remember these valuators so that chrome
+  // doesn't think X/device doesn't know about the valuators. We currently
+  // use this only on touchscreen devices.
+  std::vector<double> last_seen_valuator_[kMaxDeviceNum][kMaxSlotNum];
 
   // X11 atoms cache.
   X11AtomCache atom_cache_;

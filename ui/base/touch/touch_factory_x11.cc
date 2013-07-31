@@ -224,6 +224,15 @@ bool TouchFactory::IsMultiTouchDevice(unsigned int deviceid) const {
 }
 
 #if defined(USE_XI2_MT)
+bool TouchFactory::QuerySlotForTrackingID(uint32 tracking_id, int* slot) {
+  TrackingIdMap::iterator itr = tracking_id_map_.find(tracking_id);
+  if (itr != tracking_id_map_.end()) {
+    *slot = itr->second;
+    return true;
+  }
+  return false;
+}
+
 int TouchFactory::GetSlotForTrackingID(uint32 tracking_id) {
   TrackingIdMap::iterator itr = tracking_id_map_.find(tracking_id);
   if (itr != tracking_id_map_.end())
@@ -271,6 +280,20 @@ void TouchFactory::SetSlotUsed(int slot, bool used) {
 
 bool TouchFactory::IsTouchDevicePresent() {
   return !touch_events_disabled_ && touch_device_available_;
+}
+
+void TouchFactory::SetTouchDeviceForTest(
+    const std::vector<unsigned int>& devices) {
+  touch_device_lookup_.reset();
+  touch_device_list_.clear();
+  for (std::vector<unsigned int>::const_iterator iter = devices.begin();
+       iter != devices.end(); ++iter) {
+    DCHECK(*iter < touch_device_lookup_.size());
+    touch_device_lookup_[*iter] = true;
+    touch_device_list_[*iter] = true;
+  }
+  touch_device_available_ = true;
+  touch_events_disabled_ = false;
 }
 
 }  // namespace ui

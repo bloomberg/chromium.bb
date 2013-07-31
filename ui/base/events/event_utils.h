@@ -80,6 +80,9 @@ UI_EXPORT gfx::Vector2d GetMouseWheelOffset(
 // Gets the touch id from a native event.
 UI_EXPORT int GetTouchId(const base::NativeEvent& native_event);
 
+// Clear the touch id from bookkeeping if it is a release/cancel event.
+UI_EXPORT void ClearTouchIdIfReleased(const base::NativeEvent& native_event);
+
 // Gets the radius along the X/Y axis from a native event. Default is 1.0.
 UI_EXPORT float GetTouchRadiusX(const base::NativeEvent& native_event);
 UI_EXPORT float GetTouchRadiusY(const base::NativeEvent& native_event);

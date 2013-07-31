@@ -254,6 +254,10 @@ gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
   return gfx::Vector2d(0, GET_WHEEL_DELTA_WPARAM(native_event.wParam));
 }
 
+void ClearTouchIdIfReleased(const base::NativeEvent& xev) {
+  NOTIMPLEMENTED();
+}
+
 int GetTouchId(const base::NativeEvent& xev) {
   NOTIMPLEMENTED();
   return 0;

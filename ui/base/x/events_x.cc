@@ -613,6 +613,22 @@ gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
   }
 }
 
+void ClearTouchIdIfReleased(const base::NativeEvent& xev) {
+#if defined(USE_XI2_MT)
+  ui::EventType type = ui::EventTypeFromNative(xev);
+  if (type == ui::ET_TOUCH_CANCELLED ||
+      type == ui::ET_TOUCH_RELEASED) {
+    ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
+    ui::DeviceDataManager* manager = ui::DeviceDataManager::GetInstance();
+    double tracking_id;
+    if (manager->GetEventData(
+        *xev, ui::DeviceDataManager::DT_TOUCH_TRACKING_ID, &tracking_id)) {
+      factory->ReleaseSlotForTrackingID(tracking_id);
+    }
+  }
+#endif
+}
+
 int GetTouchId(const base::NativeEvent& xev) {
   double slot = 0;
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
@@ -632,11 +648,6 @@ int GetTouchId(const base::NativeEvent& xev) {
     LOG(ERROR) << "Could not get the tracking ID for the event. Using 0.";
   } else {
     slot = factory->GetSlotForTrackingID(tracking_id);
-    ui::EventType type = ui::EventTypeFromNative(xev);
-    if (type == ui::ET_TOUCH_CANCELLED ||
-        type == ui::ET_TOUCH_RELEASED) {
-      factory->ReleaseSlotForTrackingID(tracking_id);
-    }
   }
 #else
   if (!manager->GetEventData(

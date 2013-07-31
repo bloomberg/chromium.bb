@@ -157,6 +157,10 @@ gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
   return gfx::Vector2d([native_event deltaX], [native_event deltaY]);
 }
 
+void ClearTouchIdIfReleased(const base::NativeEvent& xev) {
+  // Touch is currently unsupported.
+}
+
 int GetTouchId(const base::NativeEvent& native_event) {
   // Touch is currently unsupported.
   return 0;
