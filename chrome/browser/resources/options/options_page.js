@@ -886,6 +886,9 @@ cr.define('options', function() {
         container.classList.remove('transparent');
         this.onVisibilityChanged_();
       } else {
+        // Kick change events for text fields.
+        if (pageDiv.contains(document.activeElement))
+          document.activeElement.blur();
         var self = this;
         // TODO: Use an event delegate to avoid having to subscribe and
         // unsubscribe for webkitTransitionEnd events.
