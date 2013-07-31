@@ -20,9 +20,7 @@ WorkspaceControllerTestHelper::~WorkspaceControllerTestHelper() {
 }
 
 WorkspaceEventHandler* WorkspaceControllerTestHelper::GetEventHandler() {
-  ui::EventTarget::TestApi test_api(controller_->viewport_->children()[0]);
-  return static_cast<WorkspaceEventHandler*>(
-      test_api.pre_target_handlers().front());
+  return controller_->event_handler_.get();
 }
 
 MultiWindowResizeController*

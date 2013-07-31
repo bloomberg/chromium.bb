@@ -232,12 +232,6 @@ void DockedWindowResizer::FinishDragging() {
       // Reparenting will cause Relayout and possible dock shrinking.
       window->SetDefaultParentByRootWindow(window->GetRootWindow(),
                                            near_last_location);
-      // A maximized workspace may be active so we may need to switch
-      // to a parent workspace of the window being dragged out.
-      internal::WorkspaceController* workspace_controller =
-          GetRootWindowController(
-              window->GetRootWindow())->workspace_controller();
-      workspace_controller->SetActiveWorkspaceByWindow(window);
     }
   }
   dock_layout_->FinishDragging();

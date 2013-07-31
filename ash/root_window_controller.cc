@@ -114,6 +114,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
   // Set of windows to move.
   const int kContainerIdsToMove[] = {
+    internal::kShellWindowId_WorkspaceContainer,
     internal::kShellWindowId_DefaultContainer,
     internal::kShellWindowId_DockedContainer,
     internal::kShellWindowId_PanelContainer,
@@ -126,13 +127,6 @@ void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
   // For workspace windows we need to manually reparent the windows. This way
   // workspace can move the windows to the appropriate workspace.
   std::vector<aura::Window*> windows(GetWorkspaceWindows(src));
-  internal::WorkspaceController* workspace_controller =
-      GetRootWindowController(dst)->workspace_controller();
-  for (size_t i = 0; i < windows.size(); ++i) {
-    aura::Window* new_parent =
-        workspace_controller->GetParentForNewWindow(windows[i]);
-    ReparentWindow(windows[i], new_parent);
-  }
   for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
     int id = kContainerIdsToMove[i];
     if (id == internal::kShellWindowId_DefaultContainer)

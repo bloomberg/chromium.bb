@@ -4,74 +4,144 @@
 
 #include "ash/wm/workspace_controller.h"
 
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ash/wm/base_layout_manager.h"
+#include "ash/wm/property_util.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_manager.h"
+#include "ash/wm/workspace/workspace_animations.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/views/corewm/visibility_controller.h"
+#include "ui/views/corewm/window_animations.h"
 
 namespace ash {
 namespace internal {
+namespace {
+
+// Amount of time to pause before animating anything. Only used during initial
+// animation (when logging in).
+const int kInitialPauseTimeMS = 750;
+
+// LayoutManager installed on the parent window of the desktop window (eg
+// DefaultContainer).
+class LayoutManagerImpl : public BaseLayoutManager {
+ public:
+  explicit LayoutManagerImpl(aura::Window* viewport)
+      : BaseLayoutManager(viewport->GetRootWindow()),
+        viewport_(viewport) {
+  }
+  virtual ~LayoutManagerImpl() {}
+
+  // Overridden from BaseWorkspaceLayoutManager:
+  virtual void OnWindowResized() OVERRIDE {
+    for (size_t i = 0; i < viewport_->children().size(); ++i) {
+      viewport_->children()[i]->SetBounds(
+          gfx::Rect(viewport_->bounds().size()));
+    }
+  }
+
+  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
+    // Only workspaces should be added as children.
+    DCHECK(child->id() == kShellWindowId_WorkspaceContainer);
+    child->SetBounds(gfx::Rect(viewport_->bounds().size()));
+  }
+
+ private:
+  aura::Window* viewport_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayoutManagerImpl);
+};
+
+}  // namespace
 
 WorkspaceController::WorkspaceController(aura::Window* viewport)
-    : viewport_(viewport) {
-  aura::RootWindow* root_window = viewport->GetRootWindow();
-  workspace_manager_.reset(new WorkspaceManager(viewport));
-  aura::client::GetActivationClient(root_window)->AddObserver(this);
+    : viewport_(viewport),
+      shelf_(NULL),
+      desktop_(new aura::Window(NULL)),
+      event_handler_(new WorkspaceEventHandler(desktop_.get())) {
+  viewport_->SetEventFilter(NULL);
+  viewport_->SetLayoutManager(new LayoutManagerImpl(viewport_));
+
+  views::corewm::SetChildWindowVisibilityChangesAnimated(desktop_.get());
+  SetWindowVisibilityAnimationTransition(
+      desktop_.get(), views::corewm::ANIMATE_NONE);
+  desktop_->set_id(kShellWindowId_WorkspaceContainer);
+  desktop_->SetName("DesktopWorkspaceContainer");
+  desktop_->Init(ui::LAYER_NOT_DRAWN);
+  // Do this so when animating out windows don't extend beyond the bounds.
+  desktop_->layer()->SetMasksToBounds(true);
+  viewport_->AddChild(desktop_.get());
+  desktop_->SetProperty(internal::kUsesScreenCoordinatesKey, true);
+
+  // The layout-manager cannot be created in the initializer list since it
+  // depends on the window to have been initialized.
+  layout_manager_ = new WorkspaceLayoutManager(desktop_.get());
+  desktop_->SetLayoutManager(layout_manager_);
+
+  desktop_->Show();
 }
 
 WorkspaceController::~WorkspaceController() {
-  aura::client::GetActivationClient(viewport_->GetRootWindow())->
-      RemoveObserver(this);
+  desktop_->SetLayoutManager(NULL);
+  desktop_->SetEventFilter(NULL);
+  desktop_->RemovePreTargetHandler(event_handler_.get());
+  desktop_->RemovePostTargetHandler(event_handler_.get());
 }
 
 WorkspaceWindowState WorkspaceController::GetWindowState() const {
-  return workspace_manager_->GetWindowState();
+  if (!shelf_)
+    return WORKSPACE_WINDOW_STATE_DEFAULT;
+
+  const gfx::Rect shelf_bounds(shelf_->GetIdealBounds());
+  const aura::Window::Windows& windows(desktop_->children());
+  bool window_overlaps_launcher = false;
+  bool has_maximized_window = false;
+  for (aura::Window::Windows::const_iterator i = windows.begin();
+       i != windows.end(); ++i) {
+    if (GetIgnoredByShelf(*i))
+      continue;
+    ui::Layer* layer = (*i)->layer();
+    if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
+      continue;
+    if (wm::IsWindowMaximized(*i)) {
+      // An untracked window may still be fullscreen so we keep iterating when
+      // we hit a maximized window.
+      has_maximized_window = true;
+    } else if (wm::IsWindowFullscreen(*i)) {
+      return WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+    }
+    if (!window_overlaps_launcher && (*i)->bounds().Intersects(shelf_bounds))
+      window_overlaps_launcher = true;
+  }
+  if (has_maximized_window)
+    return WORKSPACE_WINDOW_STATE_MAXIMIZED;
+
+  return window_overlaps_launcher ?
+      WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF :
+      WORKSPACE_WINDOW_STATE_DEFAULT;
 }
 
 void WorkspaceController::SetShelf(ShelfLayoutManager* shelf) {
-  workspace_manager_->SetShelf(shelf);
-}
-
-void WorkspaceController::SetActiveWorkspaceByWindow(aura::Window* window) {
-  return workspace_manager_->SetActiveWorkspaceByWindow(window);
+  shelf_ = shelf;
+  layout_manager_->SetShelf(shelf);
 }
 
 aura::Window* WorkspaceController::GetActiveWorkspaceWindow() {
-  return workspace_manager_->GetActiveWorkspaceWindow();
-}
-
-aura::Window* WorkspaceController::GetParentForNewWindow(aura::Window* window) {
-  return workspace_manager_->GetParentForNewWindow(window);
+  return desktop_.get();
 }
 
 void WorkspaceController::DoInitialAnimation() {
-  workspace_manager_->DoInitialAnimation();
-}
-
-void WorkspaceController::OnWindowActivated(aura::Window* gained_active,
-                                            aura::Window* lost_active) {
-  if (!gained_active ||
-      gained_active->GetRootWindow() == viewport_->GetRootWindow()) {
-    workspace_manager_->SetActiveWorkspaceByWindow(gained_active);
-  }
-}
-
-void WorkspaceController::OnAttemptToReactivateWindow(
-    aura::Window* request_active,
-    aura::Window* actual_active) {
-  if (ash::Shell::GetInstance()->IsSystemModalWindowOpen() &&
-      viewport_->Contains(request_active)) {
-    // While a system model dialog is showing requests to activate a window
-    // other than that of the modal dialog fail. Outside of this function we
-    // only switch the active workspace when activation changes. That prevents
-    // the active workspace from changing while a system modal dialog is
-    // showing. This code ensures the active workspace changes even though
-    // activation doesn't change away from the system model dialog.
-    workspace_manager_->SetActiveWorkspaceByWindow(request_active);
-  }
+  WorkspaceAnimationDetails details;
+  details.animate = details.animate_opacity = details.animate_scale = true;
+  details.pause_time_ms = kInitialPauseTimeMS;
+  ash::internal::ShowWorkspace(desktop_.get(), details);
 }
 
 }  // namespace internal

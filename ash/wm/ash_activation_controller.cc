@@ -42,19 +42,6 @@ aura::Window* AshActivationController::WillActivateWindow(
   if (!window)
     window = PrepareToActivateLauncher();
 
-  // Make sure the workspace manager switches to the workspace for window.
-  // Without this CanReceiveEvents() below returns false and activation never
-  // changes. CanReceiveEvents() returns false if |window| isn't in the active
-  // workspace, in which case its parent is not visible.
-  // TODO(sky): if I instead change the opacity of the parent this isn't an
-  // issue, but will make animations trickier... Consider which one is better.
-  if (window) {
-    internal::RootWindowController* root_window_controller =
-        GetRootWindowController(window->GetRootWindow());
-    root_window_controller->workspace_controller()->
-        SetActiveWorkspaceByWindow(window);
-  }
-
   // Restore minimized window. This needs to be done before CanReceiveEvents()
   // is called as that function checks window visibility.
   if (window && wm::IsWindowMinimized(window))

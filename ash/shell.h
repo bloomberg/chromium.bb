@@ -125,7 +125,6 @@ class StatusAreaWidget;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class TouchObserverHUD;
-class WorkspaceController;
 }
 
 namespace shell {

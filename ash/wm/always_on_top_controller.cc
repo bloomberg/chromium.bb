@@ -4,7 +4,8 @@
 
 #include "ash/wm/always_on_top_controller.h"
 
-#include "ash/root_window_controller.h"
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/aura_constants.h"
@@ -38,8 +39,8 @@ aura::Window* AlwaysOnTopController::GetContainer(aura::Window* window) const {
   DCHECK(always_on_top_container_);
   if (window->GetProperty(aura::client::kAlwaysOnTopKey))
     return always_on_top_container_;
-  return GetRootWindowController(always_on_top_container_->GetRootWindow())->
-      workspace_controller()->GetParentForNewWindow(window);
+  return Shell::GetContainer(always_on_top_container_->GetRootWindow(),
+                             kShellWindowId_WorkspaceContainer);
 }
 
 void AlwaysOnTopController::OnWindowAdded(aura::Window* child) {

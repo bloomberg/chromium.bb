@@ -6,17 +6,16 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/base_layout_manager.h"
+#include "ash/wm/frame_painter.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace.h"
-#include "ash/wm/workspace/workspace_manager.h"
-#include "ash/wm/workspace/workspace_window_resizer.h"
-#include "base/auto_reset.h"
+#include "ash/wm/workspace/auto_window_management.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -44,37 +43,48 @@ bool IsMaximizedState(ui::WindowShowState state) {
 
 }  // namespace
 
-WorkspaceLayoutManager::WorkspaceLayoutManager(Workspace* workspace)
-    : BaseLayoutManager(workspace->window()->GetRootWindow()),
-      workspace_(workspace),
+WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
+    : BaseLayoutManager(window->GetRootWindow()),
+      shelf_(NULL),
+      window_(window),
       work_area_(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
-                     workspace->window()->parent())) {
+          window->parent())) {
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {
+}
+
+void WorkspaceLayoutManager::SetShelf(internal::ShelfLayoutManager* shelf) {
+  shelf_ = shelf;
 }
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
   // Adjust window bounds in case that the new child is out of the workspace.
   AdjustWindowSizeForScreenChange(child, ADJUST_WINDOW_WINDOW_ADDED);
   BaseLayoutManager::OnWindowAddedToLayout(child);
-  workspace_manager()->OnWindowAddedToWorkspace(workspace_, child);
+  UpdateDesktopVisibility();
+  RearrangeVisibleWindowOnShow(child);
 }
 
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(Window* child) {
   BaseLayoutManager::OnWillRemoveWindowFromLayout(child);
-  workspace_manager()->OnWillRemoveWindowFromWorkspace(workspace_, child);
+  if (child->TargetVisibility())
+    RearrangeVisibleWindowOnHideOrRemove(child);
 }
 
 void WorkspaceLayoutManager::OnWindowRemovedFromLayout(Window* child) {
-  workspace_manager()->OnWindowRemovedFromWorkspace(workspace_, child);
+  BaseLayoutManager::OnWindowRemovedFromLayout(child);
+  UpdateDesktopVisibility();
 }
 
 void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
                                                             bool visible) {
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
-  workspace_manager()->OnWorkspaceChildWindowVisibilityChanged(workspace_,
-                                                               child);
+  if (child->TargetVisibility())
+    RearrangeVisibleWindowOnShow(child);
+  else
+    RearrangeVisibleWindowOnHideOrRemove(child);
+  UpdateDesktopVisibility();
 }
 
 void WorkspaceLayoutManager::SetChildBounds(
@@ -94,16 +104,14 @@ void WorkspaceLayoutManager::SetChildBounds(
         std::min(work_area_.height(), child_bounds.height()));
     SetChildBoundsDirect(child, child_bounds);
   }
-  workspace_manager()->OnWorkspaceWindowChildBoundsChanged(workspace_, child);
+  UpdateDesktopVisibility();
 }
 
 void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
-  if (workspace_manager()->active_workspace_ == workspace_) {
-    const gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
-                                  workspace_->window()->parent()));
-    if (work_area != work_area_)
-      AdjustWindowSizesForScreenChange(ADJUST_WINDOW_DISPLAY_INSETS_CHANGED);
-  }
+  const gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+      window_->parent()));
+  if (work_area != work_area_)
+    AdjustWindowSizesForScreenChange(ADJUST_WINDOW_DISPLAY_INSETS_CHANGED);
 }
 
 void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
@@ -143,7 +151,6 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
 
   if (key == internal::kWindowTrackedByWorkspaceKey &&
       GetTrackedByWorkspace(window)) {
-    workspace_manager()->OnTrackedByWorkspaceChanged(workspace_, window);
     SetMaximizedOrFullscreenBounds(window);
   }
 
@@ -159,38 +166,13 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
 void WorkspaceLayoutManager::ShowStateChanged(
     Window* window,
     ui::WindowShowState last_show_state) {
-  if (wm::IsWindowMinimized(window)) {
-    // Save the previous show state so that we can correctly restore it.
-    window->SetProperty(aura::client::kRestoreShowStateKey, last_show_state);
-    views::corewm::SetWindowVisibilityAnimationType(
-        window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
-    workspace_manager()->OnWorkspaceWindowShowStateChanged(
-        workspace_, window, last_show_state);
-    window->Hide();
-    if (wm::IsActiveWindow(window))
-      wm::DeactivateWindow(window);
-  } else {
-    if ((window->TargetVisibility() ||
-         last_show_state == ui::SHOW_STATE_MINIMIZED) &&
-        !window->layer()->visible()) {
-      // The layer may be hidden if the window was previously minimized. Make
-      // sure it's visible.
-      window->Show();
-    }
-    if (last_show_state == ui::SHOW_STATE_MINIMIZED &&
-        !wm::IsWindowMaximized(window) &&
-        !wm::IsWindowFullscreen(window)) {
-      window->ClearProperty(internal::kWindowRestoresToRestoreBounds);
-    }
-    workspace_manager()->OnWorkspaceWindowShowStateChanged(
-        workspace_, window, last_show_state);
-  }
+  BaseLayoutManager::ShowStateChanged(window, last_show_state);
+  UpdateDesktopVisibility();
 }
 
 void WorkspaceLayoutManager::AdjustWindowSizesForScreenChange(
     AdjustWindowReason reason) {
-  work_area_ = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
-      workspace_->window()->parent());
+  work_area_ = ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_->parent());
   BaseLayoutManager::AdjustWindowSizesForScreenChange(reason);
 }
 
@@ -232,6 +214,12 @@ void WorkspaceLayoutManager::AdjustWindowSizeForScreenChange(
   }
   if (window->bounds() != bounds)
     window->SetBounds(bounds);
+}
+
+void WorkspaceLayoutManager::UpdateDesktopVisibility() {
+  if (shelf_)
+    shelf_->UpdateVisibilityState();
+  FramePainter::UpdateSoloWindowHeader(window_->GetRootWindow());
 }
 
 void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
@@ -290,10 +278,6 @@ bool WorkspaceLayoutManager::SetMaximizedOrFullscreenBounds(
     return true;
   }
   return false;
-}
-
-WorkspaceManager* WorkspaceLayoutManager::workspace_manager() {
-  return workspace_->workspace_manager();
 }
 
 }  // namespace internal

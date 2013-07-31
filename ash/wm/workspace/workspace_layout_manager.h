@@ -28,16 +28,15 @@ namespace ash {
 
 namespace internal {
 
-class Workspace;
-class WorkspaceManager;
+class ShelfLayoutManager;
 
-// LayoutManager used on the window created for a Workspace.
-class ASH_EXPORT WorkspaceLayoutManager
-    : public BaseLayoutManager {
+// LayoutManager used on the window created for a workspace.
+class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
  public:
- public:
-  explicit WorkspaceLayoutManager(Workspace* workspace);
+  explicit WorkspaceLayoutManager(aura::Window* window);
   virtual ~WorkspaceLayoutManager();
+
+  void SetShelf(internal::ShelfLayoutManager* shelf);
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE {}
@@ -67,6 +66,8 @@ class ASH_EXPORT WorkspaceLayoutManager
       aura::Window* window,
       AdjustWindowReason reason) OVERRIDE;
 
+  void UpdateDesktopVisibility();
+
   // Updates the bounds of the window from a show state change.
   void UpdateBoundsFromShowState(aura::Window* window);
 
@@ -74,9 +75,8 @@ class ASH_EXPORT WorkspaceLayoutManager
   // true is returned. Does nothing otherwise.
   bool SetMaximizedOrFullscreenBounds(aura::Window* window);
 
-  WorkspaceManager* workspace_manager();
-
-  Workspace* workspace_;
+  internal::ShelfLayoutManager* shelf_;
+  aura::Window* window_;
 
   // The work area. Cached to avoid unnecessarily moving windows during a
   // workspace switch.

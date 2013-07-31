@@ -195,12 +195,6 @@ void ScreenPositionController::SetBounds(aura::Window* window,
       if (active && focused != active)
         tracker.Add(active);
 
-      if (dst_container->id() == kShellWindowId_WorkspaceContainer) {
-        dst_container =
-            GetRootWindowController(dst_root)->workspace_controller()->
-            GetParentForNewWindow(window);
-      }
-
       dst_container->AddChild(window);
 
       MoveAllTransientChildrenToNewRoot(display, window);

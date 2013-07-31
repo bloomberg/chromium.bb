@@ -9,7 +9,6 @@
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/client/activation_change_observer.h"
 
 namespace aura {
 class Window;
@@ -21,12 +20,11 @@ namespace internal {
 class ShelfLayoutManager;
 class WorkspaceControllerTestHelper;
 class WorkspaceEventHandler;
-class WorkspaceManager;
+class WorkspaceLayoutManager;
 
 // WorkspaceController acts as a central place that ties together all the
 // various workspace pieces.
-class ASH_EXPORT WorkspaceController
-    : public aura::client::ActivationChangeObserver {
+class ASH_EXPORT WorkspaceController {
  public:
   explicit WorkspaceController(aura::Window* viewport);
   virtual ~WorkspaceController();
@@ -36,31 +34,21 @@ class ASH_EXPORT WorkspaceController
 
   void SetShelf(ShelfLayoutManager* shelf);
 
-  // Sets the active workspace based on |window|.
-  void SetActiveWorkspaceByWindow(aura::Window* window);
-
   // Returns the container window for the active workspace, never NULL.
   aura::Window* GetActiveWorkspaceWindow();
 
-  // See description in WorkspaceManager::GetParentForNewWindow().
-  aura::Window* GetParentForNewWindow(aura::Window* window);
-
   // Starts the animation that occurs on first login.
   void DoInitialAnimation();
-
-  // aura::client::ActivationChangeObserver overrides:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
-  virtual void OnAttemptToReactivateWindow(
-      aura::Window* request_active,
-      aura::Window* actual_active) OVERRIDE;
 
  private:
   friend class WorkspaceControllerTestHelper;
 
   aura::Window* viewport_;
 
-  scoped_ptr<WorkspaceManager> workspace_manager_;
+  internal::ShelfLayoutManager* shelf_;
+  scoped_ptr<aura::Window> desktop_;
+  scoped_ptr<internal::WorkspaceEventHandler> event_handler_;
+  internal::WorkspaceLayoutManager* layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceController);
 };

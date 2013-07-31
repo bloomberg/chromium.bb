@@ -184,6 +184,11 @@ void BaseLayoutManager::ShowStateChanged(aura::Window* window,
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
     window->Show();
+    if (last_show_state == ui::SHOW_STATE_MINIMIZED &&
+        !wm::IsWindowMaximized(window) &&
+        !wm::IsWindowFullscreen(window)) {
+      window->ClearProperty(internal::kWindowRestoresToRestoreBounds);
+    }
   }
 }
 
