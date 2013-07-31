@@ -1395,7 +1395,7 @@ const wallet::WalletItems::MaskedInstrument* AutofillDialogControllerImpl::
 
 const wallet::Address* AutofillDialogControllerImpl::
     ActiveShippingAddress() const {
-  if (!IsPayingWithWallet())
+  if (!IsPayingWithWallet() || !IsShippingAddressRequired())
     return NULL;
 
   const SuggestionsMenuModel* model =
@@ -2165,6 +2165,10 @@ std::string AutofillDialogControllerImpl::GetWalletCookieValue() const {
   return wallet_cookie_value_;
 }
 
+bool AutofillDialogControllerImpl::IsShippingAddressRequired() const {
+  return cares_about_shipping_;
+}
+
 void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
   DCHECK(is_submitting_ && IsPayingWithWallet());
   has_accepted_legal_documents_ = true;
@@ -2787,9 +2791,7 @@ bool AutofillDialogControllerImpl::FormStructureCaresAboutSection(
     DialogSection section) const {
   // For now, only SECTION_SHIPPING may be omitted due to a site not asking for
   // any of the fields.
-  // TODO(estade): remove !IsPayingWithWallet() check once WalletClient support
-  // is added. http://crbug.com/243514
-  if (section == SECTION_SHIPPING && !IsPayingWithWallet())
+  if (section == SECTION_SHIPPING)
     return cares_about_shipping_;
 
   return true;
@@ -3059,7 +3061,8 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
 
   const wallet::Address* active_address = ActiveShippingAddress();
   if (!IsManuallyEditingSection(SECTION_SHIPPING) &&
-      !ShouldUseBillingForShipping()) {
+      !ShouldUseBillingForShipping() &&
+      IsShippingAddressRequired()) {
     active_address_id_ = active_address->object_id();
     DCHECK(!active_address_id_.empty());
   }
@@ -3077,7 +3080,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
   }
 
   scoped_ptr<wallet::Address> inputted_address;
-  if (active_address_id_.empty()) {
+  if (active_address_id_.empty() && IsShippingAddressRequired()) {
     if (ShouldUseBillingForShipping()) {
       const wallet::Address& address = inputted_instrument ?
           *inputted_instrument->address() : active_instrument->address();
@@ -3103,7 +3106,8 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
 
   // If there's neither an address nor instrument to save, |GetFullWallet()|
   // is called when the risk fingerprint is loaded.
-  if (!active_instrument_id_.empty() && !active_address_id_.empty()) {
+  if (!active_instrument_id_.empty() &&
+      (!active_address_id_.empty() || !IsShippingAddressRequired())) {
     GetFullWallet();
     return;
   }
@@ -3147,7 +3151,7 @@ void AutofillDialogControllerImpl::GetFullWallet() {
   DCHECK(IsPayingWithWallet());
   DCHECK(wallet_items_);
   DCHECK(!active_instrument_id_.empty());
-  DCHECK(!active_address_id_.empty());
+  DCHECK(!active_address_id_.empty() || !IsShippingAddressRequired());
 
   std::vector<wallet::WalletClient::RiskCapability> capabilities;
   capabilities.push_back(wallet::WalletClient::VERIFY_CVC);

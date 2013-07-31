@@ -231,6 +231,7 @@ const char kInstrumentExpYearKey[] = "instrument.credit_card.exp_year";
 const char kInstrumentType[] = "instrument.type";
 const char kInstrumentPhoneNumberKey[] = "instrument_phone_number";
 const char kMerchantDomainKey[] = "merchant_domain";
+const char kPhoneNumberRequired[] = "phone_number_required";
 const char kReasonKey[] = "reason";
 const char kRiskCapabilitiesKey[] = "supported_risk_challenge";
 const char kRiskParamsKey[] = "risk_params";
@@ -239,10 +240,12 @@ const char kSelectedInstrumentIdKey[] = "selected_instrument_id";
 const char kSessionMaterialKey[] = "session_material";
 const char kShippingAddressIdKey[] = "shipping_address_id";
 const char kShippingAddressKey[] = "shipping_address";
+const char kShippingAddressRequired[] = "shipping_address_required";
 const char kAutocheckoutStepsKey[] = "steps";
 const char kSuccessKey[] = "success";
 const char kUpgradedBillingAddressKey[] = "upgraded_billing_address";
 const char kUpgradedInstrumentIdKey[] = "upgraded_instrument_id";
+const char kUseMinimalAddresses[] = "use_minimal_addresses";
 
 }  // namespace
 
@@ -335,6 +338,9 @@ void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
   base::DictionaryValue request_dict;
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
   request_dict.SetString(kRiskParamsKey, delegate_->GetRiskData());
+  request_dict.SetBoolean(kUseMinimalAddresses, false);
+  request_dict.SetBoolean(kPhoneNumberRequired, true);
+
   request_dict.SetString(kSelectedInstrumentIdKey,
                          full_wallet_request.instrument_id);
   request_dict.SetString(kSelectedAddressIdKey, full_wallet_request.address_id);
@@ -394,6 +400,8 @@ void WalletClient::SaveToWallet(scoped_ptr<Instrument> instrument,
   request_dict.SetString(kRiskParamsKey, delegate_->GetRiskData());
   request_dict.SetString(kMerchantDomainKey,
                          source_url.GetWithEmptyPath().spec());
+  request_dict.SetBoolean(kUseMinimalAddresses, false);
+  request_dict.SetBoolean(kPhoneNumberRequired, true);
 
   std::string primary_account_number;
   std::string card_verification_number;
@@ -481,6 +489,10 @@ void WalletClient::GetWalletItems(const GURL& source_url) {
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
   request_dict.SetString(kMerchantDomainKey,
                          source_url.GetWithEmptyPath().spec());
+  request_dict.SetBoolean(kShippingAddressRequired,
+                          delegate_->IsShippingAddressRequired());
+  request_dict.SetBoolean(kUseMinimalAddresses, false);
+  request_dict.SetBoolean(kPhoneNumberRequired, true);
 
   std::string post_body;
   base::JSONWriter::Write(&request_dict, &post_body);

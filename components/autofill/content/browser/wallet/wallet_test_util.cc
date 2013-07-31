@@ -96,6 +96,20 @@ scoped_ptr<FullWallet> GetTestFullWallet() {
   return wallet.Pass();
 }
 
+scoped_ptr<FullWallet> GetTestFullWalletInstrumentOnly() {
+  scoped_ptr<FullWallet> wallet(new FullWallet(FutureYear(),
+                                               12,
+                                               "528512",
+                                               "5ec4feecf9d6",
+                                               GetTestAddress(),
+                                               scoped_ptr<Address>(),
+                                               std::vector<RequiredAction>()));
+  std::vector<uint8> one_time_pad;
+  base::HexStringToBytes("5F04A8704183", &one_time_pad);
+  wallet->set_one_time_pad(one_time_pad);
+  return wallet.Pass();
+}
+
 scoped_ptr<Instrument> GetTestInstrument() {
   return scoped_ptr<Instrument>(new Instrument(ASCIIToUTF16("4444444444444448"),
                                                ASCIIToUTF16("123"),

@@ -2097,6 +2097,34 @@ TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHidden) {
   EXPECT_TRUE(form_structure());
 }
 
+TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHiddenForWallet) {
+  SwitchToWallet();
+
+  FormFieldData email_field;
+  email_field.autocomplete_attribute = "email";
+  FormFieldData cc_field;
+  cc_field.autocomplete_attribute = "cc-number";
+  FormFieldData billing_field;
+  billing_field.autocomplete_attribute = "billing region";
+
+  FormData form_data;
+  form_data.fields.push_back(email_field);
+  form_data.fields.push_back(cc_field);
+  form_data.fields.push_back(billing_field);
+
+  SetUpControllerWithFormData(form_data);
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_SHIPPING));
+  EXPECT_FALSE(controller()->IsShippingAddressRequired());
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              GetFullWallet(_)).Times(1);
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  SubmitWithWalletItems(wallet_items.Pass());
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWalletInstrumentOnly());
+  EXPECT_TRUE(form_structure());
+}
+
 TEST_F(AutofillDialogControllerTest, NotProdNotification) {
   // To make IsPayingWithWallet() true.
   controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());

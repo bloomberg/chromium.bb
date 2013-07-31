@@ -317,12 +317,14 @@ const char kGetFullWalletValidRequest[] =
         "\"feature\":\"REQUEST_AUTOCOMPLETE\","
         "\"google_transaction_id\":\"google_transaction_id\","
         "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
         "\"risk_params\":\"risky business\","
         "\"selected_address_id\":\"shipping_address_id\","
         "\"selected_instrument_id\":\"instrument_id\","
         "\"supported_risk_challenge\":"
         "["
-        "]"
+        "],"
+        "\"use_minimal_addresses\":false"
     "}";
 
 const char kGetFullWalletWithRiskCapabilitesValidRequest[] =
@@ -330,23 +332,37 @@ const char kGetFullWalletWithRiskCapabilitesValidRequest[] =
         "\"feature\":\"REQUEST_AUTOCOMPLETE\","
         "\"google_transaction_id\":\"google_transaction_id\","
         "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
         "\"risk_params\":\"risky business\","
         "\"selected_address_id\":\"shipping_address_id\","
         "\"selected_instrument_id\":\"instrument_id\","
         "\"supported_risk_challenge\":"
         "["
             "\"VERIFY_CVC\""
-        "]"
+        "],"
+        "\"use_minimal_addresses\":false"
     "}";
 
 const char kGetWalletItemsValidRequest[] =
     "{"
-        "\"merchant_domain\":\"https://example.com/\""
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
+        "\"shipping_address_required\":true,"
+        "\"use_minimal_addresses\":false"
+    "}";
+
+const char kGetWalletItemsNoShippingRequest[] =
+    "{"
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
+        "\"shipping_address_required\":false,"
+        "\"use_minimal_addresses\":false"
     "}";
 
 const char kSaveAddressValidRequest[] =
     "{"
         "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
         "\"risk_params\":\"risky business\","
         "\"shipping_address\":"
         "{"
@@ -364,7 +380,8 @@ const char kSaveAddressValidRequest[] =
                 "\"postal_code_number\":\"save_postal_code_number\","
                 "\"recipient_name\":\"save_recipient_name\""
             "}"
-        "}"
+        "},"
+        "\"use_minimal_addresses\":false"
     "}";
 
 const char kSaveInstrumentValidRequest[] =
@@ -395,7 +412,9 @@ const char kSaveInstrumentValidRequest[] =
         "},"
         "\"instrument_phone_number\":\"phone_number\","
         "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"risky business\""
+        "\"phone_number_required\":true,"
+        "\"risk_params\":\"risky business\","
+        "\"use_minimal_addresses\":false"
       "}";
 
 const char kSaveInstrumentAndAddressValidRequest[] =
@@ -426,6 +445,7 @@ const char kSaveInstrumentAndAddressValidRequest[] =
         "},"
         "\"instrument_phone_number\":\"phone_number\","
         "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
         "\"risk_params\":\"risky business\","
         "\"shipping_address\":"
         "{"
@@ -443,7 +463,8 @@ const char kSaveInstrumentAndAddressValidRequest[] =
                 "\"postal_code_number\":\"save_postal_code_number\","
                 "\"recipient_name\":\"save_recipient_name\""
             "}"
-        "}"
+        "},"
+        "\"use_minimal_addresses\":false"
     "}";
 
 const char kSendAutocheckoutStatusOfSuccessValidRequest[] =
@@ -473,6 +494,7 @@ const char kSendAutocheckoutStatusOfFailureValidRequest[] =
 const char kUpdateAddressValidRequest[] =
     "{"
         "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
         "\"risk_params\":\"risky business\","
         "\"shipping_address\":"
         "{"
@@ -491,13 +513,15 @@ const char kUpdateAddressValidRequest[] =
                 "\"postal_code_number\":\"ship_postal_code_number\","
                 "\"recipient_name\":\"ship_recipient_name\""
             "}"
-        "}"
+        "},"
+        "\"use_minimal_addresses\":false"
     "}";
 
 const char kUpdateInstrumentAddressValidRequest[] =
     "{"
         "\"instrument_phone_number\":\"phone_number\","
         "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
         "\"risk_params\":\"risky business\","
         "\"upgraded_billing_address\":"
         "{"
@@ -512,13 +536,15 @@ const char kUpdateInstrumentAddressValidRequest[] =
             "\"postal_code_number\":\"postal_code_number\","
             "\"recipient_name\":\"recipient_name\""
         "},"
-        "\"upgraded_instrument_id\":\"instrument_id\""
+        "\"upgraded_instrument_id\":\"instrument_id\","
+        "\"use_minimal_addresses\":false"
     "}";
 
 const char kUpdateInstrumentAddressWithNameChangeValidRequest[] =
     "{"
         "\"instrument_phone_number\":\"phone_number\","
         "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
         "\"risk_params\":\"risky business\","
         "\"upgraded_billing_address\":"
         "{"
@@ -533,7 +559,8 @@ const char kUpdateInstrumentAddressWithNameChangeValidRequest[] =
             "\"postal_code_number\":\"postal_code_number\","
             "\"recipient_name\":\"recipient_name\""
         "},"
-        "\"upgraded_instrument_id\":\"instrument_id\""
+        "\"upgraded_instrument_id\":\"instrument_id\","
+        "\"use_minimal_addresses\":false"
     "}";
 
 const char kUpdateInstrumentExpirationDateValidRequest[] =
@@ -548,8 +575,10 @@ const char kUpdateInstrumentExpirationDateValidRequest[] =
             "\"type\":\"CREDIT_CARD\""
         "},"
         "\"merchant_domain\":\"https://example.com/\","
+        "\"phone_number_required\":true,"
         "\"risk_params\":\"risky business\","
-        "\"upgraded_instrument_id\":\"instrument_id\""
+        "\"upgraded_instrument_id\":\"instrument_id\","
+        "\"use_minimal_addresses\":false"
     "}";
 
 class MockAutofillMetrics : public AutofillMetrics {
@@ -570,7 +599,9 @@ class MockAutofillMetrics : public AutofillMetrics {
 class MockWalletClientDelegate : public WalletClientDelegate {
  public:
   MockWalletClientDelegate()
-      : full_wallets_received_(0), wallet_items_received_(0) {}
+      : full_wallets_received_(0),
+        wallet_items_received_(0),
+        is_shipping_required_(true) {}
   ~MockWalletClientDelegate() {}
 
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
@@ -587,6 +618,14 @@ class MockWalletClientDelegate : public WalletClientDelegate {
 
   virtual std::string GetWalletCookieValue() const OVERRIDE {
     return "gdToken";
+  }
+
+  virtual bool IsShippingAddressRequired() const OVERRIDE {
+    return is_shipping_required_;
+  }
+
+  void SetIsShippingAddressRequired(bool is_shipping_required) {
+    is_shipping_required_ = is_shipping_required;
   }
 
   void ExpectLogWalletApiCallDuration(
@@ -650,6 +689,7 @@ class MockWalletClientDelegate : public WalletClientDelegate {
  private:
   size_t full_wallets_received_;
   size_t wallet_items_received_;
+  bool is_shipping_required_;
 
   testing::StrictMock<MockAutofillMetrics> metric_logger_;
 };
@@ -1005,6 +1045,20 @@ TEST_F(WalletClientTest, GetWalletItems) {
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsValidRequest,
+                         kGetWalletItemsValidResponse);
+  EXPECT_EQ(1U, delegate_.wallet_items_received());
+}
+
+TEST_F(WalletClientTest, GetWalletItemsRespectsDelegateForShippingRequired) {
+  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
+                                           1);
+  delegate_.ExpectBaselineMetrics();
+  delegate_.SetIsShippingAddressRequired(false);
+
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+
+  VerifyAndFinishRequest(net::HTTP_OK,
+                         kGetWalletItemsNoShippingRequest,
                          kGetWalletItemsValidResponse);
   EXPECT_EQ(1U, delegate_.wallet_items_received());
 }

@@ -210,6 +210,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual DialogType GetDialogType() const OVERRIDE;
   virtual std::string GetRiskData() const OVERRIDE;
   virtual std::string GetWalletCookieValue() const OVERRIDE;
+  virtual bool IsShippingAddressRequired() const OVERRIDE;
   virtual void OnDidAcceptLegalDocuments() OVERRIDE;
   virtual void OnDidAuthenticateInstrument(bool success) OVERRIDE;
   virtual void OnDidGetFullWallet(

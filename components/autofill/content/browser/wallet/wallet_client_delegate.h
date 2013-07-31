@@ -43,6 +43,9 @@ class WalletClientDelegate {
   // Wallet.
   virtual std::string GetWalletCookieValue() const = 0;
 
+  // Whether or not shipping address is required by the delegate.
+  virtual bool IsShippingAddressRequired() const = 0;
+
   // --------------------------------------------------------------------------
   // Callbacks called with responses from the Online Wallet backend.
   // --------------------------------------------------------------------------

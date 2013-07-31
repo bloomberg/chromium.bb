@@ -65,6 +65,11 @@ std::string AutocheckoutRequestManager::GetWalletCookieValue() const {
   return std::string();
 }
 
+bool AutocheckoutRequestManager::IsShippingAddressRequired() const {
+  NOTREACHED();
+  return true;
+}
+
 void AutocheckoutRequestManager::OnDidAcceptLegalDocuments() {
   NOTREACHED();
 }

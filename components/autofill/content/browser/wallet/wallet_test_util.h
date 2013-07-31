@@ -18,6 +18,7 @@ class Instrument;
 scoped_ptr<Address> GetTestAddress();
 scoped_ptr<Address> GetTestMinimalAddress();
 scoped_ptr<FullWallet> GetTestFullWallet();
+scoped_ptr<FullWallet> GetTestFullWalletInstrumentOnly();
 scoped_ptr<Instrument> GetTestInstrument();
 scoped_ptr<Instrument> GetTestAddressUpgradeInstrument();
 scoped_ptr<Instrument> GetTestExpirationDateChangeInstrument();
