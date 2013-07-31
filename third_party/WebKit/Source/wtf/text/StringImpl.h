@@ -158,20 +158,6 @@ private:
         STRING_STATS_ADD_16BIT_STRING(m_length);
     }
 
-    enum ConstructFromLiteralTag { ConstructFromLiteral };
-    StringImpl(const char* characters, unsigned length, ConstructFromLiteralTag)
-        : m_data8(reinterpret_cast<const LChar*>(characters))
-        , m_refCount(s_refCountIncrement)
-        , m_length(length)
-        , m_hashAndFlags(s_hashFlag8BitBuffer)
-    {
-        ASSERT(m_data8);
-        ASSERT(m_length);
-        ASSERT(!characters[length]);
-
-        STRING_STATS_ADD_8BIT_STRING(0);
-    }
-
 public:
     ~StringImpl();
 
@@ -187,17 +173,6 @@ public:
     ALWAYS_INLINE static PassRefPtr<StringImpl> create(const char* s, unsigned length) { return create(reinterpret_cast<const LChar*>(s), length); }
     static PassRefPtr<StringImpl> create(const LChar*);
     ALWAYS_INLINE static PassRefPtr<StringImpl> create(const char* s) { return create(reinterpret_cast<const LChar*>(s)); }
-
-    static PassRefPtr<StringImpl> createFromLiteral(const char* characters, unsigned length);
-    template<unsigned charactersCount>
-    ALWAYS_INLINE static PassRefPtr<StringImpl> createFromLiteral(const char (&characters)[charactersCount])
-    {
-        COMPILE_ASSERT(charactersCount > 1, StringImplFromLiteralNotEmpty);
-        COMPILE_ASSERT((charactersCount - 1 <= ((unsigned(~0) - sizeof(StringImpl)) / sizeof(LChar))), StringImplFromLiteralCannotOverflow);
-
-        return createFromLiteral(characters, charactersCount - 1);
-    }
-    static PassRefPtr<StringImpl> createFromLiteral(const char* characters);
 
     static PassRefPtr<StringImpl> createUninitialized(unsigned length, LChar*& data);
     static PassRefPtr<StringImpl> createUninitialized(unsigned length, UChar*& data);
@@ -235,7 +210,6 @@ public:
     void truncateAssumingIsolated(unsigned length)
     {
         ASSERT(hasOneRef());
-        ASSERT(!isASCIILiteral());
         ASSERT(length <= m_length);
         m_length = length;
     }
@@ -467,11 +441,6 @@ public:
 #endif
 
 private:
-    bool isASCIILiteral() const
-    {
-        return is8Bit() && length() && reinterpret_cast<const void*>(m_data8) != reinterpret_cast<const void*>(this + 1);
-    }
-
     // This number must be at least 2 to avoid sharing empty, null as well as 1 character strings from SmallStrings.
     static const unsigned s_copyCharsInlineCutOff = 20;
 
@@ -797,8 +766,6 @@ static inline bool isSpaceOrNewline(UChar c)
 
 inline PassRefPtr<StringImpl> StringImpl::isolatedCopy() const
 {
-    if (isASCIILiteral())
-        return StringImpl::createFromLiteral(reinterpret_cast<const char*>(m_data8), m_length);
     if (is8Bit())
         return create(m_data8, m_length);
     return create(m_data16, m_length);

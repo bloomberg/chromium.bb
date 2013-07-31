@@ -260,21 +260,6 @@ StringImpl::~StringImpl()
         AtomicString::remove(this);
 }
 
-PassRefPtr<StringImpl> StringImpl::createFromLiteral(const char* characters, unsigned length)
-{
-    ASSERT_WITH_MESSAGE(length, "Use StringImpl::empty() to create an empty string");
-    ASSERT(charactersAreAllASCII<LChar>(reinterpret_cast<const LChar*>(characters), length));
-    return adoptRef(new StringImpl(characters, length, ConstructFromLiteral));
-}
-
-PassRefPtr<StringImpl> StringImpl::createFromLiteral(const char* characters)
-{
-    size_t length = strlen(characters);
-    ASSERT_WITH_MESSAGE(length, "Use StringImpl::empty() to create an empty string");
-    ASSERT(charactersAreAllASCII<LChar>(reinterpret_cast<const LChar*>(characters), length));
-    return adoptRef(new StringImpl(characters, length, ConstructFromLiteral));
-}
-
 PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, LChar*& data)
 {
     if (!length) {
@@ -314,7 +299,6 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& 
 PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalString, unsigned length, LChar*& data)
 {
     ASSERT(originalString->is8Bit());
-    ASSERT(!originalString->isASCIILiteral());
     ASSERT(originalString->hasOneRef());
 
     if (!length) {
@@ -335,7 +319,6 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
 PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalString, unsigned length, UChar*& data)
 {
     ASSERT(!originalString->is8Bit());
-    ASSERT(!originalString->isASCIILiteral());
     ASSERT(originalString->hasOneRef());
 
     if (!length) {

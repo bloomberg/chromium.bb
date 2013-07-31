@@ -358,7 +358,7 @@ struct CharBufferFromLiteralDataTranslator {
 
     static void translate(StringImpl*& location, const CharBuffer& buf, unsigned hash)
     {
-        location = StringImpl::createFromLiteral(buf.s, buf.length).leakRef();
+        location = StringImpl::create(buf.s, buf.length).leakRef();
         location->setHash(hash);
         location->setIsAtomic(true);
     }

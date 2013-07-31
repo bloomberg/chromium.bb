@@ -79,11 +79,6 @@ String::String(const char* characters)
 {
 }
 
-String::String(ASCIILiteral characters)
-    : m_impl(StringImpl::createFromLiteral(characters))
-{
-}
-
 void String::append(const String& string)
 {
     if (string.isEmpty())

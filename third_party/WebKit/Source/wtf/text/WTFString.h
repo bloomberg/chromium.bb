@@ -74,8 +74,6 @@ WTF_EXPORT float charactersToFloat(const UChar*, size_t, bool* ok = 0);
 WTF_EXPORT float charactersToFloat(const LChar*, size_t, size_t& parsedLength);
 WTF_EXPORT float charactersToFloat(const UChar*, size_t, size_t& parsedLength);
 
-class ASCIILiteral;
-
 enum TrailingZerosTruncatingPolicy {
     KeepTrailingZeros,
     TruncateTrailingZeros
@@ -83,6 +81,16 @@ enum TrailingZerosTruncatingPolicy {
 
 template<bool isSpecialCharacter(UChar), typename CharacterType>
 bool isAllSpecialCharacters(const CharacterType*, size_t);
+
+// FIXME: Remove this class once all callers are gone.
+class ASCIILiteral {
+public:
+    explicit ASCIILiteral(const char* characters) : m_characters(characters) { }
+    operator const char*() { return m_characters; }
+
+private:
+    const char* m_characters;
+};
 
 class WTF_EXPORT String {
 public:
@@ -118,14 +126,10 @@ public:
     String(PassRefPtr<StringImpl> impl) : m_impl(impl) { }
     String(RefPtr<StringImpl> impl) : m_impl(impl) { }
 
-    // Construct a string from a constant string literal.
-    String(ASCIILiteral characters);
-
-    // Construct a string from a constant string literal.
-    // This constructor is the "big" version, as it put the length in the function call and generate bigger code.
+    // FIXME: Remove this API once all callers are gone.
     enum ConstructFromLiteralTag { ConstructFromLiteral };
-    template<unsigned charactersCount>
-    String(const char (&characters)[charactersCount], ConstructFromLiteralTag) : m_impl(StringImpl::createFromLiteral<charactersCount>(characters)) { }
+    String(const char* characters, ConstructFromLiteralTag) : m_impl(StringImpl::create(reinterpret_cast<const LChar*>(characters))) { }
+    String(ASCIILiteral literal) : m_impl(StringImpl::create(reinterpret_cast<const LChar*>(static_cast<const char*>(literal)))) { }
 
 #if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
     // We have to declare the copy constructor and copy assignment operator as well, otherwise
@@ -689,15 +693,6 @@ template<> struct DefaultHash<String> {
 };
 
 template <> struct VectorTraits<String> : SimpleClassVectorTraits { };
-
-class ASCIILiteral {
-public:
-    explicit ASCIILiteral(const char* characters) : m_characters(characters) { }
-    operator const char*() { return m_characters; }
-
-private:
-    const char* m_characters;
-};
 
 // Shared global empty string.
 WTF_EXPORT const String& emptyString();
