@@ -2030,9 +2030,10 @@ void TemplateURLService::UpdateDefaultSearch() {
     // Otherwise, it should be FindNewDefaultSearchProvider.
     TemplateURL* synced_default = GetPendingSyncedDefaultSearchProvider();
     if (synced_default) {
+      pending_synced_default_search_ = false;
+
       base::AutoReset<DefaultSearchChangeOrigin> change_origin(
           &dsp_change_origin_, DSP_CHANGE_SYNC_NOT_MANAGED);
-      pending_synced_default_search_ = false;
       SetDefaultSearchProviderNoNotify(synced_default);
     } else {
       SetDefaultSearchProviderNoNotify(FindNewDefaultSearchProvider());
