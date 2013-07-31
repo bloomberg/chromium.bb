@@ -150,7 +150,6 @@ ui::Range CharRangeToGlyphRange(const internal::TextRun& run,
             run.logical_clusters[run_range.end()] : run.glyph_count);
   }
   DCHECK(!result.is_reversed());
-  DCHECK(!result.is_empty());
   DCHECK(ui::Range(0, run.glyph_count).Contains(result));
   return result;
 }
@@ -513,6 +512,8 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
          ++it) {
       const ui::Range glyph_range = CharRangeToGlyphRange(*run,
           colors().GetRange(it).Intersect(run->range));
+      if (glyph_range.is_empty())
+        continue;
       renderer.SetForegroundColor(it->second);
       renderer.DrawPosText(&pos[glyph_range.start()],
                            &run->glyphs[glyph_range.start()],

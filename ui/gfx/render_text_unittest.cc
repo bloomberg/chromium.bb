@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/break_list.h"
+#include "ui/gfx/canvas.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -1568,21 +1569,27 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
 }
 #endif  // !defined(OS_MACOSX)
 
-// Changing colors between ligated Arabic glyphs should not break shaping.
-// TODO(ckocagil): Check whether this test passes on other platforms and enable
-// accordingly.
-#if defined(OS_WIN)
+// Changing colors between or inside ligated glyphs should not break shaping.
 TEST_F(RenderTextTest, SelectionKeepsLigatures) {
-  const base::string16 kTestLigature = WideToUTF16(L"\x633\x627");
+  const wchar_t* kTestStrings[] = {
+    L"\x644\x623",
+    L"\x633\x627"
+  };
 
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->set_selection_color(SK_ColorRED);
-  render_text->SetText(kTestLigature);
+  Canvas canvas;
 
-  const int expected_width = render_text->GetStringSize().width();
-  render_text->MoveCursorTo(SelectionModel(ui::Range(0, 1), CURSOR_FORWARD));
-  EXPECT_EQ(expected_width, render_text->GetStringSize().width());
+  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+    render_text->SetText(WideToUTF16(kTestStrings[i]));
+    const int expected_width = render_text->GetStringSize().width();
+    render_text->MoveCursorTo(SelectionModel(ui::Range(0, 1), CURSOR_FORWARD));
+    EXPECT_EQ(expected_width, render_text->GetStringSize().width());
+    // Draw the text. It shouldn't hit any DCHECKs or crash.
+    // See http://crbug.com/214150
+    render_text->Draw(&canvas);
+    render_text->MoveCursorTo(SelectionModel(0, CURSOR_FORWARD));
+  }
 }
-#endif  // defined(OS_WIN)
 
 }  // namespace gfx
