@@ -815,4 +815,18 @@ TEST_F(FocusManagerArrowKeyTraversalTest, ArrowKeyTraversal) {
   EXPECT_EQ(v[0], focus_manager->GetFocusedView());
 }
 
+TEST_F(FocusManagerTest, StoreFocusedView) {
+  View view;
+  GetFocusManager()->SetFocusedView(&view);
+  GetFocusManager()->StoreFocusedView(false);
+  EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
+  EXPECT_EQ(&view, GetFocusManager()->GetStoredFocusView());
+
+  // Repeat with |true|.
+  GetFocusManager()->SetFocusedView(&view);
+  GetFocusManager()->StoreFocusedView(true);
+  EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
+  EXPECT_EQ(&view, GetFocusManager()->GetStoredFocusView());
+}
+
 }  // namespace views

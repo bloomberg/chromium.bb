@@ -348,7 +348,9 @@ void FocusManager::ClearFocus() {
 }
 
 void FocusManager::StoreFocusedView(bool clear_native_focus) {
-  SetStoredFocusView(focused_view_);
+  View* focused_view = focused_view_;
+  // Don't do anything if no focused view. Storing the view (which is NULL), in
+  // this case, would clobber the view that was previously saved.
   if (!focused_view_)
     return;
 
@@ -360,9 +362,11 @@ void FocusManager::StoreFocusedView(bool clear_native_focus) {
     // deactivation can confuse registered WidgetFocusListeners, as the focus
     // is not changing due to a user-initiated event.
     AutoNativeNotificationDisabler local_notification_disabler;
+    // ClearFocus() also stores the focused view.
     ClearFocus();
   } else {
     SetFocusedView(NULL);
+    SetStoredFocusView(focused_view);
   }
 
   if (v)

@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   // The zoom bubble should not be anchored when it is shown in immersive
   // fullscreen and the top-of-window views are not revealed.
-  ZoomBubbleView::ShowBubble(web_contents, false);
+  ZoomBubbleView::ShowBubble(web_contents, true);
   ASSERT_TRUE(ZoomBubbleView::IsShowing());
   const ZoomBubbleView* zoom_bubble = ZoomBubbleView::GetZoomBubbleForTest();
   EXPECT_FALSE(zoom_bubble->anchor_view());
