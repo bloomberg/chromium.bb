@@ -15,21 +15,51 @@
   ],
   'conditions': [
     # This target won't build in fastbuild, since there are no PDBs. 
-    ['OS=="win" and fastbuild==0 and chrome_multiple_dll==0', {
-      'targets': [
-        {
-          'target_name': 'mini_installer_syzygy',
-          'type': 'executable',
-          'product_name': 'mini_installer',
+    ['OS=="win" and fastbuild==0', {
+      'conditions': [
+        ['chrome_multiple_dll==0', {
+          'targets': [
+            {
+              'target_name': 'mini_installer_syzygy',
+              'type': 'executable',
+              'product_name': 'mini_installer',
 
-          'variables': {
-            'chrome_dll_project': '../chrome_syzygy.gyp:chrome_dll_syzygy',
-            'chrome_dll_path': '<(PRODUCT_DIR)/syzygy/chrome.dll',
-            'output_dir': '<(PRODUCT_DIR)/syzygy',
-          },
-          # Bulk of the build configuration comes from here.
-          'includes': [ 'mini_installer.gypi', ],
-        },
+              'variables': {
+                'chrome_dll_project': [
+                  '../chrome_syzygy.gyp:chrome_dll_syzygy',
+                ],
+                'chrome_dll_path': [
+                  '<(PRODUCT_DIR)/syzygy/chrome.dll',
+                ],
+                'output_dir': '<(PRODUCT_DIR)/syzygy',
+              },
+              # Bulk of the build configuration comes from here.
+              'includes': [ 'mini_installer.gypi', ],
+            },
+          ],
+        }, {
+          'targets': [
+            {
+              'target_name': 'mini_installer_syzygy',
+              'type': 'executable',
+              'product_name': 'mini_installer',
+
+              'variables': {
+                'chrome_dll_project': [
+                  '../chrome_syzygy.gyp:chrome_dll_syzygy',
+                  '../chrome_syzygy.gyp:chrome_child_dll_syzygy',
+                ],
+                'chrome_dll_path': [
+                  '<(PRODUCT_DIR)/syzygy/chrome.dll',
+                  '<(PRODUCT_DIR)/syzygy/chrome_child.dll',
+                ],
+                'output_dir': '<(PRODUCT_DIR)/syzygy',
+              },
+              # Bulk of the build configuration comes from here.
+              'includes': [ 'mini_installer.gypi', ],
+            },
+          ],
+        }],
       ],
     },{
       'targets': [],
