@@ -249,15 +249,6 @@ public:
     template <typename CharType>
     ALWAYS_INLINE const CharType * getCharacters() const;
 
-    size_t cost()
-    {
-        if (m_hashAndFlags & s_hashFlagDidReportCost)
-            return 0;
-
-        m_hashAndFlags |= s_hashFlagDidReportCost;
-        return m_length;
-    }
-
     size_t sizeInBytes() const;
 
     bool isAtomic() const { return m_hashAndFlags & s_hashFlagIsAtomic; }
@@ -492,12 +483,11 @@ private:
     static const unsigned s_refCountFlagIsStaticString = 0x1;
     static const unsigned s_refCountIncrement = 0x2; // This allows us to ref / deref without disturbing the static string flag.
 
-    // The bottom 8 bits in the hash are flags, of which only 3 are currently in use.
+    // The bottom 8 bits in the hash are flags, of which only 2 are currently in use.
     static const unsigned s_flagCount = 8;
     static const unsigned s_flagMask = (1u << s_flagCount) - 1;
     COMPILE_ASSERT(s_flagCount == StringHasher::flagCount, StringHasher_reserves_enough_bits_for_StringImpl_flags);
 
-    static const unsigned s_hashFlagDidReportCost = 1u << 2;
     static const unsigned s_hashFlagIsAtomic = 1u << 1;
     static const unsigned s_hashFlag8BitBuffer = 1u << 0;
 
