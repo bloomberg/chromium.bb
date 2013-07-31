@@ -1098,6 +1098,12 @@ void FrameView::layout(bool allowSubtree)
     if (m_nestedLayoutCount)
         return;
 
+#ifndef NDEBUG
+    // Post-layout assert that nobody was re-marked as needing layout during layout.
+    for (RenderObject* renderer = document->renderer(); renderer; renderer = renderer->nextInPreOrder())
+        ASSERT(!renderer->needsLayout());
+#endif
+
     // FIXME: It should be not possible to remove the FrameView from the frame/page during layout
     // however m_inLayout is not set for most of this function, so none of our RELEASE_ASSERTS
     // in Frame/Page will fire. One of the post-layout tasks is disconnecting the Frame from

@@ -103,6 +103,11 @@ crbug.com/24197 fast/css/disabled-author-styles.html [ Skip ]
 # Test itself passes, but causes subsequent tests to fail.
 webkit.org/b/83260 fast/text/international/embed-bidi-style-in-isolate-crash.html [ Skip ]
 
+crbug.com/266213 fast/frames/invalid-frameset.html [ Crash Pass ]
+crbug.com/266213 tables/table-section-overflow-clip-crash.html [ Crash Pass ]
+crbug.com/266213 fast/forms/searchfield-heights.html [ Crash Pass ]
+crbug.com/266213 fast/forms/search-vertical-alignment.html [ Crash Pass ]
+
 # -----------------------------------------------------------------
 # Inspector tests
 # -----------------------------------------------------------------
@@ -250,6 +255,9 @@ webkit.org/b/84854 [ Win7 ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass
 webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg [ Pass Timeout ]
 
 webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Crash Pass ]
+
+crbug.com/266213 svg/custom/bug86392.html [ Crash Pass ]
+crbug.com/266213 svg/custom/unicode-in-tspan-multi-svg-crash.html [ Crash Pass ]
 
 # -----------------------------------------------------------------
 # End SVG TESTS
