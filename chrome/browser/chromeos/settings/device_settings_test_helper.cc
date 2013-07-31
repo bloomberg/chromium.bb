@@ -10,6 +10,8 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -205,6 +207,11 @@ DeviceSettingsTestBase::~DeviceSettingsTestBase() {
 }
 
 void DeviceSettingsTestBase::SetUp() {
+  // Initialize DBusThreadManager with a stub implementation.
+  DBusThreadManager::InitializeWithStub();
+  NetworkHandler::Initialize();
+  loop_.RunUntilIdle();
+
   device_policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(
       false);
   owner_key_util_->SetPublicKeyFromPrivateKey(device_policy_.signing_key());
@@ -217,6 +224,8 @@ void DeviceSettingsTestBase::SetUp() {
 void DeviceSettingsTestBase::TearDown() {
   FlushDeviceSettings();
   device_settings_service_.UnsetSessionManager();
+  NetworkHandler::Shutdown();
+  DBusThreadManager::Shutdown();
 }
 
 void DeviceSettingsTestBase::FlushDeviceSettings() {

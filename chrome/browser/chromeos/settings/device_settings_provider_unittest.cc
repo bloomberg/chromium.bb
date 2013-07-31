@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
@@ -57,8 +56,6 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   virtual void TearDown() OVERRIDE {
     DeviceSettingsTestBase::TearDown();
   }
-
-  ScopedStubNetworkLibraryEnabler stub_network_library_enabler_;
 
   ScopedTestingLocalState local_state_;
 

@@ -15,7 +15,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
@@ -26,6 +25,12 @@
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/network/device_state.h"
+#include "chromeos/network/network_device_handler.h"
+#include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
@@ -84,6 +89,12 @@ bool HasOldMetricsFile() {
   // Temporarily allow it until we fix http://crbug.com/62626
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   return GoogleUpdateSettings::GetCollectStatsConsent();
+}
+
+void LogShillError(
+    const std::string& name,
+    scoped_ptr<base::DictionaryValue> error_data) {
+  NET_LOG_ERROR("Shill error: " + name, "Network operation failed.");
 }
 
 }  // namespace
@@ -778,20 +789,35 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
 }
 
 void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
-  if (!NetworkLibrary::Get())
-    return;  // May not be initialized in tests.
-  NetworkLibrary* cros = NetworkLibrary::Get();
-  const NetworkDevice* cellular = cros->FindCellularDevice();
-  if (cellular) {
-    bool device_value = cellular->data_roaming_allowed();
-    if (!device_value && cros->IsCellularAlwaysInRoaming()) {
-      // If operator requires roaming always enabled, ignore supplied value
-      // and set data roaming allowed in true always.
-      cros->SetCellularDataRoamingAllowed(true);
-    } else if (device_value != new_value) {
-      cros->SetCellularDataRoamingAllowed(new_value);
-    }
+  // TODO(armansito): Look up the device by explicitly using the device path.
+  const DeviceState* cellular =
+      NetworkHandler::Get()->network_state_handler()->
+          GetDeviceStateByType(flimflam::kTypeCellular);
+  if (!cellular) {
+    NET_LOG_DEBUG("No cellular device is available",
+                  "Roaming is only supported by cellular devices.");
+    return;
   }
+  bool current_value;
+  if (!cellular->properties().GetBooleanWithoutPathExpansion(
+          flimflam::kCellularAllowRoamingProperty, &current_value)) {
+    NET_LOG_ERROR("Could not get \"allow roaming\" property from cellular "
+                  "device.", cellular->path());
+    return;
+  }
+
+  // Only set the value if the current value is different from |new_value|.
+  // If roaming is required by the provider, always try to set to true.
+  new_value = (cellular->provider_requires_roaming() ? true : new_value);
+  if (new_value == current_value)
+    return;
+
+  NetworkHandler::Get()->network_device_handler()->SetDeviceProperty(
+      cellular->path(),
+      flimflam::kCellularAllowRoamingProperty,
+      base::FundamentalValue(new_value),
+      base::Bind(&base::DoNothing),
+      base::Bind(&LogShillError));
 }
 
 void DeviceSettingsProvider::ApplySideEffects(
