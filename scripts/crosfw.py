@@ -240,7 +240,9 @@ def ParseCmdline(argv):
                     action='store_false', default=True,
                     help="Don't select default filenames for those not given")
   parser.add_option('-F', '--flash', action='store_true', default=False,
-                    help='Create magic flasher')
+                    help='Create magic flasher for SPI flash')
+  parser.add_option('-M', '--mmc', action='store_true', default=False,
+                    help='Create magic flasher for eMMC')
   parser.add_option('-i', '--incremental', action='store_true', default=False,
                     help="Don't reconfigure and clean")
   parser.add_option('-k', '--kernel', action='store_true', default=False,
@@ -555,6 +557,9 @@ def WriteFirmware(options):
 
   if options.flash:
     flash = ['-F', 'spi']
+
+  if options.mmc:
+    flash = ['-F', 'sdmmc']
 
   if options.verbose:
     verbose_arg = ['-v', '%s' % options.verbose]
