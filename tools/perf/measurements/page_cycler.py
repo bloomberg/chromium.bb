@@ -50,7 +50,7 @@ class PageCycler(page_measurement.PageMeasurement):
     parser.remove_option('--pageset-repeat')
     parser.add_option(pageset_repeat_option)
 
-  def DidStartBrowser(self, browser):
+  def SetUpBrowser(self, browser):
     self._memory_metrics = memory_metrics.MemoryMetrics()
     self._memory_metrics.Start(browser)
 
