@@ -73,6 +73,10 @@
 #include "net/url_request/url_request_throttler_manager.h"
 #include "net/websockets/websocket_job.h"
 
+#if defined(OS_WIN)
+#include "win8/util/win8_util.h"
+#endif
+
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "policy/policy_constants.h"
 #endif
@@ -383,7 +387,14 @@ IOThread::IOThread(
       is_spdy_disabled_by_policy_(false),
       weak_factory_(this) {
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
+#if defined(OS_WIN)
+  if (!win8::IsSingleWindowMetroMode())
+    net::ProxyResolverV8::RememberDefaultIsolate();
+  else
+    net::ProxyResolverV8::CreateIsolate();
+#else
   net::ProxyResolverV8::RememberDefaultIsolate();
+#endif
 #endif
   auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
   negotiate_disable_cname_lookup_ = local_state->GetBoolean(

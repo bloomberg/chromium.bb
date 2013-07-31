@@ -94,6 +94,16 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
   // Remember the default Isolate, must be called from the main thread. This
   // hack can be removed when the "default Isolate" concept is gone.
   static void RememberDefaultIsolate();
+
+#if defined(OS_WIN)
+  // Create an isolate to use for the proxy resolver. Until the "default
+  // Isolate" concept is gone, it is preferable to invoke
+  // RememberDefaultIsolate() as creating a new Isolate in additional to the
+  // default Isolate will waste a few MB of memory and the runtime it took to
+  // create the default Isolate.
+  static void CreateIsolate();
+#endif
+
   static v8::Isolate* GetDefaultIsolate();
 
   // Get total/ued heap memory usage of all v8 instances used by the proxy
