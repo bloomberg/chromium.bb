@@ -20,18 +20,21 @@ namespace chrome {
 
 // Gets the mtp device information given a |storage_name|. On success,
 // fills in |id|, |name| and |location|.
-typedef void (*GetStorageInfoFunc)(const std::string& storage_name,
-                                   std::string* id,
-                                   string16* name,
-                                   std::string* location);
+typedef void (*GetStorageInfoFunc)(
+    const std::string& storage_name,
+    device::MediaTransferProtocolManager* mtp_manager,
+    std::string* id,
+    string16* name,
+    std::string* location);
 
 // Helper class to send MTP storage attachment and detachment events to
 // StorageMonitor.
 class MediaTransferProtocolDeviceObserverLinux
     : public device::MediaTransferProtocolManager::Observer {
  public:
-  explicit MediaTransferProtocolDeviceObserverLinux(
-      StorageMonitor::Receiver* receiver);
+  MediaTransferProtocolDeviceObserverLinux(
+      StorageMonitor::Receiver* receiver,
+      device::MediaTransferProtocolManager* mtp_manager);
   virtual ~MediaTransferProtocolDeviceObserverLinux();
 
   // Finds the storage that contains |path| and populates |storage_info|.
@@ -43,6 +46,7 @@ class MediaTransferProtocolDeviceObserverLinux
   // Only used in unit tests.
   MediaTransferProtocolDeviceObserverLinux(
       StorageMonitor::Receiver* receiver,
+      device::MediaTransferProtocolManager* mtp_manager,
       GetStorageInfoFunc get_storage_info_func);
 
   // device::MediaTransferProtocolManager::Observer implementation.
@@ -56,6 +60,10 @@ class MediaTransferProtocolDeviceObserverLinux
 
   // Enumerate existing mtp storage devices.
   void EnumerateStorages();
+
+  // Pointer to the MTP manager. Not owned. Client must ensure the MTP
+  // manager outlives this object.
+  device::MediaTransferProtocolManager* mtp_manager_;
 
   // Map of all attached mtp devices.
   StorageLocationToInfoMap storage_map_;

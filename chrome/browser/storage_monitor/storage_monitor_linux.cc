@@ -293,7 +293,8 @@ void StorageMonitorLinux::Init() {
   }
 
   media_transfer_protocol_device_observer_.reset(
-      new MediaTransferProtocolDeviceObserverLinux(receiver()));
+      new MediaTransferProtocolDeviceObserverLinux(
+          receiver(), media_transfer_protocol_manager_.get()));
 }
 
 bool StorageMonitorLinux::GetStorageInfoForPath(

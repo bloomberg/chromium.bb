@@ -124,7 +124,8 @@ void StorageMonitorCros::Init() {
   }
 
   media_transfer_protocol_device_observer_.reset(
-      new chrome::MediaTransferProtocolDeviceObserverLinux(receiver()));
+      new chrome::MediaTransferProtocolDeviceObserverLinux(
+          receiver(), media_transfer_protocol_manager_.get()));
 }
 
 void StorageMonitorCros::CheckExistingMountPoints() {

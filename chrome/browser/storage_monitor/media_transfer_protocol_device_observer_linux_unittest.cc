@@ -19,6 +19,7 @@
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {
@@ -40,6 +41,7 @@ std::string GetMtpDeviceId(const std::string& unique_id) {
 // Helper function to get the device storage details such as device id, label
 // and location. On success, fills in |id|, |label| and |location|.
 void GetStorageInfo(const std::string& storage_name,
+                    device::MediaTransferProtocolManager* mtp_manager,
                     std::string* id,
                     string16* label,
                     std::string* location) {
@@ -57,8 +59,10 @@ class TestMediaTransferProtocolDeviceObserverLinux
     : public MediaTransferProtocolDeviceObserverLinux {
  public:
   TestMediaTransferProtocolDeviceObserverLinux(
-      StorageMonitor::Receiver* receiver)
-      : MediaTransferProtocolDeviceObserverLinux(receiver, &GetStorageInfo) {
+      StorageMonitor::Receiver* receiver,
+      device::MediaTransferProtocolManager* mtp_manager)
+      : MediaTransferProtocolDeviceObserverLinux(receiver, mtp_manager,
+                                                 &GetStorageInfo) {
   }
 
   // Notifies MediaTransferProtocolDeviceObserverLinux about the attachment of
@@ -97,7 +101,8 @@ class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
     chrome::test::TestStorageMonitor* monitor =
         chrome::test::TestStorageMonitor::CreateAndInstall();
     mtp_device_observer_.reset(
-        new TestMediaTransferProtocolDeviceObserverLinux(monitor->receiver()));
+        new TestMediaTransferProtocolDeviceObserverLinux(
+            monitor->receiver(), monitor->media_transfer_protocol_manager()));
     monitor->AddObserver(mock_storage_observer_.get());
   }
 

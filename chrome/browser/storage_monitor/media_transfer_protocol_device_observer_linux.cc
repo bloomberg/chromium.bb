@@ -19,17 +19,8 @@ namespace chrome {
 
 namespace {
 
-static MediaTransferProtocolDeviceObserverLinux* g_mtp_device_observer = NULL;
-
 // Device root path constant.
 const char kRootPath[] = "/";
-
-device::MediaTransferProtocolManager* GetMediaTransferProtocolManager() {
-  StorageMonitor* monitor = StorageMonitor::GetInstance();
-  if (!monitor)
-    return NULL;
-  return monitor->media_transfer_protocol_manager();
-}
 
 // Constructs and returns the location of the device using the |storage_name|.
 std::string GetDeviceLocationFromStorageName(const std::string& storage_name) {
@@ -104,12 +95,13 @@ string16 GetDeviceLabelFromStorageInfo(const MtpStorageInfo& storage_info) {
 // Helper function to get the device storage details such as device id, label
 // and location. On success and fills in |id|, |label| and |location|.
 void GetStorageInfo(const std::string& storage_name,
+                    device::MediaTransferProtocolManager* mtp_manager,
                     std::string* id,
                     string16* label,
                     std::string* location) {
   DCHECK(!storage_name.empty());
   const MtpStorageInfo* storage_info =
-      GetMediaTransferProtocolManager()->GetStorageInfo(storage_name);
+      mtp_manager->GetStorageInfo(storage_name);
 
   if (!storage_info)
     return;
@@ -122,13 +114,13 @@ void GetStorageInfo(const std::string& storage_name,
 }  // namespace
 
 MediaTransferProtocolDeviceObserverLinux::
-MediaTransferProtocolDeviceObserverLinux(StorageMonitor::Receiver* receiver)
-    : get_storage_info_func_(&GetStorageInfo),
+MediaTransferProtocolDeviceObserverLinux(
+    StorageMonitor::Receiver* receiver,
+    device::MediaTransferProtocolManager* mtp_manager)
+    : mtp_manager_(mtp_manager),
+      get_storage_info_func_(&GetStorageInfo),
       notifications_(receiver) {
-  DCHECK(!g_mtp_device_observer);
-  g_mtp_device_observer = this;
-
-  GetMediaTransferProtocolManager()->AddObserver(this);
+  mtp_manager_->AddObserver(this);
   EnumerateStorages();
 }
 
@@ -136,22 +128,16 @@ MediaTransferProtocolDeviceObserverLinux(StorageMonitor::Receiver* receiver)
 MediaTransferProtocolDeviceObserverLinux::
 MediaTransferProtocolDeviceObserverLinux(
     StorageMonitor::Receiver* receiver,
+    device::MediaTransferProtocolManager* mtp_manager,
     GetStorageInfoFunc get_storage_info_func)
-    : get_storage_info_func_(get_storage_info_func),
+    : mtp_manager_(mtp_manager),
+      get_storage_info_func_(get_storage_info_func),
       notifications_(receiver) {
-  DCHECK(!g_mtp_device_observer);
-  g_mtp_device_observer = this;
 }
 
 MediaTransferProtocolDeviceObserverLinux::
 ~MediaTransferProtocolDeviceObserverLinux() {
-  DCHECK_EQ(this, g_mtp_device_observer);
-  g_mtp_device_observer = NULL;
-
-  device::MediaTransferProtocolManager* mtp_manager =
-      GetMediaTransferProtocolManager();
-  if (mtp_manager)
-    mtp_manager->RemoveObserver(this);
+  mtp_manager_->RemoveObserver(this);
 }
 
 bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
@@ -190,7 +176,8 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
     std::string device_id;
     string16 device_name;
     std::string location;
-    get_storage_info_func_(storage_name, &device_id, &device_name, &location);
+    get_storage_info_func_(storage_name, mtp_manager_,
+                           &device_id, &device_name, &location);
 
     // Keep track of device id and device name to see how often we receive
     // empty values.
@@ -217,7 +204,7 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
 
 void MediaTransferProtocolDeviceObserverLinux::EnumerateStorages() {
   typedef std::vector<std::string> StorageList;
-  StorageList storages = GetMediaTransferProtocolManager()->GetStorages();
+  StorageList storages = mtp_manager_->GetStorages();
   for (StorageList::const_iterator storage_iter = storages.begin();
        storage_iter != storages.end(); ++storage_iter) {
     StorageChanged(true, *storage_iter);
