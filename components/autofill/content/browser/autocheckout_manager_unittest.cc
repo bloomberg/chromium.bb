@@ -127,6 +127,9 @@ scoped_ptr<FormStructure> CreateTestFormStructureWithDefaultValues() {
   FormFieldData female = BuildFieldWithValue("sex", "female");
   female.is_checkable = true;
   form.fields.push_back(female);
+  FormFieldData select = BuildField("SelectField");
+  select.form_control_type = "select-one";
+  form.fields.push_back(select);
 
   scoped_ptr<FormStructure> form_structure(
       new FormStructure(form, std::string()));
@@ -136,6 +139,8 @@ scoped_ptr<FormStructure> CreateTestFormStructureWithDefaultValues() {
   form_structure->field(0)->set_default_value("female");
   form_structure->field(1)->set_server_type(FIELD_WITH_DEFAULT_VALUE);
   form_structure->field(1)->set_default_value("female");
+  form_structure->field(2)->set_server_type(FIELD_WITH_DEFAULT_VALUE);
+  form_structure->field(2)->set_default_value("Default Value");
 
   return form_structure.Pass();
 }
@@ -682,11 +687,12 @@ TEST_F(AutocheckoutManagerTest, TestFillForms) {
 
   filled_forms = ReadFilledForms();
   ASSERT_EQ(1U, filled_forms.size());
-  ASSERT_EQ(2U, filled_forms[0].fields.size());
+  ASSERT_EQ(3U, filled_forms[0].fields.size());
   EXPECT_FALSE(filled_forms[0].fields[0].is_checked);
   EXPECT_EQ(ASCIIToUTF16("male"), filled_forms[0].fields[0].value);
   EXPECT_TRUE(filled_forms[0].fields[1].is_checked);
   EXPECT_EQ(ASCIIToUTF16("female"), filled_forms[0].fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("Default Value"), filled_forms[0].fields[2].value);
 }
 
 TEST_F(AutocheckoutManagerTest, OnFormsSeenTest) {

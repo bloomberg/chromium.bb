@@ -450,7 +450,6 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
   AutofillFieldType type = field.type();
 
   if (type == FIELD_WITH_DEFAULT_VALUE) {
-    DCHECK(field.is_checkable);
     // For a form with radio buttons, like:
     // <form>
     //   <input type="radio" name="sex" value="male">Male<br>
@@ -462,10 +461,24 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
     //   (fieldtype: FIELD_WITH_DEFAULT_VALUE, value: "female")
     // Note that, the field mapping is repeated twice to respond to both the
     // input elements with the same name/signature in the form.
+    //
+    // FIELD_WITH_DEFAULT_VALUE can also be used for selects, the correspondent
+    // example of the radio buttons example above is:
+    // <SELECT name="sex">
+    //   <OPTION value="female">Female</OPTION>
+    //   <OPTION value="male">Male</OPTION>
+    // </SELECT>
     base::string16 default_value = UTF8ToUTF16(field.default_value());
-    // Mark the field checked if server says the default value of the field
-    // to be this field's value.
-    field_to_fill->is_checked = (field.value == default_value);
+    if (field.is_checkable) {
+      // Mark the field checked if server says the default value of the field
+      // to be this field's value.
+      field_to_fill->is_checked = (field.value == default_value);
+    } else if (field.form_control_type == "select-one") {
+      field_to_fill->value = default_value;
+    } else {
+      // FIELD_WITH_DEFAULT_VALUE should not be used for other type of fields.
+      NOTREACHED();
+    }
     return;
   }
 
