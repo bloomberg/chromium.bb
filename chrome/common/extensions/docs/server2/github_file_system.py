@@ -180,27 +180,29 @@ class GithubFileSystem(FileSystem):
                                    username=USERNAME,
                                    password=PASSWORD)
     except urlfetch.DownloadError as e:
-      logging.error('GithubFileSystem Stat: %s' % e)
+      logging.warning('GithubFileSystem Stat: %s' % e)
       return self._DefaultStat(path)
+
     # Check if Github authentication failed.
     if result.status_code == 401:
-      logging.error('Github authentication failed for %s, falling back to '
-                    'unauthenticated.' % USERNAME)
+      logging.warning('Github authentication failed for %s, falling back to '
+                      'unauthenticated.' % USERNAME)
       try:
         result = self._fetcher.Fetch('commits/HEAD')
       except urlfetch.DownloadError as e:
-        logging.error('GithubFileSystem Stat: %s' % e)
+        logging.warning('GithubFileSystem Stat: %s' % e)
         return self._DefaultStat(path)
-    version = (json.loads(result.content).get('commit', {})
-                                         .get('tree', {})
-                                         .get('sha', None))
-    # Check if the JSON was valid, and set to 0 if not.
-    if version is not None:
+
+    # Parse response JSON - but sometimes github gives us invalid JSON.
+    try:
+      version = json.loads(result.content)['commit']['tree']['sha']
       self._stat_object_store.Set(path, version)
-    else:
-      logging.warning('Problem fetching commit hash from github.')
+      return StatInfo(version)
+    except StandardError as e:
+      logging.warning(
+          ('%s: got invalid or unexpected JSON from github. Response status ' +
+           'was %s, content %s') % (e, result.status_code, result.content))
       return self._DefaultStat(path)
-    return StatInfo(version)
 
   def GetIdentity(self):
     return '%s@%s' % (self.__class__.__name__, StringIdentity(self._url))
