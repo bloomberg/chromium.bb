@@ -46,6 +46,8 @@ namespace content {
 
 namespace {
 
+const int kUndefinedOutputSurfaceId = -1;
+
 void InsertSyncPointAndAckForGpu(
     int gpu_host_id, int route_id, const std::string& return_mailbox) {
   uint32 sync_point =
@@ -87,6 +89,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       texture_id_in_layer_(0),
+      current_mailbox_output_surface_id_(kUndefinedOutputSurfaceId),
       weak_ptr_factory_(this),
       overscroll_effect_enabled_(true) {
   if (CompositorImpl::UsesDirectGL()) {
@@ -632,6 +635,11 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
     return;
 
+  if (output_surface_id != current_mailbox_output_surface_id_) {
+    current_mailbox_ = gpu::Mailbox();
+    current_mailbox_output_surface_id_ = kUndefinedOutputSurfaceId;
+  }
+
   base::Closure callback = base::Bind(&InsertSyncPointAndAckForCompositor,
                                       host_->GetProcess()->GetID(),
                                       output_surface_id,
@@ -647,7 +655,7 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   if (layer_->layer_tree_host())
     layer_->layer_tree_host()->SetLatencyInfo(frame->metadata.latency_info);
 
-  BuffersSwapped(frame->gl_frame_data->mailbox, callback);
+  BuffersSwapped(frame->gl_frame_data->mailbox, output_surface_id, callback);
 }
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
@@ -702,11 +710,12 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
   texture_size_in_layer_ = params.size;
   content_size_in_layer_ = params.size;
 
-  BuffersSwapped(mailbox, callback);
+  BuffersSwapped(mailbox, kUndefinedOutputSurfaceId, callback);
 }
 
 void RenderWidgetHostViewAndroid::BuffersSwapped(
     const gpu::Mailbox& mailbox,
+    uint32_t output_surface_id,
     const base::Closure& ack_callback) {
   ImageTransportFactoryAndroid* factory =
       ImageTransportFactoryAndroid::GetInstance();
@@ -727,6 +736,7 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
   ResetClipping();
 
   current_mailbox_ = mailbox;
+  current_mailbox_output_surface_id_ = output_surface_id;
 
   if (host_->is_hidden())
     ack_callback.Run();
@@ -814,6 +824,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
         texture_id_in_layer_);
     texture_id_in_layer_ = 0;
     current_mailbox_ = gpu::Mailbox();
+    current_mailbox_output_surface_id_ = kUndefinedOutputSurfaceId;
   }
 }
 
@@ -1111,7 +1122,6 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
   if (texture_layer_)
     texture_layer_->SetIsDrawable(false);
   texture_id_in_layer_ = 0;
-  current_mailbox_ = gpu::Mailbox();
   RunAckCallbacks();
 }
 

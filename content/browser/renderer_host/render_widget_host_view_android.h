@@ -232,6 +232,7 @@ class RenderWidgetHostViewAndroid
 
  private:
   void BuffersSwapped(const gpu::Mailbox& mailbox,
+                      uint32_t output_surface_id,
                       const base::Closure& ack_callback);
 
   void RunAckCallbacks();
@@ -297,6 +298,7 @@ class RenderWidgetHostViewAndroid
 
   // The mailbox of the previously received frame.
   gpu::Mailbox current_mailbox_;
+  uint32_t current_mailbox_output_surface_id_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 

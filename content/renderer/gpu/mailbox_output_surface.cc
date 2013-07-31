@@ -178,7 +178,7 @@ void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   DCHECK(!surface_size_.IsEmpty());
   DCHECK(surface_size_ == current_backing_.size);
   DCHECK(frame->gl_frame_data->size == current_backing_.size);
-  DCHECK(!current_backing_.mailbox.IsZero());
+  DCHECK(!current_backing_.mailbox.IsZero() || context3d_->isContextLost());
 
   frame->gl_frame_data->mailbox = current_backing_.mailbox;
   context3d_->flush();
