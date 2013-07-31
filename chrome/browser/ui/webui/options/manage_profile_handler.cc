@@ -180,6 +180,12 @@ void ManageProfileHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
+    // If the browser shuts down during supervised-profile creation, deleting
+    // the unregistered supervised-user profile triggers this notification,
+    // but the RenderViewHost the profile info would be sent to has already been
+    // destroyed.
+    if (!web_ui()->GetWebContents()->GetRenderViewHost())
+      return;
     SendProfileNames();
     base::StringValue value(kManageProfileIconGridName);
     SendProfileIcons(value);

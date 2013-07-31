@@ -1006,6 +1006,12 @@ void BrowserOptionsHandler::Observe(
       break;
 #endif
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
+      // If the browser shuts down during supervised-profile creation, deleting
+      // the unregistered supervised-user profile triggers this notification,
+      // but the RenderViewHost the profile info would be sent to has already
+      // been destroyed.
+      if (!web_ui()->GetWebContents()->GetRenderViewHost())
+        return;
       SendProfilesInfo();
       break;
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL:

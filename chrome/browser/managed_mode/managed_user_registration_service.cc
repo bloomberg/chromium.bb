@@ -389,8 +389,8 @@ void ManagedUserRegistrationService::CompleteRegistration(
     DCHECK(!pending_managed_user_id_.empty());
 
     if (pending_managed_user_token_.empty()) {
-      // Remove the pending managed user if we weren't successful.
-      DCHECK_NE(GoogleServiceAuthError::NONE, error.state());
+      // Remove the pending managed user if we weren't successful or the
+      // creation was cancelled.
       DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
       bool success =
           update->RemoveWithoutPathExpansion(pending_managed_user_id_, NULL);

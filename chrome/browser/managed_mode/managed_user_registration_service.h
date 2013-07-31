@@ -93,7 +93,8 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
 
   // Cancels any registration currently in progress, without calling the
   // callback or reporting an error. This should be called when the user
-  // actively cancels the registration by canceling profile creation.
+  // actively cancels the registration by canceling profile creation or by
+  // quitting the browser.
   void CancelPendingRegistration();
 
   // ProfileKeyedService implementation:
