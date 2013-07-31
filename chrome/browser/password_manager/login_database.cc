@@ -47,6 +47,20 @@ enum LoginTableColumns {
   COLUMN_TIMES_USED
 };
 
+// Using the public suffix list for matching the origin is only needed for
+// websites that do not have a single hostname for entering credentials. It
+// would be better for their users if they did, but until then we help them find
+// credentials across different hostnames. We know that accounts.google.com is
+// the only hostname we should be accepting credentials on for any domain under
+// google.com, so we can apply a tighter policy for that domain.
+// For owners of domains where a single hostname is always used when your
+// users are entering their credentials, please contact palmer@chromium.org,
+// nyquist@chromium.org or file a bug at http://crbug.com/ to be added here.
+bool ShouldPSLDomainMatchingApply(
+      const std::string& registry_controlled_domain) {
+  return registry_controlled_domain != "google.com";
+}
+
 std::string GetRegistryControlledDomain(const GURL& signon_realm) {
   return net::registry_controlled_domains::GetDomainAndRegistry(
       signon_realm,
@@ -422,7 +436,10 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
       "scheme, password_type, possible_usernames, times_used "
       "FROM logins WHERE signon_realm == ? ";
   sql::Statement s;
-  if (public_suffix_domain_matching_) {
+  const GURL signon_realm(form.signon_realm);
+  std::string registered_domain = GetRegistryControlledDomain(signon_realm);
+  if (public_suffix_domain_matching_ &&
+      ShouldPSLDomainMatchingApply(registered_domain)) {
     // We are extending the original SQL query with one that includes more
     // possible matches based on public suffix domain matching. Using a regexp
     // here is just an optimization to not have to parse all the stored entries
@@ -434,11 +451,9 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
     // TODO(nyquist) Re-enable usage of GetCachedStatement when
     // http://crbug.com/248608 is fixed.
     s.Assign(db_.GetUniqueStatement(extended_sql_query.c_str()));
-    const GURL signon_realm(form.signon_realm);
-    std::string domain = GetRegistryControlledDomain(signon_realm);
     // We need to escape . in the domain. Since the domain has already been
     // sanitized using GURL, we do not need to escape any other characters.
-    ReplaceChars(domain, ".", "\\.", &domain);
+    ReplaceChars(registered_domain, ".", "\\.", &registered_domain);
     std::string scheme = signon_realm.scheme();
     // We need to escape . in the scheme. Since the scheme has already been
     // sanitized using GURL, we do not need to escape any other characters.
@@ -450,7 +465,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
     // http://www.mobile.foo.bar/. It will not match http://notfoo.bar/.
     // The scheme and port has to be the same as the observed form.
     std::string regexp = "^(" + scheme + ":\\/\\/)([\\w-]+\\.)*" +
-                         domain + "(:" + port + ")?\\/$";
+                         registered_domain + "(:" + port + ")?\\/$";
     s.BindString(0, form.signon_realm);
     s.BindString(1, regexp);
   } else {
