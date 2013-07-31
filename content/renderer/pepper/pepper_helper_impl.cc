@@ -632,56 +632,34 @@ void PepperHelperImpl::HandleDocumentLoad(
     const WebKit::WebURLResponse& response) {
   DCHECK(!instance->document_loader());
 
-  PP_Instance pp_instance = instance->pp_instance();
-  RendererPpapiHostImpl* host_impl = instance->module()->renderer_ppapi_host();
-
   // Create a loader resource host for this load. Note that we have to set
   // the document_loader before issuing the in-process
   // PPP_Instance.HandleDocumentLoad call below, since this may reentrantly
   // call into the instance and expect it to be valid.
+  RendererPpapiHostImpl* host_impl = instance->module()->renderer_ppapi_host();
   PepperURLLoaderHost* loader_host =
-      new PepperURLLoaderHost(host_impl, true, pp_instance, 0);
+      new PepperURLLoaderHost(host_impl, true, instance->pp_instance(), 0);
+  // TODO(teravest): Remove set_document_loader() from instance and clean up
+  // this relationship.
   instance->set_document_loader(loader_host);
   loader_host->didReceiveResponse(NULL, response);
 
   // This host will be pending until the resource object attaches to it.
+  //
+  // PpapiHost now owns the pointer to loader_host, so we don't have to worry
+  // about managing it.
   int pending_host_id = host_impl->GetPpapiHost()->AddPendingResourceHost(
       scoped_ptr<ppapi::host::ResourceHost>(loader_host));
   DCHECK(pending_host_id);
-  ppapi::URLResponseInfoData data =
-      DataFromWebURLResponse(pp_instance, response);
 
-  if (host_impl->in_process_router()) {
-    // Running in-process, we can just create the resource and call the
-    // PPP_Instance function directly.
-    scoped_refptr<ppapi::proxy::URLLoaderResource> loader_resource(
-        new ppapi::proxy::URLLoaderResource(
-            host_impl->in_process_router()->GetPluginConnection(pp_instance),
-            pp_instance, pending_host_id, data));
-
-    PP_Resource loader_pp_resource = loader_resource->GetReference();
-    if (!instance->instance_interface()->HandleDocumentLoad(
-            instance->pp_instance(), loader_pp_resource))
-      loader_resource->Close();
-    // We don't pass a ref into the plugin, if it wants one, it will have taken
-    // an additional one.
-    ppapi::PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(
-        loader_pp_resource);
-
-    // Danger! If the plugin doesn't take a ref in HandleDocumentLoad, the
-    // resource host will be destroyed as soon as our scoped_refptr for the
-    // resource goes out of scope.
-    //
-    // Null it out so people don't accidentally add code below that uses it.
-    loader_host = NULL;
-  } else {
-    // Running out-of-process. Initiate an IPC call to notify the plugin
-    // process.
-    ppapi::proxy::HostDispatcher* dispatcher =
-        ppapi::proxy::HostDispatcher::GetForInstance(pp_instance);
-    dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
-        ppapi::API_ID_PPP_INSTANCE, pp_instance, pending_host_id, data));
-  }
+  DataFromWebURLResponse(
+      instance->pp_instance(),
+      response,
+      base::Bind(&PepperHelperImpl::DidDataFromWebURLResponse,
+                 AsWeakPtr(),
+                 instance->pp_instance(),
+                 response,
+                 pending_host_id));
 }
 
 RendererPpapiHost* PepperHelperImpl::CreateExternalPluginModule(
@@ -843,6 +821,44 @@ void PepperHelperImpl::OnTCPServerSocketAcceptACK(
                               remote_addr);
   } else if (accepted_socket_id != 0) {
     Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(accepted_socket_id));
+  }
+}
+
+void PepperHelperImpl::DidDataFromWebURLResponse(
+    PP_Instance pp_instance,
+    const WebKit::WebURLResponse& response,
+    int pending_host_id,
+    const ppapi::URLResponseInfoData& data) {
+  PepperPluginInstanceImpl* instance =
+      ResourceHelper::PPInstanceToPluginInstance(pp_instance);
+  if (!instance)
+    return;
+
+  RendererPpapiHostImpl* host_impl = instance->module()->renderer_ppapi_host();
+
+  if (host_impl->in_process_router()) {
+    // Running in-process, we can just create the resource and call the
+    // PPP_Instance function directly.
+    scoped_refptr<ppapi::proxy::URLLoaderResource> loader_resource(
+        new ppapi::proxy::URLLoaderResource(
+            host_impl->in_process_router()->GetPluginConnection(pp_instance),
+            pp_instance, pending_host_id, data));
+
+    PP_Resource loader_pp_resource = loader_resource->GetReference();
+    if (!instance->instance_interface()->HandleDocumentLoad(
+            instance->pp_instance(), loader_pp_resource))
+      loader_resource->Close();
+    // We don't pass a ref into the plugin, if it wants one, it will have taken
+    // an additional one.
+    ppapi::PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(
+        loader_pp_resource);
+  } else {
+    // Running out-of-process. Initiate an IPC call to notify the plugin
+    // process.
+    ppapi::proxy::HostDispatcher* dispatcher =
+        ppapi::proxy::HostDispatcher::GetForInstance(pp_instance);
+    dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
+        ppapi::API_ID_PPP_INSTANCE, pp_instance, pending_host_id, data));
   }
 }
 
