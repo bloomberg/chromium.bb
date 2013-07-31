@@ -36,6 +36,7 @@
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Supplementable.h"
+#include "core/platform/Timer.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -91,10 +92,11 @@ public:
 
     // HTMLImport
     virtual HTMLImportsController* controller() OVERRIDE;
-    virtual HTMLImport* parent() OVERRIDE;
-    virtual Document* document() OVERRIDE;
+    virtual HTMLImport* parent() const OVERRIDE;
+    virtual Document* document() const OVERRIDE;
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;
+    virtual bool isProcessing() const OVERRIDE;
 
 private:
     HTMLImportLoader(HTMLImport*, const KURL&, const ResourcePtr<CachedScript>&);
@@ -129,23 +131,26 @@ public:
 
     // HTMLImport
     virtual HTMLImportsController* controller() OVERRIDE;
-    virtual HTMLImport* parent() OVERRIDE;
-    virtual Document* document() OVERRIDE;
+    virtual HTMLImport* parent() const OVERRIDE;
+    virtual Document* document() const OVERRIDE;
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;
+    virtual bool isProcessing() const OVERRIDE;
 
     void addImport(PassRefPtr<HTMLImportLoader>);
     void showSecurityErrorMessage(const String&);
     PassRefPtr<HTMLImportLoader> findLinkFor(const KURL&) const;
     SecurityOrigin* securityOrigin() const;
     ResourceFetcher* fetcher() const;
-    bool haveChildrenLoaded(HTMLImport* parent) const;
-    void didLoad(HTMLImportLoader*);
+
+    void scheduleUnblock();
+    void unblockTimerFired(Timer<HTMLImportsController>*);
 
 private:
     void clear();
 
     Document* m_master;
+    Timer<HTMLImportsController> m_unblockTimer;
 
     // List of import which has been loaded or being loaded.
     typedef Vector<RefPtr<HTMLImportLoader> > ImportList;

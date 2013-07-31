@@ -110,6 +110,7 @@ PassRefPtr<HTMLImportLoader> HTMLImportLoader::create(HTMLImport* parent, const 
 {
     RefPtr<HTMLImportLoader> loader = adoptRef(new HTMLImportLoader(parent, url, resource));
     loader->controller()->addImport(loader);
+    parent->appendChild(loader.get());
     return loader.release();
 }
 
@@ -170,8 +171,8 @@ void HTMLImportLoader::dispose()
         m_resource = 0;
     }
 
-    if (HTMLImportsController* controller = this->controller())
-        controller->didLoad(this);
+    ASSERT(!document() || !document()->parsing());
+    controller()->scheduleUnblock();
 }
 
 HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceResponse& response)
@@ -225,12 +226,12 @@ HTMLImportsController* HTMLImportLoader::controller()
     return m_parent ? m_parent->controller() : 0;
 }
 
-HTMLImport* HTMLImportLoader::parent()
+HTMLImport* HTMLImportLoader::parent() const
 {
     return m_parent;
 }
 
-Document* HTMLImportLoader::document()
+Document* HTMLImportLoader::document() const
 {
     return m_importedDocument.get();
 }
@@ -247,6 +248,12 @@ void HTMLImportLoader::didFinishParsing()
     setState(finishParsing());
 }
 
+bool HTMLImportLoader::isProcessing() const
+{
+    if (!m_importedDocument)
+        return !isDone();
+    return m_importedDocument->parsing();
+}
 
 void HTMLImportsController::provideTo(Document* master)
 {
@@ -258,6 +265,7 @@ void HTMLImportsController::provideTo(Document* master)
 
 HTMLImportsController::HTMLImportsController(Document* master)
     : m_master(master)
+    , m_unblockTimer(this, &HTMLImportsController::unblockTimerFired)
 {
 }
 
@@ -286,14 +294,6 @@ void HTMLImportsController::showSecurityErrorMessage(const String& message)
     m_master->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-void HTMLImportsController::didLoad(HTMLImportLoader* loadedImport)
-{
-    for (HTMLImport* ancestorToNotify = loadedImport->parent(); ancestorToNotify; ancestorToNotify = ancestorToNotify->parent()) {
-        if (haveChildrenLoaded(ancestorToNotify))
-            ancestorToNotify->document()->didLoadAllImports();
-    }
-}
-
 PassRefPtr<HTMLImportLoader> HTMLImportsController::findLinkFor(const KURL& url) const
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
@@ -314,31 +314,17 @@ ResourceFetcher* HTMLImportsController::fetcher() const
     return m_master->fetcher();
 }
 
-bool HTMLImportsController::haveChildrenLoaded(HTMLImport* parent) const
-{
-    for (size_t i = 0; i < m_imports.size(); ++i) {
-        if (!m_imports[i]->isDone()) {
-            for (HTMLImport* ancestor = m_imports[i]->parent(); ancestor; ancestor = ancestor->parent()) {
-                if (ancestor == parent)
-                    return false;
-            }
-        }
-    }
-
-    return true;
-}
-
 HTMLImportsController* HTMLImportsController::controller()
 {
     return this;
 }
 
-HTMLImport* HTMLImportsController::parent()
+HTMLImport* HTMLImportsController::parent() const
 {
     return 0;
 }
 
-Document* HTMLImportsController::document()
+Document* HTMLImportsController::document() const
 {
     return m_master;
 }
@@ -350,6 +336,26 @@ void HTMLImportsController::wasDetachedFromDocument()
 
 void HTMLImportsController::didFinishParsing()
 {
+}
+
+bool HTMLImportsController::isProcessing() const
+{
+    return m_master->parsing();
+}
+
+void HTMLImportsController::scheduleUnblock()
+{
+    if (m_unblockTimer.isActive())
+        return;
+    m_unblockTimer.startOneShot(0);
+}
+
+void HTMLImportsController::unblockTimerFired(Timer<HTMLImportsController>*)
+{
+    do {
+        m_unblockTimer.stop();
+        HTMLImport::unblock(this);
+    } while (m_unblockTimer.isActive());
 }
 
 } // namespace WebCore

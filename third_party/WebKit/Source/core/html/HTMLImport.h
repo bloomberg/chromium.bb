@@ -31,6 +31,8 @@
 #ifndef HTMLImport_h
 #define HTMLImport_h
 
+#include "wtf/Vector.h"
+
 namespace WebCore {
 
 class Frame;
@@ -40,17 +42,43 @@ class HTMLImportsController;
 
 class HTMLImport {
 public:
+    static bool unblock(HTMLImport*);
+
     virtual ~HTMLImport() { }
 
-    bool haveChildrenLoaded();
     Frame* frame();
     Document* master();
 
+    bool isLoaded() const { return !isBlocked() && !isProcessing(); }
+    bool isBlocked() const { return m_blocked; }
+    void appendChild(HTMLImport*);
+
     virtual HTMLImportsController* controller() = 0;
-    virtual HTMLImport* parent() = 0;
-    virtual Document* document() = 0;
+    virtual HTMLImport* parent() const = 0;
+    virtual Document* document() const = 0;
     virtual void wasDetachedFromDocument() = 0;
     virtual void didFinishParsing() = 0;
+    virtual bool isProcessing() const = 0;
+
+protected:
+    HTMLImport()
+        : m_blocked(false)
+    { }
+
+private:
+    static void block(HTMLImport*);
+
+    void blockAfter(HTMLImport* child);
+    void block();
+    void unblock();
+    void didUnblock();
+
+    bool arePredecessorsLoaded() const;
+    bool areChilrenLoaded() const;
+    bool hasChildren() const { return !m_children.isEmpty(); }
+
+    Vector<HTMLImport*> m_children;
+    bool m_blocked; // If any of decendants or predecessors is in processing, it is blocked.
 };
 
 } // namespace WebCore
