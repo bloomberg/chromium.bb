@@ -326,6 +326,16 @@ function updateForDnsProbe(strings) {
   jstProcess(context, document.getElementById('details'));
 }
 
+<if expr="is_macosx or is_linux or is_android">
+//Re-orders buttons. Used on Mac, Linux, and Android, where reload should go on the right.
+function swapButtonOrder() {
+  reloadButton = document.getElementById('reload-button');
+  moreLessButton = document.getElementById('more-less-button');
+  reloadButton.parentNode.insertBefore(moreLessButton, reloadButton);
+}
+document.addEventListener("DOMContentLoaded", swapButtonOrder);
+</if>
+
 </script>
 
 <body id="t">
