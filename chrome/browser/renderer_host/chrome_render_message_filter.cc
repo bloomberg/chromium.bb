@@ -249,7 +249,8 @@ void ChromeRenderMessageFilter::OnDnsPrefetch(
 
 void ChromeRenderMessageFilter::OnPreconnect(const GURL& url) {
   if (profile_->GetNetworkPredictor())
-    profile_->GetNetworkPredictor()->PreconnectUrlAndSubresources(url, GURL());
+    profile_->GetNetworkPredictor()->PreconnectUrl(
+        url, GURL(), chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED, 1);
 }
 
 void ChromeRenderMessageFilter::OnResourceTypeStats(
