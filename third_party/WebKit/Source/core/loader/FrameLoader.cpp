@@ -400,10 +400,10 @@ void FrameLoader::cancelAndClear()
     if (!m_isComplete)
         closeURL();
 
-    clear(ClearScriptObjects | ClearWindowObject);
+    clear(false);
 }
 
-void FrameLoader::clear(ClearOptions options)
+void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, bool clearFrameView)
 {
     m_frame->editor()->clear();
 
@@ -419,7 +419,7 @@ void FrameLoader::clear(ClearOptions options)
     }
 
     // Do this after detaching the document so that the unload event works.
-    if (options & ClearWindowProperties) {
+    if (clearWindowProperties) {
         InspectorInstrumentation::frameWindowDiscarded(m_frame, m_frame->domWindow());
         m_frame->domWindow()->reset();
         m_frame->script()->clearWindowShell();
@@ -427,17 +427,16 @@ void FrameLoader::clear(ClearOptions options)
 
     m_frame->selection()->prepareForDestruction();
     m_frame->eventHandler()->clear();
-    if (m_frame->view())
+    if (clearFrameView && m_frame->view())
         m_frame->view()->clear();
 
     // Do not drop the DOMWindow (and Document) before the ScriptController and view are cleared
     // as some destructors might still try to access the document.
-    if (options & ClearWindowObject)
-        m_frame->clearDOMWindow();
+    m_frame->setDOMWindow(0);
 
     m_containsPlugins = false;
 
-    if (options & ClearScriptObjects)
+    if (clearScriptObjects)
         m_frame->script()->clearScriptObjects();
 
     m_frame->script()->enableEval();

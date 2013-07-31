@@ -112,16 +112,8 @@ public:
     void stopLoading(UnloadEventPolicy);
     bool closeURL();
     void cancelAndClear();
-
-    // FIXME: clear() is trying to do too many things. We should break it down into smaller functions.
-
-    enum ClearOption {
-        ClearWindowProperties = 1 << 0,
-        ClearScriptObjects    = 1 << 1,
-        ClearWindowObject     = 1 << 2
-    };
-    typedef unsigned ClearOptions;
-    void clear(ClearOptions);
+    // FIXME: clear() is trying to do too many things. We should break it down into smaller functions (ideally with fewer raw Boolean parameters).
+    void clear(bool clearWindowProperties = true, bool clearScriptObjects = true, bool clearFrameView = true);
 
     void didAccessInitialDocument();
     void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);

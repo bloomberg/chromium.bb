@@ -88,9 +88,7 @@ namespace WebCore {
         Page* page() const;
         HTMLFrameOwnerElement* ownerElement() const;
 
-        void clearDOMWindow();
-        void ensureDOMWindow();
-
+        void setDOMWindow(PassRefPtr<DOMWindow>);
         DOMWindow* domWindow() const;
         Document* document() const;
         FrameView* view() const;
