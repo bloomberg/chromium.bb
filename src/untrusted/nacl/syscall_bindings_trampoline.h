@@ -181,6 +181,16 @@ typedef int (*TYPE_nacl_clock_getres) (clockid_t clk_id,
 typedef int (*TYPE_nacl_clock_gettime) (clockid_t clk_id,
                                         struct timespec *tp);
 
+typedef int (*TYPE_nacl_mkdir) (const char *path, int mode);
+
+typedef int (*TYPE_nacl_rmdir) (const char *path);
+
+typedef int (*TYPE_nacl_chdir) (const char *path);
+
+typedef int (*TYPE_nacl_getcwd) (char *path, int len);
+
+typedef int (*TYPE_nacl_unlink) (const char *path);
+
 #ifdef __GNUC__
 typedef void (*TYPE_nacl_exit) (int status) __attribute__((noreturn));
 #else

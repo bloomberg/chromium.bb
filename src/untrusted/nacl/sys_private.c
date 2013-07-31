@@ -174,6 +174,31 @@ int getpid(void) {
   return errno_value_call(NACL_SYSCALL(getpid)());
 }
 
+int mkdir(const char *path, int mode) {
+  return errno_call(NACL_SYSCALL(mkdir)(path, mode));
+}
+
+int rmdir(const char *path) {
+  return errno_call(NACL_SYSCALL(rmdir)(path));
+}
+
+int chdir(const char *path) {
+  return errno_call(NACL_SYSCALL(chdir)(path));
+}
+
+char *getcwd(char *buffer, size_t len) {
+  int retval = NACL_SYSCALL(getcwd)(buffer, len);
+  if (retval != 0) {
+    errno = -retval;
+    return NULL;
+  }
+
+  return buffer;
+}
+
+int unlink(const char *path) {
+  return errno_call(NACL_SYSCALL(unlink)(path));
+}
 
 /*
  * This is a stub since _start will call it but we don't want to

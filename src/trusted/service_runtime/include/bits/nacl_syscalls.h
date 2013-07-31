@@ -54,6 +54,12 @@
 #define NACL_sys_clock_getres           43
 #define NACL_sys_clock_gettime          44
 
+#define NACL_sys_mkdir                  45
+#define NACL_sys_rmdir                  46
+#define NACL_sys_chdir                  47
+#define NACL_sys_getcwd                 48
+#define NACL_sys_unlink                 49
+
 /* 50-58 previously used for multimedia syscalls */
 
 #define NACL_sys_imc_makeboundsock      60

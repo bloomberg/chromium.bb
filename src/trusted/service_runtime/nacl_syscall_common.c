@@ -507,6 +507,27 @@ done:
   return retval;
 }
 
+static uint32_t CopyPathFromUser(struct NaClApp *nap,
+                                 char           *dest,
+                                 size_t         num_bytes,
+                                 uintptr_t      src) {
+  /*
+   * NaClCopyInFromUserZStr may (try to) get bytes that is outside the
+   * app's address space and generate a fault.
+   */
+  if (!NaClCopyInFromUserZStr(nap, dest, num_bytes, src)) {
+    if (dest[0] == '\0') {
+      NaClLog(LOG_ERROR, "NaClSys: invalid address for pathname\n");
+      return -NACL_ABI_EFAULT;
+    }
+
+    NaClLog(LOG_ERROR, "NaClSys: pathname string too long\n");
+    return -NACL_ABI_ENAMETOOLONG;
+  }
+
+  return 0;
+}
+
 int32_t NaClSysOpen(struct NaClAppThread  *natp,
                     char                  *pathname,
                     int                   flags,
@@ -521,20 +542,10 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
           "0x%08"NACL_PRIxPTR", 0x%x, 0x%x)\n",
           (uintptr_t) natp, (uintptr_t) pathname, flags, mode);
 
-  /*
-   * NaClCopyInFromUserZStr may (try to) get bytes that is outside the
-   * app's address space and generate a fault.
-   */
-  if (!NaClCopyInFromUserZStr(nap, path, sizeof path,
-                              (uintptr_t) pathname)) {
-    if (path[0] == '\0') {
-      NaClLog(LOG_ERROR, "Invalid address for pathname\n");
-      retval = -NACL_ABI_EFAULT;
-    } else {
-      retval = -NACL_ABI_ENAMETOOLONG;
-    }
+  retval = CopyPathFromUser(nap, path, sizeof path, (uintptr_t) pathname);
+  if (0 != retval)
     goto cleanup;
-  }
+
   allowed_flags = (NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT
                    | NACL_ABI_O_TRUNC | NACL_ABI_O_APPEND);
   if (0 != (flags & ~allowed_flags)) {
@@ -1015,21 +1026,13 @@ int32_t NaClSysStat(struct NaClAppThread  *natp,
            " 0x%08"NACL_PRIxPTR")\n"),
           (uintptr_t) natp, (uintptr_t) pathname, (uintptr_t) buf);
 
-  if (!NaClCopyInFromUserZStr(nap, path, sizeof path, (uintptr_t) pathname)) {
-    if (path[0] == '\0') {
-      NaClLog(LOG_ERROR, "NaClSysStat: Invalid address for pathname\n");
-      retval = -NACL_ABI_EFAULT;
-    } else {
-      NaClLog(LOG_ERROR, "NaClSysStat: pathname string too long\n");
-      retval = -NACL_ABI_ENAMETOOLONG;
-    }
+  retval = CopyPathFromUser(nap, path, sizeof path, (uintptr_t) pathname);
+  if (0 != retval)
     goto cleanup;
-  }
 
   retval = NaClStatAclCheck(nap, path);
-  if (0 != retval) {
+  if (0 != retval)
     goto cleanup;
-  }
 
   /*
    * Perform a host stat.
@@ -1049,6 +1052,112 @@ cleanup:
   return retval;
 }
 
+int32_t NaClSysMkdir(struct NaClAppThread *natp,
+                     uint32_t             pathname,
+                     int                  mode) {
+  struct NaClApp *nap = natp->nap;
+  char           path[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks) {
+    retval = -NACL_ABI_EACCES;
+    goto cleanup;
+  }
+
+  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  if (0 != retval)
+    goto cleanup;
+
+  retval = NaClHostDescMkdir(path, mode);
+cleanup:
+  return retval;
+}
+
+int32_t NaClSysRmdir(struct NaClAppThread *natp,
+                     uint32_t             pathname) {
+  struct NaClApp *nap = natp->nap;
+  char           path[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks) {
+    retval = -NACL_ABI_EACCES;
+    goto cleanup;
+  }
+
+  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  if (0 != retval)
+    goto cleanup;
+
+  retval = NaClHostDescRmdir(path);
+cleanup:
+  return retval;
+}
+
+int32_t NaClSysChdir(struct NaClAppThread *natp,
+                     uint32_t             pathname) {
+  struct NaClApp *nap = natp->nap;
+  char           path[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks) {
+    retval = -NACL_ABI_EACCES;
+    goto cleanup;
+  }
+
+  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  if (0 != retval)
+    goto cleanup;
+
+  retval = NaClHostDescChdir(path);
+cleanup:
+  return retval;
+}
+
+int32_t NaClSysGetcwd(struct NaClAppThread *natp,
+                      uint32_t             buffer,
+                      int                  len) {
+  struct NaClApp *nap = natp->nap;
+  int32_t        retval = -NACL_ABI_EINVAL;
+  char           path[NACL_CONFIG_PATH_MAX];
+
+  if (!NaClAclBypassChecks) {
+    retval = -NACL_ABI_EACCES;
+    goto cleanup;
+  }
+
+  if (len >= NACL_CONFIG_PATH_MAX)
+    len = NACL_CONFIG_PATH_MAX - 1;
+
+  retval = NaClHostDescGetcwd(path, len);
+  if (retval != 0)
+    goto cleanup;
+
+  if (!NaClCopyOutToUser(nap, buffer, &path, strlen(path) + 1))
+    retval = -NACL_ABI_EFAULT;
+
+cleanup:
+  return retval;
+}
+
+int32_t NaClSysUnlink(struct NaClAppThread *natp,
+                      uint32_t             pathname) {
+  struct NaClApp *nap = natp->nap;
+  char           path[NACL_CONFIG_PATH_MAX];
+  int32_t        retval = -NACL_ABI_EINVAL;
+
+  if (!NaClAclBypassChecks) {
+    retval = -NACL_ABI_EACCES;
+    goto cleanup;
+  }
+
+  retval = CopyPathFromUser(nap, path, sizeof path, pathname);
+  if (0 != retval)
+    goto cleanup;
+
+  retval = NaClHostDescUnlink(path);
+cleanup:
+  return retval;
+}
 
 int NaClSysCommonAddrRangeContainsExecutablePages(struct NaClApp *nap,
                                                   uintptr_t usraddr,

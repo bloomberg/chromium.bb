@@ -10,12 +10,14 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <sched.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 #define PRINT_HEADER 0
@@ -80,6 +82,135 @@ bool test2() {
   }
   return true;
 }
+
+// TODO(sbc): remove this restriction once IRT interface is added.
+#if TESTS_USE_IRT
+
+bool test_chdir() {
+  return passed("test_chdir", "all");
+}
+
+bool test_mkdir_rmdir(const char *test_file) {
+  return passed("test_mkdir_rmdir", "all");
+}
+
+bool test_getcwd() {
+  return passed("test_getcwd", "all");
+}
+
+bool test_unlink(const char *test_file) {
+  return passed("test_unlink", "all");
+}
+
+#else
+
+// Simple test that chdir returns zero for '.'.  chdir gets more
+// significant testing as part of the getcwd test.
+bool test_chdir() {
+  int rtn = chdir(".");
+  ASSERT_EQ_MSG(rtn, 0, "chdir() failed");
+
+  return passed("test_chdir", "all");
+}
+
+bool test_mkdir_rmdir(const char *test_file) {
+  // Use a temporary direcotry name alongside the test_file which
+  // was passed in.
+  char dirname[PATH_MAX];
+  strncpy(dirname, test_file, PATH_MAX);
+
+  // Strip off the trailing filename
+  char *basename_start = strrchr(dirname, '/');
+  if (basename_start == NULL) {
+    basename_start = strrchr(dirname, '\\');
+    ASSERT_NE_MSG(basename_start, NULL, "test_file contains no dir seperator");
+  }
+  basename_start[1] = '\0';
+
+  ASSERT(strlen(dirname) + 6 < PATH_MAX);
+  strncat(dirname, "tmpdir", 6);
+
+  // Attempt to remove the directory in case it already exists
+  // from a previous test run.
+  if (rmdir(dirname) != 0)
+    ASSERT_EQ_MSG(errno, ENOENT, "rmdir() failed to cleanup existing dir");
+
+  char cwd[PATH_MAX];
+  char *cwd_rtn = getcwd(cwd, PATH_MAX);
+  ASSERT_EQ_MSG(cwd_rtn, cwd, "getcwd() failed");
+
+  int rtn = mkdir(dirname, S_IRUSR | S_IWUSR | S_IXUSR);
+  ASSERT_EQ_MSG(rtn, 0, "mkdir() failed");
+
+  rtn = rmdir(dirname);
+  ASSERT_EQ_MSG(rtn, 0, "rmdir() failed");
+
+  rtn = rmdir("This file does not exist");
+  ASSERT_EQ_MSG(rtn, -1, "rmdir() failed to fail");
+  ASSERT_EQ_MSG(errno, ENOENT, "rmdir() failed to generate ENOENT");
+
+  return passed("test_mkdir_rmdir", "all");
+}
+
+bool test_getcwd() {
+  char dirname[PATH_MAX] = { '\0' };
+  char newdir[PATH_MAX] = { '\0' };
+  char parent[PATH_MAX] = { '\0' };
+
+  char *rtn = getcwd(dirname, PATH_MAX);
+  ASSERT_EQ_MSG(rtn, dirname, "getcwd() failed to return dirname");
+  ASSERT_NE_MSG(strlen(dirname), 0, "getcwd() failed to set valid dirname");
+
+  // Calculate parent folder.
+  strncpy(parent, dirname, PATH_MAX);
+  strrchr(parent, '/')[0] = '\0';
+
+  int retcode = chdir("..");
+  ASSERT_EQ_MSG(retcode, 0, "chdir() failed");
+
+  rtn = getcwd(newdir, PATH_MAX);
+  ASSERT_EQ_MSG(rtn, newdir, "getcwd() failed");
+
+  ASSERT_MSG(strcmp(newdir, parent) == 0, "getcwd() failed after chdir");
+  retcode = chdir(dirname);
+  ASSERT_EQ_MSG(retcode, 0, "chdir() failed");
+
+  rtn = getcwd(dirname, 2);
+  ASSERT_EQ_MSG(rtn, NULL, "getcwd() failed to fail");
+  ASSERT_EQ_MSG(errno, ERANGE, "getcwd() failed to generate ERANGE");
+
+  return passed("test_getcwd", "all");
+}
+
+bool test_unlink(const char *test_file) {
+  int rtn;
+  struct stat buf;
+  char buffer[PATH_MAX];
+  snprintf(buffer, PATH_MAX, "%s.tmp", test_file);
+  buffer[PATH_MAX - 1] = '\0';
+
+  int fd = open(buffer, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+  ASSERT_MSG(fd >= 0, "open() failed");
+
+  rtn = close(fd);
+  ASSERT_EQ_MSG(rtn, 0, "close() failed");
+
+  rtn = stat(buffer, &buf);
+  ASSERT_EQ_MSG(rtn, 0, "stat() failed");
+
+  rtn = unlink(buffer);
+  ASSERT_EQ_MSG(rtn, 0, "unlink() failed");
+
+  rtn = stat(buffer, &buf);
+  ASSERT_NE_MSG(rtn, 0, "unlink() failed to remove file");
+
+  rtn = unlink(buffer);
+  ASSERT_NE_MSG(rtn, 0, "unlink() failed to fail");
+
+  return passed("test_unlink", "all");
+}
+
+#endif  // !TESTS_USE_IRT
 
 // open() returns the new file descriptor, or -1 if an error occurred
 bool test_open(const char *test_file) {
@@ -403,6 +534,10 @@ bool testSuite(const char *test_file) {
   ret &= test_read(test_file);
   ret &= test_write(test_file);
   ret &= test_lseek(test_file);
+  ret &= test_unlink(test_file);
+  ret &= test_chdir();
+  ret &= test_getcwd();
+  ret &= test_mkdir_rmdir(test_file);
   return ret;
 }
 

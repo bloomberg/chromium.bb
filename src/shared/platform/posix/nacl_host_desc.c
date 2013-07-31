@@ -529,3 +529,33 @@ int NaClHostDescStat(char const       *host_os_pathname,
 
   return 0;
 }
+
+int NaClHostDescMkdir(const char *path, int mode) {
+  if (mkdir(path, mode) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescRmdir(const char *path) {
+  if (rmdir(path) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescChdir(const char *path) {
+  if (chdir(path) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescGetcwd(char *path, size_t len) {
+  if (getcwd(path, len) == NULL)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescUnlink(const char *path) {
+  if (unlink(path) != 0)
+    return -errno;
+  return 0;
+}

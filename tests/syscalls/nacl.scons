@@ -17,6 +17,8 @@ if 'TRUSTED_ENV' in env and env['TRUSTED_ENV'].Bit('windows'):
 
 env.ComponentLibrary('syscall_test_framework', ['test.cc'])
 
+env.Append(CPPDEFINES=[['TESTS_USE_IRT', str(int(env.Bit('tests_use_irt')))]])
+
 syscalls_nexe = env.ComponentProgram('syscalls',
                                      'syscalls.cc',
                                      EXTRA_LIBS=['${PTHREAD_LIBS}',

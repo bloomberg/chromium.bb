@@ -3,4 +3,8 @@ TEST PASSED: test_close: all
 TEST PASSED: test_read: all
 TEST PASSED: test_write: all
 TEST PASSED: test_lseek: all
+TEST PASSED: test_unlink: all
+TEST PASSED: test_chdir: all
+TEST PASSED: test_getcwd: all
+TEST PASSED: test_mkdir_rmdir: all
 All tests PASSED

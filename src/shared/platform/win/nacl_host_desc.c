@@ -12,6 +12,8 @@
 #include "native_client/src/include/portability_io.h"
 
 #include <windows.h>
+#include <direct.h>
+#include <io.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <share.h>
@@ -1197,5 +1199,36 @@ int NaClHostDescStat(char const       *host_os_pathname,
     return -GetErrno();
   }
 
+  return 0;
+}
+
+int NaClHostDescMkdir(const char *path, int mode) {
+  UNREFERENCED_PARAMETER(mode);
+  if (_mkdir(path) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescRmdir(const char *path) {
+  if (_rmdir(path) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescChdir(const char *path) {
+  if (_chdir(path) != 0)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescGetcwd(char *path, size_t len) {
+  if (_getcwd(path, (int) len) == NULL)
+    return -NaClXlateErrno(errno);
+  return 0;
+}
+
+int NaClHostDescUnlink(const char *path) {
+  if (_unlink(path) != 0)
+    return -errno;
   return 0;
 }
