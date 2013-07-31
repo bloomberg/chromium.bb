@@ -14,31 +14,39 @@ class WebDeviceMotionData;
 
 namespace content {
 
-class DataFetcherSharedMemory {
+class CONTENT_EXPORT DataFetcherSharedMemory {
  public:
-  DataFetcherSharedMemory() : device_motion_buffer_(NULL) { }
+  DataFetcherSharedMemory()
+      : device_motion_buffer_(NULL),
+        started_(false) { }
   virtual ~DataFetcherSharedMemory();
 
   // Returns true if this fetcher needs explicit calls to fetch the data.
+  // Called from any thread.
   virtual bool NeedsPolling();
 
   // If this fetcher NeedsPolling() is true, this method will update the
   // buffer with the latest device motion data.
-  // This method will do nothing if NeedsPolling() is false.
   // Returns true if there was any motion data to update the buffer with.
+  // Called from the DeviceMotionProvider::PollingThread.
   virtual bool FetchDeviceMotionDataIntoBuffer();
 
   // Returns true if the relevant sensors could be successfully activated.
   // This method should be called before any calls to
   // FetchDeviceMotionDataIntoBuffer().
+  // If NeedsPolling() is true this method should be called from the
+  // PollingThread.
   virtual bool StartFetchingDeviceMotionData(
       DeviceMotionHardwareBuffer* buffer);
 
   // Indicates to the fetcher to stop fetching device data.
+  // If NeedsPolling() is true this method should be called from the
+  // PollingThread.
   virtual void StopFetchingDeviceMotionData();
 
  private:
   DeviceMotionHardwareBuffer* device_motion_buffer_;
+  bool started_;
 
   DISALLOW_COPY_AND_ASSIGN(DataFetcherSharedMemory);
 };

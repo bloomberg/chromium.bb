@@ -10,7 +10,8 @@
 namespace content {
 
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {
-  StopFetchingDeviceMotionData();
+  if (started_)
+    StopFetchingDeviceMotionData();
 }
 
 bool DataFetcherSharedMemory::NeedsPolling() {
@@ -24,13 +25,16 @@ bool DataFetcherSharedMemory::FetchDeviceMotionDataIntoBuffer() {
 
 bool DataFetcherSharedMemory::StartFetchingDeviceMotionData(
     DeviceMotionHardwareBuffer* buffer) {
+  DCHECK(buffer);
   device_motion_buffer_ = buffer;
   return DataFetcherImplAndroid::GetInstance()->
       StartFetchingDeviceMotionData(buffer);
+  started_ = true;
 }
 
 void DataFetcherSharedMemory::StopFetchingDeviceMotionData() {
-    DataFetcherImplAndroid::GetInstance()->StopFetchingDeviceMotionData();
+  DataFetcherImplAndroid::GetInstance()->StopFetchingDeviceMotionData();
+  started_ = false;
 }
 
 }  // namespace content

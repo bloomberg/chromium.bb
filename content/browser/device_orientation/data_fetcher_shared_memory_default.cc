@@ -9,7 +9,8 @@
 namespace content {
 
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {
-  StopFetchingDeviceMotionData();
+  if (started_)
+    StopFetchingDeviceMotionData();
 }
 
 bool DataFetcherSharedMemory::NeedsPolling() {
@@ -24,9 +25,11 @@ bool DataFetcherSharedMemory::FetchDeviceMotionDataIntoBuffer() {
 bool DataFetcherSharedMemory::StartFetchingDeviceMotionData(
     DeviceMotionHardwareBuffer* buffer) {
   DCHECK(buffer);
+  device_motion_buffer_ = buffer;
   device_motion_buffer_->seqlock.WriteBegin();
   device_motion_buffer_->data.allAvailableSensorsAreActive = true;
   device_motion_buffer_->seqlock.WriteEnd();
+  started_ = true;
   return true;
 }
 
@@ -34,6 +37,7 @@ void DataFetcherSharedMemory::StopFetchingDeviceMotionData() {
   device_motion_buffer_->seqlock.WriteBegin();
   device_motion_buffer_->data.allAvailableSensorsAreActive = false;
   device_motion_buffer_->seqlock.WriteEnd();
+  started_ = false;
 }
 
 }  // namespace content

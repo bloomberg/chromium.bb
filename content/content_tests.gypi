@@ -280,6 +280,7 @@
         'browser/byte_stream_unittest.cc',
         'browser/child_process_security_policy_unittest.cc',
         'browser/device_orientation/data_fetcher_impl_android_unittest.cc',
+        'browser/device_orientation/device_motion_provider_unittest.cc',
         'browser/device_orientation/provider_unittest.cc',
         'browser/devtools/devtools_http_handler_unittest.cc',
         'browser/devtools/devtools_manager_unittest.cc',
