@@ -154,6 +154,7 @@ class UserManagerImpl
   friend class UserManager;
   friend class WallpaperManager;
   friend class UserManagerTest;
+  friend class WallpaperManagerTest;
 
   UserManagerImpl();
 

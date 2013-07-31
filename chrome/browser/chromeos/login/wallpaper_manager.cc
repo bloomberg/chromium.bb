@@ -111,6 +111,18 @@ static WallpaperManager* g_wallpaper_manager = NULL;
 
 // WallpaperManager, public: ---------------------------------------------------
 
+// TestApi. For testing purpose
+WallpaperManager::TestApi::TestApi(WallpaperManager* wallpaper_manager)
+    : wallpaper_manager_(wallpaper_manager) {
+}
+
+WallpaperManager::TestApi::~TestApi() {
+}
+
+base::FilePath WallpaperManager::TestApi::current_wallpaper_path() {
+  return wallpaper_manager_->current_wallpaper_path_;
+}
+
 // static
 WallpaperManager* WallpaperManager::Get() {
   if (!g_wallpaper_manager)
@@ -122,6 +134,7 @@ WallpaperManager::WallpaperManager()
     : no_observers_(true),
       loaded_wallpapers_(0),
       wallpaper_loader_(new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC)),
+      command_line_for_testing_(NULL),
       should_cache_wallpaper_(false),
       weak_factory_(this) {
   RestartTimer();
@@ -256,7 +269,15 @@ void WallpaperManager::InitializeWallpaper() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UserManager* user_manager = UserManager::Get();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
+  CommandLine* command_line = GetComandLine();
+  if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+    // Guest wallpaper should be initialized when guest login.
+    // Note: This maybe called before login. So IsLoggedInAsGuest can not be
+    // used here to determine if current user is guest.
+    return;
+  }
+
+  if (command_line->HasSwitch(::switches::kTestType))
     WizardController::SetZeroDelays();
 
   // Zero delays is also set in autotests.
@@ -264,14 +285,6 @@ void WallpaperManager::InitializeWallpaper() {
     // Ensure tests have some sort of wallpaper.
     ash::Shell::GetInstance()->desktop_background_controller()->
         CreateEmptyWallpaper();
-    return;
-  }
-
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(chromeos::switches::kGuestSession)) {
-    // Guest wallpaper should be initialized when guest login.
-    // Note: This maybe called before login. So IsLoggedInAsGuest can not be
-    // used here to determine if current user is guest.
     return;
   }
 
@@ -295,8 +308,7 @@ void WallpaperManager::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE: {
-      if (!CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kDisableBootAnimation)) {
+      if (!GetComandLine()->HasSwitch(switches::kDisableBootAnimation)) {
         BrowserThread::PostDelayedTask(
             BrowserThread::UI, FROM_HERE,
             base::Bind(&WallpaperManager::CacheUsersWallpapers,
@@ -752,6 +764,12 @@ void WallpaperManager::EnsureCustomWallpaperDirectories(
     file_util::CreateDirectory(dir);
 }
 
+CommandLine* WallpaperManager::GetComandLine() {
+  CommandLine* command_line = command_line_for_testing_ ?
+      command_line_for_testing_ : CommandLine::ForCurrentProcess();
+  return command_line;
+}
+
 void WallpaperManager::FallbackToOldCustomWallpaper(const std::string& email,
                                                     const WallpaperInfo& info,
                                                     bool update_wallpaper){
@@ -770,7 +788,7 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
   if (UserManager::Get()->IsUserLoggedIn())
     return;
 
-  bool disable_boot_animation = CommandLine::ForCurrentProcess()->
+  bool disable_boot_animation = GetComandLine()->
       HasSwitch(switches::kDisableBootAnimation);
   bool show_users = true;
   bool result = CrosSettings::Get()->GetBoolean(
