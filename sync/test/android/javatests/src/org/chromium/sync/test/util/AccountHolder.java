@@ -48,10 +48,6 @@ public class AccountHolder {
         return mPassword;
     }
 
-    public boolean hasAuthTokenRegistered(String authTokenType) {
-        return mAuthTokens.containsKey(authTokenType);
-    }
-
     public String getAuthToken(String authTokenType) {
         return mAuthTokens.get(authTokenType);
     }

@@ -20,7 +20,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 
 import java.io.IOException;
@@ -251,44 +250,29 @@ public class AccountManagerHelper {
         }
         final AccountManagerFuture<Bundle> finalFuture = future;
         errorEncountered.set(false);
-
-        // On ICS onPostExecute is never called when running an AsyncTask from a different thread
-        // than the UI thread.
-        if (ThreadUtils.runningOnUiThread()) {
-            new AsyncTask<Void, Void, String>() {
-                @Override
-                public String doInBackground(Void... params) {
-                    return getAuthTokenInner(finalFuture, errorEncountered);
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            public String doInBackground(Void... params) {
+                return getAuthTokenInner(finalFuture, errorEncountered);
+            }
+            @Override
+            public void onPostExecute(String authToken) {
+                if (authToken != null || !errorEncountered.get() ||
+                        numTries.incrementAndGet() == MAX_TRIES ||
+                        !NetworkChangeNotifier.isInitialized()) {
+                    callback.tokenAvailable(authToken);
+                    return;
                 }
-                @Override
-                public void onPostExecute(String authToken) {
-                    onGotAuthTokenResult(account, authTokenType, authToken, callback, numTries,
-                            errorEncountered, retry);
+                if (retry == null) {
+                    ConnectionRetry newRetry = new ConnectionRetry(account, authTokenType, callback,
+                            numTries, errorEncountered);
+                    NetworkChangeNotifier.addConnectionTypeObserver(newRetry);
                 }
-            }.execute();
-        } else {
-            String authToken = getAuthTokenInner(finalFuture, errorEncountered);
-            onGotAuthTokenResult(account, authTokenType, authToken, callback, numTries,
-                    errorEncountered, retry);
-        }
-    }
-
-    private void onGotAuthTokenResult(Account account, String authTokenType, String authToken,
-            GetAuthTokenCallback callback, AtomicInteger numTries, AtomicBoolean errorEncountered,
-            ConnectionRetry retry) {
-        if (authToken != null || !errorEncountered.get() ||
-                numTries.incrementAndGet() == MAX_TRIES ||
-                !NetworkChangeNotifier.isInitialized()) {
-            callback.tokenAvailable(authToken);
-            return;
-        }
-        if (retry == null) {
-            ConnectionRetry newRetry = new ConnectionRetry(account, authTokenType, callback,
-                    numTries, errorEncountered);
-            NetworkChangeNotifier.addConnectionTypeObserver(newRetry);
-        } else {
-            NetworkChangeNotifier.addConnectionTypeObserver(retry);
-        }
+                else {
+                    NetworkChangeNotifier.addConnectionTypeObserver(retry);
+                }
+            }
+        }.execute();
     }
 
     /**
