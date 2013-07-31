@@ -51,6 +51,7 @@
 #include "ash/wm/event_rewriter_event_filter.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_controller_impl2.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/property_util.h"
@@ -310,6 +311,7 @@ Shell::~Shell() {
 
   power_button_controller_.reset();
   lock_state_controller_.reset();
+  mru_window_tracker_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // DisplayController before resetting |display_controller_|, since destruction
@@ -566,13 +568,14 @@ void Shell::Init() {
 
   magnification_controller_.reset(
       MagnificationController::CreateInstance());
+  mru_window_tracker_.reset(new MruWindowTracker(activation_client_));
 
   partial_magnification_controller_.reset(
       new PartialMagnificationController());
 
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
-  window_cycle_controller_.reset(new WindowCycleController(activation_client_));
+  window_cycle_controller_.reset(new WindowCycleController());
 
   tooltip_controller_.reset(new views::corewm::TooltipController(
                                 gfx::SCREEN_TYPE_ALTERNATE));
@@ -931,7 +934,7 @@ void Shell::InitRootWindowController(
 
   controller->Init(first_run_after_boot);
 
-  window_cycle_controller_->OnRootWindowAdded(root_window);
+  mru_window_tracker_->OnRootWindowAdded(root_window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

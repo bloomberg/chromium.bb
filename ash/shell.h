@@ -80,6 +80,7 @@ class Launcher;
 class LauncherDelegate;
 class LauncherModel;
 class MagnificationController;
+class MruWindowTracker;
 class NestedDispatcherController;
 class PartialMagnificationController;
 class PowerButtonController;
@@ -310,6 +311,9 @@ class ASH_EXPORT Shell
   }
   LockStateController* lock_state_controller() {
     return lock_state_controller_.get();
+  }
+  MruWindowTracker* mru_window_tracker() {
+    return mru_window_tracker_.get();
   }
   UserActivityDetector* user_activity_detector() {
     return user_activity_detector_.get();
@@ -545,6 +549,7 @@ class ASH_EXPORT Shell
   scoped_ptr<DesktopBackgroundController> desktop_background_controller_;
   scoped_ptr<PowerButtonController> power_button_controller_;
   scoped_ptr<LockStateController> lock_state_controller_;
+  scoped_ptr<MruWindowTracker> mru_window_tracker_;
   scoped_ptr<UserActivityDetector> user_activity_detector_;
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;

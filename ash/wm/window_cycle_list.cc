@@ -4,6 +4,8 @@
 
 #include "ash/wm/window_cycle_list.h"
 
+#include "ash/shell.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/views/corewm/window_animations.h"
@@ -13,6 +15,7 @@ namespace ash {
 WindowCycleList::WindowCycleList(const WindowList& windows)
     : windows_(windows),
       current_index_(-1) {
+  ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
   // Locate the currently active window in the list to use as our start point.
   aura::Window* active_window = wm::GetActiveWindow();
 
@@ -27,6 +30,7 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
 }
 
 WindowCycleList::~WindowCycleList() {
+  ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(false);
   for (WindowList::const_iterator i = windows_.begin(); i != windows_.end();
        ++i) {
     (*i)->RemoveObserver(this);

@@ -5,6 +5,7 @@
 #include "ash/focus_cycler.h"
 
 #include "ash/shell.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_client.h"
@@ -18,7 +19,7 @@ namespace ash {
 namespace {
 
 bool HasFocusableWindow() {
-  return !WindowCycleController::BuildWindowList(NULL, false).empty();
+  return !MruWindowTracker::BuildWindowList(false).empty();
 }
 
 }  // namespace

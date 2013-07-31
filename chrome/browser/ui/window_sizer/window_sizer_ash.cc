@@ -6,7 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
-#include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -72,7 +72,7 @@ aura::Window* GetTopWindow(const gfx::Rect& bounds_in_screen) {
 
   // Get a list of all windows.
   const std::vector<aura::Window*> windows =
-      ash::WindowCycleController::BuildWindowList(NULL, false);
+      ash::MruWindowTracker::BuildWindowList(false);
 
   if (windows.empty())
     return NULL;

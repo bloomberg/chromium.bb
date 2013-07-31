@@ -23,8 +23,8 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_animations.h"
@@ -940,7 +940,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
 
   const std::vector<aura::Window*> windows =
-      ash::WindowCycleController::BuildWindowList(NULL, false);
+      ash::MruWindowTracker::BuildWindowList(false);
 
   // Process the window list and check if there are any visible windows.
   for (size_t i = 0; i < windows.size(); ++i) {

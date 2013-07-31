@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/window_positioner.h"
 
 #include "ash/shell.h"
-#include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
@@ -100,7 +100,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
     const gfx::Rect& work_area,
     int grid) {
   const std::vector<aura::Window*> windows =
-      ash::WindowCycleController::BuildWindowList(NULL, false);
+      ash::MruWindowTracker::BuildWindowList(false);
 
   std::vector<const gfx::Rect*> regions;
   // Process the window list and check if we can bail immediately.

@@ -418,6 +418,8 @@
         'wm/lock_state_observer.h',
         'wm/maximize_bubble_controller.cc',
         'wm/maximize_bubble_controller.h',
+        'wm/mru_window_tracker.cc',
+        'wm/mru_window_tracker.h',
         'wm/overlay_event_filter.cc',
         'wm/overlay_event_filter.h',
         'wm/panels/panel_frame_view.cc',
