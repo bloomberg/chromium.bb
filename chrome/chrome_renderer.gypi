@@ -373,6 +373,11 @@
             'renderer/media/webrtc_logging_message_filter.h',
           ],
         }],
+        ['enable_spellcheck==0', {
+          'sources/': [
+            ['exclude', '^render/spellchecker/']
+          ]
+        }],
         ['OS=="mac"', {
           'dependencies': [
             '../third_party/mach_override/mach_override.gyp:mach_override',

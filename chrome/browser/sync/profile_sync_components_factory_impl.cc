@@ -21,8 +21,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/spellchecker/spellcheck_factory.h"
-#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
@@ -74,6 +72,11 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
+#endif
+
+#if defined(ENABLE_SPELLCHECK)
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
 
 using browser_sync::AutofillDataTypeController;
@@ -377,9 +380,11 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
           : base::WeakPtr<syncer::SyncableService>();
     }
 #endif
+#if defined(ENABLE_SPELLCHECK)
     case syncer::DICTIONARY:
       return SpellcheckServiceFactory::GetForProfile(profile_)->
           GetCustomDictionary()->AsWeakPtr();
+#endif
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
       browser_sync::SessionModelAssociator* model_associator =

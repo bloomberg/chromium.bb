@@ -76,7 +76,6 @@
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_message_filter.h"
-#include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
@@ -226,6 +225,10 @@
 
 #if defined(USE_X11)
 #include "chrome/browser/chrome_browser_main_extra_parts_x11.h"
+#endif
+
+#if defined(ENABLE_SPELLCHECK)
+#include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #endif
 
 using WebKit::WebWindowFeatures;
@@ -887,7 +890,9 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
 #endif
   host->GetChannel()->AddFilter(
       new SearchProviderInstallStateMessageFilter(id, profile));
+#if defined(ENABLE_SPELLCHECK)
   host->GetChannel()->AddFilter(new SpellCheckMessageFilter(id));
+#endif
 #if defined(OS_MACOSX)
   host->GetChannel()->AddFilter(new SpellCheckMessageFilterMac(id));
 #endif

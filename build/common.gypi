@@ -340,6 +340,9 @@
       # Enable printing support and UI.
       'enable_printing%': 1,
 
+      # Enable spell checker.
+      'enable_spellcheck%': 1,
+
       # Webrtc compilation is enabled by default. Set to 0 to disable.
       'enable_webrtc%': 1,
 
@@ -511,6 +514,7 @@
           'enable_extensions%': 0,
           'enable_google_now%': 0,
           'enable_printing%': 0,
+          'enable_spellcheck%': 0,
           'enable_themes%': 0,
           'proprietary_codecs%': 1,
           'remoting%': 0,
@@ -817,6 +821,7 @@
     'test_isolation_fail_on_missing': '<(test_isolation_fail_on_missing)',
     'enable_automation%': '<(enable_automation)',
     'enable_printing%': '<(enable_printing)',
+    'enable_spellcheck%': '<(enable_spellcheck)',
     'enable_google_now%': '<(enable_google_now)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_ftp_support%': '<(disable_ftp_support)',
@@ -2239,6 +2244,9 @@
       }],
       ['enable_printing==1', {
         'defines': ['ENABLE_PRINTING=1'],
+      }],
+      ['enable_spellcheck==1', {
+        'defines': ['ENABLE_SPELLCHECK=1'],
       }],
       ['enable_captive_portal_detection==1', {
         'defines': ['ENABLE_CAPTIVE_PORTAL_DETECTION=1'],

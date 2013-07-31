@@ -21,8 +21,10 @@ class ChromeRenderProcessObserver;
 class ExtensionSet;
 class PrescientNetworkingDispatcher;
 class RendererNetPredictor;
+#if defined(ENABLE_SPELLCHECK)
 class SpellCheck;
 class SpellCheckProvider;
+#endif
 
 struct ChromeViewHostMsg_GetPluginInfo_Output;
 
@@ -139,9 +141,11 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   // For testing.
   void SetExtensionDispatcher(extensions::Dispatcher* extension_dispatcher);
 
+#if defined(ENABLE_SPELLCHECK)
   // Sets a new |spellcheck|. Used for low-mem restart and testing only.
   // Takes ownership of |spellcheck|.
   void SetSpellcheck(SpellCheck* spellcheck);
+#endif
 
   // Called in low-memory conditions to dump the memory used by the spellchecker
   // and start over.
@@ -189,7 +193,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       permissions_policy_delegate_;
   scoped_ptr<PrescientNetworkingDispatcher> prescient_networking_dispatcher_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
+#if defined(ENABLE_SPELLCHECK)
   scoped_ptr<SpellCheck> spellcheck_;
+#endif
   scoped_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
   scoped_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;

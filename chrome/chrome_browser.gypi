@@ -2507,6 +2507,11 @@
             ['exclude', '^browser/task_manager/'],
           ],
         }],
+        ['enable_spellcheck==0', {
+          'sources/': [
+             ['exclude', '^browser/spellchecker/'],
+          ],
+        }],
         ['disable_nacl==0', {
           'sources': [
             'browser/nacl_host/nacl_broker_host_win.cc',

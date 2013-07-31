@@ -62,8 +62,6 @@
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
-#include "chrome/renderer/spellchecker/spellcheck.h"
-#include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/tts_dispatcher.h"
 #include "chrome/renderer/validation_message_agent.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
@@ -103,6 +101,11 @@
 
 #if defined(ENABLE_WEBRTC)
 #include "chrome/renderer/media/webrtc_logging_message_filter.h"
+#endif
+
+#if defined(ENABLE_SPELLCHECK)
+#include "chrome/renderer/spellchecker/spellcheck.h"
+#include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #endif
 
 using autofill::AutofillAgent;
@@ -161,6 +164,7 @@ static void AppendParams(const std::vector<string16>& additional_names,
   existing_values->swap(values);
 }
 
+#if defined(ENABLE_SPELLCHECK)
 class SpellCheckReplacer : public content::RenderViewVisitor {
  public:
   explicit SpellCheckReplacer(SpellCheck* spellcheck)
@@ -178,6 +182,7 @@ bool SpellCheckReplacer::Visit(content::RenderView* render_view) {
   provider->set_spellcheck(spellcheck_);
   return true;
 }
+#endif
 
 // For certain sandboxed Pepper plugins, use the JavaScript Content Settings.
 bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
@@ -232,7 +237,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
           extension_dispatcher_.get()));
   prescient_networking_dispatcher_.reset(new PrescientNetworkingDispatcher());
   net_predictor_.reset(new RendererNetPredictor());
+#if defined(ENABLE_SPELLCHECK)
   spellcheck_.reset(new SpellCheck());
+#endif
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave());
 #if defined(FULL_SAFE_BROWSING)
   phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
@@ -250,7 +257,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #if defined(FULL_SAFE_BROWSING)
   thread->AddObserver(phishing_classifier_.get());
 #endif
+#if defined(ENABLE_SPELLCHECK)
   thread->AddObserver(spellcheck_.get());
+#endif
   thread->AddObserver(visited_link_slave_.get());
   thread->AddObserver(prerender_dispatcher_.get());
 
@@ -353,7 +362,9 @@ void ChromeContentRendererClient::RenderViewCreated(
 #if defined(ENABLE_PRINTING)
   new printing::PrintWebViewHelper(render_view);
 #endif
+#if defined(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_view, spellcheck_.get());
+#endif
   new prerender::PrerendererClient(render_view);
 #if defined(FULL_SAFE_BROWSING)
   safe_browsing::MalwareDOMDetails::Create(render_view);
@@ -1163,6 +1174,7 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
       extensions, old_url, new_url, should_consider_workaround);
 }
 
+#if defined(ENABLE_SPELLCHECK)
 void ChromeContentRendererClient::SetSpellcheck(SpellCheck* spellcheck) {
   RenderThread* thread = RenderThread::Get();
   if (spellcheck_.get() && thread)
@@ -1173,10 +1185,13 @@ void ChromeContentRendererClient::SetSpellcheck(SpellCheck* spellcheck) {
   if (thread)
     thread->AddObserver(spellcheck_.get());
 }
+#endif
 
 void ChromeContentRendererClient::OnPurgeMemory() {
+#if defined(ENABLE_SPELLCHECK)
   DVLOG(1) << "Resetting spellcheck in renderer client";
   SetSpellcheck(new SpellCheck());
+#endif
 }
 
 bool ChromeContentRendererClient::IsAdblockInstalled() {

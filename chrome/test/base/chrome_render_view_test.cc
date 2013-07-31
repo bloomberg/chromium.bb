@@ -56,7 +56,9 @@ void ChromeRenderViewTest::SetUp() {
   content::SetRendererClientForTesting(&chrome_content_renderer_client_);
   extension_dispatcher_ = new extensions::Dispatcher();
   chrome_content_renderer_client_.SetExtensionDispatcher(extension_dispatcher_);
+#if defined(ENABLE_SPELLCHECK)
   chrome_content_renderer_client_.SetSpellcheck(new SpellCheck());
+#endif
 
   content::RenderViewTest::SetUp();
 

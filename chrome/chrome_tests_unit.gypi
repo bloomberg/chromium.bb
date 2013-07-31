@@ -1972,6 +1972,12 @@
             ['exclude', '^browser/background/'],
           ],
         }],
+        ['enable_spellcheck==0', {
+          'sources/': [
+             ['exclude', '^browser/spellchecker/'],
+             ['exclude', '^renderer/spellchecker/'],
+          ],
+        }],
         ['enable_one_click_signin==0', {
           'sources!': [
             'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',

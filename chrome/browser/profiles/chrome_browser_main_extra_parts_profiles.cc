@@ -46,7 +46,6 @@
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/api/session_restore/session_restore_api.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
-#include "chrome/browser/extensions/api/spellcheck/spellcheck_api.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/api/system_info/system_info_api.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
@@ -86,7 +85,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
-#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
@@ -134,6 +132,11 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
+#endif
+
+#if defined(ENABLE_SPELLCHECK)
+#include "chrome/browser/extensions/api/spellcheck/spellcheck_api.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #endif
 
 namespace chrome {
@@ -237,7 +240,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();
   extensions::SessionRestoreAPI::GetFactoryInstance();
+#if defined(ENABLE_SPELLCHECK)
   extensions::SpellcheckAPI::GetFactoryInstance();
+#endif
   extensions::StreamsPrivateAPI::GetFactoryInstance();
   extensions::SystemInfoAPI::GetFactoryInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
@@ -299,7 +304,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   ShortcutsBackendFactory::GetInstance();
   SigninManagerFactory::GetInstance();
+#if defined(ENABLE_SPELLCHECK)
   SpellcheckServiceFactory::GetInstance();
+#endif
   ThumbnailServiceFactory::GetInstance();
   TabRestoreServiceFactory::GetInstance();
   TemplateURLFetcherFactory::GetInstance();
