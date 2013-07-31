@@ -1007,6 +1007,31 @@ TEST_F(WebViewTest, ConfirmCompositionTriggersAutofillTextChange)
     webView->close();
 }
 
+TEST_F(WebViewTest, SetCompositionFromExistingTextTriggersAutofillTextChange)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
+    MockAutofillClient client;
+    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "input_field_populated.html");
+    webView->setAutofillClient(&client);
+    webView->setInitialFocus(false);
+
+    WebVector<WebCompositionUnderline> emptyUnderlines;
+
+    client.clearChangeCounts();
+    webView->setCompositionFromExistingText(8, 12, emptyUnderlines);
+
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz", std::string(info.value.utf8().data()));
+    EXPECT_EQ(8, info.compositionStart);
+    EXPECT_EQ(12, info.compositionEnd);
+
+    EXPECT_EQ(0, client.textChangesWhileIgnored());
+    EXPECT_EQ(1, client.textChangesWhileNotIgnored());
+
+    webView->setAutofillClient(0);
+    webView->close();
+}
+
 TEST_F(WebViewTest, ShadowRoot)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("shadow_dom_test.html"));

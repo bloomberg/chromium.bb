@@ -2417,7 +2417,6 @@ bool WebViewImpl::setCompositionFromExistingText(int compositionStart, int compo
     editor->setIgnoreCompositionSelectionChange(true);
     editor->setSelectionOffsets(compositionStart, compositionEnd);
     String text = editor->selectedText();
-    focused->document()->execCommand("delete", true);
     editor->setComposition(text, CompositionUnderlineVectorBuilder(underlines), 0, 0);
     // Need to set setIgnoreCompositionSelectionChange(true) again because setComposition resets it to false.
     editor->setIgnoreCompositionSelectionChange(true);
