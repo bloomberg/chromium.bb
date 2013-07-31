@@ -162,9 +162,12 @@ cr.define('options', function() {
     // Update tab title.
     this.setTitle_(targetPage.title);
 
-    // Update focus if any other control was focused before.
-    if (document.activeElement != document.body)
+    // Update focus if any other control was focused on the previous page,
+    // or the previous page is not known.
+    if (document.activeElement != document.body &&
+        (!rootPage || rootPage.pageDiv.contains(document.activeElement))) {
       targetPage.focus();
+    }
 
     // Notify pages if they were shown.
     for (var i = 0; i < allPageNames.length; ++i) {
