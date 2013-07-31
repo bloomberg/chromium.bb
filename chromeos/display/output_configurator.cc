@@ -170,8 +170,7 @@ OutputConfigurator::OutputConfigurator()
 
 OutputConfigurator::~OutputConfigurator() {}
 
-void OutputConfigurator::SetDelegateForTesting(
-    scoped_ptr<Delegate> delegate) {
+void OutputConfigurator::SetDelegateForTesting(scoped_ptr<Delegate> delegate) {
   delegate_ = delegate.Pass();
   configure_display_ = true;
 }
@@ -181,24 +180,16 @@ void OutputConfigurator::SetInitialDisplayPower(DisplayPowerState power_state) {
   power_state_ = power_state;
 }
 
-void OutputConfigurator::Init(bool is_panel_fitting_enabled,
-                              uint32 background_color_argb) {
+void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
   if (!configure_display_)
     return;
 
   if (!delegate_)
     delegate_.reset(new RealOutputConfiguratorDelegate());
-
-  // Cache the initial output state.
   delegate_->SetPanelFittingEnabled(is_panel_fitting_enabled);
-  delegate_->GrabServer();
-  std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
-  if (outputs.size() > 1 && background_color_argb)
-    delegate_->SetBackgroundColor(background_color_argb);
-  delegate_->UngrabServer();
 }
 
-void OutputConfigurator::Start() {
+void OutputConfigurator::Start(uint32 background_color_argb) {
   if (!configure_display_)
     return;
 
@@ -206,6 +197,8 @@ void OutputConfigurator::Start() {
   delegate_->InitXRandRExtension(&xrandr_event_base_);
 
   std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
+  if (outputs.size() > 1 && background_color_argb)
+    delegate_->SetBackgroundColor(background_color_argb);
   EnterStateOrFallBackToSoftwareMirroring(
       GetOutputState(outputs, power_state_), power_state_, outputs);
 
@@ -214,6 +207,7 @@ void OutputConfigurator::Start() {
   delegate_->ForceDPMSOn();
   delegate_->UngrabServer();
   delegate_->SendProjectingStateToPowerManager(IsProjecting(outputs));
+  NotifyOnDisplayChanged();
 }
 
 void OutputConfigurator::Stop() {

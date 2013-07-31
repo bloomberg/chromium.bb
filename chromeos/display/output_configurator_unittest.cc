@@ -309,10 +309,9 @@ class OutputConfiguratorTest : public testing::Test {
   virtual void InitWithSingleOutput() {
     UpdateOutputs(1);
     EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
-    configurator_.Init(false, 0);
-    EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL),
-              delegate_->GetActionsAndClear());
-    configurator_.Start();
+    configurator_.Init(false);
+    EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+    configurator_.Start(0);
     EXPECT_EQ(JoinActions(kGrab, kInitXRandR,
                           GetFramebufferAction(kSmallModeWidth,
                               kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
@@ -662,9 +661,9 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
 TEST_F(OutputConfiguratorTest, Headless) {
   UpdateOutputs(0);
   EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
-  configurator_.Init(false, 0);
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), delegate_->GetActionsAndClear());
-  configurator_.Start();
+  configurator_.Init(false);
+  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+  configurator_.Start(0);
   EXPECT_EQ(JoinActions(kGrab, kInitXRandR, kForceDPMS, kUngrab,
                         kProjectingOff, NULL),
             delegate_->GetActionsAndClear());
@@ -696,11 +695,11 @@ TEST_F(OutputConfiguratorTest, Headless) {
 TEST_F(OutputConfiguratorTest, StartWithTwoOutputs) {
   UpdateOutputs(2);
   EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
-  configurator_.Init(false, 0);
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), delegate_->GetActionsAndClear());
+  configurator_.Init(false);
+  EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
 
   state_controller_.set_state(STATE_DUAL_MIRROR);
-  configurator_.Start();
+  configurator_.Start(0);
   EXPECT_EQ(JoinActions(kGrab, kInitXRandR,
                         GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
                             outputs_[0].crtc, outputs_[1].crtc).c_str(),
@@ -715,8 +714,8 @@ TEST_F(OutputConfiguratorTest, StartWithTwoOutputs) {
 TEST_F(OutputConfiguratorTest, InvalidOutputStates) {
   UpdateOutputs(0);
   EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
-  configurator_.Init(false, 0);
-  configurator_.Start();
+  configurator_.Init(false);
+  configurator_.Start(0);
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_HEADLESS));
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_SINGLE));
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
@@ -742,8 +741,8 @@ TEST_F(OutputConfiguratorTest, GetOutputStateForDisplays) {
   outputs_[0].has_display_id = false;
   UpdateOutputs(2);
 
-  configurator_.Init(false, 0);
-  configurator_.Start();
+  configurator_.Init(false);
+  configurator_.Start(0);
 
   state_controller_.set_state(STATE_DUAL_MIRROR);
   test_api_.SendOutputChangeEvents(true);

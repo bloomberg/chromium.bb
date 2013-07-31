@@ -158,6 +158,7 @@ class CHROMEOS_EXPORT OutputConfigurator
     virtual void ForceDPMSOn() = 0;
 
     // Returns information about the current outputs.
+    // This method may block for 60 milliseconds or more.
     virtual std::vector<OutputSnapshot> GetOutputs() = 0;
 
     // Gets details corresponding to |mode|.  Parameters may be NULL.
@@ -251,13 +252,13 @@ class CHROMEOS_EXPORT OutputConfigurator
 
   // Initialization, must be called right after constructor.
   // |is_panel_fitting_enabled| indicates hardware panel fitting support.
+  void Init(bool is_panel_fitting_enabled);
+
+  // Does initial configuration of displays during startup.
   // If |background_color_argb| is non zero and there are multiple displays,
   // OutputConfigurator sets the background color of X's RootWindow to this
   // color.
-  void Init(bool is_panel_fitting_enabled, uint32 background_color_argb);
-
-  // Detects displays first time from unknown state.
-  void Start();
+  void Start(uint32 background_color_argb);
 
   // Stop handling display configuration events/requests.
   void Stop();

@@ -228,9 +228,7 @@ Shell::Shell(ShellDelegate* delegate)
       CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisablePanelFitting);
 
-  output_configurator_->Init(
-      !is_panel_fitting_disabled,
-      delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
+  output_configurator_->Init(!is_panel_fitting_disabled);
 
   base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(
       output_configurator());
@@ -458,8 +456,8 @@ void Shell::Init() {
     output_configurator_->set_state_controller(display_change_observer_.get());
     if (!command_line->HasSwitch(ash::switches::kAshDisableSoftwareMirroring))
       output_configurator_->set_mirroring_controller(display_manager_.get());
-    output_configurator_->Start();
-    display_change_observer_->OnDisplayModeChanged();
+    output_configurator_->Start(
+        delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
     display_initialized = true;
   }
 #endif
