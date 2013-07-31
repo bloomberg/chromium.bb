@@ -321,7 +321,7 @@
     {
       "channel": "dev",
       "extension_types": [
-        "extension", "packaged_app", "hosted_app", "platform_app"
+        "extension", "packaged_app", "platform_app"
       ]
     },
     {
