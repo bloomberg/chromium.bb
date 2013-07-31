@@ -1,0 +1,86 @@
+<!--
+Copyright 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="webui_resource_test.js"></script>
+    <script src="util.js"></script>
+    <script src="player_manager.js"></script>
+    <script src="player_info.js"></script>
+    <script src="main.js"></script>
+  </head>
+  <body>
+    <script>
+      window.setUp = function() {
+        var doNothing = function() {};
+        var mockRenderer = {
+          redrawList: doNothing,
+          update: doNothing,
+          select: doNothing
+        };
+
+        var manager = new PlayerManager(mockRenderer);
+        media.initialize(manager);
+
+        window.playerManager = manager;
+      };
+
+      // The renderer and player ids are completely arbitrarily.
+      var TEST_RENDERER = 12;
+      var TEST_PLAYER = 4;
+      var TEST_NAME = TEST_RENDERER + ':' + TEST_PLAYER;
+
+      // Correctly use the information from a media event.
+      window.testOnMediaEvent = function() {
+        var event = {
+          ticksMillis: 132,
+          renderer: TEST_RENDERER,
+          player: TEST_PLAYER,
+          params: {
+            fps: 60,
+            other: 'hi'
+          }
+        };
+
+        window.media.onMediaEvent(event);
+        var info = window.playerManager.players_[TEST_NAME];
+
+        assertEquals(event.ticksMillis, info.firstTimestamp_);
+        assertEquals(TEST_NAME, info.id);
+        assertEquals(event.params.fps, info.properties.fps);
+      };
+
+      // Remove a player.
+      window.testOnRenderTerminated = function() {
+        window.testOnMediaEvent();
+
+        window.playerManager.shouldRemovePlayer_ = function() {
+          return true;
+        };
+
+        window.media.onRendererTerminated(TEST_RENDERER);
+        assertEquals(undefined, window.playerManager.players_[TEST_NAME]);
+      };
+
+      // Audio Streams are weird, they are handled separately
+      window.testAddAudioStream = function() {
+        var event = {
+          id: 'ID',
+          status: 'created',
+          playing: true
+        };
+
+        window.media.addAudioStream(event);
+
+        var player = window.playerManager.players_[event.id];
+        assertTrue(undefined !== player);
+        assertEquals(event.playing, player.properties['playing']);
+      };
+
+      runTests();
+    </script>
+  </body>
+</html>
