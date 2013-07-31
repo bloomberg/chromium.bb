@@ -4,6 +4,10 @@
 
 #include "media/midi/midi_manager.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/threading/thread.h"
+
 namespace media {
 
 #if !defined(OS_MACOSX)
@@ -54,9 +58,26 @@ void MIDIManager::ReceiveMIDIData(
     double timestamp) {
   base::AutoLock auto_lock(clients_lock_);
 
-  // TODO(crogers): Filter out sysex.
   for (ClientList::iterator i = clients_.begin(); i != clients_.end(); ++i)
     (*i)->ReceiveMIDIData(port_index, data, length, timestamp);
-};
+}
+
+void MIDIManager::DispatchSendMIDIData(MIDIManagerClient* client,
+                                       int port_index,
+                                       const uint8* data,
+                                       size_t length,
+                                       double timestamp) {
+  // Lazily create the thread when first needed.
+  if (!send_thread_) {
+    send_thread_.reset(new base::Thread("MIDISendThread"));
+    send_thread_->Start();
+    send_message_loop_ = send_thread_->message_loop_proxy();
+  }
+
+  send_message_loop_->PostTask(
+     FROM_HERE,
+     base::Bind(&MIDIManager::SendMIDIData, base::Unretained(this),
+         client, port_index, data, length, timestamp));
+}
 
 }  // namespace media

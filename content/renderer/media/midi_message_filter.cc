@@ -15,6 +15,11 @@
 using media::MIDIPortInfoList;
 using base::AutoLock;
 
+// The maximum number of bytes which we're allowed to send to the browser
+// before getting acknowledgement back from the browser that they've been
+// successfully sent.
+static const size_t kMaxUnacknowledgedBytesSent = 10 * 1024 * 1024;  // 10 MB.
+
 namespace content {
 
 MIDIMessageFilter::MIDIMessageFilter(
@@ -22,7 +27,8 @@ MIDIMessageFilter::MIDIMessageFilter(
     : channel_(NULL),
       io_message_loop_(io_message_loop),
       main_message_loop_(base::MessageLoopProxy::current()),
-      next_available_id_(0) {
+      next_available_id_(0),
+      unacknowledged_bytes_sent_(0) {
 }
 
 MIDIMessageFilter::~MIDIMessageFilter() {}
@@ -42,6 +48,7 @@ bool MIDIMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(MIDIMessageFilter, message)
     IPC_MESSAGE_HANDLER(MIDIMsg_SessionStarted, OnSessionStarted)
     IPC_MESSAGE_HANDLER(MIDIMsg_DataReceived, OnDataReceived)
+    IPC_MESSAGE_HANDLER(MIDIMsg_AcknowledgeSentData, OnAcknowledgeSentData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -160,6 +167,12 @@ void MIDIMessageFilter::OnDataReceived(int port,
                  port, data, timestamp));
 }
 
+void MIDIMessageFilter::OnAcknowledgeSentData(size_t bytes_sent) {
+  DCHECK_GE(unacknowledged_bytes_sent_, bytes_sent);
+  if (unacknowledged_bytes_sent_ >= bytes_sent)
+    unacknowledged_bytes_sent_ -= bytes_sent;
+}
+
 void MIDIMessageFilter::HandleDataReceived(int port,
                                            const std::vector<uint8>& data,
                                            double timestamp) {
@@ -178,19 +191,32 @@ void MIDIMessageFilter::SendMIDIData(int port,
                                      const uint8* data,
                                      size_t length,
                                      double timestamp) {
-  // TODO(crogers): we need more work to check the amount of data sent,
-  // throttle if necessary, and filter out the SYSEX messages if not
-  // approved. For now, we will not implement the sending of MIDI data.
-  NOTIMPLEMENTED();
-  // std::vector<uint8> v(data, data + length);
-  // io_message_loop_->PostTask(FROM_HERE,
-  //     base::Bind(&MIDIMessageFilter::SendMIDIDataOnIOThread, this,
-  //                port, v, timestamp));
+  if (length > kMaxUnacknowledgedBytesSent) {
+    // TODO(crogers): buffer up the data to send at a later time.
+    // For now we're just dropping these bytes on the floor.
+    return;
+  }
+
+  std::vector<uint8> v(data, data + length);
+  io_message_loop_->PostTask(FROM_HERE,
+      base::Bind(&MIDIMessageFilter::SendMIDIDataOnIOThread, this,
+                 port, v, timestamp));
 }
 
 void MIDIMessageFilter::SendMIDIDataOnIOThread(int port,
                                                const std::vector<uint8>& data,
                                                double timestamp) {
+  size_t n = data.size();
+  if (n > kMaxUnacknowledgedBytesSent ||
+      unacknowledged_bytes_sent_ > kMaxUnacknowledgedBytesSent ||
+      n + unacknowledged_bytes_sent_ > kMaxUnacknowledgedBytesSent) {
+    // TODO(crogers): buffer up the data to send at a later time.
+    // For now we're just dropping these bytes on the floor.
+    return;
+  }
+
+  unacknowledged_bytes_sent_ += n;
+
   // Send to the browser.
   Send(new MIDIHostMsg_SendData(port, data, timestamp));
 }

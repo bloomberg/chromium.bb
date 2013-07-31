@@ -146,12 +146,12 @@ void MIDIManagerMac::ReadMidi(MIDIEndpointRef source,
   }
 }
 
-void MIDIManagerMac::SendMIDIData(int port_index,
+void MIDIManagerMac::SendMIDIData(MIDIManagerClient* client,
+                                  int port_index,
                                   const uint8* data,
                                   size_t length,
                                   double timestamp) {
-  // TODO(crogers): Filter out sysex.
-
+  // System Exclusive has already been filtered.
   MIDITimeStamp coremidi_timestamp = SecondsToMIDITimeStamp(timestamp);
 
   midi_packet_ = MIDIPacketListAdd(
@@ -175,6 +175,8 @@ void MIDIManagerMac::SendMIDIData(int port_index,
 
   // Re-initialize for next time.
   midi_packet_ = MIDIPacketListInit(packet_list_);
+
+  client->AccumulateMIDIBytesSent(length);
 }
 
 MIDIPortInfo MIDIManagerMac::GetPortInfoFromEndpoint(

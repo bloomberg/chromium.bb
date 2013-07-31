@@ -73,6 +73,11 @@ class CONTENT_EXPORT MIDIMessageFilter
                       const std::vector<uint8>& data,
                       double timestamp);
 
+  // From time-to-time, the browser incrementally informs us of how many bytes
+  // it has successfully sent. This is part of our throttling process to avoid
+  // sending too much data before knowing how much has already been sent.
+  void OnAcknowledgeSentData(size_t bytes_sent);
+
   void HandleSessionStarted(int client_id,
                             bool success,
                             media::MIDIPortInfoList inputs,
@@ -108,6 +113,8 @@ class CONTENT_EXPORT MIDIMessageFilter
 
   // Dishes out client ids.
   int next_available_id_;
+
+  size_t unacknowledged_bytes_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(MIDIMessageFilter);
 };

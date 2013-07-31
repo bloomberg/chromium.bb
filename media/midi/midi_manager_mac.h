@@ -23,7 +23,8 @@ class MEDIA_EXPORT MIDIManagerMac : public MIDIManager {
 
   // MIDIManager implementation.
   virtual bool Initialize() OVERRIDE;
-  virtual void SendMIDIData(int port_index,
+  virtual void SendMIDIData(MIDIManagerClient* client,
+                            int port_index,
                             const uint8* data,
                             size_t length,
                             double timestamp) OVERRIDE;

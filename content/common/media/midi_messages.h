@@ -42,3 +42,6 @@ IPC_MESSAGE_CONTROL3(MIDIMsg_DataReceived,
                      int /* port */,
                      std::vector<uint8> /* data */,
                      double /* timestamp */)
+
+IPC_MESSAGE_CONTROL1(MIDIMsg_AcknowledgeSentData,
+                     size_t /* bytes sent */)

@@ -37,6 +37,7 @@ class CONTENT_EXPORT MIDIHost
       const uint8* data,
       size_t length,
       double timestamp) OVERRIDE;
+  virtual void AccumulateMIDIBytesSent(size_t n) OVERRIDE;
 
   // Start session to access MIDI hardware.
   void OnStartSession(int client_id);
@@ -52,7 +53,23 @@ class CONTENT_EXPORT MIDIHost
 
   virtual ~MIDIHost();
 
+  // |midi_manager_| talks to the platform-specific MIDI APIs.
+  // It can be NULL if the platform (or our current implementation)
+  // does not support MIDI.  If not supported then a call to
+  // OnRequestAccess() will always refuse access and a call to
+  // OnSendData() will do nothing.
   media::MIDIManager* const midi_manager_;
+
+  // The number of bytes sent to the platform-specific MIDI sending
+  // system, but not yet completed.
+  size_t sent_bytes_in_flight_;
+
+  // The number of bytes successfully sent since the last time
+  // we've acknowledged back to the renderer.
+  size_t bytes_sent_since_last_acknowledgement_;
+
+  // Protects access to |sent_bytes_in_flight_|.
+  base::Lock in_flight_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MIDIHost);
 };
