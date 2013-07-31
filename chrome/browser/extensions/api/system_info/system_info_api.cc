@@ -7,7 +7,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -32,15 +31,9 @@ namespace extensions {
 
 using api::system_storage::StorageFreeSpaceChangeInfo;
 using api::system_storage::StorageUnitInfo;
-using api::system_storage::StorageUnitType;
 using content::BrowserThread;
 
 namespace {
-
-// The display events use the "systemInfo" prefix.
-const char kSystemInfoEventPrefix[] = "systemInfo";
-// The storage events still use the "experimental.systemInfo" prefix.
-const char kExperimentalSystemInfoEventPrefix[] = "experimental.systemInfo";
 
 bool IsDisplayChangedEvent(const std::string& event_name) {
   return event_name == event_names::kOnDisplayChanged;
@@ -64,9 +57,6 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
   // Add/remove event listener for the |event_name| event.
   void AddEventListener(const std::string& event_name);
   void RemoveEventListener(const std::string& event_name);
-
-  // Return true if the |event_name| is an event from systemInfo namespace.
-  static bool IsSystemInfoEvent(const std::string& event_name);
 
  private:
   // StorageFreeSpaceObserver:
@@ -189,14 +179,6 @@ void SystemInfoEventRouter::RemoveEventListener(
     ash::Shell::GetScreen()->RemoveObserver(this);
 #endif
   }
-}
-
-// static
-bool SystemInfoEventRouter::IsSystemInfoEvent(const std::string& event_name) {
-  // TODO(hshi): simplify this once all systemInfo APIs are out of experimental.
-  return (StartsWithASCII(event_name, kSystemInfoEventPrefix, true) ||
-          StartsWithASCII(event_name, kExperimentalSystemInfoEventPrefix,
-                          true));
 }
 
 // Called on UI thread since the observer is added from UI thread.
