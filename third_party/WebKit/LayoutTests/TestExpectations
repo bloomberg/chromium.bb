@@ -1349,6 +1349,6 @@ crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-chang
 
 # Temporary expectation until v8's i18n support is turned on. Then it needs to
 # be rebaslined.
-Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Failure Pass ]
+Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ NeedsRebaseline ]
 
 crbug.com/261998 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
