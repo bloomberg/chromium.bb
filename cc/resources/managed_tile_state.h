@@ -22,7 +22,8 @@ enum ManagedTileBin {
   EVENTUALLY_BIN = 2,  // Nice to have, if we've got memory and time.
   NEVER_BIN = 3,       // Dont bother.
   NUM_BINS = 4
-  // Be sure to update ManagedTileBinAsValue when adding new fields.
+  // NOTE: Be sure to update ManagedTileBinAsValue and kBinPolicyMap when adding
+  // or reordering fields.
 };
 scoped_ptr<base::Value> ManagedTileBinAsValue(
     ManagedTileBin bin);

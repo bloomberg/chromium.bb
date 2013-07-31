@@ -24,6 +24,31 @@ namespace cc {
 
 namespace {
 
+// Memory limit policy works by mapping some bin states to the NEVER bin.
+const ManagedTileBin kBinPolicyMap[NUM_TILE_MEMORY_LIMIT_POLICIES][NUM_BINS] = {
+  {  // [ALLOW_NOTHING]
+    NEVER_BIN,      // [NOW_BIN]
+    NEVER_BIN,      // [SOON_BIN]
+    NEVER_BIN,      // [EVENTUALLY_BIN]
+    NEVER_BIN       // [NEVER_BIN]
+  }, {  // [ALLOW_ABSOLUTE_MINIMUM]
+    NOW_BIN,        // [NOW_BIN]
+    NEVER_BIN,      // [SOON_BIN]
+    NEVER_BIN,      // [EVENTUALLY_BIN]
+    NEVER_BIN       // [NEVER_BIN]
+  }, {  // [ALLOW_PREPAINT_ONLY]
+    NOW_BIN,         // [NOW_BIN]
+    SOON_BIN,        // [SOON_BIN]
+    NEVER_BIN,       // [EVENTUALLY_BIN]
+    NEVER_BIN        // [NEVER_BIN]
+  }, {  // [ALLOW_ANYTHING]
+    NOW_BIN,         // [NOW_BIN]
+    SOON_BIN,        // [SOON_BIN]
+    EVENTUALLY_BIN,  // [EVENTUALLY_BIN]
+    NEVER_BIN        // [NEVER_BIN]
+  }
+};
+
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
 inline ManagedTileBin BinFromTilePriority(const TilePriority& prio,
@@ -247,31 +272,8 @@ class BinComparator {
 };
 
 void TileManager::AssignBinsToTiles(TileRefVector* tiles) {
+  const TileMemoryLimitPolicy memory_policy = global_state_.memory_limit_policy;
   const TreePriority tree_priority = global_state_.tree_priority;
-
-  // Memory limit policy works by mapping some bin states to the NEVER bin.
-  ManagedTileBin bin_map[NUM_BINS];
-  if (global_state_.memory_limit_policy == ALLOW_NOTHING) {
-    bin_map[NOW_BIN] = NEVER_BIN;
-    bin_map[SOON_BIN] = NEVER_BIN;
-    bin_map[EVENTUALLY_BIN] = NEVER_BIN;
-    bin_map[NEVER_BIN] = NEVER_BIN;
-  } else if (global_state_.memory_limit_policy == ALLOW_ABSOLUTE_MINIMUM) {
-    bin_map[NOW_BIN] = NOW_BIN;
-    bin_map[SOON_BIN] = NEVER_BIN;
-    bin_map[EVENTUALLY_BIN] = NEVER_BIN;
-    bin_map[NEVER_BIN] = NEVER_BIN;
-  } else if (global_state_.memory_limit_policy == ALLOW_PREPAINT_ONLY) {
-    bin_map[NOW_BIN] = NOW_BIN;
-    bin_map[SOON_BIN] = SOON_BIN;
-    bin_map[EVENTUALLY_BIN] = NEVER_BIN;
-    bin_map[NEVER_BIN] = NEVER_BIN;
-  } else {
-    bin_map[NOW_BIN] = NOW_BIN;
-    bin_map[SOON_BIN] = SOON_BIN;
-    bin_map[EVENTUALLY_BIN] = EVENTUALLY_BIN;
-    bin_map[NEVER_BIN] = NEVER_BIN;
-  }
 
   // For each tree, bin into different categories of tiles.
   for (TileRefVector::iterator it = tiles->begin(); it != tiles->end(); ++it) {
@@ -308,13 +310,13 @@ void TileManager::AssignBinsToTiles(TileRefVector* tiles) {
     mts.gpu_memmgr_stats_bin =
         BinFromTilePriority(tile->combined_priority(), tree_priority);
 
-    mts.tree_bin[ACTIVE_TREE] = bin_map[
+    mts.tree_bin[ACTIVE_TREE] = kBinPolicyMap[memory_policy][
         BinFromTilePriority(tile->priority(ACTIVE_TREE), tree_priority)];
-    mts.tree_bin[PENDING_TREE] = bin_map[
+    mts.tree_bin[PENDING_TREE] = kBinPolicyMap[memory_policy][
         BinFromTilePriority(tile->priority(PENDING_TREE), tree_priority)];
 
     for (int i = 0; i < NUM_BIN_PRIORITIES; ++i)
-      mts.bin[i] = bin_map[mts.bin[i]];
+      mts.bin[i] = kBinPolicyMap[memory_policy][mts.bin[i]];
 
     mts.visible_and_ready_to_draw =
         mts.tree_bin[ACTIVE_TREE] == NOW_BIN && tile->IsReadyToDraw();

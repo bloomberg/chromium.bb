@@ -126,18 +126,21 @@ struct CC_EXPORT TilePriority {
 
 enum TileMemoryLimitPolicy {
   // Nothing.
-  ALLOW_NOTHING,
+  ALLOW_NOTHING = 0,
 
   // You might be made visible, but you're not being interacted with.
-  ALLOW_ABSOLUTE_MINIMUM,  // Tall.
+  ALLOW_ABSOLUTE_MINIMUM = 1,  // Tall.
 
   // You're being interacted with, but we're low on memory.
-  ALLOW_PREPAINT_ONLY,  // Grande.
+  ALLOW_PREPAINT_ONLY = 2,  // Grande.
 
   // You're the only thing in town. Go crazy.
-  ALLOW_ANYTHING,  // Venti.
+  ALLOW_ANYTHING = 3,  // Venti.
 
-  // Be sure to update TreePriorityAsValue when adding new fields.
+  NUM_TILE_MEMORY_LIMIT_POLICIES = 4,
+
+  // NOTE: Be sure to update TreePriorityAsValue and kBinPolicyMap when adding
+  // or reordering fields.
 };
 scoped_ptr<base::Value> TileMemoryLimitPolicyAsValue(
     TileMemoryLimitPolicy policy);
