@@ -29,8 +29,9 @@ enum MediaStreamType {
   MEDIA_TAB_AUDIO_CAPTURE,
   MEDIA_TAB_VIDEO_CAPTURE,
 
-  // Capture content of the screen.
+  // Desktop media sources.
   MEDIA_SCREEN_VIDEO_CAPTURE,
+  MEDIA_WINDOW_VIDEO_CAPTURE,
 
   NUM_MEDIA_TYPES
 };

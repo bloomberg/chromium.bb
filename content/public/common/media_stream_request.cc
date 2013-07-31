@@ -16,7 +16,8 @@ bool IsAudioMediaType(MediaStreamType type) {
 bool IsVideoMediaType(MediaStreamType type) {
   return (type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
           type == content::MEDIA_TAB_VIDEO_CAPTURE ||
-          type == content::MEDIA_SCREEN_VIDEO_CAPTURE);
+          type == content::MEDIA_SCREEN_VIDEO_CAPTURE ||
+          type == content::MEDIA_WINDOW_VIDEO_CAPTURE);
 }
 
 MediaStreamDevice::MediaStreamDevice() : type(MEDIA_NO_SERVICE) {}

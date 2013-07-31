@@ -82,6 +82,7 @@ include_rules = [
   "+third_party/leveldatabase",
   "+third_party/libevent",  # For the remote V8 debugging server
   "+third_party/libjingle",
+  "+third_party/libyuv",
   "+third_party/protobuf/src/google/protobuf",
   "+third_party/re2",
   "+third_party/sqlite",
