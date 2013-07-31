@@ -229,9 +229,9 @@ void WebClipboardImpl::writeDataObject(const WebDragData& data) {
 
 bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
                                          ui::Clipboard::Buffer* result) {
+  *result = ui::Clipboard::BUFFER_STANDARD;
   switch (buffer) {
     case BufferStandard:
-      *result = ui::Clipboard::BUFFER_STANDARD;
       break;
     case BufferSelection:
 #if defined(USE_X11)
