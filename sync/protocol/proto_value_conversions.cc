@@ -6,6 +6,8 @@
 
 #include "sync/protocol/proto_value_conversions.h"
 
+#include <string>
+
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -344,7 +346,7 @@ base::DictionaryValue* FaviconSyncFlagsToValue(
   return value;
 }
 
-}
+}  // namespace
 
 base::DictionaryValue* ExperimentsSpecificsToValue(
     const sync_pb::ExperimentsSpecifics& proto) {
@@ -511,6 +513,11 @@ base::DictionaryValue* SearchEngineSpecificsToValue(
   SET_STR(sync_guid);
   SET_STR_REP(alternate_urls);
   SET_STR(search_terms_replacement_key);
+  SET_STR(image_url);
+  SET_STR(search_url_post_params);
+  SET_STR(suggestions_url_post_params);
+  SET_STR(instant_url_post_params);
+  SET_STR(image_url_post_params);
   return value;
 }
 

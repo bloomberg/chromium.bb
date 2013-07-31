@@ -406,6 +406,31 @@ const char kDefaultSearchProviderSuggestURL[] =
 const char kDefaultSearchProviderInstantURL[] =
     "default_search_provider.instant_url";
 
+// The URL (as understood by TemplateURLRef) the default search provider uses
+// for image search results.
+const char kDefaultSearchProviderImageURL[] =
+    "default_search_provider.image_url";
+
+// The string of post parameters (as understood by TemplateURLRef) the default
+// search provider uses for searches by using POST.
+const char kDefaultSearchProviderSearchURLPostParams[] =
+    "default_search_provider.search_url_post_params";
+
+// The string of post parameters (as understood by TemplateURLRef) the default
+// search provider uses for suggestions by using POST.
+const char kDefaultSearchProviderSuggestURLPostParams[] =
+    "default_search_provider.suggest_url_post_params";
+
+// The string of post parameters (as understood by TemplateURLRef) the default
+// search provider uses for instant results by using POST.
+const char kDefaultSearchProviderInstantURLPostParams[] =
+    "default_search_provider.instant_url_post_params";
+
+// The string of post parameters (as understood by TemplateURLRef) the default
+// search provider uses for image search results by using POST.
+const char kDefaultSearchProviderImageURLPostParams[] =
+    "default_search_provider.image_url_post_params";
+
 // The Favicon URL (as understood by TemplateURLRef) of the default search
 // provider.
 const char kDefaultSearchProviderIconURL[] =

@@ -742,6 +742,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
       "http://search.example/search#q={searchTerms}");
   const std::string kAlternateURL1("http://search.example/#q={searchTerms}");
   const std::string kSearchTermsReplacementKey("zekey");
+  const std::string kImageURL("http://test.com/searchbyimage/upload");
+  const std::string kImageURLPostParams(
+      "image_content=content,image_url=http://test.com/test.png");
 
   TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
       browser()->profile());
@@ -755,7 +758,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
     default_search->alternate_urls()[0] == kAlternateURL0 &&
     default_search->alternate_urls()[1] == kAlternateURL1 &&
     default_search->search_terms_replacement_key() ==
-        kSearchTermsReplacementKey);
+        kSearchTermsReplacementKey &&
+    default_search->image_url() == kImageURL &&
+    default_search->image_url_post_params() == kImageURLPostParams);
 
   // Override the default search provider using policies.
   PolicyMap policies;
@@ -776,6 +781,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                base::Value::CreateStringValue(kSearchTermsReplacementKey),
                NULL);
+  policies.Set(key::kDefaultSearchProviderImageURL,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(kImageURL),
+               NULL);
+  policies.Set(key::kDefaultSearchProviderImageURLPostParams,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(kImageURLPostParams),
+               NULL);
   UpdateProviderPolicy(policies);
   default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
@@ -786,6 +799,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_EQ(kAlternateURL1, default_search->alternate_urls()[1]);
   EXPECT_EQ(kSearchTermsReplacementKey,
             default_search->search_terms_replacement_key());
+  EXPECT_EQ(kImageURL, default_search->image_url());
+  EXPECT_EQ(kImageURLPostParams, default_search->image_url_post_params());
 
   // Verify that searching from the omnibox uses kSearchURL.
   chrome::FocusLocationBar(browser());

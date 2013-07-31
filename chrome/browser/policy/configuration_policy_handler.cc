@@ -100,6 +100,21 @@ const DefaultSearchSimplePolicyHandlerEntry kDefaultSearchPolicyMap[] = {
   { key::kDefaultSearchProviderSearchTermsReplacementKey,
     prefs::kDefaultSearchProviderSearchTermsReplacementKey,
     Value::TYPE_STRING },
+  { key::kDefaultSearchProviderImageURL,
+    prefs::kDefaultSearchProviderImageURL,
+    Value::TYPE_STRING },
+  { key::kDefaultSearchProviderSearchURLPostParams,
+    prefs::kDefaultSearchProviderSearchURLPostParams,
+    Value::TYPE_STRING },
+  { key::kDefaultSearchProviderSuggestURLPostParams,
+    prefs::kDefaultSearchProviderSuggestURLPostParams,
+    Value::TYPE_STRING },
+  { key::kDefaultSearchProviderInstantURLPostParams,
+    prefs::kDefaultSearchProviderInstantURLPostParams,
+    Value::TYPE_STRING },
+  { key::kDefaultSearchProviderImageURLPostParams,
+    prefs::kDefaultSearchProviderImageURLPostParams,
+    Value::TYPE_STRING },
 };
 
 // List of entries determining which proxy policies can be specified, depending
@@ -956,6 +971,15 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                     new ListValue());
     prefs->SetString(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
                      std::string());
+    prefs->SetString(prefs::kDefaultSearchProviderImageURL, std::string());
+    prefs->SetString(prefs::kDefaultSearchProviderSearchURLPostParams,
+                     std::string());
+    prefs->SetString(prefs::kDefaultSearchProviderSuggestURLPostParams,
+                     std::string());
+    prefs->SetString(prefs::kDefaultSearchProviderInstantURLPostParams,
+                     std::string());
+    prefs->SetString(prefs::kDefaultSearchProviderImageURLPostParams,
+                     std::string());
   } else {
     // The search URL is required.  The other entries are optional.  Just make
     // sure that they are all specified via policy, so that the regular prefs
@@ -975,6 +999,16 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       EnsureListPrefExists(prefs, prefs::kDefaultSearchProviderAlternateURLs);
       EnsureStringPrefExists(prefs,
           prefs::kDefaultSearchProviderSearchTermsReplacementKey);
+      EnsureStringPrefExists(prefs,
+          prefs::kDefaultSearchProviderImageURL);
+      EnsureStringPrefExists(prefs,
+          prefs::kDefaultSearchProviderSearchURLPostParams);
+      EnsureStringPrefExists(prefs,
+          prefs::kDefaultSearchProviderSuggestURLPostParams);
+      EnsureStringPrefExists(prefs,
+          prefs::kDefaultSearchProviderInstantURLPostParams);
+      EnsureStringPrefExists(prefs,
+          prefs::kDefaultSearchProviderImageURLPostParams);
 
       // For the name and keyword, default to the host if not specified.  If
       // there is no host (file: URLs?  Not sure), use "_" to guarantee that the
@@ -1000,7 +1034,6 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
-
 }
 
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(

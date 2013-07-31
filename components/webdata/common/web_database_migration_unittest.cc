@@ -245,7 +245,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 51;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 52;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -594,7 +594,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion27ToCurrent) {
     EXPECT_EQ(std::string("{google:baseSuggestURL}search?client=chrome&hl="
                           "{language}&q={searchTerms}"), s2.ColumnString(11));
     EXPECT_EQ(1, s2.ColumnInt(12));
-    //EXPECT_EQ(false, s2.ColumnBool(13));
+    EXPECT_FALSE(s2.ColumnBool(13));
     EXPECT_EQ(std::string(), s2.ColumnString(14));
     EXPECT_EQ(0, s2.ColumnInt(15));
     EXPECT_EQ(std::string(), s2.ColumnString(16));
@@ -2023,5 +2023,58 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion49ToCurrent) {
     // A new column should have been created in both tables.
     EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles", "origin"));
     EXPECT_TRUE(connection.DoesColumnExist("credit_cards", "origin"));
+  }
+}
+
+// Tests that the columns |image_url|, |search_url_post_params|,
+// |suggest_url_post_params|, |instant_url_post_params|, |image_url_post_params|
+// are added to the keyword table schema for a version 52 database.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion50ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(
+      LoadDatabase(FILE_PATH_LITERAL("version_50.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 50 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 50, 50));
+
+    ASSERT_FALSE(connection.DoesColumnExist("keywords", "image_url"));
+    ASSERT_FALSE(connection.DoesColumnExist("keywords",
+                                            "search_url_post_params"));
+    ASSERT_FALSE(connection.DoesColumnExist("keywords",
+                                            "suggest_url_post_params"));
+    ASSERT_FALSE(connection.DoesColumnExist("keywords",
+                                            "instant_url_post_params"));
+    ASSERT_FALSE(connection.DoesColumnExist("keywords",
+                                            "image_url_post_params"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // New columns should have been created.
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "image_url"));
+    EXPECT_TRUE(connection.DoesColumnExist("keywords",
+                                           "search_url_post_params"));
+    EXPECT_TRUE(connection.DoesColumnExist("keywords",
+                                           "suggest_url_post_params"));
+    EXPECT_TRUE(connection.DoesColumnExist("keywords",
+                                           "instant_url_post_params"));
+    EXPECT_TRUE(connection.DoesColumnExist("keywords",
+                                           "image_url_post_params"));
   }
 }

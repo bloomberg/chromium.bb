@@ -783,6 +783,46 @@
     ]
   },
 
+  "DefaultSearchProviderImageURL": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderImageURL": "http://www.google.com/searchbyimage/upload" },
+    "pref_mappings": [
+      { "pref": "default_search_provider.image_url" }
+    ]
+  },
+
+  "DefaultSearchProviderSearchURLPostParams": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderSearchURLPostParams": "" },
+    "pref_mappings": [
+      { "pref": "default_search_provider.search_url_post_params" }
+    ]
+  },
+
+  "DefaultSearchProviderSuggestURLPostParams": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderSuggestURLPostParams": "" },
+    "pref_mappings": [
+      { "pref": "default_search_provider.suggest_url_post_params" }
+    ]
+  },
+
+  "DefaultSearchProviderInstantURLPostParams": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderInstantURLPostParams": "" },
+    "pref_mappings": [
+      { "pref": "default_search_provider.instant_url_post_params" }
+    ]
+  },
+
+  "DefaultSearchProviderImageURLPostParams": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderImageURLPostParams": "image_content={imageThumbnail},image_url={imageURL},sbisrc={imageSearchSource}" },
+    "pref_mappings": [
+      { "pref": "default_search_provider.image_url_post_params" }
+    ]
+  },
+
   "DefaultCookiesSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultCookiesSetting": 2 },

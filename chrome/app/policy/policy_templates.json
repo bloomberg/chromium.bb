@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 228
+#   For your editing convenience: highest ID currently used: 233
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1845,6 +1845,96 @@
           'desc': '''If this policy is set and a search URL suggested from the omnibox contains this parameter in the query string or in the fragment identifier, then the suggestion will show the search terms and search provider instead of the raw search URL.
 
           This policy is optional. If not set, no search term replacement will be performed.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+        },
+        {
+          'name': 'DefaultSearchProviderImageURL',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:29-', 'chrome_os:0.29-', 'android:30-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 'http://search.my.company/searchbyimage/upload',
+          'id': 229,
+          'caption': '''Parameter providing search-by-image feature for the default search provider''',
+          'desc': '''Specifies the URL of the search engine used to provide image search. Search requests will be sent using the GET method. If the DefaultSearchProviderImageURLPostParams policy is set then image search requests will use the POST method instead.
+
+          This policy is optional. If not set, no image search will be used.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+        },
+        {
+          'name': 'DefaultSearchProviderSearchURLPostParams',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:29-', 'chrome_os:0.29-', 'android:30-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 'q={searchTerms},ie=utf-8,oe=utf-8',
+          'id': 230,
+          'caption': '''Parameters for search URL which uses POST''',
+          'desc': '''Specifies the parameters used when searching a URL with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
+
+          This policy is optional. If not set, search request will be sent using the GET method.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+        },
+        {
+          'name': 'DefaultSearchProviderSuggestURLPostParams',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:29-', 'chrome_os:0.29-', 'android:30-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 'q={searchTerms},ie=utf-8,oe=utf-8',
+          'id': 231,
+          'caption': '''Parameters for suggest URL which uses POST''',
+          'desc': '''Specifies the parameters used when doing suggestion search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
+
+          This policy is optional. If not set, suggest search request will be sent using the GET method.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+        },
+        {
+          'name': 'DefaultSearchProviderInstantURLPostParams',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:29-', 'chrome_os:0.29-', 'android:30-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 'q={searchTerms},ie=utf-8,oe=utf-8',
+          'id': 232,
+          'caption': '''Parameters for instant URL which uses POST''',
+          'desc': '''Specifies the parameters used when doing instant search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
+
+          This policy is optional. If not set, instant search request will be sent using the GET method.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+        },
+        {
+          'name': 'DefaultSearchProviderImageURLPostParams',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:29-', 'chrome_os:0.29-', 'android:30-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 'content={imageThumbnail},url={imageURL},sbisrc={SearchSource}',
+          'id': 233,
+          'caption': '''Parameters for image URL which uses POST''',
+          'desc': '''Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
+
+          This policy is optional. If not set, image search request will be sent using the GET method.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/search_engines/template_url_service.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -87,6 +90,13 @@ bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
       (url1->url() == url2->url()) &&
       (url1->suggestions_url() == url2->suggestions_url()) &&
       (url1->instant_url() == url2->instant_url()) &&
+      (url1->image_url() == url2->image_url()) &&
+      (url1->search_url_post_params() == url2->search_url_post_params()) &&
+      (url1->suggestions_url_post_params() ==
+          url2->suggestions_url_post_params()) &&
+      (url1->instant_url_post_params() == url2->instant_url_post_params()) &&
+      (url1->image_url_post_params() == url2->image_url_post_params()) &&
+      (url1->image_url() == url2->image_url()) &&
       (url1->favicon_url() == url2->favicon_url()) &&
       (url1->safe_for_autoreplace() == url2->safe_for_autoreplace()) &&
       (url1->show_in_default_list() == url2->show_in_default_list()) &&
@@ -1256,6 +1266,18 @@ syncer::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
   se_specifics->set_suggestions_url(turl.suggestions_url());
   se_specifics->set_prepopulate_id(turl.prepopulate_id());
   se_specifics->set_instant_url(turl.instant_url());
+  if (!turl.image_url().empty())
+    se_specifics->set_image_url(turl.image_url());
+  if (!turl.search_url_post_params().empty())
+    se_specifics->set_search_url_post_params(turl.search_url_post_params());
+  if (!turl.suggestions_url_post_params().empty()) {
+    se_specifics->set_suggestions_url_post_params(
+        turl.suggestions_url_post_params());
+  }
+  if (!turl.instant_url_post_params().empty())
+    se_specifics->set_instant_url_post_params(turl.instant_url_post_params());
+  if (!turl.image_url_post_params().empty())
+    se_specifics->set_image_url_post_params(turl.image_url_post_params());
   se_specifics->set_last_modified(turl.last_modified().ToInternalValue());
   se_specifics->set_sync_guid(turl.sync_guid());
   for (size_t i = 0; i < turl.alternate_urls().size(); ++i)
@@ -1309,6 +1331,11 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   data.SetURL(specifics.url());
   data.suggestions_url = specifics.suggestions_url();
   data.instant_url = specifics.instant_url();
+  data.image_url = specifics.image_url();
+  data.search_url_post_params = specifics.search_url_post_params();
+  data.suggestions_url_post_params = specifics.suggestions_url_post_params();
+  data.instant_url_post_params = specifics.instant_url_post_params();
+  data.image_url_post_params = specifics.image_url_post_params();
   data.favicon_url = GURL(specifics.favicon_url());
   data.show_in_default_list = specifics.show_in_default_list();
   data.safe_for_autoreplace = specifics.safe_for_autoreplace();
@@ -1574,6 +1601,11 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
   std::string search_url;
   std::string suggest_url;
   std::string instant_url;
+  std::string image_url;
+  std::string search_url_post_params;
+  std::string suggest_url_post_params;
+  std::string instant_url_post_params;
+  std::string image_url_post_params;
   std::string icon_url;
   std::string encodings;
   std::string short_name;
@@ -1588,6 +1620,11 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
     search_url = t_url->url();
     suggest_url = t_url->suggestions_url();
     instant_url = t_url->instant_url();
+    image_url = t_url->image_url();
+    search_url_post_params = t_url->search_url_post_params();
+    suggest_url_post_params = t_url->suggestions_url_post_params();
+    instant_url_post_params = t_url->instant_url_post_params();
+    image_url_post_params = t_url->image_url_post_params();
     GURL icon_gurl = t_url->favicon_url();
     if (!icon_gurl.is_empty())
       icon_url = icon_gurl.spec();
@@ -1604,6 +1641,15 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
   prefs->SetString(prefs::kDefaultSearchProviderSearchURL, search_url);
   prefs->SetString(prefs::kDefaultSearchProviderSuggestURL, suggest_url);
   prefs->SetString(prefs::kDefaultSearchProviderInstantURL, instant_url);
+  prefs->SetString(prefs::kDefaultSearchProviderImageURL, image_url);
+  prefs->SetString(prefs::kDefaultSearchProviderSearchURLPostParams,
+                   search_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderSuggestURLPostParams,
+                   suggest_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderInstantURLPostParams,
+                   instant_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderImageURLPostParams,
+                   image_url_post_params);
   prefs->SetString(prefs::kDefaultSearchProviderIconURL, icon_url);
   prefs->SetString(prefs::kDefaultSearchProviderEncodings, encodings);
   prefs->SetString(prefs::kDefaultSearchProviderName, short_name);
@@ -1654,6 +1700,16 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
       prefs->GetString(prefs::kDefaultSearchProviderSuggestURL);
   std::string instant_url =
       prefs->GetString(prefs::kDefaultSearchProviderInstantURL);
+  std::string image_url =
+      prefs->GetString(prefs::kDefaultSearchProviderImageURL);
+  std::string search_url_post_params =
+      prefs->GetString(prefs::kDefaultSearchProviderSearchURLPostParams);
+  std::string suggest_url_post_params =
+      prefs->GetString(prefs::kDefaultSearchProviderSuggestURLPostParams);
+  std::string instant_url_post_params =
+      prefs->GetString(prefs::kDefaultSearchProviderInstantURLPostParams);
+  std::string image_url_post_params =
+      prefs->GetString(prefs::kDefaultSearchProviderImageURLPostParams);
   std::string icon_url =
       prefs->GetString(prefs::kDefaultSearchProviderIconURL);
   std::string encodings =
@@ -1672,6 +1728,11 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
   data.SetURL(search_url);
   data.suggestions_url = suggest_url;
   data.instant_url = instant_url;
+  data.image_url = image_url;
+  data.search_url_post_params = search_url_post_params;
+  data.suggestions_url_post_params = suggest_url_post_params;
+  data.instant_url_post_params = instant_url_post_params;
+  data.image_url_post_params = image_url_post_params;
   data.favicon_url = GURL(icon_url);
   data.show_in_default_list = true;
   data.alternate_urls.clear();
@@ -1858,7 +1919,6 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
     string16 search_terms;
     if ((*i)->ExtractSearchTermsFromURL(row.url(), &search_terms) &&
         !search_terms.empty()) {
-
       if (content::PageTransitionStripQualifier(details.transition) ==
           content::PAGE_TRANSITION_KEYWORD) {
         // The visit is the result of the user entering a keyword, generate a

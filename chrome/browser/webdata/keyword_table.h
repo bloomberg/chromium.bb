@@ -57,6 +57,16 @@ class Statement;
 //   search_terms_replacement_key
 //                          See TemplateURLData::search_terms_replacement_key.
 //                          This was added in version 49.
+//   image_url              See TemplateURLData::image_url. This was added in
+//                          version 52.
+//   search_url_post_params See TemplateURLData::search_url_post_params. This
+//                          was added in version 52.
+//   suggest_url_post_params See TemplateURLData::suggestions_url_post_params.
+//                          This was added in version 52.
+//   instant_url_post_params See TemplateURLData::instant_url_post_params. This
+//                          was added in version 52.
+//   image_url_post_params  See TemplateURLData::image_url_post_params. This
+//                          was added in version 52.
 //
 //
 // This class also manages some fields in the |meta| table:
@@ -126,6 +136,7 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion47AddAlternateURLsColumn();
   bool MigrateToVersion48RemoveKeywordsBackup();
   bool MigrateToVersion49AddSearchTermsReplacementKeyColumn();
+  bool MigrateToVersion52AddImageSearchAndPOSTSupport();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContents);

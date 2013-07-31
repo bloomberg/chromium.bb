@@ -68,6 +68,14 @@ const std::string ColumnsForVersion(int version, bool concatenated) {
     // Column added in version 49.
     columns.push_back("search_terms_replacement_key");
   }
+  if (version >= 52) {
+    // Column added in version 52.
+    columns.push_back("image_url");
+    columns.push_back("search_url_post_params");
+    columns.push_back("suggest_url_post_params");
+    columns.push_back("instant_url_post_params");
+    columns.push_back("image_url_post_params");
+  }
 
   return JoinString(columns, std::string(concatenated ? " || " : ", "));
 }
@@ -114,6 +122,11 @@ void BindURLToStatement(const TemplateURLData& data,
   s->BindString(starting_column + 15, data.sync_guid);
   s->BindString(starting_column + 16, alternate_urls);
   s->BindString(starting_column + 17, data.search_terms_replacement_key);
+  s->BindString(starting_column + 18, data.image_url);
+  s->BindString(starting_column + 19, data.search_url_post_params);
+  s->BindString(starting_column + 20, data.suggestions_url_post_params);
+  s->BindString(starting_column + 21, data.instant_url_post_params);
+  s->BindString(starting_column + 22, data.image_url_post_params);
 }
 
 WebDatabaseTable::TypeKey GetKey() {
@@ -160,7 +173,12 @@ bool KeywordTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
                    "last_modified INTEGER DEFAULT 0,"
                    "sync_guid VARCHAR,"
                    "alternate_urls VARCHAR,"
-                   "search_terms_replacement_key VARCHAR)");
+                   "search_terms_replacement_key VARCHAR,"
+                   "image_url VARCHAR,"
+                   "search_url_post_params VARCHAR,"
+                   "suggest_url_post_params VARCHAR,"
+                   "instant_url_post_params VARCHAR,"
+                   "image_url_post_params VARCHAR)");
 }
 
 bool KeywordTable::IsSyncable() {
@@ -207,6 +225,9 @@ bool KeywordTable::MigrateToVersion(int version,
     case 49:
       *update_compatible_version = true;
       return MigrateToVersion49AddSearchTermsReplacementKeyColumn();
+    case 52:
+      *update_compatible_version = true;
+      return MigrateToVersion52AddImageSearchAndPOSTSupport();
   }
 
   return true;
@@ -214,8 +235,8 @@ bool KeywordTable::MigrateToVersion(int version,
 
 bool KeywordTable::AddKeyword(const TemplateURLData& data) {
   DCHECK(data.id);
-  std::string query("INSERT INTO keywords (" + GetKeywordColumns() +
-                    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+  std::string query("INSERT INTO keywords (" + GetKeywordColumns() + ") "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
   sql::Statement s(db_->GetUniqueStatement(query.c_str()));
   BindURLToStatement(data, &s, 0, 1);
 
@@ -258,8 +279,10 @@ bool KeywordTable::UpdateKeyword(const TemplateURLData& data) {
       "originating_url=?, date_created=?, usage_count=?, input_encodings=?, "
       "show_in_default_list=?, suggest_url=?, prepopulate_id=?, "
       "created_by_policy=?, instant_url=?, last_modified=?, sync_guid=?, "
-      "alternate_urls=?, search_terms_replacement_key=? WHERE id=?"));
-  BindURLToStatement(data, &s, 18, 0);  // "18" binds id() as the last item.
+      "alternate_urls=?, search_terms_replacement_key=?, image_url=?,"
+      "search_url_post_params=?, suggest_url_post_params=?, "
+      "instant_url_post_params=?, image_url_post_params=? WHERE id=?"));
+  BindURLToStatement(data, &s, 23, 0);  // "23" binds id() as the last item.
 
   return s.Run();
 }
@@ -444,6 +467,24 @@ bool KeywordTable::MigrateToVersion49AddSearchTermsReplacementKeyColumn() {
   return transaction.Commit();
 }
 
+bool KeywordTable::MigrateToVersion52AddImageSearchAndPOSTSupport() {
+  sql::Transaction transaction(db_);
+
+  // Fill the |image_url| and other four post params columns with empty strings;
+  return transaction.Begin() &&
+      db_->Execute("ALTER TABLE keywords ADD COLUMN image_url "
+                    "VARCHAR DEFAULT ''") &&
+      db_->Execute("ALTER TABLE keywords ADD COLUMN search_url_post_params "
+                    "VARCHAR DEFAULT ''") &&
+      db_->Execute("ALTER TABLE keywords ADD COLUMN suggest_url_post_params "
+                    "VARCHAR DEFAULT ''") &&
+      db_->Execute("ALTER TABLE keywords ADD COLUMN instant_url_post_params "
+                    "VARCHAR DEFAULT ''") &&
+      db_->Execute("ALTER TABLE keywords ADD COLUMN image_url_post_params "
+                    "VARCHAR DEFAULT ''") &&
+      transaction.Commit();
+}
+
 // static
 bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
                                                TemplateURLData* data) {
@@ -460,6 +501,11 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
   data->SetURL(s.ColumnString(4));
   data->suggestions_url = s.ColumnString(11);
   data->instant_url = s.ColumnString(14);
+  data->image_url = s.ColumnString(19);
+  data->search_url_post_params = s.ColumnString(20);
+  data->suggestions_url_post_params = s.ColumnString(21);
+  data->instant_url_post_params = s.ColumnString(22);
+  data->image_url_post_params = s.ColumnString(23);
   data->favicon_url = GURL(s.ColumnString(3));
   data->originating_url = GURL(s.ColumnString(6));
   data->show_in_default_list = s.ColumnBool(10);

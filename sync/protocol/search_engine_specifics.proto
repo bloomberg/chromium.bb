@@ -65,5 +65,15 @@ message SearchEngineSpecifics {
   // Parameter that, if present in a search URL, indicates that Chrome should
   // perform search terms replacement in the omnibox.
   optional string search_terms_replacement_key = 20;
+  // The parameterized URL that provides image results according to the image
+  // content or image URL provided by user.
+  optional string image_url = 21;
+
+  // The following post_params are comma-separated lists used to specify the
+  // post parameters for the corresponding search URL.
+  optional string search_url_post_params = 22;
+  optional string suggestions_url_post_params = 23;
+  optional string instant_url_post_params = 24;
+  optional string image_url_post_params = 25;
 }
 
