@@ -784,7 +784,8 @@ bool ChromeContentRendererClient::IsNaClAllowed(
        app_url.host() == "plus.sandbox.google.com") &&
       manifest_url.SchemeIs("https") &&
       manifest_url.host() == "ssl.gstatic.com" &&
-      (manifest_url.path().find("s2/oz/nacl/") == 1);
+      ((manifest_url.path().find("s2/oz/nacl/") == 1) ||
+       (manifest_url.path().find("photos/nacl/") == 1));
 
   bool is_extension_from_webstore =
       extension && extension->from_webstore();

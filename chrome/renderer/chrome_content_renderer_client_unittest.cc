@@ -39,7 +39,8 @@ const char kExtensionUrl[] = "chrome-extension://extension_id/background.html";
 
 const char kAllowedNaClAppURL1[] = "https://plus.google.com";
 const char kAllowedNaClAppURL2[] = "https://plus.sandbox.google.com";
-const char kAllowedNaClManifestURL[] = "https://ssl.gstatic.com/s2/oz/nacl/foo";
+const char kAllowedNaClManifestURL1[] = "https://ssl.gstatic.com/s2/oz/nacl/foo";
+const char kAllowedNaClManifestURL2[] = "https://ssl.gstatic.com/photos/nacl/foo";
 
 bool AllowsDevInterfaces(const WebPluginParams& params) {
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
@@ -202,17 +203,25 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   // interfaces. There is a whitelist for the app URL and the manifest URL.
   {
     WebPluginParams params;
-    // Whitelisted manifest URL, whitelisted app URL root #1 is allowed.
+    // Whitelisted manifest URL #1, whitelisted app URL root #1 is allowed.
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kAllowedNaClManifestURL),
+        GURL(kAllowedNaClManifestURL1),
         GURL(kAllowedNaClAppURL1),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
-    // Whitelisted manifest URL, whitelisted app URL root #2 is allowed.
+    // Whitelisted manifest URL #2, whitelisted app URL root #1 is allowed.
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kAllowedNaClManifestURL),
+        GURL(kAllowedNaClManifestURL1),
+        GURL(kAllowedNaClAppURL1),
+        kNaClRestricted,
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        &params));
+    EXPECT_FALSE(AllowsDevInterfaces(params));
+    // Whitelisted manifest URL #1, whitelisted app URL root #2 is allowed.
+    EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL(kAllowedNaClManifestURL1),
         GURL(kAllowedNaClAppURL2),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
@@ -221,19 +230,19 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
 
     // Whitelisted manifest URL, bad app URLs, NOT allowed.
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kAllowedNaClManifestURL),
+        GURL(kAllowedNaClManifestURL1),
         GURL("http://plus.google.com/foo"),  // http scheme
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kAllowedNaClManifestURL),
+        GURL(kAllowedNaClManifestURL1),
         GURL("http://plus.sandbox.google.com/foo"),  // http scheme
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kAllowedNaClManifestURL),
+        GURL(kAllowedNaClManifestURL1),
         GURL("https://plus.google.evil.com/foo"),  // bad host
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
@@ -262,7 +271,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kAllowedNaClManifestURL),
+        GURL(kAllowedNaClManifestURL1),
         GURL(kAllowedNaClAppURL1),
         kNaClUnrestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
@@ -275,7 +284,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
     WebPluginParams params;
     AddFakeDevAttribute(&params);
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kAllowedNaClManifestURL),
+        GURL(kAllowedNaClManifestURL1),
         GURL(kAllowedNaClAppURL1),
         kNaClRestricted,
         CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
