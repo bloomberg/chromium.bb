@@ -12,6 +12,7 @@ include_rules = [
   # Temporary allowed includes.
   # TODO(benwells): remove these (http://crbug.com/159366)
   "+chrome/browser/browser_process.h",
+  "+chrome/browser/browser_shutdown.h",
   "+chrome/browser/chrome_notification_types.h",
   "+chrome/browser/extensions",
   "+chrome/browser/lifetime/application_lifetime.h",
@@ -30,6 +31,7 @@ include_rules = [
   "+chrome/common/extensions",
   "+chrome/common/mac/app_mode_common.h",
   "+chrome/installer",
+  "+chrome/test/base/interactive_test_utils.h",
   "+chrome/test/base/testing_profile.h",
   "+grit/generated_resources.h",
 ]

@@ -18,6 +18,10 @@ class AppShimHostManager
   AppShimHostManager();
   virtual ~AppShimHostManager();
 
+  apps::ExtensionAppShimHandler* extension_app_shim_handler() {
+    return &extension_app_shim_handler_;
+  }
+
  private:
   // IPC::ChannelFactory::Delegate implementation.
   virtual void OnClientConnected(const IPC::ChannelHandle& handle) OVERRIDE;

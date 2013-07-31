@@ -74,6 +74,9 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
   ShellWindowList GetShellWindowsForApp(const std::string& app_id) const;
   const ShellWindowList& shell_windows() const { return shell_windows_; }
 
+  // Close all shell windows associated with an app.
+  void CloseAllShellWindowsForApp(const std::string& app_id);
+
   // Helper functions to find shell windows with particular attributes.
   apps::ShellWindow* GetShellWindowForRenderViewHost(
       content::RenderViewHost* render_view_host) const;

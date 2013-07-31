@@ -115,11 +115,6 @@
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "apps/app_shim/app_shim_host_manager_mac.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
-#endif
-
 #if defined(ENABLE_WEBRTC)
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #endif
@@ -277,10 +272,6 @@ void BrowserProcessImpl::StartTearDown() {
   // Delete aura after the metrics service has been deleted as it accesses
   // monitor information.
   aura::Env::DeleteInstance();
-#endif
-
-#if defined(OS_MACOSX)
-  app_shim_host_manager_.reset();
 #endif
 
   platform_part()->StartTearDown();
@@ -939,10 +930,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   storage_monitor_.reset(chrome::StorageMonitor::Create());
 #endif
 
-#if defined(OS_MACOSX)
-  app_shim_host_manager_.reset(new AppShimHostManager);
-  AppListService::InitAll(NULL);
-#endif
+  platform_part_->PreMainMessageLoopRun();
 }
 
 void BrowserProcessImpl::CreateIconManager() {

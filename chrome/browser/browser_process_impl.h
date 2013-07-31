@@ -41,10 +41,6 @@ class BrowserPolicyConnector;
 class PolicyService;
 };
 
-#if defined(OS_MACOSX)
-class AppShimHostManager;
-#endif
-
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
                            public base::NonThreadSafe {
@@ -290,11 +286,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   scoped_refptr<PluginsResourceService> plugins_resource_service_;
-#endif
-
-#if defined(OS_MACOSX)
-  // Hosts the IPC channel factory that App Shims connect to on Mac.
-  scoped_ptr<AppShimHostManager> app_shim_host_manager_;
 #endif
 
   scoped_ptr<BrowserProcessPlatformPart> platform_part_;

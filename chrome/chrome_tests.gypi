@@ -205,6 +205,7 @@
         'INTERACTIVE_TESTS',
       ],
       'sources': [
+        '../apps/app_shim/app_shim_quit_interactive_uitest_mac.mm',
         'browser/autofill/autofill_interactive_uitest.cc',
         'browser/browser_keyevents_browsertest.cc',
         'browser/extensions/api/omnibox/omnibox_api_interactive_test.cc',

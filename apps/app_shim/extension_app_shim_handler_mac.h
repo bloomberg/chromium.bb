@@ -63,6 +63,10 @@ class ExtensionAppShimHandler : public AppShimHandler,
   ExtensionAppShimHandler();
   virtual ~ExtensionAppShimHandler();
 
+  AppShimHandler::Host* FindHost(Profile* profile, const std::string& app_id);
+
+  static void QuitAppForWindow(ShellWindow* shell_window);
+
   // AppShimHandler overrides:
   virtual void OnShimLaunch(Host* host, AppShimLaunchType launch_type) OVERRIDE;
   virtual void OnShimClose(Host* host) OVERRIDE;

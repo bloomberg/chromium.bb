@@ -29,3 +29,6 @@ void BrowserProcessPlatformPartBase::AttemptExit() {
   chrome::CloseAllBrowsers();
 #endif
 }
+
+void BrowserProcessPlatformPartBase::PreMainMessageLoopRun() {
+}

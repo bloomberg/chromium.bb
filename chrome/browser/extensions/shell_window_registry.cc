@@ -109,6 +109,16 @@ ShellWindowRegistry::ShellWindowList ShellWindowRegistry::GetShellWindowsForApp(
   return app_windows;
 }
 
+void ShellWindowRegistry::CloseAllShellWindowsForApp(
+    const std::string& app_id) {
+  for (ShellWindowList::const_iterator i = shell_windows_.begin();
+       i != shell_windows_.end(); ) {
+    ShellWindow* shell_window = *(i++);
+    if (shell_window->extension_id() == app_id)
+      shell_window->GetBaseWindow()->Close();
+  }
+}
+
 ShellWindow* ShellWindowRegistry::GetShellWindowForRenderViewHost(
     content::RenderViewHost* render_view_host) const {
   for (ShellWindowList::const_iterator i = shell_windows_.begin();

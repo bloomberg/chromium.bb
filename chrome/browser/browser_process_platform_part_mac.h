@@ -6,7 +6,14 @@
 #define CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_MAC_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
+
+class AppShimHostManager;
+
+namespace apps {
+class ExtensionAppShimHandler;
+}
 
 class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
  public:
@@ -14,9 +21,16 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   virtual ~BrowserProcessPlatformPart();
 
   // Overridden from BrowserProcessPlatformPartBase:
+  virtual void StartTearDown() OVERRIDE;
   virtual void AttemptExit() OVERRIDE;
+  virtual void PreMainMessageLoopRun() OVERRIDE;
+
+  AppShimHostManager* app_shim_host_manager();
 
  private:
+  // Hosts the IPC channel factory that App Shims connect to on Mac.
+  scoped_ptr<AppShimHostManager> app_shim_host_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
 };
 

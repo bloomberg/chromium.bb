@@ -27,6 +27,9 @@ class BrowserProcessPlatformPartBase {
   // Called from AttemptExitInternal().
   virtual void AttemptExit();
 
+  // Called at the end of BrowserProcessImpl::PreMainMessageLoopRun().
+  virtual void PreMainMessageLoopRun();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPartBase);
 };

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/app_controller_mac.h"
 
+#include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "apps/shell_window.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -387,6 +388,27 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
+  using extensions::ShellWindowRegistry;
+
+  // If there are no windows, quit immediately.
+  if (chrome::BrowserIterator().done() &&
+      !ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(0)) {
+    return NSTerminateNow;
+  }
+
+  // Check if this is a keyboard initiated quit on an app window. If so, quit
+  // the app. This could cause the app to trigger another terminate, but that
+  // will be caught by the no windows condition above.
+  if ([[app currentEvent] type] == NSKeyDown) {
+    apps::ShellWindow* shellWindow =
+        ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
+            [app keyWindow]);
+    if (shellWindow) {
+      apps::ExtensionAppShimHandler::QuitAppForWindow(shellWindow);
+      return NSTerminateCancel;
+    }
+  }
+
   // Check if the preference is turned on.
   const PrefService* prefs = g_browser_process->local_state();
   if (!prefs->GetBoolean(prefs::kConfirmToQuitEnabled)) {
