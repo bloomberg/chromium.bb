@@ -228,23 +228,17 @@ void RenderBlock::removeBlockFromFloatMaps(DeleteFloatMapValues deleteValues)
 {
     FloatingObjects* floats = floatingObjects();
 
-    // Container map entries are only cleared when the RenderBlock or the float are being destroyed.
-    // This means that it might contain obsolete entries, but the performance cost of modifying the
-    // container map during layout is very high, and it is much easier to deal with the extra entries
-    // when iterating container maps.
-    if (beingDestroyed()) {
-        FloatingObjectSetIterator end = floats->set().end();
-        for (FloatingObjectSetIterator floatIterator = floats->set().begin(); floatIterator != end; ++floatIterator) {
-            TrackedContainerMap::iterator it = gFloatingObjectContainerMap->find((*floatIterator)->m_renderer);
-            ASSERT(it != gFloatingObjectContainerMap->end());
-            if (it == gFloatingObjectContainerMap->end())
-                continue;
-            HashSet<RenderBlock*>* containerSet = it->value.get();
-            ASSERT(containerSet->contains(this));
-            containerSet->remove(this);
-            if (containerSet->isEmpty())
-                gFloatingObjectContainerMap->remove(it);
-        }
+    FloatingObjectSetIterator end = floats->set().end();
+    for (FloatingObjectSetIterator floatIterator = floats->set().begin(); floatIterator != end; ++floatIterator) {
+        TrackedContainerMap::iterator it = gFloatingObjectContainerMap->find((*floatIterator)->m_renderer);
+        ASSERT(it != gFloatingObjectContainerMap->end());
+        if (it == gFloatingObjectContainerMap->end())
+            continue;
+        HashSet<RenderBlock*>* containerSet = it->value.get();
+        ASSERT(containerSet->contains(this));
+        containerSet->remove(this);
+        if (containerSet->isEmpty())
+            gFloatingObjectContainerMap->remove(it);
     }
     if (deleteValues == DeleteAllValues)
         deleteAllValues(floats->set());
@@ -3900,6 +3894,7 @@ void RenderBlock::insertIntoFloatingObjectMaps(FloatingObject* floatingObject)
     FloatingObjects* floats = floatingObjects();
     HashSet<RenderBlock*>* containerSet = gFloatingObjectContainerMap->get(floatingObject->renderer());
 
+    ASSERT(!containerSet || containerSet->contains(this) == floats->set().contains(floatingObject));
     floats->add(floatingObject);
 
     if (!containerSet) {
@@ -3922,11 +3917,13 @@ void RenderBlock::floatWillBeRemoved(RenderBox* floatingObject)
         RenderBlock* container = *it;
 
         TrackedFloatMap::iterator floatIterator = gFloatingObjectMap->find(container);
+        ASSERT(floatIterator != gFloatingObjectMap->end());
         if (floatIterator == gFloatingObjectMap->end())
             continue;
         FloatingObjects* floatingObjects = floatIterator->value.get();
         const FloatingObjectSet& floatingObjectSet = floatingObjects->set();
         FloatingObjectSetIterator floatIt = floatingObjectSet.find<RenderBox*, FloatingObjectHashTranslator>(floatingObject);
+        ASSERT(floatIt != floatingObjectSet.end());
         if (floatIt != floatingObjectSet.end())
             floatingObjects->remove(*floatIt);
         if (floatingObjects->set().isEmpty())
