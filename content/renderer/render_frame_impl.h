@@ -79,14 +79,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                    const WebKit::WebFormElement& form);
   virtual void willSubmitForm(WebKit::WebFrame* frame,
                               const WebKit::WebFormElement& form);
-  virtual void willPerformClientRedirect(WebKit::WebFrame* frame,
-                                         const WebKit::WebURL& from,
-                                         const WebKit::WebURL& to,
-                                         double interval,
-                                         double fire_time);
-  virtual void didCancelClientRedirect(WebKit::WebFrame* frame);
-  virtual void didCompleteClientRedirect(WebKit::WebFrame* frame,
-                                         const WebKit::WebURL& from);
   virtual void didCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* datasource);
   virtual void didStartProvisionalLoad(WebKit::WebFrame* frame);

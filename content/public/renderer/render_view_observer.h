@@ -62,12 +62,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) {}
   virtual void DidClearWindowObject(WebKit::WebFrame* frame) {}
-  virtual void WillPerformClientRedirect(
-      WebKit::WebFrame* frame, const WebKit::WebURL& from,
-      const WebKit::WebURL& to, double interval, double fire_time) {}
-  virtual void DidCancelClientRedirect(WebKit::WebFrame* frame) {}
-  virtual void DidCompleteClientRedirect(WebKit::WebFrame* frame,
-                                         const WebKit::WebURL& from) {}
   virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) {}
   virtual void FrameCreated(WebKit::WebFrame* parent,
                             WebKit::WebFrame* frame) {}

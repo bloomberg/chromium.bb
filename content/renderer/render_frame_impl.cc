@@ -341,29 +341,6 @@ void RenderFrameImpl::willSubmitForm(WebKit::WebFrame* frame,
   render_view_->willSubmitForm(frame, form);
 }
 
-void RenderFrameImpl::willPerformClientRedirect(WebKit::WebFrame* frame,
-                                                const WebKit::WebURL& from,
-                                                const WebKit::WebURL& to,
-                                                double interval,
-                                                double fire_time) {
-  // Call back to RenderViewImpl for observers to be notified.
-  // TODO(nasko): Remove once we have RenderFrameObserver.
-  render_view_->willPerformClientRedirect(frame, from, to, interval, fire_time);
-}
-
-void RenderFrameImpl::didCancelClientRedirect(WebKit::WebFrame* frame) {
-  // Call back to RenderViewImpl for observers to be notified.
-  // TODO(nasko): Remove once we have RenderFrameObserver.
-  render_view_->didCancelClientRedirect(frame);
-}
-
-void RenderFrameImpl::didCompleteClientRedirect(WebKit::WebFrame* frame,
-                                                const WebKit::WebURL& from) {
-  // Call back to RenderViewImpl for observers to be notified.
-  // TODO(nasko): Remove once we have RenderFrameObserver.
-  render_view_->didCompleteClientRedirect(frame, from);
-}
-
 void RenderFrameImpl::didCreateDataSource(WebKit::WebFrame* frame,
                                           WebKit::WebDataSource* datasource) {
   // TODO(nasko): Move implementation here. Needed state:

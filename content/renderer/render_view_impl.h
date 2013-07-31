@@ -571,14 +571,6 @@ class CONTENT_EXPORT RenderViewImpl
                                    const WebKit::WebFormElement& form);
   virtual void willSubmitForm(WebKit::WebFrame* frame,
                               const WebKit::WebFormElement& form);
-  virtual void willPerformClientRedirect(WebKit::WebFrame* frame,
-                                         const WebKit::WebURL& from,
-                                         const WebKit::WebURL& to,
-                                         double interval,
-                                         double fire_time);
-  virtual void didCancelClientRedirect(WebKit::WebFrame* frame);
-  virtual void didCompleteClientRedirect(WebKit::WebFrame* frame,
-                                         const WebKit::WebURL& from);
   virtual void didCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* datasource);
   virtual void didStartProvisionalLoad(WebKit::WebFrame* frame);
@@ -1236,12 +1228,6 @@ class CONTENT_EXPORT RenderViewImpl
   // opener. If so, we may want to load pages in a separate process.  See
   // decidePolicyForNavigation for details.
   bool opener_suppressed_;
-
-  // If we are handling a top-level client-side redirect, this tracks the URL
-  // of the page that initiated it. Specifically, when a load is committed this
-  // is used to determine if that load originated from a client-side redirect.
-  // It is empty if there is no top-level client-side redirect.
-  Referrer completed_client_redirect_src_;
 
   // Holds state pertaining to a navigation that we initiated.  This is held by
   // the WebDataSource::ExtraData attribute.  We use pending_navigation_state_

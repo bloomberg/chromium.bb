@@ -1901,12 +1901,11 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
       params.transition = PAGE_TRANSITION_LINK;
     }
 
-    // If we have a valid consumed client redirect source,
-    // the page contained a client redirect (meta refresh, document.loc...),
-    // so we set the referrer and transition to match.
-    if (completed_client_redirect_src_.url.is_valid()) {
-      DCHECK(completed_client_redirect_src_.url == params.redirects[0]);
-      params.referrer = completed_client_redirect_src_;
+    // If the page contained a client redirect (meta refresh, document.loc...),
+    // set the referrer and transition appropriately.
+    if (ds->isClientRedirect()) {
+      params.referrer = Referrer(params.redirects[0],
+          GetReferrerPolicyFromRequest(frame, ds->request()));
       params.transition = static_cast<PageTransition>(
           params.transition | PAGE_TRANSITION_CLIENT_REDIRECT);
     } else {
@@ -3246,42 +3245,6 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
       RenderViewObserver, observers_, WillSubmitForm(frame, form));
 }
 
-void RenderViewImpl::willPerformClientRedirect(
-    WebFrame* frame, const WebURL& from, const WebURL& to, double interval,
-    double fire_time) {
-  // Replace any occurrences of swappedout:// with about:blank.
-  const WebURL& blank_url = GURL(kAboutBlankURL);
-
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_,
-      WillPerformClientRedirect(frame,
-                                from == GURL(kSwappedOutURL) ? blank_url : from,
-                                to, interval, fire_time));
-}
-
-void RenderViewImpl::didCancelClientRedirect(WebFrame* frame) {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidCancelClientRedirect(frame));
-}
-
-void RenderViewImpl::didCompleteClientRedirect(
-    WebFrame* frame, const WebURL& from) {
-  // Replace any occurrences of swappedout:// with about:blank.
-  const WebURL& blank_url = GURL(kAboutBlankURL);
-  if (!frame->parent()) {
-    WebDataSource* ds = frame->provisionalDataSource();
-    // If there's no provisional data source, it's a reference fragment
-    // navigation.
-    completed_client_redirect_src_ = Referrer(
-        from == GURL(kSwappedOutURL) ? blank_url : from,
-        ds ? GetReferrerPolicyFromRequest(frame, ds->request()) :
-        frame->document().referrerPolicy());
-  }
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidCompleteClientRedirect(
-          frame, from == GURL(kSwappedOutURL) ? blank_url : from));
-}
-
 void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   bool content_initiated = !pending_navigation_params_.get();
 
@@ -3501,9 +3464,6 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
             make_scoped_ptr(new content::PasswordForm(*old_password_form)));
       }
     }
-
-    // Make sure redirect tracking state is clear for the new load.
-    completed_client_redirect_src_ = Referrer();
   } else if (frame->parent()->isLoading()) {
     // Take note of AUTO_SUBFRAME loads here, so that we can know how to
     // load an error page.  See didFailProvisionalLoad.
@@ -3705,10 +3665,6 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
   navigation_state->set_request_committed(true);
 
   UpdateURL(frame);
-
-  // If this committed load was initiated by a client redirect, we're
-  // at the last stop now, so clear it.
-  completed_client_redirect_src_ = Referrer();
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
