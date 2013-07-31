@@ -8,6 +8,13 @@
 #include "base/logging.h"
 #include "chrome/browser/undo/undo_operation.h"
 
+namespace {
+
+// Maximum number of changes that can be undone.
+const size_t kMaxUndoGroups = 100;
+
+}  // namespace
+
 // UndoGroup ------------------------------------------------------------------
 
 UndoGroup::UndoGroup() {
@@ -53,7 +60,7 @@ void UndoManager::Redo() {
 
 void UndoManager::AddUndoOperation(scoped_ptr<UndoOperation> operation) {
   if (IsUndoTrakingSuspended()) {
-    RemoveAllActions();
+    RemoveAllOperations();
     operation.reset();
     return;
   }
@@ -63,10 +70,7 @@ void UndoManager::AddUndoOperation(scoped_ptr<UndoOperation> operation) {
   } else {
     UndoGroup* new_action = new UndoGroup();
     new_action->AddOperation(operation.Pass());
-    GetActiveUndoGroup()->insert(GetActiveUndoGroup()->end(), new_action);
-
-    // A new user action invalidates any available redo actions.
-    RemoveAllRedoActions();
+    AddUndoGroup(new_action);
   }
 }
 
@@ -86,10 +90,7 @@ void UndoManager::EndGroupingActions() {
 
   bool is_user_action = !performing_undo_ && !performing_redo_;
   if (pending_grouped_action_->has_operations()) {
-    GetActiveUndoGroup()->push_back(pending_grouped_action_.release());
-    // User actions invalidate any available redo actions.
-    if (is_user_action)
-      RemoveAllRedoActions();
+    AddUndoGroup(pending_grouped_action_.release());
   } else {
     // No changes were executed since we started grouping actions, so the
     // pending UndoGroup should be discarded.
@@ -114,6 +115,12 @@ bool UndoManager::IsUndoTrakingSuspended() const {
   return undo_suspended_count_ > 0;
 }
 
+void UndoManager::RemoveAllOperations() {
+  DCHECK(!group_actions_count_);
+  undo_actions_.clear();
+  redo_actions_.clear();
+}
+
 void UndoManager::Undo(bool* performing_indicator,
                        ScopedVector<UndoGroup>* active_undo_group) {
   // Check that action grouping has been correctly ended.
@@ -132,13 +139,16 @@ void UndoManager::Undo(bool* performing_indicator,
   EndGroupingActions();
 }
 
-void UndoManager::RemoveAllActions() {
-  undo_actions_.clear();
-  RemoveAllRedoActions();
-}
+void UndoManager::AddUndoGroup(UndoGroup* new_undo_group) {
+  GetActiveUndoGroup()->push_back(new_undo_group);
 
-void UndoManager::RemoveAllRedoActions() {
-  redo_actions_.clear();
+  // User actions invalidate any available redo actions.
+  if (is_user_action())
+    redo_actions_.clear();
+
+  // Limit the number of undo levels so the undo stack does not grow unbounded.
+  if (GetActiveUndoGroup()->size() > kMaxUndoGroups)
+    GetActiveUndoGroup()->erase(GetActiveUndoGroup()->begin());
 }
 
 ScopedVector<UndoGroup>* UndoManager::GetActiveUndoGroup() {
