@@ -72,8 +72,8 @@ shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: {valueOf:
 
 // location is passed.
 // numbers within the unsigned long range.
-shouldBe("new KeyboardEvent('eventType', { location: 0 }).location", "0");
-shouldBe("new KeyboardEvent('eventType', { location: 1 }).location", "1");
+shouldBe("new KeyboardEvent('eventType', { location: KeyboardEvent.DOM_KEY_LOCATION_STANDARD }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
+shouldBe("new KeyboardEvent('eventType', { location: KeyboardEvent.DOM_KEY_LOCATION_LEFT }).location", "KeyboardEvent.DOM_KEY_LOCATION_LEFT");
 shouldBe("new KeyboardEvent('eventType', { location: 4294967294 }).location", "4294967294");
 shouldBe("new KeyboardEvent('eventType', { location: 4294967295 }).location", "4294967295");
 
@@ -87,24 +87,24 @@ shouldBe("new KeyboardEvent('eventType', { location: 1 }).keyLocation", "1");
 // 2^{53}-1, the largest number that can be exactly represented by double.
 shouldBe("new KeyboardEvent('eventType', { location: 9007199254740991 }).location", "4294967295");
 // 2^{64}-1
-shouldBe("new KeyboardEvent('eventType', { location: 18446744073709551615 }).location", "0");
+shouldBe("new KeyboardEvent('eventType', { location: 18446744073709551615 }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
 shouldBe("new KeyboardEvent('eventType', { location: 12345678901234567890 }).location", "3944679424");
 shouldBe("new KeyboardEvent('eventType', { location: -1 }).location", "4294967295");
 shouldBe("new KeyboardEvent('eventType', { location: 123.45 }).location", "123");
-shouldBe("new KeyboardEvent('eventType', { location: NaN }).location", "0");
+shouldBe("new KeyboardEvent('eventType', { location: NaN }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
 
 // Non-numeric values.
-shouldBe("new KeyboardEvent('eventType', { location: undefined }).location", "0");
-shouldBe("new KeyboardEvent('eventType', { location: null }).location", "0");
-shouldBe("new KeyboardEvent('eventType', { location: '' }).location", "0");
+shouldBe("new KeyboardEvent('eventType', { location: undefined }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
+shouldBe("new KeyboardEvent('eventType', { location: null }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
+shouldBe("new KeyboardEvent('eventType', { location: '' }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
 shouldBe("new KeyboardEvent('eventType', { location: '12345' }).location", "12345");
-shouldBe("new KeyboardEvent('eventType', { location: '12345a' }).location", "0");
-shouldBe("new KeyboardEvent('eventType', { location: 'abc' }).location", "0");
-shouldBe("new KeyboardEvent('eventType', { location: [] }).location", "0");
+shouldBe("new KeyboardEvent('eventType', { location: '12345a' }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
+shouldBe("new KeyboardEvent('eventType', { location: 'abc' }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
+shouldBe("new KeyboardEvent('eventType', { location: [] }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
 shouldBe("new KeyboardEvent('eventType', { location: [12345] }).location", "12345");
-shouldBe("new KeyboardEvent('eventType', { location: [12345, 67890] }).location", "0");
-shouldBe("new KeyboardEvent('eventType', { location: {} }).location", "0");
-shouldBe("new KeyboardEvent('eventType', { location: {moemoe: 12345} }).location", "0");
+shouldBe("new KeyboardEvent('eventType', { location: [12345, 67890] }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
+shouldBe("new KeyboardEvent('eventType', { location: {} }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
+shouldBe("new KeyboardEvent('eventType', { location: {moemoe: 12345} }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
 shouldBe("new KeyboardEvent('eventType', { location: {valueOf: function () { return 12345; }} }).location", "12345");
 
 // ctrlKey, altKey, shiftKey and metaKey are passed.

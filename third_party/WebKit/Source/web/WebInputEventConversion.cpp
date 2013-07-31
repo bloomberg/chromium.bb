@@ -602,11 +602,11 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
         return; // Skip all other keyboard events.
 
     modifiers = getWebInputModifiers(event);
-    if (event.location() == KeyboardEvent::DOMKeyLocationNumpad)
+    if (event.location() == KeyboardEvent::DOM_KEY_LOCATION_NUMPAD)
         modifiers |= WebInputEvent::IsKeyPad;
-    else if (event.location() == KeyboardEvent::DOMKeyLocationLeft)
+    else if (event.location() == KeyboardEvent::DOM_KEY_LOCATION_LEFT)
         modifiers |= WebInputEvent::IsLeft;
-    else if (event.location() == KeyboardEvent::DOMKeyLocationRight)
+    else if (event.location() == KeyboardEvent::DOM_KEY_LOCATION_RIGHT)
         modifiers |= WebInputEvent::IsRight;
 
     timeStampSeconds = event.timeStamp() / millisPerSecond;
