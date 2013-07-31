@@ -74,7 +74,12 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   void WebContentsGone();
 
  private:
-  void EnsureContinuousInvalidation(AwDrawGLInfo* draw_info);
+  // Checks the continuous invalidate and block invalidate state, and schedule
+  // invalidates appropriately. If |invalidate_ignore_compositor| is true,
+  // then send a view invalidate regardless of compositor expectation.
+  void EnsureContinuousInvalidation(
+      AwDrawGLInfo* draw_info,
+      bool invalidate_ignore_compositor);
   bool DrawSWInternal(jobject java_canvas,
                       const gfx::Rect& clip_bounds);
   bool CompositeSW(SkCanvas* canvas);
@@ -98,12 +103,16 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   bool on_new_picture_enable_;
 
   // When true, we should continuously invalidate and keep drawing, for example
-  // to drive animation.
-  bool continuous_invalidate_;
+  // to drive animation. This value is set by the compositor and should always
+  // reflect the expectation of the compositor and not be reused for other
+  // states.
+  bool compositor_needs_continuous_invalidate_;
+
   // Used to block additional invalidates while one is already pending or before
   // compositor draw which may switch continuous_invalidate on and off in the
   // process.
   bool block_invalidates_;
+
   // Holds a callback to FallbackTickFired while it is pending.
   base::CancelableClosure fallback_tick_;
 
