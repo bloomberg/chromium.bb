@@ -176,15 +176,16 @@ void FillForm(FormElements* fe, const FormData& data) {
     // want to fill with.
     if (!element.value().isEmpty() && element.value() != data_map[it->first])
       return;
+
+    // Don't fill forms with uneditable fields or fields with autocomplete
+    // disabled.
+    if (!IsElementEditable(element) || !element.autoComplete())
+      return;
   }
 
   for (FormInputElementMap::iterator it = fe->input_elements.begin();
        it != fe->input_elements.end(); ++it) {
     WebKit::WebInputElement element = it->second;
-
-    // Don't fill uneditable fields or fields with autocomplete disabled.
-    if (!IsElementEditable(element) || !element.autoComplete())
-      continue;
 
     // TODO(tkent): Check maxlength and pattern.
     element.setValue(data_map[it->first]);

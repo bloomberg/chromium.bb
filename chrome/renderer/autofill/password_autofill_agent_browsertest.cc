@@ -260,7 +260,8 @@ TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForEmptyAction) {
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
 }
 
-// Tests that changing the username does not fill a read-only password field.
+// Tests that if a password or input element is marked as readonly, neither
+// field is autofilled on page load.
 TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForReadOnly) {
   password_element_.setAttribute(WebString::fromUTF8("readonly"),
                                  WebString::fromUTF8("true"));
@@ -269,9 +270,7 @@ TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForReadOnly) {
   // autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
 
-  // Only the username should have been autocompleted.
-  // TODO(jcivelli): may be we should not event fill the username?
-  CheckTextFieldsState(kAliceUsername, true, std::string(), false);
+  CheckTextFieldsState(std::string(), false, std::string(), false);
 }
 
 // Tests that having a non-matching username precludes the autocomplete.
@@ -286,19 +285,17 @@ TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForFilledField) {
   CheckTextFieldsState("bogus", false, std::string(), false);
 }
 
-// Tests that changing the username does not fill a field specifying
+// Tests that we do not autofill username/passwords if marked as
 // autocomplete="off".
 TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForAutocompleteOff) {
-  password_element_.setAttribute(WebString::fromUTF8("autocomplete"),
+  username_element_.setAttribute(WebString::fromUTF8("autocomplete"),
                                  WebString::fromUTF8("off"));
 
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
 
-  // Only the username should have been autocompleted.
-  // TODO(jcivelli): may be we should not event fill the username?
-  CheckTextFieldsState(kAliceUsername, true, std::string(), false);
+  CheckTextFieldsState(std::string(), false, std::string(), false);
 }
 
 TEST_F(PasswordAutofillAgentTest, NoAutocompleteForTextFieldPasswords) {
