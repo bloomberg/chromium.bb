@@ -11189,7 +11189,7 @@ QualifiedName CSSParser::determineNameInNamespace(const AtomicString& prefix, co
 
 CSSParserSelector* CSSParser::rewriteSpecifiersWithNamespaceIfNeeded(CSSParserSelector* specifiers)
 {
-    if (m_defaultNamespace != starAtom || specifiers->isCustomPseudoElement())
+    if (m_defaultNamespace != starAtom || specifiers->needsCrossingTreeScopeBoundary())
         return rewriteSpecifiersWithElementName(nullAtom, starAtom, specifiers, /*tagIsForNamespaceRule*/true);
     if (CSSParserSelector* distributedPseudoElementSelector = specifiers->findDistributedPseudoElementSelector()) {
         specifiers->prependTagSelector(QualifiedName(nullAtom, starAtom, m_defaultNamespace), /*tagIsForNamespaceRule*/true);
@@ -11208,19 +11208,19 @@ CSSParserSelector* CSSParser::rewriteSpecifiersWithElementName(const AtomicStrin
         return rewriteSpecifiersForShadowDistributed(specifiers, distributedPseudoElementSelector);
     }
 
-    if (!specifiers->isCustomPseudoElement()) {
+    if (!specifiers->needsCrossingTreeScopeBoundary()) {
         if (tag == anyQName())
             return specifiers;
-        if (!(specifiers->pseudoType() == CSSSelector::PseudoCue))
-            specifiers->prependTagSelector(tag, tagIsForNamespaceRule);
+        specifiers->prependTagSelector(tag, tagIsForNamespaceRule);
         return specifiers;
     }
 
+    // We should treat ::cue in the same way as custom pseudo element.
     CSSParserSelector* lastShadowPseudo = specifiers;
     CSSParserSelector* history = specifiers;
     while (history->tagHistory()) {
         history = history->tagHistory();
-        if (history->isCustomPseudoElement() || history->hasShadowPseudo())
+        if (history->needsCrossingTreeScopeBoundary() || history->hasShadowPseudo())
             lastShadowPseudo = history;
     }
 
@@ -11266,12 +11266,12 @@ CSSParserSelector* CSSParser::rewriteSpecifiersForShadowDistributed(CSSParserSel
 
 CSSParserSelector* CSSParser::rewriteSpecifiers(CSSParserSelector* specifiers, CSSParserSelector* newSpecifier)
 {
-    if (newSpecifier->isCustomPseudoElement() || newSpecifier->pseudoType() == CSSSelector::PseudoCue) {
+    if (newSpecifier->needsCrossingTreeScopeBoundary()) {
         // Unknown pseudo element always goes at the top of selector chain.
         newSpecifier->appendTagHistory(CSSSelector::ShadowPseudo, sinkFloatingSelector(specifiers));
         return newSpecifier;
     }
-    if (specifiers->isCustomPseudoElement()) {
+    if (specifiers->needsCrossingTreeScopeBoundary()) {
         // Specifiers for unknown pseudo element go right behind it in the chain.
         specifiers->insertTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier), CSSSelector::ShadowPseudo);
         return specifiers;

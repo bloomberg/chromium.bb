@@ -761,6 +761,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
     else if (selector->m_match == CSSSelector::PseudoElement && selector->pseudoType() == CSSSelector::PseudoCue) {
         SelectorCheckingContext subContext(context);
         subContext.isSubSelector = true;
+        subContext.behaviorAtBoundary = StaysWithinTreeScope;
 
         PseudoId ignoreDynamicPseudo = NOPSEUDO;
         const CSSSelector* const & selector = context.selector;

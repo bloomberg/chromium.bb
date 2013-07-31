@@ -1394,7 +1394,7 @@ pseudo:
     // used by ::cue(:past/:future)
     | ':' ':' CUEFUNCTION maybe_space simple_selector_list maybe_space closing_parenthesis {
         $$ = parser->createFloatingSelector();
-        $$->setMatch(CSSSelector::PseudoClass);
+        $$->setMatch(CSSSelector::PseudoElement);
         $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($5));
         $$->setValue($3);
         CSSSelector::PseudoType type = $$->pseudoType();
