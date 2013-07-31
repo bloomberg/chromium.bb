@@ -638,8 +638,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     CommandUtil.registerCommand(doc, 'zoom-out', Commands.zoomOutCommand);
     CommandUtil.registerCommand(doc, 'zoom-reset', Commands.zoomResetCommand);
 
-    CommandUtil.registerCommand(doc, 'cut', Commands.defaultCommand, doc);
-    CommandUtil.registerCommand(doc, 'copy', Commands.defaultCommand, doc);
+    CommandUtil.registerCommand(this.dialogContainer_, 'cut',
+        Commands.defaultCommand, doc);
+    CommandUtil.registerCommand(this.dialogContainer_, 'copy',
+        Commands.defaultCommand, doc);
 
     var inputs = this.dialogDom_.querySelectorAll(
         'input[type=text], input[type=search], textarea');
