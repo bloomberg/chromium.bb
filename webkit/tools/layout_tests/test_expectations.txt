@@ -30,6 +30,3 @@
 # src/third_party/WebKit/LayoutTests/TestExpectations . Right?)
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
-crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-alpha.html [ ImageOnlyFailure ]
-crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-no-alpha.html [ ImageOnlyFailure ]
-crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-reflection.html [ ImageOnlyFailure ]
