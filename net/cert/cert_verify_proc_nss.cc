@@ -258,16 +258,18 @@ bool IsAdditionalTrustAnchor(CERTCertList* additional_trust_anchors,
 }
 
 enum CRLSetResult {
-  kCRLSetRevoked,
   kCRLSetOk,
-  kCRLSetError,
+  kCRLSetRevoked,
+  kCRLSetUnknown,
 };
 
 // CheckRevocationWithCRLSet attempts to check each element of |cert_list|
 // against |crl_set|. It returns:
 //   kCRLSetRevoked: if any element of the chain is known to have been revoked.
-//   kCRLSetError: if an error occurs in processing.
-//   kCRLSetOk: if no element in the chain is known to have been revoked.
+//   kCRLSetUnknown: if there is no fresh information about some element in
+//       the chain.
+//   kCRLSetOk: if every element in the chain is covered by a fresh CRLSet and
+//       is unrevoked.
 CRLSetResult CheckRevocationWithCRLSet(CERTCertList* cert_list,
                                        CERTCertificate* root,
                                        CRLSet* crl_set) {
@@ -283,6 +285,8 @@ CRLSetResult CheckRevocationWithCRLSet(CERTCertList* cert_list,
   if (root)
     certs.push_back(root);
 
+  bool covered = true;
+
   // We iterate from the root certificate down to the leaf, keeping track of
   // the issuer's SPKI at each step.
   std::string issuer_spki_hash;
@@ -296,7 +300,8 @@ CRLSetResult CheckRevocationWithCRLSet(CERTCertList* cert_list,
     base::StringPiece spki;
     if (!asn1::ExtractSPKIFromDERCert(der, &spki)) {
       NOTREACHED();
-      return kCRLSetError;
+      covered = false;
+      continue;
     }
     const std::string spki_hash = crypto::SHA256HashString(spki);
 
@@ -315,14 +320,19 @@ CRLSetResult CheckRevocationWithCRLSet(CERTCertList* cert_list,
       case CRLSet::REVOKED:
         return kCRLSetRevoked;
       case CRLSet::UNKNOWN:
+        covered = false;
+        continue;
       case CRLSet::GOOD:
         continue;
       default:
         NOTREACHED();
-        return kCRLSetError;
+        covered = false;
+        continue;
     }
   }
 
+  if (!covered || crl_set->IsExpired())
+    return kCRLSetUnknown;
   return kCRLSetOk;
 }
 
@@ -684,6 +694,7 @@ bool IsEVCandidate(EVRootCAMetadata* metadata,
 bool VerifyEV(CERTCertificate* cert_handle,
               int flags,
               CRLSet* crl_set,
+              bool rev_checking_enabled,
               EVRootCAMetadata* metadata,
               SECOidTag ev_policy_oid,
               CERTCertList* additional_trust_anchors) {
@@ -699,10 +710,6 @@ bool VerifyEV(CERTCertificate* cert_handle,
   cvout_index++;
   cvout[cvout_index].type = cert_po_end;
   ScopedCERTValOutParam scoped_cvout(cvout);
-
-  bool rev_checking_enabled =
-      (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED) ||
-      (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED_EV_ONLY);
 
   SECStatus status = PKIXVerifyCert(
       cert_handle,
@@ -817,9 +824,7 @@ int CertVerifyProcNSS::VerifyInternal(
   bool cert_io_enabled = flags & CertVerifier::VERIFY_CERT_IO_ENABLED;
   bool check_revocation =
       cert_io_enabled &&
-      ((flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED) ||
-       ((flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED_EV_ONLY) &&
-        is_ev_candidate));
+      (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED);
   if (check_revocation)
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
 
@@ -863,8 +868,9 @@ int CertVerifyProcNSS::VerifyInternal(
                      verify_result);
   }
 
+  CRLSetResult crl_set_result = kCRLSetUnknown;
   if (crl_set) {
-    CRLSetResult crl_set_result = CheckRevocationWithCRLSet(
+    crl_set_result = CheckRevocationWithCRLSet(
         cvout[cvout_cert_list_index].value.pointer.chain,
         cvout[cvout_trust_anchor_index].value.pointer.cert,
         crl_set);
@@ -895,10 +901,18 @@ int CertVerifyProcNSS::VerifyInternal(
   if (IsCertStatusError(verify_result->cert_status))
     return MapCertStatusToNetError(verify_result->cert_status);
 
-  if ((flags & CertVerifier::VERIFY_EV_CERT) && is_ev_candidate &&
-      VerifyEV(cert_handle, flags, crl_set, metadata, ev_policy_oid,
-               trust_anchors.get())) {
-    verify_result->cert_status |= CERT_STATUS_IS_EV;
+  if ((flags & CertVerifier::VERIFY_EV_CERT) && is_ev_candidate) {
+    check_revocation |=
+        crl_set_result != kCRLSetOk &&
+        cert_io_enabled &&
+        (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED_EV_ONLY);
+    if (check_revocation)
+      verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
+
+    if (VerifyEV(cert_handle, flags, crl_set, check_revocation, metadata,
+                 ev_policy_oid, trust_anchors.get())) {
+      verify_result->cert_status |= CERT_STATUS_IS_EV;
+    }
   }
 
   return OK;

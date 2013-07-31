@@ -5439,6 +5439,15 @@ static const SHA1HashValue kOCSPTestCertFingerprint =
   { { 0xf1, 0xad, 0xf6, 0xce, 0x42, 0xac, 0xe7, 0xb4, 0xf4, 0x24,
       0xdb, 0x1a, 0xf7, 0xa0, 0x9f, 0x09, 0xa1, 0xea, 0xf1, 0x5c } };
 
+// This is the SHA256, SPKI hash of the "Testing CA" certificate used by the
+// testserver.
+static const SHA256HashValue kOCSPTestCertSPKI = { {
+  0xee, 0xe6, 0x51, 0x2d, 0x4c, 0xfa, 0xf7, 0x3e,
+  0x6c, 0xd8, 0xca, 0x67, 0xed, 0xb5, 0x5d, 0x49,
+  0x76, 0xe1, 0x52, 0xa7, 0x6e, 0x0e, 0xa0, 0x74,
+  0x09, 0x75, 0xe6, 0x23, 0x24, 0xbd, 0x1b, 0x28,
+} };
+
 // This is the policy OID contained in the certificates that testserver
 // generates.
 static const char kOCSPTestCertPolicy[] = "1.3.6.1.4.1.11129.2.4.1";
@@ -5747,24 +5756,55 @@ TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSet) {
             static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
 }
 
-TEST_F(HTTPSEVCRLSetTest, FreshCRLSet) {
+TEST_F(HTTPSEVCRLSetTest, FreshCRLSetCovered) {
+  if (!SystemSupportsOCSP()) {
+    LOG(WARNING) << "Skipping test because system doesn't support OCSP";
+    return;
+  }
+
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_INVALID;
+  SSLConfigService::SetCRLSet(
+      scoped_refptr<CRLSet>(CRLSet::ForTesting(
+          false, &kOCSPTestCertSPKI, "")));
+
+  CertStatus cert_status;
+  DoConnection(ssl_options, &cert_status);
+
+  // With a fresh CRLSet that covers the issuing certificate, we shouldn't do a
+  // revocation check for EV.
+  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+  EXPECT_EQ(SystemUsesChromiumEVMetadata(),
+            static_cast<bool>(cert_status & CERT_STATUS_IS_EV));
+  EXPECT_FALSE(
+      static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
+}
+
+TEST_F(HTTPSEVCRLSetTest, FreshCRLSetNotCovered) {
+  if (!SystemSupportsOCSP()) {
+    LOG(WARNING) << "Skipping test because system doesn't support OCSP";
+    return;
+  }
+
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_AUTO);
   ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_INVALID;
   SSLConfigService::SetCRLSet(
       scoped_refptr<CRLSet>(CRLSet::EmptyCRLSetForTesting()));
 
-  CertStatus cert_status;
+  CertStatus cert_status = 0;
   DoConnection(ssl_options, &cert_status);
 
-  // With a valid, fresh CRLSet the bad OCSP response shouldn't matter because
-  // we wont check it.
-  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+  // Even with a fresh CRLSet, we should still do online revocation checks when
+  // the certificate chain isn't covered by the CRLSet, which it isn't in this
+  // test.
+  EXPECT_EQ(ExpectedCertStatusForFailedOnlineRevocationCheck(),
+            cert_status & CERT_STATUS_ALL_ERRORS);
 
+  EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
   EXPECT_EQ(SystemUsesChromiumEVMetadata(),
-            static_cast<bool>(cert_status & CERT_STATUS_IS_EV));
-
-  EXPECT_FALSE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+            static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
 }
 
 TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSetAndRevokedNonEVCert) {
@@ -5821,6 +5861,31 @@ TEST_F(HTTPSCRLSetTest, ExpiredCRLSet) {
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
   EXPECT_FALSE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
+TEST_F(HTTPSCRLSetTest, CRLSetRevoked) {
+#if defined(USE_OPENSSL)
+  LOG(WARNING) << "Skipping test because system doesn't support CRLSets";
+  return;
+#endif
+
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
+  ssl_options.cert_serial = 10;
+  SSLConfigService::SetCRLSet(
+      scoped_refptr<CRLSet>(CRLSet::ForTesting(
+          false, &kOCSPTestCertSPKI, "\x0a")));
+
+  CertStatus cert_status = 0;
+  DoConnection(ssl_options, &cert_status);
+
+  // If the certificate is recorded as revoked in the CRLSet, that should be
+  // reflected without online revocation checking.
+  EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
+  EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
+  EXPECT_FALSE(
+      static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
 }
 #endif  // !defined(OS_IOS)
 

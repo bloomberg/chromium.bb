@@ -155,7 +155,7 @@ TEST_F(CertVerifyProcTest, MAYBE_EVVerification) {
       X509Certificate::CreateFromHandle(certs[0]->os_cert_handle(),
                                         intermediates);
 
-  scoped_refptr<CRLSet> crl_set(CRLSet::EmptyCRLSetForTesting());
+  scoped_refptr<CRLSet> crl_set(CRLSet::ForTesting(false, NULL, ""));
   CertVerifyResult verify_result;
   int flags = CertVerifier::VERIFY_EV_CERT;
   int error = Verify(comodo_chain.get(),

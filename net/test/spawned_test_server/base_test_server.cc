@@ -56,6 +56,7 @@ void GetCiphersList(int cipher, base::ListValue* values) {
 BaseTestServer::SSLOptions::SSLOptions()
     : server_certificate(CERT_OK),
       ocsp_status(OCSP_OK),
+      cert_serial(0),
       request_client_certificate(false),
       bulk_ciphers(SSLOptions::BULK_CIPHER_ANY),
       record_resume(false),
@@ -64,6 +65,8 @@ BaseTestServer::SSLOptions::SSLOptions()
 BaseTestServer::SSLOptions::SSLOptions(
     BaseTestServer::SSLOptions::ServerCertificate cert)
     : server_certificate(cert),
+      ocsp_status(OCSP_OK),
+      cert_serial(0),
       request_client_certificate(false),
       bulk_ciphers(SSLOptions::BULK_CIPHER_ANY),
       record_resume(false),
@@ -374,6 +377,10 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     std::string ocsp_arg = ssl_options_.GetOCSPArgument();
     if (!ocsp_arg.empty())
       arguments->SetString("ocsp", ocsp_arg);
+
+    if (ssl_options_.cert_serial != 0)
+      arguments->Set("cert-serial",
+                     base::Value::CreateIntegerValue(ssl_options_.cert_serial));
 
     // Check bulk cipher argument.
     scoped_ptr<base::ListValue> bulk_cipher_values(new base::ListValue());

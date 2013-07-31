@@ -1884,7 +1884,8 @@ class ServerRunner(testserver_base.TestServerRunner):
               subject = "127.0.0.1",
               ocsp_url = ("http://%s:%d/ocsp" %
                   (host, self.__ocsp_server.server_port)),
-              ocsp_state = ocsp_state)
+              ocsp_state = ocsp_state,
+              serial = self.options.cert_serial)
 
           self.__ocsp_server.ocsp_response = ocsp_der
 
@@ -2024,6 +2025,10 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   help='The type of OCSP response generated '
                                   'for the automatically generated '
                                   'certificate. One of [ok,revoked,invalid]')
+    self.option_parser.add_option('--cert-serial', dest='cert_serial',
+                                  default=0, type=int,
+                                  help='If non-zero then the generated '
+                                  'certificate will have this serial number')
     self.option_parser.add_option('--tls-intolerant', dest='tls_intolerant',
                                   default='0', type='int',
                                   help='If nonzero, certain TLS connections '

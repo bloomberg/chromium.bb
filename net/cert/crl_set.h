@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
+#include "net/cert/x509_cert_types.h"
 
 namespace base {
 class DictionaryValue;
@@ -87,6 +88,15 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
 
   // ExpiredCRLSetForTesting returns a expired, empty CRLSet for unit tests.
   static CRLSet* ExpiredCRLSetForTesting();
+
+  // ForTesting returns a CRLSet for testing. If |is_expired| is true, calling
+  // IsExpired on the result will return true. If |issuer_spki| is not NULL,
+  // the CRLSet will cover certificates issued by that SPKI. If |serial_number|
+  // is not emtpy, then that big-endian serial number will be considered to
+  // have been revoked by |issuer_spki|.
+  static CRLSet* ForTesting(bool is_expired,
+                            const SHA256HashValue* issuer_spki,
+                            const std::string& serial_number);
 
  private:
   CRLSet();

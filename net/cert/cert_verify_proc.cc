@@ -87,16 +87,12 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     return ERR_CERT_REVOKED;
   }
 
-  // If EV verification was requested and no CRLSet is present, or if the
-  // CRLSet has expired, then enable online revocation checks. If the online
-  // check fails, EV status won't be shown.
-  //
+  // We do online revocation checking for EV certificates that aren't covered
+  // by a fresh CRLSet.
   // TODO(rsleevi): http://crbug.com/142974 - Allow preferences to fully
   // disable revocation checking.
-  if ((flags & CertVerifier::VERIFY_EV_CERT) &&
-      (!crl_set || crl_set->IsExpired())) {
+  if (flags & CertVerifier::VERIFY_EV_CERT)
     flags |= CertVerifier::VERIFY_REV_CHECKING_ENABLED_EV_ONLY;
-  }
 
   int rv = VerifyInternal(cert, hostname, flags, crl_set,
                           additional_trust_anchors, verify_result);

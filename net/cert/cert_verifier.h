@@ -51,9 +51,9 @@ class NET_EXPORT CertVerifier {
     // NSS only.
     VERIFY_CERT_IO_ENABLED = 1 << 2,
 
-    // If set, enables online revocation checking via CRLs or OCSP, but only
-    // for certificates which may be EV, and only when VERIFY_EV_CERT is also
-    // set.
+    // If set, enables online revocation checking via CRLs or OCSP when the
+    // chain is not covered by a fresh CRLSet, but only for certificates which
+    // may be EV, and only when VERIFY_EV_CERT is also set.
     VERIFY_REV_CHECKING_ENABLED_EV_ONLY = 1 << 3,
 
     // If set, this is equivalent to VERIFY_REV_CHECKING_ENABLED, in that it

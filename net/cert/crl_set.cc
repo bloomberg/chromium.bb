@@ -581,12 +581,30 @@ const CRLSet::CRLList& CRLSet::crls() const {
 
 // static
 CRLSet* CRLSet::EmptyCRLSetForTesting() {
-  return new CRLSet;
+  return ForTesting(false, NULL, "");
 }
 
 CRLSet* CRLSet::ExpiredCRLSetForTesting() {
+  return ForTesting(true, NULL, "");
+}
+
+// static
+CRLSet* CRLSet::ForTesting(bool is_expired,
+                           const SHA256HashValue* issuer_spki,
+                           const std::string& serial_number) {
   CRLSet* crl_set = new CRLSet;
-  crl_set->not_after_ = 1;
+  if (is_expired)
+    crl_set->not_after_ = 1;
+  if (issuer_spki != NULL) {
+    const std::string spki(reinterpret_cast<const char*>(issuer_spki->data),
+                           sizeof(issuer_spki->data));
+    crl_set->crls_.push_back(make_pair(spki, std::vector<std::string>()));
+    crl_set->crls_index_by_issuer_[spki] = 0;
+  }
+
+  if (!serial_number.empty())
+    crl_set->crls_[0].second.push_back(serial_number);
+
   return crl_set;
 }
 

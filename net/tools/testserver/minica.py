@@ -323,14 +323,16 @@ unauthorizedDER = '30030a0106'.decode('hex')
 
 def GenerateCertKeyAndOCSP(subject = "127.0.0.1",
                            ocsp_url = "http://127.0.0.1",
-                           ocsp_state = OCSP_STATE_GOOD):
+                           ocsp_state = OCSP_STATE_GOOD,
+                           serial = 0):
   '''GenerateCertKeyAndOCSP returns a (cert_and_key_pem, ocsp_der) where:
        * cert_and_key_pem contains a certificate and private key in PEM format
          with the given subject common name and OCSP URL.
        * ocsp_der contains a DER encoded OCSP response or None if ocsp_url is
          None'''
 
-  serial = RandomNumber(16)
+  if serial == 0:
+    serial = RandomNumber(16)
   cert_der = MakeCertificate(ISSUER_CN, bytes(subject), serial, KEY, KEY,
                              bytes(ocsp_url))
   cert_pem = DERToPEM(cert_der)
