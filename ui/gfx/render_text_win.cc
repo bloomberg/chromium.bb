@@ -534,6 +534,8 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 
 void RenderTextWin::ItemizeLogicalText() {
   runs_.clear();
+  // Make |string_size_|'s height and |common_baseline_| tall enough to draw
+  // often-used characters which are rendered with fonts in the font list.
   string_size_ = Size(0, font_list().GetHeight());
   common_baseline_ = font_list().GetBaseline();
 
@@ -611,6 +613,11 @@ void RenderTextWin::LayoutVisualText() {
     cached_hdc_ = CreateCompatibleDC(NULL);
 
   HRESULT hr = E_FAIL;
+  // Ensure ascent and descent are not smaller than ones of the font list.
+  // Keep them tall enough to draw often-used characters.
+  // For example, if a text field contains a Japanese character, which is
+  // smaller than Latin ones, and then later a Latin one is inserted, this
+  // ensures that the text baseline does not shift.
   int ascent = font_list().GetBaseline();
   int descent = font_list().GetHeight() - font_list().GetBaseline();
   for (size_t i = 0; i < runs_.size(); ++i) {

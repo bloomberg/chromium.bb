@@ -85,6 +85,9 @@ Size RenderTextLinux::GetStringSize() {
   pango_layout_get_pixel_size(layout_, &width, &height);
   // Keep a consistent height between this particular string's PangoLayout and
   // potentially larger text supported by the FontList.
+  // For example, if a text field contains a Japanese character, which is
+  // smaller than Latin ones, and then later a Latin one is inserted, this
+  // ensures that the text baseline does not shift.
   return Size(width, std::max(height, font_list().GetHeight()));
 }
 
@@ -92,6 +95,7 @@ int RenderTextLinux::GetBaseline() {
   EnsureLayout();
   // Keep a consistent baseline between this particular string's PangoLayout and
   // potentially larger text supported by the FontList.
+  // See the example in GetStringSize().
   return std::max(PANGO_PIXELS(pango_layout_get_baseline(layout_)),
                   font_list().GetBaseline());
 }

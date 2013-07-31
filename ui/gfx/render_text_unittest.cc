@@ -4,6 +4,8 @@
 
 #include "ui/gfx/render_text.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1130,24 +1132,84 @@ TEST_F(RenderTextTest, StringSizeSanity) {
 //                  sizes instead of pixel sizes like other implementations.
 #if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, StringSizeEmptyString) {
-  const Font font;
+  // Ascent and descent of Arial and Symbol are different on most platforms.
+  const FontList font_list("Arial,Symbol, 16px");
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  render_text->SetFont(font);
+  render_text->SetFontList(font_list);
 
+  // The empty string respects FontList metrics for non-zero height
+  // and baseline.
   render_text->SetText(base::string16());
-  EXPECT_EQ(font.GetHeight(), render_text->GetStringSize().height());
+  EXPECT_EQ(font_list.GetHeight(), render_text->GetStringSize().height());
   EXPECT_EQ(0, render_text->GetStringSize().width());
+  EXPECT_EQ(font_list.GetBaseline(), render_text->GetBaseline());
 
   render_text->SetText(UTF8ToUTF16(" "));
-  EXPECT_EQ(font.GetHeight(), render_text->GetStringSize().height());
+  EXPECT_EQ(font_list.GetHeight(), render_text->GetStringSize().height());
+  EXPECT_EQ(font_list.GetBaseline(), render_text->GetBaseline());
 }
 #endif  // !defined(OS_MACOSX)
+
+TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
+  // Check that Arial and Symbol have different font metrics.
+  Font arial_font("Arial", 16);
+  Font symbol_font("Symbol", 16);
+  EXPECT_NE(arial_font.GetHeight(), symbol_font.GetHeight());
+  EXPECT_NE(arial_font.GetBaseline(), symbol_font.GetBaseline());
+  // "a" should be rendered with Arial, not with Symbol.
+  const char* arial_font_text = "a";
+  // "®" (registered trademark symbol) should be rendered with Symbol,
+  // not with Arial.
+  const char* symbol_font_text = "\xC2\xAE";
+
+  Font smaller_font = arial_font;
+  Font larger_font = symbol_font;
+  const char* smaller_font_text = arial_font_text;
+  const char* larger_font_text = symbol_font_text;
+  if (symbol_font.GetHeight() < arial_font.GetHeight() &&
+      symbol_font.GetBaseline() < arial_font.GetBaseline()) {
+    std::swap(smaller_font, larger_font);
+    std::swap(smaller_font_text, larger_font_text);
+  }
+  ASSERT_LT(smaller_font.GetHeight(), larger_font.GetHeight());
+  ASSERT_LT(smaller_font.GetBaseline(), larger_font.GetBaseline());
+
+  // Check |smaller_font_text| is rendered with the smaller font.
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetText(UTF8ToUTF16(smaller_font_text));
+  render_text->SetFont(smaller_font);
+  EXPECT_EQ(smaller_font.GetHeight(), render_text->GetStringSize().height());
+  EXPECT_EQ(smaller_font.GetBaseline(), render_text->GetBaseline());
+
+  // Layout the same text with mixed fonts.  The text should be rendered with
+  // the smaller font, but the height and baseline are determined with the
+  // metrics of the font list, which is equal to the larger font.
+  std::vector<Font> fonts;
+  fonts.push_back(smaller_font);  // The primary font is the smaller font.
+  fonts.push_back(larger_font);
+  const FontList font_list(fonts);
+  render_text->SetFontList(font_list);
+  EXPECT_LT(smaller_font.GetHeight(), render_text->GetStringSize().height());
+  EXPECT_LT(smaller_font.GetBaseline(), render_text->GetBaseline());
+  EXPECT_EQ(font_list.GetHeight(), render_text->GetStringSize().height());
+  EXPECT_EQ(font_list.GetBaseline(), render_text->GetBaseline());
+}
 
 TEST_F(RenderTextTest, SetFont) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFont(Font("Arial", 12));
   EXPECT_EQ("Arial", render_text->GetFont().GetFontName());
   EXPECT_EQ(12, render_text->GetFont().GetFontSize());
+}
+
+TEST_F(RenderTextTest, SetFontList) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetFontList(FontList("Arial,Symbol, 13px"));
+  const std::vector<Font>& fonts = render_text->font_list().GetFonts();
+  ASSERT_EQ(2U, fonts.size());
+  EXPECT_EQ("Arial", fonts[0].GetFontName());
+  EXPECT_EQ("Symbol", fonts[1].GetFontName());
+  EXPECT_EQ(13, render_text->GetFont().GetFontSize());
 }
 
 TEST_F(RenderTextTest, StringSizeBoldWidth) {
