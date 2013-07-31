@@ -270,7 +270,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<SelectFilesFunction>();
 
   registry->RegisterFunction<LogoutUserFunction>();
-  registry->RegisterFunction<FileDialogStringsFunction>();
+  registry->RegisterFunction<GetStringsFunction>();
   registry->RegisterFunction<GetVolumeMetadataFunction>();
   registry->RegisterFunction<RequestFileSystemFunction>();
   registry->RegisterFunction<AddFileWatchBrowserFunction>();
@@ -942,13 +942,13 @@ bool GetVolumeMetadataFunction::RunImpl() {
   return true;
 }
 
-FileDialogStringsFunction::FileDialogStringsFunction() {
+GetStringsFunction::GetStringsFunction() {
 }
 
-FileDialogStringsFunction::~FileDialogStringsFunction() {
+GetStringsFunction::~GetStringsFunction() {
 }
 
-bool FileDialogStringsFunction::RunImpl() {
+bool GetStringsFunction::RunImpl() {
   DictionaryValue* dict = new DictionaryValue();
   SetResult(dict);
 

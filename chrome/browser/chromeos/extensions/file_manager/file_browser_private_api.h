@@ -304,16 +304,17 @@ class GetVolumeMetadataFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// File Dialog Strings.
-class FileDialogStringsFunction : public SyncExtensionFunction {
+// Implements the chrome.fileBrowserPrivate.getStrings method.
+// Used to get strings for the file manager from JavaScript.
+class GetStringsFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getStrings",
                              FILEBROWSERPRIVATE_GETSTRINGS)
 
-  FileDialogStringsFunction();
+  GetStringsFunction();
 
  protected:
-  virtual ~FileDialogStringsFunction();
+  virtual ~GetStringsFunction();
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
