@@ -223,29 +223,25 @@ def RemoveThirdPartyWebkitDirectory():
   return True
 
 
-def RunGClientAndSync(reset, cwd=None):
+def RunGClientAndSync(cwd=None):
   """Runs gclient and does a normal sync.
 
   Args:
-    reset: Whether to reset any changes to the depot.
     cwd: Working directory to run from.
 
   Returns:
     The return code of the call.
   """
-  params = ['sync', '--verbose', '--nohooks']
-  if reset:
-    params.extend(['--reset', '--force', '--delete_unversioned_trees'])
+  params = ['sync', '--verbose', '--nohooks', '--reset', '--force']
   return RunGClient(params, cwd=cwd)
 
 
-def SetupGitDepot(opts, reset):
+def SetupGitDepot(opts):
   """Sets up the depot for the bisection. The depot will be located in a
   subdirectory called 'bisect'.
 
   Args:
     opts: The options parsed from the command line through parse_args().
-    reset: Whether to reset any changes to the depot.
 
   Returns:
     True if gclient successfully created the config file and did a sync, False
@@ -271,7 +267,7 @@ def SetupGitDepot(opts, reset):
 
     if passed_deps_check:
       RunGClient(['revert'])
-      if not RunGClientAndSync(reset):
+      if not RunGClientAndSync():
         passed = True
 
   if opts.output_buildbot_annotations:
@@ -380,7 +376,7 @@ def SetupPlatformBuildEnvironment(opts):
   return True
 
 
-def CreateBisectDirectoryAndSetupDepot(opts, reset=False):
+def CreateBisectDirectoryAndSetupDepot(opts):
   """Sets up a subdirectory 'bisect' and then retrieves a copy of the depot
   there using gclient.
 
@@ -396,7 +392,7 @@ def CreateBisectDirectoryAndSetupDepot(opts, reset=False):
     print
     return 1
 
-  if not SetupGitDepot(opts, reset):
+  if not SetupGitDepot(opts):
     print 'Error: Failed to grab source.'
     print
     return 1

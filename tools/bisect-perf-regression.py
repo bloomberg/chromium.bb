@@ -535,7 +535,7 @@ class SourceControl(object):
       The return code of the call.
     """
     return bisect_utils.RunGClient(['sync', '--revision',
-        revision, '--verbose', '--nohooks'])
+        revision, '--verbose', '--nohooks', '--reset', '--force'])
 
   def SyncToRevisionWithRepo(self, timestamp):
     """Uses repo to sync all the underlying git depots to the specified
