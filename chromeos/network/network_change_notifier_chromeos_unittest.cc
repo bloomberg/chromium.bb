@@ -36,7 +36,7 @@ struct NotifierState {
 struct DefaultNetworkState {
   bool is_connected;
   const char* type;
-  const char* technology;
+  const char* network_technology;
   const char* service_path;
   const char* ip_address;
   const char* dns_servers;
@@ -132,7 +132,8 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
     else
       default_network_.connection_state_ = flimflam::kStateConfiguration;
     default_network_.type_ = default_network_state.type;
-    default_network_.technology_ = default_network_state.technology;
+    default_network_.network_technology_ =
+        default_network_state.network_technology;
     default_network_.path_ = default_network_state.service_path;
     default_network_.ip_address_ = default_network_state.ip_address;
     std::vector<std::string> dns_servers;

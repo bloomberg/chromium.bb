@@ -456,7 +456,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
       managed->PropertyChanged(iter.key(), iter.value());
     }
   }
-  managed->InitialPropertiesReceived();
+  network_property_updated |= managed->InitialPropertiesReceived(properties);
   NET_LOG_DEBUG("PropertiesReceived", GetManagedStateLogName(managed));
   // Notify observers.
   if (network_property_updated || managed->update_requested()) {

@@ -16,8 +16,9 @@ NetworkObserver::NetworkType NetworkObserver::GetNetworkTypeForNetworkState(
     return NETWORK_UNKNOWN;
   const std::string& type = network->type();
   if (type == flimflam::kTypeCellular) {
-    if (network->technology() == flimflam::kNetworkTechnologyLte ||
-        network->technology() == flimflam::kNetworkTechnologyLteAdvanced)
+    const std::string& technology = network->network_technology();
+    if (technology == flimflam::kNetworkTechnologyLte ||
+        technology == flimflam::kNetworkTechnologyLteAdvanced)
       return NETWORK_CELLULAR_LTE;
     else
       return NETWORK_CELLULAR;

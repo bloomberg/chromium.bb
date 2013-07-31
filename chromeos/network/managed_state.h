@@ -13,6 +13,7 @@
 
 namespace base {
 class Value;
+class DictionaryValue;
 }
 
 namespace chromeos {
@@ -56,8 +57,11 @@ class ManagedState {
 
   // Called by NetworkStateHandler after all calls to PropertyChanged for the
   // initial set of properties. Used to update state requiring multiple
-  // parsed properties, e.g. name from hex_ssid in NetworkState.
-  virtual void InitialPropertiesReceived();
+  // properties, e.g. name from hex_ssid in NetworkState.
+  // |properties| contains the complete set of initial properties.
+  // Returns true if any additional properties are updated.
+  virtual bool InitialPropertiesReceived(
+      const base::DictionaryValue& properties);
 
   const ManagedType managed_type() const { return managed_type_; }
   const std::string& path() const { return path_; }

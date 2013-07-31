@@ -51,6 +51,23 @@ std::string ValidateUTF8(const std::string& str) {
   return result;
 }
 
+// Returns a new NetworkUIData* if |ui_data_value| is a valid NetworkUIData
+// dictionary string, otherwise returns NULL.
+chromeos::NetworkUIData* CreateUIDataFromValue(
+    const base::Value& ui_data_value) {
+  std::string ui_data_str;
+  if (!ui_data_value.GetAsString(&ui_data_str))
+    return NULL;
+  if (ui_data_str.empty())
+    return new chromeos::NetworkUIData();
+
+  scoped_ptr<base::DictionaryValue> ui_data_dict(
+      chromeos::onc::ReadDictionaryFromJson(ui_data_str));
+  if (!ui_data_dict)
+    return NULL;
+  return new chromeos::NetworkUIData(*ui_data_dict);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -163,7 +180,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
     }
     return true;
   } else if (key == flimflam::kNetworkTechnologyProperty) {
-    return GetStringValue(key, value, &technology_);
+    return GetStringValue(key, value, &network_technology_);
   } else if (key == flimflam::kDeviceProperty) {
     return GetStringValue(key, value, &device_path_);
   } else if (key == flimflam::kGuidProperty) {
@@ -189,20 +206,14 @@ bool NetworkState::PropertyChanged(const std::string& key,
       return false;
     }
     return true;
-  } else if (key == flimflam::kWifiHexSsid) {
-    return GetStringValue(key, value, &hex_ssid_);
-  } else if (key == flimflam::kCountryProperty) {
-    // TODO(stevenjb): This is currently experimental. If we find a case where
-    // base::DetectEncoding() fails in UpdateName(), where country_code_ is
-    // set, figure out whether we can use country_code_ with ConvertToUtf8().
-    // crbug.com/233267.
-    return GetStringValue(key, value, &country_code_);
   }
   return false;
 }
 
-void NetworkState::InitialPropertiesReceived() {
-  UpdateName();
+bool NetworkState::InitialPropertiesReceived(
+    const base::DictionaryValue& properties) {
+  bool changed = UpdateName(properties);
+  return changed;
 }
 
 void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
@@ -266,7 +277,7 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
   // is used instead of NetworkLibrary, we can remove them again.
   dictionary->SetStringWithoutPathExpansion(
       flimflam::kNetworkTechnologyProperty,
-      technology_);
+      network_technology_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kDeviceProperty,
                                             device_path_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kGuidProperty, guid_);
@@ -313,8 +324,9 @@ bool NetworkState::IsManaged() const {
          onc_source_ == onc::ONC_SOURCE_USER_POLICY;
 }
 
-bool NetworkState::IsShared() const {
-  return profile_path_ == NetworkProfileHandler::kSharedProfilePath;
+bool NetworkState::IsPrivate() const {
+  return !profile_path_.empty() &&
+      profile_path_ != NetworkProfileHandler::kSharedProfilePath;
 }
 
 std::string NetworkState::GetDnsServersAsString() const {
@@ -340,25 +352,28 @@ bool NetworkState::HasAuthenticationError() const {
           error_ == shill::kErrorEapAuthenticationFailed);
 }
 
-void NetworkState::UpdateName() {
-  if (hex_ssid_.empty()) {
+bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
+  std::string hex_ssid;
+  properties.GetStringWithoutPathExpansion(flimflam::kWifiHexSsid, &hex_ssid);
+  if (hex_ssid.empty()) {
     // Validate name for UTF8.
     std::string valid_ssid = ValidateUTF8(name());
     if (valid_ssid != name()) {
       set_name(valid_ssid);
       NET_LOG_DEBUG("UpdateName", base::StringPrintf(
           "%s: UTF8: %s", path().c_str(), name().c_str()));
+      return true;
     }
-    return;
+    return false;
   }
 
   std::string ssid;
   std::vector<uint8> raw_ssid_bytes;
-  if (base::HexStringToBytes(hex_ssid_, &raw_ssid_bytes)) {
+  if (base::HexStringToBytes(hex_ssid, &raw_ssid_bytes)) {
     ssid = std::string(raw_ssid_bytes.begin(), raw_ssid_bytes.end());
   } else {
     std::string desc = base::StringPrintf("%s: Error processing: %s",
-                                          path().c_str(), hex_ssid_.c_str());
+                                          path().c_str(), hex_ssid.c_str());
     NET_LOG_DEBUG("UpdateName", desc);
     LOG(ERROR) << desc;
     ssid = name();
@@ -369,34 +384,45 @@ void NetworkState::UpdateName() {
       set_name(ssid);
       NET_LOG_DEBUG("UpdateName", base::StringPrintf(
           "%s: UTF8: %s", path().c_str(), name().c_str()));
+      return true;
     }
-    return;
+    return false;
   }
 
   // Detect encoding and convert to UTF-8.
+  std::string country_code;
+  properties.GetStringWithoutPathExpansion(
+      flimflam::kCountryProperty, &country_code);
   std::string encoding;
   if (!base::DetectEncoding(ssid, &encoding)) {
-    // TODO(stevenjb): Test this. See comment in PropertyChanged() under
-    // flimflam::kCountryProperty.
-    encoding = country_code_;
+    // TODO(stevenjb): This is currently experimental. If we find a case where
+    // base::DetectEncoding() fails, we need to figure out whether we can use
+    // country_code with ConvertToUtf8(). crbug.com/233267.
+    encoding = country_code;
   }
   if (!encoding.empty()) {
     std::string utf8_ssid;
     if (base::ConvertToUtf8AndNormalize(ssid, encoding, &utf8_ssid)) {
-      set_name(utf8_ssid);
-      NET_LOG_DEBUG("UpdateName", base::StringPrintf(
-          "%s: Encoding=%s: %s", path().c_str(),
-          encoding.c_str(), name().c_str()));
-      return;
+      if (utf8_ssid != name()) {
+        set_name(utf8_ssid);
+        NET_LOG_DEBUG("UpdateName", base::StringPrintf(
+            "%s: Encoding=%s: %s", path().c_str(),
+            encoding.c_str(), name().c_str()));
+        return true;
+      }
+      return false;
     }
   }
 
   // Unrecognized encoding. Only use raw bytes if name_ is empty.
-  if (name().empty())
-    set_name(ssid);
   NET_LOG_DEBUG("UpdateName", base::StringPrintf(
       "%s: Unrecognized Encoding=%s: %s", path().c_str(),
-      encoding.c_str(), name().c_str()));
+      encoding.c_str(), ssid.c_str()));
+  if (name().empty() && !ssid.empty()) {
+    set_name(ssid);
+    return true;
+  }
+  return false;
 }
 
 // static
@@ -419,20 +445,12 @@ std::string NetworkState::IPConfigProperty(const char* key) {
 }
 
 // static
-bool NetworkState::GetOncSource(const base::Value& value,
+bool NetworkState::GetOncSource(const base::Value& ui_data_value,
                                 onc::ONCSource* out) {
-  std::string ui_data_str;
-  if (!value.GetAsString(&ui_data_str))
+  scoped_ptr<NetworkUIData> ui_data(CreateUIDataFromValue(ui_data_value));
+  if (!ui_data)
     return false;
-  if (ui_data_str.empty()) {
-    *out = onc::ONC_SOURCE_NONE;
-    return true;
-  }
-  scoped_ptr<base::DictionaryValue> ui_data_dict(
-      onc::ReadDictionaryFromJson(ui_data_str));
-  if (!ui_data_dict)
-    return false;
-  *out = NetworkUIData(*ui_data_dict).onc_source();
+  *out = ui_data->onc_source();
   return true;
 }
 

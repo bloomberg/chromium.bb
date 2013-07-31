@@ -43,8 +43,9 @@ bool FavoriteState::IsManaged() const {
          onc_source_ == onc::ONC_SOURCE_USER_POLICY;
 }
 
-bool FavoriteState::IsShared() const {
-  return profile_path_ == NetworkProfileHandler::kSharedProfilePath;
+bool FavoriteState::IsPrivate() const {
+  return !profile_path_.empty() &&
+      profile_path_ != NetworkProfileHandler::kSharedProfilePath;
 }
 
 }  // namespace chromeos

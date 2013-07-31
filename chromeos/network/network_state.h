@@ -30,7 +30,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // If you change this method, update GetProperties too.
   virtual bool PropertyChanged(const std::string& key,
                                const base::Value& value) OVERRIDE;
-  virtual void InitialPropertiesReceived() OVERRIDE;
+  virtual bool InitialPropertiesReceived(
+      const base::DictionaryValue& properties) OVERRIDE;
 
   // Fills |dictionary| with the state properties. All the properties that are
   // accepted by PropertyChanged are stored in |dictionary|, no other values are
@@ -66,7 +67,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   bool passphrase_required() const { return passphrase_required_; }
   const FrequencyList& wifi_frequencies() const { return wifi_frequencies_; }
   // Cellular property accessors
-  const std::string& technology() const { return technology_; }
+  const std::string& network_technology() const {
+    return network_technology_;
+  }
   const std::string& activation_state() const { return activation_state_; }
   const std::string& roaming() const { return roaming_; }
   bool activate_over_non_cellular_networks() const {
@@ -78,11 +81,15 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& post_method() const { return post_method_; }
   const std::string& post_data() const { return post_data_; }
 
+  // Returns true if |connection_state_| is a connected/connecting state.
   bool IsConnectedState() const;
   bool IsConnectingState() const;
 
+  // Returns true if the ONC source is a device or user policy.
   bool IsManaged() const;
-  bool IsShared() const;
+
+  // Returns true if the network properties are stored in a user profile.
+  bool IsPrivate() const;
 
   // Returns a comma separated string of name servers.
   std::string GetDnsServersAsString() const;
@@ -109,8 +116,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   friend class NetworkStateHandler;
   friend class NetworkChangeNotifierChromeosUpdateTest;
 
-  // Updates the name from hex_ssid_ if provided, and validates name_.
-  void UpdateName();
+  // Updates |name_| from WiFi.HexSSID if provided, and validates |name_|.
+  // Returns true if |name_| changes.
+  bool UpdateName(const base::DictionaryValue& properties);
 
   // TODO(gauravsh): Audit the list of properties that we are caching. We should
   // only be doing this for commonly accessed properties. crbug.com/252553
@@ -140,12 +148,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   int signal_strength_;
   bool connectable_;
   // Wifi properties
-  std::string hex_ssid_;
-  std::string country_code_;
   bool passphrase_required_;
   FrequencyList wifi_frequencies_;
   // Cellular properties
-  std::string technology_;
+  std::string network_technology_;
   std::string activation_state_;
   std::string roaming_;
   bool activate_over_non_cellular_networks_;

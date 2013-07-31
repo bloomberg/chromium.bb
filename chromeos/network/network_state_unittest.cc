@@ -15,6 +15,7 @@ namespace chromeos {
 
 namespace {
 
+// StringValue that skips the DCHECK in the constructor for valid UTF8.
 class TestStringValue : public base::Value {
  public:
   explicit TestStringValue(const std::string& in_value)
@@ -54,15 +55,21 @@ class NetworkStateTest : public testing::Test {
 
  protected:
   bool SetStringProperty(const std::string& key, const std::string& value) {
-    if (!network_state_.PropertyChanged(key, TestStringValue(value)))
-      return false;
-    network_state_.InitialPropertiesReceived();
-    return true;
+    TestStringValue* string_value = new TestStringValue(value);
+    bool res = network_state_.PropertyChanged(key, *string_value);
+    properties_.SetWithoutPathExpansion(key, string_value);
+    return res;
+  }
+
+  bool SignalInitialPropertiesReceived() {
+    return network_state_.InitialPropertiesReceived(properties_);
   }
 
   NetworkState network_state_;
 
  private:
+  base::DictionaryValue properties_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkStateTest);
 };
 
@@ -97,6 +104,7 @@ TEST_F(NetworkStateTest, SsidTruncateInvalid) {
   std::string wifi_setname2 = "SSID TEST \x01\xff!";
   std::string wifi_setname2_result = "SSID TEST \xEF\xBF\xBD\xEF\xBF\xBD!";
   EXPECT_TRUE(SetStringProperty(flimflam::kNameProperty, wifi_setname2));
+  EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), wifi_setname2_result);
 }
 
@@ -106,7 +114,8 @@ TEST_F(NetworkStateTest, SsidLatin) {
   std::string wifi_latin1_hex =
       base::HexEncode(wifi_latin1.c_str(), wifi_latin1.length());
   std::string wifi_latin1_result = "latin-1 \u00c0\u00cb\u00cc\u00d6\u00fb";
-  EXPECT_TRUE(SetStringProperty(flimflam::kWifiHexSsid, wifi_latin1_hex));
+  EXPECT_FALSE(SetStringProperty(flimflam::kWifiHexSsid, wifi_latin1_hex));
+  EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), wifi_latin1_result);
 }
 
@@ -114,7 +123,8 @@ TEST_F(NetworkStateTest, SsidLatin) {
 TEST_F(NetworkStateTest, SsidHex) {
   std::string wifi_hex = "5468697320697320484558205353494421";
   std::string wifi_hex_result = "This is HEX SSID!";
-  SetStringProperty(flimflam::kWifiHexSsid, wifi_hex);
+  EXPECT_FALSE(SetStringProperty(flimflam::kWifiHexSsid, wifi_hex));
+  EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), wifi_hex_result);
 }
 

@@ -459,7 +459,7 @@ NetworkInfoDictionary::NetworkInfoDictionary(const FavoriteState* favorite,
       connectable_(false),
       connection_type_(favorite->type()),
       remembered_(true),
-      shared_(favorite->IsShared()),
+      shared_(!favorite->IsPrivate()),
       policy_managed_(favorite->IsManaged()) {
   if (favorite->type() == flimflam::kTypeEthernet)
     name_ = l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
@@ -1562,7 +1562,7 @@ void PopulateConnectionDetails(const NetworkState* network,
                         ash::network_connect::ErrorString(network->error()));
 
   dictionary->SetBoolean(kTagRemembered, !network->profile_path().empty());
-  bool shared = network->IsShared();
+  bool shared = !network->IsPrivate();
   dictionary->SetBoolean(kTagShared, shared);
 
   const std::string& type = network->type();
@@ -1633,7 +1633,7 @@ void PopulateCellularDetails(const NetworkState* cellular,
                          CommandLine::ForCurrentProcess()->HasSwitch(
                              chromeos::switches::kEnableCarrierSwitching));
   // Cellular network / connection settings.
-  dictionary->SetString(kTagNetworkTechnology, cellular->technology());
+  dictionary->SetString(kTagNetworkTechnology, cellular->network_technology());
   dictionary->SetString(kTagActivationState,
                         ActivationStateString(cellular->activation_state()));
   dictionary->SetString(kTagRoamingState,
@@ -1785,9 +1785,10 @@ void PopulateCellularDetails(const NetworkState* cellular,
       // because the network's proper portal url cannot be generated without it
       const NetworkState* default_network =
           NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+      const std::string& technology = cellular->network_technology();
       bool force_show_view_account_button =
-          (cellular->technology() == flimflam::kNetworkTechnologyLte ||
-           cellular->technology() == flimflam::kNetworkTechnologyLteAdvanced) &&
+          (technology == flimflam::kNetworkTechnologyLte ||
+           technology == flimflam::kNetworkTechnologyLteAdvanced) &&
           default_network &&
           !mdn.empty();
 

@@ -408,41 +408,42 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(const NetworkState* network,
                                                 IconType icon_type) {
   const int kUnknownBadgeType = -1;
   int id = kUnknownBadgeType;
-  if (network->technology() == flimflam::kNetworkTechnologyEvdo) {
+  const std::string& technology = network->network_technology();
+  if (technology == flimflam::kNetworkTechnologyEvdo) {
     id = IconTypeIsDark(icon_type) ?
         IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
-  } else if (network->technology() == flimflam::kNetworkTechnology1Xrtt) {
+  } else if (technology == flimflam::kNetworkTechnology1Xrtt) {
     id = IDR_AURA_UBER_TRAY_NETWORK_1X;
-  } else if (network->technology() == flimflam::kNetworkTechnologyGprs) {
+  } else if (technology == flimflam::kNetworkTechnologyGprs) {
     id = IconTypeIsDark(icon_type) ?
         IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
-  } else if (network->technology() == flimflam::kNetworkTechnologyEdge) {
+  } else if (technology == flimflam::kNetworkTechnologyEdge) {
     id = IconTypeIsDark(icon_type) ?
         IDR_AURA_UBER_TRAY_NETWORK_EDGE_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_EDGE_LIGHT;
-  } else if (network->technology() == flimflam::kNetworkTechnologyUmts) {
+  } else if (technology == flimflam::kNetworkTechnologyUmts) {
     id = IconTypeIsDark(icon_type) ?
         IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
-  } else if (network->technology() == flimflam::kNetworkTechnologyHspa) {
+  } else if (technology == flimflam::kNetworkTechnologyHspa) {
     id = IconTypeIsDark(icon_type) ?
         IDR_AURA_UBER_TRAY_NETWORK_HSPA_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_HSPA_LIGHT;
-  } else if (network->technology() == flimflam::kNetworkTechnologyHspaPlus) {
+  } else if (technology == flimflam::kNetworkTechnologyHspaPlus) {
     id = IconTypeIsDark(icon_type) ?
         IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_LIGHT;
-  } else if (network->technology() == flimflam::kNetworkTechnologyLte) {
+  } else if (technology == flimflam::kNetworkTechnologyLte) {
     id = IconTypeIsDark(icon_type) ?
         IDR_AURA_UBER_TRAY_NETWORK_LTE_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_LTE_LIGHT;
-  } else if (network->technology() == flimflam::kNetworkTechnologyLteAdvanced) {
+  } else if (technology == flimflam::kNetworkTechnologyLteAdvanced) {
     id = IconTypeIsDark(icon_type) ?
         IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_LIGHT;
-  } else if (network->technology() == flimflam::kNetworkTechnologyGsm) {
+  } else if (technology == flimflam::kNetworkTechnologyGsm) {
     id = IconTypeIsDark(icon_type) ?
         IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;

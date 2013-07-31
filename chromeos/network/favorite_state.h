@@ -32,8 +32,11 @@ class CHROMEOS_EXPORT FavoriteState : public ManagedState {
   bool is_favorite() const { return !profile_path_.empty(); }
   onc::ONCSource onc_source() const { return onc_source_; }
 
+  // Returns true if the ONC source is a device or user policy.
   bool IsManaged() const;
-  bool IsShared() const;
+
+  // Returns true if the network properties are stored in a user profile.
+  bool IsPrivate() const;
 
  private:
   std::string profile_path_;

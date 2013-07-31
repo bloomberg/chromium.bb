@@ -111,7 +111,7 @@ std::string NetworkStateToHtmlTableRow(const NetworkState* network) {
       WrapWithTD(network->error()) +
       WrapWithTD(network->ip_address()) +
       WrapWithTD(network->security()) +
-      WrapWithTD(network->technology()) +
+      WrapWithTD(network->network_technology()) +
       WrapWithTD(network->activation_state()) +
       WrapWithTD(network->roaming()) +
       WrapWithTD(base::IntToString(network->cellular_out_of_credits())) +

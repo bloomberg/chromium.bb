@@ -135,7 +135,7 @@ void NetworkChangeNotifierChromeos::UpdateState(
   // We do have a default network and it is connected.
   net::NetworkChangeNotifier::ConnectionType new_connection_type =
       ConnectionTypeFromShill(default_network->type(),
-                              default_network->technology());
+                              default_network->network_technology());
   if (new_connection_type != connection_type_) {
     NET_LOG_EVENT(
         "NCNDefaultConnectionTypeChanged",

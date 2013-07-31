@@ -53,7 +53,9 @@ FavoriteState* ManagedState::AsFavoriteState() {
   return NULL;
 }
 
-void ManagedState::InitialPropertiesReceived() {
+bool ManagedState::InitialPropertiesReceived(
+    const base::DictionaryValue& properties) {
+  return false;
 }
 
 bool ManagedState::ManagedStatePropertyChanged(const std::string& key,
