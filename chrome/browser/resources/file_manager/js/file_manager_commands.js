@@ -7,37 +7,39 @@
 var CommandUtil = {};
 
 /**
- * Extracts root on which command event was dispatched.
+ * Extracts path on which command event was dispatched.
  *
  * @param {Event} event Command event for which to retrieve root to operate on.
- * @param {DirectoryTree|VolumeList} list Directory tree or volume list to
- *     extract root node.
- * @return {string} Path of the found root.
+ * @param {DirectoryTree|VolumeList|cr.ui.List} element Element to extract a
+ *     path from.
+ * @return {?string} Path of the found node.
  */
-CommandUtil.getCommandRoot = function(event, list) {
-  if (list instanceof VolumeList) {
-    var result = list.dataModel.item(
-                     list.getIndexOfListItem(event.target)) ||
-                 list.selectedItem;
+CommandUtil.getCommandPath = function(event, element) {
+  if (element instanceof VolumeList) {
+    var result =
+        element.dataModel.item(element.getIndexOfListItem(event.target)) ||
+        element.selectedItem;
     return result;
+  } else if (element instanceof DirectoryTree) {
+    var item = element.selectedItem;
+    return item && item.fullPath;
+  } else if (cr.ui.List) {
+    var entry = element.selectedItem;
+    return entry && entry.fullPath;
   } else {
-    var entry = list.selectedItem;
-
-    if (entry && PathUtil.isRootPath(entry.fullPath))
-      return entry.fullPath;
-    else
-      return null;
+    console.warn('Unsupported element');
+    return null;
   }
 };
 
 /**
  * @param {Event} event Command event for which to retrieve root type.
- * @param {DirectoryTree} directoryTree Directory tree to extract root node.
- * @return {?string} Found root.
+ * @param {VolumeList} volumeList Volume list to extract root node.
+ * @return {?RootType} Type of the found root.
  */
-CommandUtil.getCommandRootType = function(event, directoryTree) {
-  var root = CommandUtil.getCommandRoot(event, directoryTree);
-  return root && PathUtil.getRootType(root);
+CommandUtil.getCommandRootType = function(event, volumeList) {
+  var root = CommandUtil.getCommandPath(event, volumeList);
+  return root && PathUtil.isRootPath(root) && PathUtil.getRootType(root);
 };
 
 /**
@@ -159,19 +161,19 @@ Commands.defaultCommand = {
 Commands.unmountCommand = {
   /**
    * @param {Event} event Command event.
-   * @param {DirectoryTree} directoryTree Target directory tree.
+   * @param {VolumeList} volumeList Target volume list.
    */
-  execute: function(event, directoryTree, fileManager) {
-    var root = CommandUtil.getCommandRoot(event, directoryTree);
+  execute: function(event, volumeList, fileManager) {
+    var root = CommandUtil.getCommandPath(event, volumeList);
     if (root)
       fileManager.unmountVolume(PathUtil.getRootPath(root));
   },
   /**
    * @param {Event} event Command event.
-   * @param {DirectoryTree} directoryTree Target directory tree.
+   * @param {VolumeList} volumeList Target volume list.
    */
-  canExecute: function(event, directoryTree) {
-    var rootType = CommandUtil.getCommandRootType(event, directoryTree);
+  canExecute: function(event, volumeList) {
+    var rootType = CommandUtil.getCommandRootType(event, volumeList);
 
     event.canExecute = (rootType == RootType.ARCHIVE ||
                         rootType == RootType.REMOVABLE);
@@ -188,10 +190,11 @@ Commands.unmountCommand = {
 Commands.formatCommand = {
   /**
    * @param {Event} event Command event.
-   * @param {DirectoryTree} directoryTree Target directory tree.
+   * @param {VolumeList} volumeList Target volume list.
+   * @param {FileManager} fileManager The file manager instance.
    */
-  execute: function(event, directoryTree, fileManager) {
-    var root = CommandUtil.getCommandRoot(event, directoryTree);
+  execute: function(event, volumeList, fileManager) {
+    var root = CommandUtil.getCommandPath(event, volumeList);
 
     if (root) {
       var url = util.makeFilesystemUrl(PathUtil.getRootPath(root));
@@ -202,10 +205,12 @@ Commands.formatCommand = {
   },
   /**
    * @param {Event} event Command event.
-   * @param {DirectoryTree} directoryTree Target directory tree.
+   * @param {VolumeList} volumeList Target volume list.
+   * @param {FileManager} fileManager The file manager instance.
+   * @param {DirectoryModel} directoryModel The directory model instance.
    */
-  canExecute: function(event, directoryTree, fileManager, directoryModel) {
-    var root = CommandUtil.getCommandRoot(event, directoryTree);
+  canExecute: function(event, volumeList, fileManager, directoryModel) {
+    var root = CommandUtil.getCommandPath(event, volumeList);
     var removable = root &&
                     PathUtil.getRootType(root) == RootType.REMOVABLE;
     var isReadOnly = root && directoryModel.isPathReadOnly(root);
@@ -220,10 +225,10 @@ Commands.formatCommand = {
 Commands.importCommand = {
   /**
    * @param {Event} event Command event.
-   * @param {DirectoryTree} directoryTree Target directory tree.
+   * @param {VolumeList} volumeList Target volume list.
    */
-  execute: function(event, directoryTree) {
-    var root = CommandUtil.getCommandRoot(event, directoryTree);
+  execute: function(event, volumeList) {
+    var root = CommandUtil.getCommandPath(event, volumeList);
     if (!root)
       return;
 
@@ -231,10 +236,10 @@ Commands.importCommand = {
   },
   /**
    * @param {Event} event Command event.
-   * @param {DirectoryTree} directoryTree Target directory tree.
+   * @param {VolumeList} volumeList Target volume list.
    */
-  canExecute: function(event, directoryTree) {
-    var rootType = CommandUtil.getCommandRootType(event, directoryTree);
+  canExecute: function(event, volumeList) {
+    var rootType = CommandUtil.getCommandRootType(event, volumeList);
     event.canExecute = (rootType != RootType.DRIVE);
   }
 };
@@ -583,10 +588,10 @@ Commands.removeFolderShortcutCommand = {
   /**
    * @param {Event} event Command event.
    * @param {FileManager} fileManager The file manager instance.
-   * @param {DirectoryTree} directoryTree Target directory tree.
+   * @param {VolumeList} volumeList Volume list to extract the node from.
    */
-  execute: function(event, fileManager, directoryTree) {
-    var path = CommandUtil.getCommandRoot(event, directoryTree);
+  execute: function(event, fileManager, volumeList) {
+    var path = CommandUtil.getCommandPath(event, volumeList);
 
     if (path)
       fileManager.removeFolderShortcut(path);
@@ -594,16 +599,16 @@ Commands.removeFolderShortcutCommand = {
   /**
    * @param {Event} event Command event.
    * @param {FileManager} fileManager The file manager instance.
-   * @param {DirectoryTree} directoryTree Target directory tree.
+   * @param {VolumeList} volumeList Volume list to extract the node from.
    */
-  canExecute: function(event, fileManager, directoryTree) {
+  canExecute: function(event, fileManager, volumeList) {
     // TODO(yoshiki): remove this after launching folder shortcut feature.
     if (!fileManager.isFolderShortcutsEnabled()) {
       event.command.setHidden(true);
       return;
     }
 
-    var path = CommandUtil.getCommandRoot(event, directoryTree);
+    var path = CommandUtil.getCommandPath(event, volumeList);
     var isShortcut = path && fileManager.folderShortcutExists(path);
     event.canExecute = isShortcut;
     event.command.setHidden(!isShortcut);
