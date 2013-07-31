@@ -463,7 +463,12 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   bool CreateCompositedIOSurface();
   bool CreateCompositedIOSurfaceLayer();
-  void DestroyCompositedIOSurfaceAndLayer();
+  enum DestroyContextBehavior {
+    kLeaveContextBoundToView,
+    kDestroyContext,
+  };
+  void DestroyCompositedIOSurfaceAndLayer(DestroyContextBehavior
+      destroy_context_behavior);
 
   // Unbind the GL context (if any) that is bound to |cocoa_view_|.
   void ClearBoundContextDrawable();

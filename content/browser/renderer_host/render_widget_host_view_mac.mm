@@ -428,7 +428,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   UnlockMouse();
 
   // Make sure that the layer doesn't reach into the now-invalid object.
-  DestroyCompositedIOSurfaceAndLayer();
+  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
   software_layer_.reset();
 
   // We are owned by RenderWidgetHostViewCocoa, so if we go away before the
@@ -551,7 +551,8 @@ bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceLayer() {
          (compositing_iosurface_layer_ || !use_core_animation_);
 }
 
-void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer() {
+void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
+    DestroyContextBehavior destroy_context_behavior) {
   ScopedCAActionDisabler disabler;
 
   compositing_iosurface_.reset();
@@ -561,8 +562,17 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer() {
     [compositing_iosurface_layer_ disableCompositing];
     compositing_iosurface_layer_.reset();
   }
-  ClearBoundContextDrawable();
-  compositing_iosurface_context_ = NULL;
+  switch (destroy_context_behavior) {
+    case kLeaveContextBoundToView:
+      break;
+    case kDestroyContext:
+      ClearBoundContextDrawable();
+      compositing_iosurface_context_ = NULL;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void RenderWidgetHostViewMac::ClearBoundContextDrawable() {
@@ -1414,7 +1424,7 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
 
 void RenderWidgetHostViewMac::GotAcceleratedCompositingError() {
   AckPendingSwapBuffers();
-  DestroyCompositedIOSurfaceAndLayer();
+  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
   // The existing GL contexts may be in a bad state, so don't re-use any of the
   // existing ones anymore, rather, allocate new ones.
   CompositingIOSurfaceContext::MarkExistingContextsAsNotShareable();
@@ -1616,7 +1626,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
-  DestroyCompositedIOSurfaceAndLayer();
+  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
 }
 
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
@@ -1744,8 +1754,19 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
 
     AckPendingSwapBuffers();
 
-    // Forget IOSurface since we are drawing a software frame now.
-    DestroyCompositedIOSurfaceAndLayer();
+    // If overlapping views are allowed, then don't unbind the context
+    // from the view (that is, don't call clearDrawble -- just delete the
+    // texture and IOSurface). Rather, let it sit behind the software frame
+    // that will be put up in front. This will prevent transparent
+    // flashes.
+    // http://crbug.com/154531
+    // Also note that it is necessary that clearDrawable be called if
+    // overlapping views are not allowed, e.g, for content shell.
+    // http://crbug.com/178408
+    if (allow_overlapping_views_)
+      DestroyCompositedIOSurfaceAndLayer(kLeaveContextBoundToView);
+    else
+      DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
   }
 }
 
