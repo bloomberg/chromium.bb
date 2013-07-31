@@ -392,7 +392,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   // Component extensions with background pages are not enabled during tests
   // because they generate a lot of background behavior that can interfere.
   if (!enable_background_extensions_during_testing &&
-      command_line->HasSwitch(switches::kTestType)) {
+      (command_line->HasSwitch(switches::kTestType) ||
+          command_line->HasSwitch(switches::kMetricsRecordingOnly))) {
     return;
   }
 
