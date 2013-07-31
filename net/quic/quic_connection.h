@@ -268,9 +268,13 @@ class NET_EXPORT_PRIVATE QuicConnection
                                 const QuicEncryptedPacket& packet);
 
   // QuicBlockedWriterInterface
-  // Called when the underlying connection becomes writable to allow
-  // queued writes to happen.  Returns false if the socket has become blocked.
+  // Called when the underlying connection becomes writable to allow queued
+  // writes to happen.  Returns false if the socket has become blocked.
   virtual bool OnCanWrite() OVERRIDE;
+
+  // If the socket is not blocked, this allows queued writes to happen. Returns
+  // false if the socket has become blocked.
+  bool WriteIfNotBlocked();
 
   // Do any work which logically would be done in OnPacket but can not be
   // safely done until the packet is validated.  Returns true if the packet
@@ -533,6 +537,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool IsRetransmission(QuicPacketSequenceNumber sequence_number);
 
   void SetupAbandonFecTimer(QuicPacketSequenceNumber sequence_number);
+
+  // Called from OnCanWrite and WriteIfNotBlocked to write queued packets.
+  // Returns false if the socket has become blocked.
+  bool DoWrite();
 
   // Drop packet corresponding to |sequence_number| by deleting entries from
   // |unacked_packets_| and |retransmission_map_|, if present. We need to drop

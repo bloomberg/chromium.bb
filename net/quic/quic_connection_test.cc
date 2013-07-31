@@ -230,7 +230,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
         timeout_alarm_(QuicTime::Zero()),
         blocked_(false),
         is_server_(true),
-        use_tagging_decrypter_(false) {
+        use_tagging_decrypter_(false),
+        packets_write_attempts_(0) {
   }
 
   // QuicConnectionHelperInterface
@@ -246,6 +247,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
                                 int* error) OVERRIDE {
+    ++packets_write_attempts_;
+
     if (packet.length() >= sizeof(final_bytes_of_last_packet_)) {
       memcpy(&final_bytes_of_last_packet_, packet.data() + packet.length() - 4,
              sizeof(final_bytes_of_last_packet_));
@@ -354,6 +357,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
     use_tagging_decrypter_ = true;
   }
 
+  uint32 packets_write_attempts() { return packets_write_attempts_; }
+
  private:
   MockClock* clock_;
   MockRandom* random_generator_;
@@ -371,6 +376,7 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
   bool is_server_;
   uint32 final_bytes_of_last_packet_;
   bool use_tagging_decrypter_;
+  uint32 packets_write_attempts_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectionHelper);
 };
@@ -2306,6 +2312,43 @@ TEST_F(QuicConnectionTest, DontProcessFramesIfPacketClosedConnection) {
 //  // Shouldn't be able to find a mutually supported version.
 //  EXPECT_FALSE(connection_.SelectMutualVersion({QUIC_VERSION_UNSUPPORTED}));
 //}
+
+TEST_F(QuicConnectionTest, ConnectionCloseWhenNotWriteBlocked) {
+  helper_->set_blocked(false);  // Already default.
+
+  // Send a packet (but write will not block).
+  ProcessFecPacket(2, 1, true, !kEntropyFlag);
+  EXPECT_EQ(0u, connection_.NumQueuedPackets());
+  EXPECT_EQ(1u, helper_->packets_write_attempts());
+
+  // Send an erroneous packet to close the connection.
+  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_PACKET_HEADER, false));
+  ProcessDataPacket(6000, 0, !kEntropyFlag);
+  EXPECT_EQ(2u, helper_->packets_write_attempts());
+}
+
+TEST_F(QuicConnectionTest, ConnectionCloseWhenWriteBlocked) {
+  helper_->set_blocked(true);
+
+  // Send a packet to so that write will really block.
+  ProcessFecPacket(2, 1, true, !kEntropyFlag);
+  EXPECT_EQ(1u, connection_.NumQueuedPackets());
+  EXPECT_EQ(1u, helper_->packets_write_attempts());
+
+  // Send an erroneous packet to close the connection.
+  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_PACKET_HEADER, false));
+  ProcessDataPacket(6000, 0, !kEntropyFlag);
+  EXPECT_EQ(1u, helper_->packets_write_attempts());
+}
+
+TEST_F(QuicConnectionTest, ConnectionCloseWhenNothingPending) {
+  helper_->set_blocked(true);
+
+  // Send an erroneous packet to close the connection.
+  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_PACKET_HEADER, false));
+  ProcessDataPacket(6000, 0, !kEntropyFlag);
+  EXPECT_EQ(1u, helper_->packets_write_attempts());
+}
 
 }  // namespace
 }  // namespace test

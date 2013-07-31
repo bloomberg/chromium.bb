@@ -378,9 +378,7 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
       HAS_RETRANSMITTABLE_DATA);
   if (delay.IsZero()) {
     helper_->UnregisterSendAlarmIfRegistered();
-    if (!write_blocked_) {
-      OnCanWrite();
-    }
+    WriteIfNotBlocked();
   } else if (!delay.IsInfinite()) {
     helper_->SetSendAlarm(time_of_last_received_packet_.Add(delay));
   }
@@ -716,7 +714,7 @@ void QuicConnection::SendVersionNegotiationPacket() {
 }
 
 QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
-                                                base::StringPiece data,
+                                                StringPiece data,
                                                 QuicStreamOffset offset,
                                                 bool fin) {
   return packet_generator_.ConsumeData(id, data, offset, fin);
@@ -782,7 +780,18 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
 
 bool QuicConnection::OnCanWrite() {
   write_blocked_ = false;
+  return DoWrite();
+}
 
+bool QuicConnection::WriteIfNotBlocked() {
+  if (write_blocked_) {
+    return false;
+  }
+  return DoWrite();
+}
+
+bool QuicConnection::DoWrite() {
+  DCHECK(!write_blocked_);
   WriteQueuedPackets();
 
   // Sending queued packets may have caused the socket to become write blocked,
@@ -1459,17 +1468,21 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
       serialized_packet.sequence_number,
       serialized_packet.entropy_hash);
 
-  WritePacket(encryption_level_,
-              serialized_packet.sequence_number,
-              serialized_packet.packet,
-              serialized_packet.retransmittable_frames != NULL ?
-                  HAS_RETRANSMITTABLE_DATA : NO_RETRANSMITTABLE_DATA,
-              FORCE);
+  if (!WritePacket(encryption_level_,
+                   serialized_packet.sequence_number,
+                   serialized_packet.packet,
+                   serialized_packet.retransmittable_frames != NULL ?
+                      HAS_RETRANSMITTABLE_DATA : NO_RETRANSMITTABLE_DATA,
+                   FORCE)) {
+    delete serialized_packet.packet;
+  }
 }
 
 void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
                                                     const string& details) {
-  SendConnectionClosePacket(error, details);
+  if (!write_blocked_) {
+    SendConnectionClosePacket(error, details);
+  }
   CloseConnection(error, false);
 }
 
