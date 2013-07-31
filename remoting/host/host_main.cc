@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/base/breakpad.h"
+#include "remoting/base/resources.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/usage_stats_consent.h"
@@ -232,11 +233,16 @@ int HostMain(int argc, char** argv) {
     return kUsageExitCode;
   }
 
+  remoting::LoadResources("");
+
   // Invoke the entry point.
   int exit_code = main_routine();
   if (exit_code == kUsageExitCode) {
     Usage(command_line->GetProgram());
   }
+
+  remoting::UnloadResources();
+
   return exit_code;
 }
 

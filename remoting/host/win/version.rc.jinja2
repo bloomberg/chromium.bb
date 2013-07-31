@@ -3,10 +3,16 @@
 // found in the LICENSE file.
 
 #include <winresrc.h>
+
 #ifdef IDC_STATIC
 #undef IDC_STATIC
 #endif
 #define IDC_STATIC (-1)
+
+// These marcos are copied from "base/stringize_macros.h" which cannot be
+// included directly.
+#define STRINGIZE_NO_EXPANSION(x) #x
+#define STRINGIZE(x) STRINGIZE_NO_EXPANSION(x)
 
 {% for lang in languages %}
   {% do SelectLanguage(lang) %}
@@ -57,7 +63,7 @@ BEGIN
       VALUE "FileDescription", "{% trans %}REMOTING_HOST_PLUGIN_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remoting_host_plugin.dll"
       VALUE "OriginalFilename", "remoting_host_plugin.dll"
-      VALUE "MIMEType", "application/vnd.chromium.remoting-host"
+      VALUE "MIMEType", STRINGIZE(HOST_PLUGIN_MIME_TYPE)
 #else
 #error BINARY must be set to one of BINARY_XXX values.
 #endif

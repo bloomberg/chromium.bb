@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/ui_strings.h"
 
 namespace remoting {
 
@@ -33,8 +32,6 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
  protected:
   friend class BasicDesktopEnvironmentFactory;
 
-  // |ui_strings| are hosted by the BasicDesktopEnvironmentFactory instance that
-  // created |this|. |ui_strings| must outlive this object.
   BasicDesktopEnvironment(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
@@ -72,8 +69,7 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   BasicDesktopEnvironmentFactory(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      const UiStrings& ui_strings);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   virtual ~BasicDesktopEnvironmentFactory();
 
   // DesktopEnvironmentFactory implementation.
@@ -92,8 +88,6 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
     return ui_task_runner_;
   }
 
-  const UiStrings& ui_strings() const { return ui_strings_; }
-
  private:
   // Task runner on which methods of DesktopEnvironmentFactory interface should
   // be called.
@@ -104,9 +98,6 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
 
   // Used to run UI code.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-
-  // Contains a copy of the localized UI strings.
-  const UiStrings ui_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicDesktopEnvironmentFactory);
 };

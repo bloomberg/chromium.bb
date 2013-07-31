@@ -65,7 +65,6 @@ Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
 
 bool Me2MeDesktopEnvironment::InitializeSecurity(
     base::WeakPtr<ClientSessionControl> client_session_control,
-    const UiStrings& ui_strings,
     bool curtain_enabled) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
@@ -106,7 +105,7 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
                                                      ui_task_runner(),
                                                      client_session_control);
 
-    disconnect_window_ = HostWindow::CreateDisconnectWindow(ui_strings);
+    disconnect_window_ = HostWindow::CreateDisconnectWindow();
     disconnect_window_.reset(new HostWindowProxy(
         caller_task_runner(),
         ui_task_runner(),
@@ -120,12 +119,10 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
 Me2MeDesktopEnvironmentFactory::Me2MeDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const UiStrings& ui_strings)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : BasicDesktopEnvironmentFactory(caller_task_runner,
                                      input_task_runner,
-                                     ui_task_runner,
-                                     ui_strings),
+                                     ui_task_runner),
       curtain_enabled_(false) {
 }
 
@@ -141,7 +138,6 @@ scoped_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
                                   input_task_runner(),
                                   ui_task_runner()));
   if (!desktop_environment->InitializeSecurity(client_session_control,
-                                               ui_strings(),
                                                curtain_enabled_)) {
     return scoped_ptr<DesktopEnvironment>();
   }

@@ -21,7 +21,7 @@ namespace {
 
 class ContinueWindowWin : public ContinueWindow {
  public:
-  explicit ContinueWindowWin(const UiStrings& ui_strings);
+  ContinueWindowWin();
   virtual ~ContinueWindowWin();
 
  protected:
@@ -42,9 +42,8 @@ class ContinueWindowWin : public ContinueWindow {
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowWin);
 };
 
-ContinueWindowWin::ContinueWindowWin(const UiStrings& ui_strings)
-    : ContinueWindow(ui_strings),
-      hwnd_(NULL) {
+ContinueWindowWin::ContinueWindowWin()
+    : hwnd_(NULL) {
 }
 
 ContinueWindowWin::~ContinueWindowWin() {
@@ -129,9 +128,8 @@ void ContinueWindowWin::EndDialog() {
 }  // namespace
 
 // static
-scoped_ptr<HostWindow> HostWindow::CreateContinueWindow(
-    const UiStrings& ui_strings) {
-  return scoped_ptr<HostWindow>(new ContinueWindowWin(ui_strings));
+scoped_ptr<HostWindow> HostWindow::CreateContinueWindow() {
+  return scoped_ptr<HostWindow>(new ContinueWindowWin());
 }
 
 }  // namespace remoting

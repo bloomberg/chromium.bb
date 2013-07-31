@@ -5,89 +5,91 @@
     <output filename="remoting/base/string_resources.h" type="rc_header">
       <emit emit_type="prepend"/>
     </output>
-    <output filename="remoting/resources/en-US.pak" lang="en" type="data_package"/>
-    <output filename="remoting/webapp/_locales/en/messages.json" lang="en" type="chrome_messages_json"/>
+
     <output filename="remoting/resources/ar.pak" lang="ar" type="data_package"/>
-    <output filename="remoting/webapp/_locales/ar/messages.json" lang="ar" type="chrome_messages_json"/>
     <output filename="remoting/resources/bg.pak" lang="bg" type="data_package"/>
-    <output filename="remoting/webapp/_locales/bg/messages.json" lang="bg" type="chrome_messages_json"/>
     <output filename="remoting/resources/ca.pak" lang="ca" type="data_package"/>
-    <output filename="remoting/webapp/_locales/ca/messages.json" lang="ca" type="chrome_messages_json"/>
     <output filename="remoting/resources/cs.pak" lang="cs" type="data_package"/>
-    <output filename="remoting/webapp/_locales/cs/messages.json" lang="cs" type="chrome_messages_json"/>
     <output filename="remoting/resources/da.pak" lang="da" type="data_package"/>
-    <output filename="remoting/webapp/_locales/da/messages.json" lang="da" type="chrome_messages_json"/>
     <output filename="remoting/resources/de.pak" lang="de" type="data_package"/>
-    <output filename="remoting/webapp/_locales/de/messages.json" lang="de" type="chrome_messages_json"/>
     <output filename="remoting/resources/el.pak" lang="el" type="data_package"/>
-    <output filename="remoting/webapp/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
     <output filename="remoting/resources/en-GB.pak" lang="en-GB" type="data_package"/>
-    <output filename="remoting/webapp/_locales/en_GB/messages.json" lang="en-GB" type="chrome_messages_json"/>
-    <output filename="remoting/resources/es.pak" lang="es" type="data_package"/>
-    <output filename="remoting/webapp/_locales/es/messages.json" lang="es" type="chrome_messages_json"/>
+    <output filename="remoting/resources/en.pak" lang="en" type="data_package"/>
     <output filename="remoting/resources/es-419.pak" lang="es-419" type="data_package"/>
-    <output filename="remoting/webapp/_locales/es_419/messages.json" lang="es-419" type="chrome_messages_json"/>
+    <output filename="remoting/resources/es.pak" lang="es" type="data_package"/>
     <output filename="remoting/resources/et.pak" lang="et" type="data_package"/>
-    <output filename="remoting/webapp/_locales/et/messages.json" lang="et" type="chrome_messages_json"/>
     <output filename="remoting/resources/fi.pak" lang="fi" type="data_package"/>
-    <output filename="remoting/webapp/_locales/fi/messages.json" lang="fi" type="chrome_messages_json"/>
     <output filename="remoting/resources/fil.pak" lang="fil" type="data_package"/>
-    <output filename="remoting/webapp/_locales/fil/messages.json" lang="fil" type="chrome_messages_json"/>
     <output filename="remoting/resources/fr.pak" lang="fr" type="data_package"/>
-    <output filename="remoting/webapp/_locales/fr/messages.json" lang="fr" type="chrome_messages_json"/>
     <output filename="remoting/resources/he.pak" lang="he" type="data_package"/>
-    <output filename="remoting/webapp/_locales/he/messages.json" lang="he" type="chrome_messages_json"/>
     <output filename="remoting/resources/hi.pak" lang="hi" type="data_package"/>
-    <output filename="remoting/webapp/_locales/hi/messages.json" lang="hi" type="chrome_messages_json"/>
     <output filename="remoting/resources/hr.pak" lang="hr" type="data_package"/>
-    <output filename="remoting/webapp/_locales/hr/messages.json" lang="hr" type="chrome_messages_json"/>
     <output filename="remoting/resources/hu.pak" lang="hu" type="data_package"/>
-    <output filename="remoting/webapp/_locales/hu/messages.json" lang="hu" type="chrome_messages_json"/>
     <output filename="remoting/resources/id.pak" lang="id" type="data_package"/>
-    <output filename="remoting/webapp/_locales/id/messages.json" lang="id" type="chrome_messages_json"/>
     <output filename="remoting/resources/it.pak" lang="it" type="data_package"/>
-    <output filename="remoting/webapp/_locales/it/messages.json" lang="it" type="chrome_messages_json"/>
     <output filename="remoting/resources/ja.pak" lang="ja" type="data_package"/>
-    <output filename="remoting/webapp/_locales/ja/messages.json" lang="ja" type="chrome_messages_json"/>
     <output filename="remoting/resources/ko.pak" lang="ko" type="data_package"/>
-    <output filename="remoting/webapp/_locales/ko/messages.json" lang="ko" type="chrome_messages_json"/>
     <output filename="remoting/resources/lt.pak" lang="lt" type="data_package"/>
-    <output filename="remoting/webapp/_locales/lt/messages.json" lang="lt" type="chrome_messages_json"/>
     <output filename="remoting/resources/lv.pak" lang="lv" type="data_package"/>
-    <output filename="remoting/webapp/_locales/lv/messages.json" lang="lv" type="chrome_messages_json"/>
     <output filename="remoting/resources/nb.pak" lang="nb" type="data_package"/>
-    <output filename="remoting/webapp/_locales/nb/messages.json" lang="nb" type="chrome_messages_json"/>
     <output filename="remoting/resources/nl.pak" lang="nl" type="data_package"/>
-    <output filename="remoting/webapp/_locales/nl/messages.json" lang="nl" type="chrome_messages_json"/>
     <output filename="remoting/resources/pl.pak" lang="pl" type="data_package"/>
-    <output filename="remoting/webapp/_locales/pl/messages.json" lang="pl" type="chrome_messages_json"/>
     <output filename="remoting/resources/pt-BR.pak" lang="pt-BR" type="data_package"/>
-    <output filename="remoting/webapp/_locales/pt_BR/messages.json" lang="pt-BR" type="chrome_messages_json"/>
     <output filename="remoting/resources/pt-PT.pak" lang="pt-PT" type="data_package"/>
-    <output filename="remoting/webapp/_locales/pt_PT/messages.json" lang="pt-PT" type="chrome_messages_json"/>
     <output filename="remoting/resources/ro.pak" lang="ro" type="data_package"/>
-    <output filename="remoting/webapp/_locales/ro/messages.json" lang="ro" type="chrome_messages_json"/>
     <output filename="remoting/resources/ru.pak" lang="ru" type="data_package"/>
-    <output filename="remoting/webapp/_locales/ru/messages.json" lang="ru" type="chrome_messages_json"/>
     <output filename="remoting/resources/sk.pak" lang="sk" type="data_package"/>
-    <output filename="remoting/webapp/_locales/sk/messages.json" lang="sk" type="chrome_messages_json"/>
     <output filename="remoting/resources/sl.pak" lang="sl" type="data_package"/>
-    <output filename="remoting/webapp/_locales/sl/messages.json" lang="sl" type="chrome_messages_json"/>
     <output filename="remoting/resources/sr.pak" lang="sr" type="data_package"/>
-    <output filename="remoting/webapp/_locales/sr/messages.json" lang="sr" type="chrome_messages_json"/>
     <output filename="remoting/resources/sv.pak" lang="sv" type="data_package"/>
-    <output filename="remoting/webapp/_locales/sv/messages.json" lang="sv" type="chrome_messages_json"/>
     <output filename="remoting/resources/th.pak" lang="th" type="data_package"/>
-    <output filename="remoting/webapp/_locales/th/messages.json" lang="th" type="chrome_messages_json"/>
     <output filename="remoting/resources/tr.pak" lang="tr" type="data_package"/>
-    <output filename="remoting/webapp/_locales/tr/messages.json" lang="tr" type="chrome_messages_json"/>
     <output filename="remoting/resources/uk.pak" lang="uk" type="data_package"/>
-    <output filename="remoting/webapp/_locales/uk/messages.json" lang="uk" type="chrome_messages_json"/>
     <output filename="remoting/resources/vi.pak" lang="vi" type="data_package"/>
-    <output filename="remoting/webapp/_locales/vi/messages.json" lang="vi" type="chrome_messages_json"/>
     <output filename="remoting/resources/zh-CN.pak" lang="zh-CN" type="data_package"/>
-    <output filename="remoting/webapp/_locales/zh_CN/messages.json" lang="zh-CN" type="chrome_messages_json"/>
     <output filename="remoting/resources/zh-TW.pak" lang="zh-TW" type="data_package"/>
+
+    <output filename="remoting/webapp/_locales/ar/messages.json" lang="ar" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/bg/messages.json" lang="bg" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/ca/messages.json" lang="ca" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/cs/messages.json" lang="cs" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/da/messages.json" lang="da" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/de/messages.json" lang="de" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/en/messages.json" lang="en" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/en_GB/messages.json" lang="en-GB" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/es/messages.json" lang="es" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/es_419/messages.json" lang="es-419" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/et/messages.json" lang="et" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/fi/messages.json" lang="fi" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/fil/messages.json" lang="fil" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/fr/messages.json" lang="fr" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/he/messages.json" lang="he" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/hi/messages.json" lang="hi" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/hr/messages.json" lang="hr" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/hu/messages.json" lang="hu" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/id/messages.json" lang="id" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/it/messages.json" lang="it" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/ja/messages.json" lang="ja" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/ko/messages.json" lang="ko" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/lt/messages.json" lang="lt" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/lv/messages.json" lang="lv" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/nb/messages.json" lang="nb" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/nl/messages.json" lang="nl" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/pl/messages.json" lang="pl" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/pt_BR/messages.json" lang="pt-BR" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/pt_PT/messages.json" lang="pt-PT" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/ro/messages.json" lang="ro" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/ru/messages.json" lang="ru" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/sk/messages.json" lang="sk" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/sl/messages.json" lang="sl" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/sr/messages.json" lang="sr" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/sv/messages.json" lang="sv" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/th/messages.json" lang="th" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/tr/messages.json" lang="tr" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/uk/messages.json" lang="uk" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/vi/messages.json" lang="vi" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/zh_CN/messages.json" lang="zh-CN" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/zh_TW/messages.json" lang="zh-TW" type="chrome_messages_json"/>
   </outputs>
   <translations>
@@ -217,6 +219,18 @@
         <message name="IDR_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
           Please confirm your account and PIN below to allow access by Chrome Remote Desktop.
         </message>
+        <message name="IDR_REMOTING_HOST_PLUGIN_NAME" desc="Name of Chrome Remote Desktop Host plugin displayed by Chrome at about:plugins.">
+          Chrome Remote Desktop Host
+        </message>
+        <message name="IDR_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Preferences bundle on MacOS.">
+          Chrome Remote Desktop Host Preferences
+        </message>
+        <message name="IDR_MAC_PREFPANE_ICON_LABEL" desc="The name of Chrome Remote Desktop Host icon in Preference Pane on MacOS. The carriage return makes sure that the label is not truncated.">
+          Chrome Remote&#x0a;Desktop Host
+        </message>
+        <message name="IDR_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Uninstaller bundle on MacOS.">
+          Chrome Remote Desktop Host Uninstaller
+        </message>
       </if>
 
       <if expr="not pp_ifdef('_google_chrome')">
@@ -301,6 +315,18 @@
         <message name="IDR_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
           Please confirm your account and PIN below to allow access by Chromoting.
         </message>
+        <message name="IDR_REMOTING_HOST_PLUGIN_NAME" desc="Name of Chromoting Host plugin displayed by Chrome at about:plugins.">
+          Chromoting Host
+        </message>
+        <message name="IDR_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Preferences bundle on MacOS.">
+          Chromoting Host Preferences
+        </message>
+        <message name="IDR_MAC_PREFPANE_ICON_LABEL" desc="The name of Chromoting Host icon in Preference Pane on MacOS. The carriage return makes sure that the label is not truncated.">
+          Chromoting&#x0a;Host
+        </message>
+        <message name="IDR_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Uninstaller bundle on MacOS.">
+          Chromoting Host Uninstaller
+        </message>
       </if>
 
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDR_ACCESS_CODE">
@@ -361,9 +387,6 @@
         Disable
       </message>
       <message desc="Label for the client-side disconnect button. Clicking this button disconnects oneself from the host." name="IDR_DISCONNECT_MYSELF_BUTTON">
-        Disconnect
-      </message>
-      <message desc="Label for the host-side disconnect button, without keyboard shortcuts. Only used in case we aren't able to enable hot-key support. Clicking this button disconnects the remote user." name="IDR_DISCONNECT_OTHER_BUTTON">
         Disconnect
       </message>
       <message desc="Column header in the connection history table showing the length of time for which a connection was active, if available." name="IDR_DURATION_HEADER">

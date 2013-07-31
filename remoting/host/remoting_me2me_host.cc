@@ -64,7 +64,6 @@
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/host/token_validator_factory_impl.h"
-#include "remoting/host/ui_strings.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/jingle_glue/network_settings.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
@@ -583,9 +582,6 @@ void HostProcess::StartOnUiThread() {
   }
 #endif  // defined(OS_LINUX)
 
-  // TODO(alexeypa): Localize the UI strings. See http://crbug.com/155204.
-  UiStrings ui_strings;
-
   // Create a desktop environment factory appropriate to the build type &
   // platform.
 #if defined(OS_WIN)
@@ -602,8 +598,7 @@ void HostProcess::StartOnUiThread() {
       new Me2MeDesktopEnvironmentFactory(
           context_->network_task_runner(),
           context_->input_task_runner(),
-          context_->ui_task_runner(),
-          ui_strings);
+          context_->ui_task_runner());
 #endif  // !defined(OS_WIN)
 
   desktop_environment_factory_.reset(desktop_environment_factory);

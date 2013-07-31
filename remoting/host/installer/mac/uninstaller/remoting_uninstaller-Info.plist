@@ -12,8 +12,6 @@
 	<string>BUNDLE_ID</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>BUNDLE_NAME</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -24,8 +22,6 @@
 	<string>VERSION_FULL</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>${MACOSX_DEPLOYMENT_TARGET}.0</string>
-	<key>NSHumanReadableCopyright</key>
-	<string>COPYRIGHT_INFO</string>
 	<key>NSMainNibFile</key>
 	<string>remoting_uninstaller</string>
 	<key>NSPrincipalClass</key>
