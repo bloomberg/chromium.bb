@@ -72,7 +72,7 @@
                 // for custom callbacks.
                 "optional": true,
                 "type": "object",
-                "isInstanceOf": "global",
+                "isInstanceOf": "Window",
                 "additionalProperties": { "type": "any" },
                 "description": "The JavaScript 'window' object for the background page."
               }

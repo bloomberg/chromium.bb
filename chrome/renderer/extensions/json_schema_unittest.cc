@@ -91,4 +91,8 @@ TEST_F(JsonSchemaTest, TestCheckSchemaOverlap) {
   TestFunction("testCheckSchemaOverlap");
 }
 
+TEST_F(JsonSchemaTest, TestInstanceOf) {
+  TestFunction("testInstanceOf");
+}
+
 }  // namespace extensions

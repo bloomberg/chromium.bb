@@ -168,7 +168,7 @@ namespace app.window {
     [nodoc] static void setIcon(DOMString icon_url);
 
     // The JavaScript 'window' object for the created child.
-    [instanceOf=global] object contentWindow;
+    [instanceOf=Window] object contentWindow;
   };
 
   interface Functions {

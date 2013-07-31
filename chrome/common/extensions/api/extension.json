@@ -97,7 +97,7 @@
           "items": {
             "name": "viewGlobals",
             "type": "object",
-            "isInstanceOf": "global",
+            "isInstanceOf": "Window",
             "additionalProperties": { "type": "any" }
           }
         }
@@ -112,7 +112,7 @@
             "type": "object",
             "optional": true,
             "name": "backgroundPageGlobal",
-            "isInstanceOf": "global",
+            "isInstanceOf": "Window",
             "additionalProperties": { "type": "any" }
          }
       },
@@ -132,7 +132,7 @@
           "items": {
             "type": "object",
             "name": "tabGlobals",
-            "isInstanceOf": "global",
+            "isInstanceOf": "Window",
             "additionalProperties": { "type": "any" }
           }
         }

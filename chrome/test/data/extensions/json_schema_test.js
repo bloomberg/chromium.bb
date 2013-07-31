@@ -613,6 +613,42 @@ function testCheckSchemaOverlap() {
   AssertTrue(validator.checkSchemaOverlap(objectRefSchema, complexSchema));
 }
 
+function testInstanceOf() {
+  function Animal() {};
+  function Cat() {};
+  function Dog() {};
+  Cat.prototype = new Animal;
+  Cat.prototype.constructor = Cat;
+  Dog.prototype = new Animal;
+  Dog.prototype.constructor = Dog;
+  var cat = new Cat();
+  var dog = new Dog();
+  var num = new Number(1);
+
+  // instanceOf should check type by walking up prototype chain.
+  assertValid("", cat, {type:"object", isInstanceOf:"Cat"});
+  assertValid("", cat, {type:"object", isInstanceOf:"Animal"});
+  assertValid("", cat, {type:"object", isInstanceOf:"Object"});
+  assertValid("", dog, {type:"object", isInstanceOf:"Dog"});
+  assertValid("", dog, {type:"object", isInstanceOf:"Animal"});
+  assertValid("", dog, {type:"object", isInstanceOf:"Object"});
+  assertValid("", num, {type:"object", isInstanceOf:"Number"});
+  assertValid("", num, {type:"object", isInstanceOf:"Object"});
+
+  assertNotValid("", cat, {type:"object", isInstanceOf:"Dog"},
+                 [formatError("notInstance", ["Dog"])]);
+  assertNotValid("", dog, {type:"object", isInstanceOf:"Cat"},
+                 [formatError("notInstance", ["Cat"])]);
+  assertNotValid("", cat, {type:"object", isInstanceOf:"String"},
+                 [formatError("notInstance", ["String"])]);
+  assertNotValid("", dog, {type:"object", isInstanceOf:"String"},
+                 [formatError("notInstance", ["String"])]);
+  assertNotValid("", num, {type:"object", isInstanceOf:"Array"},
+                [formatError("notInstance", ["Array"])]);
+  assertNotValid("", num, {type:"object", isInstanceOf:"String"},
+                [formatError("notInstance", ["String"])]);
+}
+
 // Tests exposed to schema_unittest.cc.
 exports.testFormatError = testFormatError;
 exports.testComplex = testComplex;
@@ -629,3 +665,4 @@ exports.testTypeReference = testTypeReference;
 exports.testGetAllTypesForSchema = testGetAllTypesForSchema;
 exports.testIsValidSchemaType = testIsValidSchemaType;
 exports.testCheckSchemaOverlap = testCheckSchemaOverlap;
+exports.testInstanceOf = testInstanceOf;

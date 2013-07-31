@@ -42,13 +42,11 @@ var loadTypeSchema = require('utils').loadTypeSchema;
 var CHECK = requireNative('logging').CHECK;
 
 function isInstanceOfClass(instance, className) {
-  if (!instance)
-    return false;
-
-  if (Object.prototype.toString.call(instance) == "[object " + className + "]")
-    return true;
-
-  return isInstanceOfClass($Object.getPrototypeOf(instance), className);
+  while ((instance = instance.__proto__)) {
+    if (instance.constructor.name == className)
+      return true;
+  }
+  return false;
 }
 
 function isOptionalValue(value) {
