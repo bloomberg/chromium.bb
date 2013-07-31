@@ -842,6 +842,7 @@ void RenderViewContextMenu::AppendImageItems() {
                                   IDS_CONTENT_CONTEXT_COPYIMAGE);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
                                   IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
+  AppendPrintItem();
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
