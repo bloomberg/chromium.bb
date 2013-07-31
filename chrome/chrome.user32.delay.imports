@@ -23,7 +23,6 @@
     'GetTouchInputInfo@16',
     'IsTouchWindow@8',
     'RegisterTouchWindow@8',
-    'SetGestureConfig@20',
     'UnregisterTouchWindow@4',
   ],
 }

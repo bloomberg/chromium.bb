@@ -331,6 +331,8 @@
         'base/touch/touch_device_win.cc',
         'base/touch/touch_editing_controller.cc',
         'base/touch/touch_editing_controller.h',
+        'base/touch/touch_enabled.cc',
+        'base/touch/touch_enabled.h',
         'base/touch/touch_factory_x11.cc',
         'base/touch/touch_factory_x11.h',
         'base/ui_base_exports.cc',

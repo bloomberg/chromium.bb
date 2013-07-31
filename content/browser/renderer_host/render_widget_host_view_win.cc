@@ -48,6 +48,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/process_type.h"
@@ -62,6 +63,7 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/touch/touch_device.h"
+#include "ui/base/touch/touch_enabled.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/dpi.h"
@@ -407,7 +409,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       touch_state_(new WebTouchState(this)),
       pointer_down_context_(false),
       last_touch_location_(-1, -1),
-      touch_events_enabled_(false),
+      touch_events_enabled_(ui::AreTouchEventsEnabled()),
       gesture_recognizer_(ui::GestureRecognizer::Create(this)) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
@@ -926,35 +928,10 @@ void RenderWidgetHostViewWin::ProcessAckedTouchEvent(
 
 void RenderWidgetHostViewWin::UpdateDesiredTouchMode() {
   // Make sure that touch events even make sense.
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  static bool touch_mode = base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      ui::IsTouchDevicePresent() && (
-          !cmdline->HasSwitch(switches::kTouchEvents) ||
-          cmdline->GetSwitchValueASCII(switches::kTouchEvents) !=
-              switches::kTouchEventsDisabled);
-
-  if (!touch_mode)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
-
-  // Now we know that the window's current state doesn't match the desired
-  // state. If we want touch mode, then we attempt to register for touch
-  // events, and otherwise to unregister.
-  touch_events_enabled_ = RegisterTouchWindow(m_hWnd, TWF_WANTPALM) == TRUE;
-
-  if (!touch_events_enabled_) {
-    UnregisterTouchWindow(m_hWnd);
-    // Single finger panning is consistent with other windows applications.
-    const DWORD gesture_allow = GC_PAN_WITH_SINGLE_FINGER_VERTICALLY |
-                                GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
-    const DWORD gesture_block = GC_PAN_WITH_GUTTER;
-    GESTURECONFIG gc[] = {
-        { GID_ZOOM, GC_ZOOM, 0 },
-        { GID_PAN, gesture_allow , gesture_block},
-        { GID_TWOFINGERTAP, GC_TWOFINGERTAP , 0},
-        { GID_PRESSANDTAP, GC_PRESSANDTAP , 0}
-    };
-    if (!SetGestureConfig(m_hWnd, 0, arraysize(gc), gc, sizeof(GESTURECONFIG)))
-      NOTREACHED();
+  if (touch_events_enabled_) {
+    CHECK(RegisterTouchWindow(m_hWnd, TWF_WANTPALM));
   }
 }
 
@@ -2333,8 +2310,6 @@ LRESULT RenderWidgetHostViewWin::OnGestureEvent(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnGestureEvent");
 
-  // Note that as of M22, touch events are enabled by default on Windows.
-  // This code should not be reachable.
   DCHECK(!touch_events_enabled_);
   handled = FALSE;
 

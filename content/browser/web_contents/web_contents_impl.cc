@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/strings/string16.h"
@@ -81,6 +82,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/layout.h"
 #include "ui/base/touch/touch_device.h"
+#include "ui/base/touch/touch_enabled.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -559,23 +561,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       switches::kDisableGestureRequirementForMediaPlayback);
 #endif
 
-  bool touch_device_present = false;
-  touch_device_present = ui::IsTouchDevicePresent();
-  const std::string touch_enabled_switch =
-      command_line.HasSwitch(switches::kTouchEvents) ?
-      command_line.GetSwitchValueASCII(switches::kTouchEvents) :
-      switches::kTouchEventsAuto;
-
-  if (touch_enabled_switch.empty() ||
-      touch_enabled_switch == switches::kTouchEventsEnabled) {
-    prefs.touch_enabled = true;
-  } else if (touch_enabled_switch == switches::kTouchEventsAuto) {
-    prefs.touch_enabled = touch_device_present;
-  } else if (touch_enabled_switch != switches::kTouchEventsDisabled) {
-    LOG(ERROR) << "Invalid --touch-events option: " << touch_enabled_switch;
-  }
-
-  prefs.device_supports_touch = prefs.touch_enabled && touch_device_present;
+  prefs.touch_enabled = ui::AreTouchEventsEnabled();
+  prefs.device_supports_touch = prefs.touch_enabled &&
+      ui::IsTouchDevicePresent();
 #if defined(OS_ANDROID)
   prefs.device_supports_mouse = false;
 #endif

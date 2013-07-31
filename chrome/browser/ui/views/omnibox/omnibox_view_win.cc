@@ -61,6 +61,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/touch/touch_enabled.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/touch_input.h"
@@ -1441,7 +1442,8 @@ LRESULT OmniboxViewWin::OnCreate(const CREATESTRUCTW* /*create_struct*/) {
     // Enable TSF support of RichEdit.
     SetEditStyle(SES_USECTF, SES_USECTF);
   }
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if ((base::win::GetVersion() >= base::win::VERSION_WIN8) &&
+      ui::AreTouchEventsEnabled()) {
     BOOL touch_mode = RegisterTouchWindow(m_hWnd, TWF_WANTPALM);
     DCHECK(touch_mode);
   }
