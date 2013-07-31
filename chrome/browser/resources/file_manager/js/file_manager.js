@@ -392,6 +392,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         driveConnectionChangedHandler);
     driveConnectionChangedHandler();
 
+    // Set the initial focus and set it as a fallback.
+    this.document_.addEventListener('focusout', function(e) {
+      if (!e.relatedTarget)
+        this.refocus();
+    }.bind(this));
     this.refocus();
 
     this.initDataTransferOperations_();
@@ -2079,7 +2084,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.filePopupCloseCallback_();
         this.filePopupCloseCallback_ = null;
       }
-      this.refocus();
 
       // These operations have to be in the end, otherwise v8 crashes on an
       // assert. See: crbug.com/224174.
@@ -2612,7 +2616,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       parent.removeAttribute('renaming');
       parent.removeChild(this.renameInput_);
     }
-    this.refocus();
   };
 
   /**

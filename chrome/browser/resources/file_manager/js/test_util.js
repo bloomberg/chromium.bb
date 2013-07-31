@@ -338,7 +338,13 @@ test.util.async.waitAndAcceptDialog = function(contentWindow, callback) {
     if (!button)
       return false;
     button.click();
-    callback();
+    // Wait until the dialog is removed from the DOM.
+    test.util.repeatUntilTrue_(function() {
+      if (contentWindow.document.querySelector('.cr-dialog-container'))
+        return false;
+      callback();
+      return true;
+    });
     return true;
   });
 };
