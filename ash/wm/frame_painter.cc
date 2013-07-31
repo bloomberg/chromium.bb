@@ -404,9 +404,8 @@ bool FramePainter::ShouldUseMinimalHeaderStyle(Themed header_themed) const {
   // Use the minimalistic header style whenever |frame_| is maximized or
   // fullscreen EXCEPT:
   // - If the user has installed a theme with custom images for the header.
-  // - For windows whose workspace is not tracked by the workspace code (which
-  //   are used for tab dragging).
-  // - When the user is cycling through workspaces.
+  // - For windows which are not tracked by the workspace code (which are used
+  //   for tab dragging).
   return ((frame_->IsMaximized() || frame_->IsFullscreen()) &&
       header_themed == THEMED_NO &&
       GetTrackedByWorkspace(frame_->GetNativeWindow()));
@@ -456,7 +455,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   }
   header_frame_bounds_ = gfx::Rect(0, 0, view->width(), theme_frame->height());
 
-  const int kCornerRadius = 2;
+  int corner_radius = GetHeaderCornerRadius();
   SkPaint paint;
 
   if (crossfade_animation_.get() && crossfade_animation_->is_animating()) {
@@ -487,7 +486,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                   crossfade_theme_frame_overlay,
                                   paint,
                                   header_frame_bounds_,
-                                  kCornerRadius,
+                                  corner_radius,
                                   GetThemeBackgroundXInset());
 
       paint.setAlpha(new_alpha);
@@ -502,7 +501,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                               theme_frame_overlay,
                               paint,
                               header_frame_bounds_,
-                              kCornerRadius,
+                              corner_radius,
                               GetThemeBackgroundXInset());
 
   previous_theme_frame_id_ = theme_frame_id;
@@ -518,15 +517,12 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                        close_button_->y());
 
   // We don't need the extra lightness in the edges when we're at the top edge
-  // of the screen or maximized. We have the maximized check as during
-  // animations the bounds may not be at 0, but the border shouldn't be drawn.
+  // of the screen or when the header's corners are not rounded.
   //
   // TODO(sky): this isn't quite right. What we really want is a method that
   // returns bounds ignoring transforms on certain windows (such as workspaces)
   // and is relative to the root.
-  if (frame_->GetNativeWindow()->bounds().y() == 0 ||
-      frame_->IsMaximized() ||
-      frame_->IsFullscreen())
+  if (frame_->GetNativeWindow()->bounds().y() == 0 || corner_radius == 0)
     return;
 
   // Draw the top corners and edge.
@@ -812,6 +808,16 @@ int FramePainter::GetTitleOffsetX() const {
 
 int FramePainter::GetCloseButtonCenterY() const {
   return close_button_->y() + close_button_->height() / 2;
+}
+
+int FramePainter::GetHeaderCornerRadius() const {
+  // Use square corners for maximized and fullscreen windows when they are
+  // tracked by the workspace code. (Windows which are not tracked by the
+  // workspace code are used for tab dragging.)
+  bool square_corners = ((frame_->IsMaximized() || frame_->IsFullscreen())) &&
+      GetTrackedByWorkspace(frame_->GetNativeWindow());
+  const int kCornerRadius = 2;
+  return square_corners ? 0 : kCornerRadius;
 }
 
 int FramePainter::GetHeaderOpacity(

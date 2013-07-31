@@ -185,6 +185,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
                        int theme_frame_id,
                        int theme_frame_overlay_id) const;
 
+  // Returns the radius of the header's top corners.
+  int GetHeaderCornerRadius() const;
+
   // Adjust frame operations for left / right maximized modes.
   int AdjustFrameHitCodeForMaximizedModes(int hit_code);
 
