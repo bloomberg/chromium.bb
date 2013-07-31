@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GTK_MENU_LABEL_ACCELERATOR_UTIL_H_
-#define UI_BASE_GTK_MENU_LABEL_ACCELERATOR_UTIL_H_
+#ifndef UI_BASE_ACCELERATORS_MENU_LABEL_ACCELERATOR_UTIL_LINUX_H_
+#define UI_BASE_ACCELERATORS_MENU_LABEL_ACCELERATOR_UTIL_LINUX_H_
 
 #include <string>
 
@@ -26,4 +26,4 @@ UI_EXPORT std::string EscapeWindowsStyleAccelerators(const std::string& label);
 
 }  // namespace ui
 
-#endif  // UI_BASE_GTK_MENU_LABEL_ACCELERATOR_UTIL_H_
+#endif  // UI_BASE_ACCELERATORS_MENU_LABEL_ACCELERATOR_UTIL_LINUX_H_

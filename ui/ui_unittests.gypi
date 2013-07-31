@@ -136,6 +136,7 @@
       'all_sources': [
         '<@(_common_sources)',
         'base/accelerators/accelerator_manager_unittest.cc',
+        'base/accelerators/menu_label_accelerator_util_linux_unittest.cc',
         'base/clipboard/clipboard_unittest.cc',
         'base/clipboard/custom_data_helper_unittest.cc',
         'base/cocoa/base_view_unittest.mm',
@@ -153,7 +154,6 @@
         'base/events/event_unittest.cc',
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
-        'base/gtk/menu_label_accelerator_util_unittest.cc',
         'base/keycodes/usb_keycode_map_unittest.cc',
         'base/models/list_model_unittest.cc',
         'base/models/list_selection_model_unittest.cc',

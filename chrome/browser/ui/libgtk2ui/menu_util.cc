@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/skia_utils_gtk2.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/models/menu_model.h"
 
 namespace libgtk2ui {
@@ -99,8 +100,8 @@ void BuildSubmenuFromModel(ui::MenuModel* model,
   GtkWidget* menu_item = NULL;
   for (int i = 0; i < model->GetItemCount(); ++i) {
     gfx::Image icon;
-    std::string label =
-        ConvertAcceleratorsFromWindowsStyle(UTF16ToUTF8(model->GetLabelAt(i)));
+    std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
+        UTF16ToUTF8(model->GetLabelAt(i)));
 
     bool connect_to_activate = true;
 
@@ -227,7 +228,7 @@ void SetMenuItemInfo(GtkWidget* widget, void* block_activation_ptr) {
     if (model->IsVisibleAt(id)) {
       // Update the menu item label if it is dynamic.
       if (model->IsItemDynamicAt(id)) {
-        std::string label = ConvertAcceleratorsFromWindowsStyle(
+        std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
             UTF16ToUTF8(model->GetLabelAt(id)));
 
         gtk_menu_item_set_label(GTK_MENU_ITEM(widget), label.c_str());

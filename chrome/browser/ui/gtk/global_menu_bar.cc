@@ -21,8 +21,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
+#include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/accelerators/platform_accelerator_gtk.h"
-#include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 struct GlobalMenuBarCommand {

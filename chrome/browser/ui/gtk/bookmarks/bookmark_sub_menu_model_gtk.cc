@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/gtk/menu_label_accelerator_util.h"
+#include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"

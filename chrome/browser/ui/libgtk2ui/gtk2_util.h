@@ -31,10 +31,6 @@ std::string GetDesktopName(base::Environment* env);
 // crucial to its functionality.
 void SetAlwaysShowImage(GtkWidget* image_menu_item);
 
-// Change windows accelerator style to GTK style. (GTK uses _ for
-// accelerators.  Windows uses & with && as an escape for &.)
-std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label);
-
 guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator);
 
 GdkModifierType GetGdkModifierForAccelerator(

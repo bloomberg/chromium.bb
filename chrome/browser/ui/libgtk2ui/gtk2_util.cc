@@ -35,33 +35,6 @@ void CommonInitFromCommandLine(const CommandLine& command_line,
   }
 }
 
-// Replaces all ampersands (as used in our grd files to indicate mnemonics)
-// to |target|, except ampersands appearing in pairs which are replaced by
-// a single ampersand. Any underscores get replaced with two underscores as
-// is needed by GTK.
-std::string ConvertAmpersandsTo(const std::string& label,
-                                const std::string& target) {
-  std::string ret;
-  ret.reserve(label.length() * 2);
-  for (size_t i = 0; i < label.length(); ++i) {
-    if ('_' == label[i]) {
-      ret.push_back('_');
-      ret.push_back('_');
-    } else if ('&' == label[i]) {
-      if (i + 1 < label.length() && '&' == label[i + 1]) {
-        ret.push_back('&');
-        ++i;
-      } else {
-        ret.append(target);
-      }
-    } else {
-      ret.push_back(label[i]);
-    }
-  }
-
-  return ret;
-}
-
 }  // namespace
 
 namespace libgtk2ui {
@@ -90,10 +63,6 @@ std::string GetDesktopName(base::Environment* env) {
 void SetAlwaysShowImage(GtkWidget* image_menu_item) {
   gtk_image_menu_item_set_always_show_image(
       GTK_IMAGE_MENU_ITEM(image_menu_item), TRUE);
-}
-
-std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
-  return ConvertAmpersandsTo(label, "_");
 }
 
 guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator) {

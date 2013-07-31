@@ -14,7 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/generated_resources.h"
-#include "ui/base/gtk/menu_label_accelerator_util.h"
+#include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/gtk/menu_label_accelerator_util.h"
+#include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 
 #include "base/strings/string_util.h"
 
