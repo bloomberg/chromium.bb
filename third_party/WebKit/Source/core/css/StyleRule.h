@@ -71,8 +71,6 @@ public:
 
     PassRefPtr<StyleRuleBase> copy() const;
 
-    int sourceLine() const { return m_sourceLine; }
-
     void deref()
     {
         if (derefBase())
@@ -84,8 +82,8 @@ public:
     PassRefPtr<CSSRule> createCSSOMWrapper(CSSRule* parentRule) const;
 
 protected:
-    StyleRuleBase(Type type, signed sourceLine = 0) : m_type(type), m_sourceLine(sourceLine) { }
-    StyleRuleBase(const StyleRuleBase& o) : WTF::RefCountedBase(), m_type(o.m_type), m_sourceLine(o.m_sourceLine) { }
+    StyleRuleBase(Type type) : m_type(type) { }
+    StyleRuleBase(const StyleRuleBase& o) : WTF::RefCountedBase(), m_type(o.m_type) { }
 
     ~StyleRuleBase() { }
 
@@ -95,13 +93,12 @@ private:
     PassRefPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const;
 
     unsigned m_type : 5;
-    signed m_sourceLine : 27;
 };
 
 class StyleRule : public StyleRuleBase {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<StyleRule> create(int sourceLine) { return adoptRef(new StyleRule(sourceLine)); }
+    static PassRefPtr<StyleRule> create() { return adoptRef(new StyleRule()); }
 
     ~StyleRule();
 
@@ -118,7 +115,7 @@ public:
     static unsigned averageSizeInBytes();
 
 private:
-    StyleRule(int sourceLine);
+    StyleRule();
     StyleRule(const StyleRule&);
 
     RefPtr<StylePropertySet> m_properties;

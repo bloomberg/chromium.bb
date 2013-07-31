@@ -1153,12 +1153,10 @@ selector_list:
         $$ = parser->reusableSelectorVector();
         $$->shrink(0);
         $$->append(parser->sinkFloatingSelector($1));
-        parser->updateLastSelectorLineAndPosition();
     }
     | selector_list at_selector_end ',' maybe_space before_selector_group_item selector %prec UNIMPORTANT_TOK {
         $$ = $1;
         $$->append(parser->sinkFloatingSelector($6));
-        parser->updateLastSelectorLineAndPosition();
     }
    ;
 

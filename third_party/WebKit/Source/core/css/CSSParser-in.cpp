@@ -261,7 +261,6 @@ CSSParser::CSSParser(const CSSParserContext& context, UseCounter* counter)
     , m_token(0)
     , m_lineNumber(0)
     , m_tokenStartLineNumber(0)
-    , m_lastSelectorLineNumber(0)
     , m_ruleHeaderType(CSSRuleSourceData::UNKNOWN_RULE)
     , m_allowImportRules(true)
     , m_allowNamespaceDeclarations(true)
@@ -11115,7 +11114,7 @@ StyleRuleBase* CSSParser::createStyleRule(Vector<OwnPtr<CSSParserSelector> >* se
     StyleRule* result = 0;
     if (selectors) {
         m_allowImportRules = m_allowNamespaceDeclarations = false;
-        RefPtr<StyleRule> rule = StyleRule::create(m_lastSelectorLineNumber);
+        RefPtr<StyleRule> rule = StyleRule::create();
         rule->parserAdoptSelectorVector(*selectors);
         if (m_hasFontFaceOnlyValues)
             deleteFontFaceOnlyValues();
@@ -11396,11 +11395,6 @@ void CSSParser::invalidBlockHit()
 {
     if (m_styleSheet && !m_hadSyntacticallyValidCSSRule)
         m_styleSheet->setHasSyntacticallyValidCSSHeader(false);
-}
-
-void CSSParser::updateLastSelectorLineAndPosition()
-{
-    m_lastSelectorLineNumber = m_lineNumber + m_startPosition.m_line.zeroBasedInt();
 }
 
 void CSSParser::startRuleHeader(CSSRuleSourceData::Type ruleType)

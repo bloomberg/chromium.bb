@@ -191,8 +191,8 @@ unsigned StyleRule::averageSizeInBytes()
     return sizeof(StyleRule) + sizeof(CSSSelector) + StylePropertySet::averageSizeInBytes();
 }
 
-StyleRule::StyleRule(int sourceLine)
-    : StyleRuleBase(Style, sourceLine)
+StyleRule::StyleRule()
+    : StyleRuleBase(Style)
 {
 }
 
@@ -248,7 +248,7 @@ void StyleRulePage::setProperties(PassRefPtr<StylePropertySet> properties)
 }
 
 StyleRuleFontFace::StyleRuleFontFace()
-    : StyleRuleBase(FontFace, 0)
+    : StyleRuleBase(FontFace)
 {
 }
 
@@ -275,7 +275,7 @@ void StyleRuleFontFace::setProperties(PassRefPtr<StylePropertySet> properties)
 }
 
 StyleRuleGroup::StyleRuleGroup(Type type, Vector<RefPtr<StyleRuleBase> >& adoptRule)
-    : StyleRuleBase(type, 0)
+    : StyleRuleBase(type)
 {
     m_childRules.swap(adoptRule);
 }
@@ -340,7 +340,7 @@ StyleRuleRegion::StyleRuleRegion(const StyleRuleRegion& o)
 }
 
 StyleRuleViewport::StyleRuleViewport()
-    : StyleRuleBase(Viewport, 0)
+    : StyleRuleBase(Viewport)
 {
     ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
 }
@@ -369,7 +369,7 @@ void StyleRuleViewport::setProperties(PassRefPtr<StylePropertySet> properties)
 }
 
 StyleRuleFilter::StyleRuleFilter(const String& filterName)
-    : StyleRuleBase(Filter, 0)
+    : StyleRuleBase(Filter)
     , m_filterName(filterName)
 {
 }

@@ -355,8 +355,6 @@ public:
     void setReusableRegionSelectorVector(Vector<OwnPtr<CSSParserSelector> >* selectors);
     Vector<OwnPtr<CSSParserSelector> >* reusableRegionSelectorVector() { return &m_reusableRegionSelectorVector; }
 
-    void updateLastSelectorLineAndPosition();
-
     void clearProperties();
 
     PassRefPtr<ImmutableStylePropertySet> createStylePropertySet();
@@ -596,7 +594,6 @@ private:
     TextPosition m_startPosition;
     int m_lineNumber;
     int m_tokenStartLineNumber;
-    int m_lastSelectorLineNumber;
     CSSRuleSourceData::Type m_ruleHeaderType;
     unsigned m_ruleHeaderStartOffset;
     int m_ruleHeaderStartLineNumber;
