@@ -237,12 +237,13 @@ class SupportsAddRefAndRelease {
 // common pattern for refcounted types. It does this even though no attempt to
 // instantiate Base is made.  We disable the warning for this definition.
 #if defined(OS_WIN)
+#pragma warning(push)
 #pragma warning(disable:4624)
 #endif
   struct Base : public T, public BaseMixin {
   };
 #if defined(OS_WIN)
-#pragma warning(default:4624)
+#pragma warning(pop)
 #endif
 
   template <void(BaseMixin::*)(void)> struct Helper {};
