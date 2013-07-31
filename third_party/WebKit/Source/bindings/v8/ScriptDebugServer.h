@@ -35,6 +35,7 @@
 #include "InspectorBackendDispatcher.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "core/inspector/ScriptBreakpoint.h"
+#include "core/inspector/ScriptDebugListener.h"
 #include <v8-debug.h>
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -136,6 +137,7 @@ protected:
 
 private:
     PassRefPtr<JavaScriptCallFrame> wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit);
+    bool executeSkipPauseRequest(ScriptDebugListener::SkipPauseRequest, v8::Handle<v8::Object> executionState);
 
     class ScriptPreprocessor;
     OwnPtr<ScriptPreprocessor> m_scriptPreprocessor;

@@ -70,7 +70,16 @@ public:
     virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) = 0;
     virtual void didContinue() = 0;
 
-    virtual bool shouldSkipPause(RefPtr<JavaScriptCallFrame>& topFrame) = 0;
+    enum SkipPauseRequest {
+        NoSkip,
+        Continue,
+        StepInto,
+        StepOut
+    };
+
+    virtual SkipPauseRequest shouldSkipExceptionPause(RefPtr<JavaScriptCallFrame>& topFrame) = 0;
+    virtual SkipPauseRequest shouldSkipBreakpointPause(RefPtr<JavaScriptCallFrame>& topFrame) = 0;
+    virtual SkipPauseRequest shouldSkipStepPause(RefPtr<JavaScriptCallFrame>& topFrame) = 0;
 };
 
 } // namespace WebCore

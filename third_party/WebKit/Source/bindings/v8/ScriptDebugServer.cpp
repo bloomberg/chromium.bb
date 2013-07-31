@@ -57,6 +57,8 @@ private:
     OwnPtr<ScriptDebugServer::Task> m_task;
 };
 
+const char stepIntoV8MethodName[] = "stepIntoStatement";
+const char stepOutV8MethodName[] = "stepOutOfFunction";
 }
 
 v8::Local<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* functionName, int argc, v8::Handle<v8::Value> argv[])
@@ -272,7 +274,7 @@ void ScriptDebugServer::stepIntoStatement()
     ASSERT(isPaused());
     v8::HandleScope handleScope(m_isolate);
     v8::Handle<v8::Value> argv[] = { m_executionState.newLocal(m_isolate) };
-    callDebuggerMethod("stepIntoStatement", 1, argv);
+    callDebuggerMethod(stepIntoV8MethodName, 1, argv);
     continueProgram();
 }
 
@@ -290,7 +292,7 @@ void ScriptDebugServer::stepOutOfFunction()
     ASSERT(isPaused());
     v8::HandleScope handleScope(m_isolate);
     v8::Handle<v8::Value> argv[] = { m_executionState.newLocal(m_isolate) };
-    callDebuggerMethod("stepOutOfFunction", 1, argv);
+    callDebuggerMethod(stepOutV8MethodName, 1, argv);
     continueProgram();
 }
 
@@ -462,6 +464,24 @@ void ScriptDebugServer::v8DebugEventCallback(const v8::Debug::EventDetails& even
     thisPtr->handleV8DebugEvent(eventDetails);
 }
 
+bool ScriptDebugServer::executeSkipPauseRequest(ScriptDebugListener::SkipPauseRequest request, v8::Handle<v8::Object> executionState)
+{
+    const char* v8MethodName;
+    switch (request) {
+    case ScriptDebugListener::NoSkip:
+        return false;
+    case ScriptDebugListener::Continue:
+        return true;
+    case ScriptDebugListener::StepInto:
+        v8MethodName = stepIntoV8MethodName;
+    case ScriptDebugListener::StepOut:
+        v8MethodName = stepOutV8MethodName;
+    }
+    v8::Handle<v8::Value> argv[] = { executionState };
+    callDebuggerMethod(stepIntoV8MethodName, 1, argv);
+    return true;
+}
+
 void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails)
 {
     v8::DebugEvent event = eventDetails.GetEvent();
@@ -517,8 +537,7 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             if (!stackTrace->GetFrameCount())
                 return;
             RefPtr<JavaScriptCallFrame> topFrame = wrapCallFrames(eventDetails.GetExecutionState(), 1);
-            if (topFrame && listener->shouldSkipPause(topFrame)) {
-                // Silently continue on this break.
+            if (topFrame && executeSkipPauseRequest(listener->shouldSkipExceptionPause(topFrame), eventDetails.GetExecutionState())) {
                 return;
             }
             v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
@@ -531,6 +550,17 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
             v8::Handle<v8::Value> hitBreakpoints = V8ScriptRunner::callInternalFunction(getBreakpointNumbersFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
             ASSERT(hitBreakpoints->IsArray());
+
+            RefPtr<JavaScriptCallFrame> topFrame = wrapCallFrames(eventDetails.GetExecutionState(), 1);
+            if (topFrame) {
+                ScriptDebugListener::SkipPauseRequest skipRequest;
+                if (v8::Handle<v8::Array>::Cast(hitBreakpoints)->Length())
+                    skipRequest = listener->shouldSkipBreakpointPause(topFrame);
+                else
+                    skipRequest = listener->shouldSkipStepPause(topFrame);
+                if (executeSkipPauseRequest(skipRequest, eventDetails.GetExecutionState()))
+                    return;
+            }
 
             handleProgramBreak(eventDetails, v8::Handle<v8::Value>(), hitBreakpoints.As<v8::Array>());
         }
