@@ -101,6 +101,23 @@ TEST_F(BluetoothDeviceWinTest, GetServiceRecords) {
   EXPECT_EQ(2, service_records_->size());
   EXPECT_STREQ(kTestAudioSdpUuid, (*service_records_)[0]->uuid().c_str());
   EXPECT_STREQ(kTestVideoSdpUuid, (*service_records_)[1]->uuid().c_str());
+
+  BluetoothDeviceWin* device_win =
+      reinterpret_cast<BluetoothDeviceWin*>(device_.get());
+
+  const BluetoothServiceRecord* audio_device =
+      device_win->GetServiceRecord(kTestAudioSdpUuid);
+  ASSERT_TRUE(audio_device != NULL);
+  EXPECT_EQ((*service_records_)[0], audio_device);
+
+  const BluetoothServiceRecord* video_device =
+      device_win->GetServiceRecord(kTestVideoSdpUuid);
+  ASSERT_TRUE(video_device != NULL);
+  EXPECT_EQ((*service_records_)[1], video_device);
+
+  const BluetoothServiceRecord* invalid_device =
+      device_win->GetServiceRecord(kTestVideoSdpAddress);
+  EXPECT_TRUE(invalid_device == NULL);
 }
 
 TEST_F(BluetoothDeviceWinTest, ProvidesServiceWithName) {

@@ -221,7 +221,8 @@ const BluetoothServiceRecord* BluetoothDeviceWin::GetServiceRecord(
   for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
        iter != service_record_list_.end();
        ++iter) {
-    return *iter;
+    if ((*iter)->uuid().compare(uuid) == 0)
+      return *iter;
   }
   return NULL;
 }

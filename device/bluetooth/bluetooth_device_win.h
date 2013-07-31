@@ -94,7 +94,7 @@ class BluetoothDeviceWin : public BluetoothDevice {
   // The Bluetooth address of the device.
   std::string address_;
 
-  // Tracked device state, updated by the adapter managing the lifecyle of
+  // Tracked device state, updated by the adapter managing the lifecycle of
   // the device.
   bool paired_;
   bool connected_;

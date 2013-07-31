@@ -108,7 +108,7 @@ class BluetoothDevice {
     //
     // This is used for Bluetooth 2.0 and earlier keyboard devices, the
     // |pincode| will always be a six-digit numeric in the range 000000-999999
-    // for compatibilty with later specifications.
+    // for compatibility with later specifications.
     virtual void DisplayPinCode(BluetoothDevice* device,
                                 const std::string& pincode) = 0;
 
@@ -186,7 +186,7 @@ class BluetoothDevice {
   virtual uint16 GetDeviceID() const = 0;
 
   // Returns the name of the device suitable for displaying, this may
-  // be a synthesied string containing the address and localized type name
+  // be a synthesized string containing the address and localized type name
   // if the device has no obtained name.
   virtual string16 GetName() const;
 
@@ -323,10 +323,10 @@ class BluetoothDevice {
 
   // Disconnects the device, terminating the low-level ACL connection
   // and any application connections using it, and then discards link keys
-  // and other pairing information. The device object remainds valid until
-  // returing from the calling function, after which it should be assumed to
+  // and other pairing information. The device object remains valid until
+  // returning from the calling function, after which it should be assumed to
   // have been deleted. If the request fails, |error_callback| will be called.
-  // There is no callback for success beause this object is often deleted
+  // There is no callback for success because this object is often deleted
   // before that callback would be called.
   virtual void Forget(const ErrorCallback& error_callback) = 0;
 
