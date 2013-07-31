@@ -72,4 +72,5 @@ class Redirector(object):
     '''
     for root, dirs, files in self._file_system.Walk(self._root_path + '/'):
       if 'redirects.json' in files:
-        self._cache.GetFromFile('%s/redirects.json' % root)
+        self._cache.GetFromFile('%s/redirects.json' % posixpath.join(
+            self._root_path, root))

@@ -26,6 +26,8 @@ _TEST_DATA_NEW = {
   },
 }
 
+identity = lambda _, x: x
+
 class ChainedCompiledFileSystemTest(unittest.TestCase):
   def setUp(self):
     object_store_creator = ObjectStoreCreator(start_empty=False)
@@ -38,9 +40,9 @@ class ChainedCompiledFileSystemTest(unittest.TestCase):
     self._chained_factory = ChainedCompiledFileSystem.Factory(
         [(self._patched_factory, self._file_system),
          (self._base_factory, base_file_system)])
-    self._base_compiled_fs = self._base_factory.CreateIdentity(TestFileSystem)
-    self._chained_compiled_fs = self._chained_factory.CreateIdentity(
-        TestFileSystem)
+    self._base_compiled_fs = self._base_factory.Create(identity, TestFileSystem)
+    self._chained_compiled_fs = self._chained_factory.Create(
+        identity, TestFileSystem)
 
   def testGetFromFile(self):
     self.assertEqual(self._chained_compiled_fs.GetFromFile('a.txt'),

@@ -37,13 +37,6 @@ class CompiledFileSystem(object):
                                 create_object_store('file'),
                                 create_object_store('list'))
 
-    def CreateIdentity(self, cls):
-      '''Handy helper to get or create the identity compiled file system.
-      GetFromFile will return the file's contents.
-      GetFromFileListing will return the directory list.
-      '''
-      return self.Create(lambda _, x: x, cls)
-
   def __init__(self,
                file_system,
                populate_function,

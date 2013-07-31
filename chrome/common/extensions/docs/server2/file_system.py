@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-
 class FileNotFoundError(Exception):
   def __init__(self, filename):
     Exception.__init__(self, filename)
@@ -79,19 +77,25 @@ class FileSystem(object):
     '''Recursively walk the directories in a file system, starting with root.
     Emulates os.walk from the standard os module.
     '''
-    if not root.endswith('/'):
-      root += '/'
+    basepath = root.rstrip('/') + '/'
 
-    dirs, files = [], []
+    def walk(root):
+      if not root.endswith('/'):
+        root += '/'
 
-    for f in self.ReadSingle(root):
-      if f.endswith('/'):
-        dirs.append(f)
-      else:
-        files.append(f)
+      dirs, files = [], []
 
-    yield (root.rstrip('/'), dirs, files)
+      for f in self.ReadSingle(root):
+        if f.endswith('/'):
+          dirs.append(f)
+        else:
+          files.append(f)
 
-    for d in dirs:
-      for walkinfo in self.Walk(root + d):
-        yield walkinfo
+      yield root[len(basepath):].rstrip('/'), dirs, files
+
+      for d in dirs:
+        for walkinfo in walk(root + d):
+          yield walkinfo
+
+    for walkinfo in walk(root):
+      yield walkinfo

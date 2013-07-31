@@ -50,6 +50,7 @@ class ServerInstance(object):
 
     self.api_list_data_source_factory = APIListDataSource.Factory(
         self.compiled_host_fs_factory,
+        self.host_file_system,
         svn_constants.API_PATH,
         svn_constants.PUBLIC_TEMPLATE_PATH)
 
@@ -118,13 +119,10 @@ class ServerInstance(object):
 
     self.example_zipper = ExampleZipper(
         self.compiled_host_fs_factory,
+        self.host_file_system,
         svn_constants.DOCS_PATH)
 
     self.path_canonicalizer = PathCanonicalizer(self.compiled_host_fs_factory)
-
-    # TODO(kalman): delete content cache.
-    self.content_cache = self.compiled_host_fs_factory.CreateIdentity(
-        ServerInstance)
 
     self.redirector = Redirector(
         self.compiled_host_fs_factory,

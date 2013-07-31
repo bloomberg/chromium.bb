@@ -18,18 +18,21 @@ class APIListDataSource(object):
   will contain non-API articles.
   """
   class Factory(object):
-    def __init__(self, compiled_fs_factory, api_path, public_path):
+    def __init__(self, compiled_fs_factory, file_system, api_path, public_path):
       self._compiled_fs = compiled_fs_factory.Create(self._ListAPIs,
                                                      APIListDataSource)
-      self._identity_fs = compiled_fs_factory.CreateIdentity(APIListDataSource)
+      self._file_system = file_system
       def Normalize(string):
         return string if string.endswith('/') else (string + '/')
       self._api_path = Normalize(api_path)
       self._public_path = Normalize(public_path)
 
     def _GetAPIsInSubdirectory(self, api_names, doc_type):
-      public_templates = self._identity_fs.GetFromFileListing(
-          '%s%s/' % (self._public_path, doc_type))
+      public_templates = []
+      for root, _, files in self._file_system.Walk(
+          self._public_path + doc_type):
+        public_templates.extend(
+            ('%s/%s' % (root, name)).lstrip('/') for name in files)
       template_names = set(os.path.splitext(name)[0]
                            for name in public_templates)
       experimental_apis = []

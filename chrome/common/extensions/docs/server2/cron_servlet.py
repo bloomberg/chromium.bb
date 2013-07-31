@@ -137,12 +137,12 @@ class CronServlet(Servlet):
       # Extension examples have zip files too. Well, so do apps, but the app
       # file system doesn't get the Offline treatment so they don't need cron.
       if not IsDevServer():
-        manifest_json = '/manifest.json'
-        example_zips = [
-            '%s.zip' % filename[:-len(manifest_json)]
-            for filename in server_instance.content_cache.GetFromFileListing(
-                svn_constants.EXAMPLES_PATH)
-            if filename.endswith(manifest_json)]
+        manifest_json = 'manifest.json'
+        example_zips = []
+        for root, _, files in server_instance.host_file_system.Walk(
+            svn_constants.EXAMPLES_PATH):
+          example_zips.extend(
+              root + '.zip' for name in files if name == manifest_json)
         logging.info('cron: rendering %s example zips...' % len(example_zips))
         start_time = time.time()
         try:

@@ -10,5 +10,5 @@ def CreateURLsFromPaths(file_system, directory, urlprefix):
   '''
   for root, _, files in file_system.Walk(directory):
     for f in files:
-      url = posixpath.join(urlprefix, root[len(directory) + 1:], f)
-      yield url, '%s/%s' % (root, f)
+      url = posixpath.join(urlprefix, root, f)
+      yield url, posixpath.join(directory, root, f)

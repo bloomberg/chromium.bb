@@ -21,6 +21,7 @@ class ExampleZipperTest(unittest.TestCase):
         object_store_creator)
     self._example_zipper = ExampleZipper(
         CompiledFileSystem.Factory(self._file_system, object_store_creator),
+        self._file_system,
         'example_zipper')
 
   def testCreateZip(self):

@@ -66,13 +66,13 @@ class RenderServlet(Servlet):
         content_type = 'application/zip'
       elif path.startswith('extensions/examples/'):
         mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
-        content = server_instance.content_cache.GetFromFile(
+        content = server_instance.host_file_system.ReadSingle(
             '%s/%s' % (svn_constants.DOCS_PATH, path[len('extensions/'):]),
             binary=_IsBinaryMimetype(mimetype))
         content_type = mimetype
       elif path.startswith('static/'):
         mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
-        content = server_instance.content_cache.GetFromFile(
+        content = server_instance.host_file_system.ReadSingle(
             ('%s/%s' % (svn_constants.DOCS_PATH, path)),
             binary=_IsBinaryMimetype(mimetype))
         content_type = mimetype

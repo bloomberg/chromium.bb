@@ -2,19 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
 from io import BytesIO
-import re
 from zipfile import ZipFile
-
-import compiled_file_system as compiled_fs
 
 class ExampleZipper(object):
   '''This class creates a zip file given a samples directory.
   '''
-  def __init__(self, compiled_fs_factory, base_path):
+  def __init__(self, compiled_fs_factory, file_system, base_path):
     self._base_path = base_path.rstrip('/')
-    self._file_cache = compiled_fs_factory.CreateIdentity(ExampleZipper)
+    self._file_system = file_system
     self._zip_cache = compiled_fs_factory.Create(self._MakeZipFile,
                                                  ExampleZipper)
 
@@ -26,7 +22,7 @@ class ExampleZipper(object):
     try:
       for file_name in files:
         file_path = '%s%s' % (base_dir, file_name)
-        file_contents = self._file_cache.GetFromFile(file_path, binary=True)
+        file_contents = self._file_system.ReadSingle(file_path, binary=True)
         if isinstance(file_contents, unicode):
           # Data is sometimes already cached as unicode.
           file_contents = file_contents.encode('utf8')
