@@ -33,7 +33,7 @@ class FirstRunTest : public testing::Test {
 };
 
 TEST_F(FirstRunTest, RemoveSentinel) {
-  EXPECT_TRUE(CreateSentinel());
+  EXPECT_TRUE(internal::CreateSentinel());
   EXPECT_TRUE(base::PathExists(sentinel_path_));
 
   EXPECT_TRUE(RemoveSentinel());

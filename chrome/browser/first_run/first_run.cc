@@ -442,6 +442,13 @@ void SetDefaultBrowser(installer::MasterPreferences* install_prefs){
   }
 }
 
+bool CreateSentinel() {
+  base::FilePath first_run_sentinel;
+  if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
+    return false;
+  return file_util::WriteFile(first_run_sentinel, "", 0) != -1;
+}
+
 // -- Platform-specific functions --
 
 #if !defined(OS_LINUX) && !defined(OS_BSD)
@@ -469,42 +476,27 @@ bool IsChromeFirstRun() {
   if (internal::first_run_ != internal::FIRST_RUN_UNKNOWN)
     return internal::first_run_ == internal::FIRST_RUN_TRUE;
 
-  enum FirstRunState {
-    CANCEL_FIRST_RUN,
-    NOT_FIRST_RUN,
-    IS_FIRST_RUN,
-  };
-
-  FirstRunState first_run_state = NOT_FIRST_RUN;
+  internal::first_run_ = internal::FIRST_RUN_FALSE;
 
   base::FilePath first_run_sentinel;
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kForceFirstRun)) {
-    first_run_state = IS_FIRST_RUN;
+    internal::first_run_ = internal::FIRST_RUN_TRUE;
   } else if (command_line->HasSwitch(switches::kNoFirstRun)) {
-    first_run_state = CANCEL_FIRST_RUN;
+    internal::first_run_ = internal::FIRST_RUN_CANCEL;
   } else if (internal::GetFirstRunSentinelFilePath(&first_run_sentinel) &&
              !base::PathExists(first_run_sentinel)) {
-    first_run_state = IS_FIRST_RUN;
-  }
-
-  if (first_run_state == IS_FIRST_RUN || first_run_state == CANCEL_FIRST_RUN)
-    CreateSentinel();
-
-  if (first_run_state == IS_FIRST_RUN) {
     internal::first_run_ = internal::FIRST_RUN_TRUE;
-    return true;
-  } else {
-    internal::first_run_ = internal::FIRST_RUN_FALSE;
-    return false;
   }
+
+  return internal::first_run_ == internal::FIRST_RUN_TRUE;
 }
 
-bool CreateSentinel() {
-  base::FilePath first_run_sentinel;
-  if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
-    return false;
-  return file_util::WriteFile(first_run_sentinel, "", 0) != -1;
+void CreateSentinelIfNeeded() {
+  if (IsChromeFirstRun() ||
+      internal::first_run_ == internal::FIRST_RUN_CANCEL) {
+    internal::CreateSentinel();
+  }
 }
 
 std::string GetPingDelayPrefName() {

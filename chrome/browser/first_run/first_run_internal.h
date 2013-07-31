@@ -23,7 +23,9 @@ namespace internal {
 enum FirstRunState {
   FIRST_RUN_UNKNOWN,  // The state is not tested or set yet.
   FIRST_RUN_TRUE,
-  FIRST_RUN_FALSE
+  FIRST_RUN_FALSE,
+  FIRST_RUN_CANCEL,  // This shouldn't be considered first run but the sentinel
+                     // should be created anyways.
 };
 
 // This variable should only be accessed through IsChromeFirstRun().
@@ -47,6 +49,9 @@ void SetupMasterPrefsFromInstallPrefs(
     MasterPrefs* out_prefs);
 
 void SetDefaultBrowser(installer::MasterPreferences* install_prefs);
+
+// Creates the sentinel file that signals that chrome has been configured.
+bool CreateSentinel();
 
 // -- Platform-specific functions --
 

@@ -1238,6 +1238,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         NOTREACHED();
     }
   }
+
+  first_run::CreateSentinelIfNeeded();
 #endif  // !defined(OS_ANDROID)
 
   // Desktop construction occurs here, (required before profile creation).

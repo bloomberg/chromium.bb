@@ -160,9 +160,6 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
   if (dialog_)
     gtk_widget_hide_all(dialog_);
 
-  // Mark that first run has ran.
-  first_run::CreateSentinel();
-
   // Check if user has opted into reporting.
   if (report_crashes_ &&
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(report_crashes_))) {

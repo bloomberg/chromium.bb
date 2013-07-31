@@ -91,8 +91,10 @@ struct MasterPrefs {
 // Returns true if this is the first time chrome is run for this user.
 bool IsChromeFirstRun();
 
-// Creates the sentinel file that signals that chrome has been configured.
-bool CreateSentinel();
+// Creates the first run sentinel if needed. This should only be called after
+// the process singleton has been grabbed by the current process
+// (http://crbug.com/264694).
+void CreateSentinelIfNeeded();
 
 // Get RLZ ping delay pref name.
 std::string GetPingDelayPrefName();
