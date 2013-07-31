@@ -413,7 +413,9 @@ void SimpleEntryImpl::MakeUninitialized() {
   std::memset(crc32s_, 0, sizeof(crc32s_));
   std::memset(have_written_, 0, sizeof(have_written_));
   std::memset(data_size_, 0, sizeof(data_size_));
-  std::memset(crc_check_state_, 0, sizeof(crc_check_state_));
+  for (size_t i = 0; i < arraysize(crc_check_state_); ++i) {
+    crc_check_state_[i] = CRC_CHECK_NEVER_READ_AT_ALL;
+  }
 }
 
 void SimpleEntryImpl::ReturnEntryToCaller(Entry** out_entry) {
@@ -853,6 +855,11 @@ void SimpleEntryImpl::ReadOperationComplete(
   DCHECK_EQ(STATE_IO_PENDING, state_);
   DCHECK(read_crc32);
   DCHECK(result);
+
+  if (*result > 0 &&
+      crc_check_state_[stream_index] == CRC_CHECK_NEVER_READ_AT_ALL) {
+    crc_check_state_[stream_index] = CRC_CHECK_NEVER_READ_TO_END;
+  }
 
   if (*result > 0 && crc32s_end_offset_[stream_index] == offset) {
     uint32 current_crc = offset == 0 ? crc32(0, Z_NULL, 0)

@@ -15364,9 +15364,10 @@ other types of suffix sets.
 </enum>
 
 <enum name="CheckCRCResult" type="int">
-  <int value="0" label="Was never read to end"/>
+  <int value="0" label="Stream was never read to end"/>
   <int value="1" label="CRC check not done"/>
   <int value="2" label="CRC check done"/>
+  <int value="3" label="Stream was never read at all"/>
 </enum>
 
 <enum name="ChromeDownloadCountType" type="int">

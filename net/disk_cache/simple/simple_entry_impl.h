@@ -123,7 +123,8 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
     CRC_CHECK_NEVER_READ_TO_END = 0,
     CRC_CHECK_NOT_DONE = 1,
     CRC_CHECK_DONE = 2,
-    CRC_CHECK_MAX = 3,
+    CRC_CHECK_NEVER_READ_AT_ALL = 3,
+    CRC_CHECK_MAX = 4,
   };
 
   // Used in histograms.
