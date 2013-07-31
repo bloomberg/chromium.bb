@@ -39,9 +39,6 @@ namespace fileapi {
 
 namespace {
 
-const char kChromeScheme[] = "chrome";
-const char kExtensionScheme[] = "chrome-extension";
-
 const char kOpenFileSystemLabel[] = "FileSystem.OpenFileSystem";
 const char kOpenFileSystemDetailLabel[] = "FileSystem.OpenFileSystemDetail";
 const char kOpenFileSystemDetailNonThrottledLabel[] =
@@ -60,7 +57,6 @@ enum FileSystemError {
 
 const char kTemporaryOriginsCountLabel[] = "FileSystem.TemporaryOriginsCount";
 const char kPersistentOriginsCountLabel[] = "FileSystem.PersistentOriginsCount";
-const char kSyncableOriginsCountLabel[] = "FileSystem.SyncableOriginsCount";
 
 // Restricted names.
 // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
@@ -109,11 +105,8 @@ void OpenFileSystemOnFileThread(
     OpenFileSystemMode mode,
     base::PlatformFileError* error_ptr) {
   DCHECK(error_ptr);
-
   const bool create = (mode == OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
-  base::FilePath root_path =
-      file_util->GetDirectoryForOriginAndType(
-          origin_url, type, create, error_ptr);
+  file_util->GetDirectoryForOriginAndType(origin_url, type, create, error_ptr);
   if (*error_ptr != base::PLATFORM_FILE_OK) {
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
                               kCreateDirectoryError,
@@ -179,17 +172,11 @@ void SandboxFileSystemBackend::OpenFileSystem(
         enable_temporary_file_system_in_incognito_)) {
     // TODO(kinuko): return an isolated temporary directory.
     callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
-    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
-                              kIncognito,
-                              kFileSystemErrorMax);
     return;
   }
 
   if (!IsAllowedScheme(origin_url)) {
     callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
-    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
-                              kInvalidSchemeError,
-                              kFileSystemErrorMax);
     return;
   }
 
@@ -361,9 +348,6 @@ void SandboxFileSystemBackend::GetOriginsForTypeOnFileThread(
       break;
     case kFileSystemTypePersistent:
       UMA_HISTOGRAM_COUNTS(kPersistentOriginsCountLabel, origins->size());
-      break;
-    case kFileSystemTypeSyncable:
-      UMA_HISTOGRAM_COUNTS(kSyncableOriginsCountLabel, origins->size());
       break;
     default:
       break;
