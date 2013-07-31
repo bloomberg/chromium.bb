@@ -276,8 +276,11 @@ cr.define('options', function() {
     // Update tab title.
     this.setTitle_(overlay.title);
 
-    // Change focus to the overlay if any other control was focused before.
-    if (document.activeElement != document.body)
+    // Change focus to the overlay if any other control was focused by keyboard
+    // before.
+    if (document.activeElement != document.body &&
+        document.documentElement.classList.contains(
+            cr.ui.FocusOutlineManager.CLASS_NAME))
       overlay.focus();
 
     $('searchBox').setAttribute('aria-hidden', true);
@@ -641,7 +644,7 @@ cr.define('options', function() {
   OptionsPage.initialize = function() {
     chrome.send('coreOptionsInitialize');
     uber.onContentFrameLoaded();
-
+    cr.ui.FocusOutlineManager.forDocument(document);
     document.addEventListener('scroll', this.handleScroll_.bind(this));
 
     // Trigger the scroll handler manually to set the initial state.

@@ -6,6 +6,12 @@ html.loading * {
   -webkit-transition-duration: 0 !important;
 }
 
+html:not(.focus-outline-visible)
+:enabled:focus:-webkit-any(input[type='checkbox'], input[type='radio']) {
+  /* Cancel border-color for :focus specified in widgets.css. */
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
 /* Developer mode */
 
 #dev-controls {

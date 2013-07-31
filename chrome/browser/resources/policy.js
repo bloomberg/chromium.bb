@@ -408,6 +408,7 @@ cr.define('policy', function() {
      */
     initialize: function() {
       uber.onContentFrameLoaded();
+      cr.ui.FocusOutlineManager.forDocument(document);
 
       this.mainSection = $('main-section');
       this.policyTables = {};

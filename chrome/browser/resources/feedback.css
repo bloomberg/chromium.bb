@@ -47,6 +47,13 @@
   margin-bottom: -0.25em;
 }
 
+html:not(.focus-outline-visible)
+:enabled:focus:-webkit-any(input[type='checkbox'], input[type='radio'],
+    input[type='submit']) {
+  /* Cancel border-color for :focus specified in widgets.css. */
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
 .thumbnail-list {
   margin-bottom: 1em;
   margin-top: 1em;

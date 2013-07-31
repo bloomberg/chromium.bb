@@ -89,7 +89,7 @@ cr.define('extensions', function() {
      */
     initialize: function() {
       uber.onContentFrameLoaded();
-
+      cr.ui.FocusOutlineManager.forDocument(document);
       measureCheckboxStrings();
 
       // Set the title.

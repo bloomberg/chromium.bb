@@ -436,6 +436,12 @@ list.autocomplete-suggestions:not([hasElementFocus]) > [lead][selected] {
   background-color: rgb(187, 206, 233);
 }
 
+html:not(.focus-outline-visible)
+:enabled:focus:-webkit-any(input[type='checkbox'], input[type='radio']) {
+  /* Cancel border-color for :focus specified in widgets.css. */
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
 html:not([hasFlashPlugin]) .flash-plugin-area,
 /* If the Flash plug-in supports the NPP_ClearSiteData API, we don't need to
  * show the link to the Flash storage settings manager:

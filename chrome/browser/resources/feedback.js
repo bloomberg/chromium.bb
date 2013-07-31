@@ -280,7 +280,7 @@ function changeToCurrent() {
  * Window onload handler, sets up the page.
  */
 function load() {
-  cr.ui.FocusManager.disableMouseFocusOnButtons();
+  cr.ui.FocusOutlineManager.forDocument(document);
   if ($('attach-file'))
     $('attach-file').addEventListener('change', onFileSelected);
 
