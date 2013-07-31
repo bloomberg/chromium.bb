@@ -304,6 +304,7 @@ const SkColor kProgressBarSliceBorderColor = SkColorSetRGB(110, 188, 249);
       [self wrapText:notification_->message()
             forField:title_
        maxNumberOfLines:message_center::kMessageExpandedLineLimit])];
+  [message_ setHidden:NO];
   [message_ sizeToFit];
   NSRect messageFrame = [message_ frame];
   messageFrame.origin.y =
@@ -316,6 +317,11 @@ const SkColor kProgressBarSliceBorderColor = SkColorSetRGB(110, 188, 249);
       notification->items();
   NSRect listFrame = NSZeroRect;
   if (items.size() > 0) {
+    // If there are list items, then the message_ view should not be displayed.
+    [message_ setHidden:YES];
+    messageFrame.origin.y = titleFrame.origin.y;
+    messageFrame.size.height = 0;
+
     listFrame = [self currentContentRect];
     listFrame.origin.y = 0;
     listFrame.size.height = 0;
@@ -347,7 +353,7 @@ const SkColor kProgressBarSliceBorderColor = SkColorSetRGB(110, 188, 249);
         message_center::kTextTopPadding - messageTopGap;
     listFrame.size.height = y;
     listFrame.origin.y =
-        NSMinY(messageFrame) - listTopPadding - NSHeight(listFrame);
+        NSMinY(titleFrame) - listTopPadding - NSHeight(listFrame);
     [listItemView_ setFrame:listFrame];
     [[self view] addSubview:listItemView_];
   }

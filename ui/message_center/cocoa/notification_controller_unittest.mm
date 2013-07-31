@@ -277,8 +277,8 @@ TEST_F(NotificationControllerTest, List) {
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_BASE_FORMAT,
           "an_id",
-          string16(),
-          string16(),
+          UTF8ToUTF16("Notification Title"),
+          UTF8ToUTF16("Notification Message - should be hidden"),
           gfx::Image(),
           string16(),
           std::string(),
@@ -291,7 +291,10 @@ TEST_F(NotificationControllerTest, List) {
                                                messageCenter:&message_center]);
   [controller view];
 
+  EXPECT_FALSE([[controller titleView] isHidden]);
+  EXPECT_TRUE([[controller messageView] isHidden]);
+
   EXPECT_EQ(2u, [[[controller listItemView] subviews] count]);
-  EXPECT_TRUE(NSMaxY([[controller listItemView] frame]) <
-              NSMinY([[controller messageView] frame]));
+  EXPECT_LT(NSMaxY([[controller listItemView] frame]),
+            NSMinY([[controller titleView] frame]));
 }

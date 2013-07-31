@@ -43,7 +43,7 @@ MESSAGE_CENTER_EXPORT
   // The title of the message.
   base::scoped_nsobject<NSTextField> title_;
 
-  // Body text of the message.
+  // Body text of the message. Hidden for list notifications.
   base::scoped_nsobject<NSTextField> message_;
 
   // Container for optional list item views.
