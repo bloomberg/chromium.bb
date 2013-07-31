@@ -43,6 +43,9 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
                                  const std::string& new_key,
                                  Callback callback));
   MOCK_METHOD1(AsyncMountGuest, void(Callback callback));
+  MOCK_METHOD3(AsyncMountPublic, void(const std::string& public_mount_id,
+                                      int flags,
+                                      Callback callback));
   MOCK_METHOD2(AsyncRemove, void(const std::string& user_email,
                                  Callback callback));
   MOCK_METHOD1(AsyncTpmAttestationCreateEnrollRequest,

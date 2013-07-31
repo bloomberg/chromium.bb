@@ -91,6 +91,17 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
             "Couldn't initiate async mount of cryptohome."));
   }
 
+  virtual void AsyncMountPublic(const std::string& public_mount_id,
+                                int flags,
+                                Callback callback) OVERRIDE {
+    DBusThreadManager::Get()->GetCryptohomeClient()->
+        AsyncMountPublic(public_mount_id, flags, base::Bind(
+            &AsyncMethodCallerImpl::RegisterAsyncCallback,
+            weak_ptr_factory_.GetWeakPtr(),
+            callback,
+            "Couldn't initiate async mount public of cryptohome."));
+  }
+
   virtual void AsyncRemove(const std::string& user_email,
                            Callback callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->

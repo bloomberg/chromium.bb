@@ -219,6 +219,22 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
+  virtual void AsyncMountPublic(const std::string& public_mount_id,
+                                int flags,
+                                const AsyncMethodCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeAsyncMountPublic);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(public_mount_id);
+    writer.AppendBool(flags & cryptohome::CREATE_IF_MISSING);
+    writer.AppendBool(flags & cryptohome::ENSURE_EPHEMERAL);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // CryptohomeClient override.
   virtual void TpmIsReady(const BoolDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmIsReady);
@@ -925,6 +941,13 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void AsyncMountGuest(const AsyncMethodCallback& callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback, false);
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncMountPublic(const std::string& public_mount_id,
+                                int flags,
+                                const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback, false);
   }
 

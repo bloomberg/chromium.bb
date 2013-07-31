@@ -117,6 +117,12 @@ void FakeCryptohomeClient::AsyncMountGuest(
     const AsyncMethodCallback& callback) {
 }
 
+void FakeCryptohomeClient::AsyncMountPublic(
+    const std::string& public_mount_id,
+    int flags,
+    const AsyncMethodCallback& callback) {
+}
+
 bool FakeCryptohomeClient::CallTpmIsBeingOwnedAndBlock(bool* owning) {
   return false;
 }

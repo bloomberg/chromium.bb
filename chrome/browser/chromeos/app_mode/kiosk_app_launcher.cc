@@ -26,6 +26,12 @@ using content::BrowserThread;
 
 namespace chromeos {
 
+namespace {
+
+void IgnoreResult(bool mount_success, cryptohome::MountError mount_error) {}
+
+}  // namespace
+
 // static
 KioskAppLauncher* KioskAppLauncher::running_instance_ = NULL;
 
@@ -101,11 +107,9 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
  public:
   ProfileLoader(KioskAppManager* kiosk_app_manager,
                 KioskAppLauncher* kiosk_app_launcher)
-      : kiosk_app_launcher_(kiosk_app_launcher) {
-    KioskAppManager::App app;
-    if (!kiosk_app_manager->GetApp(kiosk_app_launcher->app_id_, &app))
-      NOTREACHED() << "Logging into nonexistent kiosk-app account.";
-    user_id_ = app.user_id;
+      : kiosk_app_launcher_(kiosk_app_launcher),
+        user_id_(kiosk_app_launcher->user_id_) {
+    CHECK(!user_id_.empty());
   }
 
   virtual ~ProfileLoader() {
@@ -160,6 +164,9 @@ KioskAppLauncher::KioskAppLauncher(KioskAppManager* kiosk_app_manager,
     : kiosk_app_manager_(kiosk_app_manager),
       app_id_(app_id),
       remove_attempted_(false) {
+  KioskAppManager::App app;
+  CHECK(kiosk_app_manager_->GetApp(app_id_, &app));
+  user_id_ = app.user_id;
 }
 
 KioskAppLauncher::~KioskAppLauncher() {}
@@ -200,12 +207,14 @@ void KioskAppLauncher::ReportLaunchResult(KioskAppLaunchError::Error error) {
 }
 
 void KioskAppLauncher::StartMount() {
-  const std::string token =
-      CryptohomeLibrary::Get()->EncryptWithSystemSalt(app_id_);
-
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
+  // Nuke old home that uses |app_id_| as cryptohome user id.
+  // TODO(xiyuan): Remove this after all clients migrated to new home.
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
       app_id_,
-      token,
+      base::Bind(&IgnoreResult));
+
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountPublic(
+      user_id_,
       cryptohome::CREATE_IF_MISSING,
       base::Bind(&KioskAppLauncher::MountCallback,
                  base::Unretained(this)));
@@ -234,7 +243,7 @@ void KioskAppLauncher::MountCallback(bool mount_success,
 
 void KioskAppLauncher::AttemptRemove() {
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      app_id_,
+      user_id_,
       base::Bind(&KioskAppLauncher::RemoveCallback,
                  base::Unretained(this)));
 }

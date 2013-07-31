@@ -57,6 +57,7 @@ class KioskAppLauncher {
 
   KioskAppManager* kiosk_app_manager_;
   const std::string app_id_;
+  std::string user_id_;
 
   scoped_ptr<CryptohomedChecker> crytohomed_checker;
   scoped_ptr<ProfileLoader> profile_loader_;

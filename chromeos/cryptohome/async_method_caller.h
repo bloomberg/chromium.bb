@@ -87,6 +87,14 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // |callback| will be called with status info on completion.
   virtual void AsyncMountGuest(Callback callback) = 0;
 
+  // Asks cryptohomed to asynchrounously try to find the cryptohome for
+  // |public_mount_id| and then mount it using a passhash derived from
+  // |public_mount_id| and a secret. See AsyncMount for possible values for
+  // |flags|.
+  virtual void AsyncMountPublic(const std::string& public_mount_id,
+                                int flags,
+                                Callback callback) = 0;
+
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then nuke it.
   virtual void AsyncRemove(const std::string& user_email,
