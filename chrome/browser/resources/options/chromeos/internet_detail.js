@@ -155,8 +155,10 @@ cr.define('options.internet', function() {
         if (data.providerApnList.value.length > 0) {
           var iApn = 0;
           data.apn.apn = data.providerApnList.value[iApn].apn;
-          data.apn.username = data.providerApnList.value[iApn].username;
-          data.apn.password = data.providerApnList.value[iApn].password;
+          var username = data.providerApnList.value[iApn].username;
+          var password = data.providerApnList.value[iApn].password;
+          data.apn.username = username ? username : '';
+          data.apn.password = password ? password : '';
           chrome.send('setApn', [data.servicePath,
                                  String(data.apn.apn),
                                  String(data.apn.username),
@@ -231,8 +233,10 @@ cr.define('options.internet', function() {
           data.selectedApn = apnSelector.selectedIndex;
         } else {
           $('cellular-apn').value = data.apn.apn;
-          $('cellular-apn-username').value = data.apn.username;
-          $('cellular-apn-password').value = data.apn.password;
+          var username = data.apn.username;
+          var password = data.apn.password;
+          $('cellular-apn-username').value = username ? username : '';
+          $('cellular-apn-password').value = password ? password : '';
 
           updateHidden('.apn-list-view', true);
           updateHidden('.apn-details-view', false);
@@ -1078,20 +1082,20 @@ cr.define('options.internet', function() {
         var apnList = data.providerApnList.value;
         for (var i = 0; i < apnList.length; i++) {
           var option = document.createElement('option');
-          var name = apnList[i].localizedName;
-          if (name == '' && apnList[i].name != '')
-            name = apnList[i].name;
-          if (name == '')
-            name = apnList[i].apn;
-          else
-            name = name + ' (' + apnList[i].apn + ')';
-          option.textContent = name;
+          var localizedName = apnList[i].localizedName;
+          var name = localizedName ? localizedName : apnList[i].name;
+          var apn = apnList[i].apn;
+          option.textContent = name ? (name + ' (' + apn + ')') : apn;
           option.value = i;
-          if ((data.apn.apn == apnList[i].apn &&
+          // data.apn and data.lastGoodApn will always be defined, however
+          // data.apn.apn and data.lastGoodApn.apn may not be. This is not a
+          // problem, as apnList[i].apn will always be defined and the
+          // comparisons below will work as expected.
+          if ((data.apn.apn == apn &&
                data.apn.username == apnList[i].username &&
                data.apn.password == apnList[i].password) ||
-              (data.apn.apn == '' &&
-               data.lastGoodApn.apn == apnList[i].apn &&
+              (!data.apn.apn &&
+               data.lastGoodApn.apn == apn &&
                data.lastGoodApn.username == apnList[i].username &&
                data.lastGoodApn.password == apnList[i].password)) {
             data.selectedApn = i;
@@ -1099,7 +1103,7 @@ cr.define('options.internet', function() {
           // Insert new option before "other" option.
           apnSelector.add(option, otherOption);
         }
-        if (data.selectedApn == -1 && data.apn.apn != '') {
+        if (data.selectedApn == -1 && data.apn.apn) {
           var option = document.createElement('option');
           option.textContent = data.apn.apn;
           option.value = -1;
