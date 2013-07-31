@@ -419,7 +419,7 @@ void ShillPropertyHandler::UpdateAvailableTechnologies(
     const base::ListValue& technologies) {
   available_technologies_.clear();
   NET_LOG_EVENT("AvailableTechnologiesChanged",
-                base::StringPrintf("Size: %"PRIuS, technologies.GetSize()));
+                base::StringPrintf("Size: %" PRIuS, technologies.GetSize()));
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;
@@ -433,7 +433,7 @@ void ShillPropertyHandler::UpdateEnabledTechnologies(
     const base::ListValue& technologies) {
   enabled_technologies_.clear();
   NET_LOG_EVENT("EnabledTechnologiesChanged",
-                base::StringPrintf("Size: %"PRIuS, technologies.GetSize()));
+                base::StringPrintf("Size: %" PRIuS, technologies.GetSize()));
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;
@@ -448,7 +448,7 @@ void ShillPropertyHandler::UpdateUninitializedTechnologies(
     const base::ListValue& technologies) {
   uninitialized_technologies_.clear();
   NET_LOG_EVENT("UninitializedTechnologiesChanged",
-                base::StringPrintf("Size: %"PRIuS, technologies.GetSize()));
+                base::StringPrintf("Size: %" PRIuS, technologies.GetSize()));
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;

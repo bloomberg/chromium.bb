@@ -110,7 +110,7 @@ TEST_F(NetworkEventLogTest, TestMaxNetworkEvents) {
   for (size_t i = 0; i < entries_to_add; ++i) {
     network_event_log::internal::AddEntry(
         "test", 1, LOG_LEVEL_EVENT,
-        base::StringPrintf("event_%"PRIuS, i), "");
+        base::StringPrintf("event_%" PRIuS, i), "");
   }
   std::string output = GetLogString(OLDEST_FIRST, 0);
   size_t output_lines = CountLines(output);

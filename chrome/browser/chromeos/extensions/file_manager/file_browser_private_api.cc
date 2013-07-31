@@ -1026,7 +1026,7 @@ bool GetMountPointsFunction::RunImpl() {
 
   log_string += "]";
 
-  drive::util::Log("%s[%d] succeeded. (results: '%s', %"PRIuS" mount points)",
+  drive::util::Log("%s[%d] succeeded. (results: '%s', %" PRIuS " mount points)",
                    name().c_str(),
                    request_id(),
                    log_string.c_str(),

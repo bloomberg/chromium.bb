@@ -138,7 +138,7 @@ std::string FormatEntry(const base::FilePath& path,
 
   const drive::PlatformFileInfoProto& file_info = entry.file_info();
   StringAppendF(&out, "  file_info\n");
-  StringAppendF(&out, "    size: %"PRId64"\n", file_info.size());
+  StringAppendF(&out, "    size: %" PRId64 "\n", file_info.size());
   StringAppendF(&out, "    is_directory: %d\n", file_info.is_directory());
   StringAppendF(&out, "    is_symbolic_link: %d\n",
                 file_info.is_symbolic_link());
@@ -177,7 +177,7 @@ std::string FormatEntry(const base::FilePath& path,
     StringAppendF(&out, "  directory_info\n");
     const drive::DirectorySpecificInfo& directory_specific_info =
         entry.directory_specific_info();
-    StringAppendF(&out, "    changestamp: %"PRId64"\n",
+    StringAppendF(&out, "    changestamp: %" PRId64 "\n",
                   directory_specific_info.changestamp());
   }
 

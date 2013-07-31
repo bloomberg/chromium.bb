@@ -382,7 +382,7 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
                                             const base::ListValue& entries) {
   ManagedStateList* managed_list = GetManagedList(type);
   NET_LOG_DEBUG(base::StringPrintf("UpdateManagedList:%d", type),
-                base::StringPrintf("%"PRIuS, entries.GetSize()));
+                base::StringPrintf("%" PRIuS, entries.GetSize()));
   // Create a map of existing entries. Assumes all entries in |managed_list|
   // are unique.
   std::map<std::string, ManagedState*> managed_map;
@@ -552,7 +552,7 @@ void NetworkStateHandler::ManagedStateListChanged(
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     // Notify observers that the list of networks has changed.
     NET_LOG_EVENT("NetworkListChanged",
-                  base::StringPrintf("Size:%"PRIuS, network_list_.size()));
+                  base::StringPrintf("Size:%" PRIuS, network_list_.size()));
     FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                       NetworkListChanged());
     // The list order may have changed, so check if the default network changed.
@@ -560,12 +560,12 @@ void NetworkStateHandler::ManagedStateListChanged(
       OnDefaultNetworkChanged();
   } else if (type == ManagedState::MANAGED_TYPE_FAVORITE) {
     NET_LOG_DEBUG("FavoriteListChanged",
-                  base::StringPrintf("Size:%"PRIuS, favorite_list_.size()));
+                  base::StringPrintf("Size:%" PRIuS, favorite_list_.size()));
     FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                       NetworkListChanged());
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     NET_LOG_DEBUG("DeviceListChanged",
-                  base::StringPrintf("Size:%"PRIuS, device_list_.size()));
+                  base::StringPrintf("Size:%" PRIuS, device_list_.size()));
     FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                       DeviceListChanged());
   } else {
@@ -669,7 +669,7 @@ void NetworkStateHandler::NetworkPropertiesUpdated(
 void NetworkStateHandler::ScanCompleted(const std::string& type) {
   size_t num_callbacks = scan_complete_callbacks_.count(type);
   NET_LOG_EVENT("ScanCompleted",
-                base::StringPrintf("%s:%"PRIuS, type.c_str(), num_callbacks));
+                base::StringPrintf("%s:%" PRIuS, type.c_str(), num_callbacks));
   if (num_callbacks == 0)
     return;
   ScanCallbackList& callback_list = scan_complete_callbacks_[type];

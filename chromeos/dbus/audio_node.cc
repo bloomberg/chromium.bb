@@ -39,7 +39,7 @@ std::string AudioNode::ToString() const {
                       "is_input = %s ",
                       is_input ? "true" : "false");
   base::StringAppendF(&result,
-                      "id = 0x%"PRIx64" ",
+                      "id = 0x%" PRIx64 " ",
                       id);
   base::StringAppendF(&result,
                       "device_name = %s ",
