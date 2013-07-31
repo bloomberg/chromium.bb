@@ -214,6 +214,11 @@ public:
     // Animate a scale into the specified find-in-page rect.
     virtual void zoomToFindInPageRect(const WebRect&) = 0;
 
+    // Animate a scale into the specified rect where multiple targets were
+    // found from previous tap gesture.
+    // Returns false if it doesn't do any zooming.
+    virtual bool zoomToMultipleTargetsRect(const WebRect&) = 0;
+
 
     // Zoom ----------------------------------------------------------------
 

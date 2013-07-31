@@ -191,6 +191,9 @@ static const float doubleTapZoomContentMinimumMargin = 2;
 static const double doubleTapZoomAnimationDurationInSeconds = 0.25;
 static const float doubleTapZoomAlreadyLegibleRatio = 1.2f;
 
+static const double multipleTargetsZoomAnimationDurationInSeconds = 0.25;
+static const double findInPageAnimationDurationInSeconds = 0;
+
 // Constants for viewport anchoring on resize.
 static const float viewportAnchorXCoord = 0.5f;
 static const float viewportAnchorYCoord = 0;
@@ -384,9 +387,9 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_exitFullscreenPageScaleFactor(0)
     , m_doubleTapZoomPageScaleFactor(0)
     , m_doubleTapZoomPending(false)
-    , m_enableFakeDoubleTapAnimationForTesting(false)
-    , m_fakeDoubleTapPageScaleFactor(0)
-    , m_fakeDoubleTapUseAnchor(false)
+    , m_enableFakePageScaleAnimationForTesting(false)
+    , m_fakePageScaleAnimationPageScaleFactor(0)
+    , m_fakePageScaleAnimationUseAnchor(false)
     , m_contextMenuAllowed(false)
     , m_doingDragAndDrop(false)
     , m_ignoreInputEvents(false)
@@ -771,7 +774,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     case WebInputEvent::GestureDoubleTap:
         if (m_webSettings->doubleTapToZoomEnabled() && minimumPageScaleFactor() != maximumPageScaleFactor()) {
             m_client->cancelScheduledContentIntents();
-            animateZoomAroundPoint(platformEvent.position(), DoubleTap);
+            animateDoubleTapZoom(platformEvent.position());
         }
         // GestureDoubleTap is currently only used by Android for zooming. For WebCore,
         // GestureTap with tap count = 2 is used instead. So we drop GestureDoubleTap here.
@@ -822,10 +825,10 @@ bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool u
     if (useAnchor && newScale == pageScaleFactor())
         return false;
 
-    if (m_enableFakeDoubleTapAnimationForTesting) {
-        m_fakeDoubleTapTargetPosition = targetPosition;
-        m_fakeDoubleTapUseAnchor = useAnchor;
-        m_fakeDoubleTapPageScaleFactor = newScale;
+    if (m_enableFakePageScaleAnimationForTesting) {
+        m_fakePageScaleAnimationTargetPosition = targetPosition;
+        m_fakePageScaleAnimationUseAnchor = useAnchor;
+        m_fakePageScaleAnimationPageScaleFactor = newScale;
     } else {
         if (!m_layerTreeView)
             return false;
@@ -834,9 +837,9 @@ bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool u
     return true;
 }
 
-void WebViewImpl::enableFakeDoubleTapAnimationForTesting(bool enable)
+void WebViewImpl::enableFakePageScaleAnimationForTesting(bool enable)
 {
-    m_enableFakeDoubleTapAnimationForTesting = enable;
+    m_enableFakePageScaleAnimationForTesting = enable;
 }
 
 WebViewBenchmarkSupport* WebViewImpl::benchmarkSupport()
@@ -1062,15 +1065,14 @@ bool WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
     return true;
 }
 
-WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, AutoZoomType zoomType)
+WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, bool ignoreClipping)
 {
     if (!mainFrameImpl())
         return WebRect();
 
     // Use the rect-based hit test to find the node.
     IntPoint point = mainFrameImpl()->frameView()->windowToContents(IntPoint(rect.x, rect.y));
-    HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent
-            | ((zoomType == FindInPage) ? HitTestRequest::IgnoreClipping : 0);
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent | (ignoreClipping ? HitTestRequest::IgnoreClipping : 0);
     HitTestResult result = mainFrameImpl()->frame()->eventHandler()->hitTestResultAtPoint(point, hitType, IntSize(rect.width, rect.height));
 
     Node* node = result.innerNonSharedNode();
@@ -1122,21 +1124,12 @@ WebRect WebViewImpl::widenRectWithinPageBounds(const WebRect& source, int target
     return WebRect(newX, source.y, newWidth, source.height);
 }
 
-void WebViewImpl::computeScaleAndScrollForHitRect(const WebRect& hitRect, AutoZoomType zoomType, float& scale, WebPoint& scroll, bool& isAnchor)
+void WebViewImpl::computeScaleAndScrollForBlockRect(const WebRect& blockRect, float padding, float& scale, WebPoint& scroll, bool& doubleTapShouldZoomOut)
 {
     scale = pageScaleFactor();
     scroll.x = scroll.y = 0;
-    WebRect targetRect = hitRect;
-    // Padding only depends on page scale when triggered by manually tapping
-    int padding = (zoomType == DoubleTap) ? touchPointPadding : nonUserInitiatedPointPadding;
-    if (targetRect.isEmpty())
-        targetRect.width = targetRect.height = padding;
-    WebRect rect = computeBlockBounds(targetRect, zoomType);
-    if (zoomType == FindInPage && rect.isEmpty()) {
-        // Keep current scale (no need to scroll as x,y will normally already
-        // be visible). FIXME: Revisit this if it isn't always true.
-        return;
-    }
+
+    WebRect rect = blockRect;
 
     bool scaleUnchanged = true;
     if (!rect.isEmpty()) {
@@ -1173,46 +1166,40 @@ void WebViewImpl::computeScaleAndScrollForHitRect(const WebRect& hitRect, AutoZo
     bool stillAtPreviousDoubleTapScale = (pageScaleFactor() == m_doubleTapZoomPageScaleFactor
         && m_doubleTapZoomPageScaleFactor != minimumPageScaleFactor())
         || m_doubleTapZoomPending;
-    if (zoomType == DoubleTap && (rect.isEmpty() || scaleUnchanged || stillAtPreviousDoubleTapScale)) {
-        // Zoom out to minimum scale.
-        scale = minimumPageScaleFactor();
-        scroll = WebPoint(hitRect.x, hitRect.y);
-        isAnchor = true;
+
+    doubleTapShouldZoomOut = rect.isEmpty() || scaleUnchanged || stillAtPreviousDoubleTapScale;
+
+    // FIXME: If this is being called for auto zoom during find in page,
+    // then if the user manually zooms in it'd be nice to preserve the
+    // relative increase in zoom they caused (if they zoom out then it's ok
+    // to zoom them back in again). This isn't compatible with our current
+    // double-tap zoom strategy (fitting the containing block to the screen)
+    // though.
+
+    float screenWidth = m_size.width / scale;
+    float screenHeight = m_size.height / scale;
+
+    // Scroll to vertically align the block.
+    if (rect.height < screenHeight) {
+        // Vertically center short blocks.
+        rect.y -= 0.5 * (screenHeight - rect.height);
     } else {
-        // FIXME: If this is being called for auto zoom during find in page,
-        // then if the user manually zooms in it'd be nice to preserve the
-        // relative increase in zoom they caused (if they zoom out then it's ok
-        // to zoom them back in again). This isn't compatible with our current
-        // double-tap zoom strategy (fitting the containing block to the screen)
-        // though.
+        // Ensure position we're zooming to (+ padding) isn't off the bottom of
+        // the screen.
+        rect.y = max<float>(rect.y, blockRect.y + padding - screenHeight);
+    } // Otherwise top align the block.
 
-        float screenWidth = m_size.width / scale;
-        float screenHeight = m_size.height / scale;
-
-        // Scroll to vertically align the block.
-        if (rect.height < screenHeight) {
-            // Vertically center short blocks.
-            rect.y -= 0.5 * (screenHeight - rect.height);
-        } else {
-            // Ensure position we're zooming to (+ padding) isn't off the bottom of
-            // the screen.
-            rect.y = max<float>(rect.y, hitRect.y + padding - screenHeight);
-        } // Otherwise top align the block.
-
-        // Do the same thing for horizontal alignment.
-        if (rect.width < screenWidth)
-            rect.x -= 0.5 * (screenWidth - rect.width);
-        else
-            rect.x = max<float>(rect.x, hitRect.x + padding - screenWidth);
-        scroll.x = rect.x;
-        scroll.y = rect.y;
-        isAnchor = false;
-    }
+    // Do the same thing for horizontal alignment.
+    if (rect.width < screenWidth)
+        rect.x -= 0.5 * (screenWidth - rect.width);
+    else
+        rect.x = max<float>(rect.x, blockRect.x + padding - screenWidth);
+    scroll.x = rect.x;
+    scroll.y = rect.y;
 
     scale = clampPageScaleFactorToLimits(scale);
     scroll = mainFrameImpl()->frameView()->windowToContents(scroll);
-    if (!isAnchor)
-        scroll = clampOffsetAtScale(scroll, scale);
+    scroll = clampOffsetAtScale(scroll, scale);
 }
 
 static bool invokesHandCursor(Node* node, bool shiftKey, Frame* frame)
@@ -1271,22 +1258,29 @@ void WebViewImpl::enableTapHighlight(const PlatformGestureEvent& tapEvent)
     m_linkHighlight = LinkHighlight::create(touchNode, this);
 }
 
-void WebViewImpl::animateZoomAroundPoint(const IntPoint& point, AutoZoomType zoomType)
+void WebViewImpl::animateDoubleTapZoom(const IntPoint& point)
 {
     if (!mainFrameImpl())
         return;
 
+    WebRect rect(point.x(), point.y(), touchPointPadding, touchPointPadding);
+    WebRect blockBounds = computeBlockBounds(rect, false);
+
     float scale;
     WebPoint scroll;
-    bool isAnchor;
-    WebPoint webPoint = point;
-    computeScaleAndScrollForHitRect(WebRect(webPoint.x, webPoint.y, 0, 0), zoomType, scale, scroll, isAnchor);
+    bool doubleTapShouldZoomOut;
 
-    bool isDoubleTap = (zoomType == DoubleTap);
-    double durationInSeconds = isDoubleTap ? doubleTapZoomAnimationDurationInSeconds : 0;
-    bool isAnimating = startPageScaleAnimation(scroll, isAnchor, scale, durationInSeconds);
+    computeScaleAndScrollForBlockRect(blockBounds, touchPointPadding, scale, scroll, doubleTapShouldZoomOut);
 
-    if (isDoubleTap && isAnimating) {
+    bool isAnimating;
+
+    if (doubleTapShouldZoomOut) {
+        isAnimating = startPageScaleAnimation(mainFrameImpl()->frameView()->windowToContents(point), true, minimumPageScaleFactor(), doubleTapZoomAnimationDurationInSeconds);
+    } else {
+        isAnimating = startPageScaleAnimation(scroll, false, scale, doubleTapZoomAnimationDurationInSeconds);
+    }
+
+    if (isAnimating) {
         m_doubleTapZoomPageScaleFactor = scale;
         m_doubleTapZoomPending = true;
     }
@@ -1294,7 +1288,42 @@ void WebViewImpl::animateZoomAroundPoint(const IntPoint& point, AutoZoomType zoo
 
 void WebViewImpl::zoomToFindInPageRect(const WebRect& rect)
 {
-    animateZoomAroundPoint(IntRect(rect).center(), FindInPage);
+    if (!mainFrameImpl())
+        return;
+
+    WebRect blockBounds = computeBlockBounds(rect, true);
+
+    if (blockBounds.isEmpty()) {
+        // Keep current scale (no need to scroll as x,y will normally already
+        // be visible). FIXME: Revisit this if it isn't always true.
+        return;
+    }
+
+    float scale;
+    WebPoint scroll;
+    bool doubleTapShouldZoomOut;
+
+    computeScaleAndScrollForBlockRect(blockBounds, nonUserInitiatedPointPadding, scale, scroll, doubleTapShouldZoomOut);
+
+    startPageScaleAnimation(scroll, false, scale, findInPageAnimationDurationInSeconds);
+}
+
+bool WebViewImpl::zoomToMultipleTargetsRect(const WebRect& rect)
+{
+    if (!mainFrameImpl())
+        return false;
+
+    float scale;
+    WebPoint scroll;
+    bool doubleTapShouldZoomOut;
+
+    computeScaleAndScrollForBlockRect(rect, nonUserInitiatedPointPadding, scale, scroll, doubleTapShouldZoomOut);
+
+    if (scale <= pageScaleFactor())
+        return false;
+
+    startPageScaleAnimation(scroll, false, scale, multipleTargetsZoomAnimationDurationInSeconds);
+    return true;
 }
 
 void WebViewImpl::numberOfWheelEventHandlersChanged(unsigned numberOfWheelHandlers)

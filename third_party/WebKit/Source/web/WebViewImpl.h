@@ -127,10 +127,6 @@ class WebViewImpl : public WebView
     , public WebCore::PagePopupDriver
     , public PageWidgetEventHandler {
 public:
-    enum AutoZoomType {
-        DoubleTap,
-        FindInPage,
-    };
 
     // WebWidget methods:
     virtual void close();
@@ -225,6 +221,7 @@ public:
     virtual void zoomLimitsChanged(double minimumZoomLevel,
                                    double maximumZoomLevel);
     virtual void setInitialPageScaleOverride(float);
+    virtual bool zoomToMultipleTargetsRect(const WebRect&);
     virtual float pageScaleFactor() const;
     virtual void setPageScaleFactorPreservingScrollOffset(float);
     virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin);
@@ -528,17 +525,18 @@ public:
     // a plugin can update its own zoom, say because of its own UI.
     void fullFramePluginZoomLevelChanged(double zoomLevel);
 
-    void computeScaleAndScrollForHitRect(const WebRect& hitRect, AutoZoomType, float& scale, WebPoint& scroll, bool& isAnchor);
+    void computeScaleAndScrollForBlockRect(const WebRect& blockRect, float padding, float& scale, WebPoint& scroll, bool& doubleTapShouldZoomOut);
     WebCore::Node* bestTapNode(const WebCore::PlatformGestureEvent& tapEvent);
     void enableTapHighlight(const WebCore::PlatformGestureEvent& tapEvent);
     void computeScaleAndScrollForFocusedNode(WebCore::Node* focusedNode, float& scale, WebCore::IntPoint& scroll, bool& needAnimation);
-    void animateZoomAroundPoint(const WebCore::IntPoint&, AutoZoomType);
 
-    void enableFakeDoubleTapAnimationForTesting(bool);
+    void animateDoubleTapZoom(const WebCore::IntPoint&);
+
+    void enableFakePageScaleAnimationForTesting(bool);
     bool fakeDoubleTapAnimationPendingForTesting() const { return m_doubleTapZoomPending; }
-    WebCore::IntPoint fakeDoubleTapTargetPositionForTesting() const { return m_fakeDoubleTapTargetPosition; }
-    float fakeDoubleTapPageScaleFactorForTesting() const { return m_fakeDoubleTapPageScaleFactor; }
-    bool fakeDoubleTapUseAnchorForTesting() const { return m_fakeDoubleTapUseAnchor; }
+    WebCore::IntPoint fakePageScaleAnimationTargetPositionForTesting() const { return m_fakePageScaleAnimationTargetPosition; }
+    float fakePageScaleAnimationPageScaleForTesting() const { return m_fakePageScaleAnimationPageScaleFactor; }
+    bool fakePageScaleAnimationUseAnchorForTesting() const { return m_fakePageScaleAnimationUseAnchor; }
 
     void enterFullScreenForElement(WebCore::Element*);
     void exitFullScreenForElement(WebCore::Element*);
@@ -565,11 +563,15 @@ public:
 
     WebSettingsImpl* settingsImpl();
 
+    // Returns the bounding box of the block type node touched by the WebRect.
+    WebRect computeBlockBounds(const WebRect&, bool ignoreClipping);
+
+    WebCore::IntPoint clampOffsetAtScale(const WebCore::IntPoint& offset, float scale);
+
 private:
     void refreshPageScaleFactorAfterLayout();
     void setUserAgentPageScaleConstraints(WebCore::PageScaleConstraints newConstraints);
     float clampPageScaleFactorToLimits(float) const;
-    WebCore::IntPoint clampOffsetAtScale(const WebCore::IntPoint& offset, float scale);
     WebCore::IntSize contentsSize() const;
 
     void resetSavedScrollAndScaleState();
@@ -629,9 +631,6 @@ private:
     void doPixelReadbackToCanvas(WebCanvas*, const WebCore::IntRect&);
     void reallocateRenderer();
     void updateLayerTreeViewport();
-
-    // Returns the bounding box of the block type node touched by the WebRect.
-    WebRect computeBlockBounds(const WebRect&, AutoZoomType);
 
     // Helper function: Widens the width of |source| by the specified margins
     // while keeping it smaller than page width.
@@ -718,10 +717,10 @@ private:
     bool m_doubleTapZoomPending;
 
     // Used for testing purposes.
-    bool m_enableFakeDoubleTapAnimationForTesting;
-    WebCore::IntPoint m_fakeDoubleTapTargetPosition;
-    float m_fakeDoubleTapPageScaleFactor;
-    bool m_fakeDoubleTapUseAnchor;
+    bool m_enableFakePageScaleAnimationForTesting;
+    WebCore::IntPoint m_fakePageScaleAnimationTargetPosition;
+    float m_fakePageScaleAnimationPageScaleFactor;
+    bool m_fakePageScaleAnimationUseAnchor;
 
     bool m_contextMenuAllowed;
 
