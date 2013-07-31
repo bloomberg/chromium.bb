@@ -1949,7 +1949,8 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
   ppapi::host::ResourceHost* host = ppapi_host->GetResourceHost(device);
   PepperGraphics2DHost* graphics_2d = NULL;
   if (host) {
-    graphics_2d = host->AsPepperGraphics2DHost();
+    if (host->IsGraphics2DHost())
+      graphics_2d = static_cast<PepperGraphics2DHost*>(host);
     DLOG_IF(ERROR, !graphics_2d) << "Resource is not PepperGraphics2DHost.";
   }
 

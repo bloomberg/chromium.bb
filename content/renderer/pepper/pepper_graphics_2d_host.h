@@ -43,7 +43,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
-  virtual PepperGraphics2DHost* AsPepperGraphics2DHost() OVERRIDE;
+  virtual bool IsGraphics2DHost() OVERRIDE;
 
   bool ReadImageData(PP_Resource image,
                      const PP_Point* top_left);

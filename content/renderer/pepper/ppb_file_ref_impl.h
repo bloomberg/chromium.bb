@@ -27,7 +27,7 @@ namespace content {
 
 using ::ppapi::StringVar;
 
-class PPB_FileSystem_Impl;
+class PepperFileSystemHost;
 
 class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared {
  public:
@@ -100,8 +100,8 @@ class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared {
   // access check for these functions.
   bool IsValidNonExternalFileSystem() const;
 
-  ppapi::host::ResourceHost* GetResourceHost() const;
-  static ppapi::host::ResourceHost* GetResourceHostInternal(
+  PepperFileSystemHost* GetFileSystemHost() const;
+  static PepperFileSystemHost* GetFileSystemHostInternal(
       PP_Instance instance, PP_Resource resource);
 
   // 0 for external filesystems.  This is a plugin side resource that we don't

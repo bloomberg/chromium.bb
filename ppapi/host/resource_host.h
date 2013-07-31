@@ -14,13 +14,6 @@
 #include "ppapi/host/resource_message_handler.h"
 #include "ppapi/shared_impl/host_resource.h"
 
-namespace content {
-class PepperFileRefHost;
-class PepperFileSystemBrowserHost;
-class PepperFileSystemHost;
-class PepperGraphics2DHost;
-}
-
 namespace IPC {
 class Message;
 }
@@ -61,11 +54,11 @@ class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
   virtual void SendReply(const ReplyMessageContext& context,
                          const IPC::Message& msg) OVERRIDE;
 
-  // Simple RTTI. Overidden by subclasses that implement the interface.
-  virtual content::PepperFileRefHost* AsPepperFileRefHost();
-  virtual content::PepperFileSystemBrowserHost* AsPepperFileSystemBrowserHost();
-  virtual content::PepperFileSystemHost* AsPepperFileSystemHost();
-  virtual content::PepperGraphics2DHost* AsPepperGraphics2DHost();
+  // Simple RTTI. A subclass that is a host for one of these APIs will override
+  // the appropriate function and return true.
+  virtual bool IsFileRefHost();
+  virtual bool IsFileSystemHost();
+  virtual bool IsGraphics2DHost();
 
  protected:
   // Adds a ResourceMessageFilter to handle resource messages. Incoming

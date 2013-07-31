@@ -53,8 +53,9 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
     return;
   }
 
-  PepperFileSystemBrowserHost* fs_host =
-      fs_resource_host->AsPepperFileSystemBrowserHost();
+  PepperFileSystemBrowserHost* fs_host = NULL;
+  if (fs_resource_host->IsFileSystemHost())
+    fs_host = static_cast<PepperFileSystemBrowserHost*>(fs_resource_host);
   if (fs_host == NULL) {
     DLOG(ERROR) << "Filesystem PP_Resource is not PepperFileSystemBrowserHost";
     return;
@@ -101,8 +102,8 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
 PepperFileRefHost::~PepperFileRefHost() {
 }
 
-PepperFileRefHost* PepperFileRefHost::AsPepperFileRefHost() {
-  return this;
+bool PepperFileRefHost::IsFileRefHost() {
+  return true;
 }
 
 PP_FileSystemType PepperFileRefHost::GetFileSystemType() const {
@@ -219,7 +220,9 @@ int32_t PepperFileRefHost::OnRename(ppapi::host::HostMessageContext* context,
   if (!resource_host)
     return PP_ERROR_BADRESOURCE;
 
-  PepperFileRefHost* file_ref_host = resource_host->AsPepperFileRefHost();
+  PepperFileRefHost* file_ref_host = NULL;
+  if (resource_host->IsFileRefHost())
+    file_ref_host = static_cast<PepperFileRefHost*>(resource_host);
   if (!file_ref_host)
     return PP_ERROR_BADRESOURCE;
 

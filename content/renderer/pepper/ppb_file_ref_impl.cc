@@ -242,16 +242,12 @@ PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Instance instance,
   if (!plugin_instance || !plugin_instance->helper())
     return 0;
 
-  ppapi::host::ResourceHost* host = GetResourceHostInternal(
+  PepperFileSystemHost* host = GetFileSystemHostInternal(
       instance, pp_file_system);
   if (!host)
     return 0;
 
-  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
-  if (!fs_host)
-    return 0;
-
-  PP_FileSystemType type = fs_host->GetType();
+  PP_FileSystemType type = host->GetType();
   if (type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
       type != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
       type != PP_FILESYSTEMTYPE_EXTERNAL &&
@@ -418,32 +414,23 @@ GURL PPB_FileRef_Impl::GetFileSystemURL() const {
   // We need to trim off the '/' before calling Resolve, as FileSystem URLs
   // start with a storage type identifier that looks like a path segment.
 
-  ppapi::host::ResourceHost* host = GetResourceHost();
+  PepperFileSystemHost* host = GetFileSystemHost();
   if (!host)
     return GURL();
 
-  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
-  if (!fs_host)
-    return GURL();
-
-  return GURL(fs_host->GetRootUrl()).Resolve(net::EscapePath(
+  return GURL(host->GetRootUrl()).Resolve(net::EscapePath(
       virtual_path.substr(1)));
 }
 
 bool PPB_FileRef_Impl::IsValidNonExternalFileSystem() const {
-  ppapi::host::ResourceHost* host = GetResourceHost();
-  return HasValidFileSystem() &&
-      host->AsPepperFileSystemHost()->GetType() !=
-          PP_FILESYSTEMTYPE_EXTERNAL;
+  PepperFileSystemHost* host = GetFileSystemHost();
+  return HasValidFileSystem() && host &&
+      host->GetType() != PP_FILESYSTEMTYPE_EXTERNAL;
 }
 
 bool PPB_FileRef_Impl::HasValidFileSystem() const {
-  ppapi::host::ResourceHost* host = GetResourceHost();
-  if (!host)
-    return false;
-
-  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
-  return fs_host && fs_host->IsOpened();
+  PepperFileSystemHost* host = GetFileSystemHost();
+  return host && host->IsOpened();
 }
 
 int32_t PPB_FileRef_Impl::Query(PP_FileInfo* info,
@@ -477,8 +464,7 @@ int32_t PPB_FileRef_Impl::QueryInHost(
     if (!HasValidFileSystem())
       return PP_ERROR_NOACCESS;
 
-    PP_FileSystemType file_system_type = GetResourceHost()->
-        AsPepperFileSystemHost()->GetType();
+    PP_FileSystemType file_system_type = GetFileSystemHost()->GetType();
     FileSystemDispatcher* file_system_dispatcher =
         ChildThread::current()->file_system_dispatcher();
     file_system_dispatcher->ReadMetadata(
@@ -515,17 +501,21 @@ int32_t PPB_FileRef_Impl::ReadDirectoryEntriesInHost(
   return PP_OK_COMPLETIONPENDING;
 }
 
-ppapi::host::ResourceHost* PPB_FileRef_Impl::GetResourceHost() const {
-  return GetResourceHostInternal(pp_instance(), file_system_);
+PepperFileSystemHost* PPB_FileRef_Impl::GetFileSystemHost() const {
+  return GetFileSystemHostInternal(pp_instance(), file_system_);
 }
 
-ppapi::host::ResourceHost* PPB_FileRef_Impl::GetResourceHostInternal(
+PepperFileSystemHost* PPB_FileRef_Impl::GetFileSystemHostInternal(
     PP_Instance instance, PP_Resource resource) {
   const ppapi::host::PpapiHost* ppapi_host =
       RendererPpapiHost::GetForPPInstance(instance)->GetPpapiHost();
   if (!resource || !ppapi_host)
     return NULL;
-  return ppapi_host->GetResourceHost(resource);
+  ppapi::host::ResourceHost* resource_host =
+      ppapi_host->GetResourceHost(resource);
+  if (resource_host && resource_host->IsFileSystemHost())
+    return static_cast<PepperFileSystemHost*>(resource_host);
+  return NULL;
 }
 
 }  // namespace content

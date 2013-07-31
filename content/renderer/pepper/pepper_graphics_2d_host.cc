@@ -238,8 +238,8 @@ int32_t PepperGraphics2DHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
-PepperGraphics2DHost* PepperGraphics2DHost::AsPepperGraphics2DHost() {
-  return this;
+bool PepperGraphics2DHost::IsGraphics2DHost() {
+  return true;
 }
 
 bool PepperGraphics2DHost::ReadImageData(PP_Resource image,

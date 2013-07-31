@@ -84,9 +84,8 @@ int32_t PepperFileSystemBrowserHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
-PepperFileSystemBrowserHost*
-PepperFileSystemBrowserHost::AsPepperFileSystemBrowserHost() {
-  return this;
+bool PepperFileSystemBrowserHost::IsFileSystemHost() {
+  return true;
 }
 
 int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(

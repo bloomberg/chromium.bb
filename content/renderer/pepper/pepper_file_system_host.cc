@@ -71,8 +71,8 @@ int32_t PepperFileSystemHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
-PepperFileSystemHost* PepperFileSystemHost::AsPepperFileSystemHost() {
-  return this;
+bool PepperFileSystemHost::IsFileSystemHost() {
+  return true;
 }
 
 void PepperFileSystemHost::DidOpenFileSystem(

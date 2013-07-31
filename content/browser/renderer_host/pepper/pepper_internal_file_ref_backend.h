@@ -18,6 +18,8 @@
 
 namespace content {
 
+class PepperFileSystemBrowserHost;
+
 // Implementations of FileRef operations for internal filesystems.
 class PepperInternalFileRefBackend : public PepperFileRefBackend {
  public:

@@ -115,13 +115,12 @@ void PepperRendererConnection::OnMsgFileRefGetInfoForRenderer(
   if (host) {
     ppapi::host::ResourceHost* resource_host =
         host->GetPpapiHost()->GetResourceHost(params.pp_resource());
-    if (resource_host) {
-      PepperFileRefHost* file_ref_host = resource_host->AsPepperFileRefHost();
-      if (file_ref_host) {
-        fs_type = file_ref_host->GetFileSystemType();
-        file_system_url_spec = file_ref_host->GetFileSystemURLSpec();
-        external_path = file_ref_host->GetExternalPath();
-      }
+    if (resource_host && resource_host->IsFileRefHost()) {
+      PepperFileRefHost* file_ref_host =
+          static_cast<PepperFileRefHost*>(resource_host);
+      fs_type = file_ref_host->GetFileSystemType();
+      file_system_url_spec = file_ref_host->GetFileSystemURLSpec();
+      external_path = file_ref_host->GetExternalPath();
     }
   }
   Send(new PpapiHostMsg_FileRef_GetInfoForRendererReply(

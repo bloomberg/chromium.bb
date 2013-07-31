@@ -73,7 +73,7 @@ class CONTENT_EXPORT PepperFileRefHost
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
-  virtual PepperFileRefHost* AsPepperFileRefHost() OVERRIDE;
+  virtual bool IsFileRefHost() OVERRIDE;
 
   // Required to support Rename().
   PP_FileSystemType GetFileSystemType() const;

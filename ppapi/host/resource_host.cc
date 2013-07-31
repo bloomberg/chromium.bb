@@ -48,21 +48,16 @@ void ResourceHost::SendReply(const ReplyMessageContext& context,
   host_->SendReply(context, msg);
 }
 
-content::PepperFileRefHost* ResourceHost::AsPepperFileRefHost() {
-  return NULL;
+bool ResourceHost::IsFileRefHost() {
+  return false;
 }
 
-content::PepperFileSystemBrowserHost*
-ResourceHost::AsPepperFileSystemBrowserHost() {
-  return NULL;
+bool ResourceHost::IsFileSystemHost() {
+  return false;
 }
 
-content::PepperFileSystemHost* ResourceHost::AsPepperFileSystemHost() {
-  return NULL;
-}
-
-content::PepperGraphics2DHost* ResourceHost::AsPepperGraphics2DHost() {
-  return NULL;
+bool ResourceHost::IsGraphics2DHost() {
+  return false;
 }
 
 void ResourceHost::AddFilter(scoped_refptr<ResourceMessageFilter> filter) {

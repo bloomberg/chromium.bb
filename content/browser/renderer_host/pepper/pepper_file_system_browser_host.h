@@ -32,7 +32,7 @@ class PepperFileSystemBrowserHost :
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
-  virtual PepperFileSystemBrowserHost* AsPepperFileSystemBrowserHost() OVERRIDE;
+  virtual bool IsFileSystemHost() OVERRIDE;
 
   // Supports FileRefs direct access on the host side.
   PP_FileSystemType GetType() const { return type_; }
