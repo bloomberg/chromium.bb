@@ -34,11 +34,35 @@
 #include "SkBitmap.h"
 #include "SkRect.h"
 #include "SkSize.h"
+#include "SkXfermode.h"
+#include "core/platform/graphics/GraphicsTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
+class SkMatrix;
+class SkPaint;
+
 namespace WebCore {
+
+class FloatPoint;
+class FloatRect;
+class FloatSize;
+class GraphicsContext;
+
+// Used by computeResamplingMode to tell how bitmaps should be resampled.
+enum ResamplingMode {
+    // Nearest neighbor resampling. Used when we detect that the page is
+    // trying to make a pattern by stretching a small bitmap very large.
+    NoResampling,
+
+    // Default skia resampling. Used for large growing of images where high
+    // quality resampling doesn't get us very much except a slowdown.
+    LinearResampling,
+
+    // High quality resampling.
+    AwesomeResampling,
+};
 
 // This object is used as the "native image" in our port. When WebKit uses
 // PassNativeImagePtr / NativeImagePtr, it is a smart pointer to this type.
@@ -102,6 +126,16 @@ public:
     // Rectangle of the subset in the scaled image.
     SkBitmap resizedBitmap(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const;
 
+    void draw(GraphicsContext*, const SkRect& srcRect, const SkRect& destRect, SkXfermode::Mode) const;
+    void drawPattern(
+        GraphicsContext*,
+        const FloatRect& srcRect,
+        const FloatSize& scale,
+        const FloatPoint& phase,
+        CompositeOperator,
+        const FloatRect& destRect,
+        BlendMode) const;
+
 private:
     NativeImageSkia();
 
@@ -137,6 +171,10 @@ private:
     // scrolling on and off the screen. Since we only cache when doing the
     // entire thing, it's best to just do it up front.
     bool shouldCacheResampling(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const;
+
+    ResamplingMode computeResamplingMode(const SkMatrix&, float srcWidth, float srcHeight, float destWidth, float destHeight) const;
+    SkBitmap extractScaledImageFragment(const SkRect& srcRect, float scaleX, float scaleY, SkRect* scaledSrcRect) const;
+    void drawResampledBitmap(GraphicsContext*, SkPaint&, const SkRect& srcRect, const SkRect& destRect) const;
 
     // The original image.
     SkBitmap m_image;
