@@ -5397,15 +5397,6 @@
    fun:_ZN4base5files12_GLOBAL__N_121InotifyReaderCallbackEPNS1_13InotifyReaderEii
 }
 {
-   bug_145738
-   Memcheck:Leak
-   fun:calloc
-   fun:ippNew
-   fun:ippNewRequest
-   obj:/usr/lib/libcups.so.2
-   fun:cupsGetDests2
-}
-{
    bug_145747a
    Memcheck:Leak
    fun:_Znw*
