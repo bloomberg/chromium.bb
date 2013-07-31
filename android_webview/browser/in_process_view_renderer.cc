@@ -160,7 +160,7 @@ InProcessViewRenderer::InProcessViewRenderer(
       dip_scale_(0.0),
       page_scale_factor_(1.0),
       on_new_picture_enable_(false),
-      compositor_needs_continuous_invalidate_(false),
+      continuous_invalidate_(false),
       block_invalidates_(false),
       width_(0),
       height_(0),
@@ -211,7 +211,7 @@ bool InProcessViewRenderer::OnDraw(jobject java_canvas,
   block_invalidates_ = true;
   bool result = DrawSWInternal(java_canvas, clip);
   block_invalidates_ = false;
-  EnsureContinuousInvalidation(NULL, false);
+  EnsureContinuousInvalidation(NULL);
   return result;
 }
 
@@ -266,19 +266,17 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
                       scroll_at_start_of_frame_.y());
   // TODO(joth): Check return value.
   block_invalidates_ = true;
-  gfx::Rect clip_rect(draw_info->clip_left,
-                      draw_info->clip_top,
-                      draw_info->clip_right - draw_info->clip_left,
-                      draw_info->clip_bottom - draw_info->clip_top);
-  compositor_->DemandDrawHw(gfx::Size(draw_info->width, draw_info->height),
-                            transform,
-                            clip_rect,
-                            state_restore.stencil_enabled());
+  compositor_->DemandDrawHw(
+      gfx::Size(draw_info->width, draw_info->height),
+      transform,
+      gfx::Rect(draw_info->clip_left,
+                draw_info->clip_top,
+                draw_info->clip_right - draw_info->clip_left,
+                draw_info->clip_bottom - draw_info->clip_top),
+      state_restore.stencil_enabled());
   block_invalidates_ = false;
 
-  bool drew_full_visible_rect =
-      clip_rect.Contains(global_visible_rect_at_start_of_frame_);
-  EnsureContinuousInvalidation(draw_info, !drew_full_visible_rect);
+  EnsureContinuousInvalidation(draw_info);
 }
 
 bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
@@ -508,7 +506,7 @@ void InProcessViewRenderer::DidDestroyCompositor(
 }
 
 void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {
-  if (compositor_needs_continuous_invalidate_ == invalidate)
+  if (continuous_invalidate_ == invalidate)
     return;
 
   TRACE_EVENT_INSTANT1("android_webview",
@@ -516,8 +514,8 @@ void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {
                        TRACE_EVENT_SCOPE_THREAD,
                        "invalidate",
                        invalidate);
-  compositor_needs_continuous_invalidate_ = invalidate;
-  EnsureContinuousInvalidation(NULL, false);
+  continuous_invalidate_ = invalidate;
+  EnsureContinuousInvalidation(NULL);
 }
 
 void InProcessViewRenderer::SetDipScale(float dip_scale) {
@@ -593,11 +591,8 @@ void InProcessViewRenderer::DidOverscroll(
 }
 
 void InProcessViewRenderer::EnsureContinuousInvalidation(
-    AwDrawGLInfo* draw_info,
-    bool invalidate_ignore_compositor) {
-  if ((compositor_needs_continuous_invalidate_ ||
-       invalidate_ignore_compositor) &&
-      !block_invalidates_) {
+    AwDrawGLInfo* draw_info) {
+  if (continuous_invalidate_ && !block_invalidates_) {
     if (draw_info) {
       draw_info->dirty_left = global_visible_rect_at_start_of_frame_.x();
       draw_info->dirty_top = global_visible_rect_at_start_of_frame_.y();
@@ -608,43 +603,36 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
       client_->PostInvalidate();
     }
 
-    block_invalidates_ = true;
-
     // Unretained here is safe because the callback is cancelled when
     // |fallback_tick_| is destroyed.
     fallback_tick_.Reset(base::Bind(&InProcessViewRenderer::FallbackTickFired,
                                     base::Unretained(this)));
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        fallback_tick_.callback(),
+        base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
 
-    // No need to reschedule fallback tick if compositor does not need to be
-    // ticked. This can happen if this is reached because
-    // invalidate_ignore_compositor is true.
-    if (compositor_needs_continuous_invalidate_) {
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          fallback_tick_.callback(),
-          base::TimeDelta::FromMilliseconds(
-              kFallbackTickTimeoutInMilliseconds));
-    }
+    block_invalidates_ = true;
   }
 }
 
 void InProcessViewRenderer::FallbackTickFired() {
   TRACE_EVENT1("android_webview",
                "InProcessViewRenderer::FallbackTickFired",
-               "compositor_needs_continuous_invalidate_",
-               compositor_needs_continuous_invalidate_);
+               "continuous_invalidate_",
+               continuous_invalidate_);
 
   // This should only be called if OnDraw or DrawGL did not come in time, which
   // means block_invalidates_ must still be true.
   DCHECK(block_invalidates_);
-  if (compositor_needs_continuous_invalidate_ && compositor_) {
+  if (continuous_invalidate_ && compositor_) {
     SkDevice device(SkBitmap::kARGB_8888_Config, 1, 1);
     SkCanvas canvas(&device);
     block_invalidates_ = true;
     CompositeSW(&canvas);
   }
   block_invalidates_ = false;
-  EnsureContinuousInvalidation(NULL, false);
+  EnsureContinuousInvalidation(NULL);
 }
 
 bool InProcessViewRenderer::CompositeSW(SkCanvas* canvas) {
@@ -657,9 +645,8 @@ std::string InProcessViewRenderer::ToString(AwDrawGLInfo* draw_info) const {
   base::StringAppendF(&str, "visible: %d ", visible_);
   base::StringAppendF(&str, "dip_scale: %f ", dip_scale_);
   base::StringAppendF(&str, "page_scale_factor: %f ", page_scale_factor_);
-  base::StringAppendF(&str,
-                      "compositor_needs_continuous_invalidate: %d ",
-                      compositor_needs_continuous_invalidate_);
+  base::StringAppendF(
+      &str, "continuous_invalidate: %d ", continuous_invalidate_);
   base::StringAppendF(&str, "block_invalidates: %d ", block_invalidates_);
   base::StringAppendF(&str, "view width height: [%d %d] ", width_, height_);
   base::StringAppendF(&str, "attached_to_window: %d ", attached_to_window_);
