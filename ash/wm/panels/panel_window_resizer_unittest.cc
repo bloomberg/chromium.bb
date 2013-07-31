@@ -39,6 +39,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     UpdateDisplay("600x400");
     test::ShellTestApi test_api(Shell::GetInstance());
     model_ = test_api.launcher_model();
+    launcher_delegate_ = test::TestLauncherDelegate::instance();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -61,9 +62,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
         aura::client::WINDOW_TYPE_PANEL,
         0,
         bounds);
-    test::TestLauncherDelegate* launcher_delegate =
-        test::TestLauncherDelegate::instance();
-    launcher_delegate->AddLauncherItem(window);
+    launcher_delegate_->AddLauncherItem(window);
     PanelLayoutManager* manager =
         static_cast<PanelLayoutManager*>(
             Shell::GetContainer(window->GetRootWindow(),
@@ -138,13 +137,12 @@ class PanelWindowResizerTest : public test::AshTestBase {
   }
 
   void TestWindowOrder(const std::vector<aura::Window*>& window_order) {
-    Launcher* launcher = Launcher::ForPrimaryDisplay();
     int panel_index = model_->FirstPanelIndex();
     EXPECT_EQ((int)(panel_index + window_order.size()), model_->item_count());
     for (std::vector<aura::Window*>::const_iterator iter =
          window_order.begin(); iter != window_order.end();
          ++iter, ++panel_index) {
-      LauncherID id = launcher->delegate()->GetIDByWindow(*iter);
+      LauncherID id = launcher_delegate_->GetIDByWindow(*iter);
       EXPECT_EQ(id, model_->items()[panel_index].id);
     }
   }
@@ -186,6 +184,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   scoped_ptr<WindowResizer> resizer_;
   internal::PanelLayoutManager* panel_layout_manager_;
   LauncherModel* model_;
+  test::TestLauncherDelegate* launcher_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTest);
 };
