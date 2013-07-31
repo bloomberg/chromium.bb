@@ -111,7 +111,7 @@ class AwContentsClientCallbackHelper {
                 case MSG_ON_NEW_PICTURE: {
                     Picture picture = null;
                     try {
-                        if (msg.obj != null) picture = ((Callable<Picture>) msg.obj).call();
+                        if (msg.obj != null) picture = (Picture) ((Callable<?>) msg.obj).call();
                     } catch (Exception e) {
                         throw new RuntimeException("Error getting picture", e);
                     }

@@ -7,7 +7,6 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsoluteLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -81,6 +80,7 @@ public class AwAutofillManagerDelegate {
             }
 
             @Override
+            @SuppressWarnings("deprecation")  // AbsoluteLayout.LayoutParams
             public void setAnchorViewPosition(
                     View view, float x, float y, float width, float height) {
                 assert(view.getParent() == mContainerView);
@@ -89,7 +89,8 @@ public class AwAutofillManagerDelegate {
                 int topMargin = (int)mContentViewCore.getRenderCoordinates().getContentOffsetYPix()
                         + (int)Math.round(y * mDIPScale);
 
-                AbsoluteLayout.LayoutParams lp = new AbsoluteLayout.LayoutParams((int)width,
+                android.widget.AbsoluteLayout.LayoutParams lp =
+                    new android.widget.AbsoluteLayout.LayoutParams((int)width,
                         (int)height, leftMargin, topMargin);
                 view.setLayoutParams(lp);
             }
