@@ -136,6 +136,29 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
             mock_prompt->extension()->id());
     ASSERT_TRUE(permissions.get());
   }
+
+  // Creates and returns a popup ExtensionHost for an extension and waits
+  // for a url to load in the host's web contents.
+  // The caller is responsible for cleaning up the returned ExtensionHost.
+  ExtensionHost* OpenUrlInExtensionPopupHost(const Extension* extension,
+                                             const GURL& url) {
+    ExtensionSystem* extension_system = extensions::ExtensionSystem::Get(
+        browser()->profile());
+    ExtensionProcessManager* epm = extension_system->process_manager();
+    ExtensionHost* extension_host =
+        epm->CreatePopupHost(extension, url, browser());
+
+    extension_host->CreateRenderViewSoon();
+    if (!extension_host->IsRenderViewLive()) {
+      content::WindowedNotificationObserver observer(
+          content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+          content::Source<content::WebContents>(
+              extension_host->host_contents()));
+      observer.Wait();
+    }
+
+    return extension_host;
+  }
 };
 
 #if defined(OS_CHROMEOS)
@@ -300,6 +323,60 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, HiDpiThemeTest) {
 
   UninstallExtension(extension_id);
   EXPECT_FALSE(service->GetExtensionById(extension_id, false));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
+                       InstallDelayedUntilNextUpdate) {
+  const std::string extension_id("ldnnhddmnhbkjipkidpdiheffobcpfmf");
+  base::FilePath crx_path = test_data_dir_.AppendASCII("delayed_install");
+  ExtensionSystem* extension_system = extensions::ExtensionSystem::Get(
+      browser()->profile());
+  ExtensionService* service = extension_system->extension_service();
+  ASSERT_TRUE(service);
+
+  // Install version 1 of the test extension. This extension does not have
+  // a background page but does have a browser action.
+  ASSERT_TRUE(InstallExtension(crx_path.AppendASCII("v1.crx"), 1));
+  const extensions::Extension* extension =
+     service->GetExtensionById(extension_id, false);
+  ASSERT_TRUE(extension);
+  ASSERT_EQ(extension_id, extension->id());
+  ASSERT_EQ("1.0", extension->version()->GetString());
+
+  // Make test extension non-idle by opening the extension's browser action
+  // popup. This should cause the installation to be delayed.
+  std::string popup_url = std::string("chrome-extension://")
+      + extension_id + std::string("/popup.html");
+  scoped_ptr<ExtensionHost> extension_host = scoped_ptr<ExtensionHost>(
+      OpenUrlInExtensionPopupHost(extension, GURL(popup_url)));
+
+  // Install version 2 of the extension and check that it is indeed delayed.
+  ASSERT_TRUE(UpdateExtensionWaitForIdle(
+      extension_id, crx_path.AppendASCII("v2.crx"), 0));
+
+  ASSERT_EQ(1u, service->delayed_installs()->size());
+  extension = service->GetExtensionById(extension_id, false);
+  ASSERT_EQ("1.0", extension->version()->GetString());
+
+  // Make the extension idle again by navigating away from the extension's
+  // browser action page. This should not trigger the delayed install.
+  extension_system->process_manager()->UnregisterRenderViewHost(
+      extension_host->render_view_host());
+  ASSERT_EQ(1u, service->delayed_installs()->size());
+
+  // Install version 3 of the extension. Because the extension is idle,
+  // this install should succeed.
+  ASSERT_TRUE(UpdateExtensionWaitForIdle(
+      extension_id, crx_path.AppendASCII("v3.crx"), 0));
+  extension = service->GetExtensionById(extension_id, false);
+  ASSERT_EQ("3.0", extension->version()->GetString());
+
+  // The version 2 delayed install should be cleaned up, and finishing
+  // delayed extension installation shouldn't break anything.
+  ASSERT_EQ(0u, service->delayed_installs()->size());
+  service->MaybeFinishDelayedInstallations();
+  extension = service->GetExtensionById(extension_id, false);
+  ASSERT_EQ("3.0", extension->version()->GetString());
 }
 
 }  // namespace extensions

@@ -142,6 +142,10 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
                                     expected_change);
   }
 
+  // Same as UpdateExtension but waits for the extension to be idle first.
+  const extensions::Extension* UpdateExtensionWaitForIdle(
+      const std::string& id, const base::FilePath& path, int expected_change);
+
   // Same as |InstallExtension| but with the normal extension UI showing up
   // (for e.g. info bar on success).
   const extensions::Extension* InstallExtensionWithUI(
@@ -279,7 +283,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
       int expected_change,
       extensions::Manifest::Location install_source,
       Browser* browser,
-      bool from_webstore);
+      bool from_webstore,
+      bool wait_for_idle);
 
   bool WaitForExtensionViewsToLoad();
 

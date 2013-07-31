@@ -200,6 +200,7 @@ class ExtensionService
   virtual const ExtensionSet* disabled_extensions() const OVERRIDE;
   const ExtensionSet* terminated_extensions() const;
   const ExtensionSet* blacklisted_extensions() const;
+  const ExtensionSet* delayed_installs() const;
 
   // Returns a set of all installed, disabled, blacklisted, and terminated
   // extensions.

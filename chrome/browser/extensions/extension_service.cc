@@ -436,6 +436,10 @@ const ExtensionSet* ExtensionService::blacklisted_extensions() const {
   return &blacklisted_extensions_;
 }
 
+const ExtensionSet* ExtensionService::delayed_installs() const {
+  return &delayed_installs_;
+}
+
 scoped_ptr<const ExtensionSet>
     ExtensionService::GenerateInstalledExtensionsSet() const {
   scoped_ptr<ExtensionSet> installed_extensions(new ExtensionSet());
@@ -2444,6 +2448,8 @@ void ExtensionService::AddNewOrUpdatedExtension(
       extension,
       initial_state,
       page_ordinal);
+
+  delayed_installs_.Remove(extension->id());
 
   FinishInstallation(extension);
 }
