@@ -64,7 +64,6 @@ class UbertokenFetcherTest : public TokenServiceTestHarness {
  public:
   virtual void SetUp() OVERRIDE {
     TokenServiceTestHarness::SetUp();
-    profile()->CreateRequestContext(NULL);
 
     ProfileOAuth2TokenServiceFactory::GetInstance()->
         SetTestingFactoryAndUse(profile(), Build);
