@@ -7142,58 +7142,6 @@
    fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
 }
 {
-   bug_259350a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN8notifier*SingleLoginAttemptTest_*
-}
-{
-   bug_259350b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4BindIMN3net18ClientSocketHandleEFviENS_8internal17UnretainedWrapperIS2_EEEENS_8CallbackINS5_9BindStateINS5_13FunctorTraitsIT_E12RunnableTypeENSC_7RunTypeEFvNS5_19CallbackParamTraitsIT0_E11StorageTypeEEE14UnboundRunTypeEEESB_RKSG_
-   fun:_ZN3net18ClientSocketHandleC1Ev
-   fun:_ZN11jingle_glue26ProxyResolvingClientSocket23ProcessProxyResolveDoneEi
-}
-{
-   bug_259350c
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN4buzz10XmppClient7ProcessEi
-   fun:_ZN9talk_base4Task4StepEv
-   fun:_ZN9talk_base10TaskRunner16InternalRunTasksEb
-   fun:_ZN9talk_base10TaskRunner8RunTasksEv
-   fun:_ZN11jingle_glue8TaskPump16CheckAndRunTasksEv
-}
-{
-   bug_259350d
-   Memcheck:Leak
-   fun:malloc
-   obj:*/libexpat.so*
-   fun:_ZN4buzz9XmlParserC1EPNS_15XmlParseHandlerE
-   fun:_ZN4buzz16XmppStanzaParserC1EPNS_22XmppStanzaParseHandlerE
-   fun:_ZN4buzz14XmppEngineImplC1Ev
-   fun:_ZN4buzz10XmppEngine6CreateEv
-   fun:_ZN4buzz10XmppClient7ConnectERKNS_18XmppClientSettingsERKSsPNS_11AsyncSocketEPNS_11PreXmppAuthE
-   fun:_ZN8notifier14XmppConnectionC1ERKN4buzz18XmppClientSettingsERK13scoped_refptrIN3net23URLRequestContextGetterEEPNS0_8DelegateEPNS1_11PreXmppAuthE
-   fun:_ZN8notifier18SingleLoginAttempt10TryConnectERKNS_18ConnectionSettingsE
-}
-{
-   bug_259350e
-   Memcheck:Leak
-   ...
-   fun:_ZN3net29InitSocketHandleForRawConnectERKNS_12HostPortPairEPNS_18HttpNetworkSessionERKNS_9ProxyInfoERKNS_9SSLConfigESA_NS_11PrivacyModeERKNS_11BoundNetLogEPNS_18ClientSocketHandleERKN4base8CallbackIFviEEE
-   fun:_ZN11jingle_glue26ProxyResolvingClientSocket23ProcessProxyResolveDoneEi
-}
-{
-   bug_259350f
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11jingle_glue26ProxyResolvingClientSocket23ProcessProxyResolveDoneEi
-}
-{
    bug_259357d
    Memcheck:Uninitialized
    ...
@@ -7255,12 +7203,4 @@
    fun:_ZN15webkit_database15DatabaseTracker8LazyInitEv
    fun:_ZN15webkit_database15DatabaseTracker23GetAllOriginIdentifiersEPSt6vectorISsSaISsEE
    fun:_ZN15webkit_database12_GLOBAL__N_120GetOriginsOnDBThreadEPNS_15DatabaseTrackerEPSt3setI4GURLSt4lessIS4_ESaIS4_EE
-}
-{
-  bug_264225
-  Memcheck:Leak
-  fun:_Znw*
-  ...
-  fun:_ZN14TestingProfile20CreateRequestContextEPSt3mapISs10linked_ptrIN3net20URLRequestJobFactory15ProtocolHandlerEESt4lessISsESaISt4pairIKSsS5_EEE
-  fun:_ZN20UbertokenFetcherTest5SetUpEv
 }

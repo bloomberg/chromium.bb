@@ -22,9 +22,6 @@ leak:crypto::ScopedTestNSSDB::ScopedTestNSSDB
 # because it can't unwind through libnssutil. Just suppress it for the time being.
 leak:libnssutil
 
-## Global singleton instance of SkFontConfigDirect in Skia. http://crbug.com/186086
-#leak:SkFontConfigInterfaceDirect::SkFontConfigInterfaceDirect
-
 # Skia leaks. http://crbug.com/189170
 leak:SkFontHost::CreateTypeface
 
@@ -37,6 +34,3 @@ leak:GrGpuGL::flushGraphicsState
 
 # Small test-only leak in ppapi_unittests. http://crbug.com/258113
 leak:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_Test
-
-# Leak in unit_tests http://crbug.com/264225
-leak:UbertokenFetcherTest::SetUp

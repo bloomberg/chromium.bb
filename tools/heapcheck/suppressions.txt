@@ -855,49 +855,6 @@
    fun:ppapi::ThreadAwareCallbackMultiThreadTest_RunOnTargetThread_Test::TestBody
 }
 {
-   bug_259350a
-   Heapcheck:Leak
-   ...
-   fun:SingleLoginAttemptTest_*_Test
-}
-{
-   bug_259350b
-   Heapcheck:Leak
-   ...
-   fun:notifier::SingleLoginAttempt::OnError
-}
-{
-   bug_259350c
-   Heapcheck:Leak
-   ...
-   fun:buzz::XmppClient::Process
-   fun:talk_base::Task::Step
-   fun:talk_base::TaskRunner::InternalRunTasks
-   fun:talk_base::TaskRunner::RunTasks
-   fun:jingle_glue::TaskPump::CheckAndRunTasks
-}
-{
-   bug_259350d
-   Heapcheck:Leak
-   ...
-   fun:jingle_glue::ProxyResolvingClientSocket::ProcessProxyResolveDone
-}
-{
-   bug_222687a
-   Heapcheck:Leak
-   ...
-   fun:chrome::StorageMonitor::GetInstance
-   fun:GetMediaTransferProtocolManager
-   fun:~MediaTransferProtocolDeviceObserverLinux
-   fun:~MediaTransferProtocolDeviceObserverLinux
-   fun:base::DefaultDeleter::operator
-   fun:~scoped_ptr_impl
-   fun:~scoped_ptr
-   fun:~StorageMonitorLinux
-   fun:~TestStorageMonitorLinux
-   fun:~TestStorageMonitorLinux
-}
-{
    bug_263748a
    Heapcheck:Leak
    ...
@@ -914,11 +871,4 @@
    Heapcheck:Leak
    ...
    fun:EncodeDecodeTest_Elf_Small_Test::TestBody
-}
-{
-   bug_264225
-   Heapcheck:Leak
-   ...
-   fun:TestingProfile::CreateRequestContext
-   fun:UbertokenFetcherTest::SetUp
 }
