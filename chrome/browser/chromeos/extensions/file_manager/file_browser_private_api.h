@@ -28,10 +28,6 @@ namespace fileapi {
 class FileSystemContext;
 }
 
-namespace ui {
-struct SelectedFileInfo;
-}
-
 namespace file_manager {
 
 // Manages and registers the fileBrowserPrivate API with the extension system.
@@ -176,62 +172,6 @@ class ViewFilesFunction : public LoggedAsyncExtensionFunction {
 
  protected:
   virtual ~ViewFilesFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
-// Mount a device or a file.
-class AddMountFunction : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.addMount",
-                             FILEBROWSERPRIVATE_ADDMOUNT)
-
-  AddMountFunction();
-
- protected:
-  virtual ~AddMountFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  // A callback method to handle the result of MarkCacheAsMounted.
-  void OnMountedStateSet(const std::string& mount_type,
-                         const base::FilePath::StringType& file_name,
-                         drive::FileError error,
-                         const base::FilePath& file_path);
-};
-
-// Unmounts selected device. Expects mount point path as an argument.
-class RemoveMountFunction : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.removeMount",
-                             FILEBROWSERPRIVATE_REMOVEMOUNT)
-
-  RemoveMountFunction();
-
- protected:
-  virtual ~RemoveMountFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  // A callback method to handle the result of GetSelectedFileInfo.
-  void GetSelectedFileInfoResponse(
-      const std::vector<ui::SelectedFileInfo>& files);
-};
-
-class GetMountPointsFunction : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getMountPoints",
-                             FILEBROWSERPRIVATE_GETMOUNTPOINTS)
-
-  GetMountPointsFunction();
-
- protected:
-  virtual ~GetMountPointsFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
