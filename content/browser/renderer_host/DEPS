@@ -24,6 +24,7 @@ specific_include_rules = {
     "+media/filters",
   ],
   "render_sandbox_host_linux\.cc": [
-    "+third_party/WebKit/public/web/WebKit.h"
+    "+third_party/WebKit/public/web/WebKit.h",
+    "+third_party/WebKit/public/web/linux/WebFontInfo.h",
   ],
 }

@@ -39,7 +39,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
   "+third_party/WebKit/public/platform/WebIDBCallbacks.h",
-  "+third_party/WebKit/public/platform/WebIDBDatabase.h",
   "+third_party/WebKit/public/platform/WebIDBDatabaseException.h",
   "+third_party/WebKit/public/platform/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
@@ -49,7 +48,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebCompositionUnderline.h",
   "+third_party/WebKit/public/web/WebConsoleMessage.h",
   "+third_party/WebKit/public/web/WebCursorInfo.h",
-  "+third_party/WebKit/public/web/WebDevToolsAgent.h",
   "+third_party/WebKit/public/web/WebDragOperation.h",
   "+third_party/WebKit/public/web/WebDragStatus.h",
   "+third_party/WebKit/public/web/WebFindOptions.h",
@@ -63,10 +61,7 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTextDirection.h",
 
   # These should be burned down. http://crbug.com/237267
-  "!third_party/WebKit/public/web/WebBindings.h",
-  "!third_party/WebKit/public/web/android/WebInputEventFactory.h",
   "!third_party/WebKit/public/web/gtk/WebInputEventFactory.h",
-  "!third_party/WebKit/public/web/linux/WebFontInfo.h",
   "!third_party/WebKit/public/web/mac/WebInputEventFactory.h",
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!

@@ -18,6 +18,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebFloatRect.h",
   "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
+  "+third_party/WebKit/public/platform/WebHTTPBody.h",
   "+third_party/WebKit/public/platform/WebIDBCallbacks.h",
   "+third_party/WebKit/public/platform/WebIDBCursor.h",
   "+third_party/WebKit/public/platform/WebIDBDatabase.h",
@@ -40,10 +41,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebScreenInfo.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebWindowFeatures.h",
-
-  # These should be burned down. http://crbug.com/237267
-  "!third_party/WebKit/public/platform/WebHTTPBody.h",
-  "!third_party/WebKit/public/web/WebDatabase.h",
 ]
 
 specific_include_rules = {
