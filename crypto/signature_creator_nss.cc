@@ -84,7 +84,6 @@ bool SignatureCreator::Final(std::vector<uint8>* signature) {
   SECItem signature_item;
   SECStatus rv = SGN_End(sign_context_, &signature_item);
   if (rv != SECSuccess) {
-    NOTREACHED();
     return false;
   }
   signature->assign(signature_item.data,

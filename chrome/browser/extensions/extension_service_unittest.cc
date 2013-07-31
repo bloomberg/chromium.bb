@@ -2202,6 +2202,14 @@ TEST_F(ExtensionServiceTest, PackExtension) {
   creator.reset(new ExtensionCreator());
   ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
                             base::FilePath(), ExtensionCreator::kOverwriteCRX));
+
+  // Try packing with a private key that is a valid key, but invalid for the
+  // extension.
+  base::FilePath bad_private_key_dir = data_dir_.AppendASCII("bad_private_key");
+  crx_path = output_directory.AppendASCII("bad_private_key.crx");
+  privkey_path = data_dir_.AppendASCII("bad_private_key.pem");
+  ASSERT_FALSE(creator->Run(bad_private_key_dir, crx_path, base::FilePath(),
+      privkey_path, ExtensionCreator::kOverwriteCRX));
 }
 
 // Test Packaging and installing an extension whose name contains punctuation.

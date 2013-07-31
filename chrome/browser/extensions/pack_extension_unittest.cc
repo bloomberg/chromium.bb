@@ -17,7 +17,7 @@
 namespace extensions {
 
 // Tests the environment for packing extensions from the command line
-// via the --pack-extension switch.
+// when using the --pack-extension switch.
 class PackExtensionTest : public testing::Test {
  public:
   PackExtensionTest()

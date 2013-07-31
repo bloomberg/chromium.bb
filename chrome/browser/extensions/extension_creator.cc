@@ -228,7 +228,11 @@ bool ExtensionCreator::SignZip(const base::FilePath& zip_path,
   }
   zip_handle.Close();
 
-  signature_creator->Final(signature);
+  if (!signature_creator->Final(signature)) {
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_ERROR_WHILE_SIGNING);
+    return false;
+  }
   return true;
 }
 
