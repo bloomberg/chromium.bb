@@ -343,8 +343,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   ASSERT_TRUE(tabs);
   int expected_tab_count = static_cast<int>(arraysize(kStartupURLs));
   EXPECT_EQ(expected_tab_count, tabs->count());
-  for (int i = 0; i < expected_tab_count && i < tabs->count(); ++i)
-    EXPECT_EQ(GURL(kStartupURLs[i]), tabs->GetWebContentsAt(i)->GetURL());
+  for (int i = 0; i < expected_tab_count && i < tabs->count(); ++i) {
+    EXPECT_EQ(GURL(kStartupURLs[i]),
+              tabs->GetWebContentsAt(i)->GetVisibleURL());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfService) {

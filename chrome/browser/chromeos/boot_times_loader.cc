@@ -62,7 +62,7 @@ const std::string GetTabUrl(RenderWidgetHost* rwh) {
          ++i) {
       WebContents* tab = browser->tab_strip_model()->GetWebContentsAt(i);
       if (tab->GetRenderWidgetHostView() == rwhv) {
-        return tab->GetURL().spec();
+        return tab->GetLastCommittedURL().spec();
       }
     }
   }

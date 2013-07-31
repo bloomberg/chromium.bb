@@ -324,7 +324,7 @@ Browser* GetBrowserForUrl(GURL target_url) {
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int idx = 0; idx < tab_strip->count(); idx++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(idx);
-      const GURL& url = web_contents->GetURL();
+      const GURL& url = web_contents->GetLastCommittedURL();
       if (url == target_url)
         return browser;
     }

@@ -70,7 +70,7 @@ void CaptivePortalView::NavigationStateChanged(
 
   // Naive way to determine the redirection. This won't be needed after portal
   // detection will be done on the Chrome side.
-  GURL url = source->GetURL();
+  GURL url = source->GetLastCommittedURL();
   // Note, |url| will be empty for "client3.google.com/generate_204" page.
   if (!redirected_  && url != GURL::EmptyGURL() &&
       url != GURL(CaptivePortalStartURL())) {

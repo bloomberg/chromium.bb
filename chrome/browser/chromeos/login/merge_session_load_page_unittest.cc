@@ -124,7 +124,7 @@ TEST_F(MergeSessionLoadPageTest, MergeSessionPageShown) {
   base::RunLoop().RunUntilIdle();
 
   // The URL remains to be URL2.
-  EXPECT_EQ(kURL2, web_contents()->GetURL().spec());
+  EXPECT_EQ(kURL2, web_contents()->GetVisibleURL().spec());
 
   // Commit navigation and the interstitial page is gone.
   Navigate(kURL2, 2);

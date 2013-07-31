@@ -567,7 +567,8 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
       if (!contents->IsCrashed()) {
         TabStats stats;
         stats.is_app = is_browser_for_app;
-        stats.is_reloadable_ui = IsReloadableUI(contents->GetURL());
+        stats.is_reloadable_ui =
+            IsReloadableUI(contents->GetLastCommittedURL());
         stats.is_playing_audio = chrome::IsPlayingAudio(contents);
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);

@@ -114,7 +114,7 @@ TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
   EXPECT_EQ(OK, user_response());
 
   // The URL remains to be URL2.
-  EXPECT_EQ(kURL2, web_contents()->GetURL().spec());
+  EXPECT_EQ(kURL2, web_contents()->GetVisibleURL().spec());
 
   // Commit navigation and the interstitial page is gone.
   Navigate(kURL2, 2);
@@ -143,7 +143,7 @@ TEST_F(OfflineLoadPageTest, OfflinePageDontProceed) {
   // We did not proceed, the pending entry should be gone.
   EXPECT_FALSE(controller().GetPendingEntry());
   // the URL is set back to kURL1.
-  EXPECT_EQ(kURL1, web_contents()->GetURL().spec());
+  EXPECT_EQ(kURL1, web_contents()->GetLastCommittedURL().spec());
 }
 
 }  // namespace chromeos
