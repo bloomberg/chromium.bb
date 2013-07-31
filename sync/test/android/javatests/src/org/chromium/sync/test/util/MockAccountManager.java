@@ -264,7 +264,9 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     private String internalGenerateAndStoreAuthToken(AccountHolder ah, String authTokenType) {
         synchronized (mAccounts) {
-            if (ah.getAuthToken(authTokenType) == null) {
+            // Some tests register auth tokens with value null, and those should be preserved.
+            if (!ah.hasAuthTokenRegistered(authTokenType) &&
+                    ah.getAuthToken(authTokenType) == null) {
                 // No authtoken registered. Need to create one.
                 String authToken = UUID.randomUUID().toString();
                 Log.d(TAG, "Created new auth token for " + ah.getAccount() +

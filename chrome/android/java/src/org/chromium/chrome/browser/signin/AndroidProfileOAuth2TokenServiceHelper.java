@@ -13,9 +13,10 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.sync.signin.AccountManagerHelper;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import javax.annotation.Nullable;
 
 /**
@@ -25,11 +26,14 @@ import javax.annotation.Nullable;
  * AccountManagerHelper and forwards callbacks to native code.
  * <p/>
  */
-public class AndroidProfileOAuth2TokenServiceHelper {
+public final class AndroidProfileOAuth2TokenServiceHelper {
 
     private static final String TAG = "AndroidProfileOAuth2TokenServiceHelper";
 
     private static final String OAUTH2_SCOPE_PREFIX = "oauth2:";
+
+    private AndroidProfileOAuth2TokenServiceHelper() {
+    }
 
     private static Account getAccountOrNullFromUsername(Context context, String username) {
         if (username == null) {
@@ -106,21 +110,25 @@ public class AndroidProfileOAuth2TokenServiceHelper {
             Context context, @Nullable Activity activity, Account account, String scope,
             long timeout, TimeUnit unit) {
         assert !ThreadUtils.runningOnUiThread();
-        final BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+        final AtomicReference<String> result = new AtomicReference<String>();
+        final Semaphore semaphore = new Semaphore(0);
         getOAuth2AccessToken(
                 context, activity, account, scope,
                 new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
                     public void tokenAvailable(String token) {
-                        try {
-                            queue.put(token);
-                        } catch (InterruptedException e) {
-                            Log.d(TAG, "Got interrupted while trying to offer token", e);
-                        }
+                        result.set(token);
+                        semaphore.release();
                     }
                 });
         try {
-            return queue.poll(timeout, unit);
+            if (semaphore.tryAcquire(timeout, unit)) {
+                return result.get();
+            } else {
+                Log.d(TAG, "Failed to retrieve auth token within timeout (" +
+                        timeout + " + " + unit.name() + ")");
+                return null;
+            }
         } catch (InterruptedException e) {
             Log.w(TAG, "Got interrupted while waiting for auth token");
             return null;
