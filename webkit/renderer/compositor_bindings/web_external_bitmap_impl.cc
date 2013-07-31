@@ -25,7 +25,10 @@ WebExternalBitmapImpl::~WebExternalBitmapImpl() {}
 
 void WebExternalBitmapImpl::setSize(WebKit::WebSize size) {
   if (size != size_) {
-    shared_memory_ = g_memory_allocator(size.width * size.height * 4);
+    size_t byte_size = size.width * size.height * 4;
+    shared_memory_ = g_memory_allocator(byte_size);
+    if (shared_memory_)
+      shared_memory_->Map(byte_size);
     size_ = size;
   }
 }
