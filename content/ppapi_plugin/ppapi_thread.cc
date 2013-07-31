@@ -43,6 +43,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "sandbox/win/src/sandbox.h"
 #elif defined(OS_MACOSX)
 #include "content/common/sandbox_init_mac.h"
@@ -325,6 +326,13 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   // can be loaded. TODO(cpu): consider changing to the loading style of
   // regular plugins.
   if (g_target_services) {
+    // Let Flash load DRM before lockdown on Vista+.
+    if (permissions.HasPermission(ppapi::PERMISSION_FLASH) &&
+        base::win::OSInfo::GetInstance()->version() >=
+        base::win::VERSION_VISTA ) {
+      LoadLibrary(L"dxva2.dll");
+    }
+
     // Cause advapi32 to load before the sandbox is turned on.
     unsigned int dummy_rand;
     rand_s(&dummy_rand);
