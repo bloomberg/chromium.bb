@@ -25,7 +25,6 @@
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "grit/generated_resources.h"
@@ -107,16 +106,11 @@ void AppShimController::Init() {
 
   SetUpMenu();
 
-  // Open an IPC channel to Chrome and send the initial app launch message.
-  NSString* chrome_bundle_path =
-      base::SysUTF8ToNSString(g_info->chrome_outer_bundle_path.value());
-  NSBundle* chrome_bundle = [NSBundle bundleWithPath:chrome_bundle_path];
-  base::FilePath user_data_dir;
-  if (!chrome::GetUserDataDirectoryForBrowserBundle(chrome_bundle,
-                                                    &user_data_dir)) {
-    Close();
-    return;
-  }
+  // The user_data_dir for shims actually contains the app_data_path.
+  // I.e. <user_data_dir>/<profile_dir>/Web Applications/_crx_extensionid/
+  base::FilePath user_data_dir =
+      g_info->user_data_dir.DirName().DirName().DirName();
+  CHECK(!user_data_dir.empty());
 
   base::FilePath socket_path =
       user_data_dir.Append(app_mode::kAppShimSocketName);
