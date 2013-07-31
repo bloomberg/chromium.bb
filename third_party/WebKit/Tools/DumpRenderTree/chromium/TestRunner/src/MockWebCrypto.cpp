@@ -108,6 +108,21 @@ MockWebCrypto* MockWebCrypto::get()
     return &crypto;
 }
 
+void MockWebCrypto::encrypt(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, WebKit::WebCryptoOperationResult& result)
+{
+    result.initializationSucceeded(new MockCryptoOperation(algorithm, result));
+}
+
+void MockWebCrypto::decrypt(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, WebKit::WebCryptoOperationResult& result)
+{
+    result.initializationSucceeded(new MockCryptoOperation(algorithm, result));
+}
+
+void MockWebCrypto::sign(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, WebKit::WebCryptoOperationResult& result)
+{
+    result.initializationSucceeded(new MockCryptoOperation(algorithm, result));
+}
+
 void MockWebCrypto::digest(const WebKit::WebCryptoAlgorithm& algorithm, WebKit::WebCryptoOperationResult& result)
 {
     result.initializationSucceeded(new MockCryptoOperation(algorithm, result));

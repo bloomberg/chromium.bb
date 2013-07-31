@@ -53,6 +53,8 @@ public:
     Algorithm* algorithm();
     Vector<String> usages() const;
 
+    const WebKit::WebCryptoKey& key() const { return m_key; }
+
     static bool parseFormat(const String&, WebKit::WebCryptoKeyFormat&);
 
     // Parses KeyUsage strings to a WebCryptoKeyUsageMask. If any element is

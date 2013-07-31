@@ -40,6 +40,9 @@ class MockWebCrypto : public WebKit::WebCrypto {
 public:
     static MockWebCrypto* get();
 
+    virtual void encrypt(const WebKit::WebCryptoAlgorithm&, const WebKit::WebCryptoKey&, WebKit::WebCryptoOperationResult&) OVERRIDE;
+    virtual void decrypt(const WebKit::WebCryptoAlgorithm&, const WebKit::WebCryptoKey&, WebKit::WebCryptoOperationResult&) OVERRIDE;
+    virtual void sign(const WebKit::WebCryptoAlgorithm&, const WebKit::WebCryptoKey&, WebKit::WebCryptoOperationResult&) OVERRIDE;
     virtual void digest(const WebKit::WebCryptoAlgorithm&, WebKit::WebCryptoOperationResult&) OVERRIDE;
     virtual void importKey(WebKit::WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebKit::WebCryptoAlgorithm&, bool extractable, WebKit::WebCryptoKeyUsageMask, WebKit::WebCryptoKeyOperationResult&) OVERRIDE;
 };
