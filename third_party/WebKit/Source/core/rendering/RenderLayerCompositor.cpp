@@ -116,17 +116,17 @@ public:
     OverlapMap()
         : m_geometryMap(UseTransforms)
     {
-        // Begin assuming the root layer will be composited so that there is
-        // something on the stack. The root layer should also never get an
-        // popCompositingContainer call.
-        pushCompositingContainer();
+        // Begin by assuming the root layer will be composited so that there
+        // is something on the stack. The root layer should also never get a
+        // finishCurrentOverlapTestingContext() call.
+        beginNewOverlapTestingContext();
     }
 
     void add(const RenderLayer* layer, const IntRect& bounds)
     {
         // Layers do not contribute to overlap immediately--instead, they will
-        // contribute to overlap as soon as their composited ancestor has been
-        // recursively processed and popped off the stack.
+        // contribute to overlap as soon as they have been recursively processed
+        // and popped off the stack.
         ASSERT(m_overlapStack.size() >= 2);
         m_overlapStack[m_overlapStack.size() - 2].add(bounds);
         m_layers.add(layer);
@@ -147,13 +147,23 @@ public:
         return m_layers.isEmpty();
     }
 
-    void pushCompositingContainer()
+    void beginNewOverlapTestingContext()
     {
+        // This effectively creates a new "clean slate" for overlap state.
+        // This is used when we know that a subtree or remaining set of
+        // siblings does not need to check overlap with things behind it.
         m_overlapStack.append(OverlapMapContainer());
     }
 
-    void popCompositingContainer()
+    void finishCurrentOverlapTestingContext()
     {
+        // The overlap information on the top of the stack is still necessary
+        // for checking overlap of any layers outside this context that may
+        // overlap things from inside this context. Therefore, we must merge
+        // the information from the top of the stack before popping the stack.
+        //
+        // FIXME: we may be able to avoid this deep copy by rearranging how
+        //        overlapMap state is managed.
         m_overlapStack[m_overlapStack.size() - 2].unite(m_overlapStack.last());
         m_overlapStack.removeLast();
     }
@@ -820,8 +830,11 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         // This layer now acts as the ancestor for kids.
         childState.m_compositingAncestor = layer;
 
+        // Here we know that all children and the layer's own contents can blindly paint into
+        // this layer's backing, until a descendant is composited. So, we don't need to check
+        // for overlap with anything behind this layer.
         if (overlapMap)
-            overlapMap->pushCompositingContainer();
+            overlapMap->beginNewOverlapTestingContext();
         // This layer is going to be composited, so children can safely ignore the fact that there's an
         // animation running behind this layer, meaning they can rely on the overlap map testing again.
         childState.m_testingOverlap = true;
@@ -832,6 +845,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
 #endif
 
     bool anyDescendantHas3DTransform = false;
+    bool willHaveForegroundLayer = false;
 
     if (layer->isStackingContainer()) {
         if (Vector<RenderLayer*>* negZOrderList = layer->negZOrderList()) {
@@ -848,16 +862,21 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
                     if (!willBeComposited) {
                         // make layer compositing
                         childState.m_compositingAncestor = layer;
-                        if (overlapMap)
-                            overlapMap->pushCompositingContainer();
-                        // This layer is going to be composited, so children can safely ignore the fact that there's an
-                        // animation running behind this layer, meaning they can rely on the overlap map testing again
-                        childState.m_testingOverlap = true;
                         willBeComposited = true;
+                        willHaveForegroundLayer = true;
                     }
                 }
             }
         }
+    }
+
+    if (overlapMap && willHaveForegroundLayer) {
+        // A foreground layer effectively is a new backing for all subsequent children, so
+        // we don't need to test for overlap with anything behind this.
+        overlapMap->beginNewOverlapTestingContext();
+        // This layer is going to be composited, so children can safely ignore the fact that there's an
+        // animation running behind this layer, meaning they can rely on the overlap map testing again
+        childState.m_testingOverlap = true;
     }
 
     if (Vector<RenderLayer*>* normalFlowList = layer->normalFlowList()) {
@@ -898,7 +917,10 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     if (!willBeComposited && canBeComposited(layer) && requiresCompositing(subtreeCompositingReasons)) {
         childState.m_compositingAncestor = layer;
         if (overlapMap) {
-            overlapMap->pushCompositingContainer();
+            // FIXME: this context push is effectively a no-op but needs to exist for
+            // now, because the code is designed to push overlap information to the
+            // second-from-top context of the stack.
+            overlapMap->beginNewOverlapTestingContext();
             addToOverlapMapRecursive(*overlapMap, layer);
         }
         willBeComposited = true;
@@ -927,7 +949,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         compositingState.m_testingOverlap = false;
 
     if (overlapMap && childState.m_compositingAncestor == layer && !layer->isRootLayer())
-        overlapMap->popCompositingContainer();
+        overlapMap->finishCurrentOverlapTestingContext();
 
     // If we're back at the root, and no other layers need to be composited, and the root layer itself doesn't need
     // to be composited, then we can drop out of compositing mode altogether. However, don't drop out of compositing mode
