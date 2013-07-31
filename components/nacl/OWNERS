@@ -5,5 +5,3 @@ mseaborn@chromium.org
 noelallen@chromium.org
 sehr@chromium.org
 
-per-file nacl_sandbox_linux.*=jln@chromium.org
-per-file nacl_sandbox_linux.*=mseaborn@chromium.org
