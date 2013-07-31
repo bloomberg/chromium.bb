@@ -517,10 +517,19 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutShowsSteps) {
   RunMessageLoop();
 }
 
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_RequestAutocompleteDoesntShowSteps \
+    DISABLED_RequestAutocompleteDoesntShowSteps
+#else
+#define MAYBE_RequestAutocompleteDoesntShowSteps \
+    RequestAutocompleteDoesntShowSteps
+#endif
 // Test that Autocheckout steps are not showing after submitting the
 // dialog for controller with type DIALOG_TYPE_REQUEST_AUTOCOMPLETE.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       RequestAutocompleteDoesntShowSteps) {
+                       MAYBE_RequestAutocompleteDoesntShowSteps) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
   controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD);
 
@@ -534,10 +543,17 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_FALSE(controller()->ShouldShowProgressBar());
 }
 
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_FillComboboxFromAutofill DISABLED_FillComboboxFromAutofill
+#else
+#define MAYBE_FillComboboxFromAutofill FillComboboxFromAutofill
+#endif
 // Tests that changing the value of a CC expiration date combobox works as
 // expected when Autofill is used to fill text inputs.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       FillComboboxFromAutofill) {
+                       MAYBE_FillComboboxFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
 
   CreditCard card1;
@@ -767,7 +783,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, NoCvcSegfault) {
       controller()->GetTestableView()->SubmitForTesting());
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, PreservedSections) {
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_PreservedSections  DISABLED_PreservedSections
+#else
+#define MAYBE_PreservedSections PreservedSections
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
   controller()->set_use_validation(true);
 
