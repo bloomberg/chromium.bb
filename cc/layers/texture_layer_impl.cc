@@ -194,6 +194,16 @@ void TextureLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   external_texture_resource_ = 0;
 }
 
+Region TextureLayerImpl::VisibleContentOpaqueRegion() const {
+  if (contents_opaque())
+    return visible_content_rect();
+
+  if (blend_background_color_ && (SkColorGetA(background_color()) == 0xFF))
+    return visible_content_rect();
+
+  return Region();
+}
+
 void TextureLayerImpl::DidLoseOutputSurface() {
   if (external_texture_resource_ && !uses_mailbox_) {
     ResourceProvider* resource_provider =

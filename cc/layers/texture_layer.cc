@@ -232,6 +232,16 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   content_committed_ = DrawsContent();
 }
 
+Region TextureLayer::VisibleContentOpaqueRegion() const {
+  if (contents_opaque())
+    return visible_content_rect();
+
+  if (blend_background_color_ && (SkColorGetA(background_color()) == 0xFF))
+    return visible_content_rect();
+
+  return Region();
+}
+
 bool TextureLayer::BlocksPendingCommit() const {
   // Double-buffered texture layers need to be blocked until they can be made
   // triple-buffered.  Single-buffered layers already prevent draws, so

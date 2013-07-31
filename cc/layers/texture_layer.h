@@ -82,6 +82,7 @@ class CC_EXPORT TextureLayer : public Layer {
   virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
   virtual bool BlocksPendingCommit() const OVERRIDE;
 
   virtual bool CanClipSelf() const OVERRIDE;
