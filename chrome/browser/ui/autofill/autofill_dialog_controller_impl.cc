@@ -70,7 +70,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/cert_status_flags.h"
 #include "ui/base/base_window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -2098,20 +2097,6 @@ void AutofillDialogControllerImpl::Observe(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// content::WebContentsObserver implementation.
-
-void AutofillDialogControllerImpl::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  // Close view if necessary.
-  if (!net::registry_controlled_domains::SameDomainOrHost(
-          details.previous_url, details.entry->GetURL(),
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)) {
-    Hide();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // SuggestionsMenuModelDelegate implementation.
 
 void AutofillDialogControllerImpl::SuggestionItemSelected(
@@ -2353,8 +2338,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback)
-    : WebContentsObserver(contents),
-      profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
+    : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
       dialog_type_(dialog_type),

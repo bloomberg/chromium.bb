@@ -33,7 +33,6 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
@@ -70,7 +69,6 @@ class WalletSigninHelper;
 class AutofillDialogControllerImpl : public AutofillDialogController,
                                      public AutofillPopupDelegate,
                                      public content::NotificationObserver,
-                                     public content::WebContentsObserver,
                                      public SuggestionsMenuModelDelegate,
                                      public wallet::WalletClientDelegate,
                                      public wallet::WalletSigninHelperDelegate,
@@ -195,11 +193,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // content::WebContentsObserver implementation.
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
 
   // SuggestionsMenuModelDelegate implementation.
   virtual void SuggestionItemSelected(SuggestionsMenuModel* model,

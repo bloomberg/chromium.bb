@@ -20,18 +20,15 @@ namespace gfx {
 class Image;
 }
 
-// Operations to be performed on the dialog by the
-// TabModalConfirmDialogDelegate.
-class TabModalConfirmDialogOperationsDelegate {
+class TabModalConfirmDialogCloseDelegate {
  public:
-  TabModalConfirmDialogOperationsDelegate() {}
-  virtual ~TabModalConfirmDialogOperationsDelegate() {}
+  TabModalConfirmDialogCloseDelegate() {}
+  virtual ~TabModalConfirmDialogCloseDelegate() {}
 
   virtual void CloseDialog() = 0;
-  virtual void SetPreventCloseOnLoadStart(bool prevent) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TabModalConfirmDialogOperationsDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TabModalConfirmDialogCloseDelegate);
 };
 
 // This class acts as the delegate for a simple tab-modal dialog confirming
@@ -41,9 +38,8 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   explicit TabModalConfirmDialogDelegate(content::WebContents* web_contents);
   virtual ~TabModalConfirmDialogDelegate();
 
-  void set_operations_delegate(
-      TabModalConfirmDialogOperationsDelegate* operations_delegate) {
-    operations_delegate_ = operations_delegate;
+  void set_close_delegate(TabModalConfirmDialogCloseDelegate* close_delegate) {
+    close_delegate_ = close_delegate;
   }
 
   // Accepts the confirmation prompt and calls |OnAccepted|.
@@ -85,12 +81,12 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   virtual const char* GetCancelButtonIcon();
 
  protected:
-  TabModalConfirmDialogOperationsDelegate* operations_delegate() {
-    return operations_delegate_;
+  TabModalConfirmDialogCloseDelegate* close_delegate() {
+    return close_delegate_;
   }
 
   // content::NotificationObserver implementation.
-  // Watch for a closed tab and dismiss the dialog if it occurs.
+  // Watch for a new load or a closed tab and dismiss the dialog if they occur.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -113,7 +109,7 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   // Close the dialog.
   void CloseDialog();
 
-  TabModalConfirmDialogOperationsDelegate* operations_delegate_;
+  TabModalConfirmDialogCloseDelegate* close_delegate_;
   // True iff we are in the process of closing, to avoid running callbacks
   // multiple times.
   bool closing_;

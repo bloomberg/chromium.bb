@@ -103,11 +103,11 @@ class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
 
 class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
  public:
-  PrintPreviewDialogControllerBrowserTest() : initiator_(NULL) {}
+  PrintPreviewDialogControllerBrowserTest() : initiator_tab_(NULL) {}
   virtual ~PrintPreviewDialogControllerBrowserTest() {}
 
-  WebContents* initiator() {
-    return initiator_;
+  WebContents* initiator_tab() {
+    return initiator_tab_;
   }
 
   void PrintPreview() {
@@ -120,7 +120,7 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
   WebContents* GetPrintPreviewDialog() {
     printing::PrintPreviewDialogController* dialog_controller =
         printing::PrintPreviewDialogController::GetInstance();
-    return dialog_controller->GetPrintPreviewForContents(initiator_);
+    return dialog_controller->GetPrintPreviewForContents(initiator_tab_);
   }
 
  private:
@@ -143,14 +143,14 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
     cloned_tab_observer_.reset(new PrintPreviewDialogClonedObserver(first_tab));
     chrome::DuplicateTab(browser());
 
-    initiator_ = browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(initiator_);
-    ASSERT_NE(first_tab, initiator_);
+    initiator_tab_ = browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(initiator_tab_);
+    ASSERT_NE(first_tab, initiator_tab_);
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     cloned_tab_observer_.reset();
-    initiator_ = NULL;
+    initiator_tab_ = NULL;
   }
 
   RequestPrintPreviewObserver* request_preview_tab_observer() {
@@ -158,13 +158,13 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
   }
 
   scoped_ptr<PrintPreviewDialogClonedObserver> cloned_tab_observer_;
-  WebContents* initiator_;
+  WebContents* initiator_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogControllerBrowserTest);
 };
 
-// Test to verify that when a initiator navigates, we can create a new preview
-// dialog for the new tab contents.
+// Test to verify that when a initiator tab navigates, we can create a new
+// preview dialog for the new tab contents.
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                        NavigateFromInitiatorTab) {
   // print for the first time.
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
   // Check a new print preview dialog got created.
   ASSERT_TRUE(preview_dialog);
-  ASSERT_NE(initiator(), preview_dialog);
+  ASSERT_NE(initiator_tab(), preview_dialog);
 
   // Navigate in the initiator tab. Make sure navigating destroys the print
   // preview dialog.
@@ -193,8 +193,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   EXPECT_TRUE(new_preview_dialog);
 }
 
-// Test to verify that after reloading the initiator, it creates a new print
-// preview dialog.
+// Test to verify that after reloading the initiator tab, it creates a new
+// print preview dialog.
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                        ReloadInitiatorTab) {
   // print for the first time.
@@ -204,9 +204,9 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
   // Check a new print preview dialog got created.
   ASSERT_TRUE(preview_dialog);
-  ASSERT_NE(initiator(), preview_dialog);
+  ASSERT_NE(initiator_tab(), preview_dialog);
 
-  // Reload the initiator. Make sure reloading destroys the print preview
+  // Reload the initiator tab. Make sure reloading destroys the print preview
   // dialog.
   PrintPreviewDialogDestroyedObserver dialog_destroyed_observer(preview_dialog);
   content::WindowedNotificationObserver notification_observer(

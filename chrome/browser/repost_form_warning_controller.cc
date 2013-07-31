@@ -45,9 +45,7 @@ const char* RepostFormWarningController::GetCancelButtonIcon() {
 #endif  // defined(TOOLKIT_GTK)
 
 void RepostFormWarningController::OnAccepted() {
-  operations_delegate()->SetPreventCloseOnLoadStart(true);
   web_contents()->GetController().ContinuePendingReload();
-  operations_delegate()->SetPreventCloseOnLoadStart(false);
 }
 
 void RepostFormWarningController::OnCanceled() {

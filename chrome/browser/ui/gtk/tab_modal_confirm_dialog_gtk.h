@@ -38,17 +38,14 @@ class TabModalConfirmDialogGtk : public TabModalConfirmDialog {
   virtual void AcceptTabModalDialog() OVERRIDE;
   virtual void CancelTabModalDialog() OVERRIDE;
 
-  // TabModalConfirmDialogOperationsDelegate:
+  // TabModalConfirmDialogCloseDelegate:
   virtual void CloseDialog() OVERRIDE;
-  virtual void SetPreventCloseOnLoadStart(bool prevent) OVERRIDE;
 
   // Callbacks:
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnAccept);
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnCancel);
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnDestroy);
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnLinkClicked);
-
-  content::WebContents* web_contents_;
 
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 

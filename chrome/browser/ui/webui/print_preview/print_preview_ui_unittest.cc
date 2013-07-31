@@ -61,24 +61,26 @@ void PrintPreviewUIUnitTest::SetUp() {
   chrome::NewTab(browser());
 }
 
-// Create/Get a preview tab for initiator.
+// Create/Get a preview tab for initiator tab.
 TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
-  WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(initiator);
-  EXPECT_FALSE(IsShowingWebContentsModalDialog(initiator));
+  WebContents* initiator_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(initiator_tab);
+  EXPECT_FALSE(IsShowingWebContentsModalDialog(initiator_tab));
 
   printing::PrintPreviewDialogController* controller =
       printing::PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(controller);
 
   printing::PrintViewManager* print_view_manager =
-      printing::PrintViewManager::FromWebContents(initiator);
+      printing::PrintViewManager::FromWebContents(initiator_tab);
   print_view_manager->PrintPreviewNow(false);
-  WebContents* preview_dialog = controller->GetOrCreatePreviewDialog(initiator);
+  WebContents* preview_dialog =
+      controller->GetOrCreatePreviewDialog(initiator_tab);
 
-  EXPECT_NE(initiator, preview_dialog);
+  EXPECT_NE(initiator_tab, preview_dialog);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_TRUE(IsShowingWebContentsModalDialog(initiator));
+  EXPECT_TRUE(IsShowingWebContentsModalDialog(initiator_tab));
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
@@ -117,21 +119,23 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
 
 // Set and get the individual draft pages.
 TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
-  WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(initiator);
+  WebContents* initiator_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(initiator_tab);
 
   printing::PrintPreviewDialogController* controller =
       printing::PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(controller);
 
   printing::PrintViewManager* print_view_manager =
-      printing::PrintViewManager::FromWebContents(initiator);
+      printing::PrintViewManager::FromWebContents(initiator_tab);
   print_view_manager->PrintPreviewNow(false);
-  WebContents* preview_dialog = controller->GetOrCreatePreviewDialog(initiator);
+  WebContents* preview_dialog =
+      controller->GetOrCreatePreviewDialog(initiator_tab);
 
-  EXPECT_NE(initiator, preview_dialog);
+  EXPECT_NE(initiator_tab, preview_dialog);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_TRUE(IsShowingWebContentsModalDialog(initiator));
+  EXPECT_TRUE(IsShowingWebContentsModalDialog(initiator_tab));
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
@@ -177,21 +181,23 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
 
 // Test the browser-side print preview cancellation functionality.
 TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
-  WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(initiator);
+  WebContents* initiator_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(initiator_tab);
 
   printing::PrintPreviewDialogController* controller =
       printing::PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(controller);
 
   printing::PrintViewManager* print_view_manager =
-      printing::PrintViewManager::FromWebContents(initiator);
+      printing::PrintViewManager::FromWebContents(initiator_tab);
   print_view_manager->PrintPreviewNow(false);
-  WebContents* preview_dialog = controller->GetOrCreatePreviewDialog(initiator);
+  WebContents* preview_dialog =
+      controller->GetOrCreatePreviewDialog(initiator_tab);
 
-  EXPECT_NE(initiator, preview_dialog);
+  EXPECT_NE(initiator_tab, preview_dialog);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_TRUE(IsShowingWebContentsModalDialog(initiator));
+  EXPECT_TRUE(IsShowingWebContentsModalDialog(initiator_tab));
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());

@@ -45,11 +45,6 @@ class WebContentsModalDialogManager
   // calling this function.
   void FocusTopmostDialog();
 
-  // Set to true to prevent closing the window when a page load starts on the
-  // WebContents.
-  void SetPreventCloseOnLoadStart(NativeWebContentsModalDialog dialog,
-                                  bool prevent);
-
   // Overriden from NativeWebContentsModalDialogManagerDelegate:
   virtual content::WebContents* GetWebContents() const OVERRIDE;
   // Called when a WebContentsModalDialogs we own is about to be closed.
@@ -81,18 +76,7 @@ class WebContentsModalDialogManager
   explicit WebContentsModalDialogManager(content::WebContents* web_contents);
   friend class content::WebContentsUserData<WebContentsModalDialogManager>;
 
-  struct DialogState {
-    explicit DialogState(NativeWebContentsModalDialog dialog);
-
-    NativeWebContentsModalDialog dialog;
-    bool prevent_close_on_load_start;
-  };
-
-  typedef std::deque<DialogState> WebContentsModalDialogList;
-
-  // Utility function to get the dialog state for a dialog.
-  WebContentsModalDialogList::iterator FindDialogState(
-      NativeWebContentsModalDialog dialog);
+  typedef std::deque<NativeWebContentsModalDialog> WebContentsModalDialogList;
 
   // Blocks/unblocks interaction with renderer process.
   void BlockWebContentsInteraction(bool blocked);
@@ -103,6 +87,9 @@ class WebContentsModalDialogManager
   void CloseAllDialogs();
 
   // Overridden from content::WebContentsObserver:
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidGetIgnoredUIEvent() OVERRIDE;
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 

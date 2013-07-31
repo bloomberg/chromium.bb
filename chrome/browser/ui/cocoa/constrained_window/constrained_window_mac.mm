@@ -78,14 +78,6 @@ NativeWebContentsModalDialog ConstrainedWindowMac::GetNativeDialog() {
   return this;
 }
 
-void ConstrainedWindowMac::SetPreventCloseOnLoadStart(bool prevent) {
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->SetPreventCloseOnLoadStart(
-      GetNativeDialog(),
-      prevent);
-}
-
 NSWindow* ConstrainedWindowMac::GetParentWindow() const {
   // Tab contents in a tabbed browser may not be inside a window. For this
   // reason use a browser window if possible.

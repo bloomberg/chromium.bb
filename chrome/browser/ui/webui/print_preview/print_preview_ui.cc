@@ -388,9 +388,9 @@ int PrintPreviewUI::GetAvailableDraftPageCount() {
   return print_preview_data_service()->GetAvailableDraftPageCount(id_);
 }
 
-void PrintPreviewUI::SetInitiatorTitle(
+void PrintPreviewUI::SetInitiatorTabTitle(
     const string16& job_title) {
-  initiator_title_ = job_title;
+  initiator_tab_title_ = job_title;
 }
 
 // static
@@ -431,7 +431,7 @@ void PrintPreviewUI::OnPrintPreviewDialogClosed() {
   OnClosePrintPreviewDialog();
 }
 
-void PrintPreviewUI::OnInitiatorClosed() {
+void PrintPreviewUI::OnInitiatorTabClosed() {
   WebContents* preview_dialog = web_ui()->GetWebContents();
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();

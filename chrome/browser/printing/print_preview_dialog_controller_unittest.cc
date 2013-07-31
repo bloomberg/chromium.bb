@@ -16,23 +16,23 @@
 
 using content::WebContents;
 
-// Test crashes on Aura due to initiator's native view having no parent.
+// Test crashes on Aura due to initiator tab's native view having no parent.
 // http://crbug.com/104284
 #if defined(USE_AURA)
 #define MAYBE_GetOrCreatePreviewDialog DISABLED_GetOrCreatePreviewDialog
 #define MAYBE_MultiplePreviewDialogs DISABLED_MultiplePreviewDialogs
-#define MAYBE_ClearInitiatorDetails DISABLED_ClearInitiatorDetails
+#define MAYBE_ClearInitiatorTabDetails DISABLED_ClearInitiatorTabDetails
 #else
 #define MAYBE_GetOrCreatePreviewDialog GetOrCreatePreviewDialog
 #define MAYBE_MultiplePreviewDialogs MultiplePreviewDialogs
-#define MAYBE_ClearInitiatorDetails ClearInitiatorDetails
+#define MAYBE_ClearInitiatorTabDetails ClearInitiatorTabDetails
 #endif
 
 namespace printing {
 
 typedef PrintPreviewTest PrintPreviewDialogControllerUnitTest;
 
-// Create/Get a preview dialog for initiator.
+// Create/Get a preview dialog for initiator tab.
 TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_GetOrCreatePreviewDialog) {
   // Lets start with one window with one tab.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -40,37 +40,38 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_GetOrCreatePreviewDialog) {
   chrome::NewTab(browser());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
-  // Create a reference to initiator contents.
-  WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
+  // Create a reference to initiator tab contents.
+  WebContents* initiator_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   PrintPreviewDialogController* dialog_controller =
       PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(dialog_controller);
 
-  // Get the preview dialog for initiator.
-  PrintViewManager::FromWebContents(initiator)->PrintPreviewNow(false);
+  // Get the preview dialog for initiator tab.
+  PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewNow(false);
   WebContents* preview_dialog =
-      dialog_controller->GetOrCreatePreviewDialog(initiator);
+      dialog_controller->GetOrCreatePreviewDialog(initiator_tab);
 
   // New print preview dialog is a constrained window, so the number of tabs is
   // still 1.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_NE(initiator, preview_dialog);
+  EXPECT_NE(initiator_tab, preview_dialog);
 
-  // Get the print preview dialog for the same initiator.
+  // Get the print preview dialog for the same initiator tab.
   WebContents* new_preview_dialog =
-      dialog_controller->GetOrCreatePreviewDialog(initiator);
+      dialog_controller->GetOrCreatePreviewDialog(initiator_tab);
 
   // Preview dialog already exists. Tab count remains the same.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
-  // 1:1 relationship between initiator and preview dialog.
+  // 1:1 relationship between initiator tab and preview dialog.
   EXPECT_EQ(new_preview_dialog, preview_dialog);
 }
 
-// Tests multiple print preview dialogs exist in the same browser for different
-// initiators. If a preview dialog already exists for an initiator, that
-// initiator gets focused.
+// Tests multiple print preview dialogs exist in the same browser for
+// different initiator tabs. If a preview dialog already exists for an
+// initiator tab, that initiator tab gets focused.
 TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewDialogs) {
   // Lets start with one window and two tabs.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -79,7 +80,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewDialogs) {
 
   EXPECT_EQ(0, tab_strip_model->count());
 
-  // Create some new initiators.
+  // Create some new initiator tabs.
   chrome::NewTab(browser());
   WebContents* web_contents_1 = tab_strip_model->GetActiveWebContents();
   ASSERT_TRUE(web_contents_1);
@@ -108,8 +109,8 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewDialogs) {
 
   EXPECT_NE(web_contents_2, preview_dialog_2);
   EXPECT_NE(preview_dialog_1, preview_dialog_2);
-  // 2 initiators and 2 preview dialogs exist in the same browser.  The preview
-  // dialogs are constrained in their respective initiators.
+  // 2 initiator tabs and 2 preview dialogs exist in the same browser.
+  // The preview dialogs are constrained in their respective initiator tabs.
   EXPECT_EQ(2, tab_strip_model->count());
 
   int tab_1_index = tab_strip_model->GetIndexOfWebContents(web_contents_1);
@@ -124,7 +125,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewDialogs) {
   EXPECT_EQ(-1, preview_dialog_2_index);
 
   // Since |preview_dialog_2_index| was the most recently created dialog, its
-  // initiator should have focus.
+  // initiator tab should have focus.
   EXPECT_EQ(tab_2_index, tab_strip_model->active_index());
 
   // When we get the preview dialog for |web_contents_1|,
@@ -133,38 +134,39 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewDialogs) {
   EXPECT_EQ(tab_1_index, tab_strip_model->active_index());
 }
 
-// Check clearing the initiator details associated with a print preview dialog
-// allows the initiator to create another print preview dialog.
-TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_ClearInitiatorDetails) {
+// Check clearing the initiator tab details associated with a print preview
+// dialog allows the initiator tab to create another print preview dialog.
+TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_ClearInitiatorTabDetails) {
   // Lets start with one window with one tab.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   chrome::NewTab(browser());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
-  // Create a reference to initiator contents.
-  WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
+  // Create a reference to initiator tab contents.
+  WebContents* initiator_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   PrintPreviewDialogController* dialog_controller =
       PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(dialog_controller);
 
-  // Get the preview dialog for the initiator.
-  PrintViewManager::FromWebContents(initiator)->PrintPreviewNow(false);
+  // Get the preview dialog for the initiator tab.
+  PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewNow(false);
   WebContents* preview_dialog =
-      dialog_controller->GetOrCreatePreviewDialog(initiator);
+      dialog_controller->GetOrCreatePreviewDialog(initiator_tab);
 
   // New print preview dialog is a constrained window, so the number of tabs is
   // still 1.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_NE(initiator, preview_dialog);
+  EXPECT_NE(initiator_tab, preview_dialog);
 
-  // Clear the initiator details associated with the preview dialog.
-  dialog_controller->EraseInitiatorInfo(preview_dialog);
+  // Clear the initiator tab details associated with the preview dialog.
+  dialog_controller->EraseInitiatorTabInfo(preview_dialog);
 
-  // Get a new print preview dialog for the initiator.
+  // Get a new print preview dialog for the initiator tab.
   WebContents* new_preview_dialog =
-      dialog_controller->GetOrCreatePreviewDialog(initiator);
+      dialog_controller->GetOrCreatePreviewDialog(initiator_tab);
 
   // New print preview dialog is a constrained window, so the number of tabs is
   // still 1.

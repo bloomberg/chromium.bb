@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/url_constants.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
@@ -29,7 +28,6 @@
 
 using content::WebContents;
 using content::WebUIMessageHandler;
-using web_modal::WebContentsModalDialogManager;
 
 // static
 TabModalConfirmDialog* TabModalConfirmDialog::Create(
@@ -44,8 +42,7 @@ const int kDialogHeight = 120;
 TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
     TabModalConfirmDialogDelegate* delegate,
     WebContents* web_contents)
-    : web_contents_(web_contents),
-      delegate_(delegate) {
+    : delegate_(delegate) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   content::WebUIDataSource* data_source = content::WebUIDataSource::Create(
@@ -56,7 +53,7 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
 
   constrained_web_dialog_delegate_ =
       CreateConstrainedWebDialog(profile, this, NULL, web_contents);
-  delegate_->set_operations_delegate(this);
+  delegate_->set_close_delegate(this);
 }
 
 ui::ModalType TabModalConfirmDialogWebUI::GetDialogModalType() const {
@@ -98,7 +95,7 @@ void TabModalConfirmDialogWebUI::OnDialogClosed(
       NOTREACHED() << "Missing or unreadable response from dialog";
   }
 
-  delegate_->set_operations_delegate(NULL);
+  delegate_->set_close_delegate(NULL);
   if (accepted)
     delegate_->Accept();
   else
@@ -122,12 +119,4 @@ void TabModalConfirmDialogWebUI::CancelTabModalDialog() {
 
 void TabModalConfirmDialogWebUI::CloseDialog() {
   constrained_web_dialog_delegate_->OnDialogCloseFromWebUI();
-}
-
-void TabModalConfirmDialogWebUI::SetPreventCloseOnLoadStart(bool prevent) {
-  web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->SetPreventCloseOnLoadStart(
-      constrained_web_dialog_delegate_->GetNativeDialog(),
-      prevent);
 }

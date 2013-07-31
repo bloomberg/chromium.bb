@@ -1,4 +1,4 @@
- // Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,9 +22,9 @@ class WebContents;
 
 namespace printing {
 
-// For print preview, the WebContents that initiates the printing operation is
-// the initiator, and the constrained dialog that shows the print preview is the
-// print preview dialog.
+// For print preview, the tab that initiates the printing operation is the
+// initiator tab, and the constrained dialog that shows the print preview is
+// the print preview dialog.
 // This class manages print preview dialog creation and destruction, and keeps
 // track of the 1:1 relationship between initiatora tabs and print preview
 // dialogs.
@@ -36,14 +36,14 @@ class PrintPreviewDialogController
 
   static PrintPreviewDialogController* GetInstance();
 
-  // Initiate print preview for |initiator|.
+  // Initiate print preview for |initiator_tab|.
   // Call this instead of GetOrCreatePreviewDialog().
-  static void PrintPreview(content::WebContents* initiator);
+  static void PrintPreview(content::WebContents* initiator_tab);
 
-  // Get/Create the print preview dialog for |initiator|.
+  // Get/Create the print preview dialog for |initiator_tab|.
   // Exposed for unit tests.
   content::WebContents* GetOrCreatePreviewDialog(
-      content::WebContents* initiator);
+      content::WebContents* initiator_tab);
 
   // Returns the preview dialog for |contents|.
   // Returns |contents| if |contents| is a preview dialog.
@@ -51,9 +51,9 @@ class PrintPreviewDialogController
   content::WebContents* GetPrintPreviewForContents(
       content::WebContents* contents) const;
 
-  // Returns the initiator for |preview_dialog|.
-  // Returns NULL if no initiator exists for |preview_dialog|.
-  content::WebContents* GetInitiator(content::WebContents* preview_dialog);
+  // Returns the initiator tab for |preview_dialog|.
+  // Returns NULL if no initiator tab exists for |preview_dialog|.
+  content::WebContents* GetInitiatorTab(content::WebContents* preview_dialog);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -66,8 +66,8 @@ class PrintPreviewDialogController
   // Returns true if |url| is a print preview url.
   static bool IsPrintPreviewURL(const GURL& url);
 
-  // Erase the initiator info associated with |preview_dialog|.
-  void EraseInitiatorInfo(content::WebContents* preview_dialog);
+  // Erase the initiator tab info associated with |preview_tab|.
+  void EraseInitiatorTabInfo(content::WebContents* preview_tab);
 
   bool is_creating_print_preview_dialog() const {
     return is_creating_print_preview_dialog_;
@@ -76,16 +76,9 @@ class PrintPreviewDialogController
  private:
   friend class base::RefCounted<PrintPreviewDialogController>;
 
-  // Used to distinguish between the two varieties of WebContents dealt with by
-  // this class.
-  enum ContentsType {
-    INITIATOR,
-    PREVIEW_DIALOG
-  };
-
-  // 1:1 relationship between a print preview dialog and its initiator.
+  // 1:1 relationship between a print preview dialog and its initiator tab.
   // Key: Print preview dialog.
-  // Value: Initiator.
+  // Value: Initiator tab.
   typedef std::map<content::WebContents*, content::WebContents*>
       PrintPreviewDialogMap;
 
@@ -106,22 +99,21 @@ class PrintPreviewDialogController
 
   // Creates a new print preview dialog.
   content::WebContents* CreatePrintPreviewDialog(
-      content::WebContents* initiator);
+      content::WebContents* initiator_tab);
 
-  // Helper function to store the title of the initiator associated with
+  // Helper function to store the title of the initiator tab associated with
   // |preview_dialog| in |preview_dialog|'s PrintPreviewUI.
-  void SaveInitiatorTitle(content::WebContents* preview_dialog);
+  void SaveInitiatorTabTitle(content::WebContents* preview_dialog);
 
   // Adds/Removes observers for notifications from |contents|.
-  void AddObservers(content::WebContents* contents, ContentsType contents_type);
-  void RemoveObservers(content::WebContents* contents,
-                       ContentsType contents_type);
+  void AddObservers(content::WebContents* contents);
+  void RemoveObservers(content::WebContents* contents);
 
   // Removes WebContents when they close/crash/navigate.
-  void RemoveInitiator(content::WebContents* initiator);
+  void RemoveInitiatorTab(content::WebContents* initiator_tab);
   void RemovePreviewDialog(content::WebContents* preview_dialog);
 
-  // Mapping between print preview dialog and the corresponding initiator.
+  // Mapping between print preview dialog and the corresponding initiator tab.
   PrintPreviewDialogMap preview_dialog_map_;
 
   // A registrar for listening notifications.
