@@ -19,12 +19,13 @@ completed && !document.getElementById("progress-bar-container")"""
     util.WaitFor(_IsDone, 300, poll_interval=5)
 
     js_get_results = """
-var results = {}
+var results = {};
 var result_divs = document.querySelectorAll('.p-result');
 for (var r in result_divs) {
-  if (result_divs[r].id && result_divs[r].id.indexOf('Result-') == 0)
+  if (result_divs[r].id && result_divs[r].id.indexOf('Result-') == 0) {
     var key = result_divs[r].id.replace('Result-', '');
     results[key] = result_divs[r].innerHTML;
+  }
 }
 var main_banner = document.getElementById("main-banner").innerHTML;
 var octane_score = main_banner.substr(main_banner.lastIndexOf(':') + 2);
