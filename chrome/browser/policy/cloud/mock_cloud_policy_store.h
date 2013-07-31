@@ -25,6 +25,7 @@ class MockCloudPolicyStore : public CloudPolicyStore {
   using CloudPolicyStore::policy_map_;
   using CloudPolicyStore::policy_;
   using CloudPolicyStore::status_;
+  using CloudPolicyStore::invalidation_version_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyStore);

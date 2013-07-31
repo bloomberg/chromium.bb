@@ -68,7 +68,7 @@ void CloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
   if (policy) {
     if (refresh_state_ != REFRESH_NONE)
       refresh_state_ = REFRESH_POLICY_STORE;
-    store_->Store(*policy);
+    store_->Store(*policy, client->fetched_invalidation_version());
   } else {
     RefreshCompleted(false);
   }

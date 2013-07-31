@@ -200,6 +200,7 @@ TEST_F(CloudPolicyClientTest, Init) {
   EXPECT_CALL(service_, CreateJob(_)).Times(0);
   EXPECT_FALSE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_ns_key_));
+  EXPECT_EQ(0, client_->fetched_invalidation_version());
 }
 
 TEST_F(CloudPolicyClientTest, SetupRegistrationAndPolicyFetch) {
@@ -343,6 +344,40 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithMetaData) {
   EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
   client_->FetchPolicy();
   CheckPolicyResponse();
+}
+
+TEST_F(CloudPolicyClientTest, PolicyFetchWithInvalidation) {
+  Register();
+
+  int64 previous_version = client_->fetched_invalidation_version();
+  client_->SetInvalidationInfo(12345, "12345");
+  EXPECT_EQ(previous_version, client_->fetched_invalidation_version());
+  em::PolicyFetchRequest* policy_fetch_request =
+      policy_request_.mutable_policy_request()->mutable_request(0);
+  policy_fetch_request->set_invalidation_version(12345);
+  policy_fetch_request->set_invalidation_payload("12345");
+
+  ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
+  EXPECT_CALL(observer_, OnPolicyFetched(_));
+  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  client_->FetchPolicy();
+  CheckPolicyResponse();
+  EXPECT_EQ(12345, client_->fetched_invalidation_version());
+}
+
+TEST_F(CloudPolicyClientTest, PolicyFetchWithInvalidationNoPayload) {
+  Register();
+
+  int64 previous_version = client_->fetched_invalidation_version();
+  client_->SetInvalidationInfo(-12345, std::string());
+  EXPECT_EQ(previous_version, client_->fetched_invalidation_version());
+
+  ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
+  EXPECT_CALL(observer_, OnPolicyFetched(_));
+  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  client_->FetchPolicy();
+  CheckPolicyResponse();
+  EXPECT_EQ(-12345, client_->fetched_invalidation_version());
 }
 
 TEST_F(CloudPolicyClientTest, BadPolicyResponse) {

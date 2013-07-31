@@ -159,12 +159,35 @@ enum MetricEnrollment {
   kMetricEnrollmentSize  // Must be the last.
 };
 
+// Events related to policy refresh.
+enum MetricPolicyRefresh {
+  // A refresh occurred while the policy was not invalidated and the policy was
+  // changed. Invalidations were enabled.
+  METRIC_POLICY_REFRESH_CHANGED,
+  // A refresh occurred while the policy was not invalidated and the policy was
+  // changed. Invalidations were disabled.
+  METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS,
+  // A refresh occurred while the policy was not invalidated and the policy was
+  // unchanged.
+  METRIC_POLICY_REFRESH_UNCHANGED,
+  // A refresh occurred while the policy was invalidated and the policy was
+  // changed.
+  METRIC_POLICY_REFRESH_INVALIDATED_CHANGED,
+  // A refresh occurred while the policy was invalidated and the policy was
+  // unchanged.
+  METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED,
+
+  METRIC_POLICY_REFRESH_SIZE  // Must be the last.
+};
+
 // Names for the UMA counters. They are shared from here since the events
 // from the same enum above can be triggered in different files, and must use
 // the same UMA histogram name.
-extern const char* kMetricToken;
-extern const char* kMetricPolicy;
-extern const char* kMetricEnrollment;
+extern const char kMetricToken[];
+extern const char kMetricPolicy[];
+extern const char kMetricEnrollment[];
+extern const char kMetricPolicyRefresh[];
+extern const char kMetricPolicyInvalidations[];
 
 }  // namespace policy
 

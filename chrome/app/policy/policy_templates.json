@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 226
+#   For your editing convenience: highest ID currently used: 228
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2434,6 +2434,24 @@
       Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.
 
       Leaving this policy not set will make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> use the default value of 3 hours.''',
+    },
+    {
+      'name': 'MaxInvalidationFetchDelay',
+      'type': 'int',
+      'schema': { 'type': 'integer' },
+      'supported_on': ['chrome.*:30-', 'chrome_os:0.30-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 10000,
+      'id': 228,
+      'caption': '''Maximum fetch delay after a policy invalidation''',
+      'desc': '''Specifies the maximum delay in milliseconds between receiving a policy invalidation and fetching the new policy from the device management service.
+
+      Setting this policy overrides the default value of 5000 milliseconds. Valid values for this policy are in the range from 1000 (1 second) to 300000 (5 minutes). Any values not in this range will be clamped to the respective boundary.
+
+      Leaving this policy not set will make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> use the default value of 5000 milliseconds.''',
     },
     {
       'name': 'ChromeFrameRendererSettings',

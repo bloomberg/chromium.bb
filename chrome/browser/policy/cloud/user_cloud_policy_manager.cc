@@ -35,7 +35,7 @@ UserCloudPolicyManager::~UserCloudPolicyManager() {
 void UserCloudPolicyManager::Connect(
     PrefService* local_state, scoped_ptr<CloudPolicyClient> client) {
   core()->Connect(client.Pass());
-  core()->StartRefreshScheduler();
+  StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state, prefs::kUserPolicyRefreshRate);
 }
 

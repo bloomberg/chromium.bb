@@ -1496,6 +1496,12 @@
     ]
   },
 
+  "MaxInvalidationFetchDelay": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "PolicyRefreshRate": 15000 },
+    "pref_mappings": []
+  },
+
   "OpenNetworkConfiguration": {
   },
 

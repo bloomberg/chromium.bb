@@ -73,11 +73,23 @@ class CloudPolicyStore {
     return validation_status_;
   }
 
+  // Returns true if the latest policy loaded was different from the previous
+  // policy.
+  bool policy_changed() const {
+    return policy_changed_;
+  }
+
   // Store a new policy blob. Pending load/store operations will be canceled.
   // The store operation may proceed asynchronously and observers are notified
   // once the operation finishes. If successful, OnStoreLoaded() will be invoked
   // on the observers and the updated policy can be read through policy().
   // Errors generate OnStoreError() notifications.
+  // |invalidation_version| is the invalidation version of the policy to be
+  // stored.
+  void Store(
+      const enterprise_management::PolicyFetchResponse& policy,
+      int64 invalidation_version);
+
   virtual void Store(
       const enterprise_management::PolicyFetchResponse& policy) = 0;
 
@@ -92,6 +104,12 @@ class CloudPolicyStore {
 
   // Removes the specified observer.
   void RemoveObserver(Observer* observer);
+
+  // The invalidation version of the last policy stored. This value can be read
+  // by observers to determine which version of the policy is now available.
+  int64 invalidation_version() {
+    return invalidation_version_;
+  }
 
  protected:
   // Invokes the corresponding callback on all registered observers.
@@ -110,10 +128,20 @@ class CloudPolicyStore {
   // Latest validation status.
   CloudPolicyValidatorBase::Status validation_status_;
 
+  // The invalidation version of the last policy stored.
+  int64 invalidation_version_;
+
  private:
   // Whether the store has completed asynchronous initialization, which is
   // triggered by calling Load().
   bool is_initialized_;
+
+  // Whether latest policy loaded was different from the previous policy.
+  bool policy_changed_;
+
+  // The hash value of the current policy. This is used to determine when the
+  // policy changes.
+  uint32 hash_value_;
 
   ObserverList<Observer, true> observers_;
 

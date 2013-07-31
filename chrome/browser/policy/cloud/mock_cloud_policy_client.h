@@ -50,6 +50,9 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   using CloudPolicyClient::public_key_version_;
   using CloudPolicyClient::public_key_version_valid_;
   using CloudPolicyClient::namespaces_to_fetch_;
+  using CloudPolicyClient::invalidation_version_;
+  using CloudPolicyClient::invalidation_payload_;
+  using CloudPolicyClient::fetched_invalidation_version_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyClient);

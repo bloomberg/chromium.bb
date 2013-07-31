@@ -104,6 +104,11 @@ class CloudPolicyClient {
       bool is_auto_enrollment,
       const std::string& requisition);
 
+  // Sets information about a policy invalidation. Subsequent fetch operations
+  // will use the given info, and callers can use fetched_invalidation_version
+  // to determine which version of policy was fetched.
+  void SetInvalidationInfo(int64 version, const std::string& payload);
+
   // Requests a policy fetch. The client being registered is a prerequisite to
   // this operation and this call will CHECK if the client is not in registered
   // state. FetchPolicy() triggers a policy fetch from the cloud. A policy
@@ -186,6 +191,13 @@ class CloudPolicyClient {
     return robot_api_auth_code_;
   }
 
+  // Returns the invalidation version that was used for the last FetchPolicy.
+  // Observers can call this method from their OnPolicyFetched method to
+  // determine which at which invalidation version the policy was fetched.
+  int64 fetched_invalidation_version() const {
+    return fetched_invalidation_version_;
+  }
+
  protected:
   // A set of PolicyNamespaceKeys to fetch.
   typedef std::set<PolicyNamespaceKey> NamespaceSet;
@@ -244,6 +256,13 @@ class CloudPolicyClient {
   int public_key_version_;
   bool public_key_version_valid_;
   std::string robot_api_auth_code_;
+
+  // Information for the latest policy invalidation received.
+  int64 invalidation_version_;
+  std::string invalidation_payload_;
+
+  // The invalidation version used for the most recent fetch operation.
+  int64 fetched_invalidation_version_;
 
   // Used for issuing requests to the cloud.
   DeviceManagementService* service_;

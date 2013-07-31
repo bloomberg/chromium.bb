@@ -58,6 +58,8 @@ CloudPolicyClient::CloudPolicyClient(const std::string& machine_id,
       submit_machine_id_(false),
       public_key_version_(-1),
       public_key_version_valid_(false),
+      invalidation_version_(0),
+      fetched_invalidation_version_(0),
       service_(service),                  // Can be NULL for unit tests.
       status_provider_(status_provider),  // Can be NULL for unit tests.
       status_(DM_STATUS_SUCCESS) {
@@ -125,6 +127,13 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
                                  base::Unretained(this)));
 }
 
+void CloudPolicyClient::SetInvalidationInfo(
+    int64 version,
+    const std::string& payload) {
+  invalidation_version_ = version;
+  invalidation_payload_ = payload;
+}
+
 void CloudPolicyClient::FetchPolicy() {
   CHECK(is_registered());
   CHECK(!namespaces_to_fetch_.empty());
@@ -165,6 +174,10 @@ void CloudPolicyClient::FetchPolicy() {
             last_policy_timestamp_ - base::Time::UnixEpoch());
         fetch_request->set_timestamp(timestamp.InMilliseconds());
       }
+      if (!invalidation_payload_.empty()) {
+        fetch_request->set_invalidation_version(invalidation_version_);
+        fetch_request->set_invalidation_payload(invalidation_payload_);
+      }
     }
   }
 
@@ -179,6 +192,10 @@ void CloudPolicyClient::FetchPolicy() {
       request->clear_session_status_report_request();
     }
   }
+
+  // Set the fetched invalidation version to the latest invalidation version
+  // since it is now the invalidation version used for the latest fetch.
+  fetched_invalidation_version_ = invalidation_version_;
 
   // Fire the job.
   request_job_->Start(base::Bind(&CloudPolicyClient::OnPolicyFetchCompleted,

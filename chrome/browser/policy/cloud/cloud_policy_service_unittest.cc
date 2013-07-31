@@ -105,8 +105,11 @@ TEST_F(CloudPolicyServiceTest, RefreshPolicySuccess) {
   em::PolicyFetchResponse policy;
   policy.set_policy_data("fake policy");
   client_.SetPolicy(policy_ns_key_, policy);
+  client_.fetched_invalidation_version_ = 12345;
   EXPECT_CALL(store_, Store(ProtoMatches(policy))).Times(1);
+  EXPECT_EQ(0, store_.invalidation_version());
   client_.NotifyPolicyFetched();
+  EXPECT_EQ(12345, store_.invalidation_version());
 
   // Store reloads policy, callback gets triggered.
   store_.policy_.reset(new em::PolicyData());

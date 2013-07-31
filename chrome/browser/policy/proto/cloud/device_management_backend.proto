@@ -169,6 +169,16 @@ message PolicyFetchRequest {
   // policy_type represents the type of settings (e.g. public account,
   // extension) devices request to fetch.
   optional string settings_entity_id = 6;
+
+  // If this fetch is due to a policy invalidation, this field contains the
+  // version provided with the invalidation. The server interprets this value
+  // and the value of invalidation_payload to fetch the up-to-date policy.
+  optional int64 invalidation_version = 7;
+
+  // If this fetch is due to a policy invalidation, this field contains the
+  // payload delivered with the invalidation. The server interprets this value
+  // and the value of invalidation_version to fetch the up-to-date policy.
+  optional bytes invalidation_payload = 8;
 }
 
 // This message is included in serialized form in PolicyFetchResponse
@@ -242,6 +252,16 @@ message PolicyData {
   // Indicates the identity the device service account is associated with.
   // This is only sent as part of device policy fetch.
   optional string service_account_identity = 12;
+
+  // The object source which hosts policy objects within the invalidation
+  // service. This value is combined with invalidation_name to form the object
+  // id used to register for invalidations to this policy.
+  optional int32 invalidation_source = 13;
+
+  // The name which uniquely identifies this policy within the invalidation
+  // service object source. This value is combined with invalidation_source to
+  // form the object id used to register for invalidations to this policy.
+  optional bytes invalidation_name = 14;
 }
 
 message PolicyFetchResponse {

@@ -6,8 +6,10 @@
 
 namespace policy {
 
-const char* kMetricToken = "Enterprise.DMToken";
-const char* kMetricPolicy = "Enterprise.Policy";
-const char* kMetricEnrollment = "Enterprise.Enrollment";
+const char kMetricToken[] = "Enterprise.DMToken";
+const char kMetricPolicy[] = "Enterprise.Policy";
+const char kMetricEnrollment[] = "Enterprise.Enrollment";
+const char kMetricPolicyRefresh[] = "Enterprise.PolicyRefresh";
+const char kMetricPolicyInvalidations[] = "Enterprise.PolicyInvalidations";
 
 }  // namespace policy

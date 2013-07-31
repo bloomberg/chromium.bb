@@ -164,6 +164,12 @@ const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 // expiration of credentials during testing.
 const char kClearTokenService[]             = "clear-token-service";
 
+// The maximum amount of delay in ms between receiving a cloud policy
+// invalidation and fetching the policy. A random delay up to this value is used
+// to prevent Chrome clients from overwhelming the cloud policy server when a
+// policy which affects many users is changed.
+const char kCloudPolicyInvalidationDelay[]  = "cloud-policy-invalidation-delay";
+
 // Used with kCloudPrintFile. Tells Chrome to delete the file when finished
 // displaying the print dialog.
 const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";
@@ -520,6 +526,9 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 
 // Enables a sync promo that is displayed in the bookmark bubble.
 const char kEnableBookmarkSyncPromo[]       = "enable-bookmark-sync-promo";
+
+// Enables pushing cloud policy to Chrome using an invalidation service.
+const char kEnableCloudPolicyPush[]         = "enable-cloud-policy-push";
 
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.

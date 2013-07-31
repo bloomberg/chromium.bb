@@ -1007,6 +1007,7 @@
         'browser/policy/cloud/cloud_external_data_store_unittest.cc',
         'browser/policy/cloud/cloud_policy_client_unittest.cc',
         'browser/policy/cloud/cloud_policy_core_unittest.cc',
+        'browser/policy/cloud/cloud_policy_invalidator_unittest.cc',
         'browser/policy/cloud/cloud_policy_manager_unittest.cc',
         'browser/policy/cloud/cloud_policy_refresh_scheduler_unittest.cc',
         'browser/policy/cloud/cloud_policy_service_unittest.cc',

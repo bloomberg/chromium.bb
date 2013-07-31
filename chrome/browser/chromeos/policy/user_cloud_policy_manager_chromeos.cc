@@ -148,7 +148,7 @@ void UserCloudPolicyManagerChromeOS::OnInitializationCompleted(
     // Start the refresh scheduler now, which will eventually refresh the
     // cached policy or make the first fetch once the OAuth2 token is
     // available.
-    StartRefreshScheduler();
+    StartRefreshSchedulerIfReady();
   }
 }
 
@@ -188,7 +188,7 @@ void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyRefreshNeeded() {
 
 void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyUpdated() {
   CheckAndPublishPolicy();
-  StartRefreshScheduler();
+  StartRefreshSchedulerIfReady();
 }
 
 void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingSigninProfile() {
@@ -252,10 +252,10 @@ void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch() {
   CheckAndPublishPolicy();
   // Now that |wait_for_policy_fetch_| is guaranteed to be false, the scheduler
   // can be started.
-  StartRefreshScheduler();
+  StartRefreshSchedulerIfReady();
 }
 
-void UserCloudPolicyManagerChromeOS::StartRefreshScheduler() {
+void UserCloudPolicyManagerChromeOS::StartRefreshSchedulerIfReady() {
   if (core()->refresh_scheduler())
     return;  // Already started.
 
@@ -273,7 +273,7 @@ void UserCloudPolicyManagerChromeOS::StartRefreshScheduler() {
     return;
   }
 
-  core()->StartRefreshScheduler();
+  StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state_, prefs::kUserPolicyRefreshRate);
 }
 

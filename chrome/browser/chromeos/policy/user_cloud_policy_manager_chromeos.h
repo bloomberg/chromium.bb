@@ -108,7 +108,7 @@ class UserCloudPolicyManagerChromeOS
   // have completed).
   void CancelWaitForPolicyFetch();
 
-  void StartRefreshScheduler();
+  void StartRefreshSchedulerIfReady();
 
   // Owns the store, note that CloudPolicyManager just keeps a plain pointer.
   scoped_ptr<CloudPolicyStore> store_;

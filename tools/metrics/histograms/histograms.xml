@@ -2404,10 +2404,28 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.PolicyInvalidations"
+    enum="EnterprisePolicyInvalidations">
+  <summary>
+    Events for counting policy invalidations received with and without payloads.
+    Invalidations indicate that a policy has been updated and should be
+    refreshed. Payloads provide context about the policy update, but may be
+    absent if dropped by the invalidation service.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.PolicyLoadStatus" enum="EnterprisePolicyLoadStatus">
   <summary>
     Load status from the policy loaders which pull policy settings from the
     underlying platform, such as Windows Group Policy.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.PolicyRefresh" enum="EnterprisePolicyRefresh">
+  <summary>
+    Events measuring effectiveness of refreshing policy when invalidations are
+    received from a service. For each refresh, indicates whether the policy
+    changed, and whether the policy was invalidated at the time of the refresh.
   </summary>
 </histogram>
 
@@ -16177,6 +16195,11 @@ other types of suffix sets.
   <int value="198" label="Idle warning delay when running on battery power"/>
 </enum>
 
+<enum name="EnterprisePolicyInvalidations" type="int">
+  <int value="0" label="No payload"/>
+  <int value="1" label="Payload"/>
+</enum>
+
 <enum name="EnterprisePolicyLoadStatus" type="int">
   <summary>
     Status codes produced by the policy loaders that pull policy settings from
@@ -16206,6 +16229,14 @@ other types of suffix sets.
   </int>
   <int value="7" label="TOO_BIG">Data too large to process.</int>
   <int value="8" label="PARSE_ERROR">Parse error.</int>
+</enum>
+
+<enum name="EnterprisePolicyRefresh" type="int">
+  <int value="0" label="Changed"/>
+  <int value="1" label="Changed; Invalidations disabled"/>
+  <int value="2" label="Unchanged"/>
+  <int value="3" label="Invalidated; Changed"/>
+  <int value="4" label="Invalidated; Unchanged"/>
 </enum>
 
 <enum name="EnterprisePolicyType" type="int">
