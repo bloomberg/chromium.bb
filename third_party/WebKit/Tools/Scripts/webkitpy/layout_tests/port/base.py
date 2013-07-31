@@ -165,7 +165,12 @@ class Port(object):
         return False
 
     def default_timeout_ms(self):
-        return 35 * 1000
+        timeout_ms = 6 * 1000
+        if self.get_option('configuration') == 'Debug':
+            # Debug is 6x slower than Release
+            # FIXME: It should be closer to 2x. See crbug.com/254188
+            return 6 * timeout_ms
+        return timeout_ms
 
     def driver_stop_timeout(self):
         """ Returns the amount of time in seconds to wait before killing the process in driver.stop()."""

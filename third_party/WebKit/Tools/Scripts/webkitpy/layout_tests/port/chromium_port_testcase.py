@@ -55,10 +55,6 @@ class ChromiumPortTestCase(port_testcase.PortTestCase):
         port.default_child_processes = lambda: 2
         self.assertEqual(port.default_max_locked_shards(), 1)
 
-    def test_default_timeout_ms(self):
-        self.assertEqual(self.make_port(options=MockOptions(configuration='Release')).default_timeout_ms(), 6000)
-        self.assertEqual(self.make_port(options=MockOptions(configuration='Debug')).default_timeout_ms(), 12000)
-
     def test_default_pixel_tests(self):
         self.assertEqual(self.make_port().default_pixel_tests(), True)
 

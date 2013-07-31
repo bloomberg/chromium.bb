@@ -149,11 +149,6 @@ class ChromiumPort(Port):
     def default_baseline_search_path(self):
         return map(self._webkit_baseline_path, self.FALLBACK_PATHS[self.version()])
 
-    def default_timeout_ms(self):
-        if self.get_option('configuration') == 'Debug':
-            return 12 * 1000
-        return 6 * 1000
-
     def _check_file_exists(self, path_to_file, file_description,
                            override_step=None, logging=True):
         """Verify the file is present where expected or log an error.
