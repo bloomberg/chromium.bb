@@ -33,24 +33,23 @@ int main(int argc, char** argv) {
 
   std::string command;
   if (args.empty()) {
-    command = "gen";
+    command = commands::kGen;
   } else {
     command = args[0];
     args.erase(args.begin());
   }
 
-  int retval = 0;
-  if (command == "gen") {
-    retval = RunGenCommand(args);
-  } else if (command == "desc" || command == "wtf") {
-    retval = RunDescCommand(args);
-  } else if (command == "deps") {
-    retval = RunDepsCommand(args);
-  } else if (command == "tree") {
-    retval = RunTreeCommand(args);
+  const commands::CommandInfoMap& command_map = commands::GetCommands();
+  commands::CommandInfoMap::const_iterator found_command =
+      command_map.find(command);
+
+  int retval;
+  if (found_command != command_map.end()) {
+    retval = found_command->second.runner(args);
   } else {
     Err(Location(),
         "Command \"" + command + "\" unknown.").PrintToStdout();
+    commands::RunHelp(std::vector<std::string>());
     retval = 1;
   }
 

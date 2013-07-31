@@ -11,6 +11,8 @@ class Err;
 class ParseNode;
 class Value;
 
+extern const char kInputConversion_Help[];
+
 // Converts the given input string (is read from a file or output from a
 // script) to a Value. Conversions as specified in the input_conversion string
 // will be performed. The given origin will be used for constructing the

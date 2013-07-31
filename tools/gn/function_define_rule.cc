@@ -3,16 +3,21 @@
 // found in the LICENSE file.
 
 #include "tools/gn/functions.h"
-
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/value.h"
 
-Value ExecuteDefineRule(Scope* scope,
-                        const FunctionCallNode* function,
-                        const std::vector<Value>& args,
-                        BlockNode* block,
-                        Err* err) {
+namespace functions {
+
+const char kDefineRule[] = "define_rule";
+const char kDefileRule_Help[] =
+    "TODO(brettw) write this.";
+
+Value RunDefineRule(Scope* scope,
+                    const FunctionCallNode* function,
+                    const std::vector<Value>& args,
+                    BlockNode* block,
+                    Err* err) {
   // TODO(brettw) determine if the function is built-in and throw an error if
   // it is.
   if (args.size() != 1) {
@@ -35,3 +40,5 @@ Value ExecuteDefineRule(Scope* scope,
   scope->AddRule(rule_name, function);
   return Value();
 }
+
+}  // namespace functions

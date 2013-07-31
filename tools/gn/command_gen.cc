@@ -14,6 +14,8 @@
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
 
+namespace commands {
+
 namespace {
 
 // Suppress output on success.
@@ -21,7 +23,16 @@ const char kSwitchQuiet[] = "q";
 
 }  // namespace
 
-int RunGenCommand(const std::vector<std::string>& args) {
+const char kGen[] = "gen";
+const char kGen_HelpShort[] =
+    "gen: Generate ninja files.";
+const char kGen_Help[] =
+    "gn gen\n"
+    "  Generates ninja files from the current tree.\n"
+    "\n"
+    "  See \"gn help\" for the common command-line switches.\n";
+
+int RunGen(const std::vector<std::string>& args) {
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
   // Deliberately leaked to avoid expensive process teardown.
@@ -64,3 +75,5 @@ int RunGenCommand(const std::vector<std::string>& args) {
 
   return 0;
 }
+
+}  // namespace commands

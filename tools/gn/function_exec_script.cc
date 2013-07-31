@@ -22,40 +22,7 @@
 #include "base/win/scoped_process_information.h"
 #endif
 
-/*
-exec_script: Synchronously run a script and return the output.
-
-  exec_script(filename, arguments, input_conversion, [file_dependencies])
-
-  Runs the given script, returning the stdout of the script. The build
-  generation will fail if the script does not exist or returns a nonzero
-  exit code.
-
-Arguments:
-
-  filename:
-      File name of python script to execute, relative to the build file.
-
-  arguments:
-      A list of strings to be passed to the scripe as arguments.
-
-  input_conversion:
-      Controls how the file is read and parsed. See "help input_conversion".
-
-  dependencies:
-      (Optional) A list of files that this script reads or otherwise depends
-      on. These dependencies will be added to the build result such that if
-      any of them change, the build will be regenerated and the script will
-      be re-run.
-
-      The script itself will be an implicit dependency so you do not need to
-      list it.
-
-Example:
-
-  all_lines = exec_script("myscript.py", [some_input], "list lines",
-                          ["data_file.txt"])
-*/
+namespace functions {
 
 namespace {
 
@@ -168,10 +135,47 @@ bool ExecProcess(const CommandLine& cmdline,
 
 }  // namespace
 
-Value ExecuteExecScript(Scope* scope,
-                        const FunctionCallNode* function,
-                        const std::vector<Value>& args,
-                        Err* err) {
+const char kExecScript[] = "exec_script";
+const char kExecScript_Help[] =
+    "exec_script: Synchronously run a script and return the output.\n"
+    "\n"
+    "  exec_script(filename, arguments, input_conversion,\n"
+    "              [file_dependencies])\n"
+    "\n"
+    "  Runs the given script, returning the stdout of the script. The build\n"
+    "  generation will fail if the script does not exist or returns a nonzero\n"
+    "  exit code.\n"
+    "\n"
+    "Arguments:\n"
+    "\n"
+    "  filename:\n"
+    "      File name of python script to execute, relative to the build file.\n"
+    "\n"
+    "  arguments:\n"
+    "      A list of strings to be passed to the scripe as arguments.\n"
+    "\n"
+    "  input_conversion:\n"
+    "      Controls how the file is read and parsed.\n"
+    "      See \"gn help input_conversion\".\n"
+    "\n"
+    "  dependencies:\n"
+    "      (Optional) A list of files that this script reads or otherwise\n"
+    "      depends on. These dependencies will be added to the build result\n"
+    "      such that if any of them change, the build will be regenerated and\n"
+    "      the script will be re-run.\n"
+    "\n"
+    "      The script itself will be an implicit dependency so you do not\n"
+    "      need to list it.\n"
+    "\n"
+    "Example:\n"
+    "\n"
+    "  all_lines = exec_script(\"myscript.py\", [some_input], \"list lines\",\n"
+    "                          [\"data_file.txt\"])\n";
+
+Value RunExecScript(Scope* scope,
+                    const FunctionCallNode* function,
+                    const std::vector<Value>& args,
+                    Err* err) {
   if (args.size() != 3 && args.size() != 4) {
     *err = Err(function->function(), "Wrong number of args to write_file",
                "I expected three or four arguments.");
@@ -252,3 +256,5 @@ Value ExecuteExecScript(Scope* scope,
 
   return ConvertInputToValue(output, function, args[2], err);
 }
+
+}  // namespace functions

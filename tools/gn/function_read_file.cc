@@ -14,30 +14,33 @@
 // WebKit bindings but misundersood what was required, and didn't need to
 // use this. This seems to have a high potential for misuse.
 
-/*
-read_file: Read a file into a variable.
+namespace functions {
 
-  read_file(filename, how_to_read)
+const char kReadFile[] = "read_file";
+const char kReadFile_Help[] =
+    "read_file: Read a file into a variable.\n"
+    "\n"
+    "  read_file(filename, how_to_read)\n"
+    "\n"
+    "  Whitespace will be trimmed from the end of the file. Throws an error\n"
+    "  if the file can not be opened.\n"
+    "\n"
+    "Arguments:\n"
+    "\n"
+    "  filename\n"
+    "      Filename to read, relative to the build file.\n"
+    "\n"
+    "  input_conversion\n"
+    "      Controls how the file is read and parsed.\n"
+    "      See \"gn help input_conversion\".\n"
+    "\n"
+    "Example:\n"
+    "  lines = read_file(\"foo.txt\", \"list lines\")\n";
 
-  Whitespace will be trimmed from the end of the file. Throws an error if the
-  file can not be opened.
-
-Arguments:
-
-  filename:
-      Filename to read, relative to the build file.
-
-  input_conversion:
-      Controls how the file is read and parsed. See "help input_conversion".
-
-Example:
-
-  lines = read_file("foo.txt", "list lines")
-*/
-Value ExecuteReadFile(Scope* scope,
-                      const FunctionCallNode* function,
-                      const std::vector<Value>& args,
-                      Err* err) {
+Value RunReadFile(Scope* scope,
+                  const FunctionCallNode* function,
+                  const std::vector<Value>& args,
+                  Err* err) {
   if (args.size() != 2) {
     *err = Err(function->function(), "Wrong number of args to read_file",
                "I expected two arguments.");
@@ -65,3 +68,5 @@ Value ExecuteReadFile(Scope* scope,
 
   return ConvertInputToValue(file_contents, function, args[1], err);
 }
+
+}  // namespace functions

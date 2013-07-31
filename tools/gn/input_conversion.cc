@@ -157,32 +157,32 @@ Value ParseList(const std::string& input,
 
 }  // namespace
 
-/*
-input_conversion: Specifies how to transform input to a variable.
-
-  input_conversion is an argument to read_file and exec_script that specifies
-  how the result of the read operation should be converted into a variable.
-
-  "list lines":
-      Return the file contents as a list, with a string for each line. The
-      newlines will not be present in the result. Empty newlines will be
-      trimmed from the trailing end of the returned list.
-
-  "value":
-      Parse the input as if it was a literal rvalue in a buildfile.
-      Examples of typical program output using this mode:
-        [ "foo", "bar" ]     (result will be a list)
-      or
-        "foo bar"            (result will be a string)
-      or
-        5                    (result will be an integer)
-
-      Note that if the input is empty, the result will be a null value which
-      will produce an error if assigned to a variable.
-
-  "string":
-      Return the file contents into a single string.
-*/
+extern const char kInputConversion_Help[] =
+    "input_conversion: Specifies how to transform input to a variable.\n"
+    "\n"
+    "  input_conversion is an argument to read_file and exec_script that\n"
+    "  specifies how the result of the read operation should be converted\n"
+    "  into a variable.\n"
+    "\n"
+    "  \"list lines\"\n"
+    "      Return the file contents as a list, with a string for each line.\n"
+    "      The newlines will not be present in the result. Empty newlines\n"
+    "      will be trimmed from the trailing end of the returned list.\n"
+    "\n"
+    "  \"value\"\n"
+    "      Parse the input as if it was a literal rvalue in a buildfile.\n"
+    "      Examples of typical program output using this mode:\n"
+    "        [ \"foo\", \"bar\" ]     (result will be a list)\n"
+    "      or\n"
+    "        \"foo bar\"            (result will be a string)\n"
+    "      or\n"
+    "        5                    (result will be an integer)\n"
+    "\n"
+    "      Note that if the input is empty, the result will be a null value\n"
+    "      which will produce an error if assigned to a variable.\n"
+    "\n"
+    "  \"string\"\n"
+    "      Return the file contents into a single string.\n";
 
 Value ConvertInputToValue(const std::string& input,
                           const ParseNode* origin,

@@ -280,7 +280,8 @@ Value FunctionCallNode::Execute(Scope* scope, Err* err) const {
   Value args = args_->Execute(scope, err);
   if (err->has_error())
     return Value();
-  return ExecuteFunction(scope, this, args.list_value(), block_.get(), err);
+  return functions::RunFunction(scope, this, args.list_value(), block_.get(),
+                                err);
 }
 
 LocationRange FunctionCallNode::GetRange() const {

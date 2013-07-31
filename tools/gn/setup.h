@@ -21,6 +21,8 @@ class CommandLine;
 class InputFile;
 class ParseNode;
 
+extern const char kDotfile_Help[];
+
 // Helper class to setup the build settings and environment for the various
 // commands to run.
 class Setup {

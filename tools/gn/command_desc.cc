@@ -14,6 +14,8 @@
 #include "tools/gn/standard_out.h"
 #include "tools/gn/target.h"
 
+namespace commands {
+
 namespace {
 
 struct CompareTargetLabel {
@@ -99,7 +101,21 @@ void RecursivePrintDeps(const Target* target,
 
 }  // namespace
 
-int RunDescCommand(const std::vector<std::string>& args) {
+// desc ------------------------------------------------------------------------
+
+const char kDesc[] = "desc";
+const char kDesc_HelpShort[] =
+    "desc: Show lots of insigntful information about a target.";
+const char kDesc_Help[] =
+    "gn desc <target label>\n"
+    "  Displays all recursive dependencies for a given labeled target.\n"
+    "\n"
+    "  See \"gn help\" for the common command-line switches.\n"
+    "\n"
+    "Examples:\n"
+    "  gn desc //base:base\n";
+
+int RunDesc(const std::vector<std::string>& args) {
   if (args.size() != 1) {
     Err(Location(), "You're holding it wrong.",
         "Usage: \"gn desc <target_name>\"").PrintToStdout();
@@ -154,7 +170,21 @@ int RunDescCommand(const std::vector<std::string>& args) {
   return 0;
 }
 
-int RunDepsCommand(const std::vector<std::string>& args) {
+// deps ------------------------------------------------------------------------
+
+const char kDeps[] = "deps";
+const char kDeps_HelpShort[] =
+    "deps: Show all recursive dependencies of a target.";
+const char kDeps_Help[] =
+    "gn deps <target label>\n"
+    "  Displays all recursive dependencies for a given labeled target.\n"
+    "\n"
+    "  See \"gn help\" for the common command-line switches.\n"
+    "\n"
+    "Examples:\n"
+    "  gn deps //base:base\n";
+
+int RunDeps(const std::vector<std::string>& args) {
   if (args.size() != 1) {
     Err(Location(), "You're holding it wrong.",
         "Usage: \"gn deps <target_name>\"").PrintToStdout();
@@ -183,7 +213,21 @@ int RunDepsCommand(const std::vector<std::string>& args) {
   return 0;
 }
 
-int RunTreeCommand(const std::vector<std::string>& args) {
+// tree ------------------------------------------------------------------------
+
+const char kTree[] = "tree";
+const char kTree_HelpShort[] =
+    "tree: Show dependency tree for a target.";
+const char kTree_Help[] =
+    "gn tree <target label>\n"
+    "  Displays a dependecy tree for the given labeled target.\n"
+    "\n"
+    "  See \"gn help\" for the common command-line switches.\n"
+    "\n"
+    "Examples:\n"
+    "  gn tree //base:base\n";
+
+int RunTree(const std::vector<std::string>& args) {
   if (args.size() != 1) {
     Err(Location(), "You're holding it wrong.",
         "Usage: \"gn tree <target_name>\"").PrintToStdout();
@@ -199,3 +243,5 @@ int RunTreeCommand(const std::vector<std::string>& args) {
 
   return 0;
 }
+
+}  // namespace commands
