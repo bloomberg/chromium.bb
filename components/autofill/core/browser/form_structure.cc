@@ -27,6 +27,7 @@
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
+#include "third_party/icu/source/i18n/unicode/regex.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace autofill {
@@ -58,6 +59,9 @@ const char kXMLElementFields[] = "fields";
 const char kXMLElementForm[] = "form";
 const char kBillingSection[] = "billing";
 const char kShippingSection[] = "shipping";
+
+// Stip away >= 5 consecutive digits.
+const char kIgnorePatternInFieldName[] = "\\d{5,}+";
 
 // Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
 // |available_field_types| and returns the hex representation as a string.
@@ -284,6 +288,32 @@ AutofillFieldType FieldTypeFromAutocompleteType(
   return UNKNOWN_TYPE;
 }
 
+std::string StripDigitsIfRequired(const base::string16& input) {
+  UErrorCode status = U_ZERO_ERROR;
+  CR_DEFINE_STATIC_LOCAL(icu::UnicodeString, icu_pattern,
+                         (kIgnorePatternInFieldName));
+  CR_DEFINE_STATIC_LOCAL(icu::RegexMatcher, matcher,
+                         (icu_pattern, UREGEX_CASE_INSENSITIVE, status));
+  DCHECK_EQ(status, U_ZERO_ERROR);
+
+  icu::UnicodeString icu_input(input.data(), input.length());
+  matcher.reset(icu_input);
+
+  icu::UnicodeString replaced_string = matcher.replaceAll("", status);
+
+  std::string return_string;
+  status = U_ZERO_ERROR;
+  UTF16ToUTF8(replaced_string.getBuffer(),
+              static_cast<size_t>(replaced_string.length()),
+              &return_string);
+  if (status != U_ZERO_ERROR) {
+    DVLOG(1) << "Couldn't strip digits in " << UTF16ToUTF8(input);
+    return UTF16ToUTF8(input);
+  }
+
+  return return_string;
+}
+
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form,
@@ -308,7 +338,7 @@ FormStructure::FormStructure(const FormData& form,
       // Add all supported form fields (including with empty names) to the
       // signature.  This is a requirement for Autofill servers.
       form_signature_field_names_.append("&");
-      form_signature_field_names_.append(UTF16ToUTF8(field->name));
+      form_signature_field_names_.append(StripDigitsIfRequired(field->name));
 
       ++active_field_count_;
     }

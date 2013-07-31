@@ -2355,6 +2355,26 @@ TEST(FormStructureTest, CheckFormSignature) {
   EXPECT_EQ(FormStructureTest::Hash64Bit(
       std::string("https://login.facebook.com&login_form&email&first")),
       form_structure->FormSignature());
+
+  field.label = ASCIIToUTF16("Random Field label");
+  field.name = ASCIIToUTF16("random1234");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+  field.label = ASCIIToUTF16("Random Field label2");
+  field.name = ASCIIToUTF16("random12345");
+  form.fields.push_back(field);
+  field.label = ASCIIToUTF16("Random Field label3");
+  field.name = ASCIIToUTF16("1random12345678");
+  form.fields.push_back(field);
+  field.label = ASCIIToUTF16("Random Field label3");
+  field.name = ASCIIToUTF16("12345random");
+  form.fields.push_back(field);
+  form_structure.reset(new FormStructure(form, std::string()));
+  EXPECT_EQ(FormStructureTest::Hash64Bit(
+      std::string("https://login.facebook.com&login_form&email&first&"
+                  "random1234&random&1random&random")),
+      form_structure->FormSignature());
+
 }
 
 TEST(FormStructureTest, ToFormData) {
