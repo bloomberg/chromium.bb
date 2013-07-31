@@ -12,7 +12,7 @@ Originally obtained from Mozilla's local copy/fork of bspatch; see:
 
 The license is shared in common with bsdiff.
 
-Local changes include CRC32 verification.
+Local changes include CRC32 verification and improvements in error handling.
 
 Update(08 Sep 08): Changed ApplyBinaryPatch to accept wchar_t paths
 instead of char paths.
