@@ -115,7 +115,7 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
 #endif
 }
 
-void ShellJavaScriptDialogManager::ResetJavaScriptState(
+void ShellJavaScriptDialogManager::CancelActiveAndPendingDialogs(
     WebContents* web_contents) {
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
   if (dialog_) {
@@ -125,6 +125,10 @@ void ShellJavaScriptDialogManager::ResetJavaScriptState(
 #else
   // TODO: implement ShellJavaScriptDialog for other platforms, drop this #if
 #endif
+}
+
+void ShellJavaScriptDialogManager::WebContentsDestroyed(
+    WebContents* web_contents) {
 }
 
 void ShellJavaScriptDialogManager::DialogClosed(ShellJavaScriptDialog* dialog) {

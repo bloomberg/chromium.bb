@@ -220,7 +220,7 @@ const bool kRecordModeEnabled = true;
 
 const char* const kUnknownLanguageCode = "und";
 
-const int kJavascriptMessageExpectedDelay = 1000;
+const int kJavaScriptMessageExpectedDelay = 1000;
 
 #if defined(OS_ANDROID)
 const bool kEnableTouchIcon = true;

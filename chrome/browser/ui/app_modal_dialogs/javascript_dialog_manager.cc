@@ -61,7 +61,10 @@ class ChromeJavaScriptDialogManager : public JavaScriptDialogManager,
       bool accept,
       const string16* prompt_override) OVERRIDE;
 
-  virtual void ResetJavaScriptState(WebContents* web_contents) OVERRIDE;
+  virtual void CancelActiveAndPendingDialogs(
+      WebContents* web_contents) OVERRIDE;
+
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
  private:
   ChromeJavaScriptDialogManager();
@@ -76,8 +79,6 @@ class ChromeJavaScriptDialogManager : public JavaScriptDialogManager,
   string16 GetTitle(const GURL& origin_url,
                     const std::string& accept_lang,
                     bool is_alert);
-
-  void CancelPendingDialogs(WebContents* web_contents);
 
   // Wrapper around a DialogClosedCallback so that we can intercept it before
   // passing it onto the original callback.
@@ -145,11 +146,13 @@ void ChromeJavaScriptDialogManager::RunJavaScriptDialog(
       extra_data->last_javascript_message_dismissal_;
   bool display_suppress_checkbox = false;
   // Show a checkbox offering to suppress further messages if this message is
-  // being displayed within kJavascriptMessageExpectedDelay of the last one.
+  // being displayed within kJavaScriptMessageExpectedDelay of the last one.
   if (time_since_last_message <
       base::TimeDelta::FromMilliseconds(
-          chrome::kJavascriptMessageExpectedDelay)) {
+          chrome::kJavaScriptMessageExpectedDelay)) {
     display_suppress_checkbox = true;
+  } else {
+    display_suppress_checkbox = false;
   }
 
   bool is_alert = message_type == content::JAVASCRIPT_MESSAGE_TYPE_ALERT;
@@ -223,9 +226,9 @@ bool ChromeJavaScriptDialogManager::HandleJavaScriptDialog(
   return true;
 }
 
-void ChromeJavaScriptDialogManager::ResetJavaScriptState(
+void ChromeJavaScriptDialogManager::WebContentsDestroyed(
     WebContents* web_contents) {
-  CancelPendingDialogs(web_contents);
+  CancelActiveAndPendingDialogs(web_contents);
   javascript_dialog_extra_data_.erase(web_contents);
 }
 
@@ -266,7 +269,7 @@ string16 ChromeJavaScriptDialogManager::GetTitle(const GURL& origin_url,
       base::i18n::GetDisplayStringInLTRDirectionality(url_string));
 }
 
-void ChromeJavaScriptDialogManager::CancelPendingDialogs(
+void ChromeJavaScriptDialogManager::CancelActiveAndPendingDialogs(
     WebContents* web_contents) {
   AppModalDialogQueue* queue = AppModalDialogQueue::GetInstance();
   AppModalDialog* active_dialog = queue->active_dialog();

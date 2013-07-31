@@ -222,7 +222,9 @@ class CONTENT_EXPORT BrowserPluginGuest
   virtual bool HandleJavaScriptDialog(WebContents* web_contents,
                                       bool accept,
                                       const string16* prompt_override) OVERRIDE;
-  virtual void ResetJavaScriptState(WebContents* web_contents) OVERRIDE;
+  virtual void CancelActiveAndPendingDialogs(
+      WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents();

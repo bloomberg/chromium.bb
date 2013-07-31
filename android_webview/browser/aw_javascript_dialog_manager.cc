@@ -44,7 +44,11 @@ void AwJavaScriptDialogManager::RunBeforeUnloadDialog(
                                 callback);
 }
 
-void AwJavaScriptDialogManager::ResetJavaScriptState(
+void AwJavaScriptDialogManager::CancelActiveAndPendingDialogs(
+    content::WebContents* web_contents) {
+}
+
+void AwJavaScriptDialogManager::WebContentsDestroyed(
     content::WebContents* web_contents) {
 }
 

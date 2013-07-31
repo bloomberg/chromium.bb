@@ -1552,7 +1552,11 @@ bool BrowserPluginGuest::HandleJavaScriptDialog(
   return false;
 }
 
-void BrowserPluginGuest::ResetJavaScriptState(WebContents* web_contents) {
+void BrowserPluginGuest::CancelActiveAndPendingDialogs(
+    WebContents* web_contents) {
+}
+
+void BrowserPluginGuest::WebContentsDestroyed(WebContents* web_contents) {
 }
 
 void BrowserPluginGuest::OnUpdateRect(

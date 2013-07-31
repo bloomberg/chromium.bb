@@ -377,7 +377,7 @@ WebContentsImpl::~WebContentsImpl() {
 
   // Clear out any JavaScript state.
   if (dialog_manager_)
-    dialog_manager_->ResetJavaScriptState(this);
+    dialog_manager_->WebContentsDestroyed(this);
 
   if (color_chooser_)
     color_chooser_->End();
@@ -2702,13 +2702,9 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
     RenderViewHost* render_view_host,
     const LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
-  // If we navigate off the page, reset JavaScript state. This does nothing
-  // to prevent a malicious script from spamming messages, since the script
-  // could just reload the page to stop blocking.
-  if (dialog_manager_ && !details.is_in_page) {
-    dialog_manager_->ResetJavaScriptState(this);
-    dialog_manager_ = NULL;
-  }
+  // If we navigate off the page, close all JavaScript dialogs.
+  if (dialog_manager_ && !details.is_in_page)
+    dialog_manager_->CancelActiveAndPendingDialogs(this);
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,

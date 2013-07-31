@@ -36,7 +36,10 @@ class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
       bool is_reload,
       const DialogClosedCallback& callback) OVERRIDE;
 
-  virtual void ResetJavaScriptState(WebContents* web_contents) OVERRIDE;
+  virtual void CancelActiveAndPendingDialogs(
+      WebContents* web_contents) OVERRIDE;
+
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
   // Called by the ShellJavaScriptDialog when it closes.
   void DialogClosed(ShellJavaScriptDialog* dialog);

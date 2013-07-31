@@ -96,11 +96,10 @@ extern const bool kRecordModeEnabled;
 // (Matches what the CLD -Compact Language Detection- library reports.)
 extern const char* const kUnknownLanguageCode;
 
-// If another javascript message box is displayed within
-// kJavascriptMessageExpectedDelay of a previous javascript message box being
-// dismissed, display an option to suppress future message boxes from this
-// contents.
-extern const int kJavascriptMessageExpectedDelay;
+// If a WebContents is impolite and displays a second JavaScript alert within
+// kJavaScriptMessageExpectedDelay of a previous JavaScript alert being
+// dismissed, display an option to suppress future alerts from this WebContents.
+extern const int kJavaScriptMessageExpectedDelay;
 
 // Are touch icons enabled? False by default.
 extern const bool kEnableTouchIcon;
