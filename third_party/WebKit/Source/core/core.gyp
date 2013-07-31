@@ -30,7 +30,7 @@
 
 {
   'includes': [
-    '../WebKit/chromium/WinPrecompile.gypi',
+    '../build/win/precompile.gypi',
     'features.gypi',
     '../modules/modules.gypi',
     '../bindings/bindings.gypi',
@@ -821,7 +821,7 @@
         }],
         ['OS=="win" and chromium_win_pch==1', {
           'sources/': [
-            ['include', '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.cpp'],
+            ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
           ],
         }],
         ['OS=="android"', {
@@ -925,7 +925,7 @@
         }],
         ['OS=="win" and chromium_win_pch==1', {
           'sources/': [
-            ['include', '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.cpp'],
+            ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
           ],
         }],
         ['OS=="mac"', {

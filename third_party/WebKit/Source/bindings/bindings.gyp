@@ -30,7 +30,7 @@
 
 {
   'includes': [
-    '../WebKit/chromium/WinPrecompile.gypi',
+    '../build/win/precompile.gypi',
     'bindings.gypi',
   ],
   'target_defaults': {
