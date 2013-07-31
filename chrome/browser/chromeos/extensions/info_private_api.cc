@@ -5,12 +5,15 @@
 #include "chrome/browser/chromeos/extensions/info_private_api.h"
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chromeos/network/device_state.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
-using chromeos::NetworkLibrary;
+using chromeos::NetworkHandler;
 
 namespace extensions {
 
@@ -64,8 +67,13 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     provider->GetMachineStatistic(chromeos::system::kHardwareClass, &hwid);
     return new base::StringValue(hwid);
   } else if (property_name == kPropertyHomeProvider) {
-    NetworkLibrary* netlib = NetworkLibrary::Get();
-    return new base::StringValue(netlib->GetCellularHomeCarrierId());
+    const chromeos::DeviceState* cellular_device =
+        NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
+            flimflam::kTypeCellular);
+    std::string home_provider_id;
+    if (cellular_device)
+      home_provider_id = cellular_device->home_provider_id();
+    return new base::StringValue(home_provider_id);
   } else if (property_name == kPropertyInitialLocale) {
     return new base::StringValue(
         chromeos::StartupUtils::GetInitialLocale());
