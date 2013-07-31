@@ -601,6 +601,8 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
 void VideoCaptureController::DoFrameInfoChangedOnIOThread(
     const media::VideoCaptureCapability& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // TODO(mcasas): Here we should reallocate the VideoCaptureBufferPool, if
+  // needed, to support the new video capture format. See crbug.com/266082.
   for (ControllerClients::iterator client_it = controller_clients_.begin();
        client_it != controller_clients_.end(); ++client_it) {
     (*client_it)->event_handler->OnFrameInfoChanged(
@@ -637,11 +639,7 @@ void VideoCaptureController::SendFrameInfoAndBuffers(ControllerClient* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(frame_info_available_);
   client->event_handler->OnFrameInfo(client->controller_id,
-                                     frame_info_.width, frame_info_.height,
-                                     frame_info_.frame_rate);
-  if (!buffer_pool_.get())
-    return;
-
+                                     frame_info_);
   for (int buffer_id = 0; buffer_id < buffer_pool_->count(); ++buffer_id) {
     base::SharedMemoryHandle remote_handle =
         buffer_pool_->ShareToProcess(buffer_id, client->render_process_handle);

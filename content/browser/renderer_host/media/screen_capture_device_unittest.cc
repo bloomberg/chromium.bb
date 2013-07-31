@@ -120,7 +120,15 @@ TEST_F(ScreenCaptureDeviceTest, MAYBE_Capture) {
           SaveArg<1>(&frame_size),
           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
-  capture_device.Allocate(640, 480, kFrameRate, &frame_observer);
+  media::VideoCaptureCapability capture_format(
+      640,
+      480,
+      kFrameRate,
+      media::VideoCaptureCapability::kI420,
+      0,
+      false,
+      media::ConstantResolutionVideoCaptureDevice);
+  capture_device.Allocate(capture_format, &frame_observer);
   capture_device.Start();
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
   capture_device.Stop();
@@ -158,8 +166,15 @@ TEST_F(ScreenCaptureDeviceTest, ScreenResolutionChange) {
           SaveArg<1>(&frame_size),
           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
-  capture_device.Allocate(kTestFrameWidth1, kTestFrameHeight1,
-                          kFrameRate, &frame_observer);
+  media::VideoCaptureCapability capture_format(
+      kTestFrameWidth1,
+      kTestFrameHeight1,
+      kFrameRate,
+      media::VideoCaptureCapability::kI420,
+      0,
+      false,
+      media::ConstantResolutionVideoCaptureDevice);
+  capture_device.Allocate(capture_format, &frame_observer);
   capture_device.Start();
   // Capture first frame.
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));

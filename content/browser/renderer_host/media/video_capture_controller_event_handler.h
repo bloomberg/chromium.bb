@@ -9,6 +9,10 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 
+namespace media {
+struct VideoCaptureCapability;
+}
+
 namespace content {
 
 // ID used for identifying an object of VideoCaptureController.
@@ -41,9 +45,7 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
 
   // The frame resolution the VideoCaptureDevice capture video in.
   virtual void OnFrameInfo(const VideoCaptureControllerID& id,
-                           int width,
-                           int height,
-                           int frame_rate) = 0;
+                           const media::VideoCaptureCapability& format) = 0;
 
   // The frame resolution the VideoCaptureDevice capture video in.
   virtual void OnFrameInfoChanged(const VideoCaptureControllerID& id,

@@ -28,10 +28,8 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   static bool RegisterVideoCaptureDevice(JNIEnv* env);
 
   // VideoCaptureDevice implementation.
-  virtual void Allocate(int width,
-                        int height,
-                        int frame_rate,
-                        EventHandler* observer) OVERRIDE;
+  virtual void Allocate(const VideoCaptureCapability& capture_format,
+                         EventHandler* observer) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;

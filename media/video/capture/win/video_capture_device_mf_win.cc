@@ -340,9 +340,7 @@ bool VideoCaptureDeviceMFWin::Init() {
 }
 
 void VideoCaptureDeviceMFWin::Allocate(
-    int width,
-    int height,
-    int frame_rate,
+    const VideoCaptureCapability& capture_format,
     VideoCaptureDevice::EventHandler* observer) {
   DCHECK(CalledOnValidThread());
 
@@ -364,7 +362,9 @@ void VideoCaptureDeviceMFWin::Allocate(
   }
 
   const VideoCaptureCapabilityWin& found_capability =
-      capabilities.GetBestMatchedCapability(width, height, frame_rate);
+      capabilities.GetBestMatchedCapability(capture_format.width,
+                                            capture_format.height,
+                                            capture_format.frame_rate);
   DLOG(INFO) << "Chosen capture format= (" << found_capability.width << "x"
              << found_capability.height << ")@("
              << found_capability.frame_rate_numerator << "/"

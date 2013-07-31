@@ -204,9 +204,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // is called informing of the resulting resolution and frame rate.
   // DeAllocate() must be called before this function can be called again and
   // before the object is deleted.
-  virtual void Allocate(int width,
-                        int height,
-                        int frame_rate,
+  virtual void Allocate(const VideoCaptureCapability& capture_format,
                         EventHandler* observer) = 0;
 
   // Start capturing video frames. Allocate must be called before this function.

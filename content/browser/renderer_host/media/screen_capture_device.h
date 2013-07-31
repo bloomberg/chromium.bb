@@ -33,9 +33,8 @@ class CONTENT_EXPORT ScreenCaptureDevice : public media::VideoCaptureDevice {
       scoped_ptr<webrtc::ScreenCapturer> capturer);
 
   // VideoCaptureDevice interface.
-  virtual void Allocate(int width, int height,
-                        int frame_rate,
-                        EventHandler* event_handler) OVERRIDE;
+  virtual void Allocate(const media::VideoCaptureCapability& capture_format,
+                        EventHandler* observer) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;

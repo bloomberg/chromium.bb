@@ -197,18 +197,21 @@ VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
   }
 }
 
-void VideoCaptureDeviceLinux::Allocate(int width,
-                                       int height,
-                                       int frame_rate,
-                                       EventHandler* observer) {
+void VideoCaptureDeviceLinux::Allocate(
+    const VideoCaptureCapability& capture_format,
+    EventHandler* observer) {
   if (v4l2_thread_.IsRunning()) {
     return;  // Wrong state.
   }
   v4l2_thread_.Start();
-  v4l2_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCaptureDeviceLinux::OnAllocate, base::Unretained(this),
-                 width, height, frame_rate, observer));
+  v4l2_thread_.message_loop()
+      ->PostTask(FROM_HERE,
+                 base::Bind(&VideoCaptureDeviceLinux::OnAllocate,
+                            base::Unretained(this),
+                            capture_format.width,
+                            capture_format.height,
+                            capture_format.frame_rate,
+                            observer));
 }
 
 void VideoCaptureDeviceLinux::Start() {

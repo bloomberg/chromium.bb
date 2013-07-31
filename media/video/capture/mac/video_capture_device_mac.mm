@@ -102,16 +102,21 @@ VideoCaptureDeviceMac::~VideoCaptureDeviceMac() {
   [capture_device_ release];
 }
 
-void VideoCaptureDeviceMac::Allocate(int width, int height, int frame_rate,
-                                     EventHandler* observer) {
+void VideoCaptureDeviceMac::Allocate(
+    const VideoCaptureCapability& capture_format,
+    EventHandler* observer) {
   if (state_ != kIdle) {
     return;
   }
+  int width = capture_format.width;
+  int height = capture_format.height;
+  int frame_rate = capture_format.frame_rate;
 
   // QTKit can scale captured frame to any size requested, which would lead to
   // undesired aspect ratio change. Tries to open the camera with a natively
   // supported format and let the client to crop/pad the captured frames.
-  GetBestMatchSupportedResolution(&width, &height);
+  GetBestMatchSupportedResolution(&width,
+                                  &height);
 
   observer_ = observer;
   NSString* deviceId =

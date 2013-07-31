@@ -17,8 +17,9 @@ VideoCaptureDeviceDummy::VideoCaptureDeviceDummy() {}
 VideoCaptureDeviceDummy::~VideoCaptureDeviceDummy() {}
 
 void VideoCaptureDeviceDummy::Allocate(
-    int width, int height, int frame_rate,
-    VideoCaptureDevice::EventHandler* observer) {}
+    const VideoCaptureCapability& capture_format,
+    VideoCaptureDevice::EventHandler* observer) {
+}
 
 void VideoCaptureDeviceDummy::Start() {}
 

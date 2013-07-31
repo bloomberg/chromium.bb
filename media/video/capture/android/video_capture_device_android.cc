@@ -122,9 +122,7 @@ const VideoCaptureDevice::Name& VideoCaptureDeviceAndroid::device_name() {
 }
 
 void VideoCaptureDeviceAndroid::Allocate(
-    int width,
-    int height,
-    int frame_rate,
+    const VideoCaptureCapability& capture_format,
     EventHandler* observer) {
   {
     base::AutoLock lock(lock_);
@@ -138,9 +136,9 @@ void VideoCaptureDeviceAndroid::Allocate(
 
   jboolean ret = Java_VideoCapture_allocate(env,
                                             j_capture_.obj(),
-                                            width,
-                                            height,
-                                            frame_rate);
+                                            capture_format.width,
+                                            capture_format.height,
+                                            capture_format.frame_rate);
   if (!ret) {
     SetErrorState("failed to allocate");
     return;

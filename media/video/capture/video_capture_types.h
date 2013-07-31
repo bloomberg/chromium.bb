@@ -13,12 +13,25 @@ namespace media {
 // shared with device manager.
 typedef int VideoCaptureSessionId;
 
+enum VideoCaptureResolutionType {
+  ConstantResolutionVideoCaptureDevice = 0,
+  VariableResolutionVideoCaptureDevice,
+  MaxVideoCaptureResolutionType,  // Must be last.
+};
+
 // Parameters for starting video capture and device information.
 struct VideoCaptureParams {
+  VideoCaptureParams()
+      : width(0),
+        height(0),
+        frame_per_second(0),
+        session_id(0),
+        frame_size_type(ConstantResolutionVideoCaptureDevice) {};
   int width;
   int height;
   int frame_per_second;
   VideoCaptureSessionId session_id;
+  VideoCaptureResolutionType frame_size_type;
 };
 
 // Capabilities describe the format a camera capture video in.
@@ -36,12 +49,39 @@ struct VideoCaptureCapability {
     kYV12,
   };
 
-  int width;  // Desired width.
-  int height;  // Desired height.
-  int frame_rate;  // Desired frame rate.
-  Format color;  // Desired video type.
+  VideoCaptureCapability()
+      : width(0),
+        height(0),
+        frame_rate(0),
+        color(kColorUnknown),
+        expected_capture_delay(0),
+        interlaced(false),
+        frame_size_type(ConstantResolutionVideoCaptureDevice),
+        session_id(0) {};
+  VideoCaptureCapability(int width,
+                         int height,
+                         int frame_rate,
+                         Format color,
+                         int delay,
+                         bool interlaced,
+                         VideoCaptureResolutionType frame_size_type)
+      : width(width),
+        height(height),
+        frame_rate(frame_rate),
+        color(color),
+        expected_capture_delay(delay),
+        interlaced(interlaced),
+        frame_size_type(frame_size_type),
+        session_id(0) {};
+
+  int width;                   // Desired width.
+  int height;                  // Desired height.
+  int frame_rate;              // Desired frame rate.
+  Format color;                // Desired video type.
   int expected_capture_delay;  // Expected delay in millisecond.
-  bool interlaced;  // Need interlace format.
+  bool interlaced;             // Need interlace format.
+  VideoCaptureResolutionType frame_size_type;
+  VideoCaptureSessionId session_id;
 };
 
 }  // namespace media

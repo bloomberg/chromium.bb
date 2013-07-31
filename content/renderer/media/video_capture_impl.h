@@ -185,11 +185,11 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   media::VideoCaptureCapability::Format video_type_;
 
-  // The parameter is being used in current capture session. A capture session
-  // starts with StartCapture and ends with StopCapture.
-  media::VideoCaptureParams current_params_;
+  // Member capture_format_ represents the video format requested by the client
+  // to this class via DoStartCaptureOnCaptureThread.
+  media::VideoCaptureCapability capture_format_;
 
-  // The information about the device sent from browser process side.
+  // The device's video capture format sent from browser process side.
   media::VideoCaptureParams device_info_;
   bool device_info_available_;
 

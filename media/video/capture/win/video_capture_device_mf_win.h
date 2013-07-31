@@ -38,10 +38,8 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin
   bool Init();
 
   // VideoCaptureDevice implementation.
-  virtual void Allocate(int width,
-                        int height,
-                        int frame_rate,
-                        VideoCaptureDevice::EventHandler* observer) OVERRIDE;
+  virtual void Allocate(const VideoCaptureCapability& capture_format,
+                         VideoCaptureDevice::EventHandler* observer) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;

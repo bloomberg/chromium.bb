@@ -1069,7 +1069,7 @@ void WebContentsVideoCaptureDevice::Impl::Allocate(
 
   // Initialize capture settings which will be consistent for the
   // duration of the capture.
-  media::VideoCaptureCapability settings = { 0 };
+  media::VideoCaptureCapability settings;
 
   settings.width = width;
   settings.height = height;
@@ -1248,9 +1248,14 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
 }
 
 void WebContentsVideoCaptureDevice::Allocate(
-    int width, int height, int frame_rate,
-    VideoCaptureDevice::EventHandler* consumer) {
-  impl_->Allocate(width, height, frame_rate, consumer);
+    const media::VideoCaptureCapability& capture_format,
+    VideoCaptureDevice::EventHandler* observer) {
+  DVLOG(1) << "Allocating " << capture_format.width << "x"
+           << capture_format.height;
+  impl_->Allocate(capture_format.width,
+                  capture_format.height,
+                  capture_format.frame_rate,
+                  observer);
 }
 
 void WebContentsVideoCaptureDevice::Start() {

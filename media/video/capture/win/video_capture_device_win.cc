@@ -336,9 +336,7 @@ bool VideoCaptureDeviceWin::Init() {
 }
 
 void VideoCaptureDeviceWin::Allocate(
-    int width,
-    int height,
-    int frame_rate,
+    const VideoCaptureCapability& capture_format,
     VideoCaptureDevice::EventHandler* observer) {
   DCHECK(CalledOnValidThread());
   if (state_ != kIdle)
@@ -348,13 +346,15 @@ void VideoCaptureDeviceWin::Allocate(
 
   // Get the camera capability that best match the requested resolution.
   const VideoCaptureCapabilityWin& found_capability =
-      capabilities_.GetBestMatchedCapability(width, height, frame_rate);
+      capabilities_.GetBestMatchedCapability(capture_format.width,
+                                             capture_format.height,
+                                             capture_format.frame_rate);
   VideoCaptureCapability capability = found_capability;
 
   // Reduce the frame rate if the requested frame rate is lower
   // than the capability.
-  if (capability.frame_rate > frame_rate)
-    capability.frame_rate = frame_rate;
+  if (capability.frame_rate > capture_format.frame_rate)
+    capability.frame_rate = capture_format.frame_rate;
 
   AM_MEDIA_TYPE* pmt = NULL;
   VIDEO_STREAM_CONFIG_CAPS caps;

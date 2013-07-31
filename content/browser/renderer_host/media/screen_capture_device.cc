@@ -359,10 +359,13 @@ void ScreenCaptureDevice::SetScreenCapturerForTest(
   core_->SetScreenCapturerForTest(capturer.Pass());
 }
 
-void ScreenCaptureDevice::Allocate(int width, int height,
-                                   int frame_rate,
-                                   EventHandler* event_handler) {
-  core_->Allocate(width, height, frame_rate, event_handler);
+void ScreenCaptureDevice::Allocate(
+    const media::VideoCaptureCapability& capture_format,
+    EventHandler* observer) {
+  core_->Allocate(capture_format.width,
+                  capture_format.height,
+                  capture_format.frame_rate,
+                  observer);
 }
 
 void ScreenCaptureDevice::Start() {

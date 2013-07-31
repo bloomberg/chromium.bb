@@ -60,27 +60,33 @@ void ParamTraits<VideoCaptureParams>::Write(Message* m,
   m->WriteInt(p.height);
   m->WriteInt(p.frame_per_second);
   m->WriteInt(static_cast<int>(p.session_id));
+  m->WriteInt(static_cast<int>(p.frame_size_type));
 }
 
 bool ParamTraits<VideoCaptureParams>::Read(const Message* m,
                                            PickleIterator* iter,
                                            VideoCaptureParams* r) {
-  int session_id;
-
+  int session_id, frame_size_type;
   if (!m->ReadInt(iter, &r->width) ||
       !m->ReadInt(iter, &r->height) ||
       !m->ReadInt(iter, &r->frame_per_second) ||
-      !m->ReadInt(iter, &session_id))
+      !m->ReadInt(iter, &session_id) ||
+      !m->ReadInt(iter, &frame_size_type))
     return false;
 
   r->session_id = static_cast<VideoCaptureSessionId>(session_id);
+  r->frame_size_type =
+      static_cast<media::VideoCaptureResolutionType>(
+          frame_size_type);
 
   // TODO(wjia): Replace with IsValid() method on VideoCaptureParams.
   if (r->width <= 0 || r->height <= 0 || r->frame_per_second <= 0 ||
       r->frame_per_second > media::limits::kMaxFramesPerSecond ||
       r->width > media::limits::kMaxDimension ||
       r->height > media::limits::kMaxDimension ||
-      r->width * r->height > media::limits::kMaxCanvas) {
+      r->width * r->height > media::limits::kMaxCanvas ||
+      r->frame_size_type < 0 ||
+      r->frame_size_type >= media::MaxVideoCaptureResolutionType) {
     return false;
   }
 

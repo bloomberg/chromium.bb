@@ -78,10 +78,9 @@ class MockVideoCaptureControllerEventHandler
         base::Bind(&VideoCaptureController::ReturnBuffer,
                    controller_, controller_id_, this, buffer_id));
   }
-  virtual void OnFrameInfo(const VideoCaptureControllerID& id,
-                           int width,
-                           int height,
-                           int frame_per_second) OVERRIDE {
+  virtual void OnFrameInfo(
+      const VideoCaptureControllerID& id,
+      const media::VideoCaptureCapability& format) OVERRIDE {
     EXPECT_EQ(id, controller_id_);
     DoFrameInfo(id);
   }
@@ -115,9 +114,17 @@ class MockVideoCaptureManager : public VideoCaptureManager {
   void Start(const media::VideoCaptureParams& capture_params,
              media::VideoCaptureDevice::EventHandler* vc_receiver) OVERRIDE {
     StartCapture(capture_params.width, capture_params.height, vc_receiver);
-    video_capture_device_->Allocate(capture_params.width, capture_params.height,
-                                    capture_params.frame_per_second,
-                                    vc_receiver);
+    // TODO(mcasas): Add testing for variable resolution video capture devices,
+    // supported by FakeVideoCaptureDevice. See crbug.com/261410, second part.
+    media::VideoCaptureCapability capture_format(
+        capture_params.width,
+        capture_params.height,
+        capture_params.frame_per_second,
+        media::VideoCaptureCapability::kI420,
+        0,
+        false,
+        media::ConstantResolutionVideoCaptureDevice);
+    video_capture_device_->Allocate(capture_format, vc_receiver);
     video_capture_device_->Start();
   }
 

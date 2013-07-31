@@ -269,6 +269,14 @@ void VideoCaptureManager::OnStart(
     video_capture_receiver->OnError();
     return;
   }
+  // TODO(mcasas): Variable resolution video capture devices, are not yet
+  // fully supported, see crbug.com/261410, second part, and crbug.com/266082 .
+  if (capture_params.frame_size_type !=
+      media::ConstantResolutionVideoCaptureDevice) {
+    LOG(DFATAL) << "Only constant Video Capture resolution device supported.";
+    video_capture_receiver->OnError();
+    return;
+  }
   Controllers::iterator cit = controllers_.find(video_capture_device);
   if (cit != controllers_.end()) {
     cit->second->ready_to_delete = false;
@@ -276,8 +284,13 @@ void VideoCaptureManager::OnStart(
 
   // Possible errors are signaled to video_capture_receiver by
   // video_capture_device. video_capture_receiver to perform actions.
-  video_capture_device->Allocate(capture_params.width, capture_params.height,
-                                 capture_params.frame_per_second,
+  media::VideoCaptureCapability params_as_capability_copy;
+  params_as_capability_copy.width = capture_params.width;
+  params_as_capability_copy.height = capture_params.height;
+  params_as_capability_copy.frame_rate = capture_params.frame_per_second;
+  params_as_capability_copy.session_id = capture_params.session_id;
+  params_as_capability_copy.frame_size_type = capture_params.frame_size_type;
+  video_capture_device->Allocate(params_as_capability_copy,
                                  video_capture_receiver);
   video_capture_device->Start();
 }
