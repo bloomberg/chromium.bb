@@ -52,6 +52,11 @@ class ExternalCache : public content::NotificationObserver,
                 Delegate* delegate);
   virtual ~ExternalCache();
 
+  // Returns already cached extensions.
+  const base::DictionaryValue* cached_extensions() {
+    return cached_extensions_.get();
+  }
+
   // Update list of extensions in cache and force update check for them.
   // ExternalCache gets ownership of |prefs|.
   void UpdateExtensionsList(scoped_ptr<base::DictionaryValue> prefs);
