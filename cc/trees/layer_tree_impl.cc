@@ -216,15 +216,6 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
   gfx::Vector2dF max_scroll = gfx::Rect(ScrollableSize()).bottom_right() -
       gfx::RectF(ScrollableViewportSize()).bottom_right();
 
-  // The scrollable viewport size is based on device viewport instead of Blink's
-  // container layer, so we need to adjust for non-overlay scrollbars.
-  ScrollbarLayerImpl* horiz = root_scroll->horizontal_scrollbar_layer();
-  ScrollbarLayerImpl* vertical = root_scroll->vertical_scrollbar_layer();
-  if (horiz && !horiz->is_overlay_scrollbar())
-    max_scroll.set_y(max_scroll.y() + horiz->thumb_thickness());
-  if (vertical && !vertical->is_overlay_scrollbar())
-    max_scroll.set_x(max_scroll.x() + vertical->thumb_thickness());
-
   // The viewport may be larger than the contents in some cases, such as
   // having a vertical scrollbar but no horizontal overflow.
   max_scroll.SetToMax(gfx::Vector2dF());

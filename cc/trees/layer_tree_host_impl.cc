@@ -1325,6 +1325,15 @@ float LayerTreeHostImpl::DeviceScaleFactor() const {
 }
 
 gfx::SizeF LayerTreeHostImpl::VisibleViewportSize() const {
+  // The container layer bounds should be used if non-overlay scrollbars may
+  // exist since it adjusts for them.
+  LayerImpl* container_layer = active_tree_->RootContainerLayer();
+  if (!Settings().solid_color_scrollbars && container_layer) {
+    DCHECK(!top_controls_manager_);
+    DCHECK_EQ(0, overdraw_bottom_height_);
+    return container_layer->bounds();
+  }
+
   gfx::SizeF dip_size =
       gfx::ScaleSize(device_viewport_size(), 1.f / device_scale_factor());
 

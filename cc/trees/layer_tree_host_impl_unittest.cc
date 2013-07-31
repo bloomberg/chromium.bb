@@ -1055,18 +1055,19 @@ TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
   settings.scrollbar_linear_fade_delay_ms = 20;
   settings.scrollbar_linear_fade_length_ms = 20;
 
+  gfx::Size viewport_size(10, 10);
+  gfx::Size content_size(100, 100);
+
   LayerTreeHostImplOverridePhysicalTime* host_impl_override_time =
       new LayerTreeHostImplOverridePhysicalTime(
           settings, this, &proxy_, &stats_instrumentation_);
   host_impl_ = make_scoped_ptr<LayerTreeHostImpl>(host_impl_override_time);
   host_impl_->InitializeRenderer(CreateOutputSurface());
-  host_impl_->SetViewportSize(gfx::Size(10, 10));
+  host_impl_->SetViewportSize(viewport_size);
 
-  gfx::Size content_size(100, 100);
   scoped_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl_->active_tree(), 1);
-  root->SetBounds(content_size);
-  root->SetContentBounds(content_size);
+  root->SetBounds(viewport_size);
 
   scoped_ptr<LayerImpl> scroll =
       LayerImpl::Create(host_impl_->active_tree(), 2);
