@@ -6,6 +6,7 @@
 
 #include "grit/ui_resources.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/point.h"
 
 namespace ui {
@@ -77,10 +78,13 @@ bool SearchTable(const CursorData* table,
                  float scale_factor,
                  int* resource_id,
                  gfx::Point* point) {
+  bool resource_2x_available =
+      ResourceBundle::GetSharedInstance().max_scale_factor() ==
+      SCALE_FACTOR_200P;
   for (size_t i = 0; i < table_length; ++i) {
     if (table[i].id == id) {
       *resource_id = table[i].resource_id;
-      *point = scale_factor == 1.0f ?
+      *point = scale_factor == 1.0f || !resource_2x_available ?
                gfx::Point(table[i].hot_1x.x, table[i].hot_1x.y) :
                gfx::Point(table[i].hot_2x.x, table[i].hot_2x.y);
       return true;
