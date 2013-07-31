@@ -454,9 +454,8 @@ INSTANTIATE_TEST_CASE_P(
                                     "galleryOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive")));
 
-// TODO(mtomasz): Fix this test. crbug.com/252561
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_KeyboardOperations,
+    KeyboardOperations,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
