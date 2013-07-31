@@ -1645,10 +1645,15 @@ void PopulateCellularDetails(const NetworkState* cellular,
                             IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL) :
                         l10n_util::GetStringUTF8(
                             IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
-  CopyStringFromDictionary(shill_properties, flimflam::kOperatorNameProperty,
-                          kTagOperatorName, dictionary);
-  CopyStringFromDictionary(shill_properties, flimflam::kOperatorCodeProperty,
-                          kTagOperatorCode, dictionary);
+
+  const base::DictionaryValue* serving_operator = NULL;
+  if (shill_properties.GetDictionaryWithoutPathExpansion(
+          flimflam::kServingOperatorProperty, &serving_operator)) {
+    CopyStringFromDictionary(*serving_operator, flimflam::kOperatorNameKey,
+                             kTagOperatorName, dictionary);
+    CopyStringFromDictionary(*serving_operator, flimflam::kOperatorCodeKey,
+                             kTagOperatorCode, dictionary);
+  }
 
   const base::DictionaryValue* olp = NULL;
   if (shill_properties.GetDictionaryWithoutPathExpansion(
