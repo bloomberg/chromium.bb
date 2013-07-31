@@ -1804,15 +1804,19 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       << kInvalidURLs[index];
   }
 
-  EXPECT_STREQ("net::ERR_ACCESS_DENIED", RunFunctionAndReturnError(
-      new DownloadsDownloadFunction(),
-      "[{\"url\": \"javascript:document.write(\\\"hello\\\");\"}]").c_str());
-  EXPECT_STREQ("net::ERR_ACCESS_DENIED", RunFunctionAndReturnError(
-      new DownloadsDownloadFunction(),
-      "[{\"url\": \"javascript:return false;\"}]").c_str());
-  EXPECT_STREQ("net::ERR_NOT_IMPLEMENTED", RunFunctionAndReturnError(
-      new DownloadsDownloadFunction(),
-      "[{\"url\": \"ftp://example.com/example.txt\"}]").c_str());
+  static const char* kDisallowedHost[] = {
+    "javascript:document.write(\\\"hello\\\");",
+    "javascript:return false;",
+    "ftp://example.com/example.txt",
+  };
+
+  for (size_t index = 0; index < arraysize(kDisallowedHost); ++index) {
+    EXPECT_STREQ(errors::kHostPermission,
+                  RunFunctionAndReturnError(new DownloadsDownloadFunction(),
+                                            base::StringPrintf(
+        "[{\"url\": \"%s\"}]", kDisallowedHost[index])).c_str())
+      << kDisallowedHost[index];
+  }
 }
 
 // TODO(benjhayden): Set up a test ftp server, add ftp://localhost* to

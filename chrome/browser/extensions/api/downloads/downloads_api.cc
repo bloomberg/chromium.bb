@@ -83,6 +83,7 @@ namespace download_extension_errors {
 
 const char kEmptyFile[] = "Filename not yet determined";
 const char kFileAlreadyDeleted[] = "Download file already deleted";
+const char kHostPermission[] = "Access to that hostname must be requested";
 const char kIconNotFound[] = "Icon not found";
 const char kInvalidDangerType[] = "Invalid danger type";
 const char kInvalidFilename[] = "Invalid filename";
@@ -928,7 +929,12 @@ bool DownloadsDownloadFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   const extensions::api::downloads::DownloadOptions& options = params->options;
   GURL download_url(options.url);
-  if (Fault(!download_url.is_valid(), errors::kInvalidURL, &error_))
+  if (Fault(!download_url.is_valid(), errors::kInvalidURL, &error_) ||
+      Fault((!download_url.SchemeIs("data") &&
+             (download_url.GetOrigin() != GetExtension()->url().GetOrigin()) &&
+             !extensions::PermissionsData::HasHostPermission(
+                 GetExtension(), download_url)),
+            errors::kHostPermission, &error_))
     return false;
 
   Profile* current_profile = profile();
