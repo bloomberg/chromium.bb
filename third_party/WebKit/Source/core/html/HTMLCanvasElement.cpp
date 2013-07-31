@@ -75,6 +75,7 @@ HTMLCanvasElement::HTMLCanvasElement(const QualifiedName& tagName, Document* doc
     , m_hasCreatedImageBuffer(false)
     , m_didClearImageBuffer(false)
     , m_accelerationDisabled(false)
+    , m_externallyAllocatedMemory(0)
 {
     ASSERT(hasTagName(canvasTag));
     ScriptWrappable::init(this);
@@ -92,6 +93,7 @@ PassRefPtr<HTMLCanvasElement> HTMLCanvasElement::create(const QualifiedName& tag
 
 HTMLCanvasElement::~HTMLCanvasElement()
 {
+    setExternallyAllocatedMemory(0);
     HashSet<CanvasObserver*>::iterator end = m_observers.end();
     for (HashSet<CanvasObserver*>::iterator it = m_observers.begin(); it != end; ++it)
         (*it)->canvasDestroyed(this);
@@ -351,6 +353,7 @@ void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
     m_hasCreatedImageBuffer = false;
     m_contextStateSaver.clear();
     m_imageBuffer.clear();
+    setExternallyAllocatedMemory(0);
     clearCopiedImage();
 }
 
@@ -488,6 +491,7 @@ void HTMLCanvasElement::createImageBuffer()
     m_imageBuffer = ImageBuffer::create(size(), m_deviceScaleFactor, renderingMode, opacityMode);
     if (!m_imageBuffer)
         return;
+    setExternallyAllocatedMemory(4 * width() * height());
     m_imageBuffer->context()->setImageInterpolationQuality(DefaultInterpolationQuality);
     if (document()->settings() && !document()->settings()->antialiased2dCanvasEnabled())
         m_imageBuffer->context()->setShouldAntialias(false);
@@ -500,6 +504,12 @@ void HTMLCanvasElement::createImageBuffer()
     // Recalculate compositing requirements if acceleration state changed.
     if (m_context && m_context->is2d())
         scheduleLayerUpdate();
+}
+
+void HTMLCanvasElement::setExternallyAllocatedMemory(intptr_t externallyAllocatedMemory)
+{
+    v8::V8::AdjustAmountOfExternalAllocatedMemory(externallyAllocatedMemory - m_externallyAllocatedMemory);
+    m_externallyAllocatedMemory = externallyAllocatedMemory;
 }
 
 GraphicsContext* HTMLCanvasElement::drawingContext() const

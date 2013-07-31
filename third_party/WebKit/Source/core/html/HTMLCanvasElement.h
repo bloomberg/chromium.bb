@@ -150,6 +150,8 @@ private:
 
     bool paintsIntoCanvasBuffer() const;
 
+    void setExternallyAllocatedMemory(intptr_t);
+
     HashSet<CanvasObserver*> m_observers;
 
     IntSize m_size;
@@ -161,6 +163,8 @@ private:
     bool m_ignoreReset;
     bool m_accelerationDisabled;
     FloatRect m_dirtyRect;
+
+    intptr_t m_externallyAllocatedMemory;
 
     float m_deviceScaleFactor; // FIXME: This is always 1 and should probable be deleted
     bool m_originClean;
