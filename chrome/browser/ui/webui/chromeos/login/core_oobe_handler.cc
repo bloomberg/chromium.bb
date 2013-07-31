@@ -24,6 +24,8 @@
 
 namespace {
 
+const char kJsScreenPath[] = "cr.ui.Oobe";
+
 // JS API callbacks names.
 const char kJsApiEnableHighContrast[] = "enableHighContrast";
 const char kJsApiEnableScreenMagnifier[] = "enableScreenMagnifier";
@@ -39,7 +41,8 @@ namespace chromeos {
 // Note that show_oobe_ui_ defaults to false because WizardController assumes
 // OOBE UI is not visible by default.
 CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
-    : oobe_ui_(oobe_ui),
+    : BaseScreenHandler(kJsScreenPath),
+      oobe_ui_(oobe_ui),
       show_oobe_ui_(false),
       version_info_updater_(this),
       delegate_(NULL) {
@@ -119,6 +122,63 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleSetDeviceRequisition);
 }
 
+void CoreOobeHandler::ShowSignInError(
+    int login_attempts,
+    const std::string& error_text,
+    const std::string& help_link_text,
+    HelpAppLauncher::HelpTopic help_topic_id) {
+  CallJS("showSignInError", login_attempts, error_text,
+         help_link_text, static_cast<int>(help_topic_id));
+}
+
+void CoreOobeHandler::ShowTpmError() {
+  CallJS("showTpmError");
+}
+
+void CoreOobeHandler::ShowSignInUI(const std::string& email) {
+  CallJS("showSigninUI", email);
+}
+
+void CoreOobeHandler::ResetSignInUI(bool force_online) {
+  CallJS("resetSigninUI", force_online);
+}
+
+void CoreOobeHandler::ClearUserPodPassword() {
+  CallJS("clearUserPodPassword");
+}
+
+void CoreOobeHandler::RefocusCurrentPod() {
+  CallJS("refocusCurrentPod");
+}
+
+void CoreOobeHandler::OnLoginSuccess(const std::string& username) {
+  CallJS("onLoginSuccess", username);
+}
+
+void CoreOobeHandler::ShowPasswordChangedScreen(bool show_password_error) {
+  CallJS("showPasswordChangedScreen", show_password_error);
+}
+
+void CoreOobeHandler::SetUsageStats(bool checked) {
+  CallJS("setUsageStats", checked);
+}
+
+void CoreOobeHandler::SetOemEulaUrl(const std::string& oem_eula_url) {
+  CallJS("setOemEulaUrl", oem_eula_url);
+}
+
+void CoreOobeHandler::SetTpmPassword(const std::string& tpm_password) {
+  CallJS("setTpmPassword", tpm_password);
+}
+
+void CoreOobeHandler::ClearErrors() {
+  CallJS("clearErrors");
+}
+
+void CoreOobeHandler::ReloadContent(const base::DictionaryValue& dictionary) {
+  CallJS("reloadContent", dictionary);
+}
+
 void CoreOobeHandler::HandleInitialized() {
   oobe_ui_->InitializeHandlers();
 }
@@ -183,7 +243,7 @@ void CoreOobeHandler::UpdateA11yState() {
                        AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   a11y_info.SetBoolean("screenMagnifierEnabled",
                        MagnificationManager::Get()->IsMagnifierEnabled());
-  CallJS("cr.ui.Oobe.refreshA11yInfo", a11y_info);
+  CallJS("refreshA11yInfo", a11y_info);
 }
 
 void CoreOobeHandler::UpdateOobeUIVisibility() {
@@ -194,10 +254,10 @@ void CoreOobeHandler::UpdateOobeUIVisibility() {
       channel == chrome::VersionInfo::CHANNEL_BETA) {
     should_show_version = false;
   }
-  CallJS("cr.ui.Oobe.showVersion", should_show_version);
-  CallJS("cr.ui.Oobe.showOobeUI", show_oobe_ui_);
+  CallJS("showVersion", should_show_version);
+  CallJS("showOobeUI", show_oobe_ui_);
   if (system::keyboard_settings::ForceKeyboardDrivenUINavigation())
-    CallJS("cr.ui.Oobe.enableKeyboardFlow", true);
+    CallJS("enableKeyboardFlow", true);
 }
 
 void CoreOobeHandler::OnOSVersionLabelTextUpdated(
@@ -212,16 +272,16 @@ void CoreOobeHandler::OnBootTimesLabelTextUpdated(
 
 void CoreOobeHandler::OnEnterpriseInfoUpdated(
     const std::string& message_text) {
-  CallJS("cr.ui.Oobe.setEnterpriseInfo", message_text);
+  CallJS("setEnterpriseInfo", message_text);
 }
 
 void CoreOobeHandler::UpdateLabel(const std::string& id,
                                   const std::string& text) {
-  CallJS("cr.ui.Oobe.setLabelText", id, text);
+  CallJS("setLabelText", id, text);
 }
 
 void CoreOobeHandler::UpdateDeviceRequisition() {
-  CallJS("cr.ui.Oobe.updateDeviceRequisition",
+  CallJS("updateDeviceRequisition",
          g_browser_process->browser_policy_connector()->
              GetDeviceCloudPolicyManager()->GetDeviceRequisition());
 }

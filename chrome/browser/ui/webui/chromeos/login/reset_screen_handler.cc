@@ -21,6 +21,8 @@
 
 namespace {
 
+const char kJsScreenPath[] = "login.ResetScreen";
+
 // Reset screen id.
 const char kResetScreen[] = "reset";
 
@@ -29,7 +31,9 @@ const char kResetScreen[] = "reset";
 namespace chromeos {
 
 ResetScreenHandler::ResetScreenHandler()
-    : delegate_(NULL), show_on_init_(false) {
+    : BaseScreenHandler(kJsScreenPath),
+      delegate_(NULL),
+      show_on_init_(false) {
 }
 
 ResetScreenHandler::~ResetScreenHandler() {

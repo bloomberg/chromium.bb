@@ -8,10 +8,17 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+namespace {
+
+const char kJsScreenPath[] = "login.TermsOfServiceScreen";
+
+}  // namespace
+
 namespace chromeos {
 
 TermsOfServiceScreenHandler::TermsOfServiceScreenHandler()
-    : screen_(NULL),
+    : BaseScreenHandler(kJsScreenPath),
+      screen_(NULL),
       show_on_init_(false),
       load_error_(false) {
 }

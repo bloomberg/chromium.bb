@@ -10,6 +10,8 @@
 
 namespace {
 
+const char kJsScreenPath[] = "cr.ui.DropDown";
+
 // JS API callbacks names.
 const char kJsApiNetworkItemChosen[] = "networkItemChosen";
 const char kJsApiNetworkDropdownShow[] = "networkDropdownShow";
@@ -20,7 +22,8 @@ const char kJsApiNetworkDropdownRefresh[] = "networkDropdownRefresh";
 
 namespace chromeos {
 
-NetworkDropdownHandler::NetworkDropdownHandler() {
+NetworkDropdownHandler::NetworkDropdownHandler()
+    : BaseScreenHandler(kJsScreenPath) {
 }
 
 NetworkDropdownHandler::~NetworkDropdownHandler() {

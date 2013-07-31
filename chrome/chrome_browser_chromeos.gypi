@@ -509,6 +509,7 @@
         'browser/chromeos/login/screen_locker_delegate.h',
         'browser/chromeos/login/screens/base_screen.cc',
         'browser/chromeos/login/screens/base_screen.h',
+        'browser/chromeos/login/screens/core_oobe_actor.h',
         'browser/chromeos/login/screens/error_screen.cc',
         'browser/chromeos/login/screens/error_screen.h',
         'browser/chromeos/login/screens/error_screen_actor.cc',

@@ -14,12 +14,14 @@
 
 namespace chromeos {
 
+class CoreOobeActor;
+
 // WebUI implementation of NetworkScreenActor. It is used to interact with
 // the welcome screen (part of the page) of the OOBE.
 class NetworkScreenHandler : public NetworkScreenActor,
                              public BaseScreenHandler {
  public:
-  NetworkScreenHandler();
+  explicit NetworkScreenHandler(CoreOobeActor* core_oobe_actor);
   virtual ~NetworkScreenHandler();
 
   // NetworkScreenActor implementation:
@@ -60,6 +62,7 @@ class NetworkScreenHandler : public NetworkScreenActor,
   static base::ListValue* GetInputMethods();
 
   NetworkScreenActor::Delegate* screen_;
+  CoreOobeActor* core_oobe_actor_;
 
   bool is_continue_enabled_;
 

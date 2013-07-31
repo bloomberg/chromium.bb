@@ -11,10 +11,17 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+const char kJsScreenPath[] = "login.UpdateScreen";
+
+}  // namespace
+
 namespace chromeos {
 
 UpdateScreenHandler::UpdateScreenHandler()
-    : screen_(NULL),
+    : BaseScreenHandler(kJsScreenPath),
+      screen_(NULL),
       show_on_init_(false) {
 }
 

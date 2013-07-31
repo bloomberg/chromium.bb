@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
+#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "content/public/browser/web_ui.h"
@@ -60,7 +61,14 @@ void LocalizedValuesBuilder::AddF(const std::string& key,
          l10n_util::GetStringUTF16(message_id_b));
 }
 
-BaseScreenHandler::BaseScreenHandler() : page_is_ready_(false) {
+BaseScreenHandler::BaseScreenHandler()
+    : page_is_ready_(false) {
+}
+
+BaseScreenHandler::BaseScreenHandler(const std::string& js_screen_path)
+    : page_is_ready_(false),
+      js_screen_path_prefix_(js_screen_path + ".") {
+  CHECK(!js_screen_path.empty());
 }
 
 BaseScreenHandler::~BaseScreenHandler() {
@@ -97,6 +105,11 @@ void BaseScreenHandler::ShowScreen(const char* screen_name,
 
 gfx::NativeWindow BaseScreenHandler::GetNativeWindow() {
   return LoginDisplayHostImpl::default_host()->GetNativeWindow();
+}
+
+std::string BaseScreenHandler::FullMethodPath(const std::string& method) const {
+  DCHECK(!method.empty());
+  return js_screen_path_prefix_ + method;
 }
 
 }  // namespace chromeos

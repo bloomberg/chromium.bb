@@ -29,6 +29,8 @@
 
 namespace {
 
+const char kJsScreenPath[] = "login.OAuthEnrollmentScreen";
+
 // Start page of GAIA authentication extension.
 const char kGaiaExtStartPage[] =
     "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/main.html";
@@ -74,7 +76,8 @@ class EnrollmentScreenHandler::TokenRevoker
 // EnrollmentScreenHandler, public ------------------------------
 
 EnrollmentScreenHandler::EnrollmentScreenHandler()
-    : controller_(NULL),
+    : BaseScreenHandler(kJsScreenPath),
+      controller_(NULL),
       show_on_init_(false),
       is_auto_enrollment_(false),
       can_exit_enrollment_(true),
@@ -353,7 +356,7 @@ void EnrollmentScreenHandler::HandleRetry() {
 }
 
 void EnrollmentScreenHandler::ShowStep(const char* step) {
-  CallJS("login.OAuthEnrollmentScreen.showStep", std::string(step));
+  CallJS("showStep", std::string(step));
 }
 
 void EnrollmentScreenHandler::ShowError(int message_id,
@@ -364,12 +367,11 @@ void EnrollmentScreenHandler::ShowError(int message_id,
 void EnrollmentScreenHandler::ShowErrorMessage(
     const std::string& message,
     bool retry) {
-  CallJS("login.OAuthEnrollmentScreen.showError", message, retry);
+  CallJS("showError", message, retry);
 }
 
 void EnrollmentScreenHandler::ShowWorking(int message_id) {
-  CallJS("login.OAuthEnrollmentScreen.showWorking",
-         l10n_util::GetStringUTF16(message_id));
+  CallJS("showWorking", l10n_util::GetStringUTF16(message_id));
 }
 
 void EnrollmentScreenHandler::OnTokenFetched(

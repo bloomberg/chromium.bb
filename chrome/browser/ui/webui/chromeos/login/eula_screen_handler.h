@@ -18,6 +18,7 @@ class DictionaryValue;
 
 namespace chromeos {
 
+class CoreOobeActor;
 class HelpAppLauncher;
 
 // WebUI implementation of EulaScreenActor. It is used to interact
@@ -26,7 +27,7 @@ class EulaScreenHandler : public EulaScreenActor,
                           public BaseScreenHandler,
                           public TpmPasswordFetcherDelegate {
  public:
-  EulaScreenHandler();
+  explicit EulaScreenHandler(CoreOobeActor* core_oobe_actor);
   virtual ~EulaScreenHandler();
 
   // EulaScreenActor implementation:
@@ -50,7 +51,8 @@ class EulaScreenHandler : public EulaScreenActor,
   void HandleOnLearnMore();
   void HandleOnInstallationSettingsPopupOpened();
 
-  Delegate* delegate_;
+  EulaScreenActor::Delegate* delegate_;
+  CoreOobeActor* core_oobe_actor_;
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;

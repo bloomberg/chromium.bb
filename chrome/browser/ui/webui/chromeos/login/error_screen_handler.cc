@@ -14,6 +14,12 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "grit/generated_resources.h"
 
+namespace {
+
+const char kJsScreenPath[] = "login.ErrorMessageScreen";
+
+}  // namespace
+
 namespace chromeos {
 
 namespace {
@@ -34,7 +40,8 @@ void DisableLazyDetection() {
 
 ErrorScreenHandler::ErrorScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer)
-    : network_state_informer_(network_state_informer),
+    : BaseScreenHandler(kJsScreenPath),
+      network_state_informer_(network_state_informer),
       show_on_init_(false) {
   DCHECK(network_state_informer_.get());
 }
@@ -86,22 +93,21 @@ void ErrorScreenHandler::HideCaptivePortal() {
 
 void ErrorScreenHandler::SetUIState(ErrorScreen::UIState ui_state) {
   ui_state_ = ui_state;
-  CallJS("login.ErrorMessageScreen.setUIState", static_cast<int>(ui_state_));
+  CallJS("setUIState", static_cast<int>(ui_state_));
 }
 
 void ErrorScreenHandler::SetErrorState(ErrorScreen::ErrorState error_state,
                                        const std::string& network) {
   error_state_ = error_state;
-  CallJS("login.ErrorMessageScreen.setErrorState",
-         static_cast<int>(error_state_), network);
+  CallJS("setErrorState", static_cast<int>(error_state_), network);
 }
 
 void ErrorScreenHandler::AllowGuestSignin(bool allowed) {
-  CallJS("login.ErrorMessageScreen.allowGuestSignin", allowed);
+  CallJS("allowGuestSignin", allowed);
 }
 
 void ErrorScreenHandler::AllowOfflineLogin(bool allowed) {
-  CallJS("login.ErrorMessageScreen.allowOfflineLogin", allowed);
+  CallJS("allowOfflineLogin", allowed);
 }
 
 void ErrorScreenHandler::NetworkErrorShown() {

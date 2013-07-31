@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/notification_observer.h"
@@ -19,7 +20,8 @@ class OobeUI;
 // The core handler for Javascript messages related to the "oobe" view.
 class CoreOobeHandler : public BaseScreenHandler,
                         public VersionInfoUpdater::Delegate,
-                        public content::NotificationObserver {
+                        public content::NotificationObserver,
+                        public CoreOobeActor {
  public:
   class Delegate {
    public:
@@ -55,6 +57,25 @@ class CoreOobeHandler : public BaseScreenHandler,
   }
 
  private:
+  // CoreOobeActor implementation:
+  virtual void ShowSignInError(
+      int login_attempts,
+      const std::string& error_text,
+      const std::string& help_link_text,
+      HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
+  virtual void ShowTpmError() OVERRIDE;
+  virtual void ShowSignInUI(const std::string& email) OVERRIDE;
+  virtual void ResetSignInUI(bool force_online) OVERRIDE;
+  virtual void ClearUserPodPassword() OVERRIDE;
+  virtual void RefocusCurrentPod() OVERRIDE;
+  virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
+  virtual void ShowPasswordChangedScreen(bool show_password_error) OVERRIDE;
+  virtual void SetUsageStats(bool checked) OVERRIDE;
+  virtual void SetOemEulaUrl(const std::string& oem_eula_url) OVERRIDE;
+  virtual void SetTpmPassword(const std::string& tmp_password) OVERRIDE;
+  virtual void ClearErrors() OVERRIDE;
+  virtual void ReloadContent(const base::DictionaryValue& dictionary) OVERRIDE;
+
   // Handlers for JS WebUI messages.
   void HandleEnableLargeCursor(bool enabled);
   void HandleEnableHighContrast(bool enabled);

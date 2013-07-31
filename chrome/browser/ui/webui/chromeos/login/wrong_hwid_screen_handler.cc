@@ -8,10 +8,18 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+namespace {
+
+const char kJsScreenPath[] = "login.WrongHWIDScreen";
+
+}  // namespace
+
 namespace chromeos {
 
 WrongHWIDScreenHandler::WrongHWIDScreenHandler()
-    : delegate_(NULL), show_on_init_(false) {
+    : BaseScreenHandler(kJsScreenPath),
+      delegate_(NULL),
+      show_on_init_(false) {
 }
 
 WrongHWIDScreenHandler::~WrongHWIDScreenHandler() {
@@ -70,4 +78,3 @@ void WrongHWIDScreenHandler::HandleOnSkip() {
 }
 
 }  // namespace chromeos
-

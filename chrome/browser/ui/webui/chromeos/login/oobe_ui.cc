@@ -175,11 +175,12 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   update_screen_handler_ = new UpdateScreenHandler();
   AddScreenHandler(update_screen_handler_);
 
-  NetworkScreenHandler* network_screen_handler = new NetworkScreenHandler();
+  NetworkScreenHandler* network_screen_handler =
+      new NetworkScreenHandler(core_handler_);
   network_screen_actor_ = network_screen_handler;
   AddScreenHandler(network_screen_handler);
 
-  EulaScreenHandler* eula_screen_handler = new EulaScreenHandler();
+  EulaScreenHandler* eula_screen_handler = new EulaScreenHandler(core_handler_);
   eula_screen_actor_ = eula_screen_handler;
   AddScreenHandler(eula_screen_handler);
 
@@ -228,7 +229,8 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   AddScreenHandler(error_screen_handler_);
 
   signin_screen_handler_ = new SigninScreenHandler(network_state_informer_,
-                                                   error_screen_handler_);
+                                                   error_screen_handler_,
+                                                   core_handler_);
   AddScreenHandler(signin_screen_handler_);
 
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.

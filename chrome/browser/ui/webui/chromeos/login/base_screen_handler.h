@@ -78,7 +78,12 @@ class LocalizedValuesBuilder {
 // Base class for the OOBE/Login WebUI handlers.
 class BaseScreenHandler : public content::WebUIMessageHandler {
  public:
+  // C-tor used when JS screen prefix is not needed.
   BaseScreenHandler();
+
+  // C-tor used when JS screen prefix is needed.
+  explicit BaseScreenHandler(const std::string& js_screen_path);
+
   virtual ~BaseScreenHandler();
 
   // Gets localized strings to be used on the page.
@@ -103,12 +108,13 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
 
   template<typename A1>
   void CallJS(const std::string& method, const A1& arg1) {
-    web_ui()->CallJavascriptFunction(method, MakeValue(arg1));
+    web_ui()->CallJavascriptFunction(FullMethodPath(method), MakeValue(arg1));
   }
 
   template<typename A1, typename A2>
   void CallJS(const std::string& method, const A1& arg1, const A2& arg2) {
-    web_ui()->CallJavascriptFunction(method, MakeValue(arg1), MakeValue(arg2));
+    web_ui()->CallJavascriptFunction(FullMethodPath(method), MakeValue(arg1),
+                                     MakeValue(arg2));
   }
 
   template<typename A1, typename A2, typename A3>
@@ -116,7 +122,7 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
               const A1& arg1,
               const A2& arg2,
               const A3& arg3) {
-    web_ui()->CallJavascriptFunction(method,
+    web_ui()->CallJavascriptFunction(FullMethodPath(method),
                                      MakeValue(arg1),
                                      MakeValue(arg2),
                                      MakeValue(arg3));
@@ -128,7 +134,7 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
               const A2& arg2,
               const A3& arg3,
               const A4& arg4) {
-    web_ui()->CallJavascriptFunction(method,
+    web_ui()->CallJavascriptFunction(FullMethodPath(method),
                                      MakeValue(arg1),
                                      MakeValue(arg2),
                                      MakeValue(arg3),
@@ -201,10 +207,19 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
   virtual gfx::NativeWindow GetNativeWindow();
 
  private:
+  // Returns full name of JS method based on screen and method
+  // names.
+  std::string FullMethodPath(const std::string& method) const;
+
   // Keeps whether page is ready.
   bool page_is_ready_;
 
   base::DictionaryValue* localized_values_;
+
+  // Full name of the corresponding JS screen object. Can be empty, if
+  // there are no corresponding screen object or several different
+  // objects.
+  std::string js_screen_path_prefix_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScreenHandler);
 };

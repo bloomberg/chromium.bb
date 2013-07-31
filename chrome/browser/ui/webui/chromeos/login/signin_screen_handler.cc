@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -381,7 +382,8 @@ static bool SetUserInputMethodImpl(
 
 SigninScreenHandler::SigninScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
-    ErrorScreenActor* error_screen_actor)
+    ErrorScreenActor* error_screen_actor,
+    CoreOobeActor* core_oobe_actor)
     : ui_state_(UI_STATE_UNKNOWN),
       frame_state_(FRAME_STATE_UNKNOWN),
       frame_error_(net::OK),
@@ -401,12 +403,14 @@ SigninScreenHandler::SigninScreenHandler(
       webui_visible_(false),
       preferences_changed_delayed_(false),
       error_screen_actor_(error_screen_actor),
+      core_oobe_actor_(core_oobe_actor),
       is_first_update_state_call_(true),
       offline_login_active_(false),
       last_network_state_(NetworkStateInformer::UNKNOWN),
       has_pending_auth_ui_(false) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_actor_);
+  DCHECK(core_oobe_actor_);
   network_state_informer_->AddObserver(this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowGuest, this);
@@ -886,19 +890,19 @@ void SigninScreenHandler::HandleGetUsers() {
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
-  CallJS("cr.ui.Oobe.resetSigninUI", false);
+  core_oobe_actor_->ResetSignInUI(false);
 }
 
 void SigninScreenHandler::ClearUserPodPassword() {
-  CallJS("cr.ui.Oobe.clearUserPodPassword");
+  core_oobe_actor_->ClearUserPodPassword();
 }
 
 void SigninScreenHandler::RefocusCurrentPod() {
-  CallJS("cr.ui.Oobe.refocusCurrentPod");
+  core_oobe_actor_->RefocusCurrentPod();
 }
 
 void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
-  CallJS("cr.ui.Oobe.onLoginSuccess", username);
+  core_oobe_actor_->OnLoginSuccess(username);
 }
 
 void SigninScreenHandler::OnUserRemoved(const std::string& username) {
@@ -936,14 +940,14 @@ void SigninScreenHandler::ShowError(int login_attempts,
                                     const std::string& error_text,
                                     const std::string& help_link_text,
                                     HelpAppLauncher::HelpTopic help_topic_id) {
-  CallJS("cr.ui.Oobe.showSignInError", login_attempts, error_text,
-         help_link_text, static_cast<int>(help_topic_id));
+  core_oobe_actor_->ShowSignInError(login_attempts, error_text, help_link_text,
+                                    help_topic_id);
 }
 
 void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
   switch (error_id) {
     case LoginDisplay::TPM_ERROR:
-      CallJS("cr.ui.Oobe.showTpmError");
+      core_oobe_actor_->ShowTpmError();
       break;
     default:
       NOTREACHED() << "Unknown sign in error";
@@ -952,18 +956,18 @@ void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
 }
 
 void SigninScreenHandler::ShowSigninUI(const std::string& email) {
-  CallJS("cr.ui.Oobe.showSigninUI", email);
+
 }
 
 void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
   email_ = username;
   password_changed_for_.insert(email_);
-  CallJS("cr.ui.Oobe.showSigninUI", email_);
+  core_oobe_actor_->ShowSignInUI(email_);
   CallJS("login.AccountPickerScreen.updateUserGaiaNeeded", email_);
 }
 
 void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error) {
-  CallJS("cr.ui.Oobe.showPasswordChangedScreen", show_password_error);
+  core_oobe_actor_->ShowPasswordChangedScreen(show_password_error);
 }
 
 void SigninScreenHandler::ShowSigninScreenForCreds(

@@ -16,6 +16,8 @@
 
 namespace {
 
+const char kJsScreenPath[] = "login.KioskEnableScreen";
+
 // Reset screen id.
 const char kKioskEnableScreen[] = "kiosk-enable";
 
@@ -24,7 +26,8 @@ const char kKioskEnableScreen[] = "kiosk-enable";
 namespace chromeos {
 
 KioskEnableScreenHandler::KioskEnableScreenHandler()
-    : delegate_(NULL),
+    : BaseScreenHandler(kJsScreenPath),
+      delegate_(NULL),
       show_on_init_(false),
       is_configurable_(false),
       weak_ptr_factory_(this) {
@@ -130,9 +133,7 @@ void KioskEnableScreenHandler::OnEnableConsumerModeKiosk(bool success) {
   if (!success)
     LOG(WARNING) << "Consumer kiosk mode can't be enabled!";
 
-  base::FundamentalValue value(success);
-  web_ui()->CallJavascriptFunction("login.KioskEnableScreen.onCompleted",
-                                   value);
+  CallJS("onCompleted", success);
   if (success) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_KIOSK_ENABLED,

@@ -19,10 +19,17 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+namespace {
+
+const char kJsScreenPath[] = "login.UserImageScreen";
+
+}  // namespace
+
 namespace chromeos {
 
 UserImageScreenHandler::UserImageScreenHandler()
-    : screen_(NULL),
+    : BaseScreenHandler(kJsScreenPath),
+      screen_(NULL),
       show_on_init_(false) {
 }
 
@@ -99,18 +106,18 @@ void UserImageScreenHandler::RegisterMessages() {
 
 void UserImageScreenHandler::SelectImage(int index) {
   if (page_is_ready())
-    CallJS("login.UserImageScreen.setSelectedImage", GetDefaultImageUrl(index));
+    CallJS("setSelectedImage", GetDefaultImageUrl(index));
 }
 
 void UserImageScreenHandler::SendProfileImage(const std::string& data_url) {
   if (page_is_ready())
-    CallJS("login.UserImageScreen.setProfileImage", data_url);
+    CallJS("setProfileImage", data_url);
 }
 
 void UserImageScreenHandler::OnProfileImageAbsent() {
   if (page_is_ready()) {
     scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
-    CallJS("login.UserImageScreen.setProfileImage", *null_value);
+    CallJS("setProfileImage", *null_value);
   }
 }
 
@@ -127,7 +134,7 @@ void UserImageScreenHandler::HandleGetImages() {
     image_data->SetString("title", GetDefaultImageDescription(i));
     image_urls.Append(image_data.release());
   }
-  CallJS("login.UserImageScreen.setDefaultImages", image_urls);
+  CallJS("setDefaultImages", image_urls);
   if (!screen_)
     return;
   if (screen_->selected_image() != User::kInvalidImageIndex)
@@ -175,11 +182,11 @@ void UserImageScreenHandler::HandleScreenShown() {
 }
 
 void UserImageScreenHandler::SetCameraPresent(bool present) {
-  CallJS("login.UserImageScreen.setCameraPresent", present);
+  CallJS("setCameraPresent", present);
 }
 
 void UserImageScreenHandler::SetProfilePictureEnabled(bool enabled) {
-  CallJS("login.UserImageScreen.setProfilePictureEnabled", enabled);
+  CallJS("setProfilePictureEnabled", enabled);
 }
 
 }  // namespace chromeos

@@ -34,6 +34,7 @@ class ListValue;
 namespace chromeos {
 
 class CaptivePortalWindowProxy;
+class CoreOobeActor;
 class LocallyManagedUserCreationScreenHandler;
 class NativeWindowDelegate;
 class User;
@@ -171,7 +172,8 @@ class SigninScreenHandler
  public:
   SigninScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
-      ErrorScreenActor* error_screen_actor);
+      ErrorScreenActor* error_screen_actor,
+      CoreOobeActor* core_oobe_actor);
   virtual ~SigninScreenHandler();
 
   // Shows the sign in screen. |oobe_ui| indicates whether the signin
@@ -453,6 +455,7 @@ class SigninScreenHandler
   bool preferences_changed_delayed_;
 
   ErrorScreenActor* error_screen_actor_;
+  CoreOobeActor* core_oobe_actor_;
 
   bool is_first_update_state_call_;
   bool offline_login_active_;

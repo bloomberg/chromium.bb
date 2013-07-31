@@ -7,6 +7,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/url_constants.h"
@@ -15,10 +16,19 @@
 #include "grit/generated_resources.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+const char kJsScreenPath[] = "login.EulaScreen";
+
+}  // namespace
+
 namespace chromeos {
 
-EulaScreenHandler::EulaScreenHandler()
-    : delegate_(NULL), show_on_init_(false) {
+EulaScreenHandler::EulaScreenHandler(CoreOobeActor* core_oobe_actor)
+    : BaseScreenHandler(kJsScreenPath),
+      delegate_(NULL),
+      core_oobe_actor_(core_oobe_actor),
+      show_on_init_(false) {
 }
 
 EulaScreenHandler::~EulaScreenHandler() {
@@ -83,14 +93,12 @@ void EulaScreenHandler::Initialize() {
   if (!page_is_ready() || !delegate_)
     return;
 
-  CallJS("cr.ui.Oobe.setUsageStats", delegate_->IsUsageStatsEnabled());
+  core_oobe_actor_->SetUsageStats(delegate_->IsUsageStatsEnabled());
 
   // This OEM EULA is a file:// URL which we're unable to load in iframe.
   // Instead if it's defined we use chrome://terms/oem that will load same file.
-  if (!delegate_->GetOemEulaUrl().is_empty()) {
-    CallJS("cr.ui.Oobe.setOemEulaUrl",
-           std::string(chrome::kChromeUITermsOemURL));
-  }
+  if (!delegate_->GetOemEulaUrl().is_empty())
+    core_oobe_actor_->SetOemEulaUrl(chrome::kChromeUITermsOemURL);
 
   if (show_on_init_) {
     Show();
@@ -106,7 +114,7 @@ void EulaScreenHandler::RegisterMessages() {
 }
 
 void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
-  CallJS("cr.ui.Oobe.setTpmPassword", tpm_password);
+  core_oobe_actor_->SetTpmPassword(tpm_password);
 }
 
 void EulaScreenHandler::HandleOnExit(bool accepted, bool usage_stats_enabled) {

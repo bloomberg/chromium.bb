@@ -20,6 +20,8 @@
 
 namespace {
 
+const char kJsScreenPath[] = "login.LocallyManagedUserCreationScreen";
+
 // Locally managed user creation screen id.
 const char kLocallyManagedUserCreationScreen[] =
     "locally-managed-user-creation";
@@ -29,7 +31,9 @@ const char kLocallyManagedUserCreationScreen[] =
 namespace chromeos {
 
 LocallyManagedUserCreationScreenHandler::
-LocallyManagedUserCreationScreenHandler() : delegate_(NULL) {
+LocallyManagedUserCreationScreenHandler()
+    : BaseScreenHandler(kJsScreenPath),
+      delegate_(NULL) {
 }
 
 LocallyManagedUserCreationScreenHandler::
@@ -177,36 +181,35 @@ void LocallyManagedUserCreationScreenHandler::Show() {
 void LocallyManagedUserCreationScreenHandler::Hide() {}
 
 void LocallyManagedUserCreationScreenHandler::ShowIntroPage() {
-  CallJS("login.LocallyManagedUserCreationScreen.showIntroPage");
+  CallJS("showIntroPage");
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowManagerPasswordError() {
-  CallJS("login.LocallyManagedUserCreationScreen.showManagerPasswordError");
+  CallJS("showManagerPasswordError");
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowStatusMessage(
     bool is_progress,
     const string16& message) {
   if (is_progress)
-    CallJS("login.LocallyManagedUserCreationScreen.showProgress", message);
+    CallJS("showProgress", message);
   else
-    CallJS("login.LocallyManagedUserCreationScreen.showStatusError", message);
+    CallJS("showStatusError", message);
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowUsernamePage() {
-  CallJS("login.LocallyManagedUserCreationScreen.showUsernamePage");
+  CallJS("showUsernamePage");
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowTutorialPage() {
-  CallJS("login.LocallyManagedUserCreationScreen.showTutorialPage");
+  CallJS("showTutorialPage");
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowErrorPage(
     const string16& title,
     const string16& message,
     const string16& button_text) {
-  CallJS("login.LocallyManagedUserCreationScreen.showErrorPage",
-      title, message, button_text);
+  CallJS("showErrorPage", title, message, button_text);
 }
 
 void LocallyManagedUserCreationScreenHandler::SetDelegate(Delegate* delegate) {
@@ -234,11 +237,11 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
     const string16& name) {
   if (NULL != UserManager::Get()->
           FindLocallyManagedUser(CollapseWhitespace(name, true))) {
-    CallJS("login.LocallyManagedUserCreationScreen.managedUserNameError",
-           name, l10n_util::GetStringUTF16(
+    CallJS("managedUserNameError", name,
+           l10n_util::GetStringUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS));
   } else {
-    CallJS("login.LocallyManagedUserCreationScreen.managedUserNameOk", name);
+    CallJS("managedUserNameOk", name);
   }
 }
 
@@ -249,8 +252,8 @@ void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
     return;
   const string16 new_user_name = CollapseWhitespace(new_raw_user_name, true);
   if (NULL != UserManager::Get()->FindLocallyManagedUser(new_user_name)) {
-    CallJS("login.LocallyManagedUserCreationScreen.managedUserNameError",
-           new_user_name, l10n_util::GetStringFUTF16(
+    CallJS("managedUserNameError", new_user_name,
+           l10n_util::GetStringFUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
                new_user_name));
     return;
@@ -258,7 +261,7 @@ void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
 
   // TODO(antrim): Any other password checks here?
   if (new_user_password.length() == 0) {
-    CallJS("login.LocallyManagedUserCreationScreen.showPasswordError",
+    CallJS("showPasswordError",
            l10n_util::GetStringUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT));
     return;
@@ -296,7 +299,7 @@ void LocallyManagedUserCreationScreenHandler::HandleGetImages() {
     image_data->SetString("title", GetDefaultImageDescription(i));
     image_urls.Append(image_data.release());
   }
-  CallJS("login.LocallyManagedUserCreationScreen.setDefaultImages", image_urls);
+  CallJS("setDefaultImages", image_urls);
 }
 
 void LocallyManagedUserCreationScreenHandler::HandlePhotoTaken
@@ -324,7 +327,7 @@ void LocallyManagedUserCreationScreenHandler::HandleSelectImage(
 }
 
 void LocallyManagedUserCreationScreenHandler::SetCameraPresent(bool present) {
-  CallJS("login.LocallyManagedUserCreationScreen.setCameraPresent", present);
+  CallJS("setCameraPresent", present);
 }
 
 }  // namespace chromeos

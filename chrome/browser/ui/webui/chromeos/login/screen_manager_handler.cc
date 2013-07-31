@@ -13,7 +13,8 @@ const char kJsApiContextChanged[] = "contextChanged";
 
 namespace chromeos {
 
-ScreenManagerHandler::ScreenManagerHandler() : delegate_(NULL) {
+ScreenManagerHandler::ScreenManagerHandler()
+    : delegate_(NULL) {
 }
 
 ScreenManagerHandler::~ScreenManagerHandler() {
