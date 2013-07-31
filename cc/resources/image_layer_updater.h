@@ -43,7 +43,8 @@ class CC_EXPORT ImageLayerUpdater : public LayerUpdater {
                      gfx::Vector2d dest_offset,
                      bool partial_update);
 
-  void set_bitmap(const SkBitmap& bitmap) { bitmap_ = bitmap; }
+  void SetBitmap(const SkBitmap& bitmap);
+  bool UsingBitmap(const SkBitmap& bitmap) const;
 
  private:
   ImageLayerUpdater() {}

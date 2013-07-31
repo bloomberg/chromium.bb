@@ -56,4 +56,13 @@ void ImageLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
     queue->AppendFullUpload(upload);
 }
 
+void ImageLayerUpdater::SetBitmap(const SkBitmap& bitmap) {
+  DCHECK(bitmap.pixelRef());
+  bitmap_ = bitmap;
+}
+
+bool ImageLayerUpdater::UsingBitmap(const SkBitmap& bitmap) const {
+  return bitmap.pixelRef() == bitmap_.pixelRef();
+}
+
 }  // namespace cc

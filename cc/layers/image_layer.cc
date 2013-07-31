@@ -43,11 +43,10 @@ void ImageLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
 bool ImageLayer::Update(ResourceUpdateQueue* queue,
                         const OcclusionTracker* occlusion) {
   CreateUpdaterIfNeeded();
-  if (needs_display_) {
-    updater_->set_bitmap(bitmap_);
+  if (!updater_->UsingBitmap(bitmap_)) {
+    updater_->SetBitmap(bitmap_);
     UpdateTileSizeAndTilingOption();
     InvalidateContentRect(gfx::Rect(content_bounds()));
-    needs_display_ = false;
   }
   return TiledLayer::Update(queue, occlusion);
 }

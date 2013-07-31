@@ -419,6 +419,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void reset_raster_scale_to_unknown() { raster_scale_ = 0.f; }
 
   // This flag is set when layer need repainting/updating.
+  // TODO(enne): Remove this flag and just check update_rect_.
   bool needs_display_;
 
   // This flag is set when the layer needs to push properties to the impl

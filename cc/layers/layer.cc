@@ -671,16 +671,15 @@ void Layer::SetHideLayerAndSubtree(bool hide) {
 }
 
 void Layer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
-  if (!update_rect_.Contains(dirty_rect)) {
-    SetNeedsPushProperties();
-  }
+  if (dirty_rect.IsEmpty())
+    return;
 
+  SetNeedsPushProperties();
   update_rect_.Union(dirty_rect);
   needs_display_ = true;
 
-  if (DrawsContent() && !update_rect_.IsEmpty()) {
+  if (DrawsContent())
     SetNeedsUpdate();
-  }
 }
 
 bool Layer::DescendantIsFixedToContainerLayer() const {
