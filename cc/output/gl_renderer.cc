@@ -1136,14 +1136,14 @@ bool GLRenderer::SetupQuadForAntialiasing(
   bool clipped = false;
   gfx::QuadF device_layer_quad = MathUtil::MapQuad(
       device_transform, gfx::QuadF(quad->visibleContentRect()), &clipped);
-  DCHECK(!clipped);
 
   bool is_axis_aligned_in_target = device_layer_quad.IsRectilinear();
   bool is_nearest_rect_within_epsilon = is_axis_aligned_in_target &&
       gfx::IsNearestRectWithinDistance(device_layer_quad.BoundingBox(),
                                        kAntiAliasingEpsilon);
+
   bool use_aa = Settings().allow_antialiasing &&
-                !clipped &&
+                !clipped &&  // code can't handle clipped quads
                 !is_nearest_rect_within_epsilon &&
                 quad->IsEdge();
   if (!use_aa)
