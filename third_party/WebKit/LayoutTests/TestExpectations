@@ -485,8 +485,6 @@ webkit.org/b/111004 [ Win Linux ] accessibility/svg-remote-element.html [ Failur
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
 
-crbug.com/174268 webgl [ Skip ]
-
 webkit.org/b/92287 fast/canvas/webgl/context-creation-and-destruction.html [ Failure Pass Timeout ]
 webkit.org/b/92287 virtual/gpu/fast/canvas/webgl/context-creation-and-destruction.html [ Failure Pass Timeout ]
 
