@@ -30,9 +30,9 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
     ASSERT_TRUE(manager_.SetUp());
 
     manager_.CreateTestingProfile("test1", scoped_ptr<PrefServiceSyncable>(),
-                                  ASCIIToUTF16("Test 1"), 1);
+                                  ASCIIToUTF16("Test 1"), 1, false);
     manager_.CreateTestingProfile("test2", scoped_ptr<PrefServiceSyncable>(),
-                                  ASCIIToUTF16("Test 2"), 0);
+                                  ASCIIToUTF16("Test 2"), 0, false);
 
     model_ = new AvatarMenuModel(manager_.profile_info_cache(), NULL, NULL);
 
@@ -121,7 +121,7 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
 
   // Now create a new profile and notify the delegate.
   manager()->CreateTestingProfile("test3", scoped_ptr<PrefServiceSyncable>(),
-                                  ASCIIToUTF16("Test 3"), 0);
+                                  ASCIIToUTF16("Test 3"), 0, false);
 
   // Testing the bridge is not worth the effort...
   [controller() performLayout];

@@ -89,6 +89,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetIsUsingGAIANameOfProfileAtIndex(size_t index, bool value);
   void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image* image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
+  void SetProfileIsManagedAtIndex(size_t index, bool value);
   void SetProfileSigninRequiredAtIndex(size_t index, bool value);
 
   // Returns unique name that can be assigned to a newly created profile.

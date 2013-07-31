@@ -7,10 +7,9 @@
 
 #include <set>
 
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ProfileInfoCache;
@@ -62,9 +61,7 @@ class ProfileInfoCacheTest : public testing::Test {
   TestingProfileManager testing_profile_manager_;
 
  private:
-  base::MessageLoopForUI ui_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   ProfileNameVerifierObserver name_observer_;
 };
 

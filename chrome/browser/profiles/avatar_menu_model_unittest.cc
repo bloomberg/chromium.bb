@@ -63,9 +63,9 @@ TEST_F(AvatarMenuModelTest, InitialCreation) {
   string16 name2(ASCIIToUTF16("Test 2"));
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0);
+                                  name1, 0, false);
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0);
+                                  name2, 0, false);
 
   MockObserver observer;
   EXPECT_EQ(0, observer.change_count());
@@ -89,9 +89,9 @@ TEST_F(AvatarMenuModelTest, ActiveItem) {
   string16 name2(ASCIIToUTF16("Test 2"));
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0);
+                                  name1, 0, false);
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0);
+                                  name2, 0, false);
 
   MockObserver observer;
   AvatarMenuModel model(manager()->profile_info_cache(), &observer, browser());
@@ -107,9 +107,9 @@ TEST_F(AvatarMenuModelTest, ModifyingNameResortsCorrectly) {
   string16 newname1(ASCIIToUTF16("Gamma"));
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0);
+                                  name1, 0, false);
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0);
+                                  name2, 0, false);
 
   MockObserver observer;
   AvatarMenuModel model(manager()->profile_info_cache(), &observer, browser());
@@ -143,9 +143,9 @@ TEST_F(AvatarMenuModelTest, ChangeOnNotify) {
   string16 name2(ASCIIToUTF16("Test 2"));
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0);
+                                  name1, 0, false);
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0);
+                                  name2, 0, false);
 
   MockObserver observer;
   EXPECT_EQ(0, observer.change_count());
@@ -156,7 +156,7 @@ TEST_F(AvatarMenuModelTest, ChangeOnNotify) {
 
   string16 name3(ASCIIToUTF16("Test 3"));
   manager()->CreateTestingProfile("p3", scoped_ptr<PrefServiceSyncable>(),
-                                  name3, 0);
+                                  name3, 0, false);
 
   // Four changes happened via the call to CreateTestingProfile: adding the
   // profile to the cache, setting the user name, rebuilding the list of
@@ -198,7 +198,7 @@ TEST_F(AvatarMenuModelTest, ShowAvatarMenuInTrial) {
 TEST_F(AvatarMenuModelTest, DontShowAvatarMenu) {
   string16 name1(ASCIIToUTF16("Test 1"));
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0);
+                                  name1, 0, false);
 
   EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
 
@@ -209,7 +209,7 @@ TEST_F(AvatarMenuModelTest, DontShowAvatarMenu) {
 
   string16 name2(ASCIIToUTF16("Test 2"));
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0);
+                                  name2, 0, false);
 
   EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
 }
@@ -223,9 +223,9 @@ TEST_F(AvatarMenuModelTest, ShowAvatarMenu) {
   string16 name2(ASCIIToUTF16("Test 2"));
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0);
+                                  name1, 0, false);
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0);
+                                  name2, 0, false);
 
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
@@ -240,7 +240,7 @@ TEST_F(AvatarMenuModelTest, SyncState) {
     return;
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  ASCIIToUTF16("Test 1"), 0);
+                                  ASCIIToUTF16("Test 1"), 0, false);
 
   // Add a managed user profile.
   ProfileInfoCache* cache = manager()->profile_info_cache();

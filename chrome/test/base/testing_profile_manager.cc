@@ -48,7 +48,8 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
     const std::string& profile_name,
     scoped_ptr<PrefServiceSyncable> prefs,
     const string16& user_name,
-    int avatar_id) {
+    int avatar_id,
+    bool is_managed) {
   DCHECK(called_set_up_);
 
   // Create a path for the profile based on the name.
@@ -66,8 +67,11 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   // Update the user metadata.
   ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(profile_path);
-  cache.SetNameOfProfileAtIndex(index, user_name);
   cache.SetAvatarIconOfProfileAtIndex(index, avatar_id);
+  cache.SetProfileIsManagedAtIndex(index, is_managed);
+  // SetNameOfProfileAtIndex may reshuffle the list of profiles, so we do it
+  // last.
+  cache.SetNameOfProfileAtIndex(index, user_name);
 
   testing_profiles_.insert(std::make_pair(profile_name, profile));
 
@@ -78,7 +82,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
     const std::string& name) {
   DCHECK(called_set_up_);
   return CreateTestingProfile(name, scoped_ptr<PrefServiceSyncable>(),
-                              UTF8ToUTF16(name), 0);
+                              UTF8ToUTF16(name), 0, false);
 }
 
 void TestingProfileManager::DeleteTestingProfile(const std::string& name) {

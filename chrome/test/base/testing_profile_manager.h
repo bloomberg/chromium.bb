@@ -43,14 +43,15 @@ class TestingProfileManager {
   // profile_name, which is a non-user-visible key for the test environment.
   // |prefs| is the PrefService used by the profile. If it is NULL, the profile
   // creates a PrefService on demand.
-  // |user_name| and |avatar_id| are passed along to the ProfileInfoCache and
-  // provide the user-visible profile metadata. This will register the
-  // TestingProfile with the profile subsystem as well. The subsystem owns the
-  // Profile and returns a weak pointer.
+  // |user_name|, |avatar_id| and |is_managed| are passed along to the
+  // ProfileInfoCache and provide the user-visible profile metadata. This will
+  // register the TestingProfile with the profile subsystem as well. The
+  // subsystem owns the Profile and returns a weak pointer.
   TestingProfile* CreateTestingProfile(const std::string& profile_name,
                                        scoped_ptr<PrefServiceSyncable> prefs,
                                        const string16& user_name,
-                                       int avatar_id);
+                                       int avatar_id,
+                                       bool is_managed);
 
   // Small helper for creating testing profiles. Just forwards to above.
   TestingProfile* CreateTestingProfile(const std::string& name);

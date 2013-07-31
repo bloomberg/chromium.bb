@@ -87,7 +87,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile, scoped_ptr<PrefServiceSyncable>(),
-        UTF8ToUTF16("testing_profile"), 0);
+        UTF8ToUTF16("testing_profile"), 0, false);
     signin_profile_ = profile_manager_->CreateTestingProfile(kSigninProfile);
     signin_profile_->set_incognito(true);
     // Usually the signin Profile and the main Profile are separate, but since

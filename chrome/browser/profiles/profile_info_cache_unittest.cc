@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -77,10 +78,7 @@ ProfileInfoCache* ProfileNameVerifierObserver::GetCache() {
 }
 
 ProfileInfoCacheTest::ProfileInfoCacheTest()
-    : testing_profile_manager_(
-        TestingBrowserProcess::GetGlobal()),
-      ui_thread_(BrowserThread::UI, &ui_loop_),
-      file_thread_(BrowserThread::FILE, &ui_loop_),
+    : testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
       name_observer_(&testing_profile_manager_) {
 }
 
@@ -95,7 +93,7 @@ void ProfileInfoCacheTest::SetUp() {
 void ProfileInfoCacheTest::TearDown() {
   // Drain the UI thread to make sure all tasks are completed. This prevents
   // memory leaks.
-  ui_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 ProfileInfoCache* ProfileInfoCacheTest::GetCache() {
@@ -125,9 +123,10 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     const SkBitmap* icon = rb.GetImageNamed(
         ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(
             i)).ToSkBitmap();
+    bool is_managed = i == 3;
 
     GetCache()->AddProfileToCache(profile_path, profile_name, string16(), i,
-                                  false);
+                                  is_managed);
     GetCache()->SetBackgroundStatusOfProfileAtIndex(i, true);
     string16 gaia_name = ASCIIToUTF16(base::StringPrintf("gaia_%ud", i));
     GetCache()->SetGAIANameOfProfileAtIndex(i, gaia_name);
@@ -135,10 +134,11 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     EXPECT_EQ(i + 1, GetCache()->GetNumberOfProfiles());
     EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(i));
     EXPECT_EQ(profile_path, GetCache()->GetPathOfProfileAtIndex(i));
-    const SkBitmap* actual_icon = GetCache()->GetAvatarIconOfProfileAtIndex(
-        i).ToSkBitmap();
+    const SkBitmap* actual_icon =
+        GetCache()->GetAvatarIconOfProfileAtIndex(i).ToSkBitmap();
     EXPECT_EQ(icon->width(), actual_icon->width());
     EXPECT_EQ(icon->height(), actual_icon->height());
+    EXPECT_EQ(is_managed, GetCache()->ProfileIsManagedAtIndex(i));
   }
 
   // Reset the cache and test the it reloads correctly.
@@ -394,6 +394,21 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
     gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
 }
 
+TEST_F(ProfileInfoCacheTest, SetProfileIsManaged) {
+  GetCache()->AddProfileToCache(
+      GetProfilePath("test"), ASCIIToUTF16("Test"), string16(), 0, false);
+  EXPECT_FALSE(GetCache()->ProfileIsManagedAtIndex(0));
+
+  GetCache()->SetProfileIsManagedAtIndex(0, true);
+  EXPECT_TRUE(GetCache()->ProfileIsManagedAtIndex(0));
+
+  ResetCache();
+  EXPECT_TRUE(GetCache()->ProfileIsManagedAtIndex(0));
+
+  GetCache()->SetProfileIsManagedAtIndex(0, false);
+  EXPECT_FALSE(GetCache()->ProfileIsManagedAtIndex(0));
+}
+
 TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
   string16 profile_name = ASCIIToUTF16("name_1");
   int id = ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(0);
@@ -413,6 +428,18 @@ TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
   EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(0));
   EXPECT_TRUE(gfx::test::IsEqual(
       profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(0)));
+}
+
+TEST_F(ProfileInfoCacheTest, CreateManagedTestingProfile) {
+  testing_profile_manager_.CreateTestingProfile("default");
+  string16 managed_user_name = ASCIIToUTF16("Supervised User");
+  testing_profile_manager_.CreateTestingProfile(
+      "test1", scoped_ptr<PrefServiceSyncable>(), managed_user_name, 0, true);
+  for (size_t i = 0; i < GetCache()->GetNumberOfProfiles(); i++) {
+    bool is_managed =
+        GetCache()->GetNameOfProfileAtIndex(i) == managed_user_name;
+    EXPECT_EQ(is_managed, GetCache()->ProfileIsManagedAtIndex(i));
+  }
 }
 
 }  // namespace

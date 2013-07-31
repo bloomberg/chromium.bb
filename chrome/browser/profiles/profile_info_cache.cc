@@ -613,6 +613,13 @@ void ProfileInfoCache::SetIsUsingGAIAPictureOfProfileAtIndex(size_t index,
                     OnProfileAvatarChanged(profile_path));
 }
 
+void ProfileInfoCache::SetProfileIsManagedAtIndex(size_t index, bool value) {
+  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetBoolean(kIsManagedKey, value);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
 void ProfileInfoCache::SetProfileSigninRequiredAtIndex(size_t index,
                                                        bool value) {
   if (value == ProfileIsSigninRequiredAtIndex(index))
