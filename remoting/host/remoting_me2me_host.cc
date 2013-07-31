@@ -371,10 +371,12 @@ bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
   }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
+  // Ignore certificate requests - the host currently has no client certificate
+  // support, so ignoring certificate requests allows connecting to servers that
+  // request, but don't require, a certificate (optional client authentication).
+  net::URLFetcher::SetIgnoreCertificateRequests(true);
+
   ServiceUrls* service_urls = ServiceUrls::GetInstance();
-  if (service_urls->ignore_urlfetcher_cert_requests()) {
-    net::URLFetcher::SetIgnoreCertificateRequests(true);
-  }
   bool xmpp_server_valid = net::ParseHostAndPort(
       service_urls->xmpp_server_address(),
       &xmpp_server_config_.host, &xmpp_server_config_.port);

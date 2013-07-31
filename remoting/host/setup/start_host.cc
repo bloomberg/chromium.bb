@@ -153,9 +153,7 @@ int main(int argc, char** argv) {
           g_message_loop->message_loop_proxy(),
           io_thread.message_loop_proxy()));
 
-  if (remoting::ServiceUrls::GetInstance()->ignore_urlfetcher_cert_requests()) {
-    net::URLFetcher::SetIgnoreCertificateRequests(true);
-  }
+  net::URLFetcher::SetIgnoreCertificateRequests(true);
 
   // Start the host.
   scoped_ptr<HostStarter> host_starter(HostStarter::Create(
