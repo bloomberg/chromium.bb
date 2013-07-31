@@ -560,7 +560,8 @@ void InspectorOverlay::drawViewSize()
 void InspectorOverlay::drawOverridesMessage()
 {
     RefPtr<JSONObject> data = JSONObject::create();
-    data->setNumber("overrides", m_overrides);
+    if (!m_drawViewSize)
+        data->setNumber("overrides", m_overrides);
     data->setNumber("topOffset", m_overridesTopOffset);
     evaluateInOverlay("drawOverridesMessage", data.release());
 }
