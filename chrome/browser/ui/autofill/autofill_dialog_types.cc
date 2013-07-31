@@ -28,7 +28,7 @@ SkColor DialogNotification::GetBackgroundColor() const {
     case DialogNotification::AUTOCHECKOUT_SUCCESS:
     case DialogNotification::EXPLANATORY_MESSAGE:
     case DialogNotification::WALLET_USAGE_CONFIRMATION:
-      return SkColorSetRGB(0x47, 0x89, 0xfa);
+      return SkColorSetRGB(0xf5, 0xf5, 0xf5);
     case DialogNotification::REQUIRED_ACTION:
     case DialogNotification::WALLET_ERROR:
     case DialogNotification::AUTOCHECKOUT_ERROR:
@@ -45,16 +45,36 @@ SkColor DialogNotification::GetBackgroundColor() const {
   return SK_ColorTRANSPARENT;
 }
 
+SkColor DialogNotification::GetBorderColor() const {
+  switch (type_) {
+    case DialogNotification::AUTOCHECKOUT_SUCCESS:
+    case DialogNotification::EXPLANATORY_MESSAGE:
+    case DialogNotification::WALLET_USAGE_CONFIRMATION:
+      return SkColorSetRGB(0xe5, 0xe5, 0xe5);
+    case DialogNotification::REQUIRED_ACTION:
+    case DialogNotification::WALLET_ERROR:
+    case DialogNotification::AUTOCHECKOUT_ERROR:
+    case DialogNotification::DEVELOPER_WARNING:
+    case DialogNotification::SECURITY_WARNING:
+    case DialogNotification::VALIDATION_ERROR:
+    case DialogNotification::NONE:
+      return GetBackgroundColor();
+  }
+
+  NOTREACHED();
+  return SK_ColorTRANSPARENT;
+}
+
 SkColor DialogNotification::GetTextColor() const {
   switch (type_) {
     case DialogNotification::REQUIRED_ACTION:
     case DialogNotification::WALLET_ERROR:
     case DialogNotification::AUTOCHECKOUT_ERROR:
-      return SkColorSetRGB(102, 102, 102);
     case DialogNotification::AUTOCHECKOUT_SUCCESS:
-    case DialogNotification::DEVELOPER_WARNING:
     case DialogNotification::EXPLANATORY_MESSAGE:
     case DialogNotification::WALLET_USAGE_CONFIRMATION:
+      return SkColorSetRGB(102, 102, 102);
+    case DialogNotification::DEVELOPER_WARNING:
     case DialogNotification::SECURITY_WARNING:
     case DialogNotification::VALIDATION_ERROR:
       return SK_ColorWHITE;

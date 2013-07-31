@@ -342,6 +342,7 @@ class AutofillDialogViews : public AutofillDialogView,
     // views::View implementation.
     virtual gfx::Size GetPreferredSize() OVERRIDE;
     virtual const char* GetClassName() const OVERRIDE;
+    virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
     // views::ButtonListener implementation:

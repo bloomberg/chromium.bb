@@ -124,17 +124,27 @@ typedef ui::MultiAnimation::Part Part;
 typedef ui::MultiAnimation::Parts Parts;
 
 // Draws an arrow at the top of |canvas| pointing to |tip_x|.
-void DrawArrow(gfx::Canvas* canvas, int tip_x, const SkColor& color) {
+void DrawArrow(gfx::Canvas* canvas,
+               int tip_x,
+               const SkColor& fill_color,
+               const SkColor& stroke_color) {
   const int arrow_half_width = kArrowWidth / 2.0f;
 
   SkPath arrow;
-  arrow.moveTo(tip_x, 0);
-  arrow.rLineTo(arrow_half_width, kArrowHeight);
-  arrow.rLineTo(-kArrowWidth, 0);
-  arrow.close();
-  SkPaint paint;
-  paint.setColor(color);
-  canvas->DrawPath(arrow, paint);
+  arrow.moveTo(tip_x - arrow_half_width, kArrowHeight);
+  arrow.lineTo(tip_x, 0);
+  arrow.lineTo(tip_x + arrow_half_width, kArrowHeight);
+
+  SkPaint fill_paint;
+  fill_paint.setColor(fill_color);
+  canvas->DrawPath(arrow, fill_paint);
+
+  if (stroke_color != SK_ColorTRANSPARENT) {
+    SkPaint stroke_paint;
+    stroke_paint.setColor(stroke_color);
+    stroke_paint.setStyle(SkPaint::kStroke_Style);
+    canvas->DrawPath(arrow, stroke_paint);
+  }
 }
 
 // This class handles layout for the first row of a SuggestionView.
@@ -193,7 +203,7 @@ class ErrorBubbleContents : public views::View {
  public:
   explicit ErrorBubbleContents(const base::string16& message)
       : color_(kWarningColor) {
-    set_border(views::Border::CreateEmptyBorder(kArrowHeight, 0, 0, 0));
+    set_border(views::Border::CreateEmptyBorder(kArrowHeight - 3, 0, 0, 0));
 
     views::Label* label = new views::Label();
     label->SetText(message);
@@ -210,7 +220,7 @@ class ErrorBubbleContents : public views::View {
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     views::View::OnPaint(canvas);
-    DrawArrow(canvas, width() / 2.0f, color_);
+    DrawArrow(canvas, width() / 2.0f, color_, SK_ColorTRANSPARENT);
   }
 
  private:
@@ -362,6 +372,8 @@ class NotificationView : public views::View {
 
     set_background(
        views::Background::CreateSolidBackground(data.GetBackgroundColor()));
+    set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
+                                                     data.GetBorderColor()));
   }
 
   virtual ~NotificationView() {}
@@ -862,7 +874,8 @@ AutofillDialogViews::NotificationArea::NotificationArea(
     : controller_(controller),
       checkbox_(NULL) {
   // Reserve vertical space for the arrow (regardless of whether one exists).
-  set_border(views::Border::CreateEmptyBorder(kArrowHeight, 0, 0, 0));
+  // The -1 accounts for the border.
+  set_border(views::Border::CreateEmptyBorder(kArrowHeight - 1, 0, 0, 0));
 
   views::BoxLayout* box_layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
@@ -907,14 +920,19 @@ const char* AutofillDialogViews::NotificationArea::GetClassName() const {
   return kNotificationAreaClassName;
 }
 
+void AutofillDialogViews::NotificationArea::PaintChildren(
+    gfx::Canvas* canvas) {}
+
 void AutofillDialogViews::NotificationArea::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
+  views::View::PaintChildren(canvas);
 
   if (HasArrow()) {
     DrawArrow(
         canvas,
         GetMirroredXInView(width() - arrow_centering_anchor_->width() / 2.0f),
-        notifications_[0].GetBackgroundColor());
+        notifications_[0].GetBackgroundColor(),
+        notifications_[0].GetBorderColor());
   }
 }
 

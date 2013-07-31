@@ -96,9 +96,10 @@ class DialogNotification {
   DialogNotification();
   DialogNotification(Type type, const string16& display_text);
 
-  // Returns the appropriate background or text color for the view's
+  // Returns the appropriate background, border, or text color for the view's
   // notification area based on |type_|.
   SkColor GetBackgroundColor() const;
+  SkColor GetBorderColor() const;
   SkColor GetTextColor() const;
 
   // Whether this notification has an arrow pointing up at the account chooser.
