@@ -2384,4 +2384,16 @@ TEST_F(AutofillDialogControllerTest, ReloadWithEmptyWalletItems) {
       3, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
 }
 
+TEST_F(AutofillDialogControllerTest, GeneratedCardBubbleNotShown) {
+  EXPECT_CALL(*test_bubble_controller(),
+              ShowAsGeneratedCardBubble(_, _)).Times(0);
+  EXPECT_CALL(*test_bubble_controller(), ShowAsNewCardSavedBubble(_)).Times(0);
+
+  SubmitWithWalletItems(CompleteAndValidWalletItems());
+  controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  controller()->OnAutocheckoutError();
+  controller()->ViewClosed();
+}
+
 }  // namespace autofill

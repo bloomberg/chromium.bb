@@ -3476,6 +3476,12 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
     return;
   }
 
+  // Don't show GeneratedCardBubble if Autocheckout failed.
+  if (GetDialogType() == DIALOG_TYPE_AUTOCHECKOUT &&
+      autocheckout_state_ != AUTOCHECKOUT_SUCCESS) {
+    return;
+  }
+
   base::string16 backing_last_four;
   if (ActiveInstrument()) {
     backing_last_four = ActiveInstrument()->TypeAndLastFourDigits();
