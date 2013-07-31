@@ -206,6 +206,15 @@ namespace downloads {
     // $ref:search() may be called as often as necessary, but will not check for
     // file existence any more frequently than once every 10 seconds.
     boolean exists;
+
+    // The identifier for the extension that initiated this download if this
+    // download was initiated by an extension. Does not change once it is set.
+    DOMString? byExtensionId;
+
+    // The localized name of the extension that initiated this download if this
+    // download was initiated by an extension. May change if the extension
+    // changes its name or if the user changes their locale.
+    DOMString? byExtensionName;
   };
 
   [inline_doc] dictionary DownloadQuery {

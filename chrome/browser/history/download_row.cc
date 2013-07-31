@@ -29,7 +29,9 @@ DownloadRow::DownloadRow(
     content::DownloadDangerType danger_type,
     content::DownloadInterruptReason interrupt_reason,
     uint32 id,
-    bool download_opened)
+    bool download_opened,
+    const std::string& ext_id,
+    const std::string& ext_name)
     : current_path(current_path),
       target_path(target_path),
       url_chain(url_chain),
@@ -42,7 +44,9 @@ DownloadRow::DownloadRow(
       danger_type(danger_type),
       interrupt_reason(interrupt_reason),
       id(id),
-      opened(download_opened) {
+      opened(download_opened),
+      by_ext_id(ext_id),
+      by_ext_name(ext_name) {
 }
 
 DownloadRow::~DownloadRow() {

@@ -34,7 +34,9 @@ struct DownloadRow {
       content::DownloadDangerType danger_type,
       content::DownloadInterruptReason interrupt_reason,
       uint32 id,
-      bool download_opened);
+      bool download_opened,
+      const std::string& ext_id,
+      const std::string& ext_name);
   ~DownloadRow();
 
   // The current path to the download (potentially different from final if
@@ -81,6 +83,10 @@ struct DownloadRow {
 
   // Whether this download has ever been opened from the browser.
   bool opened;
+
+  // The id and name of the extension that created this download.
+  std::string by_ext_id;
+  std::string by_ext_name;
 };
 
 }  // namespace history

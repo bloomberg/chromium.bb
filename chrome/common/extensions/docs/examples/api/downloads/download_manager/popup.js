@@ -177,6 +177,10 @@ function DownloadItem(data) {
     chrome.tabs.create({url: item.referrer});
     return false;
   };
+  item.getElement('by-ext').onclick = function() {
+    chrome.tabs.create({url: 'chrome://extensions#' + item.byExtensionId});
+    return false;
+  }
   item.getElement('open-filename').onclick = function() {
     item.open();
     return false;
@@ -316,6 +320,16 @@ DownloadItem.prototype.render = function() {
 
   item.getElement('removed').innerText = item.basename;
   item.getElement('open-filename').innerText = item.basename;
+
+  if (item.byExtensionId && item.byExtensionName) {
+    item.getElement('by-ext').title = item.byExtensionName;
+    item.getElement('by-ext').href =
+      'chrome://extensions#' + item.byExtensionId;
+    item.getElement('by-ext img').src =
+      'chrome://extension-icon/' + item.byExtensionId + '/48/1';
+  } else {
+    item.getElement('by-ext').hidden = true;
+  }
 
   if (!item.getElement('error').hidden) {
     if (item.error) {

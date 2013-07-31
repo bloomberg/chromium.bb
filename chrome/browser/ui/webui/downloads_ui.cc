@@ -74,6 +74,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("control_resume", IDS_DOWNLOAD_LINK_RESUME);
   source->AddLocalizedString("control_removefromlist",
                              IDS_DOWNLOAD_LINK_REMOVE);
+  source->AddLocalizedString("control_by_extension",
+                             IDS_DOWNLOAD_BY_EXTENSION);
 
   PrefService* prefs = profile->GetPrefs();
   source->AddBoolean("allow_deleting_history",

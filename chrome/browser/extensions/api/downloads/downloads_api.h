@@ -59,6 +59,26 @@ extern const char kUnexpectedDeterminer[];
 }  // namespace download_extension_errors
 
 
+class DownloadedByExtension : public base::SupportsUserData::Data {
+ public:
+  static DownloadedByExtension* Get(content::DownloadItem* item);
+
+  DownloadedByExtension(content::DownloadItem* item,
+                        const std::string& id,
+                        const std::string& name);
+
+  const std::string& id() const { return id_; }
+  const std::string& name() const { return name_; }
+
+ private:
+  static const char kKey[];
+
+  std::string id_;
+  std::string name_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadedByExtension);
+};
+
 class DownloadsDownloadFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.download", DOWNLOADS_DOWNLOAD)

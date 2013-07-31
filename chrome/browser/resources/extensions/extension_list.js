@@ -318,6 +318,15 @@ cr.define('options', function() {
       }
 
       this.appendChild(node);
+      if (location.hash.substr(1) == extension.id) {
+        // Scroll beneath the fixed header so that the extension is not
+        // obscured.
+        var topScroll = node.offsetTop - $('page-header').offsetHeight;
+        var pad = parseInt(getComputedStyle(node, null).marginTop, 10);
+        if (!isNaN(pad))
+          topScroll -= pad / 2;
+        document.body.scrollTop = topScroll;
+      }
     }
   };
 

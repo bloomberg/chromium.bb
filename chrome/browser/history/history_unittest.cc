@@ -179,7 +179,9 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
                          content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                          content::DOWNLOAD_INTERRUPT_REASON_NONE,
                          id,
-                         false);
+                         false,
+                         "by_ext_id",
+                         "by_ext_name");
     return db_->CreateDownload(download);
   }
 
@@ -249,6 +251,8 @@ TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
   EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
             downloads[0].interrupt_reason);
   EXPECT_FALSE(downloads[0].opened);
+  EXPECT_EQ("by_ext_id", downloads[0].by_ext_id);
+  EXPECT_EQ("by_ext_name", downloads[0].by_ext_name);
 
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(1U, downloads.size());
@@ -484,6 +488,69 @@ TEST_F(HistoryBackendDBTest, MigrateReferrer) {
   }
 }
 
+TEST_F(HistoryBackendDBTest, MigrateDownloadedByExtension) {
+  Time now(base::Time::Now());
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(26));
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "INSERT INTO downloads (id, current_path, target_path, start_time, "
+          "received_bytes, total_bytes, state, danger_type, interrupt_reason, "
+          "end_time, opened, referrer) VALUES "
+          "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      s.BindInt64(0, 1);
+      s.BindString(1, "current_path");
+      s.BindString(2, "target_path");
+      s.BindInt64(3, now.ToTimeT());
+      s.BindInt64(4, 100);
+      s.BindInt64(5, 100);
+      s.BindInt(6, 1);
+      s.BindInt(7, 0);
+      s.BindInt(8, 0);
+      s.BindInt64(9, now.ToTimeT());
+      s.BindInt(10, 1);
+      s.BindString(11, "referrer");
+      ASSERT_TRUE(s.Run());
+    }
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "INSERT INTO downloads_url_chains (id, chain_index, url) VALUES "
+          "(?, ?, ?)"));
+      s.BindInt64(0, 4);
+      s.BindInt64(1, 0);
+      s.BindString(2, "url");
+      ASSERT_TRUE(s.Run());
+    }
+  }
+  // Re-open the db using the HistoryDatabase, which should migrate to version
+  // 27, creating the by_ext_id and by_ext_name columns.
+  CreateBackendAndDatabase();
+  DeleteBackend();
+  {
+    // Re-open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    // The version should have been updated.
+    int cur_version = HistoryDatabase::GetCurrentVersion();
+    ASSERT_LE(27, cur_version);
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT value FROM meta WHERE key = 'version'"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(cur_version, s.ColumnInt(0));
+    }
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT by_ext_id, by_ext_name from downloads"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(std::string(), s.ColumnString(0));
+      EXPECT_EQ(std::string(), s.ColumnString(1));
+    }
+  }
+}
+
 TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
   // Create the DB.
   CreateBackendAndDatabase();
@@ -548,7 +615,9 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
                        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                        content::DOWNLOAD_INTERRUPT_REASON_NONE,
                        1,
-                       0);
+                       0,
+                       "by_ext_id",
+                       "by_ext_name");
 
   // Creating records without any urls should fail.
   EXPECT_FALSE(db_->CreateDownload(download));

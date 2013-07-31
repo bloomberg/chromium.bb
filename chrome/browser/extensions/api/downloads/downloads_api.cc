@@ -47,6 +47,7 @@
 #include "chrome/browser/icon_loader.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -114,6 +115,8 @@ namespace {
 const int  kDefaultIconSize = 32;
 
 // Parameter keys
+const char kByExtensionIdKey[] = "byExtensionId";
+const char kByExtensionNameKey[] = "byExtensionName";
 const char kBytesReceivedKey[] = "bytesReceived";
 const char kCanResumeKey[] = "canResume";
 const char kDangerAccepted[] = "accepted";
@@ -227,7 +230,7 @@ std::string TimeToISO8601(const base::Time& t) {
 
 scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
     DownloadItem* download_item,
-    bool incognito) {
+    Profile* profile) {
   base::DictionaryValue* json = new base::DictionaryValue();
   json->SetBoolean(kExistsKey, !download_item->GetFileExternallyRemoved());
   json->SetInteger(kIdKey, download_item->GetId());
@@ -246,7 +249,7 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
   json->SetString(kStartTimeKey, TimeToISO8601(download_item->GetStartTime()));
   json->SetInteger(kBytesReceivedKey, download_item->GetReceivedBytes());
   json->SetInteger(kTotalBytesKey, download_item->GetTotalBytes());
-  json->SetBoolean(kIncognitoKey, incognito);
+  json->SetBoolean(kIncognitoKey, profile->IsOffTheRecord());
   if (download_item->GetState() == DownloadItem::INTERRUPTED) {
     json->SetString(kErrorKey, content::InterruptReasonDebugString(
         download_item->GetLastReason()));
@@ -260,6 +263,20 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
   if (download_item->TimeRemaining(&time_remaining)) {
     base::Time now = base::Time::Now();
     json->SetString(kEstimatedEndTimeKey, TimeToISO8601(now + time_remaining));
+  }
+  DownloadedByExtension* by_ext = DownloadedByExtension::Get(download_item);
+  if (by_ext) {
+    json->SetString(kByExtensionIdKey, by_ext->id());
+    json->SetString(kByExtensionNameKey, by_ext->name());
+    // Lookup the extension's current name() in case the user changed their
+    // language. This won't work if the extension was uninstalled, so the name
+    // might be the wrong language.
+    bool include_disabled = true;
+    const extensions::Extension* extension = extensions::ExtensionSystem::Get(
+        profile)->extension_service()->GetExtensionById(
+            by_ext->id(), include_disabled);
+    if (extension)
+      json->SetString(kByExtensionNameKey, extension->name());
   }
   // TODO(benjhayden): Implement fileSize.
   json->SetInteger(kFileSizeKey, download_item->GetTotalBytes());
@@ -882,6 +899,25 @@ bool IsDownloadDeltaField(const std::string& field) {
 
 }  // namespace
 
+const char DownloadedByExtension::kKey[] =
+  "DownloadItem DownloadedByExtension";
+
+DownloadedByExtension* DownloadedByExtension::Get(
+    content::DownloadItem* item) {
+  base::SupportsUserData::Data* data = item->GetUserData(kKey);
+  return (data == NULL) ? NULL :
+      static_cast<DownloadedByExtension*>(data);
+}
+
+DownloadedByExtension::DownloadedByExtension(
+    content::DownloadItem* item,
+    const std::string& id,
+    const std::string& name)
+  : id_(id),
+    name_(name) {
+  item->SetUserData(kKey, this);
+}
+
 DownloadsDownloadFunction::DownloadsDownloadFunction() {}
 
 DownloadsDownloadFunction::~DownloadsDownloadFunction() {}
@@ -985,6 +1021,9 @@ void DownloadsDownloadFunction::OnStarted(
       data->CreatorSuggestedFilename(
           creator_suggested_filename, creator_conflict_action);
     }
+    new DownloadedByExtension(
+        item, GetExtension()->id(), GetExtension()->name());
+    item->UpdateObservers();
   } else {
     DCHECK_NE(net::OK, error);
     error_ = net::ErrorToString(error);
@@ -1022,7 +1061,8 @@ bool DownloadsSearchFunction::RunImpl() {
     bool off_record = ((incognito_manager != NULL) &&
                        (incognito_manager->GetDownload(download_id) != NULL));
     scoped_ptr<base::DictionaryValue> json_item(DownloadItemToJSON(
-        *it, off_record));
+        *it, off_record ? profile()->GetOffTheRecordProfile()
+                        : profile()->GetOriginalProfile()));
     json_results->Append(json_item.release());
   }
   SetResult(json_results);
@@ -1413,7 +1453,7 @@ void ExtensionDownloadsEventRouter::OnDeterminingFilename(
   data->set_filename_change_callbacks(no_change, change);
   bool any_determiners = false;
   base::DictionaryValue* json = DownloadItemToJSON(
-      item, profile_->IsOffTheRecord()).release();
+      item, profile_).release();
   json->SetString(kFilenameKey, suggested_path.LossyDisplayName());
   DispatchEvent(events::kOnDownloadDeterminingFilename,
                 false,
@@ -1534,7 +1574,7 @@ void ExtensionDownloadsEventRouter::OnDownloadCreated(
     return;
   }
   scoped_ptr<base::DictionaryValue> json_item(
-      DownloadItemToJSON(download_item, profile_->IsOffTheRecord()));
+      DownloadItemToJSON(download_item, profile_));
   DispatchEvent(events::kOnDownloadCreated,
                 true,
                 extensions::Event::WillDispatchCallback(),
@@ -1565,7 +1605,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
         scoped_ptr<base::DictionaryValue>(new base::DictionaryValue()));
   }
   scoped_ptr<base::DictionaryValue> new_json(DownloadItemToJSON(
-      download_item, profile_->IsOffTheRecord()));
+      download_item, profile_));
   scoped_ptr<base::DictionaryValue> delta(new base::DictionaryValue());
   delta->SetInteger(kIdKey, download_item->GetId());
   std::set<std::string> new_fields;

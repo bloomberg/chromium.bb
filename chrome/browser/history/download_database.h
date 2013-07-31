@@ -65,6 +65,10 @@ class DownloadDatabase {
   // downloads table.
   bool MigrateReferrer();
 
+  // Returns true if able to successfully add the by_ext_id and by_ext_name
+  // columns to the downloads table.
+  bool MigrateDownloadedByExtension();
+
   // Creates the downloads table if needed.
   bool InitDownloadTable();
 

@@ -30,6 +30,9 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/extensions/api/downloads/downloads_api.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
@@ -134,6 +137,21 @@ DictionaryValue* CreateDownloadItemValue(
   file_value->Set("file_path", base::CreateFilePathValue(download_path));
   file_value->SetString("file_url",
                         net::FilePathToFileURL(download_path).spec());
+
+  DownloadedByExtension* by_ext = DownloadedByExtension::Get(download_item);
+  if (by_ext) {
+    file_value->SetString("by_ext_id", by_ext->id());
+    file_value->SetString("by_ext_name", by_ext->name());
+    // Lookup the extension's current name() in case the user changed their
+    // language. This won't work if the extension was uninstalled, so the name
+    // might be the wrong language.
+    bool include_disabled = true;
+    const extensions::Extension* extension = extensions::ExtensionSystem::Get(
+        Profile::FromBrowserContext(download_item->GetBrowserContext()))->
+      extension_service()->GetExtensionById(by_ext->id(), include_disabled);
+    if (extension)
+      file_value->SetString("by_ext_name", extension->name());
+  }
 
   // Keep file names as LTR.
   string16 file_name =

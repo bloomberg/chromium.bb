@@ -37,6 +37,10 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/extensions/api/downloads/downloads_api.h"
+#endif
+
 namespace {
 
 // Per-DownloadItem data. This information does not belong inside DownloadItem,
@@ -96,6 +100,15 @@ const char DownloadHistoryData::kKey[] =
 
 history::DownloadRow GetDownloadRow(
     content::DownloadItem* item) {
+  std::string by_ext_id, by_ext_name;
+#if !defined(OS_ANDROID)
+  DownloadedByExtension* by_ext = DownloadedByExtension::Get(item);
+  if (by_ext) {
+    by_ext_id = by_ext->id();
+    by_ext_name = by_ext->name();
+  }
+#endif
+
   return history::DownloadRow(
       item->GetFullPath(),
       item->GetTargetFilePath(),
@@ -109,7 +122,9 @@ history::DownloadRow GetDownloadRow(
       item->GetDangerType(),
       item->GetLastReason(),
       item->GetId(),
-      item->GetOpened());
+      item->GetOpened(),
+      by_ext_id,
+      by_ext_name);
 }
 
 bool ShouldUpdateHistory(const history::DownloadRow* previous,
@@ -124,7 +139,9 @@ bool ShouldUpdateHistory(const history::DownloadRow* previous,
           (previous->state != current.state) ||
           (previous->danger_type != current.danger_type) ||
           (previous->interrupt_reason != current.interrupt_reason) ||
-          (previous->opened != current.opened));
+          (previous->opened != current.opened) ||
+          (previous->by_ext_id != current.by_ext_id) ||
+          (previous->by_ext_name != current.by_ext_name));
 }
 
 typedef std::vector<history::DownloadRow> InfoVector;
@@ -222,6 +239,12 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
         it->danger_type,
         it->interrupt_reason,
         it->opened);
+#if !defined(OS_ANDROID)
+    if (!it->by_ext_id.empty() && !it->by_ext_name.empty()) {
+      new DownloadedByExtension(item, it->by_ext_id, it->by_ext_name);
+      item->UpdateObservers();
+    }
+#endif
     DCHECK_EQ(DownloadHistoryData::Get(item)->state(),
               DownloadHistoryData::PERSISTED);
     ++history_size_;

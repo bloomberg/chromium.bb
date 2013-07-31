@@ -51,7 +51,9 @@ static const char kSchema[] =
     "interrupt_reason INTEGER NOT NULL,"
     "end_time INTEGER NOT NULL,"  // When the download completed.
     "opened INTEGER NOT NULL,"  // 1 if it has ever been opened else 0
-    "referrer VARCHAR NOT NULL)";  // HTTP Referrer
+    "referrer VARCHAR NOT NULL,"  // HTTP Referrer
+    "by_ext_id VARCHAR NOT NULL,"  // ID of extension that started the download
+    "by_ext_name VARCHAR NOT NULL)";  // name of extension
 
 static const char kUrlChainSchema[] =
     "CREATE TABLE downloads_url_chains ("
@@ -233,7 +235,8 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
   sql::Statement statement_populate(GetDB().GetUniqueStatement(
     "INSERT INTO downloads "
     "( id, current_path, target_path, start_time, received_bytes, total_bytes, "
-    "  state, danger_type, interrupt_reason, end_time, opened, referrer ) "
+    "  state, danger_type, interrupt_reason, end_time, opened, referrer, "
+    "  by_ext_id, by_ext_name ) "
     "SELECT id, full_path, full_path, "
     "       CASE start_time WHEN 0 THEN 0 ELSE "
     "            (start_time + 11644473600) * 1000000 END, "
@@ -241,7 +244,7 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
     "       state, ?, ?, "
     "       CASE end_time WHEN 0 THEN 0 ELSE "
     "            (end_time + 11644473600) * 1000000 END, "
-    "       opened, \"\" "
+    "       opened, \"\", \"\", \"\" "
     "FROM downloads_tmp"));
   statement_populate.BindInt(0, content::DOWNLOAD_INTERRUPT_REASON_NONE);
   statement_populate.BindInt(1, kDangerTypeNotDangerous);
@@ -266,6 +269,11 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
 
 bool DownloadDatabase::MigrateReferrer() {
   return EnsureColumnExists("referrer", "VARCHAR NOT NULL DEFAULT \"\"");
+}
+
+bool DownloadDatabase::MigrateDownloadedByExtension() {
+  return EnsureColumnExists("by_ext_id", "VARCHAR NOT NULL DEFAULT \"\"") &&
+         EnsureColumnExists("by_ext_name", "VARCHAR NOT NULL DEFAULT \"\"");
 }
 
 bool DownloadDatabase::InitDownloadTable() {
@@ -316,7 +324,7 @@ void DownloadDatabase::QueryDownloads(
   sql::Statement statement_main(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, current_path, target_path, start_time, received_bytes, "
       "total_bytes, state, danger_type, interrupt_reason, end_time, opened, "
-      "referrer "
+      "referrer, by_ext_id, by_ext_name "
       "FROM downloads ORDER BY start_time"));
 
   while (statement_main.Step()) {
@@ -345,6 +353,8 @@ void DownloadDatabase::QueryDownloads(
         statement_main.ColumnInt64(column++));
     info->opened = statement_main.ColumnInt(column++) != 0;
     info->referrer_url = GURL(statement_main.ColumnString(column++));
+    info->by_ext_id = statement_main.ColumnString(column++);
+    info->by_ext_name = statement_main.ColumnString(column++);
 
     // If the record is corrupted, note that and drop it.
     // http://crbug.com/251269
@@ -448,7 +458,7 @@ bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
       "UPDATE downloads "
       "SET current_path=?, target_path=?, received_bytes=?, state=?, "
           "danger_type=?, interrupt_reason=?, end_time=?, total_bytes=?, "
-          "opened=? WHERE id=?"));
+          "opened=?, by_ext_id=?, by_ext_name=? WHERE id=?"));
   int column = 0;
   BindFilePath(statement, data.current_path, column++);
   BindFilePath(statement, data.target_path, column++);
@@ -459,6 +469,8 @@ bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
   statement.BindInt64(column++, data.end_time.ToInternalValue());
   statement.BindInt64(column++, data.total_bytes);
   statement.BindInt(column++, (data.opened ? 1 : 0));
+  statement.BindString(column++, data.by_ext_id);
+  statement.BindString(column++, data.by_ext_name);
   statement.BindInt(column++, data.id);
 
   return statement.Run();
@@ -499,8 +511,8 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
         "INSERT INTO downloads "
         "(id, current_path, target_path, start_time, "
         " received_bytes, total_bytes, state, danger_type, interrupt_reason, "
-        " end_time, opened, referrer) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+        " end_time, opened, referrer, by_ext_id, by_ext_name) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 
     int column = 0;
     statement_insert.BindInt(column++, info.id);
@@ -515,6 +527,8 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
     statement_insert.BindInt64(column++, info.end_time.ToInternalValue());
     statement_insert.BindInt(column++, info.opened ? 1 : 0);
     statement_insert.BindString(column++, info.referrer_url.spec());
+    statement_insert.BindString(column++, info.by_ext_id);
+    statement_insert.BindString(column++, info.by_ext_name);
     if (!statement_insert.Run()) {
       // GetErrorCode() returns a bitmask where the lower byte is a more general
       // code and the upper byte is a more specific code. In order to save

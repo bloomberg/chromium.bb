@@ -2997,6 +2997,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Open downloads folder link">
         Open downloads folder
       </message>
+      <message name="IDS_DOWNLOAD_BY_EXTENSION"
+               desc="Indicates which extension downloaded this file.">
+        Downloaded by <ph name="EXTENSION">$1<ex>The Best Chrome Extension Ever</ex></ph>
+      </message>
 
       <!-- Download Context Menu Items -->
       <if expr="not pp_ifdef('use_titlecase')">
