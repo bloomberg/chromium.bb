@@ -57,6 +57,14 @@ class GenerateSysroot(object):
     """
     self.sysroot = sysroot
     self.options = options
+    self.extra_env = {'ROOT': self.sysroot, 'USE': os.environ.get('USE', '')}
+
+  def _Emerge(self, *args, **kwargs):
+    """Emerge the given packages using parallel_emerge."""
+    cmd = [self.PARALLEL_EMERGE, '--board=%s' % self.options.board,
+           '--usepkgonly', '--noreplace'] + list(args)
+    kwargs.setdefault('extra_env', self.extra_env)
+    cros_build_lib.SudoRunCommand(cmd, **kwargs)
 
   def _InstallToolchain(self):
     cros_build_lib.RunCommand(
@@ -65,16 +73,24 @@ class GenerateSysroot(object):
          self.options.board])
 
   def _InstallKernelHeaders(self):
-    cros_build_lib.SudoRunCommand(
-        [self.PARALLEL_EMERGE, '--board=%s' % self.options.board,
-         '--root-deps=rdeps', '--getbinpkg', '--usepkg',
-         '--root=%s' % self.sysroot, 'sys-kernel/linux-headers'])
+    self._Emerge('sys-kernel/linux-headers')
 
   def _InstallBuildDependencies(self):
-    cros_build_lib.SudoRunCommand(
-        [self.PARALLEL_EMERGE, '--board=%s' % self.options.board,
-         '--root=%s' % self.sysroot, '--usepkg', '--onlydeps',
-         '--usepkg-exclude=%s' % self.options.package, self.options.package])
+    # Calculate buildtime deps that are not runtime deps.
+    raw_sysroot = '/build/%s' % (self.options.board,)
+    cmd = ['qdepends', '-q', '-C', self.options.package]
+    output = cros_build_lib.RunCommandCaptureOutput(
+        cmd, extra_env={'ROOT': raw_sysroot}).output
+
+    if output.count('\n') > 1:
+      raise AssertionError('Too many packages matched given package pattern')
+
+    # qdepend outputs "package: deps", so only grab the deps.
+    atoms = output.partition(':')[2].split()
+
+    # Install the buildtime deps.
+    if atoms:
+      self._Emerge(*atoms)
 
   def _CreateTarball(self):
     target = os.path.join(self.options.out_dir, self.options.out_file)

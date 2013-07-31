@@ -2459,10 +2459,14 @@ class ArchiveStage(ArchivingStage):
   def BuildAndArchiveChromeSysroot(self):
     """Generate and upload sysroot for building Chrome."""
     assert self.archive_path.startswith(self._build_root)
+    extra_env = {}
+    if self._build_config['useflags']:
+      extra_env['USE'] = ' '.join(self._build_config['useflags'])
     in_chroot_path = git.ReinterpretPathForChroot(self.archive_path)
     cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
            self._current_board, '--package', constants.CHROME_CP]
-    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True)
+    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
+                              extra_env=extra_env)
     self._upload_queue.put([constants.CHROME_SYSROOT_TAR])
 
   def ArchiveChromeEbuildEnv(self):
