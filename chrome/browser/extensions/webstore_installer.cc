@@ -67,7 +67,8 @@ const char kDownloadDirectoryError[] = "Could not create download directory";
 const char kDownloadCanceledError[] = "Download canceled";
 const char kInstallCanceledError[] = "Install canceled";
 const char kDownloadInterruptedError[] = "Download interrupted";
-const char kInvalidDownloadError[] = "Download was not a CRX";
+const char kInvalidDownloadError[] =
+    "Download was not a valid extension or user script";
 const char kInlineInstallSource[] = "inline";
 const char kDefaultInstallSource[] = "ondemand";
 
