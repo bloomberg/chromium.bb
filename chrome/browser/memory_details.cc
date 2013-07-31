@@ -160,9 +160,14 @@ std::string MemoryDetails::ToLogString() {
       }
       log += "]";
     }
-    log += StringPrintf(" %d MB private, %d MB shared\n",
+    log += StringPrintf(" %d MB private, %d MB shared",
                         static_cast<int>(iter1->working_set.priv) / 1024,
                         static_cast<int>(iter1->working_set.shared) / 1024);
+#if defined(OS_CHROMEOS)
+    log += StringPrintf(", %d MB swapped",
+                        static_cast<int>(iter1->working_set.swapped) / 1024);
+#endif
+    log += "\n";
   }
   return log;
 }
@@ -578,8 +583,12 @@ void MemoryDetails::UpdateSwapHistograms() {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.Swap.MemUsedTotal",
                               swap_data_.mem_used_total / (1024 * 1024),
                               1, 4096, 50);
-  UMA_HISTOGRAM_COUNTS("Memory.Swap.NumReads", swap_data_.num_reads);
-  UMA_HISTOGRAM_COUNTS("Memory.Swap.NumWrites", swap_data_.num_writes);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.Swap.NumReads",
+                              swap_data_.num_reads,
+                              1, 100000000, 100);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.Swap.NumWrites",
+                              swap_data_.num_writes,
+                              1, 100000000, 100);
 
   if (swap_data_.orig_data_size > 0 && swap_data_.compr_data_size > 0) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(

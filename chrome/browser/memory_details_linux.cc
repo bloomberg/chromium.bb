@@ -168,7 +168,8 @@ static uint64 ReadFileToUint64(const base::FilePath file) {
   std::string file_as_string;
   if (!file_util::ReadFileToString(file, &file_as_string))
     return 0;
-  uint64 file_as_uint64;
+  TrimWhitespaceASCII(file_as_string, TRIM_ALL, &file_as_string);
+  uint64 file_as_uint64 = 0;
   if (!base::StringToUint64(file_as_string, &file_as_uint64))
     return 0;
   return file_as_uint64;
