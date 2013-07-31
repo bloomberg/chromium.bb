@@ -40,7 +40,6 @@
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/ResourceLoadNotifier.h"
 #include "core/loader/ResourceLoaderOptions.h"
-#include "core/loader/SubframeLoader.h"
 #include "core/loader/cache/CachePolicy.h"
 #include "core/page/LayoutMilestones.h"
 #include "core/platform/Timer.h"
@@ -86,7 +85,6 @@ public:
 
     HistoryController* history() const { return &m_history; }
     ResourceLoadNotifier* notifier() const { return &m_notifer; }
-    SubframeLoader* subframeLoader() const { return &m_subframeLoader; }
     IconController* icon() const { return m_icon.get(); }
     MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
 
@@ -317,7 +315,6 @@ private:
     // Some of these could be lazily created for memory savings on devices.
     mutable HistoryController m_history;
     mutable ResourceLoadNotifier m_notifer;
-    mutable SubframeLoader m_subframeLoader;
     mutable FrameLoaderStateMachine m_stateMachine;
     OwnPtr<IconController> m_icon;
     mutable MixedContentChecker m_mixedContentChecker;

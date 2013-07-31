@@ -23,9 +23,13 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/RenderPart.h"
 #include "core/svg/SVGDocument.h"
+#include "weborigin/SecurityOrigin.h"
+#include "weborigin/SecurityPolicy.h"
 
 namespace WebCore {
 
@@ -117,5 +121,56 @@ SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionCode& ec) const
     ec = NotSupportedError;
     return 0;
 }
+
+bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const AtomicString& frameName, bool lockBackForwardList)
+{
+    RefPtr<Frame> parentFrame = document()->frame();
+    if (contentFrame()) {
+        contentFrame()->navigationScheduler()->scheduleLocationChange(document()->securityOrigin(), url.string(), parentFrame->loader()->outgoingReferrer(), lockBackForwardList);
+        return true;
+    }
+
+    if (!document()->securityOrigin()->canDisplay(url)) {
+        FrameLoader::reportLocalLoadFailed(parentFrame.get(), url.string());
+        return false;
+    }
+
+    String referrer = SecurityPolicy::generateReferrerHeader(document()->referrerPolicy(), url, parentFrame->loader()->outgoingReferrer());
+    RefPtr<Frame> childFrame = parentFrame->loader()->client()->createFrame(url, frameName, this, referrer, allowScrollingInContentFrame(), marginWidth(), marginHeight());
+
+    if (!childFrame)  {
+        parentFrame->loader()->checkCallImplicitClose();
+        return false;
+    }
+
+    // All new frames will have m_isComplete set to true at this point due to synchronously loading
+    // an empty document in FrameLoader::init(). But many frames will now be starting an
+    // asynchronous load of url, so we set m_isComplete to false and then check if the load is
+    // actually completed below. (Note that we set m_isComplete to false even for synchronous
+    // loads, so that checkCompleted() below won't bail early.)
+    // FIXME: Can we remove this entirely? m_isComplete normally gets set to false when a load is committed.
+    childFrame->loader()->started();
+
+    RenderObject* renderObject = renderer();
+    FrameView* view = childFrame->view();
+    if (renderObject && renderObject->isWidget() && view)
+        toRenderWidget(renderObject)->setWidget(view);
+
+    parentFrame->loader()->checkCallImplicitClose();
+
+    // Some loads are performed synchronously (e.g., about:blank and loads
+    // cancelled by returning a null ResourceRequest from requestFromDelegate).
+    // In these cases, the synchronous load would have finished
+    // before we could connect the signals, so make sure to send the
+    // completed() signal for the child by hand and mark the load as being
+    // complete.
+    // FIXME: In this case the Frame will have finished loading before
+    // it's being added to the child list. It would be a good idea to
+    // create the child first, then invoke the loader separately.
+    if (childFrame->loader()->state() == FrameStateComplete && !childFrame->loader()->policyDocumentLoader())
+        childFrame->loader()->checkCompleted();
+    return true;
+}
+
 
 } // namespace WebCore

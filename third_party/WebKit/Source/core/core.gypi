@@ -1076,7 +1076,6 @@
             'loader/ResourceLoaderOptions.h',
             'loader/SinkDocument.cpp',
             'loader/SinkDocument.h',
-            'loader/SubframeLoader.cpp',
             'loader/SubstituteData.cpp',
             'loader/SubstituteData.h',
             'loader/TextResourceDecoder.cpp',

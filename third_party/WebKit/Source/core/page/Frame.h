@@ -52,6 +52,7 @@ namespace WebCore {
     class FrameDestructionObserver;
     class FrameSelection;
     class FrameView;
+    class HTMLFrameOwnerElement;
     class HTMLTableCellElement;
     class IntPoint;
     class Node;
@@ -63,6 +64,7 @@ namespace WebCore {
     class Settings;
     class TreeScope;
     class VisiblePosition;
+    class Widget;
 
     class Frame : public RefCounted<Frame> {
     public:
