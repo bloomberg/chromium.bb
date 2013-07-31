@@ -28,8 +28,6 @@ void AutofillCreditCardBubbleViews::Show() {
   // TODO(dbeam): investigate why this steals focus from the web contents.
   views::BubbleDelegateView::CreateBubble(this);
 
-  GetBubbleFrameView()->SetTitle(controller_->BubbleTitle());
-
   GetWidget()->Show();
   SizeToContents();
 }
@@ -40,6 +38,10 @@ void AutofillCreditCardBubbleViews::Hide() {
 
 bool AutofillCreditCardBubbleViews::IsHiding() const {
   return GetWidget() && GetWidget()->IsClosed();
+}
+
+string16 AutofillCreditCardBubbleViews::GetWindowTitle() const {
+  return controller_->BubbleTitle();
 }
 
 void AutofillCreditCardBubbleViews::Init() {

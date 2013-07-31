@@ -66,6 +66,12 @@ class BubbleBorderDelegate : public WidgetDelegate,
 
   // WidgetDelegate overrides:
   virtual bool CanActivate() const OVERRIDE { return false; }
+  virtual string16 GetWindowTitle() const {
+    return bubble_->GetWindowTitle();
+  }
+  virtual bool ShouldShowCloseButton() const OVERRIDE {
+    return bubble_->ShouldShowCloseButton();
+  }
   virtual void DeleteDelegate() OVERRIDE { delete this; }
   virtual Widget* GetWidget() OVERRIDE { return widget_; }
   virtual const Widget* GetWidget() const OVERRIDE { return widget_; }
@@ -190,6 +196,10 @@ BubbleDelegateView* BubbleDelegateView::AsBubbleDelegate() {
 
 bool BubbleDelegateView::CanActivate() const {
   return !use_focusless();
+}
+
+bool BubbleDelegateView::ShouldShowCloseButton() const {
+  return false;
 }
 
 View* BubbleDelegateView::GetContentsView() {

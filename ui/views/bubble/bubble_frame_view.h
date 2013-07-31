@@ -55,8 +55,6 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   gfx::Insets content_margins() const { return content_margins_; }
 
-  void SetTitle(const string16& title);
-  void SetShowCloseButton(bool show);
   void SetTitlebarExtraView(View* view);
 
   // Given the size of the contents and the rect to point at, returns the bounds

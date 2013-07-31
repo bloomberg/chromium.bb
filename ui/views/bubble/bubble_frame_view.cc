@@ -140,11 +140,18 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
   }
 }
 
-void BubbleFrameView::ResetWindowControls() {}
+void BubbleFrameView::ResetWindowControls() {
+  close_->SetVisible(GetWidget()->widget_delegate()->ShouldShowCloseButton());
+}
 
 void BubbleFrameView::UpdateWindowIcon() {}
 
-void BubbleFrameView::UpdateWindowTitle() {}
+void BubbleFrameView::UpdateWindowTitle() {
+  title_->SetText(GetWidget()->widget_delegate()->ShouldShowWindowTitle() ?
+      GetWidget()->widget_delegate()->GetWindowTitle() : string16());
+  // Update the close button visibility too, otherwise it's not intialized.
+  ResetWindowControls();
+}
 
 gfx::Insets BubbleFrameView::GetInsets() const {
   gfx::Insets insets = content_margins_;
@@ -219,14 +226,6 @@ void BubbleFrameView::SetBubbleBorder(BubbleBorder* border) {
 
   // Update the background, which relies on the border.
   set_background(new views::BubbleBackground(border));
-}
-
-void BubbleFrameView::SetTitle(const string16& title) {
-  title_->SetText(title);
-}
-
-void BubbleFrameView::SetShowCloseButton(bool show) {
-  close_->SetVisible(show);
 }
 
 void BubbleFrameView::SetTitlebarExtraView(View* view) {

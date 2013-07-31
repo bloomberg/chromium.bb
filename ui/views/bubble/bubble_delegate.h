@@ -41,6 +41,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // WidgetDelegate overrides:
   virtual BubbleDelegateView* AsBubbleDelegate() OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
+  virtual bool ShouldShowCloseButton() const OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) OVERRIDE;
 

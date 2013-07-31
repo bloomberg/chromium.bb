@@ -30,6 +30,7 @@ class AutofillCreditCardBubbleViews : public AutofillCreditCardBubble,
   virtual bool IsHiding() const OVERRIDE;
 
   // views::BubbleDelegateView:
+  virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void Init() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 

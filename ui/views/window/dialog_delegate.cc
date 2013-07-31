@@ -90,7 +90,7 @@ base::string16 DialogDelegate::GetDialogLabel() const {
 }
 
 base::string16 DialogDelegate::GetDialogTitle() const {
-  return base::string16();
+  return GetWindowTitle();
 }
 
 int DialogDelegate::GetDialogButtons() const {
@@ -165,6 +165,7 @@ NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(Widget* widget) {
   return CreateNewStyleFrameView(widget, false);
 }
 
+// static
 NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(
     Widget* widget,
     bool force_opaque_border) {
@@ -181,14 +182,12 @@ NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(
                                             BubbleBorder::SMALL_SHADOW,
                                             color));
   }
-  frame->SetTitle(widget->widget_delegate()->GetWindowTitle());
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate) {
     View* titlebar_view = delegate->CreateTitlebarExtraView();
     if (titlebar_view)
       frame->SetTitlebarExtraView(titlebar_view);
   }
-  frame->SetShowCloseButton(widget->widget_delegate()->ShouldShowCloseButton());
   if (force_opaque_border)
     widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   return frame;
