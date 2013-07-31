@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/process/process.h"
 #include "content/child/child_thread.h"
 #include "content/common/fileapi/file_system_messages.h"
@@ -88,8 +89,9 @@ class FileSystemDispatcher::CallbackDispatcher {
 
   void DidCreateSnapshotFile(
       const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path) {
-    snapshot_callback_.Run(file_info, platform_path);
+      const base::FilePath& platform_path,
+      int request_id) {
+    snapshot_callback_.Run(file_info, platform_path, request_id);
   }
 
   void DidReadDirectory(
@@ -363,10 +365,8 @@ void FileSystemDispatcher::OnDidCreateSnapshotFile(
     const base::FilePath& platform_path) {
   CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
-  dispatcher->DidCreateSnapshotFile(file_info, platform_path);
+  dispatcher->DidCreateSnapshotFile(file_info, platform_path, request_id);
   dispatchers_.Remove(request_id);
-  ChildThread::current()->Send(
-      new FileSystemHostMsg_DidReceiveSnapshotFile(request_id));
 }
 
 void FileSystemDispatcher::OnDidReadDirectory(

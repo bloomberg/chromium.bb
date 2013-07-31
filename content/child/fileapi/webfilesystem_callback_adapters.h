@@ -24,20 +24,6 @@ void FileStatusCallbackAdapter(
     WebKit::WebFileSystemCallbacks* callbacks,
     base::PlatformFileError error);
 
-void ReadMetadataCallbackAdapter(
-    WebKit::WebFileSystemCallbacks* callbacks,
-    const base::PlatformFileInfo& file_info);
-
-void CreateSnapshotFileCallbackAdapter(
-    WebKit::WebFileSystemCallbacks* callbacks,
-    const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path);
-
-void ReadDirectoryCallbackAdapater(
-    WebKit::WebFileSystemCallbacks* callbacks,
-    const std::vector<fileapi::DirectoryEntry>& entries,
-    bool has_more);
-
 void OpenFileSystemCallbackAdapter(
     WebKit::WebFileSystemCallbacks* callbacks,
     const std::string& name, const GURL& root);
