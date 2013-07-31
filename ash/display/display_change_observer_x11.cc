@@ -94,26 +94,6 @@ DisplayChangeObserverX11::DisplayChangeObserverX11()
   int error_base_ignored;
   XRRQueryExtension(xdisplay_, &xrandr_event_base_, &error_base_ignored);
 
-  // Find internal display.
-  XRRScreenResources* screen_resources =
-      XRRGetScreenResources(xdisplay_, x_root_window_);
-  for (int output_index = 0; output_index < screen_resources->noutput;
-       output_index++) {
-    XID output = screen_resources->outputs[output_index];
-    XRROutputInfo *output_info =
-        XRRGetOutputInfo(xdisplay_, screen_resources, output);
-    bool is_internal = chromeos::IsInternalOutputName(
-        std::string(output_info->name));
-    XRRFreeOutputInfo(output_info);
-    if (is_internal) {
-      int64 id = GetDisplayId(output, output_index);
-      // Fallback to output index. crbug.com/180100
-      gfx::Display::SetInternalDisplayId(
-          id == gfx::Display::kInvalidDisplayID ? output_index : id);
-      break;
-    }
-  }
-  XRRFreeScreenResources(screen_resources);
   Shell::GetInstance()->AddShellObserver(this);
 }
 
@@ -155,6 +135,18 @@ void DisplayChangeObserverX11::OnDisplayModeChanged() {
     XID output = screen_resources->outputs[output_index];
     XRROutputInfo *output_info =
         XRRGetOutputInfo(xdisplay_, screen_resources, output);
+
+    const bool is_internal = chromeos::IsInternalOutputName(
+        std::string(output_info->name));
+
+    if (is_internal &&
+        gfx::Display::InternalDisplayId() == gfx::Display::kInvalidDisplayID) {
+      int64 id = GetDisplayId(output, output_index);
+      // Fallback to output index. crbug.com/180100
+      gfx::Display::SetInternalDisplayId(
+          id == gfx::Display::kInvalidDisplayID ? output_index : id);
+    }
+
     if (output_info->connection != RR_Connected) {
       XRRFreeOutputInfo(output_info);
       continue;
@@ -181,8 +173,6 @@ void DisplayChangeObserverX11::OnDisplayModeChanged() {
     gfx::Rect display_bounds(
         crtc_info->x, crtc_info->y, mode->width, mode->height);
 
-    bool is_internal = chromeos::IsInternalOutputName(
-        std::string(output_info->name));
     XRRFreeOutputInfo(output_info);
 
     std::string name = is_internal ?
