@@ -264,6 +264,13 @@
     "description": "Performance on the [SunSpider JavaScript benchmark](http://www.webkit.org/perf/sunspider/sunspider.html)",
     "code": ["chrome/src/tools/perf/benchmarks/sunspider.py"]
   },
+  "tough_layout_cases": {
+    "description": "Page loading benchmark for the slowest layouts observed in the Alexa top 1 million sites in July 2013.",
+    "code": [
+      "chrome/src/tools/perf/measurements/page_cycler.py",
+      "chrome/src/tools/perf/page_sets/tough_layout_cases.json"
+    ]
+  },
   "typical_25": {
     "description": "Page load time benchmark for a 25 typical web pages. Designed to represent typical, not highly optimized or highly popular web sites. Runs against pages recorded in April, 2013.",
     "code": [
