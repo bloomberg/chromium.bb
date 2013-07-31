@@ -4,7 +4,7 @@
 
 #include "chrome/browser/automation/chrome_frame_automation_provider_win.h"
 
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/automation_messages.h"
@@ -14,15 +14,11 @@
 
 ChromeFrameAutomationProvider::ChromeFrameAutomationProvider(Profile* profile)
     : AutomationProvider(profile) {
-  DCHECK(g_browser_process);
-  if (g_browser_process)
-    g_browser_process->AddRefModule();
+  chrome::StartKeepAlive();
 }
 
 ChromeFrameAutomationProvider::~ChromeFrameAutomationProvider() {
-  DCHECK(g_browser_process);
-  if (g_browser_process)
-    g_browser_process->ReleaseModule();
+  chrome::EndKeepAlive();
 }
 
 bool ChromeFrameAutomationProvider::OnMessageReceived(
