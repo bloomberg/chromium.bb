@@ -834,6 +834,11 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoAbbreviationInPngFileName(input_api, output_api))
   results.extend(_CheckForInvalidOSMacros(input_api, output_api))
   results.extend(_CheckAddedDepsHaveTargetApprovals(input_api, output_api))
+  results.extend(
+      input_api.canned_checks.CheckChangeHasNoTabs(
+          input_api,
+          output_api,
+          source_file_filter=lambda x: x.LocalPath().endswith('.grd')))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
