@@ -48,6 +48,9 @@ class DeviceInfo {
   // |DeviceInfo::MakeUserAgentForSyncApi|.
   const std::string& sync_user_agent() const;
 
+  // Third party visible id for the device. See |public_id_| for more details.
+  const std::string& public_id() const;
+
   // Device Type.
   sync_pb::SyncEnums::DeviceType device_type() const;
 
@@ -58,7 +61,7 @@ class DeviceInfo {
   // not unique enough so the user can be tracked. Exposing |guid|
   // would lead to a stable unique id for a device which can potentially
   // be used for tracking.
-  void SetPublicId(std::string id);
+  void set_public_id(std::string id);
 
   // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
   // which extension APIs can expose to third party apps.
@@ -102,6 +105,10 @@ class DeviceInfo {
 
   const sync_pb::SyncEnums::DeviceType device_type_;
 
+  // Exposing |guid| would lead to a stable unique id for a device which
+  // can potentially be used for tracking. Public ids are privacy safe
+  // ids in that the same device will have different id for different apps
+  // and they are also reset when app/extension is uninstalled.
   std::string public_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInfo);

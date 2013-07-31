@@ -95,6 +95,10 @@ const std::string& DeviceInfo::sync_user_agent() const {
   return sync_user_agent_;
 }
 
+const std::string& DeviceInfo::public_id() const {
+  return public_id_;
+}
+
 sync_pb::SyncEnums::DeviceType DeviceInfo::device_type() const {
   return device_type_;
 }
@@ -176,7 +180,7 @@ base::DictionaryValue* DeviceInfo::ToValue() {
   return value;
 }
 
-void DeviceInfo::SetPublicId(std::string id) {
+void DeviceInfo::set_public_id(std::string id) {
   public_id_ = id;
 }
 

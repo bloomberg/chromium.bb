@@ -392,6 +392,8 @@
         'browser/extensions/api/serial/serial_port_enumerator_win.cc',
         'browser/extensions/api/session_restore/session_restore_api.cc',
         'browser/extensions/api/session_restore/session_restore_api.h',
+        'browser/extensions/api/signedin_devices/id_mapping_helper.cc',
+        'browser/extensions/api/signedin_devices/id_mapping_helper.h',
         'browser/extensions/api/socket/socket.cc',
         'browser/extensions/api/socket/socket.h',
         'browser/extensions/api/socket/socket_api.cc',
