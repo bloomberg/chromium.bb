@@ -21,7 +21,7 @@
   "web_accessible_resources": [
     "broker.html",
     "broker.js",
-    "error.html"
+    "not-eligible.html"
   ],
   "background": {
     "scripts": ["main.js"],
