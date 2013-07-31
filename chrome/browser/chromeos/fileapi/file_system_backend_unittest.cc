@@ -12,9 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
