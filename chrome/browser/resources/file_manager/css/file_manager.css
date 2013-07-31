@@ -1364,6 +1364,7 @@ input.rename {
     url('../images/files/ui/2x/onbutton_trash.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
+  display: -webkit-box;
   min-width: 21px;  /* overrride */
   padding: 0;  /* overrride */
   width: 21px;
@@ -1376,6 +1377,10 @@ input.rename {
 #tasks-menu menuitem:not(.change-default) {
   background-position: left 10px center;
   padding-left: 32px;
+}
+
+#share-button {
+  min-width: 0;  /* overrride */
 }
 
 #preview-lines {
