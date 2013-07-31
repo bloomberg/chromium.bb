@@ -174,7 +174,7 @@ void CreateAppListShim(const base::FilePath& profile_path) {
   // TODO(tapted): Create a dock icon using chrome/browser/mac/dock.h .
   web_app::CreateShortcuts(shortcut_info,
                            ShellIntegration::ShortcutLocations(),
-                           web_app::SHORTCUT_CREATION_BY_USER);
+                           web_app::SHORTCUT_CREATION_AUTOMATED);
 }
 
 // Check that there is an app list shim. If enabling and there is not, make one.

@@ -101,9 +101,8 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_path_, info_);
   EXPECT_CALL(shortcut_creator, GetDestinationPath())
       .WillRepeatedly(Return(destination_path_));
-  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
 
-  EXPECT_TRUE(shortcut_creator.CreateShortcuts());
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED));
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(destination_path_));
   EXPECT_EQ(shim_base_name_, shortcut_creator.GetShortcutName());
@@ -180,14 +179,13 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_path_, info_);
   EXPECT_CALL(shortcut_creator, GetDestinationPath())
       .WillRepeatedly(Return(destination_path_));
-  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
 
   std::string expected_bundle_id = kFakeChromeBundleId;
   expected_bundle_id += ".app.Profile-1-" + info_.extension_id;
   EXPECT_CALL(shortcut_creator, GetAppBundleById(expected_bundle_id))
       .WillOnce(Return(other_shim_path));
 
-  EXPECT_TRUE(shortcut_creator.CreateShortcuts());
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED));
   EXPECT_TRUE(base::PathExists(internal_shim_path_));
   EXPECT_TRUE(base::PathExists(shim_path_));
 
@@ -231,9 +229,8 @@ TEST_F(WebAppShortcutCreatorTest, RunShortcut) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_path_, info_);
   EXPECT_CALL(shortcut_creator, GetDestinationPath())
       .WillRepeatedly(Return(destination_path_));
-  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
 
-  EXPECT_TRUE(shortcut_creator.CreateShortcuts());
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED));
   EXPECT_TRUE(base::PathExists(shim_path_));
 
   ssize_t status = getxattr(
@@ -249,7 +246,7 @@ TEST_F(WebAppShortcutCreatorTest, CreateFailure) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_path_, info_);
   EXPECT_CALL(shortcut_creator, GetDestinationPath())
       .WillRepeatedly(Return(non_existent_path));
-  EXPECT_FALSE(shortcut_creator.CreateShortcuts());
+  EXPECT_FALSE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED));
 }
 
 TEST_F(WebAppShortcutCreatorTest, UpdateIcon) {
@@ -268,6 +265,19 @@ TEST_F(WebAppShortcutCreatorTest, UpdateIcon) {
   EXPECT_TRUE(image);
   EXPECT_EQ(product_logo.Width(), [image size].width);
   EXPECT_EQ(product_logo.Height(), [image size].height);
+}
+
+TEST_F(WebAppShortcutCreatorTest, RevealAppShimInFinder) {
+  WebAppShortcutCreatorMock shortcut_creator(app_data_path_, info_);
+  EXPECT_CALL(shortcut_creator, GetDestinationPath())
+      .WillRepeatedly(Return(destination_path_));
+
+  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder())
+      .Times(0);
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED));
+
+  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_BY_USER));
 }
 
 }  // namespace web_app

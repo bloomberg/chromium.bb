@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/web_applications/web_app.h"
 
 #ifdef __OBJC__
 @class NSDictionary;
@@ -51,7 +52,7 @@ class WebAppShortcutCreator {
   // folder. E.g. ~/Applications or /Applications.
   virtual base::FilePath GetDestinationPath() const;
 
-  bool CreateShortcuts();
+  bool CreateShortcuts(ShortcutCreationReason creation_reason);
   void DeleteShortcuts();
   bool UpdateShortcuts();
 
