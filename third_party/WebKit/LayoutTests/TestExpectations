@@ -303,11 +303,7 @@ webkit.org/b/92287 fast/canvas/webgl/context-creation-and-destruction.html [ Fai
 webkit.org/b/92287 virtual/gpu/fast/canvas/webgl/context-creation-and-destruction.html [ Failure Pass Timeout ]
 
 # WebGL not yet supported by the software compositor.
-crbug.com/151713 virtual/softwarecompositing/draws-content/webgl-background-layer.html [ Skip ]
-crbug.com/151713 virtual/softwarecompositing/draws-content/webgl-simple-background.html [ Skip ]
-crbug.com/151713 virtual/softwarecompositing/backface-visibility/backface-visibility-webgl.html [ Skip ]
-crbug.com/151713 virtual/softwarecompositing/visibility/visibility-simple-webgl-layer.html [ Skip ]
-crbug.com/151713 virtual/softwarecompositing/webgl [ Skip ]
+crbug.com/151713 virtual/softwarecompositing/draws-content/webgl-simple-background.html [ ImageOnlyFailure ]
 
 # This test isn't hanging, it just takes 12-13 seconds to run. See BUGWK87839.
 crbug.com/30536 http/tests/misc/acid3.html [ Failure ] # See "SVG Tests" section too
