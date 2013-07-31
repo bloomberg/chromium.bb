@@ -79,36 +79,41 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
 bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
   DCHECK(bytes);
   *bytes = 0;
-  // We can't query available GPU memory from the system on Android,
-  // but the dalvik heap size give us a good estimate of available
-  // GPU memory on a wide range of devices.
-  //
-  // The heap size tends to be about 1/4 of total ram on higher end
-  // devices, so we use 1/2 of that by default. For example both the
-  // Nexus 4/10 have 2GB of ram and 512MB Dalvik heap size. For lower
-  // end devices, 1/2 of the heap size can be too high, but this
-  // correlates well with having a small heap-growth-limit. So for
-  // devices with less ram, we factor in the growth limit.
-  //
-  // This is the result of the calculation below:
-  // Droid DNA 1080P  128MB
-  // Nexus S           56MB
-  // Galaxy Nexus     112MB
-  // Nexus 4/10       256MB
-  // Xoom              88MB
-  static size_t dalvik_limit = 0;
-  if (!dalvik_limit) {
-    size_t heap_size   = static_cast<size_t>(base::SysInfo::DalvikHeapSizeMB());
-    size_t heap_growth = static_cast<size_t>(
-                             base::SysInfo::DalvikHeapGrowthLimitMB());
-    size_t limit = 0;
-    if (heap_size >= 350)
-        limit = heap_size / 2;
+
+  // We can't query available GPU memory from the system on Android.
+  // Physical memory is also mis-reported sometimes (eg. Nexus 10 reports
+  // 1262MB when it actually has 2GB, while Razr M has 1GB but only reports
+  // 128MB java heap size). First we estimate physical memory using both.
+  size_t dalvik_mb = base::SysInfo::DalvikHeapSizeMB();
+  size_t physical_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+  size_t physical_memory_mb = 0;
+  if (dalvik_mb >= 256)
+    physical_memory_mb = dalvik_mb * 4;
+  else
+    physical_memory_mb = std::max(dalvik_mb * 4,
+                                  (physical_mb * 4) / 3);
+
+  // Now we take a default of 1/8th of memory on high-memory devices,
+  // and gradually scale that back for low-memory devices (to be nicer
+  // to other apps so they don't get killed). Examples:
+  // Nexus 4/10(2GB)    256MB
+  // Droid Razr M(1GB)  91MB
+  // Galaxy Nexus(1GB)  85MB
+  // Xoom(1GB)          85MB
+  // Nexus S(512MB)     36MB
+  static size_t limit_bytes = 0;
+  if (limit_bytes == 0) {
+    if (physical_memory_mb >= 1536)
+      limit_bytes = physical_memory_mb / 8;
+    else if (physical_memory_mb >= 1152)
+      limit_bytes = physical_memory_mb / 10;
+    else if (physical_memory_mb >= 768)
+      limit_bytes = physical_memory_mb / 12;
     else
-        limit = (heap_size + (heap_growth * 2)) / 4;
-    dalvik_limit = limit * 1024 * 1024;
+      limit_bytes = physical_memory_mb / 16;
+    limit_bytes = limit_bytes * 1024 * 1024;
   }
-  *bytes = dalvik_limit;
+  *bytes = limit_bytes;
   return true;
 }
 
