@@ -167,11 +167,17 @@ class BasePerfTest(pyauto.PyUITest):
       return False
     return True
 
+  def _GetAllDescendentProcesses(self, pid):
+    pstree_out = subprocess.check_output(['pstree', '-p', '%s' % pid])
+    children = re.findall('\((\d+)\)', pstree_out)
+    return [int(pid) for pid in children]
+
   def _WaitForChromeExit(self, browser_info, timeout):
-    child_processes = browser_info['child_processes']
+    pid = browser_info['browser_pid']
+    chrome_pids = self._GetAllDescendentProcesses(pid)
     initial_time = time.time()
     while time.time() - initial_time < timeout:
-      if any([self._IsPIDRunning(c['pid']) for c in child_processes]):
+      if any([self._IsPIDRunning(pid) for pid in chrome_pids]):
         time.sleep(1)
       else:
         logging.info('_WaitForChromeExit() took: %s seconds',
