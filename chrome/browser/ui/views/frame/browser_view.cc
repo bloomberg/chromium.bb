@@ -410,6 +410,9 @@ BrowserView::BrowserView()
 #endif
       force_location_bar_focus_(false),
       immersive_mode_controller_(chrome::CreateImmersiveModeController()),
+#if defined(OS_CHROMEOS)
+      scroll_end_effect_controller_(ScrollEndEffectController::Create()),
+#endif
       color_change_listener_(this),
       activate_modal_dialog_factory_(this) {
 }
@@ -2576,6 +2579,8 @@ void BrowserView::ShowPasswordGenerationBubble(
 }
 
 void BrowserView::OverscrollUpdate(int delta_y) {
+  if (scroll_end_effect_controller_)
+    scroll_end_effect_controller_->OverscrollUpdate(delta_y);
 }
 
 void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),

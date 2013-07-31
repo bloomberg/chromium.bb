@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/scroll_end_effect_controller.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -756,6 +757,8 @@ class BrowserView : public BrowserWindow,
   bool force_location_bar_focus_;
 
   scoped_ptr<ImmersiveModeController> immersive_mode_controller_;
+
+  scoped_ptr<ScrollEndEffectController> scroll_end_effect_controller_;
 
   gfx::ScopedSysColorChangeListener color_change_listener_;
 
