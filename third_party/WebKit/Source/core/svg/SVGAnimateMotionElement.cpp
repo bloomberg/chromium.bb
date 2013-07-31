@@ -200,8 +200,17 @@ void SVGAnimateMotionElement::clearAnimatedType(SVGElement* targetElement)
 {
     if (!targetElement)
         return;
-    if (AffineTransform* transform = targetElement->supplementalTransform())
-        transform->makeIdentity();
+
+    AffineTransform* transform = targetElement->supplementalTransform();
+    if (!transform)
+        return;
+
+    transform->makeIdentity();
+
+    if (RenderObject* targetRenderer = targetElement->renderer()) {
+        targetRenderer->setNeedsTransformUpdate();
+        RenderSVGResource::markForLayoutAndParentResourceInvalidation(targetRenderer);
+    }
 }
 
 bool SVGAnimateMotionElement::calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString)
