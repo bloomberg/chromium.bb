@@ -88,8 +88,8 @@ namespace mediaGalleriesPrivate {
     static void removeGalleryWatch(DOMString galleryId);
     static void getAllGalleryWatch(GetAllGalleryWatchCallback callback);
     static void removeAllGalleryWatch();
-    // The function has moved to experimental.systemInfo.storage namespace.
-    // See experimental_system_info_storage.idl.
+    // The function has moved to system.storage namespace.
+    // See system_storage.idl.
     static void ejectDevice(DOMString deviceId, EjectDeviceCallback callback);
     static void getHandlers(GetHandlersCallback callback);
   };

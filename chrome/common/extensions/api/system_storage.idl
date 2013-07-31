@@ -17,7 +17,10 @@ namespace system.storage {
   };
 
   dictionary StorageUnitInfo {
-    // The unique storage id. It will use the transient ID.
+    // The transient ID that uniquely identifies the storage device.
+    // This ID will be persistent within the same run of a single application.
+    // It will not be a persistent identifier between different runs of an
+    // application, or between different applications.
     DOMString id;
     // The name of the storage unit.
     DOMString name;
@@ -71,9 +74,6 @@ namespace system.storage {
     static void getInfo(StorageInfoCallback callback);
 
     // Ejects a removable storage device.
-    // Note: We plan to move this function into a namespace that indicates it
-    // that modifies the state of the system rather than just gathering
-    // information.
     static void ejectDevice(DOMString id, EjectDeviceCallback callback);
 
     // Monitor a particular storage device available change capacity.
