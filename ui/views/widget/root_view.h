@@ -15,6 +15,10 @@
 
 namespace views {
 
+namespace test {
+class WidgetTest;
+}
+
 class Widget;
 
 // This is a views-internal API and should not be used externally.
@@ -114,6 +118,7 @@ class VIEWS_EXPORT RootView : public View,
   // Overridden from View:
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
+  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Vector2d CalculateOffsetToAncestorWithLayer(
       ui::Layer** layer_parent) OVERRIDE;
@@ -122,6 +127,7 @@ class VIEWS_EXPORT RootView : public View,
  private:
   friend class ::views::View;
   friend class ::views::Widget;
+  friend class ::views::test::WidgetTest;
 
   // Input ---------------------------------------------------------------------
 
