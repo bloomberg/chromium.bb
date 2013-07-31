@@ -1428,7 +1428,7 @@ _release.add_config('butterfly-release',
 
 _release.add_config('falco-release',
   boards=['falco'],
-  hw_tests = [],
+  hw_tests=HWTestConfig.DefaultList(file_bugs=True),
   # TODO(sosa): Restore temp removal of vm testing once devserver bug
   # crbug.com/251309 is fixed.
   vm_tests=None,
