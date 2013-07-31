@@ -9,6 +9,9 @@
 /* It is up to higher level data structures to avoid duplicates. */
 /* It is up to higher level data structures to provide fast lookups. */
 
+/* _GNU_SOURCE must be defined prior to the inclusion of string.h
+ * so that strnlen is available with glibc */
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include "xray/xray_priv.h"

@@ -84,7 +84,9 @@ XRAY_NO_INSTRUMENT void XRayRegisterBrowserInterface(
 inline struct XRayTraceCapture* XRayInit(int stack_size,
                                          int buffer_size,
                                          int frame_count,
-                                         const char* mapfilename) {}
+                                         const char* mapfilename) {
+  return NULL;
+}
 inline void XRayShutdown(struct XRayTraceCapture* capture) {}
 inline void XRayStartFrame(struct XRayTraceCapture* capture) {}
 inline void XRayEndFrame(struct XRayTraceCapture* capture) {}
@@ -97,7 +99,7 @@ inline void XRaySaveReport(struct XRayTraceCapture* capture,
 inline void XRayReport(struct XRayTraceCapture* capture,
                        FILE* f,
                        float percent_cutoff,
-                       int ticks_cutoff);
+                       int ticks_cutoff) {}
 
 #ifndef XRAY_DISABLE_BROWSER_INTEGRATION
 inline void XRayBrowserTraceReport(struct XRayTraceCapture* capture) {}

@@ -1,6 +1,7 @@
-/* Copyright 2013 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
+ * found in the LICENSE file.
+ */
 
 
 /* XRay -- a simple profiler for Native Client */
@@ -39,6 +40,19 @@ struct XRayTimestampPair XRayGenerateTimestampsNow(void) {
   return pair;
 }
 
+/* see chromium/src/base/debug/trace_event.h */
+#define TRACE_VALUE_TYPE_UINT (2)
+#define TRACE_VALUE_TYPE_DOUBLE (4)
+#define TRACE_VALUE_TYPE_COPY_STRING (7)
+
+union TraceValue {
+    bool as_bool;
+    unsigned long long as_uint;
+    long long as_int;
+    double as_double;
+    const void* as_pointer;
+    const char* as_string;
+  };
 
 void XRayBrowserTraceReport(struct XRayTraceCapture* capture) {
 
@@ -66,12 +80,17 @@ void XRayBrowserTraceReport(struct XRayTraceCapture* capture) {
 
     int start = XRayFrameGetTraceStartIndex(capture, frame);
     int end = XRayFrameGetTraceEndIndex(capture, frame);
-    int count = XRayFrameGetTraceCount(capture, frame);
 
     struct XRayTraceBufferEntry** stack_base = XRayMalloc(
       sizeof(struct XRayTraceBufferEntry*) * (XRAY_TRACE_STACK_SIZE + 1));
     struct XRayTraceBufferEntry** stack_top = stack_base;
     *stack_top = NULL;
+
+    uint32_t num_args = 0;
+    const char* arg_names[] = {"annotation"};
+    uint8_t arg_types[] = {TRACE_VALUE_TYPE_COPY_STRING};
+    uint64_t arg_values[] = {0};
+    char annotation[XRAY_TRACE_ANNOTATION_LENGTH];
 
     int i;
     for(i = start; i != end; i = XRayTraceNextEntry(capture, i)) {
@@ -94,13 +113,25 @@ void XRayBrowserTraceReport(struct XRayTraceCapture* capture) {
         );
       }
 
+      num_args = 0;
       struct XRayTraceBufferEntry* e = XRayTraceGetEntry(capture, i);
+      uint32_t annotation_index = e->annotation_index;
+      if (annotation_index) {
+        XRayTraceCopyToString(capture, annotation_index, annotation);
+
+        union TraceValue val;
+        val.as_string = (const char*)annotation;
+
+        arg_values[0] = val.as_uint;
+        num_args = 1;
+      }
+
       ppb_trace_event_interface->AddTraceEventWithThreadIdAndTimestamp(
           'B', cat_enabled,
           XRayGetName(symbols, e),
           0, thread_id,
           (scale_a * e->start_tick) + scale_b,
-          0, NULL, NULL, NULL, 0
+          num_args, arg_names, arg_types, arg_values, 0
       );
 
       *(++stack_top) = e;

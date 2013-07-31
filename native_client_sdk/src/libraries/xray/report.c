@@ -169,7 +169,6 @@ void XRayReport(struct XRayTraceCapture* capture,
   int head = XRayFrameGetHead(capture);
   int frame = XRayFrameGetTail(capture);
   int counter = 0;
-  struct XRaySymbolTable* symbols = XRayGetSymbolTable(capture);
   XRayFrameReport(capture, f);
   fprintf(f, "\n");
   while (frame != head) {
