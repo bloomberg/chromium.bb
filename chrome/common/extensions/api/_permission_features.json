@@ -455,7 +455,7 @@
   "power": {
     "channel": "stable",
     "extension_types": [
-      "extension", "hosted_app", "packaged_app", "platform_app"
+      "extension", "packaged_app", "platform_app"
     ]
   },
   "preferencesPrivate":  {
@@ -544,23 +544,17 @@
   },
   "system.cpu": {
     "channel": "dev",
-    "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
-    ],
+    "extension_types": ["extension", "packaged_app", "platform_app"],
     "whitelist": [""]
   },
   "system.memory": {
     "channel": "dev",
-    "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
-    ],
+    "extension_types": ["extension", "packaged_app", "platform_app"],
     "whitelist": [""]
   },
   "system.storage": {
     "channel": "stable",
-    "extension_types": [
-      "extension", "packaged_app", "platform_app"
-    ]
+    "extension_types": ["extension", "packaged_app", "platform_app"]
   },
   "system.display": {
     "channel": "stable",
