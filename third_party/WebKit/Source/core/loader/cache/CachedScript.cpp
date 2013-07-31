@@ -71,16 +71,17 @@ const String& CachedScript::script()
     ASSERT(isLoaded());
 
     if (!m_script && m_data) {
-        m_script = m_decoder->decode(m_data->data(), encodedSize());
-        m_script.append(m_decoder->flush());
+        String script = m_decoder->decode(m_data->data(), encodedSize());
+        script.append(m_decoder->flush());
         m_data.clear();
-        // We lie a it here and claim that m_script counts as encoded data (even though it's really decoded data).
+        // We lie a it here and claim that script counts as encoded data (even though it's really decoded data).
         // That's because the MemoryCache thinks that it can clear out decoded data by calling destroyDecodedData(),
-        // but we can't destroy m_script in destroyDecodedData because that's our only copy of the data!
-        setEncodedSize(m_script.sizeInBytes());
+        // but we can't destroy script in destroyDecodedData because that's our only copy of the data!
+        setEncodedSize(script.sizeInBytes());
+        m_script = script;
     }
 
-    return m_script;
+    return m_script.string();
 }
 
 bool CachedScript::mimeTypeAllowedByNosniff() const

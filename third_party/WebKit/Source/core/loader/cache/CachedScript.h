@@ -47,7 +47,7 @@ class ResourceFetcher;
         bool mimeTypeAllowedByNosniff() const;
 
     private:
-        String m_script;
+        AtomicString m_script;
         RefPtr<TextResourceDecoder> m_decoder;
     };
 }
