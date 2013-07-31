@@ -170,7 +170,7 @@ inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::Floa
     // based on the margin box. In order to do this, we need to walk back through the floating object list to find
     // the first previous float that is on the same side as our newFloat.
     ShapeOutsideInfo* previousShapeOutsideInfo = 0;
-    const RenderBlock::FloatingObjectSet& floatingObjectSet = m_block->m_floatingObjects->set();
+    const RenderBlock::FloatingObjectSet& floatingObjectSet = m_block->floatingObjects()->set();
     RenderBlock::FloatingObjectSetIterator it = floatingObjectSet.end();
     RenderBlock::FloatingObjectSetIterator begin = floatingObjectSet.begin();
     while (it != begin) {
@@ -1521,7 +1521,7 @@ void RenderBlock::layoutRunsAndFloats(LineLayoutState& layoutState, bool hasInli
     }
 
     if (containsFloats())
-        layoutState.setLastFloat(m_floatingObjects->set().last());
+        layoutState.setLastFloat(floatingObjects()->set().last());
 
     // We also find the first clean line and extract these lines.  We will add them back
     // if we determine that we're able to synchronize after handling all our dirty lines.
@@ -1773,7 +1773,7 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
 
         const InlineIterator oldEnd = end;
         bool isNewUBAParagraph = layoutState.lineInfo().previousLineBrokeCleanly();
-        FloatingObject* lastFloatFromPreviousLine = (containsFloats()) ? m_floatingObjects->set().last() : 0;
+        FloatingObject* lastFloatFromPreviousLine = (containsFloats()) ? floatingObjects()->set().last() : 0;
 
         updateShapeAndSegmentsForCurrentLine(shapeInsideInfo, absoluteLogicalTop, layoutState);
 
@@ -1868,8 +1868,9 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
             newLine(lineBreaker.clear());
         }
 
-        if (m_floatingObjects && lastRootBox()) {
-            const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+        FloatingObjects* floats = floatingObjects();
+        if (floats && lastRootBox()) {
+            const FloatingObjectSet& floatingObjectSet = floats->set();
             FloatingObjectSetIterator it = floatingObjectSet.begin();
             FloatingObjectSetIterator end = floatingObjectSet.end();
             if (layoutState.lastFloat()) {
@@ -1989,7 +1990,7 @@ void RenderBlock::linkToEndLineIfNeeded(LineLayoutState& layoutState)
         }
     }
 
-    if (m_floatingObjects && (layoutState.checkForFloatsFromLastLine() || positionNewFloats()) && lastRootBox()) {
+    if (floatingObjects() && (layoutState.checkForFloatsFromLastLine() || positionNewFloats()) && lastRootBox()) {
         // In case we have a float on the last line, it might not be positioned up to now.
         // This has to be done before adding in the bottom border/padding, or the float will
         // include the padding incorrectly. -dwh
@@ -2012,7 +2013,7 @@ void RenderBlock::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                 trailingFloatsLineBox->setContainingRegion(regionAtBlockOffset(trailingFloatsLineBox->lineTopWithLeading()));
         }
 
-        const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+        const FloatingObjectSet& floatingObjectSet = floatingObjects()->set();
         FloatingObjectSetIterator it = floatingObjectSet.begin();
         FloatingObjectSetIterator end = floatingObjectSet.end();
         if (layoutState.lastFloat()) {
@@ -2358,7 +2359,8 @@ bool RenderBlock::checkPaginationAndFloatsAtEndLine(LineLayoutState& layoutState
         }
     }
 
-    if (!lineDelta || !m_floatingObjects)
+    FloatingObjects* floats = floatingObjects();
+    if (!lineDelta || !floats)
         return true;
 
     // See if any floats end in the range along which we want to shift the lines vertically.
@@ -2370,7 +2372,7 @@ bool RenderBlock::checkPaginationAndFloatsAtEndLine(LineLayoutState& layoutState
 
     LayoutUnit logicalBottom = lastLine->lineBottomWithLeading() + absoluteValue(lineDelta);
 
-    const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+    const FloatingObjectSet& floatingObjectSet = floats->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
         FloatingObject* f = *it;
@@ -3404,7 +3406,8 @@ bool RenderBlock::positionNewFloatOnLine(FloatingObject* newFloat, FloatingObjec
     if (!newFloat->m_paginationStrut || !lineInfo.previousLineBrokeCleanly() || !lineInfo.isEmpty())
         return true;
 
-    const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+    FloatingObjects* floats = floatingObjects();
+    const FloatingObjectSet& floatingObjectSet = floats->set();
     ASSERT(floatingObjectSet.last() == newFloat);
 
     LayoutUnit floatLogicalTop = logicalTopForFloat(newFloat);
@@ -3431,9 +3434,9 @@ bool RenderBlock::positionNewFloatOnLine(FloatingObject* newFloat, FloatingObjec
             // Save the old logical top before calling removePlacedObject which will set
             // isPlaced to false. Otherwise it will trigger an assert in logicalTopForFloat.
             LayoutUnit oldLogicalTop = logicalTopForFloat(f);
-            m_floatingObjects->removePlacedObject(f);
+            floats->removePlacedObject(f);
             setLogicalTopForFloat(f, oldLogicalTop + paginationStrut);
-            m_floatingObjects->addPlacedObject(f);
+            floats->addPlacedObject(f);
         }
     }
 
