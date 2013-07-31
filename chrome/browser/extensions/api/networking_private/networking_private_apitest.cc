@@ -267,6 +267,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, SetProperties) {
 }
 
 #if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetStateNonExistent) {
+  EXPECT_TRUE(RunNetworkingSubtest("getStateNonExistent")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        GetManagedProperties) {
   ShillServiceClient::TestInterface* service_test =

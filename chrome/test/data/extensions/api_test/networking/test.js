@@ -294,6 +294,11 @@ var availableTests = [
         }, result);
       }));
   },
+  function getStateNonExistent() {
+    chrome.networkingPrivate.getState(
+      'non_existent',
+      callbackFail('Error.InvalidParameter'));
+  },
   function onNetworksChangedEventConnect() {
     var network = "stub_wifi2";
     var done = chrome.test.callbackAdded();

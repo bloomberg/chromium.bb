@@ -163,7 +163,7 @@ bool NetworkingPrivateGetStateFunction::RunImpl() {
       GetNetworkState(service_path);
   if (!state) {
     error_ = "Error.InvalidParameter";
-    SendResponse(false);
+    return false;
   }
 
   scoped_ptr<base::DictionaryValue> result_dict(new base::DictionaryValue);
