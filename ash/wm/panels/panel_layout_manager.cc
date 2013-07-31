@@ -98,6 +98,10 @@ class CalloutWidgetBackground : public views::Background {
     canvas->DrawPath(path, paint);
   }
 
+  ShelfAlignment alignment() {
+    return alignment_;
+  }
+
   void set_alignment(ShelfAlignment alignment) {
     alignment_ = alignment;
   }
@@ -216,7 +220,10 @@ class PanelCalloutWidget : public views::Widget {
       callout_bounds.set_height(kArrowWidth);
     }
     GetNativeWindow()->SetBounds(callout_bounds);
-    background_->set_alignment(alignment);
+    if (background_->alignment() != alignment) {
+      background_->set_alignment(alignment);
+      SchedulePaintInRect(gfx::Rect(gfx::Point(), callout_bounds.size()));
+    }
   }
 
  private:
