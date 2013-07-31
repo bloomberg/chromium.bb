@@ -42,6 +42,13 @@ class MessageCenter;
 class MessageCenterTray;
 class ToastContentsView;
 
+enum PopupAlignment {
+  POPUP_ALIGNMENT_TOP = 1 << 0,
+  POPUP_ALIGNMENT_LEFT = 1 << 1,
+  POPUP_ALIGNMENT_BOTTOM = 1 << 2,
+  POPUP_ALIGNMENT_RIGHT = 1 << 3,
+};
+
 // Container for popup toasts. Because each toast is a frameless window rather
 // than a view in a bubble, now the container just manages all of those toasts.
 // This is similar to chrome/browser/notifications/balloon_collection, but the
@@ -82,13 +89,15 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // zero. Otherwise, simply waits when it becomes zero.
   void DoUpdateIfPossible();
 
-  // Updates |work_area_| and rearranges the notification toasts if necessary.
+  // Updates |work_area_| and re-calculates the alignment of notification toasts
+  // rearranging them if necessary.
   // This is separated from methods from OnDisplayBoundsChanged(), since
-  // sometimes a work area has to be specified directly. One example is shelf's
-  // auto-hide change. When the shelf in ChromeOS is temporarily shown from auto
-  // hide status, it doesn't change the display's work area but the actual work
-  // area for toasts should be resized.
-  void SetWorkArea(const gfx::Rect& work_area);
+  // sometimes the display info has to be specified directly. One example is
+  // shelf's auto-hide change. When the shelf in ChromeOS is temporarily shown
+  // from auto hide status, it doesn't change the display's work area but the
+  // actual work area for toasts should be resized.
+  void SetDisplayInfo(const gfx::Rect& work_area,
+                      const gfx::Rect& screen_bounds);
 
   // Overridden from gfx::DislayObserver:
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
@@ -122,6 +131,12 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // See crbug.com/224089
   void RepositionWidgetsWithTarget();
 
+  void ComputePopupAlignment(gfx::Rect work_area, gfx::Rect screen_bounds);
+
+  // The base line is an (imaginary) line that would touch the bottom of the
+  // next created notification if bottom-aligned or its top if top-aligned.
+  int GetBaseLine(ToastContentsView* last_toast);
+
   // Overridden from MessageCenterObserver:
   virtual void OnNotificationAdded(const std::string& notification_id) OVERRIDE;
   virtual void OnNotificationRemoved(const std::string& notification_id,
@@ -149,6 +164,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   Toasts toasts_;
   gfx::Rect work_area_;
   int64 display_id_;
+
+  // Specifies which corner of the screen popups should show up. This should
+  // ideally be the same corner the notification area (systray) is at.
+  PopupAlignment alignment_;
 
   int defer_counter_;
 

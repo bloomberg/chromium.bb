@@ -109,8 +109,9 @@ void WorkAreaObserver::OnDisplayWorkAreaInsetsChanged() {
 }
 
 void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
-  gfx::Rect work_area = Shell::GetScreen()->GetDisplayNearestWindow(
-      shelf_->shelf_widget()->GetNativeView()).work_area();
+  gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
+      shelf_->shelf_widget()->GetNativeView());
+  gfx::Rect work_area = display.work_area();
   int width = (new_state == SHELF_AUTO_HIDE_HIDDEN) ?
       ShelfLayoutManager::kAutoHideSize :
       ShelfLayoutManager::GetPreferredShelfSize();
@@ -128,7 +129,7 @@ void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
       work_area.Inset(0, width, 0, 0);
       break;
   }
-  collection_->SetWorkArea(work_area);
+  collection_->SetDisplayInfo(work_area, display.bounds());
 }
 
 // Class to initialize and manage the WebNotificationBubble and

@@ -71,20 +71,20 @@ MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
   DoUpdateIfPossible();
   message_center_->AddObserver(this);
   gfx::Screen* screen = NULL;
+  gfx::Display display;
   if (!parent_) {
     // On Win+Aura, we don't have a parent since the popups currently show up
     // on the Windows desktop, not in the Aura/Ash desktop.  This code will
     // display the popups on the primary display.
     screen = gfx::Screen::GetNativeScreen();
-    gfx::Display display = screen->GetPrimaryDisplay();
-    display_id_ = display.id();
-    work_area_ = display.work_area();
+    display = screen->GetPrimaryDisplay();
   } else {
     screen = gfx::Screen::GetScreenFor(parent_);
-    gfx::Display display = screen->GetDisplayNearestWindow(parent_);
-    display_id_ = display.id();
-    work_area_ = display.work_area();
+    display = screen->GetDisplayNearestWindow(parent_);
   }
+  display_id_ = display.id();
+  work_area_ = display.work_area();
+  ComputePopupAlignment(work_area_, display.bounds());
   screen->AddObserver(this);
 }
 
@@ -114,13 +114,8 @@ void MessagePopupCollection::UpdateWidgets() {
     return;
   }
 
-  int bottom = toasts_.empty() ?
-      work_area_.bottom() : toasts_.back()->origin().y();
-
-  if (!first_item_has_no_margin_)
-    bottom -= kToastMarginY;
-  else
-    bottom += kNoToastMarginBorderAndShadowOffset;
+  bool top_down = alignment_ & POPUP_ALIGNMENT_TOP;
+  int base = GetBaseLine(toasts_.empty() ? NULL : toasts_.back());
 
   // Iterate in the reverse order to keep the oldest toasts on screen. Newer
   // items may be ignored if there are no room to place them.
@@ -136,7 +131,9 @@ void MessagePopupCollection::UpdateWidgets() {
                                  true,  // Create expanded.
                                  true); // Create top-level notification.
     int view_height = ToastContentsView::GetToastSizeForView(view).height();
-    if (bottom - view_height - kToastMarginY < 0) {
+    int height_available = top_down ? work_area_.bottom() - base : base;
+
+    if (height_available - view_height - kToastMarginY < 0) {
       delete view;
       break;
     }
@@ -150,9 +147,15 @@ void MessagePopupCollection::UpdateWidgets() {
     gfx::Size preferred_size = toast->GetPreferredSize();
     gfx::Point origin(
         GetToastOriginX(gfx::Rect(preferred_size)) + preferred_size.width(),
-        bottom);
+        top_down ? base + view_height : base);
     toast->RevealWithAnimation(origin);
-    bottom -= view_height + kToastMarginY;
+
+    // Shift the base line to be a few pixels above the last added toast or (few
+    // pixels below last added toast if top-aligned).
+    if (top_down)
+      base += view_height + kToastMarginY;
+    else
+      base -= view_height + kToastMarginY;
 
     message_center_->DisplayedNotification((*iter)->id());
     if (views::ViewsDelegate::views_delegate) {
@@ -207,30 +210,38 @@ int MessagePopupCollection::GetToastOriginX(const gfx::Rect& toast_bounds) {
   if (base::i18n::IsRTL())
     return work_area_.x() + kToastMarginX;
 #endif
+  if (alignment_ & POPUP_ALIGNMENT_LEFT)
+    return work_area_.x() + kToastMarginX;
   return work_area_.right() - kToastMarginX - toast_bounds.width();
 }
 
 void MessagePopupCollection::RepositionWidgets() {
-  int bottom = work_area_.bottom();
-  if (!first_item_has_no_margin_)
-    bottom -= kToastMarginY;
-  else
-    bottom += kNoToastMarginBorderAndShadowOffset;
+  bool top_down = alignment_ & POPUP_ALIGNMENT_TOP;
+  int base = GetBaseLine(NULL);  // We don't want to position relative to last
+                                 // toast - we want re-position.
 
   for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end();) {
     Toasts::iterator curr = iter++;
     gfx::Rect bounds((*curr)->bounds());
     bounds.set_x(GetToastOriginX(bounds));
-    bounds.set_y(bottom - bounds.height());
-    // The notification may scrolls the top boundary of the screen due to image
+    bounds.set_y(alignment_ & POPUP_ALIGNMENT_TOP ? base
+                                                  : base - bounds.height());
+
+    // The notification may scrolls the boundary of the screen due to image
     // load and such notifications should disappear. Do not call
     // CloseWithAnimation, we don't want to show the closing animation, and we
     // don't want to mark such notifications as shown. See crbug.com/233424
-    if (bounds.y() >= 0)
+    if ((top_down ? work_area_.bottom() - bounds.bottom() : bounds.y()) >= 0)
       (*curr)->SetBoundsWithAnimation(bounds);
     else
       (*curr)->CloseWithAnimation(false);
-    bottom -= bounds.height() + kToastMarginY;
+
+    // Shift the base line to be a few pixels above the last added toast or (few
+    // pixels below last added toast if top-aligned).
+    if (top_down)
+      base += bounds.height() + kToastMarginY;
+    else
+      base -= bounds.height() + kToastMarginY;
   }
 }
 
@@ -238,25 +249,90 @@ void MessagePopupCollection::RepositionWidgetsWithTarget() {
   if (toasts_.empty())
     return;
 
-  // No widgets above.
-  if (toasts_.back()->origin().y() > target_top_edge_)
+  bool top_down = alignment_ & POPUP_ALIGNMENT_TOP;
+
+  // Nothing to do if there are no widgets above target if bottom-aligned or no
+  // widgets below target if top-aligned.
+  if (top_down ? toasts_.back()->origin().y() < target_top_edge_
+               : toasts_.back()->origin().y() > target_top_edge_)
     return;
 
   Toasts::reverse_iterator iter = toasts_.rbegin();
   for (; iter != toasts_.rend(); ++iter) {
-    if ((*iter)->origin().y() > target_top_edge_)
+    // We only reposition widgets above target if bottom-aligned or widgets
+    // below target if top-aligned.
+    if (top_down ? (*iter)->origin().y() < target_top_edge_
+                 : (*iter)->origin().y() > target_top_edge_)
       break;
   }
   --iter;
-  int slide_length = target_top_edge_ - (*iter)->origin().y();
-  for (; ; --iter) {
+
+  // Slide length is the number of pixels the widgets should move so that their
+  // bottom edge (top-edge if top-aligned) touches the target.
+  int slide_length = std::abs(target_top_edge_ - (*iter)->origin().y());
+  for (;; --iter) {
     gfx::Rect bounds((*iter)->bounds());
-    bounds.set_y(bounds.y() + slide_length);
+
+    // If top-aligned, shift widgets upwards by slide_length. If bottom-aligned,
+    // shift them downwards by slide_length.
+    if (top_down)
+      bounds.set_y(bounds.y() - slide_length);
+    else
+      bounds.set_y(bounds.y() + slide_length);
     (*iter)->SetBoundsWithAnimation(bounds);
 
     if (iter == toasts_.rbegin())
       break;
   }
+}
+
+void MessagePopupCollection::ComputePopupAlignment(gfx::Rect work_area,
+                                                   gfx::Rect screen_bounds) {
+  // If the taskbar is at the top, render notifications top down. Some platforms
+  // like Gnome can have taskbars at top and bottom. In this case it's more
+  // likely that the systray is on the top one.
+  alignment_ = work_area.y() > screen_bounds.y() ? POPUP_ALIGNMENT_TOP
+                                                 : POPUP_ALIGNMENT_BOTTOM;
+
+  // If the taskbar is on the left show the notifications on the left. Otherwise
+  // show it on right since it's very likely that the systray is on the right if
+  // the taskbar is on the top or bottom.
+  // Since on some platforms like Ubuntu Unity there's also a launcher along
+  // with a taskbar (panel), we need to check that there is really nothing at
+  // the top before concluding that the taskbar is at the left.
+  alignment_ = static_cast<PopupAlignment>(
+      alignment_ |
+      ((work_area.x() > screen_bounds.x() && work_area.y() == screen_bounds.y())
+           ? POPUP_ALIGNMENT_LEFT
+           : POPUP_ALIGNMENT_RIGHT));
+}
+
+int MessagePopupCollection::GetBaseLine(ToastContentsView* last_toast) {
+  bool top_down = alignment_ & POPUP_ALIGNMENT_TOP;
+  int base;
+
+  if (top_down) {
+    if (!last_toast)
+      base = work_area_.y();
+    else
+      base = toasts_.back()->bounds().bottom();
+
+    if (!first_item_has_no_margin_)
+      base += kToastMarginY;
+    else
+      base -= kNoToastMarginBorderAndShadowOffset;
+  } else {
+    if (!last_toast)
+      base = work_area_.bottom();
+    else
+      base = toasts_.back()->origin().y();
+
+    if (!first_item_has_no_margin_)
+      base -= kToastMarginY;
+    else
+      base += kNoToastMarginBorderAndShadowOffset;
+  }
+  return base;
 }
 
 void MessagePopupCollection::OnNotificationAdded(
@@ -390,11 +466,13 @@ void MessagePopupCollection::DoUpdateIfPossible() {
     run_loop_for_test_->Quit();
 }
 
-void MessagePopupCollection::SetWorkArea(const gfx::Rect& work_area) {
+void MessagePopupCollection::SetDisplayInfo(const gfx::Rect& work_area,
+                                            const gfx::Rect& screen_bounds) {
   if (work_area_ == work_area)
     return;
 
   work_area_ = work_area;
+  ComputePopupAlignment(work_area, screen_bounds);
   RepositionWidgets();
 }
 
@@ -403,7 +481,7 @@ void MessagePopupCollection::OnDisplayBoundsChanged(
   if (display.id() != display_id_)
     return;
 
-  SetWorkArea(display.work_area());
+  SetDisplayInfo(display.work_area(), display.bounds());
 }
 
 void MessagePopupCollection::OnDisplayAdded(const gfx::Display& new_display) {
