@@ -56,56 +56,63 @@ class StoragePartition {
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
 
-  enum StorageMask {
-    kCookies = 1 << 0,
+  enum RemoveDataMask {
+    REMOVE_DATA_MASK_APPCACHE = 1 << 0,
+    REMOVE_DATA_MASK_COOKIES = 1 << 1,
+    REMOVE_DATA_MASK_FILE_SYSTEMS = 1 << 2,
+    REMOVE_DATA_MASK_INDEXEDDB = 1 << 3,
+    REMOVE_DATA_MASK_LOCAL_STORAGE = 1 << 4,
+    REMOVE_DATA_MASK_SHADER_CACHE = 1 << 5,
+    REMOVE_DATA_MASK_WEBSQL = 1 << 6,
 
+    REMOVE_DATA_MASK_ALL = -1
+  };
+
+  // TODO(lazyboy): Value in the enum should start with the enum prefix
+  // (QUOTA_MANAGED_STORAGE_MASK_*).
+  enum QuotaManagedStorageMask {
     // Corresponds to quota::kStorageTypeTemporary.
-    kQuotaManagedTemporaryStorage = 1 << 1,
+    kQuotaManagedTemporaryStorage = 1 << 0,
 
     // Corresponds to quota::kStorageTypePersistent.
-    kQuotaManagedPersistentStorage = 1 << 2,
-
-    // Local dom storage.
-    kLocalDomStorage = 1 << 3,
-    kSessionDomStorage = 1 << 4,
-
-    // Local shader storage.
-    kShaderStorage = 1 << 5,
+    kQuotaManagedPersistentStorage = 1 << 1,
 
     // Corresponds to quota::kStorageTypeSyncable.
-    kQuotaManagedSyncableStorage = 1 << 6,
+    kQuotaManagedSyncableStorage = 1 << 2,
 
-    kAllStorage = -1,
+    kAllStorage = -1
   };
 
   // Starts an asynchronous task that does a best-effort clear the data
-  // corresonding to the given |storage_mask| inside this StoragePartition for
-  // the given |storage_origin|. Note kSessionDomStorage is not cleared and the
-  // mask is ignored.
+  // corresponding to the given |remove_mask| and |quota_storage_remove_mask|
+  // inside this StoragePartition for the given |storage_origin|.
+  // Note session dom storage is not cleared even if you specify
+  // REMOVE_DATA_MASK_LOCAL_STORAGE.
   //
   // TODO(ajwong): Right now, the embedder may have some
   // URLRequestContextGetter objects that the StoragePartition does not know
   // about.  This will no longer be the case when we resolve
   // http://crbug.com/159193. Remove |request_context_getter| when that bug
   // is fixed.
-  virtual void AsyncClearDataForOrigin(
-      uint32 storage_mask,
-      const GURL& storage_origin,
-      net::URLRequestContextGetter* request_context_getter) = 0;
+  virtual void ClearDataForOrigin(uint32 remove_mask,
+                                  uint32 quota_storage_remove_mask,
+                                  const GURL& storage_origin,
+                                  net::URLRequestContextGetter* rq_context) = 0;
 
-  // Similar to AsyncClearDataForOrigin(), but deletes all data out of the
+  // Similar to ClearDataForOrigin(), but deletes all data out of the
   // StoragePartition rather than just the data related to this origin.
-  virtual void AsyncClearData(uint32 storage_mask) = 0;
+  virtual void ClearDataForUnboundedRange(uint32 remove_mask,
+                                          uint32 quota_storage_remove_mask) = 0;
 
-  // Similar to AsyncClearDataForOrigin(), but deletes all the data out of the
+  // Similar to ClearDataForOrigin(), but deletes all the data out of the
   // StoragePartion from between the given |begin| and |end| dates rather
   // then just the data related to this origin.
-  //
-  // Note: This currently only supports the shader cache.
-  virtual void AsyncClearDataBetween(uint32 storage_mask,
-                                     const base::Time& begin,
-                                     const base::Time& end,
-                                     const base::Closure& callback) = 0;
+  virtual void ClearDataForRange(uint32 remove_mask,
+                                 uint32 quota_storage_remove_mask,
+                                 const base::Time& begin,
+                                 const base::Time& end,
+                                 const base::Closure& callback) = 0;
+
  protected:
   virtual ~StoragePartition() {}
 };

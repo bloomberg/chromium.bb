@@ -496,7 +496,11 @@ void StoragePartitionImplMap::AsyncObliterate(
        ++it) {
     const StoragePartitionConfig& config = it->first;
     if (config.partition_domain == partition_domain) {
-      it->second->AsyncClearData(StoragePartition::kAllStorage);
+      it->second->ClearDataForUnboundedRange(
+          // All except shader cache.
+          StoragePartition::REMOVE_DATA_MASK_ALL &
+            (~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE),
+          StoragePartition::kAllStorage);
       if (!config.in_memory) {
         paths_to_keep.push_back(it->second->GetPath());
       }
