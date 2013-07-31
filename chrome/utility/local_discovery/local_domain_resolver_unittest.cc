@@ -167,6 +167,22 @@ TEST_F(LocalDomainResolverTest, ResolveDomainNone) {
   RunFor(base::TimeDelta::FromSeconds(4));
 }
 
+TEST_F(LocalDomainResolverTest, ResolveDomainPreferAFromCache) {
+  socket_factory_->SimulateReceive(
+      kSamplePacketA, sizeof(kSamplePacketAAAA));
+  socket_factory_->SimulateReceive(
+      kSamplePacketA, sizeof(kSamplePacketA));
+
+  LocalDomainResolverImpl resolver(
+      "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
+      base::Bind(&LocalDomainResolverTest::AddressCallback,
+                 base::Unretained(this)), &mdns_client_);
+
+  EXPECT_CALL(*this, AddressCallbackInternal(true, "1.2.3.4"));
+
+  resolver.Start();
+}
+
 }  // namespace
 
 }  // namespace local_discovery
