@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
@@ -15,6 +16,27 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
+
+namespace {
+
+std::string GenerateGetUserMediaCall(int min_width,
+                                     int max_width,
+                                     int min_height,
+                                     int max_height,
+                                     int min_frame_rate,
+                                     int max_frame_rate) {
+  return base::StringPrintf(
+      "getUserMedia({video: {mandatory: {minWidth: %d, maxWidth: %d, "
+      "minHeight: %d, maxHeight: %d, minFrameRate: %d, maxFrameRate: %d}, "
+      "optional: []}});",
+      min_width,
+      max_width,
+      min_height,
+      max_height,
+      min_frame_rate,
+      max_frame_rate);
+}
+}
 
 namespace content {
 
@@ -230,4 +252,34 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CallAndModifyStream) {
   ExpectTitle("OK");
 }
 
+// This test calls getUserMedia in sequence with different constraints.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaConstraints) {
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+
+  std::vector<std::string> list_of_get_user_media_calls;
+  list_of_get_user_media_calls.push_back(
+      GenerateGetUserMediaCall(320, 320, 180, 180, 30, 30));
+  list_of_get_user_media_calls.push_back(
+      GenerateGetUserMediaCall(320, 320, 240, 240, 30, 30));
+  list_of_get_user_media_calls.push_back(
+      GenerateGetUserMediaCall(640, 640, 360, 360, 30, 30));
+  list_of_get_user_media_calls.push_back(
+      GenerateGetUserMediaCall(640, 640, 480, 480, 30, 30));
+  list_of_get_user_media_calls.push_back(
+      GenerateGetUserMediaCall(960, 960, 720, 720, 30, 30));
+  list_of_get_user_media_calls.push_back(
+      GenerateGetUserMediaCall(1280, 1280, 720, 720, 30, 30));
+  list_of_get_user_media_calls.push_back(
+      GenerateGetUserMediaCall(1920, 1920, 1080, 1080, 30, 30));
+
+  for (std::vector<std::string>::iterator const_iterator =
+           list_of_get_user_media_calls.begin();
+       const_iterator != list_of_get_user_media_calls.end();
+       ++const_iterator) {
+    DVLOG(1) << "Calling getUserMedia: " << *const_iterator;
+    NavigateToURL(shell(), url);
+    EXPECT_TRUE(ExecuteJavascript(*const_iterator));
+    ExpectTitle("OK");
+  }
+}
 }  // namespace content
