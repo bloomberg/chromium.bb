@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/private_api_dialog.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_drive.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_tasks.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
@@ -45,7 +46,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -240,116 +240,6 @@ bool SetLastModifiedOnBlockingPool(const base::FilePath& local_path,
   return utime(local_path.value().c_str(), &times) == 0;
 }
 
-// The typedefs are used for GetSelectedFileInfo().
-typedef std::vector<GURL> UrlList;
-typedef std::vector<ui::SelectedFileInfo> SelectedFileInfoList;
-typedef base::Callback<void(const SelectedFileInfoList&)>
-    GetSelectedFileInfoCallback;
-
-// The struct is used for GetSelectedFileInfo().
-struct GetSelectedFileInfoParams {
-  bool for_opening;
-  GetSelectedFileInfoCallback callback;
-  std::vector<base::FilePath> file_paths;
-  SelectedFileInfoList selected_files;
-};
-
-// Forward declarations of helper functions for GetSelectedFileInfo().
-void GetSelectedFileInfoInternal(Profile* profile,
-                                 scoped_ptr<GetSelectedFileInfoParams> params);
-void ContinueGetSelectedFileInfo(Profile* profile,
-                                 scoped_ptr<GetSelectedFileInfoParams> params,
-                                 drive::FileError error,
-                                 const base::FilePath& local_file_path,
-                                 scoped_ptr<drive::ResourceEntry> entry);
-
-// Runs |callback| with SelectedFileInfoList created from |file_urls|.
-void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
-                         Profile* profile,
-                         const UrlList& file_urls,
-                         bool for_opening,
-                         GetSelectedFileInfoCallback callback) {
-  DCHECK(render_view_host);
-  DCHECK(profile);
-
-  scoped_ptr<GetSelectedFileInfoParams> params(new GetSelectedFileInfoParams);
-  params->for_opening = for_opening;
-  params->callback = callback;
-
-  for (size_t i = 0; i < file_urls.size(); ++i) {
-    const GURL& file_url = file_urls[i];
-    const base::FilePath path = GetLocalPathFromURL(
-        render_view_host, profile, file_url);
-    if (!path.empty()) {
-      DVLOG(1) << "Selected: file path: " << path.value();
-      params->file_paths.push_back(path);
-    }
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&GetSelectedFileInfoInternal,
-                 profile,
-                 base::Passed(&params)));
-}
-
-// Part of GetSelectedFileInfo().
-void GetSelectedFileInfoInternal(Profile* profile,
-                                 scoped_ptr<GetSelectedFileInfoParams> params) {
-  DCHECK(profile);
-
-  for (size_t i = params->selected_files.size();
-       i < params->file_paths.size(); ++i) {
-    const base::FilePath& file_path = params->file_paths[i];
-    // When opening a drive file, we should get local file path.
-    if (params->for_opening &&
-        drive::util::IsUnderDriveMountPoint(file_path)) {
-      drive::DriveIntegrationService* integration_service =
-          drive::DriveIntegrationServiceFactory::GetForProfile(profile);
-      // |integration_service| is NULL if Drive is disabled.
-      if (!integration_service) {
-        ContinueGetSelectedFileInfo(profile,
-                                    params.Pass(),
-                                    drive::FILE_ERROR_FAILED,
-                                    base::FilePath(),
-                                    scoped_ptr<drive::ResourceEntry>());
-        return;
-      }
-      integration_service->file_system()->GetFileByPath(
-          drive::util::ExtractDrivePath(file_path),
-          base::Bind(&ContinueGetSelectedFileInfo,
-                     profile,
-                     base::Passed(&params)));
-      return;
-    } else {
-      params->selected_files.push_back(
-          ui::SelectedFileInfo(file_path, base::FilePath()));
-    }
-  }
-  params->callback.Run(params->selected_files);
-}
-
-// Part of GetSelectedFileInfo().
-void ContinueGetSelectedFileInfo(Profile* profile,
-                                 scoped_ptr<GetSelectedFileInfoParams> params,
-                                 drive::FileError error,
-                                 const base::FilePath& local_file_path,
-                                 scoped_ptr<drive::ResourceEntry> entry) {
-  DCHECK(profile);
-
-  const int index = params->selected_files.size();
-  const base::FilePath& file_path = params->file_paths[index];
-  base::FilePath local_path;
-  if (error == drive::FILE_ERROR_OK) {
-    local_path = local_file_path;
-  } else {
-    DLOG(ERROR) << "Failed to get " << file_path.value()
-                << " with error code: " << error;
-  }
-  params->selected_files.push_back(ui::SelectedFileInfo(file_path, local_path));
-  GetSelectedFileInfoInternal(profile, params.Pass());
-}
-
 }  // namespace
 
 FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
@@ -374,15 +264,17 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<RequestAccessTokenFunction>();
   registry->RegisterFunction<GetShareUrlFunction>();
 
-  registry->RegisterFunction<LogoutUserFunction>();
+  // File dialog related functions.
   registry->RegisterFunction<CancelFileDialogFunction>();
+  registry->RegisterFunction<SelectFileFunction>();
+  registry->RegisterFunction<SelectFilesFunction>();
+
+  registry->RegisterFunction<LogoutUserFunction>();
   registry->RegisterFunction<FileDialogStringsFunction>();
   registry->RegisterFunction<GetVolumeMetadataFunction>();
   registry->RegisterFunction<RequestFileSystemFunction>();
   registry->RegisterFunction<AddFileWatchBrowserFunction>();
   registry->RegisterFunction<RemoveFileWatchBrowserFunction>();
-  registry->RegisterFunction<SelectFileFunction>();
-  registry->RegisterFunction<SelectFilesFunction>();
   registry->RegisterFunction<AddMountFunction>();
   registry->RegisterFunction<RemoveMountFunction>();
   registry->RegisterFunction<GetMountPointsFunction>();
@@ -663,100 +555,6 @@ bool ViewFilesFunction::RunImpl() {
   return true;
 }
 
-SelectFileFunction::SelectFileFunction() {
-}
-
-SelectFileFunction::~SelectFileFunction() {
-}
-
-bool SelectFileFunction::RunImpl() {
-  if (args_->GetSize() != 4) {
-    return false;
-  }
-  std::string file_url;
-  args_->GetString(0, &file_url);
-  UrlList file_paths;
-  file_paths.push_back(GURL(file_url));
-  bool for_opening = false;
-  args_->GetBoolean(2, &for_opening);
-
-  GetSelectedFileInfo(
-      render_view_host(),
-      profile(),
-      file_paths,
-      for_opening,
-      base::Bind(&SelectFileFunction::GetSelectedFileInfoResponse, this));
-  return true;
-}
-
-void SelectFileFunction::GetSelectedFileInfoResponse(
-    const std::vector<ui::SelectedFileInfo>& files) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (files.size() != 1) {
-    SendResponse(false);
-    return;
-  }
-  int index;
-  args_->GetInteger(1, &index);
-  int32 tab_id = GetTabId(dispatcher());
-  SelectFileDialogExtension::OnFileSelected(tab_id, files[0], index);
-  SendResponse(true);
-}
-
-SelectFilesFunction::SelectFilesFunction() {
-}
-
-SelectFilesFunction::~SelectFilesFunction() {
-}
-
-bool SelectFilesFunction::RunImpl() {
-  if (args_->GetSize() != 2) {
-    return false;
-  }
-
-  ListValue* path_list = NULL;
-  args_->GetList(0, &path_list);
-  DCHECK(path_list);
-
-  std::string virtual_path;
-  size_t len = path_list->GetSize();
-  UrlList file_urls;
-  file_urls.reserve(len);
-  for (size_t i = 0; i < len; ++i) {
-    path_list->GetString(i, &virtual_path);
-    file_urls.push_back(GURL(virtual_path));
-  }
-
-  GetSelectedFileInfo(
-      render_view_host(),
-      profile(),
-      file_urls,
-      true,  // for_opening
-      base::Bind(&SelectFilesFunction::GetSelectedFileInfoResponse, this));
-  return true;
-}
-
-void SelectFilesFunction::GetSelectedFileInfoResponse(
-    const std::vector<ui::SelectedFileInfo>& files) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int32 tab_id = GetTabId(dispatcher());
-  SelectFileDialogExtension::OnMultiFilesSelected(tab_id, files);
-  SendResponse(true);
-}
-
-CancelFileDialogFunction::CancelFileDialogFunction() {
-}
-
-CancelFileDialogFunction::~CancelFileDialogFunction() {
-}
-
-bool CancelFileDialogFunction::RunImpl() {
-  int32 tab_id = GetTabId(dispatcher());
-  SelectFileDialogExtension::OnFileSelectionCanceled(tab_id);
-  SendResponse(true);
-  return true;
-}
-
 AddMountFunction::AddMountFunction() {
 }
 
@@ -891,7 +689,7 @@ bool RemoveMountFunction::RunImpl() {
                    mount_path.c_str());
   set_log_on_completion(true);
 
-  UrlList file_paths;
+  std::vector<GURL> file_paths;
   file_paths.push_back(GURL(mount_path));
   GetSelectedFileInfo(
       render_view_host(),

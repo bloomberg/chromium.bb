@@ -7,6 +7,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_UTIL_H_
 
+#include "base/callback_forward.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "url/gurl.h"
 
@@ -15,6 +16,10 @@ class Profile;
 
 namespace content {
 class RenderViewHost;
+}
+
+namespace ui {
+struct SelectedFileInfo;
 }
 
 namespace file_manager {
@@ -45,6 +50,17 @@ base::FilePath GetLocalPathFromURL(
     content::RenderViewHost* render_view_host,
     Profile* profile,
     const GURL& url);
+
+// The callback type is used for GetSelectedFileInfo().
+typedef base::Callback<void(const std::vector<ui::SelectedFileInfo>&)>
+    GetSelectedFileInfoCallback;
+
+// Gets the information for |file_urls|.
+void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
+                         Profile* profile,
+                         const std::vector<GURL>& file_urls,
+                         bool for_opening,
+                         GetSelectedFileInfoCallback callback);
 
 }  // namespace file_manager
 

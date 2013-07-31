@@ -24,13 +24,8 @@ class FileManagerEventRouter;
 class GURL;
 class Profile;
 
-namespace base {
-class Value;
-}
-
 namespace fileapi {
 class FileSystemContext;
-class FileSystemURL;
 }
 
 namespace ui {
@@ -171,25 +166,6 @@ class RemoveFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
       const std::string& extension_id) OVERRIDE;
 };
 
-class SelectFileFunction : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFile",
-                             FILEBROWSERPRIVATE_SELECTFILE)
-
-  SelectFileFunction();
-
- protected:
-  virtual ~SelectFileFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  // A callback method to handle the result of GetSelectedFileInfo.
-  void GetSelectedFileInfoResponse(
-      const std::vector<ui::SelectedFileInfo>& files);
-};
-
 // View multiple selected files.  Window stays open.
 class ViewFilesFunction : public LoggedAsyncExtensionFunction {
  public:
@@ -200,41 +176,6 @@ class ViewFilesFunction : public LoggedAsyncExtensionFunction {
 
  protected:
   virtual ~ViewFilesFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
-// Select multiple files.  Closes the dialog window.
-class SelectFilesFunction : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFiles",
-                             FILEBROWSERPRIVATE_SELECTFILES)
-
-  SelectFilesFunction();
-
- protected:
-  virtual ~SelectFilesFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  // A callback method to handle the result of GetSelectedFileInfo.
-  void GetSelectedFileInfoResponse(
-      const std::vector<ui::SelectedFileInfo>& files);
-};
-
-// Cancel file selection Dialog.  Closes the dialog window.
-class CancelFileDialogFunction : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelDialog",
-                             FILEBROWSERPRIVATE_CANCELDIALOG)
-
-  CancelFileDialogFunction();
-
- protected:
-  virtual ~CancelFileDialogFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
