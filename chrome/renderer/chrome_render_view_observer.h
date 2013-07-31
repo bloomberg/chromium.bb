@@ -16,6 +16,7 @@
 #include "content/public/common/top_controls_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebPermissionClient.h"
+#include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 class ChromeRenderProcessObserver;
@@ -130,6 +131,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   void OnSetAllowRunningInsecureContent(bool allow);
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnSetVisuallyDeemphasized(bool deemphasized);
+  void OnRequestThumbnailForContextNode(int thumbnail_min_area_pixels,
+                                        gfx::Size thumbnail_max_size_pixels);
   void OnStartFrameSniffer(const string16& frame_name);
   void OnGetFPS();
   void OnAddStrictSecurityHost(const std::string& host);

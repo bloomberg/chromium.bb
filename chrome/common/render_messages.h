@@ -366,6 +366,15 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_StartFrameSniffer,
                     string16 /* frame-name */)
 
+// Asks the renderer for a thumbnail of the image selected by the most
+// recently opened context menu, if there is one. If the image's area
+// is greater than thumbnail_min_area it will be downscaled to
+// be within thumbnail_max_size. The possibly downsampled image will be
+// returned in a ChromeViewHostMsg_RequestThumbnailForContextNode_ACK message.
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_RequestThumbnailForContextNode,
+                    int /* thumbnail_min_area_pixels */,
+                    gfx::Size /* thumbnail_max_size_pixels */)
+
 // Notifies the renderer whether hiding/showing the top controls is enabled,
 // what the current state should be, and whether or not to animate to the
 // proper state.
@@ -374,9 +383,14 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateTopControlsState,
                     content::TopControlsState /* current */,
                     bool /* animate */)
 
+
 // Updates the window features of the render view.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,
                     WebKit::WebWindowFeatures /* window_features */)
+
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
+                    SkBitmap /* thumbnail */)
+
 
 // JavaScript related messages -----------------------------------------------
 

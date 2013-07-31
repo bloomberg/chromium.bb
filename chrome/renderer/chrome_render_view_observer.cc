@@ -30,6 +30,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "net/base/data_url.h"
+#include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -49,6 +50,7 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/size_f.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "v8/include/v8-testing.h"
 #include "webkit/glue/webkit_glue.h"
@@ -169,6 +171,42 @@ GURL StripRef(const GURL& url) {
   replacements.ClearRef();
   return url.ReplaceComponents(replacements);
 }
+
+// If the source image is null or occupies less area than
+// |thumbnail_min_area_pixels|, we return the image unmodified.  Otherwise, we
+// scale down the image so that the width and height do not exceed
+// |thumbnail_max_size_pixels|, preserving the original aspect ratio.
+static SkBitmap Downscale(WebKit::WebImage image,
+                          int thumbnail_min_area_pixels,
+                          gfx::Size thumbnail_max_size_pixels) {
+  if (image.isNull())
+    return SkBitmap();
+
+  gfx::Size image_size = image.size();
+
+  if (image_size.GetArea() < thumbnail_min_area_pixels)
+    return image.getSkBitmap();
+
+  if (image_size.width() <= thumbnail_max_size_pixels.width() &&
+      image_size.height() <= thumbnail_max_size_pixels.height())
+    return image.getSkBitmap();
+
+  gfx::SizeF scaled_size = image_size;
+
+  if (scaled_size.width() > thumbnail_max_size_pixels.width()) {
+    scaled_size.Scale(thumbnail_max_size_pixels.width() / scaled_size.width());
+  }
+
+  if (scaled_size.height() > thumbnail_max_size_pixels.height()) {
+    scaled_size.Scale(
+        thumbnail_max_size_pixels.height() / scaled_size.height());
+  }
+
+  return skia::ImageOperations::Resize(image.getSkBitmap(),
+                                       skia::ImageOperations::RESIZE_GOOD,
+                                       static_cast<int>(scaled_size.width()),
+                                       static_cast<int>(scaled_size.height()));
+}
 }  // namespace
 
 ChromeRenderViewObserver::ChromeRenderViewObserver(
@@ -211,6 +249,8 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
                         OnSetClientSidePhishingDetection)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetVisuallyDeemphasized,
                         OnSetVisuallyDeemphasized)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestThumbnailForContextNode,
+                        OnRequestThumbnailForContextNode)
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_StartFrameSniffer, OnStartFrameSniffer)
 #endif
@@ -334,6 +374,20 @@ void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
   } else {
     dimmed_color_overlay_.reset();
   }
+}
+
+void ChromeRenderViewObserver::OnRequestThumbnailForContextNode(
+    int thumbnail_min_area_pixels, gfx::Size thumbnail_max_size_pixels) {
+  WebNode context_node = render_view()->GetContextMenuNode();
+  SkBitmap thumbnail;
+  if (context_node.isElementNode()) {
+    WebKit::WebImage image = context_node.to<WebElement>().imageContents();
+    thumbnail = Downscale(image,
+                          thumbnail_min_area_pixels,
+                          thumbnail_max_size_pixels);
+  }
+  Send(new ChromeViewHostMsg_RequestThumbnailForContextNode_ACK(routing_id(),
+                                                                thumbnail));
 }
 
 void ChromeRenderViewObserver::OnStartFrameSniffer(const string16& frame_name) {
