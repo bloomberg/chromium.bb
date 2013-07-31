@@ -2491,7 +2491,7 @@ void TestingAutomationProvider::GetDownloadsInfo(Browser* browser,
   ListValue* list_of_downloads = new ListValue;
 
   DownloadService* download_service(
-      DownloadServiceFactory::GetForProfile(browser->profile()));
+      DownloadServiceFactory::GetForBrowserContext(browser->profile()));
 
   if (download_service->HasCreatedDownloadManager()) {
     std::vector<DownloadItem*> downloads;
@@ -2523,7 +2523,7 @@ void TestingAutomationProvider::WaitForAllDownloadsToComplete(
   }
 
   DownloadService* download_service =
-      DownloadServiceFactory::GetForProfile(browser->profile());
+      DownloadServiceFactory::GetForBrowserContext(browser->profile());
   if (!download_service->HasCreatedDownloadManager()) {
     // No download manager, so no downloads to wait for.
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
@@ -2547,7 +2547,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
   std::string action;
 
   DownloadService* download_service =
-      DownloadServiceFactory::GetForProfile(browser->profile());
+      DownloadServiceFactory::GetForBrowserContext(browser->profile());
   if (!download_service->HasCreatedDownloadManager()) {
     AutomationJSONReply(this, reply_message).SendError("No download manager.");
     return;

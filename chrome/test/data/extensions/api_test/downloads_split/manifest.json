@@ -8,6 +8,7 @@
   "permissions": [
     "downloads",
     "downloads.open",
+    "downloads.shelf",
     "http://*/*",
     "file://*"
   ]

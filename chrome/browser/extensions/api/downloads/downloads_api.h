@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DOWNLOADS_DOWNLOADS_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DOWNLOADS_DOWNLOADS_API_H_
 
+#include <set>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -19,6 +20,8 @@
 #include "chrome/common/extensions/api/downloads.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class DownloadFileIconExtractor;
 class DownloadQuery;
@@ -54,6 +57,8 @@ extern const char kNotDangerous[];
 extern const char kNotInProgress[];
 extern const char kNotResumable[];
 extern const char kOpenPermission[];
+extern const char kShelfDisabled[];
+extern const char kShelfPermission[];
 extern const char kTooManyListeners[];
 extern const char kUnexpectedDeterminer[];
 
@@ -239,6 +244,20 @@ class DownloadsOpenFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsOpenFunction);
 };
 
+class DownloadsSetShelfEnabledFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("downloads.setShelfEnabled",
+                             DOWNLOADS_SETSHELFENABLED)
+  DownloadsSetShelfEnabledFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ protected:
+  virtual ~DownloadsSetShelfEnabledFunction();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadsSetShelfEnabledFunction);
+};
+
 class DownloadsDragFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.drag", DOWNLOADS_DRAG)
@@ -272,6 +291,7 @@ class DownloadsGetFileIconFunction : public AsyncExtensionFunction {
 // Observes a single DownloadManager and many DownloadItems and dispatches
 // onCreated and onErased events.
 class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
+                                      public content::NotificationObserver,
                                       public AllDownloadItemNotifier::Observer {
  public:
   typedef base::Callback<void(
@@ -297,6 +317,9 @@ class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
   explicit ExtensionDownloadsEventRouter(
       Profile* profile, content::DownloadManager* manager);
   virtual ~ExtensionDownloadsEventRouter();
+
+  void SetShelfEnabled(const extensions::Extension* extension, bool enabled);
+  bool IsShelfEnabled() const;
 
   // Called by ChromeDownloadManagerDelegate during the filename determination
   // process, allows extensions to change the item's target filename. If no
@@ -339,8 +362,15 @@ class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
       const extensions::Event::WillDispatchCallback& will_dispatch_callback,
       base::Value* json_arg);
 
+  // content::NotificationObserver
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   Profile* profile_;
   AllDownloadItemNotifier notifier_;
+  std::set<const extensions::Extension*> shelf_disabling_extensions_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloadsEventRouter);
 };

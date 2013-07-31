@@ -10,15 +10,15 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class DownloadService;
-class Profile;
 
 // Singleton that owns all DownloadServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated DownloadService.
 class DownloadServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // Returns the DownloadService for |profile|, creating if not yet created.
-  static DownloadService* GetForProfile(Profile* profile);
+  // Returns the DownloadService for |context|, creating if not yet created.
+  static DownloadService* GetForBrowserContext(
+      content::BrowserContext* context);
 
   static DownloadServiceFactory* GetInstance();
 

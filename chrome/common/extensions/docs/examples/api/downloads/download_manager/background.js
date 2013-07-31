@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+if (chrome.downloads.setShelfEnabled)
+  chrome.downloads.setShelfEnabled(false);
+
 var colors = {
   progressColor: '#0d0',
   arrow: '#555',

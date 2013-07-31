@@ -243,7 +243,7 @@ PrefService* OffTheRecordProfileImpl::GetOffTheRecordPrefs() {
 }
 
 DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
-  return DownloadServiceFactory::GetForProfile(this)->
+  return DownloadServiceFactory::GetForBrowserContext(this)->
       GetDownloadManagerDelegate();
 }
 

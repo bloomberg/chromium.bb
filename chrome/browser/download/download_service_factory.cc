@@ -10,10 +10,10 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 // static
-DownloadService* DownloadServiceFactory::GetForProfile(
-    Profile* profile) {
+DownloadService* DownloadServiceFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<DownloadService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static

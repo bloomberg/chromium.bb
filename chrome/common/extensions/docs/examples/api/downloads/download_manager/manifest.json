@@ -11,4 +11,4 @@
    "default_popup": "popup.html"},
  "background": {"persistent": false, "scripts": ["background.js"]},
  "default_locale": "en",
- "permissions": ["management", "downloads", "downloads.open"]}
+ "permissions": ["management", "downloads", "downloads.open", "downloads.shelf"]}

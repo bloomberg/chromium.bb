@@ -63,7 +63,7 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
 DownloadTestFileActivityObserver::DownloadTestFileActivityObserver(
     Profile* profile) {
   test_delegate_ = new MockDownloadManagerDelegate(profile);
-  DownloadServiceFactory::GetForProfile(profile)->
+  DownloadServiceFactory::GetForBrowserContext(profile)->
       SetDownloadManagerDelegateForTesting(test_delegate_.get());
 }
 

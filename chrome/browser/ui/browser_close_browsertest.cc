@@ -151,7 +151,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
     for (std::vector<Profile*>::const_iterator pit = profiles.begin();
          pit != profiles.end(); ++pit) {
       DownloadService* download_service =
-          DownloadServiceFactory::GetForProfile(*pit);
+          DownloadServiceFactory::GetForBrowserContext(*pit);
       if (download_service->HasCreatedDownloadManager()) {
         DownloadManager *mgr = BrowserContext::GetDownloadManager(*pit);
         scoped_refptr<content::DownloadTestFlushObserver> observer(
@@ -160,7 +160,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
       }
       if ((*pit)->HasOffTheRecordProfile()) {
         DownloadService* incognito_download_service =
-          DownloadServiceFactory::GetForProfile(
+          DownloadServiceFactory::GetForBrowserContext(
               (*pit)->GetOffTheRecordProfile());
         if (incognito_download_service->HasCreatedDownloadManager()) {
           DownloadManager *mgr = BrowserContext::GetDownloadManager(

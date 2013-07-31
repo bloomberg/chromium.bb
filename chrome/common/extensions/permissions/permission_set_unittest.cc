@@ -643,6 +643,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kBrowsingData);
   skip.insert(APIPermission::kContextMenus);
   skip.insert(APIPermission::kDiagnostics);
+  skip.insert(APIPermission::kDownloadsShelf);
   skip.insert(APIPermission::kFontSettings);
   skip.insert(APIPermission::kFullscreen);
   skip.insert(APIPermission::kIdle);
@@ -650,8 +651,8 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kPointerLock);
   skip.insert(APIPermission::kPower);
   skip.insert(APIPermission::kPushMessaging);
-  skip.insert(APIPermission::kSessionRestore);
   skip.insert(APIPermission::kScreensaver);
+  skip.insert(APIPermission::kSessionRestore);
   skip.insert(APIPermission::kStorage);
   skip.insert(APIPermission::kSystemCpu);
   skip.insert(APIPermission::kSystemDisplay);

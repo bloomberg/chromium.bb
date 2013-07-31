@@ -8,6 +8,8 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -96,15 +98,16 @@ base::TimeDelta DownloadShelf::GetTransientDownloadShowDelay() {
 }
 
 content::DownloadManager* DownloadShelf::GetDownloadManager() {
-  DCHECK(browser());
   return content::BrowserContext::GetDownloadManager(browser()->profile());
 }
 
 void DownloadShelf::ShowDownload(DownloadItem* download) {
   if (download->GetState() == DownloadItem::COMPLETE &&
-      DownloadItemModel(download).ShouldRemoveFromShelfWhenComplete()) {
+      DownloadItemModel(download).ShouldRemoveFromShelfWhenComplete())
     return;
-  }
+  if (!DownloadServiceFactory::GetForBrowserContext(
+        download->GetBrowserContext())->IsShelfEnabled())
+    return;
 
   if (is_hidden_)
     Unhide();

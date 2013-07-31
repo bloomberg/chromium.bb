@@ -386,12 +386,13 @@ class HistoryObserver : public DownloadHistory::Observer {
       : profile_(profile),
         waiting_(false),
         seen_stored_(false) {
-    DownloadServiceFactory::GetForProfile(profile_)->
+    DownloadServiceFactory::GetForBrowserContext(profile_)->
       GetDownloadHistory()->AddObserver(this);
   }
 
   virtual ~HistoryObserver() {
-    DownloadService* service = DownloadServiceFactory::GetForProfile(profile_);
+    DownloadService* service = DownloadServiceFactory::GetForBrowserContext(
+        profile_);
     if (service && service->GetDownloadHistory())
       service->GetDownloadHistory()->RemoveObserver(this);
   }
@@ -412,7 +413,7 @@ class HistoryObserver : public DownloadHistory::Observer {
   }
 
   virtual void OnDownloadHistoryDestroyed() OVERRIDE {
-    DownloadServiceFactory::GetForProfile(profile_)->
+    DownloadServiceFactory::GetForBrowserContext(profile_)->
       GetDownloadHistory()->RemoveObserver(this);
   }
 
@@ -3064,9 +3065,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_DenyDanger) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadPrefs_SaveFilePath) {
-  DownloadPrefs* on_prefs = DownloadServiceFactory::GetForProfile(
+  DownloadPrefs* on_prefs = DownloadServiceFactory::GetForBrowserContext(
       browser()->profile())->GetDownloadManagerDelegate()->download_prefs();
-  DownloadPrefs* off_prefs = DownloadServiceFactory::GetForProfile(
+  DownloadPrefs* off_prefs = DownloadServiceFactory::GetForBrowserContext(
       browser()->profile()->GetOffTheRecordProfile())
     ->GetDownloadManagerDelegate()->download_prefs();
   base::FilePath dir(on_prefs->SaveFilePath());

@@ -527,8 +527,12 @@ class DownloadExtensionTest : public ExtensionApiTest {
                    const std::string& args) {
     scoped_refptr<UIThreadExtensionFunction> delete_function(function);
     SetUpExtensionFunction(function);
-    return extension_function_test_utils::RunFunction(
+    bool result = extension_function_test_utils::RunFunction(
         function, args, browser(), GetFlags());
+    if (!result) {
+      LOG(ERROR) << function->GetError();
+    }
+    return result;
   }
 
   extension_function_test_utils::RunFunctionFlags GetFlags() {
@@ -3592,6 +3596,23 @@ IN_PROC_BROWSER_TEST_F(
                          item->GetId())));
 }
 
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_SetShelfEnabled) {
+  LoadExtension("downloads_split");
+  EXPECT_TRUE(RunFunction(new DownloadsSetShelfEnabledFunction(), "[false]"));
+  EXPECT_FALSE(DownloadServiceFactory::GetForBrowserContext(
+      browser()->profile())->IsShelfEnabled());
+  EXPECT_TRUE(RunFunction(new DownloadsSetShelfEnabledFunction(), "[true]"));
+  EXPECT_TRUE(DownloadServiceFactory::GetForBrowserContext(
+      browser()->profile())->IsShelfEnabled());
+  // TODO(benjhayden) Test that existing shelves are hidden.
+  // TODO(benjhayden) Test multiple extensions.
+  // TODO(benjhayden) Test disabling extensions.
+  // TODO(benjhayden) Test that browsers associated with other profiles are not
+  // affected.
+  // TODO(benjhayden) Test incognito.
+}
+
 // TODO(benjhayden) Figure out why DisableExtension() does not fire
 // OnListenerRemoved.
 
@@ -3610,7 +3631,6 @@ class DownloadsApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DownloadsApiTest) {
   ASSERT_TRUE(RunExtensionTest("downloads")) << message_;
 }
-
 
 TEST(DownloadInterruptReasonEnumsSynced,
      DownloadInterruptReasonEnumsSynced) {

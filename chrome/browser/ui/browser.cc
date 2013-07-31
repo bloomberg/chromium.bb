@@ -718,7 +718,7 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
   // profile, and there are downloads associated with that profile,
   // those downloads would be cancelled by our window (-> profile) close.
   DownloadService* download_service =
-      DownloadServiceFactory::GetForProfile(profile());
+      DownloadServiceFactory::GetForBrowserContext(profile());
   if ((profile_window_count == 0) &&
       (download_service->DownloadCount() > 0) &&
       profile()->IsOffTheRecord()) {

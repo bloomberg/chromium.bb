@@ -111,7 +111,9 @@ namespace downloads {
   //     <dt>accepted</dt>
   //     <dd>The user has accepted the dangerous download.</dd>
   // </dl>
-  enum DangerType {file, url, content, uncommon, host, unwanted, safe, accepted};
+  enum DangerType {
+    file, url, content, uncommon, host, unwanted, safe, accepted
+  };
 
   // <dl><dt>in_progress</dt>
   //     <dd>The download is currently receiving data from the server.</dd>
@@ -489,6 +491,14 @@ namespace downloads {
     // Initiate dragging the downloaded file to another application. Call in a
     // javascript <code>ondragstart</code> handler.
     static void drag(long downloadId);
+
+    // Enable or disable the gray shelf at the bottom of every window associated
+    // with the current browser profile. The shelf will be disabled as long as
+    // at least one extension has disabled it. Enabling the shelf while at least
+    // one other extension has disabled it will return an error through
+    // $ref:runtime.lastError. Requires the <code>"downloads.shelf"</code>
+    // permission in addition to the <code>"downloads"</code> permission.
+    static void setShelfEnabled(boolean enabled);
   };
 
   interface Events {

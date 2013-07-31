@@ -912,7 +912,7 @@ content::GeolocationPermissionContext*
 }
 
 DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {
-  return DownloadServiceFactory::GetForProfile(this)->
+  return DownloadServiceFactory::GetForBrowserContext(this)->
       GetDownloadManagerDelegate();
 }
 

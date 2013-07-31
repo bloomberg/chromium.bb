@@ -422,7 +422,7 @@ void ChromeDownloadManagerDelegate::NotifyExtensions(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if !defined(OS_ANDROID)
   ExtensionDownloadsEventRouter* router =
-      DownloadServiceFactory::GetForProfile(profile_)->
+      DownloadServiceFactory::GetForBrowserContext(profile_)->
       GetExtensionEventRouter();
   if (router) {
     base::Closure original_path_callback =

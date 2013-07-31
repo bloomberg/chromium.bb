@@ -63,12 +63,13 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
       filter_(filter),
       waiting_(false),
       persisted_(false) {
-    DownloadServiceFactory::GetForProfile(profile_)->
+    DownloadServiceFactory::GetForBrowserContext(profile_)->
       GetDownloadHistory()->AddObserver(this);
   }
 
   virtual ~DownloadPersistedObserver() {
-    DownloadService* service = DownloadServiceFactory::GetForProfile(profile_);
+    DownloadService* service = DownloadServiceFactory::GetForBrowserContext(
+        profile_);
     if (service && service->GetDownloadHistory())
       service->GetDownloadHistory()->RemoveObserver(this);
   }

@@ -102,9 +102,9 @@ int DownloadService::DownloadCountAllProfiles() {
   int count = 0;
   for (std::vector<Profile*>::iterator it = profiles.begin();
        it < profiles.end(); ++it) {
-    count += DownloadServiceFactory::GetForProfile(*it)->DownloadCount();
+    count += DownloadServiceFactory::GetForBrowserContext(*it)->DownloadCount();
     if ((*it)->HasOffTheRecordProfile())
-      count += DownloadServiceFactory::GetForProfile(
+      count += DownloadServiceFactory::GetForBrowserContext(
           (*it)->GetOffTheRecordProfile())->DownloadCount();
   }
 
@@ -123,6 +123,15 @@ void DownloadService::SetDownloadManagerDelegateForTesting(
     dm->SetDelegate(new_delegate);
     new_delegate->SetDownloadManager(dm);
   }
+}
+
+bool DownloadService::IsShelfEnabled() {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return !extension_event_router_ ||
+         extension_event_router_->IsShelfEnabled();
+#endif
 }
 
 void DownloadService::Shutdown() {

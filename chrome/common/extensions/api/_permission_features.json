@@ -189,11 +189,13 @@
   ],
   "downloads": {
     "channel": "beta",
-    "extension_types": [
-      "extension"
-    ]
+    "extension_types": ["extension"]
   },
   "downloads.open": {
+    "channel": "beta",
+    "extension_types": ["extension"]
+  },
+  "downloads.shelf": {
     "channel": "beta",
     "extension_types": ["extension"]
   },

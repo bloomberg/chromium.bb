@@ -50,15 +50,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/api/downloads.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -101,6 +105,9 @@ const char kNotDangerous[] = "Download must be dangerous";
 const char kNotInProgress[] = "Download must be in progress";
 const char kNotResumable[] = "DownloadItem.canResume must be true";
 const char kOpenPermission[] = "The \"downloads.open\" permission is required";
+const char kShelfDisabled[] = "Another extension has disabled the shelf";
+const char kShelfPermission[] = "downloads.setShelfEnabled requires the "
+  "\"downloads.shelf\" permission";
 const char kTooManyListeners[] = "Each extension may have at most one "
   "onDeterminingFilename listener between all of its renderer execution "
   "contexts.";
@@ -416,7 +423,7 @@ enum DownloadsFunctionName {
   DOWNLOADS_FUNCTION_RESUME = 3,
   DOWNLOADS_FUNCTION_CANCEL = 4,
   DOWNLOADS_FUNCTION_ERASE = 5,
-  DOWNLOADS_FUNCTION_SET_DESTINATION = 6,
+  // 6 unused
   DOWNLOADS_FUNCTION_ACCEPT_DANGER = 7,
   DOWNLOADS_FUNCTION_SHOW = 8,
   DOWNLOADS_FUNCTION_DRAG = 9,
@@ -424,6 +431,7 @@ enum DownloadsFunctionName {
   DOWNLOADS_FUNCTION_OPEN = 11,
   DOWNLOADS_FUNCTION_REMOVE_FILE = 12,
   DOWNLOADS_FUNCTION_SHOW_DEFAULT_FOLDER = 13,
+  DOWNLOADS_FUNCTION_SET_SHELF_ENABLED = 14,
   // Insert new values here, not at the beginning.
   DOWNLOADS_FUNCTION_LAST
 };
@@ -1347,6 +1355,64 @@ bool DownloadsDragFunction::RunImpl() {
   return true;
 }
 
+DownloadsSetShelfEnabledFunction::DownloadsSetShelfEnabledFunction() {}
+
+DownloadsSetShelfEnabledFunction::~DownloadsSetShelfEnabledFunction() {}
+
+bool DownloadsSetShelfEnabledFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::SetShelfEnabled::Params> params(
+      extensions::api::downloads::SetShelfEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  if (!GetExtension()->HasAPIPermission(
+        extensions::APIPermission::kDownloadsShelf)) {
+    error_ = download_extension_errors::kShelfPermission;
+    return false;
+  }
+
+  RecordApiFunctions(DOWNLOADS_FUNCTION_SET_SHELF_ENABLED);
+  DownloadManager* manager = NULL;
+  DownloadManager* incognito_manager = NULL;
+  GetManagers(profile(), include_incognito(), &manager, &incognito_manager);
+  DownloadService* service = NULL;
+  DownloadService* incognito_service = NULL;
+  if (manager) {
+    service = DownloadServiceFactory::GetForBrowserContext(
+        manager->GetBrowserContext());
+    service->GetExtensionEventRouter()->SetShelfEnabled(
+        GetExtension(), params->enabled);
+  }
+  if (incognito_manager) {
+    incognito_service = DownloadServiceFactory::GetForBrowserContext(
+        incognito_manager->GetBrowserContext());
+    incognito_service->GetExtensionEventRouter()->SetShelfEnabled(
+        GetExtension(), params->enabled);
+  }
+
+  BrowserList* browsers = BrowserList::GetInstance(chrome::GetActiveDesktop());
+  if (browsers) {
+    for (BrowserList::const_iterator iter = browsers->begin();
+        iter != browsers->end(); ++iter) {
+      const Browser* browser = *iter;
+      DownloadService* current_service =
+        DownloadServiceFactory::GetForBrowserContext(browser->profile());
+      if (((current_service == service) ||
+           (current_service == incognito_service)) &&
+          browser->window()->IsDownloadShelfVisible() &&
+          !current_service->IsShelfEnabled())
+        browser->window()->GetDownloadShelf()->Close(DownloadShelf::AUTOMATIC);
+    }
+  }
+
+  if (params->enabled &&
+      ((manager && !service->IsShelfEnabled()) ||
+       (incognito_manager && !incognito_service->IsShelfEnabled()))) {
+    error_ = download_extension_errors::kShelfDisabled;
+    return false;
+  }
+
+  return true;
+}
+
 DownloadsGetFileIconFunction::DownloadsGetFileIconFunction()
     : icon_extractor_(new DownloadFileIconExtractorImpl()) {
 }
@@ -1404,6 +1470,8 @@ ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
       notifier_(manager, this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
   extensions::EventRouter* router = extensions::ExtensionSystem::Get(profile_)->
       event_router();
   if (router)
@@ -1416,6 +1484,22 @@ ExtensionDownloadsEventRouter::~ExtensionDownloadsEventRouter() {
       event_router();
   if (router)
     router->UnregisterObserver(this);
+}
+
+void ExtensionDownloadsEventRouter::SetShelfEnabled(
+    const extensions::Extension* extension, bool enabled) {
+  std::set<const extensions::Extension*>::iterator iter =
+    shelf_disabling_extensions_.find(extension);
+  if (iter == shelf_disabling_extensions_.end()) {
+    if (!enabled)
+      shelf_disabling_extensions_.insert(extension);
+  } else if (enabled) {
+    shelf_disabling_extensions_.erase(extension);
+  }
+}
+
+bool ExtensionDownloadsEventRouter::IsShelfEnabled() const {
+  return shelf_disabling_extensions_.empty();
 }
 
 // The method by which extensions hook into the filename determination process
@@ -1706,4 +1790,21 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
       chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
       content_source,
       content::Details<std::string>(&json_args));
+}
+
+void ExtensionDownloadsEventRouter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      extensions::UnloadedExtensionInfo* unloaded =
+          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
+      std::set<const extensions::Extension*>::iterator iter =
+        shelf_disabling_extensions_.find(unloaded->extension);
+      if (iter != shelf_disabling_extensions_.end())
+        shelf_disabling_extensions_.erase(iter);
+      break;
+    }
+  }
 }

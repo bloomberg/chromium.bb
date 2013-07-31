@@ -765,7 +765,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i) {
     DownloadService* download_service =
-      DownloadServiceFactory::GetForProfile(profiles[i]);
+      DownloadServiceFactory::GetForBrowserContext(profiles[i]);
     DownloadManager* download_manager =
         (download_service->HasCreatedDownloadManager() ?
          BrowserContext::GetDownloadManager(profiles[i]) : NULL);
