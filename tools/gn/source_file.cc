@@ -57,7 +57,7 @@ base::FilePath SourceFile::Resolve(const base::FilePath& source_root) const {
 
   converted.assign(&value_[2], value_.size() - 2);
   ConvertPathToSystem(&converted);
-  return root_path_.Append(UTF8ToFilePath(converted));
+  return source_root.Append(UTF8ToFilePath(converted));
 #else
   if (is_system_absolute())
     return base::FilePath(value_);

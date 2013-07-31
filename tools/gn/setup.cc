@@ -64,13 +64,12 @@ bool Setup::DoSetup() {
     return false;
 
   // FIXME(brettw) get python path!
-/*#if defined(OS_WIN)
-  build_settings_.set_python_path(base::FilePath(
-      //L"P:\\depot_tools\\python_bin\\python.exe"));
-      L"C:\\apps\\depot_tools\\python_bin\\python.exe"));
-#else*/
-  build_settings_.set_python_path(base::FilePath("python"));
-//#endif
+#if defined(OS_WIN)
+  build_settings_.set_python_path(
+      base::FilePath(FILE_PATH_LITERAL("cmd.exe /c python")));
+#else
+  build_settings_.set_python_path(base::FilePath(FILE_PATH_LITERAL("python")));
+#endif
 
   build_settings_.SetBuildDir(SourceDir("//out/gn/"));
 
