@@ -11,28 +11,16 @@ namespace {
 
 class TestUndoOperation;
 
+// TestUndoService -------------------------------------------------------------
+
 class TestUndoService {
  public:
-  TestUndoService()
-      : performing_redo_(false),
-        undo_operation_count_(0),
-        redo_operation_count_(0) {
-  }
-  ~TestUndoService() {}
+  TestUndoService();
+  ~TestUndoService();
 
-  void Redo() {
-    base::AutoReset<bool> incoming_changes(&performing_redo_, true);
-    undo_manager_.Redo();
-  }
-
+  void Redo();
   void TriggerOperation();
-
-  void RecordUndoCall() {
-    if (performing_redo_)
-      ++redo_operation_count_;
-    else
-      ++undo_operation_count_;
-  }
+  void RecordUndoCall();
 
   UndoManager undo_manager_;
 
@@ -42,17 +30,15 @@ class TestUndoService {
   int redo_operation_count_;
 };
 
+// TestUndoOperation -----------------------------------------------------------
+
 class TestUndoOperation : public UndoOperation {
  public:
-  explicit TestUndoOperation(TestUndoService* undo_service)
-      : undo_service_(undo_service) {
-  }
-  virtual ~TestUndoOperation() {}
+  explicit TestUndoOperation(TestUndoService* undo_service);
+  virtual ~TestUndoOperation();
 
-  virtual void Undo() OVERRIDE {
-    undo_service_->TriggerOperation();
-    undo_service_->RecordUndoCall();
-  }
+  // UndoOperation:
+  virtual void Undo() OVERRIDE;
 
  private:
   TestUndoService* undo_service_;
@@ -60,10 +46,46 @@ class TestUndoOperation : public UndoOperation {
   DISALLOW_COPY_AND_ASSIGN(TestUndoOperation);
 };
 
+TestUndoOperation::TestUndoOperation(TestUndoService* undo_service)
+      : undo_service_(undo_service) {
+}
+
+TestUndoOperation::~TestUndoOperation() {
+}
+
+void TestUndoOperation::Undo() {
+  undo_service_->TriggerOperation();
+  undo_service_->RecordUndoCall();
+}
+
+// TestUndoService -------------------------------------------------------------
+
+TestUndoService::TestUndoService() : performing_redo_(false),
+                                     undo_operation_count_(0),
+                                     redo_operation_count_(0) {
+}
+
+TestUndoService::~TestUndoService() {
+}
+
+void TestUndoService::Redo() {
+  base::AutoReset<bool> incoming_changes(&performing_redo_, true);
+  undo_manager_.Redo();
+}
+
 void TestUndoService::TriggerOperation() {
   scoped_ptr<TestUndoOperation> op(new TestUndoOperation(this));
   undo_manager_.AddUndoOperation(op.PassAs<UndoOperation>());
 }
+
+void TestUndoService::RecordUndoCall() {
+  if (performing_redo_)
+    ++redo_operation_count_;
+  else
+    ++undo_operation_count_;
+}
+
+// Tests -----------------------------------------------------------------------
 
 TEST(UndoServiceTest, AddUndoActions) {
   TestUndoService undo_service;
@@ -161,6 +183,27 @@ TEST(UndoServiceTest, RedoEmptyAfterNewAction) {
   undo_service.TriggerOperation();
   EXPECT_EQ(1U, undo_service.undo_manager_.undo_count());
   EXPECT_EQ(0U, undo_service.undo_manager_.redo_count());
+}
+
+TEST(UndoServiceTest, GetAllUndoOperations) {
+  TestUndoService undo_service;
+
+  undo_service.TriggerOperation();
+
+  undo_service.undo_manager_.StartGroupingActions();
+  undo_service.TriggerOperation();
+  undo_service.TriggerOperation();
+  undo_service.undo_manager_.EndGroupingActions();
+
+  undo_service.TriggerOperation();
+
+  undo_service.undo_manager_.Undo();
+  ASSERT_EQ(2U, undo_service.undo_manager_.undo_count());
+  ASSERT_EQ(1U, undo_service.undo_manager_.redo_count());
+
+  std::vector<UndoOperation*> all_operations =
+      undo_service.undo_manager_.GetAllUndoOperations();
+  EXPECT_EQ(4U, all_operations.size());
 }
 
 } // namespace

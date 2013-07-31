@@ -21,10 +21,9 @@ class UndoGroup {
   ~UndoGroup();
 
   void AddOperation(scoped_ptr<UndoOperation> operation);
-  bool has_operations() const {
-    return !operations_.empty();
+  const std::vector<UndoOperation*>& undo_operations() {
+    return operations_.get();
   }
-
   void Undo();
 
  private:
@@ -60,6 +59,10 @@ class UndoManager {
   void SuspendUndoTracking();
   void ResumeUndoTracking();
   bool IsUndoTrakingSuspended() const;
+
+  // Returns all UndoOperations that are awaiting Undo or Redo. Note that
+  // ownership of the UndoOperations is retained by UndoManager.
+  std::vector<UndoOperation*> GetAllUndoOperations() const;
 
   // Remove all undo and redo operations. Note that grouping of actions and
   // suspension of undo tracking states are left unchanged.

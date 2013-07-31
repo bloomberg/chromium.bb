@@ -89,7 +89,7 @@ void UndoManager::EndGroupingActions() {
   DCHECK_GE(group_actions_count_, 0);
 
   bool is_user_action = !performing_undo_ && !performing_redo_;
-  if (pending_grouped_action_->has_operations()) {
+  if (!pending_grouped_action_->undo_operations().empty()) {
     AddUndoGroup(pending_grouped_action_.release());
   } else {
     // No changes were executed since we started grouping actions, so the
@@ -113,6 +113,22 @@ void UndoManager::ResumeUndoTracking() {
 
 bool UndoManager::IsUndoTrakingSuspended() const {
   return undo_suspended_count_ > 0;
+}
+
+std::vector<UndoOperation*> UndoManager::GetAllUndoOperations() const {
+  std::vector<UndoOperation*> result;
+  for (size_t i = 0; i < undo_actions_.size(); ++i) {
+    const std::vector<UndoOperation*>& operations =
+        undo_actions_[i]->undo_operations();
+    result.insert(result.end(), operations.begin(), operations.end());
+  }
+  for (size_t i = 0; i < redo_actions_.size(); ++i) {
+    const std::vector<UndoOperation*>& operations =
+        redo_actions_[i]->undo_operations();
+    result.insert(result.end(), operations.begin(), operations.end());
+  }
+
+  return result;
 }
 
 void UndoManager::RemoveAllOperations() {
