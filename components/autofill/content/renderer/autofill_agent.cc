@@ -581,7 +581,7 @@ void AutofillAgent::OnFillFormsAndClick(
 
   // Fill the form.
   for (size_t i = 0; i < forms.size(); ++i)
-    FillFormIncludingNonFocusableElements(forms[i], form_elements_[i]);
+    FillFormForAllElements(forms[i], form_elements_[i]);
 
   // Click elements in click_elements_after_form_fill.
   for (size_t i = 0; i < click_elements_after_form_fill.size(); ++i) {

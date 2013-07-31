@@ -5,10 +5,12 @@
 #include <vector>
 
 #include "base/format_macros.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_cache.h"
@@ -35,6 +37,36 @@ using WebKit::WebSelectElement;
 using WebKit::WebNode;
 using WebKit::WebString;
 using WebKit::WebVector;
+
+namespace {
+
+struct AutofillFieldCase {
+  const char* const name;
+  const char* const initial_value;
+  const char* const autocomplete_attribute;  // The autocomplete attribute of
+                                             // the element.
+  bool should_be_autofilled;   // Whether the filed should be autofilled.
+  const char* const autofill_value;  // The value being used to fill the field.
+  const char* const expected_value;  // The expected value after Autofill
+                                     // or Preview.
+};
+
+static const char kFormHtml[] =
+    "<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+    "  <INPUT type=\"text\" id=\"firstname\"/>"
+    "  <INPUT type=\"text\" id=\"lastname\"/>"
+    "  <INPUT type=\"hidden\" id=\"imhidden\"/>"
+    "  <INPUT type=\"text\" id=\"notempty\" value=\"Hi\"/>"
+    "  <INPUT type=\"text\" autocomplete=\"off\" id=\"noautocomplete\"/>"
+    "  <INPUT type=\"text\" disabled=\"disabled\" id=\"notenabled\"/>"
+    "  <INPUT type=\"text\" readonly id=\"readonly\"/>"
+    "  <INPUT type=\"text\" style=\"visibility: hidden\""
+    "         id=\"invisible\"/>"
+    "  <INPUT type=\"text\" style=\"display: none\" id=\"displaynone\"/>"
+    "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+    "</FORM>";
+
+}  // namespace
 
 namespace autofill {
 
@@ -107,6 +139,102 @@ class FormAutofillTest : public ChromeRenderViewTest {
     values.push_back(ASCIIToUTF16("john@example.com"));
 
     ExpectLabels(html, labels, names, values);
+  }
+
+  typedef void (*FillFormFunction)(const FormData& form,
+                                   const WebInputElement& element);
+
+  typedef WebString (WebInputElement::*GetValueFunction)(void) const;
+
+  // Test FormFillxxx functions.
+  void TestFormFillFunctions(const char* html,
+                             const AutofillFieldCase* field_cases,
+                             size_t number_of_field_cases,
+                             FillFormFunction fill_form_function,
+                             GetValueFunction get_value_function) {
+    LoadHTML(html);
+
+    WebFrame* web_frame = GetMainFrame();
+    ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+    FormCache form_cache;
+    std::vector<FormData> forms;
+    form_cache.ExtractForms(*web_frame, &forms);
+    ASSERT_EQ(1U, forms.size());
+
+    // Get the input element we want to find.
+    WebElement element = web_frame->document().getElementById("firstname");
+    WebInputElement input_element = element.to<WebInputElement>();
+
+    // Find the form that contains the input element.
+    FormData form_data;
+    FormFieldData field;
+    EXPECT_TRUE(
+        FindFormAndFieldForInputElement(input_element,
+                                        &form_data,
+                                        &field,
+                                        autofill::REQUIRE_AUTOCOMPLETE));
+    EXPECT_EQ(ASCIIToUTF16("TestForm"), form_data.name);
+    EXPECT_EQ(GURL(web_frame->document().url()), form_data.origin);
+    EXPECT_EQ(GURL("http://buh.com"), form_data.action);
+
+    const std::vector<FormFieldData>& fields = form_data.fields;
+    ASSERT_EQ(number_of_field_cases, fields.size());
+
+    FormFieldData expected;
+    expected.form_control_type = "text";
+    expected.max_length = WebInputElement::defaultMaxLength();
+
+    // Verify field's initial value.
+    for (size_t i = 0; i < number_of_field_cases; ++i) {
+      SCOPED_TRACE(base::StringPrintf("Verify initial value for field %s",
+                                      field_cases[i].name));
+      expected.name = ASCIIToUTF16(field_cases[i].name);
+      expected.value = ASCIIToUTF16(field_cases[i].initial_value);
+      expected.autocomplete_attribute = field_cases[i].autocomplete_attribute;
+      EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[i]);
+      // Fill the form_data for the field.
+      form_data.fields[i].value = ASCIIToUTF16(field_cases[i].autofill_value);
+    }
+
+    // Autofill the form using the given fill form function.
+    fill_form_function(form_data, input_element);
+
+    // Validate Autofill or Preview results.
+    for (size_t i = 0; i < number_of_field_cases; ++i) {
+      ValidteFilledField(field_cases[i], get_value_function);
+    }
+  }
+
+  // Validate an Autofilled field.
+  void ValidteFilledField(const AutofillFieldCase& field_case,
+                          GetValueFunction get_value_function) {
+    SCOPED_TRACE(base::StringPrintf("Verify autofilled value for field %s",
+                                    field_case.name));
+    WebInputElement input_element = GetMainFrame()->document().getElementById(
+        ASCIIToUTF16(field_case.name)).to<WebInputElement>();
+    EXPECT_EQ(field_case.should_be_autofilled, input_element.isAutofilled());
+    if (field_case.should_be_autofilled) {
+      EXPECT_EQ(ASCIIToUTF16(field_case.expected_value),
+                (input_element.*get_value_function)());
+    } else {
+      WebString expected_value = ASCIIToUTF16(field_case.expected_value);
+      if (expected_value.isEmpty())
+        EXPECT_TRUE((input_element.*get_value_function)().isEmpty());
+      else
+        EXPECT_EQ(expected_value, (input_element.*get_value_function)());
+    }
+  }
+
+  static void FillFormForAllFieldsWrapper(const FormData& form,
+                                       const WebInputElement& element) {
+    FillFormForAllElements(form, element.form());
+  }
+
+  static void FillFormIncludingNonFocusableElementsWrapper(
+      const FormData& form,
+      const WebInputElement& element) {
+    FillFormIncludingNonFocusableElements(form, element.form());
   }
 
  private:
@@ -835,230 +963,118 @@ TEST_F(FormAutofillTest, FindForm) {
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
 }
 
+// Test regular FillForm function.
 TEST_F(FormAutofillTest, FillForm) {
-  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
-           "  <INPUT type=\"text\" id=\"firstname\"/>"
-           "  <INPUT type=\"text\" id=\"lastname\"/>"
-           "  <INPUT type=\"hidden\" id=\"imhidden\"/>"
-           "  <INPUT type=\"text\" id=\"notempty\" value=\"Hi\"/>"
-           "  <INPUT type=\"text\" autocomplete=\"off\" id=\"noautocomplete\"/>"
-           "  <INPUT type=\"text\" disabled=\"disabled\" id=\"notenabled\"/>"
-           "  <INPUT type=\"text\" readonly id=\"readonly\"/>"
-           "  <INPUT type=\"text\" style=\"visibility: hidden\""
-           "         id=\"invisible\"/>"
-           "  <INPUT type=\"text\" style=\"display: none\" id=\"displaynone\"/>"
-           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
-           "</FORM>");
+  static const AutofillFieldCase field_cases[] = {
+      // fields: name, initial_value, autocomplete_attribute,
+      //         should_be_autofilled, autofill_value, expected_value
 
-  WebFrame* web_frame = GetMainFrame();
-  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+      // Regular empty fields (firstname & lastname) should be autofilled.
+      {"firstname", "", "", true, "filled firstname", "filled firstname"},
+      {"lastname", "", "", true, "filled lastname", "filled lastname"},
+      // hidden fields should not be extracted to form_data.
+      // Non empty fields should not be autofilled.
+      {"notempty", "Hi", "", false, "filled notempty", "Hi"},
+      // "noautocomplete" should not be extracted to form_data.
+      // Disabled fields should not be autofilled.
+      {"notenabled", "", "", false, "filled notenabled", ""},
+      // Readonly fields should not be autofilled.
+      {"readonly", "", "", false, "filled readonly", ""},
+      // Fields with "visibility: hidden" should not be autofilled.
+      {"invisible", "", "", false, "filled invisible", ""},
+      // Fields with "display:none" should not be autofilled.
+      {"displaynone", "", "", false, "filled displaynone", ""},
+  };
+  TestFormFillFunctions(kFormHtml, field_cases, arraysize(field_cases),
+                        FillForm, &WebInputElement::value);
+  // Verify preview selection.
+  WebInputElement firstname = GetMainFrame()->document().
+      getElementById("firstname").to<WebInputElement>();
+  EXPECT_EQ(16, firstname.selectionStart());
+  EXPECT_EQ(16, firstname.selectionEnd());
+}
 
-  FormCache form_cache;
-  std::vector<FormData> forms;
-  form_cache.ExtractForms(*web_frame, &forms);
-  ASSERT_EQ(1U, forms.size());
+TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
+  static const AutofillFieldCase field_cases[] = {
+      // fields: name, initial_value, autocomplete_attribute,
+      //         should_be_autofilled, autofill_value, expected_value
 
-  // Get the input element we want to find.
-  WebElement element = web_frame->document().getElementById("firstname");
-  WebInputElement input_element = element.to<WebInputElement>();
+      // Regular empty fields (firstname & lastname) should be autofilled.
+      {"firstname", "", "", true, "filled firstname", "filled firstname"},
+      {"lastname", "", "", true, "filled lastname", "filled lastname"},
+      // hidden fields should not be extracted to form_data.
+      // Non empty fields should be overrided.
+      {"notempty", "Hi", "", true, "filled notempty", "filled notempty"},
+      // "noautocomplete" should not be extracted to form_data.
+      // Disabled fields should not be autofilled.
+      {"notenabled", "", "", false, "filled notenabled", ""},
+      // Readonly fields should not be autofilled.
+      {"readonly", "", "", false, "filled readonly", ""},
+      // Fields with "visibility: hidden" should also be autofilled.
+      {"invisible", "", "", true, "filled invisible", "filled invisible"},
+      // Fields with "display:none" should also be autofilled.
+      {"displaynone", "", "", true, "filled displaynone", "filled displaynone"},
+  };
+  TestFormFillFunctions(kFormHtml, field_cases, arraysize(field_cases),
+                        &FillFormIncludingNonFocusableElementsWrapper,
+                        &WebInputElement::value);
+}
 
-  // Find the form that contains the input element.
-  FormData form;
-  FormFieldData field;
-  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
-                                              autofill::REQUIRE_AUTOCOMPLETE));
-  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
-  EXPECT_EQ(GURL("http://buh.com"), form.action);
+TEST_F(FormAutofillTest, FillFormForAllElements) {
+  static const AutofillFieldCase field_cases[] = {
+      // fields: name, initial_value, autocomplete_attribute,
+      //         should_be_autofilled, autofill_value, expected_value
 
-  const std::vector<FormFieldData>& fields = form.fields;
-  ASSERT_EQ(7U, fields.size());
-
-  FormFieldData expected;
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-
-  expected.name = ASCIIToUTF16("firstname");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
-
-  expected.name = ASCIIToUTF16("lastname");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
-
-  expected.name = ASCIIToUTF16("notempty");
-  expected.value = ASCIIToUTF16("Hi");
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
-
-  expected.name = ASCIIToUTF16("notenabled");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
-
-  expected.name = ASCIIToUTF16("readonly");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[4]);
-
-  expected.name = ASCIIToUTF16("invisible");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[5]);
-
-  expected.name = ASCIIToUTF16("displaynone");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[6]);
-
-  // Fill the form.
-  form.fields[0].value = ASCIIToUTF16("Wyatt");
-  form.fields[1].value = ASCIIToUTF16("Earp");
-  form.fields[2].value = ASCIIToUTF16("Alpha");
-  form.fields[3].value = ASCIIToUTF16("Beta");
-  form.fields[4].value = ASCIIToUTF16("Gamma");
-  form.fields[5].value = ASCIIToUTF16("Delta");
-  form.fields[6].value = ASCIIToUTF16("Epsilon");
-  FillForm(form, input_element);
-
-  // Verify the filled elements.
-  WebDocument document = web_frame->document();
-  WebInputElement firstname =
-      document.getElementById("firstname").to<WebInputElement>();
-  EXPECT_TRUE(firstname.isAutofilled());
-  EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value());
-  EXPECT_EQ(5, firstname.selectionStart());
-  EXPECT_EQ(5, firstname.selectionEnd());
-
-  WebInputElement lastname =
-      document.getElementById("lastname").to<WebInputElement>();
-  EXPECT_TRUE(lastname.isAutofilled());
-  EXPECT_EQ(ASCIIToUTF16("Earp"), lastname.value());
-
-  // Non-empty fields are not filled.
-  WebInputElement notempty =
-      document.getElementById("notempty").to<WebInputElement>();
-  EXPECT_FALSE(notempty.isAutofilled());
-  EXPECT_EQ(ASCIIToUTF16("Hi"), notempty.value());
-
-  // autocomplete=off fields are not filled.
-  WebInputElement noautocomplete =
-      document.getElementById("noautocomplete").to<WebInputElement>();
-  EXPECT_FALSE(noautocomplete.isAutofilled());
-  EXPECT_TRUE(noautocomplete.value().isEmpty());
-
-  // Disabled fields are not filled.
-  WebInputElement notenabled =
-      document.getElementById("notenabled").to<WebInputElement>();
-  EXPECT_FALSE(notenabled.isAutofilled());
-  EXPECT_TRUE(notenabled.value().isEmpty());
-
-  // Read-only fields are not filled.
-  WebInputElement readonly =
-      document.getElementById("readonly").to<WebInputElement>();
-  EXPECT_FALSE(readonly.isAutofilled());
-  EXPECT_TRUE(readonly.value().isEmpty());
-
-  // |visibility:hidden| fields are not filled.
-  WebInputElement invisible =
-      document.getElementById("invisible").to<WebInputElement>();
-  EXPECT_FALSE(invisible.isAutofilled());
-  EXPECT_TRUE(invisible.value().isEmpty());
-
-  // |display:none| fields are not filled.
-  WebInputElement display_none =
-      document.getElementById("displaynone").to<WebInputElement>();
-  EXPECT_FALSE(display_none.isAutofilled());
-  EXPECT_TRUE(display_none.value().isEmpty());
+      // All fields except hidden fields (type="hidden") should be Autofilled.
+      {"firstname", "", "", true, "filled firstname", "filled firstname"},
+      {"lastname", "", "", true, "filled lastname", "filled lastname"},
+      // hidden fields should not be extracted to form_data.
+      {"notempty", "Hi", "", true, "filled notempty", "filled notempty"},
+      {"noautocomplete", "", "off", true, "filled noautocomplete",
+          "filled noautocomplete"},
+      {"notenabled", "", "", true, "filled notenabled", "filled notenabled"},
+      {"readonly", "", "", true, "filled readonly", "filled readonly"},
+      {"invisible", "", "", true, "filled invisible", "filled invisible"},
+      {"displaynone", "", "", true, "filled displaynone", "filled displaynone"},
+  };
+  // Enable Autocheckout because |FillFormForAllElements| is only used by
+  // Autocheckout.
+  base::FieldTrialList field_trial_list(
+      new metrics::SHA1EntropyProvider("foo"));
+  base::FieldTrialList::CreateFieldTrial("Autocheckout", "Yes");
+  TestFormFillFunctions(kFormHtml, field_cases, arraysize(field_cases),
+                        &FillFormForAllFieldsWrapper, &WebInputElement::value);
 }
 
 TEST_F(FormAutofillTest, PreviewForm) {
-  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
-           "  <INPUT type=\"text\" id=\"firstname\"/>"
-           "  <INPUT type=\"text\" id=\"lastname\"/>"
-           "  <INPUT type=\"text\" id=\"notempty\" value=\"Hi\"/>"
-           "  <INPUT type=\"text\" autocomplete=\"off\" id=\"noautocomplete\"/>"
-           "  <INPUT type=\"text\" disabled=\"disabled\" id=\"notenabled\"/>"
-           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
-           "</FORM>");
+  static const char* html =
+      "<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+      "  <INPUT type=\"text\" id=\"firstname\"/>"
+      "  <INPUT type=\"text\" id=\"lastname\"/>"
+      "  <INPUT type=\"text\" id=\"notempty\" value=\"Hi\"/>"
+      "  <INPUT type=\"text\" autocomplete=\"off\" id=\"noautocomplete\"/>"
+      "  <INPUT type=\"text\" disabled=\"disabled\" id=\"notenabled\"/>"
+      "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+      "</FORM>";
 
-  WebFrame* web_frame = GetMainFrame();
-  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+  static const AutofillFieldCase field_cases[] = {
+      // Normal empty fields should be previewed.
+      {"firstname", "", "", true, "suggested firstname", "suggested firstname"},
+      {"lastname", "", "", true, "suggested lastname", "suggested lastname"},
+      // Non empty fields should not be previewed.
+      {"notempty", "Hi", "", false, "filled notempty", ""},
+      // "noautocomplete" should not be extracted to form_data.
+      // Disabled fields should not be previewed.
+      {"notenabled", "", "", false, "filled notenabled", ""},
+  };
+  TestFormFillFunctions(html, field_cases, arraysize(field_cases), &PreviewForm,
+                        &WebInputElement::suggestedValue);
 
-  FormCache form_cache;
-  std::vector<FormData> forms;
-  form_cache.ExtractForms(*web_frame, &forms);
-  ASSERT_EQ(1U, forms.size());
-
-  // Get the input element we want to find.
-  WebElement element = web_frame->document().getElementById("firstname");
-  WebInputElement input_element = element.to<WebInputElement>();
-
-  // Find the form that contains the input element.
-  FormData form;
-  FormFieldData field;
-  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
-                                              autofill::REQUIRE_AUTOCOMPLETE));
-  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
-  EXPECT_EQ(GURL("http://buh.com"), form.action);
-
-  const std::vector<FormFieldData>& fields = form.fields;
-  ASSERT_EQ(4U, fields.size());
-
-  FormFieldData expected;
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-
-  expected.name = ASCIIToUTF16("firstname");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
-
-  expected.name = ASCIIToUTF16("lastname");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
-
-  expected.name = ASCIIToUTF16("notempty");
-  expected.value = ASCIIToUTF16("Hi");
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
-
-  expected.name = ASCIIToUTF16("notenabled");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
-
-  // Preview the form.
-  form.fields[0].value = ASCIIToUTF16("Wyatt");
-  form.fields[1].value = ASCIIToUTF16("Earp");
-  form.fields[2].value = ASCIIToUTF16("Alpha");
-  form.fields[3].value = ASCIIToUTF16("Beta");
-  PreviewForm(form, input_element);
-
-  // Verify the previewed elements.
-  WebDocument document = web_frame->document();
-  WebInputElement firstname =
-      document.getElementById("firstname").to<WebInputElement>();
-  EXPECT_TRUE(firstname.isAutofilled());
-  EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.suggestedValue());
+  // Verify preview selection.
+  WebInputElement firstname = GetMainFrame()->document().
+      getElementById("firstname").to<WebInputElement>();
   EXPECT_EQ(0, firstname.selectionStart());
-  EXPECT_EQ(5, firstname.selectionEnd());
-
-  WebInputElement lastname =
-      document.getElementById("lastname").to<WebInputElement>();
-  EXPECT_TRUE(lastname.isAutofilled());
-  EXPECT_EQ(ASCIIToUTF16("Earp"), lastname.suggestedValue());
-
-  // Non-empty fields are not previewed.
-  WebInputElement notempty =
-      document.getElementById("notempty").to<WebInputElement>();
-  EXPECT_FALSE(notempty.isAutofilled());
-  EXPECT_TRUE(notempty.suggestedValue().isEmpty());
-
-  // autocomplete=off fields are not previewed.
-  WebInputElement noautocomplete =
-      document.getElementById("noautocomplete").to<WebInputElement>();
-  EXPECT_FALSE(noautocomplete.isAutofilled());
-  EXPECT_TRUE(noautocomplete.suggestedValue().isEmpty());
-
-  // Disabled fields are not previewed.
-  WebInputElement notenabled =
-      document.getElementById("notenabled").to<WebInputElement>();
-  EXPECT_FALSE(notenabled.isAutofilled());
-  EXPECT_TRUE(notenabled.suggestedValue().isEmpty());
+  EXPECT_EQ(19, firstname.selectionEnd());
 }
 
 TEST_F(FormAutofillTest, Labels) {
@@ -2258,86 +2274,6 @@ TEST_F(FormAutofillTest, FillFormEmptyFormNames) {
   expected.value = ASCIIToUTF16("Also Yellow");
   expected.is_autofilled = true;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
-}
-
-TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
-  LoadHTML("<FORM action=\"http://abc.com\" method=\"post\" id=\"formid\">"
-           "  <INPUT type=\"text\" id=\"firstname\" value=\"not-firstname\"/>"
-           "  <INPUT type=\"text\" id=\"lastname\"/>"
-           "  <INPUT type=\"text\" id=\"middlename\"/>"
-           "  <INPUT type=\"submit\" value=\"Send\"/>"
-           "</FORM>"
-           "<FORM action=\"http://abc.com\" method=\"post\">"
-           "  <INPUT type=\"text\" id=\"apple\"/>"
-           "  <INPUT type=\"text\" id=\"banana\"/>"
-           "  <INPUT type=\"text\" id=\"cantelope\"/>"
-           "  <INPUT type=\"submit\" value=\"Send\"/>"
-           "</FORM>");
-
-  WebFrame* web_frame = GetMainFrame();
-  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
-
-  FormCache form_cache;
-  std::vector<FormData> forms;
-  form_cache.ExtractForms(*web_frame, &forms);
-  ASSERT_EQ(2U, forms.size());
-
-  // Get the input element we want to find.
-  WebElement firstname = web_frame->document().getElementById("firstname");
-  WebInputElement input_element = firstname.to<WebInputElement>();
-  WebElement formid = web_frame->document().getElementById("formid");
-  WebFormElement formid_element = formid.to<WebFormElement>();
-
-  // Find the form that contains the input element.
-  FormData form;
-  FormFieldData field;
-  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
-                                              autofill::REQUIRE_NONE));
-  EXPECT_EQ(ASCIIToUTF16("formid"), form.name);
-  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
-  EXPECT_EQ(GURL("http://abc.com"), form.action);
-  const std::vector<FormFieldData>& fields = form.fields;
-  ASSERT_EQ(3U, fields.size());
-  FormFieldData expected;
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-  expected.is_autofilled = false;
-  expected.name = ASCIIToUTF16("firstname");
-  expected.value = ASCIIToUTF16("not-firstname");
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
-  expected.name = ASCIIToUTF16("lastname");
-  expected.value = string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
-
-  // Fill the form.
-  form.fields[0].value = ASCIIToUTF16("FirstName");
-  form.fields[1].value = ASCIIToUTF16("LastName");
-  FillFormIncludingNonFocusableElements(form, formid_element);
-
-  // Find the newly-filled form that contains the input element, and verify
-  // if all fields have been filled.
-  FormData form2;
-  FormFieldData field2;
-  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form2, &field2,
-                                              autofill::REQUIRE_NONE));
-  EXPECT_EQ(ASCIIToUTF16("formid"), form2.name);
-  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
-  EXPECT_EQ(GURL("http://abc.com"), form2.action);
-  std::vector<FormFieldData>& fields2 = form2.fields;
-  ASSERT_EQ(3U, fields2.size());
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-  // All of the fields should be autofilled now.
-  expected.is_autofilled = true;
-
-  // fields[0].value should have changed from not-firstname to FirstName.
-  expected.name = ASCIIToUTF16("firstname");
-  expected.value = ASCIIToUTF16("FirstName");
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[0]);
-
-  expected.name = ASCIIToUTF16("lastname");
-  expected.value = ASCIIToUTF16("LastName");
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[1]);
 }
 
 TEST_F(FormAutofillTest, ThreePartPhone) {
