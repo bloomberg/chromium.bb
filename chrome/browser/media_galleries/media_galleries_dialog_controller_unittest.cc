@@ -9,19 +9,23 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-std::string GalleryName(const chrome::MediaGalleryPrefInfo& gallery) {
+namespace chrome {
+
+std::string GalleryName(const MediaGalleryPrefInfo& gallery) {
   string16 name = gallery.GetGalleryDisplayName();
   return UTF16ToASCII(name);
 }
 
 TEST(MediaGalleriesDialogControllerTest, TestNameGeneration) {
-  chrome::MediaGalleryPrefInfo gallery;
+  ASSERT_TRUE(test::TestStorageMonitor::CreateAndInstall());
+  MediaGalleryPrefInfo gallery;
   gallery.pref_id = 1;
-  gallery.device_id = chrome::StorageInfo::MakeDeviceId(
-      chrome::StorageInfo::FIXED_MASS_STORAGE, "/path/to/gallery");
-  gallery.type = chrome::MediaGalleryPrefInfo::kAutoDetected;
+  gallery.device_id = StorageInfo::MakeDeviceId(
+      StorageInfo::FIXED_MASS_STORAGE, "/path/to/gallery");
+  gallery.type = MediaGalleryPrefInfo::kAutoDetected;
   EXPECT_EQ("gallery", GalleryName(gallery));
 
   gallery.display_name = ASCIIToUTF16("override");
@@ -35,8 +39,8 @@ TEST(MediaGalleriesDialogControllerTest, TestNameGeneration) {
   EXPECT_EQ("gallery2", GalleryName(gallery));
 
   gallery.path = base::FilePath();
-  gallery.device_id = chrome::StorageInfo::MakeDeviceId(
-      chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+  gallery.device_id = StorageInfo::MakeDeviceId(
+      StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
       "/path/to/dcim");
   gallery.display_name = ASCIIToUTF16("override");
   EXPECT_EQ("override", GalleryName(gallery));
@@ -58,3 +62,5 @@ TEST(MediaGalleriesDialogControllerTest, TestNameGeneration) {
   gallery.path = base::FilePath(FILE_PATH_LITERAL("sub/path"));
   EXPECT_EQ("path - 977 KB vendor, model", GalleryName(gallery));
 }
+
+}  // namespace chrome
