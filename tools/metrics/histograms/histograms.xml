@@ -2932,8 +2932,18 @@ other types of suffix sets.
 <histogram name="ExtensionBlacklist.BlockCRX" enum="ExtensionLocation">
   <summary>
     The number of extensions that have been blocked from installing grouped by
-    Extension::Location. Logged when CrxInstaller refuses to install a
+    Extension::Location. Logged when ExtensionService refuses to install a
     blacklisted extension.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionBlacklist.SilentInstall" enum="ExtensionLocation">
+  <summary>
+    The number of extensions that have been silently installed in a blacklisted
+    state, grouped by Extension::Location. Logged when ExtensionService installs
+    a blacklisted extension without blocking it (ExtensionBlacklist.BlockCRX
+    would be logged otherwise). Typically this will be when a user has a
+    blacklisted extension synced.
   </summary>
 </histogram>
 

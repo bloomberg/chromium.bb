@@ -69,6 +69,7 @@ std::string SyncExtensionHelper::InstallExtension(
       ->OnExtensionInstalled(extension.get(),
                              syncer::StringOrdinal(),
                              false /* no requirement errors */,
+                             extensions::Blacklist::NOT_BLACKLISTED,
                              false /* don't wait for idle to install */);
   return extension->id();
 }

@@ -1163,12 +1163,13 @@ void ExtensionPrefs::SetToolbarOrder(const ExtensionIdList& extension_ids) {
 void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
+    Blacklist::BlacklistState blacklist_state,
     const syncer::StringOrdinal& page_ordinal) {
   ScopedExtensionPrefUpdate update(prefs_, extension->id());
   DictionaryValue* extension_dict = update.Get();
   const base::Time install_time = time_provider_->GetCurrentTime();
   PopulateExtensionInfoPrefs(extension, install_time, initial_state,
-                             extension_dict);
+                             blacklist_state, extension_dict);
   FinishExtensionInfoPrefs(extension->id(), install_time,
                            extension->RequiresSortOrdinal(),
                            page_ordinal, extension_dict);
@@ -1329,11 +1330,12 @@ ExtensionPrefs::GetInstalledExtensionsInfo() const {
 void ExtensionPrefs::SetDelayedInstallInfo(
     const Extension* extension,
     Extension::State initial_state,
+    Blacklist::BlacklistState blacklist_state,
     DelayReason delay_reason,
     const syncer::StringOrdinal& page_ordinal) {
   DictionaryValue* extension_dict = new DictionaryValue();
   PopulateExtensionInfoPrefs(extension, time_provider_->GetCurrentTime(),
-                             initial_state, extension_dict);
+                             initial_state, blacklist_state, extension_dict);
 
   // Add transient data that is needed by FinishDelayedInstallInfo(), but
   // should not be in the final extension prefs. All entries here should have
@@ -1766,6 +1768,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     const Extension* extension,
     const base::Time install_time,
     Extension::State initial_state,
+    Blacklist::BlacklistState blacklist_state,
     DictionaryValue* extension_dict) {
   // Leave the state blank for component extensions so that old chrome versions
   // loading new profiles do not fail in GetInstalledExtensionInfo. Older
@@ -1787,6 +1790,8 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   extension_dict->Set(kPrefInstallTime,
                       Value::CreateStringValue(
                           base::Int64ToString(install_time.ToInternalValue())));
+  if (blacklist_state == Blacklist::BLACKLISTED)
+    extension_dict->Set(kPrefBlacklist, Value::CreateBooleanValue(true));
 
   base::FilePath::StringType path = MakePathRelative(install_directory_,
                                                      extension->path());

@@ -451,7 +451,9 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
         path, Manifest::INTERNAL, manifest, Extension::NO_FLAGS, id, &errors);
     ASSERT_TRUE(extension.get()) << errors;
     ASSERT_EQ(id, extension->id());
-    prefs()->SetDelayedInstallInfo(extension.get(), Extension::ENABLED,
+    prefs()->SetDelayedInstallInfo(extension.get(),
+                                   Extension::ENABLED,
+                                   Blacklist::NOT_BLACKLISTED,
                                    ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
                                    syncer::StringOrdinal());
   }
@@ -551,9 +553,10 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
   virtual void Initialize() OVERRIDE {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
-    prefs()->OnExtensionInstalled(
-        extension_.get(), Extension::DISABLED,
-        syncer::StringOrdinal());
+    prefs()->OnExtensionInstalled(extension_.get(),
+                                  Extension::DISABLED,
+                                  Blacklist::NOT_BLACKLISTED,
+                                  syncer::StringOrdinal());
   }
 
   virtual void Verify() OVERRIDE {
@@ -571,7 +574,9 @@ class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
   virtual void Initialize() OVERRIDE {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
-    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
+    prefs()->OnExtensionInstalled(extension_.get(),
+                                  Extension::ENABLED,
+                                  Blacklist::NOT_BLACKLISTED,
                                   syncer::StringOrdinal());
   }
 

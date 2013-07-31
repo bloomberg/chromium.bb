@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
+#include "chrome/browser/extensions/extension_notification_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -69,12 +70,14 @@
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/value_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -3331,20 +3334,22 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtension) {
 // Unload installed extension from blacklist.
 TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
   InitializeEmptyExtensionService();
-  std::vector<std::string> blacklist;
-  blacklist.push_back(good_crx);
-  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
-                                                                    "v1");
 
-  // Make sure pref is updated
-  loop_.RunUntilIdle();
+  // Fake the blacklisting of good_crx by pretending that we get an update
+  // which includes it.
+  extensions::Blacklist* blacklist =
+      ExtensionSystem::Get(profile_.get())->blacklist();
+  blacklist->SetFromUpdater(std::vector<std::string>(1, good_crx), "v1");
 
-  // Now, the good_crx is blacklisted.
+  // Now good_crx is blacklisted.
   ValidateBooleanPref(good_crx, "blacklist", true);
 
-  // We can not install good_crx.
+  // We cannot install good_crx.
   base::FilePath path = data_dir_.AppendASCII("good.crx");
-  InstallCRX(path, INSTALL_FAILED);
+  // HACK: specify WAS_INSTALLED_BY_DEFAULT so that test machinery doesn't
+  // decide to install this silently. Somebody should fix these tests, all
+  // 6,000 lines of them. Hah!
+  InstallCRX(path, INSTALL_FAILED, Extension::WAS_INSTALLED_BY_DEFAULT);
   EXPECT_EQ(0u, service_->extensions()->size());
   ValidateBooleanPref(good_crx, "blacklist", true);
 }
@@ -6346,4 +6351,43 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreNewProfile) {
   EXPECT_TRUE(extensions::HasExternalInstallError(service_));
   EXPECT_FALSE(extensions::HasExternalInstallBubble(service_));
   EXPECT_FALSE(service_->IsExtensionEnabled(updates_from_webstore));
+}
+
+TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<Extension> extension = extensions::ExtensionBuilder()
+      .SetManifest(extensions::DictionaryBuilder()
+          .Set("name", "extension")
+          .Set("version", "1.0")
+          .Set("manifest_version", 2).Build())
+      .Build();
+  ASSERT_TRUE(extension.get());
+  const std::string& id = extension->id();
+
+  std::set<std::string> id_set;
+  id_set.insert(id);
+  extensions::ExtensionNotificationObserver notifications(
+      content::NotificationService::AllSources(), id_set);
+
+  // Installation should be allowed but the extension should never have been
+  // loaded and it should be blacklisted in prefs.
+  service_->OnExtensionInstalled(
+      extension.get(),
+      syncer::StringOrdinal(),
+      false /* has requirement errors */,
+      extensions::Blacklist::BLACKLISTED,
+      false /* wait for idle */);
+  loop_.RunUntilIdle();
+
+  // Extension was installed but not loaded.
+  EXPECT_TRUE(notifications.CheckNotifications(
+      chrome::NOTIFICATION_EXTENSION_INSTALLED));
+
+  EXPECT_TRUE(service_->GetInstalledExtension(id));
+  EXPECT_FALSE(service_->extensions()->Contains(id));
+  EXPECT_TRUE(service_->blacklisted_extensions()->Contains(id));
+  EXPECT_TRUE(service_->extension_prefs()->IsExtensionBlacklisted(id));
+  EXPECT_TRUE(
+      service_->extension_prefs()->IsBlacklistedExtensionAcknowledged(id));
 }

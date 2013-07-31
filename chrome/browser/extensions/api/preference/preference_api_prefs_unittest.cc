@@ -152,7 +152,9 @@ void ExtensionControlledPrefsTest::EnsureExtensionInstalled(
                               extension4() };
   for (size_t i = 0; i < kNumInstalledExtensions; ++i) {
     if (extension == extensions[i] && !installed_[i]) {
-      prefs()->OnExtensionInstalled(extension, Extension::ENABLED,
+      prefs()->OnExtensionInstalled(extension,
+                                    Extension::ENABLED,
+                                    Blacklist::NOT_BLACKLISTED,
                                     syncer::StringOrdinal());
       installed_[i] = true;
       break;

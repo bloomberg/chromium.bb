@@ -114,6 +114,8 @@
         'browser/extensions/api/messaging/native_messaging_test_util.h',
         'browser/extensions/api/system_storage/test_storage_info_provider.cc',
         'browser/extensions/api/system_storage/test_storage_info_provider.h',
+        'browser/extensions/extension_notification_observer.cc',
+        'browser/extensions/extension_notification_observer.h',
         'browser/extensions/fake_safe_browsing_database_manager.cc',
         'browser/extensions/fake_safe_browsing_database_manager.h',
         'browser/extensions/mock_extension_special_storage_policy.cc',

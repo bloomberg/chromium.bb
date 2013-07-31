@@ -107,7 +107,6 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
                              approval.get()       /* keep ownership */));
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);
-    installer->set_bypass_blacklist_for_test(true);
     installer->InstallCrx(PackExtension(ext_path));
     content::RunMessageLoop();
 
@@ -377,6 +376,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   service->MaybeFinishDelayedInstallations();
   extension = service->GetExtensionById(extension_id, false);
   ASSERT_EQ("3.0", extension->version()->GetString());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blacklist) {
+  extensions::Blacklist* blacklist =
+      ExtensionSystem::Get(profile())->blacklist();
+
+  // Fake the blacklisting of the extension we're about to install by
+  // pretending that we get a blacklist update which includes it.
+  const std::string kId = "gllekhaobjnhgeagipipnkpmmmpchacm";
+  blacklist->SetFromUpdater(std::vector<std::string>(1, kId), "some-version");
+
+  base::FilePath crx_path = test_data_dir_.AppendASCII("theme_hidpi_crx")
+                                          .AppendASCII("theme_hidpi.crx");
+  EXPECT_FALSE(InstallExtension(crx_path, 0));
 }
 
 }  // namespace extensions

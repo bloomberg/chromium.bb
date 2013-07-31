@@ -556,8 +556,10 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
   EXPECT_TRUE(extension.get());
   EXPECT_STREQ("", error.c_str());
   browser()->profile()->GetExtensionService()->
-      OnExtensionInstalled(extension.get(), syncer::StringOrdinal(),
+      OnExtensionInstalled(extension.get(),
+                           syncer::StringOrdinal(),
                            false /* no requirement errors */,
+                           extensions::Blacklist::NOT_BLACKLISTED,
                            false /* don't wait for idle */);
   return extension;
 }

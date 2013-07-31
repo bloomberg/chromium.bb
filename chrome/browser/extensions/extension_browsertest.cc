@@ -159,7 +159,9 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
   // The call to OnExtensionInstalled ensures the other extension prefs
   // are set up with the defaults.
   service->extension_prefs()->OnExtensionInstalled(
-      extension, Extension::ENABLED,
+      extension,
+      Extension::ENABLED,
+      extensions::Blacklist::NOT_BLACKLISTED,
       syncer::StringOrdinal::CreateInitialOrdinal());
 
   // Toggling incognito or file access will reload the extension, so wait for

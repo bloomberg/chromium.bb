@@ -432,12 +432,16 @@ class ExtensionService
 
   // Informs the service that an extension's files are in place for loading.
   //
-  // Please make sure the Blacklist is checked some time before calling this
-  // method.
+  // |page_ordinal| is the location of the extension in the app launcher.
+  // |has_requirement_errors| is true if requirements of the extension weren't
+  // met (for example graphics capabilities).
+  // |blacklist_state| will be BLACKLISTED if the extension is blacklisted.
+  // |wait_for_idle| may be false to install the extension immediately.
   void OnExtensionInstalled(
       const extensions::Extension* extension,
       const syncer::StringOrdinal& page_ordinal,
       bool has_requirement_errors,
+      extensions::Blacklist::BlacklistState blacklist_state,
       bool wait_for_idle);
 
   // Checks for delayed installation for all pending installs.
@@ -737,9 +741,11 @@ class ExtensionService
   // the extension is installed, e.g., to update event handlers on background
   // pages; and perform other extension install tasks before calling
   // AddExtension.
-  void AddNewOrUpdatedExtension(const extensions::Extension* extension,
-                                extensions::Extension::State initial_state,
-                                const syncer::StringOrdinal& page_ordinal);
+  void AddNewOrUpdatedExtension(
+      const extensions::Extension* extension,
+      extensions::Extension::State initial_state,
+      extensions::Blacklist::BlacklistState blacklist_state,
+      const syncer::StringOrdinal& page_ordinal);
 
   // Handles sending notification that |extension| was loaded.
   void NotifyExtensionLoaded(const extensions::Extension* extension);

@@ -2038,7 +2038,8 @@ void ExtensionService::AddExtension(const Extension* extension) {
   if (extension_prefs_->IsExtensionBlacklisted(extension->id())) {
     // Only prefs is checked for the blacklist. We rely on callers to check the
     // blacklist before calling into here, e.g. CrxInstaller checks before
-    // installation, we check when loading installed extensions.
+    // installation then threads through the install and pending install flow
+    // of this class, and we check when loading installed extensions.
     blacklisted_extensions_.Insert(extension);
   } else if (!reloading &&
              extension_prefs_->IsExtensionDisabled(extension->id())) {
@@ -2090,6 +2091,7 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
 
     AddNewOrUpdatedExtension(extension,
                              Extension::ENABLED_COMPONENT,
+                             extensions::Blacklist::NOT_BLACKLISTED,
                              syncer::StringOrdinal());
     return;
   }
@@ -2328,6 +2330,7 @@ void ExtensionService::OnExtensionInstalled(
     const Extension* extension,
     const syncer::StringOrdinal& page_ordinal,
     bool has_requirement_errors,
+    extensions::Blacklist::BlacklistState blacklist_state,
     bool wait_for_idle) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2384,6 +2387,18 @@ void ExtensionService::OnExtensionInstalled(
     extension_prefs_->ClearDisableReasons(id);
   }
 
+  if (blacklist_state == extensions::Blacklist::BLACKLISTED) {
+    // Installation of a blacklisted extension can happen from sync, policy,
+    // etc, where to maintain consistency we need to install it, just never
+    // load it (see AddExtension). Usually it should be the job of callers to
+    // incercept blacklisted extension earlier (e.g. CrxInstaller, before even
+    // showing the install dialogue).
+    extension_prefs()->AcknowledgeBlacklistedExtension(id);
+    UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.SilentInstall",
+                              extension->location(),
+                              Manifest::NUM_LOCATIONS);
+  }
+
   if (!GetInstalledExtension(extension->id())) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
                               extension->GetType(), 100);
@@ -2405,8 +2420,12 @@ void ExtensionService::OnExtensionInstalled(
   const Extension::State initial_state =
       initial_enable ? Extension::ENABLED : Extension::DISABLED;
   if (ShouldDelayExtensionUpdate(id, wait_for_idle)) {
-    extension_prefs_->SetDelayedInstallInfo(extension, initial_state,
-        extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE, page_ordinal);
+    extension_prefs_->SetDelayedInstallInfo(
+        extension,
+        initial_state,
+        blacklist_state,
+        extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
+        page_ordinal);
 
     // Transfer ownership of |extension|.
     delayed_installs_.Insert(extension);
@@ -2423,34 +2442,42 @@ void ExtensionService::OnExtensionInstalled(
 
   ImportStatus status = SatisfyImports(extension);
   if (installs_delayed_for_gc()) {
-    extension_prefs_->SetDelayedInstallInfo(extension, initial_state,
-        extensions::ExtensionPrefs::DELAY_REASON_GC, page_ordinal);
+    extension_prefs_->SetDelayedInstallInfo(
+        extension,
+        initial_state,
+        blacklist_state,
+        extensions::ExtensionPrefs::DELAY_REASON_GC,
+        page_ordinal);
     delayed_installs_.Insert(extension);
   } else if (status != IMPORT_STATUS_OK) {
     if (status == IMPORT_STATUS_UNSATISFIED) {
-      extension_prefs_->SetDelayedInstallInfo(extension, initial_state,
+      extension_prefs_->SetDelayedInstallInfo(
+          extension,
+          initial_state,
+          blacklist_state,
           extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
           page_ordinal);
       delayed_installs_.Insert(extension);
     }
   } else {
-    AddNewOrUpdatedExtension(extension, initial_state, page_ordinal);
+    AddNewOrUpdatedExtension(extension,
+                             initial_state,
+                             blacklist_state,
+                             page_ordinal);
   }
 }
 
 void ExtensionService::AddNewOrUpdatedExtension(
     const Extension* extension,
     Extension::State initial_state,
+    extensions::Blacklist::BlacklistState blacklist_state,
     const syncer::StringOrdinal& page_ordinal) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  extension_prefs_->OnExtensionInstalled(
-      extension,
-      initial_state,
-      page_ordinal);
-
+  extension_prefs_->OnExtensionInstalled(extension,
+                                         initial_state,
+                                         blacklist_state,
+                                         page_ordinal);
   delayed_installs_.Remove(extension->id());
-
   FinishInstallation(extension);
 }
 
@@ -3056,7 +3083,8 @@ void ExtensionService::ManageBlacklist(
        it != no_longer_blacklisted.end(); ++it) {
     scoped_refptr<const Extension> extension =
         blacklisted_extensions_.GetByID(*it);
-    DCHECK(extension.get());
+    DCHECK(extension.get()) << "Extension " << *it << " no longer blacklisted, "
+                            << "but it was never blacklisted.";
     if (!extension.get())
       continue;
     blacklisted_extensions_.Remove(*it);
@@ -3069,7 +3097,8 @@ void ExtensionService::ManageBlacklist(
   for (std::set<std::string>::iterator it = not_yet_blacklisted.begin();
        it != not_yet_blacklisted.end(); ++it) {
     scoped_refptr<const Extension> extension = GetInstalledExtension(*it);
-    DCHECK(extension.get());
+    DCHECK(extension.get()) << "Extension " << *it << " needs to be "
+                            << "blacklisted, but it's not installed.";
     if (!extension.get())
       continue;
     blacklisted_extensions_.Insert(extension);

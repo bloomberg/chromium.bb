@@ -274,10 +274,12 @@ void UnpackedInstaller::ConfirmInstall() {
   PermissionsUpdater perms_updater(service_weak_->profile());
   perms_updater.GrantActivePermissions(installer_.extension().get());
 
-  service_weak_->OnExtensionInstalled(installer_.extension().get(),
-                                      syncer::StringOrdinal(),
-                                      false /* no requirement errors */,
-                                      false /* don't wait for idle */);
+  service_weak_->OnExtensionInstalled(
+      installer_.extension().get(),
+      syncer::StringOrdinal(),
+      false /* no requirement errors */,
+      Blacklist::NOT_BLACKLISTED,
+      false /* don't wait for idle */);
 }
 
 }  // namespace extensions

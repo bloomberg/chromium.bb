@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/extensions/extension.h"
@@ -187,6 +188,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // for the App.
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
+                            Blacklist::BlacklistState blacklist_state,
                             const syncer::StringOrdinal& page_ordinal);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
@@ -408,6 +410,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // to install it.
   void SetDelayedInstallInfo(const Extension* extension,
                              Extension::State initial_state,
+                             Blacklist::BlacklistState blacklist_state,
                              DelayReason delay_reason,
                              const syncer::StringOrdinal& page_ordinal);
 
@@ -585,6 +588,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   void PopulateExtensionInfoPrefs(const Extension* extension,
                                   const base::Time install_time,
                                   Extension::State initial_state,
+                                  Blacklist::BlacklistState blacklist_state,
                                   base::DictionaryValue* extension_dict);
 
   // Helper function to complete initialization of the values in

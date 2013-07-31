@@ -52,10 +52,15 @@ class Blacklist : public content::NotificationObserver,
     DISALLOW_COPY_AND_ASSIGN(ScopedDatabaseManagerForTest);
   };
 
+  enum BlacklistState {
+    NOT_BLACKLISTED,
+    BLACKLISTED,
+  };
+
   typedef base::Callback<void(const std::set<std::string>&)>
       GetBlacklistedIDsCallback;
 
-  typedef base::Callback<void(bool)> IsBlacklistedCallback;
+  typedef base::Callback<void(BlacklistState)> IsBlacklistedCallback;
 
   // |prefs_| must outlive this.
   explicit Blacklist(ExtensionPrefs* prefs);

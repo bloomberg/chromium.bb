@@ -100,13 +100,13 @@ CrxInstaller::CrxInstaller(
       client_(client),
       apps_require_extension_mime_type_(false),
       allow_silent_install_(false),
-      bypass_blacklist_for_test_(false),
       install_cause_(extension_misc::INSTALL_CAUSE_UNSET),
       creation_flags_(Extension::NO_FLAGS),
       off_store_install_allow_reason_(OffStoreInstallDisallowed),
       did_handle_successfully_(true),
       error_on_unsupported_requirements_(false),
       has_requirement_errors_(false),
+      blacklist_state_(extensions::Blacklist::NOT_BLACKLISTED),
       install_wait_for_idle_(true),
       update_from_settings_page_(false),
       installer_(service_weak->profile()) {
@@ -429,6 +429,9 @@ void CrxInstaller::CheckImportsAndRequirements() {
 void CrxInstaller::OnRequirementsChecked(
     std::vector<std::string> requirement_errors) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!service_weak_)
+    return;
+
   if (!requirement_errors.empty()) {
     if (error_on_unsupported_requirements_) {
       ReportFailureFromUIThread(CrxInstallerError(
@@ -437,6 +440,36 @@ void CrxInstaller::OnRequirementsChecked(
     }
     has_requirement_errors_ = true;
   }
+
+  ExtensionSystem::Get(profile())->blacklist()->IsBlacklisted(
+      extension()->id(),
+      base::Bind(&CrxInstaller::OnBlacklistChecked, this));
+}
+
+void CrxInstaller::OnBlacklistChecked(
+    extensions::Blacklist::BlacklistState blacklist_state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!service_weak_)
+    return;
+
+  blacklist_state_ = blacklist_state;
+
+  if (blacklist_state_ == extensions::Blacklist::BLACKLISTED &&
+      !allow_silent_install_) {
+    // User tried to install a blacklisted extension. Show an error and
+    // refuse to install it.
+    ReportFailureFromUIThread(extensions::CrxInstallerError(
+        l10n_util::GetStringFUTF16(IDS_EXTENSION_IS_BLACKLISTED,
+                                   UTF8ToUTF16(extension()->name()))));
+    UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlockCRX",
+                              extension()->location(),
+                              Manifest::NUM_LOCATIONS);
+    return;
+  }
+
+  // NOTE: extension may still be blacklisted, but we're forced to silently
+  // install it. In this case, ExtensionService::OnExtensionInstalled needs to
+  // deal with it.
   ConfirmInstall();
 }
 
@@ -673,43 +706,12 @@ void CrxInstaller::ReportSuccessFromUIThread() {
     }
   }
 
-  // Install the extension if it's not blacklisted, but notify either way.
-  base::Closure on_success =
-      base::Bind(&ExtensionService::OnExtensionInstalled,
-                 service_weak_,
-                 extension(),
-                 page_ordinal_,
-                 has_requirement_errors_,
-                 install_wait_for_idle_);
-  if (bypass_blacklist_for_test_) {
-    HandleIsBlacklistedResponse(on_success, false);
-  } else {
-    ExtensionSystem::Get(profile())->blacklist()->IsBlacklisted(
-        extension()->id(),
-        base::Bind(&CrxInstaller::HandleIsBlacklistedResponse,
-                   this,
-                   on_success));
-  }
-}
-
-void CrxInstaller::HandleIsBlacklistedResponse(
-    const base::Closure& on_success,
-    bool is_blacklisted) {
-  if (is_blacklisted) {
-    string16 error = l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_IS_BLACKLISTED,
-        UTF8ToUTF16(extension()->name()));
-    make_scoped_ptr(ExtensionInstallUI::Create(profile()))->OnInstallFailure(
-        extensions::CrxInstallerError(error));
-    // Show error via reporter to make tests happy.
-    ExtensionErrorReporter::GetInstance()->ReportError(error, false);  // quiet
-    UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlockCRX",
-                              extension()->location(),
-                              Manifest::NUM_LOCATIONS);
-  } else {
-    on_success.Run();
-  }
-  NotifyCrxInstallComplete(!is_blacklisted);
+  service_weak_->OnExtensionInstalled(extension(),
+                                      page_ordinal_,
+                                      has_requirement_errors_,
+                                      blacklist_state_,
+                                      install_wait_for_idle_);
+  NotifyCrxInstallComplete(true);
 }
 
 void CrxInstaller::NotifyCrxInstallComplete(bool success) {
@@ -726,7 +728,6 @@ void CrxInstaller::NotifyCrxInstallComplete(bool success) {
 
   if (success)
     ConfirmReEnable();
-
 }
 
 void CrxInstaller::CleanupTempFiles() {
