@@ -107,16 +107,11 @@ FileCopyManager.EventRouter.prototype.sendDeleteEvent = function(
  * cancel operation cancels everything in the queue.
  *
  * @param {DirectoryEntry} targetDirEntry Target directory.
- * @param {boolean} sourceOnDrive True if the source entries are on Drive.
- * @param {boolean} targetOnDrive True if the target entry is on Drive.
  * @param {DirectoryEntry=} opt_zipBaseDirEntry Base directory dealt as a root
  *     in ZIP archive.
  * @constructor
  */
-FileCopyManager.Task = function(targetDirEntry,
-                                sourceOnDrive,
-                                targetOnDrive,
-                                opt_zipBaseDirEntry) {
+FileCopyManager.Task = function(targetDirEntry, opt_zipBaseDirEntry) {
   this.targetDirEntry = targetDirEntry;
   this.zipBaseDirEntry = opt_zipBaseDirEntry;
   this.originalEntries = null;
@@ -132,8 +127,6 @@ FileCopyManager.Task = function(targetDirEntry,
   this.deleteAfterCopy = false;
   this.move = false;
   this.zip = false;
-  this.sourceOnDrive = sourceOnDrive;
-  this.targetOnDrive = targetOnDrive;
 
   // If directory already exists, we try to make a copy named 'dir (X)',
   // where X is a number. When we do this, all subsequent copies from
@@ -536,12 +529,10 @@ FileCopyManager.prototype.maybeCancel_ = function() {
  * @param {Array.<string>} directories Pathes of source directories.
  * @param {boolean} isCut If the source items are removed from original
  *     location.
- * @param {boolean} isOnDrive If the source items are on Google Drive.
  * @param {string} targetPath Target path.
- * @param {boolean} targetOnDrive If target is on Drive.
  */
-FileCopyManager.prototype.paste = function(files, directories, isCut, isOnDrive,
-                                           targetPath, targetOnDrive) {
+FileCopyManager.prototype.paste = function(
+    files, directories, isCut, targetPath) {
   var self = this;
   var entries = [];
   var added = 0;
@@ -590,11 +581,7 @@ FileCopyManager.prototype.paste = function(files, directories, isCut, isOnDrive,
     },
 
     onTargetEntryFound: function(targetEntry) {
-      self.queueCopy_(targetEntry,
-                      entries,
-                      isCut,
-                      isOnDrive,
-                      targetOnDrive);
+      self.queueCopy_(targetEntry, entries, isCut);
     },
 
     onPathError: function(err) {
@@ -630,20 +617,14 @@ FileCopyManager.prototype.isMovable = function(sourceEntry,
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {Array.<Entry>} entries Entries to copy.
  * @param {boolean} deleteAfterCopy In case of move.
- * @param {boolean} sourceOnDrive Source directory on Drive.
- * @param {boolean} targetOnDrive Target directory on Drive.
  * @return {FileCopyManager.Task} Copy task.
  * @private
  */
-FileCopyManager.prototype.queueCopy_ = function(targetDirEntry,
-                                                entries,
-                                                deleteAfterCopy,
-                                                sourceOnDrive,
-                                                targetOnDrive) {
+FileCopyManager.prototype.queueCopy_ = function(
+    targetDirEntry, entries, deleteAfterCopy) {
   var self = this;
   // When copying files, null can be specified as source directory.
-  var copyTask = new FileCopyManager.Task(
-      targetDirEntry, sourceOnDrive, targetOnDrive);
+  var copyTask = new FileCopyManager.Task(targetDirEntry);
   if (deleteAfterCopy) {
     if (this.isMovable(entries[0], targetDirEntry)) {
       copyTask.move = true;
@@ -863,10 +844,13 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
   };
 
   var onDeduplicated = function(targetRelativePath) {
+    var isSourceOnDrive = PathUtil.isDriveBasedPath(sourceEntry.fullPath);
+    var isTargetOnDrive = PathUtil.isDriveBasedPath(targetDirEntry.fullPath);
+
     // TODO(benchan): drive::FileSystem has not implemented directory copy,
     // and thus we only call FileEntry.copyTo() for files. Revisit this
     // code when drive::FileSystem supports directory copy.
-    if (sourceEntry.isFile && (task.sourceOnDrive || task.targetOnDrive)) {
+    if (sourceEntry.isFile && (isSourceOnDrive || isTargetOnDrive)) {
       var sourceFileUrl = sourceEntry.toURL();
       var targetFileUrl = targetDirEntry.toURL() + '/' +
                           encodeURIComponent(targetRelativePath);
@@ -911,7 +895,7 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
             // It becomes tricky when both the sides are on Drive.
             // Currently, it is implemented by download followed by upload.
             // Note, however, download will not happen if the file is cached.
-            if (task.sourceOnDrive && task.targetOnDrive) {
+            if (isSourceOnDrive && isTargetOnDrive) {
               if (filePath == sourceFilePath) {
                 // Download transfer is detected. Let's halve the progress.
                 downTransfer = processed = (s.processed >> 1);
@@ -932,7 +916,7 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
         }
       };
 
-      if (task.sourceOnDrive && task.targetOnDrive) {
+      if (isSourceOnDrive && isTargetOnDrive) {
         targetDirEntry.getDirectory(
             PathUtil.dirname(targetRelativePath), {create: false},
             function(dirEntry) {
@@ -950,7 +934,7 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
         if (chrome.runtime.lastError) {
           onFailTransfer({
             code: chrome.runtime.lastError.message,
-            toDrive: task.targetOnDrive,
+            toDrive: isTargetOnDrive,
             sourceFileUrl: sourceFileUrl
           });
         } else {
@@ -963,7 +947,7 @@ FileCopyManager.prototype.serviceNextCopyTaskEntry_ = function(
         self.cancelCallback_ = null;
         chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
             onFileTransfersUpdated);
-        if (task.sourceOnDrive) {
+        if (isSourceOnDrive) {
           chrome.fileBrowserPrivate.cancelFileTransfers([sourceFileUrl],
                                                         function() {});
         } else {
@@ -1349,14 +1333,11 @@ FileCopyManager.prototype.serviceDeleteTask_ = function(
  * Creates a zip file for the selection of files.
  *
  * @param {Entry} dirEntry the directory containing the selection.
- * @param {boolean} isOnDrive If directory is on Drive.
  * @param {Array.<Entry>} selectionEntries the selected entries.
  */
-FileCopyManager.prototype.zipSelection = function(dirEntry, isOnDrive,
-                                                  selectionEntries) {
+FileCopyManager.prototype.zipSelection = function(dirEntry, selectionEntries) {
   var self = this;
-  var zipTask = new FileCopyManager.Task(
-      dirEntry, isOnDrive, isOnDrive, dirEntry);
+  var zipTask = new FileCopyManager.Task(dirEntry, dirEntry);
   zipTask.zip = true;
   zipTask.setEntries(selectionEntries, function() {
     // TODO: per-entry zip progress update with accurate byte count.

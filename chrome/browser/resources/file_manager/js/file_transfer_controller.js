@@ -150,7 +150,6 @@ FileTransferController.prototype = {
 
     // Tag to check it's filemanager data.
     dataTransfer.setData('fs/tag', 'filemanager-data');
-    dataTransfer.setData('fs/isOnDrive', this.isOnDrive);
     dataTransfer.setData('fs/sourceRoot',
                          this.directoryModel_.getCurrentRootPath());
     dataTransfer.setData('fs/directories', directories.join('\n'));
@@ -213,14 +212,10 @@ FileTransferController.prototype = {
         dataTransfer.effectAllowed : dataTransfer.getData('fs/effectallowed');
     var toMove = effectAllowed == 'move' ||
         (effectAllowed == 'copyMove' && opt_effect == 'move');
-    var targetOnDrive = (PathUtil.getRootType(destinationPath) ===
-                         RootType.DRIVE);
     this.copyManager_.paste(files,
                             directories,
                             toMove,
-                            dataTransfer.getData('fs/isOnDrive') == 'true',
-                            destinationPath,
-                            targetOnDrive);
+                            destinationPath);
     return toMove ? 'move' : 'copy';
   },
 
