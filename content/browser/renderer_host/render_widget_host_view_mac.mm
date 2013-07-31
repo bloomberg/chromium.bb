@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
+#import <objc/runtime.h>
 #include <QuartzCore/QuartzCore.h>
 
 #include "base/bind.h"
@@ -135,6 +136,29 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
   if (flags & NSAlternateKeyMask) modifiers |= WebInputEvent::AltKey;
   if (flags & NSCommandKeyMask) modifiers |= WebInputEvent::MetaKey;
   return modifiers;
+}
+
+// This method will return YES for OS X versions 10.7.3 and later, and NO
+// otherwise.
+// Used to prevent a crash when building with the 10.7 SDK and accessing the
+// notification below. See: http://crbug.com/260595.
+static BOOL SupportsBackingPropertiesChangedNotification() {
+  // windowDidChangeBackingProperties: method has been added to the
+  // NSWindowDelegate protocol in 10.7.3, at the same time as the
+  // NSWindowDidChangeBackingPropertiesNotification notification was added.
+  // If the protocol contains this method description, the notification should
+  // be supported as well.
+  Protocol* windowDelegateProtocol = NSProtocolFromString(@"NSWindowDelegate");
+  struct objc_method_description methodDescription =
+      protocol_getMethodDescription(
+          windowDelegateProtocol,
+          @selector(windowDidChangeBackingProperties:),
+          NO,
+          YES);
+
+  // If the protocol does not contain the method, the returned method
+  // description is {NULL, NULL}
+  return methodDescription.name != NULL || methodDescription.types != NULL;
 }
 
 static float ScaleFactor(NSView* view) {
@@ -2452,7 +2476,8 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 
   // Backing property notifications crash on 10.6 when building with the 10.7
   // SDK, see http://crbug.com/260595.
-  BOOL supportsBackingPropertiesNotification = base::mac::IsOSLionOrLater();
+  static BOOL supportsBackingPropertiesNotification =
+      SupportsBackingPropertiesChangedNotification();
 
   if (oldWindow) {
     if (supportsBackingPropertiesNotification) {
