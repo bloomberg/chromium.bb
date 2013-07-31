@@ -8,8 +8,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "components/nacl/common/pnacl_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +40,6 @@ class PnaclTranslationCacheTest : public testing::Test {
   void StoreNexe(const std::string& key, const std::string& nexe);
   std::string GetNexe(const std::string& key);
 
- protected:
   PnaclTranslationCache* cache_;
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
@@ -59,24 +60,118 @@ void PnaclTranslationCacheTest::InitBackend(bool in_mem) {
 void PnaclTranslationCacheTest::StoreNexe(const std::string& key,
                                           const std::string& nexe) {
   net::TestCompletionCallback store_cb;
-  cache_->StoreNexe(key, nexe, store_cb.callback());
+  scoped_refptr<net::DrainableIOBuffer> nexe_buf(
+      new net::DrainableIOBuffer(new net::StringIOBuffer(nexe), nexe.size()));
+  cache_->StoreNexe(key, nexe_buf, store_cb.callback());
   // Using ERR_IO_PENDING here causes the callback to wait for the result
   // which should be harmless even if it returns OK immediately. This is because
   // we don't plumb the intermediate writing stages all the way out.
   EXPECT_EQ(net::OK, store_cb.GetResult(net::ERR_IO_PENDING));
 }
 
+// Inspired by net::TestCompletionCallback. Instantiate a TestNexeCallback and
+// pass the GetNexeCallback returned by the callback() method to GetNexe.
+// Then call GetResult, which will pump the message loop until it gets a result,
+// return the resulting IOBuffer and fill in the return value
+class TestNexeCallback {
+ public:
+  TestNexeCallback()
+      : have_result_(false),
+        result_(-1),
+        cb_(base::Bind(&TestNexeCallback::SetResult, base::Unretained(this))) {}
+  GetNexeCallback callback() { return cb_; }
+  net::DrainableIOBuffer* GetResult(int* result) {
+    while (!have_result_)
+      base::RunLoop().RunUntilIdle();
+    have_result_ = false;
+    *result = result_;
+    return buf_.get();
+  }
+
+ private:
+  void SetResult(int rv, scoped_refptr<net::DrainableIOBuffer> buf) {
+    have_result_ = true;
+    result_ = rv;
+    buf_ = buf;
+  }
+  bool have_result_;
+  int result_;
+  scoped_refptr<net::DrainableIOBuffer> buf_;
+  const GetNexeCallback cb_;
+};
+
 std::string PnaclTranslationCacheTest::GetNexe(const std::string& key) {
-  net::TestCompletionCallback load_cb;
-  std::string nexe;
-  cache_->GetNexe(key, &nexe, load_cb.callback());
-  EXPECT_EQ(net::OK, load_cb.GetResult(net::ERR_IO_PENDING));
+  TestNexeCallback load_cb;
+  cache_->GetNexe(key, load_cb.callback());
+  int rv;
+  scoped_refptr<net::DrainableIOBuffer> buf(load_cb.GetResult(&rv));
+  EXPECT_EQ(net::OK, rv);
+  std::string nexe(buf->data(), buf->size());
   return nexe;
 }
 
 static const std::string test_key("1");
 static const std::string test_store_val("testnexe");
-static const int kLargeNexeSize = 16 * 1024 *1024;
+static const int kLargeNexeSize = 16 * 1024 * 1024;
+
+TEST(PnaclTranslationCacheKeyTest, CacheKeyTest) {
+  nacl::PnaclCacheInfo info;
+  info.pexe_url = GURL("http://www.google.com");
+  info.abi_version = 0;
+  info.opt_level = 0;
+  std::string test_time("Wed, 15 Nov 1995 06:25:24 GMT");
+  base::Time::FromString(test_time.c_str(), &info.last_modified);
+  // Basic check for URL and time components
+  EXPECT_EQ("ABI:0;opt:0;URL:http://www.google.com/;"
+            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            PnaclTranslationCache::GetKey(info));
+  // Check that query portion of URL is not stripped
+  info.pexe_url = GURL("http://www.google.com/?foo=bar");
+  EXPECT_EQ("ABI:0;opt:0;URL:http://www.google.com/?foo=bar;"
+            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            PnaclTranslationCache::GetKey(info));
+  // Check that username, password, and normal port are stripped
+  info.pexe_url = GURL("https://user:host@www.google.com:443/");
+  EXPECT_EQ("ABI:0;opt:0;URL:https://www.google.com/;"
+            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            PnaclTranslationCache::GetKey(info));
+  // Check that unusual port is not stripped but ref is stripped
+  info.pexe_url = GURL("https://www.google.com:444/#foo");
+  EXPECT_EQ("ABI:0;opt:0;URL:https://www.google.com:444/;"
+            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            PnaclTranslationCache::GetKey(info));
+  // Check chrome-extesnsion scheme
+  info.pexe_url = GURL("chrome-extension://ljacajndfccfgnfohlgkdphmbnpkjflk/");
+  EXPECT_EQ("ABI:0;opt:0;"
+            "URL:chrome-extension://ljacajndfccfgnfohlgkdphmbnpkjflk/;"
+            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            PnaclTranslationCache::GetKey(info));
+  // Check that ABI version, opt level, and etag are in the key
+  info.pexe_url = GURL("http://www.google.com/");
+  info.abi_version = 2;
+  EXPECT_EQ("ABI:2;opt:0;URL:http://www.google.com/;"
+            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            PnaclTranslationCache::GetKey(info));
+  info.opt_level = 2;
+  EXPECT_EQ("ABI:2;opt:2;URL:http://www.google.com/;"
+            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            PnaclTranslationCache::GetKey(info));
+  info.etag = std::string("etag");
+  EXPECT_EQ("ABI:2;opt:2;URL:http://www.google.com/;"
+            "modified:1995:11:15:6:25:24:0:UTC;etag:etag",
+            PnaclTranslationCache::GetKey(info));
+
+  // Check for all the time components, and null time
+  info.last_modified = base::Time();
+  EXPECT_EQ("ABI:2;opt:2;URL:http://www.google.com/;"
+            "modified:0:0:0:0:0:0:0:UTC;etag:etag",
+            PnaclTranslationCache::GetKey(info));
+  test_time.assign("Fri, 29 Feb 2008 13:04:12 GMT");
+  base::Time::FromString(test_time.c_str(), &info.last_modified);
+  EXPECT_EQ("ABI:2;opt:2;URL:http://www.google.com/;"
+            "modified:2008:2:29:13:4:12:0:UTC;etag:etag",
+            PnaclTranslationCache::GetKey(info));
+}
 
 TEST_F(PnaclTranslationCacheTest, StoreSmallInMem) {
   // Test that a single store puts something in the mem backend
@@ -94,9 +189,6 @@ TEST_F(PnaclTranslationCacheTest, StoreSmallOnDisk) {
 
 TEST_F(PnaclTranslationCacheTest, StoreLargeOnDisk) {
   // Test a value too large(?) for a single I/O operation
-  // TODO(dschuff): we only seem to ever have one operation go through into the
-  // backend. Find out what the 'offset' field means, and if it can ever require
-  // multiple writes.
   InitBackend(false);
   const std::string large_buffer(kLargeNexeSize, 'a');
   StoreNexe(test_key, large_buffer);
@@ -105,7 +197,9 @@ TEST_F(PnaclTranslationCacheTest, StoreLargeOnDisk) {
 
 TEST_F(PnaclTranslationCacheTest, InMemSizeLimit) {
   InitBackend(true);
-  const std::string large_buffer(kMaxMemCacheSize + 1, 'a');
+  scoped_refptr<net::DrainableIOBuffer> large_buffer(new net::DrainableIOBuffer(
+      new net::StringIOBuffer(std::string(kMaxMemCacheSize + 1, 'a')),
+      kMaxMemCacheSize + 1));
   net::TestCompletionCallback store_cb;
   cache_->StoreNexe(test_key, large_buffer, store_cb.callback());
   EXPECT_EQ(net::ERR_FAILED, store_cb.GetResult(net::ERR_IO_PENDING));
@@ -115,6 +209,13 @@ TEST_F(PnaclTranslationCacheTest, InMemSizeLimit) {
 
 TEST_F(PnaclTranslationCacheTest, GetOneInMem) {
   InitBackend(true);
+  StoreNexe(test_key, test_store_val);
+  EXPECT_EQ(1, cache_->Size());
+  EXPECT_EQ(0, GetNexe(test_key).compare(test_store_val));
+}
+
+TEST_F(PnaclTranslationCacheTest, GetOneOnDisk) {
+  InitBackend(false);
   StoreNexe(test_key, test_store_val);
   EXPECT_EQ(1, cache_->Size());
   EXPECT_EQ(0, GetNexe(test_key).compare(test_store_val));
@@ -149,10 +250,12 @@ TEST_F(PnaclTranslationCacheTest, StoreTwo) {
 TEST_F(PnaclTranslationCacheTest, GetMiss) {
   InitBackend(true);
   StoreNexe(test_key, test_store_val);
-  net::TestCompletionCallback load_cb;
+  TestNexeCallback load_cb;
   std::string nexe;
-  cache_->GetNexe(test_key + "a", &nexe, load_cb.callback());
-  EXPECT_EQ(net::ERR_FAILED, load_cb.GetResult(net::ERR_IO_PENDING));
+  cache_->GetNexe(test_key + "a", load_cb.callback());
+  int rv;
+  scoped_refptr<net::DrainableIOBuffer> buf(load_cb.GetResult(&rv));
+  EXPECT_EQ(net::ERR_FAILED, rv);
 }
 
 }  // namespace pnacl
