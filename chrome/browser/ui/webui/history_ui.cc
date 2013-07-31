@@ -180,13 +180,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->SetDefaultResource(IDR_HISTORY_HTML);
   source->SetUseJsonJSFormatV2();
   source->DisableDenyXFrameOptions();
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  source->AddBoolean("isManagedProfile", false);
-#else
-  source->AddBoolean("isManagedProfile",
-      ManagedUserServiceFactory::GetForProfile(profile)->ProfileIsManaged());
-#endif
+  source->AddBoolean("isManagedProfile", profile->IsManaged());
 
   return source;
 }
@@ -370,8 +364,7 @@ scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   result->SetString("deviceType", device_type);
 
 #if defined(ENABLE_MANAGED_USERS)
-  DCHECK(managed_user_service);
-  if (managed_user_service->ProfileIsManaged()) {
+  if (managed_user_service) {
     const ManagedModeURLFilter* url_filter =
         managed_user_service->GetURLFilterForUIThread();
     int filtering_behavior =
@@ -697,7 +690,8 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile);
   ManagedUserService* managed_user_service = NULL;
 #if defined(ENABLE_MANAGED_USERS)
-  managed_user_service = ManagedUserServiceFactory::GetForProfile(profile);
+  if (profile->IsManaged())
+    managed_user_service = ManagedUserServiceFactory::GetForProfile(profile);
 #endif
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);

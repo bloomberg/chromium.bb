@@ -53,6 +53,7 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/bookmark_load_observer.h"
 #include "chrome/test/base/history_index_restore_observer.h"
@@ -543,6 +544,10 @@ Profile* TestingProfile::GetOriginalProfile() {
   if (original_profile_)
     return original_profile_;
   return this;
+}
+
+bool TestingProfile::IsManaged() {
+  return GetPrefs()->GetBoolean(prefs::kProfileIsManaged);
 }
 
 ExtensionService* TestingProfile::GetExtensionService() {

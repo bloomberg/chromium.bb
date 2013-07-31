@@ -172,12 +172,7 @@ void ManagedUserService::Shutdown() {
 }
 
 bool ManagedUserService::ProfileIsManaged() const {
-  return ProfileIsManaged(profile_);
-}
-
-// static
-bool ManagedUserService::ProfileIsManaged(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kProfileIsManaged);
+  return profile_->IsManaged();
 }
 
 // static
@@ -563,6 +558,8 @@ void ManagedUserService::Init() {
 void ManagedUserService::RegisterAndInitSync(
     Profile* custodian_profile,
     const ProfileManager::CreateCallback& callback) {
+  DCHECK(ProfileIsManaged());
+  DCHECK(!custodian_profile->IsManaged());
 
   // Register the managed user with the custodian's account.
   ManagedUserRegistrationService* registration_service =

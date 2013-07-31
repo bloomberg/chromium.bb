@@ -9,7 +9,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
@@ -152,7 +151,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 
       // Managed users cannot enter incognito mode, so we only need to check
       // it in this code path.
-      if (ManagedUserService::ProfileIsManaged(profile)) {
+      if (profile->IsManaged()) {
         labelButton_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
         [labelButton_ setButtonType:NSMomentaryLightButton];
         [labelButton_ setBezelStyle:NSRecessedBezelStyle];

@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -276,7 +275,7 @@ void TiclInvalidationService::Shutdown() {
 }
 
 bool TiclInvalidationService::IsReadyToStart() {
-  if (ManagedUserService::ProfileIsManaged(profile_)) {
+  if (profile_->IsManaged()) {
     DVLOG(2) << "Not starting TiclInvalidationService: User is managed.";
     return false;
   }

@@ -239,27 +239,20 @@ const AvatarMenuModel::Item& AvatarMenuModel::GetItemAt(size_t index) {
 }
 
 bool AvatarMenuModel::ShouldShowAddNewProfileLink() const {
-#if defined(ENABLE_MANAGED_USERS)
   // |browser_| can be NULL in unit_tests.
-  return !browser_ ||
-      !ManagedUserService::ProfileIsManaged(browser_->profile());
-#endif
-  return true;
+  return !browser_ || !browser_->profile()->IsManaged();
 }
 
 base::string16 AvatarMenuModel::GetManagedUserInformation() const {
-#if defined(ENABLE_MANAGED_USERS)
   // |browser_| can be NULL in unit_tests.
-  if (!browser_)
-    return base::string16();
-
-  ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
-      browser_->profile());
-  if (service->ProfileIsManaged()) {
+  if (browser_ && browser_->profile()->IsManaged()) {
+#if defined(ENABLE_MANAGED_USERS)
+    ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
+        browser_->profile());
     base::string16 custodian = UTF8ToUTF16(service->GetCustodianName());
     return l10n_util::GetStringFUTF16(IDS_MANAGED_USER_INFO, custodian);
-  }
 #endif
+  }
   return base::string16();
 }
 

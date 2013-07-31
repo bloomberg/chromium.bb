@@ -385,15 +385,10 @@ void ExternalProviderImpl::CreateExternalProviders(
       Extension::WAS_INSTALLED_BY_DEFAULT;
 #endif
 
-  bool is_managed_profile = false;
+  bool is_managed_profile = profile->IsManaged();
   int external_apps_path_id = chrome::DIR_EXTERNAL_EXTENSIONS;
-#if defined(ENABLE_MANAGED_USERS)
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-  is_managed_profile = managed_user_service->ProfileIsManaged();
   if (is_managed_profile)
     external_apps_path_id = chrome::DIR_MANAGED_USERS_DEFAULT_APPS;
-#endif
 
 #if defined(OS_CHROMEOS)
   typedef chromeos::ExternalPrefCacheLoader PrefLoader;

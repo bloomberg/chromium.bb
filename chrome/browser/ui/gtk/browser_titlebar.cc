@@ -20,7 +20,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -818,7 +817,7 @@ void BrowserTitlebar::UpdateAvatar() {
   gtk_widget_show_all(avatar_);
 
   Profile* profile = browser_window_->browser()->profile();
-  if (ManagedUserService::ProfileIsManaged(profile)) {
+  if (profile->IsManaged()) {
     avatar_label_ = gtk_label_new(NULL);
     gtk_misc_set_padding(GTK_MISC(avatar_label_), 10, 2);
     avatar_label_bg_ = gtk_event_box_new();

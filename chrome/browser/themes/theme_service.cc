@@ -34,7 +34,6 @@
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_theme.h"
 #endif
 
@@ -451,15 +450,14 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
 }
 
 bool ThemeService::IsManagedUser() const {
-#if defined(ENABLE_MANAGED_USERS)
-  return ManagedUserService::ProfileIsManaged(profile_);
-#endif
-  return false;
+  return profile_->IsManaged();
 }
 
 void ThemeService::SetManagedUserTheme() {
 #if defined(ENABLE_MANAGED_USERS)
   SetCustomDefaultTheme(new ManagedUserTheme);
+#else
+  NOTREACHED();
 #endif
 }
 

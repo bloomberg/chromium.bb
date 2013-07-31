@@ -230,6 +230,10 @@ ExtensionSpecialStoragePolicy*
   return GetOriginalProfile()->GetExtensionSpecialStoragePolicy();
 }
 
+bool OffTheRecordProfileImpl::IsManaged() {
+  return GetOriginalProfile()->IsManaged();
+}
+
 PrefService* OffTheRecordProfileImpl::GetPrefs() {
   return prefs_;
 }

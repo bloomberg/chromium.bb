@@ -436,12 +436,10 @@ void NTPResourceCache::CreateNewTabHTML() {
   // feature is enabled.
   load_time_data.SetBoolean("isSwipeTrackingFromScrollEventsEnabled",
                             is_swipe_tracking_from_scroll_events_enabled_);
-  #if defined(ENABLE_MANAGED_USERS)
-    // Managed users can not have apps installed currently so there's no need to
-    // show the app cards.
-    if (ManagedUserService::ProfileIsManaged(profile_))
-      should_show_apps_page_ = false;
-  #endif
+  // Managed users can not have apps installed currently so there's no need to
+  // show the app cards.
+  if (profile_->IsManaged())
+    should_show_apps_page_ = false;
   load_time_data.SetBoolean("showApps", should_show_apps_page_);
   load_time_data.SetBoolean("showWebStoreIcon",
                             !prefs->GetBoolean(prefs::kHideWebStoreIcon));

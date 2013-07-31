@@ -699,6 +699,10 @@ Profile* ProfileImpl::GetOriginalProfile() {
   return this;
 }
 
+bool ProfileImpl::IsManaged() {
+  return GetPrefs()->GetBoolean(prefs::kProfileIsManaged);
+}
+
 ExtensionService* ProfileImpl::GetExtensionService() {
   return extensions::ExtensionSystem::Get(this)->extension_service();
 }

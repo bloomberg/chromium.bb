@@ -280,7 +280,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 
 #if defined(ENABLE_MANAGED_USERS)
   if (ManagedUserService::AreManagedUsersEnabled()) {
-    if (ManagedUserService::ProfileIsManaged(profile_)) {
+    if (profile_->IsManaged()) {
       pss->RegisterDataTypeController(
           new UIDataTypeController(
               syncer::MANAGED_USER_SETTINGS, this, profile_, pss));

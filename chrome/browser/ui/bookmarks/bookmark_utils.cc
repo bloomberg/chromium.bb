@@ -28,10 +28,6 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#endif
-
 namespace chrome {
 
 int num_bookmark_urls_before_prompting = 15;
@@ -288,12 +284,10 @@ bool IsAppsShortcutEnabled(const Profile* profile) {
 }
 
 bool ShouldShowAppsShortcutInBookmarkBar(Profile* profile) {
-#if defined(ENABLE_MANAGED_USERS)
   // Managed users can not have apps installed currently so there's no need to
   // show the apps shortcut.
-  if (ManagedUserService::ProfileIsManaged(profile))
+  if (profile->IsManaged())
     return false;
-#endif
 
   return IsAppsShortcutEnabled(profile) &&
       profile->GetPrefs()->GetBoolean(prefs::kShowAppsShortcutInBookmarkBar);

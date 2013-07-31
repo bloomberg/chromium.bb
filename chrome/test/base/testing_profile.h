@@ -194,6 +194,7 @@ class TestingProfile : public Profile {
   virtual void DestroyOffTheRecordProfile() OVERRIDE {}
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
+  virtual bool IsManaged() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   void SetExtensionSpecialStoragePolicy(
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);

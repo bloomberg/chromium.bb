@@ -101,11 +101,9 @@ enum {
   DIR_CHROMEOS_CUSTOM_WALLPAPERS,     // Directory where custom wallpapers
                                       // reside.
 #endif
-#if defined(ENABLE_MANAGED_USERS)
   DIR_MANAGED_USERS_DEFAULT_APPS,  // Directory where installer places .crx
                                    // files to be installed when managed user
                                    // session starts.
-#endif
 
   // Valid only in development environment; TODO(darin): move these
   DIR_GEN_TEST_DATA,            // Directory where generated test data resides.

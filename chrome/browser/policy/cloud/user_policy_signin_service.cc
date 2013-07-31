@@ -23,10 +23,6 @@
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
 
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#endif
-
 namespace policy {
 
 UserPolicySigninService::UserPolicySigninService(
@@ -102,12 +98,10 @@ void UserPolicySigninService::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
 
-#if defined(ENABLE_MANAGED_USERS)
-  if (ManagedUserService::ProfileIsManaged(profile())) {
+  if (profile()->IsManaged()) {
     registrar()->RemoveAll();
     return;
   }
-#endif
 
   // If using a TestingProfile with no SigninManager or UserCloudPolicyManager,
   // skip initialization.

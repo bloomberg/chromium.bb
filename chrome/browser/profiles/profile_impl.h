@@ -94,6 +94,7 @@ class ProfileImpl : public Profile {
   virtual void DestroyOffTheRecordProfile() OVERRIDE;
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
+  virtual bool IsManaged() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;

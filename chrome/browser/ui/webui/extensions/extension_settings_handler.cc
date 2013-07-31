@@ -601,10 +601,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   }
   results.Set("extensions", extensions_list);
 
-  ManagedUserService* service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-
-  bool is_managed = service->ProfileIsManaged();
+  bool is_managed = profile->IsManaged();
   bool developer_mode =
       !is_managed &&
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
@@ -624,7 +621,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
 void ExtensionSettingsHandler::HandleToggleDeveloperMode(
     const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (ManagedUserServiceFactory::GetForProfile(profile)->ProfileIsManaged())
+  if (profile->IsManaged())
     return;
 
   bool developer_mode =

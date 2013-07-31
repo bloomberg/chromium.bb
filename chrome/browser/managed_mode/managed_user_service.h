@@ -57,12 +57,6 @@ class ManagedUserService : public BrowserContextKeyedService,
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
-  bool ProfileIsManaged() const;
-
-  // Checks whether the given profile is managed without constructing a
-  // ManagedUserService (which could lead to cyclic dependencies).
-  static bool ProfileIsManaged(Profile* profile);
-
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns true if managed users are enabled by either Finch or the command
@@ -162,6 +156,10 @@ class ManagedUserService : public BrowserContextKeyedService,
  private:
   friend class ManagedUserServiceExtensionTest;
   friend class ManagedUserServiceFactory;
+  FRIEND_TEST_ALL_PREFIXES(ManagedUserServiceTest,
+                           ExtensionManagementPolicyProviderUnmanaged);
+  FRIEND_TEST_ALL_PREFIXES(ManagedUserServiceTest,
+                           ExtensionManagementPolicyProviderManaged);
 
   // A bridge from ManagedMode (which lives on the UI thread) to the
   // ManagedModeURLFilters, one of which lives on the IO thread. This class
@@ -205,6 +203,8 @@ class ManagedUserService : public BrowserContextKeyedService,
                                const std::string& token);
 
   void SetupSync();
+
+  bool ProfileIsManaged() const;
 
   // Internal implementation for ExtensionManagementPolicy::Delegate methods.
   // If |error| is not NULL, it will be filled with an error message if the

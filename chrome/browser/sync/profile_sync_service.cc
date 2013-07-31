@@ -1845,11 +1845,7 @@ void ProfileSyncService::RequestAccessToken() {
     return;
   request_access_token_retry_timer_.Stop();
   OAuth2TokenService::ScopeSet oauth2_scopes;
-  bool is_managed = false;
-#if defined(ENABLE_MANAGED_USERS)
-  is_managed = ManagedUserService::ProfileIsManaged(profile_);
-#endif
-  if (is_managed) {
+  if (profile_->IsManaged()) {
     oauth2_scopes.insert(GaiaConstants::kChromeSyncManagedOAuth2Scope);
   } else {
     oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
@@ -2085,12 +2081,14 @@ void ProfileSyncService::OnInternalUnrecoverableError(
 }
 
 std::string ProfileSyncService::GetEffectiveUsername() {
+  if (profile_->IsManaged()) {
 #if defined(ENABLE_MANAGED_USERS)
-  if (ManagedUserService::ProfileIsManaged(profile_)) {
     DCHECK_EQ(std::string(), signin_->GetAuthenticatedUsername());
     return ManagedUserService::GetManagedUserPseudoEmail();
-  }
+#else
+    NOTREACHED();
 #endif
+  }
 
   return signin_->GetAuthenticatedUsername();
 }
