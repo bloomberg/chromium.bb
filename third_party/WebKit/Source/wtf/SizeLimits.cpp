@@ -56,14 +56,23 @@ struct SameSizeAsRefCounted {
 };
 #endif
 
+template<typename T, unsigned inlineCapacity>
+struct SameSizeAsVectorWithInlineCapacity {
+    void* bufferPointer;
+    unsigned capacity;
+    unsigned size;
+    AlignedBuffer<inlineCapacity * sizeof(T), WTF_ALIGN_OF(T)> inlineBuffer;
+};
+
 COMPILE_ASSERT(sizeof(OwnPtr<int>) == sizeof(int*), OwnPtr_should_stay_small);
 COMPILE_ASSERT(sizeof(PassRefPtr<RefCounted<int> >) == sizeof(int*), PassRefPtr_should_stay_small);
 COMPILE_ASSERT(sizeof(RefCounted<int>) == sizeof(SameSizeAsRefCounted), RefCounted_should_stay_small);
 COMPILE_ASSERT(sizeof(RefCountedCustomAllocated<int>) == sizeof(SameSizeAsRefCounted), RefCountedCustomAllocated_should_stay_small);
 COMPILE_ASSERT(sizeof(RefPtr<RefCounted<int> >) == sizeof(int*), RefPtr_should_stay_small);
 #if !(OS(WINDOWS) && CPU(X86_64))  // Packing trouble on Win64. See crbug.com/231671
-COMPILE_ASSERT(sizeof(Vector<int>) == sizeof(int*) + 2 * sizeof(int), Vector_should_stay_small);
-COMPILE_ASSERT(sizeof(Vector<int, 1>) == 2 * sizeof(int*) + 2 * sizeof(int), Vector_should_stay_small);
+COMPILE_ASSERT(sizeof(Vector<int, 1>) == sizeof(SameSizeAsVectorWithInlineCapacity<int, 1>), Vector_should_stay_small);
+COMPILE_ASSERT(sizeof(Vector<int, 2>) == sizeof(SameSizeAsVectorWithInlineCapacity<int, 2>), Vector_should_stay_small);
+COMPILE_ASSERT(sizeof(Vector<int, 3>) == sizeof(SameSizeAsVectorWithInlineCapacity<int, 3>), Vector_should_stay_small);
 #endif
 
 }

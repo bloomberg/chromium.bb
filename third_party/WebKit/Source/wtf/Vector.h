@@ -331,7 +331,8 @@ namespace WTF {
         }
 
         T* m_buffer;
-        unsigned m_capacity;  // Must come last so that it packs cleanly with Vector::m_size on 64-bit.
+        unsigned m_capacity;
+        unsigned m_size;
     };
 
     template<typename T, size_t inlineCapacity>
@@ -377,6 +378,10 @@ namespace WTF {
         using Base::capacity;
 
         using Base::releaseBuffer;
+
+    protected:
+        using Base::m_size;
+
     private:
         using Base::m_buffer;
         using Base::m_capacity;
@@ -483,6 +488,9 @@ namespace WTF {
             return Base::releaseBuffer();
         }
 
+    protected:
+        using Base::m_size;
+
     private:
         using Base::m_buffer;
         using Base::m_capacity;
@@ -510,14 +518,14 @@ namespace WTF {
         typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
         Vector()
-            : m_size(0)
         {
+            m_size = 0;
         }
 
         explicit Vector(size_t size)
             : Base(size)
-            , m_size(size)
         {
+            m_size = size;
             if (begin())
                 TypeOperations::initialize(begin(), end());
         }
@@ -618,8 +626,8 @@ namespace WTF {
 
         Vector(size_t size, const T& val)
             : Base(size)
-            , m_size(size)
         {
+            m_size = size;
             if (begin())
                 TypeOperations::uninitializedFill(begin(), end(), val);
         }
@@ -649,8 +657,7 @@ namespace WTF {
         template<typename U> U* expandCapacity(size_t newMinCapacity, U*);
         template<typename U> void appendSlowCase(const U&);
 
-        unsigned m_size;
-
+        using Base::m_size;
         using Base::buffer;
         using Base::capacity;
         using Base::swap;
@@ -666,8 +673,8 @@ namespace WTF {
     template<typename T, size_t inlineCapacity>
     Vector<T, inlineCapacity>::Vector(const Vector& other)
         : Base(other.capacity())
-        , m_size(other.size())
     {
+        m_size = other.size();
         if (begin())
             TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
     }
@@ -676,8 +683,8 @@ namespace WTF {
     template<size_t otherCapacity>
     Vector<T, inlineCapacity>::Vector(const Vector<T, otherCapacity>& other)
         : Base(other.capacity())
-        , m_size(other.size())
     {
+        m_size = other.size();
         if (begin())
             TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
     }
@@ -746,8 +753,8 @@ namespace WTF {
 #if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
     template<typename T, size_t inlineCapacity>
     Vector<T, inlineCapacity>::Vector(Vector<T, inlineCapacity>&& other)
-        : m_size(0)
     {
+        m_size = 0;
         // It's a little weird to implement a move constructor using swap but this way we
         // don't have to add a move constructor to VectorBuffer.
         swap(other);
