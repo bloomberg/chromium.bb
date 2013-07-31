@@ -94,6 +94,7 @@ const struct MigrationInputMethodList {
   { "m17n:te:itrans",
     "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_te_phone" },
   { "m17n:fa:isiri", "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_fa" },
+  { "m17n:ar:kbd", "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_ar" },
   // TODO(nona): Remove following migration map in M32
   { "m17n:zh:quick",
     "_comp_ime_ekbifjdfhkmdeeajnolmgdlmkllopefizh-hant-t-i0-und" },
