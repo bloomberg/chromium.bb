@@ -8026,7 +8026,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         New tab
       </message>
       <message name="IDS_TOOLTIP_MIC_SEARCH" desc="The tooltip for search-by-voice button">
-        Voice search
+        Search by voice
       </message>
       <message name="IDS_TOOLTIP_ZOOM" desc="The tooltip for zoom icon">
         Zoom: <ph name="VALUE">$1<ex>100</ex></ph>%
