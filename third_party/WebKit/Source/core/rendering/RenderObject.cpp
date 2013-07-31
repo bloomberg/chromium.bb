@@ -43,6 +43,7 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
+#include "core/page/UseCounter.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/platform/Partitions.h"
 #include "core/platform/graphics/FloatQuad.h"
@@ -164,6 +165,12 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         return new RenderRubyText(element);
     if (RuntimeEnabledFeatures::cssRegionsEnabled() && style->isDisplayRegionType() && !style->regionThread().isEmpty() && doc->renderView())
         return new RenderRegion(element, 0);
+
+    if (style->display() == RUN_IN)
+        UseCounter::count(doc, UseCounter::CSSDisplayRunIn);
+    else if (style->display() == COMPACT)
+        UseCounter::count(doc, UseCounter::CSSDisplayCompact);
+
     switch (style->display()) {
     case NONE:
         return 0;
