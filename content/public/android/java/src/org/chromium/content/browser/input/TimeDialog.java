@@ -28,8 +28,13 @@ public class TimeDialog extends TimePickerDialog {
             Context context, OnTimeSetListener callBack,
             int hourOfDay, int minute, boolean is24HourView, long min, long max) {
         super(context, callBack, hourOfDay, minute, is24HourView);
-        mMinTime = getTimeForMillis(min);
-        mMaxTime = getTimeForMillis(max);
+        if (min >= max) {
+            mMinTime = getTimeForHourAndMinute(0, 0);
+            mMaxTime = getTimeForHourAndMinute(23, 59);
+        } else {
+            mMinTime = getTimeForMillis(min);
+            mMaxTime = getTimeForMillis(max);
+        }
      }
 
      @Override
