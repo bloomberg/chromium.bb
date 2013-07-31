@@ -36,8 +36,7 @@ bool IsTextField(const FormFieldData& field) {
       field.form_control_type == "search" ||
       field.form_control_type == "tel" ||
       field.form_control_type == "url" ||
-      field.form_control_type == "email" ||
-      field.form_control_type == "text";
+      field.form_control_type == "email";
 }
 
 }  // namespace
