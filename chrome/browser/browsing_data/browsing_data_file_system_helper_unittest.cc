@@ -18,7 +18,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 using content::BrowserContext;
