@@ -56,6 +56,11 @@ WebCryptoAlgorithm::WebCryptoAlgorithm(WebCryptoAlgorithmId id, const char* name
 {
 }
 
+WebCryptoAlgorithm WebCryptoAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId id, const char* name, WebCryptoAlgorithmParams* params)
+{
+    return WebCryptoAlgorithm(id, name, adoptPtr(params));
+}
+
 WebCryptoAlgorithmId WebCryptoAlgorithm::id() const
 {
     return m_private->id;

@@ -75,8 +75,10 @@ class WebCryptoAlgorithm {
 public:
 #if WEBKIT_IMPLEMENTATION
     WebCryptoAlgorithm() { }
-    WebCryptoAlgorithm(WebCryptoAlgorithmId, const char*, PassOwnPtr<WebCryptoAlgorithmParams>);
+    WebCryptoAlgorithm(WebCryptoAlgorithmId, const char* name, PassOwnPtr<WebCryptoAlgorithmParams>);
 #endif
+
+    WEBKIT_EXPORT static WebCryptoAlgorithm adoptParamsAndCreate(WebCryptoAlgorithmId, const char* name, WebCryptoAlgorithmParams*);
 
     ~WebCryptoAlgorithm() { reset(); }
 
