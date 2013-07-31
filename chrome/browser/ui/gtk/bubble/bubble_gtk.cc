@@ -741,7 +741,11 @@ gboolean BubbleGtk::OnGrabBroken(GtkWidget* widget,
                                  GdkEventGrabBroken* grab_broken) {
   // |grab_input_| may have been changed to false.
   if (!grab_input_)
-    return false;
+    return FALSE;
+
+  // |grab_window| can be NULL.
+  if (!grab_broken->grab_window)
+    return FALSE;
 
   gpointer user_data;
   gdk_window_get_user_data(grab_broken->grab_window, &user_data);
