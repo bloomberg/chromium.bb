@@ -103,8 +103,6 @@ const char kLanguageListFetchURL[] =
 const char kAlphaLanguageQueryName[] = "alpha";
 const char kAlphaLanguageQueryValue[] = "1";
 
-const int kFetcherId = 1;
-
 // Represent if the language list updater is disabled.
 bool update_is_disabled = false;
 

@@ -33,8 +33,6 @@ class TranslateAcceptLanguages : public content::NotificationObserver {
                         const std::string& language);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TranslateAcceptLanguages);
-
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -55,6 +53,8 @@ class TranslateAcceptLanguages : public content::NotificationObserver {
   PrefServiceRegistrarMap pref_change_registrars_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(TranslateAcceptLanguages);
 };
 
 #endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_ACCEPT_LANGUAGES_H_

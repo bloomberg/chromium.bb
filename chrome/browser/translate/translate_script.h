@@ -18,6 +18,8 @@ class TranslateScript {
  public:
   typedef base::Callback<void(bool, const std::string&)> Callback;
 
+  static const int kFetcherId = 0;
+
   TranslateScript();
   virtual ~TranslateScript();
 

@@ -2,18 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include <algorithm>
 #include <set>
 #include <vector>
 
-#include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -25,6 +21,7 @@
 #include "chrome/browser/translate/translate_language_list.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/browser/translate/translate_script.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -42,31 +39,22 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
-#include "grit/generated_resources.h"
-#include "ipc/ipc_test_sink.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 
-using content::NavigationController;
 using content::RenderViewHostTester;
-using content::WebContents;
-using testing::_;
-using testing::Pointee;
-using testing::Property;
-using WebKit::WebContextMenuData;
 
 // An observer that keeps track of whether a navigation entry was committed.
 class NavEntryCommittedObserver : public content::NotificationObserver {
  public:
-  explicit NavEntryCommittedObserver(WebContents* web_contents) {
+  explicit NavEntryCommittedObserver(content::WebContents* web_contents) {
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   content::Source<NavigationController>(
-                      &web_contents->GetController()));
+                   content::Source<content::NavigationController>(
+                       &web_contents->GetController()));
   }
 
   virtual void Observe(int type,
@@ -77,8 +65,7 @@ class NavEntryCommittedObserver : public content::NotificationObserver {
         *(content::Details<content::LoadCommittedDetails>(details).ptr());
   }
 
-  const content::LoadCommittedDetails&
-      get_load_commited_details() const {
+  const content::LoadCommittedDetails& load_committed_details() const {
     return details_;
   }
 
@@ -115,6 +102,22 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
         rvh(),
         ChromeViewHostMsg_TranslateLanguageDetermined(
             0, details, page_translatable));
+  }
+
+  void SimulateOnPageTranslated(int routing_id,
+                                const std::string& source_lang,
+                                const std::string& target_lang,
+                                TranslateErrors::Type error) {
+    RenderViewHostTester::TestOnMessageReceived(
+        rvh(),
+        ChromeViewHostMsg_PageTranslated(
+            routing_id, 0, source_lang, target_lang, error));
+  }
+
+  void SimulateOnPageTranslated(const std::string& source_lang,
+                                const std::string& target_lang) {
+    SimulateOnPageTranslated(0, source_lang, target_lang,
+                             TranslateErrors::NONE);
   }
 
   bool GetTranslateMessage(int* page_id,
@@ -167,16 +170,6 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
     return found;
   }
 
-  // Returns true if at least one infobar was closed.
-  bool InfoBarRemoved() {
-    return !removed_infobars_.empty();
-  }
-
-  // Clears the list of stored removed infobars.
-  void ClearRemovedInfoBars() {
-    removed_infobars_.clear();
-  }
-
   void ExpireTranslateScriptImmediately() {
     TranslateManager::GetInstance()->SetTranslateScriptExpirationDelay(0);
   }
@@ -201,7 +194,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
 
     // Ensures it is really handled a reload.
     const content::LoadCommittedDetails& nav_details =
-        nav_observer.get_load_commited_details();
+        nav_observer.load_committed_details();
     EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
     EXPECT_EQ(content::NAVIGATION_TYPE_EXISTING_PAGE, nav_details.type);
 
@@ -255,8 +248,8 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
   }
 
   void SimulateTranslateScriptURLFetch(bool success) {
-    // TODO(hajimehoshi): 0 is a magic number.
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+    net::TestURLFetcher* fetcher =
+        url_fetcher_factory_.GetFetcherByID(TranslateScript::kFetcherId);
     ASSERT_TRUE(fetcher);
     net::URLRequestStatus status;
     status.set_status(success ? net::URLRequestStatus::SUCCESS :
@@ -304,8 +297,8 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
 
       data += "}})";
     }
-    // TODO(hajimehoshi): 1 is a magic number.
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(1);
+    net::TestURLFetcher* fetcher =
+        url_fetcher_factory_.GetFetcherByID(TranslateLanguageList::kFetcherId);
     ASSERT_TRUE(fetcher != NULL);
     fetcher->set_url(fetcher->GetOriginalURL());
     fetcher->set_status(status);
@@ -336,7 +329,7 @@ namespace {
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
   static TestRenderViewContextMenu* CreateContextMenu(
-      WebContents* web_contents) {
+      content::WebContents* web_contents) {
     content::ContextMenuParams params;
     params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
     params.x = 0;
@@ -351,7 +344,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.writing_direction_left_to_right = 0;
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
-    params.edit_flags = WebContextMenuData::CanTranslate;
+    params.edit_flags = WebKit::WebContextMenuData::CanTranslate;
     return new TestRenderViewContextMenu(web_contents, params);
   }
 
@@ -366,7 +359,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
       ui::Accelerator* accelerator) OVERRIDE { return false; }
 
  private:
-  TestRenderViewContextMenu(WebContents* web_contents,
+  TestRenderViewContextMenu(content::WebContents* web_contents,
                             const content::ContextMenuParams& params)
       : RenderViewContextMenu(web_contents, params) {
   }
@@ -377,7 +370,6 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
 }  // namespace
 
 TEST_F(TranslateManagerBrowserTest, NormalTranslate) {
-  // Simulate navigating to a page.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // We should have an infobar.
@@ -407,10 +399,7 @@ TEST_F(TranslateManagerBrowserTest, NormalTranslate) {
   EXPECT_EQ("en", target_lang);
 
   // Simulate the render notifying the translation has been done.
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, "fr", "en", TranslateErrors::NONE));
+  SimulateOnPageTranslated("fr", "en");
 
   // The after translate infobar should be showing.
   infobar = GetTranslateInfoBar();
@@ -426,10 +415,7 @@ TEST_F(TranslateManagerBrowserTest, NormalTranslate) {
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ("en", target_lang);
   // Simulate the render notifying the translation has been done.
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, new_original_lang, "en", TranslateErrors::NONE));
+  SimulateOnPageTranslated(new_original_lang, "en");
   // infobar is now invalid.
   TranslateInfoBarDelegate* new_infobar = GetTranslateInfoBar();
   ASSERT_TRUE(new_infobar != NULL);
@@ -444,10 +430,7 @@ TEST_F(TranslateManagerBrowserTest, NormalTranslate) {
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ(new_target_lang, target_lang);
   // Simulate the render notifying the translation has been done.
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, new_original_lang, new_target_lang, TranslateErrors::NONE));
+  SimulateOnPageTranslated(new_original_lang, new_target_lang);
   // infobar is now invalid.
   new_infobar = GetTranslateInfoBar();
   ASSERT_TRUE(new_infobar != NULL);
@@ -460,7 +443,6 @@ TEST_F(TranslateManagerBrowserTest, NormalTranslate) {
 }
 
 TEST_F(TranslateManagerBrowserTest, TranslateScriptNotAvailable) {
-  // Simulate navigating to a page.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // We should have an infobar.
@@ -472,7 +454,6 @@ TEST_F(TranslateManagerBrowserTest, TranslateScriptNotAvailable) {
   // Simulate clicking translate.
   process()->sink().ClearMessages();
   infobar->Translate();
-  // Simulate a failure retrieving the translate script.
   SimulateTranslateScriptURLFetch(false);
 
   // We should not have sent any message to translate to the renderer.
@@ -514,10 +495,7 @@ TEST_F(TranslateManagerBrowserTest, TranslateUnknownLanguage) {
 
   // Simulate the render notifying the translation has been done, the server
   // having detected the page was in a known and supported language.
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, "fr", "en", TranslateErrors::NONE));
+  SimulateOnPageTranslated("fr", "en");
 
   // The after translate infobar should be showing.
   infobar = GetTranslateInfoBar();
@@ -532,10 +510,7 @@ TEST_F(TranslateManagerBrowserTest, TranslateUnknownLanguage) {
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          1, 0, "en", "en", TranslateErrors::IDENTICAL_LANGUAGES));
+  SimulateOnPageTranslated(1, "en", "en", TranslateErrors::IDENTICAL_LANGUAGES);
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR,
@@ -548,10 +523,8 @@ TEST_F(TranslateManagerBrowserTest, TranslateUnknownLanguage) {
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          2, 0, std::string(), "en", TranslateErrors::UNKNOWN_LANGUAGE));
+  SimulateOnPageTranslated(2, std::string(), "en",
+                           TranslateErrors::UNKNOWN_LANGUAGE);
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR,
@@ -581,7 +554,6 @@ TEST_F(TranslateManagerBrowserTest, TestLanguages) {
     TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
     ASSERT_TRUE(infobar == NULL);
 
-    // Simulate navigating to a page.
     SimulateNavigation(url, lang, true);
 
     // Verify we have/don't have an info-bar as expected.
@@ -590,7 +562,6 @@ TEST_F(TranslateManagerBrowserTest, TestLanguages) {
         lang != "en";
     EXPECT_EQ(expected, infobar != NULL);
 
-    // Close the info-bar if applicable.
     if (infobar != NULL)
       EXPECT_TRUE(CloseTranslateInfoBar());
   }
@@ -700,7 +671,6 @@ TEST_F(TranslateManagerBrowserTest,
 
 // Tests auto-translate on page.
 TEST_F(TranslateManagerBrowserTest, AutoTranslateOnNavigate) {
-  // Simulate navigating to a page and getting its language.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // Simulate the user translating.
@@ -709,11 +679,7 @@ TEST_F(TranslateManagerBrowserTest, AutoTranslateOnNavigate) {
   infobar->Translate();
   // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
-
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, "fr", "en", TranslateErrors::NONE));
+  SimulateOnPageTranslated("fr", "en");
 
   // Now navigate to a new page in the same language.
   process()->sink().ClearMessages();
@@ -737,7 +703,6 @@ TEST_F(TranslateManagerBrowserTest, AutoTranslateOnNavigate) {
 
 // Tests that multiple OnPageContents do not cause multiple infobars.
 TEST_F(TranslateManagerBrowserTest, MultipleOnPageContents) {
-  // Simulate navigating to a page and getting its language.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // Simulate clicking 'Nope' (don't translate).
@@ -759,17 +724,14 @@ TEST_F(TranslateManagerBrowserTest, MultipleOnPageContents) {
 // Test that reloading the page brings back the infobar if the
 // reload succeeded and does not bring it back the reload fails.
 TEST_F(TranslateManagerBrowserTest, Reload) {
-  // Simulate navigating to a page and getting its language.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
-  // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
 
   // Reload should bring back the infobar if the page succeds
   ReloadAndWait(true);
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 
-  // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
 
   // And not show it if the reload fails
@@ -787,25 +749,22 @@ TEST_F(TranslateManagerBrowserTest, Reload) {
 // location bar brings back the infobar.
 TEST_F(TranslateManagerBrowserTest, ReloadFromLocationBar) {
   GURL url("http://www.google.fr");
-
-  // Simulate navigating to a page and getting its language.
   SimulateNavigation(url, "fr", true);
 
-  // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
 
   // Create a pending navigation and simulate a page load.  That should be the
   // equivalent of typing the URL again in the location bar.
   NavEntryCommittedObserver nav_observer(web_contents());
   web_contents()->GetController().LoadURL(url, content::Referrer(),
-                                      content::PAGE_TRANSITION_TYPED,
-                                      std::string());
+                                          content::PAGE_TRANSITION_TYPED,
+                                          std::string());
   rvh_tester()->SendNavigate(0, url);
 
   // Test that we are really getting a same page navigation, the test would be
   // useless if it was not the case.
   const content::LoadCommittedDetails& nav_details =
-      nav_observer.get_load_commited_details();
+      nav_observer.load_committed_details();
   EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
   EXPECT_EQ(content::NAVIGATION_TYPE_SAME_PAGE, nav_details.type);
 
@@ -818,15 +777,12 @@ TEST_F(TranslateManagerBrowserTest, ReloadFromLocationBar) {
 // Tests that a closed translate infobar does not reappear when navigating
 // in-page.
 TEST_F(TranslateManagerBrowserTest, CloseInfoBarInPageNavigation) {
-  // Simulate navigating to a page and getting its language.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
-  // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
 
   // Navigate in page, no infobar should be shown.
-  SimulateNavigation(GURL("http://www.google.fr/#ref1"), "fr",
-                     true);
+  SimulateNavigation(GURL("http://www.google.fr/#ref1"), "fr", true);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Navigate out of page, a new infobar should show.
@@ -837,10 +793,8 @@ TEST_F(TranslateManagerBrowserTest, CloseInfoBarInPageNavigation) {
 // Tests that a closed translate infobar does not reappear when navigating
 // in a subframe. (http://crbug.com/48215)
 TEST_F(TranslateManagerBrowserTest, CloseInfoBarInSubframeNavigation) {
-  // Simulate navigating to a page and getting its language.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
-  // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
 
   // Simulate a sub-frame auto-navigating.
@@ -860,7 +814,6 @@ TEST_F(TranslateManagerBrowserTest, CloseInfoBarInSubframeNavigation) {
 
 // Tests that denying translation is sticky when navigating in page.
 TEST_F(TranslateManagerBrowserTest, DenyTranslateInPageNavigation) {
-  // Simulate navigating to a page and getting its language.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // Simulate clicking 'Nope' (don't translate).
@@ -878,7 +831,6 @@ TEST_F(TranslateManagerBrowserTest, DenyTranslateInPageNavigation) {
 // Tests that after translating and closing the infobar, the infobar does not
 // return when navigating in page.
 TEST_F(TranslateManagerBrowserTest, TranslateCloseInfoBarInPageNavigation) {
-  // Simulate navigating to a page and getting its language.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // Simulate the user translating.
@@ -887,12 +839,8 @@ TEST_F(TranslateManagerBrowserTest, TranslateCloseInfoBarInPageNavigation) {
   infobar->Translate();
   // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, "fr", "en", TranslateErrors::NONE));
+  SimulateOnPageTranslated("fr", "en");
 
-  // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
 
   // Navigate in page, no infobar should be shown.
@@ -910,19 +858,14 @@ TEST_F(TranslateManagerBrowserTest, TranslateCloseInfoBarInPageNavigation) {
 // Tests that the after translate the infobar still shows when navigating
 // in-page.
 TEST_F(TranslateManagerBrowserTest, TranslateInPageNavigation) {
-  // Simulate navigating to a page and getting its language.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // Simulate the user translating.
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   infobar->Translate();
-  // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, "fr", "en", TranslateErrors::NONE));
+  SimulateOnPageTranslated("fr", "en");
   // The after translate infobar is showing.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
@@ -951,7 +894,6 @@ TEST_F(TranslateManagerBrowserTest, CLDReportsUnsupportedPageLanguage) {
 // server.
 // The translation server might return a language we don't support.
 TEST_F(TranslateManagerBrowserTest, ServerReportsUnsupportedLanguage) {
-  // Simulate navigating to a page and translating it.
   SimulateNavigation(GURL("http://mail.google.fr"), "fr", true);
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
@@ -960,10 +902,7 @@ TEST_F(TranslateManagerBrowserTest, ServerReportsUnsupportedLanguage) {
   SimulateTranslateScriptURLFetch(true);
   // Simulate the render notifying the translation has been done, but it
   // reports a language we don't support.
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, "qbz", "en", TranslateErrors::NONE));
+  SimulateOnPageTranslated("qbz", "en");
 
   // An error infobar should be showing to report that we don't support this
   // language.
@@ -1053,7 +992,6 @@ TEST_F(TranslateManagerBrowserTest, TranslateEnabledPref) {
   PrefService* prefs = profile->GetPrefs();
   prefs->SetBoolean(prefs::kEnableTranslate, true);
 
-  // Simulate navigating to a page and getting its language.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // An infobar should be shown.
@@ -1078,7 +1016,6 @@ TEST_F(TranslateManagerBrowserTest, TranslateEnabledPref) {
 
 // Tests the "Never translate <language>" pref.
 TEST_F(TranslateManagerBrowserTest, NeverTranslateLanguagePref) {
-  // Simulate navigating to a page and getting its language.
   GURL url("http://www.google.fr");
   SimulateNavigation(url, "fr", true);
 
@@ -1102,7 +1039,6 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateLanguagePref) {
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));
   EXPECT_FALSE(translate_prefs.CanTranslateLanguage(profile, "fr"));
 
-  // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
 
   // Navigate to a new page also in French.
@@ -1127,7 +1063,6 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateLanguagePref) {
 
 // Tests the "Never translate this site" pref.
 TEST_F(TranslateManagerBrowserTest, NeverTranslateSitePref) {
-  // Simulate navigating to a page and getting its language.
   GURL url("http://www.google.fr");
   std::string host(url.host());
   SimulateNavigation(url, "fr", true);
@@ -1150,7 +1085,6 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateSitePref) {
   EXPECT_TRUE(translate_prefs.IsSiteBlacklisted(host));
   EXPECT_TRUE(translate_prefs.CanTranslateLanguage(profile, "fr"));
 
-  // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
 
   // Navigate to a new page also on the same site.
@@ -1194,7 +1128,6 @@ TEST_F(TranslateManagerBrowserTest, AlwaysTranslateLanguagePref) {
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->infobar_type());
-  // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
   int page_id = 0;
   std::string original_lang, target_lang;
@@ -1268,7 +1201,6 @@ TEST_F(TranslateManagerBrowserTest, ContextMenu) {
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->infobar_type());
-  // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
   int page_id = 0;
   std::string original_lang, target_lang;
@@ -1282,10 +1214,7 @@ TEST_F(TranslateManagerBrowserTest, ContextMenu) {
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));
 
   // Let's simulate the page being translated.
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, "fr", "en", TranslateErrors::NONE));
+  SimulateOnPageTranslated("fr", "en");
 
   // The translate menu should now be disabled.
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
@@ -1320,10 +1249,7 @@ TEST_F(TranslateManagerBrowserTest, ContextMenu) {
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
   menu->Init();
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, "de", "en", TranslateErrors::NONE));
+  SimulateOnPageTranslated("de", "en");
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
   // No message expected since the translation should have been ignored.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
@@ -1428,7 +1354,6 @@ TEST_F(TranslateManagerBrowserTest, BeforeTranslateExtraButtons) {
 // Tests that we don't show a translate infobar when a page instructs that it
 // should not be translated.
 TEST_F(TranslateManagerBrowserTest, NonTranslatablePage) {
-  // Simulate navigating to a page.
   SimulateNavigation(GURL("http://mail.google.fr"), "fr", false);
 
   // We should not have an infobar.
@@ -1446,17 +1371,13 @@ TEST_F(TranslateManagerBrowserTest, NonTranslatablePage) {
 TEST_F(TranslateManagerBrowserTest, ScriptExpires) {
   ExpireTranslateScriptImmediately();
 
-  // Simulate navigating to a page and translating it.
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   process()->sink().ClearMessages();
   infobar->Translate();
   SimulateTranslateScriptURLFetch(true);
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(),
-      ChromeViewHostMsg_PageTranslated(
-          0, 0, "fr", "en", TranslateErrors::NONE));
+  SimulateOnPageTranslated("fr", "en");
 
   // A task should have been posted to clear the script, run it.
   base::MessageLoop::current()->RunUntilIdle();
@@ -1471,8 +1392,7 @@ TEST_F(TranslateManagerBrowserTest, ScriptExpires) {
   // for the script and no message should have been sent to the renderer.
   EXPECT_TRUE(
       process()->sink().GetFirstMessageMatching(
-          ChromeViewMsg_TranslatePage::ID) ==
-          NULL);
+          ChromeViewMsg_TranslatePage::ID) == NULL);
   // Now simulate the URL fetch.
   SimulateTranslateScriptURLFetch(true);
   // Now the message should have been sent.
@@ -1503,11 +1423,11 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
   SessionStartupPref pref(SessionStartupPref::LAST);
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
-  WebContents* current_web_contents =
+  content::WebContents* current_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(current_web_contents);
-  content::Source<WebContents> source(current_web_contents);
+  content::Source<content::WebContents> source(current_web_contents);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<
     LanguageDetectionDetails>
@@ -1531,9 +1451,9 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
 #define MAYBE_TranslateSessionRestore TranslateSessionRestore
 #endif
 IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, MAYBE_TranslateSessionRestore) {
-  WebContents* current_web_contents =
+  content::WebContents* current_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::Source<WebContents> source(current_web_contents);
+  content::Source<content::WebContents> source(current_web_contents);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<
     LanguageDetectionDetails>

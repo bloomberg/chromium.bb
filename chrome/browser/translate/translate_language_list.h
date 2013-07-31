@@ -20,6 +20,8 @@ class TranslateURLFetcher;
 // This class is defined to be owned only by TranslateManager.
 class TranslateLanguageList : public ResourceRequestAllowedNotifier::Observer {
  public:
+  static const int kFetcherId = 1;
+
   TranslateLanguageList();
   virtual ~TranslateLanguageList();
 

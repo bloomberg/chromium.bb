@@ -25,7 +25,6 @@ const int kExpirationDelayDays = 1;
 const char kScriptURL[] =
     "https://translate.google.com/translate_a/element.js";
 const char kRequestHeader[] = "Google-Translate-Element-Mode: library";
-const int kFetcherId = 0;
 
 // Used in kTranslateScriptURL to specify a callback function name.
 const char kCallbackQueryName[] = "cb";

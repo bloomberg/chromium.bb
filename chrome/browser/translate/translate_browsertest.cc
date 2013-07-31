@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_script.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -133,7 +134,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, DISABLED_Translate) {
     "  }\n"
     "} } } };\n"
     "cr.googleTranslate.onTranslateElementLoad();\n";
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  net::TestURLFetcher* fetcher =
+      factory.GetFetcherByID(TranslateScript::kFetcherId);
   ASSERT_TRUE(fetcher);
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
