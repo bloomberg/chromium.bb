@@ -24,6 +24,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/limits.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_common.h"
@@ -285,7 +286,8 @@ base::TimeDelta FFmpegDemuxerStream::ConvertStreamTimestamp(
 FFmpegDemuxer::FFmpegDemuxer(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     DataSource* data_source,
-    const FFmpegNeedKeyCB& need_key_cb)
+    const FFmpegNeedKeyCB& need_key_cb,
+    const scoped_refptr<MediaLog>& media_log)
     : host_(NULL),
       message_loop_(message_loop),
       weak_factory_(this),
@@ -293,6 +295,7 @@ FFmpegDemuxer::FFmpegDemuxer(
       pending_read_(false),
       pending_seek_(false),
       data_source_(data_source),
+      media_log_(media_log),
       bitrate_(0),
       start_time_(kNoTimestamp()),
       audio_disabled_(false),

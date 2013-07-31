@@ -52,6 +52,7 @@ typedef base::Callback<void(const std::string& type,
                             scoped_ptr<uint8[]> init_data,
                             int init_data_size)> FFmpegNeedKeyCB;
 
+class MediaLog;
 class FFmpegDemuxer;
 class FFmpegGlue;
 class FFmpegH264ToAnnexBBitstreamConverter;
@@ -137,7 +138,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
  public:
   FFmpegDemuxer(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                 DataSource* data_source,
-                const FFmpegNeedKeyCB& need_key_cb);
+                const FFmpegNeedKeyCB& need_key_cb,
+                const scoped_refptr<MediaLog>& media_log);
   virtual ~FFmpegDemuxer();
 
   // Demuxer implementation.
@@ -225,6 +227,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // Provides asynchronous IO to this demuxer. Consumed by |url_protocol_| to
   // integrate with libavformat.
   DataSource* data_source_;
+
+  scoped_refptr<MediaLog> media_log_;
 
   // Derived bitrate after initialization has completed.
   int bitrate_;

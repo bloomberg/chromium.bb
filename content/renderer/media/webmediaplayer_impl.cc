@@ -1039,7 +1039,8 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
 
     demuxer_.reset(new media::FFmpegDemuxer(
         media_loop_, data_source_.get(),
-        BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnNeedKey, "")));
+        BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnNeedKey, ""),
+        media_log_));
   } else {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);

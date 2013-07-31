@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/media.h"
+#include "media/base/media_log.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
 
@@ -194,8 +195,10 @@ int main(int argc, char** argv) {
   CHECK(data_source.Initialize(file_path));
 
   media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
-  media::FFmpegDemuxer demuxer(
-      message_loop.message_loop_proxy(), &data_source, need_key_cb);
+  media::FFmpegDemuxer demuxer(message_loop.message_loop_proxy(),
+                               &data_source,
+                               need_key_cb,
+                               new media::MediaLog());
 
   demuxer.Initialize(&demuxer_host, base::Bind(
       &QuitLoopWithStatus, &message_loop));

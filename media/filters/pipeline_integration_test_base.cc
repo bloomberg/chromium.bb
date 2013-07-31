@@ -210,11 +210,13 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   CHECK(file_data_source->Initialize(file_path));
   data_source_.reset(file_data_source);
 
-  media::FFmpegNeedKeyCB need_key_cb =
-      base::Bind(&PipelineIntegrationTestBase::DemuxerNeedKeyCB,
-                 base::Unretained(this));
-  scoped_ptr<Demuxer> demuxer(new FFmpegDemuxer(
-      message_loop_.message_loop_proxy(), data_source_.get(), need_key_cb));
+  media::FFmpegNeedKeyCB need_key_cb = base::Bind(
+      &PipelineIntegrationTestBase::DemuxerNeedKeyCB, base::Unretained(this));
+  scoped_ptr<Demuxer> demuxer(
+      new FFmpegDemuxer(message_loop_.message_loop_proxy(),
+                        data_source_.get(),
+                        need_key_cb,
+                        new MediaLog()));
   return CreateFilterCollection(demuxer.Pass(), decryptor);
 }
 

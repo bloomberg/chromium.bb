@@ -279,7 +279,7 @@ int main(int argc, char** argv) {
       CreateDataSource(filename), command_line->HasSwitch("streaming")));
   scoped_ptr<media::Demuxer> demuxer(new media::FFmpegDemuxer(
       media_thread.message_loop_proxy(), data_source.get(),
-      base::Bind(&NeedKey)));
+      base::Bind(&NeedKey), new media::MediaLog()));
 
   media::Pipeline pipeline(media_thread.message_loop_proxy(),
                            new media::MediaLog());

@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/media_log.h"
 #include "media/base/mock_demuxer_host.h"
 #include "media/base/test_helpers.h"
 #include "media/ffmpeg/ffmpeg_common.h"
@@ -82,8 +83,10 @@ class FFmpegDemuxerTest : public testing::Test {
 
     media::FFmpegNeedKeyCB need_key_cb =
         base::Bind(&FFmpegDemuxerTest::NeedKeyCB, base::Unretained(this));
-    demuxer_.reset(new FFmpegDemuxer(
-        message_loop_.message_loop_proxy(), data_source_.get(), need_key_cb));
+    demuxer_.reset(new FFmpegDemuxer(message_loop_.message_loop_proxy(),
+                                     data_source_.get(),
+                                     need_key_cb,
+                                     new MediaLog()));
   }
 
   MOCK_METHOD1(CheckPoint, void(int v));
