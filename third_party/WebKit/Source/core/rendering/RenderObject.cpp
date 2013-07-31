@@ -679,6 +679,10 @@ void RenderObject::markContainingBlocksForLayout(bool scheduleRelayout, RenderOb
         // calling setNeedsLayout during preferred width computation.
         SetLayoutNeededForbiddenScope layoutForbiddenScope(object, isSetNeedsLayoutForbidden());
 #endif
+
+        if (object->selfNeedsLayout())
+            return;
+
         // Don't mark the outermost object of an unrooted subtree. That object will be
         // marked when the subtree is added to the document.
         RenderObject* container = object->container();
