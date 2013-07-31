@@ -346,6 +346,12 @@ cr.define('extensions', function() {
 
     if (node)
       node.classList.add('showing');
+
+    var pages = document.querySelectorAll('.page');
+    for (var i = 0; i < pages.length; i++) {
+      pages[i].setAttribute('aria-hidden', node ? 'true' : 'false');
+    }
+
     overlay.hidden = !node;
     uber.invokeMethodOnParent(node ? 'beginInterceptingEvents' :
                                      'stopInterceptingEvents');
