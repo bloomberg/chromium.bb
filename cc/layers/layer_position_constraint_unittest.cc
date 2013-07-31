@@ -115,6 +115,13 @@ class LayerPositionConstraintTest : public testing::Test {
                                  bounds,
                                  false);
 
+    root->SetMaxScrollOffset(gfx::Vector2d(100, 100));
+    root->SetScrollable(true);
+    child->SetMaxScrollOffset(gfx::Vector2d(100, 100));
+    child->SetScrollable(true);
+    grand_child->SetMaxScrollOffset(gfx::Vector2d(100, 100));
+    grand_child->SetScrollable(true);
+
     grand_child->AddChild(great_grand_child.Pass());
     child->AddChild(grand_child.Pass());
     root->AddChild(child.Pass());

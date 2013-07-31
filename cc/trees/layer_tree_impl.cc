@@ -75,6 +75,7 @@ void LayerTreeImpl::FindRootScrollLayer() {
   root_scroll_layer_ = FindRootScrollLayerRecursive(root_layer_.get());
 
   if (root_scroll_layer_) {
+    UpdateMaxScrollOffset();
     root_scroll_layer_->SetScrollOffsetDelegate(
         root_layer_scroll_offset_delegate_);
   }
@@ -362,10 +363,11 @@ static void DidBecomeActiveRecursive(LayerImpl* layer) {
 }
 
 void LayerTreeImpl::DidBecomeActive() {
-  if (root_layer())
-    DidBecomeActiveRecursive(root_layer());
+  if (!root_layer())
+    return;
+
+  DidBecomeActiveRecursive(root_layer());
   FindRootScrollLayer();
-  UpdateMaxScrollOffset();
 }
 
 bool LayerTreeImpl::ContentsTexturesPurged() const {

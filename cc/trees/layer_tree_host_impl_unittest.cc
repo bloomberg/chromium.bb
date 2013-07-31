@@ -426,9 +426,9 @@ TEST_F(LayerTreeHostImplTest, ScrollDeltaRepeatedScrolls) {
   {
     scoped_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl_->active_tree(), 1);
+    root->SetMaxScrollOffset(gfx::Vector2d(100, 100));
     root->SetScrollOffset(scroll_offset);
     root->SetScrollable(true);
-    root->SetMaxScrollOffset(gfx::Vector2d(100, 100));
     root->ScrollBy(scroll_delta);
     host_impl_->active_tree()->SetRootLayer(root.Pass());
   }

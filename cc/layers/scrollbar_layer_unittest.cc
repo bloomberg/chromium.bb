@@ -114,6 +114,7 @@ TEST(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   layer_tree_root->AddChild(content_layer);
   layer_tree_root->AddChild(scrollbar_layer);
 
+  layer_tree_root->SetScrollable(true);
   layer_tree_root->SetScrollOffset(gfx::Vector2d(10, 20));
   layer_tree_root->SetMaxScrollOffset(gfx::Vector2d(30, 50));
   layer_tree_root->SetBounds(gfx::Size(100, 200));
@@ -232,6 +233,7 @@ TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   scrollbar_layer_impl->SetCurrentPos(4.f);
   scrollbar_layer_impl->SetMaximum(8);
 
+  layer_impl_tree_root->SetScrollable(true);
   layer_impl_tree_root->SetHorizontalScrollbarLayer(scrollbar_layer_impl);
   layer_impl_tree_root->SetMaxScrollOffset(gfx::Vector2d(8, 8));
   layer_impl_tree_root->SetBounds(gfx::Size(2, 2));

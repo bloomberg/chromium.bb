@@ -32,6 +32,8 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
 
   virtual void BeginTest() OVERRIDE {
     layer_tree_host()->root_layer()->SetScrollable(true);
+    layer_tree_host()->root_layer()
+        ->SetMaxScrollOffset(gfx::Vector2d(100, 100));
     layer_tree_host()->root_layer()->SetScrollOffset(initial_scroll_);
     PostSetNeedsCommitToMainThread();
   }
@@ -96,6 +98,8 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
     layer_tree_host()->root_layer()->SetScrollable(true);
     layer_tree_host()->root_layer()->SetScrollOffset(initial_scroll_);
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(200, 200));
+    layer_tree_host()->root_layer()
+        ->SetMaxScrollOffset(gfx::Vector2d(100, 100));
     PostSetNeedsCommitToMainThread();
   }
 
@@ -117,9 +121,6 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     LayerImpl* root = impl->active_tree()->root_layer();
-    root->SetScrollable(true);
-    root->SetMaxScrollOffset(gfx::Vector2d(100, 100));
-
     if (impl->active_tree()->source_frame_number() == 0 &&
         impl->SourceAnimationFrameNumber() == 1) {
       // First draw after first commit.
@@ -345,12 +346,13 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
 
   virtual void BeginTest() OVERRIDE {
     layer_tree_host()->root_layer()->SetScrollable(true);
+    layer_tree_host()->root_layer()
+        ->SetMaxScrollOffset(gfx::Vector2d(100, 100));
     PostSetNeedsCommitToMainThread();
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     LayerImpl* root = impl->active_tree()->root_layer();
-    root->SetMaxScrollOffset(gfx::Vector2d(100, 100));
 
     // Check that a fractional scroll delta is correctly accumulated over
     // multiple commits.
@@ -725,6 +727,8 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
 
   virtual void BeginTest() OVERRIDE {
     layer_tree_host()->root_layer()->SetScrollable(true);
+    layer_tree_host()->root_layer()
+        ->SetMaxScrollOffset(gfx::Vector2d(100, 100));
     layer_tree_host()->root_layer()->SetScrollOffset(initial_scroll_);
     PostSetNeedsCommitToMainThread();
   }
@@ -764,9 +768,6 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
     ImplSidePaintingScrollTest::DrawLayersOnThread(impl);
 
     LayerImpl* root = impl->active_tree()->root_layer();
-    root->SetScrollable(true);
-    root->SetMaxScrollOffset(gfx::Vector2d(100, 100));
-
     LayerImpl* pending_root =
         impl->active_tree()->FindPendingTreeLayerById(root->id());
 

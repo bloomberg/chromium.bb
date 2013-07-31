@@ -400,6 +400,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
 TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   const gfx::Vector2d kScrollOffset(50, 100);
   const gfx::Vector2dF kScrollDelta(2.34f, 5.67f);
+  const gfx::Vector2d kMaxScrollOffset(200, 200);
   const gfx::PointF kScrollLayerPosition(-kScrollOffset.x(),
                                          -kScrollOffset.y());
   const float kPageScale = 0.888f;
@@ -433,6 +434,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                gfx::Size(10, 20),
                                false);
   scroll_layer->SetScrollable(true);
+  scroll_layer->SetMaxScrollOffset(kMaxScrollOffset);
   scroll_layer->SetScrollOffset(kScrollOffset);
   scroll_layer->SetScrollDelta(kScrollDelta);
   gfx::Transform impl_transform;

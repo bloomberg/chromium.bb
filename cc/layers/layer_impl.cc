@@ -259,6 +259,8 @@ void LayerImpl::SetSentScrollDelta(gfx::Vector2d sent_scroll_delta) {
 }
 
 gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
+  DCHECK(scrollable());
+
   gfx::Vector2dF min_delta = -scroll_offset_;
   gfx::Vector2dF max_delta = max_scroll_offset_ - scroll_offset_;
   // Clamp new_delta so that position + delta stays within scroll bounds.

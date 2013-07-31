@@ -81,6 +81,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   child->AddChild(LayerImpl::Create(host_impl.active_tree(), 3));
   LayerImpl* grand_child = child->children()[0];
 
+  root->SetScrollable(true);
+
   // Adding children is an internal operation and should not mark layers as
   // changed.
   EXPECT_FALSE(root->LayerPropertyChanged());
@@ -198,6 +200,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   FakeLayerTreeHostImpl host_impl(&proxy);
   EXPECT_TRUE(host_impl.InitializeRenderer(CreateFakeOutputSurface()));
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
+  root->SetScrollable(true);
 
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
   float arbitrary_number = 0.352f;
@@ -327,6 +330,7 @@ class LayerImplScrollTest : public testing::Test {
   LayerImplScrollTest() : host_impl_(&proxy_), root_id_(7) {
     host_impl_.active_tree()
         ->SetRootLayer(LayerImpl::Create(host_impl_.active_tree(), root_id_));
+    host_impl_.active_tree()->root_layer()->SetScrollable(true);
   }
 
   LayerImpl* layer() { return host_impl_.active_tree()->root_layer(); }
