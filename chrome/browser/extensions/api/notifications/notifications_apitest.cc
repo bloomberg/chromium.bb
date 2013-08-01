@@ -15,11 +15,6 @@
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
 
-// TODO(kbr): remove: http://crbug.com/222296
-#if defined(OS_MACOSX)
-#import "base/mac/mac_util.h"
-#endif
-
 using extensions::Extension;
 
 namespace utils = extension_function_test_utils;
@@ -45,12 +40,6 @@ class NotificationsApiTest : public ExtensionApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   // Create a new notification. A lingering output of this block is the
   // notifications ID, which we'll use in later parts of this test.
   std::string notification_id;
@@ -456,12 +445,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestGetAll) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestEvents) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(RunExtensionTest("notifications/api/events")) << message_;
 }
 

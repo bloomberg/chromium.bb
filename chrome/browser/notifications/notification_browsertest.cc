@@ -50,11 +50,6 @@
 #include "ui/message_center/message_center_util.h"
 #include "url/gurl.h"
 
-// TODO(kbr): remove: http://crbug.com/222296
-#if defined(OS_MACOSX)
-#import "base/mac/mac_util.h"
-#endif
-
 namespace {
 
 const char kExpectedIconUrl[] = "/notifications/no_such_file.png";
@@ -520,12 +515,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNoUserGestureInfobar) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Creates a simple notification.
@@ -554,12 +543,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseNotification) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Creates a notification and closes it.
@@ -585,12 +568,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseNotification) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCancelNotification) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Creates a notification and cancels it in the origin page.
@@ -617,12 +594,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPermissionInfobarAppears) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowOnPermissionInfobar) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Tries to create a notification and clicks allow on the infobar.
@@ -668,12 +639,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestClosePermissionInfobar) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowNotificationsFromAllSites) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Verify that all domains can be allowed to show notifications.
@@ -718,12 +683,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyDomainAndAllowAll) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowDomainAndDenyAll) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Verify that allowing a domain and denying all others should show
@@ -740,12 +699,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowDomainAndDenyAll) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyAndThenAllowDomain) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Verify that denying and again allowing should show notifications.
@@ -768,12 +721,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyAndThenAllowDomain) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Verify able to create, deny, and close the notification.
@@ -870,12 +817,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestKillNotificationProcess) {
   if (message_center::IsRichNotificationEnabled())
     return;
 
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Test killing a notification doesn't crash Chrome.
@@ -891,12 +832,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestKillNotificationProcess) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestIncognitoNotification) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Test notifications in incognito window.
@@ -932,12 +867,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionInfobar) {
 IN_PROC_BROWSER_TEST_F(
     NotificationsTest,
     TestNavigateAwayWithPermissionInfobar) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Test navigating away when an infobar is present,
@@ -968,12 +897,6 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest,
                        MAYBE_TestCrashRendererNotificationRemain) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Test crashing renderer does not close or crash notification.
@@ -992,12 +915,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
-#if defined(OS_MACOSX)
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-#endif
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Test that we can replace a notification using the replaceId.
